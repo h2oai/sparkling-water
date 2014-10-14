@@ -1,0 +1,19 @@
+description = "Sparkling Water Core"
+
+dependencies {
+  // Required for h2o-app (we need UI)
+  compile "ai.h2o:h2o-app:${h2oVersion}"
+  // H2O Scala API
+  compile "ai.h2o:h2o-scala_${scalaBinaryVersion}:${h2oVersion}"
+
+  // Spark 1.1.0 release
+  // - core
+  compile "org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}"
+  // - SQL component
+  compile "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
+
+  // And Scala library
+  compile "org.scala-lang:scala-library:${scalaVersion}"
+}
+
+
