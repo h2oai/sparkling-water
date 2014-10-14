@@ -1,0 +1,25 @@
+apply plugin: 'com.github.johnrengelman.shadow'
+
+description = "Sparkling Water Examples"
+
+dependencies {
+  // Sparkling Water Core
+  compile( project(":sparkling-water-core") ) { 
+    exclude group: "javax.servlet", module: "servlet-api"
+  }
+}
+
+shadowJar {
+  dependencies {
+    include(dependency("ai.h2o:sparkling-water-core"))
+    include(dependency("ai.h2o:sparkling-water-examples"))
+    include(dependency("ai.h2o:h2o-core"))
+    include(dependency("ai.h2o:h2o-app"))
+    include(dependency("ai.h2o:h2o-web"))
+    include(dependency("ai.h2o:h2o-algos"))
+    include(dependency("joda-time:joda-time"))
+    include(dependency("org.javassist:javassist"))
+  }
+}
+assemble.dependsOn shadowJar 
+
