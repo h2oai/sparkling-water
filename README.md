@@ -23,20 +23,22 @@ Use provided `gradlew` to build project:
 
 Build a package which can be submitted to Spark cluster:
 ```
-./gradlew shadowJar
+./gradlew assemble
 ```
 
-Configure location of your Spark cluster or use default `local-cluster[3,2,1024]`
+Configure location of your Spark cluster, for example; `local-cluster[3,2,1024]`
 ```
-export MASTER="spark://localhost:7077"
+export MASTER="local-cluster[3,2,1024]"
 ```
+
+> To use local Spark cluster, please use `spark://localhost:7077`
 
 And run example:
 ```
 bin/run-example.sh
 ```
 
-> Default address of Spark cluster is `local-cluster[3,2,1024]` causing creation of an embedded cluster consisting of 3 workers.
+> In this example, Spark cluster is described by the location `local-cluster[3,2,1024]` which causes creation of an embedded cluster consisting of 3 workers.
 
 ## Sparkling shell
 
@@ -44,12 +46,12 @@ It provides regular Spark shell with support to create H<sub>2</sub>O cloud and 
 
 First, build a package containing Sparkling water
 ```
-./gradlew shadowJar
+./gradlew assemble
 ```
 
-Configure location of your Spark cluster if necessary:
+Configure location of your Spark cluster:
 ```
-export MASTER="spark://localhost:7077"
+export MASTER="local-cluster[3,2,1024]"
 ```
 
 And run Sparkling Shell
