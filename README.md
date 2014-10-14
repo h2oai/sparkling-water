@@ -35,7 +35,7 @@ And run example:
 bin/run-example.sh
 ```
 
-> Default address of Spark cluster is `local-cluster[3,2,104]` causing creation of an embedded cluster consisting of 3 workers.
+> Default address of Spark cluster is `local-cluster[3,2,1024]` causing creation of an embedded cluster consisting of 3 workers.
 
 ## Sparkling shell
 
