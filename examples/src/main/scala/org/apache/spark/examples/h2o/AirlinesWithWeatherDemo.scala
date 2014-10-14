@@ -32,14 +32,14 @@ object AirlinesWithWeatherDemo {
     val h2oContext = new H2OContext(sc).start()
     import h2oContext._
 
-    val weatherDataFile = "h2o-examples/smalldata/Chicago_Ohare_International_Airport.csv"
+    val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
     val wrawdata = sc.textFile(weatherDataFile,3).cache()
     val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
 
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val dataFile = "h2o-examples/smalldata/allyears2k_headers.csv.gz"
+    val dataFile = "examples/smalldata/allyears2k_headers.csv.gz"
     println(s"\n===> Parsing datafile: $dataFile\n")
     val airlinesData = new DataFrame(new File(dataFile))
 

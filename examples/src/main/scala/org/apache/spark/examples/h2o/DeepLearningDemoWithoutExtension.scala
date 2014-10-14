@@ -30,7 +30,7 @@ object DeepLearningDemoWithoutExtension {
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val dataFile = "h2o-examples/smalldata/allyears2k_headers.csv.gz"
+    val dataFile = "examples/smalldata/allyears2k_headers.csv.gz"
     println(s"\n===> Parsing datafile: $dataFile\n")
     val airlinesData = new DataFrame(new File(dataFile))
 

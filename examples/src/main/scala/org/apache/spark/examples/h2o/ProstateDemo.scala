@@ -41,7 +41,7 @@ object ProstateDemo {
     val sc = createSparkContext()
     // Add a file to be available for cluster mode
     // FIXME: absolute path is here because in cluster deployment mode the file is not found (JVM path is different from .)
-    sc.addFile("/Users/michal/Devel/projects/h2o/repos/perrier/h2o-examples/smalldata/prostate.csv")
+    sc.addFile("examples/smalldata/prostate.csv")
 
     // We do not need to wait for H2O cloud since it will be launched by backend
 
