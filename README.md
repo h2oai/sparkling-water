@@ -101,6 +101,7 @@ bin/sparkling-shell
 
 7. Select only flights with destination in SFO with help of Spark SQL:
   ```scala
+  import org.apache.spark.sql.SQLContext
   val sqlContext = new SQLContext(sc)
   import sqlContext._ 
   airlinesTable.registerTempTable("airlinesTable")
