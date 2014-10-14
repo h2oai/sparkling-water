@@ -1,0 +1,39 @@
+apply plugin: 'scala'
+
+// Specify properties
+project.ext {
+  scalaBinaryVersion = '2.10'
+  scalaVersion = '2.10.4'
+}
+
+// Activate Zinc compiler and configure scalac
+tasks.withType(ScalaCompile) {
+    scalaCompileOptions.useCompileDaemon = false
+    scalaCompileOptions.useAnt = false
+    scalaCompileOptions.additionalParameters = ['-target:jvm-1.6']
+}
+
+jar {
+  baseName = "${project.name}_${scalaBinaryVersion}"
+}
+
+// Create jar
+task testJar(type: Jar, dependsOn: testClasses) {
+    baseName = "${project.name}_${scalaBinaryVersion}"
+    appendix = 'test'
+    from sourceSets.test.output
+}
+
+// Create a configuration containing only for test artifacts
+configurations {
+    testArchives
+}
+
+// Explicitly
+artifacts {
+    testArchives testJar
+}
+
+// Enable scalastyle
+apply from: "$rootDir/gradle/scalastyle.gradle"
+

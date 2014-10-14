@@ -1,0 +1,10 @@
+apply plugin: 'scalaStyle'
+
+scalaStyle {
+  //configLocation = "$rootDir/gradle/conf/scalastyle_conf.xml"
+  configLocation = "$rootDir/gradle/conf/scalastyle-config.xml"
+  includeTestSourceDirectory = true
+  source = "src/main/scala"
+  testSource = "src/test/scala"
+}
+

@@ -1,0 +1,5 @@
+rootProject.name = 'sparkling-water'
+
+include 'core'
+include 'examples'
+rootProject.children.each { it.name = rootProject.name + "-" + it.name }

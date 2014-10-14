@@ -1,0 +1,66 @@
+//
+// The top-level h2o-dev project does not have any java pieces itself, but
+// apply from the standard java.gradle so that 'gradle idea' generates IDE
+// files with the right settings.
+//
+// The top-level h2o-dev.jar file that gets produced is empty and not usable
+// for anything.  Use the jar file produced by the h2o-web subproject.
+//
+
+// The build script settings to fetch plugins and put them on
+// classpath
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven { url "http://dl.bintray.com/releashaus/release" }
+    }
+
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.1.1'
+        classpath 'org.github.mansur.scalastyle:gradle-scalastyle-plugin_2.10:0.4.1'
+    }
+}
+
+//
+// For all projects (this and all subprojects) specify common properties and tasks
+//
+configure(allprojects) { project ->
+    group = 'ai.h2o'
+
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+    apply from: "$rootDir/gradle/artifacts.gradle"
+    
+    // Version of main components
+    ext { 
+      scalaVersion       = '2.10.4'
+      scalaBinaryVersion = '2.10'
+      h2oVersion         = '0.1.6'
+      sparkVersion       = '1.1.0'
+    }
+}
+
+// 
+// Common configuration for all subprojects
+//
+configure(subprojects) { project ->
+    // All project inherits the same versioning number
+    version = rootProject.version
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://repository.cloudera.com/artifactory/cloudera-repos/"
+        }
+    }
+
+
+    // All subprojects are scala project so apply the plugin directly
+    apply from: "$rootDir/gradle/scala.gradle"
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.0'
+}
+
