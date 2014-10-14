@@ -2,4 +2,7 @@ rootProject.name = 'sparkling-water'
 
 include 'core'
 include 'examples'
+include 'assembly'
+
+// Prefix all projects with sparkling-water name
 rootProject.children.each { it.name = rootProject.name + "-" + it.name }
