@@ -4,6 +4,7 @@ Sparkling Water integrates H<sub>2</sub>O fast scalable machine learning engine 
 
 ## Requirements
 
+  * Linux or OS X (Windows support is coming)
   * Java 7
   * Spark 1.1.0 
     * `SPARK_HOME` shell variable should point to your local Spark installation
