@@ -53,7 +53,7 @@ trait H2OConf {
   val PROP_PORT_INCR = ( "spark.ext.h2o.port.incr", 2)
   /** Configuration property - timeout for cloud up. */
   val PROP_CLOUD_TIMEOUT = ("spark.ext.h2o.cloud.timeout", 60*1000)
-  /** Configuration property - number of retries to create an RDD which is spread over all executors */
+  /** Configuration property - number of retries to create an RDD spreat over all executors */
   val PROP_SPREADRDD_RETRIES = ("spark.ext.h2o.spreadrdd.retries", 10)
   /** Configuration property - name of H2O cloud */
   val PROP_CLOUD_NAME = ("spark.ext.h2o.cloud.name", "sparkling-water-42")

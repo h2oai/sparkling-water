@@ -125,7 +125,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     val nodes = distRDD.map { index =>
       ( SparkEnv.get.executorId,
         java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString("."),
-        (basePort+incrPort*index))
+        (basePort + incrPort*index))
     }.collect()
     nodes
   }
@@ -137,7 +137,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     tmpDir.deleteOnExit()
     val flatFile = new File(tmpDir, "flatfile.txt")
     // Save flatfile
-    scala.tools.nsc.io.File(flatFile).writeAll(nodes.map(x=>x._2+":"+x._3).mkString("", "\n","\n"))
+    scala.tools.nsc.io.File(flatFile).writeAll(
+      nodes.map(x => x._2 + ":" + x._3).mkString("", "\n","\n"))
     // Distribute the file around the Spark cluster via Spark infrastructure
     // - the file will be fetched by Executors
     sparkContext.addFile(flatFile.getAbsolutePath)
@@ -145,7 +146,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     flatFile
   }
 
-  private def createSpreadRDD(nretries:Int, mfactor: Int, nworkers: Int): (RDD[Int], Array[NodeDesc]) = {
+  private def createSpreadRDD(nretries:Int,
+                              mfactor: Int,
+                              nworkers: Int): (RDD[Int], Array[NodeDesc]) = {
     // FIXME: put there iteration increasing mfactor
 
     val spreadRDD =
@@ -178,7 +181,7 @@ object H2OContext {
 
   /** Transform SchemaRDD into H2O DataFrame */
   def toDataFrame(sc: SparkContext, rdd: SchemaRDD) : DataFrame = {
-    val keyName = "frame_rdd_"+rdd.id // There are uniq IDs for RDD
+    val keyName = "frame_rdd_" + rdd.id // There are uniq IDs for RDD
     val fnames = rdd.schema.fieldNames.toArray
     val ftypes = rdd.schema.fields.map( field => dataTypeToClass(field.dataType) ).toArray
 
@@ -224,9 +227,11 @@ object H2OContext {
       case q if q==classOf[java.lang.Float]   => Vec.T_NUM
       case q if q==classOf[java.lang.Double]  => Vec.T_NUM
       case q if q==classOf[java.lang.Boolean] => Vec.T_NUM
-      case q if q==classOf[java.lang.String]  => if (d.length < water.parser.Enum.MAX_ENUM_SIZE)
+      case q if q==classOf[java.lang.String]  => if (d.length < water.parser.Enum.MAX_ENUM_SIZE) {
                                                     Vec.T_ENUM
-                                                 else Vec.T_STR
+                                                  } else {
+                                                    Vec.T_STR
+                                                  }
       case _ => !!!
     }
   }
@@ -360,7 +365,9 @@ object H2OContext {
   def toRDD[A <: Product: TypeTag: ClassTag]
            ( h2oContext : H2OContext, fr : DataFrame ) : RDD[A] = new H2ORDD[A](h2oContext,fr)
 
-  private def startH2O(sc: SparkContext, spreadRDD: RDD[Int], cloudName: String): Array[(String,Boolean)] = {
+  private def startH2O(sc: SparkContext,
+                       spreadRDD: RDD[Int],
+                       cloudName: String): Array[(String,Boolean)] = {
     spreadRDD.map { index =>
       try {
         H2O.START_TIME_MILLIS.synchronized {
