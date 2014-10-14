@@ -25,7 +25,7 @@ Build a package which can be submitted to Spark cluster:
 ./gradlew shadowJar
 ```
 
-Configure location of your Spark cluster or use default `local-cluster[3,2,104]`
+Configure location of your Spark cluster or use default `local-cluster[3,2,1024]`
 ```
 export MASTER="spark://localhost:7077"
 ```
