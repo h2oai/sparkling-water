@@ -113,6 +113,9 @@ bin/sparkling-shell
 
 8. Launch H<sub>2</sub>O algorithm on the result of SQL query
   ```scala
+  import hex.deeplearning._
+  import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+
   val dlParams = new DeepLearningParameters()
   dlParams._training_frame = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
                                     'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
