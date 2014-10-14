@@ -56,7 +56,7 @@ And run Sparkling Shell
 bin/sparkling-shell
 ```
 
-### Example
+### Simple Example
 
 1. Run Sparkling shell with embedded cluster:
   ```
@@ -89,3 +89,43 @@ bin/sparkling-shell
   import org.apache.spark.examples.h2o._
   val airlinesTable : RDD[Airlines] = toRDD[Airlines](airlinesData)
   ```
+
+6. Compute number of rows inside RDD:
+  ```scala
+  airlinesTable.count
+  ```
+  or compute number of rows via H<sub>2</sub>O API
+  ```scala
+  airlinesData.numRows()
+  ```
+
+7. Select only flights with destination in SFO with help of Spark SQL:
+  ```scala
+  val sqlContext = new SQLContext(sc)
+  import sqlContext._ 
+  airlinesTable.registerTempTable("airlinesTable")
+
+  // Select only interesting columns and flights with destination in SFO
+  val query = "SELECT * FROM airlinesTable WHERE Dest LIKE 'SFO'"
+  val result = sql(query)
+  ```
+
+8. Launch H<sub>2</sub>O algorithm on the result of SQL query
+  ```scala
+  val dlParams = new DeepLearningParameters()
+  dlParams._training_frame = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
+                                    'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
+                                    'Distance, 'IsDepDelayed)
+  dlParams.response_column = 'IsDepDelayed
+  dlParams.classification = true
+  // Launch computation
+  val dl = new DeepLearning(dlParams)
+  val dlModel = dl.train.get
+  ```
+  
+9. Use model for prediction
+  ```scala
+  val predictionH2OFrame = dlModel.score(result)('predict)
+  val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
+  ```
+  
