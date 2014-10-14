@@ -66,10 +66,11 @@ bin/sparkling-shell
 You can go to http://localhost:4040/ to see Sparkling shell (i.e., Spark driver) status.
 
 
-Now you can launch H<sub>2</sub>O inside Spark cluster
+Now you can launch H<sub>2</sub>O inside Spark cluster:
 ```scala
 import org.apache.spark.h2o._
 val h2oContext = new H2OContext(sc).start(3)
+import h2oContext._
 ```
 
 > Note: Currently H2OContext#start API call requires number of Spark workers, in this case Spark cluster contains 3 workers.
