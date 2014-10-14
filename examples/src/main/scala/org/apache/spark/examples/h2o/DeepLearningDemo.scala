@@ -4,8 +4,9 @@ import java.io.File
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import org.apache.spark.examples.h2o.DemoUtils.createSparkContext
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.SparkContext
+import org.apache.spark.examples.h2o.DemoUtils.configure
+import org.apache.spark.h2o.{DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import water.fvec.DataFrame
@@ -15,7 +16,12 @@ object DeepLearningDemo {
 
   def main(args: Array[String]): Unit = {
     // Create Spark context which will drive computation.
-    val sc = createSparkContext()
+    val conf = configure("Sparkling Water: Deep Learning on Airlines data")
+    val sc = new SparkContext(conf)
+
+    // Run H2O cluster inside Spark cluster
+    val h2oContext = new H2OContext(sc).start()
+    import h2oContext._
 
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
@@ -27,8 +33,6 @@ object DeepLearningDemo {
     //
     // Use H2O to RDD transformation
     //
-    val h2oContext = new H2OContext(sc)
-    import h2oContext._
     val airlinesTable : RDD[Airlines] = toRDD[Airlines](airlinesData)
     println(s"\n===> Number of all flights via RDD#count call: ${airlinesTable.count()}\n")
     println(s"\n===> Number of all flights via H2O#Frame#count: ${airlinesData.numRows()}\n")
@@ -58,14 +62,9 @@ object DeepLearningDemo {
     dlParams._training_frame = result( 'Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
                                     'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
                                     'Distance, 'IsDepDelayed)
-    dlParams.response_column = 'IsDepDelayed.name
-    dlParams.classification = true
+    dlParams.response_column = 'IsDepDelayed
+    //dlParams.classification = true
 
-    // ---- DEBUG
-    //println("========== ******* DEBUG ******* =========")
-    //val xxx = dlParams._training_frame
-    //DemoUtils.printFrame(xxx.get[DataFrame])
-    // ---------
 
     val dl = new DeepLearning(dlParams)
     val dlModel = dl.train.get
@@ -75,7 +74,7 @@ object DeepLearningDemo {
     //
     println("\n====> Making prediction with help of DeepLearning model\n")
     val predictionH2OFrame = dlModel.score(result)('predict)
-    val predictionsFromModel = toRDD[Result](predictionH2OFrame).take(10).map ( _.predict.getOrElse("NaN") )
+    val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map ( _.result.getOrElse("NaN") )
     println(predictionsFromModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
 
     // Stop Spark cluster and destroy all executors
@@ -85,5 +84,4 @@ object DeepLearningDemo {
     // This will block in cluster mode since we have H2O launched in driver
   }
 
-  case class Result(predict: Option[Double])
 }

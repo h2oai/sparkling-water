@@ -5,27 +5,18 @@ import java.io.File
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import water.fvec.DataFrame
+import DemoUtils.configure
 
 
 object AirlinesWithWeatherDemo {
 
-  def configure():SparkConf = {
-    val conf = new SparkConf()
-      .setAppName("Airlines with Weather Demo")
-    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local"))
-    val localMode = conf.get("spark.master").equals("local") || conf.get("spark.master").startsWith("local[")
-    conf.setIfMissing("spark.ext.h2o.cluster.size",
-      if (localMode) "1" else sys.env.getOrElse("spark.h2o.workers", "3"))
-    conf
-  }
-
   def main(args: Array[String]): Unit = {
     // Configure this application
-    val conf: SparkConf = configure()
+    val conf: SparkConf = configure("Sparkling Water: Join of Airlines with Weather Data")
 
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
@@ -81,13 +72,11 @@ object AirlinesWithWeatherDemo {
     val dlModel = dl.train.get
 
     val predictionH2OFrame = dlModel.score(bigTable)('predict)
-    val predictionsFromModel = toRDD[Result](predictionH2OFrame).collect.map(_.predict.getOrElse(Double.NaN))
+    val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
     println(predictionsFromModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
 
     // Explicit sleep for long time to make cluster available from R
     Thread.sleep(600000)
     sc.stop()
   }
-
-  case class Result(predict: Option[Double])
 }

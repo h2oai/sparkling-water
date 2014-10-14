@@ -4,8 +4,9 @@ import java.io.File
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import water.fvec.DataFrame
@@ -14,13 +15,8 @@ import water.fvec.DataFrame
 object DeepLearningDemoWithoutExtension {
 
   def main(args: Array[String]): Unit = {
-    // Configure this application
-    val conf = new SparkConf()
-      .setAppName("DL demo without Spark modification")
-    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local"))
-    val localMode = conf.get("spark.master").equals("local") || conf.get("spark.master").startsWith("local[")
-    conf.setIfMissing("spark.ext.h2o.cluster.size",
-      if (localMode) "1" else sys.env.getOrElse("spark.h2o.workers", "3"))
+    // Create a Spark config
+    val conf: SparkConf = configure("Sparkling water: DL demo without Spark modification")
 
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
@@ -69,12 +65,9 @@ object DeepLearningDemoWithoutExtension {
     dlParams.response_column = 'IsDepDelayed
     dlParams.classification = true
 
-    // ---- DEBUG
-    //println("========== ******* DEBUG ******* =========")
-    //val xxx = dlParams._training_frame
-    //DemoUtils.printFrame(xxx.get[DataFrame])
-    // ---------
-
+    //
+    // Prepare Deep Learning parameters
+    //
     val dl = new DeepLearning(dlParams)
     val dlModel = dl.train.get
 
@@ -83,7 +76,7 @@ object DeepLearningDemoWithoutExtension {
     //
     println("\n====> Making prediction with help of DeepLearning model\n")
     val predictionH2OFrame = dlModel.score(result)('predict)
-    val predictionsFromModel = toRDD[Result](predictionH2OFrame).take(10).map ( _.predict.getOrElse("NaN") )
+    val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).take(10).map ( _.result.getOrElse("NaN") )
     println(predictionsFromModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
 
     // Stop Spark cluster and destroy all executors
@@ -92,6 +85,4 @@ object DeepLearningDemoWithoutExtension {
     }
     // This will block in cluster mode since we have H2O launched in driver
   }
-
-  case class Result(predict: Option[Double])
 }
