@@ -23,4 +23,6 @@ out/
 .gradle/
 .DS_Store*
 *.ipr
+*.iml
+.idea
 
