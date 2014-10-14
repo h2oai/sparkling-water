@@ -14,6 +14,7 @@ shadowJar {
     include(dependency("ai.h2o:sparkling-water-core"))
     include(dependency("ai.h2o:sparkling-water-examples"))
     include(dependency("ai.h2o:h2o-core"))
+    include(dependency("ai.h2o:h2o-scala_${scalaBinaryVersion}"))
     include(dependency("ai.h2o:h2o-app"))
     include(dependency("ai.h2o:h2o-web"))
     include(dependency("ai.h2o:h2o-algos"))
