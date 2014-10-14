@@ -58,15 +58,16 @@ bin/sparkling-shell
 
 ### Example
 
-Run Sparkling shell with embedded cluster:
+1. Run Sparkling shell with embedded cluster:
 ```
 export MASTER="local-cluster[3,2,1024]"
 bin/sparkling-shell
 ```
-You can go to http://localhost:4040/ to see Sparkling shell (i.e., Spark driver) status.
+
+2. You can go to [http://localhost:4040/](http://localhost:4040/) to see Sparkling shell (i.e., Spark driver) status.
 
 
-Now you can launch H<sub>2</sub>O inside Spark cluster:
+3. Now you can launch H<sub>2</sub>O inside Spark cluster:
 ```scala
 import org.apache.spark.h2o._
 val h2oContext = new H2OContext(sc).start(3)
@@ -76,14 +77,14 @@ import h2oContext._
 > Note: Currently H2OContext#start API call requires number of Spark workers, in this case Spark cluster contains 3 workers.
 
 
-Import provided airlines data, parse them via H<sub>2</sub>O parser:
+4. Import provided airlines data, parse them via H<sub>2</sub>O parser:
 ```scala
 import java.io.File
 val dataFile = "examples/smalldata/allyears2k_headers.csv.gz"
 val airlinesData = new DataFrame(new File(dataFile))
 ```
 
-Use data via RDD API:
+5. Use data via RDD API:
 ```scala
 import org.apache.spark.examples.h2o._
 val airlinesTable : RDD[Airlines] = toRDD[Airlines](airlinesData)
