@@ -26,19 +26,17 @@ Build a package which can be submitted to Spark cluster:
 ./gradlew assemble
 ```
 
-Configure location of your Spark cluster, for example; `local-cluster[3,2,1024]`
+Set the configuration of the demo Spark cluster, for example; `local-cluster[3,2,1024]`
+
 ```
 export MASTER="local-cluster[3,2,1024]"
 ```
+> In this example, the description `local-cluster[3,2,1024]` causes the creation of an embedded cluster consisting of 3 workers.
 
-> To use local Spark cluster, please use `spark://localhost:7077`
-
-And run example:
+And run the example:
 ```
 bin/run-example.sh
 ```
-
-> In this example, Spark cluster is described by the location `local-cluster[3,2,1024]` which causes creation of an embedded cluster consisting of 3 workers.
 
 ## Sparkling shell
 
