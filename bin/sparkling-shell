@@ -21,5 +21,7 @@ Using
 
 EOF
 
-$SPARK_HOME/bin/spark-shell --jars $TOPDIR/examples/build/libs/$FAT_JAR --driver-memory $SHELL_DRIVER_MEMORY
-
+(
+ cd $TOPDIR
+ $SPARK_HOME/bin/spark-shell --jars $TOPDIR/examples/build/libs/$FAT_JAR --driver-memory $SHELL_DRIVER_MEMORY
+)

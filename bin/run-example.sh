@@ -41,5 +41,7 @@ echo "---------"
 export SPARK_PRINT_LAUNCH_COMMAND=1
 VERBOSE=--verbose
 VERBOSE=
-$SPARK_HOME/bin/spark-submit $VERBOSE --driver-memory $EXAMPLE_DRIVER_MEMORY --driver-java-options "$EXAMPLE_H2O_SYS_OPS -Dspark.h2o.workers=$EXAMPLE_NUM_OF_H2O_WORKERS" --master $EXAMPLE_MASTER --deploy-mode $EXAMPLE_DEPLOY_MODE --class $EXAMPLE $TOPDIR/examples/build/libs/$FAT_JAR
-
+(
+ cd $TOPDIR
+ $SPARK_HOME/bin/spark-submit $VERBOSE --driver-memory $EXAMPLE_DRIVER_MEMORY --driver-java-options "$EXAMPLE_H2O_SYS_OPS -Dspark.h2o.workers=$EXAMPLE_NUM_OF_H2O_WORKERS" --master $EXAMPLE_MASTER --deploy-mode $EXAMPLE_DEPLOY_MODE --class $EXAMPLE $TOPDIR/examples/build/libs/$FAT_JAR
+)
