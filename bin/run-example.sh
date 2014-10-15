@@ -2,7 +2,7 @@
 
 # Current dir
 TOPDIR=$(cd `dirname $0`/.. &&  pwd)
-FAT_JAR="sparkling-water-examples-0.1.6-SNAPSHOT-all.jar"
+FAT_JAR="sparkling-water-examples-0.1.8-SNAPSHOT-all.jar"
 # Example class prefix
 if [ ! -d "$SPARK_HOME" ]; then
   echo "Please setup SPARK_HOME variable to your Spark installation!"
