@@ -35,4 +35,10 @@ object FrameUtils {
     Frame.createNewChunks(name, cidx)
 
   def closeNewChunks( nchks : Array[NewChunk] ): Unit = Frame.closeNewChunks(nchks)
+
+  def getChunks(fr: Frame, cidx: Int): Array[Chunk] = {
+    val vecs = fr.vecs()
+    val chks = vecs.indices.map(idx => vecs(idx).chunkForChunkIdx(cidx))
+    chks.toArray
+  }
 }
