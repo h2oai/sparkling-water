@@ -40,7 +40,7 @@ bin/run-example.sh
 
 ## Sparkling shell
 
-The Sparkling shell provides regular Spark shell with support to create a H<sub>2</sub>O cloud and execute H<sub>2</sub> algorithms.
+The Sparkling shell provides a regular Spark shell with support to create a H<sub>2</sub>O cloud and execute H<sub>2</sub>O algorithms.
 
 First, build a package containing Sparkling water
 ```
