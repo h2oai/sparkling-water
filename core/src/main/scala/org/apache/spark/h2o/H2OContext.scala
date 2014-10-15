@@ -181,7 +181,7 @@ object H2OContext {
 
   /** Transform SchemaRDD into H2O DataFrame */
   def toDataFrame(sc: SparkContext, rdd: SchemaRDD) : DataFrame = {
-    val keyName = "frame_rdd_" + rdd.id // There are uniq IDs for RDD
+    val keyName = "frame_rdd_" + rdd.id + Key.rand() // There are uniq IDs for RDD
     val fnames = rdd.schema.fieldNames.toArray
     val ftypes = rdd.schema.fields.map( field => dataTypeToClass(field.dataType) ).toArray
 
@@ -239,13 +239,13 @@ object H2OContext {
   /** Transform typed RDD into H2O DataFrame */
   def toDataFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A]) : DataFrame = {
     import org.apache.spark.h2o.ReflectionUtils._
+    val keyName = "frame_rdd_" + rdd.id + Key.rand() // There are uniq IDs for RDD
     val fnames = names[A]
     val ftypes = types[A]
     // Collect domains for string columns
     val fdomains = collectColumnDomains(sc, rdd, fnames, ftypes)
 
     // Make an H2O data Frame - but with no backing data (yet)
-    val keyName = Key.rand
     initFrame(keyName, fnames)
 
     val rows = sc.runJob(rdd, perRDDPartition(keyName) _) // eager, not lazy, evaluation

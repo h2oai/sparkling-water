@@ -78,7 +78,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag] private (@transient val h2oContext
                   s"Constructor must take exactly ${colNames.length} args")
       })
 
-      val chks = fr.getChunks(split.index)
+      val chks = water.fvec.FrameUtils.getChunks(fr, split.index)
       val nrows = chks(0)._len
       var row : Int = 0
       val valStr = new ValueString() // dummy holder
