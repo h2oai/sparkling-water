@@ -11,7 +11,7 @@ fi
 # Example prefix
 PREFIX=org.apache.spark.examples.h2o
 # Name of default example
-DEFAULT_EXAMPLE=DeepLearningDemoWithoutExtension
+DEFAULT_EXAMPLE=AirlinesWithWeatherDemo
 
 if [ $1 ]; then
   EXAMPLE=$PREFIX.$1
