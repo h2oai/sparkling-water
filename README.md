@@ -37,6 +37,12 @@ And run the example:
 ```
 bin/run-example.sh
 ```
+This runs the Deep Learning demo.  It is finished when you see the line (Ctrl-C to stop the demo cluster):
+```
+===> Model predictions: 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, ...
+```
+For more details about the demo, please see the README.md file in the examples directory.
+
 
 ## Sparkling shell
 
