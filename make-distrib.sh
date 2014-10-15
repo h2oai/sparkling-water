@@ -4,7 +4,7 @@ cat > demofiles.list <<EOF
 sparkling-water/bin/launch-spark-cloud.sh
 sparkling-water/bin/run-example.sh
 sparkling-water/bin/sparkling-shell
-sparkling-water/examples/build/libs/sparkling-water-examples-0.1.6-SNAPSHOT-all.jar
+sparkling-water/examples/build/libs/sparkling-water-examples-0.1.8-SNAPSHOT-all.jar
 sparkling-water/examples/README.md
 sparkling-water/examples/scripts/dlDemo.script
 sparkling-water/examples/smalldata/allyears2k_headers.csv.gz
@@ -24,3 +24,10 @@ ZIPNAME="sparkling-water.zip"
   cat sparkling-water/demofiles.list | zip -@ "sparkling-water/$ZIPNAME"
 )
 
+SPARK_DIST="spark-1.1.0-bin-cdh4"
+SPARK_EXT="tgz"
+(
+ cd private
+ tar -zxvf "${SPARK_DIST}.${SPARK_EXT}"
+ zip -r -u ../$ZIPNAME $SPARK_DIST
+)
