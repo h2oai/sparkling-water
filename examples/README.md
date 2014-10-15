@@ -5,7 +5,7 @@
     _smalldata/prostate.csv_)
   * `DeepLearningDemo` - running DeepLearning on a subset of airlines dataset (see
     _smalldata/allyears2k\_headers.csv.gz_)
-  * _AirlinesWithWeatherDemo_ - joining flights data with weather data and running
+  * `AirlinesWithWeatherDemo` - joining flights data with weather data and running
     Deep Learning
 
 ## Compile Example
