@@ -67,6 +67,7 @@ object AirlinesWithWeatherDemo {
     dlParams._training_frame = bigTable
     dlParams.response_column = 'ArrDelay
     dlParams.classification = false
+    dlParams.epochs = 100
 
     val dl = new DeepLearning(dlParams)
     val dlModel = dl.train.get
@@ -75,8 +76,27 @@ object AirlinesWithWeatherDemo {
     val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
     println(predictionsFromModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
 
+    println(
+      s"""# R script for residual plot
+        |h = h2o.init()
+        |
+        |pred = h2o.getFrame(h, "${predictionH2OFrame._key}")
+        |act = h2o.getFrame (h, "${bigTable._key}")
+        |
+        |predDelay = pred$$predict
+        |actDelay = act$$ArrDelay
+        |
+        |nrow(actDelay) == nrow(predDelay)
+        |
+        |residuals = predDelay - actDelay
+        |
+        |compare = cbind (as.data.frame(actDelay$$ArrDelay), as.data.frame(residuals$$predict))
+        |nrow(compare)
+        |plot( compare[,1:2] )
+        |
+      """.stripMargin)
     // Explicit sleep for long time to make cluster available from R
-    Thread.sleep(600000)
+    Thread.sleep(60*60*1000)
     sc.stop()
   }
 }
