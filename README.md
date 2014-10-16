@@ -8,7 +8,11 @@ Sparkling Water integrates H<sub>2</sub>O fast scalable machine learning engine 
   * Java 7
   * Spark 1.1.0 
     * `SPARK_HOME` shell variable should point to your local Spark installation
-  
+ 
+## Downloads of binaries
+   * [Sparkling water](https://s3-us-west-1.amazonaws.com/sparkling-h2o/sparkling-water.zip)
+   * [Sparkling water with Spark](https://s3-us-west-1.amazonaws.com/sparkling-h2o/sparkling-water-with-spark.zip)
+   
 ## Building
 
 Use provided `gradlew` to build project:
