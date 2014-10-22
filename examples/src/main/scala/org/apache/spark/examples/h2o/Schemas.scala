@@ -143,11 +143,11 @@ object AirlinesParse extends Serializable {
 case class Weather( val Year   : Option[Int],
                     val Month  : Option[Int],
                     val Day    : Option[Int],
-                    val TmaxF  : Option[Int],
-                    val TminF  : Option[Int],
-                    val TmeanF : Option[Float],
-                    val PrcpIn : Option[Float],   // Precipitation (inches)
-                    val SnowIn : Option[Float],   // Snow (inches)
+                    val TmaxF  : Option[Int],   // Max temperatur in F
+                    val TminF  : Option[Int],   // Min temperatur in F
+                    val TmeanF : Option[Float], // Mean temperatur in F
+                    val PrcpIn : Option[Float], // Precipitation (inches)
+                    val SnowIn : Option[Float], // Snow (inches)
                     val CDD    : Option[Float], // Cooling Degree Day
                     val HDD    : Option[Float], // Heating Degree Day
                     val GDD    : Option[Float]) // Growing Degree Day
