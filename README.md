@@ -68,7 +68,8 @@ And run Sparkling Shell:
 bin/sparkling-shell
 ```
 
-> Sparkling Shell accepts common Spark Shell arguments. For example, to increase memory allocated by each executor it > is possible to pass `spark.executor.memory` parameter: `bin/sparkling-shell --conf "spark.executor.memory=4g"`
+> Sparkling Shell accepts common Spark Shell arguments. For example, to increase memory allocated by each executor it > is possible to pass `spark.executor.memory` parameter:
+> `bin/sparkling-shell --conf "spark.executor.memory=4g"`
 
 ### Simple Example
 
