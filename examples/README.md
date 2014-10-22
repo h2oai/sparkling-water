@@ -131,7 +131,12 @@ You can tune Sparkling Water via the following variables:
   
 13. Plot residuals plot in R
   ```R
+  #
   # R script for residual plot
+  #
+  # Import H2O library
+  library(h2o)
+  # Initialize H2O R-client
   h = h2o.init()
   # Fetch prediction and actual data, use remembered keys
   pred = h2o.getFrame(h, "dframe_b5f449d0c04ee75fda1b9bc865b14a69")
