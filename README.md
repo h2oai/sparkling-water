@@ -57,15 +57,18 @@ First, build a package containing Sparkling water
 ./gradlew assemble
 ```
 
-Configure the Spark cluster:
+Configure the location of Spark cluster:
 ```
 export MASTER="local-cluster[3,2,1024]"
 ```
+> In this case `local-cluster[3,2,1024]` points to embedded cluster of 3 worker nodes, each with 2 cores and 1G of memory.
 
 And run Sparkling Shell:
 ```
 bin/sparkling-shell
 ```
+
+> Sparkling Shell accepts common Spark Shell arguments. For example, to increase memory allocated by each executor it > is possible to pass `spark.executor.memory` parameter: `bin/sparkling-shell --conf "spark.executor.memory=4g"`
 
 ### Simple Example
 
