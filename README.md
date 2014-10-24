@@ -10,8 +10,8 @@ Sparkling Water integrates H<sub>2</sub>O fast scalable machine learning engine 
     * `SPARK_HOME` shell variable should point to your local Spark installation
  
 ## Downloads of binaries
-   * [Sparkling water](https://s3-us-west-1.amazonaws.com/sparkling-h2o/sparkling-water.zip)
-   * [Sparkling water with Spark](https://s3-us-west-1.amazonaws.com/sparkling-h2o/sparkling-water-with-spark.zip)
+   * [Sparkling water 0.2.0](https://s3-us-west-1.amazonaws.com/sparkling-h2o/sparkling-water-0.2.0.zip)
+   * [Sparkling water 0.2.0 with bundled Spark 1.1.0-cdh4](https://s3-us-west-1.amazonaws.com/sparkling-h2o/sparkling-water-with-spark-0.2.0.zip)
    
 ## Building
 
