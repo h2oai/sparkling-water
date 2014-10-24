@@ -64,9 +64,9 @@ object AirlinesWithWeatherDemo {
     // -- Run DeepLearning
     //
     val dlParams = new DeepLearningParameters()
-    dlParams._training_frame = bigTable
-    dlParams.response_column = 'ArrDelay
-    dlParams.classification = false
+    dlParams._train = bigTable
+    dlParams._response_column = 'ArrDelay
+    dlParams._classification = false
     dlParams.epochs = 100
 
     val dl = new DeepLearning(dlParams)

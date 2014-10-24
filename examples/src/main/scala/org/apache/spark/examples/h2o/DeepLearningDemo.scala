@@ -59,10 +59,10 @@ object DeepLearningDemo {
     val dlParams = new DeepLearningParameters()
     // Use result of SQL query
     // Note: there is implicit conversion from RDD->DataFrame->Key
-    dlParams._training_frame = result( 'Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
-                                    'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
-                                    'Distance, 'IsDepDelayed)
-    dlParams.response_column = 'IsDepDelayed
+    dlParams._train = result( 'Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
+                              'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
+                              'Distance, 'IsDepDelayed )
+    dlParams._response_column = 'IsDepDelayed
     //dlParams.classification = true
 
 
