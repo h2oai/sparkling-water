@@ -22,8 +22,7 @@ shadowJar {
     include(dependency("org.javassist:javassist"))
   }
 }
-assemble.dependsOn shadowJar 
 
-// Disable default jar
-jar.onlyIf { false }
-
+artifacts {
+  archives shadowJar
+}

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Current dir
+TOPDIR=$(cd `dirname $0` &&  pwd)
+source $TOPDIR/bin/sparkling-env.sh
+
 cat > demofiles.list <<EOF
 sparkling-water/bin/launch-spark-cloud.sh
 sparkling-water/bin/run-example.sh
@@ -14,9 +18,10 @@ sparkling-water/examples/smalldata/Chicago_Ohare_International_Airport_2010_2013
 sparkling-water/examples/smalldata/prostate.csv
 sparkling-water/LICENSE
 sparkling-water/README.md
+sparkling-water/gradle.properties
 EOF
 
-ZIPNAME="sparkling-water.zip" 
+ZIPNAME="sparkling-water-$VERSION.zip" 
 [ -f "$ZIPNAME" ] && rm $ZIPNAME
 
 (
@@ -24,10 +29,13 @@ ZIPNAME="sparkling-water.zip"
   cat sparkling-water/demofiles.list | zip -@ "sparkling-water/$ZIPNAME"
 )
 
+ZIPNAME_WITH_SPARK=$(echo $ZIPNAME | sed "s/water/water-spark")
+cp $ZIPNAME $ZIPNAME_WITH_SPARK
+
 SPARK_DIST="spark-1.1.0-bin-cdh4"
 SPARK_EXT="tgz"
 (
  cd private
  tar -zxvf "${SPARK_DIST}.${SPARK_EXT}"
- zip -r -u ../$ZIPNAME $SPARK_DIST
+ zip -r -u ../$ZIPNAME_WITH_SPARK $SPARK_DIST
 )

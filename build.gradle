@@ -1,11 +1,11 @@
 //
-// The top-level h2o-dev project does not have any java pieces itself, but
-// apply from the standard java.gradle so that 'gradle idea' generates IDE
-// files with the right settings.
+// Sparkling Water build file.
+// This is a multi-module build file.
 //
-// The top-level h2o-dev.jar file that gets produced is empty and not usable
-// for anything.  Use the jar file produced by the h2o-web subproject.
-//
+
+// For multiproject setup we have to apply release plugin here (we share same release number cross all modules)
+apply from: 'gradle/release.gradle'
+
 
 // The build script settings to fetch plugins and put them on
 // classpath
@@ -19,7 +19,20 @@ buildscript {
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.1.1'
         classpath 'org.github.mansur.scalastyle:gradle-scalastyle-plugin_2.10:0.4.1'
+        classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.7.1'
+        classpath 'com.github.townsfolk:gradle-release:1.2'
     }
+}
+
+//
+// Common configuration
+//
+ext {
+    // Published projects
+    publishedProjects = [
+      project(':sparkling-water-core'),
+      project(':sparkling-water-assembly')
+    ]
 }
 
 //
@@ -36,7 +49,7 @@ configure(allprojects) { project ->
     ext { 
       scalaVersion       = '2.10.4'
       scalaBinaryVersion = '2.10'
-      h2oVersion         = '0.1.8'
+      h2oVersion         = '0.1.9'
       sparkVersion       = '1.1.0'
     }
 }
@@ -53,11 +66,18 @@ configure(subprojects) { project ->
         maven {
             url "https://repository.cloudera.com/artifactory/cloudera-repos/"
         }
+        // Should be enabled only in development mode
+        //mavenLocal()
     }
 
 
     // All subprojects are scala project so apply the plugin directly
     apply from: "$rootDir/gradle/scala.gradle"
+    
+    // Publish artifacts 
+    if (project in publishedProjects) {
+      apply from: "$rootDir/gradle/publish.gradle"
+    }
 }
 
 task wrapper(type: Wrapper) {
