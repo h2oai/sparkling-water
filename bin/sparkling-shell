@@ -5,7 +5,7 @@ TOPDIR=$(cd `dirname $0`/..; pwd)
 source $TOPDIR/bin/sparkling-env.sh
 
 SHELL_DRIVER_MEMORY=3G
-FAT_JAR="sparkling-water-examples-$VERSION-all.jar"
+FAT_JAR="sparkling-water-assembly-$VERSION-all.jar"
 
 if [ ! -d "$SPARK_HOME" ]; then
   echo "Please setup SPARK_HOME variable to your Spark installation!"
@@ -26,5 +26,5 @@ EOF
 
 (
  cd $TOPDIR
- $SPARK_HOME/bin/spark-shell --jars $TOPDIR/examples/build/libs/$FAT_JAR --driver-memory $SHELL_DRIVER_MEMORY "$@"
+ $SPARK_HOME/bin/spark-shell --jars $TOPDIR/assembly/build/libs/$FAT_JAR --driver-memory $SHELL_DRIVER_MEMORY "$@"
 )

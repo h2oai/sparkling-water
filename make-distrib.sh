@@ -9,7 +9,7 @@ sparkling-water/bin/launch-spark-cloud.sh
 sparkling-water/bin/run-example.sh
 sparkling-water/bin/sparkling-shell
 sparkling-water/bin/sparkling-env.sh
-sparkling-water/examples/build/libs/sparkling-water-examples-0.1.8-SNAPSHOT-all.jar
+sparkling-water/assembly/build/libs/sparkling-water-assembly-$VERSION-all.jar
 sparkling-water/examples/README.md
 sparkling-water/examples/scripts/dlDemo.script
 sparkling-water/examples/smalldata/allyears2k_headers.csv.gz
