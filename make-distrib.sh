@@ -29,7 +29,7 @@ ZIPNAME="sparkling-water-$VERSION.zip"
   cat sparkling-water/demofiles.list | zip -@ "sparkling-water/$ZIPNAME"
 )
 
-ZIPNAME_WITH_SPARK=$(echo $ZIPNAME | sed "s/water/water-spark")
+ZIPNAME_WITH_SPARK=$(echo $ZIPNAME | sed "s/water/water-with-spark/")
 cp $ZIPNAME $ZIPNAME_WITH_SPARK
 
 SPARK_DIST="spark-1.1.0-bin-cdh4"
@@ -39,3 +39,5 @@ SPARK_EXT="tgz"
  tar -zxvf "${SPARK_DIST}.${SPARK_EXT}"
  zip -r -u ../$ZIPNAME_WITH_SPARK $SPARK_DIST
 )
+
+rm demofiles.list
