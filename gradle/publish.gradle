@@ -1,0 +1,48 @@
+// Nexus plugin for releasing https://github.com/bmuschko/gradle-nexus-plugin
+apply plugin: 'nexus'
+
+modifyPom {
+    project {
+      name project.name
+      // Basic info
+      url 'https://github.com/0xdata/h2o'
+      inceptionYear '2013'
+      description project.description
+
+      organization {
+        name = '0xdata'
+        url  = 'http://h2o.ai/'
+      }
+
+      // H2O licensing 
+      licenses {
+        license {
+          name 'The Apache Software License, Version 2.0'
+          url  'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          distribution 'repo'
+        }
+      }
+
+      // Info for contributors
+      scm {
+        url        = 'https://github.com/0xdata/sparkling-water'
+        connection = 'scm:git:https://github.com/0xdata/sparkling-water.git'
+        developerConnection = 'scm:git:git@github.com:0xdata/sparkling-water.git'
+      }
+
+      // Public H2O JIRA for issue management
+      issueManagement {
+        system = 'Jira'
+        url    = 'http://jira.0xdata.com'
+      }
+      // Developer information
+      developers {
+        developer {
+          id 'support'
+          name '0xdata Support'
+          email 'support@0xdata.com'
+        }
+      }
+    }
+}
+

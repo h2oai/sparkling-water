@@ -1,0 +1,11 @@
+apply plugin: 'release'
+
+release {
+  tagPrefix = "RELEASE"
+  // Safe point - do releases only from release branch - can be deleted in future
+  //requireBranch = "release"
+  failOnUnversionedFiles = false
+}
+
+// Upload artifacts after release
+createReleaseTag.dependsOn { subprojects.uploadArchives }
