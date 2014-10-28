@@ -16,6 +16,7 @@ DIST_DIR="$TOPDIR/dist/"
 DIST_BUILD_DIR="${DIST_DIR}build/"
 [ -d "$DIST_BUILD_DIR" ] && rm -rf "$DIST_BUILD_DIR"
 mkdir "$DIST_BUILD_DIR" 2> /dev/null
+mkdir private 2> /dev/null
 
 cat > "$TOPDIR/demofiles.list" <<EOF
 bin/
