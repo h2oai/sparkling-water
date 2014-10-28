@@ -24,6 +24,11 @@ task testJar(type: Jar, dependsOn: testClasses) {
     from sourceSets.test.output
 }
 
+task scaladocJar(type: Jar, dependsOn: scaladoc) {
+    classifier = 'scaladoc'
+    from scaladoc
+}
+
 // Create a configuration containing only for test artifacts
 configurations {
     testArchives
@@ -32,6 +37,7 @@ configurations {
 // Explicitly
 artifacts {
     testArchives testJar
+    archives scaladocJar
 }
 
 // Enable scalastyle
