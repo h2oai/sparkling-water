@@ -27,9 +27,7 @@ assembly/build/libs/sparkling-water-assembly-$VERSION-all.jar
 examples/README.md
 examples/scripts/dlDemo.script
 examples/smalldata/allyears2k_headers.csv.gz
-examples/smalldata/Chicago_Ohare_2010_2013.csv
 examples/smalldata/Chicago_Ohare_International_Airport.csv
-examples/smalldata/Chicago_Ohare_International_Airport_2010_2013.csv
 examples/smalldata/prostate.csv
 LICENSE
 README.md
