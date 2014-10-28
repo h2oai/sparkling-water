@@ -3,4 +3,4 @@ if [ -z $TOPDIR ]; then
   exit -1
 fi
 
-VERSION=$( cat $TOPDIR/gradle.properties | sed -e "s/.*=//" )
+VERSION=$( cat $TOPDIR/gradle.properties | grep version | sed -e "s/.*=//" )
