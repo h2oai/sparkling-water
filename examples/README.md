@@ -108,9 +108,9 @@ You can tune Sparkling Water via the following variables:
   import hex.deeplearning.DeepLearning
   import hex.deeplearning.DeepLearningModel.DeepLearningParameters
   val dlParams = new DeepLearningParameters()
-  dlParams._training_frame = bigTable
-  dlParams.response_column = 'ArrDelay
-  dlParams.classification = false
+  dlParams._train = bigTable
+  dlParams._response_column = 'ArrDelay
+  dlParams._classification = false
   dlParams.epochs = 100
   // Create a job  
   val dl = new DeepLearning(dlParams)
