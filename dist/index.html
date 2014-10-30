@@ -230,21 +230,26 @@
             <div id="downloads">
               <a id="dzip" class="download-button" href="sparkling-water-SUBST_PROJECT_VERSION.zip">Download Sparkling Water</a>
             </div>
-            <h2>Get started with Sparkling Water in 3 easy steps</h2>
-            <p>1. Download Sparkling Water. This is a zip file that contains everything you need to get started.</p>
-            <p>2. From your terminal, run:</p>
+            <h2>Get started with Sparkling Water in a few easy steps</h2>
+            <p>1. Download Spark if not already installed from: <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a>.</p>
+	    <p>2. Download Sparkling Water and point it to the existing installation of Spark by setting the SPARK_HOME environment variable:</p>
+	    <p class="terminal">
+	      export SPARK_HOME='/path/to/spark/installation'
+	    </p>
+            <p>3. From your terminal, run:</p>
             <p class="terminal">
               cd ~/Downloads<br/>
               unzip sparkling-water-SUBST_PROJECT_VERSION.zip<br/>
               cd sparkling-water-SUBST_PROJECT_VERSION<br/>
               bin/sparkling-shell<br/>
             </p>
-            <p>3. Create H<sub>2</sub>O cloud inside Spark cluster:</p>
+            <p>4. Create H<sub>2</sub>O cloud inside Spark cluster:</p>
             <p class="terminal">
             import org.apache.spark.h2o._<br />
             val h2oContext = new H2OContext(sc).start(3) <br />
             import h2oContext._ <br />
             </p>
+	    <p>5. Follow <a id="clitutorial" href="https://github.com/0xdata/sparkling-water/tree/master/examples#step-by-step-through-weather-data-example">this demo</a>, which imports airlines and weather data and runs predictions on delays.<br /></p>
           </div>
         </div>
         <div id="documentation">
