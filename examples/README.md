@@ -50,7 +50,7 @@ You can tune Sparkling Water via the following variables:
   ```scala
   import org.apache.spark.h2o._
   import org.apache.spark.examples.h2o._
-  val h2oContext = new H2OContext(sc).start(3)
+  val h2oContext = new H2OContext(sc).start()
   import h2oContext._
   ```
 

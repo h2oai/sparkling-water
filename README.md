@@ -85,11 +85,12 @@ bin/sparkling-shell
 3. Now you can launch H<sub>2</sub>O inside the Spark cluster:
   ```scala
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start(3)
+  val h2oContext = new H2OContext(sc).start()
   import h2oContext._
   ```
 
-  > Note: Currently the H2OContext#start API call requires the number of Spark workers, in this case Spark cluster contains 3 workers.
+  > Note: The H2OContext#start API call figures out number of Spark workers and
+  > launch corresponding number of H2O instances inside Spark cluster.
 
 
 4. Import the provided airlines data, parse them via H<sub>2</sub>O parser:
