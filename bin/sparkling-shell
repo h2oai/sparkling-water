@@ -4,14 +4,8 @@
 TOPDIR=$(cd `dirname $0`/..; pwd)
 source $TOPDIR/bin/sparkling-env.sh
 
+# Default memory for shell
 SHELL_DRIVER_MEMORY=3G
-FAT_JAR="sparkling-water-assembly-$VERSION-all.jar"
-
-if [ ! -d "$SPARK_HOME" ]; then
-  echo "Please setup SPARK_HOME variable to your Spark installation!"
-  exit -1
-fi
-
 # Default MASTER
 MASTER=${MASTER:-"local-cluster[3,2,2048]"}
 export MASTER
