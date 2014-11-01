@@ -18,7 +18,6 @@
 package org.apache.spark.h2o
 
 import java.io.File
-import java.util.Random
 
 import com.google.common.io.Files
 import org.apache.spark.rdd.H2ORDD
@@ -29,17 +28,19 @@ import water.fvec.Vec
 import water.parser.ValueString
 import water._
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
+
+import org.apache.spark.h2o.H2OContextUtils._
 
 /**
  * Simple H2O context motivated by SQLContext.
  *
  * Doing - implicit conversion from RDD -> H2OLikeRDD
  *
- * FIXME: unify path for RDD[A] and SchemaRDD
  */
 class H2OContext (@transient val sparkContext: SparkContext) extends {
     val sparkConf = sparkContext.getConf
@@ -74,42 +75,47 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   def toRDD[A <: Product: TypeTag: ClassTag]( fr : DataFrame ) : RDD[A] = new H2ORDD[A](this,fr)
 
-  type NodeDesc = (String, String, Int) // ExecutorId, IP, port
+
 
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
-  def start(h2oWorkers: Int):H2OContext = start(Some(h2oWorkers))
-  /** Initialize Sparkling H2O and start H2O cloud. */
-  def start(h2oWorkers:Option[Int] = None,
-            mulFactor:Option[Int] = None,
-            retries: Option[Int] = None,
-            nameOfCloud: Option[String] = None): H2OContext = {
+  def start(h2oWorkers: Int):H2OContext = {
+    sparkConf.set(PROP_CLUSTER_SIZE._1, h2oWorkers.toString)
+    start()
+  }
 
-    // Create a dummy RDD and try to spread over all executors - this is really nasty hack !
-    // FIXME: get a rid of hardcoded cloud name
-    val cName = nameOfCloud.getOrElse(cloudName)
-    val nworkers = h2oWorkers.getOrElse(numH2OWorkers)
-    val mfactor = mulFactor.getOrElse(drddMulFactor)
-    val mretries = retries.getOrElse(spreadRddRetries)
-    //
-    val (spreadRDD, nodes) = createSpreadRDD(mretries, mfactor, nworkers)
+  /** Initialize Sparkling H2O and start H2O cloud. */
+  def start(): H2OContext = {
+
+    logInfo(s"Starting ${numH2OWorkers} H2O nodes...")
+    // Create dummy RDD distributed over executors
+    val (spreadRDD, nodes) = createSpreadRDD(numRddRetries, drddMulFactor, numH2OWorkers)
+
     // FIXME put here handling flatfile
     // Start H2O nodes
-    val executorStatus = H2OContext.startH2O(sparkContext, spreadRDD, cName)
-    logInfo("Sparkling H2O - H2O status: " + executorStatus.mkString(","))
-    // Verify that all executors contain running H2O
-    if (!executorStatus.forall(x => x._2) || executorStatus.map(_._1).distinct.length != nworkers) {
+    // Get executors to execute H2O
+    val allExecutorIds = nodes.map(_._1).distinct
+    val executorIds = if (numH2OWorkers > 0) allExecutorIds.take(numH2OWorkers) else allExecutorIds
+    if (executorIds.length < allExecutorIds.length) {
+      logWarning(s"Spark cluster contains ${allExecutorIds.length}, but H2O is running only on ${executorIds} nodes!")
+    }
+    // Execute H2O on given nodes
+    val executorStatus = startH2O(sparkContext, spreadRDD, executorIds, getH2OArgs() )
+    // Verify that all specified executors contain running H2O
+    if (!executorStatus.forall(x => !executorIds.contains(x._1) || x._2)) {
       throw new IllegalArgumentException(
         s"""Cannot execute H2O on all Spark executors:
-           |  numH2OWorkers = ${nworkers}"
+           |  numH2OWorkers = ${numH2OWorkers}"
            |  executorStatus = ${executorStatus.mkString(",")}""".stripMargin)
     }
+    logInfo("Sparkling H2O - H2O status: " + executorStatus.mkString(","))
+
     // Now connect to a cluster via H2O client,
     // but only in non-local case
     if (!sparkContext.isLocal) {
-      logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + nworkers)
-      H2OClientApp.main(Array("-name", cloudName))
+      logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + numH2OWorkers)
+      H2OClientApp.main(getH2OArgs())
       H2O.finalizeRequest()
-      H2O.waitForCloudSize(nworkers, cloudTimeout)
+      H2O.waitForCloudSize(executorIds.length, cloudTimeout)
     } else {
       logTrace("Sparkling H2O - LOCAL mode")
       // Since LocalBackend does not wait for initialization (yet)
@@ -119,16 +125,6 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     this
   }
 
-  /** Generates and distributes a flatfile around Spark cluster. */
-  private def collectNodesInfo(distRDD: RDD[Int], basePort: Int, incrPort: Int): Array[NodeDesc] = {
-    // Collect flatfile - tuple of (IP, port)
-    val nodes = distRDD.map { index =>
-      ( SparkEnv.get.executorId,
-        java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString("."),
-        (basePort + incrPort*index))
-    }.collect()
-    nodes
-  }
 
   /* Save flatfile and distribute it over cluster. */
   private def distributedFlatFile(nodes: Array[NodeDesc]):File = {
@@ -146,34 +142,39 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     flatFile
   }
 
+  @tailrec
   private def createSpreadRDD(nretries:Int,
                               mfactor: Int,
                               nworkers: Int): (RDD[Int], Array[NodeDesc]) = {
-    // FIXME: put there iteration increasing mfactor
-
+    logDebug(s"  Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, nworkers=${nworkers}")
+    // Non-positive value means automatic detection of number of workers
+    val workers = if (nworkers > 0) nworkers else 100
     val spreadRDD =
-      sparkContext.parallelize(0 until mfactor*nworkers,
-        mfactor*nworkers).persist()
+      sparkContext.parallelize(0 until mfactor*workers,
+        mfactor*workers).persist()
 
-      // Collect information about executors in Spark cluster
-      val nodes = collectNodesInfo(spreadRDD, basePort, incrPort)
-      logInfo("Sparkling H2O - flatfile: " + nodes.mkString(","))
-      // Verify that all executors participated in execution
-      val sparkExecutors = nodes.map(_._1).distinct.length
-      if (sparkExecutors != nworkers) {
-        throw new IllegalArgumentException(
-          s"""Cannot execute H2O on all Spark executors: ${nodes.mkString(",")}
+    // Collect information about executors in Spark cluster
+    val nodes = collectNodesInfo(spreadRDD, basePort, incrPort)
+
+    // Verify that all executors participate in execution
+    val sparkExecutors = nodes.map(_._1).distinct.length
+    if (sparkExecutors < nworkers && nretries == 0) {
+      throw new IllegalArgumentException(
+        s"""Cannot execute H2O on all Spark executors: ${nodes.mkString(",")}
              |Expected number of h2o workers is ${nworkers}
-             |Number of Spark workers is $sparkExecutors
+             |Detected number of Spark workers is $sparkExecutors
              |Try to increase value in property ${PROP_DUMMY_RDD_MUL_FACTOR}
              |(its value is currently: ${mfactor} increased to ${mfactor})
              |""".stripMargin
-        )
-      }
-
-    logInfo(s"Detected ${sparkExecutors} spark executors!")
-
-    (spreadRDD, nodes)
+      )
+    } else if (sparkExecutors >= nworkers) {
+      logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers!")
+      (spreadRDD, nodes)
+    } else {
+      spreadRDD.unpersist()
+      logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers! Retrying again...")
+      createSpreadRDD(nretries-1, mfactor*2, nworkers)
+    }
   }
 }
 
@@ -361,30 +362,9 @@ object H2OContext {
   }
 
   private def !!! = throw new IllegalArgumentException
+  private def !!!(msg: => String) = throw new IllegalArgumentException(msg)
 
   def toRDD[A <: Product: TypeTag: ClassTag]
            ( h2oContext : H2OContext, fr : DataFrame ) : RDD[A] = new H2ORDD[A](h2oContext,fr)
 
-  private def startH2O(sc: SparkContext,
-                       spreadRDD: RDD[Int],
-                       cloudName: String): Array[(String,Boolean)] = {
-    spreadRDD.map { index =>
-      try {
-        H2O.START_TIME_MILLIS.synchronized {
-          if (H2O.START_TIME_MILLIS.get() == 0) {
-            H2OApp.main(Array("-name", cloudName))
-          } else {
-            println("H2O seems already started...")
-          }
-        }
-        (SparkEnv.get.executorId, true)
-      } catch {
-        case e: Throwable => {
-          e.printStackTrace()
-          println(s"Cannot start H2O node because: ${e.getMessage}")
-          (SparkEnv.get.executorId, false)
-        }
-      }
-    }.collect()
-  }
 }

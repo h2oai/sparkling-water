@@ -17,23 +17,27 @@
 package water.fvec
 
 /**
- * Simple bring to access package-private members.
+ * This is a simple bridge to access package-private/protected members.
  */
 object FrameUtils {
 
+  /** @see Frame#preparePartialFrame */
   def preparePartialFrame(fr: Frame, names: Array[String]): Unit = {
     fr.preparePartialFrame(names)
   }
 
+  /** @see Frame#finalizePartialFrame */
   def finalizePartialFrame(fr: Frame, rowsPerChunk: Array[Long],
                            colDomains: Array[Array[String]],
                            colTypes: Array[Byte]): Unit = {
     fr.finalizePartialFrame(rowsPerChunk, colDomains, colTypes)
   }
 
+  /** @see Frame#createNewChunks */
   def createNewChunks( name: String, cidx: Int ): Array[NewChunk] =
     Frame.createNewChunks(name, cidx)
 
+  /** @see Frame#closeNewChunks */
   def closeNewChunks( nchks : Array[NewChunk] ): Unit = Frame.closeNewChunks(nchks)
 
   def getChunks(fr: Frame, cidx: Int): Array[Chunk] = {
