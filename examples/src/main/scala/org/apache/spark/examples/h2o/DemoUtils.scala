@@ -52,9 +52,6 @@ private[h2o] object DemoUtils {
     val conf = new SparkConf()
       .setAppName(appName)
     conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local"))
-    val localMode = conf.get("spark.master").equals("local") || conf.get("spark.master").startsWith("local[")
-    conf.setIfMissing("spark.ext.h2o.cluster.size",
-      if (localMode) "1" else sys.env.getOrElse("spark.h2o.workers", "3"))
     conf
   }
 
