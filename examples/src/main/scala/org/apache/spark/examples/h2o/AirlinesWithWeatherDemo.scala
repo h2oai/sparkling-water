@@ -10,6 +10,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import water.fvec.DataFrame
 import DemoUtils.configure
+import DemoUtils.addFiles
 
 
 object AirlinesWithWeatherDemo {
@@ -23,8 +24,9 @@ object AirlinesWithWeatherDemo {
     val h2oContext = new H2OContext(sc).start()
     import h2oContext._
     // Setup environment
-    sc.addFile("examples/smalldata/Chicago_Ohare_International_Airport.csv")
-    sc.addFile("examples/smalldata/allyears2k_headers.csv.gz")
+    addFiles(sc,
+      "examples/smalldata/Chicago_Ohare_International_Airport.csv",
+      "examples/smalldata/allyears2k_headers.csv.gz")
 
     //val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
     val wrawdata = sc.textFile(SparkFiles.get("Chicago_Ohare_International_Airport.csv"),3).cache()

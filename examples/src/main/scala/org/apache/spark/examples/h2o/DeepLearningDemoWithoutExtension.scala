@@ -5,7 +5,7 @@ import java.io.File
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.examples.h2o.DemoUtils._
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{SparkFiles, SparkConf, SparkContext}
 import org.apache.spark.h2o.{DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
@@ -20,15 +20,15 @@ object DeepLearningDemoWithoutExtension {
 
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
+    addFiles(sc, "examples/smalldata/allyears2k_headers.csv.gz")
+
     val h2oContext = new H2OContext(sc).start()
     import h2oContext._
 
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val dataFile = "examples/smalldata/allyears2k_headers.csv.gz"
-    println(s"\n===> Parsing datafile: $dataFile\n")
-    val airlinesData = new DataFrame(new File(dataFile))
+    val airlinesData = new DataFrame(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
 
     //
     // Use H2O to RDD transformation

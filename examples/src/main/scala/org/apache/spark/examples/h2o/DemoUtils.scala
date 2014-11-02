@@ -55,6 +55,10 @@ private[h2o] object DemoUtils {
     conf
   }
 
+  def addFiles(sc: SparkContext, files: String*): Unit = {
+    files.foreach( f => sc.addFile(f) )
+  }
+
   def printFrame(fr: DataFrame): Unit = {
     new MRTask {
       override def map(cs: Array[Chunk]): Unit = {

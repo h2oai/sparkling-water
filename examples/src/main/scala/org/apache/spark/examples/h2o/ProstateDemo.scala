@@ -20,7 +20,7 @@ package org.apache.spark.examples.h2o
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.kmeans.{KMeans, KMeansModel}
 import org.apache.spark.{SparkContext, SparkFiles}
-import org.apache.spark.examples.h2o.DemoUtils.configure
+import org.apache.spark.examples.h2o.DemoUtils.{configure,addFiles}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext
 import water._
@@ -37,12 +37,12 @@ object ProstateDemo {
     // Create Spark context which will drive computation
     val conf = configure("Sparkling Water: Prostate demo")
     val sc = new SparkContext(conf)
+    // Add a file to be available for cluster mode
+    addFiles(sc, "examples/smalldata/prostate.csv")
+
     // Run H2O cluster inside Spark cluster
     val h2oContext = new H2OContext(sc).start()
     import h2oContext._
-
-    // Add a file to be available for cluster mode
-    sc.addFile("examples/smalldata/prostate.csv")
 
     // We do not need to wait for H2O cloud since it will be launched by backend
 
