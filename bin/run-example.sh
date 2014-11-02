@@ -9,8 +9,9 @@ PREFIX=org.apache.spark.examples.h2o
 # Name of default example
 DEFAULT_EXAMPLE=AirlinesWithWeatherDemo
 
-if [ $1 ]; then
+if [ $1 ] && [[ ${1} != "--"* ]]; then
   EXAMPLE=$PREFIX.$1
+  shift
 else
   EXAMPLE=$PREFIX.$DEFAULT_EXAMPLE
 fi
@@ -37,5 +38,5 @@ VERBOSE=--verbose
 VERBOSE=
 (
  cd $TOPDIR
- $SPARK_HOME/bin/spark-submit $VERBOSE --driver-memory $EXAMPLE_DRIVER_MEMORY --driver-java-options "$EXAMPLE_H2O_SYS_OPS" --master $EXAMPLE_MASTER --deploy-mode $EXAMPLE_DEPLOY_MODE --class $EXAMPLE $TOPDIR/assembly/build/libs/$FAT_JAR
+ $SPARK_HOME/bin/spark-submit "$@" $VERBOSE --driver-memory $EXAMPLE_DRIVER_MEMORY --driver-java-options "$EXAMPLE_H2O_SYS_OPS" --master $EXAMPLE_MASTER --deploy-mode $EXAMPLE_DEPLOY_MODE --class $EXAMPLE $TOPDIR/assembly/build/libs/$FAT_JAR
 )
