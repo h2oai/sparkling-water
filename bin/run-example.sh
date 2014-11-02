@@ -3,6 +3,8 @@
 # Current dir
 TOPDIR=$(cd `dirname $0`/.. &&  pwd)
 source $TOPDIR/bin/sparkling-env.sh
+# Verify there is Spark installation
+checkSparkHome
 
 # Example prefix
 PREFIX=org.apache.spark.examples.h2o

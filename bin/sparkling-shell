@@ -3,6 +3,8 @@
 # Top-level directory for this product
 TOPDIR=$(cd `dirname $0`/..; pwd)
 source $TOPDIR/bin/sparkling-env.sh
+# Verify there is Spark installation
+checkSparkHome
 
 # Default memory for shell
 SHELL_DRIVER_MEMORY=3G

@@ -16,6 +16,4 @@ VERSION=$( cat $TOPDIR/gradle.properties | grep version | sed -e "s/.*=//" )
 # Fat jar for this distribution
 FAT_JAR="sparkling-water-assembly-$VERSION-all.jar"
 FAT_JAR_FILE="$TOPDIR/assembly/build/libs/$FAT_JAR"
-# Verify there is Spark installation
-checkSparkHome
 
