@@ -148,7 +148,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
                               nworkers: Int): (RDD[Int], Array[NodeDesc]) = {
     logDebug(s"  Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, nworkers=${nworkers}")
     // Non-positive value means automatic detection of number of workers
-    val workers = if (nworkers > 0) nworkers else 100
+    val workers = if (nworkers > 0) nworkers else defaultCloudSize
     val spreadRDD =
       sparkContext.parallelize(0 until mfactor*workers,
         mfactor*workers).persist()

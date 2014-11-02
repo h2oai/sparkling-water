@@ -40,6 +40,7 @@ trait H2OConf {
   def drddMulFactor = sparkConf.getInt(PROP_DUMMY_RDD_MUL_FACTOR._1, PROP_DUMMY_RDD_MUL_FACTOR._2)
   def numRddRetries = sparkConf.getInt(PROP_SPREADRDD_RETRIES._1, PROP_SPREADRDD_RETRIES._2)
   def cloudName     = sparkConf.get(PROP_CLOUD_NAME._1, PROP_CLOUD_NAME._2)
+  def defaultCloudSize = sparkConf.getInt(PROP_DEFAULT_CLUSTER_SIZE._1, PROP_DEFAULT_CLUSTER_SIZE._2)
 
   /* Configuration properties */
 
@@ -59,6 +60,8 @@ trait H2OConf {
   val PROP_SPREADRDD_RETRIES = ("spark.ext.h2o.spreadrdd.retries", 10)
   /** Configuration property - name of H2O cloud */
   val PROP_CLOUD_NAME = ("spark.ext.h2o.cloud.name", "sparkling-water-42")
+  /** Starting size of cluster in case that size is not explicitelly passed */
+  val PROP_DEFAULT_CLUSTER_SIZE = ( "spark.ext.h2o.default.cluster.size,", 20)
 
 
   /** Configuration property - multiplication factor for dummy RDD generation.
