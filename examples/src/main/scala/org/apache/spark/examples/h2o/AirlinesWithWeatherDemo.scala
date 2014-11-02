@@ -4,7 +4,7 @@ import java.io.File
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{SparkFiles, SparkConf, SparkContext}
 import org.apache.spark.h2o.{DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
@@ -22,17 +22,18 @@ object AirlinesWithWeatherDemo {
     val sc = new SparkContext(conf)
     val h2oContext = new H2OContext(sc).start()
     import h2oContext._
+    // Setup environment
+    sc.addFile("examples/smalldata/Chicago_Ohare_International_Airport.csv")
+    sc.addFile("examples/smalldata/allyears2k_headers.csv.gz")
 
-    val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
-    val wrawdata = sc.textFile(weatherDataFile,3).cache()
+    //val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
+    val wrawdata = sc.textFile(SparkFiles.get("Chicago_Ohare_International_Airport.csv"),3).cache()
     val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
 
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val dataFile = "examples/smalldata/allyears2k_headers.csv.gz"
-    println(s"\n===> Parsing datafile: $dataFile\n")
-    val airlinesData = new DataFrame(new File(dataFile))
+    val airlinesData = new DataFrame(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
 
     val airlinesTable : RDD[Airlines] = toRDD[Airlines](airlinesData)
     // Select flights only to ORD
