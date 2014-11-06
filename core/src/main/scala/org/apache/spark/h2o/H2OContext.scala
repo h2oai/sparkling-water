@@ -90,16 +90,16 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // Create dummy RDD distributed over executors
     val (spreadRDD, nodes) = createSpreadRDD(numRddRetries, drddMulFactor, numH2OWorkers)
 
-    // FIXME put here handling flatfile
     // Start H2O nodes
     // Get executors to execute H2O
     val allExecutorIds = nodes.map(_._1).distinct
     val executorIds = if (numH2OWorkers > 0) allExecutorIds.take(numH2OWorkers) else allExecutorIds
+    val executors = nodes.filter( n => executorIds.contains(n._1) )
     if (executorIds.length < allExecutorIds.length) {
       logWarning(s"Spark cluster contains ${allExecutorIds.length}, but H2O is running only on ${executorIds} nodes!")
     }
     // Execute H2O on given nodes
-    val executorStatus = startH2O(sparkContext, spreadRDD, executorIds, getH2OArgs() )
+    val executorStatus = startH2O(sparkContext, spreadRDD, executors, this, getH2OArgs() )
     // Verify that all specified executors contain running H2O
     if (!executorStatus.forall(x => !executorIds.contains(x._1) || x._2)) {
       throw new IllegalArgumentException(
@@ -113,6 +113,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // but only in non-local case
     if (!sparkContext.isLocal) {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + numH2OWorkers)
+
       H2OClientApp.main(getH2OArgs())
       H2O.finalizeRequest()
       H2O.waitForCloudSize(executorIds.length, cloudTimeout)
@@ -147,7 +148,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
                               mfactor: Int,
                               nworkers: Int): (RDD[Int], Array[NodeDesc]) = {
     logDebug(s"  Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, nworkers=${nworkers}")
-    // Non-positive value means automatic detection of number of workers
+    // Non-positive value of nworkers means automatic detection of number of workers
     val workers = if (nworkers > 0) nworkers else defaultCloudSize
     val spreadRDD =
       sparkContext.parallelize(0 until mfactor*workers,
@@ -161,11 +162,11 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     if (sparkExecutors < nworkers && nretries == 0) {
       throw new IllegalArgumentException(
         s"""Cannot execute H2O on all Spark executors: ${nodes.mkString(",")}
-             |Expected number of h2o workers is ${nworkers}
-             |Detected number of Spark workers is $sparkExecutors
-             |Try to increase value in property ${PROP_DUMMY_RDD_MUL_FACTOR}
-             |(its value is currently: ${mfactor} increased to ${mfactor})
-             |""".stripMargin
+            | Expected number of h2o workers is ${nworkers}
+            | Detected number of Spark workers is $sparkExecutors
+            | Try to increase value in property ${PROP_DUMMY_RDD_MUL_FACTOR}
+            | (its value is currently: ${mfactor} increased to ${mfactor})
+            |""".stripMargin
       )
     } else if (sparkExecutors >= nworkers) {
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers!")
