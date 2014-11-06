@@ -4,13 +4,12 @@ import java.io.File
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import org.apache.spark.{SparkFiles, SparkConf, SparkContext}
+import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure}
 import org.apache.spark.h2o.{DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
 import water.fvec.DataFrame
-import DemoUtils.configure
-import DemoUtils.addFiles
 
 
 object AirlinesWithWeatherDemo {
@@ -69,11 +68,10 @@ object AirlinesWithWeatherDemo {
     val dlParams = new DeepLearningParameters()
     dlParams._train = bigTable
     dlParams._response_column = 'ArrDelay
-    dlParams._classification = false
-    dlParams.epochs = 100
+    dlParams._epochs = 100
 
     val dl = new DeepLearning(dlParams)
-    val dlModel = dl.train.get
+    val dlModel = dl.trainModel.get
 
     val predictionH2OFrame = dlModel.score(bigTable)('predict)
     val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))

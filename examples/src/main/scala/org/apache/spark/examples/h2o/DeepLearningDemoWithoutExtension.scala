@@ -63,13 +63,12 @@ object DeepLearningDemoWithoutExtension {
                                     'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
                                     'Distance, 'IsDepDelayed)
     dlParams._response_column = 'IsDepDelayed
-    dlParams._classification = true
 
     //
     // Prepare Deep Learning parameters
     //
     val dl = new DeepLearning(dlParams)
-    val dlModel = dl.train.get
+    val dlModel = dl.trainModel.get
 
     //
     // Use model for scoring

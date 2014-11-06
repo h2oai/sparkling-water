@@ -67,7 +67,7 @@ object DeepLearningDemo {
 
 
     val dl = new DeepLearning(dlParams)
-    val dlModel = dl.train.get
+    val dlModel = dl.trainModel.get
 
     //
     // Use model for scoring
