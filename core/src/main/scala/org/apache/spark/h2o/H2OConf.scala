@@ -45,7 +45,7 @@ trait H2OConf {
   /* Configuration properties */
 
   /** Configuration property - use flatfile for H2O cloud formation. */
-  val PROP_USE_FLATFILE = ( "spark.ext.h2o.flatfile", false)
+  val PROP_USE_FLATFILE = ( "spark.ext.h2o.flatfile", true)
   /** Configuration property - expected number of workers of H2O cloud.
     * Value -1 means automatic detection of cluster size.
     */
