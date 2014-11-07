@@ -41,6 +41,7 @@ trait H2OConf {
   def numRddRetries = sparkConf.getInt(PROP_SPREADRDD_RETRIES._1, PROP_SPREADRDD_RETRIES._2)
   def cloudName     = sparkConf.get(PROP_CLOUD_NAME._1, PROP_CLOUD_NAME._2)
   def defaultCloudSize = sparkConf.getInt(PROP_DEFAULT_CLUSTER_SIZE._1, PROP_DEFAULT_CLUSTER_SIZE._2)
+  def h2oLogLevel   = sparkConf.get(PROP_LOG_LEVEL._1, PROP_LOG_LEVEL._2)
 
   /* Configuration properties */
 
@@ -59,9 +60,11 @@ trait H2OConf {
   /** Configuration property - number of retries to create an RDD spreat over all executors */
   val PROP_SPREADRDD_RETRIES = ("spark.ext.h2o.spreadrdd.retries", 10)
   /** Configuration property - name of H2O cloud */
-  val PROP_CLOUD_NAME = ("spark.ext.h2o.cloud.name", "sparkling-water-42")
+  val PROP_CLOUD_NAME = ("spark.ext.h2o.cloud.name", "sparkling-water-")
   /** Starting size of cluster in case that size is not explicitelly passed */
   val PROP_DEFAULT_CLUSTER_SIZE = ( "spark.ext.h2o.default.cluster.size,", 20)
+  /* H2O internal log level */
+  val PROP_LOG_LEVEL = ("spark.ext.h2o.log.level", "INFO")
 
 
   /** Configuration property - multiplication factor for dummy RDD generation.
@@ -73,15 +76,18 @@ trait H2OConf {
    * @return array of command line h2o arguments
    */
   def getH2OArgs():Array[String] = {
-    Array("-name", cloudName)
+    Array("-name", cloudName, "-log_level", h2oLogLevel)
   }
 
   override def toString: String =
     s"""Sparkling H2O setup:
-         |  workers=$numH2OWorkers
-         |  flatfile: $useFlatFile
-         |  basePort: $basePort
-         |  incrPort: $incrPort
+         |  workers      : $numH2OWorkers
+         |  cloudName    : $cloudName
+         |  flatfile     : $useFlatFile
+         |  basePort     : $basePort
+         |  incrPort     : $incrPort
+         |  cloudTimeout : $cloudTimeout
+         |  h2oLog       : $h2oLogLevel
          |  drddMulFactor: $drddMulFactor""".stripMargin
 
 }

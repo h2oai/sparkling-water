@@ -85,8 +85,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   /** Initialize Sparkling H2O and start H2O cloud. */
   def start(): H2OContext = {
+    sparkConf.set(PROP_CLOUD_NAME._1, PROP_CLOUD_NAME._2 + sys.env.getOrElse("user.name","42x") )
 
-    logInfo(s"Starting ${numH2OWorkers} H2O nodes...")
+    logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
     val (spreadRDD, nodes) = createSpreadRDD(numRddRetries, drddMulFactor, numH2OWorkers)
 
@@ -94,11 +95,17 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // Get executors to execute H2O
     val allExecutorIds = nodes.map(_._1).distinct
     val executorIds = if (numH2OWorkers > 0) allExecutorIds.take(numH2OWorkers) else allExecutorIds
-    val executors = nodes.filter( n => executorIds.contains(n._1) )
+    val executors = nodes.groupBy(_._1).map(_._2.head).filter( n => executorIds.contains(n._1) ).toArray
+    // The collected executors based on IDs should match
+    assert(executors.length == executorIds.length,
+            s"Unexpected number of executors ${executors.length}!=${executorIds.length}")
+    // H2O is executed only on the subset of Spark cluster
+    // This situation is interesting when data are located on node which does not contain H2O
     if (executorIds.length < allExecutorIds.length) {
       logWarning(s"Spark cluster contains ${allExecutorIds.length}, but H2O is running only on ${executorIds} nodes!")
     }
     // Execute H2O on given nodes
+    logInfo(s"""Launching H2O on following nodes: ${executors.mkString(",")}""")
     val executorStatus = startH2O(sparkContext, spreadRDD, executors, this, getH2OArgs() )
     // Verify that all specified executors contain running H2O
     if (!executorStatus.forall(x => !executorIds.contains(x._1) || x._2)) {
@@ -113,10 +120,11 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // but only in non-local case
     if (!sparkContext.isLocal) {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + numH2OWorkers)
-
-      H2OClientApp.main(getH2OArgs())
+      // Get arguments for this launch including flatfile
+      val h2oArgs = toH2OArgs( getH2OArgs(), this, executors )
+      H2OClientApp.main(h2oArgs)
       H2O.finalizeRequest()
-      H2O.waitForCloudSize(executorIds.length, cloudTimeout)
+      H2O.waitForCloudSize(executors.length, cloudTimeout)
     } else {
       logTrace("Sparkling H2O - LOCAL mode")
       // Since LocalBackend does not wait for initialization (yet)

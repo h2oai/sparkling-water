@@ -45,6 +45,27 @@ private[spark] object H2OContextUtils {
     flatFile
   }
 
+  def toFlatFileString(executors: Array[NodeDesc]):String = {
+    executors.map( en => s"${en._2}:${en._3}").mkString("\n")
+  }
+
+  def toH2OArgs(h2oArgs: Array[String], h2oConf: H2OConf, executors: Array[NodeDesc]): Array[String] = {
+    toH2OArgs(
+      h2oArgs,
+      if (h2oConf.useFlatFile)
+        Some(toFlatFileString(executors))
+      else
+        None)
+  }
+
+  def toH2OArgs(h2oArgs: Array[String], flatFileString: Option[String]): Array[String] = {
+    val launcherArgs = flatFileString
+      .map(f => saveAsFile(f))
+      .map(f => h2oArgs ++ Array("-flatfile", f.getAbsolutePath))
+      .getOrElse(h2oArgs)
+    launcherArgs
+  }
+
   /**
    * Start H2O nodes on given executors.
    *
@@ -60,22 +81,26 @@ private[spark] object H2OContextUtils {
                 executors: Array[NodeDesc],
                 h2oConf: H2OConf,
                 h2oArgs: Array[String]): Array[(String,Boolean)] = {
-    val executorIds = executors.map(_._1)
-    val flatFile = if (h2oConf.useFlatFile)
-                    Some(executors.map( en => s"${en._2}:${en._3}").mkString("\n"))
-                   else
-                    None
+    //val executorIds = executors.map(_._1)
+    val flatFileString =
+      if (h2oConf.useFlatFile)
+        Some(toFlatFileString(executors))
+       else
+        None
 
     spreadRDD.map { index =>  // RDD partition index
       // This executor
       val executorId = SparkEnv.get.executorId
-      if (executorIds.contains(executorId)) {
+      val node = executors.find( n => executorId.equals(n._1))
+      if (node.isDefined) {
+        // Find the node
         try {
           // Create a flatfile if required
-          val launcherArgs = flatFile
-                      .map(f => saveAsFile(f))
-                      .map(f => h2oArgs ++ Array("-flatfile", f.getAbsolutePath))
-                      .getOrElse(h2oArgs)
+          val ip = node.get._2
+          val port = node.get._3.toString
+          val launcherArgs = toH2OArgs(
+            h2oArgs ++ Array("-ip", ip, "-port", port),
+            flatFileString)
           // Do not launch H2O several times
           H2O.START_TIME_MILLIS.synchronized {
             if (H2O.START_TIME_MILLIS.get() == 0) {
