@@ -14,6 +14,9 @@ dependencies {
 
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"
+
+  // And use scalatest for Scala testing
+  testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
 }
 
 
