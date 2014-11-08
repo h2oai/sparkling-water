@@ -78,7 +78,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
 
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
-  def start(h2oWorkers: Int):H2OContext = {
+  private[spark] def start(h2oWorkers: Int):H2OContext = {
     sparkConf.set(PROP_CLUSTER_SIZE._1, h2oWorkers.toString)
     start()
   }
