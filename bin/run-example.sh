@@ -23,11 +23,7 @@ EXAMPLE_DEPLOY_MODE="cluster"
 EXAMPLE_DEPLOY_MODE=${DEPLOY_MODE:-"client"} 
 EXAMPLE_DRIVER_MEMORY=${DRIVER_MEMORY:-1G}
 EXAMPLE_H2O_SYS_OPS=${H2O_SYS_OPS:-""}
-tmpdir=${TMPDIR:-"/tmp/"}
-export SPARK_LOG_DIR="${tmpdir}spark/logs"
-export SPARK_WORKER_DIR="${tmpdir}spark/work"
-export SPARK_LOCAL_DIRS="${tmpdir}spark/work"
-#
+
 echo "---------"
 echo "  Using example                  : $EXAMPLE"
 echo "  Using master    (MASTER)       : $EXAMPLE_MASTER"

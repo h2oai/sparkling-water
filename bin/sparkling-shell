@@ -7,20 +7,15 @@ source $TOPDIR/bin/sparkling-env.sh
 checkSparkHome
 
 # Default memory for shell
-SHELL_DRIVER_MEMORY=3G
+DRIVER_MEMORY=3G
+DRIVER_MEMORY=${DRIVER_MEMORY:-2G}
 # Default MASTER
 MASTER=${MASTER:-"local-cluster[3,2,2048]"}
 export MASTER
 
-cat <<EOF
-
-Using 
-  MASTER     = $MASTER"
-  SPARK_HOME = $SPARK_HOME"
-
-EOF
+banner
 
 (
  cd $TOPDIR
- $SPARK_HOME/bin/spark-shell --jars $TOPDIR/assembly/build/libs/$FAT_JAR --driver-memory $SHELL_DRIVER_MEMORY "$@"
+ $SPARK_HOME/bin/spark-shell --jars $TOPDIR/assembly/build/libs/$FAT_JAR --driver-memory $DRIVER_MEMORY "$@"
 )
