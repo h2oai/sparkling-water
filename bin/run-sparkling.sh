@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-
+set -e
 # Current dir
-TOPDIR=$(cd `dirname $0`/.. &&  pwd)
+TOPDIR=$(cd `dirname $(readlink "$0" || echo "$0")`/.. ; pwd -P)
 source $TOPDIR/bin/sparkling-env.sh
 # Verify there is Spark installation
 checkSparkHome
