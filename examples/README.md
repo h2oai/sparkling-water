@@ -11,14 +11,14 @@
 ## Compile Example
 Please use top-level `gradlew`:
 ```
-gradlew assemble
-````
+./gradlew assemble
+```
 ## Run Example
 
 ### Simple Local Cluster
  
- Run a given example on local cluster. The cluster is defined by MASTER address
-`local-cluster[3,2,3072]` which means that cluster contains 3 worker nodes, each having 2CPUs and 3GB of memory
+ Run a given example on local cluster. The cluster is defined by `MASTER` address `local-cluster[3,2,3072]` which means that cluster contains 3 worker nodes, each having 2CPUs and 3GB of memory:
+ 
    * Run `bin/run-example.sh <name of demo>`
 
 ### Run on Spark Cluster
@@ -111,8 +111,7 @@ You can tune Sparkling Water via the following variables:
   val dlParams = new DeepLearningParameters()
   dlParams._train = bigTable
   dlParams._response_column = 'ArrDelay
-  dlParams._classification = false
-  dlParams.epochs = 100
+  dlParams._epochs = 100
   // Create a job  
   val dl = new DeepLearning(dlParams)
   val dlModel = dl.trainModel.get

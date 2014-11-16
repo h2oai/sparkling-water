@@ -138,11 +138,10 @@ bin/sparkling-shell
   dlParams._training_frame = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
                                     'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
                                     'Distance, 'IsDepDelayed)
-  dlParams.response_column = 'IsDepDelayed
-  dlParams.classification = true
+  dlParams._response_column = 'IsDepDelayed
   // Launch computation
   val dl = new DeepLearning(dlParams)
-  val dlModel = dl.train.get
+  val dlModel = dl.trainModel.get
   ```
   
 9. Use the model for prediction:
