@@ -36,6 +36,8 @@ import scala.reflect.runtime.universe._
 
 import org.apache.spark.h2o.H2OContextUtils._
 
+import scala.util.Random
+
 /**
  * Simple H2O context motivated by SQLContext.
  *
@@ -85,7 +87,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   /** Initialize Sparkling H2O and start H2O cloud. */
   def start(): H2OContext = {
-    sparkConf.set(PROP_CLOUD_NAME._1, PROP_CLOUD_NAME._2 + sys.env.getOrElse("user.name","42x") )
+    sparkConf.set(PROP_CLOUD_NAME._1, PROP_CLOUD_NAME._2 + System.getProperty("user.name","cloud_"+Random.nextInt(42)) )
 
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
