@@ -193,22 +193,27 @@ object H2OContext {
 
   /** Transform SchemaRDD into H2O DataFrame */
   def toDataFrame(sc: SparkContext, rdd: SchemaRDD) : DataFrame = {
-    val keyName = "frame_rdd_" + rdd.id + Key.rand() // There are uniq IDs for RDD
-    val fnames = rdd.schema.fieldNames.toArray
-    val ftypes = rdd.schema.fields.map( field => dataTypeToClass(field.dataType) ).toArray
+    val keyName = "frame_rdd_" + rdd.id //+ Key.rand() // There are uniq IDs for RDD
+    val frameVal = DKV.get(keyName)
+    if (frameVal==null) {
+      val fnames = rdd.schema.fieldNames.toArray
+      val ftypes = rdd.schema.fields.map(field => dataTypeToClass(field.dataType)).toArray
 
-    // Collect domains for String columns
-    val fdomains = collectColumnDomains(sc, rdd, fnames, ftypes)
+      // Collect domains for String columns
+      val fdomains = collectColumnDomains(sc, rdd, fnames, ftypes)
 
-    initFrame(keyName, fnames)
+      initFrame(keyName, fnames)
 
-    // Eager, not lazy, evaluation
-    val rows = sc.runJob(rdd, perSQLPartition(keyName, ftypes, fdomains) _)
-    val res = new Array[Long](rdd.partitions.size)
-    rows.foreach { case(cidx,nrows) => res(cidx) = nrows }
+      // Eager, not lazy, evaluation
+      val rows = sc.runJob(rdd, perSQLPartition(keyName, ftypes, fdomains) _)
+      val res = new Array[Long](rdd.partitions.size)
+      rows.foreach { case (cidx, nrows) => res(cidx) = nrows}
 
-    // Add Vec headers per-Chunk, and finalize the H2O Frame
-    new DataFrame(finalizeFrame(keyName, res, ftypes, fdomains))
+      // Add Vec headers per-Chunk, and finalize the H2O Frame
+      new DataFrame(finalizeFrame(keyName, res, ftypes, fdomains))
+    } else {
+      new DataFrame(frameVal.get.asInstanceOf[Frame])
+    }
   }
 
   private def initFrame[T](keyName: String, names: Array[String]):Unit = {
