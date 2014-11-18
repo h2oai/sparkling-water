@@ -5,5 +5,8 @@ dependencies {
   compile( project(":sparkling-water-core") ) { 
     exclude group: "javax.servlet", module: "servlet-api"
   }
+
+  // And Scala library
+  compile "org.scala-lang:scala-library:${scalaVersion}"
 }
 
