@@ -114,7 +114,7 @@ You can tune Sparkling Water via the following variables:
   dlParams.epochs = 100
   // Create a job  
   val dl = new DeepLearning(dlParams)
-  val dlModel = dl.train.get
+  val dlModel = dl.trainModel.get
   ```
 
 11. Use model to estimate delay on training data
