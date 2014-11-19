@@ -8,7 +8,10 @@ dependencies {
     exclude group: "javax.servlet", module: "servlet-api"
   }
   compile( project(":sparkling-water-examples") )  
-  
+
+  // And Scala library
+  compile "org.scala-lang:scala-library:${scalaVersion}" 
+ 
   // Force this dependency
   runtime( "ai.h2o:h2o-flow:$h2oFlowVersion" )
 }
