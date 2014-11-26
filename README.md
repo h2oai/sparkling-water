@@ -33,6 +33,7 @@ Build a package which can be submitted to Spark cluster:
 Set the configuration of the demo Spark cluster, for example; `local-cluster[3,2,1024]`
 
 ```
+export SPARK_HOME="/path/to/spark/installation"
 export MASTER="local-cluster[3,2,1024]"
 ```
 > In this example, the description `local-cluster[3,2,1024]` causes the creation of an embedded cluster consisting of 3 workers.
@@ -59,6 +60,7 @@ First, build a package containing Sparkling water
 
 Configure the location of Spark cluster:
 ```
+export SPARK_HOME="/path/to/spark/installation"
 export MASTER="local-cluster[3,2,1024]"
 ```
 > In this case `local-cluster[3,2,1024]` points to embedded cluster of 3 worker nodes, each with 2 cores and 1G of memory.
@@ -75,6 +77,7 @@ bin/sparkling-shell
 
 1. Run Sparkling shell with an embedded cluster:
   ```
+  export SPARK_HOME="/path/to/spark/installation"
   export MASTER="local-cluster[3,2,1024]"
   bin/sparkling-shell
   ```

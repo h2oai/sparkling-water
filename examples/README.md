@@ -40,6 +40,7 @@ You can tune Sparkling Water via the following variables:
 
 1. Run Sparkling shell with an embedded cluster:
   ```
+  export SPARK_HOME="/path/to/spark/installation"
   export MASTER="local-cluster[3,2,1024]"
   bin/sparkling-shell
   ```
