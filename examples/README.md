@@ -153,3 +153,45 @@ You can tune Sparkling Water via the following variables:
   nrow(compare)
   plot( compare[,1:2] )
   ```
+
+# Sparkling Water on Hadoop
+
+Compatiable Hadoop Distribution: CDH4, ~~CDH5~~, and HDP2.1
+
+## Install on Hadoop
+
+- To install on your Hadoop Cluster clone the git repository and make a build:
+
+```
+git clone https://github.com/0xdata/sparkling-water.git 
+cd sparkling-water
+./gradlew build
+./gradlew assemble
+```
+
+- Then set MASTER to the IP address of where your Spark Master Node is launched and set SPARK_HOME to the location of your Spark installation. In the example below the path for SPARK_HOME is the default location of Spark preinstalled on a CDH5 cluster. Please change MASTER below:
+
+```
+export MASTER="spark://mr-0xd9-precise1.0xdata.loc:7077"
+export SPARK_HOME="/opt/cloudera/parcels/CDH-5.2.0-1.cdh5.2.0.p0.11/lib/spark"
+```
+
+- Launch Sparkling Shell:
+
+```
+./bin/sparkling-shell
+```
+
+## Import Data from HDFS
+
+The initialization of H2O remains the same with the exception of importing data from a HDFS path. Please change path variable below to one suitable for your data.
+
+```scala
+import org.apache.spark.h2o._
+import org.apache.spark.examples.h2o._
+val h2oContext = new H2OContext(sc).start()
+import h2oContext._
+val path = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/bestbuy_test.csv"
+val d = new java.net.URI(path)
+val f = new DataFrame(d)
+```
