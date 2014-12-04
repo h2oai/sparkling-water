@@ -58,6 +58,7 @@ println("-Dspark.testing=true\n" +
             "-Dsparkling.test.assembly=${configurations.testAssembly.artifacts.file.join(',')}\n")
 }
 
+/* Get spark home value from local environmnet */
 String getSparkHome() {
     String sh =
         [ project.hasProperty("sparkHome") ? project["sparkHome"] : null,
@@ -72,6 +73,14 @@ String getSparkHome() {
                 "please specify SPARK_HOME env variable or pass -PsparkHome property to gradle script")
 }
 
+/**
+ * Find dependencies from 'configuration.runtime' matching given specification.
+ *
+ * Specification is given in form group_name:module_name
+ *
+ * @param d list of specifications.
+ * @return
+ */
 FileCollection dep(List<String> d) {
     Configuration conf = configurations.runtime
     List<String[]> depsSpec = d.collect { it.split(":")}
