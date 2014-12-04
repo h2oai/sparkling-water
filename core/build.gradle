@@ -19,4 +19,73 @@ dependencies {
   testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
 }
 
+// Add a new configuration containing only jars needed for test run
+configurations {
+    testAssembly {
+        description = 'Contains only jars needed to run tests on top of Spark.'
+        transitive = false
+    }
+}
 
+artifacts {
+    testAssembly jar
+    testAssembly testJar
+
+    // pull selected dependencies
+    dep(["ai.h2o:h2o-core",
+     "ai.h2o:h2o-app",
+     "joda-time:joda-time",
+     "org.javassist:javassist",
+     "gov.nist.math:jama"]).each {
+        testAssembly it
+    }
+}
+
+// Setup test environment for Spark
+test {
+    systemProperty "spark.testing",   "true"
+    systemProperty "spark.test.home", "${getSparkHome()}"
+    // Pass list of jars required for testing
+    systemProperty "sparkling.test.assembly", "${configurations.testAssembly.artifacts.file.join(',')}"
+}
+
+test.dependsOn testJar
+
+// Useful task to setup idea test configuration
+task printTestEnv << {
+println("-Dspark.testing=true\n" +
+            "-Dspark.test.home=${getSparkHome()}\n" +
+            "-Dsparkling.test.assembly=${configurations.testAssembly.artifacts.file.join(',')}\n")
+}
+
+String getSparkHome() {
+    String sh =
+        [ project.hasProperty("sparkHome") ? project["sparkHome"] : null,
+          System.properties["master"],
+          System.env['SPARK_HOME']
+        ].find { h -> h!=null ? new File(h).isDirectory() : false }
+    if (sh!=null) {
+        logger.info("Found spark home: ${sh}")
+        return sh
+    } else
+        throw new GradleException("Cannot find Spark home - " +
+                "please specify SPARK_HOME env variable or pass -PsparkHome property to gradle script")
+}
+
+FileCollection dep(List<String> d) {
+    Configuration conf = configurations.runtime
+    List<String[]> depsSpec = d.collect { it.split(":")}
+    Set<ResolvedDependency> toInclude = []
+    resolve(conf.resolvedConfiguration.firstLevelModuleDependencies, toInclude, depsSpec)
+    files( toInclude.collect {
+        it.moduleArtifacts*.file
+    }.flatten())
+}
+void resolve(Set<ResolvedDependency> deps, Set<ResolvedDependency> includeDeps, List<String[]> depsSpec) {
+    deps.each { d->
+        if (depsSpec.any { ds -> d.moduleGroup==ds[0] && d.moduleName==ds[1] })
+            if (includeDeps.add(d)) {
+                resolve(d.children, includeDeps, depsSpec)
+            }
+    }
+}
