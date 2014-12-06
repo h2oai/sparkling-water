@@ -47,7 +47,9 @@ artifacts {
 test {
     // Test environment
     systemProperty "spark.testing",   "true"
-    systemProperty "spark.test.home", "${getSparkHome()}"
+
+    def sh = getSparkHome()
+    if (sh!=null) systemProperty "spark.test.home", "${sh}"
     // Pass list of jars required for testing
     systemProperty "sparkling.test.assembly", "${configurations.testAssembly.artifacts.file.join(',')}"
 
