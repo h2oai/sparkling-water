@@ -21,7 +21,6 @@ buildscript {
         classpath 'org.github.mansur.scalastyle:gradle-scalastyle-plugin_2.10:0.4.1'
         classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.7.1'
         classpath 'com.github.townsfolk:gradle-release:1.2'
-        classpath 'com.github.maiflai:gradle-scalatest:0.4'
     }
 }
 

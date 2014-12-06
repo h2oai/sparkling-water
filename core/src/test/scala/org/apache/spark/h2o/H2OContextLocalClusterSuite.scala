@@ -17,36 +17,37 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.util.{SparkTestContext, LocalSparkClusterContext}
-import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}
-import water.util.IcedInt
-import water.{Key, DKV}
+import org.apache.spark.h2o.util.SparkTestContext
+import org.scalatest.junit.JUnitRunner
+import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+import water.{DKV, Key}
+import org.junit.runner.RunWith
 
 /**
  * Testing creation of H2O cloud in distributed environment.
  */
-class H2OContextSuite extends FunSuite
+@RunWith(classOf[JUnitRunner])
+class H2OContextLocalClusterSuite extends FunSuite
   with Matchers with BeforeAndAfter with SparkTestContext {
 
-  test("verify H2O cloud building on local JVM") {
-    sc = new SparkContext("local", "test-local")
-    hc = new H2OContext(sc).start()
-    // Make sure that H2O is running
-    assert(water.H2O.store_size() == 0)
-    DKV.put(Key.make(), new IcedInt(43))
-    assert(water.H2O.store_size() == 1)
-    resetSparkContext()
-  }
+  val swassembly = sys.props.getOrElse("sparkling.test.assembly",
+    fail("The variable 'sparkling.test.assembly' is not set! It should point to assembly jar file."))
 
   test("verify H2O cloud building on local cluster") {
     // For distributed testing we need to pass around jar containing all implementation classes plus test classes
-    val swassembly = sys.props.getOrElse("sparkling.test.assembly",
-      fail("The variable 'sparkling.test.assembly' is not set! It should point to assembly jar file."))
     sc = new SparkContext("local-cluster[3,2,721]", "test-local-cluster", null, swassembly :: Nil)
     hc = new H2OContext(sc).start()
-    //
+
+    assert(water.H2O.CLOUD.members().length == 3, "H2O cloud should have 3 members")
+    // Does not reset
     resetSparkContext()
   }
 
+  // IGNORED since we are not able to initialize client in the process several times
+  ignore("2nd run to verify that test does not overlap") {
+    sc = new SparkContext("local-cluster[3,2,721]", "test-local-cluster", null, swassembly :: Nil)
+    hc = new H2OContext(sc).start()
 
+    resetSparkContext()
+  }
 }

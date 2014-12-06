@@ -42,12 +42,15 @@ artifacts {
     archives scaladocJar
 }
 
+/* To enable scalatest Runner insteadof using JUnitRunner
+// buildscript: classpath 'com.github.maiflai:gradle-scalatest:0.4'
 // Enable scalatests
-apply plugin: 'scalatest'
+//apply plugin: 'scalatest'
 
 dependencies {
     testRuntime 'org.pegdown:pegdown:1.1.0'
 }
+*/
 
 test {
     maxParallelForks = 1

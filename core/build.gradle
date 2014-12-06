@@ -17,6 +17,7 @@ dependencies {
 
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
+  testCompile "junit:junit:4.11"
 }
 
 // Add a new configuration containing only jars needed for test run
@@ -33,6 +34,7 @@ artifacts {
 
     // pull selected dependencies
     dep(["ai.h2o:h2o-core",
+     "ai.h2o:h2o-algos",
      "ai.h2o:h2o-app",
      "joda-time:joda-time",
      "org.javassist:javassist",
@@ -43,10 +45,18 @@ artifacts {
 
 // Setup test environment for Spark
 test {
+    // Test environment
     systemProperty "spark.testing",   "true"
     systemProperty "spark.test.home", "${getSparkHome()}"
     // Pass list of jars required for testing
     systemProperty "sparkling.test.assembly", "${configurations.testAssembly.artifacts.file.join(',')}"
+
+
+    // Run with assertions ON
+    enableAssertions = true
+
+    // For a new JVM for each test class
+    forkEvery = 1
 }
 
 test.dependsOn testJar
@@ -68,9 +78,11 @@ String getSparkHome() {
     if (sh!=null) {
         logger.info("Found spark home: ${sh}")
         return sh
-    } else
-        throw new GradleException("Cannot find Spark home - " +
+    } else {
+        logger.warn("Cannot find Spark home - " +
                 "please specify SPARK_HOME env variable or pass -PsparkHome property to gradle script")
+        return null
+    }
 }
 
 /**
