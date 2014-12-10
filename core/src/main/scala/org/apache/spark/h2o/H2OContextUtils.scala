@@ -24,8 +24,11 @@ private[spark] object H2OContextUtils {
   def collectNodesInfo(distRDD: RDD[Int], basePort: Int, incrPort: Int): Array[NodeDesc] = {
     // Collect flatfile - tuple of (IP, port)
     val nodes = distRDD.map { index =>
-      ( SparkEnv.get.executorId,
-        java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString("."),
+      val env = SparkEnv.get
+      ( env.executorId,
+        // java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString("."),
+        // Use existing Akka setup since Spark at this point is already communicating
+        env.actorSystem.settings.config.getString("akka.remote.netty.tcp.hostname"),
         // FIXME: verify that port is available
         (basePort + incrPort*index))
     }.collect()

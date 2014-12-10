@@ -42,6 +42,7 @@ trait H2OConf {
   def cloudName     = sparkConf.get(PROP_CLOUD_NAME._1, PROP_CLOUD_NAME._2)
   def defaultCloudSize = sparkConf.getInt(PROP_DEFAULT_CLUSTER_SIZE._1, PROP_DEFAULT_CLUSTER_SIZE._2)
   def h2oLogLevel   = sparkConf.get(PROP_LOG_LEVEL._1, PROP_LOG_LEVEL._2)
+  def networkMask   = sparkConf.getOption(PROP_NETWORK_MASK._1)
 
   /* Configuration properties */
 
@@ -65,6 +66,9 @@ trait H2OConf {
   val PROP_DEFAULT_CLUSTER_SIZE = ( "spark.ext.h2o.default.cluster.size,", 20)
   /* H2O internal log level */
   val PROP_LOG_LEVEL = ("spark.ext.h2o.log.level", "INFO")
+  /** Subnet selector for h2o if IP guess fail - useful if 'spark.ext.h2o.flatfile' is false
+    * and we are trying to guess right IP on mi*/
+  val PROP_NETWORK_MASK = ("spark.ext.h2o.network.mask", null.asInstanceOf[String])
 
 
   /** Configuration property - multiplication factor for dummy RDD generation.
@@ -73,10 +77,10 @@ trait H2OConf {
 
   /**
    * Produce arguments for H2O based on this config.
-   * @return array of command line h2o arguments
+   * @return array of H2O launcher command line arguments
    */
   def getH2OArgs():Array[String] = {
-    Array("-name", cloudName, "-log_level", h2oLogLevel)
+    Array("-name", cloudName, "-log_level", h2oLogLevel) ++ networkMask.map(v => Array("-network", v)).getOrElse(Array())
   }
 
   override def toString: String =

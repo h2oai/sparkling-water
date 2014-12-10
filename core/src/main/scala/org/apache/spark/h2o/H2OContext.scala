@@ -77,7 +77,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   def toRDD[A <: Product: TypeTag: ClassTag]( fr : DataFrame ) : RDD[A] = new H2ORDD[A](this,fr)
 
-
+  /** Runtime list of nodes */
+  private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
 
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
   private[spark] def start(h2oWorkers: Int):H2OContext = {
@@ -116,7 +117,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
            |  numH2OWorkers = ${numH2OWorkers}"
            |  executorStatus = ${executorStatus.mkString(",")}""".stripMargin)
     }
-    logInfo("Sparkling H2O - H2O status: " + executorStatus.mkString(","))
+
+    // Store runtime information
+    h2oNodes.append( executors:_* )
 
     // Now connect to a cluster via H2O client,
     // but only in non-local case
@@ -132,6 +135,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       // Since LocalBackend does not wait for initialization (yet)
       H2O.waitForCloudSize(1, cloudTimeout)
     }
+
+    // Inform user about status
+    logInfo("Sparkling Water started, status of context: " + this.toString)
 
     this
   }
@@ -186,6 +192,18 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers! Retrying again...")
       createSpreadRDD(nretries-1, mfactor*2, nworkers)
     }
+  }
+
+  override def toString: String = {
+    s"""
+      |${super[H2OConf].toString}
+      |
+      |Runtime info:
+      |(executorId, host, port)
+      |------------------------
+      |${h2oNodes.mkString("\n")}
+      |------------------------
+    """.stripMargin
   }
 }
 
