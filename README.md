@@ -150,3 +150,25 @@ bin/sparkling-shell
   val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
   ```
   
+## Docker Support
+
+The directory `docker` contains basic support to run Sparkling Water on top of docker container. 
+
+### Build a container
+
+```
+$ cd docker
+$ ./build.sh 
+```
+
+### Running examples in container
+
+```
+$ docker run -i -t --rm sparkling-test-base bin/run-example.sh
+```
+
+### Running Sparkling Shell in container
+
+```
+$ docker run -i -t --rm sparkling-test-base bin/sparkling-shell
+```
