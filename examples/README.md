@@ -189,8 +189,12 @@ The initialization of H2O remains the same with the exception of importing data 
 ```scala
 import org.apache.spark.h2o._
 import org.apache.spark.examples.h2o._
+// Create H2O context
 val h2oContext = new H2OContext(sc).start()
+// Export H2O context to the 
 import h2oContext._
+
+// URI to access HDFS file
 val path = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/bestbuy_test.csv"
 val d = new java.net.URI(path)
 val f = new DataFrame(d)
