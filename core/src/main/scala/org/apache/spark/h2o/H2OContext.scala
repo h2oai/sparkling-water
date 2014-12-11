@@ -93,7 +93,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   def start(): H2OContext = {
     // Setup properties for H2O configuration
     sparkConf.set(PROP_CLOUD_NAME._1, PROP_CLOUD_NAME._2 + System.getProperty("user.name","cloud_"+Random.nextInt(42)) )
-    sparkConf.set(PROP_CLUSTER_SIZE._1, numOfSparkExecutors.toString)
+    sparkConf.setIfMissing(PROP_CLUSTER_SIZE._1, numOfSparkExecutors.toString)
 
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
@@ -182,11 +182,13 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     val sparkExecutors = nodes.map(_._1).distinct.length
     if (sparkExecutors < nworkers && nretries == 0) {
       throw new IllegalArgumentException(
-        s"""Cannot execute H2O on all Spark executors: ${nodes.mkString(",")}
+        s"""Cannot execute H2O on all Spark executors:
             | Expected number of h2o workers is ${nworkers}
             | Detected number of Spark workers is $sparkExecutors
+            |
             | Try to increase value in property ${PROP_DUMMY_RDD_MUL_FACTOR}
             | (its value is currently: ${mfactor} increased to ${mfactor})
+            | or revisit number of required executors (you can specify it via ${PROP_CLUSTER_SIZE} property)
             |""".stripMargin
       )
     } else if (sparkExecutors >= nworkers) {
