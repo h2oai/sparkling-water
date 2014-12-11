@@ -84,7 +84,7 @@ trait H2OConf {
   }
 
   override def toString: String =
-    s"""Sparkling H2O setup:
+    s"""Sparkling Water configuration:
          |  workers      : $numH2OWorkers
          |  cloudName    : $cloudName
          |  flatfile     : $useFlatFile

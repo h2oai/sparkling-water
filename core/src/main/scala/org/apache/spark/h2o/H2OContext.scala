@@ -79,6 +79,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   /** Runtime list of nodes */
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
+  /** Detected number of Spark executors
+    * Property value is derived from SparkContext during creation of H2OContext. */
+  private val numOfSparkExecutors = if (sparkContext.isLocal) 1 else sparkContext.getExecutorStorageStatus.length-1
 
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
   private[spark] def start(h2oWorkers: Int):H2OContext = {
@@ -88,7 +91,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   /** Initialize Sparkling H2O and start H2O cloud. */
   def start(): H2OContext = {
+    // Setup properties for H2O configuration
     sparkConf.set(PROP_CLOUD_NAME._1, PROP_CLOUD_NAME._2 + System.getProperty("user.name","cloud_"+Random.nextInt(42)) )
+    sparkConf.set(PROP_CLUSTER_SIZE._1, numOfSparkExecutors.toString)
 
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
@@ -196,13 +201,13 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   override def toString: String = {
     s"""
-      |${super[H2OConf].toString}
-      |
-      |Runtime info:
-      |(executorId, host, port)
-      |------------------------
-      |${h2oNodes.mkString("\n")}
-      |------------------------
+      |Sparkling Water Context:
+      | * number of executors: ${h2oNodes.size}
+      | * list of used executors:
+      |  (executorId, host, port)
+      |  ------------------------
+      |  ${h2oNodes.mkString("\n  ")}
+      |  ------------------------
     """.stripMargin
   }
 }
