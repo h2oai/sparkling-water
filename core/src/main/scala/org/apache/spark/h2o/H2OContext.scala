@@ -20,22 +20,20 @@ package org.apache.spark.h2o
 import java.io.File
 
 import com.google.common.io.Files
+import org.apache.spark._
+import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.rdd.H2ORDD
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.{Row, SchemaRDD}
-import org.apache.spark._
+import water._
 import water.fvec.Vec
 import water.parser.ValueString
-import water._
 
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
-
-import org.apache.spark.h2o.H2OContextUtils._
-
 import scala.util.Random
 
 /**
@@ -81,10 +79,10 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
   /** Detected number of Spark executors
     * Property value is derived from SparkContext during creation of H2OContext. */
-  private val numOfSparkExecutors = if (sparkContext.isLocal) 1 else sparkContext.getExecutorStorageStatus.length-1
+  private def numOfSparkExecutors = if (sparkContext.isLocal) 1 else sparkContext.getExecutorStorageStatus.length-1
 
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
-  private[spark] def start(h2oWorkers: Int):H2OContext = {
+  def start(h2oWorkers: Int):H2OContext = {
     sparkConf.set(PROP_CLUSTER_SIZE._1, h2oWorkers.toString)
     start()
   }
@@ -93,7 +91,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   def start(): H2OContext = {
     // Setup properties for H2O configuration
     sparkConf.set(PROP_CLOUD_NAME._1, PROP_CLOUD_NAME._2 + System.getProperty("user.name","cloud_"+Random.nextInt(42)) )
-    sparkConf.setIfMissing(PROP_CLUSTER_SIZE._1, numOfSparkExecutors.toString)
+    //sparkConf.setIfMissing(PROP_CLUSTER_SIZE._1, numOfSparkExecutors.toString)
 
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
@@ -102,7 +100,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // Start H2O nodes
     // Get executors to execute H2O
     val allExecutorIds = nodes.map(_._1).distinct
-    val executorIds = if (numH2OWorkers > 0) allExecutorIds.take(numH2OWorkers) else allExecutorIds
+    val executorIds = /*if (numH2OWorkers > 0) allExecutorIds.take(numH2OWorkers) else*/ allExecutorIds
     val executors = nodes.groupBy(_._1).map(_._2.head).filter( n => executorIds.contains(n._1) ).toArray
     // The collected executors based on IDs should match
     assert(executors.length == executorIds.length,
@@ -110,7 +108,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // H2O is executed only on the subset of Spark cluster
     // This situation is interesting when data are located on node which does not contain H2O
     if (executorIds.length < allExecutorIds.length) {
-      logWarning(s"Spark cluster contains ${allExecutorIds.length}, but H2O is running only on ${executorIds} nodes!")
+      logWarning(s"Spark cluster contains ${allExecutorIds.length}, but H2O is running only on ${executorIds.length} nodes!")
     }
     // Execute H2O on given nodes
     logInfo(s"""Launching H2O on following nodes: ${executors.mkString(",")}""")
@@ -170,7 +168,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
                               nworkers: Int): (RDD[Int], Array[NodeDesc]) = {
     logDebug(s"  Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, nworkers=${nworkers}")
     // Non-positive value of nworkers means automatic detection of number of workers
-    val workers = if (nworkers > 0) nworkers else defaultCloudSize
+    val nSparkExecBefore = numOfSparkExecutors
+    val workers = if (nworkers > 0) nworkers else if (nSparkExecBefore > 0) nSparkExecBefore else defaultCloudSize
     val spreadRDD =
       sparkContext.parallelize(0 until mfactor*workers,
         mfactor*workers).persist()
@@ -179,19 +178,31 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     val nodes = collectNodesInfo(spreadRDD, basePort, incrPort)
 
     // Verify that all executors participate in execution
+    val nSparkExecAfter = numOfSparkExecutors
     val sparkExecutors = nodes.map(_._1).distinct.length
-    if (sparkExecutors < nworkers && nretries == 0) {
+    if ( (sparkExecutors < nworkers || nSparkExecAfter != nSparkExecBefore)
+          && nretries == 0) {
       throw new IllegalArgumentException(
         s"""Cannot execute H2O on all Spark executors:
-            | Expected number of h2o workers is ${nworkers}
+            | Expected number of H2O workers is ${nworkers}
             | Detected number of Spark workers is $sparkExecutors
+            | Num of Spark executors before is $nSparkExecBefore
+            | Num of Spark executors after is $nSparkExecAfter
             |
-            | Try to increase value in property ${PROP_DUMMY_RDD_MUL_FACTOR}
-            | (its value is currently: ${mfactor} increased to ${mfactor})
-            | or revisit number of required executors (you can specify it via ${PROP_CLUSTER_SIZE} property)
+            | If you are running regular application, please, specify number of Spark workers
+            | via ${PROP_CLUSTER_SIZE} Spark configuration property.
+            | If you are running from shell,
+            | you can try: val h2oContext = new H2OContext().start(<number of Spark workers>)
+            |
             |""".stripMargin
       )
-    } else if (sparkExecutors >= nworkers) {
+    } else if (nSparkExecAfter != nSparkExecBefore) {
+      // Repeat if we detecte change in number of executors
+      spreadRDD.unpersist()
+      logDebug(s"Detected ${nSparkExecBefore} before, and ${nSparkExecAfter} spark executors after! Retrying again...")
+      createSpreadRDD(nretries-1, mfactor, nSparkExecAfter)
+    } else if ((nworkers>0 && sparkExecutors == nworkers || nworkers<=0) && sparkExecutors == nSparkExecAfter) {
+      // Return result only if we are sure that number of detected executors seems ok
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers!")
       (spreadRDD, nodes)
     } else {
