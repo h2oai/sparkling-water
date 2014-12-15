@@ -33,8 +33,9 @@ RUN mkdir /opt/spark/work
 RUN chmod 0777 /opt/spark/work
 
 # Install Sparkling water
-RUN curl -s http://h2o-release.s3.amazonaws.com/sparkling-water/master/54/sparkling-water-0.2.1-54.zip > sw.zip && unzip sw.zip -d /opt/
-RUN cd /opt && ln -s sparkling-water-0.2.1-54 sparkling-water
+RUN curl -s http://h2o-release.s3.amazonaws.com/sparkling-water/master/54/sparkling-water-0.2.1-57.zip > sw.zip && unzip sw.zip -d /opt/
+RUN cd /opt && ln -s sparkling-water-0.2.1-57 sparkling-water
+RUN rm -f sw.zip
 
 # Setup environment
 ENV SPARK_HOME /opt/spark
