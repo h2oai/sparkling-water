@@ -138,3 +138,28 @@
   nrow(compare)
   plot( compare[,1:2] )
   ```
+  
+14. Try to generate better model with GBM
+  ```scala
+  import hex.tree.gbm.GBM
+  import hex.tree.gbm.GBMModel.GBMParameters
+
+  val gbmParams = new GBMParameters()
+  gbmParams._train = trainTable
+  gbmParams._response_column = 'ArrDelay
+  gbmParams._valid = validTable
+  gbmParams._ntrees = 100
+
+  val gbm = new GBM(gbmParams)
+  val gbmModel = gbm.trainModel.get
+  ```
+  
+15. Make prediction and print R code for residual plot
+  ```scala
+  val gbmPredictTable = gbmModel.score(testTable)('predict)
+  residualPlotRCode(gbmPredictTable, 'predict, testTable, 'ArrDelay)
+  ```
+
+  
+  
+   
