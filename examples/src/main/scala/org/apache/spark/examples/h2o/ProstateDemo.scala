@@ -73,7 +73,7 @@ object ProstateDemo {
   private def runKmeans[T](trainDataFrame: DataFrame): KMeansModel = {
     val params = new KMeansParameters
     params._train = trainDataFrame._key
-    params._K = 3
+    params._k = 3
     // Create a builder
     val job = new KMeans(params)
     // Launch a job and wait for the end.

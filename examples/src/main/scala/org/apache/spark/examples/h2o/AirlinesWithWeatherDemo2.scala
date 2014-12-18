@@ -4,19 +4,24 @@ import java.io.File
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.splitframe.SplitFrame
+import hex.splitframe.SplitFrameModel.SplitFrameParameters
+import hex.tree.gbm.GBM
+import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure}
 import org.apache.spark.h2o.{DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
 import water.fvec.DataFrame
+import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
 
 
 object AirlinesWithWeatherDemo2 {
 
   def main(args: Array[String]): Unit = {
     // Configure this application
-    val conf: SparkConf = configure("Sparkling Water: Join of Airlines with Weather Data")
+    val conf: SparkConf = configure("Sparkling Water Meetyp: Use Airlines and Weather Data for delay prediction")
 
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
@@ -25,7 +30,7 @@ object AirlinesWithWeatherDemo2 {
     // Setup environment
     addFiles(sc,
       "examples/smalldata/Chicago_Ohare_International_Airport.csv",
-      "examples/smalldata/allyears2k_headers.csv.gz")
+      "examples/smalldata/year2005.csv.gz")
 
     //val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
     val wrawdata = sc.textFile(SparkFiles.get("Chicago_Ohare_International_Airport.csv"),3).cache()
@@ -34,7 +39,7 @@ object AirlinesWithWeatherDemo2 {
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val airlinesData = new DataFrame(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
+    val airlinesData = new DataFrame(new File(SparkFiles.get("year2005.csv.gz")))
 
     val airlinesTable : RDD[Airlines] = toRDD[Airlines](airlinesData)
     // Select flights only to ORD
@@ -48,7 +53,10 @@ object AirlinesWithWeatherDemo2 {
     flightsToORD.registerTempTable("FlightsToORD")
     weatherTable.registerTempTable("WeatherORD")
 
-    val bigTable = sql(
+    //
+    // -- Join both tables and select interesting columns
+    //
+    val joinedTable = sql(
       """SELECT
         |f.Year,f.Month,f.DayofMonth,
         |f.CRSDepTime,f.CRSArrTime,f.CRSElapsedTime,
@@ -59,43 +67,58 @@ object AirlinesWithWeatherDemo2 {
         |FROM FlightsToORD f
         |JOIN WeatherORD w
         |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
-    println(s"\nResult of query: ${bigTable.count}\n")
-    bigTable.take(10).foreach(println(_))
+    println(s"\nResult of query: ${joinedTable.count}\n")
+    //bigTable.collect().foreach(println(_))
+
+    //
+    // Split data into 3 tables - train/validation/test
+    //
+    // Instead of using RDD API we will directly split H2O Frame
+    val sfParams = new SplitFrameParameters()
+    sfParams._train = joinedTable
+    sfParams._ratios = Array(0.7, 0.2)
+    val sf = new SplitFrame(sfParams)
+
+    val splits = sf.trainModel().get._output._splits
+    val trainTable = splits(0)
+    val validTable = splits(1)
+    val testTable  = splits(2)
 
     //
     // -- Run DeepLearning
     //
     val dlParams = new DeepLearningParameters()
-    dlParams._train = bigTable
+    dlParams._train = trainTable
     dlParams._response_column = 'ArrDelay
+    dlParams._valid = validTable
     dlParams._epochs = 100
+    dlParams._reproducible = true
+    dlParams._force_load_balance = false
 
     val dl = new DeepLearning(dlParams)
     val dlModel = dl.trainModel.get
 
-    val predictionH2OFrame = dlModel.score(bigTable)('predict)
-    val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
-    println(predictionsFromModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
+    val dlPredictTable = dlModel.score(testTable)('predict)
+    val predictionsFromDlModel = toRDD[DoubleHolder](dlPredictTable).collect.map(_.result.getOrElse(Double.NaN))
+    println(predictionsFromDlModel.length)
+    println(predictionsFromDlModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
 
-    println(
-      s"""# R script for residual plot
-        |h = h2o.init()
-        |
-        |pred = h2o.getFrame(h, "${predictionH2OFrame._key}")
-        |act = h2o.getFrame (h, "${bigTable._key}")
-        |
-        |predDelay = pred$$predict
-        |actDelay = act$$ArrDelay
-        |
-        |nrow(actDelay) == nrow(predDelay)
-        |
-        |residuals = predDelay - actDelay
-        |
-        |compare = cbind (as.data.frame(actDelay$$ArrDelay), as.data.frame(residuals$$predict))
-        |nrow(compare)
-        |plot( compare[,1:2] )
-        |
-      """.stripMargin)
+    printf( residualPlotRCode(dlPredictTable, 'predict, testTable, 'ArrDelay) )
+
+    // GBM Model
+    val gbmParams = new GBMParameters()
+    gbmParams._train = trainTable
+    gbmParams._response_column = 'ArrDelay
+    gbmParams._valid = validTable
+    gbmParams._ntrees = 100
+    //gbmParams._learn_rate = 0.01f
+    val gbm = new GBM(gbmParams)
+    val gbmModel = gbm.trainModel.get
+
+    // Print R code for residual plot
+    val gbmPredictTable = gbmModel.score(testTable)('predict)
+    printf( residualPlotRCode(gbmPredictTable, 'predict, testTable, 'ArrDelay) )
+
     // Explicit sleep for long time to make cluster available from R
     Thread.sleep(60*60*1000)
     sc.stop()

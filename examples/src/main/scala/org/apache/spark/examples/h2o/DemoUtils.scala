@@ -1,14 +1,14 @@
 package org.apache.spark.examples.h2o
 
 import org.apache.spark.{SparkConf, SparkContext}
-import water.fvec.{DataFrame, Chunk}
+import water.fvec.{Frame, DataFrame, Chunk}
 import water.parser.ValueString
 import water.{H2OClientApp, MRTask, H2O, H2OApp}
 
 /**
  * Shared demo utility functions.
  */
-private[h2o] object DemoUtils {
+object DemoUtils {
 
   def createSparkContext(sparkMaster:String = null, registerH2OExtension: Boolean = true): SparkContext = {
     val h2oWorkers = System.getProperty("spark.h2o.workers", "3") // N+1 workers, one is running in driver
@@ -79,5 +79,27 @@ private[h2o] object DemoUtils {
         }
       }
     }.doAll(fr)
+  }
+
+  def residualPlotRCode(prediction:Frame, predCol: String, actual:Frame, actCol:String):String = {
+    s"""# R script for residual plot
+        |library(h2o)
+        |h = h2o.init()
+        |
+        |pred = h2o.getFrame(h, "${prediction._key}")
+        |act = h2o.getFrame (h, "${actual._key}")
+        |
+        |predDelay = pred$$${predCol}
+        |actDelay = act$$${actCol}
+        |
+        |nrow(actDelay) == nrow(predDelay)
+        |
+        |residuals = predDelay - actDelay
+        |
+        |compare = cbind (as.data.frame(actDelay$$ArrDelay), as.data.frame(residuals$$predict))
+        |nrow(compare)
+        |plot( compare[,1:2] )
+        |
+      """.stripMargin
   }
 }

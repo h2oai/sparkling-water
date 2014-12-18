@@ -55,16 +55,16 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   implicit def createDataFrame[A <: Product : TypeTag](rdd : RDD[A]) : DataFrame = toDataFrame(rdd)
 
   /** Implicit conversion from SchemaRDD to H2O's DataFrame */
-  implicit def createDataFrameKey(rdd : SchemaRDD) : Key = toDataFrame(rdd)._key
+  implicit def createDataFrameKey(rdd : SchemaRDD) : Key[Frame] = toDataFrame(rdd)._key
 
   /** Implicit conversion from typed RDD to H2O's DataFrame */
-  implicit def createDataFrameKey[A <: Product : TypeTag](rdd : RDD[A]) : Key
+  implicit def createDataFrameKey[A <: Product : TypeTag](rdd : RDD[A]) : Key[_]
                                   = toDataFrame(rdd)._key
 
   /** Implicit conversion from Frame to DataFrame */
   implicit def createDataFrame(fr: Frame) : DataFrame = new DataFrame(fr)
 
-  implicit def dataFrameToKey(fr: Frame): Key = fr._key
+  implicit def dataFrameToKey(fr: Frame): Key[Frame] = fr._key
 
   implicit def symbolToString(sy: scala.Symbol): String = sy.name
 
@@ -131,7 +131,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       // Get arguments for this launch including flatfile
       val h2oArgs = toH2OArgs( getH2OArgs(), this, executors )
       H2OClientApp.main(h2oArgs)
-      H2O.finalizeRequest()
+      H2O.finalizeRegistration()
       H2O.waitForCloudSize(executors.length, cloudTimeout)
     } else {
       logTrace("Sparkling H2O - LOCAL mode")
@@ -280,7 +280,7 @@ object H2OContext {
       case q if q==classOf[java.lang.Float]   => Vec.T_NUM
       case q if q==classOf[java.lang.Double]  => Vec.T_NUM
       case q if q==classOf[java.lang.Boolean] => Vec.T_NUM
-      case q if q==classOf[java.lang.String]  => if (d.length < water.parser.Enum.MAX_ENUM_SIZE) {
+      case q if q==classOf[java.lang.String]  => if (d.length < water.parser.Categorical.MAX_ENUM_SIZE) {
                                                     Vec.T_ENUM
                                                   } else {
                                                     Vec.T_STR

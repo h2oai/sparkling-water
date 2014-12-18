@@ -48,6 +48,9 @@ object AirlinesWithWeatherDemo {
     flightsToORD.registerTempTable("FlightsToORD")
     weatherTable.registerTempTable("WeatherORD")
 
+    //
+    // -- Join both tables and select interesting columns
+    //
     val bigTable = sql(
       """SELECT
         |f.Year,f.Month,f.DayofMonth,
@@ -79,6 +82,7 @@ object AirlinesWithWeatherDemo {
 
     println(
       s"""# R script for residual plot
+        |library(h2o)
         |h = h2o.init()
         |
         |pred = h2o.getFrame(h, "${predictionH2OFrame._key}")
