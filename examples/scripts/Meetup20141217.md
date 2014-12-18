@@ -1,5 +1,10 @@
 # Sparkling Water Meetup 
 
+## Download
+
+Please download [Sparkling Water
+0.2.1-58](http://h2o-release.s3.amazonaws.com/sparkling-water/master/58/index.html)
+
 ## Step-by-Step through Airlines with Weather Data Example
 
 1. Run Sparkling shell with an embedded cluster:
