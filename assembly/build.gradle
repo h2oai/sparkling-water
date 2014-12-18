@@ -33,6 +33,8 @@ shadowJar {
     include(dependency("joda-time:joda-time"))
     include(dependency("org.javassist:javassist"))
     include(dependency("gov.nist.math:jama"))
+    include(dependency("com.google.code.gson:gson"))
+    include(dependency("org.reflections:reflections"))
   }
 }
 
