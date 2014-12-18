@@ -3,7 +3,11 @@
 ## Download
 
 Please download [Sparkling Water
-0.2.1-58](http://h2o-release.s3.amazonaws.com/sparkling-water/master/58/index.html)
+0.2.1-58](http://h2o-release.s3.amazonaws.com/sparkling-water/master/58/index.html) and unzip the file:
+```
+unzip sparkling-water-0.2.1-58.zip
+cd sparkling-water-0.2.1-58
+```
 
 ## Step-by-Step through Airlines with Weather Data Example
 
