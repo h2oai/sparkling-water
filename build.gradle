@@ -42,13 +42,12 @@ configure(allprojects) { project ->
     apply plugin: 'idea'
     apply plugin: 'eclipse'
     apply from: "$rootDir/gradle/artifacts.gradle"
-    
+
     // Version of main components
     ext { 
       scalaVersion       = '2.10.4'
       scalaBinaryVersion = '2.10'
-      h2oVersion         = '0.1.15'
-      h2oFlowVersion     = '0.2.10'
+      h2oVersion         = '0.1.17'
       sparkVersion       = '1.1.0'
     }
 }

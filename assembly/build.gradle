@@ -11,9 +11,6 @@ dependencies {
 
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}" 
- 
-  // Force this dependency
-  runtime( "ai.h2o:h2o-flow:$h2oFlowVersion" )
 }
 
 shadowJar {
@@ -29,7 +26,6 @@ shadowJar {
     include(dependency("ai.h2o:h2o-app"))
     include(dependency("ai.h2o:h2o-web"))
     include(dependency("ai.h2o:h2o-algos"))
-    include(dependency("ai.h2o:h2o-flow"))
     include(dependency("joda-time:joda-time"))
     include(dependency("org.javassist:javassist"))
     include(dependency("gov.nist.math:jama"))
