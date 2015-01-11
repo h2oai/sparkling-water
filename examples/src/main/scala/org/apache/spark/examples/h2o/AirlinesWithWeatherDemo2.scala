@@ -21,7 +21,7 @@ object AirlinesWithWeatherDemo2 {
 
   def main(args: Array[String]): Unit = {
     // Configure this application
-    val conf: SparkConf = configure("Sparkling Water Meetyp: Use Airlines and Weather Data for delay prediction")
+    val conf: SparkConf = configure("Sparkling Water Meetup: Use Airlines and Weather Data for delay prediction")
 
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
