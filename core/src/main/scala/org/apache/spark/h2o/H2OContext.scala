@@ -21,6 +21,7 @@ import java.io.File
 
 import com.google.common.io.Files
 import org.apache.spark._
+import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.rdd.H2ORDD
 import org.apache.spark.sql.catalyst.types._
@@ -101,7 +102,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // Get executors to execute H2O
     val allExecutorIds = nodes.map(_._1).distinct
     val executorIds = /*if (numH2OWorkers > 0) allExecutorIds.take(numH2OWorkers) else*/ allExecutorIds
-    val executors = nodes.groupBy(_._1).map(_._2.head).filter( n => executorIds.contains(n._1) ).toArray
+    val executors = nodes // Executors list should be already normalized
     // The collected executors based on IDs should match
     assert(executors.length == executorIds.length,
             s"Unexpected number of executors ${executors.length}!=${executorIds.length}")
@@ -112,6 +113,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     }
     // Execute H2O on given nodes
     logInfo(s"""Launching H2O on following nodes: ${executors.mkString(",")}""")
+
     val executorStatus = startH2O(sparkContext, spreadRDD, executors, this, getH2OArgs() )
     // Verify that all specified executors contain running H2O
     if (!executorStatus.forall(x => !executorIds.contains(x._1) || x._2)) {
@@ -145,27 +147,10 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     this
   }
 
-
-  /* Save flatfile and distribute it over cluster. */
-  private def distributedFlatFile(nodes: Array[NodeDesc]):File = {
-    // Create a flatfile in a temporary directory and distribute it around cluster
-    val tmpDir = Files.createTempDir()
-    tmpDir.deleteOnExit()
-    val flatFile = new File(tmpDir, "flatfile.txt")
-    // Save flatfile
-    scala.tools.nsc.io.File(flatFile).writeAll(
-      nodes.map(x => x._2 + ":" + x._3).mkString("", "\n","\n"))
-    // Distribute the file around the Spark cluster via Spark infrastructure
-    // - the file will be fetched by Executors
-    sparkContext.addFile(flatFile.getAbsolutePath)
-    logTrace("Sparkling H2O flatfile is " + flatFile.getAbsolutePath)
-    flatFile
-  }
-
   @tailrec
   private def createSpreadRDD(nretries:Int,
                               mfactor: Int,
-                              nworkers: Int): (RDD[Int], Array[NodeDesc]) = {
+                              nworkers: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
     logDebug(s"  Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, nworkers=${nworkers}")
     // Non-positive value of nworkers means automatic detection of number of workers
     val nSparkExecBefore = numOfSparkExecutors
@@ -180,6 +165,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // Verify that all executors participate in execution
     val nSparkExecAfter = numOfSparkExecutors
     val sparkExecutors = nodes.map(_._1).distinct.length
+    // Delete RDD
+    spreadRDD.unpersist()
     if ( (sparkExecutors < nworkers || nSparkExecAfter != nSparkExecBefore)
           && nretries == 0) {
       throw new IllegalArgumentException(
@@ -197,16 +184,14 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
             |""".stripMargin
       )
     } else if (nSparkExecAfter != nSparkExecBefore) {
-      // Repeat if we detecte change in number of executors
-      spreadRDD.unpersist()
-      logDebug(s"Detected ${nSparkExecBefore} before, and ${nSparkExecAfter} spark executors after! Retrying again...")
+      // Repeat if we detect change in number of executors reported by storage level
+      logInfo(s"Detected ${nSparkExecBefore} before, and ${nSparkExecAfter} spark executors after! Retrying again...")
       createSpreadRDD(nretries-1, mfactor, nSparkExecAfter)
     } else if ((nworkers>0 && sparkExecutors == nworkers || nworkers<=0) && sparkExecutors == nSparkExecAfter) {
       // Return result only if we are sure that number of detected executors seems ok
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers!")
-      (spreadRDD, nodes)
+      (new InvokeOnNodesRDD(nodes, sparkContext), nodes)
     } else {
-      spreadRDD.unpersist()
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers! Retrying again...")
       createSpreadRDD(nretries-1, mfactor*2, nworkers)
     }
@@ -414,9 +399,6 @@ object H2OContext {
   }
 
   private def !!! = throw new IllegalArgumentException
-  private def !!!(msg: => String) = throw new IllegalArgumentException(msg)
-
-  def toRDD[A <: Product: TypeTag: ClassTag]
-           ( h2oContext : H2OContext, fr : DataFrame ) : RDD[A] = new H2ORDD[A](h2oContext,fr)
-
 }
+
+

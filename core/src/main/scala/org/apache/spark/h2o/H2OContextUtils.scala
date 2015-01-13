@@ -22,18 +22,22 @@ private[spark] object H2OContextUtils {
     * @return
     */
   def collectNodesInfo(distRDD: RDD[Int], basePort: Int, incrPort: Int): Array[NodeDesc] = {
-    // Collect flatfile - tuple of (IP, port)
-    val nodes = distRDD.map { index =>
+    // Collect flatfile - tuple of (executorId, IP, port)
+    val nodes = distRDD.mapPartitionsWithIndex { (idx, it) =>
       val env = SparkEnv.get
-      ( env.executorId,
+      Iterator.single(
+        ( env.executorId,
         // java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString("."),
         // Use existing Akka setup since Spark at this point is already communicating
-        env.actorSystem.settings.config.getString("akka.remote.netty.tcp.hostname"),
+        getIp(env),
         // FIXME: verify that port is available
-        (basePort + incrPort*index))
+        (basePort + incrPort*idx) ) )
     }.collect()
-    nodes
+    // Take only unique executors
+    nodes.groupBy(_._1).map(_._2.head).toArray
   }
+
+  def getIp(env: SparkEnv) = env.actorSystem.settings.config.getString("akka.remote.netty.tcp.hostname")
 
   def saveAsFile(content: String): File = {
     val tmpDir = Files.createTempDir()
@@ -80,7 +84,7 @@ private[spark] object H2OContextUtils {
    * @return return a tuple containing executorId and status of H2O node
    */
   def startH2O( sc: SparkContext,
-                spreadRDD: RDD[Int],
+                spreadRDD: RDD[NodeDesc],
                 executors: Array[NodeDesc],
                 h2oConf: H2OConf,
                 h2oArgs: Array[String]): Array[(String,Boolean)] = {
@@ -91,7 +95,7 @@ private[spark] object H2OContextUtils {
        else
         None
 
-    spreadRDD.map { index =>  // RDD partition index
+    spreadRDD.map { nodeDesc =>  // RDD partition index
       // This executor
       val executorId = SparkEnv.get.executorId
       val node = executors.find( n => executorId.equals(n._1))
@@ -101,6 +105,8 @@ private[spark] object H2OContextUtils {
           // Create a flatfile if required
           val ip = node.get._2
           val port = node.get._3.toString
+
+          println(s"$ip (from node list) ---> $nodeDesc")
           val launcherArgs = toH2OArgs(
             h2oArgs ++ Array("-ip", ip, "-port", port),
             flatFileString)
