@@ -26,6 +26,7 @@ import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.rdd.H2ORDD
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.{Row, SchemaRDD}
+import org.apache.spark.storage.BlockManager
 import water._
 import water.fvec.Vec
 import water.parser.ValueString
@@ -92,7 +93,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   def start(): H2OContext = {
     // Setup properties for H2O configuration
     sparkConf.set(PROP_CLOUD_NAME._1, PROP_CLOUD_NAME._2 + System.getProperty("user.name","cloud_"+Random.nextInt(42)) )
-    //sparkConf.setIfMissing(PROP_CLUSTER_SIZE._1, numOfSparkExecutors.toString)
+
+    // Check Spark environment
+    H2OContext.checkSparkEnv(sparkConf)
 
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
@@ -210,7 +213,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   }
 }
 
-object H2OContext {
+object H2OContext extends Logging {
 
   /** Transform SchemaRDD into H2O DataFrame */
   def toDataFrame(sc: SparkContext, rdd: SchemaRDD) : DataFrame = {
@@ -237,13 +240,15 @@ object H2OContext {
     }
   }
 
-  private def initFrame[T](keyName: String, names: Array[String]):Unit = {
+  private
+  def initFrame[T](keyName: String, names: Array[String]):Unit = {
     val fr = new water.fvec.Frame(Key.make(keyName))
     water.fvec.FrameUtils.preparePartialFrame(fr, names)
     // Save it directly to DKV
     fr.update(null)
   }
-  private def finalizeFrame[T](keyName: String,
+  private
+  def finalizeFrame[T](keyName: String,
                                res: Array[Long],
                                colTypes: Array[Class[_]],
                                colDomains: Array[Array[String]]):Frame = {
@@ -257,7 +262,8 @@ object H2OContext {
     fr
   }
 
-  private def translateToH2OType(t: Class[_], d: Array[String]):Byte = {
+  private
+  def translateToH2OType(t: Class[_], d: Array[String]):Byte = {
     t match {
       case q if q==classOf[java.lang.Short]   => Vec.T_NUM
       case q if q==classOf[java.lang.Integer] => Vec.T_NUM
@@ -370,10 +376,11 @@ object H2OContext {
     (context.partitionId,nchks(0)._len)
   }
 
-  private def collectColumnDomains(sc: SparkContext,
-                                   rdd: SchemaRDD,
-                                   fnames: Array[String],
-                                   ftypes: Array[Class[_]]): Array[Array[String]] = {
+  private
+  def collectColumnDomains(sc: SparkContext,
+                           rdd: SchemaRDD,
+                           fnames: Array[String],
+                           ftypes: Array[Class[_]]): Array[Array[String]] = {
     val res = Array.ofDim[Array[String]](fnames.length)
     for (idx <- 0 until ftypes.length if ftypes(idx).equals(classOf[String])) {
       val acc =  sc.accumulableCollection(new mutable.HashSet[String]())
@@ -399,6 +406,12 @@ object H2OContext {
   }
 
   private def !!! = throw new IllegalArgumentException
+
+  private
+  def checkSparkEnv(conf: SparkConf): Unit = {
+    if (conf.getInt("spark.locality.wait",3000) <= 3000)
+      logWarning(s"In case of failure you can consider increasing 'spark.locality.wait' to value > 3000")
+  }
 }
 
 
