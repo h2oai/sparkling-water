@@ -3,6 +3,7 @@ package org.apache.spark.h2o
 import java.io.File
 
 import com.google.common.io.Files
+import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.{SparkContext, SparkEnv}
 import water.{H2OApp, H2O}
 
@@ -131,5 +132,16 @@ private[spark] object H2OContextUtils {
         (executorId, false)
       }
     }.collect()
+  }
+
+  def dataTypeToClass(dt : DataType):Class[_] = dt match {
+    case BinaryType  => classOf[java.lang.Integer]
+    case IntegerType => classOf[java.lang.Integer]
+    case LongType    => classOf[java.lang.Long]
+    case FloatType   => classOf[java.lang.Float]
+    case DoubleType  => classOf[java.lang.Double]
+    case StringType  => classOf[String]
+    case BooleanType => classOf[java.lang.Boolean]
+    case _ => throw new IllegalArgumentException(s"Unsupported type $dt")
   }
 }

@@ -17,16 +17,12 @@
 
 package org.apache.spark.h2o
 
-import java.io.File
-
-import com.google.common.io.Files
 import org.apache.spark._
-import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContextUtils._
-import org.apache.spark.rdd.H2ORDD
-import org.apache.spark.sql.catalyst.types._
-import org.apache.spark.sql.{Row, SchemaRDD}
-import org.apache.spark.storage.BlockManager
+import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
+import org.apache.spark.sql.catalyst.expressions.AttributeReference
+import org.apache.spark.sql.execution.{ExistingRdd, SparkLogicalPlan}
+import org.apache.spark.sql.{Row, SQLContext, SchemaRDD}
 import water._
 import water.fvec.Vec
 import water.parser.ValueString
@@ -75,7 +71,11 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   def toDataFrame[A <: Product : TypeTag](rdd: RDD[A]) : DataFrame
                                   = H2OContext.toDataFrame(sparkContext, rdd)
 
-  def toRDD[A <: Product: TypeTag: ClassTag]( fr : DataFrame ) : RDD[A] = new H2ORDD[A](this,fr)
+  /** Convert given H2O frame into a RDD type */
+  def toRDD[A <: Product: TypeTag: ClassTag](fr : DataFrame) : RDD[A] = new H2ORDD[A](this,fr)
+
+  /** Convert given H2O frame into SchemaRDD type */
+  def asSchemaRDD(fr : DataFrame)(implicit sqlContext: SQLContext) : SchemaRDD = createH2OSchemaRDD(fr)
 
   /** Runtime list of nodes */
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
@@ -151,9 +151,10 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   }
 
   @tailrec
-  private def createSpreadRDD(nretries:Int,
-                              mfactor: Int,
-                              nworkers: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
+  private
+  def createSpreadRDD(nretries:Int,
+                      mfactor: Int,
+                      nworkers: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
     logDebug(s"  Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, nworkers=${nworkers}")
     // Non-positive value of nworkers means automatic detection of number of workers
     val nSparkExecBefore = numOfSparkExecutors
@@ -198,6 +199,18 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers! Retrying again...")
       createSpreadRDD(nretries-1, mfactor*2, nworkers)
     }
+  }
+
+  def createH2OSchemaRDD(fr: DataFrame)(implicit sqlContext: SQLContext):SchemaRDD = {
+    //SparkPlan.currentContext.set(sqlContext)
+    val h2oSchemaRDD = new H2OSchemaRDD(this, fr)
+    val schemaAtts = H2OSchemaUtils.createSchema(fr).fields.map( f =>
+      AttributeReference(f.name, f.dataType, f.nullable)())
+
+    new SchemaRDD(sqlContext,
+      SparkLogicalPlan(
+        ExistingRdd(
+          schemaAtts, h2oSchemaRDD))(sqlContext))
   }
 
   override def toString: String = {
@@ -298,17 +311,6 @@ object H2OContext extends Logging {
 
     // Add Vec headers per-Chunk, and finalize the H2O Frame
     new DataFrame(finalizeFrame(keyName, res, types, fdomains))
-  }
-
-  private def dataTypeToClass(dt : DataType):Class[_] = dt match {
-    case BinaryType  => classOf[java.lang.Integer]
-    case IntegerType => classOf[java.lang.Integer]
-    case LongType    => classOf[java.lang.Long]
-    case FloatType   => classOf[java.lang.Float]
-    case DoubleType  => classOf[java.lang.Double]
-    case StringType  => classOf[String]
-    case BooleanType => classOf[java.lang.Boolean]
-    case _ => throw new IllegalArgumentException(s"Unsupported type $dt")
   }
 
   private

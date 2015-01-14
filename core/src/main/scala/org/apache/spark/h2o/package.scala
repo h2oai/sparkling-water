@@ -25,6 +25,7 @@ package object h2o {
   type DataFrame = water.fvec.DataFrame
   type RDD[X] = org.apache.spark.rdd.RDD[X]
 
+  case class IntHolder   (result: Option[Int])
   case class DoubleHolder(result: Option[Double])
   case class StringHolder(result: Option[String])
 }

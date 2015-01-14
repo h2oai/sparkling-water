@@ -18,13 +18,46 @@
 package org.apache.spark.rdd
 
 import org.apache.spark.h2o.H2OContext
+import water.{Key, DKV}
+import water.fvec.{Chunk, Frame, DataFrame}
 
 /**
  * Contains functions that are shared between all H2ORDD types (i.e., Scala, Java)
  */
 private[rdd] trait H2ORDDLike {
+  /** Context for this RDD */
   @transient val h2oContext : H2OContext
+  /** Underlying DataFrame */
+  @transient val frame: DataFrame
+
+  /** Cache frame key to get DataFrame from the K/V store */
+  // FIXME: we should be able to use water.Key here
+  val keyName: String = frame._key.toString
 
   //private[rdd] def baseRDD: H2ORDD[]
+
+
+  /** Base implementation for iterator over rows stored in chunks for given partition. */
+  trait H2OChunkIterator[+A] extends Iterator[A] {
+    /* Key of pointing to underlying dataframe */
+    val keyName: String
+    /* Partition index */
+    val partIndex: Int
+    /* Lazily fetched dataframe from K/V store */
+    lazy val fr: Frame = getFrame()
+    /* Chunks for this partition */
+    lazy val chks: Array[Chunk] = water.fvec.FrameUtils.getChunks(fr, partIndex)
+    /* Number of rows in this partition */
+    lazy val nrows = chks(0)._len
+    /* Number of columns in the dataset */
+    lazy val ncols = fr.numCols()
+
+    /* Iterator state: Actual row */
+    var row: Int = 0
+
+    def hasNext: Boolean = row < nrows
+
+    private def getFrame() = DKV.get(Key.make(keyName)).get.asInstanceOf[Frame]
+  }
 
 }

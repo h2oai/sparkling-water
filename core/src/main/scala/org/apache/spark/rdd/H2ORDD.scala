@@ -34,20 +34,18 @@ import scala.reflect.runtime.universe._
 
 private[spark]
 class H2ORDD[A <: Product: TypeTag: ClassTag] private (@transient val h2oContext: H2OContext,
-                                                       @transient fr: DataFrame,
+                                                       @transient val frame: DataFrame,
                                                        val colNames: Array[String])
   extends RDD[A](h2oContext.sparkContext, Nil) with H2ORDDLike {
 
   // Get column names before building an RDD
   def this(h2oContext: H2OContext, fr : DataFrame ) = this(h2oContext,fr,ReflectionUtils.names[A])
-  // Cache a way to get DataFrame from the K/V
-  val keyName = fr._key.toString
   // Check that DataFrame & given Scala type are compatible
   if (colNames.length > 1) {
     colNames.foreach { name =>
-      if (fr.find(name) == -1) {
+      if (frame.find(name) == -1) {
         throw new IllegalArgumentException("Scala type has field " + name +
-          " but DataFrame does not have a matching column; has " + fr._names.mkString(","))
+          " but DataFrame does not have a matching column; has " + frame.names().mkString(","))
       }
     }
   }
@@ -65,8 +63,10 @@ class H2ORDD[A <: Product: TypeTag: ClassTag] private (@transient val h2oContext
    * Implemented by subclasses to compute a given partition.
    */
   override def compute(split: Partition, context: TaskContext): Iterator[A] = {
-    new Iterator[A] {
-      val fr : Frame = DKV.get(Key.make(keyName)).get.asInstanceOf[Frame]
+    val kn = keyName
+    new H2OChunkIterator[A] {
+      override val keyName = kn
+      override val partIndex = split.index
 
       val jc = implicitly[ClassTag[A]].runtimeClass
       val cs = jc.getConstructors
@@ -77,12 +77,9 @@ class H2ORDD[A <: Product: TypeTag: ClassTag] private (@transient val h2oContext
             throw new IllegalArgumentException(
                   s"Constructor must take exactly ${colNames.length} args")
       })
+      /** Dummy muttable holder for String values */
+      val valStr = new ValueString()
 
-      val chks = water.fvec.FrameUtils.getChunks(fr, split.index)
-      val nrows = chks(0)._len
-      var row : Int = 0
-      val valStr = new ValueString() // dummy holder
-      def hasNext: Boolean = row < nrows
       def next(): A = {
         val data = new Array[Option[Any]](chks.length)
           for (
@@ -116,7 +113,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag] private (@transient val h2oContext
 
   /** Pass thru an RDD if given one, else pull from the H2O Frame */
   override protected def getPartitions: Array[Partition] = {
-    val num = fr.anyVec().nChunks()
+    val num = frame.anyVec().nChunks()
     val res = new Array[Partition](num)
     for( i <- 0 until num ) res(i) = new Partition { val index = i }
     res
