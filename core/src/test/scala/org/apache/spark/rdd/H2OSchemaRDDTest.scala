@@ -30,7 +30,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     dataFrame.delete()
   }
 
-  ignore("test RDD to DataFrame to SchemaRDD way") {
+  test("test RDD to DataFrame to SchemaRDD way") {
     val h2oContext = hc
     import h2oContext._
 
@@ -40,7 +40,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asSchemaRDD(dataFrame)
 
-    assert (rdd.count == dataFrame.numCols())
+    assert (rdd.count == dataFrame.numRows())
     assert (rdd.count == schemaRdd.count)
   }
 
