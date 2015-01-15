@@ -107,7 +107,6 @@ private[spark] object H2OContextUtils {
           val ip = node.get._2
           val port = node.get._3.toString
 
-          println(s"$ip (from node list) ---> $nodeDesc")
           val launcherArgs = toH2OArgs(
             h2oArgs ++ Array("-ip", ip, "-port", port),
             flatFileString)

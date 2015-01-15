@@ -87,18 +87,18 @@ class H2ORDD[A <: Product: TypeTag: ClassTag] private (@transient val h2oContext
             chk = chks (idx);
             typ = types(idx)
           ) {
-            val value = if (chk.isNA0(row)) None
+            val value = if (chk.isNA(row)) None
             else typ match {
-              case q if q == classOf[Integer]           => Some(chk.at80(row).asInstanceOf[Int])
-              case q if q == classOf[java.lang.Long]    => Some(chk.at80(row))
-              case q if q == classOf[java.lang.Double]  => Some(chk.at0 (row))
-              case q if q == classOf[java.lang.Float]   => Some(chk.at0 (row))
-              case q if q == classOf[java.lang.Boolean] => Some(chk.at80(row) == 1)
+              case q if q == classOf[Integer]           => Some(chk.at8(row).asInstanceOf[Int])
+              case q if q == classOf[java.lang.Long]    => Some(chk.at8(row))
+              case q if q == classOf[java.lang.Double]  => Some(chk.atd(row))
+              case q if q == classOf[java.lang.Float]   => Some(chk.atd(row))
+              case q if q == classOf[java.lang.Boolean] => Some(chk.at8(row) == 1)
               case q if q == classOf[String] =>
                 if (chk.vec().isEnum) {
-                  Some(chk.vec().domain()(chk.at80(row).asInstanceOf[Int]))
+                  Some(chk.vec().domain()(chk.at8(row).asInstanceOf[Int]))
                 } else if (chk.vec().isString) {
-                  chk.atStr0(valStr, row)
+                  chk.atStr(valStr, row)
                   Some(valStr.toString)
                 } else None
               case _ => None

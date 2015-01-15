@@ -40,21 +40,21 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
         while (i < ncols) {
           val chk = chks(i)
           val typ = types(i)
-          if (chk.isNA0(row))
+          if (chk.isNA(row))
             mutableRow.setNullAt(i)
           else
             mutableRow(i) = typ match {
-              case ByteType    => chk.at80(row).asInstanceOf[Byte]
-              case ShortType   => chk.at80(row).asInstanceOf[Short]
-              case IntegerType => chk.at80(row).asInstanceOf[Int]
-              case FloatType   => chk.at0 (row)
-              case DoubleType  => chk.at0 (row)
-              case BooleanType => chk.at80(row) == 1
+              case ByteType    => chk.at8(row).asInstanceOf[Byte]
+              case ShortType   => chk.at8(row).asInstanceOf[Short]
+              case IntegerType => chk.at8(row).asInstanceOf[Int]
+              case FloatType   => chk.atd(row)
+              case DoubleType  => chk.atd(row)
+              case BooleanType => chk.at8(row) == 1
               case StringType =>
                 if (chk.vec().isEnum) {
-                  chk.vec().domain()(chk.at80(row).asInstanceOf[Int])
+                  chk.vec().domain()(chk.at8(row).asInstanceOf[Int])
                 } else if (chk.vec().isString) {
-                  chk.atStr0(valStr, row)
+                  chk.atStr(valStr, row)
                   valStr.toString
                 } else None
               case _ => ???
