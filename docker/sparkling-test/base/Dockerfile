@@ -27,15 +27,16 @@ RUN apt-get -y install \
   unzip
 
 # Install Spark
-RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.1.0-bin-cdh4.tgz | tar -xz -C /opt/
-RUN cd /opt && ln -s spark-1.1.0-bin-cdh4 spark
-RUN mkdir /opt/spark/work 
-RUN chmod 0777 /opt/spark/work
+RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.1.0-bin-cdh4.tgz | tar -xz -C /opt/ && \
+    ln -s /opt/spark-1.1.0-bin-cdh4 /opt/spark && \
+    mkdir /opt/spark/work && \
+    chmod 0777 /opt/spark/work
 
 # Install Sparkling water
-RUN curl -s http://h2o-release.s3.amazonaws.com/sparkling-water/master/58/sparkling-water-0.2.1-58.zip > sw.zip && unzip sw.zip -d /opt/
-RUN cd /opt && ln -s sparkling-water-0.2.1-58 sparkling-water
-RUN rm -f sw.zip
+RUN curl -s http://h2o-release.s3.amazonaws.com/sparkling-water/master/58/sparkling-water-0.2.1-58.zip --output sw.zip && \
+  unzip sw.zip -d /opt/ && \
+  ln -s /opt/sparkling-water-0.2.1-58 /opt/sparkling-water && \
+  rm -f sw.zip
 
 # Setup environment
 ENV SPARK_HOME /opt/spark
