@@ -41,6 +41,6 @@ class H2OContextLocalSuite extends FunSuite
     DKV.put(Key.make(), new IcedInt(43))
     assert(water.H2O.store_size() == 1)
     // Reset this context
-    resetSparkContext()
+    resetContext()
   }
 }

@@ -67,12 +67,12 @@ object DemoUtils {
           for (c <- cs) {
             val vstr = new ValueString
             if (c.vec().isString) {
-              c.atStr0(vstr, r)
+              c.atStr(vstr, r)
               print(vstr.toString + ",")
             } else if (c.vec().isEnum) {
-              print(c.vec().domain()(c.at80(r).asInstanceOf[Int]) + ", ")
+              print(c.vec().domain()(c.at8(r).asInstanceOf[Int]) + ", ")
             } else {
-              print(c.at0(r) + ", ")
+              print(c.atd(r) + ", ")
             }
           }
           println()

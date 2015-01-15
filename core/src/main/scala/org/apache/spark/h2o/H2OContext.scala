@@ -401,6 +401,7 @@ object H2OContext extends Logging {
     for (idx <- 0 until ftypes.length if ftypes(idx).equals(classOf[String])) {
       val acc =  sc.accumulableCollection(new mutable.HashSet[String]())
       // Distributed ops
+      // FIXME product element can be Optional or Non-optional
       rdd.foreach( r => { acc += r.productElement(idx).asInstanceOf[Option[String]].get })
       res(idx) = acc.value.toArray.sorted
     }

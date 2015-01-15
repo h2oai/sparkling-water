@@ -24,6 +24,7 @@ import org.scalatest.{Suite, BeforeAndAfterAll, BeforeAndAfterEach}
 
 /**
  * Helper trait to simplify initialization and termination of Spark/H2O contexts.
+ *
  */
 trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self: Suite =>
   @transient var sc: SparkContext = _
@@ -36,17 +37,52 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
     super.beforeAll()
   }
 
-  override def afterEach() {
-    resetSparkContext()
-    super.afterEach()
-  }
-
-  def resetSparkContext() = {
+  def resetContext() = {
     SparkTestContext.stop(sc)
     sc = null
     hc = null
   }
 }
+
+/** This fixture create a Spark context once and share it over whole run of test suite. */
+trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
+
+  def createSparkContext:SparkContext
+  def createH2OContext(sc:SparkContext):H2OContext = new H2OContext(sc).start()
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    sc = createSparkContext
+    hc = createH2OContext(sc)
+  }
+
+  override protected def afterAll(): Unit = {
+    resetContext()
+    super.afterAll()
+  }
+}
+
+/** This fixture create a Spark context once and share it over whole run of test suite.
+  *
+  * FIXME: this cannot be used yet, since H2OContext cannot be recreated in JVM. */
+trait PerTestSparkTestContext extends SparkTestContext { self: Suite =>
+
+  def createSparkContext:SparkContext
+  def createH2OContext(sc:SparkContext):H2OContext = new H2OContext(sc).start()
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    sc = createSparkContext
+    hc = createH2OContext(sc)
+  }
+
+  override protected def afterEach(): Unit = {
+    resetContext()
+    super.afterEach()
+  }
+}
+
+
 
 object SparkTestContext {
   def stop(sc: SparkContext) {

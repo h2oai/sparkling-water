@@ -40,7 +40,7 @@ class H2OContextLocalClusterSuite extends FunSuite
 
     assert(water.H2O.CLOUD.members().length == 3, "H2O cloud should have 3 members")
     // Does not reset
-    resetSparkContext()
+    resetContext()
   }
 
   // IGNORED since we are not able to initialize client in the process several times
@@ -48,6 +48,6 @@ class H2OContextLocalClusterSuite extends FunSuite
     sc = new SparkContext("local-cluster[3,2,721]", "test-local-cluster", null, swassembly :: Nil)
     hc = new H2OContext(sc).start()
 
-    resetSparkContext()
+    resetContext()
   }
 }
