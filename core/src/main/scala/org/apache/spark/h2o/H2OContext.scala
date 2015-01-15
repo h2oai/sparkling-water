@@ -298,7 +298,7 @@ object H2OContext extends Logging {
     import org.apache.spark.h2o.ReflectionUtils._
     val keyName = "frame_rdd_" + rdd.id + Key.rand() // There are uniq IDs for RDD
     val fnames = names[A]
-    val ftypes = types[A]
+    val ftypes = types[A](fnames)
     // Collect domains for string columns
     val fdomains = collectColumnDomains(sc, rdd, fnames, ftypes)
 
@@ -306,11 +306,11 @@ object H2OContext extends Logging {
     initFrame(keyName, fnames)
 
     val rows = sc.runJob(rdd, perRDDPartition(keyName) _) // eager, not lazy, evaluation
-    val res = new Array[Long](rdd.partitions.size)
+    val res = new Array[Long](rdd.partitions.length)
     rows.foreach{ case(cidx,nrows) => res(cidx) = nrows }
 
     // Add Vec headers per-Chunk, and finalize the H2O Frame
-    new DataFrame(finalizeFrame(keyName, res, types, fdomains))
+    new DataFrame(finalizeFrame(keyName, res, ftypes, fdomains))
   }
 
   private
