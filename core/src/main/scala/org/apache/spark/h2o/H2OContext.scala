@@ -72,7 +72,11 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
                                   = H2OContext.toDataFrame(sparkContext, rdd)
 
   /** Convert given H2O frame into a RDD type */
-  def toRDD[A <: Product: TypeTag: ClassTag](fr : DataFrame) : RDD[A] = new H2ORDD[A](this,fr)
+  @deprecated("Use asRDD instead")
+  def toRDD[A <: Product: TypeTag: ClassTag](fr : DataFrame) : RDD[A] = asRDD[A](fr)
+
+  /** Convert given H2O frame into a Product RDD type */
+  def asRDD[A <: Product: TypeTag: ClassTag](fr : DataFrame) : RDD[A] = createH2ORDD[A](fr)
 
   /** Convert given H2O frame into SchemaRDD type */
   def asSchemaRDD(fr : DataFrame)(implicit sqlContext: SQLContext) : SchemaRDD = createH2OSchemaRDD(fr)
@@ -201,6 +205,10 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers! Retrying again...")
       createSpreadRDD(nretries-1, mfactor*2, nworkers)
     }
+  }
+
+  def createH2ORDD[A <: Product: TypeTag: ClassTag](fr: DataFrame): RDD[A] = {
+    new H2ORDD[A](this,fr)
   }
 
   def createH2OSchemaRDD(fr: DataFrame)(implicit sqlContext: SQLContext):SchemaRDD = {
