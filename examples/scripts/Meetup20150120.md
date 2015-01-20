@@ -3,11 +3,13 @@
 ## Download
 
 Please download [Sparkling Water
-0.2.1-58](http://h2o-release.s3.amazonaws.com/sparkling-water/master/58/index.html) and unzip the file:
+0.2.1-61](http://h2o-release.s3.amazonaws.com/sparkling-water/master/61/index.html) and unzip the file:
 ```
-unzip sparkling-water-0.2.1-58.zip
-cd sparkling-water-0.2.1-58
+unzip sparkling-water-0.2.1-61.zip
+cd sparkling-water-0.2.1-61
 ```
+
+> All materials will be also available on provided USBs.
 
 ## Step-by-Step through Airlines with Weather Data Example
 
@@ -24,7 +26,8 @@ cd sparkling-water-0.2.1-58
   ```scala
   import org.apache.spark.h2o._
   import org.apache.spark.examples.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  // Make h2oContext implicit to allow its use from H2OContext
+  implicit val h2oContext = new H2OContext(sc).start()
   import h2oContext._
   ```
 
@@ -93,7 +96,9 @@ cd sparkling-water-0.2.1-58
   val testTable  = splits(2)
   ```
   
-11. Run deep learning to produce model estimating arrival delay:
+11. Inspect results in H2O Flow - go to (http://localhost:54321/)[http://localhost:54321/]
+  
+12. Run deep learning to produce model estimating arrival delay:
   ```scala
   import hex.deeplearning.DeepLearning
   import hex.deeplearning.DeepLearningModel.DeepLearningParameters
@@ -110,14 +115,16 @@ cd sparkling-water-0.2.1-58
   val dlModel = dl.trainModel.get
   ```
 
-12. Use model to estimate delay on training data
+13. Use model to estimate delay on training data
   ```scala
+  // Produce single-vector table with prediction
   val dlPredictTable = dlModel.score(testTable)('predict)
-  val predictionsFromDlModel = toRDD[DoubleHolder](dlPredictTable).collect.map(_.result.getOrElse(Double.NaN))
+  // Convert vector to SchemaRDD and collect results
+  val predictionsFromDlModel = asSchemaRDD(dlPredictTable).collect.map(row => if (row.isNullAt(0)) Double.NaN else row(0))
   ```
 
   
-13. Generate R code to plot residuals plot
+14. Generate R code to plot residuals plot
   ```scala
   import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
   residualPlotRCode(dlPredictTable, 'predict, testTable, 'ArrDelay)
@@ -148,7 +155,7 @@ cd sparkling-water-0.2.1-58
   plot( compare[,1:2] )
   ```
   
-14. Try to generate better model with GBM
+15. Try to generate better model with GBM
   ```scala
   import hex.tree.gbm.GBM
   import hex.tree.gbm.GBMModel.GBMParameters
@@ -163,7 +170,7 @@ cd sparkling-water-0.2.1-58
   val gbmModel = gbm.trainModel.get
   ```
   
-15. Make prediction and print R code for residual plot
+16. Make prediction and print R code for residual plot
   ```scala
   val gbmPredictTable = gbmModel.score(testTable)('predict)
   residualPlotRCode(gbmPredictTable, 'predict, testTable, 'ArrDelay)
