@@ -8,15 +8,14 @@ import hex.splitframe.SplitFrame
 import hex.splitframe.SplitFrameModel.SplitFrameParameters
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
-import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure}
+import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure, residualPlotRCode}
 import org.apache.spark.h2o.{DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
 import water.fvec.DataFrame
-import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
 
-
+/** Demo for meetup presented at 12/17/2014 */
 object AirlinesWithWeatherDemo2 {
 
   def main(args: Array[String]): Unit = {

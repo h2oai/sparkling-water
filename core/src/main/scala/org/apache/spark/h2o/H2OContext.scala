@@ -81,7 +81,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
   /** Detected number of Spark executors
     * Property value is derived from SparkContext during creation of H2OContext. */
-  private def numOfSparkExecutors = if (sparkContext.isLocal) 1 else sparkContext.getExecutorStorageStatus.length-1
+  private def numOfSparkExecutors = if (sparkContext.isLocal) 1 else sparkContext.getExecutorStorageStatus.length - 1
 
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
   def start(h2oWorkers: Int):H2OContext = {
@@ -92,7 +92,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   /** Initialize Sparkling H2O and start H2O cloud. */
   def start(): H2OContext = {
     // Setup properties for H2O configuration
-    sparkConf.set(PROP_CLOUD_NAME._1, PROP_CLOUD_NAME._2 + System.getProperty("user.name","cloud_"+Random.nextInt(42)) )
+    sparkConf.set(PROP_CLOUD_NAME._1,
+      PROP_CLOUD_NAME._2 + System.getProperty("user.name", "cloud_" + Random.nextInt(42)))
 
     // Check Spark environment
     H2OContext.checkSparkEnv(sparkConf)
@@ -112,7 +113,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // H2O is executed only on the subset of Spark cluster
     // This situation is interesting when data are located on node which does not contain H2O
     if (executorIds.length < allExecutorIds.length) {
-      logWarning(s"Spark cluster contains ${allExecutorIds.length}, but H2O is running only on ${executorIds.length} nodes!")
+      logWarning(s"""Spark cluster contains ${allExecutorIds.length},
+               but H2O is running only on ${executorIds.length} nodes!""")
     }
     // Execute H2O on given nodes
     logInfo(s"""Launching H2O on following nodes: ${executors.mkString(",")}""")
@@ -412,8 +414,9 @@ object H2OContext extends Logging {
 
   private
   def checkSparkEnv(conf: SparkConf): Unit = {
-    if (conf.getInt("spark.locality.wait",3000) <= 3000)
+    if (conf.getInt("spark.locality.wait",3000) <= 3000) {
       logWarning(s"In case of failure you can consider increasing 'spark.locality.wait' to value > 3000")
+    }
   }
 }
 

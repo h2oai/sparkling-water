@@ -1,3 +1,20 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package org.apache.spark.rdd
 
 import org.apache.spark.annotation.DeveloperApi
@@ -40,15 +57,15 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
         while (i < ncols) {
           val chk = chks(i)
           val typ = types(i)
-          if (chk.isNA(row))
+          if (chk.isNA(row)) {
             mutableRow.setNullAt(i)
-          else
+          } else {
             mutableRow(i) = typ match {
-              case ByteType    => chk.at8(row).asInstanceOf[Byte]
-              case ShortType   => chk.at8(row).asInstanceOf[Short]
+              case ByteType => chk.at8(row).asInstanceOf[Byte]
+              case ShortType => chk.at8(row).asInstanceOf[Short]
               case IntegerType => chk.at8(row).asInstanceOf[Int]
-              case FloatType   => chk.atd(row)
-              case DoubleType  => chk.atd(row)
+              case FloatType => chk.atd(row)
+              case DoubleType => chk.atd(row)
               case BooleanType => chk.at8(row) == 1
               case StringType =>
                 if (chk.vec().isEnum) {
@@ -59,6 +76,7 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
                 } else None
               case _ => ???
             }
+          }
           i += 1
         }
         row += 1

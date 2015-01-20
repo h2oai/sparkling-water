@@ -1,3 +1,20 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package org.apache.spark.h2o
 
 import org.apache.spark.sql.catalyst.types._
@@ -38,10 +55,8 @@ object H2OSchemaUtils {
       case Vec.T_ENUM => StringType
       case Vec.T_UUID => StringType
       case Vec.T_STR  => StringType
-      case typ => if (typ>=Vec.T_TIME && typ<=Vec.T_TIMELAST)
-          TimestampType
-        else
-          ???
+      case typ => if (typ>=Vec.T_TIME && typ<=Vec.T_TIMELAST) TimestampType
+                  else ???
     }
   }
 
@@ -49,14 +64,15 @@ object H2OSchemaUtils {
     if (v.isInt) {
       val min = v.min()
       val max = v.max()
-      if (min > Byte.MinValue && max < Byte.MaxValue)
+      if (min > Byte.MinValue && max < Byte.MaxValue) {
         ByteType
-      else if (min > Short.MinValue && max < Short.MaxValue)
+      } else if (min > Short.MinValue && max < Short.MaxValue) {
         ShortType
-      else if (min > Int.MinValue && max < Int.MaxValue)
+      } else if (min > Int.MinValue && max < Int.MaxValue) {
         IntegerType
-      else
+      } else {
         LongType
+      }
     } else DoubleType
   }
 }

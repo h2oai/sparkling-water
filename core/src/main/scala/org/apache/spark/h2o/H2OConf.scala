@@ -80,7 +80,9 @@ trait H2OConf {
    * @return array of H2O launcher command line arguments
    */
   def getH2OArgs():Array[String] = {
-    Array("-name", cloudName, "-log_level", h2oLogLevel) ++ networkMask.map(v => Array("-network", v)).getOrElse(Array())
+    Array("-name", cloudName,
+          "-log_level", h2oLogLevel) ++
+      networkMask.map(v => Array("-network", v)).getOrElse(Array())
   }
 
   override def toString: String =
