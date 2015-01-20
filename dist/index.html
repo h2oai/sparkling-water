@@ -190,7 +190,7 @@
       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
       ga('create', 'UA-29263631-3');
-      ga('send', 'pageview', { 'title': 'H2O Downloads for SUBST_PROJECT_VERSION' });
+      ga('send', 'pageview', { 'title': 'Sparkling Water Downloads for SUBST_PROJECT_VERSION' });
       <!-- GA sending events -->
       function trackLink(id, category, action) {
         var link = document.getElementById(id);
@@ -244,7 +244,8 @@
       window.onload = function() {
         trackLink('dzip', 'Download', 'ZIP');
         trackLink('ddocall', 'Documentation', 'All');
-        trackLink('ddocjavadoc', 'Documentation', 'Javadoc');
+        trackLink('ddocgit', 'Documentation', 'Gitexample')
+        trackLink('ddocscaladoc', 'Documentation', 'Scaladoc');
 
         initializeTabs();
        }
@@ -361,7 +362,8 @@
           <h2>Documentation</h2>
           <ul>
             <li><a id="ddocall" href="docs-website/index.html">Full Documentation</a></li>
-            <li><a id="ddocjavadoc" href="scaladoc/index.html"> Scala Developer Documentation (Javadoc)</a></li>
+            <li><a id="ddocgit" href="https://github.com/h2oai/sparkling-water/blob/SUBST_PROJECT_GITHASH/examples/README.md">Demo Example from Git</a></li>
+            <li><a id="ddocscaladoc" href="scaladoc/index.html"> Scala Developer Documentation (Scaladoc)</a></li>
           </ul>
         </div>
       </div>
