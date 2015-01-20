@@ -158,6 +158,23 @@
         text-decoration: none;
         background-color: #555;
       }
+      a.documentation-button {
+        display: inline-block;
+        background-color: #1c1c1c;
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABfklEQVRYw2NggIK/f/9q/Pv3byMQfwXi/3TALxmQLFcBCrz9T0eA4gAgZyma5G9oSNAS30d2wEMky9f++vWLjYGeABQcSA7IoavlWBzwGIgzgDiGxjgEqwMGKhEOXgcA5a4D8Wkq4eskO+DPnz8m1EprILOGlwO+fPnCApR3AJakGUCcAmRbvH37lokuDgCK6wD13cSSZs4D5dRo6oAfP35wgYpSPAn3PrA05aKZA4DBHYdk0MqfP39KAC1UArJ3wsSBapJo5gCg+tlQQ/4CLRZDskAPyYKJNHMANOHFAXEEWshYIVnQSPNcgAx+//4tBDTnIixkQKFBNwcA1cggl3LAkGjEoY76Dvj06RMTKOshWd6Nx6HUdwBQ3gzJ0I0E1NLEAR5A/XdBGOj7ALo7gBRAqxAAJcDDoHQADAE9ujsAaGkzkqFLB8IBAaCOBjQHFA1IGgBabAbEDgOSBkgB+BzwEI8D/IDFrBw1MMgsXA5Y+p/OYHB1TqGOGJDuOQAnkat5SShT9wAAAABJRU5ErkJggg==);
+        background-repeat: no-repeat;
+        background-position: 15px center;
+        color: #fff;
+        text-transform: uppercase;
+        font-size: 11px;
+        height: 50px;
+        line-height: 50px;
+        padding: 0 20px 0 50px;
+      }
+      a.documentation-button:hover {
+        text-decoration: none;
+        background-color: #555;
+      }
       #documentation {
         border-top: 1px solid #ddd;
       }
@@ -173,7 +190,7 @@
       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
       ga('create', 'UA-29263631-3');
-      ga('send', 'pageview', { 'title': 'Sparkling Water Downloads for SUBST_PROJECT_VERSION' });
+      ga('send', 'pageview', { 'title': 'H2O Downloads for SUBST_PROJECT_VERSION' });
       <!-- GA sending events -->
       function trackLink(id, category, action) {
         var link = document.getElementById(id);
@@ -186,22 +203,49 @@
       function initializeTabs() {
         var zipTab = document.getElementById('quickstart-zip-tab');
         var zipPanel = document.getElementById('quickstart-zip');
+        var standaloneTab = document.getElementById('standalone-tab');
+        var standalonePanel = document.getElementById('standalone');
+        var hadoopTab = document.getElementById('quickstart-hadoop-tab');
+        var hadoopPanel = document.getElementById('quickstart-hadoop');
         var showZipTab = function() {
           zipPanel.style.display = 'block';
           zipTab.className = 'active';
-          rPanel.style.display = 'none';
-          rTab.className = '';
+          standalonePanel.style.display = 'none';
+          standaloneTab.className = '';
           hadoopPanel.style.display = 'none';
           hadoopTab.className = '';
         };
+        var showStandaloneTab = function() {
+          standalonePanel.style.display = 'block';
+          standaloneTab.className = 'active';
+          zipPanel.style.display = 'none';
+          zipTab.className = '';
+          hadoopPanel.style.display = 'none';
+          hadoopTab.className = '';
+        };
+        var showHadoopTab = function(){
+          hadoopPanel.style.display = 'block';
+          hadoopTab.className = 'active';
+          standalonePanel.style.display = 'none';
+          standaloneTab.className = '';
+          zipPanel.style.display = 'none';
+          zipTab.className = '';
+        };
         zipTab.onclick = showZipTab
+        standaloneTab.onclick = showStandaloneTab
+        hadoopTab.onclick = showHadoopTab
+        var hash = window.location.hash;
+        if(hash && hash.indexOf('#h') == 0) {
+          showHadoopTab();
+        }
+        showZipTab();
       }
       <!-- DOM 0 style without jquery -->
       window.onload = function() {
         trackLink('dzip', 'Download', 'ZIP');
         trackLink('ddocall', 'Documentation', 'All');
-        trackLink('ddocscaladoc', 'Documentation', 'scaladoc');
-        
+        trackLink('ddocjavadoc', 'Documentation', 'Javadoc');
+
         initializeTabs();
        }
     </script>
@@ -213,7 +257,7 @@
     <div id="container">
       <div id="title">
         <p class="links">
-          <a href="http://h2o.ai">H<sub>2</sub>O.ai</a> | <a href="https://github.com/0xdata/sparkling-water">Github</a>
+          <a href="http://h2o.ai">H<sub>2</sub>O.ai</a> | <a href="https://github.com/h2oai/sparkling-water">Github</a>
         </p>
         <h1><span>Sparkling Water</span></h1>
         <p class="version">Version SUBST_PROJECT_VERSION</p>
@@ -224,6 +268,8 @@
       <div id="content">
         <div id="tabs">
           &nbsp; <span id="quickstart-zip-tab" class="active">Download and Run</span>
+          <span id="standalone-tab">Run Standalone Sparkling Water</span>
+          <span id = "quickstart-hadoop-tab">Install on Hadoop</span>
         </div>
         <div id="panels">
           <div id="quickstart-zip">
@@ -232,10 +278,10 @@
             </div>
             <h2>Get started with Sparkling Water in a few easy steps</h2>
             <p>1. Download Spark if not already installed from: <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a>.</p>
-	    <p>2. Download Sparkling Water and point it to the existing installation of Spark by setting the SPARK_HOME environment variable:</p>
-	    <p class="terminal">
-	      export SPARK_HOME='/path/to/spark/installation'
-	    </p>
+            <p>2. Download Sparkling Water and point it to the existing installation of Spark by setting the SPARK_HOME environment variable:</p>
+            <p class="terminal">
+              export SPARK_HOME='/path/to/spark/installation'
+            </p>
             <p>3. From your terminal, run:</p>
             <p class="terminal">
               cd ~/Downloads<br/>
@@ -245,19 +291,77 @@
             </p>
             <p>4. Create H<sub>2</sub>O cloud inside Spark cluster:</p>
             <p class="terminal">
-            import org.apache.spark.h2o._<br />
-            val h2oContext = new H2OContext(sc).start() <br />
-            // Or if you now number of Spark workers: <br />
-            //   val h2oContext = new H2OContext(sc).start( &lt;number of Spark workers&gt; ) <br />
-            import h2oContext._ <br />
+              import org.apache.spark.h2o._<br />
+              val h2oContext = new H2OContext(sc).start() <br />
+              // Or if you now number of Spark workers: <br />
+              //   val h2oContext = new H2OContext(sc).start( &lt;number of Spark workers&gt; ) <br />
+              import h2oContext._ <br />
             </p>
-	    <p>5. Follow <a id="clitutorial" href="https://github.com/0xdata/sparkling-water/tree/master/examples#step-by-step-through-weather-data-example">this demo</a>, which imports airlines and weather data and runs predictions on delays.<br /></p>
+            <p>5. Follow <a id="clitutorial" href="https://github.com/0xdata/sparkling-water/tree/master/examples#step-by-step-through-weather-data-example">this demo</a>, which imports airlines and weather data and runs predictions on delays.<br /></p>
+          </div>
+          <div id="quickstart-hadoop">
+            <div id="downloads">
+              <a id="dzip" class="download-button" href="sparkling-water-SUBST_PROJECT_VERSION.zip">Download Sparkling Water</a>
+            </div>
+            <h2>Launch Sparkling Water on Hadoop using Yarn.</h2>
+            <p>1. Download Spark if not already installed from: <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a>.</p>
+            <p>2. Download Sparkling Water and point it to the existing installation of Spark by setting the SPARK_HOME environment variable:</p>
+            <p class="terminal">
+              wget <script type="text/javascript">var url = location.href; var url2 = url.substring(0, url.lastIndexOf("/")); document.write(url2);</script>/sparkling-water-SUBST_PROJECT_VERSION.zip <br/>
+              export SPARK_HOME='/path/to/spark/installation' <br />
+            </p>
+            <p>3. Set the HADOOP_CONF_DIR and Spark MASTER environmental variables.</p>
+            <p class="terminal">
+              export HADOOP_CONF_DIR=/etc/hadoop/conf <br />
+              export MASTER="yarn-client" <br />
+            </p>
+            <p>4. Use spark-submit to launch Sparkling Shell on YARN.</p>
+            <p class="terminal">
+              unzip sparkling-water-SUBST_PROJECT_VERSION.zip <br />
+              cd ../sparkling-water-SUBST_PROJECT_VERSION/ <br />
+              bin/sparkling-shell --num-executors 3 --executor-memory 2g --executor-cores 1 --master yarn-client <br />
+            </p>
+            <p>5. Create H<sub>2</sub>O cloud inside Spark cluster:</p>
+            <p class="terminal">
+              import org.apache.spark.h2o._ <br />
+              val h2oContext = new H2OContext(sc).start() <br />
+              import h2oContext._ <br />
+            </p>
+          </div>
+          <div id="standalone">
+            <div id="downloads">
+              <a id="dzip" class="download-button" href="sparkling-water-SUBST_PROJECT_VERSION.zip">Download Sparkling Water</a>
+            </div>
+            <h2>Launch H2O on a Standalone Spark Cluster</h2>
+            <p>1. Download Spark if not already installed from: <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a>.</p>
+            <p>2. Download Sparkling Water and point it to the existing installation of Spark by setting the SPARK_HOME environment variable:</p>
+            <p class="terminal">
+              export SPARK_HOME='/path/to/spark/installation'
+            </p>
+            <p>3. From your terminal, run:</p>
+            <p class="terminal">
+              cd ~/Downloads<br/>
+              unzip sparkling-water-SUBST_PROJECT_VERSION.zip<br/>
+              cd sparkling-water-SUBST_PROJECT_VERSION<br/>
+              bin/launch-spark-cloud.sh <br/>
+              export MASTER="spark://localhost:7077" <br/>
+              bin/sparkling-shell<br/>
+            </p>
+            <p>4. Create H<sub>2</sub>O cloud inside Spark cluster:</p>
+            <p class="terminal">
+              import org.apache.spark.h2o._<br />
+              val h2oContext = new H2OContext(sc).start() <br />
+              // Or if you now number of Spark workers: <br />
+              //   val h2oContext = new H2OContext(sc).start( &lt;number of Spark workers&gt; ) <br />
+              import h2oContext._ <br />
+            </p>
           </div>
         </div>
         <div id="documentation">
           <h2>Documentation</h2>
           <ul>
-            <li><a id="ddocscaladoc" href="scaladoc/index.html">Scala Developer Documentation (scaladoc)</a></li>
+            <li><a id="ddocall" href="docs-website/index.html">Full Documentation</a></li>
+            <li><a id="ddocjavadoc" href="scaladoc/index.html"> Scala Developer Documentation (Javadoc)</a></li>
           </ul>
         </div>
       </div>
