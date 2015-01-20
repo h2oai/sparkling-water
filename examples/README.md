@@ -166,7 +166,6 @@ Compatiable Hadoop Distribution: CDH4, ~~CDH5~~, and HDP2.1
 git clone https://github.com/0xdata/sparkling-water.git 
 cd sparkling-water
 ./gradlew build
-./gradlew assemble
 ```
 
 - Then set MASTER to the IP address of where your Spark Master Node is launched and set SPARK_HOME to the location of your Spark installation. In the example below the path for SPARK_HOME is the default location of Spark preinstalled on a CDH5 cluster. Please change MASTER below:
