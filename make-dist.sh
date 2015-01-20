@@ -71,8 +71,9 @@ rsync -rtvW --files-from "$TOPDIR/demofiles.list" "$TOPDIR/" "$DEST_DIR/"
 # Copy scaladoc
 rsync -rtvW "$SCALADOC_SRC_DIR" "$SCALADOC_DST_DIR"
 
+GITHASH=`git rev-parse --verify HEAD`
 # Copy dist dir files
-cat "$DIST_DIR/index.html" | sed -e "s/SUBST_PROJECT_VERSION/$VERSION/g" > "$DIST_BUILD_DIR/index.html"
+cat "$DIST_DIR/index.html" | sed -e "s/SUBST_PROJECT_VERSION/$VERSION/g" | sed -e "s/SUBST_PROJECT_GITHASH/${GITHASH}/g" > "$DIST_BUILD_DIR/index.html"
 
 exit 0
 
