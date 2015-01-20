@@ -65,13 +65,14 @@ You can tune Sparkling Water via the following variables:
 5. Load airlines data using H<sub>2</sub>O parser
   ```scala
   import java.io.File
+  import water.fvec.DataFrame
   val dataFile = "examples/smalldata/allyears2k_headers.csv.gz"
-  val airlinesData = new DataFrame(new File(dataFile))
+  val airlinesData = DataFrame(new File(dataFile))
   ```
 
 6. Select flights with destination in Chicago (ORD)
   ```scala
-  val airlinesTable : RDD[Airlines] = toRDD[Airlines](airlinesData)
+  val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
   val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
   ```
   
@@ -83,7 +84,7 @@ You can tune Sparkling Water via the following variables:
 8. Use Spark SQL to join flight data with weather data
   ```scala
   import org.apache.spark.sql.SQLContext
-  val sqlContext = new SQLContext(sc)
+  implicit val sqlContext = new SQLContext(sc)
   import sqlContext._
   flightsToORD.registerTempTable("FlightsToORD")
   weatherTable.registerTempTable("WeatherORD")
@@ -123,13 +124,13 @@ You can tune Sparkling Water via the following variables:
   val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
   ```
 
-12. Remember keys of `bigTable` and resulting prediction `predictionH2OFrame`
+12. Generate R-code producing residual plot
   ```scala
-  bigTable._key
-  predictionH2OFrame._key
+  import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
+  residualPlotRCode(predictionH2OFrame, 'predict, bigTable, 'ArrDelay)  
   ```
   
-13. Plot residuals plot in R
+  Execute generated R-code in RStudio:
   ```R
   #
   # R script for residual plot
