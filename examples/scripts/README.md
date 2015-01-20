@@ -1,15 +1,33 @@
 # Sparkling Water Meetup (01/20/2015)
 
+## Requirements
+ 
+### For Sparkling Water part
+ - Oracle Java 7+
+ - Spark 1.1.0
+ - Sparkling Water 0.2.1-62
+ 
+### For R part
+ - R 3.1.2+
+ - RStudio
+ 
+### For development part
+ - Idea/Eclipse IDE with Scala support
+ - 
+ 
 ## Download
 
 Please download [Sparkling Water
-0.2.1-61](http://h2o-release.s3.amazonaws.com/sparkling-water/master/61/index.html) and unzip the file:
+0.2.1-62](http://h2o-release.s3.amazonaws.com/sparkling-water/master/62/index.html) and unzip the file:
 ```
-unzip sparkling-water-0.2.1-61.zip
-cd sparkling-water-0.2.1-61
+unzip sparkling-water-0.2.1-62.zip
+cd sparkling-water-0.2.1-62
 ```
 
 > All materials will be also available on provided USBs.
+
+## Slides
+Will be available soon.
 
 ## Step-by-Step through Airlines with Weather Data Example
 
@@ -26,8 +44,7 @@ cd sparkling-water-0.2.1-61
   ```scala
   import org.apache.spark.h2o._
   import org.apache.spark.examples.h2o._
-  // Make h2oContext implicit to allow its use from H2OContext
-  implicit val h2oContext = new H2OContext(sc).start()
+  val h2oContext = new H2OContext(sc).start()
   import h2oContext._
   ```
 
@@ -59,7 +76,8 @@ cd sparkling-water-0.2.1-61
 8. Use Spark SQL to join flight data with weather data
   ```scala
   import org.apache.spark.sql.SQLContext
-  val sqlContext = new SQLContext(sc)
+  // Make sqlContext implicit to allow its use from H2OContext
+  implicit val sqlContext = new SQLContext(sc)
   import sqlContext._
   flightsToORD.registerTempTable("FlightsToORD")
   weatherTable.registerTempTable("WeatherORD")
