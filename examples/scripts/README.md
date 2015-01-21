@@ -198,14 +198,14 @@ Will be available soon after meetup at [H2O.ai SlideShare account](http://www.sl
 ## Develop a Standalone Sparkling Water Application
 
 1. Clone H2O Droplets repository
-```
-git clone https://github.com/h2oai/h2o-droplets.git
-```
+  ```
+  git clone https://github.com/h2oai/h2o-droplets.git
+  ```
 
 2. Go to Sparkling Water droplet directory
-```
-cd h2o-droplets/sparkling-water-droplet/
-```
+  ```
+  cd h2o-droplets/sparkling-water-droplet/
+  ```
 
 3. Generate Idea/Eclipse project files
   For Idea
