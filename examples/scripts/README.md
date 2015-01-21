@@ -5,7 +5,7 @@
 ### For Sparkling Water part
  - Oracle Java 7+
  - Spark 1.1.0
- - Sparkling Water 0.2.1-62
+ - Sparkling Water 0.2.4-62
  
 ### For R part
  - R 3.1.2+
