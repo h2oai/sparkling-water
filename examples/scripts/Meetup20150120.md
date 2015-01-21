@@ -29,7 +29,7 @@ cd sparkling-water-0.2.1-62
 ## Slides
 Will be available soon after meetup at [H2O.ai SlideShare account](http://www.slideshare.net/0xdata/).
 
-## Use Sparkling Shell for ML Modelling 
+## Use Sparkling Shell for ML 
 
 1. Run Sparkling shell with an embedded cluster:
   ```
