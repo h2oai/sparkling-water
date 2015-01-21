@@ -27,7 +27,7 @@ cd sparkling-water-0.2.1-62
 > All materials will be also available on provided USBs.
 
 ## Slides
-Will be available soon.
+Will be available soon after meetup at [H2O.ai SlideShare account](http://www.slideshare.net/0xdata/).
 
 ## Use Sparkling Shell for ML Modelling 
 
@@ -340,12 +340,12 @@ cd h2o-droplets/sparkling-water-droplet/
 
 10. Build application from command line
 
-```
-./gradlew build shadowJar
-```
+  ```
+  ./gradlew build shadowJar
+  ```
   
 11. Submit application to Spark cluster
-```
-export MASTER='local-cluster[3,2,1024]'
-$SPARK_HOME/bin/spark-submit --class water.droplets.AirlineWeatherAnalysis build/libs/sparkling-water-droplet-app.jar
-```   
+  ```
+  export MASTER='local-cluster[3,2,1024]'
+  $SPARK_HOME/bin/spark-submit --class water.droplets.AirlineWeatherAnalysis build/libs/sparkling-water-droplet-app.jar
+  ```   
