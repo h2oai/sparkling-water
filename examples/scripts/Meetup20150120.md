@@ -27,7 +27,7 @@ cd sparkling-water-0.2.4-62
 > All materials will be also available on provided USBs.
 
 ## Slides
-Will be available soon after meetup at [H2O.ai SlideShare account](http://www.slideshare.net/0xdata/).
+Hands-On slides are available at [H2O.ai SlideShare account](http://www.slideshare.net/0xdata/spa-43755759)
 
 ## Use Sparkling Shell for ML 
 
