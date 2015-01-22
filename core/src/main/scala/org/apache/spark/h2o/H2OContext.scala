@@ -72,7 +72,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
                                   = H2OContext.toDataFrame(sparkContext, rdd)
 
   /** Convert given H2O frame into a RDD type */
-  @deprecated("Use asRDD instead")
+  @deprecated("Use asRDD instead", "0.2.3")
   def toRDD[A <: Product: TypeTag: ClassTag](fr : DataFrame) : RDD[A] = asRDD[A](fr)
 
   /** Convert given H2O frame into a Product RDD type */

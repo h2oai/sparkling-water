@@ -19,10 +19,9 @@ package org.apache.spark.h2o
 
 import java.io.File
 
-import com.google.common.io.Files
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.{SparkContext, SparkEnv}
-import water.{H2OApp, H2O}
+import water.{H2O, H2OApp}
 
 /**
  * Support methods.
@@ -58,7 +57,7 @@ private[spark] object H2OContextUtils {
   def getIp(env: SparkEnv) = env.actorSystem.settings.config.getString("akka.remote.netty.tcp.hostname")
 
   def saveAsFile(content: String): File = {
-    val tmpDir = Files.createTempDir()
+    val tmpDir = createTempDir()
     tmpDir.deleteOnExit()
     val flatFile = new File(tmpDir, "flatfile.txt")
     val p = new java.io.PrintWriter(flatFile)
@@ -144,6 +143,21 @@ private[spark] object H2OContextUtils {
         (executorId, false)
       }
     }.collect()
+  }
+
+  val TEMP_DIR_ATTEMPTS = 1000
+
+  private def createTempDir(): File = {
+    def baseDir = new File(System.getProperty("java.io.tmpdir"))
+    def baseName = System.currentTimeMillis() + "-"
+
+    var cnt = 0
+    while (cnt < TEMP_DIR_ATTEMPTS) {// infinite loop
+      val tempDir = new File(baseDir, baseName + cnt)
+      if (tempDir.mkdir()) return tempDir
+      cnt += 1
+    }
+    throw new IllegalStateException(s"Failed to create temporary directory $baseDir / $baseName")
   }
 
   def dataTypeToClass(dt : DataType):Class[_] = dt match {
