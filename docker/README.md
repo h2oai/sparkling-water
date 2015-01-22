@@ -1,6 +1,6 @@
 # Docker Support
 
-## Build
+## Building a container
 
 ```
 $ ./build.sh
@@ -16,4 +16,10 @@ $ docker run  -i -t sparkling-test-base /bin/bash
 
 ```
 docker run -i -t --rm sparkling-test-base bin/sparkling-shell 
+```
+
+## Running examples in container
+
+```
+docker run -i -t --rm sparkling-test-base bin/run-example.sh
 ```

@@ -12,6 +12,20 @@ Sparkling Water integrates H<sub>2</sub>O fast scalable machine learning engine 
 ## Downloads of binaries
    * [Sparkling Water - Latest version](http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html)
 
+## Contributing
+
+### Where to start
+
+Look at our [list of JIRA tasks](https://0xdata.atlassian.net/issues/?filter=13600) for new contributors or send us 
+your idea via [support@h2o.ai](mailto:support@h2o.ai).
+
+## Issues 
+For issues reporting please use JIRA at [http://jira.h2o.ai/](http://jira.h2o.ai/).
+
+## Mailing list
+
+Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
+
 ## Building
 
 Use provided `gradlew` to build project:
@@ -41,11 +55,8 @@ And run the example:
 ```
 bin/run-example.sh
 ```
-This runs the Deep Learning demo.  It is finished when you see the line (Ctrl-C to stop the demo cluster):
-```
-===> Model predictions: 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, ...
-```
-For more details about the demo, please see the README.md file in the examples directory.
+
+For more details about the demo, please see the [README.md](examples/README.md) file in the [examples directory](examples/).
 
 
 ## Sparkling shell
@@ -72,103 +83,10 @@ bin/sparkling-shell
 > Sparkling Shell accepts common Spark Shell arguments. For example, to increase memory allocated by each executor it > is possible to pass `spark.executor.memory` parameter:
 > `bin/sparkling-shell --conf "spark.executor.memory=4g"`
 
-### Simple Example
-
-1. Run Sparkling shell with an embedded cluster:
-  ```
-  export SPARK_HOME="/path/to/spark/installation"
-  export MASTER="local-cluster[3,2,1024]"
-  bin/sparkling-shell
-  ```
-
-2. You can go to [http://localhost:4040/](http://localhost:4040/) to see the Sparkling shell (i.e., Spark driver) status.
-
-
-3. Now you can launch H<sub>2</sub>O inside the Spark cluster:
-  ```scala
-  import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
-  import h2oContext._
-  ```
-
-  > Note: The H2OContext#start API call figures out number of Spark workers and
-  > launch corresponding number of H2O instances inside Spark cluster.
-
-
-4. Import the provided airlines data, parse them via H<sub>2</sub>O parser:
-  ```scala
-  import java.io.File
-  val dataFile = "examples/smalldata/allyears2k_headers.csv.gz"
-  val airlinesData = new DataFrame(new File(dataFile))
-  ```
-
-5. Use the data via RDD API:
-  ```scala
-  import org.apache.spark.examples.h2o._
-  val airlinesTable : RDD[Airlines] = toRDD[Airlines](airlinesData)
-  ```
-
-6. Compute the number of rows inside RDD:
-  ```scala
-  airlinesTable.count
-  ```
-  or compute the number of rows via H<sub>2</sub>O API:
-  ```scala
-  airlinesData.numRows()
-  ```
-
-7. Select only flights with destination in SFO with help of Spark SQL:
-  ```scala
-  import org.apache.spark.sql.SQLContext
-  val sqlContext = new SQLContext(sc)
-  import sqlContext._ 
-  airlinesTable.registerTempTable("airlinesTable")
-
-  // Select only interesting columns and flights with destination in SFO
-  val query = "SELECT * FROM airlinesTable WHERE Dest LIKE 'SFO'"
-  val result = sql(query)
-  ```
-
-8. Launch the H<sub>2</sub>O algorithm on the result of the SQL query:
-  ```scala
-  import hex.deeplearning._
-  import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-
-  val dlParams = new DeepLearningParameters()
-  dlParams._training_frame = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
-                                    'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
-                                    'Distance, 'IsDepDelayed)
-  dlParams._response_column = 'IsDepDelayed
-  // Launch computation
-  val dl = new DeepLearning(dlParams)
-  val dlModel = dl.trainModel.get
-  ```
-  
-9. Use the model for prediction:
-  ```scala
-  val predictionH2OFrame = dlModel.score(result)('predict)
-  val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
-  ```
+### Examples
+You can find more examples in [examples folder](examples/).
   
 ## Docker Support
 
-The directory `docker` contains basic support to run Sparkling Water on top of docker container. 
+See [docker/README.md](docker/README.md) to learn about Docker support.
 
-### Build a container
-
-```
-$ cd docker
-$ ./build.sh 
-```
-
-### Running examples in container
-
-```
-$ docker run -i -t --rm sparkling-test-base bin/run-example.sh
-```
-
-### Running Sparkling Shell in container
-
-```
-$ docker run -i -t --rm sparkling-test-base bin/sparkling-shell
-```
