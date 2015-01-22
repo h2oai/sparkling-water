@@ -33,7 +33,7 @@ object DeepLearningDemo {
     //
     // Use H2O to RDD transformation
     //
-    val airlinesTable : RDD[Airlines] = toRDD[Airlines](airlinesData)
+    val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
     println(s"\n===> Number of all flights via RDD#count call: ${airlinesTable.count()}\n")
     println(s"\n===> Number of all flights via H2O#Frame#count: ${airlinesData.numRows()}\n")
 
@@ -74,7 +74,7 @@ object DeepLearningDemo {
     //
     println("\n====> Making prediction with help of DeepLearning model\n")
     val predictionH2OFrame = dlModel.score(result)('predict)
-    val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map ( _.result.getOrElse("NaN") )
+    val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map ( _.result.getOrElse("NaN") )
     println(predictionsFromModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
 
     // Stop Spark cluster and destroy all executors

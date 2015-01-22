@@ -40,7 +40,7 @@ object AirlinesWithWeatherDemo2 {
     // Use super-fast advanced H2O CSV parser !!!
     val airlinesData = new DataFrame(new File(SparkFiles.get("year2005.csv.gz")))
 
-    val airlinesTable : RDD[Airlines] = toRDD[Airlines](airlinesData)
+    val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
     // Select flights only to ORD
     val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
 
@@ -98,7 +98,7 @@ object AirlinesWithWeatherDemo2 {
     val dlModel = dl.trainModel.get
 
     val dlPredictTable = dlModel.score(testTable)('predict)
-    val predictionsFromDlModel = toRDD[DoubleHolder](dlPredictTable).collect.map(_.result.getOrElse(Double.NaN))
+    val predictionsFromDlModel = asRDD[DoubleHolder](dlPredictTable).collect.map(_.result.getOrElse(Double.NaN))
     println(predictionsFromDlModel.length)
     println(predictionsFromDlModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
 
