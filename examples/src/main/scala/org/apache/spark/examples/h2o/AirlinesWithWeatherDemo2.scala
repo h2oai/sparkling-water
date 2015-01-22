@@ -4,6 +4,7 @@ import java.io.File
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import hex.splitframe.SplitFrame
 import hex.splitframe.SplitFrameModel.SplitFrameParameters
 import hex.tree.gbm.GBM
@@ -47,7 +48,7 @@ object AirlinesWithWeatherDemo2 {
     flightsToORD.count
     println(s"\nFlights to ORD: ${flightsToORD.count}\n")
 
-    val sqlContext = new SQLContext(sc)
+    implicit val sqlContext = new SQLContext(sc)
     import sqlContext._ // import implicit conversions
     flightsToORD.registerTempTable("FlightsToORD")
     weatherTable.registerTempTable("WeatherORD")
@@ -73,8 +74,12 @@ object AirlinesWithWeatherDemo2 {
     // Split data into 3 tables - train/validation/test
     //
     // Instead of using RDD API we will directly split H2O Frame
+    val joinedDataFrame:DataFrame = joinedTable // Invoke implicit transformation
+    // Transform date related columns to enums
+    for( i <- 0 to 2) joinedDataFrame.replace(i, joinedDataFrame.vec(i).toEnum)
+
     val sfParams = new SplitFrameParameters()
-    sfParams._train = joinedTable
+    sfParams._train = joinedDataFrame
     sfParams._ratios = Array(0.7, 0.2)
     val sf = new SplitFrame(sfParams)
 
@@ -90,7 +95,9 @@ object AirlinesWithWeatherDemo2 {
     dlParams._train = trainTable
     dlParams._response_column = 'ArrDelay
     dlParams._valid = validTable
-    dlParams._epochs = 100
+    dlParams._epochs = 5
+    dlParams._activation = Activation.RectifierWithDropout
+    dlParams._hidden = Array[Int](100, 100)
     dlParams._reproducible = true
     dlParams._force_load_balance = false
 
@@ -98,7 +105,9 @@ object AirlinesWithWeatherDemo2 {
     val dlModel = dl.trainModel.get
 
     val dlPredictTable = dlModel.score(testTable)('predict)
-    val predictionsFromDlModel = asRDD[DoubleHolder](dlPredictTable).collect.map(_.result.getOrElse(Double.NaN))
+    val predictionsFromDlModel = asSchemaRDD(dlPredictTable).collect
+                                .map(row => if (row.isNullAt(0)) Double.NaN else row(0))
+
     println(predictionsFromDlModel.length)
     println(predictionsFromDlModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
 

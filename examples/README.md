@@ -106,26 +106,36 @@ You can tune Sparkling Water via the following variables:
             |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
   ```
   
-10. Run deep learning to produce model estimating arrival delay:
+10. Transform the first 3 columns holding date information into enum columns
+  ```scala
+  val bigDataFrame: DataFrame = bigTable // implicit conversion from RDD to DataFrame
+  for( i <- 0 to 2) bigDataFrame.replace(i, bigDataFrame.vec(i).toEnum)
+  ```
+
+11. Run deep learning to produce model estimating arrival delay:
   ```scala
   import hex.deeplearning.DeepLearning
   import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+  import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
   val dlParams = new DeepLearningParameters()
-  dlParams._train = bigTable
+  dlParams._train = bigDataFrame
   dlParams._response_column = 'ArrDelay
-  dlParams._epochs = 100
+  dlParams._epochs = 5
+  dlParams._activation = Activation.RectifierWithDropout
+  dlParams._hidden = Array[Int](100, 100)
+  
   // Create a job  
   val dl = new DeepLearning(dlParams)
   val dlModel = dl.trainModel.get
   ```
 
-11. Use model to estimate delay on training data
+12. Use model to estimate delay on training data
   ```scala
   val predictionH2OFrame = dlModel.score(bigTable)('predict)
-  val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
+  val predictionsFromModel = asSchemaRDD(predictionH2OFrame).collect.map(row => if (row.isNullAt(0)) Double.NaN else row(0))
   ```
 
-12. Generate R-code producing residual plot
+13. Generate R-code producing residual plot
   ```scala
   import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
   residualPlotRCode(predictionH2OFrame, 'predict, bigTable, 'ArrDelay)  
