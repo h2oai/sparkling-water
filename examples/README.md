@@ -7,6 +7,7 @@
     _smalldata/allyears2k\_headers.csv.gz_)
   * `AirlinesWithWeatherDemo` - joining flights data with weather data and running
     Deep Learning
+  * `AirlinesWithWeatherDemo2` - new iteration of `AirlinesWithWeatherDemo`
 
 ## Compile Example
 Please use top-level `gradlew`:
