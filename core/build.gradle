@@ -38,7 +38,9 @@ artifacts {
      "ai.h2o:h2o-app",
      "joda-time:joda-time",
      "org.javassist:javassist",
-     "gov.nist.math:jama"]).each {
+     "gov.nist.math:jama",
+     "com.google.code.gson:gson",
+     "org.reflections:reflections"]).each {
         testAssembly it
     }
 }

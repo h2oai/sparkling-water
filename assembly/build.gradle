@@ -19,6 +19,8 @@ shadowJar {
     // Do not forget that Sparkling Water is intended 
     // to run inside Spark environment providing some jars 
     // (like hadoop, aws) on classpath
+    //
+    // DO NOT Forget to update a list of jars used in testAssembly task
     include(project(":sparkling-water-core"))
     include(project(":sparkling-water-examples"))
     include(dependency("ai.h2o:h2o-core"))
