@@ -48,7 +48,7 @@ configure(allprojects) { project ->
       scalaVersion       = '2.10.4'
       scalaBinaryVersion = '2.10'
       h2oVersion         = '0.1.20'
-      sparkVersion       = '1.1.0'
+      sparkVersion       = '1.2.0'
     }
 }
 
