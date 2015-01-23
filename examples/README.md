@@ -51,13 +51,13 @@ You can tune Sparkling Water via the following variables:
 3. Create H<sub>2</sub>O cloud using all 3 Spark workers
   ```scala
   import org.apache.spark.h2o._
-  import org.apache.spark.examples.h2o._
   val h2oContext = new H2OContext(sc).start()
   import h2oContext._
   ```
 
 4. Load weather data for Chicago international airport (ORD) with help of RDD API.
   ```scala
+  import org.apache.spark.examples.h2o._
   val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
   val wrawdata = sc.textFile(weatherDataFile,3).cache()
   val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
