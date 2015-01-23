@@ -20,6 +20,7 @@ package org.apache.spark.h2o
 import org.apache.spark._
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
+import org.apache.spark.scheduler.{SparkListenerBlockManagerAdded, SparkListenerBlockManagerRemoved}
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
 import org.apache.spark.sql.execution.{ExistingRdd, SparkLogicalPlan}
 import org.apache.spark.sql.{Row, SQLContext, SchemaRDD}
@@ -140,7 +141,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     if (!sparkContext.isLocal) {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + numH2OWorkers)
       // Get arguments for this launch including flatfile
-      val h2oArgs = toH2OArgs( getH2OArgs(), this, executors )
+      val h2oArgs = toH2OArgs(getH2OArgs() ++ Array("-ip", getIp(SparkEnv.get)),
+                              this,
+                              executors)
       H2OClientApp.main(h2oArgs)
       H2O.finalizeRegistration()
       H2O.waitForCloudSize(executors.length, cloudTimeout)
@@ -428,4 +431,15 @@ object H2OContext extends Logging {
   }
 }
 
+private[h2o]
+trait SparkEnvListener extends org.apache.spark.scheduler.SparkListener { self: H2OContext =>
+
+  override def onBlockManagerAdded(blockManagerAdded: SparkListenerBlockManagerAdded): Unit = {
+    println("--------------------> onBlockManagerAdded: "+ blockManagerAdded)
+  }
+
+  override def onBlockManagerRemoved(blockManagerRemoved: SparkListenerBlockManagerRemoved): Unit = {
+    println("--------------------> onBlockManagerRemoved: "+ blockManagerRemoved)
+  }
+}
 
