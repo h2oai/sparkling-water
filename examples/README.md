@@ -206,7 +206,7 @@ val h2oContext = new H2OContext(sc).start()
 import h2oContext._
 
 // URI to access HDFS file
-val path = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/bestbuy_test.csv"
+val path = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines_all.05p.csv"
 val d = new java.net.URI(path)
 val f = new DataFrame(d)
 ```
