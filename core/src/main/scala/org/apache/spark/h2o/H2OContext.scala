@@ -110,7 +110,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // Start H2O nodes
     // Get executors to execute H2O
     val allExecutorIds = nodes.map(_._1).distinct
-    val executorIds = /*if (numH2OWorkers > 0) allExecutorIds.take(numH2OWorkers) else*/ allExecutorIds
+    val executorIds = allExecutorIds
     val executors = nodes // Executors list should be already normalized
     // The collected executors based on IDs should match
     assert(executors.length == executorIds.length,
@@ -426,7 +426,8 @@ object H2OContext extends Logging {
   private
   def checkSparkEnv(conf: SparkConf): Unit = {
     if (conf.getInt("spark.locality.wait",3000) <= 3000) {
-      logWarning(s"In case of failure you can consider increasing 'spark.locality.wait' to value > 3000")
+      logWarning(s"Increasing 'spark.locality.wait' to value 30000")
+      conf.set("spark.locality.wait", "30000")
     }
   }
 }
