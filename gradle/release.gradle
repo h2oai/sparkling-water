@@ -9,7 +9,8 @@ release {
 }
 
 // Helper task uploading all artifacts
-task uploadAll << {
+task uploadAll
+uploadAll.dependsOn {
   subprojects.uploadArchives
 }
 
