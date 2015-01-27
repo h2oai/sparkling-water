@@ -6,15 +6,14 @@ Sparkling Water integrates H<sub>2</sub>O fast scalable machine learning engine 
 
   * Linux or OS X (Windows support is coming)
   * Java 7
-  * Spark 1.1.0 
+  * [Spark 1.2.0](https://spark.apache.org/downloads.html)
     * `SPARK_HOME` shell variable should point to your local Spark installation
  
 ## Downloads of binaries
    * [Sparkling Water - Latest version](http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html)
 
-## Contributing
+## Contributing - Where to start
 
-### Where to start
 
 Look at our [list of JIRA tasks](https://0xdata.atlassian.net/issues/?filter=13600) for new contributors or send us 
 your idea via [support@h2o.ai](mailto:support@h2o.ai).
@@ -89,3 +88,14 @@ You can find more examples in [examples folder](examples/).
 ## Docker Support
 
 See [docker/README.md](docker/README.md) to learn about Docker support.
+
+## FAQ
+
+* Where to find Spark logs?
+  > Look for `$SPARK_HOME/work/app-XXX`. The last part of address is name of your application.
+ 
+* Spark is too slow during start or H2O is not able to cluster.
+  > Configure Spark variable `SPARK_LOCAL_IP`. For example: 
+  ```
+  export SPARK_LOCAL_IP='127.0.0.1'
+  ```  
