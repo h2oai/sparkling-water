@@ -26,16 +26,16 @@ RUN apt-get -y install \
   openssh-server \
   unzip
 
-# Install Spark
-RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.1.0-bin-cdh4.tgz | tar -xz -C /opt/ && \
-    ln -s /opt/spark-1.1.0-bin-cdh4 /opt/spark && \
+# Install Spark 1.2.0
+RUN curl -s http://d3kbcqa49mib13.cloudfront.net/spark-1.2.0-bin-cdh4.tgz | tar -xz -C /opt && \
+    ln -s /opt/spark-1.2.0-bin-cdh4 /opt/spark && \
     mkdir /opt/spark/work && \
     chmod 0777 /opt/spark/work
 
-# Install Sparkling water
-RUN curl -s http://h2o-release.s3.amazonaws.com/sparkling-water/master/58/sparkling-water-0.2.1-58.zip --output sw.zip && \
+# Install Sparkling water latest version
+RUN curl -s http://h2o-release.s3.amazonaws.com/sparkling-water/master/68/sparkling-water-0.2.5-68.zip --output sw.zip && \
   unzip sw.zip -d /opt/ && \
-  ln -s /opt/sparkling-water-0.2.1-58 /opt/sparkling-water && \
+  ln -s /opt/sparkling-water-0.2.5-68 /opt/sparkling-water && \
   rm -f sw.zip
 
 # Setup environment
