@@ -291,6 +291,7 @@ object H2OContext extends Logging {
   private
   def translateToH2OType(t: Class[_], d: Array[String]):Byte = {
     t match {
+      case q if q==classOf[java.lang.Byte]    => Vec.T_NUM
       case q if q==classOf[java.lang.Short]   => Vec.T_NUM
       case q if q==classOf[java.lang.Integer] => Vec.T_NUM
       case q if q==classOf[java.lang.Long]    => Vec.T_NUM
@@ -302,7 +303,8 @@ object H2OContext extends Logging {
                                                   } else {
                                                     Vec.T_STR
                                                   }
-      case _ => !!!
+      case q if q==classOf[java.sql.Timestamp] => Vec.T_TIME
+      case q => throw new IllegalArgumentException(s"Do not understand type $q")
     }
   }
 
@@ -344,6 +346,8 @@ object H2OContext extends Logging {
         val nchk = nchks(i)
         if (row.isNullAt(i)) nchk.addNA()
         else types(i) match {
+          case q if q==classOf[Byte]              => nchk.addNum(row.getInt(i))
+          case q if q==classOf[Short]             => nchk.addNum(row.getInt(i))
           case q if q==classOf[Integer]           => nchk.addNum(row.getInt(i))
           case q if q==classOf[java.lang.Long]    => nchk.addNum(row.getLong(i))
           case q if q==classOf[java.lang.Double]  => nchk.addNum(row.getDouble(i))
@@ -357,6 +361,7 @@ object H2OContext extends Logging {
               val smap = domHash(i)
               nchk.addEnum(smap.getOrElse(sv, !!!))
             }
+          case q if q==classOf[java.sql.Timestamp] => nchk.addNum(row.getLong(i))
           case _ => Double.NaN
         }
       }
