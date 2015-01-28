@@ -137,6 +137,12 @@
       #content p.terminal em {
         color: green;
       }
+      #content p.options {
+      background: #FFFFFF;
+      padding: 5px;
+      font-family: monospace;
+      line-height: 15px;
+      }
       #downloads {
         text-align: center;
         margin-top: 20px;
@@ -203,10 +209,10 @@
       function initializeTabs() {
         var zipTab = document.getElementById('quickstart-zip-tab');
         var zipPanel = document.getElementById('quickstart-zip');
-        var standaloneTab = document.getElementById('standalone-tab');
-        var standalonePanel = document.getElementById('standalone');
         var hadoopTab = document.getElementById('quickstart-hadoop-tab');
         var hadoopPanel = document.getElementById('quickstart-hadoop');
+        var standaloneTab = document.getElementById('standalone-tab');
+        var standalonePanel = document.getElementById('standalone');
         var showZipTab = function() {
           zipPanel.style.display = 'block';
           zipTab.className = 'active';
@@ -268,8 +274,8 @@
       <div id="content">
         <div id="tabs">
           &nbsp; <span id="quickstart-zip-tab" class="active">Download and Run</span>
-          <span id="standalone-tab">Run Standalone Sparkling Water</span>
           <span id = "quickstart-hadoop-tab">Install on Hadoop</span>
+          <span id="standalone-tab">Run Standalone Sparkling Water</span>
         </div>
         <div id="panels">
           <div id="quickstart-zip">
@@ -277,7 +283,11 @@
               <a id="dzip" class="download-button" href="sparkling-water-SUBST_PROJECT_VERSION.zip">Download Sparkling Water</a>
             </div>
             <h2>Get started with Sparkling Water in a few easy steps</h2>
-            <p>1. Download Spark if not already installed from: <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a>.</p>
+            <p>1. Download Spark if not already installed from: <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a> </p>
+            <p class="options">
+              Chose Spark release : 1.2.0</br>
+              Chose a package type: Pre-built for Hadoop 2.4 and later
+            </p>
             <p>2. Download Sparkling Water and point it to the existing installation of Spark by setting the SPARK_HOME environment variable:</p>
             <p class="terminal">
               export SPARK_HOME='/path/to/spark/installation'
@@ -319,7 +329,7 @@
             <p class="terminal">
               unzip sparkling-water-SUBST_PROJECT_VERSION.zip <br />
               cd ../sparkling-water-SUBST_PROJECT_VERSION/ <br />
-              bin/sparkling-shell --num-executors 3 --executor-memory 2g --executor-cores 1 --master yarn-client <br />
+              bin/sparkling-shell --num-executors 3 --executor-memory 2g --master yarn-client <br />
             </p>
             <p>5. Create H<sub>2</sub>O cloud inside Spark cluster:</p>
             <p class="terminal">
@@ -334,6 +344,10 @@
             </div>
             <h2>Launch H2O on a Standalone Spark Cluster</h2>
             <p>1. Download Spark if not already installed from: <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a>.</p>
+            <p class="options">
+              Chose Spark release : 1.2.0</br>
+              Chose a package type: Pre-built for Hadoop 2.4 and later
+            </p>
             <p>2. Download Sparkling Water and point it to the existing installation of Spark by setting the SPARK_HOME environment variable:</p>
             <p class="terminal">
               export SPARK_HOME='/path/to/spark/installation'
