@@ -141,7 +141,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     if (!sparkContext.isLocal) {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + numH2OWorkers)
       // Get arguments for this launch including flatfile
-      val h2oArgs = toH2OArgs(getH2OArgs() ++ Array("-ip", getIp(SparkEnv.get)),
+      val h2oArgs = toH2OArgs(getH2OArgs() ++ Array("-ip", getIp(SparkEnv.get), "-baseport", basePort.toString),
                               this,
                               executors)
       H2OClientApp.main(h2oArgs)
