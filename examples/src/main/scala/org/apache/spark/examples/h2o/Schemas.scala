@@ -51,7 +51,7 @@ class Airlines (val Year              :Option[Int],
                 val SecurityDelay     :Option[Int],
                 val LateAircraftDelay :Option[Int],
                 val IsArrDelayed      :Option[Boolean],
-                val IsDepDelayed      :Option[Boolean]) extends Product {
+                val IsDepDelayed      :Option[Boolean]) extends Product with Serializable {
 
   /*
   def this() = this(None,None,None,None,None,None,None,None,None,
