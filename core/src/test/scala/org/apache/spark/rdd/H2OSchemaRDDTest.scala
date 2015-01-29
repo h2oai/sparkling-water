@@ -17,6 +17,7 @@
 package org.apache.spark.rdd
 
 import java.io.File
+import java.sql.Timestamp
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{IntHolder, H2OContext}
@@ -24,6 +25,9 @@ import org.apache.spark.h2o.util.SparkTestContext
 import org.apache.spark.sql.SQLContext
 import org.scalatest.FunSuite
 import water.fvec.DataFrame
+import org.apache.spark.sql._
+import water.parser.{Categorical, Parser}
+
 
 /**
  * Testing schema for h2o schema rdd transformation.
@@ -32,9 +36,11 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
   sc = new SparkContext("local[*]", "test-local")
   hc = new H2OContext(sc).start()
+  // Shared sqlContext
+  val h2oContext = hc
+  val sqlContext = new SQLContext(sc)
 
   test("test creation of H2OSchemaRDD") {
-    val h2oContext = hc
     import h2oContext._
 
     // FIXME: create different shapes of frame
@@ -47,7 +53,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("test RDD to DataFrame to SchemaRDD way") {
-    val h2oContext = hc
     import h2oContext._
 
     val rdd = sc.parallelize(1 to 10000, 1000).map(i => IntHolder(Some(i)))
@@ -60,7 +65,103 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (rdd.count == schemaRdd.count)
   }
 
+  test("SchemaRDD[Byte] to DataFrame[Numeric]") {
+    import sqlContext._
+
+    val srdd:SchemaRDD = sc.parallelize(-127 to 127).map(v => ByteField(v.asInstanceOf[Byte]))
+    val dataFrame = hc.toDataFrame(srdd)
+
+    assertDataFrameInvariants(srdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
+  test("SchemaRDD[Short] to DataFrame[Numeric]") {
+    import sqlContext._
+
+    val srdd:SchemaRDD = sc.parallelize(-2048 to 4096).map(v => ShortField(v.asInstanceOf[Short]))
+    val dataFrame = hc.toDataFrame(srdd)
+
+    assertDataFrameInvariants(srdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
+  test("SchemaRDD[Int] to DataFrame[Numeric]") {
+    import sqlContext._
+
+    val values = Seq(Int.MinValue, Int.MaxValue, 0, -100, 200, -5000, 568901)
+    val srdd:SchemaRDD = sc.parallelize(values).map(v => IntField(v))
+    val dataFrame = hc.toDataFrame(srdd)
+
+    assertDataFrameInvariants(srdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
+  test("SchemaRDD[Long] to DataFrame[Numeric]") {
+    import sqlContext._
+
+    val values = Seq(Long.MinValue, Long.MaxValue, 0L, -100L, 200L, -5000L, 5689323201L, -432432433335L)
+    val srdd:SchemaRDD = sc.parallelize(values).map(v => LongField(v))
+    val dataFrame = hc.toDataFrame(srdd)
+
+    assertDataFrameInvariants(srdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
+  test("SchemaRDD[String] to DataFrame[Enum]") {
+    import sqlContext._
+
+    val num = 3000
+    val values = (1 to num).map( v => StringField(v + "-value"))
+    val srdd:SchemaRDD = sc.parallelize(values)
+    val dataFrame = hc.toDataFrame(srdd)
+
+    assertDataFrameInvariants(srdd, dataFrame)
+    assert (dataFrame.vec(0).isEnum())
+    assert (dataFrame.domains()(0).length == num)
+  }
+
+  test("SchemaRDD[String] to DataFrame[String]") {
+    import sqlContext._
+
+    val num = Categorical.MAX_ENUM_SIZE + 1
+    val values = (1 to num).map( v => StringField(v + "-value"))
+    val srdd:SchemaRDD = sc.parallelize(values)
+    val dataFrame = hc.toDataFrame(srdd)
+
+    assertDataFrameInvariants(srdd, dataFrame)
+    assert (dataFrame.vec(0).isString())
+  }
+
+  test("SchemaRDD[TimeStamp] to DataFrame[Time]") {
+    import sqlContext._
+
+    val num = 20
+    val values = (1 to num).map(v => new Timestamp(v))
+    val srdd:SchemaRDD = sc.parallelize(values).map(v => TimestampField(v))
+    val dataFrame = hc.toDataFrame(srdd)
+
+    assertDataFrameInvariants(srdd, dataFrame)
+    assert (dataFrame.vec(0).isTime())
+  }
+
+  test("DataFrame[Time] to SchemaRDD[TimeStamp]") {
+
+  }
+
+  def assertDataFrameInvariants(inputRDD: SchemaRDD, df: DataFrame): Unit = {
+    assert( inputRDD.count == df.numRows(), "Number of rows has to match")
+    assert( df.numCols() == 1 , "Only single column")
+  }
 }
 
 object H2OSchemaRDDTest {
 }
+
+// Helper classes for conversion from RDD to SchemaRDD
+// which expects T <: Product
+case class ByteField  (v: Byte)
+case class ShortField (v: Short)
+case class IntField   (v: Int)
+case class LongField  (v: Long)
+case class StringField(v: String)
+case class TimestampField(v: Timestamp)

@@ -74,7 +74,7 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
                   chk.atStr(valStr, row)
                   valStr.toString
                 } else None
-              case TimestampType => chk.at8(row)
+              case TimestampType => new java.sql.Timestamp(chk.at8(row))
               case _ => ???
             }
           }

@@ -346,12 +346,12 @@ object H2OContext extends Logging {
         val nchk = nchks(i)
         if (row.isNullAt(i)) nchk.addNA()
         else types(i) match {
-          case q if q==classOf[Byte]              => nchk.addNum(row.getInt(i))
-          case q if q==classOf[Short]             => nchk.addNum(row.getInt(i))
-          case q if q==classOf[Integer]           => nchk.addNum(row.getInt(i))
-          case q if q==classOf[java.lang.Long]    => nchk.addNum(row.getLong(i))
+          case q if q==classOf[java.lang.Byte]    => nchk.addNum(row.getByte  (i))
+          case q if q==classOf[java.lang.Short]   => nchk.addNum(row.getShort (i))
+          case q if q==classOf[Integer]           => nchk.addNum(row.getInt   (i))
+          case q if q==classOf[java.lang.Long]    => nchk.addNum(row.getLong  (i))
           case q if q==classOf[java.lang.Double]  => nchk.addNum(row.getDouble(i))
-          case q if q==classOf[java.lang.Float]   => nchk.addNum(row.getFloat(i))
+          case q if q==classOf[java.lang.Float]   => nchk.addNum(row.getFloat (i))
           case q if q==classOf[java.lang.Boolean] => nchk.addNum(if (row.getBoolean(i)) 1 else 0)
           case q if q==classOf[String]            =>
             // too large domain - use String instead
@@ -361,7 +361,7 @@ object H2OContext extends Logging {
               val smap = domHash(i)
               nchk.addEnum(smap.getOrElse(sv, !!!))
             }
-          case q if q==classOf[java.sql.Timestamp] => nchk.addNum(row.getLong(i))
+          case q if q==classOf[java.sql.Timestamp] => nchk.addNum(row.getAs[java.sql.Timestamp](i).getTime())
           case _ => Double.NaN
         }
       }
