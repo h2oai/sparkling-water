@@ -19,7 +19,9 @@ package org.apache.spark.rdd
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.util.SharedSparkTestContext
 import org.apache.spark.h2o.{DoubleHolder, IntHolder, StringHolder}
+import org.junit.runner.RunWith
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 import water.fvec.{DataFrame, Vec}
 import water.parser.ValueString
 
@@ -27,6 +29,7 @@ import water.parser.ValueString
  * Testing schema for h2o schema rdd transformation.
  */
 // FIXME this should be only trait but used in different SparkContext
+@RunWith(classOf[JUnitRunner])
 class H2ORDDTest extends FunSuite with SharedSparkTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local")

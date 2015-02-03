@@ -23,7 +23,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{IntHolder, H2OContext}
 import org.apache.spark.h2o.util.SparkTestContext
 import org.apache.spark.sql.SQLContext
+import org.junit.runner.RunWith
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 import water.fvec.DataFrame
 import org.apache.spark.sql._
 import water.parser.{Categorical, Parser}
@@ -32,6 +34,7 @@ import water.parser.{Categorical, Parser}
 /**
  * Testing schema for h2o schema rdd transformation.
  */
+@RunWith(classOf[JUnitRunner])
 class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
   sc = new SparkContext("local[*]", "test-local")
