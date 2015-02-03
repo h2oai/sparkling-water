@@ -2,6 +2,8 @@
 
 Sparkling Water integrates H<sub>2</sub>O fast scalable machine learning engine with Spark.
 
+## Features
+
 ## Requirements
 
   * Linux or OS X (Windows support is coming)
@@ -99,3 +101,8 @@ See [docker/README.md](docker/README.md) to learn about Docker support.
   ```
   export SPARK_LOCAL_IP='127.0.0.1'
   ```  
+* How to increase memory assigned to Spark executors in Sparkling Shell?
+ > Sparkling Shell accepts common Spark Shell arguments. For example, to increase
+ > memory allocated by each executor it > is possible to pass `spark.executor.memory`
+ > parameter: `bin/sparkling-shell --conf "spark.executor.memory=4g"`
+

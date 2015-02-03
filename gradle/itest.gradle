@@ -1,0 +1,45 @@
+//
+// Integration tests support
+//
+
+sourceSets {
+    integTest {
+        scala.srcDir file('src/integTest/scala')
+        resources.srcDir file('src/integTest/resources')
+
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
+}
+
+configurations {
+    integTestCompile.extendsFrom testCompile
+    integTestRuntime.extendsFrom testRuntime
+}
+
+// Add a new configuration containing only jars needed for test run
+configurations {
+    integTestAssembly {
+        description = 'Contains only jars needed to run integration tests on top of Spark.'
+        transitive = false
+    }
+}
+
+task integTest(type: Test) {
+    group = 'Verification'
+    description = 'Runs all integration tests'
+    testClassesDir = sourceSets.integTest.output.classesDir
+    classpath = sourceSets.integTest.runtimeClasspath
+}
+
+// Create jar
+task integTestJar(type: Jar, dependsOn: integTestClasses) {
+    group = "Build"
+    description = "Assembles a jar archive with integration test classes."
+    baseName = "${project.name}_${scalaBinaryVersion}"
+    appendix = 'itest'
+    from sourceSets.integTest.output
+}
+
+// TO run integration tests jar is required
+integTest.dependsOn integTestJar
