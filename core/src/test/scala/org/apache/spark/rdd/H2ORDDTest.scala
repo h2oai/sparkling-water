@@ -23,7 +23,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.fvec.{DataFrame, Vec}
-import water.parser.ValueString
+import water.parser.{Categorical, ValueString}
 
 /**
  * Testing schema for h2o schema rdd transformation.
@@ -65,11 +65,32 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     rdd.unpersist()
   }
 
-  test("RDD[StringHolder] to DataFrame and back") {
+  test("RDD[StringHolder] to DataFrame[Enum] and back") {
 
     val rdd = sc.parallelize(1 to 1000, 100).map( v => StringHolder(Some(v.toString)))
     val dataFrame:DataFrame = hc.createDataFrame(rdd)
 
+    assert (dataFrame.vec(0).isEnum, "The vector type should be enum")
+    assert (dataFrame.vec(0).domain().length == 1000, "The vector domain should be 1000")
+
+    assertBasicInvariants(rdd, dataFrame, (row, vec) => {
+      val dom = vec.domain()
+      val value = dom(vec.at8(row).asInstanceOf[Int]) // value stored at row-th
+      // Using == since int should be mapped strictly to doubles
+      assert (row+1 == value.toInt, "The DataFrame values should match row numbers")
+    })
+    // Clean up
+    dataFrame.delete()
+    rdd.unpersist()
+  }
+
+  test("RDD[StringHolder] to DataFrame[String] and back") {
+
+    val rdd = sc.parallelize(1 to (Categorical.MAX_ENUM_SIZE + 1), 100).map( v => StringHolder(Some(v.toString)))
+    val dataFrame:DataFrame = hc.createDataFrame(rdd)
+
+    assert (dataFrame.vec(0).isString, "The vector type should be string")
+    assert (dataFrame.vec(0).domain() == null, "The vector should have null domain")
     val valueString = new ValueString()
     assertBasicInvariants(rdd, dataFrame, (row, vec) => {
       val row1 = (row + 1).toString
@@ -81,7 +102,6 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     dataFrame.delete()
     rdd.unpersist()
   }
-
 
   private type RowValueAssert = (Long, Vec) => Unit
 

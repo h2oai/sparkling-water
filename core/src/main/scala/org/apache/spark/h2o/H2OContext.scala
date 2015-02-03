@@ -26,7 +26,7 @@ import org.apache.spark.sql.execution.{ExistingRdd, SparkLogicalPlan}
 import org.apache.spark.sql.{Row, SQLContext, SchemaRDD}
 import water._
 import water.fvec.Vec
-import water.parser.ValueString
+import water.parser.{Categorical, ValueString}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -298,7 +298,7 @@ object H2OContext extends Logging {
       case q if q==classOf[java.lang.Float]   => Vec.T_NUM
       case q if q==classOf[java.lang.Double]  => Vec.T_NUM
       case q if q==classOf[java.lang.Boolean] => Vec.T_NUM
-      case q if q==classOf[java.lang.String]  => if (d.length < water.parser.Categorical.MAX_ENUM_SIZE) {
+      case q if q==classOf[java.lang.String]  => if (d!=null && d.length < water.parser.Categorical.MAX_ENUM_SIZE) {
                                                     Vec.T_ENUM
                                                   } else {
                                                     Vec.T_STR
@@ -320,7 +320,7 @@ object H2OContext extends Logging {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
 
-    val rows = sc.runJob(rdd, perRDDPartition(keyName) _) // eager, not lazy, evaluation
+    val rows = sc.runJob(rdd, perRDDPartition(keyName, fdomains) _) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
     rows.foreach{ case(cidx,nrows) => res(cidx) = nrows }
 
@@ -373,21 +373,41 @@ object H2OContext extends Logging {
   }
 
   private
-  def perRDDPartition[A<:Product]( keystr:String )
+  def perRDDPartition[A<:Product]( keystr:String, domains: Array[Array[String]] )
                                          ( context: TaskContext, it: Iterator[A] ): (Int,Long) = {
     // An array of H2O NewChunks; A place to record all the data in this partition
     val nchks = water.fvec.FrameUtils.createNewChunks(keystr,context.partitionId)
+    // Make a helper hash for enum domains
+    val domHash = domains.map( ary =>
+      if (ary==null) {
+        null.asInstanceOf[mutable.Map[String,Int]]
+      } else {
+        val m = new mutable.HashMap[String, Int]()
+        for (idx <- ary.indices) m.put(ary(idx), idx)
+        m
+      })
+
+    val valStr = new ValueString()
     it.foreach(prod => { // For all rows which are subtype of Product
       for( i <- 0 until prod.productArity ) { // For all fields...
-      val fld = prod.productElement(i)
-        nchks(i).addNum( { // Copy numeric data from fields to NewChunks
-        val x = fld match { case Some(n) => n; case _ => fld }
-          x match {
-            case n: Number => n.doubleValue
-            case n: Boolean => if (n) 1 else 0
-            case _ => Double.NaN
-          }
-        } )
+        val fld = prod.productElement(i)
+        val chk = nchks(i)
+        val x = fld match {
+            case Some(n) => n
+            case _ => fld
+        }
+        x match {
+          case n: Number  => chk.addNum(n.doubleValue())
+          case n: Boolean => chk.addNum(if (n) 1 else 0)
+          case n: String  =>
+            if (domains(i)==null) chk.addStr(valStr.setTo(n))
+            else {
+              val sv = n
+              val smap = domHash(i)
+              chk.addEnum(smap.getOrElse(sv, !!!))
+            }
+          case _ => chk.addNA()
+        }
       }
     })
     // Compress & write out the Partition/Chunks
@@ -406,7 +426,7 @@ object H2OContext extends Logging {
       val acc =  sc.accumulableCollection(new mutable.HashSet[String]())
       // Distributed ops
       rdd.foreach( r => { acc += r.getString(idx) })
-      res(idx) = acc.value.toArray.sorted
+      res(idx) = if (acc.value.size > Categorical.MAX_ENUM_SIZE) null else acc.value.toArray.sorted
     }
     res
   }
@@ -421,7 +441,7 @@ object H2OContext extends Logging {
       // Distributed ops
       // FIXME product element can be Optional or Non-optional
       rdd.foreach( r => { acc += r.productElement(idx).asInstanceOf[Option[String]].get })
-      res(idx) = acc.value.toArray.sorted
+      res(idx) = if (acc.value.size > Categorical.MAX_ENUM_SIZE) null else acc.value.toArray.sorted
     }
     res
   }
