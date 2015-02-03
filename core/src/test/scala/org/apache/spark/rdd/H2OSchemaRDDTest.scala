@@ -47,7 +47,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     import h2oContext._
 
     // FIXME: create different shapes of frame
-    val dataFrame = new DataFrame(new File("examples/smalldata/prostate.csv"))
+    val dataFrame = new DataFrame(new File("../examples/smalldata/prostate.csv"))
     implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asSchemaRDD(dataFrame)
 
