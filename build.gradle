@@ -61,10 +61,17 @@ configure(subprojects) { project ->
     version = rootProject.version
 
     repositories {
+
         mavenCentral()
+
         maven {
             url "https://repository.cloudera.com/artifactory/cloudera-repos/"
         }
+        // Public Sonatype repository
+        maven {
+            url "https://oss.sonatype.org/content/repositories/releases/"
+        }
+
         // Should be enabled only in development mode
         //mavenLocal()
     }
