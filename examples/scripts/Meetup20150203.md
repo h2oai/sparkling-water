@@ -19,7 +19,7 @@
 ## Download
 
 Please download [Sparkling Water
-0.2.8-71](http://h2o-release.s3.amazonaws.com/sparkling-water/master/62/index.html) and unzip the file:
+0.2.6-69](http://h2o-release.s3.amazonaws.com/sparkling-water/master/69/index.html) and unzip the file:
 ```
 unzip sparkling-water-0.2.6-69.zip
 cd sparkling-water-0.2.6-69
