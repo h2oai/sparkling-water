@@ -61,13 +61,16 @@ test {
 
     // For a new JVM for each test class
     forkEvery = 1
+
+    // Make sure that test driver have enough memory
+    maxHeapSize = "2g"
 }
 
 test.dependsOn testJar
 
 // Useful task to setup idea test configuration
 task printTestEnv << {
-println("-Dspark.testing=true\n" +
+    println("-Dspark.testing=true\n" +
             "-Dspark.test.home=${getSparkHome()}\n" +
             "-Dsparkling.test.assembly=${configurations.testAssembly.artifacts.file.join(',')}\n")
 }
