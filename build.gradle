@@ -48,7 +48,7 @@ configure(allprojects) { project ->
     ext { 
       scalaVersion       = '2.10.4'
       scalaBinaryVersion = '2.10'
-      h2oVersion         = '0.1.23'
+      h2oVersion         = '0.1.24'
       sparkVersion       = '1.2.0'
     }
 }
