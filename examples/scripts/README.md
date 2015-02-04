@@ -1,11 +1,11 @@
-# Sparkling Water Meetup (01/20/2015)
+# Sparkling Water Meetup (02/03/2015)
 
 ## Requirements
  
 ### For Sparkling Water part
  - Oracle Java 7+
- - Spark 1.1.0
- - Sparkling Water 0.2.4-62
+ - [Spark 1.2.0](http://spark.apache.org/downloads.html)
+ - [Sparkling Water 0.2.6-69](http://h2o-release.s3.amazonaws.com/sparkling-water/master/69/index.html)
  
 ### For R part
  - R 3.1.2+
@@ -13,15 +13,16 @@
  
 ### For Sparkling Water droplet part
  - Git
- - Idea/Eclipse IDE with Scala support
+ - Idea/Eclipse IDE with Scala support (Idea is recommended)
+ - [Sparkling Water Droplet](https://github.com/h2oai/h2o-droplets)
  
 ## Download
 
 Please download [Sparkling Water
-0.2.4-62](http://h2o-release.s3.amazonaws.com/sparkling-water/master/62/index.html) and unzip the file:
+0.2.8-71](http://h2o-release.s3.amazonaws.com/sparkling-water/master/62/index.html) and unzip the file:
 ```
-unzip sparkling-water-0.2.4-62.zip
-cd sparkling-water-0.2.4-62
+unzip sparkling-water-0.2.6-69.zip
+cd sparkling-water-0.2.6-69
 ```
 
 > All materials will be also available on provided USBs.
@@ -48,6 +49,9 @@ Hands-On slides are available at [H2O.ai SlideShare account](http://www.slidesha
   import h2oContext._
   ```
 
+  > At this point, you can go to [http://localhost:54321](http://localhost:54321) and see
+  status of H2O cloud by typing `getCloud`
+  
 4. Load weather data for Chicago international airport (ORD) with help of RDD API.
   ```scala
   val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
@@ -61,6 +65,9 @@ Hands-On slides are available at [H2O.ai SlideShare account](http://www.slidesha
   val dataFile = "examples/smalldata/year2005.csv.gz"
   val airlinesData = new DataFrame(new File(dataFile))
   ```
+  
+  > You can go to [http://localhost:54321](http://localhost:54321) and start to explore
+  loaded data by typing `getFrames`
 
 6. Select flights with destination in Chicago (ORD)
   ```scala
@@ -114,17 +121,20 @@ Hands-On slides are available at [H2O.ai SlideShare account](http://www.slidesha
   val testTable  = splits(2)
   ```
   
-11. Inspect results in H2O Flow - go to (http://localhost:54321/)[http://localhost:54321/]
+11. Inspect results in H2O Flow - go to [http://localhost:54321/](http://localhost:54321/)
   
 12. Run deep learning to produce model estimating arrival delay:
   ```scala
   import hex.deeplearning.DeepLearning
   import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+  import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
   val dlParams = new DeepLearningParameters()
   dlParams._train = trainTable
   dlParams._response_column = 'ArrDelay
   dlParams._valid = validTable
-  dlParams._epochs = 100
+  dlParams._epochs = 5
+  dlParams._activation = Activation.RectifierWithDropout
+  dlParams._hidden = Array[Int](100, 100)
   dlParams._reproducible = false
   dlParams._force_load_balance = false
 
@@ -142,14 +152,19 @@ Hands-On slides are available at [H2O.ai SlideShare account](http://www.slidesha
   ```
 
 ## Use Sparkling Water from R
+
+1. Install h2o-r from RStudio/R:
+   ```
+   install.packages("sparkling-water-meetup/R/h2o_0.1.22.99999.tar.gz", repos = NULL, type = "source")
+   ```
   
-1. In Sparkling Shell generate R code producing residuals plot
+2. In Sparkling Shell generate R code producing residuals plot
   ```scala
   import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
   residualPlotRCode(dlPredictTable, 'predict, testTable, 'ArrDelay)
   ```
   
-2.  Use resulting R code inside RStudio:
+3.  Use resulting R code inside RStudio:
   ```R
   #
   # R script for residual plot
@@ -241,6 +256,11 @@ Hands-On slides are available at [H2O.ai SlideShare account](http://www.slidesha
 	  val conf = new SparkConf().setAppName("Flight analysis")
 	  conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local"))
 	  val sc = new SparkContext(conf)
+	  
+	  /* Put here your code */
+	  
+	  // Shutdown the application
+	  sc.stop()
     }
   }
   ```
@@ -253,15 +273,13 @@ Hands-On slides are available at [H2O.ai SlideShare account](http://www.slidesha
   import org.apache.spark.examples.h2o._
  
   import org.apache.spark._
-
+  
   object AirlineWeatherAnalysis {
     def main(args: Array[String]) {
 	  val conf = new SparkConf().setAppName("Flights analysis")
 	  conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local"))
 	  val sc = new SparkContext(conf)
 	  
-      import org.apache.spark.h2o._
-	  import org.apache.spark.examples.h2o._
       val h2oContext = new H2OContext(sc).start()
       import h2oContext._
     
