@@ -15,29 +15,29 @@ import org.apache.spark.mllib.clustering.KMeans
 import org.apache.spark.mllib.linalg.Vectors
 
 @RunWith(classOf[JUnitRunner])
-class KMeansITestSuite extends FunSuite {
+class HexDev64TestSuite extends FunSuite {
 
   val swassembly = sys.props.getOrElse("sparkling.test.assembly",
     fail("The variable 'sparkling.test.assembly' is not set! It should point to assembly jar file."))
 
   val testJar = sys.props.getOrElse("sparkling.test.jar", fail("The variable 'sparkling.test.jar' should "))
 
-  test("MLlib KMeans on airlines_all data") {
+  test("Transfer of H2O Dataframe to SparkRDD") {
     // Requests environment:
     // - MASTER=YARN-CLIENT
     // - SPARK_HOME=spark-1.2.0-hadoop2.4
     //
-    val cmdLine = Array[String]("--class", "water.sparkling.itest.HexDev62Test", "--jars", swassembly, testJar)
+    val cmdLine = Array[String]("--class", "water.sparkling.itest.HexDev64Test", "--jars", swassembly, testJar)
     println(cmdLine.mkString(","))
     SparkSubmit.main(cmdLine)
   }
 }
 
-object KMeansITest {
+object HexDev64Test {
   def main(args: Array[String]): Unit = {
     val swassembly = sys.props.getOrElse("sparkling.test.assembly",
       throw new IllegalArgumentException("The variable 'sparkling.test.assembly' is not set! It should point to assembly jar file."))
-    val conf = new SparkConf().setAppName("KMeansITestSuite").setJars(swassembly :: Nil)
+    val conf = new SparkConf().setAppName("HexDev64TestSuite").setJars(swassembly :: Nil)
     val sc = new SparkContext(conf)
     val h2oContext = new H2OContext(sc).start()
 
@@ -47,7 +47,8 @@ object KMeansITest {
     val timer1 = new water.util.Timer
     val d = new java.net.URI(path)
     val airlinesData = new DataFrame(d)
-    val timeToParse = timer1.time
+    val timeToParse = timer1.time/1000
+    println("Time it took to parse 116 million airlines = " + timeToParse + "secs")
 
     // Transfer data from H2O to Spark RDD
 
@@ -56,20 +57,9 @@ object KMeansITest {
     val timer2 = new water.util.Timer
     implicit val sqlContext = new SQLContext(sc)
     val airlinesRDD = asSchemaRDD(airlinesData)(sqlContext)
-    val timeToTransfer = timer2.time
+    val timeToTransfer = timer2.time/1000
+    println("Time it took to convert data to SparkRDD = " + timeToTransfer + "secs")
 
     assert (airlinesData.numRows == airlinesRDD.count, "Transfer of H2ORDD to SparkRDD completed!")
-
-    // Run Kmeans in Spark  on indices 10,19,26 (FlightNo, Distance, WeatherDelay)
-
-    val airlinesVectorRDD = airlinesRDD.map(row => Vectors.dense(row.getByte(1) * 1.0, row.getByte(2) * 1.0, row.getByte(3) * 1.0))
-
-    val timer3 = new water.util.Timer
-    val clusters = KMeans.train(airlinesVectorRDD, 5, 20)
-    val timeForKMModel = timer3.time
-
-    // Evaluate clustering by computing within set sum of squared errors
-    val WSSSE = clusters.computeCost(airlinesVectorRDD)
-    println("Within Set Sum of Squared Errors = " + WSSSE)
   }
 }

@@ -100,6 +100,8 @@ class Airlines (val Year              :Option[Int],
       sb.append(productElement(i)).append(',')
     sb.toString
   }
+
+  def isWrongRow():Boolean = (0 until productArity).map( idx => productElement(idx)).forall(e => e==None)
 }
 
 /** A dummy csv parser for airlines dataset. */
