@@ -276,24 +276,32 @@ TODO: platform testing - mesos, SIMR
  * YARN cluster - the `MASTER variable contains `yarn-client` or `yarn-cluster` values
 
 ## Testing scenarios
- * Initializing H2O on the top of Spark
- It includes running of `new H2OContext(sc).start()` and verifying that H2O was properly initialized on all Spark nodes:
+ 1. Initializing H2O on the top of Spark
+ It includes running of `new H2OContext(sc).start()` and verifying that H2O was properly initialized on all Spark nodes
+ 2. Load data with help of H2O API from various data sources
+   1. local disk
+   2. HDFS
+   3. S3N
+ 3. Transformation from `RDD[T]` to `DataFrame`
+ 4. Transformation from `SchemaRDD` to `DataFrame`
+ 5. Transformation from `DataFrame` to `RDD` 
+ 6. Transformation from `DataFrame` to `SchemaRDD`
+ 7. Integration with H2O Algorithms
+   - using RDD as algorithm input
+ 8. Integration with MLlib Algorithms
+   - using DataFrame as algorithm input
+     - KMeans
+ 9. Integration with MLlib pipelines (TBD)
+
+## Integration tests
+The following code reflects use-cases listed above. The code is executed in all testing environments (if applicable): local, standalone cluster, yarn
+ 1. use-case
   ```scala
   val sc = new SparkContext(conf)
   val h2oContext = new H2OContext(sc).start()
   import h2oContext._
   ```
- * Load data with help of H2O API from various data sources
-   - local disk
-   - HDFS
-   - S3N
- * Transformation from `RDD[T]` to `DataFrame`
- * Transformation from `SchemaRDD` to `DataFrame`
- * Transformation from `DataFrame` to `RDD` 
- * Transformation from `DataFrame` to `SchemaRDD`
- * Integration with H2O Algorithms
-   - using RDD as algorithm input
- * Integration with MLlib Algorithms
-   - using DataFrame as algorithm input
-     - KMeans
- * Integration with MLlib pipelines (TBD)
+  
+ 2. 
+ 2. 
+ 2. 
