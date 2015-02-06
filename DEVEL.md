@@ -277,7 +277,12 @@ TODO: platform testing - mesos, SIMR
 
 ## Testing scenarios
  * Initializing H2O on the top of Spark
- It includes running of `new H2OContext(sc).start()` and verifying that H2O was properly initialized on all Spark nodes
+ It includes running of `new H2OContext(sc).start()` and verifying that H2O was properly initialized on all Spark nodes:
+  ```scala
+  val sc = new SparkContext(conf)
+  val h2oContext = new H2OContext(sc).start()
+  import h2oContext._
+  ```
  * Load data with help of H2O API from various data sources
    - local disk
    - HDFS
