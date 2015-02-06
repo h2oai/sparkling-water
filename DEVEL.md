@@ -134,15 +134,21 @@ val hc = new H2OContext(sc).start(3)
 ```
 
 ### Transforming DataFrame into RDD[T]
-The `H2OContext` class provides explicit conversion `asRDD` which creates a RDD-like wrapper
-around provided H2O DataFrame:
+The `H2OContext` class provides explicit conversion `asRDD` which creates a RDD-like wrapper around provided H2O DataFrame:
 ```scala
 def asRDD[A <: Product: TypeTag: ClassTag](fr : DataFrame) : RDD[A]
 ```
 
-The call expect the type `A` to create correctly typed RDD. 
+The call expects the type `A` to create correctly typed RDD. 
 The transformation requires type `A` to be bound by `Product` interface.
 The relation between columns of DataFrame and attributes of class `A` is based on name matching.
+
+#### Example
+```scala
+val df: DataFrame = ...
+val rdd = asRDD[Weather](df)
+
+```
 
 ### Transforming DataFrame into SchemaRDD
 The `H2OContext` class provides explicit conversion `asSchemaRDD` which creates a SchemaRDD-like wrapper
@@ -152,20 +158,23 @@ def asSchemaRDD(fr : DataFrame)(implicit sqlContext: SQLContext) : SchemaRDD
 ```
 
 This call does not require any type parameters, but since it creates `SchemaRDD` instances it requires access to
-an instance of `SQLContext`. In this case, the instance is provided as an implicit parameter of the call. The parameter can be passed in two ways:
+an instance of `SQLContext`. In this case, the instance is provided as an implicit parameter of the call. The parameter can be passed in two ways as explicit parameter or introducing implicit variable into current context.
 
-As explicit parameter of call:
+The schema of created instance of SchemaRDD is derived from column name and types of given DataFrame.
+
+
+#### Example
+
+Using explicit parameter of call to pass sqlContext:
 ```scala
 val sqlContext = new SQLContext(sc)
 val schemaRDD = asSchemaRDD(dataFrame)(sqlContext)
 ```
-or as implicit parameter provided by actual environment:
+or as implicit variable provided by actual environment:
 ```scala
 implicit val sqlContext = new SQLContext(sc)
 val schemaRDD = asSchemaRDD(dataFrame)
 ```
-
-The schema of created instance of SchemaRDD is derived from column name and types of given DataFrame.
 
 
 ### Transforming RDD[T] into DataFrame
@@ -175,12 +184,27 @@ The `H2OContext` provides **implicit** conversion from given `RDD[A]` to DataFra
 implicit def createDataFrame[A <: Product : TypeTag](rdd : RDD[A]) : DataFrame
 ```
 
+#### Example
+```scala
+val rdd: RDD[Weather] = ...
+import h2oContext._
+val df: DataFrame = rdd // implicit call of H2OContext.createDataFrame[Weather](rdd) is used 
+```
+
 ### Transforming SchemaRDD into DataFrame
 The `H2OContext` provides **implicit** conversion from given `SchemaRDD` to DataFrame. The conversion will create a new DataFrame, transfer data from given RDD, and save it to H2O K/V data store.
 
 ```scala
 implicit def createDataFrame(rdd : SchemaRDD) : DataFrame
 ```
+
+#### Example
+```scala
+val srdd: SchemaRDD = ...
+import h2oContext._
+val df: DataFrame = srdd // implicit call of H2OContext.createDataFrame(srdd) is used 
+```
+
 
 ### Creating DataFrame from existing Key
 
@@ -254,13 +278,14 @@ TODO: platform testing - mesos, SIMR
 ## Testing scenarios
  * Initializing H2O on the top of Spark
  It includes running of `new H2OContext(sc).start()` and verifying that H2O was properly initialized on all Spark nodes
- * Load of data from various data sources
+ * Load data with help of H2O API from various data sources
    - local disk
    - HDFS
- * Transformation from RDD to DataFrame
- * Transformation from SchemaRDD to DataFrame
- * Transformation from DataFrame to RDD 
- * Transformation from DataFrame to SchemaRDD 
+   - S3N
+ * Transformation from `RDD[T]` to `DataFrame`
+ * Transformation from `SchemaRDD` to `DataFrame`
+ * Transformation from `DataFrame` to `RDD` 
+ * Transformation from `DataFrame` to `SchemaRDD`
  * Integration with H2O Algorithms
    - using RDD as algorithm input
  * Integration with MLlib Algorithms
