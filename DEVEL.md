@@ -341,8 +341,7 @@ It expects Spark 1.2.0.
   val airlinesData = new DataFrame(uri)
    ```
   > Spark/H2O needs to know AWS credentials specified in `core-site.xml`. The credentials are passed via `HADOOP_CONF_DIR` pointing to a configuration directory with `core-site.xml`.
-	  
-	
+
 3. Transformation from `RDD[T]` to `DataFrame`
 
   ```scala
