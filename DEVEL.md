@@ -352,6 +352,28 @@ The following code reflects use-cases listed above. The code is executed in all 
    ```
    
  4. Transformation from `SchemaRDD` to `DataFrame`
+    ```scala
+    val sc = new SparkContext(conf)
+    import org.apache.spark.h2o._
+    val h2oContext = new H2OContext(sc).start()
+    import org.apache.spark.sql._
+    val sqlContext = new SQLContext(sc)
+    import sqlContext._
+    val srdd:SchemaRDD = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
+    val dataFrame = h2oContext.toDataFrame(srdd)
+    ``` 
+   
+5. Transformation from `DataFrame` to `RDD[T]`
+   ```scala
+   val sc = new SparkContext(conf)
+   import org.apache.spark.h2o._
+   val h2oContext = new H2OContext(sc).start()
+   val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
+   val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)  
+   val newRdd = h2oContext.asRDD[IntHolder](dataFrame)
+   ```
+  
+6. Transformation from `DataFrame` to `SchemaRDD`
    ```scala
    val sc = new SparkContext(conf)
    import org.apache.spark.h2o._
@@ -361,5 +383,5 @@ The following code reflects use-cases listed above. The code is executed in all 
    import sqlContext._
    val srdd:SchemaRDD = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
    val dataFrame = h2oContext.toDataFrame(srdd)
+   val newRdd = h2oContext.asSchemaRDD(dataFrame)(sqlContext)
    ``` 
-5. 
