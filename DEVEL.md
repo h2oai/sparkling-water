@@ -318,7 +318,6 @@ It expects Spark 1.2.0.
    val df: DataFrame = new DataFrame(new File("/datasets/allyears2k_headers.csv.gz"))
    ```
    > Note: The file has to exist on all nodes.
- 	
   2. HDFS
  
    ```scala
@@ -329,7 +328,6 @@ It expects Spark 1.2.0.
    val uri = new java.net.URI(path)
   val airlinesData = new DataFrame(uri)
    ```
- 
   3. S3N
   
    ```scala
