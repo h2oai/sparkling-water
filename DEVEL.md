@@ -358,6 +358,8 @@ The following code reflects use-cases listed above. The code is executed in all 
    val h2oContext = new H2OContext(sc).start()
    import org.apache.spark.sql._
    val sqlContext = new SQLContext(sc)
-   val srdd:SchemaRDD = sc.parallelize(values).map(v => LongField(v))
+   import sqlContext._
+   val srdd:SchemaRDD = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
    val dataFrame = h2oContext.toDataFrame(srdd)
    ``` 
+5. 
