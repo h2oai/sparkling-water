@@ -295,7 +295,8 @@ TODO: platform testing - mesos, SIMR
 
 ## Integration tests examples
 
-The following code reflects use-cases listed above. The code is executed in all testing environments (if applicable): local, standalone cluster, yarn
+The following code reflects use-cases listed above. The code is executed in all testing environments (if applicable): local, standalone cluster, yarn.
+It expects Spark 1.2.0.
 
 
  1. Initialize H2O
@@ -385,3 +386,22 @@ The following code reflects use-cases listed above. The code is executed in all 
    val dataFrame = h2oContext.toDataFrame(srdd)
    val newRdd = h2oContext.asSchemaRDD(dataFrame)(sqlContext)
    ``` 
+7. Integration with H2O Algorithms - using RDD as algorithm input
+   ```scala
+   val sc = new SparkContext(conf)
+   import org.apache.spark.h2o._
+   import org.apache.spark.examples.h2o._
+   val h2oContext = new H2OContext(sc).start()
+   val path = "/tmp/prostate.csv"
+   val prostateText = sc.textFile(path)
+   val prostateRDD = airlinesRaw.map(_.split(",")).map(row => ProstateParse(row))
+   import hex.tree.gbm.GBM
+   import hex.tree.gbm.GBMModel.GBMParameters
+   import h2oContext._
+   val train:DataFrame = prostateRDD
+   val gbmParams = new GBMParameters()
+   gbmParams._train = train
+   gbmParams._response_column = 'CAPSULE
+   gbmParams._ntrees = 10
+   ```
+   
