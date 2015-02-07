@@ -309,6 +309,10 @@ The following code reflects use-cases listed above. The code is executed in all 
  2. Data load
  	1. local disk
  	```scala
+ 	import org.apache.spark.h2o._
+    val sc = new SparkContext(conf)
+    val h2oContext = new H2OContext(sc).start()
+    import h2oContext._
  	import java.io.File
  	val df: DataFrame = new DataFrame(new File("/datasets/allyears2k_headers.csv.gz"))
  	```
@@ -316,6 +320,10 @@ The following code reflects use-cases listed above. The code is executed in all 
  	> Note: The file has to exist on all nodes.
  	2. HDFS
  	```scala
+ 	import org.apache.spark.h2o._
+    val sc = new SparkContext(conf)
+    val h2oContext = new H2OContext(sc).start()
+    import h2oContext._
  	val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
  	val uri = new java.net.URI(path)
     val airlinesData = new DataFrame(uri)
@@ -323,6 +331,10 @@ The following code reflects use-cases listed above. The code is executed in all 
  	
 	3. S3N
  	```scala
+ 	import org.apache.spark.h2o._
+    val sc = new SparkContext(conf)
+	val h2oContext = new H2OContext(sc).start()
+    import h2oContext._
  	val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
  	val uri = new java.net.URI(path)
     val airlinesData = new DataFrame(uri)
