@@ -395,7 +395,7 @@ It expects Spark 1.2.0.
    val h2oContext = new H2OContext(sc).start()
    val path = "/tmp/prostate.csv"
    val prostateText = sc.textFile(path)
-   val prostateRDD = airlinesRaw.map(_.split(",")).map(row => ProstateParse(row))
+   val prostateRDD = prostateText.map(_.split(",")).map(row => ProstateParse(row))
    import hex.tree.gbm.GBM
    import hex.tree.gbm.GBMModel.GBMParameters
    import h2oContext._
