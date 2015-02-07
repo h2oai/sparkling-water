@@ -338,7 +338,7 @@ It expects Spark 1.2.0.
  	  ```
 	  > Spark/H2O needs to know AWS credentials specified in `core-site.xml`. The credentials are passed via `HADOOP_CONF_DIR` pointing to a configuration directory with `core-site.xml`.
 	
- 3. Transformation from `RDD[T]` to `DataFrame`
+3. Transformation from `RDD[T]` to `DataFrame`
    ```scala
    val sc = new SparkContext(conf)
    import org.apache.spark.h2o._
@@ -347,7 +347,7 @@ It expects Spark 1.2.0.
    val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)
    ```
    
- 4. Transformation from `SchemaRDD` to `DataFrame`
+4. Transformation from `SchemaRDD` to `DataFrame`
     ```scala
     val sc = new SparkContext(conf)
     import org.apache.spark.h2o._
