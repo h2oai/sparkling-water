@@ -337,84 +337,85 @@ It expects Spark 1.2.0.
           val airlinesData = new DataFrame(uri)
  	  ```
 	  > Spark/H2O needs to know AWS credentials specified in `core-site.xml`. The credentials are passed via `HADOOP_CONF_DIR` pointing to a configuration directory with `core-site.xml`.
+	  
 	
 3. Transformation from `RDD[T]` to `DataFrame`
-   ```scala
-   val sc = new SparkContext(conf)
-   import org.apache.spark.h2o._
-   val h2oContext = new H2OContext(sc).start()
-   val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
-   val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)
-   ```
+  ```scala
+  val sc = new SparkContext(conf)
+  import org.apache.spark.h2o._
+  val h2oContext = new H2OContext(sc).start()
+  val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
+  val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)
+  ```
    
 4. Transformation from `SchemaRDD` to `DataFrame`
-    ```scala
-    val sc = new SparkContext(conf)
-    import org.apache.spark.h2o._
-    val h2oContext = new H2OContext(sc).start()
-    import org.apache.spark.sql._
-    val sqlContext = new SQLContext(sc)
-    import sqlContext._
-    val srdd:SchemaRDD = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
-    val dataFrame = h2oContext.toDataFrame(srdd)
-    ``` 
+  ```scala
+  val sc = new SparkContext(conf)
+  import org.apache.spark.h2o._
+  val h2oContext = new H2OContext(sc).start()
+  import org.apache.spark.sql._
+  val sqlContext = new SQLContext(sc)
+  import sqlContext._
+  val srdd:SchemaRDD = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
+  val dataFrame = h2oContext.toDataFrame(srdd)
+  ``` 
    
 5. Transformation from `DataFrame` to `RDD[T]`
-   ```scala
-   val sc = new SparkContext(conf)
-   import org.apache.spark.h2o._
-   val h2oContext = new H2OContext(sc).start()
-   val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
-   val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)  
-   val newRdd = h2oContext.asRDD[IntHolder](dataFrame)
-   ```
+  ```scala
+  val sc = new SparkContext(conf)
+  import org.apache.spark.h2o._
+  val h2oContext = new H2OContext(sc).start()
+  val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
+  val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)  
+  val newRdd = h2oContext.asRDD[IntHolder](dataFrame)
+  ```
   
 6. Transformation from `DataFrame` to `SchemaRDD`
-   ```scala
-   val sc = new SparkContext(conf)
-   import org.apache.spark.h2o._
-   val h2oContext = new H2OContext(sc).start()
-   import org.apache.spark.sql._
-   val sqlContext = new SQLContext(sc)
-   import sqlContext._
-   val srdd:SchemaRDD = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
-   val dataFrame = h2oContext.toDataFrame(srdd)
-   val newRdd = h2oContext.asSchemaRDD(dataFrame)(sqlContext)
-   ``` 
+  ```scala
+  val sc = new SparkContext(conf)
+  import org.apache.spark.h2o._
+  val h2oContext = new H2OContext(sc).start()
+  import org.apache.spark.sql._
+  val sqlContext = new SQLContext(sc)
+  import sqlContext._
+  val srdd:SchemaRDD = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
+  val dataFrame = h2oContext.toDataFrame(srdd)
+  val newRdd = h2oContext.asSchemaRDD(dataFrame)(sqlContext)
+  ``` 
    
 7. Integration with H2O Algorithms - using RDD as algorithm input
-   ```scala
-   val sc = new SparkContext(conf)
-   import org.apache.spark.h2o._
-   import org.apache.spark.examples.h2o._
-   val h2oContext = new H2OContext(sc).start()
-   val path = "/tmp/prostate.csv"
-   val prostateText = sc.textFile(path)
-   val prostateRDD = prostateText.map(_.split(",")).map(row => ProstateParse(row))
-   import hex.tree.gbm.GBM
-   import hex.tree.gbm.GBMModel.GBMParameters
-   import h2oContext._
-   val train:DataFrame = prostateRDD
-   val gbmParams = new GBMParameters()
-   gbmParams._train = train
-   gbmParams._response_column = 'CAPSULE
-   gbmParams._ntrees = 10
-   val gbmModel = new GBM(gbmParams).trainModel.get
-   ```
+  ```scala
+  val sc = new SparkContext(conf)
+  import org.apache.spark.h2o._
+  import org.apache.spark.examples.h2o._
+  val h2oContext = new H2OContext(sc).start()
+  val path = "/tmp/prostate.csv"
+  val prostateText = sc.textFile(path)
+  val prostateRDD = prostateText.map(_.split(",")).map(row => ProstateParse(row))
+  import hex.tree.gbm.GBM
+  import hex.tree.gbm.GBMModel.GBMParameters
+  import h2oContext._
+  val train:DataFrame = prostateRDD
+  val gbmParams = new GBMParameters()
+  gbmParams._train = train
+  gbmParams._response_column = 'CAPSULE
+  gbmParams._ntrees = 10
+  val gbmModel = new GBM(gbmParams).trainModel.get
+  ```
    
 8. Integration with MLlib algorithms
-   ```scala
-   val sc = new SparkContext(conf)
-   import org.apache.spark.h2o._
-   import org.apache.spark.examples.h2o._
-   import java.io.File
-   val h2oContext = new H2OContext(sc).start()
-   val path = "/tmp/prostate.csv"
-   val prostateDF = new DataFrame(new File(path))
-   val prostateRDD = h2oContext.asRDD[Prostate](prostateDF)
-   import org.apache.spark.mllib.clustering.KMeans
-   import org.apache.spark.mllib.linalg.Vectors
-   val train = prostateRDD.map( v => Vectors.dense(v.CAPSULE.get*1.0, v.AGE.get*1.0, v.DPROS.get*1.0,v.DCAPS.get*1.0, v.GLEASON.get*1.0))
-   val clusters = KMeans.train(train, 5, 20)
-   ```
-   
+  ```scala
+  val sc = new SparkContext(conf)
+  import org.apache.spark.h2o._
+  import org.apache.spark.examples.h2o._
+  import java.io.File
+  val h2oContext = new H2OContext(sc).start()
+  val path = "/tmp/prostate.csv"
+  val prostateDF = new DataFrame(new File(path))
+  val prostateRDD = h2oContext.asRDD[Prostate](prostateDF)
+  import org.apache.spark.mllib.clustering.KMeans
+  import org.apache.spark.mllib.linalg.Vectors
+  val train = prostateRDD.map( v => Vectors.dense(v.CAPSULE.get*1.0, v.AGE.get*1.0, v.DPROS.get*1.0,v.DCAPS.get*1.0, v.GLEASON.get*1.0))
+  val clusters = KMeans.train(train, 5, 20)
+  ```
+  
