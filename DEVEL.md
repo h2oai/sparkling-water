@@ -310,8 +310,8 @@ The following code reflects use-cases listed above. The code is executed in all 
  	1. Local disk
   	
   	```scala
- 	import org.apache.spark.h2o._
     val sc = new SparkContext(conf)
+ 	import org.apache.spark.h2o._
     val h2oContext = new H2OContext(sc).start()
  	import java.io.File
  	val df: DataFrame = new DataFrame(new File("/datasets/allyears2k_headers.csv.gz"))
@@ -321,8 +321,8 @@ The following code reflects use-cases listed above. The code is executed in all 
  	2. HDFS
  	
  	```scala
- 	import org.apache.spark.h2o._
     val sc = new SparkContext(conf)
+ 	import org.apache.spark.h2o._
     val h2oContext = new H2OContext(sc).start()
   	val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
  	val uri = new java.net.URI(path)
@@ -332,8 +332,8 @@ The following code reflects use-cases listed above. The code is executed in all 
 	3. S3N
 	
  	```scala
- 	import org.apache.spark.h2o._
     val sc = new SparkContext(conf)
+    import org.apache.spark.h2o._
 	val h2oContext = new H2OContext(sc).start()
  	val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
  	val uri = new java.net.URI(path)
@@ -344,10 +344,20 @@ The following code reflects use-cases listed above. The code is executed in all 
 	
  3. Transformation from `RDD[T]` to `DataFrame`
    ```scala
-   import org.apache.spark.h2o._
    val sc = new SparkContext(conf)
+   import org.apache.spark.h2o._
    val h2oContext = new H2OContext(sc).start()
    val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
-   val dataFrame:DataFrame = hc.createDataFrame(rdd)
+   val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)
    ```
- 4. 
+   
+ 4. Transformation from `SchemaRDD` to `DataFrame`
+   ```scala
+   val sc = new SparkContext(conf)
+   import org.apache.spark.h2o._
+   val h2oContext = new H2OContext(sc).start()
+   import org.apache.spark.sql._
+   val sqlContext = new SQLContext(sc)
+   val srdd:SchemaRDD = sc.parallelize(values).map(v => LongField(v))
+   val dataFrame = h2oContext.toDataFrame(srdd)
+   ``` 
