@@ -386,6 +386,7 @@ It expects Spark 1.2.0.
    val dataFrame = h2oContext.toDataFrame(srdd)
    val newRdd = h2oContext.asSchemaRDD(dataFrame)(sqlContext)
    ``` 
+   
 7. Integration with H2O Algorithms - using RDD as algorithm input
    ```scala
    val sc = new SparkContext(conf)
