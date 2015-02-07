@@ -306,7 +306,6 @@ It expects Spark 1.2.0.
   val h2oContext = new H2OContext(sc).start()
   import h2oContext._
   ```
-  
 2. Data load
   1. Local disk
   
@@ -349,7 +348,6 @@ It expects Spark 1.2.0.
   val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
   val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)
   ```
-   
 4. Transformation from `SchemaRDD` to `DataFrame`
 
   ```scala
@@ -361,8 +359,7 @@ It expects Spark 1.2.0.
   import sqlContext._
   val srdd:SchemaRDD = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
   val dataFrame = h2oContext.toDataFrame(srdd)
-  ``` 
-   
+  ```
 5. Transformation from `DataFrame` to `RDD[T]`
 
   ```scala
@@ -373,7 +370,6 @@ It expects Spark 1.2.0.
   val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)  
   val newRdd = h2oContext.asRDD[IntHolder](dataFrame)
   ```
-  
 6. Transformation from `DataFrame` to `SchemaRDD`
 
   ```scala
@@ -387,7 +383,6 @@ It expects Spark 1.2.0.
   val dataFrame = h2oContext.toDataFrame(srdd)
   val newRdd = h2oContext.asSchemaRDD(dataFrame)(sqlContext)
   ``` 
-   
 7. Integration with H2O Algorithms - using RDD as algorithm input
 
   ```scala
@@ -408,7 +403,6 @@ It expects Spark 1.2.0.
   gbmParams._ntrees = 10
   val gbmModel = new GBM(gbmParams).trainModel.get
   ```
-   
 8. Integration with MLlib algorithms
 
   ```scala
