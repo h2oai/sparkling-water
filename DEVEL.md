@@ -298,7 +298,6 @@ TODO: platform testing - mesos, SIMR
 The following code reflects use-cases listed above. The code is executed in all testing environments (if applicable): local, standalone cluster, yarn.
 It expects Spark 1.2.0.
 
-
  1. Initialize H2O
   ```scala
   import org.apache.spark.h2o._
@@ -308,40 +307,36 @@ It expects Spark 1.2.0.
   ```
   
  2. Data load
- 	1. Local disk
-  	
-  	```scala
-    val sc = new SparkContext(conf)
- 	import org.apache.spark.h2o._
-    val h2oContext = new H2OContext(sc).start()
- 	import java.io.File
- 	val df: DataFrame = new DataFrame(new File("/datasets/allyears2k_headers.csv.gz"))
- 	```
- 	> Note: The file has to exist on all nodes.
+  	1. Local disk
+    	  ```scala
+          val sc = new SparkContext(conf)
+ 	  import org.apache.spark.h2o._
+          val h2oContext = new H2OContext(sc).start()
+ 	  import java.io.File
+ 	  val df: DataFrame = new DataFrame(new File("/datasets/allyears2k_headers.csv.gz"))
+ 	  ```
+ 	  > Note: The file has to exist on all nodes.
  	
  	2. HDFS
- 	
- 	```scala
-    val sc = new SparkContext(conf)
- 	import org.apache.spark.h2o._
-    val h2oContext = new H2OContext(sc).start()
-  	val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
- 	val uri = new java.net.URI(path)
-    val airlinesData = new DataFrame(uri)
- 	```
+ 	  ```scala
+          val sc = new SparkContext(conf)
+ 	  import org.apache.spark.h2o._
+          val h2oContext = new H2OContext(sc).start()
+          val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
+ 	  val uri = new java.net.URI(path)
+          val airlinesData = new DataFrame(uri)
+ 	  ```
  	
 	3. S3N
-	
- 	```scala
-    val sc = new SparkContext(conf)
-    import org.apache.spark.h2o._
-	val h2oContext = new H2OContext(sc).start()
- 	val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
- 	val uri = new java.net.URI(path)
-    val airlinesData = new DataFrame(uri)
- 	```
- 	
-	> Spark/H2O needs to know AWS credentials specified in `core-site.xml`. The credentials are passed via `HADOOP_CONF_DIR` pointing to a configuration directory with `core-site.xml`.
+ 	  ```scala
+          val sc = new SparkContext(conf)
+          import org.apache.spark.h2o._
+	  val h2oContext = new H2OContext(sc).start()
+ 	  val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
+ 	  val uri = new java.net.URI(path)
+          val airlinesData = new DataFrame(uri)
+ 	  ```
+	  > Spark/H2O needs to know AWS credentials specified in `core-site.xml`. The credentials are passed via `HADOOP_CONF_DIR` pointing to a configuration directory with `core-site.xml`.
 	
  3. Transformation from `RDD[T]` to `DataFrame`
    ```scala
