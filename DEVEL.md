@@ -293,15 +293,42 @@ TODO: platform testing - mesos, SIMR
      - KMeans
  9. Integration with MLlib pipelines (TBD)
 
-## Integration tests
+## Integration tests examples
+
 The following code reflects use-cases listed above. The code is executed in all testing environments (if applicable): local, standalone cluster, yarn
- 1. use-case
+
+
+ 1. Initialize H2O
   ```scala
+  import org.apache.spark.h2o._
   val sc = new SparkContext(conf)
   val h2oContext = new H2OContext(sc).start()
   import h2oContext._
   ```
   
- 2. 
- 2. 
+ 2. Data load
+ 	1. local disk
+ 	```scala
+ 	import java.io.File
+ 	val df: DataFrame = new DataFrame(new File("/datasets/allyears2k_headers.csv.gz"))
+ 	```
+ 	
+ 	> Note: The file has to exist on all nodes.
+ 	2. HDFS
+ 	```scala
+ 	val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
+ 	val uri = new java.net.URI(path)
+    val airlinesData = new DataFrame(uri)
+ 	```
+ 	
+	3. S3N
+ 	```scala
+ 	val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
+ 	val uri = new java.net.URI(path)
+    val airlinesData = new DataFrame(uri)
+ 	```
+ 	
+	> Spark/H2O needs to know AWS credentials specified in `core-site.xml`
+	
+ 3. 
  2. 
