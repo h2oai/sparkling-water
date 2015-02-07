@@ -404,5 +404,22 @@ It expects Spark 1.2.0.
    gbmParams._train = train
    gbmParams._response_column = 'CAPSULE
    gbmParams._ntrees = 10
+   val gbmModel = new GBM(gbmParams).trainModel.get
+   ```
+   
+8. Integration with MLlib algorithms
+   ```scala
+   val sc = new SparkContext(conf)
+   import org.apache.spark.h2o._
+   import org.apache.spark.examples.h2o._
+   import java.io.File
+   val h2oContext = new H2OContext(sc).start()
+   val path = "/tmp/prostate.csv"
+   val prostateDF = new DataFrame(new File(path))
+   val prostateRDD = h2oContext.asRDD[Prostate](prostateDF)
+   import org.apache.spark.mllib.clustering.KMeans
+   import org.apache.spark.mllib.linalg.Vectors
+   val train = prostateRDD.map( v => Vectors.dense(v.CAPSULE.get*1.0, v.AGE.get*1.0, v.DPROS.get*1.0,v.DCAPS.get*1.0, v.GLEASON.get*1.0))
+   val clusters = KMeans.train(train, 5, 20)
    ```
    
