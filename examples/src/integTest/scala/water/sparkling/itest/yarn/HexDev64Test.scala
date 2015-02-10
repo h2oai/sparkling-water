@@ -14,6 +14,10 @@ class HexDev64TestSuite extends FunSuite with SparkITest {
     launch( "water.sparkling.itest.yarn.HexDev64Test",
       env {
         sparkMaster("yarn-client")
+        // Configure YARN environment
+        conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test
+        conf("spark.executor.instances", 3) // 3 executor instances
+        conf("spark.executor.memory", "5g") // 5g per executor
       }
     )
   }
