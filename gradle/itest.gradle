@@ -42,4 +42,7 @@ task integTestJar(type: Jar, dependsOn: integTestClasses) {
 }
 
 // TO run integration tests jar is required
+integTest.dependsOn jar
+integTest.dependsOn testJar
 integTest.dependsOn integTestJar
+

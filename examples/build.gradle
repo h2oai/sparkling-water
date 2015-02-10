@@ -34,24 +34,53 @@ artifacts {
   integTestAssembly integTestJar
 
   // pull selected dependencies
-  dep(testDependencies).each {
+  dep(testDependencies + [ "ai.h2o:sparkling-water-core", "ai.h2o:h2o-scala_${scalaBinaryVersion}" ]).each {
     integTestAssembly it
   }
 }
 
 integTest {
+  // Pass references to libraries to test launcher
   systemProperty "spark.testing",   "true"
-
   systemProperty "spark.test.home", "${sparkHome}"
   // Pass list of jars required for testing
   systemProperty "sparkling.test.assembly", "${configurations.integTestAssembly.artifacts.file.join(',')}"
   systemProperty "sparkling.test.jar", "${integTestJar.archivePath}"
 
+  // Decide which tests should be launch here based on environment
+  switch ( detectEnvironment() ) {
+    case "yarn":
+      include "water/sparkling/itest/yarn/**"
+      break
+    case "standalone":
+      include "water/sparkling/itest/standalone/**"
+      break
+    case "local":
+      include "water/sparkling/itest/local/**"
+      break
+  }
+
   // Run with assertions ON
   enableAssertions = true
-
   // For a new JVM for each test class
   forkEvery = 1
+  // Working dir will be root project
+  workingDir = rootDir
+  // Increase test runner memory
+  maxHeapSize = "2g"
+
+  // Show standard out and standard error of the test JVM(s) on the console
+  // DEBUG testLogging.showStandardStreams = true
+}
+
+String detectEnvironment(String defaultEnv = "local") {
+  String denv = [ project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
+    System.properties["sparklingTestEnv"],
+    defaultEnv
+  ].find { h -> h!=null } // first match
+  // Return env
+  logger.info("* Detected '$denv' Sparkling test environment")
+  denv
 }
 
 /**
