@@ -1,43 +1,27 @@
-package water.sparkling.itest
+package water.sparkling.itest.yarn
 
-import org.apache.spark.deploy.SparkSubmit
 import org.apache.spark.h2o._
+import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest._
 import org.scalatest.junit.JUnitRunner
-
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.junit.JUnitRunner
-import water.{DKV, Key}
-import org.junit.runner.RunWith
-import org.apache.spark.mllib.clustering.KMeans
-import org.apache.spark.mllib.linalg.Vectors
+import water.sparkling.itest.SparkITest
 
 @RunWith(classOf[JUnitRunner])
-class HexDev64TestSuite extends FunSuite {
+class HexDev64TestSuite extends FunSuite with SparkITest {
 
-  val swassembly = sys.props.getOrElse("sparkling.test.assembly",
-    fail("The variable 'sparkling.test.assembly' is not set! It should point to assembly jar file."))
-
-  val testJar = sys.props.getOrElse("sparkling.test.jar", fail("The variable 'sparkling.test.jar' should "))
-
-  test("Transfer of H2O Dataframe to SparkRDD") {
-    // Requests environment:
-    // - MASTER=YARN-CLIENT
-    // - SPARK_HOME=spark-1.2.0-hadoop2.4
-    //
-    val cmdLine = Array[String]("--class", "water.sparkling.itest.HexDev64Test", "--jars", swassembly, testJar)
-    println(cmdLine.mkString(","))
-    SparkSubmit.main(cmdLine)
+  test("HEX-DEV 64 test - airlines on big data") {
+    launch( "water.sparkling.itest.yarn.HexDev64Test",
+      env {
+        sparkMaster("yarn-client")
+      }
+    )
   }
 }
 
 object HexDev64Test {
   def main(args: Array[String]): Unit = {
-    val swassembly = sys.props.getOrElse("sparkling.test.assembly",
-      throw new IllegalArgumentException("The variable 'sparkling.test.assembly' is not set! It should point to assembly jar file."))
-    val conf = new SparkConf().setAppName("HexDev64TestSuite").setJars(swassembly :: Nil)
+    val conf = new SparkConf().setAppName("HexDev64Test")
     val sc = new SparkContext(conf)
     val h2oContext = new H2OContext(sc).start()
 
