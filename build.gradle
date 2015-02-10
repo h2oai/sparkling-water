@@ -106,7 +106,9 @@ configure(subprojects) { project ->
                         "org.javassist:javassist",
                         "gov.nist.math:jama",
                         "com.google.code.gson:gson",
-                        "org.reflections:reflections"]
+                        "org.reflections:reflections",
+                        "com.google.guava:guava",
+                        "commons-collections:commons-collections"]
     }
 }
 
