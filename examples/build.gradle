@@ -8,5 +8,106 @@ dependencies {
 
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"
+
+  // And use scalatest for Scala testing
+  testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
+  testCompile "junit:junit:4.11"
+
+  // Integration tests requirements
+  integTestCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
+  integTestCompile "junit:junit:4.11"
+
+  // To enable Idea compiler even for integTestCode which use mllib
+  /*integTestCompile*/ compile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
+
+  // Put Spark Assembly on runtime path
+  integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: 'spark*.jar' )
 }
+
+//
+// Setup integration tests environment
+//
+artifacts {
+  integTestAssembly jar
+  // No tests for examples
+  //integTestAssembly testJar
+  integTestAssembly integTestJar
+
+  // pull selected dependencies
+  dep(testDependencies + [ "ai.h2o:sparkling-water-core", "ai.h2o:h2o-scala_${scalaBinaryVersion}" ]).each {
+    integTestAssembly it
+  }
+}
+
+integTest {
+  // Pass references to libraries to test launcher
+  systemProperty "spark.testing",   "true"
+  systemProperty "spark.test.home", "${sparkHome}"
+  // Pass list of jars required for testing
+  systemProperty "sparkling.test.assembly", "${configurations.integTestAssembly.artifacts.file.join(',')}"
+  systemProperty "sparkling.test.jar", "${integTestJar.archivePath}"
+
+  // Decide which tests should be launch here based on environment
+  switch ( detectEnvironment() ) {
+    case "yarn":
+      include "water/sparkling/itest/yarn/**"
+      break
+    case "standalone":
+      include "water/sparkling/itest/standalone/**"
+      break
+    case "local":
+      include "water/sparkling/itest/local/**"
+      break
+  }
+
+  // Run with assertions ON
+  enableAssertions = true
+  // For a new JVM for each test class
+  forkEvery = 1
+  // Working dir will be root project
+  workingDir = rootDir
+  // Increase test runner memory
+  maxHeapSize = "2g"
+
+  // Show standard out and standard error of the test JVM(s) on the console
+  // DEBUG testLogging.showStandardStreams = true
+}
+
+String detectEnvironment(String defaultEnv = "local") {
+  String denv = [ project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
+    System.properties["sparklingTestEnv"],
+    defaultEnv
+  ].find { h -> h!=null } // first match
+  // Return env
+  logger.info("* Detected '$denv' Sparkling test environment")
+  denv
+}
+
+/**
+ * Find dependencies from 'configuration.runtime' matching given specification.
+ *
+ * Specification is given in form group_name:module_name
+ *
+ * @param d list of specifications.
+ * @return
+ */
+public FileCollection dep(List<String> d) {
+  Configuration conf = configurations.runtime
+  List<String[]> depsSpec = d.collect { it.split(":")}
+  Set<ResolvedDependency> toInclude = []
+  resolve(conf.resolvedConfiguration.firstLevelModuleDependencies, toInclude, depsSpec)
+  files( toInclude.collect {
+    it.moduleArtifacts*.file
+  }.flatten())
+}
+
+void resolve(Set<ResolvedDependency> deps, Set<ResolvedDependency> includeDeps, List<String[]> depsSpec) {
+  deps.each { d->
+    if (depsSpec.any { ds -> d.moduleGroup==ds[0] && d.moduleName==ds[1] })
+      if (includeDeps.add(d)) {
+        resolve(d.children, includeDeps, depsSpec)
+      }
+  }
+}
+
 

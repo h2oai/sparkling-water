@@ -28,19 +28,15 @@ configurations {
     }
 }
 
+//
+// Setup artifacts for testing on top of Spark cluster
+// - should contain all dependencies required to build an assembly executable on Spark
 artifacts {
     testAssembly jar
     testAssembly testJar
 
     // pull selected dependencies
-    dep(["ai.h2o:h2o-core",
-     "ai.h2o:h2o-algos",
-     "ai.h2o:h2o-app",
-     "joda-time:joda-time",
-     "org.javassist:javassist",
-     "gov.nist.math:jama",
-     "com.google.code.gson:gson",
-     "org.reflections:reflections"]).each {
+    dep(testDependencies).each {
         testAssembly it
     }
 }
@@ -50,47 +46,18 @@ test {
     // Test environment
     systemProperty "spark.testing",   "true"
 
-    def sh = getSparkHome()
-    if (sh!=null) systemProperty "spark.test.home", "${sh}"
+    systemProperty "spark.test.home", "${sparkHome}"
     // Pass list of jars required for testing
     systemProperty "sparkling.test.assembly", "${configurations.testAssembly.artifacts.file.join(',')}"
-
 
     // Run with assertions ON
     enableAssertions = true
 
     // For a new JVM for each test class
     forkEvery = 1
-
-    // Make sure that test driver have enough memory
-    maxHeapSize = "2g"
 }
 
 test.dependsOn testJar
-
-// Useful task to setup idea test configuration
-task printTestEnv << {
-    println("-Dspark.testing=true\n" +
-            "-Dspark.test.home=${getSparkHome()}\n" +
-            "-Dsparkling.test.assembly=${configurations.testAssembly.artifacts.file.join(',')}\n")
-}
-
-/* Get spark home value from local environmnet */
-String getSparkHome() {
-    String sh =
-        [ project.hasProperty("sparkHome") ? project["sparkHome"] : null,
-          System.properties["master"],
-          System.env['SPARK_HOME']
-        ].find { h -> h!=null ? new File(h).isDirectory() : false }
-    if (sh!=null) {
-        logger.info("Found spark home: ${sh}")
-        return sh
-    } else {
-        logger.warn("Cannot find Spark home - " +
-                "please specify SPARK_HOME env variable or pass -PsparkHome property to gradle script")
-        return null
-    }
-}
 
 /**
  * Find dependencies from 'configuration.runtime' matching given specification.
@@ -100,7 +67,7 @@ String getSparkHome() {
  * @param d list of specifications.
  * @return
  */
-FileCollection dep(List<String> d) {
+public FileCollection dep(List<String> d) {
     Configuration conf = configurations.runtime
     List<String[]> depsSpec = d.collect { it.split(":")}
     Set<ResolvedDependency> toInclude = []
@@ -109,6 +76,7 @@ FileCollection dep(List<String> d) {
         it.moduleArtifacts*.file
     }.flatten())
 }
+
 void resolve(Set<ResolvedDependency> deps, Set<ResolvedDependency> includeDeps, List<String[]> depsSpec) {
     deps.each { d->
         if (depsSpec.any { ds -> d.moduleGroup==ds[0] && d.moduleName==ds[1] })

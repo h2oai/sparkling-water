@@ -1,0 +1,49 @@
+/* Get spark home value from local environmnet */
+String getSparkHome() {
+    String sh =
+        [ project.hasProperty("sparkHome") ? project["sparkHome"] : null,
+          System.properties["SPARK_HOME"],
+          System.env['SPARK_HOME']
+        ].find { h -> h!=null ? new File(h).isDirectory() : false }
+    if (sh!=null) {
+        logger.info("Found spark home: ${sh}")
+        return sh
+    } else {
+        logger.warn("Cannot find Spark home - " +
+                "please specify SPARK_HOME env variable or pass -PsparkHome property to gradle script")
+        return null
+    }
+}
+
+/* Get spark home value from local environmnet */
+String getSparkMaster() {
+    String sh =
+            [ project.hasProperty("sparkMaster") ? project["sparkMaster"] : null,
+              System.properties["MASTER"],
+              System.env['MASTER']
+            ].find { h -> h!=null }
+    if (sh!=null) {
+        logger.info("Found spark master: ${sh}")
+        return sh
+    } else {
+        logger.warn("Cannot find Spark master - " +
+                "please specify MASTER env variable or pass -PsparkMaster property to gradle script")
+        return null
+    }
+}
+
+// Useful task to setup idea test configuration
+task printTestEnv << {
+    println("-Dspark.testing=true\n" +
+            "-Dspark.test.home=${getSparkHome()}\n" +
+            "-Dsparkling.test.assembly=${configurations.testAssembly.artifacts.file.join(',')}\n")
+}
+
+task printIntegTestEnv << {
+    println("-Dspark.testing=true\n" +
+            "-Dspark.test.home=${getSparkHome()}\n" +
+            "-Dsparkling.test.assembly=${configurations.integTestAssembly.artifacts.file.join(',')}\n")
+}
+
+ext.sparkHome = getSparkHome()
+ext.sparkMaster = getSparkMaster()

@@ -100,8 +100,7 @@ object AirlinesWithWeatherDemo {
         |plot( compare[,1:2] )
         |
       """.stripMargin)
-    // Explicit sleep for long time to make cluster available from R
-    Thread.sleep(60*60*1000)
+    // Shutdown Spark cluster
     sc.stop()
   }
 }

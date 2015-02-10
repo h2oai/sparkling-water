@@ -22,7 +22,6 @@ object AirlinesWithWeatherDemo2 {
   def main(args: Array[String]): Unit = {
     // Configure this application
     val conf: SparkConf = configure("Sparkling Water Meetup: Use Airlines and Weather Data for delay prediction")
-
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
     val h2oContext = new H2OContext(sc).start()
@@ -127,8 +126,6 @@ object AirlinesWithWeatherDemo2 {
     val gbmPredictTable = gbmModel.score(testTable)('predict)
     printf( residualPlotRCode(gbmPredictTable, 'predict, testTable, 'ArrDelay) )
 
-    // Explicit sleep for long time to make cluster available from R
-    Thread.sleep(60*60*1000)
     sc.stop()
   }
 }
