@@ -27,13 +27,15 @@ trait SparkITest extends BeforeAndAfterEach { self: Suite =>
     * @param env Spark environment
     */
   def launch(className: String, env: IntegTestEnv): Unit = {
-    val cmdLine = Array[String](
+    val cmdLine = Seq[String](
       "--class", className,
       "--jars", env.swassembly,
-      "--master", env.sparkMaster,
-      "--conf", env.sparkConf.map( p => p._1 + "=" + p._2).mkString(","),
-      env.testJar)
-    SparkSubmit.main(cmdLine)
+      "--verbose",
+      "--master", env.sparkMaster) ++
+      env.sparkConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++
+      Seq[String](env.testJar)
+
+    SparkSubmit.main(cmdLine.toArray)
   }
 
   object env {
@@ -54,6 +56,8 @@ trait SparkITest extends BeforeAndAfterEach { self: Suite =>
     lazy val sparkMaster = sys.props.getOrElse("MASTER",
       sys.props.getOrElse("spark.master",
         fail("The variable 'MASTER' should point to Spark cluster")))
+
+    def verbose:Boolean = true
 
     def sparkConf: mutable.Map[String, String]
   }
