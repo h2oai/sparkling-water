@@ -45,8 +45,8 @@ object KMeansITest {
     // Import all year airlines into H2O
     val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
     val timer1 = new water.util.Timer
-    //val d = new java.net.URI(new File(path))
-    val airlinesData = new DataFrame(new File(path))
+    val d = new java.net.URI(path)
+    val airlinesData = new DataFrame(d)
     val timeToParse = timer1.time
 
     // Transfer data from H2O to Spark RDD
