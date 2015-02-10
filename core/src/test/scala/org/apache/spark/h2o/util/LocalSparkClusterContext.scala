@@ -17,13 +17,9 @@
 
 package org.apache.spark.h2o.util
 
-import _root_.io.netty.util.internal.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.Suite
-import water.{UDPRebooted, H2O}
 
 /** Manages a local `sc` {@link SparkContext} variable, correctly stopping it after each test. */
 trait LocalSparkClusterContext extends SparkTestContext { self:Suite =>
