@@ -79,7 +79,7 @@ String detectEnvironment(String defaultEnv = "local") {
     defaultEnv
   ].find { h -> h!=null } // first match
   // Return env
-  logger.info("* Detected '$denv' Sparkling test environment")
+  logger.info("* Detected '$denv' Sparkling test environment (configure via property 'sparklingTestEnv')")
   denv
 }
 
