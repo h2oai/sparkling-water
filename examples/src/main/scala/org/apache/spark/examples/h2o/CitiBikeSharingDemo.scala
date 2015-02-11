@@ -11,7 +11,9 @@ import org.apache.spark.sql.{SQLContext, SchemaRDD}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.joda.time.MutableDateTime
 import water.fvec._
+import water.util.Timer
 import water.{Key, MRTask}
+import scala.collection.mutable
 
 /**
  * Citibike NYC Demo.
@@ -32,18 +34,30 @@ object CitiBikeSharingDemo {
     implicit val sqlContext = new SQLContext(sc)
     import sqlContext._
 
+    // Make a shared timer
+    val gTimer = new GTimer
+
     //
     // Load data into H2O by using H2O parser
     //
-    val dataf = new DataFrame(new File("/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/2013-09.csv"))
+    gTimer.start()
+    val dataFiles = Array[String](
+      "2013-09.csv",
+      "2013-10.csv",
+      "2013-11.csv",
+      "2013-12.csv").map(f => new File("/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/", f))
+    val dataf = new DataFrame(dataFiles:_*)
+    gTimer.stop("H2O: parse")
 
     //
     // Transform start time to days from Epoch
     //
+    gTimer.start()
     val startTimeF = dataf('starttime)
     // Add a new column
     dataf.add(new TimeSplit().doIt(startTimeF))
     println(dataf)
+    gTimer.stop("H2O: split start time column")
 
     //
     // Transform DataFrame into SchemaRDD
@@ -62,20 +76,26 @@ object CitiBikeSharingDemo {
         |GROUP BY Days, start_station_id """.stripMargin)
     println(bph.take(10).mkString("\n"))
 
+
+    gTimer.start()
     val bphf:DataFrame = bph
+    gTimer.stop("Spark: do SQL query").start()
     val daysVec = bphf('Days)
     val finalTable = bphf.add(new TimeTransform().doIt(daysVec))
+    gTimer.stop("H2O: time transformation")
     println(finalTable)
 
     //
     // Split into train and test parts
     //
+    gTimer.start()
     val keys = Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make(_))
     val ratios = Array[Double](0.6, 0.3, 0.1)
     val frs = ShuffleSplitFrame.shuffleSplitFrame(finalTable, keys, ratios, 1234567689L)
     val train = frs(0)
     val test = frs(1)
     val hold = frs(2)
+    gTimer.stop("H2O: split frame")
 
     // Cleanup
     dataf.delete()
@@ -93,8 +113,10 @@ object CitiBikeSharingDemo {
     gbmParams._ntrees = 500
     gbmParams._max_depth = 6
 
+    gTimer.start()
     val gbm = new GBM(gbmParams)
     val gbmModel = gbm.trainModel.get
+    gTimer.stop("H2O: gbm model training")
 
     gbmModel.score(train).remove()
     gbmModel.score(test).remove()
@@ -105,6 +127,8 @@ object CitiBikeSharingDemo {
          |r2 on train: ${r2(gbmModel, train)}
          |r2 on test:  ${r2(gbmModel, test)}
          |r2 on hold:  ${r2(gbmModel, hold)}"""".stripMargin)
+
+    println(gTimer)
 
     sc.stop()
   }
@@ -132,9 +156,16 @@ object CitiBikeSharingDemo {
     assert (bottom10(0) == minDurationBikeId)
 
     val maxDurationBikeId = tGBduration.min()(Ordering.by[Row, Long](r => -r.getLong(1)))
-
   }
 
+  def withTimer(timer:GTimer, round: String)(b : => Unit): Unit = {
+    timer.start()
+    try {
+      b
+    } finally {
+      timer.stop(round)
+    }
+  }
 }
 
 class TimeSplit extends MRTask[TimeSplit] {
@@ -163,6 +194,27 @@ class TimeTransform extends MRTask[TimeSplit] {
       month.addNum(mdt.getMonthOfYear - 1)
       dayOfWeek.addNum(mdt.getDayOfWeek -1)
     }
+  }
+}
+
+class GTimer {
+  type T = (String, String)
+  val timeList = new mutable.Queue[T]()
+  var t:Timer = _
+
+  def start():GTimer = {
+    t = new Timer
+    this
+  }
+  def stop(roundName: String):GTimer = {
+    val item = roundName -> t.toString
+    timeList += item
+    t = null
+    this
+  }
+
+  override def toString: String = {
+    timeList.map(p=> s"   * ${p._1} : takes ${p._2}").mkString("------\nTiming\n------\n","\n", "\n------")
   }
 }
 
