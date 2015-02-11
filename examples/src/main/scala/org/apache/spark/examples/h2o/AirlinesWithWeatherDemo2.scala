@@ -5,7 +5,7 @@ import java.io.File
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
-import hex.SplitFrame
+import hex.{FrameSplitter, SplitFrame}
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure, residualPlotRCode}
@@ -76,15 +76,15 @@ object AirlinesWithWeatherDemo2 {
     // Transform date related columns to enums
     for( i <- 0 to 2) joinedDataFrame.replace(i, joinedDataFrame.vec(i).toEnum)
 
-    val sf = new SplitFrame()
-    sf.dataset = joinedDataFrame
-    sf.ratios = Array(0.7, 0.2)
-    sf.execImpl()
-    val splits = sf.get().destKeys
+    //
+    // Use low-level task to split the frame
+    val sf = new FrameSplitter(joinedDataFrame, Array(.7, .2))
+    water.H2O.submitTask(sf)
+    val splits = sf.getResult
 
-    val trainTable = new DataFrame(splits(0))
-    val validTable = new DataFrame(splits(1))
-    val testTable  = new DataFrame(splits(2))
+    val trainTable = splits(0)
+    val validTable = splits(1)
+    val testTable  = splits(2)
 
     //
     // -- Run DeepLearning
