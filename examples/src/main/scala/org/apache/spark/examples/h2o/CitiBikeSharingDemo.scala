@@ -2,17 +2,16 @@ package org.apache.spark.examples.h2o
 
 import java.io.File
 
+import hex.splitframe.ShuffleSplitFrame
 import hex.tree.gbm.GBMModel
-import hex.{ModelMetricsSupervised, Model, ModelMetrics, SupervisedModel}
-import hex.splitframe.{ShuffleSplitFrame, SplitFrame}
-import hex.splitframe.SplitFrameModel.SplitFrameParameters
-import org.apache.spark.h2o.H2OContext
-import org.apache.spark.sql.{SchemaRDD, SQLContext}
-import org.apache.spark.{SparkContext, SparkConf}
+import hex.{ModelMetrics, ModelMetricsSupervised}
 import org.apache.spark.examples.h2o.DemoUtils._
+import org.apache.spark.h2o.H2OContext
+import org.apache.spark.sql.{SQLContext, SchemaRDD}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.joda.time.MutableDateTime
-import water.{Key, MRTask}
 import water.fvec._
+import water.{Key, MRTask}
 
 /**
  * Citibike NYC Demo.
