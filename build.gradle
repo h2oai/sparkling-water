@@ -52,7 +52,8 @@ configure(allprojects) { project ->
     ext { 
       scalaVersion       = '2.10.4'
       scalaBinaryVersion = '2.10'
-      h2oVersion         = '0.1.27.1045'
+      h2oBuild           = '1046'
+      h2oVersion         = "0.1.27.$h2oBuild"
       sparkVersion       = '1.2.0'
       junitVersion       = '4.11'
     }
@@ -78,7 +79,7 @@ configure(subprojects) { project ->
         }
 
         maven {
-            url "http://h2o-release.s3.amazonaws.com/h2o-dev/master/1045/maven/repo/"
+            url "http://h2o-release.s3.amazonaws.com/h2o-dev/master/$h2oBuild/maven/repo/"
         }
 
         // Should be enabled only in development mode
