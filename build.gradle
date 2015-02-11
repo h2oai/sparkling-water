@@ -52,7 +52,7 @@ configure(allprojects) { project ->
     ext { 
       scalaVersion       = '2.10.4'
       scalaBinaryVersion = '2.10'
-      h2oVersion         = '0.1.25'
+      h2oVersion         = '0.1.27.1044'
       sparkVersion       = '1.2.0'
       junitVersion       = '4.11'
     }
@@ -75,6 +75,10 @@ configure(subprojects) { project ->
         // Public Sonatype repository
         maven {
             url "https://oss.sonatype.org/content/repositories/releases/"
+        }
+
+        mave {
+            url "http://h2o-release.s3.amazonaws.com/h2o-dev/master/1044/maven/repo/"
         }
 
         // Should be enabled only in development mode
