@@ -2,44 +2,43 @@
 
 ## Features
 
-Sparkling Water provides transparent integration of H2O engine and its machine learning 
-algorithms
-into the Spark platform. Hence, it enables:
- * using H2O algorithms in Spark workflow
+Sparkling Water provides transparent integration for the H2O engine and its machine learning 
+algorithms into the Spark platform, enabling:
+ * use of H2O algorithms in Spark workflow
  * transformation between H2O and Spark data structures
- * using Spark RDDs as input for H2O algorithms
+ * use of Spark RDDs as input for H2O algorithms
  * transparent execution of Sparkling Water applications on top of Spark
  
-### Supported data sources
-Currently Sparkling Water can use:
- - standard RDD API to load data and transferm them into DataFrame
- - H2O API to load data directly into DataFrame from
+### Supported Data Sources
+Currently, Sparkling Water can use the following data source types:
+ - standard RDD API to load data and transform them into DataFrame
+ - H2O API to load data directly into DataFrame from:
    - local file(s)
    - HDFS file(s)
-   - S3 files(s)
+   - S3 file(s)
    
-### Supported data formats
+### Supported Data Formats
 Sparkling Water can read data stored in the following formats:
  - CSV
  - SVMLight
  - ARFF
  
-### Supported execution environments
-Sparkling Water can run on the top of Spark:
- - running as local cluster (master points to one of values `local`, `local[*]`, or `local-cluster[...]`
- - running as a standalone cluster
- - running in YARN environment
+### Supported Execution Environments
+Sparkling Water can run on top of Spark in the following ways:
+ -  as a local cluster (master points to one of values `local`, `local[*]`, or `local-cluster[...]`
+ -  as a standalone cluster
+ -  in a YARN environment
 
 ## Design
 
-The Sparkling Water is designed to be executed as a regular Spark application.
+Sparkling Water is designed to be executed as a regular Spark application.
 It provides a way to initialize H2O services on each node in the Spark cluster and access
-data stored in Spark and H2O's data structures.
+data stored in data structures of Spark and H2O.
 
 Since Sparkling Water is designed as Spark application, it is launched 
-inside Spark executor which are created after application submission. 
-At this point H2O services including distributed KV store, memory manager are started
-and orchestrated into a cloud. The topology of the created cloud exactly matches the topology of the underlying Spark cluster.
+inside a Spark executor, which is created after application submission. 
+At this point, H2O starts services, including distributed KV store and memory manager,
+and orchestrates them into a cloud. The topology of the created cloud matches the topology of the underlying Spark cluster exactly.
 
 [Image from Slides showing the topology]
 
@@ -47,44 +46,44 @@ When H2O services are running, it is possible to create H2O data structures, cal
 
 
 ### Provided Primitives
-The Sparkling Water provides following primitives:
+The Sparkling Water provides following primitives, which are the basic classes used by Spark components:
 
 
 | Concept        | Implementation class              | Description |
 |----------------|-----------------------------------|-------------|
-| H2O context    | `org.apache.spark.h2o.H2OContext` | H2O context holds H2O state and provides primitives to transfer RDD into DataFrame and vice versa. It follows design principles of Spark primitives such as `SparkContext` or `SQLContext` |
-| H2O entry point| `water.H2O`                       | The class represents entry point for accessing H2O services. It holds information about actual H2O cluster including list of nodes and state of distributed K/V datastore. |
-| H2O DataFrame  | `water.fvec.DataFrame`            | DataFrame is H2O data structure representing a table of values. The table is column based providing column and row accessors. |
-| H2O Algorithms | package `hex`                     | The package represents H2O machine learning algorithms library including DeepLearning, GBM, RandomForest. |
+| H2O context    | `org.apache.spark.h2o.H2OContext` | H2O context that holds H2O state and provides primitives to transfer RDD into DataFrame and vice versa. It follows design principles of Spark primitives such as `SparkContext` or `SQLContext` |
+| H2O entry point| `water.H2O`                       | Represents the entry point for accessing H2O services. It holds information about the actual H2O cluster, including a list of nodes and the status of distributed K/V datastore. |
+| H2O DataFrame  | `water.fvec.DataFrame`            | DataFrame is the H2O data structure that represents a table of values. The table is column-based and provides column and row accessors. |
+| H2O Algorithms | package `hex`                     | Represents the H2O machine learning algorithms library, including DeepLearning, GBM, RandomForest. |
  
 
 ### H2O Initialization Sequence
-When `SparkContext` is available, it is possible to initialize and start H2O context
+If `SparkContext` is available, initialize and start H2O context: 
 ```scala
 val sc:SparkContext = ...
 val hc = new H2OContext(sc).start()
 ```
 
 The call will:
- 1. collect actual number and host names of executors (worker nodes) in Spark cluster;
- 2. launch H2O services on each detected executor;
- 3. cloud up H2O services based on the list of executors;
- 4. verify H2O cloud status
+ 1. Collect the number and host names of the executors (worker nodes) in the Spark cluster
+ 2. Launch H2O services on each detected executor
+ 3. Create a cloud for H2O services based on the list of executors
+ 4. Verify the H2O cloud status
 
-### Data sharing
-Sparkling Water provides transformation between different types of RDD and H2O's DataFrame and vice versa.
+### Data Sharing
+Sparkling Water enables transformation between different types of RDDs and H2O's DataFrame, and vice versa.
 
 [pic from slides]
 
-The direction from DataFrame to RDD is based on creating a cheap wrapper around H2O DataFrame which provides RDD-like API. In this case, no data is duplicated and is served directly from underling DataFrame.
+When converting from DataFrame to RDD, a wrapper is created around the H2O DataFrame to provide an RDD-like API. In this case, no data is duplicated; instead, the data is served directly from then underlying DataFrame.
 
-The opposite direction, from RDD to DataFrame, introduces data duplication since it transfers data from RDD storage into DataFrame. However, data stored in DataFrame is heavily compressed. 
+Converting in the opposite direction (from RDD to DataFrame) introduces data duplication, since it transfers data from RDD storage into DataFrame. However, data stored in DataFrame is heavily compressed. 
 
 TODO: estimation of overhead
 
 
 ## Typical Use-Case
-Sparkling Water excels in existing Spark-based workflows which need to call advanced machine learning algorithms. Typical example involves data munging with help of Spark API, prepared table is passed to H2O DeepLearning algorithm. The constructed DeepLearning model estimates different metrics based on testing data, which can be used in the rest of Spark workflow.
+Sparkling Water excels in leveraging existing Spark-based workflows that need to call advanced machine learning algorithms. A typical example involves data munging with help of Spark API, where a prepared table is passed to the H2O DeepLearning algorithm. The constructed DeepLearning model estimates different metrics based on the testing data, which can be used in the rest of the Spark workflow.
 
 ## Requirements
  - Linux or Mac OSX platform
@@ -94,26 +93,26 @@ Sparkling Water excels in existing Spark-based workflows which need to call adva
 ## Configuration
 
 ### Build Environment
-The environment should contain a property `SPARK_HOME` pointing to Spark distribution.
+The environment must contain a property `SPARK_HOME` pointing to Spark distribution.
 
 ### Run Environment
-The environment should contain a property `SPARK_HOME`.
+The environment must contain a property `SPARK_HOME`.
 
 ### Sparkling Water Configuration Properties
 
-These configuration properties can be passed to Spark to configure Sparking Water.
+The following configuration properties can be passed to Spark to configure Sparking Water:
 
 | Property name | Default value | Description |
 |---------------|---------------|-------------|
-|`spark.ext.h2o.flatfile` | `true`| Use flatfile approach for H2O clouding instead of multicast|
-|`spark.ext.h2o.cluster.size` | `-1` |Expected number of workers of H2O cloud. Value -1 means automatic detection of cluster size. Should be equal to number of Spark workers|
-|`spark.ext.h2o.port.base`| `54321`| Base port used for individual H2O nodes configuration.|
-|`spark.ext.h2o.port.incr`| `2` | Increment added to base port to find available port.|
-|`spark.ext.h2o.cloud.timeout`| `60*1000` | Timeout for cloud up in msec |
-|`spark.ext.h2o.spreadrdd.retries` | `10` | Number of retries to create an RDD covering all existing Spark executors. |
+|`spark.ext.h2o.flatfile` | `true`| Use flatfile (instead of multicast) approach for creating H2O cloud |
+|`spark.ext.h2o.cluster.size` | `-1` |Expected number of workers of H2O cloud. Use -1 to automatically detect the cluster size. This number must be equal to number of Spark workers.|
+|`spark.ext.h2o.port.base`| `54321`| Base port used for individual H2O node configuration.|
+|`spark.ext.h2o.port.incr`| `2` | Increment added to base port to find the next available port.|
+|`spark.ext.h2o.cloud.timeout`| `60*1000` | Timeout (in msec) for cloud  |
+|`spark.ext.h2o.spreadrdd.retries` | `10` | Number of retries for creation of an RDD covering all existing Spark executors. |
 |`spark.ext.h2o.cloud.name`| `sparkling-water-` | Name of H2O cloud. |
 |`spark.ext.h2o.log.level`| `INFO`| H2O internal log level. |
-|`spark.ext.h2o.network.mask`|--|Subnet selector for h2o if IP guess fail - useful if 'spark.ext.h2o.flatfile' is false and we are trying to guess right IP on the machine.* |
+|`spark.ext.h2o.network.mask`|--|Subnet selector for H2O if IP detection fails - useful for detecting the correct IP if 'spark.ext.h2o.flatfile' is false.* |
 
 ### Pass property to Sparkling Shell
 TODO: example of arg passing from sparkling shell.
@@ -128,20 +127,20 @@ val sc:SparkContext = ...
 val hc = new H2OContext(sc).start()
 ```
 
-When number of Spark nodes is known in advance, it can be specified in `start` call:
+When the number of Spark nodes is known, it can be specified in `start` call:
 ```scala
 val hc = new H2OContext(sc).start(3)
 ```
 
 ### Transforming DataFrame into RDD[T]
-The `H2OContext` class provides explicit conversion `asRDD` which creates a RDD-like wrapper around provided H2O DataFrame:
+The `H2OContext` class provides the explicit conversion, `asRDD`, which creates an RDD-like wrapper around the  provided H2O DataFrame:
 ```scala
 def asRDD[A <: Product: TypeTag: ClassTag](fr : DataFrame) : RDD[A]
 ```
 
-The call expects the type `A` to create correctly typed RDD. 
+The call expects the type `A` to create a correctly-typed RDD. 
 The transformation requires type `A` to be bound by `Product` interface.
-The relation between columns of DataFrame and attributes of class `A` is based on name matching.
+The relationship between the columns of DataFrame and the attributes of class `A` is based on name matching.
 
 #### Example
 ```scala
@@ -151,21 +150,20 @@ val rdd = asRDD[Weather](df)
 ```
 
 ### Transforming DataFrame into SchemaRDD
-The `H2OContext` class provides explicit conversion `asSchemaRDD` which creates a SchemaRDD-like wrapper
-around provided H2O DataFrame (technically it provides `RDD[sql.Row]` RDD API):
+The `H2OContext` class provides the explicit conversion, `asSchemaRDD`, which creates a SchemaRDD-like wrapper
+around the provided H2O DataFrame. Technically, it provides the `RDD[sql.Row]` RDD API:
 ```scala
 def asSchemaRDD(fr : DataFrame)(implicit sqlContext: SQLContext) : SchemaRDD
 ```
 
-This call does not require any type parameters, but since it creates `SchemaRDD` instances it requires access to
-an instance of `SQLContext`. In this case, the instance is provided as an implicit parameter of the call. The parameter can be passed in two ways as explicit parameter or introducing implicit variable into current context.
+This call does not require any type of parameters, but since it creates `SchemaRDD` instances, it requires access to an instance of `SQLContext`. In this case, the instance is provided as an implicit parameter of the call. The parameter can be passed in two ways: as an explicit parameter or by introducing an implicit variable into the current context.
 
-The schema of created instance of SchemaRDD is derived from column name and types of given DataFrame.
+The schema of the created instance of the SchemaRDD is derived from the column name and the types of DataFrames specified.
 
 
 #### Example
 
-Using explicit parameter of call to pass sqlContext:
+Using an explicit parameter in the call to pass sqlContext:
 ```scala
 val sqlContext = new SQLContext(sc)
 val schemaRDD = asSchemaRDD(dataFrame)(sqlContext)
@@ -178,7 +176,7 @@ val schemaRDD = asSchemaRDD(dataFrame)
 
 
 ### Transforming RDD[T] into DataFrame
-The `H2OContext` provides **implicit** conversion from given `RDD[A]` to DataFrame. As in opposite direction, the type `A` has to satisfy upper bound expressed by the type `Product`. The conversion will create a new DataFrame, transfer data from given RDD, and save it to H2O K/V data store.
+The `H2OContext` provides **implicit** conversion from the specified `RDD[A]` to DataFrame. As with conversion in the opposite direction, the type `A` has to satisfy the upper bound expressed by the type `Product`. The conversion will create a new DataFrame, transfer data from the specified RDD, and save it to the H2O K/V data store.
 
 ```scala
 implicit def createDataFrame[A <: Product : TypeTag](rdd : RDD[A]) : DataFrame
@@ -192,7 +190,7 @@ val df: DataFrame = rdd // implicit call of H2OContext.createDataFrame[Weather](
 ```
 
 ### Transforming SchemaRDD into DataFrame
-The `H2OContext` provides **implicit** conversion from given `SchemaRDD` to DataFrame. The conversion will create a new DataFrame, transfer data from given RDD, and save it to H2O K/V data store.
+The `H2OContext` provides **implicit** conversion from the specified `SchemaRDD` to DataFrame. The conversion will create a new DataFrame, transfer data from the specified RDD, and save it to the H2O K/V data store.
 
 ```scala
 implicit def createDataFrame(rdd : SchemaRDD) : DataFrame
@@ -206,10 +204,10 @@ val df: DataFrame = srdd // implicit call of H2OContext.createDataFrame(srdd) is
 ```
 
 
-### Creating DataFrame from existing Key
+### Creating DataFrame from an Existing Key
 
-If H2O cluster already contains a loaded DataFrame referenced by key `train.hex`, it is possible
-to reference it from Sparkling Water via creating a proxy `DataFrame` instance using key as the input:
+If the H2O cluster already contains a loaded DataFrame referenced by the key `train.hex`, it is possible
+to reference it from Sparkling Water by creating a proxy `DataFrame` instance using the key as the input:
 ```scala
 val trainDF = new DataFrame("train.hex")
 ```
@@ -218,10 +216,10 @@ val trainDF = new DataFrame("train.hex")
 TBD
 
 
-### Calling H2O Algorithm
+### Calling H2O Algorithms
 
-Calling of H2O algorithm is composed of three steps:
- 1. Creating parameters object which hold references to input data and parameters specific for the algorithm:
+Calling H2O algorithms is comprised of three steps:
+ 1. Create the parameters object that holds references to input data and parameters specific for the algorithm:
  ```scala
  val train: RDD = ...
  val valid: DataFrame = ...
@@ -233,17 +231,17 @@ Calling of H2O algorithm is composed of three steps:
  gbmParams._ntrees = 500
  gbmParams._max_depth = 6
  ```
- 2. Creating model builder:
+ 2. Create a model builder:
  ```scala
  val gbm = new GBM(gbmParams)
  ```
- 3. Invoking model build job and blocking till the end of computation (`trainModel` is asynchronous call by default):
+ 3. Invoke the model build job and block until the end of computation (`trainModel` is an asynchronous call by default):
  ```scala
  val gbmModel = gbm.trainModel.get
  ```
  
 
-## Running unit tests
+## Running Unit Tests
 JVM options -Dspark.testing=true -Dspark.test.home=/Users/michal/Tmp/spark/spark-1.1.0-bin-cdh4/
 
 ## Overhead Estimation
@@ -256,7 +254,7 @@ TBD
 TODO: used datasources, how data is moved to spark
 TODO: platform testing - mesos, SIMR
 
-# Running on select target platforms
+# Running on Select Target Platforms
 ## Standalone
 [Spark documentation - running Standalone cluster](http://spark.apache.org/docs/latest/spark-standalone.html)
 
@@ -268,37 +266,36 @@ TODO: platform testing - mesos, SIMR
 
 # Integration Tests
 
-## Testing environments
+## Testing Environments
  * Local - corresponds to setting Spark `MASTER` variable to one of `local`, or `local[*]`, or `local-cluster[_,_,_]` values
  * Standalone cluster - the `MASTER` variable points to existing standalone Spark cluster `spark://...` 
    * ad-hoc build cluster
    * CDH5.3 provided cluster
  * YARN cluster - the `MASTER variable contains `yarn-client` or `yarn-cluster` values
 
-## Testing scenarios
- 1. Initializing H2O on the top of Spark
- It includes running of `new H2OContext(sc).start()` and verifying that H2O was properly initialized on all Spark nodes
- 2. Load data with help of H2O API from various data sources
-   1. local disk
-   2. HDFS
-   3. S3N
- 3. Transformation from `RDD[T]` to `DataFrame`
- 4. Transformation from `SchemaRDD` to `DataFrame`
- 5. Transformation from `DataFrame` to `RDD` 
- 6. Transformation from `DataFrame` to `SchemaRDD`
- 7. Integration with H2O Algorithms
-   - using RDD as algorithm input
- 8. Integration with MLlib Algorithms
-   - using DataFrame as algorithm input
-     - KMeans
- 9. Integration with MLlib pipelines (TBD)
+## Testing Scenarios
+ 1. Initialize H2O on top of Spark by running  `new H2OContext(sc).start()` and verifying that H2O was properly initialized on all Spark nodes. 
+ 2. Load data with help from the H2O API from various data sources:
+   * local disk
+   * HDFS
+   * S3N
+ 3. Convert from `RDD[T]` to `DataFrame`
+ 4. Convert from `SchemaRDD` to `DataFrame`
+ 5. Convert from `DataFrame` to `RDD` 
+ 6. Convert from `DataFrame` to `SchemaRDD`
+ 7. Integrate with H2O Algorithms using RDD as algorithm input
+ 8. Integrate with MLlib Algorithms using DataFrame as algorithm input (KMeans)
+ 9. Integrate with MLlib pipelines (TBD)
 
-## Integration tests examples
+## Integration Tests Example
 
-The following code reflects use-cases listed above. The code is executed in all testing environments (if applicable): local, standalone cluster, yarn.
-It expects Spark 1.2.0.
+The following code reflects the use cases listed above. The code is executed in all testing environments (if applicable): 
+ * local
+ * standalone cluster
+ * YARN
+Spark 1.2.0 or later is required.
 
-1. Initialize H2O
+1. Initialize H2O:
 
   ```scala
   import org.apache.spark.h2o._
@@ -306,8 +303,8 @@ It expects Spark 1.2.0.
   val h2oContext = new H2OContext(sc).start()
   import h2oContext._
   ```
-2. Data load
-  1. Local disk
+2. Load data: 
+  1. From the local disk:
   
       ```scala
       val sc = new SparkContext(conf)
@@ -316,8 +313,8 @@ It expects Spark 1.2.0.
    import java.io.File
    val df: DataFrame = new DataFrame(new File("/datasets/allyears2k_headers.csv.gz"))
    ```
-   > Note: The file has to exist on all nodes.
-  2. HDFS
+   > Note: The file must be present on all nodes.
+  2. From HDFS:
  
    ```scala
   val sc = new SparkContext(conf)
@@ -327,7 +324,7 @@ It expects Spark 1.2.0.
    val uri = new java.net.URI(path)
   val airlinesData = new DataFrame(uri)
    ```
-  3. S3N
+  3. From S3N: 
   
    ```scala
   val sc = new SparkContext(conf)
@@ -337,9 +334,9 @@ It expects Spark 1.2.0.
    val uri = new java.net.URI(path)
   val airlinesData = new DataFrame(uri)
    ```
-  > Spark/H2O needs to know AWS credentials specified in `core-site.xml`. The credentials are passed via `HADOOP_CONF_DIR` pointing to a configuration directory with `core-site.xml`.
+  > Spark/H2O needs to know the AWS credentials specified in `core-site.xml`. The credentials are passed via `HADOOP_CONF_DIR` that points to a configuration directory with `core-site.xml`.
 
-3. Transformation from `RDD[T]` to `DataFrame`
+3. Convert from `RDD[T]` to `DataFrame`:
 
   ```scala
   val sc = new SparkContext(conf)
@@ -348,7 +345,7 @@ It expects Spark 1.2.0.
   val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
   val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)
   ```
-4. Transformation from `SchemaRDD` to `DataFrame`
+4. Convert from `SchemaRDD` to `DataFrame`:
 
   ```scala
   val sc = new SparkContext(conf)
@@ -360,7 +357,7 @@ It expects Spark 1.2.0.
   val srdd:SchemaRDD = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
   val dataFrame = h2oContext.toDataFrame(srdd)
   ```
-5. Transformation from `DataFrame` to `RDD[T]`
+5. Convert from `DataFrame` to `RDD[T]`:
 
   ```scala
   val sc = new SparkContext(conf)
@@ -370,7 +367,7 @@ It expects Spark 1.2.0.
   val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)  
   val newRdd = h2oContext.asRDD[IntHolder](dataFrame)
   ```
-6. Transformation from `DataFrame` to `SchemaRDD`
+6. Convert from `DataFrame` to `SchemaRDD`:
 
   ```scala
   val sc = new SparkContext(conf)
@@ -383,7 +380,7 @@ It expects Spark 1.2.0.
   val dataFrame = h2oContext.toDataFrame(srdd)
   val newRdd = h2oContext.asSchemaRDD(dataFrame)(sqlContext)
   ``` 
-7. Integration with H2O Algorithms - using RDD as algorithm input
+7. Integrate with H2O Algorithms using RDD as algorithm input:
 
   ```scala
   val sc = new SparkContext(conf)
@@ -403,7 +400,7 @@ It expects Spark 1.2.0.
   gbmParams._ntrees = 10
   val gbmModel = new GBM(gbmParams).trainModel.get
   ```
-8. Integration with MLlib algorithms
+8. Integrate with MLlib algorithms:
 
   ```scala
   val sc = new SparkContext(conf)
