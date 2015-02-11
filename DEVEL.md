@@ -304,7 +304,7 @@ Spark 1.2.0 or later is required.
   import h2oContext._
   ```
 2. Load data: 
-  1. From the local disk:
+   * From the local disk:
   
       ```scala
       val sc = new SparkContext(conf)
@@ -313,8 +313,9 @@ Spark 1.2.0 or later is required.
    import java.io.File
    val df: DataFrame = new DataFrame(new File("/datasets/allyears2k_headers.csv.gz"))
    ```
-   > Note: The file must be present on all nodes.
-  2. From HDFS:
+     > Note: The file must be present on all nodes.
+     
+   * From HDFS:
  
    ```scala
   val sc = new SparkContext(conf)
@@ -324,7 +325,7 @@ Spark 1.2.0 or later is required.
    val uri = new java.net.URI(path)
   val airlinesData = new DataFrame(uri)
    ```
-  3. From S3N: 
+   * From S3N: 
   
    ```scala
   val sc = new SparkContext(conf)
@@ -334,8 +335,7 @@ Spark 1.2.0 or later is required.
    val uri = new java.net.URI(path)
   val airlinesData = new DataFrame(uri)
    ```
-  > Spark/H2O needs to know the AWS credentials specified in `core-site.xml`. The credentials are passed via `HADOOP_CONF_DIR` that points to a configuration directory with `core-site.xml`.
-
+       > Spark/H2O needs to know the AWS credentials specified in `core-site.xml`. The credentials are passed via        `HADOOP_CONF_DIR` that points to a configuration directory with `core-site.xml`.
 3. Convert from `RDD[T]` to `DataFrame`:
 
   ```scala
