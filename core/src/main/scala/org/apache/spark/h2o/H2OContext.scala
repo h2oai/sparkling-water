@@ -425,7 +425,7 @@ object H2OContext extends Logging {
     for (idx <- 0 until ftypes.length if ftypes(idx).equals(classOf[String])) {
       val acc =  sc.accumulableCollection(new mutable.HashSet[String]())
       // Distributed ops
-      rdd.foreach( r => { acc += r.getString(idx) })
+      rdd.foreach( r => { if (!r.isNullAt(idx)) acc += r.getString(idx) })
       res(idx) = if (acc.value.size > Categorical.MAX_ENUM_SIZE) null else acc.value.toArray.sorted
     }
     res
