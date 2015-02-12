@@ -275,9 +275,9 @@ object H2OContext extends Logging {
   }
   private
   def finalizeFrame[T](keyName: String,
-                               res: Array[Long],
-                               colTypes: Array[Class[_]],
-                               colDomains: Array[Array[String]]):Frame = {
+                       res: Array[Long],
+                       colTypes: Array[Class[_]],
+                       colDomains: Array[Array[String]]):Frame = {
     val fr:Frame = DKV.get(keyName).get.asInstanceOf[Frame]
     val colH2OTypes = colTypes.indices.map(idx => {
       val typ = translateToH2OType(colTypes(idx), colDomains(idx))
@@ -359,7 +359,7 @@ object H2OContext extends Logging {
             else {
               val sv = row.getString(i)
               val smap = domHash(i)
-              nchk.addEnum(smap.getOrElse(sv, !!!))
+              nchk.addEnum(smap.get(sv).get)
             }
           case q if q==classOf[java.sql.Timestamp] => nchk.addNum(row.getAs[java.sql.Timestamp](i).getTime())
           case _ => Double.NaN
@@ -404,7 +404,7 @@ object H2OContext extends Logging {
             else {
               val sv = n
               val smap = domHash(i)
-              chk.addEnum(smap.getOrElse(sv, !!!))
+              chk.addEnum(smap.get(sv).get)
             }
           case _ => chk.addNA()
         }
