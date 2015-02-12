@@ -431,22 +431,24 @@ object H2OContext extends Logging {
     res
   }
 
-  private def collectColumnDomains[A <: Product](sc: SparkContext,
-                                   rdd: RDD[A],
-                                   fnames: Array[String],
-                                   ftypes: Array[Class[_]]): Array[Array[String]] = {
+  private
+  def collectColumnDomains[A <: Product](sc: SparkContext,
+                                         rdd: RDD[A],
+                                         fnames: Array[String],
+                                         ftypes: Array[Class[_]]): Array[Array[String]] = {
     val res = Array.ofDim[Array[String]](fnames.length)
     for (idx <- 0 until ftypes.length if ftypes(idx).equals(classOf[String])) {
       val acc =  sc.accumulableCollection(new mutable.HashSet[String]())
       // Distributed ops
       // FIXME product element can be Optional or Non-optional
-      rdd.foreach( r => { acc += r.productElement(idx).asInstanceOf[Option[String]].get })
+      rdd.foreach( r => {
+        val v = r.productElement(idx).asInstanceOf[Option[String]]
+        if (v.isDefined) acc += v.get
+      })
       res(idx) = if (acc.value.size > Categorical.MAX_ENUM_SIZE) null else acc.value.toArray.sorted
     }
     res
   }
-
-  private def !!! = throw new IllegalArgumentException
 
   private
   def checkSparkEnv(conf: SparkConf): Unit = {
