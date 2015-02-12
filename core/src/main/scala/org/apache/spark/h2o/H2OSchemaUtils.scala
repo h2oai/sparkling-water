@@ -51,12 +51,13 @@ object H2OSchemaUtils {
    */
   def h2oTypeToDataType(v: Vec): DataType = {
     v.get_type() match {
+      case Vec.T_BAD  => ByteType // vector is full of NAs, use any type
       case Vec.T_NUM  => h2oNumericTypeToDataType(v)
       case Vec.T_ENUM => StringType
       case Vec.T_UUID => StringType
       case Vec.T_STR  => StringType
       case typ => if (typ>=Vec.T_TIME && typ<=Vec.T_TIMELAST) TimestampType
-                  else ???
+                  else throw new IllegalArgumentException("Unknown vector type " + typ)
     }
   }
 
