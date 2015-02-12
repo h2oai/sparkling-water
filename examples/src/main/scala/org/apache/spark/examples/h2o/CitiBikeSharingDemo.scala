@@ -22,30 +22,32 @@ import scala.collection.mutable
  */
 object CitiBikeSharingDemo {
 
+  val DIR_PREFIX = "/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/"
+
   def main(args: Array[String]): Unit = {
     // Configure this application
     val conf: SparkConf = configure("Sparkling Water Meetup: Predict occupation of citi bike station in NYC")
 
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
-    val h2oContext = new H2OContext(sc).start()
+    implicit val h2oContext = new H2OContext(sc).start()
     import h2oContext._
 
     implicit val sqlContext = new SQLContext(sc)
     import sqlContext._
 
     // Make a shared timer
-    val gTimer = new GTimer
+    implicit val gTimer = new GTimer
 
     //
     // Load data into H2O by using H2O parser
     //
     gTimer.start()
     val dataFiles = Array[String](
-      "2013-09.csv",
+      "2013-09.csv"/*,
       "2013-10.csv",
       "2013-11.csv",
-      "2013-12.csv").map(f => new File("/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/", f))
+      "2013-12.csv"*/).map(f => new File(DIR_PREFIX, f))
     val dataf = new DataFrame(dataFiles:_*)
     gTimer.stop("H2O: parse")
 
@@ -54,7 +56,9 @@ object CitiBikeSharingDemo {
     //
     gTimer.start()
     val startTimeF = dataf('starttime)
+    //
     // Add a new column
+    //
     dataf.add(new TimeSplit().doIt(startTimeF))
     println(dataf)
     gTimer.stop("H2O: split start time column")
@@ -68,7 +72,7 @@ object CitiBikeSharingDemo {
     sqlContext.registerRDDAsTable(brdd, "brdd")
 
     //
-    // Do grouping
+    // Do grouping with help of Spark SQL
     //
     val bph = sql(
       """SELECT Days, start_station_id, count(*) bikes
@@ -78,27 +82,41 @@ object CitiBikeSharingDemo {
 
 
     gTimer.start()
+    // Convert RDD to DataFrame
     val bphf:DataFrame = bph
     gTimer.stop("Spark: do SQL query").start()
+    //
+    // Perform time transformation
+    //
     val daysVec = bphf('Days)
     val finalTable = bphf.add(new TimeTransform().doIt(daysVec))
     gTimer.stop("H2O: time transformation")
     println(finalTable)
 
+    // Build GBM model
+    buildModel(finalTable)
+
+    // Print timing results
+    println(gTimer)
+
+    sc.stop()
+  }
+
+  def r2(model: GBMModel, fr: Frame) =  ModelMetrics.getFromDKV(model, fr).asInstanceOf[ModelMetricsSupervised].r2()
+
+  def buildModel(df: DataFrame)(implicit gTimer: GTimer, h2oContext: H2OContext) = {
+    import h2oContext._
     //
     // Split into train and test parts
     //
     gTimer.start()
     val keys = Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make(_))
     val ratios = Array[Double](0.6, 0.3, 0.1)
-    val frs = ShuffleSplitFrame.shuffleSplitFrame(finalTable, keys, ratios, 1234567689L)
+    val frs = ShuffleSplitFrame.shuffleSplitFrame(df, keys, ratios, 1234567689L)
     val train = frs(0)
     val test = frs(1)
     val hold = frs(2)
     gTimer.stop("H2O: split frame")
-
-    // Cleanup
-    dataf.delete()
 
     //
     // Launch GBM prediction
@@ -125,15 +143,14 @@ object CitiBikeSharingDemo {
     println(
       s"""
          |r2 on train: ${r2(gbmModel, train)}
-         |r2 on test:  ${r2(gbmModel, test)}
-         |r2 on hold:  ${r2(gbmModel, hold)}"""".stripMargin)
+          |r2 on test:  ${r2(gbmModel, test)}
+          |r2 on hold:  ${r2(gbmModel, hold)}"""".stripMargin)
+    train.delete()
+    test.delete()
+    hold.delete()
 
-    println(gTimer)
-
-    sc.stop()
+    gbmModel
   }
-
-  def r2(model: GBMModel, fr: Frame) =  ModelMetrics.getFromDKV(model, fr).asInstanceOf[ModelMetricsSupervised].r2()
 
   def basicStats(brdd: SchemaRDD)(implicit sqlContext:SQLContext): Unit = {
     import sqlContext._
