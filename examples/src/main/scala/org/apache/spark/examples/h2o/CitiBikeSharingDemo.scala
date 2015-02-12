@@ -23,6 +23,7 @@ import scala.collection.mutable
 object CitiBikeSharingDemo {
 
   val DIR_PREFIX = "/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/"
+  val TREES = 1
 
   def main(args: Array[String]): Unit = {
     // Configure this application
@@ -96,6 +97,35 @@ object CitiBikeSharingDemo {
     // Build GBM model
     buildModel(finalTable)
 
+    //
+    // Try to join with weather data and repeat experiment again
+    //
+
+    // Load weather data via Spark API and parse them
+    val weatherData = sc.textFile(DIR_PREFIX + "31081_New_York_City__Hourly_2013.csv")
+    // Parse data and filter them
+    val weatherRdd = weatherData.map(_.split(","))
+      .map(row => NYWeatherParse(row))
+      .filter(!_.isWrongRow())
+      .filter(_.HourLocal == Some(12))
+
+    // Join with bike table
+    sqlContext.registerRDDAsTable(weatherRdd, "weatherRdd")
+    sqlContext.registerRDDAsTable(asSchemaRDD(finalTable), "bikesRdd")
+    sql("SET spark.sql.shuffle.partitions=20")
+    val bikesWeatherRdd = sql(
+      """SELECT b.Days, b.start_station_id, b.bikes, b.Month, b.DayOfWeek,
+        |w.DewPoint, w.HumidityFraction, w.Prcp1Hour, w.Temperature, w.WeatherCode1
+        | FROM bikesRdd b
+        | JOIN weatherRdd w
+        | ON b.Days = w.Days
+        |
+      """.stripMargin)
+
+
+    // And make prediction again
+    buildModel(bikesWeatherRdd)
+
     // Print timing results
     println(gTimer)
 
@@ -128,7 +158,7 @@ object CitiBikeSharingDemo {
     gbmParams._train = train
     gbmParams._valid = test
     gbmParams._response_column = 'bikes
-    gbmParams._ntrees = 500
+    gbmParams._ntrees = TREES
     gbmParams._max_depth = 6
 
     gTimer.start()
@@ -162,7 +192,7 @@ object CitiBikeSharingDemo {
     // Register table and SQL table
     sqlContext.registerRDDAsTable(brdd, "brdd")
 
-    val tGBduration = sql("select bikeid, sum(tripduration) from brdd group by bikeid")
+    val tGBduration = sql("SELECT bikeid, SUM(tripduration) FROM brdd GROUP BY bikeid")
     // Sort based on duration
     val bottom10 = tGBduration.sortBy( r => r.getLong(1)).take(10)
 
