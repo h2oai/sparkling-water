@@ -19,6 +19,7 @@ package org.apache.spark.rdd
 import java.io.File
 import java.sql.Timestamp
 
+import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{IntHolder, H2OContext}
 import org.apache.spark.h2o.util.SparkTestContext
@@ -26,6 +27,7 @@ import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.Key
 import water.fvec.DataFrame
 import org.apache.spark.sql._
 import water.parser.{Categorical, Parser}
@@ -147,8 +149,25 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.vec(0).isTime())
   }
 
-  test("DataFrame[Time] to SchemaRDD[TimeStamp]") {
+  ignore("DataFrame[Time] to SchemaRDD[TimeStamp]") {
 
+  }
+
+  test("SchemaRDD[Int] to DataFrame with empty partitions (error detected in calling ShuffleSplitFrame)") {
+    import sqlContext._
+
+    val values = 1 to 100
+    val srdd:SchemaRDD = sc.parallelize(values, 2000).map(v => IntField(v))
+
+    val dataFrame = hc.toDataFrame(srdd)
+
+    ShuffleSplitFrame.shuffleSplitFrame(dataFrame,
+        Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make(_)),
+        Array[Double](0.5, 0.3, 0.2), 1234567689L)
+  }
+
+  def fp(it:Iterator[Row]):Unit = {
+    println(it.size)
   }
 
   def assertDataFrameInvariants(inputRDD: SchemaRDD, df: DataFrame): Unit = {
