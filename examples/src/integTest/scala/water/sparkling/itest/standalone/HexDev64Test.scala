@@ -7,6 +7,10 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.sparkling.itest.SparkITest
 
+
+/**
+ * Test for Jira Hex-Dev 64 : Import airlines data into H2O and then pass it to Spark.
+ */
 @RunWith(classOf[JUnitRunner])
 class HexDev64TestSuite extends FunSuite with SparkITest {
 
@@ -17,7 +21,7 @@ class HexDev64TestSuite extends FunSuite with SparkITest {
         // Configure Standalone environment
         conf("spark.standalone.max.executor.failures", 1) // In fail of executor, fail the test
         conf("spark.executor.instances", 8) // 8 executor instances
-        conf("spark.executor.memory", "8g") // 10g per executor
+        conf("spark.executor.memory", "10g") // 10g per executor
       }
     )
   }
