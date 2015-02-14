@@ -111,8 +111,10 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.cloud.timeout`| `60*1000` | Timeout (in msec) for cloud  |
 |`spark.ext.h2o.spreadrdd.retries` | `10` | Number of retries for creation of an RDD covering all existing Spark executors. |
 |`spark.ext.h2o.cloud.name`| `sparkling-water-` | Name of H2O cloud. |
-|`spark.ext.h2o.log.level`| `INFO`| H2O internal log level. |
+|`spark.ext.h2o.node.log.level`| `INFO`| H2O internal log level used for launched H2O nodes. |
+|`spark.ext.h2o.client.log.level`| `INFO`| H2O internal log level used for H2O client running inside Spark driver. |
 |`spark.ext.h2o.network.mask`|--|Subnet selector for H2O if IP detection fails - useful for detecting the correct IP if 'spark.ext.h2o.flatfile' is false.* |
+|`spark.ext.h2o.nthreads`|`-1`|Limit for number of threads used by H2O, default `-1` means unlimited.|
 
 ### Pass property to Sparkling Shell
 TODO: example of arg passing from sparkling shell.

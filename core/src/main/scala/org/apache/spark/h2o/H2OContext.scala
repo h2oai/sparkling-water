@@ -128,7 +128,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // Execute H2O on given nodes
     logInfo(s"""Launching H2O on following nodes: ${executors.mkString(",")}""")
 
-    val executorStatus = startH2O(sparkContext, spreadRDD, executors, this, getH2OArgs() )
+    val executorStatus = startH2O(sparkContext, spreadRDD, executors, this, getH2ONodeArgs )
     // Verify that all specified executors contain running H2O
     if (!executorStatus.forall(x => !executorIds.contains(x._1) || x._2)) {
       throw new IllegalArgumentException(
@@ -146,7 +146,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     if (!sparkContext.isLocal) {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + numH2OWorkers)
       // Get arguments for this launch including flatfile
-      val h2oArgs = toH2OArgs(getH2OArgs() ++ Array("-ip", getIp(SparkEnv.get), "-baseport", basePort.toString),
+      val h2oArgs = toH2OArgs(getH2OClientArgs ++ Array("-ip", getIp(SparkEnv.get), "-baseport", basePort.toString),
                               this,
                               executors)
       H2OClientApp.main(h2oArgs)
@@ -250,8 +250,6 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       logError(s"Desktop support is missing! Cannot open browser for ${h2oLocalClient}")
     }
   }
-
-
 
   override def toString: String = {
     s"""
