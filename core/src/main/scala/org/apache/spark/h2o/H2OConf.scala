@@ -65,7 +65,7 @@ trait H2OConf {
   /** Starting size of cluster in case that size is not explicitelly passed */
   val PROP_DEFAULT_CLUSTER_SIZE = ( "spark.ext.h2o.default.cluster.size,", 20)
   /* H2O internal log level */
-  val PROP_LOG_LEVEL = ("spark.ext.h2o.log.level", "INFO")
+  val PROP_LOG_LEVEL = ("spark.ext.h2o.log.level", "WARN")
   /** Subnet selector for h2o if IP guess fail - useful if 'spark.ext.h2o.flatfile' is false
     * and we are trying to guess right IP on mi*/
   val PROP_NETWORK_MASK = ("spark.ext.h2o.network.mask", null.asInstanceOf[String])

@@ -88,6 +88,10 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     * Property value is derived from SparkContext during creation of H2OContext. */
   private def numOfSparkExecutors = if (sparkContext.isLocal) 1 else sparkContext.getExecutorStorageStatus.length - 1
 
+  private var localClient:String = _
+  def h2oLocalClient = this.localClient
+  def sparkUI = sparkContext.ui.map(ui => ui.appUIAddress)
+
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
   def start(h2oWorkers: Int):H2OContext = {
     sparkConf.set(PROP_CLUSTER_SIZE._1, h2oWorkers.toString)
@@ -138,6 +142,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
     // Now connect to a cluster via H2O client,
     // but only in non-local case
+    // - get IP of local node
     if (!sparkContext.isLocal) {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + numH2OWorkers)
       // Get arguments for this launch including flatfile
@@ -152,6 +157,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       // Since LocalBackend does not wait for initialization (yet)
       H2O.waitForCloudSize(1, cloudTimeout)
     }
+    // Get H2O web port
+    localClient = H2O.getIpPortString
 
     // Inform user about status
     logInfo("Sparkling Water started, status of context: " + this.toString)
@@ -226,6 +233,26 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
           schemaAtts, h2oSchemaRDD))(sqlContext))
   }
 
+  /** Open H2O Flow running in this client. */
+  def openFlow(): Unit = openURI(s"http://${h2oLocalClient}")
+  /** Open Spark task manager. */
+  def openSparkUI(): Unit = sparkUI.foreach(openURI(_))
+
+  /** Open browser for given address.
+    *
+    * @param uri addres to open in browser, e.g., http://example.com
+    */
+  private def openURI(uri: String): Unit = {
+    import java.awt.Desktop
+    if (Desktop.isDesktopSupported) {
+      Desktop.getDesktop.browse(new java.net.URI(uri))
+    } else {
+      logError(s"Desktop support is missing! Cannot open browser for ${h2oLocalClient}")
+    }
+  }
+
+
+
   override def toString: String = {
     s"""
       |Sparkling Water Context:
@@ -235,6 +262,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       |  ------------------------
       |  ${h2oNodes.mkString("\n  ")}
       |  ------------------------
+      |
+      |  Open H2O Flow in browser: http://${localClient} (CMD + click in Mac OSX)
     """.stripMargin
   }
 }
