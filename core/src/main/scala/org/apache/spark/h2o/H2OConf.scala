@@ -96,7 +96,7 @@ trait H2OConf {
   private def getH2OCommonOptions:Seq[String] =
     Seq(
       ("-name", cloudName),
-      ("-nthreads", if (nthreads>0) null else nthreads),
+      ("-nthreads", if (nthreads>0) nthreads else null),
       ("-network", networkMask.getOrElse(null)))
       .filter(x => x._2 != null)
       .flatMap(x => Seq(x._1, x._2.toString))
