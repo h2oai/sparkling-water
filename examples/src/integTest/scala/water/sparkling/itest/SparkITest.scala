@@ -35,7 +35,16 @@ trait SparkITest extends BeforeAndAfterEach { self: Suite =>
       env.sparkConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++
       Seq[String](env.testJar)
 
-    SparkSubmit.main(cmdLine.toArray)
+    if(!env.sparkMaster.startsWith("yarn")) {
+      SparkSubmit.main(cmdLine.toArray)
+    } else {
+      // Launch it via command line
+      import scala.sys.process._
+      val sparkHome = System.getenv("SPARK_HOME")
+      val cmdToLaunch = Seq( s"$sparkHome/bin/spark-submit") ++ cmdLine
+      val proc = cmdToLaunch.!
+      assert (proc == 0, "Process finished in wrong way!")
+    }
   }
 
   object env {
