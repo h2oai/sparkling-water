@@ -25,6 +25,7 @@ import org.apache.spark.sql.catalyst.expressions.AttributeReference
 import org.apache.spark.sql.execution.{ExistingRdd, SparkLogicalPlan}
 import org.apache.spark.sql.{Row, SQLContext, SchemaRDD}
 import water._
+import water.api._
 import water.fvec.Vec
 import water.parser.{Categorical, ValueString}
 
@@ -153,6 +154,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
                               executors)
       logDebug(s"Arguments used for launching h2o nodes: ${h2oClientArgs.mkString(" ")}")
       H2OClientApp.main(h2oClientArgs)
+      H2OContext.registerClientWebAPI(sparkContext)
       H2O.finalizeRegistration()
       H2O.waitForCloudSize(executors.length, cloudTimeout)
     } else {
@@ -486,6 +488,17 @@ object H2OContext extends Logging {
       logWarning(s"Increasing 'spark.locality.wait' to value 30000")
       conf.set("spark.locality.wait", "30000")
     }
+  }
+
+  private[h2o] def registerClientWebAPI(sc: SparkContext): Unit = {
+    def hfactory = new HandlerFactory {
+      override def create(aClass: Class[_ <: Handler]): Handler = new RDDsHandler(sc)
+    }
+    RequestServer.register("/3/RDDs", "GET",
+                            classOf[RDDsHandler], "list",
+                            null, new Array[String](0),
+                            "Return all Frames in the H2O distributed K/V store.",
+                            hfactory)
   }
 }
 
