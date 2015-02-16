@@ -252,7 +252,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     if (Desktop.isDesktopSupported) {
       Desktop.getDesktop.browse(new java.net.URI(uri))
     } else {
-      logError(s"Desktop support is missing! Cannot open browser for ${h2oLocalClient}")
+      logError(s"Desktop support is missing! Cannot open browser for ${uri}")
     }
   }
 
