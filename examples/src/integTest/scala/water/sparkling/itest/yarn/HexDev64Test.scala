@@ -16,8 +16,9 @@ class HexDev64TestSuite extends FunSuite with SparkITest {
         sparkMaster("yarn-client")
         // Configure YARN environment
         conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test
-        conf("spark.executor.instances", 3) // 3 executor instances
-        conf("spark.executor.memory", "5g") // 5g per executor
+        conf("spark.executor.instances", 10) // 10 executor instances
+        conf("spark.executor.memory", "20g") // 20g per executor
+        conf("spark.ext.h2o.port.base", 63331) //
       }
     )
   }
@@ -49,5 +50,6 @@ object HexDev64Test {
     println("Time it took to convert data to SparkRDD = " + timeToTransfer + "secs")
 
     assert (airlinesData.numRows == airlinesRDD.count, "Transfer of H2ORDD to SparkRDD completed!")
+    sc.stop()
   }
 }
