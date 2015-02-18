@@ -1,5 +1,28 @@
 # Sparkling Water Development Documentation
 
+##Table of Contents
+- [Requirements](#Req)
+- [Features](#Features)
+- [Typical Use Case](#UseCase)
+- [Design](#Design)
+- [Supported Data Sources](#DataSource)
+- [Supported Data Formats](#DataFormat)
+- [Data Sharing](#DataShare)
+- [Supported Execution Environments](#ExecEnv)
+- [Provided Primitives](#ProvPrim)
+- [H2O Initialization Sequence](#H2OInit)
+- [Integration Tests Example](#IntegExample)
+
+---
+<a name="Req"></a>
+## Requirements
+ - Linux or Mac OSX platform
+ - Java 1.7+
+ - [Spark 1.2.0](http://spark.apache.org/downloads.html)
+
+--- 
+ 
+<a name="Features"></a>
 ## Features
 
 Sparkling Water provides transparent integration for the H2O engine and its machine learning 
@@ -8,27 +31,14 @@ algorithms into the Spark platform, enabling:
  * transformation between H2O and Spark data structures
  * use of Spark RDDs as input for H2O algorithms
  * transparent execution of Sparkling Water applications on top of Spark
- 
-### Supported Data Sources
-Currently, Sparkling Water can use the following data source types:
- - standard RDD API to load data and transform them into DataFrame
- - H2O API to load data directly into DataFrame from:
-   - local file(s)
-   - HDFS file(s)
-   - S3 file(s)
-   
-### Supported Data Formats
-Sparkling Water can read data stored in the following formats:
- - CSV
- - SVMLight
- - ARFF
- 
-### Supported Execution Environments
-Sparkling Water can run on top of Spark in the following ways:
- -  as a local cluster (master points to one of values `local`, `local[*]`, or `local-cluster[...]`
- -  as a standalone cluster
- -  in a YARN environment
 
+---
+<a name="UseCase"></a>
+## Typical Use-Case
+Sparkling Water excels in leveraging existing Spark-based workflows that need to call advanced machine learning algorithms. A typical example involves data munging with help of Spark API, where a prepared table is passed to the H2O DeepLearning algorithm. The constructed DeepLearning model estimates different metrics based on the testing data, which can be used in the rest of the Spark workflow.
+
+
+<a name="Design"></a>
 ## Design
 
 Sparkling Water is designed to be executed as a regular Spark application.
@@ -44,7 +54,48 @@ and orchestrates them into a cloud. The topology of the created cloud matches th
 
 When H2O services are running, it is possible to create H2O data structures, call H2O algorithms, and transfer values from/to RDD.
 
+---
+<a name="DataSource"></a> 
+### Supported Data Sources
+Currently, Sparkling Water can use the following data source types:
+ - standard RDD API to load data and transform them into DataFrame
+ - H2O API to load data directly into DataFrame from:
+   - local file(s)
+   - HDFS file(s)
+   - S3 file(s)
 
+---
+<a name="DataFormat"></a>   
+### Supported Data Formats
+Sparkling Water can read data stored in the following formats:
+ - CSV
+ - SVMLight
+ - ARFF
+
+
+---
+<a name="DataShare"></a>
+### Data Sharing
+Sparkling Water enables transformation between different types of RDDs and H2O's DataFrame, and vice versa.
+
+[pic from slides]
+
+When converting from DataFrame to RDD, a wrapper is created around the H2O DataFrame to provide an RDD-like API. In this case, no data is duplicated; instead, the data is served directly from then underlying DataFrame.
+
+Converting in the opposite direction (from RDD to DataFrame) introduces data duplication, since it transfers data from RDD storage into DataFrame. However, data stored in DataFrame is heavily compressed. 
+
+TODO: estimation of overhead
+
+---
+<a name="ExecEnv"></a> 
+### Supported Execution Environments
+Sparkling Water can run on top of Spark in the following ways:
+ -  as a local cluster (master points to one of values `local`, `local[*]`, or `local-cluster[...]`
+ -  as a standalone cluster
+ -  in a YARN environment
+
+---
+<a name="ProvPrim"></a>
 ### Provided Primitives
 The Sparkling Water provides following primitives, which are the basic classes used by Spark components:
 
@@ -56,7 +107,8 @@ The Sparkling Water provides following primitives, which are the basic classes u
 | H2O DataFrame  | `water.fvec.DataFrame`            | DataFrame is the H2O data structure that represents a table of values. The table is column-based and provides column and row accessors. |
 | H2O Algorithms | package `hex`                     | Represents the H2O machine learning algorithms library, including DeepLearning, GBM, RandomForest. |
  
-
+---
+<a name="H2OInit"></a>
 ### H2O Initialization Sequence
 If `SparkContext` is available, initialize and start H2O context: 
 ```scala
@@ -70,25 +122,10 @@ The call will:
  3. Create a cloud for H2O services based on the list of executors
  4. Verify the H2O cloud status
 
-### Data Sharing
-Sparkling Water enables transformation between different types of RDDs and H2O's DataFrame, and vice versa.
-
-[pic from slides]
-
-When converting from DataFrame to RDD, a wrapper is created around the H2O DataFrame to provide an RDD-like API. In this case, no data is duplicated; instead, the data is served directly from then underlying DataFrame.
-
-Converting in the opposite direction (from RDD to DataFrame) introduces data duplication, since it transfers data from RDD storage into DataFrame. However, data stored in DataFrame is heavily compressed. 
-
-TODO: estimation of overhead
 
 
-## Typical Use-Case
-Sparkling Water excels in leveraging existing Spark-based workflows that need to call advanced machine learning algorithms. A typical example involves data munging with help of Spark API, where a prepared table is passed to the H2O DeepLearning algorithm. The constructed DeepLearning model estimates different metrics based on the testing data, which can be used in the rest of the Spark workflow.
+---
 
-## Requirements
- - Linux or Mac OSX platform
- - Java 1.7+
- - [Spark 1.2.0](http://spark.apache.org/downloads.html)
 
 ## Configuration
 
@@ -289,6 +326,9 @@ TODO: platform testing - mesos, SIMR
  8. Integrate with MLlib Algorithms using DataFrame as algorithm input (KMeans)
  9. Integrate with MLlib pipelines (TBD)
 
+---
+
+<a name="IntegExample"></a> 
 ## Integration Tests Example
 
 The following code reflects the use cases listed above. The code is executed in all testing environments (if applicable): 
