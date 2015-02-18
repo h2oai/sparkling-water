@@ -1,11 +1,14 @@
-// imports
+//
+// Meetup script 2015-02-17
+//
+
+// Common imports
 import org.apache.spark.h2o._
 import org.apache.spark.examples.h2o._
 import org.apache.spark.sql.{SQLContext, SchemaRDD}
 import org.joda.time.MutableDateTime
 import water.fvec._
 import water.util.Timer
-import water.{Key, MRTask}
 import hex.tree.gbm.GBMModel
 
 // Create H2OContext to execute H2O code on Spark cluster
@@ -26,53 +29,51 @@ val dataFiles = Array[String](
       "2013-11.csv", "2013-12.csv",
       "2014-01.csv", "2014-02.csv", "2014-03.csv", "2014-04.csv",
       "2014-05.csv", "2014-06.csv", "2014-07.csv", "2014-08.csv").map(f => new File(DIR_PREFIX, f))
+val dataFiles = Array[String]("2013-07.csv").map(f => new File(DIR_PREFIX, f))
 // Load and parse data
-val dataf = new DataFrame(dataFiles:_*)
+val bikesDF = new DataFrame(dataFiles:_*)
 // Rename columns and remove all spaces in header
-val colNames = dataf.names().map( n => n.replace(' ', '_'))
-dataf._names = colNames
-dataf.update(null)
+val colNames = bikesDF.names().map( n => n.replace(' ', '_'))
+bikesDF._names = colNames
+bikesDF.update(null)
 
 //
 // Transform start time to days from Epoch
 //
-val startTimeF = dataf('starttime)
-
-//
+val startTimeF = bikesDF('starttime)
 // Add a new column
-//
-dataf.add(new TimeSplit().doIt(startTimeF))
+bikesDF.add(new TimeSplit().doIt(startTimeF))
 // Do not forget to update frame in K/V store
-dataf.update(null)
-println(dataf)
+bikesDF.update(null)
 
 //
 // Transform DataFrame into SchemaRDD
 //
-val brdd = asSchemaRDD(dataf)
+val bikesRdd = asSchemaRDD(bikesDF)
 
 // Register table and SQL table
-sqlContext.registerRDDAsTable(brdd, "brdd")
+sqlContext.registerRDDAsTable(bikesRdd, "bikesRdd")
 
 //
 // Do grouping with help of Spark SQL
 //
-val bph = sql(
+val bikesPerDayRdd = sql(
   """SELECT Days, start_station_id, count(*) bikes
-    |FROM brdd
+    |FROM bikesRdd
     |GROUP BY Days, start_station_id """.stripMargin)
 println(bph.take(10).mkString("\n"))
 
 //
 // Convert RDD to DataFrame via implicit operation
-val bphf:DataFrame = bph
+val bikesPerDayDF:DataFrame = bikesPerDayRdd
 
 //
 // Perform time transformation
 //
 // Select "Days" column
-val daysVec = bphf('Days)
-val finalTable = bphf.add(new TimeTransform().doIt(daysVec))
+val daysVec = bikesPerDayDF('Days)
+// Run transformation TimeTransform
+val finalBikeDF = bikesPerDayDF.add(new TimeTransform().doIt(daysVec))
 
 //
 // Define function to build a model
@@ -81,7 +82,9 @@ def r2(model: GBMModel, fr: Frame) =  hex.ModelMetrics.getFromDKV(model, fr).asI
 
 def buildModel(df: DataFrame)(implicit h2oContext: H2OContext) = {
     import hex.splitframe.ShuffleSplitFrame
+    import water.Key
     import h2oContext._
+
     //
     // Split into train and test parts
     //
@@ -126,7 +129,7 @@ def buildModel(df: DataFrame)(implicit h2oContext: H2OContext) = {
     gbmModel
 }
 
-buildModel(finalTable)
+buildModel(finalBikeDF)
 
 
 // Load weather data in NY 2013
@@ -140,7 +143,7 @@ val weatherRdd = weatherData.map(_.split(",")).
 
 // Join with bike table
 sqlContext.registerRDDAsTable(weatherRdd, "weatherRdd")
-sqlContext.registerRDDAsTable(asSchemaRDD(finalTable), "bikesRdd")
+sqlContext.registerRDDAsTable(asSchemaRDD(finalBikeDF), "bikesRdd")
 
 val bikesWeatherRdd = sql(
     """SELECT b.Days, b.start_station_id, b.bikes, b.Month, b.DayOfWeek,
