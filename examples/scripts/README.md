@@ -1,15 +1,11 @@
-# Sparkling Water Meetup (02/03/2015)
+# Sparkling Water Meetup (02/17/2015)
 
 ## Requirements
  
 ### For Sparkling Water part
  - Oracle Java 7+
  - [Spark 1.2.0](http://spark.apache.org/downloads.html)
- - [Sparkling Water 0.2.6-69](http://h2o-release.s3.amazonaws.com/sparkling-water/master/69/index.html)
- 
-### For R part
- - R 3.1.2+
- - RStudio
+ - [Sparkling Water 0.2.11-80](http://h2o-release.s3.amazonaws.com/sparkling-water/master/80/index.html)
  
 ### For Sparkling Water droplet part
  - Git
@@ -19,10 +15,10 @@
 ## Download
 
 Please download [Sparkling Water
-0.2.6-69](http://h2o-release.s3.amazonaws.com/sparkling-water/master/69/index.html) and unzip the file:
+0.2.11-80](http://h2o-release.s3.amazonaws.com/sparkling-water/master/80/index.html) and unzip the file:
 ```
-unzip sparkling-water-0.2.6-69.zip
-cd sparkling-water-0.2.6-69
+unzip sparkling-water-0.2.11-80.zip
+cd sparkling-water-0.2.11-80
 ```
 
 > All materials will be also available on provided USBs.
@@ -30,186 +26,237 @@ cd sparkling-water-0.2.6-69
 ## Slides
 Hands-On slides are available at [H2O.ai SlideShare account](http://www.slideshare.net/0xdata/spa-43755759)
 
-## Use Sparkling Shell for ML 
+## Script
+The script is available at GitHub - [https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150217.script](https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150217.script).
 
-1. Run Sparkling shell with an embedded cluster:
+```bash
+curl https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150217.script > meetup.script
+```
+
+## Data
+Data are available on provided USB or in S3:
+
+### CitiBike data
+
+```bash
+for f in "2013-07.csv 2013-08.csv 2013-09.csv 2013-10.csv 2013-11.csv 2013-12.csv 2014-01.csv 2014-02.csv 2014-03.csv 2014-04.csv 2014-05.csv 2014-06.csv 2014-07.csv 2014-08.csv" 
+do
+wget "https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/$f"
+done
+```
+### Weather data 
+
+```bash
+wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv
+```
+
+## ML Workflow
+
+> Create a model which will predict number of bikes on stations.
+
+### Prepare data and build GBM model
+
+1. Run Sparkling shell with an embedded Spark cluster:
   ```
   export SPARK_HOME="/path/to/spark/installation"
-  export MASTER="local-cluster[3,2,1024]"
+  export MASTER="local-cluster[3,2,2048]"
   bin/sparkling-shell
   ```
 
-2. You can go to [http://localhost:4040/](http://localhost:4040/) to see the Sparkling shell (i.e., Spark driver) status.
+2. Open Spark UI: You can go to [http://localhost:4040/](http://localhost:4040/) to see the Sparkling shell (i.e., Spark driver) status.
 
-3. Create H<sub>2</sub>O cloud using all 3 Spark workers
+
+3. Initialize H2O: Create H<sub>2</sub>O cloud using all 3 Spark workers
   ```scala
   import org.apache.spark.h2o._
   import org.apache.spark.examples.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  import org.apache.spark.sql.{SQLContext, SchemaRDD}
+  import org.joda.time.MutableDateTime
+  import water.fvec._
+  import hex.tree.gbm.GBMModel
+
+  implicit val h2oContext = new H2OContext(sc).start()
   import h2oContext._
-  ```
-
-  > At this point, you can go to [http://localhost:54321](http://localhost:54321) and see
-  status of H2O cloud by typing `getCloud`
   
-4. Load weather data for Chicago international airport (ORD) with help of RDD API.
-  ```scala
-  val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
-  val wrawdata = sc.textFile(weatherDataFile,3).cache()
-  val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
-  ```
-
-5. Load airlines data using H<sub>2</sub>O parser
-  ```scala
-  import java.io.File
-  val dataFile = "examples/smalldata/year2005.csv.gz"
-  val airlinesData = new DataFrame(new File(dataFile))
-  ```
-  
-  > You can go to [http://localhost:54321](http://localhost:54321) and start to explore
-  loaded data by typing `getFrames`
-
-6. Select flights with destination in Chicago (ORD)
-  ```scala
-  val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
-  val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
-  ```
-  
-7. Compute number of these flights
-  ```scala
-  flightsToORD.count
-  ```
-
-8. Use Spark SQL to join flight data with weather data
-  ```scala
-  import org.apache.spark.sql.SQLContext
-  // Make sqlContext implicit to allow its use from H2OContext
+  // Initialize SQLConcept
   implicit val sqlContext = new SQLContext(sc)
   import sqlContext._
-  flightsToORD.registerTempTable("FlightsToORD")
-  weatherTable.registerTempTable("WeatherORD")
   ```
 
-9. Perform SQL JOIN on both tables
+4. Open H2O UI: 
   ```scala
-  val joinedTable = sql(
-          """SELECT
-            |f.Year,f.Month,f.DayofMonth,
-            |f.CRSDepTime,f.CRSArrTime,f.CRSElapsedTime,
-            |f.UniqueCarrier,f.FlightNum,f.TailNum,
-            |f.Origin,f.Distance,
-            |w.TmaxF,w.TminF,w.TmeanF,w.PrcpIn,w.SnowIn,w.CDD,w.HDD,w.GDD,
-            |f.ArrDelay
-            |FROM FlightsToORD f
-            |JOIN WeatherORD w
-            |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
+  openFlow
   ```
+  > At this point, you can go use H2O UI and see status of H2O cloud by typing `getCloud`.
   
-10. Split data into train/validation/test datasets
+  > You can also open Spark UI by typing `openSparkUI`.
+  
+5. Load data into H2O:
   ```scala
-  import hex.splitframe.SplitFrame
-  import hex.splitframe.SplitFrameModel.SplitFrameParameters
-
-  val sfParams = new SplitFrameParameters()
-  sfParams._train = joinedTable
-  sfParams._ratios = Array(0.7, 0.2)
-  val sf = new SplitFrame(sfParams)
-
-  val splits = sf.trainModel().get._output._splits
-  val trainTable = splits(0)
-  val validTable = splits(1)
-  val testTable  = splits(2)
+  val DIR_PREFIX = "/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/"
+  val dataFiles = Array[String](
+      "2013-07.csv", "2013-08.csv", "2013-09.csv", "2013-10.csv",
+      "2013-11.csv", "2013-12.csv",
+      "2014-01.csv", "2014-02.csv", "2014-03.csv", "2014-04.csv",
+      "2014-05.csv", "2014-06.csv", "2014-07.csv", "2014-08.csv").map(f => new java.io.File(DIR_PREFIX, f))
+  // Load and parse data
+  val bikesDF = new DataFrame(dataFiles:_*)
+  // Rename columns and remove all spaces in header
+  val colNames = bikesDF.names().map( n => n.replace(' ', '_'))
+  bikesDF._names = colNames
+  bikesDF.update(null)
   ```
   
-11. Inspect results in H2O Flow - go to [http://localhost:54321/](http://localhost:54321/)
-  
-12. Run deep learning to produce model estimating arrival delay:
+  Data contains columns: _tripduration,starttime,stoptime,start station id,start station name,start station latitude,start station longitude,end station id,end station name,end station latitude,end station longitude,bikeid,usertype,birth year,gender_
+
+6. Transform column `starttime` to number of days from Epoch: 
   ```scala
-  import hex.deeplearning.DeepLearning
-  import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-  import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
-  val dlParams = new DeepLearningParameters()
-  dlParams._train = trainTable
-  dlParams._response_column = 'ArrDelay
-  dlParams._valid = validTable
-  dlParams._epochs = 5
-  dlParams._activation = Activation.RectifierWithDropout
-  dlParams._hidden = Array[Int](100, 100)
-  dlParams._reproducible = false
-  dlParams._force_load_balance = false
-
-  // Invoke model training
-  val dl = new DeepLearning(dlParams)
-  val dlModel = dl.trainModel.get
+  // Select column
+  val startTimeCol = bikesDF('starttime)
+  // Transform column and add it to original table
+  bikesDF.add(new TimeSplit().doIt(startTimeCol))
+  // Do not forget to update frame in K/V store
+  bikesDF.update(null)
   ```
-
-13. Use model to estimate delay on training data
+  
+  > What is `TimeSplit`?
   ```scala
-  // Produce single-vector table with prediction
-  val dlPredictTable = dlModel.score(testTable)('predict)
-  // Convert vector to SchemaRDD and collect results
-  val predictionsFromDlModel = asSchemaRDD(dlPredictTable).collect.map(row => if (row.isNullAt(0)) Double.NaN else row(0))
+  class TimeSplit extends MRTask[TimeSplit] {
+    def doIt(time: DataFrame):DataFrame =
+        DataFrame(doAll(1, time).outputFrame(Array[String]("Days"), null))
+    override def map(msec: Chunk, day: NewChunk):Unit = {
+      for (i <- 0 until msec.len) {
+        day.addNum(msec.at8(i) / (1000 * 60 * 60 * 24)); // Days since the Epoch
+      }
+    }
+  }
   ```
-
-## Use Sparkling Water from R
-
-1. Install h2o-r from RStudio/R:
-   ```
-   install.packages("sparkling-water-meetup/R/h2o_0.1.22.99999.tar.gz", repos = NULL, type = "source")
-   ```
   
-2. In Sparkling Shell generate R code producing residuals plot
+7. Transform DataFrame `bikesDF` into RDD:
   ```scala
-  import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
-  residualPlotRCode(dlPredictTable, 'predict, testTable, 'ArrDelay)
-  ```
-  
-3.  Use resulting R code inside RStudio:
-  ```R
-  #
-  # R script for residual plot
-  #
-  # Import H2O library
-  library(h2o)
-  # Initialize H2O R-client
-  h = h2o.init()
-  # Fetch prediction and actual data, use remembered keys
-  pred = h2o.getFrame(h, "dframe_b5f449d0c04ee75fda1b9bc865b14a69")
-  act = h2o.getFrame (h, "frame_rdd_14_b429e8b43d2d8c02899ccb61b72c4e57")
-  # Select right columns
-  predDelay = pred$predict
-  actDelay = act$ArrDelay
-  # Make sure that number of rows is same  
-  nrow(actDelay) == nrow(predDelay)
-  # Compute residuals  
-  residuals = predDelay - actDelay
-  # Plot residuals   
-  compare = cbind (as.data.frame(actDelay$ArrDelay), as.data.frame(residuals$predict))
-  nrow(compare)
-  plot( compare[,1:2] )
-  ```
-  
-3. Try to generate better model with GBM
+  val bikesRdd = asSchemaRDD(bikesDF)
+  ``` 
+8. Do grouping via Spark SQL: make a new table by grouping by `start_station_id` and `Days`
   ```scala
-  import hex.tree.gbm.GBM
-  import hex.tree.gbm.GBMModel.GBMParameters
-
-  val gbmParams = new GBMParameters()
-  gbmParams._train = trainTable
-  gbmParams._response_column = 'ArrDelay
-  gbmParams._valid = validTable
-  gbmParams._ntrees = 100
-
-  val gbm = new GBM(gbmParams)
-  val gbmModel = gbm.trainModel.get
+  // Register table and SQL table
+  sqlContext.registerRDDAsTable(bikesRdd, "bikesRdd")
+  val bikesPerDayRdd = sql(
+    """SELECT Days, start_station_id, count(*) bikes
+      |FROM bikesRdd
+      |GROUP BY Days, start_station_id """.stripMargin)
   ```
   
-4. Make prediction and print R code for residual plot
+9. Convert RDD to DataFrame type
   ```scala
-  val gbmPredictTable = gbmModel.score(testTable)('predict)
-  residualPlotRCode(gbmPredictTable, 'predict, testTable, 'ArrDelay)
+  val bikesPerDayDF:DataFrame = bikesPerDayRdd // Implicit conversion h2oContext.createDataFrame(
+  ```
+
+10. Perform another column transformation - refine `Days` column to `Month` and `DayOfWeek`
+  ```scala
+  // Select "Days" column
+  val daysVec = bikesPerDayDF('Days)
+  // Run transformation TimeTransform
+  val finalBikeDF = bikesPerDayDF.add(new TimeTransform().doIt(daysVec))
   ```
   
+  What is `TimeTransform`?
+
+11. Build a GBM model: 
+  
+  1. define a helper function to make a model
+    ```scala
+    def r2(model: GBMModel, fr: Frame) =  hex.ModelMetrics.getFromDKV(model,fr).asInstanceOf[hex.ModelMetricsSupervised].r2()
+    
+    def buildModel(df: DataFrame)(implicit h2oContext: H2OContext) = {
+        import hex.splitframe.ShuffleSplitFrame
+        import h2oContext._
+        import water.Key
+        //
+        // Split into train and test parts
+        //
+        val keys = Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make(_))
+        val ratios = Array[Double](0.6, 0.3, 0.1)
+        val frs = ShuffleSplitFrame.shuffleSplitFrame(df, keys, ratios, 1234567689L)
+        val train = frs(0)
+        val test = frs(1)
+        val hold = frs(2)
+
+        //
+        // Launch GBM prediction
+        //
+        import hex.tree.gbm.GBM
+        import hex.tree.gbm.GBMModel.GBMParameters
+
+        val gbmParams = new GBMParameters()
+        gbmParams._train = train
+        gbmParams._valid = test
+        gbmParams._response_column = 'bikes
+        gbmParams._ntrees = 5
+        gbmParams._max_depth = 6
+
+        val gbm = new GBM(gbmParams)
+        val gbmModel = gbm.trainModel.get
+
+        gbmModel.score(train).remove()
+        gbmModel.score(test).remove()
+        gbmModel.score(hold).remove()
+
+        println(
+          s"""
+            |r2 on train: ${r2(gbmModel, train)}
+            |r2 on test:  ${r2(gbmModel, test)}
+            |r2 on hold:  ${r2(gbmModel, hold)}"""".stripMargin)
+
+        // Perform clean-up
+        train.delete()
+        test.delete()
+        hold.delete()
+
+        gbmModel
+    }
+    ``` 
+
+  2. Build a model
+    ```scala
+    buildModel(finalBikeDF)
+    ``` 
+    
+### Can weather improve our model?
+
+
+1. Load weather data via Spark API, transform and filter them:
+  ```scala
+  // Load weather data in NY 2013
+  val weatherData = sc.textFile(DIR_PREFIX + "31081_New_York_City__Hourly_2013.csv")
+  // Parse data and filter them
+  val weatherRdd = weatherData.map(_.split(",")).
+    map(row => NYWeatherParse(row)).
+    filter(!_.isWrongRow()).
+    filter(_.HourLocal == Some(12)).cache()
+  ```
+  > `NYWeatherParse` will in
+
+2. Join weather data with `finalBikeDF` - use information about `Days` to make a join:
+  ```scala
+  sqlContext.registerRDDAsTable(weatherRdd, "weatherRdd")
+  sqlContext.registerRDDAsTable(asSchemaRDD(finalBikeDF), "bikesRdd")
+
+  val bikesWeatherRdd = sql(
+    """SELECT b.Days, b.start_station_id, b.bikes, b.Month, b.DayOfWeek,
+      |w.DewPoint, w.HumidityFraction, w.Prcp1Hour, w.Temperature, w.WeatherCode1
+      | FROM bikesRdd b
+      | JOIN weatherRdd w
+      | ON b.Days = w.Days
+      |
+    """.stripMargin)
+  ```
+
+3. Build a model again:
+  ```scala
+  // And make prediction again but now on RDD
+  buildModel(bikesWeatherRdd)
+  ```
+
 ## Develop a Standalone Sparkling Water Application
 
 1. Clone H2O Droplets repository
@@ -237,10 +284,10 @@ Hands-On slides are available at [H2O.ai SlideShare account](http://www.slidesha
 
 5. Try to run simple application `water.droplets.SparklingWaterDroplet`
 
-6. Add a new Scala object `water.droplets.AirlinesWeatherAnalysis` with main method
+6. Add a new Scala object `water.droplets.CitiBikeAnalysis` with main method
   ```scala
   package water.droplets
-  object AirlineWeatherAnalysis {
+  object CitiBikeAnalysis {
     def main(args: Array[String]) {
     }
   }
@@ -249,7 +296,7 @@ Hands-On slides are available at [H2O.ai SlideShare account](http://www.slidesha
 7. Create Spark configuration and context 
   ```scala
   package water.droplets
-  object AirlineWeatherAnalysis {
+  object CitiBikeAnalysis {
     def main(args: Array[String]) {
       import org.apache.spark._
       
@@ -265,105 +312,16 @@ Hands-On slides are available at [H2O.ai SlideShare account](http://www.slidesha
   }
   ```
  
-8. Use code above to create `H2OContext`, load data and perform analysis. At the end of code, do not forget to release Spark context (H2O context will be released automatically)
+8. Try to run application with your IDE
 
-  ```scala
-  package water.droplets
-  import org.apache.spark.h2o._
-  import org.apache.spark.examples.h2o._
- 
-  import org.apache.spark._
-  
-  object AirlineWeatherAnalysis {
-    def main(args: Array[String]) {
-	  val conf = new SparkConf().setAppName("Flights analysis")
-	  conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local"))
-	  val sc = new SparkContext(conf)
-	  
-      val h2oContext = new H2OContext(sc).start()
-      import h2oContext._
-    
-	  // Do not forget to modify location of your data  
-	  val weatherDataFile = "smalldata/Chicago_Ohare_International_Airport.csv"
-      val wrawdata = sc.textFile(weatherDataFile,3).cache()
-      val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
-      
-	  import java.io.File
-      val dataFile = "smalldata/allyears2k_headers.csv.gz"
-      val airlinesData = new DataFrame(new File(dataFile))
-      
-      val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
-      val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
-      
-	  import org.apache.spark.sql.SQLContext
-      // Make sqlContext implicit to allow its use from H2OContext
-      implicit val sqlContext = new SQLContext(sc)
-      import sqlContext._
-      flightsToORD.registerTempTable("FlightsToORD")
-      weatherTable.registerTempTable("WeatherORD")
-	
-	  val joinedTable = sql(
-        """SELECT
-          |f.Year,f.Month,f.DayofMonth,
-          |f.CRSDepTime,f.CRSArrTime,f.CRSElapsedTime,
-          |f.UniqueCarrier,f.FlightNum,f.TailNum,
-          |f.Origin,f.Distance,
-          |w.TmaxF,w.TminF,w.TmeanF,w.PrcpIn,w.SnowIn,w.CDD,w.HDD,w.GDD,
-          |f.ArrDelay
-          |FROM FlightsToORD f
-          |JOIN WeatherORD w
-          |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
-          
-	  import hex.splitframe.SplitFrame
-      import hex.splitframe.SplitFrameModel.SplitFrameParameters
-
-      val sfParams = new SplitFrameParameters()
-      sfParams._train = joinedTable
-      sfParams._ratios = Array(0.7, 0.2)
-      val sf = new SplitFrame(sfParams)
-
-      val splits = sf.trainModel().get._output._splits
-      val trainTable = splits(0)
-      val validTable = splits(1)
-      val testTable  = splits(2)
-      
-      import hex.deeplearning.DeepLearning
-      import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-      val dlParams = new DeepLearningParameters()
-      dlParams._train = trainTable
-      dlParams._response_column = 'ArrDelay
-      dlParams._valid = validTable
-      dlParams._epochs = 100
-      dlParams._reproducible = false
-      dlParams._force_load_balance = false
-
-      // Invoke model training
-      val dl = new DeepLearning(dlParams)
-      val dlModel = dl.trainModel.get
-      
-      // Produce single-vector table with prediction
-      val dlPredictTable = dlModel.score(testTable)('predict)
-      // Convert vector to SchemaRDD and collect results
-      val predictionsFromDlModel = asSchemaRDD(dlPredictTable).collect.map(row => if (row.isNullAt(0)) Double.NaN else row(0))
-      
-	  println(predictionsFromDlModel.mkString("\n"))
-	  
-      // Shutdown application
-      sc.stop()
-    }
-  }
-  ```
-
-9. Try to run application with your IDE
-
-10. Build application from command line
+9. Build application from command line
 
   ```
   ./gradlew build shadowJar
   ```
   
-11. Submit application to Spark cluster
+10. Submit application to Spark cluster
   ```
   export MASTER='local-cluster[3,2,1024]'
-  $SPARK_HOME/bin/spark-submit --class water.droplets.AirlineWeatherAnalysis build/libs/sparkling-water-droplet-app.jar
+  $SPARK_HOME/bin/spark-submit --class water.droplets.CitiBikeAnalysis build/libs/sparkling-water-droplet-app.jar
   ```   
