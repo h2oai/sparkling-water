@@ -39,7 +39,7 @@ Data are available on provided USB or in S3:
 ### CitiBike data
 
 ```bash
-for f in "2013-07.csv 2013-08.csv 2013-09.csv 2013-10.csv 2013-11.csv 2013-12.csv 2014-01.csv 2014-02.csv 2014-03.csv 2014-04.csv 2014-05.csv 2014-06.csv 2014-07.csv 2014-08.csv" 
+for f in 2013-07.csv 2013-08.csv 2013-09.csv 2013-10.csv 2013-11.csv 2013-12.csv 2014-01.csv 2014-02.csv 2014-03.csv 2014-04.csv 2014-05.csv 2014-06.csv 2014-07.csv 2014-08.csv 
 do
 wget "https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/$f"
 done
