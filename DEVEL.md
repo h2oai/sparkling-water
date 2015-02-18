@@ -1,9 +1,9 @@
 # Sparkling Water Development Documentation
 
 ##Table of Contents
+- [Typical Use Case](#UseCase)
 - [Requirements](#Req)
 - [Features](#Features)
-- [Typical Use Case](#UseCase)
 - [Design](#Design)
 - [Supported Data Sources](#DataSource)
 - [Supported Data Formats](#DataFormat)
@@ -11,17 +11,32 @@
 - [Supported Execution Environments](#ExecEnv)
 - [Provided Primitives](#ProvPrim)
 - [H2O Initialization Sequence](#H2OInit)
-- [Integration Tests Example](#IntegExample)
+- [Running on Select Target Platforms](#TargetPlatforms)
+  - [Standalone](#Standalone)
+  - [YARN](#YARN)
+  - [Mesos](#Mesos)
+- [Integration Tests](#IntegTest)
+  - [Testing Environment](#TestEnv)
+  - [Testing Scenarios](#TestCases)
+  - [Integration Tests Example](#IntegExample)
+
+
+--- 
+ 
+ <a name="UseCase"></a>
+## Typical Use-Case
+Sparkling Water excels in leveraging existing Spark-based workflows that need to call advanced machine learning algorithms. A typical example involves data munging with help of Spark API, where a prepared table is passed to the H2O DeepLearning algorithm. The constructed DeepLearning model estimates different metrics based on the testing data, which can be used in the rest of the Spark workflow.
 
 ---
+
 <a name="Req"></a>
 ## Requirements
  - Linux or Mac OSX platform
  - Java 1.7+
  - [Spark 1.2.0](http://spark.apache.org/downloads.html)
 
---- 
- 
+---
+
 <a name="Features"></a>
 ## Features
 
@@ -33,10 +48,6 @@ algorithms into the Spark platform, enabling:
  * transparent execution of Sparkling Water applications on top of Spark
 
 ---
-<a name="UseCase"></a>
-## Typical Use-Case
-Sparkling Water excels in leveraging existing Spark-based workflows that need to call advanced machine learning algorithms. A typical example involves data munging with help of Spark API, where a prepared table is passed to the H2O DeepLearning algorithm. The constructed DeepLearning model estimates different metrics based on the testing data, which can be used in the rest of the Spark workflow.
-
 
 <a name="Design"></a>
 ## Design
@@ -55,6 +66,7 @@ and orchestrates them into a cloud. The topology of the created cloud matches th
 When H2O services are running, it is possible to create H2O data structures, call H2O algorithms, and transfer values from/to RDD.
 
 ---
+
 <a name="DataSource"></a> 
 ### Supported Data Sources
 Currently, Sparkling Water can use the following data source types:
@@ -257,7 +269,6 @@ TBD
 
 ### Calling H2O Algorithms
 
-Calling H2O algorithms is comprised of three steps:
  1. Create the parameters object that holds references to input data and parameters specific for the algorithm:
  ```scala
  val train: RDD = ...
@@ -293,18 +304,29 @@ TBD
 TODO: used datasources, how data is moved to spark
 TODO: platform testing - mesos, SIMR
 
+---
+
+<a name="TargetPlatforms"></a>
 # Running on Select Target Platforms
+
+<a name="Standalone"></a>
 ## Standalone
 [Spark documentation - running Standalone cluster](http://spark.apache.org/docs/latest/spark-standalone.html)
 
+<a name="YARN"></a>
 ## YARN
 [Spark documentation - running Spark Application on YARN](http://spark.apache.org/docs/latest/running-on-yarn.html)
 
+<a name="Mesos"></a>
 ## Mesos
 [Spark documentation - running Spark Application on Mesos](http://spark.apache.org/docs/latest/running-on-mesos.html)
 
+---
+<a name="IntegTest"></a>
 # Integration Tests
 
+---
+<a name="TestEnv"></a>
 ## Testing Environments
  * Local - corresponds to setting Spark `MASTER` variable to one of `local`, or `local[*]`, or `local-cluster[_,_,_]` values
  * Standalone cluster - the `MASTER` variable points to existing standalone Spark cluster `spark://...` 
@@ -312,6 +334,9 @@ TODO: platform testing - mesos, SIMR
    * CDH5.3 provided cluster
  * YARN cluster - the `MASTER variable contains `yarn-client` or `yarn-cluster` values
 
+---
+
+<a name="TestCases"></a>
 ## Testing Scenarios
  1. Initialize H2O on top of Spark by running  `new H2OContext(sc).start()` and verifying that H2O was properly initialized on all Spark nodes. 
  2. Load data with help from the H2O API from various data sources:
