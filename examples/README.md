@@ -1,3 +1,14 @@
+#Sparkling Water Table of Contents
+- [Compiling examples](#CompileExample)
+- [Running examples](#RunExample)
+- [Running on a local cluster](#LocalCluster)
+- [Running on a Spark cluster](#SparkCluster)
+- [Configuring variables](#ConfigVar)
+- [Step-by-step weather example](#WeatherExample)
+- [Running Sparkling Water on Hadoop](#Hadoop)
+- [Importing data from HDFS](#ImportData)
+
+
 # Sparkling Water Examples
 
 ## Available Examples
@@ -8,36 +19,45 @@
   * `AirlinesWithWeatherDemo` - joining flights data with weather data and running
     Deep Learning
   * `AirlinesWithWeatherDemo2` - new iteration of `AirlinesWithWeatherDemo`
+---
 
-## Compile Example
+<a name="CompileExample"></a>
+## Compiling Examples
 Please use top-level `gradlew`:
 ```
 ./gradlew assemble
 ```
-## Run Example
+---
+<a name="RunExample"></a>
+## Running Examples
 
-### Simple Local Cluster
+<a name="LocalCluster"></a>
+### On a Simple Local Cluster
  
  Run a given example on local cluster. The cluster is defined by `MASTER` address `local-cluster[3,2,3072]` which means that cluster contains 3 worker nodes, each having 2CPUs and 3GB of memory:
  
    * Run `bin/run-example.sh <name of demo>`
-
-### Run on Spark Cluster
-   * Run Spark cluster, for example via `bin/launch-spark-cloud.sh`
-     * Verify that Spark is running - Spark UI on `http://localhost:8080/` should show 3 worker nodes 
-   * Export `MASTER` address of Spark master, i.e., `export MASTER="spark://localhost:7077"`
+---
+<a name="SparkCluster"></a>
+### On a Spark Cluster
+   * Run the Spark cluster, for example via `bin/launch-spark-cloud.sh`
+     * Verify that Spark is running: The Spark UI on `http://localhost:8080/` should show 3 worker nodes 
+   * Export `MASTER` address of Spark master using `export MASTER="spark://localhost:7077"`
    * Run `bin/run-example.sh <name of demo>`
    * Observe status of the application via Spark UI on `http://localhost:8080/`
 
-## Sparkling Water Variables
+---
+<a name="ConfigVar"></a>
+## Configuring Sparkling Water Variables
 
-You can tune Sparkling Water via the following variables:
-  * `spark.h2o.cloud.timeout` - number of msec to wait for cloud formation
-  * `spark.h2o.workers` - number of expected H<sub>2</sub>O workers - it should be same as number of Spark workers
+You can configure Sparkling Water using the following variables:
+  * `spark.h2o.cloud.timeout` - number of milliseconds to wait for cloud formation
+  * `spark.h2o.workers` - number of expected H<sub>2</sub>O workers; it should be same as number of Spark workers
   * `spark.h2o.preserve.executors` - do not kill executors via calling `sc.stop()` call
 
-
-## Step-by-Step through Weather Data Example
+---
+<a name="WeatherExample"></a>
+## Step-by-Step Weather Data Example
 
 1. Run Sparkling shell with an embedded cluster:
   ```
@@ -46,16 +66,16 @@ You can tune Sparkling Water via the following variables:
   bin/sparkling-shell
   ```
 
-2. You can go to [http://localhost:4040/](http://localhost:4040/) to see the Sparkling shell (i.e., Spark driver) status.
+2. To see the Sparkling shell (i.e., Spark driver) status, go to [http://localhost:4040/](http://localhost:4040/).
 
-3. Create H<sub>2</sub>O cloud using all 3 Spark workers
+3. Create an H<sub>2</sub>O cloud using all 3 Spark workers:
   ```scala
   import org.apache.spark.h2o._
   val h2oContext = new H2OContext(sc).start()
   import h2oContext._
   ```
 
-4. Load weather data for Chicago international airport (ORD) with help of RDD API.
+4. Load weather data for Chicago international airport (ORD), with help from the RDD API:
   ```scala
   import org.apache.spark.examples.h2o._
   val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
@@ -63,7 +83,7 @@ You can tune Sparkling Water via the following variables:
   val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
   ```
 
-5. Load airlines data using H<sub>2</sub>O parser
+5. Load airlines data using the H<sub>2</sub>O parser:
   ```scala
   import java.io.File
   import water.fvec.DataFrame
@@ -71,18 +91,18 @@ You can tune Sparkling Water via the following variables:
   val airlinesData = DataFrame(new File(dataFile))
   ```
 
-6. Select flights with destination in Chicago (ORD)
+6. Select flights destined for Chicago (ORD):
   ```scala
   val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
   val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
   ```
   
-7. Compute number of these flights
+7. Compute the number of these flights:
   ```scala
   flightsToORD.count
   ```
 
-8. Use Spark SQL to join flight data with weather data
+8. Use Spark SQL to join the flight data with the weather data:
   ```scala
   import org.apache.spark.sql.SQLContext
   implicit val sqlContext = new SQLContext(sc)
@@ -91,7 +111,7 @@ You can tune Sparkling Water via the following variables:
   weatherTable.registerTempTable("WeatherORD")
   ```
 
-9. Perform SQL JOIN on both tables
+9. Perform SQL JOIN on both tables:
   ```scala
   val bigTable = sql(
           """SELECT
@@ -106,13 +126,13 @@ You can tune Sparkling Water via the following variables:
             |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
   ```
   
-10. Transform the first 3 columns holding date information into enum columns
+10. Transform the first 3 columns containing date information into enum columns:
   ```scala
   val bigDataFrame: DataFrame = bigTable // implicit conversion from RDD to DataFrame
   for( i <- 0 to 2) bigDataFrame.replace(i, bigDataFrame.vec(i).toEnum)
   ```
 
-11. Run deep learning to produce model estimating arrival delay:
+11. Run deep learning to produce a model estimating arrival delay:
   ```scala
   import hex.deeplearning.DeepLearning
   import hex.deeplearning.DeepLearningModel.DeepLearningParameters
@@ -129,19 +149,19 @@ You can tune Sparkling Water via the following variables:
   val dlModel = dl.trainModel.get
   ```
 
-12. Use model to estimate delay on training data
+12. Use the model to estimate the delay on the training data:
   ```scala
   val predictionH2OFrame = dlModel.score(bigTable)('predict)
   val predictionsFromModel = asSchemaRDD(predictionH2OFrame).collect.map(row => if (row.isNullAt(0)) Double.NaN else row(0))
   ```
 
-13. Generate R-code producing residual plot
+13. Generate an R-code producing residual plot:
   ```scala
   import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
   residualPlotRCode(predictionH2OFrame, 'predict, bigTable, 'ArrDelay)  
   ```
   
-  Execute generated R-code in RStudio:
+ 14. Execute generated R-code in RStudio:
   ```R
   #
   # R script for residual plot
@@ -165,14 +185,15 @@ You can tune Sparkling Water via the following variables:
   nrow(compare)
   plot( compare[,1:2] )
   ```
-
+---
+<a name="Hadoop"></a>
 # Sparkling Water on Hadoop
 
 Compatiable Hadoop Distribution: CDH4, ~~CDH5~~, and HDP2.1
 
 ## Install on Hadoop
 
-- To install on your Hadoop Cluster clone the git repository and make a build:
+1. To install on your Hadoop Cluster, clone the git repository and make a build:
 
 ```
 git clone https://github.com/0xdata/sparkling-water.git 
@@ -180,22 +201,23 @@ cd sparkling-water
 ./gradlew build
 ```
 
-- Then set MASTER to the IP address of where your Spark Master Node is launched and set SPARK_HOME to the location of your Spark installation. In the example below the path for SPARK_HOME is the default location of Spark preinstalled on a CDH5 cluster. Please change MASTER below:
+2. Set `MASTER` to the IP address of where your Spark Master Node is launched and set `SPARK_HOME` to the location of your Spark installation. In the example below the path for `SPARK_HOME` is the default location of Spark preinstalled on a CDH5 cluster. Please change `MASTER` below:
 
 ```
 export MASTER="spark://mr-0xd9-precise1.0xdata.loc:7077"
 export SPARK_HOME="/opt/cloudera/parcels/CDH-5.2.0-1.cdh5.2.0.p0.11/lib/spark"
 ```
 
-- Launch Sparkling Shell:
+3. Launch Sparkling Shell:
 
 ```
 ./bin/sparkling-shell
 ```
-
+---
+<a name="ImportData"></a>
 ## Import Data from HDFS
 
-The initialization of H2O remains the same with the exception of importing data from a HDFS path. Please change path variable below to one suitable for your data.
+The initialization of H2O remains the same, with the exception of importing data from a HDFS path. Please change path variable below to one suitable for your data.
 
 ```scala
 import org.apache.spark.h2o._
