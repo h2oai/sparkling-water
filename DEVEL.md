@@ -3,18 +3,35 @@
 ##Table of Contents
 - [Typical Use Case](#UseCase)
 - [Requirements](#Req)
-- [Features](#Features)
 - [Design](#Design)
-- [Supported Data Sources](#DataSource)
-- [Supported Data Formats](#DataFormat)
-- [Data Sharing](#DataShare)
-- [Supported Execution Environments](#ExecEnv)
-- [Provided Primitives](#ProvPrim)
-- [H2O Initialization Sequence](#H2OInit)
+- [Features](#Features)
+  - [Supported Data Sources](#DataSource)
+  - [Supported Data Formats](#DataFormat)
+  - [Data Sharing](#DataShare)
+  - [Supported Execution Environments](#ExecEnv)
+  - [Provided Primitives](#ProvPrim)
 - [Running on Select Target Platforms](#TargetPlatforms)
   - [Standalone](#Standalone)
   - [YARN](#YARN)
   - [Mesos](#Mesos)
+- [H2O Initialization Sequence](#H2OInit)
+  - [Configuration](#Config)
+    - [Build Environment](#BuildEnv)
+    - [Run Environment](#RunEnv)
+    - [Sparkling Water Configuration Properties](#Properties)
+- [Running Sparkling Water](#RunSW)
+  - [Starting H2O Services](#StartH2O)
+  - [Converting DataFrames into RDD](#TransformDF)
+    - [Example](#Example)
+  - [Converting DataFrames into SchemaRDD](#ConvertSchema)
+    - [Example](#Example2)
+  - [Converting RDD into DataFrames](#ConvertRDD)
+    - [Example](#Example3)
+  - [Converting SchemaRDD into DataFrame](#ConvertSchematoDF)
+    - [Example](#Example4)
+  - [Creating DataFrames from an existing key](#CreateDF)
+  - [Calling H2O Algorithms](#CallAlgos)
+  - [Running Unit Tests](#UnitTest)
 - [Integration Tests](#IntegTest)
   - [Testing Environment](#TestEnv)
   - [Testing Scenarios](#TestCases)
@@ -37,18 +54,6 @@ Sparkling Water excels in leveraging existing Spark-based workflows that need to
 
 ---
 
-<a name="Features"></a>
-## Features
-
-Sparkling Water provides transparent integration for the H2O engine and its machine learning 
-algorithms into the Spark platform, enabling:
- * use of H2O algorithms in Spark workflow
- * transformation between H2O and Spark data structures
- * use of Spark RDDs as input for H2O algorithms
- * transparent execution of Sparkling Water applications on top of Spark
-
----
-
 <a name="Design"></a>
 ## Design
 
@@ -66,6 +71,17 @@ and orchestrates them into a cloud. The topology of the created cloud matches th
 When H2O services are running, it is possible to create H2O data structures, call H2O algorithms, and transfer values from/to RDD.
 
 ---
+
+<a name="Features"></a>
+## Features
+
+Sparkling Water provides transparent integration for the H2O engine and its machine learning 
+algorithms into the Spark platform, enabling:
+ * use of H2O algorithms in Spark workflow
+ * transformation between H2O and Spark data structures
+ * use of Spark RDDs as input for H2O algorithms
+ * transparent execution of Sparkling Water applications on top of Spark
+
 
 <a name="DataSource"></a> 
 ### Supported Data Sources
@@ -120,9 +136,28 @@ The Sparkling Water provides following primitives, which are the basic classes u
 | H2O DataFrame  | `water.fvec.DataFrame`            | DataFrame is the H2O data structure that represents a table of values. The table is column-based and provides column and row accessors. |
 | H2O Algorithms | package `hex`                     | Represents the H2O machine learning algorithms library, including DeepLearning, GBM, RandomForest. |
  
+
+---
+
+<a name="TargetPlatforms"></a>
+# Running on Select Target Platforms
+
+<a name="Standalone"></a>
+## Standalone
+[Spark documentation - running Standalone cluster](http://spark.apache.org/docs/latest/spark-standalone.html)
+
+<a name="YARN"></a>
+## YARN
+[Spark documentation - running Spark Application on YARN](http://spark.apache.org/docs/latest/running-on-yarn.html)
+
+<a name="Mesos"></a>
+## Mesos
+[Spark documentation - running Spark Application on Mesos](http://spark.apache.org/docs/latest/running-on-mesos.html)
+
+
 ---
 <a name="H2OInit"></a>
-### H2O Initialization Sequence
+# H2O Initialization Sequence
 If `SparkContext` is available, initialize and start H2O context: 
 ```scala
 val sc:SparkContext = ...
@@ -135,19 +170,21 @@ The call will:
  3. Create a cloud for H2O services based on the list of executors
  4. Verify the H2O cloud status
 
-
-
 ---
-
-
+<a name="Config"></a>
 ## Configuration
 
+<a name="BuildEnv"></a>
 ### Build Environment
-The environment must contain a property `SPARK_HOME` pointing to Spark distribution.
+The environment must contain the property `SPARK_HOME` that points to the Spark distribution.
+---
 
+<a name="RunEnv"></a>
 ### Run Environment
-The environment must contain a property `SPARK_HOME`.
+The environment must contain the property `SPARK_HOME` that points to the Spark distribution.
+---
 
+<a name="Properties"></a>
 ### Sparkling Water Configuration Properties
 
 The following configuration properties can be passed to Spark to configure Sparking Water:
@@ -166,14 +203,20 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.network.mask`|--|Subnet selector for H2O if IP detection fails - useful for detecting the correct IP if 'spark.ext.h2o.flatfile' is false.* |
 |`spark.ext.h2o.nthreads`|`-1`|Limit for number of threads used by H2O, default `-1` means unlimited.|
 
-### Pass property to Sparkling Shell
-TODO: example of arg passing from sparkling shell.
+---
 
-### Pass property to Spark submit
+%%### Pass property to Sparkling Shell
+%%TODO: example of arg passing from sparkling shell.
 
-## Running
+%%### Passing property to Spark submit
 
-### Creating H2O Services
+<a name="RunSW"></a>
+# Running Sparkling Water
+
+---
+
+<a name="StartH2O"></a>
+### Starting H2O Services
 ```scala
 val sc:SparkContext = ...
 val hc = new H2OContext(sc).start()
@@ -183,25 +226,29 @@ When the number of Spark nodes is known, it can be specified in `start` call:
 ```scala
 val hc = new H2OContext(sc).start(3)
 ```
-
-### Transforming DataFrame into RDD[T]
+---
+<a name="ConvertDF"></a>
+### Converting DataFrames into RDD[T]
 The `H2OContext` class provides the explicit conversion, `asRDD`, which creates an RDD-like wrapper around the  provided H2O DataFrame:
 ```scala
 def asRDD[A <: Product: TypeTag: ClassTag](fr : DataFrame) : RDD[A]
 ```
 
 The call expects the type `A` to create a correctly-typed RDD. 
-The transformation requires type `A` to be bound by `Product` interface.
+The conversion requires type `A` to be bound by `Product` interface.
 The relationship between the columns of DataFrame and the attributes of class `A` is based on name matching.
 
+<a name="Example"></a>
 #### Example
 ```scala
 val df: DataFrame = ...
 val rdd = asRDD[Weather](df)
 
 ```
+---
 
-### Transforming DataFrame into SchemaRDD
+<a name="ConvertSchema"></a>
+### Converting DataFrames into SchemaRDD
 The `H2OContext` class provides the explicit conversion, `asSchemaRDD`, which creates a SchemaRDD-like wrapper
 around the provided H2O DataFrame. Technically, it provides the `RDD[sql.Row]` RDD API:
 ```scala
@@ -212,7 +259,7 @@ This call does not require any type of parameters, but since it creates `SchemaR
 
 The schema of the created instance of the SchemaRDD is derived from the column name and the types of DataFrames specified.
 
-
+<a name="Example2"></a>
 #### Example
 
 Using an explicit parameter in the call to pass sqlContext:
@@ -225,15 +272,17 @@ or as implicit variable provided by actual environment:
 implicit val sqlContext = new SQLContext(sc)
 val schemaRDD = asSchemaRDD(dataFrame)
 ```
+---
 
-
-### Transforming RDD[T] into DataFrame
+<a name="ConvertRDD"></a>
+### Converting RDD[T] into DataFrames
 The `H2OContext` provides **implicit** conversion from the specified `RDD[A]` to DataFrame. As with conversion in the opposite direction, the type `A` has to satisfy the upper bound expressed by the type `Product`. The conversion will create a new DataFrame, transfer data from the specified RDD, and save it to the H2O K/V data store.
 
 ```scala
 implicit def createDataFrame[A <: Product : TypeTag](rdd : RDD[A]) : DataFrame
 ```
 
+<a name"Example3"></a>
 #### Example
 ```scala
 val rdd: RDD[Weather] = ...
@@ -241,22 +290,26 @@ import h2oContext._
 val df: DataFrame = rdd // implicit call of H2OContext.createDataFrame[Weather](rdd) is used 
 ```
 
-### Transforming SchemaRDD into DataFrame
+---
+<a name="ConvertSchematoDF"></a>
+### Converting SchemaRDD into DataFrame
 The `H2OContext` provides **implicit** conversion from the specified `SchemaRDD` to DataFrame. The conversion will create a new DataFrame, transfer data from the specified RDD, and save it to the H2O K/V data store.
 
 ```scala
 implicit def createDataFrame(rdd : SchemaRDD) : DataFrame
 ```
 
+<a name="Example4"></a>
 #### Example
 ```scala
 val srdd: SchemaRDD = ...
 import h2oContext._
 val df: DataFrame = srdd // implicit call of H2OContext.createDataFrame(srdd) is used 
 ```
+---
 
-
-### Creating DataFrame from an Existing Key
+<a name="CreateDF"></a>
+### Creating DataFrames from an Existing Key
 
 If the H2O cluster already contains a loaded DataFrame referenced by the key `train.hex`, it is possible
 to reference it from Sparkling Water by creating a proxy `DataFrame` instance using the key as the input:
@@ -264,10 +317,11 @@ to reference it from Sparkling Water by creating a proxy `DataFrame` instance us
 val trainDF = new DataFrame("train.hex")
 ```
 
-### Type mapping between H2O DataTypes and Spark SchemaRDD types
-TBD
+%%### Type mapping between H2O DataTypes and Spark SchemaRDD types
+%%TBD
+---
 
-
+<a name="CallAlgos"></a>
 ### Calling H2O Algorithms
 
  1. Create the parameters object that holds references to input data and parameters specific for the algorithm:
@@ -290,37 +344,21 @@ TBD
  ```scala
  val gbmModel = gbm.trainModel.get
  ```
- 
-
+--- 
+<a name="UnitTest"></a>
 ## Running Unit Tests
 JVM options -Dspark.testing=true -Dspark.test.home=/Users/michal/Tmp/spark/spark-1.1.0-bin-cdh4/
 
-## Overhead Estimation
-TBD
+%%## Overhead Estimation
+%%TBD
 
-## Application Development
+%%## Application Development
 
-## Sparkling Water configuration
+%%## Sparkling Water configuration
 
-TODO: used datasources, how data is moved to spark
-TODO: platform testing - mesos, SIMR
+%%TODO: used datasources, how data is moved to spark
+%%TODO: platform testing - mesos, SIMR
 
----
-
-<a name="TargetPlatforms"></a>
-# Running on Select Target Platforms
-
-<a name="Standalone"></a>
-## Standalone
-[Spark documentation - running Standalone cluster](http://spark.apache.org/docs/latest/spark-standalone.html)
-
-<a name="YARN"></a>
-## YARN
-[Spark documentation - running Spark Application on YARN](http://spark.apache.org/docs/latest/running-on-yarn.html)
-
-<a name="Mesos"></a>
-## Mesos
-[Spark documentation - running Spark Application on Mesos](http://spark.apache.org/docs/latest/running-on-mesos.html)
 
 ---
 <a name="IntegTest"></a>
