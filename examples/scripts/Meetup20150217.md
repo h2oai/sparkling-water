@@ -191,7 +191,7 @@ wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/3
         gbmParams._train = train
         gbmParams._valid = test
         gbmParams._response_column = 'bikes
-        gbmParams._ntrees = 5
+        gbmParams._ntrees = 500
         gbmParams._max_depth = 6
 
         val gbm = new GBM(gbmParams)
