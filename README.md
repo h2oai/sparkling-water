@@ -1,35 +1,57 @@
 # Sparkling Water
 
-Sparkling Water integrates H<sub>2</sub>O fast scalable machine learning engine with Spark.
+- [Requirements](#Req)
+- [Contributing](#Contrib)
+- [Issues](#Issues)
+- [Mailing List](#MailList)
+- [Binary downloads](#Binary)
+- [Making a build](#MakeBuild)
+- [Sparkling Shell](#SparkShell)
+- [Running Examples](#RunExample)
+- [Additional Examples](#MoreExamples)
+- [Docker Support](#Docker)
+- [FAQ](#FAQ)
 
-## Features
 
+
+Sparkling Water integrates H<sub>2</sub>O's fast scalable machine learning engine with Spark.
+
+<a name="Req"></a>
 ## Requirements
 
-  * Linux or OS X (Windows support is coming)
+  * Linux or OS X (Windows support is pending)
   * Java 7
   * [Spark 1.2.0](https://spark.apache.org/downloads.html)
-    * `SPARK_HOME` shell variable should point to your local Spark installation
+    * `SPARK_HOME` shell variable must point to your local Spark installation
  
-## Downloads of binaries
-   * [Sparkling Water - Latest version](http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html)
+---
+<a name="Contrib"></a>
+## Contributing
 
-## Contributing - Where to start
 
+Look at our [list of JIRA tasks](https://0xdata.atlassian.net/issues/?filter=13600) for new contributors or send  
+your idea to [support@h2o.ai](mailto:support@h2o.ai).
 
-Look at our [list of JIRA tasks](https://0xdata.atlassian.net/issues/?filter=13600) for new contributors or send us 
-your idea via [support@h2o.ai](mailto:support@h2o.ai).
-
+---
+<a name="Issues"></a>
 ## Issues 
 For issues reporting please use JIRA at [http://jira.h2o.ai/](http://jira.h2o.ai/).
 
+---
+<a name="MailList"></a>
 ## Mailing list
 
 Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
+---
+<a name="Binary"></a>
+## Downloads of binaries
+   * [Sparkling Water - Latest version](http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html)
 
-## Building
+---
+<a name="MakeBuild"></a>
+## Making a build
 
-Use provided `gradlew` to build project:
+Use the provided `gradlew` to build project:
 
 ```
 ./gradlew build
@@ -37,9 +59,37 @@ Use provided `gradlew` to build project:
 
 > To avoid running tests, please, use `-x test` option
 
+---
+<a name="SparkShell"></a>
+## Sparkling shell
+
+The Sparkling shell provides a regular Spark shell that supports creation of an H<sub>2</sub>O cloud and execution of H<sub>2</sub>O algorithms.
+
+First, build a package containing Sparkling water:
+```
+./gradlew assemble
+```
+
+Configure the location of Spark cluster:
+```
+export SPARK_HOME="/path/to/spark/installation"
+export MASTER="local-cluster[3,2,1024]"
+```
+
+> In this case `local-cluster[3,2,1024]` points to embedded cluster of 3 worker nodes, each with 2 cores and 1G of memory.
+
+And run Sparkling Shell:
+```
+bin/sparkling-shell
+```
+
+> Sparkling Shell accepts common Spark Shell arguments. For example, to increase memory allocated by each executor use the `spark.executor.memory` parameter: `bin/sparkling-shell --conf "spark.executor.memory=4g"`
+---
+
+<a name="RunExample"></a>
 ## Running examples
 
-Build a package which can be submitted to Spark cluster:
+Build a package that can be submitted to Spark cluster:
 ```
 ./gradlew assemble
 ```
@@ -58,39 +108,17 @@ bin/run-example.sh
 ```
 
 For more details about the demo, please see the [README.md](examples/README.md) file in the [examples directory](examples/).
-
-
-## Sparkling shell
-
-The Sparkling shell provides a regular Spark shell with support to create a H<sub>2</sub>O cloud and execute H<sub>2</sub>O algorithms.
-
-First, build a package containing Sparkling water
-```
-./gradlew assemble
-```
-
-Configure the location of Spark cluster:
-```
-export SPARK_HOME="/path/to/spark/installation"
-export MASTER="local-cluster[3,2,1024]"
-```
-> In this case `local-cluster[3,2,1024]` points to embedded cluster of 3 worker nodes, each with 2 cores and 1G of memory.
-
-And run Sparkling Shell:
-```
-bin/sparkling-shell
-```
-
-> Sparkling Shell accepts common Spark Shell arguments. For example, to increase memory allocated by each executor it > is possible to pass `spark.executor.memory` parameter:
-> `bin/sparkling-shell --conf "spark.executor.memory=4g"`
-
-### Examples
+---
+<a name="MoreExamples"></a>
+### Additional Examples
 You can find more examples in [examples folder](examples/).
-  
+---  
+<a name="Docker"></a>
 ## Docker Support
 
 See [docker/README.md](docker/README.md) to learn about Docker support.
-
+---
+<a name="FAQ"></a>
 ## FAQ
 
 * Where to find Spark logs?
