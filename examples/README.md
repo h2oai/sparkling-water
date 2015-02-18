@@ -189,26 +189,25 @@ You can configure Sparkling Water using the following variables:
   ```
 ---
 <a name="Hadoop"></a>
-# Sparkling Water on Hadoop
+#Sparkling Water on Hadoop
 
 Compatible Hadoop Distributions: CDH4, ~~CDH5~~, and HDP2.1
 
-1. To install on your Hadoop Cluster, clone the git repository and make a build:
+1) To install on your Hadoop Cluster, clone the git repository and make a build:
 
 ```
 git clone https://github.com/0xdata/sparkling-water.git 
 cd sparkling-water
 ./gradlew build
 ```
-
-2. Set `MASTER` to the IP address of where your Spark Master Node is launched and set `SPARK_HOME` to the location of your Spark installation. In the example below the path for `SPARK_HOME` is the default location of Spark preinstalled on a CDH5 cluster. Please change `MASTER` below:
+2) Set `MASTER` to the IP address of where your Spark Master Node is launched and set `SPARK_HOME` to the location of your Spark installation. In the example below the path for `SPARK_HOME` is the default location of Spark preinstalled on a CDH5 cluster. Please change `MASTER` below:
 
 ```
 export MASTER="spark://mr-0xd9-precise1.0xdata.loc:7077"
 export SPARK_HOME="/opt/cloudera/parcels/CDH-5.2.0-1.cdh5.2.0.p0.11/lib/spark"
 ```
 
-3. Launch Sparkling Shell:
+3) Launch Sparkling Shell:
 
 ```
 ./bin/sparkling-shell
