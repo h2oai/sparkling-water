@@ -45,11 +45,16 @@ object CitiBikeSharingDemo {
     //
     gTimer.start()
     val dataFiles = Array[String](
-      "2013-09.csv"/*,
-      "2013-10.csv",
-      "2013-11.csv",
-      "2013-12.csv"*/).map(f => new File(DIR_PREFIX, f))
+      "2013-07.csv", "2013-08.csv", "2013-09.csv", "2013-10.csv",
+      "2013-11.csv", "2013-12.csv",
+      "2014-01.csv", "2014-02.csv", "2014-03.csv", "2014-04.csv",
+      "2014-05.csv", "2014-06.csv", "2014-07.csv", "2014-08.csv").map(f => new File(DIR_PREFIX, f))
+    // Load and parse data
     val dataf = new DataFrame(dataFiles:_*)
+    // Rename columns and remove all spaces in header
+    val colNames = dataf.names().map( n => n.replace(' ', '_'))
+    dataf._names = colNames
+    dataf.update(null)
     gTimer.stop("H2O: parse")
 
     //
@@ -61,6 +66,8 @@ object CitiBikeSharingDemo {
     // Add a new column
     //
     dataf.add(new TimeSplit().doIt(startTimeF))
+    // Do not forget to update frame in K/V store
+    dataf.update(null)
     println(dataf)
     gTimer.stop("H2O: split start time column")
 
@@ -112,7 +119,7 @@ object CitiBikeSharingDemo {
     // Join with bike table
     sqlContext.registerRDDAsTable(weatherRdd, "weatherRdd")
     sqlContext.registerRDDAsTable(asSchemaRDD(finalTable), "bikesRdd")
-    sql("SET spark.sql.shuffle.partitions=20")
+    //sql("SET spark.sql.shuffle.partitions=20")
     val bikesWeatherRdd = sql(
       """SELECT b.Days, b.start_station_id, b.bikes, b.Month, b.DayOfWeek,
         |w.DewPoint, w.HumidityFraction, w.Prcp1Hour, w.Temperature, w.WeatherCode1
@@ -123,7 +130,7 @@ object CitiBikeSharingDemo {
       """.stripMargin)
 
 
-    // And make prediction again
+    // And make prediction again but now on RDD
     buildModel(bikesWeatherRdd)
 
     // Print timing results
