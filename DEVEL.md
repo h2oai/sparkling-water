@@ -61,7 +61,7 @@ inside a Spark executor, which is created after application submission.
 At this point, H2O starts services, including distributed KV store and memory manager,
 and orchestrates them into a cloud. The topology of the created cloud matches the topology of the underlying Spark cluster exactly.
 
-[Image from Slides showing the topology]
+ ![Topology](images/Topology.png)
 
 When H2O services are running, it is possible to create H2O data structures, call H2O algorithms, and transfer values from/to RDD.
 
@@ -80,6 +80,7 @@ Currently, Sparkling Water can use the following data source types:
 <a name="DataFormat"></a>   
 ### Supported Data Formats
 Sparkling Water can read data stored in the following formats:
+
  - CSV
  - SVMLight
  - ARFF
@@ -90,7 +91,7 @@ Sparkling Water can read data stored in the following formats:
 ### Data Sharing
 Sparkling Water enables transformation between different types of RDDs and H2O's DataFrame, and vice versa.
 
-[pic from slides]
+ ![Data Sharing](images/DataShare.png)
 
 When converting from DataFrame to RDD, a wrapper is created around the H2O DataFrame to provide an RDD-like API. In this case, no data is duplicated; instead, the data is served directly from then underlying DataFrame.
 
