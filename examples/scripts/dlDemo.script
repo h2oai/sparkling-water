@@ -1,16 +1,15 @@
-mport water.{H2O,H2OClientApp}
-H2OClientApp.start()
-H2O.waitForCloudSize(3, 10000)
+
+# We should mouse the syntax in this file into a sparkling shell session.
 
 import java.io.File
 import org.apache.spark.examples.h2o._
 import org.apache.spark.h2o._
 
-val dataFile = "../h2o-examples/smalldata/allyears2k_headers.csv.gz"
-val airlinesData = new DataFrame(new File(dataFile))
-
-val h2oContext = new H2OContext(sc)
+val h2oContext = new H2OContext(sc).start()
 import h2oContext._
+import water.fvec.DataFrame
+val dataFile = "examples/smalldata/allyears2k_headers.csv.gz"
+val airlinesData = new DataFrame(new File(dataFile))
 
 val airlinesTable : RDD[Airlines] = toRDD[Airlines](airlinesData)
 airlinesTable.count
