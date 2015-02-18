@@ -177,11 +177,13 @@ The call will:
 <a name="BuildEnv"></a>
 ### Build Environment
 The environment must contain the property `SPARK_HOME` that points to the Spark distribution.
+
 ---
 
 <a name="RunEnv"></a>
 ### Run Environment
 The environment must contain the property `SPARK_HOME` that points to the Spark distribution.
+
 ---
 
 <a name="Properties"></a>
@@ -319,6 +321,7 @@ val trainDF = new DataFrame("train.hex")
 
 %%### Type mapping between H2O DataTypes and Spark SchemaRDD types
 %%TBD
+
 ---
 
 <a name="CallAlgos"></a>
