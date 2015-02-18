@@ -29,8 +29,7 @@ Sparkling Water integrates H<sub>2</sub>O's fast scalable machine learning engin
 ## Contributing
 
 
-Look at our [list of JIRA tasks](https://0xdata.atlassian.net/issues/?filter=13600) for new contributors or send  
-your idea to [support@h2o.ai](mailto:support@h2o.ai).
+Look at our [list of JIRA tasks](https://0xdata.atlassian.net/issues/?filter=13600) for new contributors or send your idea to [support@h2o.ai](mailto:support@h2o.ai).
 
 ---
 <a name="Issues"></a>
@@ -42,6 +41,7 @@ For issues reporting please use JIRA at [http://jira.h2o.ai/](http://jira.h2o.ai
 ## Mailing list
 
 Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
+
 ---
 <a name="Binary"></a>
 ## Downloads of binaries
@@ -84,6 +84,7 @@ bin/sparkling-shell
 ```
 
 > Sparkling Shell accepts common Spark Shell arguments. For example, to increase memory allocated by each executor use the `spark.executor.memory` parameter: `bin/sparkling-shell --conf "spark.executor.memory=4g"`
+
 ---
 
 <a name="RunExample"></a>
@@ -108,29 +109,36 @@ bin/run-example.sh
 ```
 
 For more details about the demo, please see the [README.md](examples/README.md) file in the [examples directory](examples/).
+
 ---
 <a name="MoreExamples"></a>
 ### Additional Examples
 You can find more examples in [examples folder](examples/).
+
 ---  
 <a name="Docker"></a>
 ## Docker Support
 
 See [docker/README.md](docker/README.md) to learn about Docker support.
+
 ---
+
 <a name="FAQ"></a>
 ## FAQ
 
-* Where to find Spark logs?
-  > Look for `$SPARK_HOME/work/app-XXX`. The last part of address is name of your application.
+* Where do I find the Spark logs?
+  
+ > Look for `$SPARK_HOME/work/app-XXX`. The last part of the address is the name of your application.
  
 * Spark is too slow during start or H2O is not able to cluster.
-  > Configure Spark variable `SPARK_LOCAL_IP`. For example: 
+  
+ > Configure the Spark variable `SPARK_LOCAL_IP`. For example: 
   ```
   export SPARK_LOCAL_IP='127.0.0.1'
   ```  
-* How to increase memory assigned to Spark executors in Sparkling Shell?
+* How do I increase the amount of memory assigned to the Spark executors in Sparkling Shell?
+ 
  > Sparkling Shell accepts common Spark Shell arguments. For example, to increase
- > memory allocated by each executor it > is possible to pass `spark.executor.memory`
+ > memory allocated by each executor, use the `spark.executor.memory`
  > parameter: `bin/sparkling-shell --conf "spark.executor.memory=4g"`
 
