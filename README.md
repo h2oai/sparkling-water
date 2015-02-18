@@ -139,6 +139,6 @@ See [docker/README.md](docker/README.md) to learn about Docker support.
 * How do I increase the amount of memory assigned to the Spark executors in Sparkling Shell?
  
  > Sparkling Shell accepts common Spark Shell arguments. For example, to increase
- > memory allocated by each executor, use the `spark.executor.memory`
+ > the amount of memory allocated by each executor, use the `spark.executor.memory`
  > parameter: `bin/sparkling-shell --conf "spark.executor.memory=4g"`
 
