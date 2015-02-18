@@ -29,7 +29,6 @@ val dataFiles = Array[String](
       "2013-11.csv", "2013-12.csv",
       "2014-01.csv", "2014-02.csv", "2014-03.csv", "2014-04.csv",
       "2014-05.csv", "2014-06.csv", "2014-07.csv", "2014-08.csv").map(f => new File(DIR_PREFIX, f))
-val dataFiles = Array[String]("2013-07.csv").map(f => new File(DIR_PREFIX, f))
 // Load and parse data
 val bikesDF = new DataFrame(dataFiles:_*)
 // Rename columns and remove all spaces in header
@@ -61,10 +60,10 @@ val bikesPerDayRdd = sql(
   """SELECT Days, start_station_id, count(*) bikes
     |FROM bikesRdd
     |GROUP BY Days, start_station_id """.stripMargin)
-println(bph.take(10).mkString("\n"))
 
 //
 // Convert RDD to DataFrame via implicit operation
+//
 val bikesPerDayDF:DataFrame = bikesPerDayRdd
 
 //
