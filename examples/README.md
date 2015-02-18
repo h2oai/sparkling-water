@@ -12,6 +12,7 @@
 # Sparkling Water Examples
 
 ## Available Examples
+
   * `ProstateDemo` - running K-means on prostate dataset (see
     _smalldata/prostate.csv_)
   * `DeepLearningDemo` - running DeepLearning on a subset of airlines dataset (see
@@ -19,11 +20,12 @@
   * `AirlinesWithWeatherDemo` - joining flights data with weather data and running
     Deep Learning
   * `AirlinesWithWeatherDemo2` - new iteration of `AirlinesWithWeatherDemo`
+
 ---
 
 <a name="CompileExample"></a>
 ## Compiling Examples
-Please use top-level `gradlew`:
+To compile, use top-level `gradlew`:
 ```
 ./gradlew assemble
 ```
@@ -35,8 +37,8 @@ Please use top-level `gradlew`:
 ### On a Simple Local Cluster
  
  Run a given example on local cluster. The cluster is defined by `MASTER` address `local-cluster[3,2,3072]` which means that cluster contains 3 worker nodes, each having 2CPUs and 3GB of memory:
+ * Run `bin/run-example.sh <name of demo>`
  
-   * Run `bin/run-example.sh <name of demo>`
 ---
 <a name="SparkCluster"></a>
 ### On a Spark Cluster
@@ -161,7 +163,7 @@ You can configure Sparkling Water using the following variables:
   residualPlotRCode(predictionH2OFrame, 'predict, bigTable, 'ArrDelay)  
   ```
   
- 14. Execute generated R-code in RStudio:
+14. Execute generated R-code in RStudio:
   ```R
   #
   # R script for residual plot
@@ -189,9 +191,7 @@ You can configure Sparkling Water using the following variables:
 <a name="Hadoop"></a>
 # Sparkling Water on Hadoop
 
-Compatiable Hadoop Distribution: CDH4, ~~CDH5~~, and HDP2.1
-
-## Install on Hadoop
+Compatible Hadoop Distributions: CDH4, ~~CDH5~~, and HDP2.1
 
 1. To install on your Hadoop Cluster, clone the git repository and make a build:
 
