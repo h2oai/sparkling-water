@@ -1,6 +1,12 @@
 //
-// Meetup script 2015-02-17
+// Strata script 2015-02-19
 //
+// Run: bin/sparkling-shell
+//
+
+val DIR_PREFIX = "/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/"
+val TREES = 500
+val DEPTH = 6
 
 // Common imports
 import org.apache.spark.h2o._
@@ -19,15 +25,12 @@ implicit val sqlContext = new SQLContext(sc)
 import sqlContext._
 
 //
-// Load data into H2O by using H2O parser
+// Load data into H2O by using H2O parser - use only 2013 data.
 //
 
-val DIR_PREFIX = "/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/"
 val dataFiles = Array[String](
       "2013-07.csv", "2013-08.csv", "2013-09.csv", "2013-10.csv",
-      "2013-11.csv", "2013-12.csv",
-      "2014-01.csv", "2014-02.csv", "2014-03.csv", "2014-04.csv",
-      "2014-05.csv", "2014-06.csv", "2014-07.csv", "2014-08.csv").map(f => new java.io.File(DIR_PREFIX, f))
+      "2013-11.csv", "2013-12.csv").map(f => new java.io.File(DIR_PREFIX, f))
 // Load and parse data
 val bikesDF = new DataFrame(dataFiles:_*)
 // Rename columns and remove all spaces in header
@@ -78,7 +81,7 @@ val finalBikeDF = bikesPerDayDF.add(new TimeTransform().doIt(daysVec))
 //
 def r2(model: GBMModel, fr: Frame) =  hex.ModelMetrics.getFromDKV(model, fr).asInstanceOf[hex.ModelMetricsSupervised].r2()
 
-def buildModel(df: DataFrame)(implicit h2oContext: H2OContext) = {
+def buildModel(df: DataFrame, trees: Int = TREES, depth: Int = DEPTH)(implicit h2oContext: H2OContext) = {
     import hex.splitframe.ShuffleSplitFrame
     import water.Key
     import h2oContext._
@@ -103,8 +106,8 @@ def buildModel(df: DataFrame)(implicit h2oContext: H2OContext) = {
     gbmParams._train = train
     gbmParams._valid = test
     gbmParams._response_column = 'bikes
-    gbmParams._ntrees = 500
-    gbmParams._max_depth = 6
+    gbmParams._ntrees = trees
+    gbmParams._max_depth = depth
 
     val gbm = new GBM(gbmParams)
     val gbmModel = gbm.trainModel.get
@@ -114,8 +117,7 @@ def buildModel(df: DataFrame)(implicit h2oContext: H2OContext) = {
     gbmModel.score(hold).remove()
 
     println(
-      s"""
-         |r2 on train: ${r2(gbmModel, train)}
+      s"""|r2 on train: ${r2(gbmModel, train)}
           |r2 on test:  ${r2(gbmModel, test)}
           |r2 on hold:  ${r2(gbmModel, hold)}"""".stripMargin)
 
@@ -156,4 +158,4 @@ val bikesWeatherRdd = sql(
 buildModel(bikesWeatherRdd)
 
 // Kill the cloud
-sc.stop()
+//sc.stop()
