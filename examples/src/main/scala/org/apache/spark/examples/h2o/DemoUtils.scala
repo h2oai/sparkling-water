@@ -1,9 +1,11 @@
 package org.apache.spark.examples.h2o
 
+import hex.splitframe.ShuffleSplitFrame
+import hex.tree.gbm.GBMModel
 import org.apache.spark.{SparkConf, SparkContext}
 import water.fvec.{Frame, DataFrame, Chunk}
 import water.parser.ValueString
-import water.{H2OClientApp, MRTask, H2O, H2OApp}
+import water._
 
 /**
  * Shared demo utility functions.
@@ -100,6 +102,24 @@ object DemoUtils {
         |nrow(compare)
         |plot( compare[,1:2] )
         |
+      """.stripMargin
+  }
+
+  def splitFrame(df: DataFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
+    val ks = keys.map(Key.make(_)).toArray
+    val frs = ShuffleSplitFrame.shuffleSplitFrame(df, ks, ratios.toArray, 1234567689L)
+    frs
+  }
+
+  def r2(model: GBMModel, fr: Frame) =  hex.ModelMetrics.getFromDKV(model, fr).asInstanceOf[hex.ModelMetricsSupervised].r2()
+
+  case class R2(name:String, train:Double, test:Double, hold:Double) {
+    override def toString: String =
+      s"""
+        |Results for $name:
+        |  - R2 on train = ${train}
+        |  - R2 on test  = ${test}
+        |  - R2 on hold  = ${hold}
       """.stripMargin
   }
 }
