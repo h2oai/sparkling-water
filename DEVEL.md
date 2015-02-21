@@ -36,7 +36,8 @@
   - [Testing Environment](#TestEnv)
   - [Testing Scenarios](#TestCases)
   - [Integration Tests Example](#IntegExample)
-
+- [Troubleshooting and Log Locations](#Logging)
+- [Sparkling Shell Console Output](#log4j)
 
 --- 
  
@@ -526,3 +527,60 @@ Spark 1.2.0 or later is required.
   val clusters = KMeans.train(train, 5, 20)
   ```
   
+---
+
+<a name="Logging"></a>
+## Troubleshooting and Log Locations
+In the event you hit a bug or find that Sparkling Water is not reacting the way it is suppose to, help us improve the product by sending the 
+[H2O.ai team](support@h2o.ai) the logs. Depending on how you launched H2O there are a couple of ways to obtain the logs.
+
+<a name="Standalone-Logs"></a>
+## Logs for Standalone Sparkling Water
+By default Spark sets SPARK_LOG_DIR is set to $SPARK_HOME/work/ and if logging needs to be enabled. So when launching Sparkling Shell run:
+
+  ```
+  bin/sparkling-shell.sh --conf spark.logConf=true
+  ```
+
+Zip up the log files in $SPARK_HOME/work/<application id> and the directory should contain the assembly jar file and stdout and stderr for 
+each node in the cluster.
+
+
+<a name="YARN-Logs"></a>
+## Logs for Sparkling Water on YARN
+When launching Sparkling Water on YARN, you can find the application id for the Yarn job on the resource manager where you can also find 
+the application master which is also the Spark master. Then run to get the yarn logs:
+
+  ```
+  yarn logs -applicationId <application id>
+  ```
+
+---
+
+<a name="log4j"></a>
+## Sparkling Shell Console Output
+The console output for Sparkling Shell by default will show a verbose Spark output as well as H2O logs. If you would like to switch the output to 
+only warnings from Spark, you will need to change it in the log4j properities file in Spark's configuration directory. To do this:
+
+  ```
+  cd $SPARK_HOME/conf
+  cp log4j.properties.template log4j.properties
+  ```
+
+Then either in a text editor or vim to change the contents of the log4j.properties file from:
+
+  ```
+  #Set everything to be logged to the console
+  log4j.rootCategory=INFO, console
+  ...
+  ```
+
+to:
+
+  ```
+  #Set everything to be logged to the console
+  log4j.rootCategory=WARN, console
+  ...
+  ```
+  
+---
