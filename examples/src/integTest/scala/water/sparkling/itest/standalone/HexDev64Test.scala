@@ -53,5 +53,7 @@ object HexDev64Test {
     println("Time it took to convert data to SparkRDD = " + timeToTransfer + "secs")
 
     assert (airlinesData.numRows == airlinesRDD.count, "Transfer of H2ORDD to SparkRDD completed!")
+    
+    sc.stop()
   }
 }
