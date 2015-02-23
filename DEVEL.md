@@ -535,7 +535,7 @@ In the event you hit a bug or find that Sparkling Water is not reacting the way 
 [H2O.ai team](support@h2o.ai) the logs. Depending on how you launched H2O there are a couple of ways to obtain the logs.
 
 <a name="Standalone-Logs"></a>
-## Logs for Standalone Sparkling Water
+### Logs for Standalone Sparkling Water
 By default Spark sets SPARK_LOG_DIR is set to $SPARK_HOME/work/ and if logging needs to be enabled. So when launching Sparkling Shell run:
 
   ```
@@ -547,7 +547,7 @@ each node in the cluster.
 
 
 <a name="YARN-Logs"></a>
-## Logs for Sparkling Water on YARN
+### Logs for Sparkling Water on YARN
 When launching Sparkling Water on YARN, you can find the application id for the Yarn job on the resource manager where you can also find 
 the application master which is also the Spark master. Then run to get the yarn logs:
 
