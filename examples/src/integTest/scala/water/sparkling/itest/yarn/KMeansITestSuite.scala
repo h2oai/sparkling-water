@@ -27,6 +27,7 @@ class KMeansITestSuite extends FunSuite with SparkITest {
         conf("spark.executor.instances", 10) // 10 executor instances
         conf("spark.executor.memory", "20g") // 20g per executor
         conf("spark.ext.h2o.port.base", 63331) //Start at baseport 63331
+        conf("spark.driver.memory", "2g")
       }
     )
   }
@@ -74,5 +75,7 @@ object KMeansITest {
     println("Within Set Sum of Squared Errors = " + WSSSE)
     // Shutdown Spark
     sc.stop()
+    // Shutdown H2O explicitly
+    water.H2O.shutdown()
   }
 }
