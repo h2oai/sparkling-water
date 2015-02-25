@@ -12,13 +12,16 @@ case class Prostate(ID      :Option[Long]  ,
                     PSA     :Option[Float],
                     VOL     :Option[Float],
                     GLEASON :Option[Int]  ) {
+  def isWrongRow():Boolean = (0 until productArity).map( idx => productElement(idx)).forall(e => e==None)
 }
 
 /** A dummy csv parser for prostate dataset. */
 object ProstateParse extends Serializable {
+  val EMPTY = Prostate(None, None, None, None, None, None, None, None, None)
   def apply(row: Array[String]): Prostate = {
     import org.apache.spark.examples.h2o.SchemaUtils._
-    Prostate(long(row(0)), int(row(1)), int(row(2)), int(row(3)), int(row(4)), int(row(5)), float(row(6)), float(row(7)), int(row(8)) )
+    if (row.length < 9) EMPTY
+    else Prostate(long(row(0)), int(row(1)), int(row(2)), int(row(3)), int(row(4)), int(row(5)), float(row(6)), float(row(7)), int(row(8)) )
   }
 }
 
