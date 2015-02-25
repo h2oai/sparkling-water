@@ -67,7 +67,7 @@ object KMeansITest {
     val airlinesVectorRDD = airlinesRDD.map(row => Vectors.dense(row.getByte(1) * 1.0, row.getByte(2) * 1.0, row.getByte(3) * 1.0))
 
     val timer3 = new water.util.Timer
-    val clusters = KMeans.train(airlinesVectorRDD, 5, 20)
+    val clusters = KMeans.train(airlinesVectorRDD, 5, 10)
     val timeForKMModel = timer3.time
 
     // Evaluate clustering by computing within set sum of squared errors
