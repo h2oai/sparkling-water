@@ -27,7 +27,6 @@ bin/sparkling-shell
 bin/sparkling-env.sh
 assembly/build/libs/sparkling-water-assembly-$VERSION-all.jar
 examples/README.md
-examples/scripts/dlDemo.script
 examples/scripts/Meetup20141217.md
 examples/smalldata/allyears2k_headers.csv.gz
 examples/smalldata/Chicago_Ohare_International_Airport.csv
