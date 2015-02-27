@@ -262,7 +262,7 @@ wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/3
   
 4. Grid search again:
   ```scala
-    val gridSearchResult2 = gridSearch.map( x => buildModel(bikesWeatherRdd, "bike+weather data", trees = x._1, depth = x._2) ) + Seq(result2)
+    val gridSearchResult2 = gridSearch.map( x => buildModel(bikesWeatherRdd, "bike+weather data", trees = x._1, depth = x._2) ) ++ Seq(result2)
 
   ```
 
