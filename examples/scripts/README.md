@@ -1,11 +1,11 @@
-# Sparkling Water Meetup (02/17/2015)
+# Sparkling Water Meetup (02/26/2015)
 
 ## Requirements
  
 ### For Sparkling Water part
  - Oracle Java 7+
  - [Spark 1.2.0](http://spark.apache.org/downloads.html)
- - [Sparkling Water 0.2.11-80](http://h2o-release.s3.amazonaws.com/sparkling-water/master/80/index.html)
+ - [Sparkling Water 0.2.11-86](http://h2o-release.s3.amazonaws.com/sparkling-water/master/86/index.html)
  
 ### For Sparkling Water droplet part
  - Git
@@ -15,10 +15,10 @@
 ## Download
 
 Please download [Sparkling Water
-0.2.11-80](http://h2o-release.s3.amazonaws.com/sparkling-water/master/80/index.html) and unzip the file:
+0.2.11-86](http://h2o-release.s3.amazonaws.com/sparkling-water/master/80/index.html) and unzip the file:
 ```
-unzip sparkling-water-0.2.11-80.zip
-cd sparkling-water-0.2.11-80
+unzip sparkling-water-0.2.11-86.zip
+cd sparkling-water-0.2.11-86
 ```
 
 > All materials will be also available on provided USBs.
@@ -27,25 +27,26 @@ cd sparkling-water-0.2.11-80
 Hands-On slides are available at [H2O.ai SlideShare account](http://www.slideshare.net/0xdata/spa-43755759)
 
 ## Script
-The script is available at GitHub - [https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150217.script](https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150217.script).
+The script is available at GitHub - [https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150226.script.scala](https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150226.script.scala).
 
 ```bash
-curl https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150217.script > meetup.script
+curl https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150226.script.scala > meetup.script.scala
 ```
 
 ## Data
 Data are available on provided USB or in S3:
 
 ### CitiBike data
-
+Publicly available data from CitiBike New York, year 2013:
 ```bash
-for f in 2013-07.csv 2013-08.csv 2013-09.csv 2013-10.csv 2013-11.csv 2013-12.csv 2014-01.csv 2014-02.csv 2014-03.csv 2014-04.csv 2014-05.csv 2014-06.csv 2014-07.csv 2014-08.csv 
+for f in 2013-07.csv 2013-08.csv 2013-09.csv 2013-10.csv 2013-11.csv 2013-12.csv
 do
 wget "https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/$f"
 done
 ```
 ### Weather data 
 
+Publicly available data from NCDC:
 ```bash
 wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv
 ```
@@ -62,28 +63,35 @@ wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/3
   export MASTER="local-cluster[3,2,2048]"
   bin/sparkling-shell
   ```
+  > Note: I would recommend to edit your `$SPARK_HOME/conf/log4j.properties` and configure log level to `WARN` to avoid flooding output with Spark INFO messages.
 
 2. Open Spark UI: You can go to [http://localhost:4040/](http://localhost:4040/) to see the Sparkling shell (i.e., Spark driver) status.
 
-
-3. Initialize H2O: Create H<sub>2</sub>O cloud using all 3 Spark workers
+3. Prepare environmnet
   ```scala
+  // Location of download data
+  val DIR_PREFIX = "/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/"
   import org.apache.spark.h2o._
   import org.apache.spark.examples.h2o._
+  import org.apache.spark.examples.h2o.DemoUtils._
   import org.apache.spark.sql.{SQLContext, SchemaRDD}
-  import org.joda.time.MutableDateTime
   import water.fvec._
   import hex.tree.gbm.GBMModel
-
-  implicit val h2oContext = new H2OContext(sc).start()
-  import h2oContext._
+  import hex.tree.gbm.GBM
+  import hex.tree.gbm.GBMModel.GBMParameters
   
   // Initialize SQLConcept
   implicit val sqlContext = new SQLContext(sc)
   import sqlContext._
   ```
+  
+4. Initialize H2O: Create H<sub>2</sub>O cloud using all 3 Spark workers
+  ```scala
+  implicit val h2oContext = new H2OContext(sc).start()
+  import h2oContext._  
+  ```
 
-4. Open H2O UI: 
+5. Open H2O UI: 
   ```scala
   openFlow
   ```
@@ -91,23 +99,22 @@ wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/3
   
   > You can also open Spark UI by typing `openSparkUI`.
   
-5. Load data into H2O:
+6. Load data into H2O:
   ```scala
-  val DIR_PREFIX = "/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/"
   val dataFiles = Array[String](
       "2013-07.csv", "2013-08.csv", "2013-09.csv", "2013-10.csv",
-      "2013-11.csv", "2013-12.csv",
-      "2014-01.csv", "2014-02.csv", "2014-03.csv", "2014-04.csv",
-      "2014-05.csv", "2014-06.csv", "2014-07.csv", "2014-08.csv").map(f => new java.io.File(DIR_PREFIX, f))
+      "2013-11.csv", "2013-12.csv").map(f => new java.io.File(DIR_PREFIX, f))
+      
   // Load and parse data
   val bikesDF = new DataFrame(dataFiles:_*)
+  
   // Rename columns and remove all spaces in header
   val colNames = bikesDF.names().map( n => n.replace(' ', '_'))
   bikesDF._names = colNames
-  bikesDF.update(null)
+  bikesDF.update(null) // Update Frame in DKV
   ```
   
-  Data contains columns: _tripduration,starttime,stoptime,start station id,start station name,start station latitude,start station longitude,end station id,end station name,end station latitude,end station longitude,bikeid,usertype,birth year,gender_
+  > Original data contains columns: _tripduration,starttime,stoptime,start station id,start station name,start station latitude,start station longitude,end station id,end station name,end station latitude,end station longitude,bikeid,usertype,birth year,gender_. We replace all spaces with underscores to avoid problems in running Spark SQL.
 
 6. Transform column `starttime` to number of days from Epoch: 
   ```scala
@@ -119,23 +126,26 @@ wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/3
   bikesDF.update(null)
   ```
   
-  > What is `TimeSplit`?
+  > What is definition of `TimeSplit`? 
   ```scala
-  class TimeSplit extends MRTask[TimeSplit] {
-    def doIt(time: DataFrame):DataFrame =
+    class TimeSplit extends MRTask[TimeSplit] {
+      def doIt(time: DataFrame):DataFrame =
         DataFrame(doAll(1, time).outputFrame(Array[String]("Days"), null))
-    override def map(msec: Chunk, day: NewChunk):Unit = {
-      for (i <- 0 until msec.len) {
-        day.addNum(msec.at8(i) / (1000 * 60 * 60 * 24)); // Days since the Epoch
+      override def map(msec: Chunk, day: NewChunk):Unit = {
+        for (i <- 0 until msec.len) {
+          day.addNum(msec.at8(i) / (1000 * 60 * 60 * 24)); // Days since the Epoch
+        }
       }
     }
-  }
   ```
   
-7. Transform DataFrame `bikesDF` into RDD:
+  > Explore data in H2O's Flow UI: `openFlow`
+  
+7. Transform H2O's DataFrame `bikesDF` into Spark's RDD:
   ```scala
   val bikesRdd = asSchemaRDD(bikesDF)
-  ``` 
+  ```
+   
 8. Do grouping via Spark SQL: make a new table by grouping by `start_station_id` and `Days`
   ```scala
   // Register table and SQL table
@@ -148,7 +158,7 @@ wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/3
   
 9. Convert RDD to DataFrame type
   ```scala
-  val bikesPerDayDF:DataFrame = bikesPerDayRdd // Implicit conversion h2oContext.createDataFrame(
+  val bikesPerDayDF:DataFrame = bikesPerDayRdd // Implicit conversion is applied here
   ```
 
 10. Perform another column transformation - refine `Days` column to `Month` and `DayOfWeek`
@@ -157,6 +167,7 @@ wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/3
   val daysVec = bikesPerDayDF('Days)
   // Run transformation TimeTransform
   val finalBikeDF = bikesPerDayDF.add(new TimeTransform().doIt(daysVec))
+  finalBikeDF.update(null)
   ```
   
   What is `TimeTransform`?
@@ -164,63 +175,55 @@ wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/3
 11. Build a GBM model: 
   
   1. define a helper function to make a model
-    ```scala
-    def r2(model: GBMModel, fr: Frame) =  hex.ModelMetrics.getFromDKV(model,fr).asInstanceOf[hex.ModelMetricsSupervised].r2()
-    
-    def buildModel(df: DataFrame)(implicit h2oContext: H2OContext) = {
-        import hex.splitframe.ShuffleSplitFrame
-        import h2oContext._
-        import water.Key
-        //
-        // Split into train and test parts
-        //
-        val keys = Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make(_))
-        val ratios = Array[Double](0.6, 0.3, 0.1)
-        val frs = ShuffleSplitFrame.shuffleSplitFrame(df, keys, ratios, 1234567689L)
-        val train = frs(0)
-        val test = frs(1)
-        val hold = frs(2)
+    ```scala    
+      def buildModel(df: DataFrame, modelName: String = "GBM model", trees: Int = 200, depth: Int = 6):R2 = {
+          import hex.splitframe.ShuffleSplitFrame
+          import water.Key
+          //
+          // Split into train and test parts
+          //
+          val keys = Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make(_))
+          val ratios = Array[Double](0.6, 0.3, 0.1)
+          val frs = ShuffleSplitFrame.shuffleSplitFrame(df, keys, ratios, 1234567689L)
+          val (train, test, hold) = (frs(0), frs(1), frs(2))
 
-        //
-        // Launch GBM prediction
-        //
-        import hex.tree.gbm.GBM
-        import hex.tree.gbm.GBMModel.GBMParameters
+          //
+          // Launch GBM prediction
+          //
+          import hex.tree.gbm.GBM
+          import hex.tree.gbm.GBMModel.GBMParameters
+		  // Specify parameters
+          val gbmParams = new GBMParameters()
+          gbmParams._train = train
+          gbmParams._valid = test
+          gbmParams._response_column = 'bikes
+          gbmParams._ntrees = trees
+          gbmParams._max_depth = depth
+          // Launch computation
+          val gbmModel = new GBM(gbmParams).trainModel.get
 
-        val gbmParams = new GBMParameters()
-        gbmParams._train = train
-        gbmParams._valid = test
-        gbmParams._response_column = 'bikes
-        gbmParams._ntrees = 500
-        gbmParams._max_depth = 6
+		  // Run scoring (i like Scala!)
+		  Seq(train,test,hold).foreach(gbmModel.score(_).delete)
 
-        val gbm = new GBM(gbmParams)
-        val gbmModel = gbm.trainModel.get
-
-        gbmModel.score(train).remove()
-        gbmModel.score(test).remove()
-        gbmModel.score(hold).remove()
-
-        println(
-          s"""
-            |r2 on train: ${r2(gbmModel, train)}
-            |r2 on test:  ${r2(gbmModel, test)}
-            |r2 on hold:  ${r2(gbmModel, hold)}"""".stripMargin)
-
-        // Perform clean-up
-        train.delete()
-        test.delete()
-        hold.delete()
-
-        gbmModel
-    }
+          // Collect R2 metrics
+	      val result = R2(s"Model GBM($modelName, trees: $trees, depth: $depth)", r2(gbmModel, train), r2(gbmModel, test), r2(gbmModel, hold))
+	      // Perform clean-up
+          Seq(train, test, hold).foreach(_.delete())
+          result 
+      }
     ``` 
 
   2. Build a model
     ```scala
-    buildModel(finalBikeDF)
+    val result1 = buildModel(finalBikeDF, "bike data")
     ``` 
-    
+12. Simple grid search
+  ```scala
+  // Increase number of trees, but decrease trees depth
+  val gridSearch = Seq( (10, 8), (100, 4), (200,2))
+  val gridSearchResult1 = gridSearch.map( x => buildModel(finalBikeDF, "bike data", trees = x._1, depth = x._2) ) + Seq(result1)
+  
+  ```    
 ### Can weather improve our model?
 
 
@@ -230,9 +233,9 @@ wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/3
   val weatherData = sc.textFile(DIR_PREFIX + "31081_New_York_City__Hourly_2013.csv")
   // Parse data and filter them
   val weatherRdd = weatherData.map(_.split(",")).
-    map(row => NYWeatherParse(row)).
-    filter(!_.isWrongRow()).
-    filter(_.HourLocal == Some(12)).cache()
+      map(row => NYWeatherParse(row)).
+      filter(!_.isWrongRow()).
+      filter(_.HourLocal == Some(12)).cache()
   ```
   > `NYWeatherParse` will in
 
@@ -254,7 +257,13 @@ wget https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/citibike-nyc/3
 3. Build a model again:
   ```scala
   // And make prediction again but now on RDD
-  buildModel(bikesWeatherRdd)
+  val result2 = buildModel(bikesWeatherRdd, "bikes+weather data")
+  ```
+  
+4. Grid search again:
+  ```scala
+    val gridSearchResult2 = gridSearch.map( x => buildModel(bikesWeatherRdd, "bike+weather data", trees = x._1, depth = x._2) ) + Seq(result2)
+
   ```
 
 ## Develop a Standalone Sparkling Water Application
