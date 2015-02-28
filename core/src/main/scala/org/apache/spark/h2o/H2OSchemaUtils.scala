@@ -76,4 +76,19 @@ object H2OSchemaUtils {
       }
     } else DoubleType
   }
+
+  /** Method translating SQL types into Sparkling Water types */
+  def dataTypeToClass(dt : DataType):Class[_] = dt match {
+    case BinaryType  => classOf[java.lang.Byte]
+    case ByteType    => classOf[java.lang.Byte]
+    case ShortType   => classOf[java.lang.Short]
+    case IntegerType => classOf[java.lang.Integer]
+    case LongType    => classOf[java.lang.Long]
+    case FloatType   => classOf[java.lang.Float]
+    case DoubleType  => classOf[java.lang.Double]
+    case StringType  => classOf[String]
+    case BooleanType => classOf[java.lang.Boolean]
+    case TimestampType => classOf[java.sql.Timestamp]
+    case _ => throw new IllegalArgumentException(s"Unsupported type $dt")
+  }
 }

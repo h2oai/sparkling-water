@@ -35,7 +35,6 @@ trait H2OConf {
   def numH2OWorkers = sparkConf.getInt(PROP_CLUSTER_SIZE._1, PROP_CLUSTER_SIZE._2)
   def useFlatFile   = sparkConf.getBoolean(PROP_USE_FLATFILE._1, PROP_USE_FLATFILE._2)
   def basePort      = sparkConf.getInt(PROP_PORT_BASE._1, PROP_PORT_BASE._2)
-  def incrPort      = sparkConf.getInt(PROP_PORT_INCR._1, PROP_PORT_INCR._2)
   def cloudTimeout  = sparkConf.getInt(PROP_CLOUD_TIMEOUT._1, PROP_CLOUD_TIMEOUT._2)
   def drddMulFactor = sparkConf.getInt(PROP_DUMMY_RDD_MUL_FACTOR._1, PROP_DUMMY_RDD_MUL_FACTOR._2)
   def numRddRetries = sparkConf.getInt(PROP_SPREADRDD_RETRIES._1, PROP_SPREADRDD_RETRIES._2)
@@ -56,8 +55,6 @@ trait H2OConf {
   val PROP_CLUSTER_SIZE = ( "spark.ext.h2o.cluster.size", -1 )
   /** Configuration property - base port used for individual H2O nodes configuration. */
   val PROP_PORT_BASE = ( "spark.ext.h2o.port.base", 54321 )
-  /** Configuration property - increment added to base port to find available port. */
-  val PROP_PORT_INCR = ( "spark.ext.h2o.port.incr", 2)
   /** Configuration property - timeout for cloud up. */
   val PROP_CLOUD_TIMEOUT = ("spark.ext.h2o.cloud.timeout", 60*1000)
   /** Configuration property - number of retries to create an RDD spreat over all executors */
@@ -97,7 +94,8 @@ trait H2OConf {
     Seq(
       ("-name", cloudName),
       ("-nthreads", if (nthreads>0) nthreads else null),
-      ("-network", networkMask.getOrElse(null)))
+      ("-network", networkMask.getOrElse(null)),
+      ("-baseport", basePort))
       .filter(x => x._2 != null)
       .flatMap(x => Seq(x._1, x._2.toString))
 
@@ -107,7 +105,6 @@ trait H2OConf {
          |  cloudName    : $cloudName
          |  flatfile     : $useFlatFile
          |  basePort     : $basePort
-         |  incrPort     : $incrPort
          |  cloudTimeout : $cloudTimeout
          |  h2oNodeLog   : $h2oNodeLogLevel
          |  h2oClientLog : $h2oClientLogLevel

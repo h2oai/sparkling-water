@@ -197,7 +197,6 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.flatfile` | `true`| Use flatfile (instead of multicast) approach for creating H2O cloud |
 |`spark.ext.h2o.cluster.size` | `-1` |Expected number of workers of H2O cloud. Use -1 to automatically detect the cluster size. This number must be equal to number of Spark workers.|
 |`spark.ext.h2o.port.base`| `54321`| Base port used for individual H2O node configuration.|
-|`spark.ext.h2o.port.incr`| `2` | Increment added to base port to find the next available port.|
 |`spark.ext.h2o.cloud.timeout`| `60*1000` | Timeout (in msec) for cloud  |
 |`spark.ext.h2o.spreadrdd.retries` | `10` | Number of retries for creation of an RDD covering all existing Spark executors. |
 |`spark.ext.h2o.cloud.name`| `sparkling-water-` | Name of H2O cloud. |

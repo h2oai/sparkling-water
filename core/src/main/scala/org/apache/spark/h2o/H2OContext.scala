@@ -19,8 +19,8 @@ package org.apache.spark.h2o
 
 import org.apache.spark._
 import org.apache.spark.h2o.H2OContextUtils._
+import org.apache.spark.h2o.H2OSchemaUtils.dataTypeToClass
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
-import org.apache.spark.scheduler.{SparkListenerBlockManagerAdded, SparkListenerBlockManagerRemoved}
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
 import org.apache.spark.sql.execution.{ExistingRdd, SparkLogicalPlan}
 import org.apache.spark.sql.{Row, SQLContext, SchemaRDD}
@@ -39,8 +39,7 @@ import scala.util.Random
 /**
  * Simple H2O context motivated by SQLContext.
  *
- * Doing - implicit conversion from RDD -> H2OLikeRDD
- *
+ * It provides implicit conversion from RDD -> H2OLikeRDD and back.
  */
 class H2OContext (@transient val sparkContext: SparkContext) extends {
     val sparkConf = sparkContext.getConf
@@ -105,41 +104,31 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     sparkConf.set(PROP_CLOUD_NAME._1,
       PROP_CLOUD_NAME._2 + System.getProperty("user.name", "cloud_" + Random.nextInt(42)))
 
-    // Check Spark environment
-    H2OContext.checkSparkEnv(sparkConf)
+    // Check Spark environment and reconfigure some values
+    H2OContext.checkAndUpdateSparkEnv(sparkConf)
 
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
-    val (spreadRDD, nodes) = createSpreadRDD(numRddRetries, drddMulFactor, numH2OWorkers)
+    val (spreadRDD, spreadRDDNodes) = createSpreadRDD(numRddRetries, drddMulFactor, numH2OWorkers)
 
     // Start H2O nodes
     // Get executors to execute H2O
-    val allExecutorIds = nodes.map(_._1).distinct
+    val allExecutorIds = spreadRDDNodes.map(_._1).distinct
     val executorIds = allExecutorIds
-    val executors = nodes // Executors list should be already normalized
     // The collected executors based on IDs should match
-    assert(executors.length == executorIds.length,
-            s"Unexpected number of executors ${executors.length}!=${executorIds.length}")
-    // H2O is executed only on the subset of Spark cluster
-    // This situation is interesting when data are located on node which does not contain H2O
+    assert(spreadRDDNodes.length == executorIds.length,
+            s"Unexpected number of executors ${spreadRDDNodes.length}!=${executorIds.length}")
+    // H2O is executed only on the subset of Spark cluster - fail
     if (executorIds.length < allExecutorIds.length) {
-      logWarning(s"""Spark cluster contains ${allExecutorIds.length},
+      throw new IllegalArgumentException(s"""Spark cluster contains ${allExecutorIds.length},
                but H2O is running only on ${executorIds.length} nodes!""")
     }
     // Execute H2O on given nodes
-    logInfo(s"""Launching H2O on following nodes: ${executors.mkString(",")}""")
+    logInfo(s"""Launching H2O on following nodes: ${spreadRDDNodes.mkString(",")}""")
 
     val h2oNodeArgs = getH2ONodeArgs
     logDebug(s"Arguments used for launching h2o nodes: ${h2oNodeArgs.mkString(" ")}")
-    val executorStatus = startH2O(sparkContext, spreadRDD, executors, this, h2oNodeArgs )
-    // Verify that all specified executors contain running H2O
-    if (!executorStatus.forall(x => !executorIds.contains(x._1) || x._2)) {
-      throw new IllegalArgumentException(
-        s"""Cannot execute H2O on all Spark executors:
-           |  numH2OWorkers = ${numH2OWorkers}"
-           |  executorStatus = ${executorStatus.mkString(",")}""".stripMargin)
-    }
-
+    val executors = startH2O(sparkContext, spreadRDD, spreadRDDNodes.length, this, h2oNodeArgs )
     // Store runtime information
     h2oNodes.append( executors:_* )
 
@@ -147,9 +136,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // but only in non-local case
     // - get IP of local node
     if (!sparkContext.isLocal) {
-      logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + numH2OWorkers)
+      logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + executors.length)
       // Get arguments for this launch including flatfile
-      val h2oClientArgs = toH2OArgs(getH2OClientArgs ++ Array("-ip", getIp(SparkEnv.get), "-baseport", basePort.toString),
+      val h2oClientArgs = toH2OArgs(getH2OClientArgs ++ Array("-ip", getIp(SparkEnv.get)),
                               this,
                               executors)
       logDebug(s"Arguments used for launching h2o nodes: ${h2oClientArgs.mkString(" ")}")
@@ -164,10 +153,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     }
     // Get H2O web port
     localClient = H2O.getIpPortString
-
     // Inform user about status
     logInfo("Sparkling Water started, status of context: " + this.toString)
-
     this
   }
 
@@ -185,14 +172,14 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
         mfactor*workers).persist()
 
     // Collect information about executors in Spark cluster
-    val nodes = collectNodesInfo(spreadRDD, basePort, incrPort)
+    val nodes = collectNodesInfo(spreadRDD)
 
     // Verify that all executors participate in execution
     val nSparkExecAfter = numOfSparkExecutors
     val sparkExecutors = nodes.map(_._1).distinct.length
     // Delete RDD
     spreadRDD.unpersist()
-    if ( (sparkExecutors < nworkers || nSparkExecAfter != nSparkExecBefore)
+    if ((sparkExecutors < nworkers || nSparkExecAfter != nSparkExecBefore)
           && nretries == 0) {
       throw new IllegalArgumentException(
         s"""Cannot execute H2O on all Spark executors:
@@ -483,7 +470,7 @@ object H2OContext extends Logging {
   }
 
   private
-  def checkSparkEnv(conf: SparkConf): Unit = {
+  def checkAndUpdateSparkEnv(conf: SparkConf): Unit = {
     if (conf.getInt("spark.locality.wait",3000) <= 3000) {
       logWarning(s"Increasing 'spark.locality.wait' to value 30000")
       conf.set("spark.locality.wait", "30000")
@@ -501,16 +488,3 @@ object H2OContext extends Logging {
                             hfactory)
   }
 }
-
-private[h2o]
-trait SparkEnvListener extends org.apache.spark.scheduler.SparkListener { self: H2OContext =>
-
-  override def onBlockManagerAdded(blockManagerAdded: SparkListenerBlockManagerAdded): Unit = {
-    println("--------------------> onBlockManagerAdded: "+ blockManagerAdded)
-  }
-
-  override def onBlockManagerRemoved(blockManagerRemoved: SparkListenerBlockManagerRemoved): Unit = {
-    println("--------------------> onBlockManagerRemoved: "+ blockManagerRemoved)
-  }
-}
-
