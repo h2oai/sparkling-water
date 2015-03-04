@@ -103,6 +103,18 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     rdd.unpersist()
   }
 
+  test("PUBDEV-458 - from Rdd[IntHolder] to DataFrame and back") {
+    val h2oContext = hc
+    import h2oContext._
+
+    val rdd = sc.parallelize(1 to 100, 10).map(i => IntHolder(Some(i)))
+    val dataFrame:DataFrame = rdd
+
+    val back2rdd = asRDD[PUBDEV458Type](rdd)
+    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    assert(back2rdd.count == dataFrame.numRows(), "Number of rows should match")
+  }
+
   private type RowValueAssert = (Long, Vec) => Unit
 
   private def assertBasicInvariants[T<:Product](rdd: RDD[T], df: DataFrame, rowAssert: RowValueAssert): Unit = {
@@ -124,4 +136,15 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     assert (df.names()(0).equals("result"),
       "DataFrame column name should be 'result' since Holder object was used to define RDD")
   }
+}
+
+class PUBDEV458Type(val result: Option[Int]) extends Product with Serializable {
+  //def this() = this(None)
+  override def canEqual(that: Any):Boolean = that.isInstanceOf[PUBDEV458Type]
+  override def productArity: Int = 1
+  override def productElement(n: Int) =
+    n match {
+      case 0 => result
+      case _ => throw new IndexOutOfBoundsException(n.toString)
+    }
 }
