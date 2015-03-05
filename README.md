@@ -142,3 +142,12 @@ See [docker/README.md](docker/README.md) to learn about Docker support.
  > the amount of memory allocated by each executor, use the `spark.executor.memory`
  > parameter: `bin/sparkling-shell --conf "spark.executor.memory=4g"`
 
+* How do I change a base port which is used by H2O to start free port lookup?
+  
+  > The H2O accepts `spark.ext.h2o.port.base` parameter via Spark configuration properties: `bin/sparkling-shell --conf "spark.ext.h2o.port.base=13431"`. To see full list of configuration options, please see [Devel Documentation](https://github.com/h2oai/sparkling-water/blob/master/DEVEL.md#sparkling-water-configuration-properties).
+
+* I have a Scala script `test.script` which I would like to launch in Sparkling Shell? How can I do that?
+
+ > Sparkling Shell accepts common Spark Shell arguments. To pass your script, please use `-i` option of Spark Shell:
+ > `bin/sparkling-shell -i test.script`
+ 
