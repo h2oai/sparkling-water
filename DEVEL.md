@@ -229,6 +229,29 @@ When the number of Spark nodes is known, it can be specified in `start` call:
 ```scala
 val hc = new H2OContext(sc).start(3)
 ```
+
+---
+<a name="MemorySetup"></a>
+### Memory setup
+H2O lives with Spark in the same executor JVM. The memory provided for H2O is configured via Spark - see [Spark configuration](http://spark.apache.org/docs/1.2.0/configuration.html) for more details.
+
+#### Generic configuration
+ * Executor memory (i.e., memory available for H2O)
+   * configured via `spark.executor.memory` Spark configuration property
+     > For example, `bin/sparkling-shell --conf spark.executor.memory=5g`
+     > or configure the property in `$SPARK_HOME/conf/spark-defaults.conf
+     
+ * Driver memory (i.e., memory available for H2O client running inside Spark driver)
+    * configured via `spark.driver.memory` configuration property
+     > For example, `bin/sparkling-shell --conf spark.driver.memory=2g`
+     > or configure the property in `$SPARK_HOME/conf/spark-defaults.conf
+      
+#### Yarn specific configuration
+See [Spark documentation](http://spark.apache.org/docs/1.2.0/running-on-yarn.html)
+
+For memory large JVMs, it is necessary to setup max memory available for individual mappers - see http://docs.h2o.ai/deployment/hadoop_yarn.html
+
+
 ---
 <a name="ConvertDF"></a>
 ### Converting DataFrames into RDD[T]
