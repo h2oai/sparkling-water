@@ -21,7 +21,8 @@
     - [Sparkling Water Configuration Properties](#Properties)
 - [Running Sparkling Water](#RunSW)
   - [Starting H2O Services](#StartH2O)
-  - [Converting DataFrames into RDD](#TransformDF)
+  - [Memory Allocation](#MemorySetup)
+  - [Converting DataFrames into RDD](#ConvertDF)
     - [Example](#Example)
   - [Converting DataFrames into SchemaRDD](#ConvertSchema)
     - [Example](#Example2)
@@ -197,6 +198,7 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.flatfile` | `true`| Use flatfile (instead of multicast) approach for creating H2O cloud |
 |`spark.ext.h2o.cluster.size` | `-1` |Expected number of workers of H2O cloud. Use -1 to automatically detect the cluster size. This number must be equal to number of Spark workers.|
 |`spark.ext.h2o.port.base`| `54321`| Base port used for individual H2O node configuration.|
+|`spark.ext.h2o.port.incr`| `2` | Increment added to base port to find the next available port.|
 |`spark.ext.h2o.cloud.timeout`| `60*1000` | Timeout (in msec) for cloud  |
 |`spark.ext.h2o.spreadrdd.retries` | `10` | Number of retries for creation of an RDD covering all existing Spark executors. |
 |`spark.ext.h2o.cloud.name`| `sparkling-water-` | Name of H2O cloud. |
@@ -231,24 +233,21 @@ val hc = new H2OContext(sc).start(3)
 
 ---
 <a name="MemorySetup"></a>
-### Memory setup
-H2O lives with Spark in the same executor JVM. The memory provided for H2O is configured via Spark - see [Spark configuration](http://spark.apache.org/docs/1.2.0/configuration.html) for more details.
+### Memory Allocation 
+
+H2O resides in the same executor JVM as Spark. The memory provided for H2O is configured via Spark; refer to [Spark configuration](http://spark.apache.org/docs/1.2.0/configuration.html) for more details.
 
 #### Generic configuration
- * Executor memory (i.e., memory available for H2O)
-   * configured via `spark.executor.memory` Spark configuration property
-     > For example, `bin/sparkling-shell --conf spark.executor.memory=5g`
-     > or configure the property in `$SPARK_HOME/conf/spark-defaults.conf
+ * Configure the Executor memory (i.e., memory available for H2O) via the Spark configuration property `spark.executor.memory` .
+     > For example, `bin/sparkling-shell --conf spark.executor.memory=5g` or configure the property in `$SPARK_HOME/conf/spark-defaults.conf`
      
- * Driver memory (i.e., memory available for H2O client running inside Spark driver)
-    * configured via `spark.driver.memory` configuration property
-     > For example, `bin/sparkling-shell --conf spark.driver.memory=2g`
-     > or configure the property in `$SPARK_HOME/conf/spark-defaults.conf
+ * Configure the Driver memory (i.e., memory available for H2O client running inside Spark driver) via the Spark configuration property `spark.driver.memory`
+     > For example, `bin/sparkling-shell --conf spark.driver.memory=2g` or configure the property in `$SPARK_HOME/conf/spark-defaults.conf`
       
 #### Yarn specific configuration
-See [Spark documentation](http://spark.apache.org/docs/1.2.0/running-on-yarn.html)
+* Refer to the [Spark documentation](http://spark.apache.org/docs/1.2.0/running-on-yarn.html)
 
-For memory large JVMs, it is necessary to setup max memory available for individual mappers - see http://docs.h2o.ai/deployment/hadoop_yarn.html
+* For JVMs that require a large amount of memory, we strongly recommend configuring the maximum amount of memory available for individual mappers. For information on how to do this using Yarn, refer to http://docs.h2o.ai/deployment/hadoop_yarn.html
 
 
 ---
@@ -307,7 +306,7 @@ The `H2OContext` provides **implicit** conversion from the specified `RDD[A]` to
 implicit def createDataFrame[A <: Product : TypeTag](rdd : RDD[A]) : DataFrame
 ```
 
-<a name"Example3"></a>
+<a name="Example3"></a>
 #### Example
 ```scala
 val rdd: RDD[Weather] = ...
