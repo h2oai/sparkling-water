@@ -52,7 +52,7 @@ configure(allprojects) { project ->
     ext { 
       scalaVersion       = '2.10.4'
       scalaBinaryVersion = '2.10'
-      h2oBuild           = '1074'
+      h2oBuild           = '1087'
       //h2oBuild           = '99999'
       h2oVersion         = "0.1.27.$h2oBuild"
       sparkVersion       = '1.2.0'
@@ -108,6 +108,7 @@ configure(subprojects) { project ->
         testDependencies = ["ai.h2o:h2o-core",
                         "ai.h2o:h2o-algos",
                         "ai.h2o:h2o-app",
+                        "ai.h2o:h2o-persist-hdfs",
                         "joda-time:joda-time",
                         "org.javassist:javassist",
                         "gov.nist.math:jama",
