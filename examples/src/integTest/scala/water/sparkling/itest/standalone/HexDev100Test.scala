@@ -69,7 +69,7 @@ object HexDev100Test {
 
     // Use model to estimate delay on training data
     val predDLH2OFrame = dlModel.score(airlinesTable)('predict)
-    val predDLFromModel = toRDD[DoubleHolder](predDLH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
+    val predDLFromModel = asRDD[DoubleHolder](predDLH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
     // Run GLM to produce model classifying delayed flights
     import hex.glm.GLMModel.GLMParameters.Family
@@ -84,7 +84,7 @@ object HexDev100Test {
 
     // Use model to estimate delay on training data
     val predGLMH2OFrame = glmModel.score(airlinesTable)('predict)
-    val predGLMFromModel = toRDD[DoubleHolder](predGLMH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
+    val predGLMFromModel = asRDD[DoubleHolder](predGLMH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
     
     // Use GBM to produce model classifying delayed flights
@@ -102,7 +102,7 @@ object HexDev100Test {
 
     // Use model to estimate delay on training data
     val predGBMH2OFrame = glmModel.score(airlinesTable)('predict)
-    val predGBMFromModel = toRDD[DoubleHolder](predGBMH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
+    val predGBMFromModel = asRDD[DoubleHolder](predGBMH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
     println("""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""")
     println("Finished running GLM,GBM, and Deep Learning on airlines dataset.")

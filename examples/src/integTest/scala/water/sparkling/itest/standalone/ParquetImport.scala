@@ -76,7 +76,7 @@ object ParquetImportTest {
 
     // Use model to estimate delay on training data
     val predictionH2OFrame = dlModel.score(ORDFlights)('predict)
-    val predictionsFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
+    val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
     // Clean up Parquet File
 
