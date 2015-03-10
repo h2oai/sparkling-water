@@ -32,7 +32,7 @@ import water.parser.{Categorical, ValueString}
 @RunWith(classOf[JUnitRunner])
 class H2ORDDTest extends FunSuite with SharedSparkTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local")
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
   test("RDD[IntHolder] to DataFrame and back") {
 

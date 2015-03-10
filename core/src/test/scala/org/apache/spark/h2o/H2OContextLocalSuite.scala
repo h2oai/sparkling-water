@@ -32,7 +32,7 @@ class H2OContextLocalSuite extends FunSuite
   with Matchers with BeforeAndAfter with SparkTestContext {
 
   test("verify H2O cloud building on local JVM") {
-    sc = new SparkContext("local", "test-local")
+    sc = new SparkContext("local", "test-local", defaultSparkConf)
     hc = new H2OContext(sc).start()
     // Number of nodes should be on
     assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 members")

@@ -124,7 +124,6 @@ private[spark] object H2OContextUtils {
             if (H2O.START_TIME_MILLIS.get() == 0) {
               new Thread("H2O Launcher thread") {
                 override def run(): Unit = {
-                  println("Launching " + launcherArgs)
                   H2O.setEmbeddedH2OConfig(new SparklingWaterConfig(bc))
                   H2OApp.main(launcherArgs)
                 }

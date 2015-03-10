@@ -39,7 +39,7 @@ import water.parser.{Categorical, Parser}
 @RunWith(classOf[JUnitRunner])
 class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
-  sc = new SparkContext("local[*]", "test-local")
+  sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
   hc = new H2OContext(sc).start()
   // Shared sqlContext
   val h2oContext = hc

@@ -35,7 +35,8 @@ class H2OContextLocalClusterSuite extends FunSuite
 
   test("verify H2O cloud building on local cluster") {
     // For distributed testing we need to pass around jar containing all implementation classes plus test classes
-    sc = new SparkContext("local-cluster[3,2,721]", "test-local-cluster", null, swassembly :: Nil)
+    val conf = defaultSparkConf.setJars(swassembly :: Nil)
+    sc = new SparkContext("local-cluster[3,2,721]", "test-local-cluster", conf)
     hc = new H2OContext(sc).start()
 
     assert(water.H2O.CLOUD.members().length == 3, "H2O cloud should have 3 members")
@@ -45,7 +46,8 @@ class H2OContextLocalClusterSuite extends FunSuite
 
   // IGNORED since we are not able to initialize client in the process several times
   ignore("2nd run to verify that test does not overlap") {
-    sc = new SparkContext("local-cluster[3,2,721]", "test-local-cluster", null, swassembly :: Nil)
+    val conf = defaultSparkConf.setJars(swassembly :: Nil)
+    sc = new SparkContext("local-cluster[3,2,721]", "test-local-cluster", conf)
     hc = new H2OContext(sc).start()
 
     resetContext()

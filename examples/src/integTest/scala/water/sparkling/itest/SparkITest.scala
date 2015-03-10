@@ -32,8 +32,10 @@ trait SparkITest extends BeforeAndAfterEach { self: Suite =>
       "--jars", env.swassembly,
       "--verbose",
       "--master", env.sparkMaster) ++
-      env.sparkConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++
-      Seq[String](env.testJar)
+    // Disable GA collection by default
+    env.sparkConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++
+                              Seq("--conf", "spark.ext.h2o.disable.ga=true") ++
+                              Seq[String](env.testJar)
 
     if(!env.sparkMaster.startsWith("yarn")) {
       SparkSubmit.main(cmdLine.toArray)

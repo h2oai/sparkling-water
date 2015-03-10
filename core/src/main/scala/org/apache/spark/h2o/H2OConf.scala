@@ -44,6 +44,7 @@ trait H2OConf {
   def h2oClientLogLevel = sparkConf.get(PROP_CLIENT_LOG_LEVEL._1, PROP_CLIENT_LOG_LEVEL._2)
   def networkMask   = sparkConf.getOption(PROP_NETWORK_MASK._1)
   def nthreads      = sparkConf.getInt(PROP_NTHREADS._1, PROP_NTHREADS._2)
+  def disableGA     = sparkConf.getBoolean(PROP_DISABLE_GA._1, PROP_DISABLE_GA._2)
 
   /* Configuration properties */
 
@@ -70,8 +71,10 @@ trait H2OConf {
   /** Subnet selector for h2o if IP guess fail - useful if 'spark.ext.h2o.flatfile' is false
     * and we are trying to guess right IP on mi*/
   val PROP_NETWORK_MASK = ("spark.ext.h2o.network.mask", null.asInstanceOf[String])
-  /* Limit for number of threads used by H2O, default -1 means unlimited */
+  /** Limit for number of threads used by H2O, default -1 means unlimited */
   val PROP_NTHREADS = ("spark.ext.h2o.nthreads", -1)
+  /** Disable GA tracking */
+  val PROP_DISABLE_GA = ("spark.ext.h2o.disable.ga", false)
 
 
   /** Configuration property - multiplication factor for dummy RDD generation.
@@ -91,13 +94,16 @@ trait H2OConf {
   def getH2OClientArgs:Array[String] = (getH2OCommonOptions ++ Seq("-log_level", h2oClientLogLevel)).toArray
 
   private def getH2OCommonOptions:Seq[String] =
+    // Option in form key=value
     Seq(
       ("-name", cloudName),
-      ("-nthreads", if (nthreads>0) nthreads else null),
+      ("-nthreads", if (nthreads > 0) nthreads else null),
       ("-network", networkMask.getOrElse(null)),
       ("-baseport", basePort))
       .filter(x => x._2 != null)
-      .flatMap(x => Seq(x._1, x._2.toString))
+      .flatMap(x => Seq(x._1, x._2.toString)) ++ // Append single boolean options
+      Seq(("-ga_opt_out", disableGA))
+        .filter(_._2).map(x => x._1)
 
   override def toString: String =
     s"""Sparkling Water configuration:

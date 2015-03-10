@@ -25,7 +25,7 @@ import org.scalatest.Suite
 trait LocalSparkClusterContext extends SparkTestContext { self:Suite =>
 
   override protected def beforeEach(): Unit = {
-    sc = new SparkContext("local-cluster[3,2,768]", "test")
+    sc = new SparkContext("local-cluster[3,2,768]", "test", defaultSparkConf)
     hc = new H2OContext(sc).start()
     super.beforeEach()
   }
