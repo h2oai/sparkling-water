@@ -28,7 +28,7 @@ class KMeansITestSuite extends FunSuite with SparkITest {
         conf("spark.executor.memory", "20g") // 20g per executor
         conf("spark.ext.h2o.port.base", 63331) //Start at baseport 63331
         conf("spark.driver.memory", "2g")
-        conf("spark.executor.core", 32) //Use up all the cores on the machines
+        conf("spark.executor.cores", 32) //Use up all the cores on the machines
       }
     )
   }
