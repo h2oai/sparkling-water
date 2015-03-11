@@ -45,6 +45,7 @@ trait H2OConf {
   def networkMask   = sparkConf.getOption(PROP_NETWORK_MASK._1)
   def nthreads      = sparkConf.getInt(PROP_NTHREADS._1, PROP_NTHREADS._2)
   def disableGA     = sparkConf.getBoolean(PROP_DISABLE_GA._1, PROP_DISABLE_GA._2)
+  def clientWebPort = sparkConf.getInt(PROP_CLIENT_WEB_PORT._1, PROP_CLIENT_WEB_PORT._2)
 
   /* Configuration properties */
 
@@ -75,7 +76,9 @@ trait H2OConf {
   val PROP_NTHREADS = ("spark.ext.h2o.nthreads", -1)
   /** Disable GA tracking */
   val PROP_DISABLE_GA = ("spark.ext.h2o.disable.ga", false)
-
+  /** Exact client port to access web UI.
+    * The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`. */
+  val PROP_CLIENT_WEB_PORT = ("spark.ext.h2o.client.web.port", -1)
 
   /** Configuration property - multiplication factor for dummy RDD generation.
     * Size of dummy RDD is PROP_CLUSTER_SIZE*PROP_DUMMY_RDD_MUL_FACTOR */
@@ -91,7 +94,11 @@ trait H2OConf {
    * Get arguments for H2O client.
    * @return array of H2O client arguments.
    */
-  def getH2OClientArgs:Array[String] = (getH2OCommonOptions ++ Seq("-log_level", h2oClientLogLevel, "-quiet")).toArray
+  def getH2OClientArgs:Array[String] = (getH2OCommonOptions
+    ++ Seq("-log_level", h2oClientLogLevel, "-quiet")
+    ++ Seq(("-port", if (clientWebPort > 0) clientWebPort else null))
+        .filter(_._2 != null).flatMap(x => Seq(x._1, x._2.toString))
+    ).toArray
 
   private def getH2OCommonOptions:Seq[String] =
     // Option in form key=value

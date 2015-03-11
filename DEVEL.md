@@ -195,6 +195,7 @@ The following configuration properties can be passed to Spark to configure Spark
 
 | Property name | Default value | Description |
 |---------------|---------------|-------------|
+| **Generic parameters** |||
 |`spark.ext.h2o.flatfile` | `true`| Use flatfile (instead of multicast) approach for creating H2O cloud |
 |`spark.ext.h2o.cluster.size` | `-1` |Expected number of workers of H2O cloud. Use -1 to automatically detect the cluster size. This number must be equal to number of Spark workers.|
 |`spark.ext.h2o.port.base`| `54321`| Base port used for individual H2O node configuration.|
@@ -202,11 +203,14 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.cloud.timeout`| `60*1000` | Timeout (in msec) for cloud  |
 |`spark.ext.h2o.spreadrdd.retries` | `10` | Number of retries for creation of an RDD covering all existing Spark executors. |
 |`spark.ext.h2o.cloud.name`| `sparkling-water-` | Name of H2O cloud. |
-|`spark.ext.h2o.node.log.level`| `INFO`| H2O internal log level used for launched H2O nodes. |
-|`spark.ext.h2o.client.log.level`| `INFO`| H2O internal log level used for H2O client running inside Spark driver. |
 |`spark.ext.h2o.network.mask`|--|Subnet selector for H2O if IP detection fails - useful for detecting the correct IP if 'spark.ext.h2o.flatfile' is false.* |
 |`spark.ext.h2o.nthreads`|`-1`|Limit for number of threads used by H2O, default `-1` means unlimited.|
-
+|`spark.ext.h2o.disable.ga`|`false`|Disable Google Analytics tracking for embedded H2O.|
+| **H2O server node parameters** |||
+|`spark.ext.h2o.node.log.level`| `INFO`| H2O internal log level used for launched H2O nodes. |
+| **H2O client parameters** |||
+|`spark.ext.h2o.client.log.level`| `INFO`| H2O internal log level used for H2O client running inside Spark driver. |
+|`spark.ext.h2o.client.web.port`|`-1`|Exact client port to access web UI. The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`.|
 ---
 
 %%### Pass property to Sparkling Shell
