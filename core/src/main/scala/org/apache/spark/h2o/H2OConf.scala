@@ -91,7 +91,7 @@ trait H2OConf {
    * Get arguments for H2O client.
    * @return array of H2O client arguments.
    */
-  def getH2OClientArgs:Array[String] = (getH2OCommonOptions ++ Seq("-log_level", h2oClientLogLevel)).toArray
+  def getH2OClientArgs:Array[String] = (getH2OCommonOptions ++ Seq("-log_level", h2oClientLogLevel, "-quiet")).toArray
 
   private def getH2OCommonOptions:Seq[String] =
     // Option in form key=value
