@@ -68,14 +68,15 @@ object KMeansITest {
     val H2OKMBuildTime = H2OKMTimer.time
 
     // Score in H2O
+    import org.apache.spark.sql.SQLContext
+    implicit val sqlContext = new SQLContext(sc)
+    import sqlContext._
     val pred = KmeansModel.score(airlinesData)
     val predRDD = asSchemaRDD(pred)
     val clusterCounts = predRDD.countByValue()
 
     // Run Kmeans in Spark
     val sqlQueryTimer = new water.util.Timer
-    import org.apache.spark.sql.SQLContext
-    implicit val sqlContext = new SQLContext(sc)
     val airlinesRDD = asSchemaRDD(airlinesData)(sqlContext)
     airlinesRDD.registerTempTable("airlinesRDD")
     val airlinesTable = sqlContext.sql(
