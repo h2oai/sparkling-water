@@ -1,0 +1,18 @@
+description = "Sparkling Water ML Pipelines"
+
+dependencies {
+  // Sparkling Water Core
+  compile( project(":sparkling-water-core") ) { 
+    exclude group: "javax.servlet", module: "servlet-api"
+  }
+  // MLLIb pipelines
+  compile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
+
+  // And Scala library
+  compile "org.scala-lang:scala-library:${scalaVersion}"
+
+  // And use scalatest for Scala testing
+  testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
+  testCompile "junit:junit:4.11"
+}
+
