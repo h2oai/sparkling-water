@@ -19,9 +19,9 @@ package org.apache.spark.h2o
 
 import org.apache.spark._
 import org.apache.spark.h2o.H2OContextUtils._
-import org.apache.spark.h2o.H2OSchemaUtils.dataTypeToClass
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
+import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.execution.{ExistingRdd, SparkLogicalPlan}
 import org.apache.spark.sql.{Row, SQLContext, SchemaRDD}
 import water._
@@ -262,24 +262,56 @@ object H2OContext extends Logging {
 
   /** Transform SchemaRDD into H2O DataFrame */
   def toDataFrame(sc: SparkContext, rdd: SchemaRDD) : DataFrame = {
+    import org.apache.spark.h2o.H2OSchemaUtils._
+
     val keyName = "frame_rdd_" + rdd.id //+ Key.rand() // There are uniq IDs for RDD
+    // Fetch cached frame from DKV
     val frameVal = DKV.get(keyName)
     if (frameVal==null) {
-      val fnames = rdd.schema.fieldNames.toArray
-      val ftypes = rdd.schema.fields.map(field => dataTypeToClass(field.dataType)).toArray
+      // Fetch information about SchemaRDD - string domains, max array length
+      // Collect domains only for String columns
+      val stringColIdxs = collectStringTypesIndx(rdd.schema.fields)
+      // Contains only string domains of String columns
+      val fdomains      = collectColumnDomains(sc, rdd, stringColIdxs)
 
-      // Collect domains for String columns
-      val fdomains = collectColumnDomains(sc, rdd, fnames, ftypes)
-
+      // Flattens and expands RDD's schema
+      val flatRddSchema = expandedSchema(sc, rdd)
+      // Patch the flat schema based on information about types
+      val fnames = flatRddSchema.map(t => t._2.name).toArray
       initFrame(keyName, fnames)
 
       // Eager, not lazy, evaluation
-      val rows = sc.runJob(rdd, perSQLPartition(keyName, ftypes, fdomains) _)
+      val rows = sc.runJob(rdd, perSQLPartition(keyName, flatRddSchema, fdomains) _)
       val res = new Array[Long](rdd.partitions.size)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows}
 
+      // Transform datatype into h2o types and expand string domains
+      var strColCnt = 0
+      val fH2ODomains = new Array[Array[String]](flatRddSchema.length)
+      val ftypes = flatRddSchema.indices
+        .map(idx => {
+        val f = flatRddSchema(idx)
+        f._2.dataType match {
+          case StringType => {
+            assert(f._3 != VEC_TYPE && f._3 != ARRAY_TYPE, "Array of Strings is not supported!")
+            val domain = fdomains(strColCnt)
+            val result = dataTypeToVecType(f._2.dataType, domain)
+            fH2ODomains(idx) = domain
+            strColCnt += 1
+            result
+          }
+          case _ => dataTypeToVecType(f._2.dataType, null)
+        }
+      }).toArray
+      // Expand string domains into list for each column
+
       // Add Vec headers per-Chunk, and finalize the H2O Frame
-      new DataFrame(finalizeFrame(keyName, res, ftypes, fdomains))
+      new DataFrame(
+        finalizeFrame(
+          keyName,
+          res,
+          ftypes,
+          fH2ODomains))
     } else {
       new DataFrame(frameVal.get.asInstanceOf[Frame])
     }
@@ -295,11 +327,11 @@ object H2OContext extends Logging {
   private
   def finalizeFrame[T](keyName: String,
                        res: Array[Long],
-                       colTypes: Array[Class[_]],
+                       colTypes: Array[Byte],
                        colDomains: Array[Array[String]]):Frame = {
     val fr:Frame = DKV.get(keyName).get.asInstanceOf[Frame]
     val colH2OTypes = colTypes.indices.map(idx => {
-      val typ = translateToH2OType(colTypes(idx), colDomains(idx))
+      val typ = colTypes(idx)
       if (typ==Vec.T_STR) colDomains(idx) = null // minor clean-up
       typ
     }).toArray
@@ -307,29 +339,11 @@ object H2OContext extends Logging {
     fr
   }
 
-  private
-  def translateToH2OType(t: Class[_], d: Array[String]):Byte = {
-    t match {
-      case q if q==classOf[java.lang.Byte]    => Vec.T_NUM
-      case q if q==classOf[java.lang.Short]   => Vec.T_NUM
-      case q if q==classOf[java.lang.Integer] => Vec.T_NUM
-      case q if q==classOf[java.lang.Long]    => Vec.T_NUM
-      case q if q==classOf[java.lang.Float]   => Vec.T_NUM
-      case q if q==classOf[java.lang.Double]  => Vec.T_NUM
-      case q if q==classOf[java.lang.Boolean] => Vec.T_NUM
-      case q if q==classOf[java.lang.String]  => if (d!=null && d.length < water.parser.Categorical.MAX_ENUM_SIZE) {
-                                                    Vec.T_ENUM
-                                                  } else {
-                                                    Vec.T_STR
-                                                  }
-      case q if q==classOf[java.sql.Timestamp] => Vec.T_TIME
-      case q => throw new IllegalArgumentException(s"Do not understand type $q")
-    }
-  }
-
   /** Transform typed RDD into H2O DataFrame */
   def toDataFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A]) : DataFrame = {
     import org.apache.spark.h2o.ReflectionUtils._
+    import org.apache.spark.h2o.H2OProductUtils._
+
     val keyName = "frame_rdd_" + rdd.id + Key.rand() // There are uniq IDs for RDD
     val fnames = names[A]
     val ftypes = types[A](fnames)
@@ -344,11 +358,12 @@ object H2OContext extends Logging {
     rows.foreach{ case(cidx,nrows) => res(cidx) = nrows }
 
     // Add Vec headers per-Chunk, and finalize the H2O Frame
-    new DataFrame(finalizeFrame(keyName, res, ftypes, fdomains))
+    val h2oTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx), fdomains(idx))).toArray
+    new DataFrame(finalizeFrame(keyName, res, h2oTypes, fdomains))
   }
 
   private
-  def perSQLPartition ( keystr: String, types: Array[Class[_]], domains: Array[Array[String]] )
+  def perSQLPartition ( keystr: String, types: Seq[(Seq[Byte], StructField, Byte)], domains: Array[Array[String]] )
                       ( context: TaskContext, it: Iterator[Row] ): (Int,Long) = {
     val nchks = water.fvec.FrameUtils.createNewChunks(keystr,context.partitionId)
     val domHash = domains.map( ary =>
@@ -359,30 +374,65 @@ object H2OContext extends Logging {
         for (idx <- ary.indices) m.put(ary(idx), idx)
         m
       })
+    val valStr = new ValueString() // just helper for string columns
     it.foreach(row => {
-      val valStr = new ValueString()
-      for( i <- 0 until types.length) {
-        val nchk = nchks(i)
-        if (row.isNullAt(i)) nchk.addNA()
-        else types(i) match {
-          case q if q==classOf[java.lang.Byte]    => nchk.addNum(row.getByte  (i))
-          case q if q==classOf[java.lang.Short]   => nchk.addNum(row.getShort (i))
-          case q if q==classOf[Integer]           => nchk.addNum(row.getInt   (i))
-          case q if q==classOf[java.lang.Long]    => nchk.addNum(row.getLong  (i))
-          case q if q==classOf[java.lang.Double]  => nchk.addNum(row.getDouble(i))
-          case q if q==classOf[java.lang.Float]   => nchk.addNum(row.getFloat (i))
-          case q if q==classOf[java.lang.Boolean] => nchk.addNum(if (row.getBoolean(i)) 1 else 0)
-          case q if q==classOf[String]            =>
-            // too large domain - use String instead
-            if (domains(i)==null) nchk.addStr(valStr.setTo(row.getString(i)))
-            else {
-              val sv = row.getString(i)
-              val smap = domHash(i)
-              nchk.addEnum(smap.get(sv).get)
+      var numOfStringCols = 0
+      var startOfSeq = -1
+      // Fill row in the output frame
+      types.indices.foreach { idx => // Index of column
+        val chk = nchks(idx)
+        val field = types(idx)
+        val path = field._1
+        val dataType = field._2.dataType
+        // Helpers to distinguish embedded collection types
+        val isAry = field._3 == H2OSchemaUtils.ARRAY_TYPE
+        val isVec = field._3 == H2OSchemaUtils.VEC_TYPE
+        val isNewPath = if (idx > 0) path != types(idx-1)._1 else true
+        // Reset counter for sequences
+        if ((isAry || isVec) && isNewPath) startOfSeq = idx
+        else if (!isAry && !isVec) startOfSeq = -1
+
+        var i = 0
+        var subRow = row
+        while (i < path.length-1 && !subRow.isNullAt(path(i))) { subRow = subRow.getAs[Row](path(i)); i += 1 }
+        val aidx = path(i) // actual index into row provided by path
+        if (subRow.isNullAt(aidx)) chk.addNA()
+        else {
+          val ary = if (isAry) subRow.getAs[Seq[_]](aidx) else null
+          val aryLen = if (isAry) ary.length else -1
+          val aryIdx = idx - startOfSeq // shared index to position in array/vector
+          val vec = if (isVec) subRow.getAs[mllib.linalg.Vector](aidx) else null
+          if (isAry && aryIdx >= aryLen) chk.addNA()
+          else if (isVec && aryIdx >= vec.size) chk.addNum(0.0) // Add zeros for vectors
+          else dataType match {
+            case BooleanType => chk.addNum(if (isAry)
+              if (ary(aryIdx).asInstanceOf[Boolean]) 1 else 0
+              else subRow.getByte(aidx))
+            case BinaryType =>
+            case ByteType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Byte] else subRow.getByte(aidx))
+            case ShortType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Short] else subRow.getShort(aidx))
+            case IntegerType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Int] else subRow.getInt(aidx))
+            case LongType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Long] else subRow.getLong(aidx))
+            case FloatType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Float] else subRow.getFloat(aidx))
+            case DoubleType => chk.addNum(if (isAry)
+              ary(aryIdx).asInstanceOf[Double]
+              else if (isVec) subRow.getAs[mllib.linalg.Vector](aidx)(idx - startOfSeq)
+              else subRow.getDouble(aidx))
+            case StringType => {
+              val sv = if (isAry) ary(aryIdx).asInstanceOf[String] else subRow.getString(aidx)
+              if (domains(numOfStringCols) == null) {
+                chk.addStr(valStr.setTo(sv))
+              } else {
+                val smap = domHash(numOfStringCols)
+                chk.addEnum(smap.get(sv).get)
+              }
+              numOfStringCols += 1
             }
-          case q if q==classOf[java.sql.Timestamp] => nchk.addNum(row.getAs[java.sql.Timestamp](i).getTime())
-          case _ => Double.NaN
+            case TimestampType => chk.addNum(row.getAs[java.sql.Timestamp](aidx).getTime())
+            case _ => chk.addNA()
+          }
         }
+
       }
     })
     // Compress & write out the Partition/Chunks
@@ -433,40 +483,6 @@ object H2OContext extends Logging {
     water.fvec.FrameUtils.closeNewChunks(nchks)
     // Return Partition# and rows in this Partition
     (context.partitionId,nchks(0)._len)
-  }
-
-  private
-  def collectColumnDomains(sc: SparkContext,
-                           rdd: SchemaRDD,
-                           fnames: Array[String],
-                           ftypes: Array[Class[_]]): Array[Array[String]] = {
-    val res = Array.ofDim[Array[String]](fnames.length)
-    for (idx <- 0 until ftypes.length if ftypes(idx).equals(classOf[String])) {
-      val acc =  sc.accumulableCollection(new mutable.HashSet[String]())
-      // Distributed ops
-      rdd.foreach( r => { if (!r.isNullAt(idx)) acc += r.getString(idx) })
-      res(idx) = if (acc.value.size > Categorical.MAX_ENUM_SIZE) null else acc.value.toArray.sorted
-    }
-    res
-  }
-
-  private
-  def collectColumnDomains[A <: Product](sc: SparkContext,
-                                         rdd: RDD[A],
-                                         fnames: Array[String],
-                                         ftypes: Array[Class[_]]): Array[Array[String]] = {
-    val res = Array.ofDim[Array[String]](fnames.length)
-    for (idx <- 0 until ftypes.length if ftypes(idx).equals(classOf[String])) {
-      val acc =  sc.accumulableCollection(new mutable.HashSet[String]())
-      // Distributed ops
-      // FIXME product element can be Optional or Non-optional
-      rdd.foreach( r => {
-        val v = r.productElement(idx).asInstanceOf[Option[String]]
-        if (v.isDefined) acc += v.get
-      })
-      res(idx) = if (acc.value.size > Categorical.MAX_ENUM_SIZE) null else acc.value.toArray.sorted
-    }
-    res
   }
 
   private

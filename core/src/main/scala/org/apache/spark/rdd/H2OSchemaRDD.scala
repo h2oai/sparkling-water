@@ -18,6 +18,7 @@
 package org.apache.spark.rdd
 
 import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.h2o.H2OSchemaUtils.vecTypeToDataType
 import org.apache.spark.h2o.{H2OSchemaUtils, H2OContext}
 import org.apache.spark.sql.catalyst.expressions.{GenericMutableRow, Row}
 import org.apache.spark.sql.catalyst.types._
@@ -50,7 +51,7 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
       val valStr = new ValueString()
       /** Types for of columns */
       // FIXME: should be cached
-      lazy val types = fr.vecs().map( v => H2OSchemaUtils.h2oTypeToDataType(v))
+      lazy val types = fr.vecs().map( v => vecTypeToDataType(v))
 
       override def next(): Row = {
         var i = 0

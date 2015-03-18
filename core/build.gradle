@@ -8,11 +8,14 @@ dependencies {
   // H2O Persistent layer
   compile "ai.h2o:h2o-persist-hdfs:${h2oVersion}"
 
-  // Spark 1.1.0 release
+  // Spark 1.2.0 release
   // - core
   compile "org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}"
   // - SQL component
   compile "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
+  // - MLLib component
+  compile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
+
 
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"

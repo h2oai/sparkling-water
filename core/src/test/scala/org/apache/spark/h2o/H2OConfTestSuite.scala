@@ -51,6 +51,4 @@ with Matchers with BeforeAndAfter with SparkTestContext {
   }
 
   class DummyH2OContext(val sparkConf: SparkConf) extends H2OConf
-
-
 }
