@@ -407,7 +407,7 @@ object H2OContext extends Logging {
           else dataType match {
             case BooleanType => chk.addNum(if (isAry)
               if (ary(aryIdx).asInstanceOf[Boolean]) 1 else 0
-              else subRow.getByte(aidx))
+              else if (subRow.getBoolean(aidx)) 1 else 0)
             case BinaryType =>
             case ByteType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Byte] else subRow.getByte(aidx))
             case ShortType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Short] else subRow.getShort(aidx))
