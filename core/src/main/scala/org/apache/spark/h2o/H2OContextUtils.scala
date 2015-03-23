@@ -107,7 +107,7 @@ private[spark] object H2OContextUtils {
                 h2oConf: H2OConf,
                 h2oArgs: Array[String]):Array[NodeDesc] = {
 
-    // Create global accumulable for
+    // Create global accumulator for
     val bc = sc.accumulableCollection(new mutable.HashSet[NodeDesc]())
     val executorStatus = spreadRDD.map { nodeDesc =>  // RDD partition index
       assert(nodeDesc._2 == getIp(SparkEnv.get)) // Make sure we are running on right node
