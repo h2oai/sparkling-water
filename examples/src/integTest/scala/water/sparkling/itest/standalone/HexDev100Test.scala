@@ -62,7 +62,6 @@ object HexDev100Test {
     dlParams._epochs = 10
     dlParams._train = airlinesTable
     dlParams._response_column = 'IsDepDelayed
-    dlParams._convert_to_enum = true
     // Create a job
     val dl = new DeepLearning(dlParams)
     val dlModel = dl.trainModel.get
