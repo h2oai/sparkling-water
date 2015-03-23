@@ -271,7 +271,7 @@ object H2OContext extends Logging {
       // Fetch information about SchemaRDD - string domains, max array length
       // Collect domains only for String columns
       val stringColIdxs = collectStringTypesIndx(rdd.schema.fields)
-      // Contains only string domains of String columns
+      // Contains only string domains of String columns and String arrays
       val fdomains      = collectColumnDomains(sc, rdd, stringColIdxs)
 
       // Flattens and expands RDD's schema
@@ -293,12 +293,13 @@ object H2OContext extends Logging {
         val f = flatRddSchema(idx)
         f._2.dataType match {
           case StringType => {
-            assert(f._3 != VEC_TYPE && f._3 != ARRAY_TYPE, "Array of Strings is not supported!")
-            val domain = fdomains(strColCnt)
-            val result = dataTypeToVecType(f._2.dataType, domain)
-            fH2ODomains(idx) = domain
-            strColCnt += 1
-            result
+            if (f._3 != VEC_TYPE && f._3 != ARRAY_TYPE) {
+              val domain = fdomains(strColCnt)
+              val result = dataTypeToVecType(f._2.dataType, domain)
+              fH2ODomains(idx) = domain
+              strColCnt += 1
+              result
+            } else Vec.T_STR
           }
           case _ => dataTypeToVecType(f._2.dataType, null)
         }
@@ -420,13 +421,15 @@ object H2OContext extends Logging {
               else subRow.getDouble(aidx))
             case StringType => {
               val sv = if (isAry) ary(aryIdx).asInstanceOf[String] else subRow.getString(aidx)
-              if (domains(numOfStringCols) == null) {
+              if (isAry || domains(numOfStringCols) == null) {
+                // String in arrays transform into string columns
                 chk.addStr(valStr.setTo(sv))
               } else {
                 val smap = domHash(numOfStringCols)
                 chk.addEnum(smap.get(sv).get)
               }
-              numOfStringCols += 1
+              // Domains are computed only for regular string columns, not for Array[String]
+              if (!isAry) numOfStringCols += 1
             }
             case TimestampType => chk.addNum(row.getAs[java.sql.Timestamp](aidx).getTime())
             case _ => chk.addNA()

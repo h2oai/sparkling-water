@@ -201,7 +201,7 @@ object H2OSchemaUtils {
   def collectVectorLikeTypes(fields: Seq[StructField], path: Seq[Byte] = Seq()): Seq[Seq[Byte]] = {
     fields.indices.flatMap(i => fields(i).dataType match {
       case StructType(fs) => collectVectorLikeTypes(fs, path++Seq(i.asInstanceOf[Byte]))
-      case t => if (t.isInstanceOf[UserDefinedType[mllib.linalg.Vector]]) Seq(path++Seq(i.asInstanceOf[Byte])) else Nil
+      case t => if (t.isInstanceOf[UserDefinedType[_/*mllib.linalg.Vector*/]]) Seq(path++Seq(i.asInstanceOf[Byte])) else Nil
     })
   }
 

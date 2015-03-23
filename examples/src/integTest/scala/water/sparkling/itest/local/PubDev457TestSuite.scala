@@ -59,5 +59,10 @@ object PubDev457Test {
 
     val transformedDF: DataFrame = transformed
     assert (transformedDF.numRows == 4)
+    assert (transformedDF.numCols == 1009)
+
+    val transformedFeaturesDF: DataFrame = transformed.select('features)
+    assert (transformedFeaturesDF.numRows == 4)
+    assert (transformedFeaturesDF.numCols == 1000)
   }
 }
