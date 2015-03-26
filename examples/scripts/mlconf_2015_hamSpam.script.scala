@@ -11,11 +11,8 @@ bin/sparkling-shell
 // Input data
 val DATAFILE="/tmp/smsData.txt"
 
-// SMS Text representation
-
 import hex.deeplearning.{DeepLearningModel, DeepLearning}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.mllib
@@ -23,12 +20,12 @@ import org.apache.spark.mllib.feature.{IDFModel, IDF, HashingTF}
 import org.apache.spark.rdd.RDD
 import water.Key
 
-// One message
-case class SMS(target: String, a: mllib.linalg.Vector)
+// One training message
+case class SMS(target: String, fv: mllib.linalg.Vector)
 
-// Data load
+// Data loader
 def load(dataFile: String): RDD[Array[String]] = {
-  sc.textFile(DATAFILE).map(l => l.split("\t")).filter(r => !r(0).isEmpty)
+  sc.textFile(dataFile).map(l => l.split("\t")).filter(r => !r(0).isEmpty)
 }
 
 // Tokenizer
@@ -52,13 +49,10 @@ def tokenize(data: RDD[String]): RDD[Seq[String]] = {
 def buildIDFModel(tokens: RDD[Seq[String]],
                   minDocFreq:Int = 4,
                   hashSpaceSize:Int = 1 << 10): (HashingTF, IDFModel, RDD[mllib.linalg.Vector]) = {
-  import org.apache.spark.mllib.feature.HashingTF
+  // Hash strings into the given space
   val hashingTF = new HashingTF(hashSpaceSize)
   val tf = hashingTF.transform(tokens)
-
-  //tf.cache()
-  import org.apache.spark.mllib.feature.IDF
-
+  // Build term frequency-inverse document frequency
   val idfModel = new IDF(minDocFreq = minDocFreq).fit(tf)
   val expandedText = idfModel.transform(tf)
   (hashingTF, idfModel, expandedText)
@@ -71,6 +65,7 @@ def buildDLModel(train: Frame, valid: Frame,
   import h2oContext._
   // Build a model
   val dlParams = new DeepLearningParameters()
+  dlParams._destination_key = Key.make("dlModel.hex").asInstanceOf[water.Key[Frame]]
   dlParams._train = train
   dlParams._valid = valid
   dlParams._response_column = 'target
@@ -89,8 +84,14 @@ def buildDLModel(train: Frame, valid: Frame,
   dlModel
 }
 
-
-
+// Start H2O services
+import org.apache.spark.h2o._
+implicit val h2oContext = new H2OContext(sc).start()
+import h2oContext._
+// Initialize SQL context
+import org.apache.spark.sql._
+implicit val sqlContext = new SQLContext(sc)
+import sqlContext._
 
 // Data load
 val data = load(DATAFILE)
@@ -103,22 +104,13 @@ val tokens = tokenize(message)
 // Build IDF model
 var (hashingTF, idfModel, tfidf) = buildIDFModel(tokens)
 
-// Start H2O services
-import org.apache.spark.h2o._
-implicit val h2oContext = new H2OContext(sc).start()
-import h2oContext._
-
-//
-import org.apache.spark.sql._
-implicit val sqlContext = new SQLContext(sc)
-import sqlContext._
 // Merge response with extracted vectors
 val resultRDD: SchemaRDD = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2))
 
 val table:DataFrame = resultRDD
 
 // Split table
-val keys = Array[String]("train.hex", "test.hex")
+val keys = Array[String]("train.hex", "valid.hex")
 val ratios = Array[Double](0.8)
 val frs = split(table, keys, ratios)
 val (train, valid) = (frs(0), frs(1))
@@ -127,11 +119,13 @@ table.delete()
 // Build a model
 val dlModel = buildDLModel(train, valid)
 
-// Collect metrics
+// Collect model metrics and evaluate model quality
 val trainMetrics = binomialMM(dlModel, train)
 val validMetrics = binomialMM(dlModel, valid)
+println(trainMetrics.auc.AUC)
+println(validMetrics.auc.AUC)
 
-// Validate
+// Spam detector
 def isSpam(msg: String,
            dlModel: DeepLearningModel,
            hashingTF: HashingTF,
@@ -148,6 +142,12 @@ def isSpam(msg: String,
   prediction.vecs()(1).at(0) < hamThreshold
 }
 
-println(isSpam("Michal, beer tonight in MV?", dlModel, hashingTF, idfModel))
-println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", dlModel, hashingTF, idfModel))
+//println(isSpam("Michal, beer tonight in MV?", dlModel, hashingTF, idfModel))
+//println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", dlModel, hashingTF, idfModel))
 
+// library(h2o)
+// h2o.init()
+// dlModel = h2o.getModel("dlModel.hex")
+// validation.df = as.data.frame(t(runif(n = 1024, min = 0, max = 4)))
+// names(validation.df) <- paste0("a",0:1023)
+// predict(dlModel, validation.df)
