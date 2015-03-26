@@ -1,11 +1,13 @@
 //val sc:org.apache.spark.SparkContext = null
-/*####################################################################
+/**
+ * To start Sparkling Water please type
+
 cd path/to/sparkling/water
 export SPARK_HOME=/Users/zelleta/spark-1.2.1-bin-hadoop1
 export MASTER="local-cluster[3,2,4096]"
 
-bin/sparkling-shell
-#####################################################################*/
+bin/sparkling-shell --conf spark.executor.memory=3G
+*/
 
 
 // Input data
