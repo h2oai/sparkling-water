@@ -1,7 +1,9 @@
 package org.apache.spark.examples.h2o
 
+import hex.{ModelMetrics, FrameSplitter}
 import hex.splitframe.ShuffleSplitFrame
 import hex.tree.gbm.GBMModel
+import hex.Model
 import org.apache.spark.{SparkConf, SparkContext}
 import water.fvec.{Frame, DataFrame, Chunk}
 import water.parser.ValueString
@@ -111,7 +113,21 @@ object DemoUtils {
     frs
   }
 
+  def split(df: DataFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
+    val ks = keys.map(Key.make(_)).toArray
+    val splitter = new FrameSplitter(df, ratios.toArray, ks, null)
+    water.H2O.submitTask(splitter)
+    // return results
+    splitter.getResult
+  }
+
   def r2(model: GBMModel, fr: Frame) =  hex.ModelMetrics.getFromDKV(model, fr).asInstanceOf[hex.ModelMetricsSupervised].r2()
+
+  def modelMetrics[T <: ModelMetrics, M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
+                  (model: Model[M,P,O], fr: Frame) = ModelMetrics.getFromDKV(model, fr).asInstanceOf[T]
+
+  def binomialMM[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
+                (model: Model[M,P,O], fr: Frame) = modelMetrics[hex.ModelMetricsBinomial,M,P,O](model, fr)
 
   case class R2(name:String, train:Double, test:Double, hold:Double) {
     override def toString: String =
