@@ -121,6 +121,9 @@ table.delete()
 // Build a model
 val dlModel = buildDLModel(train, valid)
 
+/*
+ * The following code is appended life during presentation.
+ */
 // Collect model metrics and evaluate model quality
 val trainMetrics = binomialMM(dlModel, train)
 val validMetrics = binomialMM(dlModel, valid)
@@ -144,12 +147,6 @@ def isSpam(msg: String,
   prediction.vecs()(1).at(0) < hamThreshold
 }
 
-//println(isSpam("Michal, beer tonight in MV?", dlModel, hashingTF, idfModel))
-//println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", dlModel, hashingTF, idfModel))
+println(isSpam("Michal, beer tonight in MV?", dlModel, hashingTF, idfModel))
+println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", dlModel, hashingTF, idfModel))
 
-// library(h2o)
-// h2o.init()
-// dlModel = h2o.getModel("dlModel.hex")
-// validation.df = as.data.frame(t(runif(n = 1024, min = 0, max = 4)))
-// names(validation.df) <- paste0("a",0:1023)
-// predict(dlModel, validation.df)
