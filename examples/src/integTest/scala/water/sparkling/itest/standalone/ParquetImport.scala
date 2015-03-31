@@ -1,15 +1,14 @@
 package water.sparkling.itest.standalone
 
-import org.apache.spark.examples.h2o.AirlinesParse
+import java.io.File
+
 import org.apache.spark.h2o._
-import org.apache.spark.sql._
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.sparkling.itest.SparkITest
-import java.io.File
-import org.apache.spark.sql.SQLContext
 
 
 
@@ -23,7 +22,7 @@ import org.apache.spark.sql.SQLContext
 class ParquetImportTestSuite extends FunSuite with SparkITest {
 
   test("Parquet File Import test") {
-    launch( "water.sparkling.itest.standalone.ParquetImport",
+    launch( "water.sparkling.itest.standalone.ParquetImportTest",
       env {
         sparkMaster("spark://mr-0xd1-precise1.0xdata.loc:7077")
         // Configure Standalone environment
