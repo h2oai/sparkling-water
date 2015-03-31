@@ -490,6 +490,9 @@ object H2OContext extends Logging {
 
   private
   def checkAndUpdateSparkEnv(conf: SparkConf): Unit = {
+    // If 'spark.executor.instances' is specified update H2O property as well
+    conf.getOption("spark.executor.instances").foreach(v => conf.set("spark.ext.h2o.cluster.size", v))
+    // Increase locality timeout since h2o-specific tasks can be long computing
     if (conf.getInt("spark.locality.wait",3000) <= 3000) {
       logWarning(s"Increasing 'spark.locality.wait' to value 30000")
       conf.set("spark.locality.wait", "30000")

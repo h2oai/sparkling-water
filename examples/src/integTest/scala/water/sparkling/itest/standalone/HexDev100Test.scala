@@ -24,6 +24,7 @@ class HexDev100TestSuite extends FunSuite with SparkITest {
         conf("spark.standalone.max.executor.failures", 1) // In fail of executor, fail the test
         conf("spark.executor.instances", 8) // 8 executor instances
         conf("spark.executor.memory", "10g") // 10g per executor
+        conf("spark.ext.h2o.cluster.size", 8) // 8 H2O nodes
       }
     )
   }
