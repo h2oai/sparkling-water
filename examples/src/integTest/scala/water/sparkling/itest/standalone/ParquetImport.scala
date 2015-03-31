@@ -41,23 +41,15 @@ object ParquetImportTest {
     val h2oContext = new H2OContext(sc).start()
     import h2oContext._
 
-    // Import airlines file into H2O
-    val dataFile = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines_all.05p.csv"
-    val airlinesData = new DataFrame(new java.net.URI(dataFile))
-
-    // Save airlines file as Parquet File
     implicit val sqlContext = new SQLContext(sc)
-    val airlinesRDD = asSchemaRDD(airlinesData)(sqlContext)
-    airlinesRDD.saveAsParquetFile("airlines.parquet")
 
     // Import Parquet file into Spark as SchemaRDD
-    val parquetFile = sqlContext.parquetFile("airlines.parquet")
+    val parquetFile = sqlContext.parquetFile("hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines.parquet")
     parquetFile.registerTempTable("parquetFile")
 
     // Filter SchemaRdd and push to H2O as H2O DataFrame
     val ORDFlights = parquetFile.filter(r => r(17) == "ORD")
     ORDFlights.count
-    ORDFlights.collect
 
     // Run Deep Learning on H2O Data Frame
     import hex.deeplearning.DeepLearning
@@ -74,23 +66,6 @@ object ParquetImportTest {
     val predictionH2OFrame = dlModel.score(ORDFlights)('predict)
     val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
-    // Clean up Parquet File
-
-    def removeAll(path: String) = {
-      def getRecursively(f: File): Seq[File] =
-        f.listFiles.filter(_.isDirectory).flatMap(getRecursively) ++ f.listFiles
-      val parent = new File(path)
-      getRecursively(parent).foreach { f =>
-        if (!f.delete())
-          throw new RuntimeException("Failed to delete " + f.getAbsolutePath)
-      }
-      if (!parent.delete())
-        throw new RuntimeException("Failed to delete " + parent.getAbsolutePath)
-      else
-        println("Finish deleting file/directory : " + path)
-    }
-
-    removeAll("airlines.parquet")
     sc.stop()
   }
 }
