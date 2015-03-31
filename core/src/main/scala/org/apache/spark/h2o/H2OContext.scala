@@ -198,7 +198,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     } else if (nSparkExecAfter != nSparkExecBefore) {
       // Repeat if we detect change in number of executors reported by storage level
       logInfo(s"Detected ${nSparkExecBefore} before, and ${nSparkExecAfter} spark executors after! Retrying again...")
-      createSpreadRDD(nretries-1, mfactor, nSparkExecAfter)
+      createSpreadRDD(nretries-1, mfactor, nworkers)
     } else if ((nworkers>0 && sparkExecutors == nworkers || nworkers<=0) && sparkExecutors == nSparkExecAfter) {
       // Return result only if we are sure that number of detected executors seems ok
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers!")
