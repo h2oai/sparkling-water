@@ -10,9 +10,6 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.sparkling.itest.SparkITest
 
-
-
-
 /**
  * Test for Parquet Import : Save small airlines data as Parquet File, 
  * import Parquet file into Spark as SchemaRDD, then run Deep Learning
@@ -46,7 +43,7 @@ object ParquetImportTest {
 
     // Import airlines file into H2O
     val dataFile = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines_all.05p.csv"
-    val airlinesData = new DataFrame(new File(dataFile))
+    val airlinesData = new DataFrame(new java.net.URI(dataFile))
 
     // Save airlines file as Parquet File
     implicit val sqlContext = new SQLContext(sc)
