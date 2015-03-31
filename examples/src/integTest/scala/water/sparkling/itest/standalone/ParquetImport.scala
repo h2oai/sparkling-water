@@ -22,7 +22,7 @@ import org.apache.spark.sql.SQLContext
 @RunWith(classOf[JUnitRunner])
 class ParquetImportTestSuite extends FunSuite with SparkITest {
 
-  ignore("Parquet File Import test") {
+  test("Parquet File Import test") {
     launch( "water.sparkling.itest.standalone.ParquetImport",
       env {
         sparkMaster("spark://mr-0xd1-precise1.0xdata.loc:7077")
