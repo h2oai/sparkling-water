@@ -76,3 +76,14 @@ class RegularExamplesSuite4 extends FunSuite with SparkITest {
   }
 }
 
+@RunWith(classOf[JUnitRunner])
+class RegularExamplesSuite5 extends FunSuite with SparkITest {
+
+  test("Launch HamOrSpam Demo", LocalTest) {
+    launch( "org.apache.spark.examples.h2o.HamOrSpamDemo",
+      env {
+        sparkMaster("local-cluster[3,2,1024]")
+      }
+    )
+  }
+}
