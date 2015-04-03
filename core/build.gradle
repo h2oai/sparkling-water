@@ -17,6 +17,9 @@ dependencies {
   compile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
 
 
+  // Add joda optional convert library which is required in Scala environment
+  compile "org.joda:joda-convert:1.7"
+
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"
 
