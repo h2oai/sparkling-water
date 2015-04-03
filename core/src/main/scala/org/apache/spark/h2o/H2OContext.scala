@@ -394,8 +394,10 @@ object H2OContext extends Logging {
         var subRow = row
         while (i < path.length-1 && !subRow.isNullAt(path(i))) { subRow = subRow.getAs[Row](path(i)); i += 1 }
         val aidx = path(i) // actual index into row provided by path
-        if (subRow.isNullAt(aidx)) chk.addNA()
-        else {
+        if (subRow.isNullAt(aidx)) {
+          chk.addNA()
+          if (dataType == StringType && !isAry) numOfStringCols += 1 // Shift pointer to the next string column
+        } else {
           val ary = if (isAry) subRow.getAs[Seq[_]](aidx) else null
           val aryLen = if (isAry) ary.length else -1
           val aryIdx = idx - startOfSeq // shared index to position in array/vector

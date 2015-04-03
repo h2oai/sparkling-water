@@ -18,12 +18,10 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
 import org.apache.spark.sql.catalyst.types.{ArrayType, BinaryType, BooleanType, ByteType, DataType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructField, StructType, TimestampType, UserDefinedType}
 import org.apache.spark.{SparkContext, mllib}
 import water.fvec.Vec
 import water.parser.Categorical
-import water.util.ArrayUtils
 
 import scala.collection.mutable
 
