@@ -22,7 +22,7 @@ import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
 import org.apache.spark.sql.catalyst.types._
-import org.apache.spark.sql.execution.{ExistingRdd, SparkLogicalPlan}
+import org.apache.spark.sql.execution.{LogicalRDD, ExistingRdd, SparkLogicalPlan}
 import org.apache.spark.sql.{Row, SQLContext, SchemaRDD}
 import water._
 import water.api._
@@ -219,10 +219,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     val schemaAtts = H2OSchemaUtils.createSchema(fr).fields.map( f =>
       AttributeReference(f.name, f.dataType, f.nullable)())
 
-    new SchemaRDD(sqlContext,
-      SparkLogicalPlan(
-        ExistingRdd(
-          schemaAtts, h2oSchemaRDD))(sqlContext))
+    new SchemaRDD(sqlContext, LogicalRDD(schemaAtts, h2oSchemaRDD)(sqlContext))
   }
 
   /** Open H2O Flow running in this client. */
