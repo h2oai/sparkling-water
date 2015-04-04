@@ -55,7 +55,7 @@ configure(allprojects) { project ->
       h2oBuild           = '1109'
       //h2oBuild           = '99999'
       h2oVersion         = "0.3.0.$h2oBuild"
-      sparkVersion       = '1.2.1'
+      sparkVersion       = '1.2.0'
       junitVersion       = '4.11'
     }
 }
