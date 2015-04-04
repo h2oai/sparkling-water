@@ -32,10 +32,11 @@ import org.scalatest.junit.JUnitRunner
 import water.{DKV, Key}
 import water.fvec._
 import org.apache.spark.sql._
-import water.parser.Categorical
+import water.parser.{ValueString, Categorical}
 import org.apache.spark.h2o.H2OSchemaUtils.flatSchema
 
 import scala.annotation.tailrec
+import scala.reflect.ClassTag
 
 
 /**
@@ -62,6 +63,35 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     dataFrame.delete()
   }
 
+  test("DataFrame[String] to SchemaRDD[StringType]") {
+    import h2oContext._
+
+    val fname: String = "testString.hex"
+    val colNames: Array[String] = Array("C0")
+    val chunkLayout: Array[Long] = Array(3L, 3L, 2L)
+    val data: Array[Array[String]] = Array(Array("string1", "string2", "string3"),
+                                           Array("string4", "string5", "string6"),
+                                           Array("string7", "string8"))
+
+    var f: Frame = new Frame(Key.make(fname))
+    FrameUtils.preparePartialFrame(f,colNames)
+    f.update(null)
+
+    for( i <- 0 to chunkLayout.length-1) { createNC(fname, data(i), i, chunkLayout(i).toInt) }
+
+    f = DKV.get(fname).get()
+    FrameUtils.finalizePartialFrame(f, chunkLayout, null, Array(Vec.T_STR))
+
+    val dataFrame = new DataFrame(f)
+
+    implicit val sqlContext = new SQLContext(sc)
+    val schemaRdd = asSchemaRDD(dataFrame)
+
+    assert (schemaRdd.count == dataFrame.numRows())
+    assert (schemaRdd.take(8)(7)(0) == "string8")
+    dataFrame.delete()
+  }
+
   ignore("DataFrame[UUID] to SchemaRDD[StringType]") {
     import h2oContext._
 
@@ -82,7 +112,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     FrameUtils.preparePartialFrame(f,colNames)
     f.update(null)
 
-    for( i <- 0 to chunkLayout.length-1) { createNUUIDC(fname, data(i), i, chunkLayout(i).toInt) }
+    for( i <- 0 to chunkLayout.length-1) { createNC(fname, data(i), i, chunkLayout(i).toInt) }
 
     f = DKV.get(fname).get()
     FrameUtils.finalizePartialFrame(f, chunkLayout, null, Array(Vec.T_UUID))
@@ -344,9 +374,17 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assertVectorDoubleValues(dataFrame.vec(2), Seq(0.0,0.0,1.0))
   }
 
-  def createNUUIDC(fname: String, data: Array[UUID], cidx: Integer, len: Integer): NewChunk = {
-    var nchunks: Array[NewChunk] = FrameUtils.createNewChunks(fname, cidx)
-    for (i <- 0 to len-1) { nchunks(0).addUUID(data(i).getLeastSignificantBits(), data(i).getMostSignificantBits()) }
+  def createNC[T: ClassTag](fname: String, data: Array[T], cidx: Integer, len: Integer): NewChunk = {
+    val nchunks: Array[NewChunk] = FrameUtils.createNewChunks(fname, cidx)
+
+    data.foreach { el =>
+      el match {
+        case x if x.isInstanceOf[UUID] => nchunks(0).addUUID(x.asInstanceOf[UUID].getLeastSignificantBits(),
+          x.asInstanceOf[UUID].getMostSignificantBits())
+        case x if x.isInstanceOf[String] => nchunks(0).addStr(new ValueString(x.asInstanceOf[String]))
+        case _ => ???
+      }
+    }
     FrameUtils.closeNewChunks(nchunks)
     return nchunks(0)
   }
