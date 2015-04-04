@@ -11,6 +11,7 @@
 - [Additional Examples](#MoreExamples)
 - [Docker Support](#Docker)
 - [FAQ](#FAQ)
+- [Diagram of Sparkling Water on YARN](#Diagram)
 
 
 
@@ -151,3 +152,8 @@ See [docker/README.md](docker/README.md) to learn about Docker support.
  > Sparkling Shell accepts common Spark Shell arguments. To pass your script, please use `-i` option of Spark Shell:
  > `bin/sparkling-shell -i test.script`
  
+<a name="Diagram"></a>
+#Diagram of Sparkling Water on YARN
+
+The following illustration depicts the topology of a Sparkling Water cluster of three nodes running on YARN: 
+ ![Diagram](images/Sparkling Water cluster.png)
