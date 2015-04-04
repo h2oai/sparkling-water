@@ -18,6 +18,7 @@ package org.apache.spark.rdd
 
 import java.io.File
 import java.sql.Timestamp
+import java.util.UUID
 
 import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.mllib.linalg.Vectors
@@ -28,10 +29,10 @@ import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.Key
-import water.fvec.DataFrame
+import water.{DKV, Key}
+import water.fvec._
 import org.apache.spark.sql._
-import water.parser.{ValueString, Categorical}
+import water.parser.Categorical
 import org.apache.spark.h2o.H2OSchemaUtils.flatSchema
 
 import scala.annotation.tailrec
@@ -58,6 +59,57 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     val schemaRdd = asSchemaRDD(dataFrame)
 
     assert(dataFrame.numRows() == schemaRdd.count(), "Number of lines in dataframe and in schema has to be same")
+    dataFrame.delete()
+  }
+
+  ignore("DataFrame[UUID] to SchemaRDD[StringType]") {
+    import h2oContext._
+
+    val fname: String = "testUUID.hex"
+    val colNames: Array[String] = Array("C0")
+    val chunkLayout: Array[Long] = Array(3L, 3L)
+    val data: Array[Array[UUID]] = Array(
+      Array(
+        UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3a"),
+        UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3b"),
+        UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3c")),
+      Array(
+        UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3d"),
+        UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3e"),
+        UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3f")))
+
+    var f: Frame = new Frame(Key.make(fname))
+    FrameUtils.preparePartialFrame(f,colNames)
+    f.update(null)
+
+    for( i <- 0 to chunkLayout.length-1) { createNUUIDC(fname, data(i), i, chunkLayout(i).toInt) }
+
+    f = DKV.get(fname).get()
+    FrameUtils.finalizePartialFrame(f, chunkLayout, null, Array(Vec.T_UUID))
+
+    val dataFrame = new DataFrame(f)
+
+    assert (UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3a").getLeastSignificantBits() ==
+      dataFrame.vec(0).chunkForChunkIdx(0).at16l(0)                                           &
+      UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3a").getMostSignificantBits()        ==
+        dataFrame.vec(0).chunkForChunkIdx(0).at16h(0))
+
+    assert (UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3b").getLeastSignificantBits() ==
+      dataFrame.vec(0).chunkForChunkIdx(0).at16l(1)                                           &
+      UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3b").getMostSignificantBits()        ==
+        dataFrame.vec(0).chunkForChunkIdx(0).at16h(1))
+
+    assert (UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3c").getLeastSignificantBits() ==
+      dataFrame.vec(0).chunkForChunkIdx(0).at16l(2)                                           &
+      UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3c").getMostSignificantBits()        ==
+        dataFrame.vec(0).chunkForChunkIdx(0).at16h(2))
+
+    implicit val sqlContext = new SQLContext(sc)
+    // TODO: asSchemaRDD should convert UUID columns to String columns
+    // TODO: test that UUID's between dataFrame and schemaRDD match
+    val schemaRdd = asSchemaRDD(dataFrame)
+
+    assert (schemaRdd.count == dataFrame.numRows())
     dataFrame.delete()
   }
 
@@ -292,6 +344,12 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assertVectorDoubleValues(dataFrame.vec(2), Seq(0.0,0.0,1.0))
   }
 
+  def createNUUIDC(fname: String, data: Array[UUID], cidx: Integer, len: Integer): NewChunk = {
+    var nchunks: Array[NewChunk] = FrameUtils.createNewChunks(fname, cidx)
+    for (i <- 0 to len-1) { nchunks(0).addUUID(data(i).getLeastSignificantBits(), data(i).getMostSignificantBits()) }
+    FrameUtils.closeNewChunks(nchunks)
+    return nchunks(0)
+  }
 
   def fp(it:Iterator[Row]):Unit = {
     println(it.size)
