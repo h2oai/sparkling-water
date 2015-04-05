@@ -193,6 +193,8 @@ object ChicagoCrimeTest {
 
     // Shutdown Spark
     sc.stop()
+    // Shutdown H2O explicitly (at least the driver)
+    water.H2O.shutdown()
   }
 
   /**

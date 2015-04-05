@@ -53,5 +53,7 @@ object HexDev62Test {
     val timeToH2O = timer2.time/1000
     println("Time it took to transfer a Spark RDD to H2O Frame = " + timeToH2O + "secs")
     sc.stop()
+    // Shutdown H2O explicitly (at least the driver)
+    water.H2O.shutdown()
   }
 }
