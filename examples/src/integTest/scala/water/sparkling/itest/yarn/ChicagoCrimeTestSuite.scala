@@ -25,14 +25,14 @@ import water.sparkling.itest.SparkITest
 @RunWith(classOf[JUnitRunner])
 class ChicagoCrimeTestSuite extends FunSuite with SparkITest {
 
-  ignore("Chicago Crime Demo") {
+  test("Chicago Crime Demo") {
     launch( "water.sparkling.itest.yarn.ChicagoCrimeTest",
       env {
         sparkMaster("yarn-client")
         // Configure YARN environment
         conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test
-        conf("spark.executor.instances", 10) // 10 executor instances
-        conf("spark.executor.memory", "20g") // 20g per executor
+        conf("spark.executor.instances", 3)
+        conf("spark.executor.memory", "4g")
         conf("spark.ext.h2o.port.base", 63331)
         conf("spark.driver.memory", "2g")
       }
@@ -42,9 +42,9 @@ class ChicagoCrimeTestSuite extends FunSuite with SparkITest {
 
 object ChicagoCrimeTest {
 
-  val WEATHER_FILE = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoAllWeather.csv"
-  val CENSUS_FILE = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCensus.csv"
-  val CRIME_FILE = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCrimes.csv"
+  val WEATHER_FILE = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoAllWeather.csv"
+  val CENSUS_FILE = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCensus.csv"
+  val CRIME_FILE = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCrimes.csv"
 
   def loadData(datafile: String): DataFrame = new DataFrame(new java.net.URI(datafile))
 
