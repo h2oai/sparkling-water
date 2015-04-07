@@ -27,8 +27,8 @@ class KMeansITestSuite extends FunSuite with SparkITest {
         sparkMaster("yarn-client")
         // Configure YARN environment
         conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test
-        conf("spark.executor.instances", 10) // 10 executor instances
-        conf("spark.executor.memory", "20g") // 20g per executor
+        conf("spark.executor.instances", 6) // 10 executor instances
+        conf("spark.executor.memory", "8g") // 20g per executor
         conf("spark.ext.h2o.port.base", 63331) //Start at baseport 63331
         conf("spark.driver.memory", "2g")
         conf("spark.executor.cores", 32) //Use up all the cores on the machines
