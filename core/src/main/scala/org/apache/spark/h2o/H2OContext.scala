@@ -21,13 +21,13 @@ import org.apache.spark._
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
-import org.apache.spark.sql.catalyst.types._
-import org.apache.spark.sql.execution.{LogicalRDD, ExistingRdd, SparkLogicalPlan}
-import org.apache.spark.sql.{Row, SQLContext, SchemaRDD}
+import org.apache.spark.sql.execution.LogicalRDD
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import water._
 import water.api._
 import water.fvec.Vec
-import water.parser.{Categorical, ValueString}
+import water.parser.ValueString
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -47,40 +47,38 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   with H2OConf
   with Serializable {
 
-  /** Implicit conversion from SchemaRDD to H2O's DataFrame */
-  implicit def createDataFrame(rdd : SchemaRDD) : DataFrame = toDataFrame(rdd)
+  /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
+  implicit def asH2OFrame(rdd : DataFrame) : H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd)
 
   /** Implicit conversion from typed RDD to H2O's DataFrame */
-  implicit def createDataFrame[A <: Product : TypeTag](rdd : RDD[A]) : DataFrame = toDataFrame(rdd)
+  implicit def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd)
 
-  /** Implicit conversion from SchemaRDD to H2O's DataFrame */
-  implicit def createDataFrameKey(rdd : SchemaRDD) : Key[Frame] = toDataFrame(rdd)._key
+  /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
+  implicit def toH2OFrameKey(rdd : DataFrame) : Key[Frame] = asH2OFrame(rdd)._key
 
   /** Implicit conversion from typed RDD to H2O's DataFrame */
-  implicit def createDataFrameKey[A <: Product : TypeTag](rdd : RDD[A]) : Key[_]
-                                  = toDataFrame(rdd)._key
+  implicit def toH2OFrameKey[A <: Product : TypeTag](rdd : RDD[A]) : Key[_] = asH2OFrame(rdd)._key
 
   /** Implicit conversion from Frame to DataFrame */
-  implicit def createDataFrame(fr: Frame) : DataFrame = new DataFrame(fr)
+  implicit def createH2OFrame(fr: Frame) : H2OFrame = new H2OFrame(fr)
 
-  implicit def dataFrameToKey(fr: Frame): Key[Frame] = fr._key
+  /** Returns a key of given frame */
+  implicit def toH2OFrameKey(fr: Frame): Key[Frame] = fr._key
 
+  /** Transform given Scala symbol to String */
   implicit def symbolToString(sy: scala.Symbol): String = sy.name
-
-  def toDataFrame(rdd: SchemaRDD) : DataFrame = H2OContext.toDataFrame(sparkContext, rdd)
-
-  def toDataFrame[A <: Product : TypeTag](rdd: RDD[A]) : DataFrame
-                                  = H2OContext.toDataFrame(sparkContext, rdd)
 
   /** Convert given H2O frame into a RDD type */
   @deprecated("Use asRDD instead", "0.2.3")
-  def toRDD[A <: Product: TypeTag: ClassTag](fr : DataFrame) : RDD[A] = asRDD[A](fr)
+  def toRDD[A <: Product: TypeTag: ClassTag](fr : H2OFrame) : RDD[A] = asRDD[A](fr)
 
   /** Convert given H2O frame into a Product RDD type */
-  def asRDD[A <: Product: TypeTag: ClassTag](fr : DataFrame) : RDD[A] = createH2ORDD[A](fr)
+  def asRDD[A <: Product: TypeTag: ClassTag](fr : H2OFrame) : RDD[A] = createH2ORDD[A](fr)
 
-  /** Convert given H2O frame into SchemaRDD type */
-  def asSchemaRDD(fr : DataFrame)(implicit sqlContext: SQLContext) : SchemaRDD = createH2OSchemaRDD(fr)
+  /** Convert given H2O frame into DataFrame type */
+  @deprecated("1.3", "Use asDataFrame")
+  def asSchemaRDD(fr : H2OFrame)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
+  def asDataFrame(fr : H2OFrame)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
 
   /** Runtime list of nodes */
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
@@ -90,7 +88,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   private var localClient:String = _
   def h2oLocalClient = this.localClient
-  def sparkUI = sparkContext.ui.map(ui => ui.appUIAddress)
+  // For now disable opening Spark UI
+  //def sparkUI = sparkContext.ui.map(ui => ui.appUIAddress)
 
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
   def start(h2oWorkers: Int):H2OContext = {
@@ -209,23 +208,23 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     }
   }
 
-  def createH2ORDD[A <: Product: TypeTag: ClassTag](fr: DataFrame): RDD[A] = {
+  def createH2ORDD[A <: Product: TypeTag: ClassTag](fr: H2OFrame): RDD[A] = {
     new H2ORDD[A](this,fr)
   }
 
-  def createH2OSchemaRDD(fr: DataFrame)(implicit sqlContext: SQLContext):SchemaRDD = {
+  def createH2OSchemaRDD(fr: H2OFrame)(implicit sqlContext: SQLContext): DataFrame = {
     //SparkPlan.currentContext.set(sqlContext)
     val h2oSchemaRDD = new H2OSchemaRDD(this, fr)
     val schemaAtts = H2OSchemaUtils.createSchema(fr).fields.map( f =>
       AttributeReference(f.name, f.dataType, f.nullable)())
 
-    new SchemaRDD(sqlContext, LogicalRDD(schemaAtts, h2oSchemaRDD)(sqlContext))
+    new DataFrame(sqlContext, LogicalRDD(schemaAtts, h2oSchemaRDD)(sqlContext))
   }
 
   /** Open H2O Flow running in this client. */
   def openFlow(): Unit = openURI(s"http://${h2oLocalClient}")
   /** Open Spark task manager. */
-  def openSparkUI(): Unit = sparkUI.foreach(openURI(_))
+  //def openSparkUI(): Unit = sparkUI.foreach(openURI(_))
 
   /** Open browser for given address.
     *
@@ -258,28 +257,30 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 object H2OContext extends Logging {
 
   /** Transform SchemaRDD into H2O DataFrame */
-  def toDataFrame(sc: SparkContext, rdd: SchemaRDD) : DataFrame = {
+  def toH2OFrame(sc: SparkContext, dataFrame: DataFrame) : H2OFrame = {
     import org.apache.spark.h2o.H2OSchemaUtils._
+    // Cache DataFrame RDD's
+    val dfRdd = dataFrame.rdd
 
-    val keyName = "frame_rdd_" + rdd.id //+ Key.rand() // There are uniq IDs for RDD
+    val keyName = "frame_rdd_" + dfRdd.id
     // Fetch cached frame from DKV
     val frameVal = DKV.get(keyName)
     if (frameVal==null) {
-      // Fetch information about SchemaRDD - string domains, max array length
+      // Fetch information about Spark DataFrame - string domains, max array length
       // Collect domains only for String columns
-      val stringColIdxs = collectStringTypesIndx(rdd.schema.fields)
+      val stringColIdxs = collectStringTypesIndx(dataFrame.schema.fields)
       // Contains only string domains of String columns and String arrays
-      val fdomains      = collectColumnDomains(sc, rdd, stringColIdxs)
+      val fdomains      = collectColumnDomains(sc, dfRdd, stringColIdxs)
 
       // Flattens and expands RDD's schema
-      val flatRddSchema = expandedSchema(sc, rdd)
+      val flatRddSchema = expandedSchema(sc, dataFrame)
       // Patch the flat schema based on information about types
       val fnames = flatRddSchema.map(t => t._2.name).toArray
       initFrame(keyName, fnames)
 
       // Eager, not lazy, evaluation
-      val rows = sc.runJob(rdd, perSQLPartition(keyName, flatRddSchema, fdomains) _)
-      val res = new Array[Long](rdd.partitions.size)
+      val rows = sc.runJob(dfRdd, perSQLPartition(keyName, flatRddSchema, fdomains) _)
+      val res = new Array[Long](dfRdd.partitions.size)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows}
 
       // Transform datatype into h2o types and expand string domains
@@ -304,14 +305,14 @@ object H2OContext extends Logging {
       // Expand string domains into list for each column
 
       // Add Vec headers per-Chunk, and finalize the H2O Frame
-      new DataFrame(
+      new H2OFrame(
         finalizeFrame(
           keyName,
           res,
           ftypes,
           fH2ODomains))
     } else {
-      new DataFrame(frameVal.get.asInstanceOf[Frame])
+      new H2OFrame(frameVal.get.asInstanceOf[Frame])
     }
   }
 
@@ -338,9 +339,9 @@ object H2OContext extends Logging {
   }
 
   /** Transform typed RDD into H2O DataFrame */
-  def toDataFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A]) : DataFrame = {
-    import org.apache.spark.h2o.ReflectionUtils._
+  def toH2OFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A]) : H2OFrame = {
     import org.apache.spark.h2o.H2OProductUtils._
+    import org.apache.spark.h2o.ReflectionUtils._
 
     val keyName = "frame_rdd_" + rdd.id + Key.rand() // There are uniq IDs for RDD
     val fnames = names[A]
@@ -357,7 +358,7 @@ object H2OContext extends Logging {
 
     // Add Vec headers per-Chunk, and finalize the H2O Frame
     val h2oTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx), fdomains(idx))).toArray
-    new DataFrame(finalizeFrame(keyName, res, h2oTypes, fdomains))
+    new H2OFrame(finalizeFrame(keyName, res, h2oTypes, fdomains))
   }
 
   private

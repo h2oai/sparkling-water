@@ -20,22 +20,23 @@ package org.apache.spark.rdd
 import java.util.UUID
 
 import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.H2OSchemaUtils.vecTypeToDataType
-import org.apache.spark.h2o.{DataFrame, H2OContext}
 import org.apache.spark.sql.catalyst.expressions.{GenericMutableRow, Row}
-import org.apache.spark.sql.catalyst.types._
+import org.apache.spark.sql.types._
 import org.apache.spark.{Partition, TaskContext}
+import water.fvec.H2OFrame
 import water.parser.ValueString
 
 /**
- * H2O DataFrame wrapper providing RDD[Row] API.
+ * H2O H2OFrame wrapper providing RDD[Row] API.
  *
  * @param h2oContext
  * @param frame
  */
 private[spark]
 class H2OSchemaRDD(@transient val h2oContext: H2OContext,
-                   @transient val frame: DataFrame)
+                   @transient val frame: H2OFrame)
   extends RDD[Row](h2oContext.sparkContext, Nil) with H2ORDDLike {
 
   @DeveloperApi

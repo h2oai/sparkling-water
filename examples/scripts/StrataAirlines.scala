@@ -10,7 +10,7 @@ import h2oContext._
 // Import all year airlines into H2O
 import java.io.File
 val dataFile = "examples/smalldata/year2005.csv.gz"
-val airlinesData = new DataFrame(new File(dataFile))
+val airlinesData = new H2OFrame(new File(dataFile))
 
 
 // Import weather data into Spark
@@ -44,7 +44,7 @@ val bigTable = sql(
           |JOIN WeatherORD w
           |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
 
-val trainFrame:DataFrame = bigTable
+val trainFrame:H2OFrame = bigTable
 trainFrame.replace(19, trainFrame.vec("IsDepDelayed").toEnum)
 trainFrame.update(null)
 

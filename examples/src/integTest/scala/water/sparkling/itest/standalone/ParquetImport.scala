@@ -10,7 +10,7 @@ import water.sparkling.itest.SparkITest
 
 /**
  * Test for Parquet Import : Save small airlines data as Parquet File, 
- * import Parquet file into Spark as SchemaRDD, then run Deep Learning
+ * import Parquet file into Spark as DataFrame, then run Deep Learning
  * using H2O*
  */
 @RunWith(classOf[JUnitRunner])
@@ -41,16 +41,16 @@ object ParquetImportTest {
 
     implicit val sqlContext = new SQLContext(sc)
 
-    // Import Parquet file into Spark as SchemaRDD
+    // Import Parquet file into Spark as DataFrame
     val parquetFile = sqlContext.parquetFile("hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines.parquet")
     parquetFile.registerTempTable("parquetFile")
 
     // Check Parquet file copies correctly
-    val AllFlights : DataFrame = parquetFile
+    val AllFlights : H2OFrame = parquetFile
     assert (AllFlights.numRows == parquetFile.count, "Transfer of H2ORDD to SparkRDD completed!")
     
-    // Filter SchemaRdd and push to H2O as H2O DataFrame
-    val ORDFlights = parquetFile.filter(r => r(17) == "ORD")
+    // Filter SchemaRdd and push to H2O as H2O H2OFrame
+    val ORDFlights = parquetFile.filter("Dest == ORD")
     assert (ORDFlights.count == 313943, "Correctly filtered out all ORD flights!")
 
     // Run Deep Learning on H2O Data Frame

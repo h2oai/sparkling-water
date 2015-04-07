@@ -14,9 +14,11 @@ import org.apache.spark.sql.SQLContext
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 
+val sc:org.apache.spark.SparkContext = null
+
 // Initialize Spark SQLContext
 implicit val sqlContext = new SQLContext(sc)
-import sqlContext._
+import sqlContext.implicits._
 
 
 // Create H2OContext to execute H2O code on Spark cluster
@@ -32,7 +34,7 @@ val dataFiles = Array[String](
       "2013-07.csv", "2013-08.csv", "2013-09.csv", "2013-10.csv",
       "2013-11.csv", "2013-12.csv").map(f => new java.io.File(DIR_PREFIX, f).toURI)
 // Load and parse data
-val bikesDF = new DataFrame(dataFiles:_*)
+val bikesDF = new H2OFrame(dataFiles:_*)
 // Rename columns and remove all spaces in header
 val colNames = bikesDF.names().map( n => n.replace(' ', '_'))
 bikesDF._names = colNames
@@ -49,25 +51,25 @@ bikesDF.add(new TimeSplit().doIt(startTimeF))
 bikesDF.update(null)
 
 //
-// Transform DataFrame into SchemaRDD
+// Transform H2OFrame into DataFrame
 //
-val bikesRdd = asSchemaRDD(bikesDF)
+val bikesRdd = asDataFrame(bikesDF)
 
 // Register table and SQL table
-sqlContext.registerRDDAsTable(bikesRdd, "bikesRdd")
+bikesRdd.registerTempTable("bikesRdd")
 
 //
 // Do grouping with help of Spark SQL
 //
-val bikesPerDayRdd = sql(
+val bikesPerDayRdd = sqlContext.sql(
   """SELECT Days, start_station_id, count(*) bikes
     |FROM bikesRdd
     |GROUP BY Days, start_station_id """.stripMargin)
 
 //
-// Convert RDD to DataFrame via implicit operation
+// Convert RDD to H2OFrame via implicit operation
 //
-val bikesPerDayDF:DataFrame = bikesPerDayRdd
+val bikesPerDayDF:H2OFrame = bikesPerDayRdd
 
 //
 // Perform time transformation
@@ -80,7 +82,7 @@ val finalBikeDF = bikesPerDayDF.add(new TimeTransform().doIt(daysVec))
 //
 // Define function to build a model
 //
-def buildModel(df: DataFrame, trees: Int = 100, depth: Int = 6):R2 = {
+def buildModel(df: H2OFrame, trees: Int = 100, depth: Int = 6):R2 = {
     // Split into train and test parts
     val frs = splitFrame(df, Seq("train.hex", "test.hex", "hold.hex"), Seq(0.6, 0.3, 0.1))
     val (train, test, hold) = (frs(0), frs(1), frs(2))
@@ -117,10 +119,10 @@ val weatherRdd = weatherData.map(_.split(",")).
 
 
 // Join with bike table
-sqlContext.registerRDDAsTable(weatherRdd, "weatherRdd")
-sqlContext.registerRDDAsTable(asSchemaRDD(finalBikeDF), "bikesRdd")
+weatherRdd.toDF.registerTempTable("weatherRdd")
+asDataFrame(finalBikeDF).registerTempTable("bikesRdd")
 
-val bikesWeatherRdd = sql(
+val bikesWeatherRdd = sqlContext.sql(
     """SELECT b.Days, b.start_station_id, b.bikes,
       |b.Month, b.DayOfWeek,
       |w.DewPoint, w.HumidityFraction, w.Prcp1Hour,

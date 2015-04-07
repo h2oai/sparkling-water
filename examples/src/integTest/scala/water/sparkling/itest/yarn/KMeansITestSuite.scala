@@ -1,17 +1,15 @@
 package water.sparkling.itest.yarn
 
-import java.io.File
-
+import hex.kmeans.KMeansModel.KMeansParameters
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.clustering.KMeans
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.sql.SchemaRDD
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.sparkling.itest.{SparkITest, YarnTest}
-import hex.kmeans.KMeansModel.KMeansParameters
 import water.util.Timer
 
 /**
@@ -51,7 +49,7 @@ object KMeansITest {
     val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
     val timer1 = new water.util.Timer
     val d = new java.net.URI(path)
-    val airlinesData = new DataFrame(d)
+    val airlinesData = new H2OFrame(d)
     val timeToParse = timer1.time
 
     // Run Kmeans in H2O
@@ -69,15 +67,15 @@ object KMeansITest {
     // Score in H2O
     import org.apache.spark.sql.SQLContext
     implicit val sqlContext = new SQLContext(sc)
-    import sqlContext._
+    import sqlContext.implicits._
     val pred = KmeansModel.score(airlinesData)
-    val predRDD = asSchemaRDD(pred)
-    val clusterCounts = predRDD.countByValue()
+    val predDF = asDataFrame(pred)
+    val clusterCounts = predDF.rdd.countByValue()
 
     // Run Kmeans in Spark
     val sqlQueryTimer = new water.util.Timer
-    val airlinesRDD = asSchemaRDD(airlinesData)(sqlContext)
-    airlinesRDD.registerTempTable("airlinesRDD")
+    val airlinesDF = asDataFrame(airlinesData)(sqlContext)
+    airlinesDF.registerTempTable("airlinesRDD")
     val airlinesTable = sqlContext.sql(
       """SELECT Month, DayofMonth, DayOfWeek FROM airlinesRDD"""
     )
@@ -94,8 +92,8 @@ object KMeansITest {
 
     // Predict on Spark's Kmeans
     val sparkPredRDD = clusters.predict(airlinesVectorRDD)
-    val srdd : SchemaRDD = sparkPredRDD.map(v => IntHolder(Option(v)))
-    val df : DataFrame = srdd
+    val srdd : DataFrame = sparkPredRDD.map(v => IntHolder(Option(v))).toDF
+    val df : H2OFrame = srdd
     val sparkClusterCounts = sparkPredRDD.countByValue()
 
     // Get Within Set Sum of Squared Errors

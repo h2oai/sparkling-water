@@ -6,8 +6,8 @@ import hex.splitframe.ShuffleSplitFrame
 import hex.tree.gbm.GBMModel
 import hex.{ModelMetrics, ModelMetricsSupervised}
 import org.apache.spark.examples.h2o.DemoUtils._
-import org.apache.spark.h2o.{DataFrame, H2OContext}
-import org.apache.spark.sql.{SQLContext, SchemaRDD}
+import org.apache.spark.h2o.{H2OFrame, H2OContext}
+import org.apache.spark.sql.{SQLContext, DataFrame}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.joda.time.MutableDateTime
 import water.fvec.{NewChunk, Chunk, Frame}
@@ -35,7 +35,7 @@ object CitiBikeSharingDemo {
     import h2oContext._
 
     implicit val sqlContext = new SQLContext(sc)
-    import sqlContext._
+    import sqlContext.implicits._
 
     // Make a shared timer
     implicit val gTimer = new GTimer
@@ -50,7 +50,7 @@ object CitiBikeSharingDemo {
       "2014-01.csv", "2014-02.csv", "2014-03.csv", "2014-04.csv",
       "2014-05.csv", "2014-06.csv", "2014-07.csv", "2014-08.csv").map(f => new File(DIR_PREFIX, f).toURI)
     // Load and parse data
-    val dataf = new DataFrame(dataFiles:_*)
+    val dataf = new H2OFrame(dataFiles:_*)
     // Rename columns and remove all spaces in header
     val colNames = dataf.names().map( n => n.replace(' ', '_'))
     dataf._names = colNames
@@ -72,17 +72,17 @@ object CitiBikeSharingDemo {
     gTimer.stop("H2O: split start time column")
 
     //
-    // Transform DataFrame into SchemaRDD
+    // Transform H2OFrame into DataFrame
     //
-    val brdd = asSchemaRDD(dataf)
+    val brdd = asDataFrame(dataf)
 
     // Register table and SQL table
-    sqlContext.registerRDDAsTable(brdd, "brdd")
+    brdd.registerTempTable("brdd")
 
     //
     // Do grouping with help of Spark SQL
     //
-    val bph = sql(
+    val bph = sqlContext.sql(
       """SELECT Days, start_station_id, count(*) bikes
         |FROM brdd
         |GROUP BY Days, start_station_id """.stripMargin)
@@ -90,8 +90,8 @@ object CitiBikeSharingDemo {
 
 
     gTimer.start()
-    // Convert RDD to DataFrame
-    val bphf:DataFrame = bph
+    // Convert RDD to H2OFrame
+    val bphf:H2OFrame = bph
     gTimer.stop("Spark: do SQL query").start()
     //
     // Perform time transformation
@@ -117,10 +117,10 @@ object CitiBikeSharingDemo {
       .filter(_.HourLocal == Some(12))
 
     // Join with bike table
-    sqlContext.registerRDDAsTable(weatherRdd, "weatherRdd")
-    sqlContext.registerRDDAsTable(asSchemaRDD(finalTable), "bikesRdd")
+    weatherRdd.toDF.registerTempTable("weatherRdd")
+    asDataFrame(finalTable).registerTempTable("bikesRdd")
     //sql("SET spark.sql.shuffle.partitions=20")
-    val bikesWeatherRdd = sql(
+    val bikesWeatherRdd = sqlContext.sql(
       """SELECT b.Days, b.start_station_id, b.bikes, b.Month, b.DayOfWeek,
         |w.DewPoint, w.HumidityFraction, w.Prcp1Hour, w.Temperature, w.WeatherCode1
         | FROM bikesRdd b
@@ -141,7 +141,7 @@ object CitiBikeSharingDemo {
 
   def r2(model: GBMModel, fr: Frame) =  ModelMetrics.getFromDKV(model, fr).asInstanceOf[ModelMetricsSupervised].r2()
 
-  def buildModel(df: DataFrame)(implicit gTimer: GTimer, h2oContext: H2OContext) = {
+  def buildModel(df: H2OFrame)(implicit gTimer: GTimer, h2oContext: H2OContext) = {
     import h2oContext._
     //
     // Split into train and test parts
@@ -189,27 +189,27 @@ object CitiBikeSharingDemo {
     gbmModel
   }
 
-  def basicStats(brdd: SchemaRDD)(implicit sqlContext:SQLContext): Unit = {
-    import sqlContext._
+  def basicStats(brdd: DataFrame)(implicit sqlContext:SQLContext): Unit = {
+    import sqlContext.implicits._
 
     // check Sri's first case
     brdd.first
     brdd.count
 
     // Register table and SQL table
-    sqlContext.registerRDDAsTable(brdd, "brdd")
+    brdd.registerTempTable("brdd")
 
-    val tGBduration = sql("SELECT bikeid, SUM(tripduration) FROM brdd GROUP BY bikeid")
+    val tGBduration = sqlContext.sql("SELECT bikeid, SUM(tripduration) FROM brdd GROUP BY bikeid")
     // Sort based on duration
-    val bottom10 = tGBduration.sortBy( r => r.getLong(1)).take(10)
+    val bottom10 = tGBduration.rdd.sortBy( r => r.getLong(1)).take(10)
 
     // Get min
     import org.apache.spark.sql.Row
-    val minDurationBikeId = tGBduration.min()(Ordering.by[Row, Long](r => r.getLong(1)))
+    val minDurationBikeId = tGBduration.rdd.min()(Ordering.by[Row, Long](r => r.getLong(1)))
 
     assert (bottom10(0) == minDurationBikeId)
 
-    val maxDurationBikeId = tGBduration.min()(Ordering.by[Row, Long](r => -r.getLong(1)))
+    val maxDurationBikeId = tGBduration.rdd.min()(Ordering.by[Row, Long](r => -r.getLong(1)))
   }
 
   def withTimer(timer:GTimer, round: String)(b : => Unit): Unit = {
@@ -223,8 +223,8 @@ object CitiBikeSharingDemo {
 }
 
 class TimeSplit extends MRTask[TimeSplit] {
-  def doIt(time: DataFrame):DataFrame =
-      new DataFrame(doAll(1, time).outputFrame(Array[String]("Days"), null))
+  def doIt(time: H2OFrame):H2OFrame =
+      new H2OFrame(doAll(1, time).outputFrame(Array[String]("Days"), null))
 
   override def map(msec: Chunk, day: NewChunk):Unit = {
     for (i <- 0 until msec.len) {
@@ -234,8 +234,8 @@ class TimeSplit extends MRTask[TimeSplit] {
 }
 
 class TimeTransform extends MRTask[TimeSplit] {
-  def doIt(days: DataFrame):DataFrame =
-    new DataFrame(doAll(2, days).outputFrame(Array[String]("Month", "DayOfWeek"), null))
+  def doIt(days: H2OFrame):H2OFrame =
+    new H2OFrame(doAll(2, days).outputFrame(Array[String]("Month", "DayOfWeek"), null))
 
   override def map(in: Array[Chunk], out: Array[NewChunk]):Unit = {
     val days = in(0)

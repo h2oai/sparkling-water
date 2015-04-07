@@ -4,7 +4,7 @@ import hex.{ModelMetrics, FrameSplitter}
 import hex.splitframe.ShuffleSplitFrame
 import hex.tree.gbm.GBMModel
 import hex.Model
-import org.apache.spark.h2o.DataFrame
+import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.{SparkConf, SparkContext}
 import water.fvec.{Frame, Chunk}
 import water.parser.ValueString
@@ -64,7 +64,7 @@ object DemoUtils {
     files.foreach( f => sc.addFile(f) )
   }
 
-  def printFrame(fr: DataFrame): Unit = {
+  def printFrame(fr: H2OFrame): Unit = {
     new MRTask {
       override def map(cs: Array[Chunk]): Unit = {
         println ("Chunks: " + cs.mkString(","))
@@ -108,13 +108,13 @@ object DemoUtils {
       """.stripMargin
   }
 
-  def splitFrame(df: DataFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
+  def splitFrame(df: H2OFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
     val ks = keys.map(Key.make(_)).toArray
     val frs = ShuffleSplitFrame.shuffleSplitFrame(df, ks, ratios.toArray, 1234567689L)
     frs
   }
 
-  def split(df: DataFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
+  def split(df: H2OFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
     val ks = keys.map(Key.make(_)).toArray
     val splitter = new FrameSplitter(df, ratios.toArray, ks, null)
     water.H2O.submitTask(splitter)

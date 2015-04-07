@@ -20,6 +20,7 @@ import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
+import org.apache.spark.sql.types._
 // SQL support
 implicit val sqlContext = new SQLContext(sc)
 import sqlContext._
@@ -34,12 +35,12 @@ import h2oContext._
 //
 // H2O Data loader using H2O API
 //
-def loadData(datafile: String): DataFrame = new DataFrame(new java.net.URI(datafile))
+def loadData(datafile: String): H2OFrame = new H2OFrame(new java.net.URI(datafile))
 
 //
 // Loader for weather data
 //
-def createWeatherTable(datafile: String): DataFrame = {
+def createWeatherTable(datafile: String): H2OFrame = {
   val table = loadData(datafile)
   // Remove first column since we do not need it
   table.remove(0).remove()
@@ -50,7 +51,7 @@ def createWeatherTable(datafile: String): DataFrame = {
 //
 // Loader for census data
 //
-def createCensusTable(datafile: String): DataFrame = {
+def createCensusTable(datafile: String): H2OFrame = {
   val table = loadData(datafile)
   // Rename columns: replace ' ' by '_'
   val colNames = table.names().map( n => n.trim.replace(' ', '_').replace('+','_'))
@@ -62,7 +63,7 @@ def createCensusTable(datafile: String): DataFrame = {
 //
 // Load and modify crime data
 //
-def createCrimeTable(datafile: String, datePattern:String, dateTimeZone:String): DataFrame = {
+def createCrimeTable(datafile: String, datePattern:String, dateTimeZone:String): H2OFrame = {
   val table = loadData(datafile)
   // Refine date into multiple columns
   val dateCol = table.vec(2)
@@ -86,14 +87,14 @@ addFiles(sc,
   "examples/smalldata/chicagoCrimes10k.csv"
 )
 
-val weatherTable = asSchemaRDD(createWeatherTable(SparkFiles.get("chicagoAllWeather.csv")))
-registerRDDAsTable(weatherTable, "chicagoWeather")
+val weatherTable = asDataFrame(createWeatherTable(SparkFiles.get("chicagoAllWeather.csv")))
+weatherTable.registerTempTable("chicagoWeather")
 // Census data
-val censusTable = asSchemaRDD(createCensusTable(SparkFiles.get("chicagoCensus.csv")))
-registerRDDAsTable(censusTable, "chicagoCensus")
+val censusTable = asDataFrame(createCensusTable(SparkFiles.get("chicagoCensus.csv")))
+censusTable.registerTempTable("chicagoCensus")
 // Crime data
-val crimeTable  = asSchemaRDD(createCrimeTable(SparkFiles.get("chicagoCrimes10k.csv"), "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))
-registerRDDAsTable(crimeTable, "chicagoCrime")
+val crimeTable  = asDataFrame(createCrimeTable(SparkFiles.get("chicagoCrimes10k.csv"), "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))
+crimeTable.registerTempTable("chicagoCrime")
 
 //
 // Join crime data with weather and census tables
@@ -116,7 +117,7 @@ val crimeWeather = sql(
 //
 // Publish as H2O Frame
 crimeWeather.printSchema()
-val crimeWeatherDF:DataFrame = crimeWeather
+val crimeWeatherDF:H2OFrame = crimeWeather
 
 //
 // Split final data table
@@ -132,7 +133,7 @@ val (train, test) = (frs(0), frs(1))
 //
 openFlow
 
-def GBMModel(train: DataFrame, test: DataFrame, response: String,
+def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
              ntrees:Int = 10, depth:Int = 6, distribution: Family = Family.bernoulli)
             (implicit h2oContext: H2OContext) : GBMModel = {
   import h2oContext._
@@ -152,7 +153,7 @@ def GBMModel(train: DataFrame, test: DataFrame, response: String,
   model
 }
 
-def DLModel(train: DataFrame, test: DataFrame, response: String)
+def DLModel(train: H2OFrame, test: H2OFrame, response: String)
            (implicit h2oContext: H2OContext) : DeepLearningModel = {
   import h2oContext._
   import hex.deeplearning.DeepLearning
@@ -181,7 +182,7 @@ val dlModel = DLModel(train, test, 'Arrest)
 
 // Collect model metrics
 def binomialMetrics[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-                    (model: Model[M,P,O], train: DataFrame, test: DataFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
+                    (model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
   model.score(train).delete()
   model.score(test).delete()
   (binomialMM(model,train), binomialMM(model, test))
@@ -206,14 +207,14 @@ println(
 //
 // Create a predictor
 //
-def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: SchemaRDD)
+def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: DataFrame)
               (implicit sqlContext: SQLContext, h2oContext: H2OContext): Float = {
   import h2oContext._
-  import sqlContext._
+  import sqlContext.implicits._
   // Create a single row table
-  val srdd:SchemaRDD = sqlContext.sparkContext.parallelize(Seq(crime))
+  val srdd:DataFrame = sqlContext.sparkContext.parallelize(Seq(crime)).toDF()
   // Join table with census data
-  val row: DataFrame = censusTable.join(srdd, on = Option('Community_Area === 'Community_Area_Number)) //.printSchema
+  val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
   val predictTable = model.score(row)
   val probOfArrest = predictTable.vec("true").at(0)
 
@@ -266,11 +267,12 @@ val schema = StructType(Seq(
   StructField("ArrestsToAllArrests", DoubleType, false),
   StructField("ArrestsToAllCrimes", DoubleType, false),
   StructField("CrimesToAllCrimes", DoubleType, false)))
+
 val rowRdd = sc.parallelize(crimeTypeArrestRate).sortBy(x => -x.getDouble(1))
-val rateSRdd = sqlContext.applySchema(rowRdd, schema)
+val rateSRdd = sqlContext.createDataFrame(rowRdd, schema)
 
 // Transfer it into H2O
-val rateFrame:DataFrame = rateSRdd
+val rateFrame:H2OFrame = rateSRdd
 
 /*
 In flow type this:

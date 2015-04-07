@@ -4,7 +4,7 @@ import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
-import org.apache.spark.sql.{SchemaRDD, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkFiles, SparkConf, SparkContext, mllib}
 import org.apache.spark.mllib.feature.{IDF, IDFModel, HashingTF}
 import org.apache.spark.rdd.RDD
@@ -34,7 +34,7 @@ object HamOrSpamDemo {
     import h2oContext._
     // Initialize SQL context
     implicit val sqlContext = new SQLContext(sc)
-    import sqlContext._
+    import sqlContext.implicits._
 
     // Data load
     val data = load(sc, DATAFILE)
@@ -48,9 +48,9 @@ object HamOrSpamDemo {
     var (hashingTF, idfModel, tfidf) = buildIDFModel(tokens)
 
     // Merge response with extracted vectors
-    val resultRDD: SchemaRDD = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2))
+    val resultRDD: DataFrame = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2)).toDF
 
-    val table:DataFrame = resultRDD
+    val table:H2OFrame = resultRDD
 
     // Split table
     val keys = Array[String]("train.hex", "valid.hex")
@@ -159,13 +159,13 @@ object HamOrSpamDemo {
              idfModel: IDFModel,
              hamThreshold: Double = 0.5)
             (implicit sqlContext: SQLContext, h2oContext: H2OContext):Boolean = {
-    import sqlContext._
+    import sqlContext.implicits._
     import h2oContext._
     val msgRdd = sc.parallelize(Seq(msg))
-    val msgVector: SchemaRDD = idfModel.transform(
+    val msgVector: DataFrame = idfModel.transform(
       hashingTF.transform (
-        tokenize (msgRdd))).map(v => SMS("?", v))
-    val msgTable: DataFrame = msgVector
+        tokenize (msgRdd))).map(v => SMS("?", v)).toDF
+    val msgTable: H2OFrame = msgVector
     msgTable.remove(0) // remove first column
     val prediction = dlModel.score(msgTable)
     //println(prediction)

@@ -1,19 +1,19 @@
 package org.apache.spark.examples.h2o
 
-import hex.{ModelMetricsBinomial, Model}
 import hex.deeplearning.DeepLearningModel
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters.{ Activation}
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import hex.tree.gbm.GBMModel
 import hex.tree.gbm.GBMModel.GBMParameters.Family
+import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkContext
 import org.apache.spark.examples.h2o.DemoUtils._
-import org.apache.spark.h2o.{DataFrame, H2OContext}
-import org.apache.spark.sql.{SchemaRDD, SQLContext}
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.{MutableDateTime, DateTimeZone}
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.joda.time.DateTimeConstants._
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.MRTask
-import water.fvec.{NewChunk, Chunk, Vec}
+import water.fvec.{Chunk, NewChunk, Vec}
 import water.parser.ValueString
 
 /**
@@ -28,22 +28,21 @@ class ChicagoCrimeApp( weatherFile: String,
                        @transient val sqlContext: SQLContext,
                        @transient val h2oContext: H2OContext)/* extends SparklingWaterApp */ {
 
-  def train(weatherTable: SchemaRDD, censusTable: SchemaRDD, crimesTable: SchemaRDD): (GBMModel, DeepLearningModel) = {
+  def train(weatherTable: DataFrame, censusTable: DataFrame, crimesTable: DataFrame): (GBMModel, DeepLearningModel) = {
     // Prepare environment
-    implicit val sqlc = sqlContext
-    implicit val h2oc = h2oContext
-    import sqlContext._
+    @transient implicit val sqlc = sqlContext
+    @transient implicit val h2oc = h2oContext
     import h2oContext._
 
     // Register tables in SQL Context
-    registerRDDAsTable(weatherTable, "chicagoWeather")
-    registerRDDAsTable(censusTable, "chicagoCensus")
-    registerRDDAsTable(crimesTable, "chicagoCrime")
+    weatherTable.registerTempTable("chicagoWeather")
+    censusTable.registerTempTable("chicagoCensus")
+    crimesTable.registerTempTable("chicagoCrime")
 
     //
     // Join crime data with weather and census tables
     //
-    val crimeWeather = sql(
+    val crimeWeather = sqlContext.sql(
       """SELECT
         |a.Year, a.Month, a.Day, a.WeekNum, a.HourOfDay, a.Weekend, a.Season, a.WeekDay,
         |a.IUCR, a.Primary_Type, a.Location_Description, a.Community_Area, a.District,
@@ -59,7 +58,7 @@ class ChicagoCrimeApp( weatherFile: String,
         |ON a.Community_Area = c.Community_Area_Number""".stripMargin)
 
     //crimeWeather.printSchema()
-    val crimeWeatherDF:DataFrame = crimeWeather
+    val crimeWeatherDF:H2OFrame = crimeWeather
 
     //
     // Split final data table
@@ -105,12 +104,12 @@ class ChicagoCrimeApp( weatherFile: String,
     water.H2O.shutdown(0)
   }
 
-  def GBMModel(train: DataFrame, test: DataFrame, response: String,
+  def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
                ntrees:Int = 10, depth:Int = 6, family: Family = Family.bernoulli)
               (implicit h2oContext: H2OContext) : GBMModel = {
+    import h2oContext._
     import hex.tree.gbm.GBM
     import hex.tree.gbm.GBMModel.GBMParameters
-    import h2oContext._
 
     val gbmParams = new GBMParameters()
     gbmParams._train = train
@@ -125,13 +124,13 @@ class ChicagoCrimeApp( weatherFile: String,
     model
   }
 
-  def DLModel(train: DataFrame, test: DataFrame, response: String,
+  def DLModel(train: H2OFrame, test: H2OFrame, response: String,
                epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
                activation: Activation = Activation.RectifierWithDropout, hidden:Array[Int] = Array(200,200))
              (implicit h2oContext: H2OContext) : DeepLearningModel = {
+    import h2oContext._
     import hex.deeplearning.DeepLearning
     import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-    import h2oContext._
 
     val dlParams = new DeepLearningParameters()
     dlParams._train = train
@@ -150,7 +149,7 @@ class ChicagoCrimeApp( weatherFile: String,
   }
 
   def binomialMetrics[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-                (model: Model[M,P,O], train: DataFrame, test: DataFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
+                (model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
     model.score(train).delete()
     model.score(test).delete()
     (binomialMM(model,train), binomialMM(model, test))
@@ -161,27 +160,26 @@ class ChicagoCrimeApp( weatherFile: String,
     *
     * @return tuple of weather, census and crime data
     */
-  def loadAll(): (SchemaRDD, SchemaRDD, SchemaRDD) = {
+  def loadAll(): (DataFrame, DataFrame, DataFrame) = {
     implicit val sqlc = sqlContext
     implicit val h2oc = h2oContext
-    import sqlContext._
     import h2oContext._
     // Weather data
-    val weatherTable = asSchemaRDD(createWeatherTable(weatherFile))
-    registerRDDAsTable(weatherTable, "chicagoWeather")
+    val weatherTable = asDataFrame(createWeatherTable(weatherFile))
+    weatherTable.registerTempTable("chicagoWeather")
     // Census data
-    val censusTable = asSchemaRDD(createCensusTable(censusFile))
-    registerRDDAsTable(censusTable, "chicagoCensus")
+    val censusTable = asDataFrame(createCensusTable(censusFile))
+    censusTable.registerTempTable("chicagoCensus")
     // Crime data
-    val crimeTable  = asSchemaRDD(createCrimeTable(crimesFile))
-    registerRDDAsTable(crimeTable, "chicagoCrime")
+    val crimeTable  = asDataFrame(createCrimeTable(crimesFile))
+    crimeTable.registerTempTable("chicagoCrime")
 
     (weatherTable, censusTable, crimeTable)
   }
 
-  private def loadData(datafile: String): DataFrame = new DataFrame(new java.net.URI(datafile))
+  private def loadData(datafile: String): H2OFrame = new H2OFrame(new java.net.URI(datafile))
 
-  def createWeatherTable(datafile: String): DataFrame = {
+  def createWeatherTable(datafile: String): H2OFrame = {
     val table = loadData(datafile)
     // Remove first column since we do not need it
     table.remove(0).remove()
@@ -189,7 +187,7 @@ class ChicagoCrimeApp( weatherFile: String,
     table
   }
 
-  def createCensusTable(datafile: String): DataFrame = {
+  def createCensusTable(datafile: String): H2OFrame = {
     val table = loadData(datafile)
     // Rename columns: replace ' ' by '_'
     val colNames = table.names().map( n => n.trim.replace(' ', '_').replace('+','_'))
@@ -198,7 +196,7 @@ class ChicagoCrimeApp( weatherFile: String,
     table
   }
 
-  def createCrimeTable(datafile: String): DataFrame = {
+  def createCrimeTable(datafile: String): H2OFrame = {
     val table = loadData(datafile)
     // Refine date into multiple columns
     val dateCol = table.vec(2)
@@ -223,14 +221,14 @@ class ChicagoCrimeApp( weatherFile: String,
    * @param h2oContext
    * @return
    */
-  def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: SchemaRDD)
+  def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: DataFrame)
                 (implicit sqlContext: SQLContext, h2oContext: H2OContext): Float = {
-    import sqlContext._
     import h2oContext._
+    import sqlContext.implicits._
     // Create a single row table
-    val srdd:SchemaRDD = sqlContext.sparkContext.parallelize(Seq(crime))
+    val srdd: DataFrame = sqlContext.sparkContext.parallelize(Seq(crime)).toDF
     // Join table with census data
-    val row: DataFrame = censusTable.join(srdd, on = Option('Community_Area === 'Community_Area_Number)) //.printSchema
+    val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
     val predictTable = model.score(row)
     val probOfArrest = predictTable.vec("true").at(0)
 
@@ -352,9 +350,9 @@ object Crime {
 class RefineDateColumn(val datePattern: String,
                        val dateTimeZone: String) extends MRTask[RefineDateColumn] {
   // Entry point
-  def doIt(col: Vec): DataFrame = {
+  def doIt(col: Vec): H2OFrame = {
     val inputCol = if (col.isEnum) col.toStringVec else col
-    val result = new DataFrame(
+    val result = new H2OFrame(
       doAll(8, inputCol).outputFrame(
         Array[String]("Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"),
         Array[Array[String]](null, null, null, null, null, null,

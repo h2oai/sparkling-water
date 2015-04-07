@@ -18,7 +18,7 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.catalyst.types.{ArrayType, BinaryType, BooleanType, ByteType, DataType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructField, StructType, TimestampType, UserDefinedType}
+import org.apache.spark.sql.types.{ArrayType, BinaryType, BooleanType, ByteType, DataType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructField, StructType, TimestampType, UserDefinedType}
 import org.apache.spark.{SparkContext, mllib}
 import water.fvec.Vec
 import water.parser.Categorical
@@ -34,7 +34,7 @@ object H2OSchemaUtils {
   val ARRAY_TYPE : Byte  = 1
   val VEC_TYPE : Byte = 2
 
-  def createSchema(f: DataFrame): StructType = {
+  def createSchema(f: H2OFrame): StructType = {
     val types = new Array[StructField](f.numCols())
     val vecs = f.vecs()
     val names = f.names()
@@ -129,13 +129,13 @@ object H2OSchemaUtils {
     * @param srdd  schema-based RDD
     * @return list of types with their positions
     */
-  def expandedSchema(sc: SparkContext, srdd: SchemaRDD): Seq[(Seq[Int], StructField, Byte)] = {
+  def expandedSchema(sc: SparkContext, srdd: DataFrame): Seq[(Seq[Int], StructField, Byte)] = {
     // Collect max size in array and vector columns to expand them
     val arrayColIdxs  = collectArrayLikeTypes(srdd.schema.fields)
     val vecColIdxs    = collectVectorLikeTypes(srdd.schema.fields)
     val numOfArrayCols = arrayColIdxs.length
     // Collect max arrays for this RDD, it is distributed operation
-    val fmaxLens = collectMaxArrays(sc, srdd, arrayColIdxs, vecColIdxs)
+    val fmaxLens = collectMaxArrays(sc, srdd.rdd, arrayColIdxs, vecColIdxs)
     // Flattens RDD's schema
     val flatRddSchema = flatSchema(srdd.schema)
     val typeIndx = collectTypeIndx(srdd.schema.fields)
@@ -205,10 +205,8 @@ object H2OSchemaUtils {
 
   private[h2o]
   def collectColumnDomains(sc: SparkContext,
-                            rdd: SchemaRDD,
-                            stringTypes: Seq[Seq[Int]] = null): Array[Array[String]] = {
-    val stringTypesIdx = if (stringTypes!=null) stringTypes
-                          else H2OSchemaUtils.collectStringTypesIndx(rdd.schema.fields)
+                            rdd: RDD[Row],
+                            stringTypesIdx: Seq[Seq[Int]]): Array[Array[String]] = {
     // Create accumulable collections for each possible string variable
     val accs = stringTypesIdx.indices.map( _ => sc.accumulableCollection(new mutable.HashSet[String]()))
     // TODO: perform via partition, indicates string columns and fail early
@@ -232,9 +230,10 @@ object H2OSchemaUtils {
   /** Collect max size of stored arrays and MLLib vectors.
     * @return list of max sizes for array types, followed by max sizes for vector types. */
   private[h2o]
-  def collectMaxArrays(sc: SparkContext, rdd: SchemaRDD,
-                        arrayTypesIndx: Seq[Seq[Int]],
-                        vectorTypesIndx: Seq[Seq[Int]]): Array[Int] = {
+  def collectMaxArrays(sc: SparkContext,
+                       rdd: RDD[Row],
+                       arrayTypesIndx: Seq[Seq[Int]],
+                       vectorTypesIndx: Seq[Seq[Int]]): Array[Int] = {
     val allTypesIndx = arrayTypesIndx ++ vectorTypesIndx
     val numOfArrayTypes = arrayTypesIndx.length
     val maxvec = rdd.map(row => {

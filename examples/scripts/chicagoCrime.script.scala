@@ -65,9 +65,9 @@ val schema = StructType(Seq(
 val rowRdd = sc.parallelize(crimeTypeArrestRate).sortBy(x => -x.getDouble(1))
 val rateSRdd = sqlContext.applySchema(rowRdd, schema)
 
-import water.fvec.DataFrame; import h2oContext._
+import water.fvec.H2OFrame; import h2oContext._
 // Transfer it into H2O
-val rateFrame:DataFrame = rateSRdd
+val rateFrame:H2OFrame = rateSRdd
 */
 /*
 In flow type this:

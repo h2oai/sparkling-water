@@ -37,15 +37,17 @@ object ChicagoCrimeTest {
     val sc = new SparkContext(configure("ChicagoCrimeTest"))
     // SQL support
     val sqlContext = new SQLContext(sc)
+    import sqlContext.implicits._
     // Start H2O services
     val h2oContext = new H2OContext(sc).start()
+    import h2oContext._
 
     val app = new ChicagoCrimeApp(
       weatherFile = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoAllWeather.csv",
       censusFile =  "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCensus.csv",
       crimesFile =  "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCrimes.csv")(sc, sqlContext, h2oContext)
     // Load data
-    val (weatherTable,censusTable,crimesTable) = app.loadAll()
+    val (weatherTable, censusTable, crimesTable) = app.loadAll()
     // Train model
     val (gbmModel, dlModel) = app.train(weatherTable, censusTable, crimesTable)
 

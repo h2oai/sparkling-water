@@ -9,6 +9,7 @@ export MASTER="local-cluster[3,2,4096]"
 bin/sparkling-shell --conf spark.executor.memory=3G
 */
 
+val sc: org.apache.spark.SparkContext = null
 
 // Input data
 val DATAFILE="examples/smalldata/smsData.txt"
@@ -93,7 +94,7 @@ import h2oContext._
 // Initialize SQL context
 import org.apache.spark.sql._
 implicit val sqlContext = new SQLContext(sc)
-import sqlContext._
+import sqlContext.implicits._
 
 // Data load
 val data = load(DATAFILE)
@@ -107,9 +108,9 @@ val tokens = tokenize(message)
 var (hashingTF, idfModel, tfidf) = buildIDFModel(tokens)
 
 // Merge response with extracted vectors
-val resultRDD: SchemaRDD = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2))
+val resultRDD: DataFrame = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2)).toDF
 
-val table:DataFrame = resultRDD
+val table:H2OFrame = resultRDD
 
 // Split table
 val keys = Array[String]("train.hex", "valid.hex")
@@ -127,8 +128,8 @@ val dlModel = buildDLModel(train, valid)
 // Collect model metrics and evaluate model quality
 val trainMetrics = binomialMM(dlModel, train)
 val validMetrics = binomialMM(dlModel, valid)
-println(trainMetrics.auc.AUC)
-println(validMetrics.auc.AUC)
+println(trainMetrics.auc._auc)
+println(validMetrics.auc._auc)
 
 // Spam detector
 def isSpam(msg: String,
@@ -137,10 +138,10 @@ def isSpam(msg: String,
            idfModel: IDFModel,
            hamThreshold: Double = 0.5):Boolean = {
   val msgRdd = sc.parallelize(Seq(msg))
-  val msgVector: SchemaRDD = idfModel.transform(
+  val msgVector: DataFrame = idfModel.transform(
                               hashingTF.transform (
-                                tokenize (msgRdd))).map(v => SMS("?", v))
-  val msgTable: DataFrame = msgVector
+                                tokenize (msgRdd))).map(v => SMS("?", v)).toDF
+  val msgTable: H2OFrame = msgVector
   msgTable.remove(0) // remove first column
   val prediction = dlModel.score(msgTable)
   //println(prediction)

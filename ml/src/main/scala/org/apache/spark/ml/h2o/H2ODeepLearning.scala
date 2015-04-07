@@ -6,7 +6,8 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.{Estimator, Model}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.param.{Param,Params}
-import org.apache.spark.sql.{SchemaRDD, StructType}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.types.StructType
 
 /**
  * Deep learning ML component.
@@ -17,16 +18,16 @@ class H2ODeepLearningModel(
                           model: DeepLearningModel)
   extends Model[H2ODeepLearningModel] {
 
-  override def transform(dataset: SchemaRDD, paramMap: ParamMap): SchemaRDD = ???
+  override def transform(dataset: DataFrame, paramMap: ParamMap): DataFrame = ???
 
-  override private[ml] def transformSchema(schema: StructType, paramMap: ParamMap): StructType = ???
+  override def transformSchema(schema: StructType, paramMap: ParamMap): StructType = ???
 }
 
 class H2ODeepLearning()
                      (implicit hc: H2OContext)
   extends Estimator[H2ODeepLearningModel] with HasDeepLearningParams {
 
-  override def fit(dataset: SchemaRDD, paramMap: ParamMap): H2ODeepLearningModel = {
+  override def fit(dataset: DataFrame, paramMap: ParamMap): H2ODeepLearningModel = {
     // Verify parameters - useless here
     transformSchema(dataset.schema, paramMap, logging = true)
     import hc._
@@ -39,7 +40,7 @@ class H2ODeepLearning()
     dlm
   }
 
-  override private[ml] def transformSchema(schema: StructType, paramMap: ParamMap): StructType = ???
+  override def transformSchema(schema: StructType, paramMap: ParamMap): StructType = ???
 }
 
 trait HasDeepLearningParams extends Params {

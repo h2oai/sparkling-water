@@ -17,7 +17,7 @@
 
 package org.apache.spark.rdd
 
-import org.apache.spark.h2o.{DataFrame, H2OContext}
+import org.apache.spark.h2o.{H2OFrame, H2OContext}
 import water.{Key, DKV}
 import water.fvec.{Chunk, Frame}
 
@@ -28,9 +28,9 @@ private[rdd] trait H2ORDDLike {
   /** Context for this RDD */
   @transient val h2oContext : H2OContext
   /** Underlying DataFrame */
-  @transient val frame: DataFrame
+  @transient val frame: H2OFrame
 
-  /** Cache frame key to get DataFrame from the K/V store */
+  /** Cache frame key to get H2OFrame from the K/V store */
   // FIXME: we should be able to use water.Key here
   val keyName: String = frame._key.toString
 

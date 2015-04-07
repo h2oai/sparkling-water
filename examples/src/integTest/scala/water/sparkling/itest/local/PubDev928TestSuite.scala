@@ -2,18 +2,16 @@ package water.sparkling.itest.local
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import org.apache.spark.SparkContext
 import org.apache.spark.examples.h2o.Airlines
 import org.apache.spark.examples.h2o.DemoUtils._
-import org.apache.spark.h2o.{DataFrame, H2OContext}
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.feature.{Tokenizer, HashingTF}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.fvec.Vec
+import water.fvec.H2OFrame
 import water.sparkling.itest.{LocalTest, SparkITest}
 
 /**
@@ -41,17 +39,17 @@ object PubDev928Test {
     val h2oContext = new H2OContext(sc).start()
     import h2oContext._
     val sqlContext = new SQLContext(sc)
-    import sqlContext._
+    import sqlContext.implicits._
 
-    val airlinesData = new DataFrame(new java.io.File("examples/smalldata/allyears2k_headers.csv.gz"))
+    val airlinesData = new H2OFrame(new java.io.File("examples/smalldata/allyears2k_headers.csv.gz"))
 
     val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
-    airlinesTable.registerTempTable("airlinesTable")
+    airlinesTable.toDF.registerTempTable("airlinesTable")
 
     val query = "SELECT * FROM airlinesTable WHERE Dest LIKE 'SFO'"
-    val result = sql(query) // Using a registered context and table
+    val result: H2OFrame = sqlContext.sql(query) // Using a registered context and table
 
-    val train: DataFrame = result( 'Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
+    val train: H2OFrame = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
       'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
       'Distance, 'IsDepDelayed )
     //train.replace(train.numCols()-1, train.lastVec().toEnum)
@@ -65,7 +63,7 @@ object PubDev928Test {
     val dlModel = dl.trainModel.get
 
     // THIS WILL FAIL
-    val testFrame : DataFrame = result
+    val testFrame : H2OFrame = result
     // Verify that testFrame has at least on chunk with 0-rows
     val av = testFrame.anyVec();
     assert( (0 until av.nChunks()).exists(idx => av.chunkForChunkIdx(idx).len() == 0), "At least on chunk with 0-rows has to exist!")

@@ -18,7 +18,7 @@
 package org.apache.spark.rdd
 
 
-import org.apache.spark.h2o.{DataFrame, H2OContext, ReflectionUtils}
+import org.apache.spark.h2o.{H2OFrame, H2OContext, ReflectionUtils}
 import org.apache.spark.{Partition, TaskContext}
 import water.parser.ValueString
 
@@ -26,23 +26,23 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
- * Convert DataFrame into an RDD (lazily)
+ * Convert H2OFrame into an RDD (lazily)
  */
 
 private[spark]
 class H2ORDD[A <: Product: TypeTag: ClassTag] private (@transient val h2oContext: H2OContext,
-                                                       @transient val frame: DataFrame,
+                                                       @transient val frame: H2OFrame,
                                                        val colNames: Array[String])
   extends RDD[A](h2oContext.sparkContext, Nil) with H2ORDDLike {
 
   // Get column names before building an RDD
-  def this(h2oContext: H2OContext, fr : DataFrame ) = this(h2oContext,fr,ReflectionUtils.names[A])
-  // Check that DataFrame & given Scala type are compatible
+  def this(h2oContext: H2OContext, fr : H2OFrame ) = this(h2oContext,fr,ReflectionUtils.names[A])
+  // Check that H2OFrame & given Scala type are compatible
   if (colNames.length > 1) {
     colNames.foreach { name =>
       if (frame.find(name) == -1) {
         throw new IllegalArgumentException("Scala type has field " + name +
-          " but DataFrame does not have a matching column; has " + frame.names().mkString(","))
+          " but H2OFrame does not have a matching column; has " + frame.names().mkString(","))
       }
     }
   }

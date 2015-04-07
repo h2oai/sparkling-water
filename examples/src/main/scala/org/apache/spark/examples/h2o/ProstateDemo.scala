@@ -21,7 +21,7 @@ import hex.kmeans.KMeansModel.KMeansParameters
 import hex.kmeans.{KMeans, KMeansModel}
 import org.apache.spark.{SparkContext, SparkFiles}
 import org.apache.spark.examples.h2o.DemoUtils.{configure,addFiles}
-import org.apache.spark.h2o.{DataFrame, H2OContext}
+import org.apache.spark.h2o.{H2OFrame, H2OContext}
 import org.apache.spark.sql.SQLContext
 import water._
 
@@ -53,12 +53,12 @@ object ProstateDemo {
 
     // Convert to SQL type RDD
     val sqlContext = new SQLContext(sc)
-    import sqlContext._ // import implicit conversions
-    table.registerTempTable("prostate_table")
+    import sqlContext.implicits._ // import implicit conversions
+    table.toDF.registerTempTable("prostate_table")
 
     // Invoke query on data; select a subsample
     val query = "SELECT * FROM prostate_table WHERE CAPSULE=1"
-    val result = sql(query) // Using a registered context and tables
+    val result = sqlContext.sql(query) // Using a registered context and tables
 
     // Build a KMeans model, setting model parameters via a Properties
     val model = runKmeans(result)
@@ -69,7 +69,7 @@ object ProstateDemo {
     sc.stop()
   }
 
-  private def runKmeans[T](trainDataFrame: DataFrame): KMeansModel = {
+  private def runKmeans[T](trainDataFrame: H2OFrame): KMeansModel = {
     val params = new KMeansParameters
     params._train = trainDataFrame._key
     params._k = 3

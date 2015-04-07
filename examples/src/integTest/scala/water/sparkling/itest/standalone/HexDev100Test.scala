@@ -2,7 +2,7 @@ package water.sparkling.itest.standalone
 
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -40,15 +40,14 @@ object HexDev100Test {
     // Import all year airlines into H2O
     val path = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines_all.csv"
     val uri = new java.net.URI(path)
-    val airlinesData = new DataFrame(uri)
+    val airlinesData = new H2OFrame(uri)
 
     // Pass into Spark to drop unused columns
     implicit val sqlContext = new SQLContext(sc)
-    val airlinesSchemaRDD = asSchemaRDD(airlinesData)
-    airlinesSchemaRDD.registerTempTable("AirlinesDataTable")
+    val airlinesDataFrame = asDataFrame(airlinesData)
+    airlinesDataFrame.registerTempTable("AirlinesDataTable")
     // Drop all columns except "Year", "Month", "DayOfWeek", "Origin", "Dest", "UniqueCarrier", "Distance", "FlightNum", "IsDepDelayed"
-    import sqlContext._
-    val airlinesTable = sql(
+    val airlinesTable = sqlContext.sql(
           """SELECT
             |f.Year, f.Month, f.DayOfWeek,
             |f.Origin, f.Dest, f.UniqueCarrier,
@@ -72,9 +71,9 @@ object HexDev100Test {
     val predDLFromModel = asRDD[DoubleHolder](predDLH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
     // Run GLM to produce model classifying delayed flights
-    import hex.glm.GLMModel.GLMParameters.Family
     import hex.glm.GLM
     import hex.glm.GLMModel.GLMParameters
+    import hex.glm.GLMModel.GLMParameters.Family
     val glmParams = new GLMParameters(Family.binomial)
     glmParams._train = airlinesTable
     glmParams._response_column = 'IsDepDelayed
@@ -86,7 +85,6 @@ object HexDev100Test {
     val predGLMH2OFrame = glmModel.score(airlinesTable)('predict)
     val predGLMFromModel = asRDD[DoubleHolder](predGLMH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
-    
     // Use GBM to produce model classifying delayed flights
     import hex.tree.gbm.GBM
     import hex.tree.gbm.GBMModel.GBMParameters

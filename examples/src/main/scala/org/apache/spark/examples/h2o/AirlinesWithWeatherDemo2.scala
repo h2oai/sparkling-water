@@ -2,14 +2,14 @@ package org.apache.spark.examples.h2o
 
 import java.io.File
 
+import hex.FrameSplitter
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
-import hex.{FrameSplitter, SplitFrame}
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure, residualPlotRCode}
-import org.apache.spark.h2o.{DataFrame, DoubleHolder, H2OContext}
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
@@ -37,7 +37,7 @@ object AirlinesWithWeatherDemo2 {
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val airlinesData = new DataFrame(new File(SparkFiles.get("year2005.csv.gz")))
+    val airlinesData = new H2OFrame(new File(SparkFiles.get("year2005.csv.gz")))
 
     val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
     // Select flights only to ORD
@@ -47,14 +47,14 @@ object AirlinesWithWeatherDemo2 {
     println(s"\nFlights to ORD: ${flightsToORD.count}\n")
 
     implicit val sqlContext = new SQLContext(sc)
-    import sqlContext._ // import implicit conversions
-    flightsToORD.registerTempTable("FlightsToORD")
-    weatherTable.registerTempTable("WeatherORD")
+    import sqlContext.implicits._ // import implicit conversions
+    flightsToORD.toDF.registerTempTable("FlightsToORD")
+    weatherTable.toDF.registerTempTable("WeatherORD")
 
     //
     // -- Join both tables and select interesting columns
     //
-    val joinedTable = sql(
+    val joinedTable = sqlContext.sql(
       """SELECT
         |f.Year,f.Month,f.DayofMonth,
         |f.CRSDepTime,f.CRSArrTime,f.CRSElapsedTime,
@@ -71,13 +71,13 @@ object AirlinesWithWeatherDemo2 {
     // Split data into 3 tables - train/validation/test
     //
     // Instead of using RDD API we will directly split H2O Frame
-    val joinedDataFrame:DataFrame = joinedTable // Invoke implicit transformation
+    val joinedH2OFrame:H2OFrame = joinedTable // Invoke implicit transformation
     // Transform date related columns to enums
-    for( i <- 0 to 2) joinedDataFrame.replace(i, joinedDataFrame.vec(i).toEnum)
+    for( i <- 0 to 2) joinedH2OFrame.replace(i, joinedH2OFrame.vec(i).toEnum)
 
     //
     // Use low-level task to split the frame
-    val sf = new FrameSplitter(joinedDataFrame, Array(.7, .2), Array("train", "valid","test").map(Key.make(_)), null)
+    val sf = new FrameSplitter(joinedH2OFrame, Array(.7, .2), Array("train", "valid","test").map(Key.make(_)), null)
     water.H2O.submitTask(sf)
     val splits = sf.getResult
 
@@ -102,7 +102,7 @@ object AirlinesWithWeatherDemo2 {
     val dlModel = dl.trainModel.get
 
     val dlPredictTable = dlModel.score(testTable)('predict)
-    val predictionsFromDlModel = asSchemaRDD(dlPredictTable).collect
+    val predictionsFromDlModel = asDataFrame(dlPredictTable).collect
                                 .map(row => if (row.isNullAt(0)) Double.NaN else row(0))
 
     println(predictionsFromDlModel.length)

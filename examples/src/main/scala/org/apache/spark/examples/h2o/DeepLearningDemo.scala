@@ -5,7 +5,7 @@ import java.io.File
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure}
-import org.apache.spark.h2o.{DataFrame, DoubleHolder, H2OContext}
+import org.apache.spark.h2o.{H2OFrame, DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, SparkFiles}
@@ -26,7 +26,7 @@ object DeepLearningDemo {
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val airlinesData = new DataFrame(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
+    val airlinesData = new H2OFrame(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
 
     //
     // Use H2O to RDD transformation
@@ -40,13 +40,13 @@ object DeepLearningDemo {
     //
 
     val sqlContext = new SQLContext(sc)
-    import sqlContext._ // import implicit conversions
-    airlinesTable.registerTempTable("airlinesTable")
+    import sqlContext.implicits._ // import implicit conversions
+    airlinesTable.toDF.registerTempTable("airlinesTable")
 
     // Select only interesting columns and flights with destination in SFO
     val query = "SELECT * FROM airlinesTable WHERE Dest LIKE 'SFO'"
-    val result = sql(query) // Using a registered context and tables
-    println(s"\n===> Number of flights with destination in SFO: ${result.count()}\n")
+    val result : H2OFrame = sqlContext.sql(query) // Using a registered context and tables
+    println(s"\n===> Number of flights with destination in SFO: ${result.numRows()}\n")
 
     //
     // Run Deep Learning
@@ -54,7 +54,7 @@ object DeepLearningDemo {
 
     println("\n====> Running DeepLearning on the result of SQL query\n")
     // Training data
-    val train: DataFrame = result( 'Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
+    val train = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
       'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
       'Distance, 'IsDepDelayed )
     train.replace(train.numCols()-1, train.lastVec().toEnum)

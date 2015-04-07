@@ -22,15 +22,15 @@
 - [Running Sparkling Water](#RunSW)
   - [Starting H2O Services](#StartH2O)
   - [Memory Allocation](#MemorySetup)
-  - [Converting DataFrames into RDD](#ConvertDF)
+  - [Converting H2OFrame into RDD](#ConvertDF)
     - [Example](#Example)
-  - [Converting DataFrames into SchemaRDD](#ConvertSchema)
+  - [Converting H2OFrame into DataFrame](#ConvertSchema)
     - [Example](#Example2)
-  - [Converting RDD into DataFrames](#ConvertRDD)
+  - [Converting RDD into H2OFrame](#ConvertRDD)
     - [Example](#Example3)
-  - [Converting SchemaRDD into DataFrame](#ConvertSchematoDF)
+  - [Converting DataFrame into H2OFrame](#ConvertSchematoDF)
     - [Example](#Example4)
-  - [Creating DataFrames from an existing key](#CreateDF)
+  - [Creating H2OFrame from an existing key](#CreateDF)
   - [Calling H2O Algorithms](#CallAlgos)
   - [Running Unit Tests](#UnitTest)
 - [Integration Tests](#IntegTest)
@@ -88,8 +88,8 @@ algorithms into the Spark platform, enabling:
 <a name="DataSource"></a> 
 ### Supported Data Sources
 Currently, Sparkling Water can use the following data source types:
- - standard RDD API to load data and transform them into DataFrame
- - H2O API to load data directly into DataFrame from:
+ - standard RDD API to load data and transform them into H2OFrame
+ - H2O API to load data directly into H2OFrame from:
    - local file(s)
    - HDFS file(s)
    - S3 file(s)
@@ -107,13 +107,13 @@ Sparkling Water can read data stored in the following formats:
 ---
 <a name="DataShare"></a>
 ### Data Sharing
-Sparkling Water enables transformation between different types of RDDs and H2O's DataFrame, and vice versa.
+Sparkling Water enables transformation between different types of RDDs and H2O's H2OFrame, and vice versa.
 
  ![Data Sharing](images/DataShare.png)
 
-When converting from DataFrame to RDD, a wrapper is created around the H2O DataFrame to provide an RDD-like API. In this case, no data is duplicated; instead, the data is served directly from then underlying DataFrame.
+When converting from H2OFrame to RDD, a wrapper is created around the H2O H2OFrame to provide an RDD-like API. In this case, no data is duplicated; instead, the data is served directly from then underlying H2OFrame.
 
-Converting in the opposite direction (from RDD to DataFrame) introduces data duplication, since it transfers data from RDD storage into DataFrame. However, data stored in DataFrame is heavily compressed. 
+Converting in the opposite direction (from RDD to H2OFrame) introduces data duplication, since it transfers data from RDD storage into H2OFrame. However, data stored in H2OFrame is heavily compressed. 
 
 TODO: estimation of overhead
 
@@ -133,9 +133,9 @@ The Sparkling Water provides following primitives, which are the basic classes u
 
 | Concept        | Implementation class              | Description |
 |----------------|-----------------------------------|-------------|
-| H2O context    | `org.apache.spark.h2o.H2OContext` | H2O context that holds H2O state and provides primitives to transfer RDD into DataFrame and vice versa. It follows design principles of Spark primitives such as `SparkContext` or `SQLContext` |
+| H2O context    | `org.apache.spark.h2o.H2OContext` | H2O context that holds H2O state and provides primitives to transfer RDD into H2OFrame and vice versa. It follows design principles of Spark primitives such as `SparkContext` or `SQLContext` |
 | H2O entry point| `water.H2O`                       | Represents the entry point for accessing H2O services. It holds information about the actual H2O cluster, including a list of nodes and the status of distributed K/V datastore. |
-| H2O DataFrame  | `water.fvec.DataFrame`            | DataFrame is the H2O data structure that represents a table of values. The table is column-based and provides column and row accessors. |
+| H2O H2OFrame  | `water.fvec.H2OFrame`            | H2OFrame is the H2O data structure that represents a table of values. The table is column-based and provides column and row accessors. |
 | H2O Algorithms | package `hex`                     | Represents the H2O machine learning algorithms library, including DeepLearning, GBM, RandomForest. |
  
 
@@ -256,36 +256,36 @@ H2O resides in the same executor JVM as Spark. The memory provided for H2O is co
 
 ---
 <a name="ConvertDF"></a>
-### Converting DataFrames into RDD[T]
-The `H2OContext` class provides the explicit conversion, `asRDD`, which creates an RDD-like wrapper around the  provided H2O DataFrame:
+### Converting H2OFrame into RDD[T]
+The `H2OContext` class provides the explicit conversion, `asRDD`, which creates an RDD-like wrapper around the provided H2O's H2OFrame:
 ```scala
-def asRDD[A <: Product: TypeTag: ClassTag](fr : DataFrame) : RDD[A]
+def asRDD[A <: Product: TypeTag: ClassTag](fr : H2OFrame) : RDD[A]
 ```
 
 The call expects the type `A` to create a correctly-typed RDD. 
 The conversion requires type `A` to be bound by `Product` interface.
-The relationship between the columns of DataFrame and the attributes of class `A` is based on name matching.
+The relationship between the columns of H2OFrame and the attributes of class `A` is based on name matching.
 
 <a name="Example"></a>
 #### Example
 ```scala
-val df: DataFrame = ...
+val df: H2OFrame = ...
 val rdd = asRDD[Weather](df)
 
 ```
 ---
 
 <a name="ConvertSchema"></a>
-### Converting DataFrames into SchemaRDD
-The `H2OContext` class provides the explicit conversion, `asSchemaRDD`, which creates a SchemaRDD-like wrapper
-around the provided H2O DataFrame. Technically, it provides the `RDD[sql.Row]` RDD API:
+### Converting H2OFrame into DataFrame
+The `H2OContext` class provides the explicit conversion, `asDataFrame`, which creates a DataFrame-like wrapper
+around the provided H2O H2OFrame. Technically, it provides the `RDD[sql.Row]` RDD API:
 ```scala
-def asSchemaRDD(fr : DataFrame)(implicit sqlContext: SQLContext) : SchemaRDD
+def asDataFrame(fr : H2OFrame)(implicit sqlContext: SQLContext) : DataFrame
 ```
 
-This call does not require any type of parameters, but since it creates `SchemaRDD` instances, it requires access to an instance of `SQLContext`. In this case, the instance is provided as an implicit parameter of the call. The parameter can be passed in two ways: as an explicit parameter or by introducing an implicit variable into the current context.
+This call does not require any type of parameters, but since it creates `DataFrame` instances, it requires access to an instance of `SQLContext`. In this case, the instance is provided as an implicit parameter of the call. The parameter can be passed in two ways: as an explicit parameter or by introducing an implicit variable into the current context.
 
-The schema of the created instance of the SchemaRDD is derived from the column name and the types of DataFrames specified.
+The schema of the created instance of the `DataFrame` is derived from the column name and the types of `H2OFrame` specified.
 
 <a name="Example2"></a>
 #### Example
@@ -293,21 +293,21 @@ The schema of the created instance of the SchemaRDD is derived from the column n
 Using an explicit parameter in the call to pass sqlContext:
 ```scala
 val sqlContext = new SQLContext(sc)
-val schemaRDD = asSchemaRDD(dataFrame)(sqlContext)
+val schemaRDD = asDataFrame(h2oFrame)(sqlContext)
 ```
 or as implicit variable provided by actual environment:
 ```scala
 implicit val sqlContext = new SQLContext(sc)
-val schemaRDD = asSchemaRDD(dataFrame)
+val schemaRDD = asDataFrame(h2oFrame)
 ```
 ---
 
 <a name="ConvertRDD"></a>
-### Converting RDD[T] into DataFrames
-The `H2OContext` provides **implicit** conversion from the specified `RDD[A]` to DataFrame. As with conversion in the opposite direction, the type `A` has to satisfy the upper bound expressed by the type `Product`. The conversion will create a new DataFrame, transfer data from the specified RDD, and save it to the H2O K/V data store.
+### Converting RDD[T] into H2OFrame
+The `H2OContext` provides **implicit** conversion from the specified `RDD[A]` to `H2OFrame`. As with conversion in the opposite direction, the type `A` has to satisfy the upper bound expressed by the type `Product`. The conversion will create a new `H2OFrame`, transfer data from the specified RDD, and save it to the H2O K/V data store.
 
 ```scala
-implicit def createDataFrame[A <: Product : TypeTag](rdd : RDD[A]) : DataFrame
+implicit def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A]) : H2OFrame
 ```
 
 <a name="Example3"></a>
@@ -315,38 +315,38 @@ implicit def createDataFrame[A <: Product : TypeTag](rdd : RDD[A]) : DataFrame
 ```scala
 val rdd: RDD[Weather] = ...
 import h2oContext._
-val df: DataFrame = rdd // implicit call of H2OContext.createDataFrame[Weather](rdd) is used 
+val df: H2OFrame = rdd // implicit call of H2OContext.asH2OFrame[Weather](rdd) is used 
 ```
 
 ---
 <a name="ConvertSchematoDF"></a>
-### Converting SchemaRDD into DataFrame
-The `H2OContext` provides **implicit** conversion from the specified `SchemaRDD` to DataFrame. The conversion will create a new DataFrame, transfer data from the specified RDD, and save it to the H2O K/V data store.
+### Converting DataFrame into H2OFrame
+The `H2OContext` provides **implicit** conversion from the specified `DataFrame` to `H2OFrame`. The conversion will create a new `H2OFrame`, transfer data from the specified `RDD`, and save it to the H2O K/V data store.
 
 ```scala
-implicit def createDataFrame(rdd : SchemaRDD) : DataFrame
+implicit def asH2OFrame(rdd : DataFrame) : H2OFrame
 ```
 
 <a name="Example4"></a>
 #### Example
 ```scala
-val srdd: SchemaRDD = ...
+val srdd: DataFrame = ...
 import h2oContext._
-val df: DataFrame = srdd // implicit call of H2OContext.createDataFrame(srdd) is used 
+val df: H2OFrame = srdd // implicit call of H2OContext.asH2OFrame(srdd) is used 
 ```
 ---
 
 <a name="CreateDF"></a>
-### Creating DataFrames from an Existing Key
+### Creating H2OFrame from an existing Key
 
-If the H2O cluster already contains a loaded DataFrame referenced by the key `train.hex`, it is possible
-to reference it from Sparkling Water by creating a proxy `DataFrame` instance using the key as the input:
+If the H2O cluster already contains a loaded `H2OFrame` referenced by the key `train.hex`, it is possible
+to reference it from Sparkling Water by creating a proxy `H2OFrame` instance using the key as the input:
 ```scala
-val trainDF = new DataFrame("train.hex")
+val trainHF = new H2OFrame("train.hex")
 ```
 
-%%### Type mapping between H2O DataTypes and Spark SchemaRDD types
-%%TBD
+### Type mapping between H2O H2OFrame types and Spark DataFrame types
+TBD
 
 ---
 
@@ -356,7 +356,7 @@ val trainDF = new DataFrame("train.hex")
  1. Create the parameters object that holds references to input data and parameters specific for the algorithm:
  ```scala
  val train: RDD = ...
- val valid: DataFrame = ...
+ val valid: H2OFrame = ...
  
  val gbmParams = new GBMParameters()
  gbmParams._train = train
@@ -376,17 +376,20 @@ val trainDF = new DataFrame("train.hex")
 --- 
 <a name="UnitTest"></a>
 ## Running Unit Tests
-JVM options -Dspark.testing=true -Dspark.test.home=/Users/michal/Tmp/spark/spark-1.1.0-bin-cdh4/
+To invoke tests, the following JVM options are required:
+  - `-Dspark.testing=true`
+  - `-Dspark.test.home=/Users/michal/Tmp/spark/spark-1.1.0-bin-cdh4/`
 
-%%## Overhead Estimation
-%%TBD
+## Overhead Estimation
+TBD
 
-%%## Application Development
+## Application Development
+You can find Sparkling Water self-contained application skeleton in [Droplet repository](https://github.com/h2oai/h2o-droplets/tree/master/sparkling-water-droplet).
 
-%%## Sparkling Water configuration
+## Sparkling Water configuration
 
-%%TODO: used datasources, how data is moved to spark
-%%TODO: platform testing - mesos, SIMR
+ - TODO: used datasources, how data is moved to spark
+ - TODO: platform testing - mesos, SIMR
 
 
 ---
@@ -411,12 +414,12 @@ JVM options -Dspark.testing=true -Dspark.test.home=/Users/michal/Tmp/spark/spark
    * local disk
    * HDFS
    * S3N
- 3. Convert from `RDD[T]` to `DataFrame`
- 4. Convert from `SchemaRDD` to `DataFrame`
- 5. Convert from `DataFrame` to `RDD` 
- 6. Convert from `DataFrame` to `SchemaRDD`
+ 3. Convert from `RDD[T]` to `H2OFrame`
+ 4. Convert from `DataFrame` to `H2OFrame`
+ 5. Convert from `H2OFrame` to `RDD` 
+ 6. Convert from `H2OFrame` to `DataFrame`
  7. Integrate with H2O Algorithms using RDD as algorithm input
- 8. Integrate with MLlib Algorithms using DataFrame as algorithm input (KMeans)
+ 8. Integrate with MLlib Algorithms using H2OFrame as algorithm input (KMeans)
  9. Integrate with MLlib pipelines (TBD)
 
 ---
@@ -444,21 +447,21 @@ Spark 1.2.0 or later is required.
       ```scala
       val sc = new SparkContext(conf)
       import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
-   import java.io.File
-   val df: DataFrame = new DataFrame(new File("/datasets/allyears2k_headers.csv.gz"))
-   ```
+      val h2oContext = new H2OContext(sc).start()
+      import java.io.File
+      val df: H2OFrame = new H2OFrame(new File("examples/smalldata/allyears2k_headers.csv.gz"))
+      ```
      > Note: The file must be present on all nodes.
      
    * From HDFS:
  
    ```scala
   val sc = new SparkContext(conf)
-   import org.apache.spark.h2o._
+  import org.apache.spark.h2o._
   val h2oContext = new H2OContext(sc).start()
   val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
-   val uri = new java.net.URI(path)
-  val airlinesData = new DataFrame(uri)
+  val uri = new java.net.URI(path)
+  val airlinesHF = new H2OFrame(uri)
    ```
    * From S3N: 
   
@@ -466,21 +469,21 @@ Spark 1.2.0 or later is required.
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
   val h2oContext = new H2OContext(sc).start()
-   val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
-   val uri = new java.net.URI(path)
-  val airlinesData = new DataFrame(uri)
+  val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
+  val uri = new java.net.URI(path)
+  val airlinesHF = new H2OFrame(uri)
    ```
-       > Spark/H2O needs to know the AWS credentials specified in `core-site.xml`. The credentials are passed via        `HADOOP_CONF_DIR` that points to a configuration directory with `core-site.xml`.
-3. Convert from `RDD[T]` to `DataFrame`:
+   > Spark/H2O needs to know the AWS credentials specified in `core-site.xml`. The credentials are passed via        `HADOOP_CONF_DIR` that points to a configuration directory with `core-site.xml`.
+3. Convert from `RDD[T]` to `H2oFrame`:
 
   ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
   val h2oContext = new H2OContext(sc).start()
   val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
-  val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)
+  val hf: H2OFrame = h2oContext.asH2OFrame(rdd)
   ```
-4. Convert from `SchemaRDD` to `DataFrame`:
+4. Convert from `DataFrame` to `H2OFrame`:
 
   ```scala
   val sc = new SparkContext(conf)
@@ -488,21 +491,21 @@ Spark 1.2.0 or later is required.
   val h2oContext = new H2OContext(sc).start()
   import org.apache.spark.sql._
   val sqlContext = new SQLContext(sc)
-  import sqlContext._
-  val srdd:SchemaRDD = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
-  val dataFrame = h2oContext.toDataFrame(srdd)
+  import sqlContext.implicits._
+  val df: DataFrame = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v))).toDF
+  val hf = h2oContext.asH2OFrame(df)
   ```
-5. Convert from `DataFrame` to `RDD[T]`:
+5. Convert from `H2OFrame` to `RDD[T]`:
 
   ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
   val h2oContext = new H2OContext(sc).start()
-  val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
-  val dataFrame:DataFrame = h2oContext.createDataFrame(rdd)  
-  val newRdd = h2oContext.asRDD[IntHolder](dataFrame)
+  val rdd = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
+  val hf: H2OFrame = h2oContext.asH2OFrame(rdd)
+  val newRdd = h2oContext.asRDD[IntHolder](hf)
   ```
-6. Convert from `DataFrame` to `SchemaRDD`:
+6. Convert from `H2OFrame` to `DataFrame`:
 
   ```scala
   val sc = new SparkContext(conf)
@@ -510,10 +513,10 @@ Spark 1.2.0 or later is required.
   val h2oContext = new H2OContext(sc).start()
   import org.apache.spark.sql._
   val sqlContext = new SQLContext(sc)
-  import sqlContext._
-  val srdd:SchemaRDD = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
-  val dataFrame = h2oContext.toDataFrame(srdd)
-  val newRdd = h2oContext.asSchemaRDD(dataFrame)(sqlContext)
+  import sqlContext.implicits._
+  val df: DataFrame = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v))).toDF
+  val hf = h2oContext.asH2OFrame(df)
+  val newRdd = h2oContext.asDataFrame(hf)(sqlContext)
   ``` 
 7. Integrate with H2O Algorithms using RDD as algorithm input:
 
@@ -522,13 +525,13 @@ Spark 1.2.0 or later is required.
   import org.apache.spark.h2o._
   import org.apache.spark.examples.h2o._
   val h2oContext = new H2OContext(sc).start()
-  val path = "/tmp/prostate.csv"
+  val path = "examples/smalldata/prostate.csv"
   val prostateText = sc.textFile(path)
   val prostateRDD = prostateText.map(_.split(",")).map(row => ProstateParse(row))
   import hex.tree.gbm.GBM
   import hex.tree.gbm.GBMModel.GBMParameters
   import h2oContext._
-  val train:DataFrame = prostateRDD
+  val train: H2OFrame = prostateRDD
   val gbmParams = new GBMParameters()
   gbmParams._train = train
   gbmParams._response_column = 'CAPSULE
@@ -543,9 +546,9 @@ Spark 1.2.0 or later is required.
   import org.apache.spark.examples.h2o._
   import java.io.File
   val h2oContext = new H2OContext(sc).start()
-  val path = "/tmp/prostate.csv"
-  val prostateDF = new DataFrame(new File(path))
-  val prostateRDD = h2oContext.asRDD[Prostate](prostateDF)
+  val path = "examples/smalldata/prostate.csv"
+  val prostateHF = new H2OFrame(new File(path))
+  val prostateRDD = h2oContext.asRDD[Prostate](prostateHF)
   import org.apache.spark.mllib.clustering.KMeans
   import org.apache.spark.mllib.linalg.Vectors
   val train = prostateRDD.map( v => Vectors.dense(v.CAPSULE.get*1.0, v.AGE.get*1.0, v.DPROS.get*1.0,v.DCAPS.get*1.0, v.GLEASON.get*1.0))

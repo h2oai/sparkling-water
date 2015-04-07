@@ -6,7 +6,7 @@ import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure}
-import org.apache.spark.h2o.{DataFrame, DoubleHolder, H2OContext}
+import org.apache.spark.h2o.{H2OFrame, DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
@@ -34,7 +34,7 @@ object AirlinesWithWeatherDemo {
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val airlinesData = new DataFrame(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
+    val airlinesData = new H2OFrame(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
 
     val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
     // Select flights only to ORD
@@ -44,14 +44,14 @@ object AirlinesWithWeatherDemo {
     println(s"\nFlights to ORD: ${flightsToORD.count}\n")
 
     val sqlContext = new SQLContext(sc)
-    import sqlContext._ // import implicit conversions
-    flightsToORD.registerTempTable("FlightsToORD")
-    weatherTable.registerTempTable("WeatherORD")
+    import sqlContext.implicits._ // import implicit conversions
+    flightsToORD.toDF.registerTempTable("FlightsToORD")
+    weatherTable.toDF.registerTempTable("WeatherORD")
 
     //
     // -- Join both tables and select interesting columns
     //
-    val bigTable = sql(
+    val bigTable = sqlContext.sql(
       """SELECT
         |f.Year,f.Month,f.DayofMonth,
         |f.CRSDepTime,f.CRSArrTime,f.CRSElapsedTime,
@@ -64,7 +64,7 @@ object AirlinesWithWeatherDemo {
         |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day
         |WHERE f.ArrDelay IS NOT NULL""".stripMargin)
 
-    val train: DataFrame = bigTable .repartition(4) // This is trick to handle PUBDEV-928 - DeepLearning is failing on empty chunks
+    val train: H2OFrame = bigTable .repartition(4) // This is trick to handle PUBDEV-928 - DeepLearning is failing on empty chunks
 
     //
     // -- Run DeepLearning

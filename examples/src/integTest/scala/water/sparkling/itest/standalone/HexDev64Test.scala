@@ -39,7 +39,7 @@ object HexDev64Test {
     val path = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines_all.csv"
     val timer1 = new water.util.Timer
     val d = new java.net.URI(path)
-    val airlinesData = new DataFrame(d)
+    val airlinesData = new H2OFrame(d)
     val timeToParse = timer1.time/1000
     println("Time it took to parse 116 million airlines = " + timeToParse + "secs")
 
@@ -49,11 +49,11 @@ object HexDev64Test {
 
     val timer2 = new water.util.Timer
     implicit val sqlContext = new SQLContext(sc)
-    val airlinesRDD = asSchemaRDD(airlinesData)(sqlContext)
+    val airlinesDataFrame = asDataFrame(airlinesData)(sqlContext)
     val timeToTransfer = timer2.time/1000
     println("Time it took to convert data to SparkRDD = " + timeToTransfer + "secs")
 
-    assert (airlinesData.numRows == airlinesRDD.count, "Transfer of H2ORDD to SparkRDD completed!")
+    assert (airlinesData.numRows == airlinesDataFrame.count, "Transfer of H2ORDD to SparkRDD completed!")
     // Shutdown Spark
     sc.stop()
     // Shutdown H2O explicitly (at least the driver)

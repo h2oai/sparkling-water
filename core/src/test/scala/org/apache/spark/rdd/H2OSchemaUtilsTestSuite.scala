@@ -1,15 +1,13 @@
 package org.apache.spark.rdd
 
 import org.apache.spark.h2o.H2OSchemaUtils
-import org.apache.spark.h2o.util.SparkTestContext
-import org.apache.spark.sql.api.java.DataType
-import org.apache.spark.sql.catalyst.types.{IntegerType, DoubleType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{IntegerType, DoubleType, StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 /**
- * Set of test for SchemaRDD utilities.
+ * Set of test for various DataFrame's schema-related methods.
  */
 @RunWith(classOf[JUnitRunner])
 class H2OSchemaUtilsTestSuite extends FunSuite {

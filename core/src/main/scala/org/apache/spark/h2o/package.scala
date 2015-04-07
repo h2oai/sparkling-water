@@ -22,7 +22,14 @@ package object h2o {
   type Frame = water.fvec.Frame
   //type Key = water.Key
   type H2O = water.H2O
+
+  /* Cannot be enabled since clashes with Spark DataFrame
+  @deprecated("1.3.0", "Use H2OFrame")
   type DataFrame = water.fvec.H2OFrame
+  */
+  // Alias for H2OFrame
+  type H2OFrame = water.fvec.H2OFrame
+  // Alias for
   type RDD[X] = org.apache.spark.rdd.RDD[X]
 
   case class IntHolder   (result: Option[Int])

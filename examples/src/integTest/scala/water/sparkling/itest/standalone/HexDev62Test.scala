@@ -2,7 +2,7 @@ package water.sparkling.itest.standalone
 
 import org.apache.spark.examples.h2o.AirlinesParse
 import org.apache.spark.h2o._
-import org.apache.spark.sql._
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -47,7 +47,7 @@ object HexDev62Test {
 
     // Convert RDD to H2O Frame
     val timer2 = new water.util.Timer
-    val airlinesData : DataFrame = airlinesRDD
+    val airlinesData : H2OFrame = airlinesRDD
     val timeToH2O = timer2.time/1000
     println("Time it took to transfer a Spark RDD to H2O Frame = " + timeToH2O + "secs")
     

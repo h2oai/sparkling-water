@@ -1,7 +1,7 @@
 package water.sparkling.itest.local
 
 import org.apache.spark.examples.h2o.DemoUtils._
-import org.apache.spark.h2o.{DataFrame, H2OContext}
+import org.apache.spark.h2o.{H2OFrame, H2OContext}
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.feature.{Tokenizer, HashingTF}
 import org.apache.spark.sql.SQLContext
@@ -37,7 +37,7 @@ object PubDev457Test {
     val h2oContext = new H2OContext(sc).start()
     import h2oContext._
     val sqlContext = new SQLContext(sc)
-    import sqlContext._
+    import sqlContext.implicits._
 
     val training = sc.parallelize(Seq(
       LabeledDocument(0L, "a b c d e spark", 1.0),
@@ -54,14 +54,14 @@ object PubDev457Test {
       .setInputCol(tokenizer.getOutputCol)
       .setOutputCol("features")
     val pipeline = new Pipeline().setStages(Array(tokenizer, hashingTF))
-    val model = pipeline.fit(training)
-    val transformed = model.transform(training)
+    val model = pipeline.fit(training.toDF)
+    val transformed = model.transform(training.toDF)
 
-    val transformedDF: DataFrame = transformed
+    val transformedDF: H2OFrame = transformed
     assert (transformedDF.numRows == 4)
     assert (transformedDF.numCols == 1009)
 
-    val transformedFeaturesDF: DataFrame = transformed.select('features)
+    val transformedFeaturesDF: H2OFrame = transformed.select("features")
     assert (transformedFeaturesDF.numRows == 4)
     assert (transformedFeaturesDF.numCols == 1000)
   }
