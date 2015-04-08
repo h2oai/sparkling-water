@@ -63,7 +63,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     dataFrame.delete()
   }
 
-  test("PUBDEV-766 DataFrame[T_ENUM] to SchemaRDD[StringType]") {
+  ignore("PUBDEV-766 DataFrame[T_ENUM] to SchemaRDD[StringType]") {
     import h2oContext._
     val fname: String = "testEnum.hex"
     val colNames: Array[String] = Array("C0")
@@ -171,7 +171,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     dataFrame.delete()
   }
 
-  test("PUBDEV-767 DataFrame[T_NUM(Long)] to SchemaRDD[LongType]") {
+  ignore("PUBDEV-767 DataFrame[T_NUM(Long)] to SchemaRDD[LongType]") {
     import h2oContext._
     val fname: String = "testLong.hex"
     val colNames: Array[String] = Array("C0")
