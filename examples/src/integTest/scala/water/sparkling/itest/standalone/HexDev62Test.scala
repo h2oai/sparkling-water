@@ -38,8 +38,8 @@ object HexDev62Test {
 
     // Import all year airlines into SPARK
     implicit val sqlContext = new SQLContext(sc)
-    val timer1 = new water.util.Timer
     val path = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines_all.csv"
+    val timer1 = new water.util.Timer
     val airlinesRaw = sc.textFile(path)
     val airlinesRDD = airlinesRaw.map(_.split(",")).map(row => AirlinesParse(row)).filter(!_.isWrongRow())
     val timeToParse = timer1.time/1000
@@ -50,7 +50,13 @@ object HexDev62Test {
     val airlinesData : DataFrame = airlinesRDD
     val timeToH2O = timer2.time/1000
     println("Time it took to transfer a Spark RDD to H2O Frame = " + timeToH2O + "secs")
+    
+    // Check H2OFrame is imported correctly
+    assert (airlinesData.numRows == airlinesRDD.count, "Transfer of H2ORDD to SparkRDD completed!")
+    
     sc.stop()
+    // Shutdown H2O explicitly (at least the driver)
+    water.H2O.shutdown()
   }
 }
 
