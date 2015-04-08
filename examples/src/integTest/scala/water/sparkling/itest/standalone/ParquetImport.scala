@@ -1,7 +1,5 @@
 package water.sparkling.itest.standalone
 
-import java.io.File
-
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
@@ -47,9 +45,13 @@ object ParquetImportTest {
     val parquetFile = sqlContext.parquetFile("hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines.parquet")
     parquetFile.registerTempTable("parquetFile")
 
+    // Check Parquet file copies correctly
+    val AllFlights : DataFrame = parquetFile
+    assert (AllFlights.numRows == parquetFile.count, "Transfer of H2ORDD to SparkRDD completed!")
+    
     // Filter SchemaRdd and push to H2O as H2O DataFrame
     val ORDFlights = parquetFile.filter(r => r(17) == "ORD")
-    ORDFlights.count
+    assert (ORDFlights.count == 313943, "Correctly filtered out all ORD flights!")
 
     // Run Deep Learning on H2O Data Frame
     import hex.deeplearning.DeepLearning
@@ -67,6 +69,8 @@ object ParquetImportTest {
     val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
     sc.stop()
+    // Shutdown H2O explicitly (at least the driver)
+    water.H2O.shutdown()
   }
 }
 
