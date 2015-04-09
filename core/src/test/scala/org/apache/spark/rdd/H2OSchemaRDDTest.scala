@@ -84,7 +84,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     dataFrame.delete()
   }
 
-  test("DataFrame[T_TIME] to SchemaRDD[TimeStamp]") {
+  test("DataFrame[T_TIME] to SchemaRDD[TimestampType]") {
     import h2oContext._
     val fname: String = "testTime.hex"
     val colNames: Array[String] = Array("C0")
@@ -236,7 +236,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     dataFrame.delete()
   }
 
-  test("DataFrame[T_UUID] to SchemaRDD[StringType]") {
+  ignore("PUBDEV-771 DataFrame[T_UUID] to SchemaRDD[StringType]") {
     import h2oContext._
     val fname: String = "testUUID.hex"
     val colNames: Array[String] = Array("C0")
@@ -263,7 +263,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     assert (schemaRdd.count == dataFrame.numRows())
     assert (schemaRdd.schema.fields(0) == StructField("C0",StringType,false))
-
+    assert (schemaRdd.take(6)(5)(0) == "6870f256-e145-4d75-adb0-99ccb77d5d3a")
     dataFrame.delete()
   }
 
