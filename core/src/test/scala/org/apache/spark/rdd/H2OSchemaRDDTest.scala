@@ -63,6 +63,25 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     dataFrame.delete()
   }
 
+  // DataFrame to RDD[T] JUnits
+  test("DataFrame[T_NUM] to RDD[Prostate]") {
+    import h2oContext._
+    val dataFrame: DataFrame = new DataFrame(new File("../examples/smalldata/prostate.csv"))
+    assert (dataFrame.vec(0).isNumeric & dataFrame.vec(1).isNumeric & dataFrame.vec(2).isNumeric &
+      dataFrame.vec(3).isNumeric & dataFrame.vec(4).isNumeric & dataFrame.vec(5).isNumeric & dataFrame.vec(6).isNumeric
+      & dataFrame.vec(7).isNumeric & dataFrame.vec(8).isNumeric)
+
+    implicit val sqlContext = new SQLContext(sc)
+    val rdd = asRDD[Prostate](dataFrame)
+
+    assert (rdd.count == dataFrame.numRows())
+    assert (rdd.take(5)(4).productArity == 9)
+    assert (rdd.take(8)(7).AGE.get == 61)
+
+    dataFrame.delete()
+  }
+
+  // DataFrame to SchemaRDD[T] JUnits
   ignore("PUBDEV-766 DataFrame[T_ENUM] to SchemaRDD[StringType]") {
     import h2oContext._
     val fname: String = "testEnum.hex"
@@ -583,3 +602,15 @@ case class ComposedA(a: PrimitiveA, weight: Double)
 case class PrimitiveB(f: Seq[Int])
 
 case class PrimitiveC(f: mllib.linalg.Vector)
+
+case class Prostate(ID      :Option[Long]  ,
+                    CAPSULE :Option[Int]  ,
+                    AGE     :Option[Int]  ,
+                    RACE    :Option[Int]  ,
+                    DPROS   :Option[Int]  ,
+                    DCAPS   :Option[Int]  ,
+                    PSA     :Option[Float],
+                    VOL     :Option[Float],
+                    GLEASON :Option[Int]  ) {
+  def isWrongRow():Boolean = (0 until productArity).map( idx => productElement(idx)).forall(e => e==None)
+}
