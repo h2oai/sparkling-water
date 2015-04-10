@@ -1,5 +1,6 @@
 package water.sparkling.itest.yarn
 
+import hex.Model
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
@@ -7,7 +8,7 @@ import hex.tree.gbm.GBMModel.GBMParameters.Family
 import org.apache.spark.SparkContext
 import org.apache.spark.examples.h2o.DemoUtils.configure
 import org.apache.spark.h2o._
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SchemaRDD, SQLContext}
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTimeZone, MutableDateTime}
@@ -45,6 +46,9 @@ object ChicagoCrimeTest {
   val WEATHER_FILE = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoAllWeather.csv"
   val CENSUS_FILE = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCensus.csv"
   val CRIME_FILE = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCrimes.csv"
+
+  val DATE_PATTERN = "MM/dd/yyyy hh:mm:ss a"
+  val DATETIME_ZONE = "Etc/UTC"
 
   def loadData(datafile: String): DataFrame = new DataFrame(new java.net.URI(datafile))
 
@@ -109,7 +113,7 @@ object ChicagoCrimeTest {
     val crimeWeather = sql(
       """SELECT
         |a.Year, a.Month, a.Day, a.WeekNum, a.HourOfDay, a.Weekend, a.Season, a.WeekDay,
-        |a.IUCR, a.Primary_Type, a.Location_Description,
+        |a.IUCR, a.Primary_Type, a.Location_Description, a.Community_Area, a.District,
         |a.Arrest, a.Domestic, a.Beat, a.Ward, a.FBI_Code,
         |b.minTemp, b.maxTemp, b.meanTemp,
         |c.PERCENT_AGED_UNDER_18_OR_OVER_64, c.PER_CAPITA_INCOME, c.HARDSHIP_INDEX,
@@ -191,6 +195,19 @@ object ChicagoCrimeTest {
         |  test  AUC = ${testMetricsDL.auc.AUC}
       """.stripMargin)
 
+    val crimes = Seq( Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", Some("STREET"),false, 422, 4, 7, 46, 18),
+                      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", Some("RESIDENCE"),false, 923, 9, 14, 63, 11))
+    for (crime <- crimes) {
+      val arrestProbGBM = 100*scoreEvent(crime, gbmModel, censusTable)(sqlContext, h2oContext)
+      val arrestProbDL = 100*scoreEvent(crime, dlModel, censusTable)(sqlContext, h2oContext)
+      println(
+        s"""
+           |Crime: $crime
+           |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
+           |  Probability of arrest best on GBM: ${arrestProbGBM} %
+        """.stripMargin)
+    }
+
     // Shutdown Spark
     sc.stop()
     // Shutdown H2O explicitly (at least the driver)
@@ -198,19 +215,96 @@ object ChicagoCrimeTest {
   }
 
   /**
+   * For given crime and model returns probability of crime.
+   *
+   * @param crime
+   * @param model
+   * @param censusTable
+   * @param sqlContext
+   * @param h2oContext
+   * @return
+   */
+  def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: SchemaRDD)
+                (implicit sqlContext: SQLContext, h2oContext: H2OContext): Float = {
+    import sqlContext._
+    import h2oContext._
+    // Create a single row table
+    val srdd:SchemaRDD = sqlContext.sparkContext.parallelize(Seq(crime))
+    // Join table with census data
+    val row: DataFrame = censusTable.join(srdd, on = Option('Community_Area === 'Community_Area_Number)) //.printSchema
+    val predictTable = model.score(row)
+    val probOfArrest = predictTable.vec("true").at(0)
+
+    probOfArrest.toFloat
+  }
+
+  case class Crime(Year: Short, Month: Byte, Day: Byte, WeekNum: Byte, HourOfDay: Byte,
+                   Weekend:Byte, Season: String, WeekDay: Byte,
+                   IUCR: Short,
+                   Primary_Type: String,
+                   Location_Description: Option[String],
+                   Domestic: String,
+                   Beat: Short,
+                   District: Byte,
+                   Ward: Byte,
+                   Community_Area: Byte,
+                   FBI_Code: Byte,
+                   minTemp: Option[Byte],
+                   maxTemp: Option[Byte],
+                   meanTemp: Option[Byte])
+
+  object Crime {
+     def apply(date:String,
+              iucr: Short,
+              primaryType: String,
+              locationDescr: Option[String],
+              domestic: Boolean,
+              beat: Short,
+              district: Byte,
+              ward: Byte,
+              communityArea: Byte,
+              fbiCode: Byte,
+              minTemp: Option[Byte] = None,
+              maxTemp: Option[Byte] = None,
+              meanTemp: Option[Byte] = None,
+              datePattern: String = "MM/dd/yyyy hh:mm:ss a",
+              dateTimeZone: String = "Etc/UTC"):Crime = {
+      val dtFmt = DateTimeFormat.forPattern(datePattern).withZone(DateTimeZone.forID(dateTimeZone))
+      val mDateTime = new MutableDateTime()
+      dtFmt.parseInto(mDateTime, date, 0)
+      val month = mDateTime.getMonthOfYear.toByte
+      val dayOfWeek = mDateTime.getDayOfWeek
+
+      Crime(mDateTime.getYear.toShort,
+            month,
+            mDateTime.getDayOfMonth.toByte,
+            mDateTime.getWeekOfWeekyear.toByte,
+            mDateTime.getHourOfDay.toByte,
+            if (dayOfWeek == SUNDAY || dayOfWeek == SATURDAY) 1 else 0,
+            SEASONS(getSeason(month)),
+            mDateTime.getDayOfWeek.toByte,
+            iucr, primaryType, locationDescr,
+            if (domestic) "true" else "false" ,
+            beat, district, ward, communityArea, fbiCode,
+            minTemp, maxTemp, meanTemp)
+    }
+  }
+
+
+  /**
    * Adhoc date column refinement.
    *
    * It takes column in format 'MM/dd/yyyy hh:mm:ss a' and refines
    * it into 8 columns: "Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"
    */
-  private class RefineDateColumn(val datePattern: String = "MM/dd/yyyy hh:mm:ss a",
-                                 val dateTimeZone: String = "Etc/UTC" /*"America/Chicago"*/) extends MRTask[RefineDateColumn] {
+  private class RefineDateColumn(val datePattern: String = DATE_PATTERN,
+                                 val dateTimeZone: String = DATETIME_ZONE) extends MRTask[RefineDateColumn] {
     // Entry point
     def doIt(col: Vec): DataFrame = DataFrame(
                     doAll(8, col).outputFrame(
                       Array[String]("Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"),
                       Array[Array[String]](null, null, null, null, null, null,
-                                           Array[String]("Spring", "Summer", "Autumn", "Winter"), null)))
+                                           SEASONS, null)))
 
     override def map(cs: Array[Chunk], ncs: Array[NewChunk]): Unit = {
       // Initialize DataTime convertor (cannot be done in setupLocal since it is not H2O serializable :-/
@@ -245,12 +339,14 @@ object ChicagoCrimeTest {
       }
     }
 
-    private def getSeason(month: Int) =
-      if (month >= MARCH && month <= MAY) 0 // Spring
-      else if (month >= JUNE && month <= AUGUST) 1 // Summer
-      else if (month >= SEPTEMBER && month <= OCTOBER) 2 // Autumn
-      else 3 // Winter
-
     private def addNAs(ncs: Array[NewChunk]): Unit = ncs.foreach(nc => nc.addNA())
   }
+
+  val SEASONS = Array[String]("Spring", "Summer", "Autumn", "Winter")
+  private def getSeason(month: Int) =
+    if (month >= MARCH && month <= MAY) 0 // Spring
+    else if (month >= JUNE && month <= AUGUST) 1 // Summer
+    else if (month >= SEPTEMBER && month <= OCTOBER) 2 // Autumn
+    else 3 // Winter
+
 }
