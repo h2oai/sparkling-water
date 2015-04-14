@@ -1,6 +1,3 @@
-import org.apache.spark.SparkContext
-val sc:SparkContext = null
-
 import org.apache.spark.examples.h2o.{Crime, ChicagoCrimeApp}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext
