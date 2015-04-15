@@ -36,3 +36,65 @@ for (crime <- crimeExamples) {
        |  Probability of arrest best on GBM: ${arrestProbGBM} %
         """.stripMargin)
 }
+
+/*
+// Group by type of crimes
+val q1 = "SELECT Primary_Type, count(*) FROM chicagoCrime GROUP BY Primary_Type"
+val allCrimes = sqlContext.sql(q1).collect // 35 items
+//Filter only successful arrests
+val q2 = "SELECT Primary_Type, count(*) FROM chicagoCrime WHERE Arrest = 'true' GROUP BY Primary_Type"
+val crimesWithArrest = sqlContext.sql(q2).collect
+val crimeTypeToArrest = collection.mutable.Map[String, Long]()
+allCrimes.foreach( c => if (!c.isNullAt(0)) crimeTypeToArrest += ( c.getString(0) -> c.getLong(1) ) )
+import org.apache.spark.sql._
+val numOfAllCrimes = crimesTable.count
+val numOfAllArrests = sqlContext.sql("SELECT * FROM chicagoCrime WHERE Arrest = 'true'").count
+val crimeTypeArrestRate = crimesWithArrest.map(c =>
+  if (!c.isNullAt(0)) {
+    val crimeType = c.getString(0)
+    val count:Long = crimeTypeToArrest.get(crimeType).getOrElse(0)
+    Row(crimeType, c.getLong(1).toDouble/count, c.getLong(1), count, c.getLong(1)/numOfAllArrests.toDouble, c.getLong(1)/count.toDouble, count/numOfAllCrimes.toDouble) } ).map(_.asInstanceOf[Row])
+val schema = StructType(Seq(
+  StructField("CrimeType", StringType, false),
+  StructField("ArrestRate", DoubleType, false),
+  StructField("NumOfArrests", LongType, false),
+  StructField("NumOfCrimes", LongType, false),
+  StructField("ArrestsToAllArrests", DoubleType, false),
+  StructField("ArrestsToAllCrimes", DoubleType, false),
+  StructField("CrimessToCrimes", DoubleType, false)))
+val rowRdd = sc.parallelize(crimeTypeArrestRate).sortBy(x => -x.getDouble(1))
+val rateSRdd = sqlContext.applySchema(rowRdd, schema)
+
+import water.fvec.DataFrame; import h2oContext._
+// Transfer it into H2O
+val rateFrame:DataFrame = rateSRdd
+*/
+/*
+In flow type this:
+plot (g) -> g(
+  g.rect(
+    g.position "CrimeType", "ArrestRate"
+)
+g.from inspect "data", getFrame "frame_rdd_132"
+)
+
+or
+
+plot (g) -> g(
+  g.rect(
+    g.position "CrimeType", "ArrestRate"
+    g.fillColor g.value 'blue'
+    g.fillOpacity g.value 0.75
+
+  )
+  g.rect(
+    g.position "CrimeType", "CrimessToCrimes"
+    g.fillColor g.value 'red'
+    g.fillOpacity g.value 0.65
+
+  )
+
+  g.from inspect "data", getFrame "frame_rdd_129"
+)
+*/
+
