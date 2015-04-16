@@ -341,6 +341,28 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.vec(0).isNumeric())
   }
 
+  test("SchemaRDD[Float] to DataFrame[Numeric]") {
+    import sqlContext._
+
+    val values = Seq(Float.MinValue, Float.MaxValue, -33.33.toFloat, 200.001.toFloat, -5000.34.toFloat)
+    val srdd:SchemaRDD = sc.parallelize(values).map(v => FloatField(v))
+    val dataFrame = hc.toDataFrame(srdd)
+
+    assertDataFrameInvariants(srdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
+  test("SchemaRDD[Double] to DataFrame[Numeric]") {
+    import sqlContext._
+
+    val values = Seq(Double.MinValue, Double.MaxValue, -33.33, 200.001, -5000.34)
+    val srdd:SchemaRDD = sc.parallelize(values).map(v => DoubleField(v))
+    val dataFrame = hc.toDataFrame(srdd)
+
+    assertDataFrameInvariants(srdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
   test("SchemaRDD[String] to DataFrame[Enum]") {
     import sqlContext._
 
@@ -589,10 +611,12 @@ object H2OSchemaRDDTest {
 
 // Helper classes for conversion from RDD to SchemaRDD
 // which expects T <: Product
-case class ByteField  (v: Byte)
-case class ShortField (v: Short)
-case class IntField   (v: Int)
-case class LongField  (v: Long)
+case class ByteField   (v: Byte)
+case class ShortField  (v: Short)
+case class IntField    (v: Int)
+case class LongField   (v: Long)
+case class FloatField  (v: Float)
+case class DoubleField (v: Double)
 case class StringField(v: String)
 case class TimestampField(v: Timestamp)
 
