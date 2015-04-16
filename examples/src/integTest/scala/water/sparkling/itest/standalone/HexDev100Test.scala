@@ -19,12 +19,12 @@ class HexDev100TestSuite extends FunSuite with SparkITest {
   ignore("HEX-DEV 100 test") {
     launch( "water.sparkling.itest.standalone.HexDev100Test",
       env {
-        sparkMaster("spark://mr-0xd1-precise1.0xdata.loc:7077")
+        // spark.master is passed via environment
         // Configure Standalone environment
         conf("spark.standalone.max.executor.failures", 1) // In fail of executor, fail the test
-        conf("spark.executor.instances", 8) // 8 executor instances
-        conf("spark.executor.memory", "10g") // 10g per executor
-        conf("spark.ext.h2o.cluster.size", 8) // 8 H2O nodes
+        conf("spark.executor.instances", 8)
+        conf("spark.executor.memory", "7g")
+        conf("spark.ext.h2o.cluster.size", 8)
       }
     )
   }
@@ -109,6 +109,8 @@ object HexDev100Test {
     println("""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""")
 
     sc.stop()
+    // Shutdown H2O explicitly (at least the driver)
+    water.H2O.shutdown()
   }
 }
 
