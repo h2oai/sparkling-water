@@ -32,6 +32,7 @@ examples/smalldata/allyears2k_headers.csv.gz
 examples/smalldata/Chicago_Ohare_International_Airport.csv
 examples/smalldata/prostate.csv
 examples/smalldata/year2005.csv.gz
+examples/smalldata/smsData.txt
 docker/
 docker/README.md
 docker/bin/
