@@ -1,33 +1,38 @@
-# NYC Big Data Science (03/26/2015) - Building Machine Learning Applications with Sparkling Water
+# Sparkling Water Meetup (04/15/2015) - Building Machine Learning Applications with Sparkling Water
 
 ## Requirements
  
 ### For Sparkling Water
  - Oracle Java 7+
  - [Spark 1.2.0](http://spark.apache.org/downloads.html)
- - [Sparkling Water 0.2.12-91](http://h2o-release.s3.amazonaws.com/sparkling-water/master/91/index.html)
+ - [Sparkling Water 0.2.12-93](http://h2o-release.s3.amazonaws.com/sparkling-water/master/93/index.html)
  
 ## Download
 
 Please download [Sparkling Water
-0.2.12-91](http://h2o-release.s3.amazonaws.com/sparkling-water/master/91/index.html) and unzip the file:
+0.2.12-93](http://h2o-release.s3.amazonaws.com/sparkling-water/master/93/index.html) and unzip the file:
 ```
-unzip sparkling-water-0.2.12-91.zip
-cd sparkling-water-0.2.12-91
+unzip sparkling-water-0.2.12-93.zip
+cd sparkling-water-0.2.12-93
 ```
 
 ## Slides
-Hands-On slides are available at [H2O.ai SlideShare account](http://www.slideshare.net/0xdata/spa-43755759)
+Hands-On slides are available at [H2O.ai SlideShare account](http://www.slideshare.net/0xdata/spa-43755759).
 
 ## Script
-The script is available at GitHub - [https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150326.script.scala](https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150226.script.scala).
+The script is available at GitHub - [https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150415.script.scala](https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150415.script.scala).
 
 ```bash
-curl https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150326.script.scala > meetup.script.scala
+curl https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/scripts/Meetup20150415.script.scala > meetup.script.scala
+```
+
+You can directly execute script:
+```bash
+bin/sparkling-shell -i meetup.script.scala
 ```
 
 ## Dataset
-Dataset is available in [GitHub](https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/smsData.txt).
+Message dataset is available in [GitHub](https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/smsData.txt).
 
 
 ## ML Workflow
@@ -49,7 +54,7 @@ Dataset is available in [GitHub](https://raw.githubusercontent.com/h2oai/sparkli
 3. Prepare environment
   ```scala
   // Input data
-  val DATAFILE="/tmp/smsData.txt"
+  val DATAFILE="examples/smalldata/smsData.txt"
   // Common imports
   import hex.deeplearning.{DeepLearningModel, DeepLearning}
   import hex.deeplearning.DeepLearningModel.DeepLearningParameters
@@ -221,3 +226,20 @@ Dataset is available in [GitHub](https://raw.githubusercontent.com/h2oai/sparkli
    isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", dlModel, hashingTF, idfModel)
    ```
 
+14. Use model from R.
+   ```R
+   library(h2o)
+   h2o.init()
+   # Get model 
+   dl_model = h2o.getModel("dlModel.hex")
+   # Generate a random vector representing a message
+   validation.df = as.data.frame(t(runif(n = 1024, min = 0, max = 4)))
+   names(validation.df) <- paste0("fv",0:1023)
+   # Upload vector to a cluster
+   validation.hex <- as.h2o(validation.df)
+   # Make a prediction
+   pred.hex = predict(dl_model, validation.hex)
+   pred.hex
+   ```
+   > This requires installation of H2O R plugin - please follow installation instructions lister [here](http://h2o-release.s3.amazonaws.com/h2o-dev/master/1109/index.html#R).
+   
