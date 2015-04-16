@@ -42,16 +42,19 @@ val bigTable = sql(
           |JOIN WeatherORD w
           |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
 
+val trainFrame:DataFrame = bigTable
+trainFrame.replace(19, trainFrame.vec("IsDepDelayed").toEnum)
+trainFrame.update(null)
 
 // Run deep learning to produce model estimating arrival delay
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 val dlParams = new DeepLearningParameters()
-dlParams._epochs = 10
-dlParams._train = bigTable 
+dlParams._epochs = 100
+dlParams._train = trainFrame
 dlParams._response_column = 'IsDepDelayed
-dlParams._convert_to_enum = true
-// Create a job  
+dlParams._variable_importances = true
+// Create a job
 val dl = new DeepLearning(dlParams)
 val dlModel = dl.trainModel.get
 
