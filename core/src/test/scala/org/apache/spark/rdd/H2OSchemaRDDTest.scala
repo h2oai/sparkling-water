@@ -299,6 +299,58 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (rdd.count == schemaRdd.count)
   }
 
+  test("RDD[Byte] to DataFrame[Numeric]") {
+    val rdd = sc.parallelize(-127 to 127).map(v => ByteField(v.asInstanceOf[Byte]))
+    val dataFrame = hc.toDataFrame(rdd)
+
+    assertRDDDataFrameInvariants(rdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
+  test("RDD[Short] to DataFrame[Numeric]") {
+    val rdd = sc.parallelize(-2048 to 4096).map(v => ShortField(v.asInstanceOf[Short]))
+    val dataFrame = hc.toDataFrame(rdd)
+
+    assertRDDDataFrameInvariants(rdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
+  test("RDD[Int] to DataFrame[Numeric]") {
+    val values = Seq(Int.MinValue, Int.MaxValue, 0, -100, 200, -5000, 568901)
+    val rdd = sc.parallelize(values).map(v => IntField(v))
+    val dataFrame = hc.toDataFrame(rdd)
+
+    assertRDDDataFrameInvariants(rdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
+  test("RDD[Long] to DataFrame[Numeric]") {
+    val values = Seq(Long.MinValue, Long.MaxValue, 0L, -100L, 200L, -5000L, 5689323201L, -432432433335L)
+    val rdd = sc.parallelize(values).map(v => LongField(v))
+    val dataFrame = hc.toDataFrame(rdd)
+
+    assertRDDDataFrameInvariants(rdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
+  test("RDD[Float] to DataFrame[Numeric]") {
+    val values = Seq(Float.MinValue, Float.MaxValue, -33.33.toFloat, 200.001.toFloat, -5000.34.toFloat)
+    val rdd = sc.parallelize(values).map(v => FloatField(v))
+    val dataFrame = hc.toDataFrame(rdd)
+
+    assertRDDDataFrameInvariants(rdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
+  test("RDD[Double] to DataFrame[Numeric]") {
+    val values = Seq(Double.MinValue, Double.MaxValue, -33.33, 200.001, -5000.34)
+    val rdd = sc.parallelize(values).map(v => DoubleField(v))
+    val dataFrame = hc.toDataFrame(rdd)
+
+    assertRDDDataFrameInvariants(rdd, dataFrame)
+    assert (dataFrame.vec(0).isNumeric())
+  }
+
   test("SchemaRDD[Byte] to DataFrame[Numeric]") {
     import sqlContext._
 
@@ -581,6 +633,25 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   def assertDataFrameInvariants(inputRDD: SchemaRDD, df: DataFrame): Unit = {
     assert( inputRDD.count == df.numRows(), "Number of rows has to match")
     assert( df.numCols() == flatSchema(inputRDD.schema).length , "Number columns should match")
+  }
+
+  def assertRDDDataFrameInvariants[T](inputRDD: RDD[T], df: DataFrame): Unit = {
+    assert( inputRDD.count == df.numRows(), "Number of rows has to match")
+    inputRDD match {
+      case x if x.take(1)(0).isInstanceOf[ByteField] =>
+        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[ByteField].productArity, "Number columns should match")
+      case x if x.take(1)(0).isInstanceOf[ShortField] =>
+        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[ShortField].productArity, "Number columns should match")
+      case x if x.take(1)(0).isInstanceOf[LongField] =>
+        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[LongField].productArity, "Number columns should match")
+      case x if x.take(1)(0).isInstanceOf[IntField] =>
+        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[IntField].productArity, "Number columns should match")
+      case x if x.take(1)(0).isInstanceOf[FloatField] =>
+        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[FloatField].productArity, "Number columns should match")
+      case x if x.take(1)(0).isInstanceOf[DoubleField] =>
+        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[DoubleField].productArity, "Number columns should match")
+      case _ => ???
+    }
   }
 
   def assertVectorIntValues(vec: water.fvec.Vec, values: Seq[Int]): Unit = {
