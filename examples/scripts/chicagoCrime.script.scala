@@ -3,9 +3,9 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext
 
 // SQL support
-val sqlContext = new SQLContext(sc)
+implicit val sqlContext = new SQLContext(sc)
 // Start H2O services
-val h2oContext = new H2OContext(sc).start()
+implicit val h2oContext = new H2OContext(sc).start()
 
 val app = new ChicagoCrimeApp(
   weatherFile = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoAllWeather.csv",

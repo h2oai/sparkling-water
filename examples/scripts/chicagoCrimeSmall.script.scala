@@ -13,9 +13,9 @@ addFiles(sc,
 )
 
 // 3. Create SQL support
-val sqlContext = new SQLContext(sc)
+implicit val sqlContext = new SQLContext(sc)
 // 4. Start H2O services
-val h2oContext = new H2OContext(sc).start()
+implicit val h2oContext = new H2OContext(sc).start()
 
 // 5. Create App
 val app = new ChicagoCrimeApp(

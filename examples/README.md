@@ -20,6 +20,12 @@
   * `AirlinesWithWeatherDemo` - joining flights data with weather data and running
     Deep Learning
   * `AirlinesWithWeatherDemo2` - new iteration of `AirlinesWithWeatherDemo`
+  * `CitiBikeSharingDemo` - predicts occupancy of Citi bike stations in NYC
+  * `HamOrSpamDemo` - shows Spam detector with Spark and H2O's DeepLearning
+  * `ChicagoCrimeAppSmall` - builds a model predicting a probability of arrest for given crime in Chicago
+  
+
+> Run examples by typing  `bin/run-example.sh <name of demo>` or follow text below.
 
 ---
 
