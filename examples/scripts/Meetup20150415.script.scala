@@ -144,9 +144,12 @@ def isSpam(msg: String,
   prediction.vecs()(1).at(0) < hamThreshold
 }
 
-//println(isSpam("Michal, beer tonight in MV?", dlModel, hashingTF, idfModel))
-//println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", dlModel, hashingTF, idfModel))
+println(isSpam("Michal, beer tonight in MV?", dlModel, hashingTF, idfModel))
+println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", dlModel, hashingTF, idfModel))
 
+//
+// This is R code which should be put into R session:
+//
 // library(h2o)
 // h2o.init()
 // dlModel = h2o.getModel("dlModel.hex")

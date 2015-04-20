@@ -11,7 +11,7 @@ bin/sparkling-shell --conf spark.executor.memory=3G
 
 
 // Input data
-val DATAFILE="/tmp/smsData.txt"
+val DATAFILE="examples/smalldata/smsData.txt"
 
 import hex.deeplearning.{DeepLearningModel, DeepLearning}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
