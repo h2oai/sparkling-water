@@ -255,7 +255,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     dataFrame.delete()
   }
 
-  ignore("PUBDEV-771 DataFrame[T_UUID] to SchemaRDD[StringType]") {
+  test("PUBDEV-771 DataFrame[T_UUID] to SchemaRDD[StringType]") {
     import h2oContext._
     val fname: String = "testUUID.hex"
     val colNames: Array[String] = Array("C0")
@@ -282,7 +282,9 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     assert (schemaRdd.count == dataFrame.numRows())
     assert (schemaRdd.schema.fields(0) == StructField("C0",StringType,false))
-    assert (schemaRdd.take(6)(5)(0) == "6870f256-e145-4d75-adb0-99ccb77d5d3a")
+    val valuesInRdd = schemaRdd.collect().map(row => row(0))
+    for (idx <- valuesInRdd.indices)
+      assert (valuesInRdd(idx) == "6870f256-e145-4d75-adb0-99ccb77d5d3" + ('a'+idx).asInstanceOf[Char])
     dataFrame.delete()
   }
 

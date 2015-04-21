@@ -17,6 +17,8 @@
 
 package org.apache.spark.rdd
 
+import java.util.UUID
+
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OSchemaUtils.vecTypeToDataType
 import org.apache.spark.h2o.{H2OSchemaUtils, H2OContext}
@@ -75,6 +77,9 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
                 } else if (chk.vec().isString) {
                   chk.atStr(valStr, row)
                   valStr.toString
+                } else if (chk.vec().isUUID) {
+                  val uuid = new UUID(chk.at16h(row), chk.at16l(row))
+                  uuid.toString
                 } else None
               case TimestampType => new java.sql.Timestamp(chk.at8(row))
               case _ => ???
