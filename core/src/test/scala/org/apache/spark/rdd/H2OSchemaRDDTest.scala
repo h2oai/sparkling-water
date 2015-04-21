@@ -82,13 +82,13 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   // DataFrame to SchemaRDD[T] JUnits
-  ignore("PUBDEV-766 DataFrame[T_ENUM] to SchemaRDD[StringType]") {
+  test("PUBDEV-766 DataFrame[T_ENUM] to SchemaRDD[StringType]") {
     import h2oContext._
     val fname: String = "testEnum.hex"
     val colNames: Array[String] = Array("C0")
     val chunkLayout: Array[Long] = Array(2L, 2L)
     val data: Array[Array[Integer]] = Array(Array(1, 0), Array(0, 1))
-    val dataFrame = makeDataFrame(fname, colNames, chunkLayout, data, Vec.T_ENUM)
+    val dataFrame = makeDataFrame(fname, colNames, chunkLayout, data, Vec.T_ENUM, colDomains = Array(Array("ZERO", "ONE")))
 
     assert (dataFrame.vec(0).chunkForChunkIdx(0).at8(0) == 1)
     assert (dataFrame.vec(0).isEnum())
@@ -97,7 +97,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     val schemaRdd = asSchemaRDD(dataFrame)
 
     assert (schemaRdd.count == dataFrame.numRows())
-    assert (schemaRdd.take(4)(3)(0) == "1")
+    assert (schemaRdd.take(4)(3)(0) == "ONE")
     assert (schemaRdd.schema.fields(0) == StructField("C0",StringType,false))
 
     dataFrame.delete()
@@ -588,7 +588,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   def makeDataFrame[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
-                                 data: Array[Array[T]], h2oType: Byte): DataFrame = {
+                                 data: Array[Array[T]], h2oType: Byte, colDomains: Array[Array[String]] = null): DataFrame = {
     var f: Frame = new Frame(Key.make(fname))
     FrameUtils.preparePartialFrame(f,colNames)
     f.update(null)
@@ -597,7 +597,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     f = DKV.get(fname).get()
 
-    FrameUtils.finalizePartialFrame(f, chunkLayout, null, Array(h2oType))
+    FrameUtils.finalizePartialFrame(f, chunkLayout, colDomains, Array(h2oType))
 
     return new DataFrame(f)
   }
