@@ -65,6 +65,7 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
               case ByteType => chk.at8(row).asInstanceOf[Byte]
               case ShortType => chk.at8(row).asInstanceOf[Short]
               case IntegerType => chk.at8(row).asInstanceOf[Int]
+              case LongType => chk.at8(row)
               case FloatType => chk.atd(row)
               case DoubleType => chk.atd(row)
               case BooleanType => chk.at8(row) == 1
