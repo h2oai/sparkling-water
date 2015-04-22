@@ -1,4 +1,3 @@
-val sc:org.apache.spark.SparkContext = null
 /**
  * To start Sparkling Water please type
 
