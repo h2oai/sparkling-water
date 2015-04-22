@@ -7,13 +7,13 @@ import hex.tree.gbm.GBMModel
 import hex.tree.gbm.GBMModel.GBMParameters.Family
 import org.apache.spark.SparkContext
 import org.apache.spark.examples.h2o.DemoUtils._
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{DataFrame, H2OContext}
 import org.apache.spark.sql.{SchemaRDD, SQLContext}
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{MutableDateTime, DateTimeZone}
 import org.joda.time.DateTimeConstants._
 import water.MRTask
-import water.fvec.{NewChunk, Chunk, DataFrame, Vec}
+import water.fvec.{NewChunk, Chunk, Vec}
 import water.parser.ValueString
 
 /**
@@ -88,11 +88,11 @@ class ChicagoCrimeApp( weatherFile: String,
     println(
       s"""Model performance:
           |  GBM:
-          |    train AUC = ${trainMetricsGBM.auc.AUC}
-          |    test  AUC = ${testMetricsGBM.auc.AUC}
+          |    train AUC = ${trainMetricsGBM.auc._auc}
+          |    test  AUC = ${testMetricsGBM.auc._auc}
           |  DL:
-          |    train AUC = ${trainMetricsDL.auc.AUC}
-          |    test  AUC = ${testMetricsDL.auc.AUC}
+          |    train AUC = ${trainMetricsDL.auc._auc}
+          |    test  AUC = ${testMetricsDL.auc._auc}
       """.stripMargin)
 
     (gbmModel, dlModel)
@@ -106,7 +106,7 @@ class ChicagoCrimeApp( weatherFile: String,
   }
 
   def GBMModel(train: DataFrame, test: DataFrame, response: String,
-               ntrees:Int = 10, depth:Int = 6, loss: Family = Family.bernoulli)
+               ntrees:Int = 10, depth:Int = 6, family: Family = Family.bernoulli)
               (implicit h2oContext: H2OContext) : GBMModel = {
     import hex.tree.gbm.GBM
     import hex.tree.gbm.GBMModel.GBMParameters
@@ -118,7 +118,7 @@ class ChicagoCrimeApp( weatherFile: String,
     gbmParams._response_column = response
     gbmParams._ntrees = ntrees
     gbmParams._max_depth = depth
-    gbmParams._loss = loss
+    gbmParams._distribution = family
 
     val gbm = new GBM(gbmParams)
     val model = gbm.trainModel.get
@@ -352,7 +352,7 @@ object Crime {
 class RefineDateColumn(val datePattern: String,
                        val dateTimeZone: String) extends MRTask[RefineDateColumn] {
   // Entry point
-  def doIt(col: Vec): DataFrame = DataFrame(
+  def doIt(col: Vec): DataFrame = new DataFrame(
     doAll(8, col).outputFrame(
       Array[String]("Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"),
       Array[Array[String]](null, null, null, null, null, null,

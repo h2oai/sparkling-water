@@ -30,6 +30,7 @@ shadowJar {
     include(dependency("ai.h2o:h2o-web"))
     include(dependency("ai.h2o:h2o-algos"))
     include(dependency("ai.h2o:h2o-persist-hdfs"))
+    include(dependency("ai.h2o:h2o-genmodel"))
     include(dependency("joda-time:joda-time"))
     include(dependency("org.joda:joda-convert"))
     include(dependency("org.javassist:javassist"))
@@ -38,9 +39,7 @@ shadowJar {
     include(dependency("org.reflections:reflections"))
     include(dependency("com.google.guava:guava"))
     include(dependency("commons-collections:commons-collections"))
-    include(dependency("com.brsanthu:google-analytics-java"))
-    include(dependency("org.apache.httpcomponents:httpclient"))
-    include(dependency("org.apache.httpcomponents:httpcore"))
+    include(dependency("ai.h2o:google-analytics-java"))
   }
 }
 

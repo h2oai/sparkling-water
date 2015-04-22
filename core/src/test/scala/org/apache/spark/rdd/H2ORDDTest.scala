@@ -18,11 +18,11 @@ package org.apache.spark.rdd
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.util.SharedSparkTestContext
-import org.apache.spark.h2o.{DoubleHolder, IntHolder, StringHolder}
+import org.apache.spark.h2o.{DataFrame, DoubleHolder, IntHolder, StringHolder}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.fvec.{DataFrame, Vec}
+import water.fvec.Vec
 import water.parser.{Categorical, ValueString}
 
 /**

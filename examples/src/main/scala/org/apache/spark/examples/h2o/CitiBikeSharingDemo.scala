@@ -6,11 +6,11 @@ import hex.splitframe.ShuffleSplitFrame
 import hex.tree.gbm.GBMModel
 import hex.{ModelMetrics, ModelMetricsSupervised}
 import org.apache.spark.examples.h2o.DemoUtils._
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{DataFrame, H2OContext}
 import org.apache.spark.sql.{SQLContext, SchemaRDD}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.joda.time.MutableDateTime
-import water.fvec._
+import water.fvec.{NewChunk, Chunk, Frame}
 import water.util.Timer
 import water.{Key, MRTask}
 import scala.collection.mutable
@@ -48,7 +48,7 @@ object CitiBikeSharingDemo {
       "2013-07.csv", "2013-08.csv", "2013-09.csv", "2013-10.csv",
       "2013-11.csv", "2013-12.csv",
       "2014-01.csv", "2014-02.csv", "2014-03.csv", "2014-04.csv",
-      "2014-05.csv", "2014-06.csv", "2014-07.csv", "2014-08.csv").map(f => new File(DIR_PREFIX, f))
+      "2014-05.csv", "2014-06.csv", "2014-07.csv", "2014-08.csv").map(f => new File(DIR_PREFIX, f).toURI)
     // Load and parse data
     val dataf = new DataFrame(dataFiles:_*)
     // Rename columns and remove all spaces in header
@@ -224,7 +224,7 @@ object CitiBikeSharingDemo {
 
 class TimeSplit extends MRTask[TimeSplit] {
   def doIt(time: DataFrame):DataFrame =
-      DataFrame(doAll(1, time).outputFrame(Array[String]("Days"), null))
+      new DataFrame(doAll(1, time).outputFrame(Array[String]("Days"), null))
 
   override def map(msec: Chunk, day: NewChunk):Unit = {
     for (i <- 0 until msec.len) {
@@ -235,7 +235,7 @@ class TimeSplit extends MRTask[TimeSplit] {
 
 class TimeTransform extends MRTask[TimeSplit] {
   def doIt(days: DataFrame):DataFrame =
-    DataFrame(doAll(2, days).outputFrame(Array[String]("Month", "DayOfWeek"), null))
+    new DataFrame(doAll(2, days).outputFrame(Array[String]("Month", "DayOfWeek"), null))
 
   override def map(in: Array[Chunk], out: Array[NewChunk]):Unit = {
     val days = in(0)

@@ -4,8 +4,9 @@ import hex.{ModelMetrics, FrameSplitter}
 import hex.splitframe.ShuffleSplitFrame
 import hex.tree.gbm.GBMModel
 import hex.Model
+import org.apache.spark.h2o.DataFrame
 import org.apache.spark.{SparkConf, SparkContext}
-import water.fvec.{Frame, DataFrame, Chunk}
+import water.fvec.{Frame, Chunk}
 import water.parser.ValueString
 import water._
 

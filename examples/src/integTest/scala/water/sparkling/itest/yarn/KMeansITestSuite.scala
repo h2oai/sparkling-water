@@ -10,7 +10,6 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.fvec.DataFrame
 import water.sparkling.itest.{SparkITest, YarnTest}
 import hex.kmeans.KMeansModel.KMeansParameters
 import water.util.Timer

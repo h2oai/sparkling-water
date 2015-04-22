@@ -16,7 +16,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.MRTask
-import water.fvec.{Chunk, DataFrame, NewChunk, Vec}
+import water.fvec.{Chunk, NewChunk, Vec}
 import water.parser.ValueString
 import water.sparkling.itest.SparkITest
 
@@ -150,7 +150,7 @@ object ChicagoCrimeTest {
     gbmParams._response_column = 'Arrest
     gbmParams._ntrees = 10
     gbmParams._max_depth = 6
-    gbmParams._loss = Family.bernoulli
+    gbmParams._distribution = Family.bernoulli
 
     val gbm = new GBM(gbmParams)
     val gbmModel = gbm.trainModel.get
@@ -188,11 +188,11 @@ object ChicagoCrimeTest {
     println(
       s"""
         |GBM:
-        |  train AUC = ${trainMetricsGBM.auc.AUC}
-        |  test  AUC = ${testMetricsGBM.auc.AUC}
+        |  train AUC = ${trainMetricsGBM.auc._auc}
+        |  test  AUC = ${testMetricsGBM.auc._auc}
         |DL:
-        |  train AUC = ${trainMetricsDL.auc.AUC}
-        |  test  AUC = ${testMetricsDL.auc.AUC}
+        |  train AUC = ${trainMetricsDL.auc._auc}
+        |  test  AUC = ${testMetricsDL.auc._auc}
       """.stripMargin)
 
     val crimes = Seq( Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", Some("STREET"),false, 422, 4, 7, 46, 18),
@@ -300,7 +300,7 @@ object ChicagoCrimeTest {
   private class RefineDateColumn(val datePattern: String = DATE_PATTERN,
                                  val dateTimeZone: String = DATETIME_ZONE) extends MRTask[RefineDateColumn] {
     // Entry point
-    def doIt(col: Vec): DataFrame = DataFrame(
+    def doIt(col: Vec): DataFrame = new DataFrame(
                     doAll(8, col).outputFrame(
                       Array[String]("Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"),
                       Array[Array[String]](null, null, null, null, null, null,

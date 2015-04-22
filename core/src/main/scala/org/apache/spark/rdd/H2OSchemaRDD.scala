@@ -21,11 +21,10 @@ import java.util.UUID
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OSchemaUtils.vecTypeToDataType
-import org.apache.spark.h2o.{H2OSchemaUtils, H2OContext}
+import org.apache.spark.h2o.{DataFrame, H2OContext}
 import org.apache.spark.sql.catalyst.expressions.{GenericMutableRow, Row}
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.{Partition, TaskContext}
-import water.fvec.DataFrame
 import water.parser.ValueString
 
 /**

@@ -18,12 +18,9 @@
 package org.apache.spark.rdd
 
 
-import org.apache.spark.h2o.{H2OContext, ReflectionUtils}
-import org.apache.spark.sql.SchemaRDD
-import org.apache.spark.{Partition, SparkContext, TaskContext}
-import water.fvec.{Frame, DataFrame}
+import org.apache.spark.h2o.{DataFrame, H2OContext, ReflectionUtils}
+import org.apache.spark.{Partition, TaskContext}
 import water.parser.ValueString
-import water.{DKV, Key}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._

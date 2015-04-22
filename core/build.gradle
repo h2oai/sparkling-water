@@ -6,7 +6,9 @@ dependencies {
   // H2O Scala API
   compile "ai.h2o:h2o-scala_${scalaBinaryVersion}:${h2oVersion}"
   // H2O Persistent layer
-  compile "ai.h2o:h2o-persist-hdfs:${h2oVersion}"
+  compile("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
+      transitive = false
+  }
 
   // Spark 1.2.0 release
   // - core

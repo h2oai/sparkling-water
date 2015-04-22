@@ -67,8 +67,8 @@ object HamOrSpamDemo {
     val validMetrics = binomialMM(dlModel, valid)
     println(
       s"""
-         |AUC on train data = ${trainMetrics.auc.AUC}
-         |AUC on valid data = ${validMetrics.auc.AUC}
+         |AUC on train data = ${trainMetrics.auc._auc}
+         |AUC on valid data = ${validMetrics.auc._auc}
        """.stripMargin)
 
     // Detect spam messages

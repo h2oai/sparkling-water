@@ -6,10 +6,9 @@ import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.{SparkFiles, SparkConf, SparkContext}
-import org.apache.spark.h2o.{DoubleHolder, H2OContext}
+import org.apache.spark.h2o.{DataFrame, DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import water.fvec.DataFrame
 
 
 object DeepLearningDemoWithoutExtension {
@@ -55,13 +54,18 @@ object DeepLearningDemoWithoutExtension {
     //
 
     println("\n====> Running DeepLearning on the result of SQL query\n")
+    // Result of SQL query
+    val train: DataFrame = result( 'Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
+      'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
+      'Distance, 'IsDepDelayed )
+    train.replace(train.numCols()-1, train.lastVec().toEnum)
+    train.update(null)
+
     // Configure Deep Learning algorithm
     val dlParams = new DeepLearningParameters()
     // Use result of SQL query
     // Note: there is implicit conversion from RDD->DataFrame->Key
-    dlParams._train = result( 'Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
-                                    'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
-                                    'Distance, 'IsDepDelayed)
+    dlParams._train = train
     dlParams._response_column = 'IsDepDelayed
 
     //

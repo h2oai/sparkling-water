@@ -4,13 +4,11 @@ import java.io.File
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import org.apache.spark.{SparkFiles, SparkContext}
-import org.apache.spark.examples.h2o.DemoUtils.configure
-import org.apache.spark.examples.h2o.DemoUtils.addFiles
-import org.apache.spark.h2o.{DoubleHolder, H2OContext}
+import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure}
+import org.apache.spark.h2o.{DataFrame, DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import water.fvec.DataFrame
+import org.apache.spark.{SparkContext, SparkFiles}
 
 
 object DeepLearningDemo {
@@ -55,16 +53,17 @@ object DeepLearningDemo {
     //
 
     println("\n====> Running DeepLearning on the result of SQL query\n")
+    // Training data
+    val train: DataFrame = result( 'Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
+      'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
+      'Distance, 'IsDepDelayed )
+    train.replace(train.numCols()-1, train.lastVec().toEnum)
+    train.update(null)
+
     // Configure Deep Learning algorithm
     val dlParams = new DeepLearningParameters()
-    // Use result of SQL query
-    // Note: there is implicit conversion from RDD->DataFrame->Key
-    dlParams._train = result( 'Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
-                              'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
-                              'Distance, 'IsDepDelayed )
+    dlParams._train = train
     dlParams._response_column = 'IsDepDelayed
-    //dlParams.classification = true
-
 
     val dl = new DeepLearning(dlParams)
     val dlModel = dl.trainModel.get

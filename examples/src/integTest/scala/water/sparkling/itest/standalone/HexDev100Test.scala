@@ -95,7 +95,7 @@ object HexDev100Test {
     gbmParams._train = airlinesTable
     gbmParams._response_column = 'IsDepDelayed
     gbmParams._ntrees = 10
-    gbmParams._loss = GBMParameters.Family.bernoulli
+    gbmParams._distribution = GBMParameters.Family.bernoulli
 
     val gbm = new GBM(gbmParams)
     val gbmModel = gbm.trainModel.get

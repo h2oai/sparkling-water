@@ -9,11 +9,11 @@ import hex.{FrameSplitter, SplitFrame}
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure, residualPlotRCode}
-import org.apache.spark.h2o.{DoubleHolder, H2OContext}
+import org.apache.spark.h2o.{DataFrame, DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
-import water.fvec.DataFrame
+import water.Key
 
 /** Demo for meetup presented at 12/17/2014 */
 object AirlinesWithWeatherDemo2 {
@@ -66,7 +66,6 @@ object AirlinesWithWeatherDemo2 {
         |JOIN WeatherORD w
         |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
     println(s"\nResult of query: ${joinedTable.count}\n")
-    //bigTable.collect().foreach(println(_))
 
     //
     // Split data into 3 tables - train/validation/test
@@ -78,7 +77,7 @@ object AirlinesWithWeatherDemo2 {
 
     //
     // Use low-level task to split the frame
-    val sf = new FrameSplitter(joinedDataFrame, Array(.7, .2))
+    val sf = new FrameSplitter(joinedDataFrame, Array(.7, .2), Array("train", "valid","test").map(Key.make(_)), null)
     water.H2O.submitTask(sf)
     val splits = sf.getResult
 

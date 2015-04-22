@@ -17,9 +17,9 @@
 
 package org.apache.spark.rdd
 
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{DataFrame, H2OContext}
 import water.{Key, DKV}
-import water.fvec.{Chunk, Frame, DataFrame}
+import water.fvec.{Chunk, Frame}
 
 /**
  * Contains functions that are shared between all H2ORDD types (i.e., Scala, Java)

@@ -22,7 +22,7 @@ package object h2o {
   type Frame = water.fvec.Frame
   //type Key = water.Key
   type H2O = water.H2O
-  type DataFrame = water.fvec.DataFrame
+  type DataFrame = water.fvec.H2OFrame
   type RDD[X] = org.apache.spark.rdd.RDD[X]
 
   case class IntHolder   (result: Option[Int])

@@ -21,7 +21,7 @@ dependencies {
   /*integTestCompile*/ compile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
 
   // Put Spark Assembly on runtime path
-  integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: 'spark*.jar' )
+  integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar' )
 }
 
 //
@@ -48,6 +48,9 @@ integTest {
   // Pass list of jars required for testing
   systemProperty "sparkling.test.assembly", "${configurations.integTestAssembly.artifacts.file.join(',')}"
   systemProperty "sparkling.test.jar", "${integTestJar.archivePath}"
+
+
+    //configurations.integTestRuntime. { println(it)}
 
   // Decide which tests should be launch here based on environment
   switch ( detectEnvironment() ) {

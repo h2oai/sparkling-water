@@ -21,10 +21,9 @@ import hex.kmeans.KMeansModel.KMeansParameters
 import hex.kmeans.{KMeans, KMeansModel}
 import org.apache.spark.{SparkContext, SparkFiles}
 import org.apache.spark.examples.h2o.DemoUtils.{configure,addFiles}
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{DataFrame, H2OContext}
 import org.apache.spark.sql.SQLContext
 import water._
-import water.fvec.DataFrame
 
 /* Demonstrates:
    - data transfer from RDD into H2O

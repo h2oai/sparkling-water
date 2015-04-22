@@ -4,12 +4,12 @@ import java.io.File
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure}
-import org.apache.spark.h2o.{DoubleHolder, H2OContext}
+import org.apache.spark.h2o.{DataFrame, DoubleHolder, H2OContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
-import water.fvec.DataFrame
 
 
 object AirlinesWithWeatherDemo {
@@ -61,17 +61,20 @@ object AirlinesWithWeatherDemo {
         |f.ArrDelay
         |FROM FlightsToORD f
         |JOIN WeatherORD w
-        |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
-    println(s"\nResult of query: ${bigTable.count}\n")
-    bigTable.take(10).foreach(println(_))
+        |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day
+        |WHERE f.ArrDelay IS NOT NULL""".stripMargin)
+
+    val train: DataFrame = bigTable .repartition(4) // This is trick to handle PUBDEV-928 - DeepLearning is failing on empty chunks
 
     //
     // -- Run DeepLearning
     //
     val dlParams = new DeepLearningParameters()
-    dlParams._train = bigTable
+    dlParams._train = train
     dlParams._response_column = 'ArrDelay
-    dlParams._epochs = 100
+    dlParams._epochs = 5
+    dlParams._activation = Activation.RectifierWithDropout
+    dlParams._hidden = Array[Int](100, 100)
 
     val dl = new DeepLearning(dlParams)
     val dlModel = dl.trainModel.get

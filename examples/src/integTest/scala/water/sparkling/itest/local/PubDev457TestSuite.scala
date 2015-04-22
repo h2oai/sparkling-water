@@ -1,6 +1,7 @@
 package water.sparkling.itest.local
 
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.examples.h2o.DemoUtils._
+import org.apache.spark.h2o.{DataFrame, H2OContext}
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.feature.{Tokenizer, HashingTF}
 import org.apache.spark.sql.SQLContext
@@ -8,7 +9,6 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.fvec.DataFrame
 import water.sparkling.itest.{LocalTest, SparkITest}
 
 /**
@@ -17,8 +17,8 @@ import water.sparkling.itest.{LocalTest, SparkITest}
 @RunWith(classOf[JUnitRunner])
 class PubDev457TestSuite extends FunSuite with SparkITest {
 
-  test("Launch simple ML pipepile using H2O", LocalTest) {
-    launch( "org.apache.spark.examples.h2o.AirlinesWithWeatherDemo",
+  test("Launch simple ML pipeline using H2O", LocalTest) {
+    launch("water.sparkling.itest.local.PubDev457Test",
       env {
         sparkMaster("local-cluster[3,2,1024]")
       }
@@ -32,7 +32,7 @@ object PubDev457Test {
   case class Document(id: Long, text: String)
 
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("PubDev457").setMaster("local")
+    val conf = configure("PUBDEV-457")
     val sc = new SparkContext(conf)
     val h2oContext = new H2OContext(sc).start()
     import h2oContext._

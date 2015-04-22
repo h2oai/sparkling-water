@@ -23,7 +23,7 @@ import java.util.UUID
 import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.{mllib, SparkContext}
-import org.apache.spark.h2o.{H2OSchemaUtils, IntHolder, H2OContext}
+import org.apache.spark.h2o.{DataFrame, H2OSchemaUtils, IntHolder, H2OContext}
 import org.apache.spark.h2o.util.SparkTestContext
 import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
@@ -430,7 +430,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.domains()(0).length == num)
   }
 
-  test("SchemaRDD[String] to DataFrame[String]") {
+  ignore("SchemaRDD[String] to DataFrame[String] - ignored since it takes 8minutes") {
     import sqlContext._
 
     val num = Categorical.MAX_ENUM_SIZE + 1
