@@ -121,17 +121,6 @@ import sqlContext._
     table
   }
    ```
-8. Start H2O services on top of the Spark
-  ```scala
-  // Start H2O services
-  import org.apache.spark.h2o._
-  implicit val h2oContext = new H2OContext(sc).start()
-  import h2oContext._
-  // Initialize SQL context
-  import org.apache.spark.sql._
-  implicit val sqlContext = new SQLContext(sc)
-  import sqlContext._
-  ```
 
 9. Load data
   ```scala
