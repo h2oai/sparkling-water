@@ -355,7 +355,7 @@ class RefineDateColumn(val datePattern: String,
   def doIt(col: Vec): DataFrame = {
     val inputCol = if (col.isEnum) col.toStringVec else col
     val result = new DataFrame(
-      doAll(8, col).outputFrame(
+      doAll(8, inputCol).outputFrame(
         Array[String]("Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"),
         Array[Array[String]](null, null, null, null, null, null,
           ChicagoCrimeApp.SEASONS, null)))

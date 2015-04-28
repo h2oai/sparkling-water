@@ -1,24 +1,13 @@
 package water.sparkling.itest.yarn
 
-import hex.Model
-import hex.deeplearning.DeepLearning
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
-import hex.tree.gbm.GBMModel.GBMParameters.Family
 import org.apache.spark.SparkContext
-import org.apache.spark.examples.h2o.{Crime, ChicagoCrimeApp}
 import org.apache.spark.examples.h2o.DemoUtils.configure
+import org.apache.spark.examples.h2o.{ChicagoCrimeApp, Crime}
 import org.apache.spark.h2o._
-import org.apache.spark.sql.{SchemaRDD, SQLContext}
-import org.joda.time.DateTimeConstants._
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.{DateTimeZone, MutableDateTime}
+import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.MRTask
-import water.fvec.{Chunk, NewChunk, Vec}
-import water.parser.ValueString
 import water.sparkling.itest.SparkITest
 
 /**
@@ -34,7 +23,7 @@ class ChicagoCrimeTestSuite extends FunSuite with SparkITest {
         // Configure YARN environment
         conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test
         conf("spark.executor.instances", 3)
-        conf("spark.executor.memory", "4g")
+        conf("spark.executor.memory", "8g")
         conf("spark.ext.h2o.port.base", 63331)
         conf("spark.driver.memory", "4g")
       }
@@ -48,10 +37,8 @@ object ChicagoCrimeTest {
     val sc = new SparkContext(configure("ChicagoCrimeTest"))
     // SQL support
     val sqlContext = new SQLContext(sc)
-    import sqlContext._
     // Start H2O services
     val h2oContext = new H2OContext(sc).start()
-    import h2oContext._
 
     val app = new ChicagoCrimeApp(
       weatherFile = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoAllWeather.csv",
