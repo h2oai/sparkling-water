@@ -352,11 +352,16 @@ object Crime {
 class RefineDateColumn(val datePattern: String,
                        val dateTimeZone: String) extends MRTask[RefineDateColumn] {
   // Entry point
-  def doIt(col: Vec): DataFrame = new DataFrame(
-    doAll(8, col).outputFrame(
-      Array[String]("Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"),
-      Array[Array[String]](null, null, null, null, null, null,
-        ChicagoCrimeApp.SEASONS, null)))
+  def doIt(col: Vec): DataFrame = {
+    val inputCol = if (col.isEnum) col.toStringVec else col
+    val result = new DataFrame(
+      doAll(8, col).outputFrame(
+        Array[String]("Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"),
+        Array[Array[String]](null, null, null, null, null, null,
+          ChicagoCrimeApp.SEASONS, null)))
+    if (col.isEnum) inputCol.remove()
+    result
+  }
 
   override def map(cs: Array[Chunk], ncs: Array[NewChunk]): Unit = {
     // Initialize DataTime convertor (cannot be done in setupLocal since it is not H2O serializable :-/
