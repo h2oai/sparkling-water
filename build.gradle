@@ -49,12 +49,11 @@ configure(allprojects) { project ->
     apply from: "$rootDir/gradle/artifacts.gradle"
 
     // Version of main components
-    ext { 
+    ext {
       scalaVersion       = '2.10.4'
       scalaBinaryVersion = '2.10'
-      h2oBuild           = '1165'
-      //h2oBuild           = '99999'
-      h2oVersion         = "0.3.0.$h2oBuild"
+      // h2oBuild property is defined in gradle.properties
+      h2oVersion         = "$h2oMajorVersion.$h2oBuild"
       sparkVersion       = '1.2.0'
       junitVersion       = '4.11'
     }
