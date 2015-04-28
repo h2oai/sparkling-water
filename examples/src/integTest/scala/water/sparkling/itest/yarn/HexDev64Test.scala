@@ -19,7 +19,7 @@ class HexDev64TestSuite extends FunSuite with SparkITest {
         conf("spark.executor.instances", 6) // 10 executor instances
         conf("spark.executor.memory", "8g") // 20g per executor
         conf("spark.ext.h2o.port.base", 63331)
-        conf("spark.driver.memory", "2g")
+        conf("spark.driver.memory", "4g")
       }
     )
   }

@@ -33,9 +33,9 @@ class ChicagoCrimeTestSuite extends FunSuite with SparkITest {
         // Configure YARN environment
         conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test
         conf("spark.executor.instances", 3)
-        conf("spark.executor.memory", "25g")
+        conf("spark.executor.memory", "4g")
         conf("spark.ext.h2o.port.base", 63331)
-        conf("spark.driver.memory", "2g")
+        conf("spark.driver.memory", "4g")
       }
     )
   }
