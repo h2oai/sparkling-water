@@ -1,6 +1,15 @@
 ChangeLog
 =========
 
+##Planned v0.2.14
+  - Upgrade h2o dependency to build 1180 including fixes in algos, improvements in
+    UI
+  - Examples changed to support modified h2o API
+  - Updated documentation
+    - list of demos and applications
+    - list of scripts for Sparkling Shell
+    - list of meetups with links to code and instructions
+
 ##v0.2.13 (2015-05-01)
   - Upgrade h2o dependency to build 1165
   - Introduce type alias DataFrame pointing to `water.fvec.H2OFrame`

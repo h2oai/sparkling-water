@@ -11,7 +11,6 @@ import org.apache.spark.h2o._
 import org.apache.spark.examples.h2o._
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.sql.SQLContext
-import water.fvec._
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 
@@ -31,7 +30,7 @@ import h2oContext._
 
 val dataFiles = Array[String](
       "2013-07.csv", "2013-08.csv", "2013-09.csv", "2013-10.csv",
-      "2013-11.csv", "2013-12.csv").map(f => new java.io.File(DIR_PREFIX, f))
+      "2013-11.csv", "2013-12.csv").map(f => new java.io.File(DIR_PREFIX, f).toURI)
 // Load and parse data
 val bikesDF = new DataFrame(dataFiles:_*)
 // Rename columns and remove all spaces in header

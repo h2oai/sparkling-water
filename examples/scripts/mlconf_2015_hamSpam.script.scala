@@ -67,7 +67,7 @@ def buildDLModel(train: Frame, valid: Frame,
   import h2oContext._
   // Build a model
   val dlParams = new DeepLearningParameters()
-  dlParams._destination_key = Key.make("dlModel.hex").asInstanceOf[water.Key[Frame]]
+  dlParams._model_id = Key.make("dlModel.hex").asInstanceOf[water.Key[Frame]]
   dlParams._train = train
   dlParams._valid = valid
   dlParams._response_column = 'target

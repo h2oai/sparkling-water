@@ -21,8 +21,7 @@ import java.io.File
 import java.net.InetAddress
 
 import org.apache.spark.h2o.H2OContextUtils._
-import org.apache.spark.scheduler.{SparkListenerBlockManagerRemoved, SparkListenerBlockManagerAdded}
-import org.apache.spark.sql.catalyst.types._
+import org.apache.spark.scheduler.{SparkListenerBlockManagerAdded, SparkListenerBlockManagerRemoved}
 import org.apache.spark.{Accumulable, SparkContext, SparkEnv}
 import water.init.AbstractEmbeddedH2OConfig
 import water.{H2O, H2OApp}

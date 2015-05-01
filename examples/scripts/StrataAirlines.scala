@@ -56,7 +56,7 @@ dlParams._epochs = 100
 dlParams._train = trainFrame
 dlParams._response_column = 'IsDepDelayed
 dlParams._variable_importances = true
-dlParams._destination_key = Key.make("dlModel.hex").asInstanceOf[water.Key[Frame]]
+dlParams._model_id = Key.make("dlModel.hex").asInstanceOf[water.Key[Frame]]
 // Create a job
 val dl = new DeepLearning(dlParams)
 val dlModel = dl.trainModel.get
@@ -73,7 +73,7 @@ val glmParams = new GLMParameters(Family.binomial)
 glmParams._train = bigTable
 glmParams._response_column = 'IsDepDelayed
 glmParams._alpha = Array[Double](0.5)
-glmParams._destination_key = Key.make("glmModel.hex").asInstanceOf[water.Key[Frame]]
+glmParams._model_id = Key.make("glmModel.hex").asInstanceOf[water.Key[Frame]]
 val glm = new GLM(glmParams)
 val glmModel = glm.trainModel().get()
 
