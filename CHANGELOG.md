@@ -1,9 +1,11 @@
 ChangeLog
 =========
 
-##v0.2.13 (2015-04-26)
-  - Upgrade h2o dependency to build 1160
+##v0.2.13 (2015-05-01)
+  - Upgrade h2o dependency to build 1165
   - Introduce type alias DataFrame pointing to `water.fvec.H2OFrame`
+  - Change naming of implicit operations `toDataFrame` to `toH2OFrame`
+  - Chicago crime shell script 
 
 ##v0.2.12 (2015-04-21)
   - Upgraded H2O dev to 1109 build.
