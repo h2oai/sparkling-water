@@ -1,8 +1,8 @@
 #Sparkling Water Table of Contents
 - [Compiling examples](#CompileExample)
 - [Running examples](#RunExample)
-- [Running on a local cluster](#LocalCluster)
-- [Running on a Spark cluster](#SparkCluster)
+  - [Running on a local cluster](#LocalCluster)
+  - [Running on a Spark cluster](#SparkCluster)
 - [Configuring variables](#ConfigVar)
 - [Step-by-step weather example](#WeatherExample)
 - [Running Sparkling Water on Hadoop](#Hadoop)
@@ -11,23 +11,32 @@
 
 # Sparkling Water Examples
 
-## Available Examples
-
-  * `ProstateDemo` - running K-means on prostate dataset (see
+## Available Demos And Applications
+  * [`ChicagoCrimeAppSmall`](src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeAppSmall.scala) - builds a model predicting a probability of arrest for given crime in Chicago using data in [`smalldata` directory](smalldata/)
+  * [`ChicagoCrimeApp`](src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala) - implementation of Chicago Crime demo with setup for data stored on HDFS
+  * [`CitiBikeSharingDemo`](src/main/scala/org/apache/spark/examples/h2o/CitiBikeSharingDemo.scala) - predicts occupancy of Citi bike stations in NYC
+  * [`HamOrSpamDemo`](src/main/scala/org/apache/spark/examples/h2o/HamOrSpamDemo.scala) - shows Spam detector with Spark and H2O's DeepLearning
+  * [`ProstateDemo`](src/main/scala/org/apache/spark/examples/h2o/ProstateDemo.scala) - running K-means on prostate dataset (see
     _smalldata/prostate.csv_)
-  * `DeepLearningDemo` - running DeepLearning on a subset of airlines dataset (see
+  * [`DeepLearningDemo`](src/main/scala/org/apache/spark/examples/h2o/DeepLearningDemo.scala) - running DeepLearning on a subset of airlines dataset (see
     _smalldata/allyears2k\_headers.csv.gz_)
-  * `AirlinesWithWeatherDemo` - joining flights data with weather data and running
+  * [`AirlinesWithWeatherDemo`](src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo.scala) - joining flights data with weather data and running
     Deep Learning
-  * `AirlinesWithWeatherDemo2` - new iteration of `AirlinesWithWeatherDemo`
-  * `CitiBikeSharingDemo` - predicts occupancy of Citi bike stations in NYC
-  * `HamOrSpamDemo` - shows Spam detector with Spark and H2O's DeepLearning
-  * `ChicagoCrimeAppSmall` - builds a model predicting a probability of arrest for given crime in Chicago
+  * [`AirlinesWithWeatherDemo2`](src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo2.scala) - new iteration of `AirlinesWithWeatherDemo`
   
 
 > Run examples by typing  `bin/run-example.sh <name of demo>` or follow text below.
 
----
+## Available Demos for Sparkling Shell
+  * [`chicagoCrimeSmallShell.script.scala`](scripts/chicagoCrimeSmall.script.scala) - demo showing full source code of predicting arrest probability for a given crime. It covers whole machine learning process from loading and transforming data, building models, scoring incoming events.
+  * [`chicagoCrimeSmall.script.scala`](scripts/chicagoCrimeSmall.script.scala) - example of using [ChicagoCrimeApp](src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala) - creating application and using it for scoring individual crime events.
+  * [`mlconf_2015_hamSpam.script.scala`](scripts/mlconf_2015_hamSpam.script.scala) - HamOrSpam application which detectes Spam messages. Presented at MLConf 2015 NYC.
+  * [`strata2015_demo.scala`](scripts/strata2015_demo.scala) - NYC CitiBike demo presented at Strata 2015 in San Jose.
+  * [`StrataAirlines.scala`](scripts/StrataAirlines.scala) - example of using flights  and weather data to predict delay of a flight
+  
+> Run examples by typing  `bin/sparkling-shell -i <path to file with demo script>` 
+  
+-----
 
 <a name="CompileExample"></a>
 ## Compiling Examples
@@ -193,11 +202,12 @@ You can configure Sparkling Water using the following variables:
   nrow(compare)
   plot( compare[,1:2] )
   ```
+
 ---
 <a name="Hadoop"></a>
 #Sparkling Water on Hadoop
 
-Compatible Hadoop Distributions: CDH4, ~~CDH5~~, and HDP2.1
+Compatible Hadoop Distributions: CDH4, CDH5, and HDP2.1
 
 1) To install on your Hadoop Cluster, clone the git repository and make a build:
 
