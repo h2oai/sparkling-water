@@ -7,11 +7,7 @@
   * 04/22/2015: **Building Machine Learning Applications with Sparkling Water: Chicago Crime Application**
     - [Notes](Meetup20150422.md) / [Code](Meetup20150422.script.scala)
   * 04/15/2015: **Building Machine Learning Applications with Sparkling Water: Ham Or Spam Application**
-    - [Notes](Meetup20150422.md) / [Code](Meetup20150422.script.scala)
-  * 04/15/2015: **Building Machine Learning Applications with Sparkling Water: Ham Or Spam Application**
-    - [Notes](Meetup20150422.md) / [Code](Meetup20150422.script.scala)
-  * 04/15/2015: **Building Machine Learning Applications with Sparkling Water: Ham Or Spam Application**
-    - [Notes](Meetup20150422.md) / [Code](Meetup20150422.script.scala)
+    - [Notes](Meetup20150415.md) / [Code](Meetup20150415.script.scala)
   * 03/26/2014: **NYC Big Data Science - Building Machine Learning Applications with Sparkling Water**
     - [Notes](Meetup20150326.md) / [Code](Meetup20150326.script.scala)
   * 02/26/2015: **Sparkling Water Meetup: CitiBike demo** 
