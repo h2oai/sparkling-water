@@ -204,11 +204,11 @@ val (trainMetricsDL, testMetricsDL) = binomialMetrics(dlModel, train, test)
 println(
   s"""Model performance:
      |  GBM:
-     |    train AUC = ${trainMetricsGBM.auc.AUC}
-      |    test  AUC = ${testMetricsGBM.auc.AUC}
+     |    train AUC = ${trainMetricsGBM.auc._auc}
+      |    test  AUC = ${testMetricsGBM.auc._auc}
       |  DL:
-      |    train AUC = ${trainMetricsDL.auc.AUC}
-      |    test  AUC = ${testMetricsDL.auc.AUC}
+      |    train AUC = ${trainMetricsDL.auc._auc}
+      |    test  AUC = ${testMetricsDL.auc._auc}
       """.stripMargin)
 
 //
