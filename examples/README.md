@@ -28,7 +28,7 @@
 > Run examples by typing  `bin/run-example.sh <name of demo>` or follow text below.
 
 ## Available Demos for Sparkling Shell
-  * [`chicagoCrimeSmallShell.script.scala`](scripts/chicagoCrimeSmall.script.scala) - demo showing full source code of predicting arrest probability for a given crime. It covers whole machine learning process from loading and transforming data, building models, scoring incoming events.
+  * [`chicagoCrimeSmallShell.script.scala`](scripts/chicagoCrimeSmallShell.script.scala) - demo showing full source code of predicting arrest probability for a given crime. It covers whole machine learning process from loading and transforming data, building models, scoring incoming events.
   * [`chicagoCrimeSmall.script.scala`](scripts/chicagoCrimeSmall.script.scala) - example of using [ChicagoCrimeApp](src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala) - creating application and using it for scoring individual crime events.
   * [`mlconf_2015_hamSpam.script.scala`](scripts/mlconf_2015_hamSpam.script.scala) - HamOrSpam application which detectes Spam messages. Presented at MLConf 2015 NYC.
   * [`strata2015_demo.scala`](scripts/strata2015_demo.scala) - NYC CitiBike demo presented at Strata 2015 in San Jose.
