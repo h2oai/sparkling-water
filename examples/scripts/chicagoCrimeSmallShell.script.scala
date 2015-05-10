@@ -153,9 +153,7 @@ def GBMModel(train: DataFrame, test: DataFrame, response: String,
   model
 }
 
-def DLModel(train: DataFrame, test: DataFrame, response: String,
-            epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
-            activation: Activation = Activation.RectifierWithDropout, hidden:Array[Int] = Array(200,200))
+def DLModel(train: DataFrame, test: DataFrame, response: String)
            (implicit h2oContext: H2OContext) : DeepLearningModel = {
   import h2oContext._
   import hex.deeplearning.DeepLearning
@@ -165,12 +163,7 @@ def DLModel(train: DataFrame, test: DataFrame, response: String,
   dlParams._train = train
   dlParams._valid = test
   dlParams._response_column = response
-  dlParams._epochs = epochs
-  dlParams._l1 = l1
-  dlParams._l2 = l2
-  dlParams._activation = activation
-  dlParams._hidden = hidden
-
+  dlParams._variable_importances = true
   // Create a job
   val dl = new DeepLearning(dlParams)
   val model = dl.trainModel.get
