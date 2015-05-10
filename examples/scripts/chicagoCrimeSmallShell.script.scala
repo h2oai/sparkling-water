@@ -12,7 +12,6 @@ bin/sparkling-shell --conf spark.executor.memory=3G
 // Prepare environment
 //
 import hex.deeplearning.DeepLearningModel
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import hex.tree.gbm.GBMModel
 import hex.tree.gbm.GBMModel.GBMParameters.Family
 import hex.{Model, ModelMetricsBinomial}
