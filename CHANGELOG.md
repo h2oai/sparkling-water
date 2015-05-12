@@ -2,7 +2,7 @@ ChangeLog
 =========
 
 ##Planned v0.2.14
-  - Upgrade h2o dependency to build 1180 including fixes in algos, improvements in
+  - Upgrade h2o dependency to build 1200 including fixes in algos, improvements in
     UI
   - Examples changed to support modified h2o API
   - Updated documentation

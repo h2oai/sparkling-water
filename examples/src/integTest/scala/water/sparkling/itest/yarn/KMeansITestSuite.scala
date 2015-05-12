@@ -100,9 +100,7 @@ object KMeansITest {
 
     // Get Within Set Sum of Squared Errors
     val sparkWSSSE = clusters.computeCost(airlinesVectorRDD)
-    val h2oWMSE = KmeansModel._output._within_mse
-    val h2oSize = KmeansModel._output._size
-    val h2oWSSSE = (for(i <- 0 until h2oSize.length) yield h2oSize(i)*h2oWMSE(i)).fold(0.0) { (a,b) => a + b}
+    val h2oWSSSE = KmeansModel._output._withinss.fold(0.0)(_+_)
 
     println("Spark: Within Set Sum of Squared Errors = " + sparkWSSSE)
     println("Spark: Time to Build (s) = " + SparkKMBuildTime)
