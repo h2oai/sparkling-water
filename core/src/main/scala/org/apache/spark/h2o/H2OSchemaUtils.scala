@@ -129,7 +129,7 @@ object H2OSchemaUtils {
     * @param srdd  schema-based RDD
     * @return list of types with their positions
     */
-  def expandedSchema(sc: SparkContext, srdd: SchemaRDD): Seq[(Seq[Byte], StructField, Byte)] = {
+  def expandedSchema(sc: SparkContext, srdd: SchemaRDD): Seq[(Seq[Int], StructField, Byte)] = {
     // Collect max size in array and vector columns to expand them
     val arrayColIdxs  = collectArrayLikeTypes(srdd.schema.fields)
     val vecColIdxs    = collectVectorLikeTypes(srdd.schema.fields)
@@ -140,7 +140,7 @@ object H2OSchemaUtils {
     val flatRddSchema = flatSchema(srdd.schema)
     val typeIndx = collectTypeIndx(srdd.schema.fields)
     val typesAndPath = typeIndx
-                .zip(flatRddSchema) // Seq[(Seq[Byte], StructField)]
+                .zip(flatRddSchema) // Seq[(Seq[Int], StructField)]
     var arrayCnt = 0; var vecCnt = 0
     // Generate expanded schema
     val expSchema = typesAndPath.indices.flatMap {idx =>
@@ -171,42 +171,42 @@ object H2OSchemaUtils {
     expSchema
   }
 
-  def collectTypeIndx(fields: Seq[StructField], path: Seq[Byte] = Seq()): Seq[Seq[Byte]] = {
+  def collectTypeIndx(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
     fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectTypeIndx(fs, path++Seq(i.asInstanceOf[Byte]))
-      case _  => Seq(path++Seq(i.asInstanceOf[Byte]))
+      case StructType(fs) => collectTypeIndx(fs, path++Seq(i))
+      case _  => Seq(path++Seq(i))
     })
   }
 
   /** Collect all StringType indexes in give list representing schema
     */
-  def collectStringTypesIndx(fields: Seq[StructField], path: Seq[Byte] = Seq()): Seq[Seq[Byte]] = {
+  def collectStringTypesIndx(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
     fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectStringTypesIndx(fs, path++Seq(i.asInstanceOf[Byte]))
-      case StringType  => Seq(path++Seq(i.asInstanceOf[Byte]))
+      case StructType(fs) => collectStringTypesIndx(fs, path++Seq(i))
+      case StringType  => Seq(path++Seq(i))
       case _ => Nil
     })
   }
 
-  def collectArrayLikeTypes(fields: Seq[StructField], path: Seq[Byte] = Seq()): Seq[Seq[Byte]] = {
+  def collectArrayLikeTypes(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
     fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectArrayLikeTypes(fs, path++Seq(i.asInstanceOf[Byte]))
-      case ArrayType(_,_)  => Seq(path++Seq(i.asInstanceOf[Byte]))
+      case StructType(fs) => collectArrayLikeTypes(fs, path++Seq(i))
+      case ArrayType(_,_)  => Seq(path++Seq(i))
       case _ => Nil
     })
   }
 
-  def collectVectorLikeTypes(fields: Seq[StructField], path: Seq[Byte] = Seq()): Seq[Seq[Byte]] = {
+  def collectVectorLikeTypes(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
     fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectVectorLikeTypes(fs, path++Seq(i.asInstanceOf[Byte]))
-      case t => if (t.isInstanceOf[UserDefinedType[_/*mllib.linalg.Vector*/]]) Seq(path++Seq(i.asInstanceOf[Byte])) else Nil
+      case StructType(fs) => collectVectorLikeTypes(fs, path++Seq(i))
+      case t => if (t.isInstanceOf[UserDefinedType[_/*mllib.linalg.Vector*/]]) Seq(path++Seq(i)) else Nil
     })
   }
 
   private[h2o]
   def collectColumnDomains(sc: SparkContext,
                             rdd: SchemaRDD,
-                            stringTypes: Seq[Seq[Byte]] = null): Array[Array[String]] = {
+                            stringTypes: Seq[Seq[Int]] = null): Array[Array[String]] = {
     val stringTypesIdx = if (stringTypes!=null) stringTypes
                           else H2OSchemaUtils.collectStringTypesIndx(rdd.schema.fields)
     // Create accumulable collections for each possible string variable
@@ -233,8 +233,8 @@ object H2OSchemaUtils {
     * @return list of max sizes for array types, followed by max sizes for vector types. */
   private[h2o]
   def collectMaxArrays(sc: SparkContext, rdd: SchemaRDD,
-                        arrayTypesIndx: Seq[Seq[Byte]],
-                        vectorTypesIndx: Seq[Seq[Byte]]): Array[Int] = {
+                        arrayTypesIndx: Seq[Seq[Int]],
+                        vectorTypesIndx: Seq[Seq[Int]]): Array[Int] = {
     val allTypesIndx = arrayTypesIndx ++ vectorTypesIndx
     val numOfArrayTypes = arrayTypesIndx.length
     val maxvec = rdd.map(row => {
