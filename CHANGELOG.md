@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-##Planned v0.2.14
+##v0.2.14 (2015-05-14)
   - Upgrade h2o dependency to build 1205 including fixes in algos, infrastructure,
     and improvements in UI
   - Examples changed to support modified h2o API
