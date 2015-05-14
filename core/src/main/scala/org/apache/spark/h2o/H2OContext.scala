@@ -361,7 +361,7 @@ object H2OContext extends Logging {
   }
 
   private
-  def perSQLPartition ( keystr: String, types: Seq[(Seq[Byte], StructField, Byte)], domains: Array[Array[String]] )
+  def perSQLPartition ( keystr: String, types: Seq[(Seq[Int], StructField, Byte)], domains: Array[Array[String]] )
                       ( context: TaskContext, it: Iterator[Row] ): (Int,Long) = {
     val nchks = water.fvec.FrameUtils.createNewChunks(keystr,context.partitionId)
     val domHash = domains.map( ary =>
