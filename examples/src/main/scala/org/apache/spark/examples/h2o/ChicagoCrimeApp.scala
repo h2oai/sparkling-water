@@ -102,7 +102,7 @@ class ChicagoCrimeApp( weatherFile: String,
     // Shutdown Spark
     sc.stop()
     // Shutdown H2O explicitly (at least the driver)
-    water.H2O.shutdown()
+    water.H2O.shutdown(0)
   }
 
   def GBMModel(train: DataFrame, test: DataFrame, response: String,

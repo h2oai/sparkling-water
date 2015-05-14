@@ -56,7 +56,7 @@ object HexDev62Test {
     
     sc.stop()
     // Shutdown H2O explicitly (at least the driver)
-    water.H2O.shutdown()
+    water.H2O.shutdown(0)
   }
 }
 

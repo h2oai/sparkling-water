@@ -70,9 +70,6 @@ object ChicagoCrimeTest {
 
     // Shutdown full stack
     app.shutdown(sc)
-
-
-
   }
 
 }

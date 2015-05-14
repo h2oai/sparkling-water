@@ -2,13 +2,14 @@ ChangeLog
 =========
 
 ##Planned v0.2.14
-  - Upgrade h2o dependency to build 1200 including fixes in algos, improvements in
-    UI
+  - Upgrade h2o dependency to build 1205 including fixes in algos, infrastructure,
+    and improvements in UI
   - Examples changed to support modified h2o API
   - Updated documentation
     - list of demos and applications
     - list of scripts for Sparkling Shell
     - list of meetups with links to code and instructions
+  - Fix a limit on number of columns in SchemaRDD (thanks @nfergu)
 
 ##v0.2.13 (2015-05-01)
   - Upgrade h2o dependency to build 1165

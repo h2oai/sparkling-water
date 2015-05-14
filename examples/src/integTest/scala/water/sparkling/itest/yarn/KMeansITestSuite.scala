@@ -113,6 +113,6 @@ object KMeansITest {
     // Shutdown Spark
     sc.stop()
     // Shutdown H2O explicitly
-    water.H2O.shutdown()
+    water.H2O.shutdown(0)
   }
 }
