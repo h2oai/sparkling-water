@@ -5,12 +5,12 @@ modifyPom {
     project {
       name project.name
       // Basic info
-      url 'https://github.com/0xdata/h2o'
+      url 'https://github.com/h2oai/sparkling-water'
       inceptionYear '2013'
       description project.description
 
       organization {
-        name = '0xdata'
+        name = 'H2O.ai'
         url  = 'http://h2o.ai/'
       }
 
@@ -25,22 +25,22 @@ modifyPom {
 
       // Info for contributors
       scm {
-        url        = 'https://github.com/0xdata/sparkling-water'
-        connection = 'scm:git:https://github.com/0xdata/sparkling-water.git'
-        developerConnection = 'scm:git:git@github.com:0xdata/sparkling-water.git'
+        url        = 'https://github.com/h2oai/sparkling-water'
+        connection = 'scm:git:https://github.com/h2oai/sparkling-water.git'
+        developerConnection = 'scm:git:git@github.com:h2oai/sparkling-water.git'
       }
 
       // Public H2O JIRA for issue management
       issueManagement {
         system = 'Jira'
-        url    = 'http://jira.0xdata.com'
+        url    = 'http://jira.h2o.ai'
       }
       // Developer information
       developers {
         developer {
           id 'support'
-          name '0xdata Support'
-          email 'support@0xdata.com'
+          name 'H2O.ai Support'
+          email 'support@h2o.ai'
         }
       }
     }
