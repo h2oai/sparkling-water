@@ -4,7 +4,7 @@ apply plugin: 'nexus-workflow'
 release {
   tagPrefix = "RELEASE"
   // Safe point - do releases only from release branch - can be deleted in future
-  //requireBranch = "release"
+  requireBranch = ""
   failOnUnversionedFiles = false
 }
 
