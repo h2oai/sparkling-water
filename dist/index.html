@@ -213,6 +213,8 @@
         var hadoopPanel = document.getElementById('quickstart-hadoop');
         var standaloneTab = document.getElementById('standalone-tab');
         var standalonePanel = document.getElementById('standalone');
+        var mavenTab = document.getElementById('maven-tab');
+        var mavenPanel = document.getElementById('maven');
         var showZipTab = function() {
           zipPanel.style.display = 'block';
           zipTab.className = 'active';
@@ -220,6 +222,8 @@
           standaloneTab.className = '';
           hadoopPanel.style.display = 'none';
           hadoopTab.className = '';
+          mavenPanel.style.display = 'none';
+          mavenTab.className = '';
         };
         var showStandaloneTab = function() {
           standalonePanel.style.display = 'block';
@@ -228,6 +232,8 @@
           zipTab.className = '';
           hadoopPanel.style.display = 'none';
           hadoopTab.className = '';
+          mavenPanel.style.display = 'none';
+          mavenTab.className = '';
         };
         var showHadoopTab = function(){
           hadoopPanel.style.display = 'block';
@@ -236,10 +242,25 @@
           standaloneTab.className = '';
           zipPanel.style.display = 'none';
           zipTab.className = '';
+          mavenPanel.style.display = 'none';
+          mavenTab.className = '';
         };
+        var showMavenTab = function(){
+          hadoopPanel.style.display = 'none';
+          hadoopTab.className = '';
+          standalonePanel.style.display = 'none';
+          standaloneTab.className = '';
+          zipPanel.style.display = 'none';
+          zipTab.className = '';
+          mavenPanel.style.display = 'block';
+          mavenTab.className = 'active';
+          
+        };
+
         zipTab.onclick = showZipTab
         standaloneTab.onclick = showStandaloneTab
         hadoopTab.onclick = showHadoopTab
+        mavenTab.onclick = showMavenTab
         var hash = window.location.hash;
         if(hash && hash.indexOf('#h') == 0) {
           showHadoopTab();
@@ -276,6 +297,7 @@
           &nbsp; <span id="quickstart-zip-tab" class="active">Download and Run</span>
           <span id = "quickstart-hadoop-tab">Install on Hadoop</span>
           <span id="standalone-tab">Run Standalone Sparkling Water</span>
+          <span id = "maven-tab">Use from Maven</span>
         </div>
         <div id="panels">
           <div id="quickstart-zip">
@@ -374,12 +396,29 @@
               import h2oContext._ <br />
             </p>
           </div>
+          <div id="maven" style="display:none">
+              <h2>Gradle-style specification for Maven artifacts</h2>
+
+              <p>See the <a href="https://github.com/h2oai/h2o-droplets">h2o-droplets github repository</a> for a working example.</p>
+              <p class="terminal">
+                repositories {</br>
+                &nbsp;mavenCentral()</br>
+                }</br>
+                </br>
+                dependencies {</br>
+                &nbsp;compile "ai.h2o:sparkling-water-core_2.10:SUBST_PROJECT_VERSION"</br>
+                }</br>
+              </p>
+              <p>See Maven Central for <a href="http://search.maven.org/#artifactdetails|ai.h2o|sparkling-water-core_2.10|SUBST_PROJECT_VERSION|jar">artifact details</a>.
+          </div>
+
         </div>
         <div id="documentation">
           <h2>Documentation</h2>
           <ul>
             <li><a id="ddocgit" href="https://github.com/h2oai/sparkling-water/blob/SUBST_PROJECT_GITHASH/examples/README.md">Demo Example from Git</a></li>
             <li><a id="ddocscaladoc" href="scaladoc/index.html"> Scala Developer Documentation (Scaladoc)</a></li>
+            <li><a href="https://github.com/h2oai/h2o-droplets/tree/master/sparkling-water-droplet">Sparkling Water Application Template</a></li>
           </ul>
         </div>
       </div>

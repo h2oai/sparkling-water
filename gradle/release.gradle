@@ -16,9 +16,13 @@ uploadAll.dependsOn {
 
 // Helper task uploading and releasing all staged artifacts 
 task stageAll
-stageAll.dependsOn uploadAll, nexusStagingRelease
-nexusStagingRelease.mustRunAfter uploadAll
+stageAll.dependsOn uploadAll
 
+if (project.hasProperty("doPromotion")) {
+  stageAll.dependsOn nexusStagingRelease
+  nexusStagingRelease.mustRunAfter uploadAll
 
-// Upload artifacts after release
-createReleaseTag.dependsOn stageAll
+  // Upload artifacts after release
+  createReleaseTag.dependsOn stageAll
+}
+
