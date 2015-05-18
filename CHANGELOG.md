@@ -1,6 +1,12 @@
 ChangeLog
 =========
 
+##v1.2.0 (2015-05-18)
+  - Major release of Sparkling Water
+  - Depends on:
+    - Spark 1.2.0
+    - H2O 3.0 Shannon release
+
 ##v0.2.14 (2015-05-14)
   - Upgrade h2o dependency to build 1205 including fixes in algos, infrastructure,
     and improvements in UI
