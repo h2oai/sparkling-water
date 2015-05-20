@@ -115,6 +115,47 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     assert(back2rdd.count == dataFrame.numRows(), "Number of rows should match")
   }
 
+  // PUBDEV-1173
+  ignore("RDD[Int] to DataFrame[Numeric]") {
+    // Create RDD with 100 Int values, 10 values per 1 Spark partition
+    val rdd = sc.parallelize(1 to 100, 10)
+    // PUBDEV-1173
+    //val dataFrame: DataFrame = hc.toDataFrame(rdd)
+    //assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    //dataFrame.delete()
+  }
+
+  // PUBDEV-1173
+  ignore("RDD[Float] to DataFrame[Numeric]") {
+    // Create RDD with 100 Float values, 10 values per 1 Spark partition
+    val rdd = sc.parallelize(1 to 100, 10).map(v => v.toFloat)
+    // PUBDEV-1173
+    //val dataFrame: DataFrame = hc.toDataFrame(rdd)
+    //assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    //dataFrame.delete()
+  }
+
+  // PUBDEV-1173
+  ignore("RDD[Double] to DataFrame[Numeric]") {
+    // Create RDD with 100 Double values, 10 values per 1 Spark partition
+    val rdd = sc.parallelize(1 to 100, 10).map(v => v.toDouble)
+    // PUBDEV-1173
+    //val dataFrame: DataFrame = hc.toDataFrame(rdd)
+    //assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    //dataFrame.delete()
+  }
+
+  // PUBDEV-1173
+  ignore("RDD[String] to DataFrame[String]") {
+    // Create RDD with 100 String values, 10 values per 1 Spark partition
+    val rdd = sc.parallelize(1 to 100, 10).map(v => v.toString)
+    // PUBDEV-1173
+    //val dataFrame: DataFrame = hc.toDataFrame(rdd)
+    //assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    //dataFrame.delete()
+  }
+
+
   private type RowValueAssert = (Long, Vec) => Unit
 
   private def assertBasicInvariants[T<:Product](rdd: RDD[T], df: DataFrame, rowAssert: RowValueAssert): Unit = {
