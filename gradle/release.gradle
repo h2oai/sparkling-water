@@ -19,10 +19,10 @@ task stageAll
 stageAll.dependsOn uploadAll
 
 if (project.hasProperty("doPromotion")) {
-  stageAll.dependsOn nexusStagingRelease
-  nexusStagingRelease.mustRunAfter uploadAll
-
-  // Upload artifacts after release
-  createReleaseTag.dependsOn stageAll
+  //stageAll.dependsOn nexusStagingRelease
+  //nexusStagingRelease.mustRunAfter uploadAll
 }
+
+// Upload artifacts after release
+createReleaseTag.dependsOn stageAll
 
