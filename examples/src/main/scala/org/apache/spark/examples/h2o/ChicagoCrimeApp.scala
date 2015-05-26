@@ -156,7 +156,7 @@ class ChicagoCrimeApp( weatherFile: String,
   }
 
 
-  /** Load all data from given 3 sources and returns SchemaRDDs for each of them.
+  /** Load all data from given 3 sources and returns Spark's DataFrame for each of them.
     *
     * @return tuple of weather, census and crime data
     */

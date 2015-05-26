@@ -103,9 +103,8 @@ You can configure Sparkling Water using the following variables:
 5. Load airlines data using the H<sub>2</sub>O parser:
   ```scala
   import java.io.File
-  import water.fvec.DataFrame
   val dataFile = "examples/smalldata/allyears2k_headers.csv.gz"
-  val airlinesData = DataFrame(new File(dataFile))
+  val airlinesData = new H2OFrame(new File(dataFile))
   ```
 
 6. Select flights destined for Chicago (ORD):
@@ -121,16 +120,14 @@ You can configure Sparkling Water using the following variables:
 
 8. Use Spark SQL to join the flight data with the weather data:
   ```scala
-  import org.apache.spark.sql.SQLContext
-  implicit val sqlContext = new SQLContext(sc)
-  import sqlContext._
-  flightsToORD.registerTempTable("FlightsToORD")
-  weatherTable.registerTempTable("WeatherORD")
+  import sqlContext.implicits._
+  flightsToORD.toDF.registerTempTable("FlightsToORD")
+  weatherTable.toDF.registerTempTable("WeatherORD")
   ```
 
 9. Perform SQL JOIN on both tables:
   ```scala
-  val bigTable = sql(
+  val bigTable = sqlContext.sql(
           """SELECT
             |f.Year,f.Month,f.DayofMonth,
             |f.CRSDepTime,f.CRSArrTime,f.CRSElapsedTime,
@@ -145,8 +142,9 @@ You can configure Sparkling Water using the following variables:
   
 10. Transform the first 3 columns containing date information into enum columns:
   ```scala
-  val bigDataFrame: DataFrame = bigTable // implicit conversion from RDD to DataFrame
+  val bigDataFrame: H2OFrame = bigTable // implicit conversion from RDD to DataFrame
   for( i <- 0 to 2) bigDataFrame.replace(i, bigDataFrame.vec(i).toEnum)
+  bigDataFrame.update(null)
   ```
 
 11. Run deep learning to produce a model estimating arrival delay:
@@ -169,7 +167,7 @@ You can configure Sparkling Water using the following variables:
 12. Use the model to estimate the delay on the training data:
   ```scala
   val predictionH2OFrame = dlModel.score(bigTable)('predict)
-  val predictionsFromModel = asSchemaRDD(predictionH2OFrame).collect.map(row => if (row.isNullAt(0)) Double.NaN else row(0))
+  val predictionsFromModel = asDataFrame(predictionH2OFrame)(sqlContext).collect.map(row => if (row.isNullAt(0)) Double.NaN else row(0))
   ```
 
 13. Generate an R-code producing residual plot:
