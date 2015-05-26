@@ -2,7 +2,7 @@
  * To start Sparkling Water please type
 
 cd path/to/sparkling/water
-export SPARK_HOME="your/spark-1.2.0-installation"
+export SPARK_HOME="your/spark-1.3.1-installation"
 export MASTER="local-cluster[3,2,4096]"
 
 bin/sparkling-shell --conf spark.executor.memory=3G
