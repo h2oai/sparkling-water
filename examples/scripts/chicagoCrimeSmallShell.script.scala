@@ -288,7 +288,7 @@ plot (g) -> g(
   g.rect(
     g.position "CrimeType", "ArrestRate"
 )
-g.from inspect "data", getFrame "frame_rdd_119"
+g.from inspect "data", getFrame "frame_rdd_83"
 )
 
 */
@@ -308,6 +308,6 @@ plot (g) -> g(
 
   )
 
-  g.from inspect "data", getFrame "frame_rdd_119"
+  g.from inspect "data", getFrame "frame_rdd_83"
 )
 */
