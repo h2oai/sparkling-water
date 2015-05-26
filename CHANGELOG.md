@@ -1,6 +1,15 @@
 ChangeLog
 =========
 
+##v1.3.0 (2015-05-25)
+  - Major release of Sparkling Water
+  - Depends on:
+    - Spark 1.3.1
+    - H2O 3.0 Shannon release
+  - It contains major renaming of API: 
+    - H2O's DataFrame was renamed to H2OFrame
+    - Spark's SchemaRDD was renamed to DataFrame
+
 ##v1.2.0 (2015-05-18)
   - Major release of Sparkling Water
   - Depends on:
