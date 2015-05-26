@@ -1,3 +1,8 @@
+/**
+ * Launch following commands:
+ *   export MASTER='local-cluster[3,2,4512]'
+ *   bin/sparkling-shell -i examples/scripts/chicagoCrime.script.scala --conf "spark.executor.memory=4G"
+ */
 import org.apache.spark.examples.h2o.{Crime, ChicagoCrimeApp}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext

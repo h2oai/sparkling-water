@@ -8,6 +8,14 @@ export MASTER="local-cluster[3,2,4096]"
 bin/sparkling-shell --conf spark.executor.memory=3G
 */
 
+/**
+ * Expects following variables:
+ *  sc - SparkContext provided by environment
+ *  sqlContext - SQL Context provided by environment
+ */
+//val sc: org.apache.spark.SparkContext = null
+//val sqlContext: org.apache.spark.sql.SQLContext = null
+
 //
 // Prepare environment
 //
@@ -21,9 +29,8 @@ import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
+
 // SQL support
-implicit val sqlContext = new SQLContext(sc)
-import sqlContext._
 
 //
 // Start H2O services
@@ -87,19 +94,19 @@ addFiles(sc,
   "examples/smalldata/chicagoCrimes10k.csv"
 )
 
-val weatherTable = asDataFrame(createWeatherTable(SparkFiles.get("chicagoAllWeather.csv")))
+val weatherTable = asDataFrame(createWeatherTable(SparkFiles.get("chicagoAllWeather.csv")))(sqlContext)
 weatherTable.registerTempTable("chicagoWeather")
 // Census data
-val censusTable = asDataFrame(createCensusTable(SparkFiles.get("chicagoCensus.csv")))
+val censusTable = asDataFrame(createCensusTable(SparkFiles.get("chicagoCensus.csv")))(sqlContext)
 censusTable.registerTempTable("chicagoCensus")
 // Crime data
-val crimeTable  = asDataFrame(createCrimeTable(SparkFiles.get("chicagoCrimes10k.csv"), "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))
+val crimeTable  = asDataFrame(createCrimeTable(SparkFiles.get("chicagoCrimes10k.csv"), "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))(sqlContext)
 crimeTable.registerTempTable("chicagoCrime")
 
 //
 // Join crime data with weather and census tables
 //
-val crimeWeather = sql(
+val crimeWeather = sqlContext.sql(
   """SELECT
     |a.Year, a.Month, a.Day, a.WeekNum, a.HourOfDay, a.Weekend, a.Season, a.WeekDay,
     |a.IUCR, a.Primary_Type, a.Location_Description, a.Community_Area, a.District,
@@ -244,6 +251,7 @@ for (crime <- crimeExamples) {
 //
 // More data munging
 //
+import sqlContext._
 // Collect all crime types
 val allCrimes = sql("SELECT Primary_Type, count(*) FROM chicagoCrime GROUP BY Primary_Type").collect
 // Filter only successful arrests

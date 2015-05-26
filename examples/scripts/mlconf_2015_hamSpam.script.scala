@@ -9,8 +9,6 @@ export MASTER="local-cluster[3,2,4096]"
 bin/sparkling-shell --conf spark.executor.memory=3G
 */
 
-val sc: org.apache.spark.SparkContext = null
-
 // Input data
 val DATAFILE="examples/smalldata/smsData.txt"
 
