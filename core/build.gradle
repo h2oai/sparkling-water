@@ -7,7 +7,9 @@ dependencies {
   compile "ai.h2o:h2o-scala_${scalaBinaryVersion}:${h2oVersion}"
   // H2O Persistent layer
   compile("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
-      transitive = false
+      // Cannot use here: transitive = false since Gradle is producing wrong POM file
+      // Hence the exlusions are listed manually
+      exclude(group: "org.apache.hadoop")
   }
 
   // Spark 1.2.0 release
@@ -17,7 +19,6 @@ dependencies {
   compile "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
   // - MLLib component
   compile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
-
 
   // Add joda optional convert library which is required in Scala environment
   compile "org.joda:joda-convert:1.7"
