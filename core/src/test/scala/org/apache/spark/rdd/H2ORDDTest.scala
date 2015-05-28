@@ -116,43 +116,43 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
   }
 
   // PUBDEV-1173
-  ignore("RDD[Int] to H2OFrame[Numeric]") {
+  test("RDD[Int] to H2OFrame[Numeric]") {
     // Create RDD with 100 Int values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10)
     // PUBDEV-1173
-    //val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
-    //assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    //dataFrame.delete()
+    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    dataFrame.delete()
   }
 
   // PUBDEV-1173
-  ignore("RDD[Float] to H2OFrame[Numeric]") {
+  test("RDD[Float] to H2OFrame[Numeric]") {
     // Create RDD with 100 Float values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10).map(v => v.toFloat)
     // PUBDEV-1173
-    //val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
-    //assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    //dataFrame.delete()
+    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    dataFrame.delete()
   }
 
   // PUBDEV-1173
-  ignore("RDD[Double] to H2OFrame[Numeric]") {
+  test("RDD[Double] to H2OFrame[Numeric]") {
     // Create RDD with 100 Double values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10).map(v => v.toDouble)
     // PUBDEV-1173
-    //val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
-    //assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    //dataFrame.delete()
+    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    dataFrame.delete()
   }
 
   // PUBDEV-1173
-  ignore("RDD[String] to H2OFrame[String]") {
+  test("RDD[String] to H2OFrame[String]") {
     // Create RDD with 100 String values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10).map(v => v.toString)
     // PUBDEV-1173
-    //val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
-    //assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    //dataFrame.delete()
+    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    dataFrame.delete()
   }
 
 

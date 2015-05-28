@@ -53,11 +53,18 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   /** Implicit conversion from typed RDD to H2O's DataFrame */
   implicit def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd)
 
+  /** Implicit conversion from RDD[Primitive type] ( where primitive type can be String, Double, Float or Int) to appropriate H2OFrame */
+  implicit def asH2OFrame(primitiveType: PrimitiveType): H2OFrame = H2OContext.toH2OFrame(sparkContext, primitiveType)
+
   /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
   implicit def toH2OFrameKey(rdd : DataFrame) : Key[Frame] = asH2OFrame(rdd)._key
 
   /** Implicit conversion from typed RDD to H2O's DataFrame */
   implicit def toH2OFrameKey[A <: Product : TypeTag](rdd : RDD[A]) : Key[_] = asH2OFrame(rdd)._key
+
+  /** Implicit conversion from RDD[Primitive type] ( where primitive type can be String, Boolean, Double, Float, Int,
+    * Long, Short or Byte ) to appropriate H2O's DataFrame */
+  implicit def toH2OFrameKey(primitiveType: PrimitiveType): Key[_] = asH2OFrame(primitiveType)._key
 
   /** Implicit conversion from Frame to DataFrame */
   implicit def createH2OFrame(fr: Frame) : H2OFrame = new H2OFrame(fr)
@@ -338,6 +345,7 @@ object H2OContext extends Logging {
     fr
   }
 
+
   /** Transform typed RDD into H2O DataFrame */
   def toH2OFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A]) : H2OFrame = {
     import org.apache.spark.h2o.H2OProductUtils._
@@ -361,6 +369,82 @@ object H2OContext extends Logging {
     new H2OFrame(finalizeFrame(keyName, res, h2oTypes, fdomains))
   }
 
+  /** Transform RDD[Primitive type] ( where primitive type can be String, Double, Float or Int) to appropriate H2OFrame */
+  def toH2OFrame(sc: SparkContext, primitive: PrimitiveType): H2OFrame = primitive.toH2OFrame(sc)
+
+  /** Transform RDD[String] to appropriate H2OFrame */
+  def toH2OFrameFromRDDString(sc: SparkContext, rdd: RDD[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd)
+
+  /** Transform RDD[Int] to appropriate H2OFrame */
+  def toH2OFrameFromRDDInt(sc: SparkContext, rdd: RDD[Int]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd)
+
+  /** Transform RDD[Float] to appropriate H2OFrame */
+  def toH2OFrameFromRDDFloat(sc: SparkContext, rdd: RDD[Float]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd)
+
+  /** Transform RDD[Double] to appropriate H2OFrame */
+  def toH2OFrameFromRDDDouble(sc: SparkContext, rdd: RDD[Double]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd)
+
+  private[this]
+  def toH2OFrameFromPrimitive[T: TypeTag](sc: SparkContext, rdd: RDD[T]): H2OFrame = {
+    import org.apache.spark.h2o.H2OPrimitiveTypesUtils._
+    import org.apache.spark.h2o.ReflectionUtils._
+
+    val keyName = "frame_rdd_" + rdd.id + Key.rand() // There are uniq IDs for RDD
+
+    val fnames = Array[String]("values")
+    val ftypes = Array[Class[_]](typ(typeOf[T]))
+    // Collect domain for only one String column
+    val fdomains = collectColumnDomains(sc, rdd, fnames, ftypes)
+
+    // Make an H2O data Frame - but with no backing data (yet)
+    initFrame(keyName, fnames)
+
+    val rows = sc.runJob(rdd, perPrimitivePartition(keyName, fdomains) _) // eager, not lazy, evaluation
+    val res = new Array[Long](rdd.partitions.length)
+    rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
+
+    // Add Vec headers per-Chunk, and finalize the H2O Frame
+    val h2oTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx), fdomains(idx))).toArray
+    new H2OFrame(finalizeFrame(keyName, res, h2oTypes, fdomains))
+  }
+
+  private
+  def perPrimitivePartition[T](keystr: String, domains: Array[Array[String]])
+                              (context: TaskContext, it: Iterator[T]): (Int, Long) = {
+    // An array of H2O NewChunks; A place to record all the data in this partition
+    val nchks = water.fvec.FrameUtils.createNewChunks(keystr, context.partitionId)
+
+    // Make a helper hash for enum domains
+    val domHash = domains.map(ary =>
+      if (ary == null) {
+        null.asInstanceOf[mutable.Map[String, Int]]
+      } else {
+        val m = new mutable.HashMap[String, Int]()
+        for (idx <- ary.indices) m.put(ary(idx), idx)
+        m
+      })
+    val valStr = new ValueString()
+    it.foreach(r => {
+      // For all rows in RDD
+      val chk = nchks(0) // There is only one chunk
+      r match {
+        case i: Int => chk.addNum(i.toDouble)
+        case d: Double => chk.addNum(d)
+        case f: Float => chk.addNum(f.toDouble)
+        case str: String => {
+          if (domains(0) == null) chk.addStr(valStr.setTo(str))
+          else {
+            val domainMap = domHash(0);
+            chk.addEnum(domainMap.get(str).get)
+          }
+        }
+      }
+    })
+    // Compress & write out the Partition/Chunks
+    water.fvec.FrameUtils.closeNewChunks(nchks)
+    // Return Partition# and rows in this Partition
+    (context.partitionId, nchks(0)._len)
+  }
   private
   def perSQLPartition ( keystr: String, types: Seq[(Seq[Int], StructField, Byte)], domains: Array[Array[String]] )
                       ( context: TaskContext, it: Iterator[Row] ): (Int,Long) = {
