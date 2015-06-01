@@ -213,12 +213,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   }
 
   def createH2OSchemaRDD(fr: H2OFrame)(implicit sqlContext: SQLContext): DataFrame = {
-    //SparkPlan.currentContext.set(sqlContext)
     val h2oSchemaRDD = new H2OSchemaRDD(this, fr)
-    val schemaAtts = H2OSchemaUtils.createSchema(fr).fields.map( f =>
-      AttributeReference(f.name, f.dataType, f.nullable)())
-
-    new DataFrame(sqlContext, LogicalRDD(schemaAtts, h2oSchemaRDD)(sqlContext))
+    sqlContext.createDataFrame(h2oSchemaRDD, H2OSchemaUtils.createSchema(fr))
   }
 
   /** Open H2O Flow running in this client. */
