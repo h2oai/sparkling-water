@@ -246,7 +246,7 @@ H2O resides in the same executor JVM as Spark. The memory provided for H2O is co
      > For example, `bin/sparkling-shell --conf spark.executor.memory=5g` or configure the property in `$SPARK_HOME/conf/spark-defaults.conf`
      
  * Configure the Driver memory (i.e., memory available for H2O client running inside Spark driver) via the Spark configuration property `spark.driver.memory`
-     > For example, `bin/sparkling-shell --conf spark.driver.memory=2g` or configure the property in `$SPARK_HOME/conf/spark-defaults.conf`
+     > For example, `bin/sparkling-shell --conf spark.driver.memory=4g` or configure the property in `$SPARK_HOME/conf/spark-defaults.conf`
       
 #### Yarn specific configuration
 * Refer to the [Spark documentation](http://spark.apache.org/docs/1.3.1/running-on-yarn.html)
