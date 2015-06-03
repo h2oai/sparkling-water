@@ -33,20 +33,30 @@ val wordCounts = filterNumbers.map(w => (w, 1)).reduceByKey(_+_)
 val rareWords = wordCounts.filter{ case (k, v) => v < 2 }.map {case (k, v) => k }.collect.toSet
 
 def token(line: String): Seq[String] = {
-    line.split("""\W+""") //get rid of nonWords such as puncutation as opposed to splitting by just " "
+    //get rid of nonWords such as puncutation as opposed to splitting by just " "
+    line.split("""\W+""") 
     .map(_.toLowerCase)
-    .filter(word => """[^0-9]*""".r.pattern.matcher(word).matches) //remove mix of words+numbers
-    .filterNot(word => stopwords.contains(word)) // remove stopwords defined above (you can add to this list if you want)
-    .filter(word => word.size >= 2) // leave only words greater than 1 characters. This deletes A LOT of words but useful to reduce our feature-set
-    .filterNot(word => rareWords.contains(word)) // remove rare occurences of words
+
+    //remove mix of words+numbers
+    .filter(word => """[^0-9]*""".r.pattern.matcher(word).matches) 
+
+    //remove stopwords defined above (you can add to this list if you want)
+    .filterNot(word => stopwords.contains(word)) 
+
+    //leave only words greater than 1 characters. 
+    //this deletes A LOT of words but useful to reduce our feature-set
+    .filter(word => word.size >= 2) 
+
+    //remove rare occurences of words
+    .filterNot(word => rareWords.contains(word)) 
 }
 
 val XXXwords = data.map(d => (d(0), token(d(1)).toSeq)).filter(s => s._2.length > 0)
 val words = XXXwords.map(v => v._2)
 val XXXlabels = XXXwords.map(v => v._1)
 
+// Sanity Check
 println(jobTitles.flatMap(lines => token(lines)).distinct.count) 
-
 
 // Make some helper functions
 def sumArray (m: Array[Double], n: Array[Double]): Array[Double] = {
@@ -73,10 +83,17 @@ def wordToVector (w:String, m: Word2VecModel): Vector = {
 
 val word2vec = new Word2Vec()
 val model = word2vec.fit(words)
+
+// Sanity Check
 model.findSynonyms("teacher", 5).foreach(println)
 
-val title_vectors = words.map(x => new DenseVector(divArray(x.map(m => wordToVector(m, model).toArray).reduceLeft(sumArray),x.length)).asInstanceOf[Vector])
-val title_pairs = words.map(x => (x,new DenseVector(divArray(x.map(m => wordToVector(m, model).toArray).reduceLeft(sumArray),x.length)).asInstanceOf[Vector]))
+val title_vectors = words.map(x => new DenseVector(
+    divArray(x.map(m => wordToVector(m, model).toArray).
+            reduceLeft(sumArray),x.length)).asInstanceOf[Vector])
+
+//val title_pairs = words.map(x => (x,new DenseVector(
+//    divArray(x.map(m => wordToVector(m, model).toArray).
+//            reduceLeft(sumArray),x.length)).asInstanceOf[Vector]))
 
 // Create H2OFrame
 import org.apache.spark.mllib
