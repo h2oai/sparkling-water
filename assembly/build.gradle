@@ -36,8 +36,6 @@ shadowJar {
     include(dependency("gov.nist.math:jama"))
     include(dependency("com.google.code.gson:gson"))
     include(dependency("org.reflections:reflections"))
-    include(dependency("com.google.guava:guava"))
-    include(dependency("commons-collections:commons-collections"))
     include(dependency("ai.h2o:google-analytics-java"))
   }
 }
