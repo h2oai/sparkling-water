@@ -37,6 +37,7 @@ shadowJar {
     include(dependency("com.google.code.gson:gson"))
     include(dependency("org.reflections:reflections"))
     include(dependency("ai.h2o:google-analytics-java"))
+    include(dependency("com.google.guava:guava"))
   }
 }
 
