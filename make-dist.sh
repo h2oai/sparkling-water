@@ -32,6 +32,7 @@ examples/scripts/chicagoCrimeSmall.script.scala
 examples/scripts/chicagoCrimeSmallShell.script.scala
 examples/scripts/mlconf_2015_hamSpam.script.scala
 examples/scripts/strata2015_demo.scala
+examples/scripts/craigslistJobTitles.scala
 examples/smalldata/allyears2k_headers.csv.gz
 examples/smalldata/Chicago_Ohare_International_Airport.csv
 examples/smalldata/prostate.csv
@@ -40,6 +41,7 @@ examples/smalldata/smsData.txt
 examples/smalldata/chicagoAllWeather.csv
 examples/smalldata/chicagoCensus.csv
 examples/smalldata/chicagoCrimes10k.csv
+examples/smalldata/craigslistJobTitles.csv
 docker/
 docker/README.md
 docker/bin/
