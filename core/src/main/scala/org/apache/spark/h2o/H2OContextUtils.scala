@@ -109,7 +109,9 @@ private[spark] object H2OContextUtils {
     // Create global accumulator for
     val bc = sc.accumulableCollection(new mutable.HashSet[NodeDesc]())
     val executorStatus = spreadRDD.map { nodeDesc =>  // RDD partition index
-      assert(nodeDesc._2 == getIp(SparkEnv.get)) // Make sure we are running on right node
+      assert(nodeDesc._2 == getIp(SparkEnv.get),  // Make sure we are running on right node
+        s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getIp(SparkEnv.get)})")
+      // Launch the node
       val executorId = SparkEnv.get.executorId
       try {
         // Get node this node IP
@@ -210,6 +212,7 @@ private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.Ha
 
   override def fetchFlatfile(): String = {
     this.synchronized { while (flatFile.isEmpty) this.wait() }
+
     flatFile.get
   }
 
