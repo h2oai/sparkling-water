@@ -119,7 +119,7 @@ configure(subprojects) { project ->
                         "com.google.code.gson:gson",
                         "org.reflections:reflections",
                         "com.google.guava:guava",
-                        "commons-collections:commons-collections",
+                        //"commons-collections:commons-collections",
                         "ai.h2o:google-analytics-java"]
     }
 }
