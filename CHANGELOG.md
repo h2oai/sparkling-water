@@ -1,6 +1,13 @@
 ChangeLog
 =========
 
+##v1.4.0 (in progress)
+  - Support of primitives type in transformation from RDD to H2OFrame
+  - Support of Spark 1.4
+  - New applications
+    - Craigslist job predictions
+    - Streaming craigslist demo
+
 ##v1.3.0 (2015-05-25)
   - Major release of Sparkling Water
   - Depends on:
