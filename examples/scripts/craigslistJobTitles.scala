@@ -1,19 +1,25 @@
-import org.apache.spark.rdd.RDD
+/**
+ * Craigslist example
+ *
+ * It predicts job category based on job description (called "job title").
+ */
 import org.apache.spark.mllib.feature.Word2Vec
 import org.apache.spark.mllib.feature.Word2VecModel
 import org.apache.spark.mllib.linalg._
 
-val rawJobTitles = sc.textFile("examples/smalldata/craigslistJobTitles.csv")
+//val sc: org.apache.spark.SparkContext = null
 
 def isHeader(line: String) = line.contains("category")
-val data = rawJobTitles.filter(x => !isHeader(x)).map(d => d.split(','))
+// Load and split data based on ","
+val data = sc.textFile("examples/smalldata/craigslistJobTitles.csv").filter(x => !isHeader(x)).map(d => d.split(','))
 
-val label = data.map(l => l(0))
+// Extract job category from job description
+val jobCategories = data.map(l => l(0))
 val jobTitles = data.map(l => l(1))
-// Count of different activites done
-val labelCounts = label.map(n => (n, 1)).reduceByKey(_+_).collect.mkString("\n")
+// Count of different job categories
+val labelCounts = jobCategories.map(n => (n, 1)).reduceByKey(_+_).collect.mkString("\n")
 
-/*
+/* Should return:
 (education,2438)
 (administrative,2500)
 (labor,2500)
@@ -22,16 +28,20 @@ val labelCounts = label.map(n => (n, 1)).reduceByKey(_+_).collect.mkString("\n")
 (foodbeverage,2495)
 */
 
+// All strings which are not useful for text-mining
 val stopwords = Set("ax","i","you","edu","s","t","m","subject","can","lines","re","what"
     ,"there","all","we","one","the","a","an","of","or","in","for","by","on"
     ,"but", "is", "in","a","not","with", "as", "was", "if","they", "are", "this", "and", "it", "have"
     , "from", "at", "my","be","by","not", "that", "to","from","com","org","like","likes","so")
 
-val nonWordSplit = jobTitles.flatMap(t => t.split("""\W+""").map(_.toLowerCase))
-val filterNumbers = nonWordSplit.filter(word => """[^0-9]*""".r.pattern.matcher(word).matches)
-val wordCounts = filterNumbers.map(w => (w, 1)).reduceByKey(_+_)
-val rareWords = wordCounts.filter{ case (k, v) => v < 2 }.map {case (k, v) => k }.collect.toSet
+// Compute rare words
+val rareWords = jobTitles.flatMap(t => t.split("""\W+""").map(_.toLowerCase)).filter(word => """[^0-9]*""".r.pattern.matcher(word).matches).
+  map(w => (w, 1)).reduceByKey(_+_).
+  filter { case (k, v) => v < 2 }.map { case (k, v) => k }.
+  collect.
+  toSet
 
+// Define tokenizer function
 def token(line: String): Seq[String] = {
     //get rid of nonWords such as puncutation as opposed to splitting by just " "
     line.split("""\W+""") 
