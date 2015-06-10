@@ -91,8 +91,20 @@ class RegularExamplesSuite5 extends FunSuite with SparkITest {
 @RunWith(classOf[JUnitRunner])
 class RegularExamplesSuite6 extends FunSuite with SparkITest {
 
-  test("Launch HamOrSpam Demo", LocalTest) {
+  test("Launch Chicago Crime Demo", LocalTest) {
     launch( "org.apache.spark.examples.h2o.ChicagoCrimeAppSmall",
+      env {
+        sparkMaster("local-cluster[3,2,1024]")
+      }
+    )
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class RegularExamplesSuite7 extends FunSuite with SparkITest {
+
+  test("Launch Craigslist App Demo", LocalTest) {
+    launch( "org.apache.spark.examples.h2o.CraigslistJobTitlesApp",
       env {
         sparkMaster("local-cluster[3,2,1024]")
       }

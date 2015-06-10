@@ -67,7 +67,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   implicit def toH2OFrameKey(primitiveType: PrimitiveType): Key[_] = asH2OFrame(primitiveType)._key
 
   /** Implicit conversion from Frame to DataFrame */
-  implicit def createH2OFrame(fr: Frame) : H2OFrame = new H2OFrame(fr)
+  implicit def asH2OFrame(fr: Frame) : H2OFrame = new H2OFrame(fr)
 
   /** Returns a key of given frame */
   implicit def toH2OFrameKey(fr: Frame): Key[Frame] = fr._key
