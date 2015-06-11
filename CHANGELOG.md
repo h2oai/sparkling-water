@@ -7,6 +7,7 @@ ChangeLog
   - New applications
     - Craigslist job predictions
     - Streaming craigslist demo
+  - use H2O version 3.0.0.18
 
 ##v1.3.0 (2015-05-25)
   - Major release of Sparkling Water
