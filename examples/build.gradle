@@ -9,6 +9,9 @@ dependencies {
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"
 
+  // Add streaming
+  compile "org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}"
+
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
   testCompile "junit:junit:4.11"
