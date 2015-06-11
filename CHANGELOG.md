@@ -1,6 +1,11 @@
 ChangeLog
 =========
 
+##v1.3.4 (2015-06-11)
+  - H2O 3.0.0.19 version
+  - Craigslist self-contained application
+  - Craigslist self-contained streaming application
+
 ##v1.3.0 (2015-05-25)
   - Major release of Sparkling Water
   - Depends on:
