@@ -1,22 +1,24 @@
 package org.apache.spark.examples.h2o
 
-import hex.SupervisedModel
+import hex.Model
+import hex.Model.Output
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.feature.{Word2Vec, Word2VecModel}
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, mllib}
+import water.Key
 
 /**
  * This application use word2vec to build a model
  * classifying job offers at Craigslist.
  */
-class CraigslistJobTitlesApp(jobsFile: String)
+class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJobTitles.csv")
                             (@transient override val sc: SparkContext,
                               @transient override val sqlContext: SQLContext,
                               @transient override val h2oContext: H2OContext) extends SWApp
-                            with SparkContextSupport with GBMSupport with ModelMetricsSupport {
+                            with SparkContextSupport with GBMSupport with ModelMetricsSupport with Serializable {
 
   // Import companion object methods
   import CraigslistJobTitlesApp._
@@ -26,12 +28,13 @@ class CraigslistJobTitlesApp(jobsFile: String)
     // Get training frame and word to vec model for data
     val (gbmModel, w2vModel) = buildModels(jobsFile, "modelX")
 
-    println(predict("school teacher having holidays every month", gbmModel, w2vModel))
-    println(predict("developer with 3+ Java experience, jumping", gbmModel, w2vModel))
-    println(predict("Financial accountant CPA preferred", gbmModel, w2vModel))
+    val classNames = gbmModel._output.asInstanceOf[Output].classNames()
+    println(show(predict("school teacher having holidays every month", gbmModel, w2vModel), classNames))
+    println(show(predict("developer with 3+ Java experience, jumping", gbmModel, w2vModel), classNames))
+    println(show(predict("Financial accountant CPA preferred", gbmModel, w2vModel), classNames))
   }
 
-  def buildModels(datafile: String = jobsFile, modelName: String): (SupervisedModel[_,_,_], Word2VecModel) = {
+  def buildModels(datafile: String = jobsFile, modelName: String): (Model[_,_,_], Word2VecModel) = {
     // Get training frame and word to vec model for data
     val (allDataFrame, w2vModel) = createH2OFrame(datafile)
     val frs = DemoUtils.splitFrame(allDataFrame, Array("train.hex", "valid.hex"), Array(0.8, 0.2))
@@ -44,7 +47,12 @@ class CraigslistJobTitlesApp(jobsFile: String)
     (gbmModel, w2vModel)
   }
 
-  def predict(jobTitle: String, model: SupervisedModel[_,_,_], w2vModel: Word2VecModel): (String, Array[Double]) = {
+
+  def predict(jobTitle: String, modelId: String, w2vModel: Word2VecModel): (String, Array[Double]) = {
+    predict(jobTitle, model = water.DKV.getGet(modelId), w2vModel)
+  }
+
+  def predict(jobTitle: String, model: Model[_,_,_], w2vModel: Word2VecModel): (String, Array[Double]) = {
     val tokens = tokenize(jobTitle, STOP_WORDS)
     val vec = wordsToVector(tokens, w2vModel)
 
@@ -61,6 +69,18 @@ class CraigslistJobTitlesApp(jobsFile: String)
     // Cleanup
     Seq(frameToPredict, prediction).foreach(_.delete)
     (predictedCategory, probs.toArray)
+  }
+
+  def classify(jobTitle: String, modelId: String, w2vModel: Word2VecModel): (String, Array[Double]) = {
+    classify(jobTitle, model = water.DKV.getGet(modelId), w2vModel)
+
+  }
+
+  def classify(jobTitle: String, model: Model[_,_,_], w2vModel: Word2VecModel): (String, Array[Double]) = {
+    val tokens = tokenize(jobTitle, STOP_WORDS)
+    val vec = wordsToVector(tokens, w2vModel)
+
+    hex.ModelUtils.classify(vec.toArray, model)
   }
 
   def createH2OFrame(datafile: String): (H2OFrame, Word2VecModel) = {
@@ -157,7 +177,7 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
     }
   }
 
-  private def tokenize(line: String, stopWords: Set[String]) = {
+  private[h2o] def tokenize(line: String, stopWords: Set[String]) = {
     //get rid of nonWords such as punctuation as opposed to splitting by just " "
     line.split("""\W+""")
       // Unify
@@ -185,7 +205,7 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
     return m
   }
 
-  private def wordsToVector(words: Array[String], model: Word2VecModel): Vector = {
+  private[h2o] def wordsToVector(words: Array[String], model: Word2VecModel): Vector = {
     val vec = Vectors.dense(
       divArray(
         words.map(word => wordToVector(word, model).toArray).reduceLeft(sumArray),
@@ -198,5 +218,10 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
     } catch {
       case e: Exception => return Vectors.zeros(100)
     }
+  }
+
+  private[h2o] def show(pred: (String, Array[Double]), classNames: Array[String]): String = {
+    val probs = classNames.zip(pred._2).map(v => f"${v._1}: ${v._2}%.3f")
+    pred._1 + ": " + probs.mkString("[", ", ", "]")
   }
 }
