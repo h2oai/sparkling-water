@@ -14,8 +14,13 @@ import CraigslistJobTitlesApp.show
  * Launch: nc -lk 9999
  * and send events from your console
  *
+ * Send "poison pill" to kill the application.
+ *
  */
 object CraigslistJobTitlesStreamingApp extends SparkContextSupport {
+
+  val POISON_PILL_MSG = "poison pill"
+
   def main(args: Array[String]) {
     // Prepare environment
     val sc = new SparkContext(configure("CraigslistJobTitlesStreamingApp"))
@@ -34,11 +39,21 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport {
       // Start streaming context
       val jobTitlesStream = ssc.socketTextStream("localhost", 9999)
 
+      // Classify incoming messages
       jobTitlesStream.filter(!_.isEmpty)
         .map(jobTitle => (jobTitle, staticApp.classify(jobTitle, modelId, w2vModel)))
         .map(pred => "\"" + pred._1 + "\" = " + show(pred._2, classNames))
         .print()
 
+      // Shutdown app if poison pill is passed as a message
+      jobTitlesStream.filter(msg => POISON_PILL_MSG == msg)
+        .foreachRDD(rdd => if (!rdd.isEmpty()) {
+          println("Poison pill received! Application is going to shut down...")
+          ssc.stop(true, true)
+          staticApp.shutdown()
+      })
+
+      println("Please start the event producer at port 9999, for example: nc -lk 9999")
       ssc.start()
       ssc.awaitTermination()
 
