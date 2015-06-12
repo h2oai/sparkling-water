@@ -1,23 +1,23 @@
 package org.apache.spark.examples.h2o
 
-import org.apache.spark.{SparkFiles, SparkContext}
-import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkContext, SparkFiles}
+import water.app.SparkContextSupport
 
 /**
  * Chicago crime app on small data.
  */
-object ChicagoCrimeAppSmall {
+object ChicagoCrimeAppSmall extends SparkContextSupport {
 
   def main(args: Array[String]) {
     // Prepare environment
     val sc = new SparkContext(configure("ChicagoCrimeTest"))
     // Add local files into the context
     addFiles(sc,
-      "examples/smalldata/chicagoAllWeather.csv",
-      "examples/smalldata/chicagoCensus.csv",
-      "examples/smalldata/chicagoCrimes10k.csv"
+      absPath("examples/smalldata/chicagoAllWeather.csv"),
+      absPath("examples/smalldata/chicagoCensus.csv"),
+      absPath("examples/smalldata/chicagoCrimes10k.csv")
     )
     // SQL support
     val sqlContext = new SQLContext(sc)

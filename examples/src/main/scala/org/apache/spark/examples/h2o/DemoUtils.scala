@@ -53,6 +53,7 @@ object DemoUtils {
     sc
   }
 
+  @deprecated("Use SparkContextSupport trait", "1.3.5")
   def configure(appName:String = "Sparkling Water Demo"):SparkConf = {
     val conf = new SparkConf()
       .setAppName(appName)
@@ -60,10 +61,11 @@ object DemoUtils {
     conf
   }
 
+  @deprecated("Use SparkContextSupport trait", "1.3.5")
   def addFiles(sc: SparkContext, files: String*): Unit = {
     files.foreach( f => sc.addFile(f) )
   }
-
+  @deprecated("Use toString on frame directly", "1.3.5")
   def printFrame(fr: H2OFrame): Unit = {
     new MRTask {
       override def map(cs: Array[Chunk]): Unit = {
@@ -122,11 +124,14 @@ object DemoUtils {
     splitter.getResult
   }
 
+  @deprecated("Use ModelMetricsSupport trait", "1.3.5")
   def r2(model: GBMModel, fr: Frame) =  hex.ModelMetrics.getFromDKV(model, fr).asInstanceOf[hex.ModelMetricsSupervised].r2()
 
+  @deprecated("Use ModelMetricsSupport trait", "1.3.5")
   def modelMetrics[T <: ModelMetrics, M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
                   (model: Model[M,P,O], fr: Frame) = ModelMetrics.getFromDKV(model, fr).asInstanceOf[T]
 
+  @deprecated("Use ModelMetricsSupport trait", "1.3.5")
   def binomialMM[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
                 (model: Model[M,P,O], fr: Frame) = modelMetrics[hex.ModelMetricsBinomial,M,P,O](model, fr)
 

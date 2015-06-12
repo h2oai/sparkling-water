@@ -4,20 +4,20 @@ import java.io.File
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure}
-import org.apache.spark.h2o.{H2OFrame, DoubleHolder, H2OContext}
+import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, SparkFiles}
+import water.app.SparkContextSupport
 
 
-object DeepLearningDemo {
+object DeepLearningDemo extends SparkContextSupport {
 
   def main(args: Array[String]): Unit = {
     // Create Spark context which will drive computation.
     val conf = configure("Sparkling Water: Deep Learning on Airlines data")
     val sc = new SparkContext(conf)
-    addFiles(sc, "examples/smalldata/allyears2k_headers.csv.gz")
+    addFiles(sc, absPath("examples/smalldata/allyears2k_headers.csv.gz"))
 
     // Run H2O cluster inside Spark cluster
     val h2oContext = new H2OContext(sc).start()

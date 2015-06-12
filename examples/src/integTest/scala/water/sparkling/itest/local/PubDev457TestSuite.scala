@@ -1,14 +1,14 @@
 package water.sparkling.itest.local
 
-import org.apache.spark.examples.h2o.DemoUtils._
-import org.apache.spark.h2o.{H2OFrame, H2OContext}
+import org.apache.spark.SparkContext
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.feature.{Tokenizer, HashingTF}
+import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.app.SparkContextSupport
 import water.sparkling.itest.{LocalTest, SparkITest}
 
 /**
@@ -26,7 +26,7 @@ class PubDev457TestSuite extends FunSuite with SparkITest {
   }
 }
 
-object PubDev457Test {
+object PubDev457Test extends SparkContextSupport {
 
   case class LabeledDocument(id: Long, text: String, label: Double)
   case class Document(id: Long, text: String)

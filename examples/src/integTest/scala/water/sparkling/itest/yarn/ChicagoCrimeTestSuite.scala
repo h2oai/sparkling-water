@@ -1,13 +1,13 @@
 package water.sparkling.itest.yarn
 
 import org.apache.spark.SparkContext
-import org.apache.spark.examples.h2o.DemoUtils.configure
 import org.apache.spark.examples.h2o.{ChicagoCrimeApp, Crime}
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.app.SparkContextSupport
 import water.sparkling.itest.SparkITest
 
 /**
@@ -31,16 +31,14 @@ class ChicagoCrimeTestSuite extends FunSuite with SparkITest {
   }
 }
 
-object ChicagoCrimeTest {
+object ChicagoCrimeTest extends SparkContextSupport {
 
   def main(args: Array[String]) {
     val sc = new SparkContext(configure("ChicagoCrimeTest"))
     // SQL support
     val sqlContext = new SQLContext(sc)
-    import sqlContext.implicits._
     // Start H2O services
     val h2oContext = new H2OContext(sc).start()
-    import h2oContext._
 
     val app = new ChicagoCrimeApp(
       weatherFile = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoAllWeather.csv",

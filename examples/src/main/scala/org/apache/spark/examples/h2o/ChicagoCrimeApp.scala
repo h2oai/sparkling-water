@@ -6,13 +6,13 @@ import hex.tree.gbm.GBMModel
 import hex.tree.gbm.GBMModel.GBMParameters.Family
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkContext
-import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.MRTask
+import water.app.{ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
 import water.fvec.{Chunk, NewChunk, Vec}
 import water.parser.ValueString
 
@@ -24,9 +24,10 @@ class ChicagoCrimeApp( weatherFile: String,
                        crimesFile: String,
                        val datePattern: String = "MM/dd/yyyy hh:mm:ss a",
                        val dateTimeZone: String = "Etc/UTC")
-                     ( @transient val sc: SparkContext,
-                       @transient val sqlContext: SQLContext,
-                       @transient val h2oContext: H2OContext)/* extends SparklingWaterApp */ {
+                     ( @transient override val sc: SparkContext,
+                       @transient override val sqlContext: SQLContext,
+                       @transient override val h2oContext: H2OContext) extends SparklingWaterApp
+                      with ModelMetricsSupport {
 
   def train(weatherTable: DataFrame, censusTable: DataFrame, crimesTable: DataFrame): (GBMModel, DeepLearningModel) = {
     // Prepare environment
@@ -237,7 +238,7 @@ class ChicagoCrimeApp( weatherFile: String,
 
 }
 
-object ChicagoCrimeApp {
+object ChicagoCrimeApp extends SparkContextSupport {
 
   def main(args: Array[String]) {
     // Prepare environment

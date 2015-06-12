@@ -9,6 +9,7 @@ import org.apache.spark.{SparkFiles, SparkConf, SparkContext, mllib}
 import org.apache.spark.mllib.feature.{IDF, IDFModel, HashingTF}
 import org.apache.spark.rdd.RDD
 import water.Key
+import water.app.{ModelMetricsSupport, SparkContextSupport}
 
 /**
  * Demo for NYC meetup and MLConf 2015.
@@ -16,7 +17,7 @@ import water.Key
  * It predicts spam text messages.
  * Training dataset is available in the file smalldata/smsData.txt.
  */
-object HamOrSpamDemo {
+object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
 
   val DATAFILE="smsData.txt"
   val TEST_MSGS = Seq(
@@ -28,7 +29,7 @@ object HamOrSpamDemo {
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
     // Register input file as Spark file
-    addFiles(sc, "examples/smalldata/" + DATAFILE)
+    addFiles(sc, absPath("examples/smalldata/" + DATAFILE))
     // Initialize H2O context
     implicit val h2oContext = new H2OContext(sc).start()
     import h2oContext._

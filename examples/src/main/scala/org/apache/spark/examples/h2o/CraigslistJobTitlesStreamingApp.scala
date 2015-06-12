@@ -6,6 +6,7 @@ import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.streaming._
 import CraigslistJobTitlesApp.show
+import water.app.SparkContextSupport
 
 /**
  * Variant of Craigslist App with streaming support to classify
