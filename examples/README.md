@@ -12,6 +12,8 @@
 # Sparkling Water Examples
 
 ## Available Demos And Applications
+  * [`CraigslistJobTitlesStreamingApp`](src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala) - **stream** application - it predicts job category based on incoming job description
+  * [`CraigslistJobTitlesApp`](src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesApp.scala) - predict job category based on posted job description
   * [`ChicagoCrimeAppSmall`](src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeAppSmall.scala) - builds a model predicting a probability of arrest for given crime in Chicago using data in [`smalldata` directory](smalldata/)
   * [`ChicagoCrimeApp`](src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala) - implementation of Chicago Crime demo with setup for data stored on HDFS
   * [`CitiBikeSharingDemo`](src/main/scala/org/apache/spark/examples/h2o/CitiBikeSharingDemo.scala) - predicts occupancy of Citi bike stations in NYC
@@ -23,7 +25,7 @@
   * [`AirlinesWithWeatherDemo`](src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo.scala) - joining flights data with weather data and running
     Deep Learning
   * [`AirlinesWithWeatherDemo2`](src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo2.scala) - new iteration of `AirlinesWithWeatherDemo`
-  
+
 
 > Run examples by typing  `bin/run-example.sh <name of demo>` or follow text below.
 

@@ -40,7 +40,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     val frs = DemoUtils.splitFrame(allDataFrame, Array("train.hex", "valid.hex"), Array(0.8, 0.2))
     val (trainFrame, validFrame) = (h2oContext.asH2OFrame(frs(0)), h2oContext.asH2OFrame(frs(1)))
 
-    val gbmModel = GBMModel(trainFrame, validFrame, "category", modelName)
+    val gbmModel = GBMModel(trainFrame, validFrame, "category", modelName, ntrees = 50)
     // Cleanup
     Seq(trainFrame, validFrame, allDataFrame).foreach(_.delete)
 
@@ -78,9 +78,13 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
 
   def classify(jobTitle: String, model: Model[_,_,_], w2vModel: Word2VecModel): (String, Array[Double]) = {
     val tokens = tokenize(jobTitle, STOP_WORDS)
-    val vec = wordsToVector(tokens, w2vModel)
+    if (tokens.length == 0)
+      EMPTY_PREDICTION
+    else {
+      val vec = wordsToVector(tokens, w2vModel)
 
-    hex.ModelUtils.classify(vec.toArray, model)
+      hex.ModelUtils.classify(vec.toArray, model)
+    }
   }
 
   def createH2OFrame(datafile: String): (H2OFrame, Word2VecModel) = {
@@ -154,6 +158,8 @@ case class JobOffer(category: String, fv: mllib.linalg.Vector)
 
 object CraigslistJobTitlesApp extends SparkContextSupport {
 
+  val EMPTY_PREDICTION = ("NA", Array[Double]())
+
   val STOP_WORDS = Set("ax","i","you","edu","s","t","m","subject","can","lines","re","what"
     ,"there","all","we","one","the","a","an","of","or","in","for","by","on"
     ,"but", "is", "in","a","not","with", "as", "was", "if","they", "are", "this", "and", "it", "have"
@@ -220,7 +226,7 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
     }
   }
 
-  private[h2o] def show(pred: (String, Array[Double]), classNames: Array[String]): String = {
+  def show(pred: (String, Array[Double]), classNames: Array[String]): String = {
     val probs = classNames.zip(pred._2).map(v => f"${v._1}: ${v._2}%.3f")
     pred._1 + ": " + probs.mkString("[", ", ", "]")
   }
