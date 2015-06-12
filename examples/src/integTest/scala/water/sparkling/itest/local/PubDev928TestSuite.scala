@@ -4,13 +4,13 @@ import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.SparkContext
 import org.apache.spark.examples.h2o.Airlines
-import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.app.SparkContextSupport
 import water.fvec.H2OFrame
 import water.sparkling.itest.{LocalTest, SparkITest}
 
@@ -31,7 +31,7 @@ class PubDev928TestSuite extends FunSuite with SparkITest {
   }
 }
 
-object PubDev928Test {
+object PubDev928Test extends SparkContextSupport {
 
   def main(args: Array[String]): Unit = {
     val conf = configure("PUBDEV-928")

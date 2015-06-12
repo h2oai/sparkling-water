@@ -9,6 +9,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, mllib}
 import water.Key
+import water.app.{GBMSupport, ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
 
 /**
  * This application use word2vec to build a model
@@ -17,7 +18,7 @@ import water.Key
 class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJobTitles.csv")
                             (@transient override val sc: SparkContext,
                               @transient override val sqlContext: SQLContext,
-                              @transient override val h2oContext: H2OContext) extends SWApp
+                              @transient override val h2oContext: H2OContext) extends SparklingWaterApp
                             with SparkContextSupport with GBMSupport with ModelMetricsSupport with Serializable {
 
   // Import companion object methods
@@ -177,7 +178,7 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
     try {
       app.run()
     } catch {
-      case e => e.printStackTrace()
+      case e: Throwable => e.printStackTrace()
     } finally {
       app.shutdown()
     }

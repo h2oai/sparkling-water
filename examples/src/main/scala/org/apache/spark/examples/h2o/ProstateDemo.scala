@@ -19,17 +19,17 @@ package org.apache.spark.examples.h2o
 
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.kmeans.{KMeans, KMeansModel}
-import org.apache.spark.{SparkContext, SparkFiles}
-import org.apache.spark.examples.h2o.DemoUtils.{configure,addFiles}
-import org.apache.spark.h2o.{H2OFrame, H2OContext}
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkContext, SparkFiles}
 import water._
+import water.app.SparkContextSupport
 
 /* Demonstrates:
    - data transfer from RDD into H2O
    - algorithm call
  */
-object ProstateDemo {
+object ProstateDemo extends SparkContextSupport {
 
   def main(args: Array[String]) {
 
@@ -37,7 +37,7 @@ object ProstateDemo {
     val conf = configure("Sparkling Water: Prostate demo")
     val sc = new SparkContext(conf)
     // Add a file to be available for cluster mode
-    addFiles(sc, "examples/smalldata/prostate.csv")
+    addFiles(sc, absPath("examples/smalldata/prostate.csv"))
 
     // Run H2O cluster inside Spark cluster
     val h2oContext = new H2OContext(sc).start()

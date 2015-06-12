@@ -1,48 +1,32 @@
-package org.apache.spark.examples.h2o
+package water.app
 
-import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
+import hex.deeplearning.{DeepLearning, DeepLearningModel}
+import hex.tree.gbm.GBMModel
 import hex.tree.gbm.GBMModel.GBMParameters.Family
 import hex.{Model, ModelMetrics}
-import hex.tree.gbm.GBMModel
-import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkConf, SparkContext}
 import water.Key
-import water.fvec.{Frame}
+import water.fvec.Frame
 
 /**
- * Created by michal on 6/7/15.
+ * A simple application trait to define Sparkling Water applications.
  */
-trait SWApp {
+trait SparklingWaterApp {
   @transient val sc: SparkContext
   @transient val sqlContext: SQLContext
   @transient val h2oContext: H2OContext
 
   def loadH2OFrame(datafile: String) = new H2OFrame(new java.net.URI(datafile))
 
-  def run()
-
   def shutdown(): Unit = {
     // Shutdown Spark
     sc.stop()
     // Shutdown H2O explicitly (at least the driver)
     water.H2O.shutdown(0)
-  }
-}
-
-trait SparkContextSupport {
-
-  def configure(appName:String = "Sparkling Water Demo"):SparkConf = {
-    val conf = new SparkConf()
-      .setAppName(appName)
-    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
-    conf
-  }
-
-  def addFiles(sc: SparkContext, files: String*): Unit = {
-    files.foreach( f => sc.addFile(f) )
   }
 }
 

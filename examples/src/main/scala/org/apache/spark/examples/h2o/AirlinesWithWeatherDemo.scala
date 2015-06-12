@@ -5,14 +5,14 @@ import java.io.File
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
-import org.apache.spark.examples.h2o.DemoUtils.{addFiles, configure}
-import org.apache.spark.h2o.{H2OFrame, DoubleHolder, H2OContext}
+import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
+import water.app.SparkContextSupport
 
 
-object AirlinesWithWeatherDemo {
+object AirlinesWithWeatherDemo extends SparkContextSupport {
 
   def main(args: Array[String]): Unit = {
     // Configure this application
@@ -24,8 +24,8 @@ object AirlinesWithWeatherDemo {
     import h2oContext._
     // Setup environment
     addFiles(sc,
-      "examples/smalldata/Chicago_Ohare_International_Airport.csv",
-      "examples/smalldata/allyears2k_headers.csv.gz")
+      absPath("examples/smalldata/Chicago_Ohare_International_Airport.csv"),
+      absPath("examples/smalldata/allyears2k_headers.csv.gz"))
 
     //val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
     val wrawdata = sc.textFile(SparkFiles.get("Chicago_Ohare_International_Airport.csv"),3).cache()

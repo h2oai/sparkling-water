@@ -10,6 +10,7 @@ import org.apache.spark.h2o.{H2OFrame, H2OContext}
 import org.apache.spark.sql.{SQLContext, DataFrame}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.joda.time.MutableDateTime
+import water.app.SparkContextSupport
 import water.fvec.{NewChunk, Chunk, Frame}
 import water.util.Timer
 import water.{Key, MRTask}
@@ -20,7 +21,7 @@ import scala.collection.mutable
  *
  *
  */
-object CitiBikeSharingDemo {
+object CitiBikeSharingDemo extends SparkContextSupport {
 
   val DIR_PREFIX = "/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/"
   val TREES = 1
