@@ -46,6 +46,8 @@ trait H2OConf {
   def nthreads      = sparkConf.getInt(PROP_NTHREADS._1, PROP_NTHREADS._2)
   def disableGA     = sparkConf.getBoolean(PROP_DISABLE_GA._1, PROP_DISABLE_GA._2)
   def clientWebPort = sparkConf.getInt(PROP_CLIENT_WEB_PORT._1, PROP_CLIENT_WEB_PORT._2)
+  def clientIcedDir = sparkConf.getOption(PROP_CLIENT_ICED_DIR._1)
+  def nodeIcedDir   = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
 
   /* Configuration properties */
 
@@ -79,6 +81,10 @@ trait H2OConf {
   /** Exact client port to access web UI.
     * The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`. */
   val PROP_CLIENT_WEB_PORT = ("spark.ext.h2o.client.web.port", -1)
+  /** Location of iced directory for the driver instance. */
+  val PROP_CLIENT_ICED_DIR = ("spark.ext.h2o.client.iced.dir", null.asInstanceOf[String])
+  /** Location of iced directory for Spark nodes */
+  val PROP_NODE_ICED_DIR = ("spark.ext.h2o.node.iced.dir", null.asInstanceOf[String])
 
   /** Configuration property - multiplication factor for dummy RDD generation.
     * Size of dummy RDD is PROP_CLUSTER_SIZE*PROP_DUMMY_RDD_MUL_FACTOR */
@@ -96,7 +102,8 @@ trait H2OConf {
    */
   def getH2OClientArgs:Array[String] = (getH2OCommonOptions
     ++ Seq("-log_level", h2oClientLogLevel, "-quiet")
-    ++ Seq(("-port", if (clientWebPort > 0) clientWebPort else null))
+    ++ Seq(("-ice_root", clientIcedDir.getOrElse(null)),
+            ("-port", if (clientWebPort > 0) clientWebPort else null))
         .filter(_._2 != null).flatMap(x => Seq(x._1, x._2.toString))
     ).toArray
 
