@@ -4,8 +4,8 @@ import java.io.File
 
 import hex.FrameSplitter
 import hex.deeplearning.DeepLearning
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
+import hex.deeplearning.DeepLearningParameters
+import hex.deeplearning.DeepLearningParameters.Activation
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode

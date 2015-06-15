@@ -1,7 +1,7 @@
 package water.sparkling.itest.local
 
 import hex.deeplearning.DeepLearning
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.deeplearning.DeepLearningParameters
 import org.apache.spark.SparkContext
 import org.apache.spark.examples.h2o.Airlines
 import org.apache.spark.h2o.H2OContext

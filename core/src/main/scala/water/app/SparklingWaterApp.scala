@@ -1,14 +1,13 @@
 package water.app
 
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
-import hex.deeplearning.{DeepLearning, DeepLearningModel}
+import hex.deeplearning.DeepLearningParameters.Activation
+import hex.deeplearning.{DeepLearningParameters, DeepLearning, DeepLearningModel}
 import hex.tree.gbm.GBMModel
 import hex.tree.gbm.GBMModel.GBMParameters.Family
 import hex.{Model, ModelMetrics}
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext
 import water.Key
 import water.fvec.Frame
 

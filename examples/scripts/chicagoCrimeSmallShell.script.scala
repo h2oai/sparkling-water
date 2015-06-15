@@ -164,7 +164,7 @@ def DLModel(train: H2OFrame, test: H2OFrame, response: String)
            (implicit h2oContext: H2OContext) : DeepLearningModel = {
   import h2oContext._
   import hex.deeplearning.DeepLearning
-  import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+  import hex.deeplearning.DeepLearningParameters
 
   val dlParams = new DeepLearningParameters()
   dlParams._train = train

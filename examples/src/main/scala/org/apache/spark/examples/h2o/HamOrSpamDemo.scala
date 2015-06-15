@@ -1,7 +1,7 @@
 package org.apache.spark.examples.h2o
 
 import hex.deeplearning.{DeepLearning, DeepLearningModel}
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.deeplearning.DeepLearningParameters
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.sql.{DataFrame, SQLContext}

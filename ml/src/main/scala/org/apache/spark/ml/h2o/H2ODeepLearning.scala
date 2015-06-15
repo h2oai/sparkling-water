@@ -1,7 +1,7 @@
 package org.apache.spark.ml.h2o
 
 import hex.deeplearning.{DeepLearningModel, DeepLearning}
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.deeplearning.DeepLearningParameters
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.{Estimator, Model}
 import org.apache.spark.ml.param.ParamMap
