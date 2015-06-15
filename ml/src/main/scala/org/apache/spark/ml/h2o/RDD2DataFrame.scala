@@ -10,7 +10,9 @@ import org.apache.spark.sql.types.StructType
  *  H2O DataFrame into
  */
 class RDD2DataFrame extends Transformer {
-  override def transform(dataset: DataFrame, paramMap: ParamMap): DataFrame = ???
+  val uid: String = ???
 
-  override def transformSchema(schema: StructType, paramMap: ParamMap): StructType = ???
+  override def transform(dataset: DataFrame): DataFrame = ???
+
+  override def transformSchema(schema: StructType): StructType = ???
 }
