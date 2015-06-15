@@ -55,7 +55,7 @@ trainFrame.update(null)
 
 // Run deep learning to produce model estimating arrival delay
 import hex.deeplearning.DeepLearning
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.deeplearning.DeepLearningParameters
 val dlParams = new DeepLearningParameters()
 dlParams._epochs = 100
 dlParams._train = trainFrame

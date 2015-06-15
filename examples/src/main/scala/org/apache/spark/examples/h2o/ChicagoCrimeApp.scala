@@ -1,7 +1,7 @@
 package org.apache.spark.examples.h2o
 
 import hex.deeplearning.DeepLearningModel
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
+import hex.deeplearning.DeepLearningParameters.Activation
 import hex.tree.gbm.GBMModel
 import hex.tree.gbm.GBMModel.GBMParameters.Family
 import hex.{Model, ModelMetricsBinomial}
@@ -131,7 +131,7 @@ class ChicagoCrimeApp( weatherFile: String,
              (implicit h2oContext: H2OContext) : DeepLearningModel = {
     import h2oContext._
     import hex.deeplearning.DeepLearning
-    import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+    import hex.deeplearning.DeepLearningParameters
 
     val dlParams = new DeepLearningParameters()
     dlParams._train = train
