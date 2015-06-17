@@ -43,6 +43,9 @@ trait ModelMetricsSupport {
   (model: Model[M,P,O], fr: Frame) = modelMetrics[hex.ModelMetricsMultinomial,M,P,O](model, fr)
 }
 
+// Create companion object
+object ModelMetricsSupport extends ModelMetricsSupport
+
 trait DeepLearningSupport {
 
   def DLModel(train: H2OFrame, valid: H2OFrame, response: String,
@@ -67,6 +70,9 @@ trait DeepLearningSupport {
   }
 }
 
+// Create companion object
+object DeepLearningSupport extends DeepLearningSupport
+
 trait GBMSupport {
 
   def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
@@ -89,3 +95,7 @@ trait GBMSupport {
     model
   }
 }
+
+// Create companion object
+object GBMSupport extends GBMSupport
+
