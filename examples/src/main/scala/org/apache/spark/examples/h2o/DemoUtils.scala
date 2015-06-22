@@ -6,7 +6,7 @@ import hex.tree.gbm.GBMModel
 import hex.Model
 import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.{SparkConf, SparkContext}
-import water.fvec.{Frame, Chunk}
+import water.fvec.{NewChunk, Frame, Chunk}
 import water.parser.ValueString
 import water._
 
@@ -145,3 +145,22 @@ object DemoUtils {
       """.stripMargin
   }
 }
+
+/** A prediction task - for given output of a binomial model and
+  * threshold it creates a new vector which contains 0, 1 based on the threshold
+  * probabilities produced by the model.
+  *
+  * @param threshold threshold to make a prediction
+  *
+  * FIXME: this is an ad-hoc solution. Wee need a library of these MRtasks
+  */
+class MakePredictions(val threshold : Double) extends MRTask[MakePredictions] {
+
+  override def map(cs: Array[Chunk], nc: NewChunk): Unit = {
+    val pred0 = cs(1)
+    for (row <- 0 until pred0.len()) {
+      nc.addNum(if (pred0.atd(row) < threshold) 0 else 1)
+    }
+  }
+}
+
