@@ -25,4 +25,6 @@ out/
 *.ipr
 *.iml
 .idea
-
+metastore_db/
+derby.log
+demofiles.list
