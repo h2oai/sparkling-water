@@ -81,8 +81,20 @@ rsync -rtvW --files-from "$TOPDIR/demofiles.list" "$TOPDIR/" "$DEST_DIR/"
 rsync -rtvW "$SCALADOC_SRC_DIR" "$SCALADOC_DST_DIR"
 
 GITHASH=`git rev-parse --verify HEAD`
+
+if [ "$H2O_NAME" == "master"]; then
+  H2O_BRANCH_NAME="master"
+else
+  H2O_BRANCH_NAME="rel-$H2O_NAME"
+fi
 # Copy dist dir files
-cat "$DIST_DIR/index.html" | sed -e "s/SUBST_PROJECT_VERSION/$VERSION/g" | sed -e "s/SUBST_PROJECT_GITHASH/${GITHASH}/g" > "$DIST_BUILD_DIR/index.html"
+cat "$DIST_DIR/index.html" | sed -e "s/SUBST_PROJECT_VERSION/$VERSION/g"\
+  | sed -e "s/SUBST_PROJECT_GITHASH/${GITHASH}/g"\
+  | sed -e "s/SUBST_H2O_VERSION/${H2O_VERSION}/g"\
+  | sed -e "s/SUBST_H2O_BUILD/${H2O_BUILD}/g"\
+  | sed -e "s/SUBST_H2O_NAME/${H2O_NAME}/g"\
+  | sed -e "s/SUBST_SPARK_VERSION/${SPARK_VERSION}/g"\
+  | sed -e "s/SUBST_H2O_BRANCH_NAME/${H2O_BRANCH_NAME}/g" > "$DIST_BUILD_DIR/index.html"
 
 exit 0
 
