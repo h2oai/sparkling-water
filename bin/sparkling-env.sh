@@ -13,6 +13,10 @@ fi
 
 # Version of this distribution
 VERSION=$( cat $TOPDIR/gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//" )
+H2O_VERSION=$(cat $TOPDIR/gradle.properties | grep h2oMajorVersion | sed -e "s/.*=//")
+H2O_BUILD=$(cat $TOPDIR/gradle.properties | grep h2oBuild | sed -e "s/.*=//")
+H2O_NAME=$(cat $TOPDIR/gradle.properties | grep h2oMajorName | sed -e "s/.*=//")
+SPARK_VERSION=$(cat $TOPDIR/gradle.properties | grep sparkVersion | sed -e "s/.*=//")
 # Fat jar for this distribution
 FAT_JAR="sparkling-water-assembly-$VERSION-all.jar"
 FAT_JAR_FILE="$TOPDIR/assembly/build/libs/$FAT_JAR"
@@ -29,6 +33,8 @@ cat <<EOF
 -----
   Spark master (MASTER)     : $MASTER
   Spark home   (SPARK_HOME) : $SPARK_HOME
+  H2O build version         : ${H2O_VERSION}.${H2O_BUILD} ($H2O_NAME)
+  Spark build version       : ${SPARK_VERSION}
 ----
 
 EOF

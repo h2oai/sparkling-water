@@ -56,7 +56,7 @@ configure(allprojects) { project ->
       scalaBinaryVersion = '2.10'
       // h2oBuild property is defined in gradle.properties
       h2oVersion         = "$h2oMajorVersion.$h2oBuild"
-      sparkVersion       = '1.3.0'
+      sparkVersion       = "$sparkVersion"
       junitVersion       = '4.11'
     }
 }
