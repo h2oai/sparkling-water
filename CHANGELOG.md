@@ -1,5 +1,11 @@
 ChangeLog
 =========
+##v1.3.6 (2015-06-26)
+  - fresh new version of H2O 3.0.0.25 supporting weights
+
+##v1.3.5 (2015-06-15)
+  - H2O version 3.0.0.22
+  - minor improvements in API consistency
 
 ##v1.3.4 (2015-06-11)
   - H2O 3.0.0.19 version
