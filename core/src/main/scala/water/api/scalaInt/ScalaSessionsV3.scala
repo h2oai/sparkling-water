@@ -14,25 +14,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.app
+package water.api.scalaInt
 
-import org.apache.spark.{SparkContext, SparkConf}
+import water.api.{API, Schema}
 
 /**
- * Publish useful method to configure Spark context.
+ * Schema used for representing all valid scala interpreters sessions
  */
-trait SparkContextSupport {
+class ScalaSessionsV3 extends Schema[IcedSessions, ScalaSessionsV3] {
 
-  def configure(appName: String = "Sparkling Water Demo"): SparkConf = {
-    val conf = new SparkConf()
-      .setAppName(appName)
-    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
-    conf
-  }
-
-  def addFiles(sc: SparkContext, files: String*): Unit = {
-    files.foreach(f => sc.addFile(f))
-  }
-
-  def absPath(path: String): String = new java.io.File(path).getAbsolutePath
+  @API(help = "List of session IDs", direction = API.Direction.OUTPUT)
+  var sessions: Array[Int] = _
 }

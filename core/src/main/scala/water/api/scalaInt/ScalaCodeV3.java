@@ -14,25 +14,31 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.app
+package water.api.scalaInt;
 
-import org.apache.spark.{SparkContext, SparkConf}
+
+import water.api.API;
+import water.api.Schema;
 
 /**
- * Publish useful method to configure Spark context.
+ * Schema used for representing scala code
  */
-trait SparkContextSupport {
+public class ScalaCodeV3 extends Schema<IcedCode, ScalaCodeV3> {
 
-  def configure(appName: String = "Sparkling Water Demo"): SparkConf = {
-    val conf = new SparkConf()
-      .setAppName(appName)
-    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
-    conf
-  }
+  @API(help = "Session id identifying the correct interpreter", direction = API.Direction.INPUT)
+  public int session_id;
 
-  def addFiles(sc: SparkContext, files: String*): Unit = {
-    files.foreach(f => sc.addFile(f))
-  }
+  @API(help = "Scala code to interpret", direction = API.Direction.INPUT)
+  public String code;
 
-  def absPath(path: String): String = new java.io.File(path).getAbsolutePath
+  @API(help = "Status of the code execution", direction = API.Direction.OUTPUT)
+  public String status;
+
+  @API(help = "Response of the interpreter", direction = API.Direction.OUTPUT)
+  public String response;
+
+  @API(help = "Redirected console output, for example output of println is stored to this field",
+      direction = API.Direction.OUTPUT)
+  public String output;
 }
+

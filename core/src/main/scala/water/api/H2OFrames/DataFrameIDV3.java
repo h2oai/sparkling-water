@@ -14,25 +14,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.app
+package water.api.H2OFrames;
 
-import org.apache.spark.{SparkContext, SparkConf}
+import water.api.API;
+import water.api.Schema;
 
 /**
- * Publish useful method to configure Spark context.
+ * Schema used for representing frame name
  */
-trait SparkContextSupport {
+public class DataFrameIDV3 extends Schema<IcedDataFrameID, DataFrameIDV3> {
+    @API(help = "Id of H2OFrame to be transformed", direction = API.Direction.INPUT)
+    public String h2oframe_id;
 
-  def configure(appName: String = "Sparkling Water Demo"): SparkConf = {
-    val conf = new SparkConf()
-      .setAppName(appName)
-    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
-    conf
-  }
-
-  def addFiles(sc: SparkContext, files: String*): Unit = {
-    files.foreach(f => sc.addFile(f))
-  }
-
-  def absPath(path: String): String = new java.io.File(path).getAbsolutePath
+    @API(help = "Id of transformed DataFrame", direction = API.Direction.OUTPUT)
+    public String dataframe_id;
 }

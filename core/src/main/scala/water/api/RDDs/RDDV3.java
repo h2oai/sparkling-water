@@ -14,25 +14,23 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.app
+package water.api.RDDs;
 
-import org.apache.spark.{SparkContext, SparkConf}
+import water.api.API;
+import water.api.Schema;
 
 /**
- * Publish useful method to configure Spark context.
+ * Endpoint representing single RDD.
  */
-trait SparkContextSupport {
+public class RDDV3 extends Schema<IcedRDDInfo, RDDV3> {
 
-  def configure(appName: String = "Sparkling Water Demo"): SparkConf = {
-    val conf = new SparkConf()
-      .setAppName(appName)
-    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
-    conf
-  }
+    @API(help = "RDD ID", direction = API.Direction.INOUT)
+    public int rdd_id;
 
-  def addFiles(sc: SparkContext, files: String*): Unit = {
-    files.foreach(f => sc.addFile(f))
-  }
+    @API(help = "RDD Name", direction = API.Direction.OUTPUT)
+    public String name;
 
-  def absPath(path: String): String = new java.io.File(path).getAbsolutePath
+    @API(help = "Number of partitions", direction = API.Direction.OUTPUT)
+    public int partitions;
+
 }

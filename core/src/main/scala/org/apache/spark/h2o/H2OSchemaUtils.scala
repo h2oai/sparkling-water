@@ -167,7 +167,7 @@ object H2OSchemaUtils {
       field.dataType match {
         case ArrayType(aryType,nullable) => {
           val result = (0 until fmaxLens(arrayCnt)).map(i =>
-            (path, StructField(field.name+i.toString, aryType, nullable), ARRAY_TYPE)
+            (path, StructField(field.name + i.toString, aryType, nullable), ARRAY_TYPE)
           )
           arrayCnt += 1
           result
@@ -175,7 +175,7 @@ object H2OSchemaUtils {
         case t if t.isInstanceOf[UserDefinedType[_]] => {
           // t.isInstanceOf[UserDefinedType[mllib.linalg.Vector]]
           val result = (0 until fmaxLens(numOfArrayCols + vecCnt)).map(i =>
-            (path, StructField(field.name+i.toString, DoubleType, true), VEC_TYPE)
+            (path, StructField(field.name + i.toString, DoubleType, true), VEC_TYPE)
           )
           vecCnt += 1
           result

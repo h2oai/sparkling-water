@@ -17,5 +17,5 @@ banner
 
 (
  cd $TOPDIR
- $SPARK_HOME/bin/spark-shell --jars $TOPDIR/assembly/build/libs/$FAT_JAR --driver-memory $DRIVER_MEMORY "$@"
+ $SPARK_HOME/bin/spark-shell --jars $TOPDIR/assembly/build/libs/$FAT_JAR --driver-class-path $TOPDIR/assembly/build/libs/$FAT_JAR --driver-memory $DRIVER_MEMORY "$@"
 )

@@ -38,6 +38,8 @@ object SparklingWaterDriver {
     new H2OContext(sc).start()
 
     // Infinite wait
-    this.synchronized( while(true) wait )
+    this.synchronized(while (true) {
+      wait
+    })
   }
 }

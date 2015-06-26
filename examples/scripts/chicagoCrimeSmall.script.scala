@@ -11,7 +11,6 @@ addFiles(sc,
   "examples/smalldata/chicagoCensus.csv",
   "examples/smalldata/chicagoCrimes10k.csv"
 )
-
 // 3. Create SQL support
 implicit val sqlContext = new SQLContext(sc)
 // 4. Start H2O services

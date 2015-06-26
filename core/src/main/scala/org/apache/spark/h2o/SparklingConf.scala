@@ -14,25 +14,23 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.app
+package org.apache.spark.h2o
 
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.SparkConf
+import org.apache.spark.repl.InterpreterUtils
 
 /**
- * Publish useful method to configure Spark context.
+ * Wrapper around spark configuration
+ * @param loadDefaults
  */
-trait SparkContextSupport {
+class SparklingConf(loadDefaults: Boolean)  {
 
-  def configure(appName: String = "Sparkling Water Demo"): SparkConf = {
-    val conf = new SparkConf()
-      .setAppName(appName)
-    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
-    conf
-  }
+  /** Create a SparkConf that loads defaults from system properties and the classpath */
+  def this() = this(true)
 
-  def addFiles(sc: SparkContext, files: String*): Unit = {
-    files.foreach(f => sc.addFile(f))
-  }
+  private val conf = new SparkConf(loadDefaults)
+  conf.set("spark.repl.class.uri", InterpreterUtils.classServerUri)
 
-  def absPath(path: String): String = new java.io.File(path).getAbsolutePath
+
+  def sparkConf  = conf
 }

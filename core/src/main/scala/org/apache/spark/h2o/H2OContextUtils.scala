@@ -242,11 +242,11 @@ private[h2o]
 trait SparkEnvListener extends org.apache.spark.scheduler.SparkListener { self: H2OContext =>
 
   override def onBlockManagerAdded(blockManagerAdded: SparkListenerBlockManagerAdded): Unit = {
-    println("--------------------> onBlockManagerAdded: "+ blockManagerAdded)
+    println("--------------------> onBlockManagerAdded: " + blockManagerAdded)
   }
 
   override def onBlockManagerRemoved(blockManagerRemoved: SparkListenerBlockManagerRemoved): Unit = {
-    println("--------------------> onBlockManagerRemoved: "+ blockManagerRemoved)
+    println("--------------------> onBlockManagerRemoved: " + blockManagerRemoved)
   }
 }
 

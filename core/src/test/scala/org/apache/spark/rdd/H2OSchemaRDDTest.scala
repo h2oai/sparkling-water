@@ -310,7 +310,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     })
     val valuesInRdd = schemaRdd.collect().map(row => row(0))
     for (idx <- valuesInRdd.indices)
-      assert (valuesInRdd(idx) == "6870f256-e145-4d75-adb0-99ccb77d5d3" + ('a'+idx).asInstanceOf[Char])
+      assert (valuesInRdd(idx) == "6870f256-e145-4d75-adb0-99ccb77d5d3" + ('a' + idx).asInstanceOf[Char])
     dataFrame.delete()
   }
 

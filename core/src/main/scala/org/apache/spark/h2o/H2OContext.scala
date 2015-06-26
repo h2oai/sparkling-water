@@ -20,12 +20,17 @@ package org.apache.spark.h2o
 import org.apache.spark._
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
+import org.apache.spark.repl.{SparkIMain, SparkILoop}
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
 import org.apache.spark.sql.execution.LogicalRDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import water._
+import water.api.DataFrames.DataFramesHandler
+import water.api.H2OFrames.H2OFramesHandler
+import water.api.RDDs.RDDsHandler
 import water.api._
+import water.api.scalaInt.ScalaCodeHandler
 import water.fvec.Vec
 import water.parser.ValueString
 
@@ -46,6 +51,12 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   } with org.apache.spark.Logging
   with H2OConf
   with Serializable {
+
+  /** Runtime list of active H2O nodes */
+  private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
+
+  /** Location (IP:PORT) of local H2O client */
+  private var localClient: String = _
 
   /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
   implicit def asH2OFrame(rdd : DataFrame) : H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd)
@@ -87,13 +98,10 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   def asSchemaRDD(fr : H2OFrame)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
   def asDataFrame(fr : H2OFrame)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
 
-  /** Runtime list of nodes */
-  private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
   /** Detected number of Spark executors
     * Property value is derived from SparkContext during creation of H2OContext. */
   private def numOfSparkExecutors = if (sparkContext.isLocal) 1 else sparkContext.getExecutorStorageStatus.length - 1
 
-  private var localClient:String = _
   def h2oLocalClient = this.localClient
   // For now disable opening Spark UI
   //def sparkUI = sparkContext.ui.map(ui => ui.appUIAddress)
@@ -149,7 +157,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
                               executors)
       logDebug(s"Arguments used for launching h2o nodes: ${h2oClientArgs.mkString(" ")}")
       H2OClientApp.main(h2oClientArgs)
-      H2OContext.registerClientWebAPI(sparkContext)
+      H2OContext.registerClientWebAPI(sparkContext,this)
       H2O.finalizeRegistration()
       H2O.waitForCloudSize(executors.length, cloudTimeout)
     } else {
@@ -175,7 +183,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   @tailrec
   private
-  def createSpreadRDD(nretries:Int,
+  def createSpreadRDD(nretries: Int,
                       mfactor: Int,
                       nworkers: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
     logDebug(s"  Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, nworkers=${nworkers}")
@@ -328,29 +336,6 @@ object H2OContext extends Logging {
     }
   }
 
-  private
-  def initFrame[T](keyName: String, names: Array[String]):Unit = {
-    val fr = new water.fvec.Frame(Key.make(keyName))
-    water.fvec.FrameUtils.preparePartialFrame(fr, names)
-    // Save it directly to DKV
-    fr.update(null)
-  }
-  private
-  def finalizeFrame[T](keyName: String,
-                       res: Array[Long],
-                       colTypes: Array[Byte],
-                       colDomains: Array[Array[String]]):Frame = {
-    val fr:Frame = DKV.get(keyName).get.asInstanceOf[Frame]
-    val colH2OTypes = colTypes.indices.map(idx => {
-      val typ = colTypes(idx)
-      if (typ==Vec.T_STR) colDomains(idx) = null // minor clean-up
-      typ
-    }).toArray
-    water.fvec.FrameUtils.finalizePartialFrame(fr, res, colDomains, colH2OTypes)
-    fr
-  }
-
-
   /** Transform typed RDD into H2O DataFrame */
   def toH2OFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A]) : H2OFrame = {
     import org.apache.spark.h2o.H2OProductUtils._
@@ -367,7 +352,7 @@ object H2OContext extends Logging {
 
     val rows = sc.runJob(rdd, perRDDPartition(keyName, fdomains) _) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
-    rows.foreach{ case(cidx,nrows) => res(cidx) = nrows }
+    rows.foreach{ case(cidx, nrows) => res(cidx) = nrows }
 
     // Add Vec headers per-Chunk, and finalize the H2O Frame
     val h2oTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx), fdomains(idx))).toArray
@@ -482,7 +467,9 @@ object H2OContext extends Logging {
 
         var i = 0
         var subRow = row
-        while (i < path.length-1 && !subRow.isNullAt(path(i))) { subRow = subRow.getAs[Row](path(i)); i += 1 }
+        while (i < path.length-1 && !subRow.isNullAt(path(i))) {
+          subRow = subRow.getAs[Row](path(i)); i += 1
+        }
         val aidx = path(i) // actual index into row provided by path
         if (subRow.isNullAt(aidx)) {
           chk.addNA()
@@ -578,6 +565,28 @@ object H2OContext extends Logging {
   }
 
   private
+  def initFrame[T](keyName: String, names: Array[String]):Unit = {
+    val fr = new water.fvec.Frame(Key.make(keyName))
+    water.fvec.FrameUtils.preparePartialFrame(fr, names)
+    // Save it directly to DKV
+    fr.update(null)
+  }
+  private
+  def finalizeFrame[T](keyName: String,
+                       res: Array[Long],
+                       colTypes: Array[Byte],
+                       colDomains: Array[Array[String]]):Frame = {
+    val fr:Frame = DKV.get(keyName).get.asInstanceOf[Frame]
+    val colH2OTypes = colTypes.indices.map(idx => {
+      val typ = colTypes(idx)
+      if (typ==Vec.T_STR) colDomains(idx) = null // minor clean-up
+      typ
+    }).toArray
+    water.fvec.FrameUtils.finalizePartialFrame(fr, res, colDomains, colH2OTypes)
+    fr
+  }
+
+  private
   def checkAndUpdateSparkEnv(conf: SparkConf): Unit = {
     // If 'spark.executor.instances' is specified update H2O property as well
     conf.getOption("spark.executor.instances").foreach(v => conf.set("spark.ext.h2o.cluster.size", v))
@@ -588,14 +597,100 @@ object H2OContext extends Logging {
     }
   }
 
-  private[h2o] def registerClientWebAPI(sc: SparkContext): Unit = {
-    def hfactory = new HandlerFactory {
-      override def create(aClass: Class[_ <: Handler]): Handler = new RDDsHandler(sc)
+  private[h2o] def registerClientWebAPI(sc: SparkContext, h2OContext: H2OContext): Unit = {
+    //this is here to override the SQLContext by the spark shell, this instance than can be obtained using SQLContext.getOrCreate(sc)
+    new SQLContext(sc)
+
+    registerScalaIntEndp(sc, h2OContext)
+    registerDataFramesEndp(sc, h2OContext)
+    registerH2OFramesEndp(sc, h2OContext)
+    registerRDDsEndp(sc)
+  }
+
+  private def registerH2OFramesEndp(sc: SparkContext, h2OContext: H2OContext) = {
+
+    val h2OFramesHandler = new H2OFramesHandler(sc, h2OContext)
+
+    def h2OFramesFactory = new HandlerFactory {
+      override def create(handler: Class[_ <: Handler]): Handler = h2OFramesHandler
     }
+
+    RequestServer.register("/3/h2oframes/(?<h2oframeid>.*)/dataframe", "POST",
+                           classOf[H2OFramesHandler], "toDataFrame",
+                           null, Array("h2oframe_id"), "Transform H2OFrame with given id to DataFrame",
+                           h2OFramesFactory);
+
+  }
+
+  private def registerRDDsEndp(sc: SparkContext) = {
+
+    val rddsHandler = new RDDsHandler(sc)
+
+    def rddsFactory = new HandlerFactory {
+      override def create(aClass: Class[_ <: Handler]): Handler = rddsHandler
+    }
+
     RequestServer.register("/3/RDDs", "GET",
-                            classOf[RDDsHandler], "list",
-                            null, new Array[String](0),
-                            "Return all Frames in the H2O distributed K/V store.",
-                            hfactory)
+                           classOf[RDDsHandler], "list",
+                           null, new Array[String](0),
+                           "Return all Frames in the H2O distributed K/V store.",
+                           rddsFactory)
+
+    RequestServer.register("/3/RDDs/(?<rddid>[0-9]+)", "GET",
+                           classOf[RDDsHandler], "getRDD",
+                           null, Array("rdd_id"),
+                           "Get frame in the H2O distributed K/V store with the given ID",
+                           rddsFactory)
+
+  }
+
+  private def registerDataFramesEndp(sc: SparkContext, h2OContext: H2OContext) = {
+
+    val dataFramesHandler = new DataFramesHandler(sc, h2OContext)
+
+    def dataFramesfactory = new HandlerFactory {
+      override def create(aClass: Class[_ <: Handler]): Handler = dataFramesHandler
+    }
+
+    RequestServer.register("/3/dataframes", "GET",
+                           classOf[DataFramesHandler], "list",
+                           null, new Array[String](0),
+                           "Return all DataFrames.",
+                           dataFramesfactory)
+
+    RequestServer.register("/3/dataframes/(?<dataframeid>df_[0-9]+)", "POST",
+                           classOf[DataFramesHandler], "getDataFrame",
+                           null, Array("dataframe_id"),
+                           "Get DataFrame with the given id",
+                           dataFramesfactory)
+
+    RequestServer.register("/3/dataframes/(?<dataframeid>df_[0-9]+)/h2oframe", "POST",
+                           classOf[DataFramesHandler], "toH2OFrame",
+                           null, Array("dataframe_id"), "Transform DataFrame with the given id to H2OFrame",
+                           dataFramesfactory);
+
+  }
+
+  private def registerScalaIntEndp(sc: SparkContext, h2OContext: H2OContext) = {
+    val scalaCodeHandler = new ScalaCodeHandler(sc, h2OContext)
+    def scalaCodeFactory = new HandlerFactory {
+      override def create(aClass: Class[_ <: Handler]): Handler = scalaCodeHandler
+    }
+    RequestServer.register("/3/scalaint/(?<sessionid>[0-9]+)", "POST",
+                           classOf[ScalaCodeHandler], "interpret",
+                           null, Array("session_id"), "Interpret the code and return the result",
+                           scalaCodeFactory);
+
+    RequestServer.register("/3/scalaint", "POST",
+                           classOf[ScalaCodeHandler], "initSession",
+                           null, new Array[String](0), "Return session id for communication with scala interpreter", scalaCodeFactory);
+
+    RequestServer.register("/3/scalaint", "GET",
+                           classOf[ScalaCodeHandler], "getSessions",
+                           null, new Array[String](0), "Return all active session IDs", scalaCodeFactory);
+
+    RequestServer.register("/3/scalaint/(?<sessionid>[0-9]+)", "DELETE",
+                           classOf[ScalaCodeHandler], "destroySession",
+                           null, Array("session_id"), "Return session id for communication with scala interpreter", scalaCodeFactory);
   }
 }

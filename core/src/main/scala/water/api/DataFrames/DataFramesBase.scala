@@ -14,25 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.app
+package water.api.DataFrames
 
-import org.apache.spark.{SparkContext, SparkConf}
+import water.api.{API, Schema}
 
 /**
- * Publish useful method to configure Spark context.
+ * Generic implementation endpoint for all Data Frame queries.
  */
-trait SparkContextSupport {
-
-  def configure(appName: String = "Sparkling Water Demo"): SparkConf = {
-    val conf = new SparkConf()
-      .setAppName(appName)
-    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
-    conf
-  }
-
-  def addFiles(sc: SparkContext, files: String*): Unit = {
-    files.foreach(f => sc.addFile(f))
-  }
-
-  def absPath(path: String): String = new java.io.File(path).getAbsolutePath
+class DataFramesBase[I <: DataFrames, S <: DataFramesBase[I, S]] extends Schema[I, S] {
+  @API(help = "List of DataFrames", direction = API.Direction.OUTPUT)
+  val dataFrames: Array[DataFrameV3] = null
 }
