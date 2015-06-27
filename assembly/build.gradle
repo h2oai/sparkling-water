@@ -38,6 +38,7 @@ shadowJar {
     include(dependency("org.reflections:reflections"))
     include(dependency("ai.h2o:google-analytics-java"))
     include(dependency("com.google.guava:guava"))
+    include(dependency("com.github.tony19:named-regexp"))
   }
 }
 

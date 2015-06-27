@@ -120,7 +120,8 @@ configure(subprojects) { project ->
                         "org.reflections:reflections",
                         "com.google.guava:guava",
                         //"commons-collections:commons-collections",
-                        "ai.h2o:google-analytics-java"]
+                        "ai.h2o:google-analytics-java",
+                        "com.github.tony19:named-regexp"]
     }
 }
 
