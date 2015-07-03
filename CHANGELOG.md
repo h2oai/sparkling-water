@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-##v1.4.0 (in progress)
+##v1.4.0 (2015-07-03)
   - Support of primitives type in transformation from RDD to H2OFrame
   - Support of Spark 1.4
   - New applications

@@ -52,7 +52,7 @@ Sparkling Water excels in leveraging existing Spark-based workflows that need to
 ## Requirements
  - Linux or Mac OSX platform
  - Java 1.7+
- - [Spark 1.3.1](http://spark.apache.org/downloads.html)
+ - [Spark 1.4.0](http://spark.apache.org/downloads.html)
 
 ---
 
@@ -239,7 +239,7 @@ val hc = new H2OContext(sc).start(3)
 <a name="MemorySetup"></a>
 ### Memory Allocation 
 
-H2O resides in the same executor JVM as Spark. The memory provided for H2O is configured via Spark; refer to [Spark configuration](http://spark.apache.org/docs/1.3.1/configuration.html) for more details.
+H2O resides in the same executor JVM as Spark. The memory provided for H2O is configured via Spark; refer to [Spark configuration](http://spark.apache.org/docs/1.4.0/configuration.html) for more details.
 
 #### Generic configuration
  * Configure the Executor memory (i.e., memory available for H2O) via the Spark configuration property `spark.executor.memory` .
@@ -249,7 +249,7 @@ H2O resides in the same executor JVM as Spark. The memory provided for H2O is co
      > For example, `bin/sparkling-shell --conf spark.driver.memory=4g` or configure the property in `$SPARK_HOME/conf/spark-defaults.conf`
       
 #### Yarn specific configuration
-* Refer to the [Spark documentation](http://spark.apache.org/docs/1.3.1/running-on-yarn.html)
+* Refer to the [Spark documentation](http://spark.apache.org/docs/1.4.0/running-on-yarn.html)
 
 * For JVMs that require a large amount of memory, we strongly recommend configuring the maximum amount of memory available for individual mappers. For information on how to do this using Yarn, refer to http://docs.h2o.ai/deployment/hadoop_yarn.html
 
@@ -431,7 +431,7 @@ The following code reflects the use cases listed above. The code is executed in 
  * local
  * standalone cluster
  * YARN
-Spark 1.3.1 or later is required.
+Spark 1.4.0 or later is required.
 
 1. Initialize H2O:
 

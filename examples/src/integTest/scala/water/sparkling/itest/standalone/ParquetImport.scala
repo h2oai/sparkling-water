@@ -42,7 +42,7 @@ object ParquetImportTest {
     implicit val sqlContext = new SQLContext(sc)
 
     // Import Parquet file into Spark as DataFrame
-    val parquetFile = sqlContext.parquetFile("hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines.parquet")
+    val parquetFile = sqlContext.read.parquet("hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines.parquet")
     parquetFile.registerTempTable("parquetFile")
 
     // Check Parquet file copies correctly
