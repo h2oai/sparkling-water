@@ -1,59 +1,49 @@
 package org.apache.spark.ml.h2o
 
-import hex.deeplearning.{DeepLearningModel, DeepLearning}
-import hex.deeplearning.DeepLearningParameters
+import hex.deeplearning.{DeepLearning, DeepLearningModel, DeepLearningParameters}
+import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.{Estimator, Model}
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.param.{Param,Params}
+import org.apache.spark.ml.param.{Param, Params}
+import org.apache.spark.ml.{Estimator, PredictionModel}
+import org.apache.spark.mllib
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.StructType
 
 /**
  * Deep learning ML component.
  */
-class H2ODeepLearningModel(
-                          override val parent: H2ODeepLearning,
-                          override val fittingParamMap: ParamMap,
-                          model: DeepLearningModel)
-  extends Model[H2ODeepLearningModel] {
+class H2ODeepLearningModel(model: DeepLearningModel)
+  extends PredictionModel[mllib.linalg.Vector, H2ODeepLearningModel] {
 
-  override def transform(dataset: DataFrame, paramMap: ParamMap): DataFrame = ???
+  override protected def predict(features: mllib.linalg.Vector): Double = ???
 
-  override def transformSchema(schema: StructType, paramMap: ParamMap): StructType = ???
+  override val uid: String = "dlModel"
 }
 
-class H2ODeepLearning()
-                     (implicit hc: H2OContext)
+class H2ODeepLearning()(implicit hc: H2OContext)
   extends Estimator[H2ODeepLearningModel] with HasDeepLearningParams {
 
-  override def fit(dataset: DataFrame, paramMap: ParamMap): H2ODeepLearningModel = {
-    // Verify parameters - useless here
-    transformSchema(dataset.schema, paramMap, logging = true)
+  override def fit(dataset: DataFrame): H2ODeepLearningModel = {
     import hc._
-    val map = this.paramMap ++ paramMap
-    val params = map(deepLearningParams)
+    val params = new DeepLearningParameters
     params._train = dataset
     val model = new DeepLearning(params).trainModel().get()
     params._train.remove()
-    val dlm = new H2ODeepLearningModel(this, paramMap, model)
+    val dlm = new H2ODeepLearningModel(model)
     dlm
   }
 
-  override def transformSchema(schema: StructType, paramMap: ParamMap): StructType = ???
+  @DeveloperApi
+  override def transformSchema(schema: StructType): StructType = ???
+
+  override val uid: String = "dl"
 }
 
 trait HasDeepLearningParams extends Params {
-  val deepLearningParams: Param[DeepLearningParameters] = new Param(this,
-    "deepLearningParams", "H2O's DeepLearning parameters", Some(new DeepLearningParameters))
-  def getDeepLearningParams: DeepLearningParameters = get(deepLearningParams)
+  val deepLearningParams: Param[DeepLearningParameters] = new Param[DeepLearningParameters]("DL params",
+    "deepLearningParams", "H2O's DeepLearning parameters", (t:DeepLearningParameters) => true)
 
-  protected def validateAndTransformSchema(
-                                          schema: StructType,
-                                          paramMap: ParamMap
-                                            ): StructType = {
-    val map = this.paramMap ++ paramMap
-    ???
-  }
+  def getDeepLearningParams: DeepLearningParameters = get(deepLearningParams).get
+
 }
 
