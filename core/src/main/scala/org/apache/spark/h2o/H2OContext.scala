@@ -164,6 +164,15 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     this
   }
 
+  /** Stops H2O context.
+    *
+    * Calls System.exit() which kills executor JVM.
+    */
+  def stop(stopSparkContext: Boolean = false): Unit = {
+    if (stopSparkContext) sparkContext.stop()
+    H2O.shutdown(0)
+  }
+
   @tailrec
   private
   def createSpreadRDD(nretries:Int,
