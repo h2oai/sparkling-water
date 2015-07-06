@@ -1,13 +1,13 @@
 ChangeLog
 =========
 
-##v1.4.0 (2015-07-03)
+##v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame
   - Support of Spark 1.4
   - New applications
     - Craigslist job predictions
     - Streaming craigslist demo
-  - use H2O version 3.0.0.25
+  - use H2O version 3.0.0.26 (algorithms weights, offsets, fixes)
   - API improvements
   - follow Spark way to provide implicit conversions
 
