@@ -334,23 +334,23 @@
               Choose Spark release : 1.4.0</br>
               Choose a package type: Pre-built for Hadoop 2.4 and later
             </p>
-            <p>2. Download Sparkling Water and point it to the existing installation of Spark by setting the SPARK_HOME environment variable:</p>
+            <p>2. Point SPARK_HOME to the existing installation of Spark and export variable MASTER. </p>
             <p class="terminal">
-              export SPARK_HOME="/path/to/spark/installation"
+              export SPARK_HOME="/path/to/spark/installation" <br/>
+              # To launch a local Spark cluster with 3 worker nodes with 2 cores and 1g per node.<br/>
+              export MASTER="local-cluster[3,2,1024]" <br/>
             </p>
             <p>3. From your terminal, run:</p>
             <p class="terminal">
               cd ~/Downloads<br/>
               unzip sparkling-water-SUBST_PROJECT_VERSION.zip<br/>
               cd sparkling-water-SUBST_PROJECT_VERSION<br/>
-              bin/sparkling-shell<br/>
+              bin/sparkling-shell --conf "spark.executor.memory=1g"<br/>
             </p>
             <p>4. Create an H<sub>2</sub>O cloud inside the Spark cluster:</p>
             <p class="terminal">
               import org.apache.spark.h2o._<br />
               val h2oContext = new H2OContext(sc).start() <br />
-              // Or if you know the number of Spark workers: <br />
-              //   val h2oContext = new H2OContext(sc).start( &lt;number of Spark workers&gt; ) <br />
               import h2oContext._ <br />
             </p>
             <p>5. Follow <a id="clitutorial" href="https://github.com/0xdata/sparkling-water/tree/master/examples#step-by-step-through-weather-data-example">this demo</a>, which imports airlines and weather data and runs predictions on delays.<br /></p>
@@ -365,9 +365,8 @@
               Choose Spark release : 1.4.0</br>
               Choose a package type: Pre-built for Hadoop 2.4 and later
             </p>
-            <p>2. Download Sparkling Water and point it to the existing installation of Spark by setting the SPARK_HOME environment variable:</p>
+            <p>2. Point SPARK_HOME to an existing installation of Spark:</p>
             <p class="terminal">
-              wget <script type="text/javascript">var url = location.href; var url2 = url.substring(0, url.lastIndexOf("/")); document.write(url2);</script>/sparkling-water-SUBST_PROJECT_VERSION.zip <br/>
               export SPARK_HOME='/path/to/spark/installation' <br />
             </p>
             <p>3. Set the HADOOP_CONF_DIR and Spark MASTER environmental variables.</p>
@@ -375,8 +374,9 @@
               export HADOOP_CONF_DIR=/etc/hadoop/conf <br />
               export MASTER="yarn-client" <br />
             </p>
-            <p>4. Use spark-submit to launch Sparkling Shell on YARN.</p>
+            <p>4. Download Spark and Use spark-submit to launch Sparkling Shell on YARN.</p>
             <p class="terminal">
+              wget <script type="text/javascript">var url = location.href; var url2 = url.substring(0, url.lastIndexOf("/")); document.write(url2);</script>/sparkling-water-SUBST_PROJECT_VERSION.zip <br/>
               unzip sparkling-water-SUBST_PROJECT_VERSION.zip <br />
               cd sparkling-water-SUBST_PROJECT_VERSION/ <br />
               bin/sparkling-shell --num-executors 3 --executor-memory 2g --master yarn-client <br />
@@ -398,7 +398,7 @@
               Choose Spark release : 1.4.0</br>
               Choose a package type: Pre-built for Hadoop 2.4 and later
             </p>
-            <p>2. Download Sparkling Water and point it to the existing installation of Spark by setting the SPARK_HOME environment variable:</p>
+            <p>2. Point SPARK_HOME to an existing installation of Spark:</p>
             <p class="terminal">
               export SPARK_HOME='/path/to/spark/installation'
             </p>
@@ -415,8 +415,6 @@
             <p class="terminal">
               import org.apache.spark.h2o._<br />
               val h2oContext = new H2OContext(sc).start() <br />
-              // Or if you know the number of Spark workers: <br />
-              //   val h2oContext = new H2OContext(sc).start( &lt;number of Spark workers&gt; ) <br />
               import h2oContext._ <br />
             </p>
           </div>
