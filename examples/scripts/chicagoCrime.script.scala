@@ -59,6 +59,7 @@ val crimeTypeArrestRate = crimesWithArrest.map(c =>
     val crimeType = c.getString(0)
     val count:Long = crimeTypeToArrest.get(crimeType).getOrElse(0)
     Row(crimeType, c.getLong(1).toDouble/count, c.getLong(1), count, c.getLong(1)/numOfAllArrests.toDouble, c.getLong(1)/count.toDouble, count/numOfAllCrimes.toDouble) } ).map(_.asInstanceOf[Row])
+import org.apache.spark.sql.types._
 val schema = StructType(Seq(
   StructField("CrimeType", StringType, false),
   StructField("ArrestRate", DoubleType, false),
