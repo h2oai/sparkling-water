@@ -97,7 +97,10 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     assert (schemaRdd.count == dataFrame.numRows())
     assert (schemaRdd.take(4)(3)(0) == "ONE")
-    assert (schemaRdd.schema.fields(0) == StructField("C0",StringType,false))
+    assert (schemaRdd.schema.fields(0) match{
+      case StructField("C0",StringType,false, _) => true
+      case _ => false
+    })
 
     dataFrame.delete()
   }
@@ -118,7 +121,10 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     assert (schemaRdd.count == dataFrame.numRows())
     assert (schemaRdd.take(4)(3)(0).asInstanceOf[Timestamp].getTime() == 1428517566L)
-    assert (schemaRdd.schema.fields(0) == StructField("C0",TimestampType,false))
+    assert (schemaRdd.schema.fields(0) match {
+      case StructField("C0",TimestampType,false,_)=> true
+      case _ => false
+    })
 
     dataFrame.delete()
   }
@@ -140,7 +146,10 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     assert (schemaRdd.count == dataFrame.numRows())
     assert (schemaRdd.take(8)(7)(0) == 8)
-    assert (schemaRdd.schema.fields(0) == StructField("C0",ByteType,false))
+    assert (schemaRdd.schema.fields(0) match {
+      case StructField("C0",ByteType,false, _) => true
+      case _ => false
+    })
 
     dataFrame.delete()
   }
@@ -162,7 +171,10 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     assert (schemaRdd.count == dataFrame.numRows())
     assert (schemaRdd.take(8)(7)(0) == 208)
-    assert (schemaRdd.schema.fields(0) == StructField("C0",ShortType,false))
+    assert (schemaRdd.schema.fields(0) match {
+      case StructField("C0",ShortType,false, _) => true
+      case _ => false
+    })
 
     dataFrame.delete()
   }
@@ -184,7 +196,10 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     assert (schemaRdd.count == dataFrame.numRows())
     assert (schemaRdd.take(8)(7)(0) == 100008)
-    assert (schemaRdd.schema.fields(0) == StructField("C0",IntegerType,false))
+    assert (schemaRdd.schema.fields(0) match {
+      case StructField("C0",IntegerType,false, _) => true
+      case _ => false
+    })
 
     dataFrame.delete()
   }
@@ -205,7 +220,10 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     assert (schemaRdd.count == dataFrame.numRows())
     assert (schemaRdd.take(4)(3)(0) == -8589934595L)
-    assert (schemaRdd.schema.fields(0) == StructField("C0",LongType,false))
+    assert (schemaRdd.schema.fields(0) match {
+      case StructField("C0",LongType,false, _) => true
+      case _ => false
+    })
 
     dataFrame.delete()
   }
@@ -226,7 +244,10 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     assert (schemaRdd.count == dataFrame.numRows())
     assert (schemaRdd.take(4)(3)(0) == 100.00012)
-    assert (schemaRdd.schema.fields(0) == StructField("C0",DoubleType,false))
+    assert (schemaRdd.schema.fields(0) match {
+      case StructField("C0",DoubleType,false, _) => true
+      case _ => false
+    })
 
     dataFrame.delete()
   }
@@ -249,7 +270,10 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     assert (schemaRdd.count == dataFrame.numRows())
     assert (schemaRdd.take(8)(7)(0) == "string8")
-    assert (schemaRdd.schema.fields(0) == StructField("C0",StringType,false))
+    assert (schemaRdd.schema.fields(0) match {
+      case StructField("C0",StringType,false, _) => true
+      case _ => false
+    } )
 
     dataFrame.delete()
   }
@@ -280,7 +304,10 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     val schemaRdd = asDataFrame(dataFrame)
 
     assert (schemaRdd.count == dataFrame.numRows())
-    assert (schemaRdd.schema.fields(0) == StructField("C0",StringType,false))
+    assert (schemaRdd.schema.fields(0) match {
+      case StructField("C0",StringType,false, _) => true
+      case _ => false
+    })
     val valuesInRdd = schemaRdd.collect().map(row => row(0))
     for (idx <- valuesInRdd.indices)
       assert (valuesInRdd(idx) == "6870f256-e145-4d75-adb0-99ccb77d5d3" + ('a'+idx).asInstanceOf[Char])
@@ -520,13 +547,14 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     val values = (1 to num).map(x => PrimitiveB(1 to x))
     val srdd: DataFrame = sc.parallelize(values).toDF
     val expandedSchema = H2OSchemaUtils.expandedSchema(sc, srdd)
+    val metadatas = expandedSchema.map(f =>f._2.metadata)
 
     assert(expandedSchema === Vector(
-      (List(0), StructField("f0", IntegerType, false), 1),
-      (List(0), StructField("f1", IntegerType, false), 1),
-      (List(0), StructField("f2", IntegerType, false), 1),
-      (List(0), StructField("f3", IntegerType, false), 1),
-      (List(0), StructField("f4", IntegerType, false), 1)))
+      (List(0), StructField("f0", IntegerType, false, metadatas(0)), 1),
+      (List(0), StructField("f1", IntegerType, false, metadatas(1)), 1),
+      (List(0), StructField("f2", IntegerType, false, metadatas(2)), 1),
+      (List(0), StructField("f3", IntegerType, false, metadatas(3)), 1),
+      (List(0), StructField("f4", IntegerType, false, metadatas(4)), 1)))
 
     // Verify transformation into dataframe
     val dataFrame = hc.asH2OFrame(srdd)
@@ -590,6 +618,32 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assertVectorDoubleValues(dataFrame.vec(0), Seq(1.0,0.0,0.0))
     assertVectorDoubleValues(dataFrame.vec(1), Seq(0.0,1.0,0.0))
     assertVectorDoubleValues(dataFrame.vec(2), Seq(0.0,0.0,1.0))
+  }
+
+  test("Add metadata to Dataframe") {
+    import h2oContext._
+    val fname: String = "testMetadata.hex"
+    val colNames: Array[String] = Array("C0")
+    val chunkLayout: Array[Long] = Array(50L, 50L)
+    val data: Array[Array[Long]] = Array((1L to 50L).toArray, (51L to 100L).toArray)
+    val dataFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
+    println(dataFrame.vec(0).pctiles())
+    implicit val sqlContext = new SQLContext(sc)
+    val schemaRdd = asDataFrame(dataFrame)
+
+    assert(schemaRdd.schema("C0").metadata.getDouble("min") == 1L)
+    assert(schemaRdd.schema("C0").metadata.getLong("count") == 100L)
+
+    dataFrame.delete()
+
+    val fnameEnum: String = "testEnum.hex"
+    val colNamesEnum: Array[String] = Array("C0")
+    val chunkLayoutEnum: Array[Long] = Array(2L, 2L)
+    val dataEnum: Array[Array[Integer]] = Array(Array(1, 0), Array(0, 1))
+    val dataFrameEnum = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_ENUM, colDomains = Array(Array("ZERO", "ONE")))
+    val schemaRddEnum = asDataFrame(dataFrameEnum)
+    assert(schemaRddEnum.schema("C0").metadata.getLong("cardinality") == 2L)
+    dataFrameEnum.delete()
   }
 
   def makeH2OFrame[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
