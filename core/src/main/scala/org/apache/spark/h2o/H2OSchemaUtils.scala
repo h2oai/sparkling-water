@@ -18,7 +18,7 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.{ArrayType, BinaryType, BooleanType, ByteType, DataType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructField, StructType, TimestampType, UserDefinedType}
+import org.apache.spark.sql.types._
 import org.apache.spark.{SparkContext, mllib}
 import water.fvec.Vec
 import water.parser.Categorical
@@ -40,10 +40,26 @@ object H2OSchemaUtils {
     val names = f.names()
     for (i <- 0 until f.numCols()) {
       val vec = vecs(i)
+      var metadata = (new MetadataBuilder).
+        putLong("count", vec.length()).
+        putLong("naCnt", vec.naCnt())
+
+      if (vec.isEnum) {
+        metadata = metadata.putStringArray("domain", vec.domain()).
+          putLong("cardinality", vec.cardinality().toLong)
+      } else if (vec.isNumeric) {
+        metadata = metadata.
+          putDouble("min", vec.min()).
+          putDouble("mean", vec.mean()).
+          putDoubleArray("percentiles", vec.pctiles()).
+          putDouble("max", vec.max()).
+          putDouble("std", vec.sigma())
+      }
       types(i) = StructField(
         names(i), // Name of column
         vecTypeToDataType(vec), // Catalyst type of column
-        vec.naCnt() > 0
+        vec.naCnt() > 0,
+        metadata.build()
       )
     }
     StructType(types)
