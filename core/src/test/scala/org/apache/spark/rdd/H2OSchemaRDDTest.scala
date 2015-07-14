@@ -625,15 +625,25 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     val fname: String = "testMetadata.hex"
     val colNames: Array[String] = Array("C0")
     val chunkLayout: Array[Long] = Array(50L, 50L)
-    val data: Array[Array[Long]] = Array((0L to 50L).toArray, (50L to 100L).toArray)
+    val data: Array[Array[Long]] = Array((1L to 50L).toArray, (51L to 100L).toArray)
     val dataFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
     println(dataFrame.vec(0).pctiles())
     implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
-    assert (schemaRdd.schema("C0").metadata.getDouble("min") == 0L)
+    assert(schemaRdd.schema("C0").metadata.getDouble("min") == 1L)
+    assert(schemaRdd.schema("C0").metadata.getLong("count") == 100L)
 
     dataFrame.delete()
+
+    val fnameEnum: String = "testEnum.hex"
+    val colNamesEnum: Array[String] = Array("C0")
+    val chunkLayoutEnum: Array[Long] = Array(2L, 2L)
+    val dataEnum: Array[Array[Integer]] = Array(Array(1, 0), Array(0, 1))
+    val dataFrameEnum = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_ENUM, colDomains = Array(Array("ZERO", "ONE")))
+    val schemaRddEnum = asDataFrame(dataFrameEnum)
+    assert(schemaRddEnum.schema("C0").metadata.getLong("cardinality") == 2L)
+    dataFrameEnum.delete()
   }
 
   def makeH2OFrame[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
