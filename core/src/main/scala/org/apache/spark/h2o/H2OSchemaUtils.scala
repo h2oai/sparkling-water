@@ -53,7 +53,8 @@ object H2OSchemaUtils {
           putDouble("mean", vec.mean()).
           putDoubleArray("percentiles", vec.pctiles()).
           putDouble("max", vec.max()).
-          putDouble("std", vec.sigma())
+          putDouble("std", vec.sigma()).
+          putDouble("sparsity", vec.nzCnt()/vec.length().toDouble)
       }
       types(i) = StructField(
         names(i), // Name of column
