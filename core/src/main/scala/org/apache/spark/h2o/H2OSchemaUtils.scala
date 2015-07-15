@@ -45,7 +45,7 @@ object H2OSchemaUtils {
         putLong("naCnt", vec.naCnt())
 
       if (vec.isEnum) {
-        metadata = metadata.putStringArray("domain", vec.domain()).
+        metadata = metadata.putStringArray("vals", vec.domain()).
           putLong("cardinality", vec.cardinality().toLong)
       } else if (vec.isNumeric) {
         metadata = metadata.
