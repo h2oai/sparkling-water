@@ -170,3 +170,13 @@ class MakePredictions(val threshold : Double) extends MRTask[MakePredictions] {
   }
 }
 
+
+/** Transformation from double vector to log vector. */
+class Log extends MRTask[Log] {
+  override def map(c: Chunk, nc: NewChunk): Unit = {
+    for (row <- 0 until c.len()) {
+      nc.addNum(Math.log(c.atd(row)))
+    }
+  }
+}
+
