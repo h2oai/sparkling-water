@@ -1,7 +1,9 @@
 # Sparkling Water Meetups
 
 ## Current meetup
-  * NA
+  * 07/21/2015: **Building Machine Learning Applications with Sparkling Water: Ask
+    Craig**
+    - [Notes](Meetup20150721.md) / [Code](Meetup20150721.script.scala)
   
 ## Previous meetups
   * 04/22/2015: **Building Machine Learning Applications with Sparkling Water: Chicago Crime Application**
