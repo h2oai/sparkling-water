@@ -153,6 +153,10 @@ See [docker/README.md](docker/README.md) to learn about Docker support.
 
  > Sparkling Shell accepts common Spark Shell arguments. To pass your script, please use `-i` option of Spark Shell:
  > `bin/sparkling-shell -i test.script`
+
+* How do I increase PermGen size for Spark driver?
+
+ > Specify `--conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m"`
  
 <a name="Diagram"></a>
 #Diagram of Sparkling Water on YARN
