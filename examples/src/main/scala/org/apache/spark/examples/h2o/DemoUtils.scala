@@ -4,7 +4,7 @@ import hex.{ModelMetrics, FrameSplitter}
 import hex.splitframe.ShuffleSplitFrame
 import hex.tree.gbm.GBMModel
 import hex.Model
-import org.apache.spark.h2o.H2OFrame
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.{SparkConf, SparkContext}
 import water.fvec.{NewChunk, Frame, Chunk}
 import water.parser.ValueString
@@ -88,10 +88,16 @@ object DemoUtils {
     }.doAll(fr)
   }
 
-  def residualPlotRCode(prediction:Frame, predCol: String, actual:Frame, actCol:String):String = {
+  def residualPlotRCode(prediction:Frame, predCol: String, actual:Frame, actCol:String, h2oContext: H2OContext = null):String = {
+    val (ip, port) = if (h2oContext != null) {
+      val s = h2oContext.h2oLocalClient.split(":")
+      (s(0), s(1))
+    } else
+      ("127.0.0.1", "54321")
+
     s"""# R script for residual plot
         |library(h2o)
-        |h = h2o.init()
+        |h = h2o.init(ip="${ip}", port=${port})
         |
         |pred = h2o.getFrame(h, "${prediction._key}")
         |act = h2o.getFrame (h, "${actual._key}")
