@@ -3,7 +3,7 @@ package org.apache.spark.examples.h2o
 import hex.deeplearning.DeepLearningModel
 import hex.deeplearning.DeepLearningParameters.Activation
 import hex.tree.gbm.GBMModel
-import hex.tree.gbm.GBMModel.GBMParameters.Family
+import hex.Distributions.Family
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
