@@ -133,7 +133,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
     import h2oContext._
     // Build a model
     val dlParams = new DeepLearningParameters()
-    dlParams._model_id = Key.make("dlModel.hex").asInstanceOf[water.Key[Frame]]
+    dlParams._model_id = water.KeyUtils.make("dlModel.hex")
     dlParams._train = train
     dlParams._valid = valid
     dlParams._response_column = 'target
