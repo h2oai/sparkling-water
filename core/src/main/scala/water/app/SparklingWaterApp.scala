@@ -1,9 +1,9 @@
 package water.app
 
+import hex.Distributions.Family
 import hex.deeplearning.DeepLearningParameters.Activation
 import hex.deeplearning.{DeepLearningParameters, DeepLearning, DeepLearningModel}
 import hex.tree.gbm.GBMModel
-import hex.tree.gbm.GBMModel.GBMParameters.Family
 import hex.{Model, ModelMetrics}
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
@@ -82,7 +82,7 @@ trait GBMSupport {
     import hex.tree.gbm.GBMModel.GBMParameters
 
     val gbmParams = new GBMParameters()
-    gbmParams._model_id = Key.make(modelId).asInstanceOf[Key[Frame]]
+    gbmParams._model_id = water.KeyUtils.make(modelId)
     gbmParams._train = train._key
     gbmParams._valid = if (test != null) test._key else null
     gbmParams._response_column = response
