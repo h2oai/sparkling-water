@@ -9,7 +9,7 @@ import hex.deeplearning.DeepLearningParameters.Activation
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.h2o.{Frame, H2OContext, H2OFrame}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
@@ -78,7 +78,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
 
     //
     // Use low-level task to split the frame
-    val sf = new FrameSplitter(joinedH2OFrame, Array(.7, .2), Array("train", "valid","test").map(Key.make(_)), null)
+    val sf = new FrameSplitter(joinedH2OFrame, Array(.7, .2), Array("train", "valid","test").map(Key.make[Frame](_)), null)
     water.H2O.submitTask(sf)
     val splits = sf.getResult
 

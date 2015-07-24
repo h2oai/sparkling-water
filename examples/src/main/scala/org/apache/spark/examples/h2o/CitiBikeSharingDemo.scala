@@ -148,7 +148,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
     // Split into train and test parts
     //
     gTimer.start()
-    val keys = Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make(_))
+    val keys = Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make[Frame](_))
     val ratios = Array[Double](0.6, 0.3, 0.1)
     val frs = ShuffleSplitFrame.shuffleSplitFrame(df, keys, ratios, 1234567689L)
     val train = frs(0)
