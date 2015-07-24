@@ -24,7 +24,7 @@ import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.scheduler.{SparkListenerBlockManagerAdded, SparkListenerBlockManagerRemoved}
 import org.apache.spark.{Accumulable, SparkContext, SparkEnv}
 import water.init.AbstractEmbeddedH2OConfig
-import water.{H2O, H2OApp}
+import water.H2OApp
 
 import scala.collection.mutable
 
@@ -117,15 +117,15 @@ private[spark] object H2OContextUtils {
         // Get node this node IP
         val ip = nodeDesc._2
         val launcherArgs = toH2OArgs(
-          h2oArgs ++ Array("-ip", ip),
+          h2oArgs ++ Array("-ip", ip) ++ Array("-disable_web"),
           None)
         // Do not launch H2O several times
-        if (H2O.START_TIME_MILLIS.get() == 0) {
-          H2O.START_TIME_MILLIS.synchronized {
-            if (H2O.START_TIME_MILLIS.get() == 0) {
+        if (water.H2O.START_TIME_MILLIS.get() == 0) {
+          water.H2O.START_TIME_MILLIS.synchronized {
+            if (water.H2O.START_TIME_MILLIS.get() == 0) {
               new Thread("H2O Launcher thread") {
                 override def run(): Unit = {
-                  H2O.setEmbeddedH2OConfig(new SparklingWaterConfig(bc))
+                  water.H2O.setEmbeddedH2OConfig(new SparklingWaterConfig(bc))
                   H2OApp.main(launcherArgs)
                 }
               }.start()
@@ -160,7 +160,7 @@ private[spark] object H2OContextUtils {
       assert(nodeDesc._2 == getIp(SparkEnv.get)) // Make sure we are running on right node
       val executorId = SparkEnv.get.executorId
 
-      val econf = H2O.getEmbeddedH2OConfig().asInstanceOf[SparklingWaterConfig]
+      val econf = water.H2O.getEmbeddedH2OConfig().asInstanceOf[SparklingWaterConfig]
       // Setup flatfile for waiting guys
       econf.synchronized {
         econf.flatFile = Option(flatFileString)
