@@ -48,6 +48,7 @@ trait H2OConf {
   def clientWebPort = sparkConf.getInt(PROP_CLIENT_WEB_PORT._1, PROP_CLIENT_WEB_PORT._2)
   def clientIcedDir = sparkConf.getOption(PROP_CLIENT_ICED_DIR._1)
   def nodeIcedDir   = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
+  def jks           = sparkConf.getOption(PROP_JKS._1)
 
   /* Configuration properties */
 
@@ -90,21 +91,30 @@ trait H2OConf {
     * Size of dummy RDD is PROP_CLUSTER_SIZE*PROP_DUMMY_RDD_MUL_FACTOR */
   val PROP_DUMMY_RDD_MUL_FACTOR = ("spark.ext.h2o.dummy.rdd.mul.factor", 10)
 
+  /** Path to Java KeyStore file. */
+  val PROP_JKS = ("spark.ext.h2o.jks", null.asInstanceOf[String])
+
   /**
    * Produce arguments for H2O node based on this config.
    * @return array of H2O launcher command line arguments
    */
-  def getH2ONodeArgs:Array[String] = (getH2OCommonOptions ++ Seq("-log_level", h2oNodeLogLevel)).toArray
+  def getH2ONodeArgs: Array[String] = (getH2OCommonOptions ++ Seq("-log_level", h2oNodeLogLevel)).toArray
 
   /**
    * Get arguments for H2O client.
    * @return array of H2O client arguments.
    */
-  def getH2OClientArgs:Array[String] = (getH2OCommonOptions
-    ++ Seq("-log_level", h2oClientLogLevel, "-quiet")
-    ++ Seq(("-ice_root", clientIcedDir.getOrElse(null)),
-            ("-port", if (clientWebPort > 0) clientWebPort else null))
-        .filter(_._2 != null).flatMap(x => Seq(x._1, x._2.toString))
+
+  def getH2OClientArgs: Array[String] = (
+    getH2OCommonOptions
+      ++ Seq("-log_level", h2oClientLogLevel)
+      ++ Seq("-quiet")
+      ++ Seq(
+        ("-ice_root", clientIcedDir.orNull),
+        ("-port", if (clientWebPort > 0) clientWebPort else null),
+        ("-jks", jks.orNull)
+      )
+      .filter(_._2 != null).flatMap(x => Seq(x._1, x._2.toString))
     ).toArray
 
   private def getH2OCommonOptions:Seq[String] =
@@ -112,7 +122,7 @@ trait H2OConf {
     Seq(
       ("-name", cloudName),
       ("-nthreads", if (nthreads > 0) nthreads else null),
-      ("-network", networkMask.getOrElse(null)),
+      ("-network", networkMask.orNull),
       ("-baseport", basePort))
       .filter(x => x._2 != null)
       .flatMap(x => Seq(x._1, x._2.toString)) ++ // Append single boolean options
