@@ -65,8 +65,8 @@ object H2OSchemaUtils {
       case Vec.T_ENUM => StringType
       case Vec.T_UUID => StringType
       case Vec.T_STR  => StringType
-      case typ => if (typ>=Vec.T_TIME && typ<=Vec.T_TIMELAST) TimestampType
-                  else throw new IllegalArgumentException("Unknown vector type " + typ)
+      case Vec.T_TIME => TimestampType
+      case typ => throw new IllegalArgumentException("Unknown vector type " + typ)
     }
   }
 
@@ -155,7 +155,8 @@ object H2OSchemaUtils {
           arrayCnt += 1
           result
         }
-        case t if (t.isInstanceOf[UserDefinedType[mllib.linalg.Vector]]) => {
+        case t if t.isInstanceOf[UserDefinedType[_]] => {
+          // t.isInstanceOf[UserDefinedType[mllib.linalg.Vector]]
           val result = (0 until fmaxLens(numOfArrayCols + vecCnt)).map(i =>
             (path, StructField(field.name+i.toString, DoubleType, true), VEC_TYPE)
           )

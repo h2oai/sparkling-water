@@ -78,13 +78,13 @@ object DemoUtils {
   }
 
   def splitFrame(df: H2OFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
-    val ks = keys.map(Key.make(_)).toArray
+    val ks = keys.map(Key.make[Frame](_)).toArray
     val frs = ShuffleSplitFrame.shuffleSplitFrame(df, ks, ratios.toArray, 1234567689L)
     frs
   }
 
   def split(df: H2OFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
-    val ks = keys.map(Key.make(_)).toArray
+    val ks = keys.map(Key.make[Frame](_)).toArray
     val splitter = new FrameSplitter(df, ratios.toArray, ks, null)
     water.H2O.submitTask(splitter)
     // return results

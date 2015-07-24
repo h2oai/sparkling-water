@@ -488,7 +488,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     val dataFrame = hc.asH2OFrame(srdd)
 
     ShuffleSplitFrame.shuffleSplitFrame(dataFrame,
-        Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make(_)),
+        Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make[Frame](_)),
         Array[Double](0.5, 0.3, 0.2), 1234567689L)
   }
 
