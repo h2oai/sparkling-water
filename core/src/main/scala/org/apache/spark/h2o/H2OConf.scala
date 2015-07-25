@@ -48,7 +48,13 @@ trait H2OConf {
   def clientWebPort = sparkConf.getInt(PROP_CLIENT_WEB_PORT._1, PROP_CLIENT_WEB_PORT._2)
   def clientIcedDir = sparkConf.getOption(PROP_CLIENT_ICED_DIR._1)
   def nodeIcedDir   = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
+
   def jks           = sparkConf.getOption(PROP_JKS._1)
+  def jksPass       = sparkConf.getOption(PROP_JKS_PASS._1)
+  def hashLogin     = sparkConf.getBoolean(PROP_HASH_LOGIN._1, PROP_HASH_LOGIN._2)
+  def ldapLogin     = sparkConf.getBoolean(PROP_LDAP_LOGIN._1, PROP_LDAP_LOGIN._2)
+  def loginConf     = sparkConf.getOption(PROP_LOGIN_CONF._1)
+  def userName      = sparkConf.getOption(PROP_USER_NAME._1)
 
   /* Configuration properties */
 
@@ -93,6 +99,16 @@ trait H2OConf {
 
   /** Path to Java KeyStore file. */
   val PROP_JKS = ("spark.ext.h2o.jks", null.asInstanceOf[String])
+  /** Password for Java KeyStore file. */
+  val PROP_JKS_PASS = ("spark.ext.h2o.jks.pass", null.asInstanceOf[String])
+  /** Enable hash login. */
+  val PROP_HASH_LOGIN = ("spark.ext.h2o.hash.login", false)
+  /** Enable LDAP login. */
+  val PROP_LDAP_LOGIN = ("spark.ext.h2o.ldap.login", false)
+  /** Login configuration file. */
+  val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", null.asInstanceOf[String])
+  /** Override user name for cluster. */
+  val PROP_USER_NAME = ("spark.ext.h2o.user.name", null.asInstanceOf[String])
 
   /**
    * Produce arguments for H2O node based on this config.
@@ -107,14 +123,18 @@ trait H2OConf {
 
   def getH2OClientArgs: Array[String] = (
     getH2OCommonOptions
-      ++ Seq("-log_level", h2oClientLogLevel)
       ++ Seq("-quiet")
+      ++ (if (hashLogin) Seq("-hash_login") else Nil)
+      ++ (if (ldapLogin) Seq("-ldap_login") else Nil)
+      ++ Seq("-log_level", h2oClientLogLevel)
       ++ Seq(
         ("-ice_root", clientIcedDir.orNull),
         ("-port", if (clientWebPort > 0) clientWebPort else null),
-        ("-jks", jks.orNull)
-      )
-      .filter(_._2 != null).flatMap(x => Seq(x._1, x._2.toString))
+        ("-jks", jks.orNull),
+        ("-jks_pass", jksPass.orNull),
+        ("-login_conf", loginConf.orNull),
+        ("-user_name", userName.orNull)
+      ).filter(_._2 != null).flatMap(x => Seq(x._1, x._2.toString))
     ).toArray
 
   private def getH2OCommonOptions:Seq[String] =
