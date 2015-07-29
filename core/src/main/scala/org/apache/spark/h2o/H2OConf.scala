@@ -127,6 +127,7 @@ trait H2OConf {
       ++ (if (hashLogin) Seq("-hash_login") else Nil)
       ++ (if (ldapLogin) Seq("-ldap_login") else Nil)
       ++ Seq("-log_level", h2oClientLogLevel)
+      ++ Seq("-log_dir", clientLogDir)
       ++ Seq(
         ("-ice_root", clientIcedDir.orNull),
         ("-port", if (clientWebPort > 0) clientWebPort else null),
@@ -148,6 +149,10 @@ trait H2OConf {
       .flatMap(x => Seq(x._1, x._2.toString)) ++ // Append single boolean options
       Seq(("-ga_opt_out", disableGA))
         .filter(_._2).map(x => x._1)
+
+  private def clientLogDir: String = {
+    System.getProperty("user.dir") + java.io.File.separator + "h2ologs"
+  }
 
   override def toString: String =
     s"""Sparkling Water configuration:
