@@ -112,12 +112,23 @@ private[spark] object H2OContextUtils {
       assert(nodeDesc._2 == getIp(SparkEnv.get),  // Make sure we are running on right node
         s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getIp(SparkEnv.get)})")
       // Launch the node
+      def logDir: String = {
+        val s = System.getProperty("spark.yarn.app.container.log.dir")
+        if (s != null) {
+          return s + java.io.File.separator
+        }
+
+        System.getProperty("user.dir") + java.io.File.separator
+      }
       val executorId = SparkEnv.get.executorId
       try {
         // Get node this node IP
         val ip = nodeDesc._2
         val launcherArgs = toH2OArgs(
-          h2oArgs ++ Array("-ip", ip) ++ Array("-disable_web"),
+          h2oArgs
+            ++ Array("-disable_web")
+            ++ Array("-ip", ip)
+            ++ Array("-log_dir", logDir),
           None)
         // Do not launch H2O several times
         if (water.H2O.START_TIME_MILLIS.get() == 0) {
