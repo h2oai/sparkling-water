@@ -81,7 +81,7 @@ trait GBMSupport {
     import hex.tree.gbm.GBMModel.GBMParameters
 
     val gbmParams = new GBMParameters()
-    gbmParams._model_id = water.KeyUtils.make(modelId)
+    gbmParams._model_id = water.Key.make(modelId)
     gbmParams._train = train._key
     gbmParams._valid = if (test != null) test._key else null
     gbmParams._response_column = response

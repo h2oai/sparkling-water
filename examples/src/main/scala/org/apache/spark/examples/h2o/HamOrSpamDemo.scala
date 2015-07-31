@@ -1,14 +1,12 @@
 package org.apache.spark.examples.h2o
 
-import hex.deeplearning.{DeepLearning, DeepLearningModel}
-import hex.deeplearning.DeepLearningParameters
+import hex.deeplearning.{DeepLearning, DeepLearningModel, DeepLearningParameters}
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
-import org.apache.spark.sql.{DataFrame, SQLContext}
-import org.apache.spark.{SparkFiles, SparkConf, SparkContext, mllib}
-import org.apache.spark.mllib.feature.{IDF, IDFModel, HashingTF}
+import org.apache.spark.mllib.feature.{HashingTF, IDF, IDFModel}
 import org.apache.spark.rdd.RDD
-import water.Key
+import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.{SparkConf, SparkContext, SparkFiles, mllib}
 import water.app.{ModelMetricsSupport, SparkContextSupport}
 
 /**
@@ -133,7 +131,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
     import h2oContext._
     // Build a model
     val dlParams = new DeepLearningParameters()
-    dlParams._model_id = water.KeyUtils.make("dlModel.hex")
+    dlParams._model_id = water.Key.make("dlModel.hex")
     dlParams._train = train
     dlParams._valid = valid
     dlParams._response_column = 'target
@@ -160,8 +158,8 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
              idfModel: IDFModel,
              hamThreshold: Double = 0.5)
             (implicit sqlContext: SQLContext, h2oContext: H2OContext):Boolean = {
-    import sqlContext.implicits._
     import h2oContext._
+    import sqlContext.implicits._
     val msgRdd = sc.parallelize(Seq(msg))
     val msgVector: DataFrame = idfModel.transform(
       hashingTF.transform (
