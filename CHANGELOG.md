@@ -1,6 +1,14 @@
 ChangeLog
 =========
 
+##v1.4.4 (future version)
+   - Attach metadata derived from H2OFrame to Spark DataFrame
+   - Improved logging subsystem
+   - H2O version 3.0.1.4 (Simons release)
+   - "Ask Craig" streaming example
+   - minor fixes in API
+   - minor fixes in documentation 
+
 ##v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame
   - Support of Spark 1.4
