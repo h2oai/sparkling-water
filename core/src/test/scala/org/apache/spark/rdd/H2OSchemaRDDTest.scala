@@ -241,7 +241,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
                                            Array("string7", "string8"))
     val dataFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_STR)
 
-    assert (dataFrame.vec(0).chunkForChunkIdx(2).atStr(new ValueString(),1) == "string8")
+    assert (dataFrame.vec(0).chunkForChunkIdx(2).atStr(new ValueString(),1).toString.equals("string8"))
     assert (dataFrame.vec(0).isString())
 
     implicit val sqlContext = new SQLContext(sc)
