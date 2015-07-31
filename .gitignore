@@ -28,3 +28,6 @@ out/
 metastore_db/
 derby.log
 demofiles.list
+
+# H2O stuff #
+h2ologs/
