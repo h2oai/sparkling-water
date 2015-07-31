@@ -1,5 +1,6 @@
 package water.sparkling.itest.standalone
 
+import hex.Distribution
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
@@ -93,7 +94,7 @@ object HexDev100Test {
     gbmParams._train = airlinesTable
     gbmParams._response_column = 'IsDepDelayed
     gbmParams._ntrees = 10
-    gbmParams._distribution = GBMParameters.Family.bernoulli
+    gbmParams._distribution = Distribution.Family.bernoulli
 
     val gbm = new GBM(gbmParams)
     val gbmModel = gbm.trainModel.get
