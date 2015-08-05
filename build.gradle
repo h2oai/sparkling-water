@@ -85,11 +85,6 @@ configure(subprojects) { project ->
             url "http://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
         }
 
-        // Temporary jitpack.io repository
-        maven {
-             url "https://jitpack.io"
-        }
-
         // Should be enabled only in development mode
         if (h2oBuild == '99999') mavenLocal()
     }
