@@ -4,6 +4,9 @@ ChangeLog
 ## In current master
   - Attach metadata derived from H2OFrame to Spark DataFrame
   - Improved logging subsystem
+  - Expose new REST end-points
+    - to interpret Scala code
+    - to perform transformation between Spark DataFrame and H2O Frame
 
 ##v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame
