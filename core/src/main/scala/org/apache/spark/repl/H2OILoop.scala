@@ -964,8 +964,7 @@ class H2OILoop(var sparkContext: SparkContext, var h2oContext: H2OContext, var s
     if (settings.Xnojline.value || Properties.isEmacsShell)
       SimpleReader()
     else try new SparkJLineReader(
-      if (settings.noCompletion.value) NoCompletion
-      else new H2OJLineCompletion(intp)
+       NoCompletion
     )
     catch {
       case ex@(_: Exception | _: NoClassDefFoundError) =>
