@@ -1,0 +1,12 @@
+# ipython nootebook checkpoints
+demos/.ipynb_checkpoints
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
