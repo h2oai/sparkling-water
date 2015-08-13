@@ -658,13 +658,13 @@ object H2OContext extends Logging {
                            "Return all DataFrames.",
                            dataFramesfactory)
 
-    RequestServer.register("/3/dataframes/(?<dataframeid>df_[0-9]+)", "POST",
+    RequestServer.register("/3/dataframes/(?<dataframeid>[0-9a-zA-Z_]+)", "POST",
                            classOf[DataFramesHandler], "getDataFrame",
                            null, Array("dataframe_id"),
                            "Get DataFrame with the given id",
                            dataFramesfactory)
 
-    RequestServer.register("/3/dataframes/(?<dataframeid>df_[0-9]+)/h2oframe", "POST",
+    RequestServer.register("/3/dataframes/(?<dataframeid>[0-9a-zA-Z_]+)/h2oframe", "POST",
                            classOf[DataFramesHandler], "toH2OFrame",
                            null, Array("dataframe_id"), "Transform DataFrame with the given id to H2OFrame",
                            dataFramesfactory);
