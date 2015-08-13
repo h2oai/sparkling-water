@@ -14,14 +14,22 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api.RDDs
+package water.api.RDDs;
 
-import water.api.{API, Schema}
+import water.api.API;
+import water.api.Schema;
 
 /**
- * Generic implementation endpoint for all RDD queries.
+ * Endpoint representing single RDD.
  */
-class RDDsBase[I <: RDDs, S <: RDDsBase[I, S]] extends Schema[I, S] {
-  @API(help = "List of RDDs", direction = API.Direction.OUTPUT)
-  val rdds: Array[RDDV3] = null
+public class RDDWithMsgV3  extends Schema<IcedRDDWithMsgInfo, RDDWithMsgV3> {
+
+    @API(help = "Searched rdd id", direction = API.Direction.INPUT)
+    public int searched_rdd_id;
+
+    @API(help = "RDD", direction = API.Direction.OUTPUT)
+    public RDDV3 rdd;
+
+    @API(help = "Additional message", direction = API.Direction.OUTPUT)
+    public String msg;
 }

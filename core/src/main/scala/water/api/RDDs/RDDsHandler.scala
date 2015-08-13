@@ -36,31 +36,26 @@ class RDDsHandler(val sc: SparkContext) extends Handler {
   def fetchAll():Array[IcedRDDInfo] =
     sc.getPersistentRDDs.values.map(IcedRDDInfo.fromRdd(_)).toArray
 
-  def getRDD(version: Int, s: RDDV3): RDDV3 = {
-    var rdd = s.createAndFillImpl()
-    if (sc.getPersistentRDDs.get(s.rdd_id).isEmpty) {
-      s.rdd_id = -1
+  def getRDD(version: Int, s: RDDWithMsgV3): RDDWithMsgV3 = {
+    val r = s.createAndFillImpl()
+    if (sc.getPersistentRDDs.get(s.searched_rdd_id).isEmpty) {
+      s.msg = "RDD with id \""+s.searched_rdd_id+"\" does not exist"
     } else {
-      rdd = IcedRDDInfo.fromRdd(sc.getPersistentRDDs.get(s.rdd_id).get)
-      s.fillFromImpl(rdd)
+      r.rdd = IcedRDDInfo.fromRdd(sc.getPersistentRDDs.get(s.searched_rdd_id).get)
+      s.fillFromImpl(r)
+      s.msg = "OK"
     }
     s
   }
-}
-
-/** Simple implementation pojo holding list of RDDs */
-private[api] class IcedRDDs extends Iced[IcedRDDs] {
-  var rdds: Array[IcedRDDInfo]  = _
 }
 
 private[api] class IcedRDDInfo(val rdd_id: Int,
                                val name: String,
                                val partitions: Int) extends Iced[IcedRDDInfo] {
 
-  def this() = this(-1, "-1", -1) // initialize with dummy values, this is used by the createImpl method in the
+  def this() = this(-1, "", -1) // initialize with dummy values, this is used by the createImpl method in the
   //RequestServer as it calls constructor without any arguments
 }
-
 
 private[api] object IcedRDDInfo {
   def fromRdd(rdd: RDD[_]): IcedRDDInfo = {
@@ -68,3 +63,15 @@ private[api] object IcedRDDInfo {
     new IcedRDDInfo(rdd.id, rddName, rdd.partitions.size)
   }
 }
+
+private[api] class IcedRDDWithMsgInfo() extends Iced[IcedRDDWithMsgInfo]{
+  var rdd: IcedRDDInfo = _
+}
+
+/** Simple implementation pojo holding list of RDDs */
+private[api] class RDDs extends Iced[RDDs] {
+  var rdds: Array[IcedRDDInfo]  = _
+}
+
+
+

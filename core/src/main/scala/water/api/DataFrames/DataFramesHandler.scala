@@ -18,11 +18,8 @@ package water.api.DataFrames
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{Metadata, DataType, StructField}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import water.Iced
-import water.api.H2OFrames.DataFrameIDV3
 import water.api.Handler
 
 /**
@@ -30,10 +27,10 @@ import water.api.Handler
  */
 class DataFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extends Handler {
   val sqlContext = SQLContext.getOrCreate(sc)
+
   def list(version: Int, s: DataFramesV3): DataFramesV3 = {
     val r = s.createAndFillImpl()
     r.dataFrames = fetchAll()
-
     s.fillFromImpl(r)
     s
   }
@@ -43,11 +40,16 @@ class DataFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extend
     names.map(name => new IcedDataFrameInfo(name, sqlContext.table(name).schema.json))
   }
 
-  def getDataFrame(version: Int, s: DataFrameV3): DataFrameV3 = {
-    var r = s.createAndFillImpl()
-    val dataFrame = sqlContext.table(s.dataframe_id)
-    r = new IcedDataFrameInfo(s.dataframe_id, dataFrame.schema.json)
-    s.fillFromImpl(r)
+  def getDataFrame(version: Int, s: DataFrameWithMsgV3): DataFrameWithMsgV3 = {
+    val r = s.createAndFillImpl()
+    if(!sqlContext.tableNames().toList.contains(s.searched_dataframe_id)){
+      s.msg = "DataFrame with id \""+s.searched_dataframe_id+"\" does not exist"
+    }else{
+      val dataFrame = sqlContext.table(s.searched_dataframe_id)
+      r.dataframe = new IcedDataFrameInfo(s.searched_dataframe_id, dataFrame.schema.json)
+      s.fillFromImpl(r)
+      s.msg="OK"
+    }
     s
   }
 
@@ -58,9 +60,15 @@ class DataFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extend
    * @return
    */
   def toH2OFrame(version: Int, s: H2OFrameIDV3): H2OFrameIDV3 = {
-    val dataFrame: DataFrame = sqlContext.table(s.dataframe_id)
-    val h2oFrame = h2OContext.asH2OFrame(dataFrame)
-    s.h2oframe_id = h2oFrame._key.toString
+    if(!sqlContext.tableNames().toList.contains(s.dataframe_id)){
+      s.h2oframe_id=""
+      s.msg = "DataFrame with id \""+s.dataframe_id+"\" does not exist, can not proceed with the transformation"
+    }else{
+      val dataFrame: DataFrame = sqlContext.table(s.dataframe_id)
+      val h2oFrame = h2OContext.asH2OFrame(dataFrame)
+      s.h2oframe_id = h2oFrame._key.toString
+      s.msg="Success"
+    }
     s
   }
 }
@@ -73,6 +81,10 @@ private[api] class DataFrames extends Iced[DataFrames] {
 private[api] class IcedDataFrameInfo(val dataframe_id: String, val schema: String) extends Iced[IcedDataFrameInfo] {
   def this() = this("df_-1", "{}") // initialize with empty values, this is used by the createImpl method in the
   //RequestServer, as it calls constructor without any arguments
+}
+
+private[api] class IcedDataFrameWithMsgInfo() extends Iced[IcedDataFrameWithMsgInfo]{
+  var dataframe: IcedDataFrameInfo = _
 }
 
 

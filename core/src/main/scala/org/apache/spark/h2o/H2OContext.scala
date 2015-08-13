@@ -636,9 +636,9 @@ object H2OContext extends Logging {
                            "Return all Frames in the H2O distributed K/V store.",
                            rddsFactory)
 
-    RequestServer.register("/3/RDDs/(?<rddid>[0-9]+)", "POST",
+    RequestServer.register("/3/RDDs/(?<searchedrddid>[0-9]+)", "POST",
                            classOf[RDDsHandler], "getRDD",
-                           null, Array("rdd_id"),
+                           null, Array("searched_rdd_id"),
                            "Get frame in the H2O distributed K/V store with the given ID",
                            rddsFactory)
 
@@ -658,9 +658,9 @@ object H2OContext extends Logging {
                            "Return all DataFrames.",
                            dataFramesfactory)
 
-    RequestServer.register("/3/dataframes/(?<dataframeid>[0-9a-zA-Z_]+)", "POST",
+    RequestServer.register("/3/dataframes/(?<searcheddataframeid>[0-9a-zA-Z_]+)", "POST",
                            classOf[DataFramesHandler], "getDataFrame",
-                           null, Array("dataframe_id"),
+                           null, Array("searched_dataframe_id"),
                            "Get DataFrame with the given id",
                            dataFramesfactory)
 

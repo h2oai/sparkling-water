@@ -31,19 +31,24 @@ class H2OFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extends
 
   def toDataFrame(version: Int, s: DataFrameIDV3): DataFrameIDV3 = {
     val value = DKV.get(s.h2oframe_id)
-
-    val h2oFrame: H2OFrame = value.className() match {
-      case name if name.equals(classOf[Frame].getName) => {
-        h2OContext.asH2OFrame(value.get[Frame]())
+    if(value == null){
+      s.dataframe_id=""
+      s.msg = "H2OFrame with id \""+s.h2oframe_id+"\" does not exist, can not proceed with the transformation"
+    }else{
+      val h2oFrame: H2OFrame = value.className() match {
+        case name if name.equals(classOf[Frame].getName) => {
+          h2OContext.asH2OFrame(value.get[Frame]())
+        }
+        case name if name.equals(classOf[H2OFrame].getName) => value.get[H2OFrame]()
       }
-      case name if name.equals(classOf[H2OFrame].getName) => value.get[H2OFrame]()
-    }
 
-    val dataFrame = h2OContext.asDataFrame(h2oFrame)
-    dataFrame.rdd.cache()
-    s.dataframe_id = "df_" + dataFrame.rdd.id.toString
-    dataFrame.registerTempTable(s.dataframe_id)
-    sqlContext.cacheTable(s.dataframe_id)
+      val dataFrame = h2OContext.asDataFrame(h2oFrame)
+      dataFrame.rdd.cache()
+      s.dataframe_id = "df_" + dataFrame.rdd.id.toString
+      s.msg = "Success"
+      dataFrame.registerTempTable(s.dataframe_id)
+      sqlContext.cacheTable(s.dataframe_id)
+    }
     s
   }
 

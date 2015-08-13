@@ -28,4 +28,7 @@ public class DataFrameIDV3 extends Schema<IcedDataFrameID, DataFrameIDV3> {
 
     @API(help = "Id of transformed DataFrame", direction = API.Direction.OUTPUT)
     public String dataframe_id;
+
+    @API(help = "Additional message", direction = API.Direction.OUTPUT)
+    public String msg;
 }

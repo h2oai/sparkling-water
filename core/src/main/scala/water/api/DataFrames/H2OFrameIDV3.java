@@ -12,4 +12,7 @@ public class H2OFrameIDV3 extends Schema<IcedH2OFrameID, H2OFrameIDV3> {
 
     @API(help = "Id of transformed H2OFrame", direction = API.Direction.OUTPUT)
     public String h2oframe_id;
+
+    @API(help = "Additional message", direction = API.Direction.OUTPUT)
+    public String msg;
 }

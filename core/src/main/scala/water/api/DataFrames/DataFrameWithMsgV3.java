@@ -14,14 +14,22 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api.RDDs
+package water.api.DataFrames;
 
-import water.api.{API, Schema}
+import water.api.API;
+import water.api.Schema;
 
 /**
- * Generic implementation endpoint for all RDD queries.
+ * Endpoint representing single DataFrame.
  */
-class RDDsBase[I <: RDDs, S <: RDDsBase[I, S]] extends Schema[I, S] {
-  @API(help = "List of RDDs", direction = API.Direction.OUTPUT)
-  val rdds: Array[RDDV3] = null
+public class DataFrameWithMsgV3 extends Schema<IcedDataFrameWithMsgInfo, DataFrameWithMsgV3> {
+
+    @API(help = "Searched data frame id", direction = API.Direction.INPUT)
+    public String searched_dataframe_id;
+
+    @API(help = "DataFrame", direction = API.Direction.OUTPUT)
+    public DataFrameV3 dataframe;
+
+    @API(help = "Additional message", direction = API.Direction.OUTPUT)
+    public String msg;
 }
