@@ -35,6 +35,7 @@ object InterpreterUtils {
   private var _replClassLoader: AbstractFileClassLoader = {
     if (Main.interp != null) {
       SparkEnv.get.serializer.setDefaultClassLoader(Main.interp.intp.classLoader)
+      SparkEnv.get.closureSerializer.setDefaultClassLoader(Main.interp.intp.classLoader)
       Main.interp.intp.classLoader
     } else {
       null
@@ -69,6 +70,7 @@ object InterpreterUtils {
     if(_replClassLoader == null) {
       _replClassLoader = classLoader
       SparkEnv.get.serializer.setDefaultClassLoader(_replClassLoader)
+      SparkEnv.get.closureSerializer.setDefaultClassLoader(_replClassLoader)
     }
   }
   def resetREPLCLassLoader() : Unit = this.synchronized{
