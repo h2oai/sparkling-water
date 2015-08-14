@@ -40,7 +40,7 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
   initializeHandler()
 
   def interpret(version: Int, s: ScalaCodeV3): ScalaCodeV3 = {
-    // check is session_id is set
+    // check if session_id is set
     if (s.session_id == -1 || !mapIntr.isDefinedAt(s.session_id)) {
       // session ID not set
       s.response = "Create session ID using the address /3/scalaint"
@@ -64,23 +64,31 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
     this.synchronized {
                         if (!freeInterpreters.isEmpty) {
                           val intp = freeInterpreters.poll()
+                          mapIntr.put(intp.sessionID, (intp, Platform.currentTime))
                           new Thread(new Runnable {
                             def run(): Unit = {
-                              createInterpreter()
+                              createIntpInPool()
                             }
                           }).start()
                           intp
                         } else {
                           // pool is empty at the moment and is being filled, return new interpreter without using the pool
-                          createInterpreter()
+                          val id = createID()
+                          val intp = ScalaCodeHandler.initializeInterpreter(sc, h2oContext, id)
+                          mapIntr.put(intp.sessionID, (intp, Platform.currentTime))
+                          intp
                         }
                       }
   }
 
   def destroySession(version: Int, s: ScalaMsgV3): ScalaMsgV3 = {
-    mapIntr(s.session_id)._1.closeInterpreter()
-    mapIntr -= s.session_id
-    s.msg = "Session closed"
+    if(!mapIntr.contains(s.session_id)){
+      s.msg = "Session does not exist"
+    }else{
+      mapIntr(s.session_id)._1.closeInterpreter()
+      mapIntr -= s.session_id
+      s.msg = "Session closed"
+    }
     s
   }
 
@@ -109,15 +117,14 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
 
   def initializePool(): Unit = {
     for (i <- 0 until intrPoolSize) {
-      createInterpreter()
+      createIntpInPool()
     }
   }
 
-  def createInterpreter(): H2OILoop = {
+  def createIntpInPool(): H2OILoop = {
     val id = createID()
     val intp = ScalaCodeHandler.initializeInterpreter(sc, h2oContext, id)
     freeInterpreters.add(intp)
-    mapIntr.put(id, (intp, Platform.currentTime))
     intp
   }
 
