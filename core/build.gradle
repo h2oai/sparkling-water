@@ -75,6 +75,8 @@ test {
 
     // For a new JVM for each test class
     forkEvery = 1
+
+    jvmArgs '-XX:MaxPermSize=384m'
 }
 
 test.dependsOn testJar

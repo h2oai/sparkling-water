@@ -39,25 +39,31 @@ if [ "$EXAMPLE_MASTER" == "yarn-client" ] || [ "$EXAMPLE_MASTER" == "yarn-cluste
 VERBOSE=
 (
  cd $TOPDIR
- $SPARK_HOME/bin/spark-submit "$@" \
+ $SPARK_HOME/bin/spark-submit \
  --class $EXAMPLE \
  --master $EXAMPLE_MASTER \
  --driver-memory $EXAMPLE_DRIVER_MEMORY \
  --driver-java-options "$EXAMPLE_H2O_SYS_OPS" \
  --driver-class-path $TOPDIR/assembly/build/libs/$FAT_JAR \
- $VERBOSE $TOPDIR/assembly/build/libs/$FAT_JAR
+ --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" \
+ $VERBOSE \
+ $TOPDIR/assembly/build/libs/$FAT_JAR \
+ "$@"
 )
 else
 VERBOSE=
 (
  cd $TOPDIR
- $SPARK_HOME/bin/spark-submit "$@" \
+ $SPARK_HOME/bin/spark-submit \
  --class $EXAMPLE \
  --master $EXAMPLE_MASTER \
  --driver-memory $EXAMPLE_DRIVER_MEMORY \
  --driver-java-options "$EXAMPLE_H2O_SYS_OPS" \
  --deploy-mode $EXAMPLE_DEPLOY_MODE \
  --driver-class-path $TOPDIR/assembly/build/libs/$FAT_JAR \
- $VERBOSE $TOPDIR/assembly/build/libs/$FAT_JAR
+ --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" \
+ $VERBOSE \
+ $TOPDIR/assembly/build/libs/$FAT_JAR \
+ "$@"
 )
 fi

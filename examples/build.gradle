@@ -52,6 +52,7 @@ integTest {
   systemProperty "sparkling.test.assembly", "${configurations.integTestAssembly.artifacts.file.join(',')}"
   systemProperty "sparkling.test.jar", "${integTestJar.archivePath}"
 
+  jvmArgs '-XX:MaxPermSize=384m'
 
     //configurations.integTestRuntime. { println(it)}
 
