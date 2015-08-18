@@ -83,7 +83,8 @@ import scala.util.control.ControlThrowable
   * @author Lex Spoon
   */
 @DeveloperApi
- class H2OIMain(initialSettings: Settings,
+ class H2OIMain(val sharedCLHelper: ClassLoaderHelper,
+                initialSettings: Settings,
                 val out: JPrintWriter,
                 val sessionID: Int,
                propagateExceptions: Boolean = false)
@@ -94,7 +95,7 @@ import scala.util.control.ControlThrowable
 
   /** Local directory to save .class files too */
   private lazy val outputDir = {
-   InterpreterUtils.getClassOutputDir
+   REPLClassServerUtils.getClassOutputDir
   }
 
   if (SPARK_DEBUG_REPL) {
@@ -131,7 +132,7 @@ import scala.util.control.ControlThrowable
    */
   @DeveloperApi
   def classServerUri = {
-   InterpreterUtils.classServerUri
+   REPLClassServerUtils.classServerUri
   }
 
   /** We're going to go to some trouble to initialize the compiler asynchronously.
@@ -429,7 +430,7 @@ import scala.util.control.ControlThrowable
   @DeveloperApi
   def addUrlsToClassPath(urls: URL*): Unit = {
     new Run // Needed to force initialization of "something" to correctly load Scala classes from jars
-    InterpreterUtils.addUrlsToClasspath(urls: _*) // Add jars/classes to runtime for execution
+    sharedCLHelper.addUrlsToClasspath(urls: _*) // Add jars/classes to runtime for execution
     updateCompilerClassPath(urls: _*) // Add jars/classes to compile time for compiling
   }
 
@@ -496,19 +497,19 @@ import scala.util.control.ControlThrowable
   definitions.
   */
   private def resetClassLoader() = {
-    logDebug("Setting new classloader: was " + InterpreterUtils.REPLCLassLoader)
-    InterpreterUtils.resetREPLCLassLoader()
+    logDebug("Setting new classloader: was " + sharedCLHelper.REPLCLassLoader)
+    sharedCLHelper.resetREPLCLassLoader()
     ensureClassLoader()
   }
 
   private final def ensureClassLoader() {
-       InterpreterUtils.ensureREPLClassLoader(makeClassLoader())
+    sharedCLHelper.ensureREPLClassLoader(makeClassLoader())
   }
 
   // NOTE: Exposed to repl package since used by SparkILoop
   private[repl] def classLoader: AbstractFileClassLoader = {
     ensureClassLoader()
-    InterpreterUtils.REPLCLassLoader
+    sharedCLHelper.REPLCLassLoader
   }
 
   private class TranslatingClassLoader(parent: ClassLoader) extends AbstractFileClassLoader(virtualDirectory, parent) {
@@ -531,8 +532,8 @@ import scala.util.control.ControlThrowable
     new TranslatingClassLoader(parentClassLoader match {
       case null => ScalaClassLoader fromURLs compilerClasspath
       case p =>
-        InterpreterUtils.ensureRuntimeCLassLoader(new URLClassLoader(compilerClasspath, p) with ExposeAddUrl)
-        InterpreterUtils.runtimeClassLoader
+        sharedCLHelper.ensureRuntimeCLassLoader(new URLClassLoader(compilerClasspath, p) with ExposeAddUrl)
+        sharedCLHelper.runtimeClassLoader
     })
 
   private def getInterpreterClassLoader = classLoader
