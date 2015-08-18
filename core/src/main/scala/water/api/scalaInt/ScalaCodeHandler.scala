@@ -18,7 +18,7 @@ package water.api.scalaInt
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.repl.H2OILoop
+import org.apache.spark.repl.{InterpreterUtils, H2OILoop}
 import water.Iced
 import water.api.Handler
 
@@ -29,6 +29,10 @@ import scala.compat.Platform
  * ScalaCode Handler
  */
 class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
+
+  if(sc.isLocal){
+    InterpreterUtils.prepareLocalClassLoader
+  }
 
   val intrPoolSize = 1
   // 1 only for development purposes

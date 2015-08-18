@@ -19,6 +19,7 @@ package org.apache.spark.repl
 import java.net.URL
 
 import org.apache.spark.SparkEnv
+import org.apache.spark.util.MutableURLClassLoader
 
 import scala.tools.nsc.interpreter.AbstractFileClassLoader
 import scala.tools.nsc.util.ScalaClassLoader.URLClassLoader
@@ -91,6 +92,21 @@ object InterpreterUtils {
       Main.interp.intp.addUrlsToClassPath(urls: _*)
     } else {
       urls.foreach(_runtimeClassLoader.addNewUrl)
+    }
+  }
+
+
+  /**
+   * Add directory with classes defined in REPL to the classloader
+   which is used in the local mode. This classloader is obtained using reflections.
+   */
+  def prepareLocalClassLoader: Unit =  {
+    val f  =  SparkEnv.get.serializer.getClass.getSuperclass.getDeclaredField("defaultClassLoader")
+    f.setAccessible(true);
+    val value =  f.get(SparkEnv.get.serializer)
+    value match {
+      case v : Option[MutableURLClassLoader] => v.get.addURL(getClassOutputDir.toURI.toURL)
+      case _ =>
     }
   }
 }
