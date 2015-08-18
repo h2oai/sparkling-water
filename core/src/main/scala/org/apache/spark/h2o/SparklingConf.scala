@@ -17,7 +17,7 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.SparkConf
-import org.apache.spark.repl.InterpreterUtils
+import org.apache.spark.repl.REPLClassServerUtils
 
 /**
  * Wrapper around spark configuration
@@ -29,7 +29,7 @@ class SparklingConf(loadDefaults: Boolean)  {
   def this() = this(true)
 
   private val conf = new SparkConf(loadDefaults)
-  conf.set("spark.repl.class.uri", InterpreterUtils.classServerUri)
+  conf.set("spark.repl.class.uri", REPLClassServerUtils.classServerUri)
 
 
   def sparkConf  = conf

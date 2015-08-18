@@ -29,7 +29,7 @@ import org.apache.spark.{HttpServer, Logging, SecurityManager, SparkConf}
 /**
  * HTTP Server containing classes defined in repl
  */
-private[repl] object ReplCLassServer extends Logging {
+private[repl] object REPLCLassServer extends Logging {
 
   lazy val getClassOutputDirectory = outputDir
   /** Local directory to save .class files too */

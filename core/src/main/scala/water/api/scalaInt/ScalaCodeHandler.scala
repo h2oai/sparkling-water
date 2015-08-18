@@ -18,7 +18,7 @@ package water.api.scalaInt
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.repl.H2OILoop
+import org.apache.spark.repl.{ClassLoaderHelper, H2OILoop}
 import water.Iced
 import water.api.Handler
 
@@ -29,6 +29,8 @@ import scala.compat.Platform
  * ScalaCode Handler
  */
 class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
+
+  val sharedClHelper = new ClassLoaderHelper(sc)
 
   val intrPoolSize = 1
   // 1 only for development purposes
@@ -74,7 +76,7 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
                         } else {
                           // pool is empty at the moment and is being filled, return new interpreter without using the pool
                           val id = createID()
-                          val intp = ScalaCodeHandler.initializeInterpreter(sc, h2oContext, id)
+                          val intp = ScalaCodeHandler.initializeInterpreter(sharedClHelper,sc, h2oContext, id)
                           mapIntr.put(intp.sessionID, (intp, Platform.currentTime))
                           intp
                         }
@@ -123,7 +125,7 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
 
   def createIntpInPool(): H2OILoop = {
     val id = createID()
-    val intp = ScalaCodeHandler.initializeInterpreter(sc, h2oContext, id)
+    val intp = ScalaCodeHandler.initializeInterpreter(sharedClHelper, sc, h2oContext, id)
     freeInterpreters.add(intp)
     intp
   }
@@ -138,9 +140,9 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
 
 object ScalaCodeHandler {
 
-  def initializeInterpreter(sparkContext: SparkContext, h2oContext: H2OContext,
+  def initializeInterpreter(sharedClHelper: ClassLoaderHelper,sparkContext: SparkContext, h2oContext: H2OContext,
                             sessionID: Int): H2OILoop = {
-    new H2OILoop(sparkContext, h2oContext, sessionID)
+    new H2OILoop(sharedClHelper,sparkContext, h2oContext, sessionID)
   }
 }
 

@@ -58,7 +58,7 @@ import scala.util.Properties.{javaVersion, jdkHome}
   *  @version 1.2
   */
 @DeveloperApi
-class H2OILoop(var sparkContext: SparkContext, var h2oContext: H2OContext, var sessionID: Int
+class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkContext, var h2oContext: H2OContext, var sessionID: Int
                 ) extends AnyRef with LoopCommands with H2OILoopInit with Logging {
 
   /** Show the history */
@@ -1097,7 +1097,7 @@ class H2OILoop(var sparkContext: SparkContext, var h2oContext: H2OContext, var s
       intp.reporter printMessage afterTyper(msg)
   }
 
-  class H2OILoopInterpreter extends H2OIMain(settings, out, sessionID) {
+  class H2OILoopInterpreter extends H2OIMain(sharedClHelper,settings, out, sessionID) {
     outer =>
     override private[repl] lazy val formatting = new Formatting {
       def prompt = H2OILoop.this.prompt
