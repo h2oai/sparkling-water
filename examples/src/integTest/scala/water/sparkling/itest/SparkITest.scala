@@ -36,8 +36,9 @@ trait SparkITest extends BeforeAndAfterEach { self: Suite =>
       // Disable GA collection by default
       env.sparkConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++
       Seq("--conf", "spark.ext.h2o.disable.ga=true") ++
-      Seq[String](env.testJar) ++
-      Seq("--conf","spark.driver.extraJavaOptions=\"-XX:MaxPermSize=384m\"")
+      Seq("--conf", "spark.driver.extraJavaOptions=\"-XX:MaxPermSize=384m\"") ++
+      Seq[String](env.testJar)
+
 
     if(!env.sparkMaster.startsWith("yarn")) {
       SparkSubmit.main(cmdLine.toArray)
