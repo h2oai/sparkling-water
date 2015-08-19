@@ -61,7 +61,7 @@ configure(allprojects) { project ->
     }
 }
 
-// 
+//
 // Common configuration for all subprojects
 //
 configure(subprojects) { project ->
@@ -85,7 +85,7 @@ configure(subprojects) { project ->
             url "http://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
         }
         // Should be enabled only in development mode
-        if (h2oBuild == '99999') mavenLocal()
+        if (h2oBuild == '99999' || sparkVersion.contains("SNAPSHOT")) mavenLocal()
     }
 
 
@@ -127,4 +127,3 @@ configure(subprojects) { project ->
 task wrapper(type: Wrapper) {
   gradleVersion = '2.4'
 }
-

@@ -90,7 +90,7 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
                 } else if (chk.vec().isUUID) {
                   val uuid = new UUID(chk.at16h(row), chk.at16l(row))
                   UTF8String.fromString(uuid.toString)
-                } else ????
+                } else ???
                 mutableRow.update(i, utf8)
               case TimestampType =>
                 mutableRow.setLong(i, chk.at8(row) * 1000L)
