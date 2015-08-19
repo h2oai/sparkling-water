@@ -238,7 +238,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   def createH2OSchemaRDD(fr: H2OFrame)(implicit sqlContext: SQLContext): DataFrame = {
     val h2oSchemaRDD = new H2OSchemaRDD(this, fr)
-    sqlContext.createDataFrame(h2oSchemaRDD, H2OSchemaUtils.createSchema(fr))
+    sqlContext.internalCreateDataFrame(h2oSchemaRDD, H2OSchemaUtils.createSchema(fr))
   }
 
   /** Open H2O Flow running in this client. */
