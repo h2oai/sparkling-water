@@ -1,13 +1,21 @@
 /**
- * Craigslist example
+ *  * Craigslist example
  *
  * It predicts job category based on job description (called "job title").
+ *
+ * Launch following commands:
+ *    export MASTER="local-cluster[3,2,4096]"
+ *   bin/sparkling-shell -i examples/scripts/craigslistJobTitles.script.scala
+ *
+ * When running using spark shell or using scala rest API:
+ *    SQLContext is available as sqlContext
+ *    SparkContext is available as sc
  */
 import org.apache.spark.mllib.feature.Word2Vec
 import org.apache.spark.mllib.feature.Word2VecModel
 import org.apache.spark.mllib.linalg._
+import org.apache.spark.sql.DataFrame
 
-//val sc: org.apache.spark.SparkContext = null
 
 def isHeader(line: String) = line.contains("category")
 // Load and split data based on ","
@@ -110,14 +118,10 @@ import org.apache.spark.mllib
 case class CRAIGSLIST(target: String, a: mllib.linalg.Vector)
 
 import org.apache.spark.h2o._
-import org.apache.spark.examples.h2o._
 val h2oContext = new H2OContext(sc).start()
 import h2oContext._
 
-import org.apache.spark.sql._
-implicit val sqlContext = new SQLContext(sc)
-import sqlContext._
-val resultRDD: SchemaRDD = XXXlabels.zip(title_vectors).map(v => CRAIGSLIST(v._1, v._2)).toDF
+val resultRDD: DataFrame = XXXlabels.zip(title_vectors).map(v => CRAIGSLIST(v._1, v._2)).toDF
 
 val table:H2OFrame = resultRDD
 

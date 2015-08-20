@@ -28,7 +28,6 @@ import scala.tools.nsc.util.ScalaClassLoader.URLClassLoader
  * Various utils for working with REPL class server
  */
 
-
 object REPLClassServerUtils {
 
   def getClassOutputDir = {

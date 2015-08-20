@@ -1,38 +1,47 @@
 /**
- * Expects following variables:
- *  sc - SparkContext provided by environment
- *  sqlContext - SQL Context provided by environment
+ * Launch following commands:
+ *   export MASTER="local-cluster[3,2,4096]"
+ *   bin/sparkling-shell -i examples/scripts/StrataAirlines.script.scala
+ *
+ * When running using spark shell or using scala rest API:
+ *    SQLContext is available as sqlContext
+ *    SparkContext is available as sc
  */
-//val sc: org.apache.spark.SparkContext = null
-//val sqlContext: org.apache.spark.sql.SQLContext = null
-
-// Start H2O
+// Common imports
+import org.apache.spark.SparkFiles
+import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.examples.h2o._
+import org.apache.spark.sql.SQLContext
 import water.Key
+import java.io.File
 
+// Create SQL support
+implicit val sqlContext = SQLContext.getOrCreate(sc)
+import sqlContext.implicits._
+
+// Start H2O services
 val h2oContext = new H2OContext(sc).start()
 import h2oContext._
 
+// Register files to SparkContext
+addFiles(sc,
+  "examples/smalldata/year2005.csv.gz",
+  "examples/smalldata/Chicago_Ohare_International_Airport.csv"
+)
 
-// Import all year airlines into H2O
-import java.io.File
-val dataFile = "examples/smalldata/year2005.csv.gz"
-val airlinesData = new H2OFrame(new File(dataFile))
-
+// Import all year airlines data into H2O
+val airlinesData = new H2OFrame(new File(SparkFiles.get("year2005.csv.gz")))
 
 // Import weather data into Spark
-val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
-val wrawdata = sc.textFile(weatherDataFile,8).cache()
+val wrawdata = sc.textFile(SparkFiles.get("Chicago_Ohare_International_Airport.csv"),8).cache()
 val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
 
-
 // Transfer data from H2O to Spark RDD
-val airlinesTable : RDD[Airlines] = toRDD[Airlines](airlinesData)
+val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
 val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
 
 // Use Spark SQL to join flight and weather data in spark
-import sqlContext.implicits._
 flightsToORD.toDF.registerTempTable("FlightsToORD")
 weatherTable.toDF.registerTempTable("WeatherORD")
 
@@ -61,7 +70,7 @@ dlParams._epochs = 100
 dlParams._train = trainFrame
 dlParams._response_column = 'IsDepDelayed
 dlParams._variable_importances = true
-dlParams._model_id = Key.make("dlModel.hex").asInstanceOf[water.Key[Frame]]
+dlParams._model_id = Key.make("dlModel.hex")
 // Create a job
 val dl = new DeepLearning(dlParams)
 val dlModel = dl.trainModel.get
@@ -78,13 +87,11 @@ val glmParams = new GLMParameters(Family.binomial)
 glmParams._train = bigTable
 glmParams._response_column = 'IsDepDelayed
 glmParams._alpha = Array[Double](0.5)
-glmParams._model_id = Key.make("glmModel.hex").asInstanceOf[water.Key[Frame]]
+glmParams._model_id = Key.make("glmModel.hex")
 val glm = new GLM(glmParams)
 val glmModel = glm.trainModel().get()
 
 // Use model to estimate delay on training data
 val predGLMH2OFrame = glmModel.score(bigTable)('predict)
-val predGLMFromModel = toRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
+val predGLMFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
-// End of test
-//exit

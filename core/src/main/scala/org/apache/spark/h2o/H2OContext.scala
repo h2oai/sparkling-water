@@ -20,9 +20,6 @@ package org.apache.spark.h2o
 import org.apache.spark._
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
-import org.apache.spark.repl.{SparkIMain, SparkILoop}
-import org.apache.spark.sql.catalyst.expressions.AttributeReference
-import org.apache.spark.sql.execution.LogicalRDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import water._
