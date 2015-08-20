@@ -1,27 +1,16 @@
 /**
- * To start Sparkling Water please type
-
-cd path/to/sparkling/water
-export SPARK_HOME="your/spark-1.3.1-installation"
-export MASTER="local-cluster[3,2,4096]"
-
-bin/sparkling-shell --conf spark.executor.memory=3G
-*/
-
-/**
- * Expects following variables:
- *  sc - SparkContext provided by environment
- *  sqlContext - SQL Context provided by environment
+ * Launch following commands:
+*    export MASTER="local-cluster[3,2,4096]"
+ *   bin/sparkling-shell -i examples/scripts/chicagoCrimeSmallShell.script.scala --conf spark.executor.memory=3G
+ *
+ * When running using spark shell or using scala rest API:
+ *    SQLContext is available as sqlContext
+ *    SparkContext is available as sc
  */
-//val sc: org.apache.spark.SparkContext = null
-//val sqlContext: org.apache.spark.sql.SQLContext = null
-
-//
-// Prepare environment
-//
+// Create an environment
+import hex.Distribution.Family
 import hex.deeplearning.DeepLearningModel
 import hex.tree.gbm.GBMModel
-import hex.tree.gbm.GBMModel.GBMParameters.Family
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkFiles
 import org.apache.spark.examples.h2o.DemoUtils._
@@ -30,11 +19,10 @@ import org.apache.spark.h2o._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
-// SQL support
+// Create SQL support
+implicit val sqlContext = SQLContext.getOrCreate(sc)
 
-//
 // Start H2O services
-//
 implicit val h2oContext = new H2OContext(sc).start()
 import h2oContext._
 
@@ -189,7 +177,7 @@ val dlModel = DLModel(train, test, 'Arrest)
 
 // Collect model metrics
 def binomialMetrics[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-                    (model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
+(model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
   model.score(train).delete()
   model.score(test).delete()
   (binomialMM(model,train), binomialMM(model, test))
@@ -243,7 +231,7 @@ for (crime <- crimeExamples) {
     s"""
        |Crime: $crime
         |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
-        |  Probability of arrest best on GBM: ${arrestProbGBM} %
+                                                                        |  Probability of arrest best on GBM: ${arrestProbGBM} %
         """.stripMargin)
 }
 
@@ -251,7 +239,6 @@ for (crime <- crimeExamples) {
 //
 // More data munging
 //
-import sqlContext._
 // Collect all crime types
 val allCrimes = sql("SELECT Primary_Type, count(*) FROM chicagoCrime GROUP BY Primary_Type").collect
 // Filter only successful arrests
