@@ -21,7 +21,7 @@ import org.apache.spark._
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql._
 import water._
 import water.api.DataFrames.DataFramesHandler
 import water.api.H2OFrames.H2OFramesHandler
@@ -234,8 +234,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   }
 
   def createH2OSchemaRDD(fr: H2OFrame)(implicit sqlContext: SQLContext): DataFrame = {
-    val h2oSchemaRDD = new H2OSchemaRDD(this, fr)
-    sqlContext.createDataFrame(h2oSchemaRDD, H2OSchemaUtils.createSchema(fr))
+    H2ODataFrameUtils.createH2OSchemaRDD(fr, this, sqlContext)
   }
 
   /** Open H2O Flow running in this client. */

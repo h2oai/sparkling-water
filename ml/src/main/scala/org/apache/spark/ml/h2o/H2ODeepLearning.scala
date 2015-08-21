@@ -3,7 +3,7 @@ package org.apache.spark.ml.h2o
 import hex.deeplearning.{DeepLearning, DeepLearningModel, DeepLearningParameters}
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.param.{Param, Params}
+import org.apache.spark.ml.param.{Param, Params, ParamMap}
 import org.apache.spark.ml.{Estimator, PredictionModel}
 import org.apache.spark.mllib
 import org.apache.spark.sql.DataFrame
@@ -16,6 +16,7 @@ class H2ODeepLearningModel(model: DeepLearningModel)
   extends PredictionModel[mllib.linalg.Vector, H2ODeepLearningModel] {
 
   override protected def predict(features: mllib.linalg.Vector): Double = ???
+  override def copy(extra: ParamMap): H2ODeepLearningModel = ???
 
   override val uid: String = "dlModel"
 }
@@ -36,6 +37,8 @@ class H2ODeepLearning()(implicit hc: H2OContext)
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = ???
 
+  override def copy(extra: ParamMap): H2ODeepLearning = ???
+
   override val uid: String = "dl"
 }
 
@@ -46,4 +49,3 @@ trait HasDeepLearningParams extends Params {
   def getDeepLearningParams: DeepLearningParameters = get(deepLearningParams).get
 
 }
-
