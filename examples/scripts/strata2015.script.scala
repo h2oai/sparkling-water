@@ -25,9 +25,9 @@ import sqlContext.implicits._
 implicit val h2oContext = new H2OContext(sc).start()
 import h2oContext._
 
-val location = "examples/bigdata/"
+val location = "examples/bigdata/laptop/citibike-nyc/"
 val fileNames = Seq[String]("2013-07.csv","2013-08.csv","2013-09.csv","2013-10.csv","2013-11.csv","2013-12.csv")
-val filesPaths = fileNames.map(name => location + name) :+ "examples/bigdata/31081_New_York_City__Hourly_2013.csv"
+val filesPaths = fileNames.map(name => location + name) :+ location+"31081_New_York_City__Hourly_2013.csv"
 
 // Register files to SparkContext
 addFiles(sc, filesPaths:_*)

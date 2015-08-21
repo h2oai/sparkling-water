@@ -18,7 +18,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.2'
         classpath 'org.github.mansur.scalastyle:gradle-scalastyle-plugin_2.10:0.4.1'
         classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.7.1'
         // https://github.com/researchgate/gradle-release

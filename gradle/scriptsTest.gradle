@@ -1,0 +1,47 @@
+//
+// Support for testing scripts
+//
+
+sourceSets {
+    scriptsTest {
+        scala.srcDir file('src/scriptsTest/scala')
+        resources.srcDir file('src/scriptsTest/resources')
+
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
+}
+
+configurations {
+    scriptsTestCompile.extendsFrom testCompile
+    scriptsTestRuntime.extendsFrom testRuntime
+}
+
+// Add a new configuration containing only jars needed for test run
+configurations {
+    scriptsTestAssembly {
+        description = 'Contains only jars needed to run integration tests on top of Spark.'
+        transitive = false
+    }
+}
+
+task scriptsTest(type: Test) {
+    group = 'Verification'
+    description = 'Runs all scripts tests'
+    testClassesDir = sourceSets.scriptsTest.output.classesDir
+    classpath = sourceSets.scriptsTest.runtimeClasspath
+}
+
+// Create jar
+task scriptsTestJar(type: Jar, dependsOn: scriptsTestClasses) {
+    group = "Build"
+    description = "Assembles a jar archive with scripts test classes."
+    baseName = "${project.name}_${scalaBinaryVersion}"
+    appendix = 'scriptsTest'
+    from sourceSets.scriptsTest.output
+}
+
+// Dependencies
+scriptsTest.dependsOn ":sparkling-water-assembly:shadowJar"
+
+

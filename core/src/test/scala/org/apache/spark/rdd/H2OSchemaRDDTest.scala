@@ -54,7 +54,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     import h2oContext._
 
     // FIXME: create different shapes of frame
-    val dataFrame = new H2OFrame(new File("../examples/smalldata/prostate.csv"))
+    val dataFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
     implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
@@ -65,7 +65,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   // H2OFrame to RDD[T] JUnits
   test("H2OFrame[T_NUM] to RDD[Prostate]") {
     import h2oContext._
-    val dataFrame: H2OFrame = new H2OFrame(new File("../examples/smalldata/prostate.csv"))
+    val dataFrame: H2OFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
     assert (dataFrame.vec(0).isNumeric & dataFrame.vec(1).isNumeric & dataFrame.vec(2).isNumeric &
       dataFrame.vec(3).isNumeric & dataFrame.vec(4).isNumeric & dataFrame.vec(5).isNumeric & dataFrame.vec(6).isNumeric
       & dataFrame.vec(7).isNumeric & dataFrame.vec(8).isNumeric)

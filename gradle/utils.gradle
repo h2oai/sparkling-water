@@ -1,0 +1,34 @@
+// Common functions used by more subprojects
+/**
+ * Find dependencies from 'configuration.runtime' matching given specification.
+ *
+ * Specification is given in form group_name:module_name
+ *
+ * @param d list of specifications.
+ * @return
+ */
+public FileCollection dep(List<String> d) {
+    Configuration conf = configurations.runtime
+    List<String[]> depsSpec = d.collect { it.split(":")}
+    Set<ResolvedDependency> toInclude = []
+    resolve(conf.resolvedConfiguration.firstLevelModuleDependencies, toInclude, depsSpec)
+    files( toInclude.collect {
+        it.moduleArtifacts*.file
+    }.flatten())
+}
+
+void resolve(Set<ResolvedDependency> deps, Set<ResolvedDependency> includeDeps, List<String[]> depsSpec) {
+    deps.each { d->
+        if (depsSpec.any { ds -> d.moduleGroup==ds[0] && d.moduleName==ds[1] })
+            if (includeDeps.add(d)) {
+                resolve(d.children, includeDeps, depsSpec)
+            }
+    }
+}
+
+/// Export methods by turning them into closures
+ext{
+    dep = this.&dep
+    resolve = this.&resolve
+}
+
