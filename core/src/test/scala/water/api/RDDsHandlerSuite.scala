@@ -21,7 +21,7 @@ import org.apache.spark.h2o.util.SharedSparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.RDDs.{RDDsHandler, RDDsV3}
+import water.api.RDDs.{RDDWithMsgV3, RDDV3, RDDsHandler, RDDsV3}
 
 /**
  * Test method of RDDsHandler.
@@ -42,5 +42,33 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     assert (result.rdds(0).name.equals(rname), "Name matches")
     assert (result.rdds(0).partitions == rpart, "Number of partitions matches")
 
+  }
+
+  test("RDDsHandler.getRDD() method"){
+    //Create and persist RDD
+    val rname = "Test"
+    val rpart = 21
+    val rdd = sc.parallelize(1 to 100,rpart).setName(rname).cache()
+
+    val rddsHandler = new RDDsHandler(sc)
+    val rddReq = new RDDWithMsgV3
+    rddReq.searched_rdd_id =  rdd.id
+
+    val result = rddsHandler.getRDD(3,rddReq)
+    assert (result.rdd.rdd_id == rdd.id, "Original ID and obtained ID should match")
+    assert (result.rdd.name.equals(rname), "Name matches")
+    assert (result.rdd.partitions == rpart, "Number of partitions matches")
+    assert (result.msg.equals("OK"),"Status should be OK")
+  }
+
+  test("RDDsHandler.getRDD() method, querying non-existing RDD"){
+    val rddsHandler = new RDDsHandler(sc)
+
+    val rddReq = new RDDWithMsgV3
+    rddReq.searched_rdd_id =  0
+
+    val result = rddsHandler.getRDD(3,rddReq)
+    assert (result.rdd == null, "Returned RDD should be null")
+    assert (!result.msg.equals("OK"),"Status is not OK - it is message saying that given rdd does not exist")
   }
 }
