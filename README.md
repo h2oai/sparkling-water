@@ -158,6 +158,14 @@ See [docker/README.md](docker/README.md) to learn about Docker support.
 
  > Specify `--conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m"`
  
+* How do I add Apache Spark classes to Python path?
+ 
+ > Configure the Python path variable `PYTHONPATH`:
+  ```
+  export PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/build:$PYTHONPATH
+  export PYTHONPATH=$SPARK_HOME/python/lib/py4j-0.8.2.1-src.zip:$PYTHONPATH
+  ```
+  
 <a name="Diagram"></a>
 #Diagram of Sparkling Water on YARN
 
