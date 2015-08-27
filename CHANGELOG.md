@@ -7,6 +7,10 @@ ChangeLog
   - Expose new REST end-points
     - to interpret Scala code
     - to perform transformation between Spark DataFrame and H2O Frame
+  - Fix all scripts and create automatic tests for them
+  - Create basic sparkling-water python package
+  - Fixes
+    - [PUBDEV-282] Create windows batch scripts for starting sparkling-shell and running examples
 
 ##v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame
