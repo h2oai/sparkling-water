@@ -49,6 +49,7 @@ integTest {
   // Pass references to libraries to test launcher
   systemProperty "spark.testing",   "true"
   systemProperty "spark.test.home", "${sparkHome}"
+  systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
   if (sparkMaster != null)
     systemProperty "spark.master", "${sparkMaster}"
   // Pass list of jars required for testing

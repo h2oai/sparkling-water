@@ -37,6 +37,7 @@ trait SparkITest extends BeforeAndAfterEach { self: Suite =>
       env.sparkConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++
       Seq("--conf", "spark.ext.h2o.disable.ga=true") ++
       Seq("--conf", "spark.driver.extraJavaOptions=-XX:MaxPermSize=384m") ++
+      Seq("--conf", "hdp.version="+env.hdpVersion) ++
       Seq[String](env.testJar)
 
 
@@ -70,6 +71,9 @@ trait SparkITest extends BeforeAndAfterEach { self: Suite =>
     lazy val sparkMaster = sys.props.getOrElse("MASTER",
       sys.props.getOrElse("spark.master",
         fail("The variable 'MASTER' should point to Spark cluster")))
+
+    lazy val hdpVersion = sys.props.getOrElse("sparkling.test.hdp.version",
+      fail("The variable 'sparkling.test.hdp.version' is not set! It should containg version of hdp used"))
 
     def verbose:Boolean = true
 
