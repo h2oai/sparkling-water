@@ -30,8 +30,8 @@ examples/README.md
 examples/scripts/chicagoCrimeSmall.script.scala
 examples/scripts/chicagoCrimeSmallShell.script.scala
 examples/scripts/mlconf_2015_hamSpam.script.scala
-examples/scripts/strata2015_demo.scala
-examples/scripts/craigslistJobTitles.scala
+examples/scripts/StrataAirlines.script.scala
+examples/scripts/craigslistJobTitles.script.scala
 examples/smalldata/allyears2k_headers.csv.gz
 examples/smalldata/Chicago_Ohare_International_Airport.csv
 examples/smalldata/prostate.csv
@@ -81,19 +81,45 @@ rsync -rtvW "$SCALADOC_SRC_DIR" "$SCALADOC_DST_DIR"
 
 GITHASH=`git rev-parse --verify HEAD`
 
-if [ "$H2O_NAME" == "master"]; then
+if [ "${H2O_NAME}" == "master" ]; then
   H2O_BRANCH_NAME="master"
 else
-  H2O_BRANCH_NAME="rel-$H2O_NAME"
+  H2O_BRANCH_NAME="rel-${H2O_NAME}"
 fi
+
+H2O_PROJECT_VERSION=${H2O_VERSION}.${H2O_BUILD}
+H2O_BUILD_NUMBER=${H2O_BUILD}
+
 # Copy dist dir files
-cat "$DIST_DIR/index.html" | sed -e "s/SUBST_PROJECT_VERSION/$VERSION/g"\
+cat "$DIST_DIR/index.html" \
+  | sed -e "s/SUBST_PROJECT_VERSION/$VERSION/g"\
   | sed -e "s/SUBST_PROJECT_GITHASH/${GITHASH}/g"\
   | sed -e "s/SUBST_H2O_VERSION/${H2O_VERSION}/g"\
   | sed -e "s/SUBST_H2O_BUILD/${H2O_BUILD}/g"\
   | sed -e "s/SUBST_H2O_NAME/${H2O_NAME}/g"\
   | sed -e "s/SUBST_SPARK_VERSION/${SPARK_VERSION}/g"\
-  | sed -e "s/SUBST_H2O_BRANCH_NAME/${H2O_BRANCH_NAME}/g" > "$DIST_BUILD_DIR/index.html"
+  | sed -e "s/SUBST_H2O_BRANCH_NAME/${H2O_BRANCH_NAME}/g"\
+  > "$DIST_BUILD_DIR/index.html"
+
+# Create json metadata file.
+cat "$DIST_DIR/buildinfo.json" \
+  | sed -e "s/SUBST_BUILD_TIME_MILLIS/${BUILD_TIME_MILLIS}/g" \
+  | sed -e "s/SUBST_BUILD_TIME_ISO8601/${BUILD_TIME_ISO8601}/g" \
+  | sed -e "s/SUBST_BUILD_TIME_LOCAL/${BUILD_TIME_LOCAL}/g" \
+  \
+  | sed -e "s/SUBST_PROJECT_VERSION/${VERSION}/g" \
+  | sed -e "s/SUBST_LAST_COMMIT_HASH/${GITHASH}/g" \
+  \
+  | sed -e "s/SUBST_H2O_NAME/${H2O_NAME}/g"\
+  | sed -e "s/SUBST_H2O_VERSION/${H2O_VERSION}/g"\
+  \
+  | sed -e "s/SUBST_H2O_PROJECT_VERSION/${H2O_PROJECT_VERSION}/g"\
+  | sed -e "s/SUBST_H2O_BRANCH_NAME/${H2O_BRANCH_NAME}/g"\
+  | sed -e "s/SUBST_H2O_BUILD_NUMBER/${H2O_BUILD_NUMBER}/g"\
+  \
+  | sed -e "s/SUBST_SPARK_VERSION/${SPARK_VERSION}/g"\
+  \
+  > "$DIST_BUILD_DIR/buildinfo.json"
 
 exit 0
 
