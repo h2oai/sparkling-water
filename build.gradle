@@ -133,7 +133,23 @@ configure(subprojects) { project ->
     }
 }
 
+// This task is used by the Jenkins on test.h2o.ai.
+//
+// See ~jenkins/bin/buildsparklingwater.sh.
+task buildSparklingWaterDist(type: Exec) {
+    def buildTimeMillis = System.currentTimeMillis();
+    def buildTimeIso8601 = new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("UTC"))
+    def buildTimeLocal = new Date()
+
+    environment['BUILD_TIME_MILLIS'] = buildTimeMillis
+    environment['BUILD_TIME_ISO8601'] = buildTimeIso8601
+    environment['BUILD_TIME_LOCAL'] = buildTimeLocal
+
+    commandLine './make-dist.sh'
+}
+
+task dist(dependsOn: buildSparklingWaterDist)
+
 task wrapper(type: Wrapper) {
   gradleVersion = '2.4'
 }
-

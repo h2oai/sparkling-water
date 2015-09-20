@@ -1,0 +1,38 @@
+{
+    "version_major" : 1,
+    "version_minor" : 0,
+
+    "build_time_millis" : SUBST_BUILD_TIME_MILLIS,
+    "build_time_iso8601" : "SUBST_BUILD_TIME_ISO8601",
+    "build_time_local" : "SUBST_BUILD_TIME_LOCAL",
+
+    "project_version" : "SUBST_PROJECT_VERSION",
+    "last_commit_hash" : "SUBST_LAST_COMMIT_HASH",
+
+    "zip_file_name" : "sparkling-water-SUBST_PROJECT_VERSION.zip",
+    "zip_file_path" : "sparkling-water-SUBST_PROJECT_VERSION.zip",
+
+    "h2o_name" : "SUBST_H2O_NAME",
+    "h2o_version" : "SUBST_H2O_VERSION",
+
+    "h2o_project_version" : "SUBST_H2O_PROJECT_VERSION",
+    "h2o_branch_name" : "SUBST_H2O_BRANCH_NAME",
+    "h2o_build_number" : "SUBST_H2O_BUILD_NUMBER",
+
+    "spark_version" : "SUBST_SPARK_VERSION",
+
+    "developer_documents" : [
+        {
+            "name" : "Demo Example from Git",
+            "path" : "https://github.com/h2oai/sparkling-water/blob/SUBST_LAST_COMMIT_HASH/examples/README.md"
+        },
+        {
+            "name" : "Scala Developer Documentation (Scaladoc)",
+            "path" : "scaladoc/index.html"
+        },
+        {
+            "name" : "Sparkling Water Application Template",
+            "path" : "https://github.com/h2oai/h2o-droplets/tree/master/sparkling-water-droplet"
+        }
+    ]
+}
