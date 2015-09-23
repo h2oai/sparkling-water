@@ -225,7 +225,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     //SparkPlan.currentContext.set(sqlContext)
     val h2oSchemaRDD = new H2OSchemaRDD(this, fr)
     val schemaAtts = H2OSchemaUtils.createSchema(fr).fields.map( f =>
-      AttributeReference(f.name, f.dataType, f.nullable)())
+      AttributeReference(f.name, f.dataType, f.nullable, f.metadata)())
 
     new DataFrame(sqlContext, LogicalRDD(schemaAtts, h2oSchemaRDD)(sqlContext))
   }
@@ -514,7 +514,7 @@ object H2OContext extends Logging {
     }
     RequestServer.register("/3/RDDs", "GET",
                             classOf[RDDsHandler], "list",
-                            null, new Array[String](0),
+                            null,
                             "Return all Frames in the H2O distributed K/V store.",
                             hfactory)
   }
