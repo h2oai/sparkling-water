@@ -2,6 +2,12 @@
  * Launch following commands:
  *   export MASTER='local-cluster[3,2,4512]'
  *   bin/sparkling-shell -i examples/scripts/chicagoCrime.script.scala --conf "spark.executor.memory=4G"
+ *
+ * When running using spark shell or using scala rest API:
+ *    SparkContext is available as sc
+ *
+ * Note: Needs access to H2O internal HDFS storage or change paths below.
+ *
  */
 import org.apache.spark.examples.h2o.{Crime, ChicagoCrimeApp}
 import org.apache.spark.h2o.H2OContext
