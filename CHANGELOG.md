@@ -8,6 +8,7 @@ ChangeLog
    - "Ask Craig" streaming example
    - minor fixes in API
    - minor fixes in documentation 
+   - use H2O version 3.2.0.3 (slater)
 
 ##v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame

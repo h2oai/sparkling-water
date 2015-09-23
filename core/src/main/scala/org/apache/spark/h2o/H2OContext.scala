@@ -594,7 +594,7 @@ object H2OContext extends Logging {
     }
     RequestServer.register("/3/RDDs", "GET",
                             classOf[RDDsHandler], "list",
-                            null, new Array[String](0),
+                            null,
                             "Return all Frames in the H2O distributed K/V store.",
                             hfactory)
   }
