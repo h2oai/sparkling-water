@@ -49,6 +49,11 @@ task upgradeOrInstallDependencies(type: Exec) {
 
 
 task buildDist(type: Exec) {
+    def SPARK_HOME = System.getenv("SPARK_HOME")
+    if (SPARK_HOME != null) {
+        environment['PYTHONPATH'] = SPARK_HOME + File.separator + "python" + File.pathSeparator +
+                                    SPARK_HOME + File.separator + "python" + File.separator + "lib" + File.separator + "py4j-0.8.2.1-src.zip";
+    }
     commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_wheel"])
 }
 
