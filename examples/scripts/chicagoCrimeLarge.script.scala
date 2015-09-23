@@ -6,6 +6,9 @@
  * When running using spark shell or using scala rest API:
  *    SQLContext is available as sqlContext
  *    SparkContext is available as sc
+ *
+ * Needs access to H2O internal HDFS storage or change paths below.
+ *
  */
 import org.apache.spark.examples.h2o.{Crime, ChicagoCrimeApp}
 import org.apache.spark.h2o.H2OContext

@@ -27,7 +27,6 @@ bin/sparkling-shell
 bin/sparkling-env.sh
 assembly/build/libs/sparkling-water-assembly-$VERSION-all.jar
 examples/README.md
-examples/scripts/chicagoCrime.script.scala
 examples/scripts/chicagoCrimeSmall.script.scala
 examples/scripts/chicagoCrimeSmallShell.script.scala
 examples/scripts/mlconf_2015_hamSpam.script.scala
