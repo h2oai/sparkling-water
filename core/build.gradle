@@ -73,6 +73,12 @@ test {
 
     // For a new JVM for each test class
     forkEvery = 1
+
+    // Increase heap size
+    maxHeapSize = "2g"
+
+    // Increase PermGen
+    jvmArgs "-XX:MaxPermSize=256m"
 }
 
 test.dependsOn testJar
