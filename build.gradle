@@ -122,11 +122,14 @@ configure(subprojects) { project ->
                         "org.javassist:javassist",
                         "gov.nist.math:jama",
                         "com.google.code.gson:gson",
-                        "org.reflections:reflections",
                         "com.google.guava:guava",
                         //"commons-collections:commons-collections",
+                        "ai.h2o:reflections",
                         "ai.h2o:google-analytics-java",
-                        "com.github.tony19:named-regexp"]
+                        "com.github.tony19:named-regexp",
+                        "org.eclipse.jetty.aggregate:jetty-servlet",
+                        "org.eclipse.jetty:jetty-server",
+                        "org.eclipse.jetty:jetty-plus:8.1.17.v20150415"]
     }
 }
 
