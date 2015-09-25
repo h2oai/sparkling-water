@@ -130,9 +130,8 @@ configure(subprojects) { project ->
                         "org.javassist:javassist",
                         "gov.nist.math:jama",
                         "com.google.code.gson:gson",
-                        "ai.h2o:reflections:0.9.11-h2o-custom",
+                        "ai.h2o:reflections",
                         "com.google.guava:guava",
-                        //"commons-collections:commons-collections",
                         "ai.h2o:google-analytics-java",
                         "com.github.tony19:named-regexp"]
     }
