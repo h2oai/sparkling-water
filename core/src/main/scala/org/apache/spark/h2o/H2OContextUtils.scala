@@ -109,8 +109,9 @@ private[spark] object H2OContextUtils {
     // Create global accumulator for
     val bc = sc.accumulableCollection(new mutable.HashSet[NodeDesc]())
     val executorStatus = spreadRDD.map { nodeDesc =>  // RDD partition index
-      assert(nodeDesc._2 == getIp(SparkEnv.get),  // Make sure we are running on right node
-        s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getIp(SparkEnv.get)})")
+      // FIXME: revisit this one
+      //assert(nodeDesc._2 == getIp(SparkEnv.get),  // Make sure we are running on right node
+      //  s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getIp(SparkEnv.get)})")
       // Launch the node
       def logDir: String = {
         val s = System.getProperty("spark.yarn.app.container.log.dir")
@@ -168,7 +169,7 @@ private[spark] object H2OContextUtils {
     val flatFileString = toFlatFileString(flatFile)
     // Pass flatfile around cluster
     spreadRDD.foreach { nodeDesc =>
-      assert(nodeDesc._2 == getIp(SparkEnv.get)) // Make sure we are running on right node
+      //assert(nodeDesc._2 == getIp(SparkEnv.get)) // Make sure we are running on right node
       val executorId = SparkEnv.get.executorId
 
       val econf = water.H2O.getEmbeddedH2OConfig().asInstanceOf[SparklingWaterConfig]
