@@ -1,8 +1,10 @@
 ChangeLog
 =========
 
-##v1.3.9 (future)
-  - N/A
+##v1.3.10 (future)
+
+##v1.3.9 (2015-09-28)
+  - H2O version 3.2.0.5 (Slater)
 
 ##v1.3.8 (2015-09-23)
   - Attach metadata derived from H2OFrame to Spark DataFrame
