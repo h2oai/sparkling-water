@@ -13,8 +13,8 @@ import org.apache.spark.h2o._
 import org.apache.spark.examples.h2o._
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.sql.SQLContext
-import hex.tree.gbm.GBM
-import hex.tree.gbm.GBMModel.GBMParameters
+import _root_.hex.tree.gbm.GBM
+import _root_.hex.tree.gbm.GBMModel.GBMParameters
 import water.app.ModelMetricsSupport
 
 // Create SQL support

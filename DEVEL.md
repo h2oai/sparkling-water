@@ -528,8 +528,8 @@ Spark 1.4.0 or later is required.
   val path = "examples/smalldata/prostate.csv"
   val prostateText = sc.textFile(path)
   val prostateRDD = prostateText.map(_.split(",")).map(row => ProstateParse(row))
-  import hex.tree.gbm.GBM
-  import hex.tree.gbm.GBMModel.GBMParameters
+  import _root_.hex.tree.gbm.GBM
+  import _root_.hex.tree.gbm.GBMModel.GBMParameters
   import h2oContext._
   val train: H2OFrame = prostateRDD
   val gbmParams = new GBMParameters()

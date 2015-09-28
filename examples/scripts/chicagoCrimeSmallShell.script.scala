@@ -8,10 +8,10 @@
  *    SparkContext is available as sc
  */
 // Create an environment
-import hex.Distribution.Family
-import hex.deeplearning.DeepLearningModel
-import hex.tree.gbm.GBMModel
-import hex.{Model, ModelMetricsBinomial}
+import _root_.hex.Distribution.Family
+import _root_.hex.deeplearning.DeepLearningModel
+import _root_.hex.tree.gbm.GBMModel
+import _root_.hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkFiles
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
@@ -132,8 +132,8 @@ def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
              ntrees:Int = 10, depth:Int = 6, distribution: Family = Family.bernoulli)
             (implicit h2oContext: H2OContext) : GBMModel = {
   import h2oContext._
-  import hex.tree.gbm.GBM
-  import hex.tree.gbm.GBMModel.GBMParameters
+  import _root_.hex.tree.gbm.GBM
+  import _root_.hex.tree.gbm.GBMModel.GBMParameters
 
   val gbmParams = new GBMParameters()
   gbmParams._train = train
@@ -151,8 +151,8 @@ def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
 def DLModel(train: H2OFrame, test: H2OFrame, response: String)
            (implicit h2oContext: H2OContext) : DeepLearningModel = {
   import h2oContext._
-  import hex.deeplearning.DeepLearning
-  import hex.deeplearning.DeepLearningParameters
+  import _root_.hex.deeplearning.DeepLearning
+  import _root_.hex.deeplearning.DeepLearningParameters
 
   val dlParams = new DeepLearningParameters()
   dlParams._train = train

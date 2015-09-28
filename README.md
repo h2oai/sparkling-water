@@ -165,6 +165,18 @@ See [docker/README.md](docker/README.md) to learn about Docker support.
   export PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/build:$PYTHONPATH
   export PYTHONPATH=$SPARK_HOME/python/lib/py4j-0.8.2.1-src.zip:$PYTHONPATH
   ```
+
+* Trying to import a class from the `hex` package in Sparkling Shell but getting weird error:
+  ```
+  error: missing arguments for method hex in object functions;
+  follow this method with '_' if you want to treat it as a partially applied
+  ```
+
+  > In this case you are probably using Spark 1.5 which is importing SQL functions
+    into Spark Shell environment. Please use the following syntax to import a class 	from the `hex` package:
+    ```
+    import _root_.hex.tree.gbm.GBM
+    ```
   
 <a name="Diagram"></a>
 #Diagram of Sparkling Water on YARN

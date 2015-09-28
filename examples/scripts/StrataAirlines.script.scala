@@ -63,8 +63,8 @@ trainFrame.replace(19, trainFrame.vec("IsDepDelayed").toEnum)
 trainFrame.update(null)
 
 // Run deep learning to produce model estimating arrival delay
-import hex.deeplearning.DeepLearning
-import hex.deeplearning.DeepLearningParameters
+import _root_.hex.deeplearning.DeepLearning
+import _root_.hex.deeplearning.DeepLearningParameters
 val dlParams = new DeepLearningParameters()
 dlParams._epochs = 100
 dlParams._train = trainFrame
@@ -80,9 +80,9 @@ val predictionH2OFrame = dlModel.score(bigTable)('predict)
 val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
 // Run GLM to produce model estimating arrival delay
-import hex.glm.GLMModel.GLMParameters.Family
-import hex.glm.GLM
-import hex.glm.GLMModel.GLMParameters
+import _root_.hex.glm.GLMModel.GLMParameters.Family
+import _root_.hex.glm.GLM
+import _root_.hex.glm.GLMModel.GLMParameters
 val glmParams = new GLMParameters(Family.binomial)
 glmParams._train = bigTable
 glmParams._response_column = 'IsDepDelayed

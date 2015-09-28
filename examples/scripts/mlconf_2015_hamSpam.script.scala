@@ -7,7 +7,7 @@
  *    SQLContext is available as sqlContext
  *    SparkContext is available as sc
  */
-import hex.deeplearning.{DeepLearningModel}
+import _root_.hex.deeplearning.{DeepLearningModel}
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.{SparkFiles, mllib}
@@ -63,8 +63,8 @@ def buildDLModel(train: Frame, valid: Frame,
                 (implicit h2oContext: H2OContext): DeepLearningModel = {
   import h2oContext._
   // Build a model
-  import hex.deeplearning.DeepLearning
-  import hex.deeplearning.DeepLearningParameters
+  import _root_.hex.deeplearning.DeepLearning
+  import _root_.hex.deeplearning.DeepLearningParameters
   val dlParams = new DeepLearningParameters()
   dlParams._model_id = Key.make("dlModel.hex")
   dlParams._train = train
