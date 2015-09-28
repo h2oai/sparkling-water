@@ -114,7 +114,7 @@ object H2OSchemaUtils {
     case DoubleType  => Vec.T_NUM
     case BooleanType => Vec.T_NUM
     case TimestampType => Vec.T_TIME
-    case StringType  => if (d!=null && d.length < water.parser.Categorical.MAX_ENUM_SIZE) {
+    case StringType  => if (d!=null && d.length < water.parser.Categorical.MAX_CATEGORICAL_COUNT) {
                           Vec.T_ENUM
                         } else {
                           Vec.T_STR
@@ -242,7 +242,7 @@ object H2OSchemaUtils {
     }
     }
     // Domain for each enum column or null
-    accs.map(acc => if (acc.value.size > Categorical.MAX_ENUM_SIZE) null else acc.value.toArray.sorted).toArray
+    accs.map(acc => if (acc.value.size > Categorical.MAX_CATEGORICAL_COUNT) null else acc.value.toArray.sorted).toArray
   }
 
   /** Collect max size of stored arrays and MLLib vectors.

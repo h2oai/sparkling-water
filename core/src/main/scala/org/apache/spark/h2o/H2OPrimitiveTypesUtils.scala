@@ -41,7 +41,7 @@ object H2OPrimitiveTypesUtils {
       rdd.foreach(r => {
         acc += r.asInstanceOf[String]
       })
-      res(idx) = if (acc.value.size > Categorical.MAX_ENUM_SIZE) null else acc.value.toArray.sorted
+      res(idx) = if (acc.value.size > Categorical.MAX_CATEGORICAL_COUNT) null else acc.value.toArray.sorted
     }
     res
   }
@@ -58,7 +58,7 @@ object H2OPrimitiveTypesUtils {
       case q if q == classOf[java.lang.Float] => Vec.T_NUM
       case q if q == classOf[java.lang.Double] => Vec.T_NUM
       case q if q == classOf[java.lang.Boolean] => Vec.T_NUM
-      case q if q == classOf[java.lang.String] => if (d != null && d.length < water.parser.Categorical.MAX_ENUM_SIZE) {
+      case q if q == classOf[java.lang.String] => if (d != null && d.length < water.parser.Categorical.MAX_CATEGORICAL_COUNT) {
         Vec.T_ENUM
       } else {
         Vec.T_STR

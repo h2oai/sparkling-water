@@ -612,9 +612,10 @@ object H2OContext extends Logging {
       override def create(handler: Class[_ <: Handler]): Handler = h2OFramesHandler
     }
 
-    RequestServer.register("/3/h2oframes/(?<h2oframeid>.*)/dataframe", "POST",
+    RequestServer.register("/3/h2oframes/(?<h2oframe_id>.*)/dataframe", "POST",
                            classOf[H2OFramesHandler], "toDataFrame",
-                           null, Array("h2oframe_id"), "Transform H2OFrame with given id to DataFrame",
+                           null,
+                           "Transform H2OFrame with given id to DataFrame",
                            h2OFramesFactory);
 
   }
@@ -629,13 +630,13 @@ object H2OContext extends Logging {
 
     RequestServer.register("/3/RDDs", "GET",
                            classOf[RDDsHandler], "list",
-                           null, new Array[String](0),
+                           null,
                            "Return all Frames in the H2O distributed K/V store.",
                            rddsFactory)
 
-    RequestServer.register("/3/RDDs/(?<searchedrddid>[0-9]+)", "POST",
+    RequestServer.register("/3/RDDs/(?<searched_rdd_id>[0-9]+)", "POST",
                            classOf[RDDsHandler], "getRDD",
-                           null, Array("searched_rdd_id"),
+                           null,
                            "Get frame in the H2O distributed K/V store with the given ID",
                            rddsFactory)
 
@@ -651,19 +652,20 @@ object H2OContext extends Logging {
 
     RequestServer.register("/3/dataframes", "GET",
                            classOf[DataFramesHandler], "list",
-                           null, new Array[String](0),
+                           null,
                            "Return all DataFrames.",
                            dataFramesfactory)
 
-    RequestServer.register("/3/dataframes/(?<searcheddataframeid>[0-9a-zA-Z_]+)", "POST",
+    RequestServer.register("/3/dataframes/(?<searched_dataframe_id>[0-9a-zA-Z_]+)", "POST",
                            classOf[DataFramesHandler], "getDataFrame",
-                           null, Array("searched_dataframe_id"),
+                           null,
                            "Get DataFrame with the given id",
                            dataFramesfactory)
 
-    RequestServer.register("/3/dataframes/(?<dataframeid>[0-9a-zA-Z_]+)/h2oframe", "POST",
+    RequestServer.register("/3/dataframes/(?<dataframe_id>[0-9a-zA-Z_]+)/h2oframe", "POST",
                            classOf[DataFramesHandler], "toH2OFrame",
-                           null, Array("dataframe_id"), "Transform DataFrame with the given id to H2OFrame",
+                           null,
+                           "Transform DataFrame with the given id to H2OFrame",
                            dataFramesfactory);
 
   }
@@ -673,21 +675,28 @@ object H2OContext extends Logging {
     def scalaCodeFactory = new HandlerFactory {
       override def create(aClass: Class[_ <: Handler]): Handler = scalaCodeHandler
     }
-    RequestServer.register("/3/scalaint/(?<sessionid>[0-9]+)", "POST",
+    RequestServer.register("/3/scalaint/(?<session_id>[0-9]+)", "POST",
                            classOf[ScalaCodeHandler], "interpret",
-                           null, Array("session_id"), "Interpret the code and return the result",
+                           null,
+                           "Interpret the code and return the result",
                            scalaCodeFactory);
 
     RequestServer.register("/3/scalaint", "POST",
                            classOf[ScalaCodeHandler], "initSession",
-                           null, new Array[String](0), "Return session id for communication with scala interpreter", scalaCodeFactory);
+                           null,
+                           "Return session id for communication with scala interpreter",
+                           scalaCodeFactory);
 
     RequestServer.register("/3/scalaint", "GET",
                            classOf[ScalaCodeHandler], "getSessions",
-                           null, new Array[String](0), "Return all active session IDs", scalaCodeFactory);
+                           null,
+                           "Return all active session IDs",
+                           scalaCodeFactory);
 
-    RequestServer.register("/3/scalaint/(?<sessionid>[0-9]+)", "DELETE",
+    RequestServer.register("/3/scalaint/(?<session_id>[0-9]+)", "DELETE",
                            classOf[ScalaCodeHandler], "destroySession",
-                           null, Array("session_id"), "Return session id for communication with scala interpreter", scalaCodeFactory);
+                           null,
+                           "Return session id for communication with scala interpreter",
+                           scalaCodeFactory);
   }
 }

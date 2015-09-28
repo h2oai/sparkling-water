@@ -86,7 +86,7 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
 
   test("RDD[StringHolder] to H2OFrame[String] and back") {
 
-    val rdd = sc.parallelize(1 to (Categorical.MAX_ENUM_SIZE + 1), 100).map( v => StringHolder(Some(v.toString)))
+    val rdd = sc.parallelize(1 to (Categorical.MAX_CATEGORICAL_COUNT + 1), 100).map( v => StringHolder(Some(v.toString)))
     val dataFrame : H2OFrame = hc.asH2OFrame(rdd)
 
     assert (dataFrame.vec(0).isString, "The vector type should be string")
