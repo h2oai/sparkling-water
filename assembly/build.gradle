@@ -35,9 +35,9 @@ shadowJar {
     include(dependency("org.javassist:javassist"))
     include(dependency("gov.nist.math:jama"))
     include(dependency("com.google.code.gson:gson"))
+    include(dependency("com.google.guava:guava"))
     include(dependency("ai.h2o:reflections"))
     include(dependency("ai.h2o:google-analytics-java"))
-    include(dependency("com.google.guava:guava"))
     include(dependency("com.github.tony19:named-regexp"))
 
     include(dependency("org.eclipse.jetty.aggregate:jetty-servlet"))
