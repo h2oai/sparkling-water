@@ -13,24 +13,24 @@ bin/sparkling-shell --conf spark.executor.memory=3G
  *  sc - SparkContext provided by environment
  *  sqlContext - SQL Context provided by environment
  */
-//val sc: org.apache.spark.SparkContext = null
-//val sqlContext: org.apache.spark.sql.SQLContext = null
 
-//
-// Prepare environment
-//
-import hex.deeplearning.DeepLearningModel
-import hex.tree.gbm.GBMModel
-import hex.tree.gbm.GBMModel.GBMParameters.Family
-import hex.{Model, ModelMetricsBinomial}
+
+// Create an environment
+import _root_.hex.Distribution.Family
+import _root_.hex.deeplearning.DeepLearningModel
+import _root_.hex.tree.gbm.GBMModel
+import _root_.hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkFiles
-import org.apache.spark.examples.h2o.DemoUtils._
+import org.apache.spark.examples.h2o.DemoUtils.{splitFrame, addFiles}
 import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
+import water.app.ModelMetricsSupport._
 
-// SQL support
+//val sc: org.apache.spark.SparkContext = null
+//val sqlContex: org.apache.spark.sql.SQLContext = null
+
 
 //
 // Start H2O services
@@ -123,7 +123,6 @@ val crimeWeather = sqlContext.sql(
 
 //
 // Publish as H2O Frame
-crimeWeather.printSchema()
 val crimeWeatherDF:H2OFrame = crimeWeather
 
 //
@@ -144,8 +143,8 @@ def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
              ntrees:Int = 10, depth:Int = 6, distribution: Family = Family.bernoulli)
             (implicit h2oContext: H2OContext) : GBMModel = {
   import h2oContext._
-  import hex.tree.gbm.GBM
-  import hex.tree.gbm.GBMModel.GBMParameters
+  import _root_.hex.tree.gbm.GBM
+  import _root_.hex.tree.gbm.GBMModel.GBMParameters
 
   val gbmParams = new GBMParameters()
   gbmParams._train = train
@@ -163,8 +162,8 @@ def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
 def DLModel(train: H2OFrame, test: H2OFrame, response: String)
            (implicit h2oContext: H2OContext) : DeepLearningModel = {
   import h2oContext._
-  import hex.deeplearning.DeepLearning
-  import hex.deeplearning.DeepLearningParameters
+  import _root_.hex.deeplearning.DeepLearning
+  import _root_.hex.deeplearning.DeepLearningParameters
 
   val dlParams = new DeepLearningParameters()
   dlParams._train = train
@@ -188,7 +187,7 @@ val gbmModel = GBMModel(train, test, 'Arrest)
 val dlModel = DLModel(train, test, 'Arrest)
 
 // Collect model metrics
-def binomialMetrics[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
+def binomialMetrics[M <: Model[M,P,O], P <: ._root_.hex.Model.Parameters, O <: _root._hex.Model.Output]
                     (model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
   model.score(train).delete()
   model.score(test).delete()
@@ -251,11 +250,10 @@ for (crime <- crimeExamples) {
 //
 // More data munging
 //
-import sqlContext._
 // Collect all crime types
-val allCrimes = sql("SELECT Primary_Type, count(*) FROM chicagoCrime GROUP BY Primary_Type").collect
+val allCrimes = sqlContext.sql("SELECT Primary_Type, count(*) FROM chicagoCrime GROUP BY Primary_Type").collect
 // Filter only successful arrests
-val crimesWithArrest = sql("SELECT Primary_Type, count(*) FROM chicagoCrime WHERE Arrest = 'true' GROUP BY Primary_Type").collect
+val crimesWithArrest = sqlContext.sql("SELECT Primary_Type, count(*) FROM chicagoCrime WHERE Arrest = 'true' GROUP BY Primary_Type").collect
 // Compute scores
 val crimeTypeToArrest = collection.mutable.Map[String, Long]()
 allCrimes.foreach( c => if (!c.isNullAt(0)) crimeTypeToArrest += ( c.getString(0) -> c.getLong(1) ) )

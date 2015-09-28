@@ -1,32 +1,30 @@
-//val sc:org.apache.spark.SparkContext = null
 /**
- * To start Sparkling Water please type
-
-cd path/to/sparkling/water
-export SPARK_HOME=/Users/zelleta/spark-1.2.1-bin-hadoop1
-export MASTER="local-cluster[3,2,4096]"
-
-bin/sparkling-shell --conf spark.executor.memory=3G
-*/
-
-// Input data
-val DATAFILE="examples/smalldata/smsData.txt"
-
-import hex.deeplearning.{DeepLearningModel, DeepLearning}
-import hex.deeplearning.DeepLearningParameters
+ * Launch following commands:
+ *   export MASTER="local-cluster[3,2,4096]"
+ *   bin/sparkling-shell -i examples/scripts/mlconf_2015_hamSpam.script.script.scala
+ *
+ * When running using spark shell or using scala rest API:
+ *    SQLContext is available as sqlContext
+ *    SparkContext is available as sc
+ */
+import _root_.hex.deeplearning.{DeepLearningModel}
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
-import org.apache.spark.mllib
+import org.apache.spark.{SparkFiles, mllib}
 import org.apache.spark.mllib.feature.{IDFModel, IDF, HashingTF}
 import org.apache.spark.rdd.RDD
 import water.Key
+import org.apache.spark.sql.{SQLContext, DataFrame}
+
+// Register files to SparkContext
+addFiles(sc, "examples/smalldata/smsData.txt")
 
 // One training message
 case class SMS(target: String, fv: mllib.linalg.Vector)
 
 // Data loader
 def load(dataFile: String): RDD[Array[String]] = {
-  sc.textFile(dataFile).map(l => l.split("\t")).filter(r => !r(0).isEmpty)
+  sc.textFile(SparkFiles.get(dataFile)).map(l => l.split("\t")).filter(r => !r(0).isEmpty)
 }
 
 // Tokenizer
@@ -40,7 +38,7 @@ def tokenize(data: RDD[String]): RDD[Seq[String]] = {
       smsText = smsText.replace(c, ' ')
     }
 
-    val words =smsText.split(" ").filter(w => !ignoredWords.contains(w) && w.length>2).distinct
+    val words = smsText.split(" ").filter(w => !ignoredWords.contains(w) && w.length>2).distinct
 
     words.toSeq
   })
@@ -65,8 +63,10 @@ def buildDLModel(train: Frame, valid: Frame,
                 (implicit h2oContext: H2OContext): DeepLearningModel = {
   import h2oContext._
   // Build a model
+  import _root_.hex.deeplearning.DeepLearning
+  import _root_.hex.deeplearning.DeepLearningParameters
   val dlParams = new DeepLearningParameters()
-  dlParams._model_id = Key.make("dlModel.hex").asInstanceOf[water.Key[Frame]]
+  dlParams._model_id = Key.make("dlModel.hex")
   dlParams._train = train
   dlParams._valid = valid
   dlParams._response_column = 'target
@@ -89,13 +89,12 @@ def buildDLModel(train: Frame, valid: Frame,
 import org.apache.spark.h2o._
 implicit val h2oContext = new H2OContext(sc).start()
 import h2oContext._
-// Initialize SQL context
-import org.apache.spark.sql._
-implicit val sqlContext = new SQLContext(sc)
+// Get SQL context
+implicit val sqlContext = SQLContext.getOrCreate(sc)
 import sqlContext.implicits._
 
 // Data load
-val data = load(DATAFILE)
+val data = load("smsData.txt")
 // Extract response spam or ham
 val hamSpam = data.map( r => r(0))
 val message = data.map( r => r(1))

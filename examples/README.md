@@ -151,9 +151,9 @@ You can configure Sparkling Water using the following variables:
 
 11. Run deep learning to produce a model estimating arrival delay:
   ```scala
-  import hex.deeplearning.DeepLearning
-  import hex.deeplearning.DeepLearningParameters  
-  import hex.deeplearning.DeepLearningParameters.Activation
+  import _root_.hex.deeplearning.DeepLearning
+  import _root_.hex.deeplearning.DeepLearningParameters  
+  import _root_.hex.deeplearning.DeepLearningParameters.Activation
   val dlParams = new DeepLearningParameters()
   dlParams._train = bigDataFrame
   dlParams._response_column = 'ArrDelay
