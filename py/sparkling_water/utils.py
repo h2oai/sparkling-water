@@ -33,18 +33,3 @@ class Utils:
         h2oframe = H2OFrame.get_frame(res["h2oframe_id"])
         return h2oframe
 
-    @staticmethod
-    def save_rdd_as_file(rdd):
-        list = rdd.collect()
-        dataset = tempfile.NamedTemporaryFile(delete=False)
-        for item in list:
-            dataset.write("%s\n" % item)
-        dataset.close()
-        return dataset.name
-
-    @staticmethod
-    def upload_frame_from_rdd(rdd):
-        filename = Utils.save_rdd_as_file(rdd)
-        h2o_frame = h2o.upload_file(path=filename)
-        os.remove(filename)
-        return h2o_frame
