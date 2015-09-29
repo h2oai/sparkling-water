@@ -187,7 +187,7 @@ val gbmModel = GBMModel(train, test, 'Arrest)
 val dlModel = DLModel(train, test, 'Arrest)
 
 // Collect model metrics
-def binomialMetrics[M <: Model[M,P,O], P <: ._root_.hex.Model.Parameters, O <: _root._hex.Model.Output]
+def binomialMetrics[M <: Model[M,P,O], P <: _root_.hex.Model.Parameters, O <: _root_.hex.Model.Output]
                     (model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
   model.score(train).delete()
   model.score(test).delete()
