@@ -31,6 +31,7 @@ task setProjectVersion << {
     INIT.write(txt)
 }
 
+
 task resetProjectVersion << {
     File INIT = new File([T, "sparkling_water", "__init__.py"].join(File.separator))
     print INIT.path
@@ -47,7 +48,13 @@ task upgradeOrInstallDependencies(type: Exec) {
     commandLine getOsSpecificCommandLine(["pip", "install", "h2o", "--user", "--upgrade"])
 }
 
+task copyJar(type: Copy) {
+            from '../assembly/build/libs'
+            into "data_files"
+            include "sparkling-water-assembly-"+PROJECT_VERSION+"-all.jar"
+            rename "sparkling-water-assembly-"+PROJECT_VERSION+"-all.jar", "sparkling-water-all.jar"
 
+}
 task buildDist(type: Exec) {
     def SPARK_HOME = System.getenv("SPARK_HOME")
     if (SPARK_HOME != null) {
@@ -77,12 +84,15 @@ task cleaner << {
     new File([getProjectDir().toString(), "dist"].join(File.separator)).deleteDir()
     new File([getProjectDir().toString(), "sparkling_water.egg-info"].join(File.separator)).deleteDir()
     new File([getProjectDir().toString(), " build/"].join(File.separator)).deleteDir()
+    new File([getProjectDir().toString(), "data_files"].join(File.separator)).deleteDir()
 }
 
 clean.dependsOn cleaner, cleanUpSmokeTest
 upgradeOrInstallDependencies.dependsOn cleaner
 setProjectVersion.dependsOn upgradeOrInstallDependencies
-buildDist.dependsOn setProjectVersion
+copyJar.dependsOn setProjectVersion
+buildDist.dependsOn copyJar
 resetProjectVersion.dependsOn buildDist
 task build_python(dependsOn: resetProjectVersion)
 build.dependsOn build_python
+

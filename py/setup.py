@@ -57,7 +57,6 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-
     keywords='machine learning, data mining, statistical analysis, modeling, big data, distributed, parallel',
 
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
@@ -66,4 +65,5 @@ setup(
     install_requires=['requests', 'tabulate', 'h2o'],
 
     # include various data files using data_files
+    data_files=[('sparkling_water_jar', ['data_files/sparkling-water-all.jar'])],
 )
