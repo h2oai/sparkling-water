@@ -1,2 +1,30 @@
-apply plugin: 'java'
-apply plugin: 'groovy'
+configurations {
+  compile {
+  }
+
+  runtime {
+    extendsFrom compile
+  }
+
+  test {
+    extendsFrom compile
+  }
+
+  testRuntime {
+    extendsFrom test
+  }
+}
+
+task compile(group: "Build tasks", description: "Compile this project")
+
+task build(group: "Build tasks", description: "Build and test this project")
+
+task test(group: "Build tasks", description: "Test this project")
+
+task clean(group: "Build tasks", description: "Clean up the project", type: Delete) {
+  delete file("build/")
+}
+
+build.dependsOn compile
+build.dependsOn test
+

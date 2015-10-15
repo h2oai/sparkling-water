@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# Current dir
+TOPDIR=$(cd `dirname $0`/.. &&  pwd)
+source $TOPDIR/bin/sparkling-env.sh
+# Verify there is Spark installation
+checkSparkHome
+
+$SPARK_HOME/bin/pyspark \
+--jars $TOPDIR/assembly/build/libs/$FAT_JAR

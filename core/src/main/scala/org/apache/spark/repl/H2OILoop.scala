@@ -146,7 +146,7 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
       |[y/n]
     """.trim.stripMargin
   private val u: scala.reflect.runtime.universe.type = scala.reflect.runtime.universe
-  private val m = u.runtimeMirror(Utils.getSparkClassLoader)
+  private val m = u.runtimeMirror(Utils.getContextOrSparkClassLoader)
   private val baos = new ByteArrayOutputStream()
   private val printStream = new PrintStream(baos)
   // NOTE: Exposed in package for testing
@@ -210,7 +210,7 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
     lazy val tagOfH2OIMain = tagOfStaticClass[org.apache.spark.repl.H2OIMain]
     // Bind intp somewhere out of the regular namespace where
     // we can get at it in generated code.
-    addThunk(intp.quietBind(NamedParam[H2OIMain]("$intp", intp)(tagOfH2OIMain, classTag[H2OIMain])))
+    addThunk(intp.quietBind(NamedParam[org.apache.spark.repl.H2OIMain]("$intp", intp)(tagOfH2OIMain, classTag[org.apache.spark.repl.H2OIMain])))
     addThunk({
       val autorun = replProps.replAutorunCode.option flatMap (f => io.File(f).safeSlurp())
       if (autorun.isDefined) intp.quietRun(autorun.get)
@@ -997,10 +997,10 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
           case x => x
         }
     }
-    lazy val tagOfH2OIMain = tagOfStaticClass[H2OIMain]
+    lazy val tagOfH2OIMain = tagOfStaticClass[org.apache.spark.repl.H2OIMain]
     // Bind intp somewhere out of the regular namespace where
     // we can get at it in generated code.
-    addThunk(intp.quietBind(NamedParam[H2OIMain]("$intp", intp)(tagOfH2OIMain, classTag[H2OIMain])))
+    addThunk(intp.quietBind(NamedParam[org.apache.spark.repl.H2OIMain]("$intp", intp)(tagOfH2OIMain, classTag[org.apache.spark.repl.H2OIMain])))
     addThunk({
       val autorun = replProps.replAutorunCode.option flatMap (f => io.File(f).safeSlurp())
       if (autorun.isDefined) intp.quietRun(autorun.get)

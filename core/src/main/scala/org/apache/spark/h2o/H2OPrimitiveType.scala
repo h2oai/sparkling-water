@@ -43,4 +43,12 @@ object PrimitiveType {
   implicit def toDataFrameFromDouble(rdd: RDD[Double]): PrimitiveType = new PrimitiveType {
     override def toH2OFrame(sc: SparkContext, frameKeyName: Option[String]): H2OFrame = H2OContext.toH2OFrameFromRDDDouble(sc, rdd, frameKeyName)
   }
+
+  implicit def toDataFrameFromBool(rdd: RDD[Boolean]): PrimitiveType = new PrimitiveType {
+    override def toH2OFrame(sc: SparkContext, frameKeyName: Option[String]): H2OFrame = H2OContext.toH2OFrameFromRDDBool(sc, rdd, frameKeyName)
+  }
+
+  implicit def toDataFrameFromLong(rdd: RDD[Long]): PrimitiveType = new PrimitiveType {
+    override def toH2OFrame(sc: SparkContext, frameKeyName: Option[String]): H2OFrame = H2OContext.toH2OFrameFromRDDLong(sc, rdd, frameKeyName)
+  }
 }

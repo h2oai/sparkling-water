@@ -4,21 +4,24 @@ from setuptools import setup, find_packages
 import setuptools
 from codecs import open
 from os import path
-import sparkling_water
-
+import pysparkling
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
 with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
+# Get the version from the relevant file
+with open(path.join(here, 'version.txt'), encoding='utf-8') as f:
+    version = f.read()
+
 setup(
-    name='sparkling_water',
+    name='pySparkling',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version=sparkling_water.__version__,
+    version=version,
     description='Sparkling Water integrates H2O\'s Fast Scalable Machine Learning with Spark',
     long_description=long_description,
 
@@ -65,5 +68,5 @@ setup(
     install_requires=['requests', 'tabulate', 'h2o'],
 
     # include various data files using data_files
-    data_files=[('sparkling_water_jar', ['data_files/sparkling-water-all.jar'])],
+    data_files=[('sparkling_water_jar', ['build/data_files/sparkling-water-all.jar'])],
 )

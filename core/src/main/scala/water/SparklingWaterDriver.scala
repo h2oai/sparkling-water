@@ -17,8 +17,6 @@
 
 package water
 
-import org.apache.log4j.Logger
-import org.apache.log4j.Level
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -30,8 +28,6 @@ object SparklingWaterDriver {
 
   /** Entry point */
   def main(args: Array[String]) {
-    Logger.getLogger("org.apache.spark.h2o.H2OContext").setLevel(Level.INFO)
-
     // Configure this application
     val conf: SparkConf = new SparkConf().setAppName("Sparkling Water")
     conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local"))

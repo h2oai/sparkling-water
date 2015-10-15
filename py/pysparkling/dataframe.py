@@ -1,12 +1,14 @@
 import h2o
-import urllib, json
+import urllib
+import json
 from pyspark.sql.types import *
 from h2o import *
-import utils
+from pysparkling import connection
+
 
 class DataFrame:
     def __init__(self):
-        self._id = ""
+        self._id = None
 
     @staticmethod
     def get_data_frame(data_frame_id):
@@ -32,5 +34,5 @@ class DataFrame:
 
     # Converts the DataFrame to H2OFrame and then downloads the dataset as CSV file
     def download(_self, filename):
-        h2o_frame = utils.Utils.dataframe_2_h2oframe(_self)
+        h2o_frame = connection.Utils.dataframe_2_h2oframe(_self)
         h2o.download_csv(h2o_frame, filename)

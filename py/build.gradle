@@ -5,94 +5,89 @@ import java.nio.file.Path
 import java.util.zip.GZIPOutputStream
 import static java.nio.file.StandardCopyOption.*;
 
+description = "PySparkling - Sparkling-Water Python Package"
 
-defaultTasks 'build_python'
-description = "Sparkling-Water Python Package"
-
-
-def getOS() {
-    String os = [Os.FAMILY_WINDOWS, Os.FAMILY_MAC, Os.FAMILY_UNIX].find { String family -> Os.isFamily(family) }
-    return os
+dependencies {
+  compile project(path: ':sparkling-water-assembly', configuration: 'shadow')
 }
-
-def getOsSpecificCommandLine(args) { return Os.isFamily(Os.FAMILY_WINDOWS) ? ['cmd', '/c'] + args : args }
 
 ext {
     PROJECT_VERSION = version
     T = getProjectDir().toString()
 }
 
-task setProjectVersion << {
-    File INIT = new File([T, "sparkling_water", "__init__.py"].join(File.separator))
-    print INIT.path
-    def txt = ""
-    txt = INIT.text
-    txt = txt.replaceAll("SUBST_PROJECT_VERSION", PROJECT_VERSION)
-    INIT.write(txt)
-}
-
-
-task resetProjectVersion << {
-    File INIT = new File([T, "sparkling_water", "__init__.py"].join(File.separator))
-    print INIT.path
-    def txt = ""
-    txt = INIT.text
-    txt = txt.replaceAll(PROJECT_VERSION, "SUBST_PROJECT_VERSION")
-    INIT.write(txt)
-}
-
-
-task upgradeOrInstallDependencies(type: Exec) {
-    commandLine getOsSpecificCommandLine(["pip", "install", "tabulate", "--user", "--upgrade"])
-    commandLine getOsSpecificCommandLine(["pip", "install", "wheel", "--user", "--upgrade"])
-    commandLine getOsSpecificCommandLine(["pip", "install", "h2o", "--user", "--upgrade"])
+task createVersionFile << {
+    File version_file = new File([T, "version.txt"].join(File.separator))
+    def version_txt = PROJECT_VERSION
+    version_file.write(version_txt)
 }
 
 task copyJar(type: Copy) {
-            from '../assembly/build/libs'
-            into "data_files"
-            include "sparkling-water-assembly-"+PROJECT_VERSION+"-all.jar"
-            rename "sparkling-water-assembly-"+PROJECT_VERSION+"-all.jar", "sparkling-water-all.jar"
-
+    from configurations.compile
+    into "build/data_files"
+    include "sparkling-water-assembly-"+PROJECT_VERSION+"-all.jar"
+    rename "sparkling-water-assembly-"+PROJECT_VERSION+"-all.jar", "sparkling-water-all.jar"
 }
-task buildDist(type: Exec) {
+
+task distPython(type: Exec) {
     def SPARK_HOME = System.getenv("SPARK_HOME")
+    def H2O_HOME = System.getenv("H2O_HOME")
+
     if (SPARK_HOME != null) {
         environment['PYTHONPATH'] = SPARK_HOME + File.separator + "python" + File.pathSeparator +
                                     SPARK_HOME + File.separator + "python" + File.separator + "lib" + File.separator + "py4j-0.8.2.1-src.zip";
     }
-    commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_wheel"])
+    if (H2O_HOME != null) {
+        environment['PYTHONPATH'] = H2O_HOME + File.separator + "h2o-py" + File.pathSeparator + environment["PYTHONPATH"]
+    }
+    commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_egg","bdist_wheel"])
+    //commandLine getOsSpecificCommandLine(["python", "setup.py", "--help", "bdist_wheel"])
+    //commandLine getOsSpecificCommandLine(["python", "setup.py", "--help-commands"])
 }
 
+task testPython(type: Exec) {
+    def SPARK_HOME = System.getenv("SPARK_HOME")
+    def H2O_HOME = System.getenv("H2O_HOME")
+    if (SPARK_HOME != null) {
+        environment['PYTHONPATH'] = SPARK_HOME + File.separator + "python" + File.pathSeparator +
+                SPARK_HOME + File.separator + "python" + File.separator + "build" + File.pathSeparator +
+                SPARK_HOME + File.separator + "python" + File.separator + "lib" + File.separator + "py4j-0.8.2.1-src.zip" + File.pathSeparator +
+                "./" + File.pathSeparator + System.getenv("PYTHONPATH")
+    }
+    if (H2O_HOME != null) {
+        environment['PYTHONPATH'] = H2O_HOME + File.separator + "h2o-py" + File.pathSeparator + environment["PYTHONPATH"]
+    }
+
+    environment['SPARK_CLASSPATH'] = "${configurations.compile.join(',')}"
+    commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test*.py"])
+
+}
 def testsPath = new File("./tests")
 
-/*task smokeTest(type: Exec) {
-    dependsOn build
-    println "PyUnit smoke test (run.py --wipeall --testsize s)..."
-    workingDir testsPath
-    commandLine 'pwd'
-    commandLine 'python', '../../scripts/run.py', '--wipeall', '--testsize', 's'
-}*/
-
-task cleanUpSmokeTest << {
-    new File([T, "tests/results"].join(File.separator)).deleteDir()
+task cleanPython(type: Delete) {
+    delete file("dist/"), file("pySparkling.egg-info/"), fileTree(dir: projectDir, include: '**/*.pyc'),
+            file("version.txt")
 }
 
-task cleaner << {
-    println "Cleaning..."
-    getProjectDir().toString()
-    new File([getProjectDir().toString(), "dist"].join(File.separator)).deleteDir()
-    new File([getProjectDir().toString(), "sparkling_water.egg-info"].join(File.separator)).deleteDir()
-    new File([getProjectDir().toString(), " build/"].join(File.separator)).deleteDir()
-    new File([getProjectDir().toString(), "data_files"].join(File.separator)).deleteDir()
+clean.dependsOn cleanPython
+createVersionFile.dependsOn cleanPython
+copyJar.dependsOn createVersionFile
+distPython.dependsOn copyJar
+
+// Build tasks
+task buildPython(dependsOn: distPython)
+build.dependsOn buildPython
+
+test.dependsOn testPython
+
+//
+// Helper methods
+//
+def getOS() {
+    String os = [Os.FAMILY_WINDOWS, Os.FAMILY_MAC, Os.FAMILY_UNIX].find { String family -> Os.isFamily(family) }
+    return os
 }
 
-clean.dependsOn cleaner, cleanUpSmokeTest
-upgradeOrInstallDependencies.dependsOn cleaner
-setProjectVersion.dependsOn upgradeOrInstallDependencies
-copyJar.dependsOn setProjectVersion
-buildDist.dependsOn copyJar
-resetProjectVersion.dependsOn buildDist
-task build_python(dependsOn: resetProjectVersion)
-build.dependsOn build_python
-
+def getOsSpecificCommandLine(args) { 
+  return Os.isFamily(Os.FAMILY_WINDOWS) ? ['cmd', '/c'] + args : args 
+}

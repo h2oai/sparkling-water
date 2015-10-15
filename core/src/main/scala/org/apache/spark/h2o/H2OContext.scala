@@ -18,6 +18,7 @@
 package org.apache.spark.h2o
 
 import org.apache.spark._
+import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
 import org.apache.spark.sql.types._
@@ -48,42 +49,84 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   with H2OConf
   with Serializable {
 
+  /** Supports call from java environments. */
+  def this(sparkContext: JavaSparkContext) = this(sparkContext.sc)
+
   /** Runtime list of active H2O nodes */
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
 
-  /** Location (IP:PORT) of local H2O client */
-  private var localClient: String = _
+  /** IP of H2O client */
+  private var localClientIp: String = _
+  /** REST port of H2O client */
+  private var localClientPort: Int = _
 
   /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
-  implicit def asH2OFrame(rdd : DataFrame) : H2OFrame = asH2OFrame(rdd, None)
-  def asH2OFrame(rdd : DataFrame, frameName: Option[String]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd, frameName)
+  implicit def asH2OFrame(df : DataFrame) : H2OFrame = asH2OFrame(df, None)
+  def asH2OFrame(df : DataFrame, frameName: Option[String]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, df, if (frameName != null) frameName else None)
+  def asH2OFrame(df : DataFrame, frameName: String) : H2OFrame = asH2OFrame(df, Option(frameName))
 
   /** Implicit conversion from typed RDD to H2O's DataFrame */
   implicit def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A]) : H2OFrame = asH2OFrame(rdd, None)
   def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A], frameName: Option[String]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd, frameName)
+  def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A], frameName: String) : H2OFrame = asH2OFrame(rdd, Option(frameName))
 
   /** Implicit conversion from RDD[Primitive type] ( where primitive type can be String, Double, Float or Int) to appropriate H2OFrame */
   implicit def asH2OFrame(primitiveType: PrimitiveType): H2OFrame = asH2OFrame(primitiveType, None)
   def asH2OFrame(primitiveType: PrimitiveType, frameName: Option[String]): H2OFrame = H2OContext.toH2OFrame(sparkContext, primitiveType, frameName)
+  def asH2OFrame(primitiveType: PrimitiveType, frameName: String): H2OFrame = asH2OFrame(primitiveType, Option(frameName))
 
   /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
   implicit def toH2OFrameKey(rdd : DataFrame) : Key[Frame] = toH2OFrameKey(rdd, None)
   def toH2OFrameKey(rdd : DataFrame, frameName: Option[String]) : Key[Frame] = asH2OFrame(rdd, frameName)._key
+  def toH2OFrameKey(rdd : DataFrame, frameName: String) : Key[Frame] = toH2OFrameKey(rdd, Option(frameName))
 
   /** Implicit conversion from typed RDD to H2O's DataFrame */
   implicit def toH2OFrameKey[A <: Product : TypeTag](rdd : RDD[A]) : Key[_] = toH2OFrameKey(rdd, None)
   def toH2OFrameKey[A <: Product : TypeTag](rdd : RDD[A], frameName: Option[String]) : Key[_] = asH2OFrame(rdd, frameName)._key
+  def toH2OFrameKey[A <: Product : TypeTag](rdd : RDD[A], frameName: String) : Key[_] = toH2OFrameKey(rdd, Option(frameName))
 
   /** Implicit conversion from RDD[Primitive type] ( where primitive type can be String, Boolean, Double, Float, Int,
     * Long, Short or Byte ) to appropriate H2O's DataFrame */
   implicit def toH2OFrameKey(primitiveType: PrimitiveType): Key[_] = toH2OFrameKey(primitiveType, None)
   def toH2OFrameKey(primitiveType: PrimitiveType, frameName: Option[String]): Key[_] = asH2OFrame(primitiveType, frameName)._key
+  def toH2OFrameKey(primitiveType: PrimitiveType, frameName: String): Key[_] = toH2OFrameKey(primitiveType, Option(frameName))
+
 
   /** Implicit conversion from Frame to DataFrame */
   implicit def asH2OFrame(fr: Frame) : H2OFrame = new H2OFrame(fr)
 
+  def asH2OFrame(s: String): H2OFrame = new H2OFrame(s)
+
   /** Returns a key of given frame */
   implicit def toH2OFrameKey(fr: Frame): Key[Frame] = fr._key
+
+  /**
+   * Support for calls from Py4J
+   */
+
+  /** Conversion from RDD[String] to H2O's DataFrame */
+  def asH2OFrameFromRDDString(rdd: JavaRDD[String], frameName: String): H2OFrame = H2OContext.toH2OFrameFromRDDString(sparkContext,rdd.rdd, Option(frameName))
+
+  /** Returns key of the H2O's DataFrame conversed from RDD[String]*/
+  def asH2OFrameFromRDDStringKey(rdd: JavaRDD[String], frameName: String): Key[Frame] = asH2OFrameFromRDDString(rdd, frameName)._key
+
+  /** Conversion from RDD[Boolean] to H2O's DataFrame */
+  def asH2OFrameFromRDDBool(rdd: JavaRDD[Boolean], frameName: String): H2OFrame = H2OContext.toH2OFrameFromRDDBool(sparkContext,rdd.rdd, Option(frameName))
+
+  /** Returns key of the H2O's DataFrame conversed from RDD[Boolean]*/
+  def asH2OFrameFromRDDBoolKey(rdd: JavaRDD[Boolean], frameName: String): Key[Frame] = asH2OFrameFromRDDBool(rdd, frameName)._key
+
+  /** Conversion from RDD[Double] to H2O's DataFrame */
+  def asH2OFrameFromRDDDouble(rdd: JavaRDD[Double], frameName: String): H2OFrame = H2OContext.toH2OFrameFromRDDDouble(sparkContext,rdd.rdd, Option(frameName))
+
+  /** Returns key of the H2O's DataFrame conversed from RDD[Double]*/
+  def asH2OFrameFromRDDDoubleKey(rdd: JavaRDD[Double], frameName: String): Key[Frame] = asH2OFrameFromRDDDouble(rdd, frameName)._key
+
+  /** Conversion from RDD[Long] to H2O's DataFrame */
+  def asH2OFrameFromRDDLong(rdd: JavaRDD[Long], frameName: String): H2OFrame = H2OContext.toH2OFrameFromRDDLong(sparkContext,rdd.rdd, Option(frameName))
+
+  /** Returns key of the H2O's DataFrame conversed from RDD[Long]*/
+  def asH2OFrameFromRDDLongKey(rdd: JavaRDD[Long], frameName: String): Key[Frame] = asH2OFrameFromRDDLong(rdd, frameName)._key
 
   /** Transform given Scala symbol to String */
   implicit def symbolToString(sy: scala.Symbol): String = sy.name
@@ -99,12 +142,19 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   @deprecated("1.3", "Use asDataFrame")
   def asSchemaRDD(fr : H2OFrame)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
   def asDataFrame(fr : H2OFrame)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
+  def asDataFrame(s : String)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(new H2OFrame(s))
+
 
   /** Detected number of Spark executors
     * Property value is derived from SparkContext during creation of H2OContext. */
   private def numOfSparkExecutors = if (sparkContext.isLocal) 1 else sparkContext.getExecutorStorageStatus.length - 1
 
-  def h2oLocalClient = this.localClient
+  def h2oLocalClient = this.localClientIp + ":" + this.localClientPort
+
+  def h2oLocalClientIp = this.localClientIp
+
+  def h2oLocalClientPort = this.localClientPort
+
   // For now disable opening Spark UI
   //def sparkUI = sparkContext.ui.map(ui => ui.appUIAddress)
 
@@ -113,6 +163,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     import H2OConf._
     sparkConf.set(PROP_CLUSTER_SIZE._1, h2oWorkers.toString)
     start()
+
   }
 
   /** Initialize Sparkling H2O and start H2O cloud. */
@@ -169,8 +220,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     H2O.finalizeRegistration()
     H2O.waitForCloudSize(executors.length, cloudTimeout)
 
-    // Get H2O web port
-    localClient = H2O.getIpPortString
+    // Fill information about H2O client
+    localClientIp = H2O.SELF_ADDRESS.getHostAddress
+    localClientPort = H2O.API_PORT
 
     // Inform user about status
     logInfo("Sparkling Water started, status of context: " + this.toString)
@@ -284,14 +336,24 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       |  ${h2oNodes.mkString("\n  ")}
       |  ------------------------
       |
-      |  Open H2O Flow in browser: http://${localClient} (CMD + click in Mac OSX)
+      |  Open H2O Flow in browser: http://${h2oLocalClient} (CMD + click in Mac OSX)
     """.stripMargin
   }
 }
 
 object H2OContext extends Logging {
 
-  /** Transform SchemaRDD into H2O DataFrame */
+  /**
+   * Create a new or return existing H2OContext.
+   *
+   * @param sparkContext
+   * @return
+   */
+  def getOrCreate(sparkContext: SparkContext): H2OContext = {
+    new H2OContext(sparkContext)
+  }
+
+  /** Transform SchemaRDD into H2O Frame */
   def toH2OFrame(sc: SparkContext, dataFrame: DataFrame, frameKeyName: Option[String]) : H2OFrame = {
     import org.apache.spark.h2o.H2OSchemaUtils._
     // Cache DataFrame RDD's
@@ -330,7 +392,7 @@ object H2OContext extends Logging {
     }
   }
 
-  /** Transform typed RDD into H2O DataFrame */
+  /** Transform typed RDD into H2O Frame */
   def toH2OFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A], frameKeyName: Option[String]) : H2OFrame = {
     import org.apache.spark.h2o.H2OProductUtils._
     import org.apache.spark.h2o.ReflectionUtils._
@@ -366,6 +428,12 @@ object H2OContext extends Logging {
   /** Transform RDD[Double] to appropriate H2OFrame */
   def toH2OFrameFromRDDDouble(sc: SparkContext, rdd: RDD[Double], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
 
+  /** Transform RDD[Long] to appropriate H2OFrame */
+  def toH2OFrameFromRDDLong(sc: SparkContext, rdd: RDD[Long], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
+
+  /** Transform RDD[Double] to appropriate H2OFrame */
+  def toH2OFrameFromRDDBool(sc: SparkContext, rdd: RDD[Boolean], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
+
   private[this]
   def toH2OFrameFromPrimitive[T: TypeTag](sc: SparkContext, rdd: RDD[T], frameKeyName: Option[String]): H2OFrame = {
     import org.apache.spark.h2o.H2OPrimitiveTypesUtils._
@@ -399,9 +467,11 @@ object H2OContext extends Logging {
       // For all rows in RDD
       val chk = nchks(0) // There is only one chunk
       r match {
-        case i: Int => chk.addNum(i.toDouble)
-        case d: Double => chk.addNum(d)
-        case f: Float => chk.addNum(f.toDouble)
+        case t: Int => chk.addNum(t.toDouble)
+        case t: Double => chk.addNum(t)
+        case t: Float => chk.addNum(t.toDouble)
+        case t: Long => chk.addNum(t.toDouble)
+        case t: Boolean => chk.addNum(if(t) 1 else 0)
         case str: String => chk.addStr(valStr.setTo(str))
       }
     })

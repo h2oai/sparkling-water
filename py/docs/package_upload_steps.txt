@@ -21,12 +21,12 @@ pip install --upgrade pip
 
 If you've downloaded before:
 
-pip install --pre sparkling-water --upgrade
+pip install --pre pysparkling --upgrade
 
 
 If it's your first time:
 
-pip install --pre sparkling-water
+pip install --pre pysparkling
 
 
 

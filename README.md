@@ -121,6 +121,38 @@ $SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.5.3,a
 #### Additional Examples
 You can find more examples in the [examples folder](examples/).
 
+---
+<a name="PySparkling"></a>
+## PySparkling
+Sparkling Water can be used directly from Spark's Python shell and submit.
+
+---
+<a name="Packages"></a>
+## Using Sparkling Water Package
+Sparkling Water is also published as Spark package. 
+You can use it directly from your Spark distribution.
+
+For example, if you have Spark version 1.5 and would like to use Sparkling Water version 1.5.2 and launch example `CraigslistJobTitlesStreamingApp`, then you can use the following command:
+
+```bash
+$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.5.2,ai.h2o:sparkling-water-examples_2.10:1.5.2 --class org.apache.spark.examples.h2o.CraigslistJobTitlesStreamingApp /dev/null
+```
+
+The similar command works for `spark-shell`:
+```bash
+$SPARK_HOME/bin/spark-shell --packages ai.h2o:sparkling-water-core_2.10:1.5.2,ai.h2o:sparkling-water-examples_2.10:1.5.2 
+```
+
+
+The same command works for Python programs:
+```bash
+$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.5.2,ai.h2o:sparkling-water-examples_2.10:1.5.2 example.py
+
+```
+
+> Note: When you are using Spark packages you do not need to download Sparkling Water distribution! Spark installation is sufficient!
+
+
 ---  
 <a name="Docker"></a>
 ### Docker Support

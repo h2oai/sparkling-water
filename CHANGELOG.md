@@ -8,7 +8,8 @@ ChangeLog
     - to interpret Scala code
     - to perform transformation between Spark DataFrame and H2O Frame
   - Fix all scripts and create automatic tests for them
-  - Create basic sparkling-water python package
+  - [SW-39] pySparkling: use Sparkling Water from Python
+
   - Fixes
     - [PUBDEV-282] Create windows batch scripts for starting sparkling-shell and running examples
     - [SW-25](https://0xdata.atlassian.net/browse/SW-25) Remove categorical handling during asH2OFrame() transformation, fix

@@ -1,5 +1,5 @@
 # ipython nootebook checkpoints
-demos/.ipynb_checkpoints
+examples/notebooks/.ipynb_checkpoints
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -9,4 +9,4 @@ __pycache__/
 build/
 dist/
 *.egg-info/
-
+version.txt
