@@ -1,6 +1,15 @@
 ChangeLog
 =========
 
+##v1.5.3 (2015-10-19)
+   - [SW-25] Do not handle categorical column in Spark
+
+##v1.5.2 (2015-09-28)
+   - Added support for buildinfo.json
+   - Fix in documentation
+   - Fix import problem - Spark by default inject method called `hex` into
+     default environment - it clashes with `hex` package.
+
 ##v1.5.1 (2015-09-28)
    - H2O version 3.2.0.5 (slater) including fixes in POJO generation
 
