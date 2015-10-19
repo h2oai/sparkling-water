@@ -278,41 +278,22 @@ object H2OContext extends Logging {
     // Fetch cached frame from DKV
     val frameVal = DKV.get(keyName)
     if (frameVal==null) {
-      // Fetch information about Spark DataFrame - string domains, max array length
-      // Collect domains only for String columns
-      val stringColIdxs = collectStringTypesIndx(dataFrame.schema.fields)
-      // Contains only string domains of String columns and String arrays
-      val fdomains      = collectColumnDomains(sc, dfRdd, stringColIdxs)
-
       // Flattens and expands RDD's schema
       val flatRddSchema = expandedSchema(sc, dataFrame)
       // Patch the flat schema based on information about types
       val fnames = flatRddSchema.map(t => t._2.name).toArray
       initFrame(keyName, fnames)
-
       // Eager, not lazy, evaluation
-      val rows = sc.runJob(dfRdd, perSQLPartition(keyName, flatRddSchema, fdomains) _)
+      val rows = sc.runJob(dfRdd, perSQLPartition(keyName, flatRddSchema) _)
       val res = new Array[Long](dfRdd.partitions.size)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows}
 
       // Transform datatype into h2o types and expand string domains
       var strColCnt = 0
-      val fH2ODomains = new Array[Array[String]](flatRddSchema.length)
       val ftypes = flatRddSchema.indices
         .map(idx => {
         val f = flatRddSchema(idx)
-        f._2.dataType match {
-          case StringType => {
-            if (f._3 != VEC_TYPE && f._3 != ARRAY_TYPE) {
-              val domain = fdomains(strColCnt)
-              val result = dataTypeToVecType(f._2.dataType, domain)
-              fH2ODomains(idx) = domain
-              strColCnt += 1
-              result
-            } else Vec.T_STR
-          }
-          case _ => dataTypeToVecType(f._2.dataType, null)
-        }
+        dataTypeToVecType(f._2.dataType)
       }).toArray
       // Expand string domains into list for each column
 
@@ -321,8 +302,7 @@ object H2OContext extends Logging {
         finalizeFrame(
           keyName,
           res,
-          ftypes,
-          fH2ODomains))
+          ftypes))
     } else {
       new H2OFrame(frameVal.get.asInstanceOf[Frame])
     }
@@ -339,14 +319,9 @@ object H2OContext extends Logging {
   def finalizeFrame[T](keyName: String,
                        res: Array[Long],
                        colTypes: Array[Byte],
-                       colDomains: Array[Array[String]]):Frame = {
+                       colDomains: Array[Array[String]] = null):Frame = {
     val fr:Frame = DKV.get(keyName).get.asInstanceOf[Frame]
-    val colH2OTypes = colTypes.indices.map(idx => {
-      val typ = colTypes(idx)
-      if (typ==Vec.T_STR) colDomains(idx) = null // minor clean-up
-      typ
-    }).toArray
-    water.fvec.FrameUtils.finalizePartialFrame(fr, res, colDomains, colH2OTypes)
+    water.fvec.FrameUtils.finalizePartialFrame(fr, res, colDomains, colTypes)
     fr
   }
 
@@ -359,19 +334,17 @@ object H2OContext extends Logging {
     val keyName = "frame_rdd_" + rdd.id + Key.rand() // There are uniq IDs for RDD
     val fnames = names[A]
     val ftypes = types[A](fnames)
-    // Collect domains for string columns
-    val fdomains = collectColumnDomains(sc, rdd, fnames, ftypes)
 
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
 
-    val rows = sc.runJob(rdd, perRDDPartition(keyName, fdomains) _) // eager, not lazy, evaluation
+    val rows = sc.runJob(rdd, perRDDPartition(keyName) _) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
     rows.foreach{ case(cidx,nrows) => res(cidx) = nrows }
 
     // Add Vec headers per-Chunk, and finalize the H2O Frame
-    val h2oTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx), fdomains(idx))).toArray
-    new H2OFrame(finalizeFrame(keyName, res, h2oTypes, fdomains))
+    val h2oTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
+    new H2OFrame(finalizeFrame(keyName, res, h2oTypes))
   }
 
   /** Transform RDD[Primitive type] ( where primitive type can be String, Double, Float or Int) to appropriate H2OFrame */
@@ -398,36 +371,25 @@ object H2OContext extends Logging {
 
     val fnames = Array[String]("values")
     val ftypes = Array[Class[_]](typ(typeOf[T]))
-    // Collect domain for only one String column
-    val fdomains = collectColumnDomains(sc, rdd, fnames, ftypes)
 
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
 
-    val rows = sc.runJob(rdd, perPrimitivePartition(keyName, fdomains) _) // eager, not lazy, evaluation
+    val rows = sc.runJob(rdd, perPrimitivePartition(keyName) _) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
     rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
 
     // Add Vec headers per-Chunk, and finalize the H2O Frame
-    val h2oTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx), fdomains(idx))).toArray
-    new H2OFrame(finalizeFrame(keyName, res, h2oTypes, fdomains))
+    val h2oTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
+    new H2OFrame(finalizeFrame(keyName, res, h2oTypes))
   }
 
   private
-  def perPrimitivePartition[T](keystr: String, domains: Array[Array[String]])
+  def perPrimitivePartition[T](keystr: String)
                               (context: TaskContext, it: Iterator[T]): (Int, Long) = {
     // An array of H2O NewChunks; A place to record all the data in this partition
     val nchks = water.fvec.FrameUtils.createNewChunks(keystr, context.partitionId)
-
-    // Make a helper hash for enum domains
-    val domHash = domains.map(ary =>
-      if (ary == null) {
-        null.asInstanceOf[mutable.Map[String, Int]]
-      } else {
-        val m = new mutable.HashMap[String, Int]()
-        for (idx <- ary.indices) m.put(ary(idx), idx)
-        m
-      })
+    // Helper to hold H2O string
     val valStr = new ValueString()
     it.foreach(r => {
       // For all rows in RDD
@@ -436,13 +398,7 @@ object H2OContext extends Logging {
         case i: Int => chk.addNum(i.toDouble)
         case d: Double => chk.addNum(d)
         case f: Float => chk.addNum(f.toDouble)
-        case str: String => {
-          if (domains(0) == null) chk.addStr(valStr.setTo(str))
-          else {
-            val domainMap = domHash(0);
-            chk.addEnum(domainMap.get(str).get)
-          }
-        }
+        case str: String => chk.addStr(valStr.setTo(str))
       }
     })
     // Compress & write out the Partition/Chunks
@@ -451,20 +407,11 @@ object H2OContext extends Logging {
     (context.partitionId, nchks(0)._len)
   }
   private
-  def perSQLPartition ( keystr: String, types: Seq[(Seq[Int], StructField, Byte)], domains: Array[Array[String]] )
-                      ( context: TaskContext, it: Iterator[Row] ): (Int,Long) = {
+  def perSQLPartition(keystr: String, types: Seq[(Seq[Int], StructField, Byte)])
+                     (context: TaskContext, it: Iterator[Row]): (Int,Long) = {
     val nchks = water.fvec.FrameUtils.createNewChunks(keystr,context.partitionId)
-    val domHash = domains.map( ary =>
-      if (ary==null) {
-        null.asInstanceOf[mutable.Map[String,Int]]
-      } else {
-        val m = new mutable.HashMap[String, Int]()
-        for (idx <- ary.indices) m.put(ary(idx), idx)
-        m
-      })
     val valStr = new ValueString() // just helper for string columns
     it.foreach(row => {
-      var numOfStringCols = 0
       var startOfSeq = -1
       // Fill row in the output frame
       types.indices.foreach { idx => // Index of column
@@ -486,7 +433,6 @@ object H2OContext extends Logging {
         val aidx = path(i) // actual index into row provided by path
         if (subRow.isNullAt(aidx)) {
           chk.addNA()
-          if (dataType == StringType && !isAry) numOfStringCols += 1 // Shift pointer to the next string column
         } else {
           val ary = if (isAry) subRow.getAs[Seq[_]](aidx) else null
           val aryLen = if (isAry) ary.length else -1
@@ -510,15 +456,8 @@ object H2OContext extends Logging {
               else subRow.getDouble(aidx))
             case StringType => {
               val sv = if (isAry) ary(aryIdx).asInstanceOf[String] else subRow.getString(aidx)
-              if (isAry || domains(numOfStringCols) == null) {
-                // String in arrays transform into string columns
-                chk.addStr(valStr.setTo(sv))
-              } else {
-                val smap = domHash(numOfStringCols)
-                chk.addEnum(smap.get(sv).get)
-              }
-              // Domains are computed only for regular string columns, not for Array[String]
-              if (!isAry) numOfStringCols += 1
+              // Always produce String vector
+              chk.addStr(valStr.setTo(sv))
             }
             case TimestampType => chk.addNum(row.getAs[java.sql.Timestamp](aidx).getTime())
             case _ => chk.addNA()
@@ -534,20 +473,10 @@ object H2OContext extends Logging {
   }
 
   private
-  def perRDDPartition[A<:Product]( keystr:String, domains: Array[Array[String]] )
-                                         ( context: TaskContext, it: Iterator[A] ): (Int,Long) = {
+  def perRDDPartition[A<:Product](keystr:String)
+                                 (context: TaskContext, it: Iterator[A]): (Int,Long) = {
     // An array of H2O NewChunks; A place to record all the data in this partition
     val nchks = water.fvec.FrameUtils.createNewChunks(keystr,context.partitionId)
-    // Make a helper hash for enum domains
-    val domHash = domains.map( ary =>
-      if (ary==null) {
-        null.asInstanceOf[mutable.Map[String,Int]]
-      } else {
-        val m = new mutable.HashMap[String, Int]()
-        for (idx <- ary.indices) m.put(ary(idx), idx)
-        m
-      })
-
     val valStr = new ValueString()
     it.foreach(prod => { // For all rows which are subtype of Product
       for( i <- 0 until prod.productArity ) { // For all fields...
@@ -560,13 +489,7 @@ object H2OContext extends Logging {
         x match {
           case n: Number  => chk.addNum(n.doubleValue())
           case n: Boolean => chk.addNum(if (n) 1 else 0)
-          case n: String  =>
-            if (domains(i)==null) chk.addStr(valStr.setTo(n))
-            else {
-              val sv = n
-              val smap = domHash(i)
-              chk.addEnum(smap.get(sv).get)
-            }
+          case n: String  => chk.addStr(valStr.setTo(n))
           case _ => chk.addNA()
         }
       }

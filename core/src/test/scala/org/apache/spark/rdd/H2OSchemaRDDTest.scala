@@ -21,9 +21,10 @@ import java.sql.Timestamp
 import java.util.UUID
 
 import hex.splitframe.ShuffleSplitFrame
+import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o.H2OSchemaUtils.flatSchema
 import org.apache.spark.h2o.util.SparkTestContext
-import org.apache.spark.h2o.{H2OContext, H2OFrame, H2OSchemaUtils, IntHolder}
+import org.apache.spark.h2o._
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.types._
@@ -31,6 +32,7 @@ import org.apache.spark.{SparkContext, mllib}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.fvec.Frame
 import water.fvec._
 import water.parser.{Categorical, ValueString}
 import water.{DKV, Key}
@@ -446,26 +448,21 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   test("DataFrame[String] to H2OFrame[Enum]") {
     import sqlContext.implicits._
 
-    val num = 3000
-    val values = (1 to num).map( v => StringField(v + "-value"))
+    val domSize = 3000
+    val values = (1 to domSize).map( v => StringField(v + "-value"))
     val srdd:DataFrame = sc.parallelize(values).toDF()
     val dataFrame = hc.asH2OFrame(srdd)
 
     assertH2OFrameInvariants(srdd, dataFrame)
-    assert (dataFrame.vec(0).isEnum())
-    assert (dataFrame.domains()(0).length == num)
-  }
-
-  ignore("DataFrame[String] to H2OFrame[String] - ignored since it takes 8minutes") {
-    import sqlContext.implicits._
-
-    val num = Categorical.MAX_CATEGORICAL_COUNT + 1
-    val values = (1 to num).map( v => StringField(v + "-value"))
-    val srdd:DataFrame = sc.parallelize(values).toDF
-    val dataFrame = hc.asH2OFrame(srdd)
-
-    assertH2OFrameInvariants(srdd, dataFrame)
     assert (dataFrame.vec(0).isString())
+    assert (dataFrame.domains()(0) == null)
+    val catVec = VecUtils.stringToCategorical(dataFrame.vec(0))
+    assert (catVec.isEnum)
+    assert (catVec.domain() != null)
+    assert (catVec.domain().length == domSize)
+
+    dataFrame.delete()
+    catVec.remove()
   }
 
   test("DataFrame[TimeStamp] to H2OFrame[Time]") {
@@ -537,7 +534,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
     // Verify data stored in dataFrame after transformation
     assertVectorIntValues(dataFrame.vec(0), Seq(1,2))
-    assertVectorEnumValues(dataFrame.vec(1), Seq("name=1", "name=2"))
+    assertVectorStringValues(dataFrame.vec(1), Seq("name=1", "name=2"))
     assertVectorDoubleValues(dataFrame.vec(2), Seq(1.0, 2.0))
   }
 
@@ -732,6 +729,17 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     (0 until vec.length().asInstanceOf[Int]).foreach { rIdx =>
       assert(vecDom(vec.at8(rIdx).asInstanceOf[Int]) == values(rIdx), "values stored has to match to values in rdd")
     }
+  }
+  def assertVectorStringValues(vec: water.fvec.Vec, values: Seq[String]): Unit = {
+    val valString = new ValueString()
+    (0 until vec.length().asInstanceOf[Int]).foreach { rIdx =>
+      assert(
+        if (vec.isNA(rIdx)) values(rIdx) == Double.NaN // this is Scala i can do NaN comparision
+        else {
+          vec.atStr(valString, rIdx)
+          valString.bytesToString() == values(rIdx)
+        }, "values stored has to match to values in rdd")
+                                                     }
   }
 }
 

@@ -13,27 +13,10 @@ import scala.language.implicitConversions
  */
 object H2OPrimitiveTypesUtils {
 
-  /** Method used for obtaining column domains */
-  private[spark]
-  def collectColumnDomains[T](sc: SparkContext,
-                              rdd: RDD[T],
-                              fnames: Array[String],
-                              ftypes: Array[Class[_]]): Array[Array[String]] = {
-    val res = Array.ofDim[Array[String]](fnames.length)
-    for (idx <- 0 until ftypes.length if ftypes(idx).equals(classOf[String])) {
-      val acc = sc.accumulableCollection(new mutable.HashSet[String]())
-      rdd.foreach(r => {
-        acc += r.asInstanceOf[String]
-      })
-      res(idx) = if (acc.value.size > Categorical.MAX_CATEGORICAL_COUNT) null else acc.value.toArray.sorted
-    }
-    res
-  }
-
   /** Method translating primitive types into Sparkling Water types
     * This method is already prepared to handle all mentioned primitive types  */
   private[spark]
-  def dataTypeToVecType(t: Class[_], d: Array[String]): Byte = {
+  def dataTypeToVecType(t: Class[_]): Byte = {
     t match {
       case q if q == classOf[java.lang.Byte] => Vec.T_NUM
       case q if q == classOf[java.lang.Short] => Vec.T_NUM
@@ -42,11 +25,7 @@ object H2OPrimitiveTypesUtils {
       case q if q == classOf[java.lang.Float] => Vec.T_NUM
       case q if q == classOf[java.lang.Double] => Vec.T_NUM
       case q if q == classOf[java.lang.Boolean] => Vec.T_NUM
-      case q if q == classOf[java.lang.String] => if (d != null && d.length < water.parser.Categorical.MAX_CATEGORICAL_COUNT) {
-        Vec.T_ENUM
-      } else {
-        Vec.T_STR
-      }
+      case q if q == classOf[java.lang.String] => Vec.T_STR
       case q => throw new IllegalArgumentException(s"Do not understand type $q")
     }
   }

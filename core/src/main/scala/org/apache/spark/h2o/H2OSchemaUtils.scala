@@ -104,7 +104,7 @@ object H2OSchemaUtils {
   }
 
   /** Method translating SQL types into Sparkling Water types */
-  def dataTypeToVecType(dt : DataType, d: Array[String]) : Byte = dt match {
+  def dataTypeToVecType(dt : DataType) : Byte = dt match {
     case BinaryType  => Vec.T_NUM
     case ByteType    => Vec.T_NUM
     case ShortType   => Vec.T_NUM
@@ -114,11 +114,7 @@ object H2OSchemaUtils {
     case DoubleType  => Vec.T_NUM
     case BooleanType => Vec.T_NUM
     case TimestampType => Vec.T_TIME
-    case StringType  => if (d!=null && d.length < water.parser.Categorical.MAX_CATEGORICAL_COUNT) {
-                          Vec.T_ENUM
-                        } else {
-                          Vec.T_STR
-                        }
+    case StringType  => Vec.T_STR
     //case StructType  => dt.
     case _ => throw new IllegalArgumentException(s"Unsupported type $dt")
   }
@@ -219,30 +215,6 @@ object H2OSchemaUtils {
       case StructType(fs) => collectVectorLikeTypes(fs, path++Seq(i))
       case t => if (t.isInstanceOf[UserDefinedType[_/*mllib.linalg.Vector*/]]) Seq(path++Seq(i)) else Nil
     })
-  }
-
-  private[h2o]
-  def collectColumnDomains(sc: SparkContext,
-                            rdd: RDD[Row],
-                            stringTypesIdx: Seq[Seq[Int]]): Array[Array[String]] = {
-    // Create accumulable collections for each possible string variable
-    val accs = stringTypesIdx.indices.map( _ => sc.accumulableCollection(new mutable.HashSet[String]()))
-    // TODO: perform via partition, indicates string columns and fail early
-    rdd.foreach { r => { // row
-      // Update accumulable variables
-      stringTypesIdx.indices.foreach { k => {
-        val indx = stringTypesIdx(k)
-        val acc = accs(k)
-        var i = 0
-        var subRow = r
-        while (i < indx.length-1 && !subRow.isNullAt(indx(i))) { subRow = subRow.getAs[Row](indx(i)); i += 1 }
-        if (!subRow.isNullAt(indx(i))) acc += subRow.getString(indx(i))
-      }
-      }
-    }
-    }
-    // Domain for each enum column or null
-    accs.map(acc => if (acc.value.size > Categorical.MAX_CATEGORICAL_COUNT) null else acc.value.toArray.sorted).toArray
   }
 
   /** Collect max size of stored arrays and MLLib vectors.
