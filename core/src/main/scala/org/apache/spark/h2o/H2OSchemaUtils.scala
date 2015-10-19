@@ -114,11 +114,7 @@ object H2OSchemaUtils {
     case DoubleType  => Vec.T_NUM
     case BooleanType => Vec.T_NUM
     case TimestampType => Vec.T_TIME
-    case StringType  => if (d!=null && d.length < water.parser.Categorical.MAX_CATEGORICAL_COUNT) {
-                          Vec.T_ENUM
-                        } else {
-                          Vec.T_STR
-                        }
+    case StringType  => Vec.T_STR
     //case StructType  => dt.
     case _ => throw new IllegalArgumentException(s"Unsupported type $dt")
   }
