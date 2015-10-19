@@ -18,7 +18,7 @@ package org.apache.spark.rdd
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.util.SharedSparkTestContext
-import org.apache.spark.h2o.{H2OFrame, DoubleHolder, IntHolder, StringHolder}
+import org.apache.spark.h2o._
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -70,8 +70,11 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     val rdd = sc.parallelize(1 to 1000, 100).map( v => StringHolder(Some(v.toString)))
     val dataFrame : H2OFrame = hc.asH2OFrame(rdd)
 
-    assert (dataFrame.vec(0).isEnum, "The vector type should be enum")
-    assert (dataFrame.vec(0).domain().length == 1000, "The vector domain should be 1000")
+    assert (dataFrame.vec(0).isString, "The vector type should be of string type")
+    assert (dataFrame.vec(0).domain() == null, "The vector domain should be <null>")
+
+    // Transform string vector to categorical
+    dataFrame.replace(0, VecUtils.stringToCategorical(dataFrame.vec(0))).remove()
 
     assertBasicInvariants(rdd, dataFrame, (row, vec) => {
       val dom = vec.domain()
