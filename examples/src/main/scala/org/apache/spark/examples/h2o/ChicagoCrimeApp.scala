@@ -6,7 +6,7 @@ import hex.tree.gbm.GBMModel
 import hex.Distribution.Family
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.h2o.{VecUtils, H2OContext, H2OFrame}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.DateTimeFormat
@@ -60,6 +60,8 @@ class ChicagoCrimeApp( weatherFile: String,
 
     //crimeWeather.printSchema()
     val crimeWeatherDF:H2OFrame = crimeWeather
+    // Transform all string columns into categorical
+    DemoUtils.allStringVecToCategorical(crimeWeatherDF)
 
     //
     // Split final data table
@@ -230,6 +232,9 @@ class ChicagoCrimeApp( weatherFile: String,
     val srdd: DataFrame = sqlContext.sparkContext.parallelize(Seq(crime)).toDF
     // Join table with census data
     val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
+    // Transform all string columns into categorical
+    DemoUtils.allStringVecToCategorical(row)
+
     val predictTable = model.score(row)
     val probOfArrest = predictTable.vec("true").at(0)
 

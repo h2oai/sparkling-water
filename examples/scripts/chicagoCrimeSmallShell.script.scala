@@ -125,6 +125,7 @@ val crimeWeather = sqlContext.sql(
 // Publish as H2O Frame
 crimeWeather.printSchema()
 val crimeWeatherDF:H2OFrame = crimeWeather
+allStringVecToCategorical(crimeWeather)
 
 //
 // Split final data table
