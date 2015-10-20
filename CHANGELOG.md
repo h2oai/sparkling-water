@@ -1,6 +1,11 @@
 ChangeLog
 =========
 
+##v1.4.7 (2015-10-20)
+  - [SW-25] - remove handling of categorical on Spark side during asH2OFrame
+    transformation
+  - usa Gradle 2.7
+
 ##v1.4.6 (2015-09-28)
   - Fix assembly error
 
