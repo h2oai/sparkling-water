@@ -50,6 +50,8 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
     val resultRDD: DataFrame = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2)).toDF
 
     val table:H2OFrame = resultRDD
+    // Transform target column into
+    table.replace(table.find("target"), VecUtils.stringToCategorical(table.vec("target"))).remove()
 
     // Split table
     val keys = Array[String]("train.hex", "valid.hex")

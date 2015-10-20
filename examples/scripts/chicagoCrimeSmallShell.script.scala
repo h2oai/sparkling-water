@@ -21,7 +21,7 @@ import _root_.hex.deeplearning.DeepLearningModel
 import _root_.hex.tree.gbm.GBMModel
 import _root_.hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkFiles
-import org.apache.spark.examples.h2o.DemoUtils.{splitFrame, addFiles}
+import org.apache.spark.examples.h2o.DemoUtils.{splitFrame, addFiles, allStringVecToCategorical}
 import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
@@ -29,7 +29,7 @@ import org.apache.spark.sql.types._
 import water.app.ModelMetricsSupport._
 
 //val sc: org.apache.spark.SparkContext = null
-//val sqlContex: org.apache.spark.sql.SQLContext = null
+//val sqlContext: org.apache.spark.sql.SQLContext = null
 
 
 //
@@ -124,6 +124,8 @@ val crimeWeather = sqlContext.sql(
 //
 // Publish as H2O Frame
 val crimeWeatherDF:H2OFrame = crimeWeather
+// Transform all string columns into categorical
+allStringVecToCategorical(crimeWeatherDF)
 
 //
 // Split final data table
