@@ -462,18 +462,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (catVec.domain().length == domSize)
   }
 
-  ignore("DataFrame[String] to H2OFrame[String] - ignored since it takes 8minutes") {
-    import sqlContext.implicits._
-
-    val num = Categorical.MAX_CATEGORICAL_COUNT + 1
-    val values = (1 to num).map( v => StringField(v + "-value"))
-    val srdd:DataFrame = sc.parallelize(values).toDF
-    val dataFrame = hc.asH2OFrame(srdd)
-
-    assertH2OFrameInvariants(srdd, dataFrame)
-    assert (dataFrame.vec(0).isString())
-  }
-
   test("DataFrame[TimeStamp] to H2OFrame[Time]") {
     import sqlContext.implicits._
 

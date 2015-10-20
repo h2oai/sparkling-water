@@ -217,30 +217,6 @@ object H2OSchemaUtils {
     })
   }
 
-  private[h2o]
-  def collectColumnDomains(sc: SparkContext,
-                            rdd: RDD[Row],
-                            stringTypesIdx: Seq[Seq[Int]]): Array[Array[String]] = {
-    // Create accumulable collections for each possible string variable
-    val accs = stringTypesIdx.indices.map( _ => sc.accumulableCollection(new mutable.HashSet[String]()))
-    // TODO: perform via partition, indicates string columns and fail early
-    rdd.foreach { r => { // row
-      // Update accumulable variables
-      stringTypesIdx.indices.foreach { k => {
-        val indx = stringTypesIdx(k)
-        val acc = accs(k)
-        var i = 0
-        var subRow = r
-        while (i < indx.length-1 && !subRow.isNullAt(indx(i))) { subRow = subRow.getAs[Row](indx(i)); i += 1 }
-        if (!subRow.isNullAt(indx(i))) acc += subRow.getString(indx(i))
-      }
-      }
-    }
-    }
-    // Domain for each enum column or null
-    accs.map(acc => if (acc.value.size > Categorical.MAX_CATEGORICAL_COUNT) null else acc.value.toArray.sorted).toArray
-  }
-
   /** Collect max size of stored arrays and MLLib vectors.
     * @return list of max sizes for array types, followed by max sizes for vector types. */
   private[h2o]

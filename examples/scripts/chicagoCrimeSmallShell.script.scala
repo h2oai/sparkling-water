@@ -14,7 +14,7 @@ import _root_.hex.tree.gbm.GBMModel
 import _root_.hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkFiles
 import org.apache.spark.examples.h2o.DemoUtils._
-import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
+import org.apache.spark.examples.h2o.{DemoUtils, Crime, RefineDateColumn}
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
@@ -113,6 +113,8 @@ val crimeWeather = sqlContext.sql(
 // Publish as H2O Frame
 crimeWeather.printSchema()
 val crimeWeatherDF:H2OFrame = crimeWeather
+// Transform all string columns into categorical
+DemoUtils.allStringVecToCategorical(crimeWeatherDF)
 
 //
 // Split final data table
