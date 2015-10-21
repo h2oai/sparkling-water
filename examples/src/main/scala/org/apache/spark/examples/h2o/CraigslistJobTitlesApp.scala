@@ -125,6 +125,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     import h2oContext._
     import sqlContext.implicits._
     val h2oFrame: H2OFrame = finalRdd.toDF
+    h2oFrame.replace(h2oFrame.find("category"), VecUtils.stringToCategorical(h2oFrame.vec("category"))).remove()
 
     (h2oFrame, w2vModel)
   }
@@ -178,7 +179,9 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
     try {
       app.run()
     } catch {
-      case e: Throwable => e.printStackTrace()
+      case e: Throwable =>
+        e.printStackTrace()
+        throw e
     } finally {
       app.shutdown()
     }
