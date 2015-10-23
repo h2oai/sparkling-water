@@ -3,11 +3,11 @@ FROM ubuntu:precise
 # Repo
 #RUN echo "deb http://archive.ubuntu.com/ubuntu precise main universe" > /etc/apt/sources.list
 # Java 7 installation from Oracle
-RUN apt-get -y install python-software-properties
+RUN apt-get update && apt-get -y install python-software-properties
 RUN add-apt-repository ppa:webupd8team/java
 
 # Upgrade package index
-RUN apt-get update 
+RUN apt-get update
 # RUN apt-get -y upgrade
 
 # automatically accept oracle license
