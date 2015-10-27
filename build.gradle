@@ -47,7 +47,7 @@ ext {
       project(':sparkling-water-assembly')
     ]
     pythonProjects = [
-      project(':sparkling-water-py')
+      //project(':sparkling-water-py')
     ]
 }
 
