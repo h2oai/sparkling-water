@@ -144,15 +144,17 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // Execute H2O on given nodes
     logInfo(s"""Launching H2O on following nodes: ${spreadRDDNodes.mkString(",")}""")
 
-    val h2oNodeArgs = getH2ONodeArgs
+    var h2oNodeArgs = getH2ONodeArgs
+    // Disable web on h2o nodes in non-local mode
+    if(!sparkContext.isLocal){
+      h2oNodeArgs = h2oNodeArgs++Array("-disable_web")
+    }
     logDebug(s"Arguments used for launching h2o nodes: ${h2oNodeArgs.mkString(" ")}")
     val executors = startH2O(sparkContext, spreadRDD, spreadRDDNodes.length, h2oNodeArgs)
     // Store runtime information
     h2oNodes.append( executors:_* )
 
-    // Now connect to a cluster via H2O client,
-    // but only in non-local case
-    // - get IP of local node
+    // Connect to a cluster via H2O client, but only in non-local case
     if (!sparkContext.isLocal) {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + executors.length)
       // Get arguments for this launch including flatfile
@@ -161,16 +163,15 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
                               executors)
       logDebug(s"Arguments used for launching h2o nodes: ${h2oClientArgs.mkString(" ")}")
       H2OClientApp.main(h2oClientArgs)
-      H2OContext.registerClientWebAPI(sparkContext,this)
-      H2O.finalizeRegistration()
-      H2O.waitForCloudSize(executors.length, cloudTimeout)
-    } else {
-      logTrace("Sparkling H2O - LOCAL mode")
-      // Since LocalBackend does not wait for initialization (yet)
-      H2O.waitForCloudSize(1, cloudTimeout)
     }
+
+    H2OContext.registerClientWebAPI(sparkContext,this)
+    H2O.finalizeRegistration()
+    H2O.waitForCloudSize(executors.length, cloudTimeout)
+
     // Get H2O web port
     localClient = H2O.getIpPortString
+
     // Inform user about status
     logInfo("Sparkling Water started, status of context: " + this.toString)
     this

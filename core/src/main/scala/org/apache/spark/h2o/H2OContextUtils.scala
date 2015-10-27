@@ -118,7 +118,7 @@ private[spark] object H2OContextUtils {
           return s + java.io.File.separator
         }
 
-        if (sparkEnv.conf.get(H2OConf.PROP_NODE_LOG_DIR._1) != null) {
+        if (sparkEnv.conf.contains(H2OConf.PROP_NODE_LOG_DIR._1)) {
           sparkEnv.conf.get(H2OConf.PROP_NODE_LOG_DIR._1)
         } else {
           // Needs to be executed at remote node!
@@ -131,7 +131,6 @@ private[spark] object H2OContextUtils {
         val ip = nodeDesc._2
         val launcherArgs = toH2OArgs(
           h2oArgs
-            ++ Array("-disable_web")
             ++ Array("-ip", ip)
             ++ Array("-log_dir", logDir),
           None)
