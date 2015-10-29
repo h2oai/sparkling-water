@@ -19,7 +19,7 @@ package org.apache.spark.h2o
 
 import water.fvec.{Chunk, NewChunk, Vec}
 import water.nbhm.NonBlockingHashMap
-import water.parser.ValueString
+import water.parser.BufferedString
 import water.{AutoBuffer, MRTask}
 
 /**
@@ -40,18 +40,18 @@ object VecUtils {
       }
 
       override def map(c: Chunk, nc: NewChunk): Unit = {
-        val vs = new ValueString()
+        val vs = new BufferedString()
         (0 until c.len()).foreach { rIdx =>
           if (c.isNA(rIdx)) nc.addNA()
           else {
             c.atStr(vs, rIdx)
-            nc.addEnum(lookupTable.get(vs.bytesToString()))
+            nc.addCategorical(lookupTable.get(vs.bytesToString()))
           }
         }
       }
     }
     // Invoke tasks - one input vector, one ouput vector
-    task.doAll(1, vec)
+    task.doAll(Array[Byte](Vec.T_CAT), vec)
     // Return result
     task.outputFrame(null, null, Array(domain)).vec(0)
   }
@@ -67,7 +67,7 @@ object VecUtils {
     }
 
     override def map(c: Chunk): Unit = {
-      val vs = new ValueString()
+      val vs = new BufferedString()
       (0 until c.len()).foreach(rIdx => {
         if (!c.isNA(rIdx)) {
           c.atStr(vs, rIdx)

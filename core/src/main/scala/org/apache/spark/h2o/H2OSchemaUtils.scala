@@ -44,7 +44,7 @@ object H2OSchemaUtils {
         putLong("count", vec.length()).
         putLong("naCnt", vec.naCnt())
 
-      if (vec.isEnum) {
+      if (vec.isCategorical) {
         metadata = metadata.putStringArray("vals", vec.domain()).
           putLong("cardinality", vec.cardinality().toLong)
       } else if (vec.isNumeric) {
@@ -79,7 +79,7 @@ object H2OSchemaUtils {
     v.get_type() match {
       case Vec.T_BAD  => ByteType // vector is full of NAs, use any type
       case Vec.T_NUM  => numericVecTypeToDataType(v)
-      case Vec.T_ENUM => StringType
+      case Vec.T_CAT  => StringType
       case Vec.T_UUID => StringType
       case Vec.T_STR  => StringType
       case Vec.T_TIME => TimestampType
@@ -104,7 +104,7 @@ object H2OSchemaUtils {
   }
 
   /** Method translating SQL types into Sparkling Water types */
-  def dataTypeToVecType(dt : DataType, d: Array[String]) : Byte = dt match {
+  def dataTypeToVecType(dt : DataType) : Byte = dt match {
     case BinaryType  => Vec.T_NUM
     case ByteType    => Vec.T_NUM
     case ShortType   => Vec.T_NUM

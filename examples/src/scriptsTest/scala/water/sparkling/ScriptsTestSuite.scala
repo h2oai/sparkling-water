@@ -27,8 +27,9 @@ class ScriptsTestSuite extends FunSuite with ScriptsTestHelper with org.apache.s
       "--master",master,
       "--driver-class-path",swfatjar) ++
       Seq("--conf", "spark.driver.extraJavaOptions=-XX:MaxPermSize=384m") ++
+      Seq("--conf", "spark.executor.extraJavaOptions=-XX:MaxPermSize=384m") ++
       extraConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++
-      Seq("-i",scriptPath)
+      Seq("-i", scriptPath)
 
     import sys.process._
     val sparkHome = System.getenv("SPARK_HOME")
@@ -37,16 +38,24 @@ class ScriptsTestSuite extends FunSuite with ScriptsTestHelper with org.apache.s
     val out = new StringBuilder
     val err = new StringBuilder
 
+    // Define output filter
+    val filter: (String => Boolean) = (s: String) => {
+      s.contains("Failed to get database default, returning NoSuchObjectException")
+    }
+
     val logger = ProcessLogger(
       (o: String) => {
-        out.append(o)
-        logInfo(o)
+        if (!filter(o)) {
+          out.append(o)
+          logInfo(o)
+        }
       },
       (e: String) => {
-        err.append(e)
-        logError(e)
+        if (!filter(e)) {
+          err.append(e)
+          logInfo(e)
+        }
       }
-
     )
 
     val proc = cmdToLaunch.!(logger)
@@ -74,7 +83,7 @@ class ScriptsTestSuite extends FunSuite with ScriptsTestHelper with org.apache.s
     java.nio.file.Files.copy(sourceFile.toPath,sourceFileWithExit,StandardCopyOption.REPLACE_EXISTING)
     val writer = new FileWriter(sourceFileWithExit.toFile,true)
     try{
-      writer.write("\nexit")
+      writer.write("\nsc.stop()\nexit")
     } finally writer.close()
 
     launch(master,sourceFileWithExit.toAbsolutePath.toString,extraConf)
@@ -93,7 +102,7 @@ class ScriptsTestSuite extends FunSuite with ScriptsTestHelper with org.apache.s
   }
 
   test("Script with exception"){
-    val result = launchCode("local-cluster[1,1,512]","throw new Exception(\"Exception Message\")")
+    val result = launchCode("local-cluster[1,1,1024]","throw new Exception(\"Exception Message\")")
     assert (result.exitStatus == 0, "Process finished in wrong way!")
     assertDoesNotContainIgnoreCase("error",result.out)
     assertContainsIgnoreCase("exception",result.out)
@@ -102,7 +111,7 @@ class ScriptsTestSuite extends FunSuite with ScriptsTestHelper with org.apache.s
   }
 
   test("Script with error, class not imported"){
-    val result = launchCode("local-cluster[1,1,512]","val h2oContext = new H2OContext(sc).start()")
+    val result = launchCode("local-cluster[1,1,1024]","val h2oContext = new H2OContext(sc).start()")
     assert (result.exitStatus == 0, "Process finished in wrong way!")
     assertContainsIgnoreCase("error",result.out)
     assertDoesNotContainIgnoreCase("exception",result.out)
@@ -110,61 +119,80 @@ class ScriptsTestSuite extends FunSuite with ScriptsTestHelper with org.apache.s
     assertDoesNotContainIgnoreCase("error",result.err)
   }
 
-  // this test uses hdfs on one of the local h2o server which is not available from outside world
+  // This test uses hdfs on one of the local h2o server which is not available from outside world
+  /*
   ignore("chicagoCrime.script.scala ") {
     val extraConf = mutable.Map[String,String]()
     extraConf.put("spark.driver.memory","4G")
-    val result = launchScript("local-cluster[3,2,4512]","chicagoCrime.script.scala",extraConf)
+    extraConf.put("spark.executor.memory","4G")
+    val result = launchScript("local-cluster[3,2,4512]","chicagoCrime.script.scala", extraConf)
     assert (result.exitStatus == 0, "Process finished in wrong way!")
     assertDoesNotContainIgnoreCase("error",result.err)
     assertDoesNotContainIgnoreCase("exception",result.err)
-  }
+  } */
 
   test("chicagoCrimeSmall.script.scala ") {
-    val result = launchScript("local-cluster[3,2,1024]","chicagoCrimeSmall.script.scala")
+    val extraConf = mutable.Map[String,String]()
+    extraConf.put("spark.driver.memory","2G")
+    extraConf.put("spark.executor.memory","2G")
+    val result = launchScript("local-cluster[3,2,2048]","chicagoCrimeSmall.script.scala", extraConf)
     assert (result.exitStatus == 0, "Process finished in wrong way!")
     assertDoesNotContainIgnoreCase("error",result.err)
     assertDoesNotContainIgnoreCase("exception",result.err)
   }
 
   test("chicagoCrimeSmallShell.script.scala ") {
-    val result = launchScript("local-cluster[3,2,4096]","chicagoCrimeSmallShell.script.scala")
+    val extraConf = mutable.Map[String,String]()
+    extraConf.put("spark.driver.memory","4G")
+    extraConf.put("spark.executor.memory","4G")
+    val result = launchScript("local-cluster[3,2,4096]","chicagoCrimeSmallShell.script.scala", extraConf)
     assert (result.exitStatus == 0, "Process finished in wrong way!")
     assertDoesNotContainIgnoreCase("error",result.err)
     assertDoesNotContainIgnoreCase("exception",result.err)
   }
 
   test("mlconf_2015_hamSpam.script.scala") {
-    val result = launchScript("local-cluster[3,2,4096]","mlconf_2015_hamSpam.script.scala")
+    val extraConf = mutable.Map[String,String]()
+    extraConf.put("spark.driver.memory","4G")
+    extraConf.put("spark.executor.memory","4G")
+    val result = launchScript("local-cluster[3,2,4096]","mlconf_2015_hamSpam.script.scala", extraConf)
     assert (result.exitStatus == 0, "Process finished in wrong way!")
     assertDoesNotContainIgnoreCase("error",result.err)
     assertDoesNotContainIgnoreCase("exception",result.err)
   }
 
   test("craigslistJobTitles.script.scala") {
-    val result = launchScript("local-cluster[3,2,4096]","craigslistJobTitles.script.scala")
+    val extraConf = mutable.Map[String,String]()
+    extraConf.put("spark.driver.memory","4G")
+    extraConf.put("spark.executor.memory","4G")
+    val result = launchScript("local-cluster[3,2,4096]","craigslistJobTitles.script.scala", extraConf)
     assert (result.exitStatus == 0, "Process finished in wrong way!")
     assertDoesNotContainIgnoreCase("error",result.err)
     assertDoesNotContainIgnoreCase("exception",result.err)
   }
 
-  test("strata2015.script.scala ") {
-    val result = launchScript("local-cluster[3,2,4096]","strata2015.script.scala")
+  test("strata2015.script.scala") {
+    val extraConf = mutable.Map[String,String]()
+    extraConf.put("spark.driver.memory","4G")
+    extraConf.put("spark.executor.memory","4G")
+    val result = launchScript("local-cluster[3,2,4096]","strata2015.script.scala", extraConf)
     assert (result.exitStatus == 0, "Process finished in wrong way!")
     assertDoesNotContainIgnoreCase("error",result.err)
     assertDoesNotContainIgnoreCase("exception",result.err)
   }
 
   test("StrataAirlines.script.scala ") {
-    val result = launchScript("local-cluster[3,2,4096]","StrataAirlines.script.scala")
+    val extraConf = mutable.Map[String,String]()
+    extraConf.put("spark.driver.memory","4G")
+    extraConf.put("spark.executor.memory","4G")
+    val result = launchScript("local-cluster[3,2,4096]","StrataAirlines.script.scala", extraConf)
     assert (result.exitStatus == 0, "Process finished in wrong way!")
     assertDoesNotContainIgnoreCase("error",result.err)
     assertDoesNotContainIgnoreCase("exception",result.err)
   }
-
 }
 
-trait ScriptsTestHelper{
+trait ScriptsTestHelper {
 
   def assertContainsIgnoreCase(message:String, output: String) {
     assertContains(message.toLowerCase,output.toLowerCase)

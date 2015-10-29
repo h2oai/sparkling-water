@@ -34,8 +34,8 @@ object FrameUtils {
   }
 
   /** @see Frame#createNewChunks */
-  def createNewChunks(name: String, cidx: Int): Array[NewChunk] =
-    Frame.createNewChunks(name, cidx)
+  def createNewChunks(name: String, vecTypes: Array[Byte], cidx: Int): Array[NewChunk] =
+    Frame.createNewChunks(name, vecTypes, cidx)
 
   /** @see Frame#closeNewChunks */
   def closeNewChunks(nchks: Array[NewChunk]): Unit = Frame.closeNewChunks(nchks)

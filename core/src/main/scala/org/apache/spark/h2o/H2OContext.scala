@@ -28,8 +28,7 @@ import water.api.H2OFrames.H2OFramesHandler
 import water.api.RDDs.RDDsHandler
 import water.api._
 import water.api.scalaInt.ScalaCodeHandler
-import water.fvec.Vec
-import water.parser.ValueString
+import water.parser.BufferedString
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -175,7 +174,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     */
   def stop(stopSparkContext: Boolean = false): Unit = {
     if (stopSparkContext) sparkContext.stop()
-    H2O.shutdown(0)
+    H2O.orderlyShutdown(1000)
+    H2O.exit(0)
   }
 
   @tailrec
@@ -288,28 +288,26 @@ object H2OContext extends Logging {
       val flatRddSchema = expandedSchema(sc, dataFrame)
       // Patch the flat schema based on information about types
       val fnames = flatRddSchema.map(t => t._2.name).toArray
+      // Transform datatype into h2o types
+      val vecTypes = flatRddSchema.indices
+        .map(idx => {
+          val f = flatRddSchema(idx)
+          dataTypeToVecType(f._2.dataType)
+        }).toArray
+      // Prepare frame header and put it into DKV under given name
       initFrame(keyName, fnames)
-
-      // Eager, not lazy, evaluation
-      val rows = sc.runJob(dfRdd, perSQLPartition(keyName, flatRddSchema) _)
+      // Create a new chunks corresponding to spark partitions
+      // Note: Eager, not lazy, evaluation
+      val rows = sc.runJob(dfRdd, perSQLPartition(keyName, flatRddSchema, vecTypes) _)
       val res = new Array[Long](dfRdd.partitions.size)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows}
-
-      // Transform datatype into h2o types and expand string domains
-      var strColCnt = 0
-      val ftypes = flatRddSchema.indices
-        .map(idx => {
-        val f = flatRddSchema(idx)
-        dataTypeToVecType(f._2.dataType, null)
-      }).toArray
-      // Expand string domains into list for each column
 
       // Add Vec headers per-Chunk, and finalize the H2O Frame
       new H2OFrame(
         finalizeFrame(
           keyName,
           res,
-          ftypes))
+          vecTypes))
     } else {
       new H2OFrame(frameVal.get.asInstanceOf[Frame])
     }
@@ -323,18 +321,17 @@ object H2OContext extends Logging {
     val keyName = "frame_rdd_" + rdd.id + Key.rand() // There are uniq IDs for RDD
     val fnames = names[A]
     val ftypes = types[A](fnames)
-    // Collect domains for string columns
-
+    // Collect H2O vector types for all input types
+    val vecTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
-
-    val rows = sc.runJob(rdd, perRDDPartition(keyName) _) // eager, not lazy, evaluation
+    // Create chunks on remote nodes
+    val rows = sc.runJob(rdd, perRDDPartition(keyName, vecTypes) _) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
     rows.foreach{ case(cidx, nrows) => res(cidx) = nrows }
 
     // Add Vec headers per-Chunk, and finalize the H2O Frame
-    val h2oTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
-    new H2OFrame(finalizeFrame(keyName, res, h2oTypes))
+    new H2OFrame(finalizeFrame(keyName, res, vecTypes))
   }
 
   /** Transform RDD[Primitive type] ( where primitive type can be String, Double, Float or Int) to appropriate H2OFrame */
@@ -361,26 +358,26 @@ object H2OContext extends Logging {
 
     val fnames = Array[String]("values")
     val ftypes = Array[Class[_]](typ(typeOf[T]))
+    val vecTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
 
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
 
-    val rows = sc.runJob(rdd, perPrimitivePartition(keyName) _) // eager, not lazy, evaluation
+    val rows = sc.runJob(rdd, perPrimitivePartition(keyName, vecTypes) _) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
     rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
 
     // Add Vec headers per-Chunk, and finalize the H2O Frame
-    val h2oTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
-    new H2OFrame(finalizeFrame(keyName, res, h2oTypes))
+    new H2OFrame(finalizeFrame(keyName, res, vecTypes))
   }
 
   private
-  def perPrimitivePartition[T](keystr: String)
+  def perPrimitivePartition[T](keystr: String, vecTypes: Array[Byte])
                               (context: TaskContext, it: Iterator[T]): (Int, Long) = {
     // An array of H2O NewChunks; A place to record all the data in this partition
-    val nchks = water.fvec.FrameUtils.createNewChunks(keystr, context.partitionId)
+    val nchks = water.fvec.FrameUtils.createNewChunks(keystr, vecTypes, context.partitionId)
     // Helper to hold H2O string
-    val valStr = new ValueString()
+    val valStr = new BufferedString()
     it.foreach(r => {
       // For all rows in RDD
       val chk = nchks(0) // There is only one chunk
@@ -397,11 +394,11 @@ object H2OContext extends Logging {
     (context.partitionId, nchks(0)._len)
   }
   private
-  def perSQLPartition ( keystr: String, types: Seq[(Seq[Int], StructField, Byte)])
+  def perSQLPartition ( keystr: String, types: Seq[(Seq[Int], StructField, Byte)], vecTypes: Array[Byte])
                       ( context: TaskContext, it: Iterator[Row] ): (Int,Long) = {
-    // New chunks
-    val nchks = water.fvec.FrameUtils.createNewChunks(keystr,context.partitionId)
-    val valStr = new ValueString() // just helper for string columns
+    // New chunks on remote node
+    val nchks = water.fvec.FrameUtils.createNewChunks(keystr, vecTypes, context.partitionId)
+    val valStr = new BufferedString() // just helper for string columns
     it.foreach(row => {
       var startOfSeq = -1
       // Fill row in the output frame
@@ -466,12 +463,12 @@ object H2OContext extends Logging {
   }
 
   private
-  def perRDDPartition[A<:Product](keystr:String)
-                                         ( context: TaskContext, it: Iterator[A] ): (Int,Long) = {
+  def perRDDPartition[A<:Product](keystr:String, vecTypes: Array[Byte])
+                                 ( context: TaskContext, it: Iterator[A] ): (Int,Long) = {
     // An array of H2O NewChunks; A place to record all the data in this partition
-    val nchks = water.fvec.FrameUtils.createNewChunks(keystr,context.partitionId)
+    val nchks = water.fvec.FrameUtils.createNewChunks(keystr, vecTypes, context.partitionId)
 
-    val valStr = new ValueString()
+    val valStr = new BufferedString()
     it.foreach(prod => { // For all rows which are subtype of Product
       for( i <- 0 until prod.productArity ) { // For all fields...
         val fld = prod.productElement(i)
@@ -594,7 +591,7 @@ object H2OContext extends Logging {
                            classOf[DataFramesHandler], "toH2OFrame",
                            null,
                            "Transform DataFrame with the given id to H2OFrame",
-                           dataFramesfactory);
+                           dataFramesfactory)
 
   }
 
@@ -607,24 +604,24 @@ object H2OContext extends Logging {
                            classOf[ScalaCodeHandler], "interpret",
                            null,
                            "Interpret the code and return the result",
-                           scalaCodeFactory);
+                           scalaCodeFactory)
 
     RequestServer.register("/3/scalaint", "POST",
                            classOf[ScalaCodeHandler], "initSession",
                            null,
                            "Return session id for communication with scala interpreter",
-                           scalaCodeFactory);
+                           scalaCodeFactory)
 
     RequestServer.register("/3/scalaint", "GET",
                            classOf[ScalaCodeHandler], "getSessions",
                            null,
                            "Return all active session IDs",
-                           scalaCodeFactory);
+                           scalaCodeFactory)
 
     RequestServer.register("/3/scalaint/(?<session_id>[0-9]+)", "DELETE",
                            classOf[ScalaCodeHandler], "destroySession",
                            null,
                            "Return session id for communication with scala interpreter",
-                           scalaCodeFactory);
+                           scalaCodeFactory)
   }
 }

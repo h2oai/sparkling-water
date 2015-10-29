@@ -14,7 +14,7 @@ import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.MRTask
 import water.app.{ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
 import water.fvec.{Chunk, NewChunk, Vec}
-import water.parser.ValueString
+import water.parser.BufferedString
 
 /**
  * Chicago Crimes Application predicting probability of arrest in Chicago.
@@ -98,13 +98,6 @@ class ChicagoCrimeApp( weatherFile: String,
       """.stripMargin)
 
     (gbmModel, dlModel)
-  }
-
-  def shutdown(sc: SparkContext): Unit = {
-    // Shutdown Spark
-    sc.stop()
-    // Shutdown H2O explicitly (at least the driver)
-    water.H2O.shutdown(0)
   }
 
   def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
@@ -283,7 +276,7 @@ object ChicagoCrimeApp extends SparkContextSupport {
     }
 
     // Shutdown full stack
-    app.shutdown(sc)
+    app.shutdown()
   }
 
   def SEASONS = Array[String]("Spring", "Summer", "Autumn", "Winter")
@@ -357,13 +350,13 @@ class RefineDateColumn(val datePattern: String,
                        val dateTimeZone: String) extends MRTask[RefineDateColumn] {
   // Entry point
   def doIt(col: Vec): H2OFrame = {
-    val inputCol = if (col.isEnum) col.toStringVec else col
+    val inputCol = if (col.isCategorical) col.toStringVec else col
     val result = new H2OFrame(
-      doAll(8, inputCol).outputFrame(
+      doAll(Array[Byte](Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM), inputCol).outputFrame(
         Array[String]("Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"),
         Array[Array[String]](null, null, null, null, null, null,
           ChicagoCrimeApp.SEASONS, null)))
-    if (col.isEnum) inputCol.remove()
+    if (col.isCategorical) inputCol.remove()
     result
   }
 
@@ -374,7 +367,7 @@ class RefineDateColumn(val datePattern: String,
     val dateChunk = cs(0)
     val (dayNC, monthNC, yearNC, weekNC, weekdayNC, weekendNC, seasonNC, hourNC)
     = (ncs(0), ncs(1), ncs(2), ncs(3), ncs(4), ncs(5), ncs(6), ncs(7))
-    val valStr = new ValueString()
+    val valStr = new BufferedString()
     val mDateTime = new MutableDateTime()
     for(row <- 0 until dateChunk.len()) {
       if (dateChunk.isNA(row)) {

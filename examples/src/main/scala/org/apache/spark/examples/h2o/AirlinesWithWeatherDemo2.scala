@@ -74,7 +74,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
     // Instead of using RDD API we will directly split H2O Frame
     val joinedH2OFrame:H2OFrame = joinedTable // Invoke implicit transformation
     // Transform date related columns to enums
-    for( i <- 0 to 2) joinedH2OFrame.replace(i, joinedH2OFrame.vec(i).toEnum)
+    for( i <- 0 to 2) joinedH2OFrame.replace(i, joinedH2OFrame.vec(i).toCategoricalVec)
 
     //
     // Use low-level task to split the frame
