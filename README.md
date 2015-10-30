@@ -1,7 +1,6 @@
 # Sparkling Water
 
 [![Join the chat at https://gitter.im/h2oai/sparkling-water](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/h2oai/sparkling-water?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 [![][travis img]][travis]
 [![][maven img]][maven]
 [![][license img]][license]
@@ -12,72 +11,47 @@
 [maven]:http://search.maven.org/#search|gav|1|g:"ai.h2o"%20AND%20a:"sparkling-water-core_2.10"
 [maven img]:https://maven-badges.herokuapp.com/maven-central/ai.h2o/sparkling-water-core_2.10/badge.svg
 
-[license]:LICENSE.txt
+[license]:LICENSE
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
 
-- [Requirements](#Req)
-- [Contributing](#Contrib)
-- [Issues](#Issues)
-- [Mailing List](#MailList)
-- [Binary downloads](#Binary)
-- [Making a build](#MakeBuild)
-- [Sparkling Shell](#SparkShell)
-- [Running Examples](#RunExample)
-- [Additional Examples](#MoreExamples)
-- [Docker Support](#Docker)
-- [FAQ](#FAQ)
-- [Diagram of Sparkling Water on YARN](#Diagram)
 
+Sparkling Water integrates H<sub>2</sub>O's fast scalable machine learning engine with Spark. It provides: 
+ - utilities to publish Spark data structures (RDDs, DataFrames) as H2O's frames and vice versa. 
+ - DSL to use Spark data structures as input for H2O's algorithms
+ - basic building blocks to create ML applications utilizing Spark and H2O APIs
+ - Python interface enabling use of Sparkling Water directly from pyspark
 
-
-Sparkling Water integrates H<sub>2</sub>O's fast scalable machine learning engine with Spark.
+## Getting Started
 
 <a name="Req"></a>
-## Requirements
+### Requirements
 
-  * Linux or OS X (Windows support is pending)
-  * Java 7
-  * [Spark 1.4.0](https://spark.apache.org/downloads.html)
+  * Linux/OS X/Windows
+  * Java 7+
+  * [Spark 1.3+](https://spark.apache.org/downloads.html)
     * `SPARK_HOME` shell variable must point to your local Spark installation
- 
----
-<a name="Contrib"></a>
-## Contributing
-
-
-Look at our [list of JIRA tasks](https://0xdata.atlassian.net/issues/?filter=13600) for new contributors or send your idea to [support@h2o.ai](mailto:support@h2o.ai).
-
----
-<a name="Issues"></a>
-## Issues 
-To report issues, please use our JIRA page at [http://jira.h2o.ai/](http://jira.h2o.ai/).
-
----
-<a name="MailList"></a>
-## Mailing list
-
-Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
-
----
-<a name="Binary"></a>
-## Downloads of binaries
-   * [Sparkling Water - Latest version](http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html)
 
 ---
 <a name="MakeBuild"></a>
-## Making a build
+### Build
 
-Use the provided `gradlew` to build project:
+Download Spark installation and point environment variable `SPARK_HOME` to it.
+Then use the provided `gradlew` to build project:
 
 ```
 ./gradlew build
 ```
 
-> To avoid running tests, use the `-x test` option. 
+> To avoid running tests, use the `-x test -x integTest` option. 
+
+---
+<a name="Binary"></a>
+### Download Binaries
+   * [Sparkling Water - Latest version](http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html)
 
 ---
 <a name="SparkShell"></a>
-## Sparkling shell
+### Run Sparkling shell
 
 The Sparkling shell provides a regular Spark shell that supports creation of an H<sub>2</sub>O cloud and execution of H<sub>2</sub>O algorithms.
 
@@ -104,7 +78,7 @@ bin/sparkling-shell
 ---
 
 <a name="RunExample"></a>
-## Running examples
+### Run examples
 
 Build a package that can be submitted to Spark cluster:
 ```
@@ -127,15 +101,48 @@ bin/run-example.sh
 For more details about the demo, please see the [README.md](examples/README.md) file in the [examples directory](examples/).
 
 ---
+### Use Sparkling Water package
+You can use Sparkling Water directly via Spark packages without need to download or build Sparkling Water.
+
+Make sure that your environment is ready:
+```
+export SPARK_HOME="/path/to/spark/installation"
+export MASTER="local-cluster[3,2,1024]"
+```
+
+Run example `CraigslistJobTitlesStreamingApp` directly via `spark-submit`:
+
+```
+$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.5.3,ai.h2o:sparkling-water-examples_2.10:1.5.3 --class org.apache.spark.examples.h2o.CraigslistJobTitlesStreamingApp /dev/null
+```
+
+---
 <a name="MoreExamples"></a>
-### Additional Examples
+#### Additional Examples
 You can find more examples in the [examples folder](examples/).
 
 ---  
 <a name="Docker"></a>
-## Docker Support
+### Docker Support
 
 See [docker/README.md](docker/README.md) to learn about Docker support.
+ 
+---
+<a name="Contrib"></a>
+## Contributing
+
+Look at our [list of JIRA tasks](https://0xdata.atlassian.net/issues/?filter=13600) for new contributors or send your idea to [support@h2o.ai](mailto:support@h2o.ai).
+
+---
+<a name="Issues"></a>
+## Issues 
+To report issues, please use our JIRA page at [http://jira.h2o.ai/](http://jira.h2o.ai/).
+
+---
+<a name="MailList"></a>
+## Mailing list
+
+Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
 
 ---
 
