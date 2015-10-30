@@ -11,8 +11,9 @@ ChangeLog
   - Create basic sparkling-water python package
   - Fixes
     - [PUBDEV-282] Create windows batch scripts for starting sparkling-shell and running examples
-    - [SW-25] Remove categorical handling during asH2OFrame() transformation, fix
-      examples
+    - [SW-25](https://0xdata.atlassian.net/browse/SW-25) Remove categorical handling during asH2OFrame() transformation, fix
+    - [SW-41](https://0xdata.atlassian.net/browse/SW-41) H2OContext#asH2OFrame now
+      accepts name for resulting H2OFrame.
 
 ##v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame

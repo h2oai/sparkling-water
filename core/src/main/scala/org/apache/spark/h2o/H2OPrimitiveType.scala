@@ -23,24 +23,24 @@ import org.apache.spark.SparkContext
  * the method with the same name
  */
 trait PrimitiveType {
-  def toH2OFrame(sc: SparkContext): H2OFrame
+  def toH2OFrame(sc: SparkContext, frameKeyName: Option[String]): H2OFrame
 }
 
 
 object PrimitiveType {
   implicit def toDataFrameFromString(rdd: RDD[String]): PrimitiveType = new PrimitiveType {
-    override def toH2OFrame(sc: SparkContext): H2OFrame = H2OContext.toH2OFrameFromRDDString(sc, rdd)
+    override def toH2OFrame(sc: SparkContext, frameKeyName: Option[String]): H2OFrame = H2OContext.toH2OFrameFromRDDString(sc, rdd, frameKeyName)
   }
 
   implicit def toDataFrameFromInt(rdd: RDD[Int]): PrimitiveType = new PrimitiveType {
-    override def toH2OFrame(sc: SparkContext): H2OFrame = H2OContext.toH2OFrameFromRDDInt(sc, rdd)
+    override def toH2OFrame(sc: SparkContext, frameKeyName: Option[String]): H2OFrame = H2OContext.toH2OFrameFromRDDInt(sc, rdd, frameKeyName)
   }
 
   implicit def toDataFrameFromFloat(rdd: RDD[Float]): PrimitiveType = new PrimitiveType {
-    override def toH2OFrame(sc: SparkContext): H2OFrame = H2OContext.toH2OFrameFromRDDFloat(sc, rdd)
+    override def toH2OFrame(sc: SparkContext, frameKeyName: Option[String]): H2OFrame = H2OContext.toH2OFrameFromRDDFloat(sc, rdd, frameKeyName)
   }
 
   implicit def toDataFrameFromDouble(rdd: RDD[Double]): PrimitiveType = new PrimitiveType {
-    override def toH2OFrame(sc: SparkContext): H2OFrame = H2OContext.toH2OFrameFromRDDDouble(sc, rdd)
+    override def toH2OFrame(sc: SparkContext, frameKeyName: Option[String]): H2OFrame = H2OContext.toH2OFrameFromRDDDouble(sc, rdd, frameKeyName)
   }
 }

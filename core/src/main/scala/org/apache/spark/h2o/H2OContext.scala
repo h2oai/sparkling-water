@@ -55,23 +55,29 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   private var localClient: String = _
 
   /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
-  implicit def asH2OFrame(rdd : DataFrame) : H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd)
+  implicit def asH2OFrame(rdd : DataFrame) : H2OFrame = asH2OFrame(rdd, None)
+  def asH2OFrame(rdd : DataFrame, frameName: Option[String]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd, frameName)
 
   /** Implicit conversion from typed RDD to H2O's DataFrame */
-  implicit def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd)
+  implicit def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A]) : H2OFrame = asH2OFrame(rdd, None)
+  def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A], frameName: Option[String]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd, frameName)
 
   /** Implicit conversion from RDD[Primitive type] ( where primitive type can be String, Double, Float or Int) to appropriate H2OFrame */
-  implicit def asH2OFrame(primitiveType: PrimitiveType): H2OFrame = H2OContext.toH2OFrame(sparkContext, primitiveType)
+  implicit def asH2OFrame(primitiveType: PrimitiveType): H2OFrame = asH2OFrame(primitiveType, None)
+  def asH2OFrame(primitiveType: PrimitiveType, frameName: Option[String]): H2OFrame = H2OContext.toH2OFrame(sparkContext, primitiveType, frameName)
 
   /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
-  implicit def toH2OFrameKey(rdd : DataFrame) : Key[Frame] = asH2OFrame(rdd)._key
+  implicit def toH2OFrameKey(rdd : DataFrame) : Key[Frame] = toH2OFrameKey(rdd, None)
+  def toH2OFrameKey(rdd : DataFrame, frameName: Option[String]) : Key[Frame] = asH2OFrame(rdd, frameName)._key
 
   /** Implicit conversion from typed RDD to H2O's DataFrame */
-  implicit def toH2OFrameKey[A <: Product : TypeTag](rdd : RDD[A]) : Key[_] = asH2OFrame(rdd)._key
+  implicit def toH2OFrameKey[A <: Product : TypeTag](rdd : RDD[A]) : Key[_] = toH2OFrameKey(rdd, None)
+  def toH2OFrameKey[A <: Product : TypeTag](rdd : RDD[A], frameName: Option[String]) : Key[_] = asH2OFrame(rdd, frameName)._key
 
   /** Implicit conversion from RDD[Primitive type] ( where primitive type can be String, Boolean, Double, Float, Int,
     * Long, Short or Byte ) to appropriate H2O's DataFrame */
-  implicit def toH2OFrameKey(primitiveType: PrimitiveType): Key[_] = asH2OFrame(primitiveType)._key
+  implicit def toH2OFrameKey(primitiveType: PrimitiveType): Key[_] = toH2OFrameKey(primitiveType, None)
+  def toH2OFrameKey(primitiveType: PrimitiveType, frameName: Option[String]): Key[_] = asH2OFrame(primitiveType, frameName)._key
 
   /** Implicit conversion from Frame to DataFrame */
   implicit def asH2OFrame(fr: Frame) : H2OFrame = new H2OFrame(fr)
@@ -275,12 +281,12 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 object H2OContext extends Logging {
 
   /** Transform SchemaRDD into H2O DataFrame */
-  def toH2OFrame(sc: SparkContext, dataFrame: DataFrame) : H2OFrame = {
+  def toH2OFrame(sc: SparkContext, dataFrame: DataFrame, frameKeyName: Option[String]) : H2OFrame = {
     import org.apache.spark.h2o.H2OSchemaUtils._
     // Cache DataFrame RDD's
     val dfRdd = dataFrame.rdd
 
-    val keyName = "frame_rdd_" + dfRdd.id
+    val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id)
     // Fetch cached frame from DKV
     val frameVal = DKV.get(keyName)
     if (frameVal==null) {
@@ -314,11 +320,11 @@ object H2OContext extends Logging {
   }
 
   /** Transform typed RDD into H2O DataFrame */
-  def toH2OFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A]) : H2OFrame = {
+  def toH2OFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A], frameKeyName: Option[String]) : H2OFrame = {
     import org.apache.spark.h2o.H2OProductUtils._
     import org.apache.spark.h2o.ReflectionUtils._
 
-    val keyName = "frame_rdd_" + rdd.id + Key.rand() // There are uniq IDs for RDD
+    val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
     val fnames = names[A]
     val ftypes = types[A](fnames)
     // Collect H2O vector types for all input types
@@ -335,26 +341,26 @@ object H2OContext extends Logging {
   }
 
   /** Transform RDD[Primitive type] ( where primitive type can be String, Double, Float or Int) to appropriate H2OFrame */
-  def toH2OFrame(sc: SparkContext, primitive: PrimitiveType): H2OFrame = primitive.toH2OFrame(sc)
+  def toH2OFrame(sc: SparkContext, primitive: PrimitiveType, frameKeyName: Option[String]): H2OFrame = primitive.toH2OFrame(sc, frameKeyName)
 
   /** Transform RDD[String] to appropriate H2OFrame */
-  def toH2OFrameFromRDDString(sc: SparkContext, rdd: RDD[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd)
+  def toH2OFrameFromRDDString(sc: SparkContext, rdd: RDD[String], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
 
   /** Transform RDD[Int] to appropriate H2OFrame */
-  def toH2OFrameFromRDDInt(sc: SparkContext, rdd: RDD[Int]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd)
+  def toH2OFrameFromRDDInt(sc: SparkContext, rdd: RDD[Int], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
 
   /** Transform RDD[Float] to appropriate H2OFrame */
-  def toH2OFrameFromRDDFloat(sc: SparkContext, rdd: RDD[Float]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd)
+  def toH2OFrameFromRDDFloat(sc: SparkContext, rdd: RDD[Float], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
 
   /** Transform RDD[Double] to appropriate H2OFrame */
-  def toH2OFrameFromRDDDouble(sc: SparkContext, rdd: RDD[Double]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd)
+  def toH2OFrameFromRDDDouble(sc: SparkContext, rdd: RDD[Double], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
 
   private[this]
-  def toH2OFrameFromPrimitive[T: TypeTag](sc: SparkContext, rdd: RDD[T]): H2OFrame = {
+  def toH2OFrameFromPrimitive[T: TypeTag](sc: SparkContext, rdd: RDD[T], frameKeyName: Option[String]): H2OFrame = {
     import org.apache.spark.h2o.H2OPrimitiveTypesUtils._
     import org.apache.spark.h2o.ReflectionUtils._
 
-    val keyName = "frame_rdd_" + rdd.id + Key.rand() // There are uniq IDs for RDD
+    val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
 
     val fnames = Array[String]("values")
     val ftypes = Array[Class[_]](typ(typeOf[T]))
