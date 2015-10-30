@@ -4,20 +4,17 @@
 
 [![][travis img]][travis]
 [![][maven img]][maven]
-[![][release img]][release]
 [![][license img]][license]
 
 [travis]:https://travis-ci.org/h2oai/sparkling-water
 [travis img]:https://travis-ci.org/h2oai/sparkling-water.svg?branch=master
 
-[maven]:http://search.maven.org/#search|gav|1|g:"ai.h2o"%20AND%20a:"sparkling-water-core"
-[maven img]:https://maven-badges.herokuapp.com/maven-central/ai.h2o/sparkling-water-core/badge.svg
-
-[release]:https://github.com/h2oai/sparkling-water/releases
-[release img]:https://img.shields.io/github/release/h2oai/sparkling-water.svg
+[maven]:http://search.maven.org/#search|gav|1|g:"ai.h2o"%20AND%20a:"sparkling-water-core_2.10"
+[maven img]:https://maven-badges.herokuapp.com/maven-central/ai.h2o/sparkling-water-core_2.10/badge.svg
 
 [license]:LICENSE.txt
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
+
 - [Requirements](#Req)
 - [Contributing](#Contrib)
 - [Issues](#Issues)
