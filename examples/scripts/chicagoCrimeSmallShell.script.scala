@@ -13,7 +13,7 @@ import _root_.hex.deeplearning.DeepLearningModel
 import _root_.hex.tree.gbm.GBMModel
 import _root_.hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkFiles
-import org.apache.spark.examples.h2o.DemoUtils._
+import org.apache.spark.examples.h2o.DemoUtils.{addFiles, splitFrame}
 import org.apache.spark.examples.h2o.{DemoUtils, Crime, RefineDateColumn}
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
@@ -119,7 +119,6 @@ DemoUtils.allStringVecToCategorical(crimeWeatherDF)
 //
 // Split final data table
 //
-import org.apache.spark.examples.h2o.DemoUtils._
 val keys = Array[String]("train.hex", "test.hex")
 val ratios = Array[Double](0.8, 0.2)
 val frs = splitFrame(crimeWeatherDF, keys, ratios)
@@ -178,8 +177,9 @@ val gbmModel = GBMModel(train, test, 'Arrest)
 val dlModel = DLModel(train, test, 'Arrest)
 
 // Collect model metrics
-def binomialMetrics[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
+def binomialMetrics[M <: Model[M,P,O], P <: _root_.hex.Model.Parameters, O <: _root_.hex.Model.Output]
 (model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
+  import water.app.ModelMetricsSupport._
   model.score(train).delete()
   model.score(test).delete()
   (binomialMM(model,train), binomialMM(model, test))
@@ -212,6 +212,7 @@ def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: DataFrame)
   val srdd:DataFrame = sqlContext.sparkContext.parallelize(Seq(crime)).toDF()
   // Join table with census data
   val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
+  DemoUtils.allStringVecToCategorical(row)
   val predictTable = model.score(row)
   val probOfArrest = predictTable.vec("true").at(0)
 
@@ -232,8 +233,8 @@ for (crime <- crimeExamples) {
   println(
     s"""
        |Crime: $crime
-        |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
-                                                                        |  Probability of arrest best on GBM: ${arrestProbGBM} %
+       |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
+       |  Probability of arrest best on GBM: ${arrestProbGBM} %
         """.stripMargin)
 }
 
@@ -242,9 +243,9 @@ for (crime <- crimeExamples) {
 // More data munging
 //
 // Collect all crime types
-val allCrimes = sql("SELECT Primary_Type, count(*) FROM chicagoCrime GROUP BY Primary_Type").collect
+val allCrimes = sqlContext.sql("SELECT Primary_Type, count(*) FROM chicagoCrime GROUP BY Primary_Type").collect
 // Filter only successful arrests
-val crimesWithArrest = sql("SELECT Primary_Type, count(*) FROM chicagoCrime WHERE Arrest = 'true' GROUP BY Primary_Type").collect
+val crimesWithArrest = sqlContext.sql("SELECT Primary_Type, count(*) FROM chicagoCrime WHERE Arrest = 'true' GROUP BY Primary_Type").collect
 // Compute scores
 val crimeTypeToArrest = collection.mutable.Map[String, Long]()
 allCrimes.foreach( c => if (!c.isNullAt(0)) crimeTypeToArrest += ( c.getString(0) -> c.getLong(1) ) )
@@ -269,7 +270,7 @@ val rowRdd = sc.parallelize(crimeTypeArrestRate).sortBy(x => -x.getDouble(1))
 val rateSRdd = sqlContext.createDataFrame(rowRdd, schema)
 
 // Transfer it into H2O
-val rateFrame:H2OFrame = rateSRdd
+val rateFrame:H2OFrame = h2oContext.asH2OFrame(rateSRdd, Some("RATES"))
 
 /*
 In flow type this:

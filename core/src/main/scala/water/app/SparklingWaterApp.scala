@@ -122,6 +122,6 @@ trait GBMSupport {
   }
 }
 
+
 // Create companion object
 object GBMSupport extends GBMSupport
-
