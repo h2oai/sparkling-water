@@ -256,12 +256,20 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     */
   private def openURI(uri: String): Unit = {
     import java.awt.Desktop
-    if (Desktop.isDesktopSupported) {
-      Desktop.getDesktop.browse(new java.net.URI(uri))
-    } else {
-      logError(s"Desktop support is missing! Cannot open browser for ${uri}")
+    if (!isTesting) {
+      if (Desktop.isDesktopSupported) {
+        Desktop.getDesktop.browse(new java.net.URI(uri))
+      } else {
+        logWarning(s"Desktop support is missing! Cannot open browser for ${uri}")
+      }
     }
   }
+
+  /**
+   * Return true if running inside spark/sparkling water test.
+   * @return true if the actual run is test run
+   */
+  private def isTesting = sparkContext.conf.contains("spark.testing") || sys.props.contains("spark.testing")
 
   override def toString: String = {
     s"""
