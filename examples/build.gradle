@@ -55,6 +55,9 @@ integTest {
   // Pass list of jars required for testing
   systemProperty "sparkling.test.assembly", "${configurations.integTestAssembly.artifacts.file.join(',')}"
   systemProperty "sparkling.test.jar", "${integTestJar.archivePath}"
+  systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest")
+  systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest")
+
 
   jvmArgs '-XX:MaxPermSize=384m'
 
@@ -90,6 +93,10 @@ integTest {
 scriptsTest {
   systemProperty "spark.testing",   "true"
   systemProperty "spark.test.home", "${sparkHome}"
+  systemProperty "sparkling.test.log.dir", new File(project.getBuildDir(), "h2ologs-test")
+  systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-stest")
+  systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-stest")
+
 
   // Set fat jar location
   systemProperty "sparkling.fat.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"

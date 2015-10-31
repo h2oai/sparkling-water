@@ -23,8 +23,8 @@ import java.net.InetAddress
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.scheduler.{SparkListenerBlockManagerAdded, SparkListenerBlockManagerRemoved}
 import org.apache.spark.{Accumulable, SparkContext, SparkEnv}
-import water.init.AbstractEmbeddedH2OConfig
 import water.H2OApp
+import water.init.AbstractEmbeddedH2OConfig
 
 import scala.collection.mutable
 
@@ -96,14 +96,12 @@ private[spark] object H2OContextUtils {
    * @param sc  Spark context
    * @param spreadRDD  helper RDD spread over all executors
    * @param numOfExecutors number of executors in Spark cluster
-   * @param h2oConf Sparkling Water configuration
    * @param h2oArgs arguments passed to H2O instances
    * @return flatfile string if flatfile mode is enabled, else None
    */
   def startH2O( sc: SparkContext,
                 spreadRDD: RDD[NodeDesc],
                 numOfExecutors: Int,
-                h2oConf: H2OConf,
                 h2oArgs: Array[String]):Array[NodeDesc] = {
 
     // Create global accumulator for
@@ -112,15 +110,22 @@ private[spark] object H2OContextUtils {
       assert(nodeDesc._2 == getIp(SparkEnv.get),  // Make sure we are running on right node
         s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getIp(SparkEnv.get)})")
       // Launch the node
+      val sparkEnv = SparkEnv.get
+      // Define log dir
       def logDir: String = {
         val s = System.getProperty("spark.yarn.app.container.log.dir")
         if (s != null) {
           return s + java.io.File.separator
         }
 
-        System.getProperty("user.dir") + java.io.File.separator
+        if (sparkEnv.conf.get(H2OConf.PROP_NODE_LOG_DIR._1) != null) {
+          sparkEnv.conf.get(H2OConf.PROP_NODE_LOG_DIR._1)
+        } else {
+          // Needs to be executed at remote node!
+          H2OConf.defaultLogDir
+        }
       }
-      val executorId = SparkEnv.get.executorId
+      val executorId = sparkEnv.executorId
       try {
         // Get node this node IP
         val ip = nodeDesc._2

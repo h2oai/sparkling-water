@@ -110,12 +110,14 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
   def start(h2oWorkers: Int):H2OContext = {
+    import H2OConf._
     sparkConf.set(PROP_CLUSTER_SIZE._1, h2oWorkers.toString)
     start()
   }
 
   /** Initialize Sparkling H2O and start H2O cloud. */
   def start(): H2OContext = {
+    import H2OConf._
     // Setup properties for H2O configuration
     sparkConf.set(PROP_CLOUD_NAME._1,
       PROP_CLOUD_NAME._2 + System.getProperty("user.name", "cloud_" + Random.nextInt(42)))
@@ -144,7 +146,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
     val h2oNodeArgs = getH2ONodeArgs
     logDebug(s"Arguments used for launching h2o nodes: ${h2oNodeArgs.mkString(" ")}")
-    val executors = startH2O(sparkContext, spreadRDD, spreadRDDNodes.length, this, h2oNodeArgs )
+    val executors = startH2O(sparkContext, spreadRDD, spreadRDDNodes.length, h2oNodeArgs)
     // Store runtime information
     h2oNodes.append( executors:_* )
 
@@ -215,7 +217,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
             | Num of Spark executors after is $nSparkExecAfter
             |
             | If you are running regular application, please, specify number of Spark workers
-            | via ${PROP_CLUSTER_SIZE} Spark configuration property.
+            | via ${H2OConf.PROP_CLUSTER_SIZE._1} Spark configuration property.
             | If you are running from shell,
             | you can try: val h2oContext = new H2OContext().start(<number of Spark workers>)
             |

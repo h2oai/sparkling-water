@@ -72,6 +72,9 @@ test {
     // Pass list of jars required for testing
     systemProperty "sparkling.test.assembly", "${configurations.testAssembly.artifacts.file.join(',')}"
 
+    systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-test")
+    systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-test")
+
     // Run with assertions ON
     enableAssertions = true
 
