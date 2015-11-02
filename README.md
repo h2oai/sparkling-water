@@ -202,4 +202,4 @@ Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
 #Diagram of Sparkling Water on YARN
 
 The following illustration depicts the topology of a Sparkling Water cluster of three nodes running on YARN: 
- ![Diagram](images/Sparkling Water cluster.png)
+ ![Diagram](design-doc/images/Sparkling Water cluster.png)
