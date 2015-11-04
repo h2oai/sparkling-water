@@ -209,16 +209,19 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     if (!sparkContext.isLocal) {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + executors.length)
       // Get arguments for this launch including flatfile
-      val h2oClientArgs = toH2OArgs(getH2OClientArgs ++ Array("-ip", getIp(SparkEnv.get)),
+      // And also ask for client mode
+      val h2oClientArgs = toH2OArgs(getH2OClientArgs ++ Array("-ip", getIp(SparkEnv.get), "-client"),
                               this,
                               executors)
       logDebug(s"Arguments used for launching h2o nodes: ${h2oClientArgs.mkString(" ")}")
-      H2OClientApp.main(h2oClientArgs)
+      // Launch H2O
+      H2OStarter.start(h2oClientArgs, false)
     }
-
-    H2OContext.registerClientWebAPI(sparkContext,this)
-    H2O.finalizeRegistration()
+    // And wait for right cluster size
     H2O.waitForCloudSize(executors.length, cloudTimeout)
+    // Register web API for client
+    H2OContext.registerClientWebAPI(sparkContext, this)
+    H2O.finalizeRegistration()
 
     // Fill information about H2O client
     localClientIp = H2O.SELF_ADDRESS.getHostAddress
@@ -607,10 +610,12 @@ object H2OContext extends Logging {
   }
 
   private[h2o] def registerClientWebAPI(sc: SparkContext, h2OContext: H2OContext): Unit = {
+    /** Need: SW-45
     //this is here to override the SQLContext by the spark shell, this instance than can be obtained using SQLContext.getOrCreate(sc)
     new SQLContext(sc)
 
-    registerScalaIntEndp(sc, h2OContext)
+    //registerScalaIntEndp(sc, h2OContext)
+    */
     registerDataFramesEndp(sc, h2OContext)
     registerH2OFramesEndp(sc, h2OContext)
     registerRDDsEndp(sc)

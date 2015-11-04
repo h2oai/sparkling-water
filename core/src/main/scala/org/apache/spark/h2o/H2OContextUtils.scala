@@ -23,7 +23,7 @@ import java.net.InetAddress
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.scheduler.{SparkListenerBlockManagerAdded, SparkListenerBlockManagerRemoved}
 import org.apache.spark.{Accumulable, SparkContext, SparkEnv}
-import water.H2OApp
+import water.H2OStarter
 import water.init.AbstractEmbeddedH2OConfig
 
 import scala.collection.mutable
@@ -104,8 +104,10 @@ private[spark] object H2OContextUtils {
                 numOfExecutors: Int,
                 h2oArgs: Array[String]):Array[NodeDesc] = {
 
-    // Create global accumulator for
+    // Create global accumulator for list of nodes IP:PORT
     val bc = sc.accumulableCollection(new mutable.HashSet[NodeDesc]())
+    val isLocal = sc.isLocal
+    // Try to launch H2O
     val executorStatus = spreadRDD.map { nodeDesc =>  // RDD partition index
       assert(nodeDesc._2 == getIp(SparkEnv.get),  // Make sure we are running on right node
         s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getIp(SparkEnv.get)})")
@@ -138,12 +140,21 @@ private[spark] object H2OContextUtils {
         if (water.H2O.START_TIME_MILLIS.get() == 0) {
           water.H2O.START_TIME_MILLIS.synchronized {
             if (water.H2O.START_TIME_MILLIS.get() == 0) {
-              new Thread("H2O Launcher thread") {
+              val t = new Thread("H2O Launcher thread") {
                 override def run(): Unit = {
                   water.H2O.setEmbeddedH2OConfig(new SparklingWaterConfig(bc))
-                  H2OApp.main(launcherArgs)
+                  // Finalize REST API only if running in non-local mode.
+                  // In local mode, we are not going to create H2O client
+                  // but use executor's H2O instance directly.
+                  H2OStarter.start(launcherArgs, !isLocal)
+                  // Signal via singleton object that h2o was started on this node
+                  H2OStartedSignal.synchronized {
+                    H2OStartedSignal.setStarted
+                    H2OStartedSignal.notifyAll()
+                  }
                 }
-              }.start()
+              }
+              t.start()
               // Need to wait since we are using shared but local broadcast variable
               bc.synchronized { bc.wait() }
             }
@@ -182,6 +193,11 @@ private[spark] object H2OContextUtils {
         econf.notifyAll()
       }
     }
+    // Wait for start of H2O in single JVM
+    if (isLocal) {
+      H2OStartedSignal.synchronized { while (!H2OStartedSignal.isStarted) H2OStartedSignal.wait() }
+    }
+    // Return flatfile
     flatFile
   }
 
@@ -251,6 +267,16 @@ trait SparkEnvListener extends org.apache.spark.scheduler.SparkListener { self: 
 
   override def onBlockManagerRemoved(blockManagerRemoved: SparkListenerBlockManagerRemoved): Unit = {
     println("--------------------> onBlockManagerRemoved: " + blockManagerRemoved)
+  }
+}
+
+// JVM private H2O is fully initialized signal.
+// Ugly, but what we can do with h2o
+private object H2OStartedSignal {
+  @volatile private var started = false
+  def isStarted = started
+  def setStarted: Unit = {
+    started = true
   }
 }
 
