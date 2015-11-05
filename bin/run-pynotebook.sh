@@ -1,19 +1,17 @@
 #!/usr/bin/env bash
 
-if [ ! -d "$SPARK_HOME" ]; then
-    echo "Please setup SPARK_HOME variable to your Spark installation!"
-    exit -1
-  fi
-
-if [ ! -d "$SPARKLING_HOME" ]; then
-    echo "Please setup SPARKLING_HOME variable to your sparkling water installation!"
-    exit -1
-  fi
+# Current dir
+TOPDIR=$(cd `dirname $0`/.. &&  pwd)
+source $TOPDIR/bin/sparkling-env.sh
+# Verify there is Spark installation
+checkSparkHome
 
 if [[ -z "$MASTER" ]]; then
     echo "Please setup MASTER variable!"
     exit -1
- fi
+fi
+
+SPARKLING_HOME=$TOPDIR
 
 # check if the custom jupyter confif file exist and generate it if it does not exist
 custom_conf_dir="$SPARKLING_HOME/jupyter_custom_config"
@@ -27,16 +25,14 @@ if [ ! -d "$custom_conf_dir" ]; then
 
 fi
 
-export PYTHONPATH=$H2O_HOME/h2o-py:$SPARKLING_HOME/py:$PYTHONPATH
-export SPARK_CLASSPATH=$SPARK_CLASSPATH:$SPARKLING_HOME/assembly/build/libs/sparkling-water-assembly-0.2.17-SNAPSHOT-all.jar
+export PYTHONPATH=$H2O_HOME/h2o-py:$PYTHONPATH
 export PYSPARK_SUBMIT_ARGS="--master $MASTER"
 
 echo "---------------------------------------"
 echo "Using SPARK_HOME: $SPARK_HOME          "
 echo "Using MASTER: $MASTER                  "
 echo "Using H2O_HOME: $H2O_HOME              "
-echo "USIGN SPARK_CLASSPATH: $SPARK_CLASSPATH"
 echo "---------------------------------------"
 
-JUPYTER_CONFIG_DIR=$custom_conf_dir IPYTHON_OPTS="notebook" $SPARK_HOME/bin/pyspark
+JUPYTER_CONFIG_DIR=$custom_conf_dir IPYTHON_OPTS="notebook" $TOPDIR/bin/pysparkling "$@"
 

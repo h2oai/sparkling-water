@@ -41,6 +41,7 @@ VERBOSE=
  --driver-memory $SCRIPT_DRIVER_MEMORY \
  --driver-java-options "$SCRIPT_H2O_SYS_OPS" \
  --driver-class-path $TOPDIR/assembly/build/libs/$FAT_JAR \
+ --py-files $PY_EGG_FILE \
  --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" \
  $VERBOSE \
  $SCRIPT \
@@ -57,6 +58,7 @@ VERBOSE=
  --driver-java-options "$SCRIPT_H2O_SYS_OPS" \
  --deploy-mode $SCRIPT_DEPLOY_MODE \
  --driver-class-path $TOPDIR/assembly/build/libs/$FAT_JAR \
+ --py-files $PY_EGG_FILE \
  --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" \
  $VERBOSE \
  $SCRIPT \

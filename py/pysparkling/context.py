@@ -4,6 +4,7 @@ from pyspark.rdd import RDD
 from pyspark.sql import SQLContext
 from h2o.frame import H2OFrame
 from pysparkling.utils import FrameConversions as fc
+import warnings
 
 try:
     import h2o
@@ -46,6 +47,23 @@ def _monkey_patch_H2OFrame(hc):
     H2OFrame.determine_java_vec_type = determine_java_vec_type
     H2OFrame.from_java_h2o_frame = from_java_h2o_frame
     H2OFrame.get_java_h2o_frame = get_java_h2o_frame
+
+
+def _is_of_simple_type(rdd):
+    if not isinstance(rdd, RDD):
+        raise ValueError('rdd is not of type pyspark.rdd.RDD')
+
+    if isinstance(rdd.first(), (str, int, bool, long, float)):
+        return True
+    else:
+        return False
+
+def _get_first(rdd):
+    if rdd.isEmpty():
+        raise ValueError('rdd is empty')
+
+    return rdd.first()
+
 
 class H2OContext(object):
 
@@ -108,10 +126,18 @@ class H2OContext(object):
             return None
 
     def stop(self):
-        self._jhc.stop(False)
+        warnings.warn("H2OContext stopping is not yet supported...")
+        #self._jhc.stop(False)
 
     def __str__(self):
-        return "H2OContext ip={}, port={}".format(self._client_ip, self._client_port)
+        return "H2OContext: ip={}, port={}".format(self._client_ip, self._client_port)
+
+    def __repr__(self):
+        self.show()
+        return ""
+
+    def show(self):
+        print self
 
     def as_data_frame(self, h2o_frame):
         if isinstance(h2o_frame,H2OFrame):
@@ -119,29 +145,14 @@ class H2OContext(object):
             jdf = self._jhc.asDataFrame(j_h2o_frame, self._jsqlContext)
             return DataFrame(jdf,self._sqlContext)
 
-    def is_of_simple_type(self, rdd):
-        if not isinstance(rdd, RDD):
-            raise ValueError('rdd is not of type pyspark.rdd.RDD')
-
-        if isinstance(rdd.first(), (str, int, bool, long, float)):
-            return True
-        else:
-            return False
-
-    def get_first(self, rdd):
-        if rdd.isEmpty():
-            raise ValueError('rdd is empty')
-
-        return rdd.first()
-
     def as_h2o_frame(self, dataframe, framename = None):
         if isinstance(dataframe, DataFrame):
             return fc._as_h2o_frame_from_dataframe(self, dataframe, framename)
         elif isinstance(dataframe, RDD):
             # First check if the type T in RDD[T] is one of the python "primitive" types
             # String, Boolean, Int and Double (Python Long is converted to java.lang.BigInteger)
-            if self.is_of_simple_type(dataframe):
-                first = self.get_first(dataframe)
+            if _is_of_simple_type(dataframe):
+                first = _get_first(dataframe)
                 if isinstance(first, str):
                     return fc._as_h2o_frame_from_RDD_String(self, dataframe, framename)
                 elif isinstance(first, bool):

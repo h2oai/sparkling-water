@@ -66,7 +66,4 @@ setup(
 
     # run-time dependencies
     install_requires=['requests', 'tabulate', 'h2o'],
-
-    # include various data files using data_files
-    data_files=[('sparkling_water_jar', ['build/data_files/sparkling-water-all.jar'])],
 )

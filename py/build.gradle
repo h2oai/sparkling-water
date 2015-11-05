@@ -22,13 +22,6 @@ task createVersionFile << {
     version_file.write(version_txt)
 }
 
-task copyJar(type: Copy) {
-    from configurations.compile
-    into "build/data_files"
-    include "sparkling-water-assembly-"+PROJECT_VERSION+"-all.jar"
-    rename "sparkling-water-assembly-"+PROJECT_VERSION+"-all.jar", "sparkling-water-all.jar"
-}
-
 task distPython(type: Exec) {
     def SPARK_HOME = System.getenv("SPARK_HOME")
     def H2O_HOME = System.getenv("H2O_HOME")
@@ -41,8 +34,6 @@ task distPython(type: Exec) {
         environment['PYTHONPATH'] = H2O_HOME + File.separator + "h2o-py" + File.pathSeparator + environment["PYTHONPATH"]
     }
     commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_egg","bdist_wheel"])
-    //commandLine getOsSpecificCommandLine(["python", "setup.py", "--help", "bdist_wheel"])
-    //commandLine getOsSpecificCommandLine(["python", "setup.py", "--help-commands"])
 }
 
 task testPython(type: Exec) {
@@ -65,14 +56,15 @@ task testPython(type: Exec) {
 def testsPath = new File("./tests")
 
 task cleanPython(type: Delete) {
-    delete file("dist/"), file("pySparkling.egg-info/"), fileTree(dir: projectDir, include: '**/*.pyc'),
+    delete file("dist/"),
+            file("pySparkling.egg-info/"), 
+            fileTree(dir: projectDir, include: '**/*.pyc'),
             file("version.txt")
 }
 
 clean.dependsOn cleanPython
 createVersionFile.dependsOn cleanPython
-copyJar.dependsOn createVersionFile
-distPython.dependsOn copyJar
+distPython.dependsOn createVersionFile
 
 // Build tasks
 task buildPython(dependsOn: distPython)
