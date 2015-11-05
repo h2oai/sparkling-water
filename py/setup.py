@@ -30,7 +30,7 @@ setup(
 
     # Author details
     author='H2O.ai',
-    author_email='support@0xdata.com',
+    author_email='support@h2o.ai',
 
     # Choose your license
     license='Apache v2',
@@ -41,14 +41,14 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
 
         # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: Apache v2',
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.

@@ -47,7 +47,7 @@ ext {
       project(':sparkling-water-assembly')
     ]
     pythonProjects = [
-      //project(':sparkling-water-py')
+      project(':sparkling-water-py')
     ]
 }
 
@@ -158,5 +158,5 @@ task buildSparklingWaterDist(type: Exec) {
 task dist(dependsOn: buildSparklingWaterDist)
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '2.7'
+  gradleVersion = '2.8'
 }

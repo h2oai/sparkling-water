@@ -32,7 +32,7 @@ class ReusedPySparklingTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        conf = SparkConf().setAppName("test").setMaster("local-cluster[3,1,512]")
+        conf = SparkConf().setAppName("test").setMaster("local-cluster[3,1,1024]")
         cls._sc = SparkContext(conf=conf)
         cls._hc = H2OContext(cls._sc)
         cls._hc.start()
@@ -44,9 +44,9 @@ class ReusedPySparklingTestCase(unittest.TestCase):
 class TestUtils:
     @staticmethod
     def asert_h2o_frame(test_suite, h2o_frame, rdd):
-        test_suite.assertEquals(h2o_frame._nrows,rdd.count(),"Number of rows should match")
-        test_suite.assertEquals(h2o_frame._ncols,1,"Number of columns should equal 1")
-        test_suite.assertEquals(h2o_frame._col_names,["values"],"Column should be name values")
+        test_suite.assertEquals(h2o_frame.nrow, rdd.count(),"Number of rows should match")
+        test_suite.assertEquals(h2o_frame.ncol, 1,"Number of columns should equal 1")
+        test_suite.assertEquals(h2o_frame.names, ["values"],"Column should be name values")
 
 # Test of transformations from dataframe/rdd to h2o frame and from h2o frame back to dataframe
 class FrameTransformationsTest(ReusedPySparklingTestCase):
@@ -56,17 +56,17 @@ class FrameTransformationsTest(ReusedPySparklingTestCase):
         hc = self._hc
         df = self._sc.parallelize([(num,"text") for num in range(0,100)]).toDF()
         h2o_frame = hc.as_h2o_frame(df)
-        self.assertEquals(h2o_frame._nrows,df.count(),"Number of rows should match")
-        self.assertEquals(h2o_frame._ncols,len(df.columns),"Number of columns should match")
-        self.assertEquals(h2o_frame._col_names,df.columns,"Column names should match")
-        self.assertEquals(df.first()._2,"text","Value should match")
+        self.assertEquals(h2o_frame.nrow, df.count(),"Number of rows should match")
+        self.assertEquals(h2o_frame.ncol, len(df.columns),"Number of columns should match")
+        self.assertEquals(h2o_frame.names, df.columns,"Column names should match")
+        self.assertEquals(df.first()._2, "text","Value should match")
 
      # test transformation from RDD consisting of python integers to h2o frame
     def test_rdd_int_h2o_frame(self):
         hc = self._hc
         rdd = self._sc.parallelize([num for num in range(0,100)])
         h2o_frame = hc.as_h2o_frame(rdd)
-        self.assertEquals(h2o_frame[0,0],0,"Value should match")
+        self.assertEquals(h2o_frame[0,0], 0, "Value should match")
         TestUtils.asert_h2o_frame(self,h2o_frame,rdd)
 
     # test transformation from RDD consisting of python booleans to h2o frame
@@ -104,9 +104,9 @@ class FrameTransformationsTest(ReusedPySparklingTestCase):
         self.assertEquals(h2o_frame[0,0],"a","Value should match")
         self.assertEquals(h2o_frame[1,0],"b","Value should match")
         self.assertEquals(h2o_frame[1,2],1.5,"Value should match")
-        self.assertEquals(h2o_frame._nrows,rdd.count(),"Number of rows should match")
-        self.assertEquals(h2o_frame._ncols,3,"Number of columns should match")
-        self.assertEquals(h2o_frame._col_names,["_1","_2","_3"],"Column names should match")
+        self.assertEquals(h2o_frame.nrow, rdd.count(),"Number of rows should match")
+        self.assertEquals(h2o_frame.ncol, 3,"Number of columns should match")
+        self.assertEquals(h2o_frame.names, ["_1","_2","_3"],"Column names should match")
 
     # test transformation from RDD consisting of python long to h2o frame
     def test_rdd_long_h2o_frame(self):
@@ -122,9 +122,9 @@ class FrameTransformationsTest(ReusedPySparklingTestCase):
         hc = self._hc
         h2o_frame = H2OFrame(file_path="../examples/smalldata/prostate.csv")
         df = hc.as_data_frame(h2o_frame)
-        self.assertEquals(df.count(), h2o_frame._nrows,"Number of rows should match")
-        self.assertEquals(len(df.columns), h2o_frame._ncols,"Number of columns should match")
-        self.assertEquals(df.columns,h2o_frame._col_names,"Column names should match")
+        self.assertEquals(df.count(), h2o_frame.nrow, "Number of rows should match")
+        self.assertEquals(len(df.columns), h2o_frame.ncol, "Number of columns should match")
+        self.assertEquals(df.columns,h2o_frame.names, "Column names should match")
 
     # test transformation from h2o frame to data frame, when given h2o frame was obtained using as_h2o_frame method
     # on h2o context
@@ -133,7 +133,7 @@ class FrameTransformationsTest(ReusedPySparklingTestCase):
         rdd = self._sc.parallelize(["a","b","c"])
         h2o_frame = hc.as_h2o_frame(rdd)
         df = hc.as_data_frame(h2o_frame)
-        self.assertEquals(df.count(), h2o_frame._nrows,"Number of rows should match")
-        self.assertEquals(len(df.columns), h2o_frame._ncols,"Number of columns should match")
-        self.assertEquals(df.columns,h2o_frame._col_names,"Column names should match")
+        self.assertEquals(df.count(), h2o_frame.nrow, "Number of rows should match")
+        self.assertEquals(len(df.columns), h2o_frame.ncol, "Number of columns should match")
+        self.assertEquals(df.columns,h2o_frame.names, "Column names should match")
 
