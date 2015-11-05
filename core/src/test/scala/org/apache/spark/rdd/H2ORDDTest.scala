@@ -74,7 +74,7 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     assert (dataFrame.vec(0).domain() == null, "The vector domain should be <null>")
 
     // Transform string vector to categorical
-    dataFrame.replace(0, VecUtils.stringToCategorical(dataFrame.vec(0))).remove()
+    dataFrame.replace(0, dataFrame.vec(0).toCategoricalVec).remove()
 
     assertBasicInvariants(rdd, dataFrame, (row, vec) => {
       val dom = vec.domain()

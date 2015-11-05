@@ -51,7 +51,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
 
     val table:H2OFrame = resultRDD
     // Transform target column into
-    table.replace(table.find("target"), VecUtils.stringToCategorical(table.vec("target"))).remove()
+    table.replace(table.find("target"), table.vec("target").toCategoricalVec).remove()
 
     // Split table
     val keys = Array[String]("train.hex", "valid.hex")

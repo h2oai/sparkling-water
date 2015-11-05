@@ -53,7 +53,10 @@ object DemoUtils {
   def allStringVecToCategorical(hf: H2OFrame): H2OFrame = {
     hf.vecs().indices
       .filter(idx => hf.vec(idx).isString)
-      .foreach(idx => hf.replace(idx, VecUtils.stringToCategorical(hf.vec(idx))).remove())
+      .foreach(idx => hf.replace(idx, hf.vec(idx).toCategoricalVec).remove())
+    // Update frame in DKV
+    water.DKV.put(hf)
+    // Return it
     hf
   }
 

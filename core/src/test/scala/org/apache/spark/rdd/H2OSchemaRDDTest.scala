@@ -456,7 +456,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assertH2OFrameInvariants(srdd, dataFrame)
     assert (dataFrame.vec(0).isString())
     assert (dataFrame.domains()(0) == null)
-    val catVec = VecUtils.stringToCategorical(dataFrame.vec(0))
+    val catVec = dataFrame.vec(0).toCategoricalVec
     assert (catVec.isCategorical)
     assert (catVec.domain() != null)
     assert (catVec.domain().length == domSize)
