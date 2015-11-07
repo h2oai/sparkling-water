@@ -20,6 +20,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
 import org.apache.spark.h2o.util.SparkTestContext
 import org.apache.spark.sql.SQLContext
+import org.junit.Ignore
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -29,6 +30,7 @@ import water.api.scalaInt._
  * Test suite for scalaint end-points
  */
 @RunWith(classOf[JUnitRunner])
+@Ignore
 class ScalaCodeHandlerSuite extends FunSuite with SparkTestContext {
   sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
   hc = new H2OContext(sc).start()

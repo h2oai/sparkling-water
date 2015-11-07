@@ -36,7 +36,7 @@ task distPython(type: Exec) {
     commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_egg","bdist_wheel"])
 }
 
-task testPython(type: Exec) {
+task testPython(type: Exec, dependsOn: configurations.compile) {
     def SPARK_HOME = System.getenv("SPARK_HOME")
     def H2O_HOME = System.getenv("H2O_HOME")
     if (SPARK_HOME != null) {
@@ -50,6 +50,7 @@ task testPython(type: Exec) {
     }
 
     environment['SPARK_CLASSPATH'] = "${configurations.compile.join(',')}"
+  print(environment['SPARK_CLASSPATH'])
     commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test*.py"])
 
 }

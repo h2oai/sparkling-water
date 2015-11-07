@@ -112,6 +112,11 @@ class H2OContext(object):
 
         It initializes H2O services on each node in Spark cluster and creates
         H2O python client.
+
+        Parameters
+        ----------
+          init_h2o_client : initialize H2O Python client (default is True)
+          strict_version_check : perform strict version check of H2O Python client against H2O Rest API
         """
         self._jhc.start()
         self._client_ip = self._jhc.h2oLocalClientIp()
@@ -139,13 +144,36 @@ class H2OContext(object):
     def show(self):
         print self
 
-    def as_data_frame(self, h2o_frame):
+    def as_spark_frame(self, h2o_frame):
+        """
+        Transforms given H2OFrame to Spark DataFrame
+
+        Parameters
+        ----------
+          h2o_frame : H2OFrame
+
+        Returns
+        -------
+          Spark DataFrame
+        """
         if isinstance(h2o_frame,H2OFrame):
             j_h2o_frame = h2o_frame.get_java_h2o_frame()
             jdf = self._jhc.asDataFrame(j_h2o_frame, self._jsqlContext)
             return DataFrame(jdf,self._sqlContext)
 
     def as_h2o_frame(self, dataframe, framename = None):
+        """
+        Transforms given Spark RDD or DataFrame to H2OFrame.
+
+        Parameters
+        ----------
+          dataframe : Spark RDD or DataFrame
+          framename : Optional name for resulting H2OFrame
+
+        Returns
+        -------
+          H2OFrame which contains data of original input Spark data structure
+        """
         if isinstance(dataframe, DataFrame):
             return fc._as_h2o_frame_from_dataframe(self, dataframe, framename)
         elif isinstance(dataframe, RDD):

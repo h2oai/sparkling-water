@@ -121,7 +121,7 @@ class FrameTransformationsTest(ReusedPySparklingTestCase):
     def test_h2o_frame_2_data_frame_new(self):
         hc = self._hc
         h2o_frame = H2OFrame(file_path="../examples/smalldata/prostate.csv")
-        df = hc.as_data_frame(h2o_frame)
+        df = hc.as_spark_frame(h2o_frame)
         self.assertEquals(df.count(), h2o_frame.nrow, "Number of rows should match")
         self.assertEquals(len(df.columns), h2o_frame.ncol, "Number of columns should match")
         self.assertEquals(df.columns,h2o_frame.names, "Column names should match")
@@ -132,7 +132,7 @@ class FrameTransformationsTest(ReusedPySparklingTestCase):
         hc = self._hc
         rdd = self._sc.parallelize(["a","b","c"])
         h2o_frame = hc.as_h2o_frame(rdd)
-        df = hc.as_data_frame(h2o_frame)
+        df = hc.as_spark_frame(h2o_frame)
         self.assertEquals(df.count(), h2o_frame.nrow, "Number of rows should match")
         self.assertEquals(len(df.columns), h2o_frame.ncol, "Number of columns should match")
         self.assertEquals(df.columns,h2o_frame.names, "Column names should match")
