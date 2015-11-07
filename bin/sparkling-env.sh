@@ -20,6 +20,8 @@ SPARK_VERSION=$(cat $TOPDIR/gradle.properties | grep sparkVersion | sed -e "s/.*
 # Fat jar for this distribution
 FAT_JAR="sparkling-water-assembly-$VERSION-all.jar"
 FAT_JAR_FILE="$TOPDIR/assembly/build/libs/$FAT_JAR"
+PY_EGG="pySparkling-${VERSION//-/_}-py2.7.egg"
+PY_EGG_FILE="$TOPDIR/py/dist/$PY_EGG"
 
 # Setup loging and outputs
 tmpdir="${TMPDIR:-"/tmp/"}/$USER/"

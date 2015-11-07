@@ -1,0 +1,18 @@
+language: scala
+sudo: false
+
+jdk:
+  - oraclejdk7
+
+scala:
+  - 2.10.4
+
+install:
+  - wget "http://d3kbcqa49mib13.cloudfront.net/spark-1.5.1-bin-cdh4.tgz"
+  - tar xvf "spark-1.5.1-bin-cdh4.tgz"
+
+env:
+  - SPARK_HOME="./spark-1.5.1-bin-cdh4/"
+
+script: ./gradlew clean build -x test -x integTest -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME
+

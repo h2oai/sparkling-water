@@ -20,7 +20,7 @@ package org.apache.spark.rdd
 
 import org.apache.spark.h2o.{H2OFrame, H2OContext, ReflectionUtils}
 import org.apache.spark.{Partition, TaskContext}
-import water.parser.ValueString
+import water.parser.BufferedString
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -75,7 +75,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag] private (@transient val h2oContext
                   s"Constructor must take exactly ${colNames.length} args")
       })
       /** Dummy muttable holder for String values */
-      val valStr = new ValueString()
+      val valStr = new BufferedString()
 
       def next(): A = {
         val data = new Array[Option[Any]](chks.length)
@@ -92,7 +92,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag] private (@transient val h2oContext
               case q if q == classOf[java.lang.Float]   => Some(chk.atd(row))
               case q if q == classOf[java.lang.Boolean] => Some(chk.at8(row) == 1)
               case q if q == classOf[String] =>
-                if (chk.vec().isEnum) {
+                if (chk.vec().isCategorical) {
                   Some(chk.vec().domain()(chk.at8(row).asInstanceOf[Int]))
                 } else if (chk.vec().isString) {
                   chk.atStr(valStr, row)

@@ -7,15 +7,15 @@
  *    SQLContext is available as sqlContext
  *    SparkContext is available as sc
  *
- * Note: Needs access to H2O internal HDFS storage or change paths below.
+ * Needs access to H2O internal HDFS storage or change paths below.
  *
  */
 import org.apache.spark.examples.h2o.{Crime, ChicagoCrimeApp}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext
 
-// SQL support
-implicit val sqlContext = new SQLContext(sc)
+// Create SQL support
+implicit val sqlContext = SQLContext.getOrCreate(sc)
 // Start H2O services
 implicit val h2oContext = new H2OContext(sc).start()
 
@@ -26,9 +26,9 @@ val app = new ChicagoCrimeApp(
 
 // Load data
 val (weatherTable,censusTable,crimesTable) = app.loadAll()
+
 // Train model
 val (gbmModel, dlModel) = app.train(weatherTable, censusTable, crimesTable)
-
 
 val crimeExamples = Seq(
   Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET",false, 422, 4, 7, 46, 18),

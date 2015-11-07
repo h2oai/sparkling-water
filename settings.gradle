@@ -4,6 +4,7 @@ include 'core'
 include 'examples'
 include 'ml'
 include 'assembly'
+include 'py'
 
 // Prefix all projects with sparkling-water name
 rootProject.children.each { it.name = rootProject.name + "-" + it.name }

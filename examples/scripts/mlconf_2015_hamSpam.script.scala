@@ -1,6 +1,6 @@
 /**
  * Launch following commands:
- *   export MASTER="local-cluster[3,2,4096]"
+ *    export MASTER="local-cluster[3,2,4096]"
  *   bin/sparkling-shell -i examples/scripts/mlconf_2015_hamSpam.script.script.scala
  *
  * When running using spark shell or using scala rest API:
@@ -13,12 +13,12 @@ import org.apache.spark.h2o._
 import org.apache.spark.{SparkFiles, mllib}
 import org.apache.spark.mllib.feature.{IDFModel, IDF, HashingTF}
 import org.apache.spark.rdd.RDD
-import water.Key
 import org.apache.spark.sql.{SQLContext, DataFrame}
+import water.Key
+import water.app.ModelMetricsSupport
 
 // Register files to SparkContext
-addFiles(sc, "examples/smalldata/smsData.txt")
-
+addFiles(sc,"examples/smalldata/smsData.txt")
 // One training message
 case class SMS(target: String, fv: mllib.linalg.Vector)
 
@@ -38,7 +38,7 @@ def tokenize(data: RDD[String]): RDD[Seq[String]] = {
       smsText = smsText.replace(c, ' ')
     }
 
-    val words = smsText.split(" ").filter(w => !ignoredWords.contains(w) && w.length>2).distinct
+    val words =smsText.split(" ").filter(w => !ignoredWords.contains(w) && w.length>2).distinct
 
     words.toSeq
   })
@@ -85,13 +85,15 @@ def buildDLModel(train: Frame, valid: Frame,
   dlModel
 }
 
+// Create SQL support
+implicit val sqlContext = SQLContext.getOrCreate(sc)
+import sqlContext.implicits._
+
 // Start H2O services
 import org.apache.spark.h2o._
 implicit val h2oContext = new H2OContext(sc).start()
 import h2oContext._
-// Get SQL context
-implicit val sqlContext = SQLContext.getOrCreate(sc)
-import sqlContext.implicits._
+
 
 // Data load
 val data = load("smsData.txt")
@@ -109,7 +111,7 @@ val resultRDD: DataFrame = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2)).toDF
 
 val table:H2OFrame = resultRDD
 // Transform target column into
-table.replace(table.find("target"), VecUtils.stringToCategorical(table.vec("target"))).remove()
+table.replace(table.find("target"), table.vec("target").toCategoricalVec).remove()
 
 // Split table
 val keys = Array[String]("train.hex", "valid.hex")
@@ -125,8 +127,8 @@ val dlModel = buildDLModel(train, valid)
  * The following code is appended life during presentation.
  */
 // Collect model metrics and evaluate model quality
-val trainMetrics = binomialMM(dlModel, train)
-val validMetrics = binomialMM(dlModel, valid)
+val trainMetrics = ModelMetricsSupport.binomialMM(dlModel, train)
+val validMetrics = ModelMetricsSupport.binomialMM(dlModel, valid)
 println(trainMetrics.auc._auc)
 println(validMetrics.auc._auc)
 
@@ -135,18 +137,19 @@ def isSpam(msg: String,
            dlModel: DeepLearningModel,
            hashingTF: HashingTF,
            idfModel: IDFModel,
+           h2oContext: H2OContext,
            hamThreshold: Double = 0.5):Boolean = {
   val msgRdd = sc.parallelize(Seq(msg))
   val msgVector: DataFrame = idfModel.transform(
                               hashingTF.transform (
                                 tokenize (msgRdd))).map(v => SMS("?", v)).toDF
-  val msgTable: H2OFrame = msgVector
+  val msgTable: H2OFrame = h2oContext.asH2OFrame(msgVector)
   msgTable.remove(0) // remove first column
   val prediction = dlModel.score(msgTable)
   //println(prediction)
   prediction.vecs()(1).at(0) < hamThreshold
 }
 
-println(isSpam("Michal, beer tonight in MV?", dlModel, hashingTF, idfModel))
-println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", dlModel, hashingTF, idfModel))
+println(isSpam("Michal, h2oworld party tonight in MV?", dlModel, hashingTF, idfModel, h2oContext))
+println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", dlModel, hashingTF, idfModel, h2oContext))
 

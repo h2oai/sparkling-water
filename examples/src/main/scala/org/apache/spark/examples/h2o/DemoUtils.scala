@@ -7,7 +7,7 @@ import hex.Model
 import org.apache.spark.h2o.{VecUtils, H2OContext, H2OFrame}
 import org.apache.spark.{SparkConf, SparkContext}
 import water.fvec.{NewChunk, Frame, Chunk}
-import water.parser.ValueString
+import water.parser.BufferedString
 import water._
 
 /**
@@ -33,11 +33,11 @@ object DemoUtils {
         println ("Chunks: " + cs.mkString(","))
         for (r <- 0 until cs(0)._len) {
           for (c <- cs) {
-            val vstr = new ValueString
+            val vstr = new BufferedString
             if (c.vec().isString) {
               c.atStr(vstr, r)
               print(vstr.toString + ",")
-            } else if (c.vec().isEnum) {
+            } else if (c.vec().isCategorical) {
               print(c.vec().domain()(c.at8(r).asInstanceOf[Int]) + ", ")
             } else {
               print(c.atd(r) + ", ")
@@ -53,7 +53,10 @@ object DemoUtils {
   def allStringVecToCategorical(hf: H2OFrame): H2OFrame = {
     hf.vecs().indices
       .filter(idx => hf.vec(idx).isString)
-      .foreach(idx => hf.replace(idx, VecUtils.stringToCategorical(hf.vec(idx))).remove())
+      .foreach(idx => hf.replace(idx, hf.vec(idx).toCategoricalVec).remove())
+    // Update frame in DKV
+    water.DKV.put(hf)
+    // Return it
     hf
   }
 

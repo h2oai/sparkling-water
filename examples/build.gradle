@@ -1,8 +1,11 @@
 description = "Sparkling Water Examples"
 
+apply from: "$rootDir/gradle/utils.gradle"
+apply from: "$rootDir/gradle/scriptsTest.gradle"
+
 dependencies {
   // Sparkling Water Core
-  compile( project(":sparkling-water-core") ) { 
+  compile( project(":sparkling-water-core") ) {
     exclude group: "javax.servlet", module: "servlet-api"
   }
 
@@ -16,7 +19,7 @@ dependencies {
   testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
   testCompile "junit:junit:4.11"
 
-  // Integration tests requirements
+    // Integration tests requirements
   integTestCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
   integTestCompile "junit:junit:4.11"
 
@@ -28,7 +31,7 @@ dependencies {
 }
 
 //
-// Setup integration tests environment
+// Setup tests environment for integration and scripts tests
 //
 artifacts {
   integTestAssembly jar
@@ -46,12 +49,17 @@ integTest {
   // Pass references to libraries to test launcher
   systemProperty "spark.testing",   "true"
   systemProperty "spark.test.home", "${sparkHome}"
+  systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
   if (sparkMaster != null)
     systemProperty "spark.master", "${sparkMaster}"
   // Pass list of jars required for testing
   systemProperty "sparkling.test.assembly", "${configurations.integTestAssembly.artifacts.file.join(',')}"
   systemProperty "sparkling.test.jar", "${integTestJar.archivePath}"
+  systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest")
+  systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest")
 
+
+  jvmArgs '-XX:MaxPermSize=384m'
 
     //configurations.integTestRuntime. { println(it)}
 
@@ -81,6 +89,28 @@ integTest {
   // DEBUG testLogging.showStandardStreams = true
 }
 
+// Setup test environment for scripts test
+scriptsTest {
+  systemProperty "spark.testing",   "true"
+  systemProperty "spark.test.home", "${sparkHome}"
+  systemProperty "sparkling.test.log.dir", new File(project.getBuildDir(), "h2ologs-test")
+  systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-stest")
+  systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-stest")
+
+
+  // Set fat jar location
+  systemProperty "sparkling.fat.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
+  // Run with assertions ON
+  enableAssertions = true
+  // For a new JVM for each test class
+  forkEvery = 1
+  jvmArgs '-XX:MaxPermSize=384m'
+  // Increase test runner memory
+  maxHeapSize = "2g"
+  // Working dir will be root project
+  workingDir = rootDir
+}
+
 String detectEnvironment(String defaultEnv = "local") {
   String denv = [ project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
     System.properties["sparklingTestEnv"],
@@ -90,32 +120,3 @@ String detectEnvironment(String defaultEnv = "local") {
   logger.info("* Detected '$denv' Sparkling test environment (configure via property 'sparklingTestEnv')")
   denv
 }
-
-/**
- * Find dependencies from 'configuration.runtime' matching given specification.
- *
- * Specification is given in form group_name:module_name
- *
- * @param d list of specifications.
- * @return
- */
-public FileCollection dep(List<String> d) {
-  Configuration conf = configurations.runtime
-  List<String[]> depsSpec = d.collect { it.split(":")}
-  Set<ResolvedDependency> toInclude = []
-  resolve(conf.resolvedConfiguration.firstLevelModuleDependencies, toInclude, depsSpec)
-  files( toInclude.collect {
-    it.moduleArtifacts*.file
-  }.flatten())
-}
-
-void resolve(Set<ResolvedDependency> deps, Set<ResolvedDependency> includeDeps, List<String[]> depsSpec) {
-  deps.each { d->
-    if (depsSpec.any { ds -> d.moduleGroup==ds[0] && d.moduleName==ds[1] })
-      if (includeDeps.add(d)) {
-        resolve(d.children, includeDeps, depsSpec)
-      }
-  }
-}
-
-

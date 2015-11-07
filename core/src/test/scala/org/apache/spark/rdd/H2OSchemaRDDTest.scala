@@ -34,7 +34,7 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.fvec.Frame
 import water.fvec._
-import water.parser.{Categorical, ValueString}
+import water.parser.{Categorical, BufferedString}
 import water.{DKV, Key}
 
 import scala.reflect.ClassTag
@@ -56,7 +56,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     import h2oContext._
 
     // FIXME: create different shapes of frame
-    val dataFrame = new H2OFrame(new File("../examples/smalldata/prostate.csv"))
+    val dataFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
     implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
@@ -67,7 +67,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   // H2OFrame to RDD[T] JUnits
   test("H2OFrame[T_NUM] to RDD[Prostate]") {
     import h2oContext._
-    val dataFrame: H2OFrame = new H2OFrame(new File("../examples/smalldata/prostate.csv"))
+    val dataFrame: H2OFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
     assert (dataFrame.vec(0).isNumeric & dataFrame.vec(1).isNumeric & dataFrame.vec(2).isNumeric &
       dataFrame.vec(3).isNumeric & dataFrame.vec(4).isNumeric & dataFrame.vec(5).isNumeric & dataFrame.vec(6).isNumeric
       & dataFrame.vec(7).isNumeric & dataFrame.vec(8).isNumeric)
@@ -89,10 +89,10 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     val colNames: Array[String] = Array("C0")
     val chunkLayout: Array[Long] = Array(2L, 2L)
     val data: Array[Array[Integer]] = Array(Array(1, 0), Array(0, 1))
-    val dataFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_ENUM, colDomains = Array(Array("ZERO", "ONE")))
+    val dataFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_CAT, colDomains = Array(Array("ZERO", "ONE")))
 
     assert (dataFrame.vec(0).chunkForChunkIdx(0).at8(0) == 1)
-    assert (dataFrame.vec(0).isEnum())
+    assert (dataFrame.vec(0).isCategorical())
 
     implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
@@ -264,7 +264,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
                                            Array("string7", "string8"))
     val dataFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_STR)
 
-    assert (dataFrame.vec(0).chunkForChunkIdx(2).atStr(new ValueString(),1).toString.equals("string8"))
+    assert (dataFrame.vec(0).chunkForChunkIdx(2).atStr(new BufferedString(),1).toString.equals("string8"))
     assert (dataFrame.vec(0).isString())
 
     implicit val sqlContext = new SQLContext(sc)
@@ -312,7 +312,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     })
     val valuesInRdd = schemaRdd.collect().map(row => row(0))
     for (idx <- valuesInRdd.indices)
-      assert (valuesInRdd(idx) == "6870f256-e145-4d75-adb0-99ccb77d5d3" + ('a'+idx).asInstanceOf[Char])
+      assert (valuesInRdd(idx) == "6870f256-e145-4d75-adb0-99ccb77d5d3" + ('a' + idx).asInstanceOf[Char])
     dataFrame.delete()
   }
 
@@ -445,7 +445,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.vec(0).isNumeric())
   }
 
-  test("DataFrame[String] to H2OFrame[Enum]") {
+  test("DataFrame[String] to H2OFrame[String]") {
     import sqlContext.implicits._
 
     val domSize = 3000
@@ -456,13 +456,10 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assertH2OFrameInvariants(srdd, dataFrame)
     assert (dataFrame.vec(0).isString())
     assert (dataFrame.domains()(0) == null)
-    val catVec = VecUtils.stringToCategorical(dataFrame.vec(0))
-    assert (catVec.isEnum)
+    val catVec = dataFrame.vec(0).toCategoricalVec
+    assert (catVec.isCategorical)
     assert (catVec.domain() != null)
     assert (catVec.domain().length == domSize)
-
-    dataFrame.delete()
-    catVec.remove()
   }
 
   test("DataFrame[TimeStamp] to H2OFrame[Time]") {
@@ -637,7 +634,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     val colNamesEnum: Array[String] = Array("C0")
     val chunkLayoutEnum: Array[Long] = Array(2L, 2L)
     val dataEnum: Array[Array[Integer]] = Array(Array(1, 0), Array(0, 1))
-    val dataFrameEnum = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_ENUM, colDomains = Array(Array("ZERO", "ONE")))
+    val dataFrameEnum = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_CAT, colDomains = Array(Array("ZERO", "ONE")))
     val schemaRddEnum = asDataFrame(dataFrameEnum)
     assert(schemaRddEnum.schema("C0").metadata.getLong("cardinality") == 2L)
     dataFrameEnum.delete()
@@ -649,7 +646,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     FrameUtils.preparePartialFrame(f,colNames)
     f.update(null)
 
-    for( i <- 0 to chunkLayout.length-1) { createNC(fname, data(i), i, chunkLayout(i).toInt, h2oType) }
+    for( i <- 0 to chunkLayout.length-1) { createNC(fname, data(i), i, chunkLayout(i).toInt, Array(h2oType)) }
 
     f = DKV.get(fname).get()
 
@@ -658,21 +655,21 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     return new H2OFrame(f)
   }
 
-  def createNC[T: ClassTag](fname: String, data: Array[T], cidx: Integer, len: Integer, h2oType: Byte): NewChunk = {
-    val nchunks: Array[NewChunk] = FrameUtils.createNewChunks(fname, cidx)
+  def createNC[T: ClassTag](fname: String, data: Array[T], cidx: Integer, len: Integer, h2oType: Array[Byte]): NewChunk = {
+    val nchunks: Array[NewChunk] = FrameUtils.createNewChunks(fname, h2oType, cidx)
 
     data.foreach { el =>
       el match {
         case x if x.isInstanceOf[UUID]               => nchunks(0).addUUID(
           x.asInstanceOf[UUID].getLeastSignificantBits(),
           x.asInstanceOf[UUID].getMostSignificantBits())
-        case x if x.isInstanceOf[String]             => nchunks(0).addStr(new ValueString(x.asInstanceOf[String]))
+        case x if x.isInstanceOf[String]             => nchunks(0).addStr(new BufferedString(x.asInstanceOf[String]))
         case x if x.isInstanceOf[Byte]               => nchunks(0).addNum(x.asInstanceOf[Byte])
         case x if x.isInstanceOf[Short]              => nchunks(0).addNum(x.asInstanceOf[Short])
         case x if x.isInstanceOf[Integer] &
-          h2oType == Vec.T_ENUM                      => nchunks(0).addEnum(x.asInstanceOf[Integer])
+          h2oType(0) == Vec.T_CAT                      => nchunks(0).addCategorical(x.asInstanceOf[Integer])
         case x if x.isInstanceOf[Integer] &
-          h2oType != Vec.T_ENUM                      => nchunks(0).addNum(x.asInstanceOf[Integer].toDouble)
+          h2oType(0) != Vec.T_CAT                      => nchunks(0).addNum(x.asInstanceOf[Integer].toDouble)
         case x if x.isInstanceOf[Long]               => nchunks(0).addNum(x.asInstanceOf[Long].toDouble)
         case x if x.isInstanceOf[Double]             => nchunks(0).addNum(x.asInstanceOf[Double])
         case _ => ???
@@ -730,16 +727,17 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
       assert(vecDom(vec.at8(rIdx).asInstanceOf[Int]) == values(rIdx), "values stored has to match to values in rdd")
     }
   }
+
   def assertVectorStringValues(vec: water.fvec.Vec, values: Seq[String]): Unit = {
-    val valString = new ValueString()
+    val valString = new BufferedString()
     (0 until vec.length().asInstanceOf[Int]).foreach { rIdx =>
       assert(
-        if (vec.isNA(rIdx)) values(rIdx) == Double.NaN // this is Scala i can do NaN comparision
+        if (vec.isNA(rIdx)) values(rIdx)==Double.NaN // this is Scala i can do NaN comparision
         else {
           vec.atStr(valString, rIdx)
           valString.bytesToString() == values(rIdx)
         }, "values stored has to match to values in rdd")
-                                                     }
+    }
   }
 }
 

@@ -11,7 +11,7 @@ import org.apache.spark.sql.{SQLContext, DataFrame}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.joda.time.MutableDateTime
 import water.app.SparkContextSupport
-import water.fvec.{NewChunk, Chunk, Frame}
+import water.fvec.{Vec, NewChunk, Chunk, Frame}
 import water.util.Timer
 import water.{Key, MRTask}
 import scala.collection.mutable
@@ -225,7 +225,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
 
 class TimeSplit extends MRTask[TimeSplit] {
   def doIt(time: H2OFrame):H2OFrame =
-      new H2OFrame(doAll(1, time).outputFrame(Array[String]("Days"), null))
+      new H2OFrame(doAll(Array(Vec.T_NUM), time).outputFrame(Array[String]("Days"), null))
 
   override def map(msec: Chunk, day: NewChunk):Unit = {
     for (i <- 0 until msec.len) {
@@ -236,7 +236,7 @@ class TimeSplit extends MRTask[TimeSplit] {
 
 class TimeTransform extends MRTask[TimeSplit] {
   def doIt(days: H2OFrame):H2OFrame =
-    new H2OFrame(doAll(2, days).outputFrame(Array[String]("Month", "DayOfWeek"), null))
+    new H2OFrame(doAll(Array(Vec.T_NUM, Vec.T_NUM), days).outputFrame(Array[String]("Month", "DayOfWeek"), null))
 
   override def map(in: Array[Chunk], out: Array[NewChunk]):Unit = {
     val days = in(0)

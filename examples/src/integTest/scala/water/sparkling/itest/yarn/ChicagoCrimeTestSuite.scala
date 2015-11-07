@@ -69,7 +69,7 @@ object ChicagoCrimeTest extends SparkContextSupport {
     }
 
     // Shutdown full stack
-    app.shutdown(sc)
+    app.shutdown()
   }
 
 }

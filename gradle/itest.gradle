@@ -46,3 +46,5 @@ integTest.dependsOn jar
 integTest.dependsOn testJar
 integTest.dependsOn integTestJar
 
+// Run integration tests as part of build
+check.dependsOn integTest

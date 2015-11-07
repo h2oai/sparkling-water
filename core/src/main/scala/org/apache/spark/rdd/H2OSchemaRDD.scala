@@ -28,7 +28,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
 import org.apache.spark.sql.types._
 import org.apache.spark.{Partition, TaskContext}
 import water.fvec.H2OFrame
-import water.parser.ValueString
+import water.parser.BufferedString
 
 /**
  * H2O H2OFrame wrapper providing RDD[Row] API.
@@ -52,7 +52,7 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
       /** Mutable row returned by iterator */
       val mutableRow = new GenericMutableRow(ncols)
       /** Dummy muttable holder for String values */
-      val valStr = new ValueString()
+      val valStr = new BufferedString()
       /** Types for of columns */
       // FIXME: should be cached
       lazy val types = fr.vecs().map( v => vecTypeToDataType(v))
@@ -81,7 +81,7 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
               case BooleanType =>
                 mutableRow.setBoolean(i, chk.at8(row) == 1)
               case StringType =>
-                val utf8 = if (chk.vec().isEnum) {
+                val utf8 = if (chk.vec().isCategorical) {
                   val str = chk.vec().domain()(chk.at8(row).asInstanceOf[Int])
                   UTF8String.fromString(str)
                 } else if (chk.vec().isString) {

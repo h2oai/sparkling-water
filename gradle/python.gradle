@@ -1,0 +1,34 @@
+configurations {
+  compile {
+  }
+
+  runtime {
+    extendsFrom compile
+  }
+
+  test {
+    extendsFrom compile
+  }
+
+  testRuntime {
+    extendsFrom test
+  }
+}
+
+task compile(group: "Build tasks", description: "Compile this project")
+
+task build(group: "Build tasks", description: "Build and test this project")
+
+task check(group: "Verification tasks", description: "Check this project")
+
+task test(group: "Verification tasks", description: "Test this project")
+
+task clean(group: "Build tasks", description: "Clean up the project", type: Delete) {
+  delete file("build/")
+}
+
+build.dependsOn compile
+build.dependsOn check
+
+check.dependsOn test
+

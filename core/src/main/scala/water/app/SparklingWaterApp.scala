@@ -1,3 +1,19 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package water.app
 
 import hex.Distribution.Family
@@ -14,6 +30,7 @@ import water.fvec.Frame
  * A simple application trait to define Sparkling Water applications.
  */
 trait SparklingWaterApp {
+
   @transient val sc: SparkContext
   @transient val sqlContext: SQLContext
   @transient val h2oContext: H2OContext
@@ -30,16 +47,18 @@ trait SparklingWaterApp {
 
 // FIXME: should be published by h2o-scala interface
 trait ModelMetricsSupport {
-  def r2(model: GBMModel, fr: Frame) =  hex.ModelMetrics.getFromDKV(model, fr).asInstanceOf[hex.ModelMetricsSupervised].r2()
 
-  def modelMetrics[T <: ModelMetrics, M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-  (model: Model[M,P,O], fr: Frame) = ModelMetrics.getFromDKV(model, fr).asInstanceOf[T]
+  def r2(model: GBMModel, fr: Frame) = hex.ModelMetrics.getFromDKV(model, fr)
+    .asInstanceOf[hex.ModelMetricsSupervised].r2()
 
-  def binomialMM[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-  (model: Model[M,P,O], fr: Frame) = modelMetrics[hex.ModelMetricsBinomial,M,P,O](model, fr)
+  def modelMetrics[T <: ModelMetrics, M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
+  (model: Model[M, P, O], fr: Frame) = ModelMetrics.getFromDKV(model, fr).asInstanceOf[T]
 
-  def multinomialMM[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-  (model: Model[M,P,O], fr: Frame) = modelMetrics[hex.ModelMetricsMultinomial,M,P,O](model, fr)
+  def binomialMM[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
+  (model: Model[M, P, O], fr: Frame) = modelMetrics[hex.ModelMetricsBinomial, M, P, O](model, fr)
+
+  def multinomialMM[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
+  (model: Model[M, P, O], fr: Frame) = modelMetrics[hex.ModelMetricsMultinomial, M, P, O](model, fr)
 }
 
 // Create companion object
@@ -50,11 +69,15 @@ trait DeepLearningSupport {
   def DLModel(train: H2OFrame, valid: H2OFrame, response: String,
               epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
               activation: Activation = Activation.RectifierWithDropout,
-              hidden:Array[Int] = Array(200,200)): DeepLearningModel = {
+              hidden: Array[Int] = Array(200, 200)): DeepLearningModel = {
 
     val dlParams = new DeepLearningParameters()
     dlParams._train = train._key
-    dlParams._valid = if (valid != null) valid._key else null
+    dlParams._valid = if (valid != null) {
+      valid._key
+    } else {
+      null
+    }
     dlParams._response_column = response
     dlParams._epochs = epochs
     dlParams._l1 = l1
@@ -76,14 +99,18 @@ trait GBMSupport {
 
   def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
                modelId: String = "model",
-               ntrees:Int = 50, depth:Int = 6, family: Family = Family.AUTO): GBMModel = {
+               ntrees: Int = 50, depth: Int = 6, family: Family = Family.AUTO): GBMModel = {
     import hex.tree.gbm.GBM
     import hex.tree.gbm.GBMModel.GBMParameters
 
     val gbmParams = new GBMParameters()
     gbmParams._model_id = water.Key.make(modelId)
     gbmParams._train = train._key
-    gbmParams._valid = if (test != null) test._key else null
+    gbmParams._valid = if (test != null) {
+      test._key
+    } else {
+      null
+    }
     gbmParams._response_column = response
     gbmParams._ntrees = ntrees
     gbmParams._max_depth = depth
@@ -95,6 +122,6 @@ trait GBMSupport {
   }
 }
 
+
 // Create companion object
 object GBMSupport extends GBMSupport
-

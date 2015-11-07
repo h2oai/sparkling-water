@@ -44,7 +44,7 @@ object H2OSchemaUtils {
         putLong("count", vec.length()).
         putLong("naCnt", vec.naCnt())
 
-      if (vec.isEnum) {
+      if (vec.isCategorical) {
         metadata = metadata.putStringArray("vals", vec.domain()).
           putLong("cardinality", vec.cardinality().toLong)
       } else if (vec.isNumeric) {
@@ -79,7 +79,7 @@ object H2OSchemaUtils {
     v.get_type() match {
       case Vec.T_BAD  => ByteType // vector is full of NAs, use any type
       case Vec.T_NUM  => numericVecTypeToDataType(v)
-      case Vec.T_ENUM => StringType
+      case Vec.T_CAT  => StringType
       case Vec.T_UUID => StringType
       case Vec.T_STR  => StringType
       case Vec.T_TIME => TimestampType
@@ -163,7 +163,7 @@ object H2OSchemaUtils {
       field.dataType match {
         case ArrayType(aryType,nullable) => {
           val result = (0 until fmaxLens(arrayCnt)).map(i =>
-            (path, StructField(field.name+i.toString, aryType, nullable), ARRAY_TYPE)
+            (path, StructField(field.name + i.toString, aryType, nullable), ARRAY_TYPE)
           )
           arrayCnt += 1
           result
@@ -171,7 +171,7 @@ object H2OSchemaUtils {
         case t if t.isInstanceOf[UserDefinedType[_]] => {
           // t.isInstanceOf[UserDefinedType[mllib.linalg.Vector]]
           val result = (0 until fmaxLens(numOfArrayCols + vecCnt)).map(i =>
-            (path, StructField(field.name+i.toString, DoubleType, true), VEC_TYPE)
+            (path, StructField(field.name + i.toString, DoubleType, true), VEC_TYPE)
           )
           vecCnt += 1
           result

@@ -1,40 +1,28 @@
 /**
- * To start Sparkling Water please type
-
-cd path/to/sparkling/water
-export SPARK_HOME="your/spark-1.3.1-installation"
-export MASTER="local-cluster[3,2,4096]"
-
-bin/sparkling-shell --conf spark.executor.memory=3G
-*/
-
-/**
- * Expects following variables:
- *  sc - SparkContext provided by environment
- *  sqlContext - SQL Context provided by environment
+ * Launch following commands:
+*    export MASTER="local-cluster[3,2,4096]"
+ *   bin/sparkling-shell -i examples/scripts/chicagoCrimeSmallShell.script.scala --conf spark.executor.memory=3G
+ *
+ * When running using spark shell or using scala rest API:
+ *    SQLContext is available as sqlContext
+ *    SparkContext is available as sc
  */
-
-
 // Create an environment
 import _root_.hex.Distribution.Family
 import _root_.hex.deeplearning.DeepLearningModel
 import _root_.hex.tree.gbm.GBMModel
 import _root_.hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkFiles
-import org.apache.spark.examples.h2o.DemoUtils.{splitFrame, addFiles, allStringVecToCategorical}
-import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
+import org.apache.spark.examples.h2o.DemoUtils.{addFiles, splitFrame}
+import org.apache.spark.examples.h2o.{DemoUtils, Crime, RefineDateColumn}
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
-import water.app.ModelMetricsSupport._
 
-//val sc: org.apache.spark.SparkContext = null
-//val sqlContext: org.apache.spark.sql.SQLContext = null
+// Create SQL support
+implicit val sqlContext = SQLContext.getOrCreate(sc)
 
-
-//
 // Start H2O services
-//
 implicit val h2oContext = new H2OContext(sc).start()
 import h2oContext._
 
@@ -123,14 +111,14 @@ val crimeWeather = sqlContext.sql(
 
 //
 // Publish as H2O Frame
+crimeWeather.printSchema()
 val crimeWeatherDF:H2OFrame = crimeWeather
 // Transform all string columns into categorical
-allStringVecToCategorical(crimeWeatherDF)
+DemoUtils.allStringVecToCategorical(crimeWeatherDF)
 
 //
 // Split final data table
 //
-import org.apache.spark.examples.h2o.DemoUtils._
 val keys = Array[String]("train.hex", "test.hex")
 val ratios = Array[Double](0.8, 0.2)
 val frs = splitFrame(crimeWeatherDF, keys, ratios)
@@ -190,7 +178,8 @@ val dlModel = DLModel(train, test, 'Arrest)
 
 // Collect model metrics
 def binomialMetrics[M <: Model[M,P,O], P <: _root_.hex.Model.Parameters, O <: _root_.hex.Model.Output]
-                    (model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
+(model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
+  import water.app.ModelMetricsSupport._
   model.score(train).delete()
   model.score(test).delete()
   (binomialMM(model,train), binomialMM(model, test))
@@ -223,6 +212,7 @@ def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: DataFrame)
   val srdd:DataFrame = sqlContext.sparkContext.parallelize(Seq(crime)).toDF()
   // Join table with census data
   val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
+  DemoUtils.allStringVecToCategorical(row)
   val predictTable = model.score(row)
   val probOfArrest = predictTable.vec("true").at(0)
 
@@ -243,8 +233,8 @@ for (crime <- crimeExamples) {
   println(
     s"""
        |Crime: $crime
-        |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
-        |  Probability of arrest best on GBM: ${arrestProbGBM} %
+       |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
+       |  Probability of arrest best on GBM: ${arrestProbGBM} %
         """.stripMargin)
 }
 
@@ -280,7 +270,7 @@ val rowRdd = sc.parallelize(crimeTypeArrestRate).sortBy(x => -x.getDouble(1))
 val rateSRdd = sqlContext.createDataFrame(rowRdd, schema)
 
 // Transfer it into H2O
-val rateFrame:H2OFrame = rateSRdd
+val rateFrame:H2OFrame = h2oContext.asH2OFrame(rateSRdd, Some("RATES"))
 
 /*
 In flow type this:

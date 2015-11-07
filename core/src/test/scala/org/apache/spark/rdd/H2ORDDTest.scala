@@ -23,7 +23,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.fvec.Vec
-import water.parser.{Categorical, ValueString}
+import water.parser.{Categorical, BufferedString}
 
 /**
  * Testing schema for h2o schema rdd transformation.
@@ -74,7 +74,7 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     assert (dataFrame.vec(0).domain() == null, "The vector domain should be <null>")
 
     // Transform string vector to categorical
-    dataFrame.replace(0, VecUtils.stringToCategorical(dataFrame.vec(0))).remove()
+    dataFrame.replace(0, dataFrame.vec(0).toCategoricalVec).remove()
 
     assertBasicInvariants(rdd, dataFrame, (row, vec) => {
       val dom = vec.domain()
@@ -94,7 +94,7 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
 
     assert (dataFrame.vec(0).isString, "The vector type should be string")
     assert (dataFrame.vec(0).domain() == null, "The vector should have null domain")
-    val valueString = new ValueString()
+    val valueString = new BufferedString()
     assertBasicInvariants(rdd, dataFrame, (row, vec) => {
       val row1 = (row + 1).toString
       val value = vec.atStr(valueString, row) // value stored at row-th

@@ -1,9 +1,27 @@
 ChangeLog
 =========
 
-##v1.5.3 (2015-10-19)
-   - [SW-25] Do not handle categorical column in Spark
-
+##v1.5.3 (2015-11-6)
+  - Attach metadata derived from H2OFrame to Spark DataFrame
+  - Improved logging subsystem
+  - Expose new REST end-points
+    - to interpret Scala code
+    - to perform transformation between Spark DataFrame and H2O Frame
+  - Fix all scripts and create automatic tests for them
+  - Upgrade H2O dependency to rel-tibshirani v1.6.0.3
+  - Upgrade Spark dependency to 1.5.1
+  - Fixes
+    - [PUBDEV-282](https://0xdata.atlassian.net/browse/PUBDEV-282) Create windows batch scripts for starting sparkling-shell and running examples
+    - [SW-5, SW-17, SW-25](https://0xdata.atlassian.net/browse/SW-25) Remove categorical handling during asH2OFrame() transformation
+    - [SW-20](https://0xdata.atlassian.net/browse/SW-20) H2OFrame provides nicer API accepting parser setup
+    - [SW-32](https://0xdata.atlassian.net/browse/SW-32) Update documentation and remove top-level images folder
+    - [SW-33](https://0xdata.atlassian.net/browse/SW-33) Remove usage of deprecated VecUtils class
+    - [SW-38](https://0xdata.atlassian.net/browse/SW-38)  Introduces Sparkling Water parameter to setup location of H2O logs
+    - [SW-39](https://0xdata.atlassian.net/browse/SW-39)  PySparkling: Support of Sparkling Water from PySpark
+    - [SW-40](https://0xdata.atlassian.net/browse/SW-40)  PySparkling: as\_h2o\_frame method accepts name of target H2O Frame
+    - [SW-41](https://0xdata.atlassian.net/browse/SW-41) H2OContext#asH2OFrame now
+      accepts name for resulting H2OFrame.
+      
 ##v1.5.2 (2015-09-28)
    - Added support for buildinfo.json
    - Fix in documentation
@@ -20,6 +38,7 @@ ChangeLog
    - minor fixes in API
    - minor fixes in documentation 
    - use H2O version 3.2.0.3 (slater)
+
 
 ##v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame
