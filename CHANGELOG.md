@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-##v1.5.3 (2015-11-6)
+##v1.5.4, 1.5.5, 1.5.6 (2015-11-6)
   - Attach metadata derived from H2OFrame to Spark DataFrame
   - Improved logging subsystem
   - Expose new REST end-points

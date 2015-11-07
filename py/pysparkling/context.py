@@ -135,7 +135,7 @@ class H2OContext(object):
         #self._jhc.stop(False)
 
     def __str__(self):
-        return "H2OContext: ip={}, port={}".format(self._client_ip, self._client_port)
+        return "H2OContext: ip={}, port={} (open UI at http://{}:{})".format(self._client_ip, self._client_port, self._client_ip, self._client_port)
 
     def __repr__(self):
         self.show()
