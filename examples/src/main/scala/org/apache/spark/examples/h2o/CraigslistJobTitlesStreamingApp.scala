@@ -1,12 +1,14 @@
 package org.apache.spark.examples.h2o
 
+import java.net.URI
+
 import hex.Model.Output
 import org.apache.spark.SparkContext
+import org.apache.spark.examples.h2o.CraigslistJobTitlesApp.show
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.streaming._
-import CraigslistJobTitlesApp.show
-import water.app.SparkContextSupport
+import water.app.{ModelSerializationSupport, SparkContextSupport}
 
 /**
  * Variant of Craigslist App with streaming support to classify
@@ -18,7 +20,7 @@ import water.app.SparkContextSupport
  * Send "poison pill" to kill the application.
  *
  */
-object CraigslistJobTitlesStreamingApp extends SparkContextSupport {
+object CraigslistJobTitlesStreamingApp extends SparkContextSupport with ModelSerializationSupport {
 
   val POISON_PILL_MSG = "poison pill"
 
@@ -36,6 +38,10 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport {
       val (svModel, w2vModel) = staticApp.buildModels("examples/smalldata/craigslistJobTitles.csv", "initialModel")
       val modelId = svModel._key.toString
       val classNames = svModel._output.asInstanceOf[Output].classNames()
+
+      // Lets save models
+      exportSparkModel(w2vModel, URI.create("file:///tmp/sparkmodel"))
+      exportH2OModel(svModel, URI.create("file:///tmp/h2omodel/"))
 
       // Start streaming context
       val jobTitlesStream = ssc.socketTextStream("localhost", 9999)
@@ -65,4 +71,5 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport {
       staticApp.shutdown()
     }
   }
+
 }

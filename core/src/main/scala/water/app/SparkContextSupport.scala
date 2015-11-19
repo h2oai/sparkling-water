@@ -16,6 +16,9 @@
 */
 package water.app
 
+import java.net.URI
+import java.io.File
+
 import org.apache.spark.{SparkContext, SparkConf}
 
 /**
@@ -35,4 +38,22 @@ trait SparkContextSupport {
   }
 
   def absPath(path: String): String = new java.io.File(path).getAbsolutePath
+
+  def exportSparkModel(model: Any, destination: URI): Unit = {
+    import java.io.FileOutputStream
+    import java.io.ObjectOutputStream
+    val fos = new FileOutputStream(new File(destination))
+    val oos = new ObjectOutputStream(fos)
+    oos.writeObject(model)
+    oos.close
+  }
+
+  def loadSparkModel[M](source: URI) : M = {
+    import java.io.FileInputStream
+    import java.io.ObjectInputStream
+    val fos = new FileInputStream(new File(source))
+    val oos = new ObjectInputStream(fos)
+    val newModel = oos.readObject().asInstanceOf[M]
+    newModel
+  }
 }
