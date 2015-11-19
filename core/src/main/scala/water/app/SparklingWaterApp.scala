@@ -16,6 +16,9 @@
 */
 package water.app
 
+import java.io.{FileOutputStream, File}
+import java.net.URI
+
 import hex.Distribution.Family
 import hex.deeplearning.DeepLearningParameters.Activation
 import hex.deeplearning.{DeepLearningParameters, DeepLearning, DeepLearningModel}
@@ -25,6 +28,9 @@ import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.SparkContext
 import water.fvec.Frame
+import water.Key
+import water.Keyed
+import water.serial.ObjectTreeBinarySerializer
 
 /**
  * A simple application trait to define Sparkling Water applications.
@@ -125,3 +131,36 @@ trait GBMSupport {
 
 // Create companion object
 object GBMSupport extends GBMSupport
+
+
+trait ModelSerializationSupport {
+
+  def exportH2OModel(model : Model[_,_,_], destination: URI): URI = {
+    val modelKey = model._key.asInstanceOf[Key[_ <: Keyed[_ <: Keyed[_ <: AnyRef]]]]
+    val keysToExport = model.getPublishedKeys()
+    // Prepend model key
+    keysToExport.add(0, modelKey)
+
+    new ObjectTreeBinarySerializer().save(keysToExport, destination)
+    destination
+  }
+
+  def loadH2OModel[M <: Model[_, _, _]](source: URI) : M = {
+    val l = new ObjectTreeBinarySerializer().load(source)
+    l.get(0).get().asInstanceOf[M]
+  }
+
+  def exportPOJOModel(model : Model[_, _,_], destination: URI): URI = {
+    val destFile = new File(destination)
+    val fos = new FileOutputStream(destFile)
+    val writer = new model.JavaModelStreamWriter(false)
+    try {
+      writer.writeTo(fos)
+    } finally {
+      fos.close()
+    }
+    destination
+  }
+}
+
+object ModelSerializationSupport extends ModelSerializationSupport
