@@ -32,6 +32,15 @@ String getSparkMaster() {
     }
 }
 
+String getHdpVersion() {
+  String sh =
+            [ project.hasProperty("hdpVersion") ? project["hdpVersion"] : null,
+              System.properties['HDP_VERSION'],
+              System.env['HDP_VERSION']
+            ].find { h -> h!=null }
+  return sh
+}
+
 // Useful task to setup idea test configuration
 task printTestEnv << {
     println("-Dspark.testing=true\n" +
@@ -47,3 +56,4 @@ task printIntegTestEnv << {
 
 ext.sparkHome = getSparkHome()
 ext.sparkMaster = getSparkMaster()
+ext.hdpVersion = getHdpVersion()

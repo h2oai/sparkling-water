@@ -33,8 +33,37 @@ echo "  H2O JVM options (H2O_SYS_OPS)  : $EXAMPLE_H2O_SYS_OPS"
 echo "---------"
 export SPARK_PRINT_LAUNCH_COMMAND=1
 VERBOSE=--verbose
+
+if [ "$EXAMPLE_MASTER" == "yarn-client" ] || [ "$EXAMPLE_MASTER" == "yarn-cluster" ]; then
+#EXAMPLE_DEPLOY_MODE does not have to be set when executing on yarn
 VERBOSE=
 (
  cd $TOPDIR
- $SPARK_HOME/bin/spark-submit "$@" $VERBOSE --driver-memory $EXAMPLE_DRIVER_MEMORY --driver-java-options "$EXAMPLE_H2O_SYS_OPS" --master $EXAMPLE_MASTER --deploy-mode $EXAMPLE_DEPLOY_MODE --class $EXAMPLE $TOPDIR/assembly/build/libs/$FAT_JAR
+ $SPARK_HOME/bin/spark-submit \
+ --class $EXAMPLE \
+ --master $EXAMPLE_MASTER \
+ --driver-memory $EXAMPLE_DRIVER_MEMORY \
+ --driver-java-options "$EXAMPLE_H2O_SYS_OPS" \
+ --driver-class-path $TOPDIR/assembly/build/libs/$FAT_JAR \
+ --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" \
+ $VERBOSE \
+ $TOPDIR/assembly/build/libs/$FAT_JAR \
+ "$@"
 )
+else
+VERBOSE=
+(
+ cd $TOPDIR
+ $SPARK_HOME/bin/spark-submit \
+ --class $EXAMPLE \
+ --master $EXAMPLE_MASTER \
+ --driver-memory $EXAMPLE_DRIVER_MEMORY \
+ --driver-java-options "$EXAMPLE_H2O_SYS_OPS" \
+ --deploy-mode $EXAMPLE_DEPLOY_MODE \
+ --driver-class-path $TOPDIR/assembly/build/libs/$FAT_JAR \
+ --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" \
+ $VERBOSE \
+ $TOPDIR/assembly/build/libs/$FAT_JAR \
+ "$@"
+)
+fi

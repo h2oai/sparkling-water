@@ -58,7 +58,7 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport {
     val train = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
       'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
       'Distance, 'IsDepDelayed )
-    train.replace(train.numCols()-1, train.lastVec().toEnum)
+    train.replace(train.numCols()-1, train.lastVec().toCategoricalVec)
     train.update(null)
 
     // Configure Deep Learning algorithm

@@ -52,7 +52,7 @@ Sparkling Water excels in leveraging existing Spark-based workflows that need to
 ## Requirements
  - Linux or Mac OSX platform
  - Java 1.7+
- - [Spark 1.4.0](http://spark.apache.org/downloads.html)
+ - [Spark 1.3.0+](http://spark.apache.org/downloads.html)
 
 ---
 
@@ -68,7 +68,7 @@ inside a Spark executor, which is created after application submission.
 At this point, H2O starts services, including distributed KV store and memory manager,
 and orchestrates them into a cloud. The topology of the created cloud matches the topology of the underlying Spark cluster exactly.
 
- ![Topology](images/Topology.png)
+ ![Topology](design-doc/images/Topology.png)
 
 When H2O services are running, it is possible to create H2O data structures, call H2O algorithms, and transfer values from/to RDD.
 
@@ -109,13 +109,13 @@ Sparkling Water can read data stored in the following formats:
 ### Data Sharing
 Sparkling Water enables transformation between different types of RDDs and H2O's H2OFrame, and vice versa.
 
- ![Data Sharing](images/DataShare.png)
+ ![Data Sharing](design-doc/images/DataShare.png)
 
 When converting from H2OFrame to RDD, a wrapper is created around the H2O H2OFrame to provide an RDD-like API. In this case, no data is duplicated; instead, the data is served directly from then underlying H2OFrame.
 
 Converting in the opposite direction (from RDD to H2OFrame) introduces data duplication, since it transfers data from RDD storage into H2OFrame. However, data stored in H2OFrame is heavily compressed. 
 
-TODO: estimation of overhead
+<!--TODO: estimation of overhead -->
 
 ---
 <a name="ExecEnv"></a> 
@@ -208,8 +208,10 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.disable.ga`|`false`|Disable Google Analytics tracking for embedded H2O.|
 | **H2O server node parameters** |||
 |`spark.ext.h2o.node.log.level`| `INFO`| H2O internal log level used for launched H2O nodes. |
+|`spark.ext.h2o.node.log.dir`| ` System.getProperty("user.dir") + File.separator + "h2ologs"` or YARN container dir| Location of h2o logs on executor machine. |
 | **H2O client parameters** |||
 |`spark.ext.h2o.client.log.level`| `INFO`| H2O internal log level used for H2O client running inside Spark driver. |
+|`spark.ext.h2o.client.log.dir`| ` System.getProperty("user.dir") + File.separator + "h2ologs"`| Location of h2o logs on driver machine. |
 |`spark.ext.h2o.client.web.port`|`-1`|Exact client port to access web UI. The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`.|
 ---
 
@@ -306,8 +308,16 @@ val schemaRDD = asDataFrame(h2oFrame)
 ### Converting RDD[T] into H2OFrame
 The `H2OContext` provides **implicit** conversion from the specified `RDD[A]` to `H2OFrame`. As with conversion in the opposite direction, the type `A` has to satisfy the upper bound expressed by the type `Product`. The conversion will create a new `H2OFrame`, transfer data from the specified RDD, and save it to the H2O K/V data store.
 
+
 ```scala
 implicit def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A]) : H2OFrame
+```
+
+The API also provides explicit version which allows for specifying name for resulting
+H2OFrame. 
+
+```scala
+def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A], frameName: Option[String]) : H2OFrame
 ```
 
 <a name="Example3"></a>
@@ -315,24 +325,38 @@ implicit def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A]) : H2OFrame
 ```scala
 val rdd: RDD[Weather] = ...
 import h2oContext._
-val df: H2OFrame = rdd // implicit call of H2OContext.asH2OFrame[Weather](rdd) is used 
+// implicit call of H2OContext.asH2OFrame[Weather](rdd) is used 
+val hf: H2OFrame = rdd
+// Explicit call of of H2OContext API with name for resulting H2O frame
+val hfNamed: H2OFrame = h2oContext.asH2OFrame(rdd, Some("h2oframe"))
 ```
+
 
 ---
 <a name="ConvertSchematoDF"></a>
 ### Converting DataFrame into H2OFrame
-The `H2OContext` provides **implicit** conversion from the specified `DataFrame` to `H2OFrame`. The conversion will create a new `H2OFrame`, transfer data from the specified `RDD`, and save it to the H2O K/V data store.
+The `H2OContext` provides **implicit** conversion from the specified `DataFrame` to `H2OFrame`. The conversion will create a new `H2OFrame`, transfer data from the specified `DataFrame`, and save it to the H2O K/V data store.
 
 ```scala
 implicit def asH2OFrame(rdd : DataFrame) : H2OFrame
 ```
 
+The API also provides explicit version which allows for specifying name for resulting
+H2OFrame. 
+
+```scala
+def asH2OFrame(rdd : DataFrame, frameName: Option[String]) : H2OFrame
+```
+
 <a name="Example4"></a>
 #### Example
 ```scala
-val srdd: DataFrame = ...
+val df: DataFrame = ...
 import h2oContext._
-val df: H2OFrame = srdd // implicit call of H2OContext.asH2OFrame(srdd) is used 
+// Implicit call of H2OContext.asH2OFrame(srdd) is used 
+val hf: H2OFrame = df 
+// Explicit call of H2Context API with name for resulting H2O frame
+val hfNamed: H2OFrame = h2oContext.asH2OFrame(df, Some("h2oframe"))
 ```
 ---
 
@@ -346,7 +370,21 @@ val trainHF = new H2OFrame("train.hex")
 ```
 
 ### Type mapping between H2O H2OFrame types and Spark DataFrame types
-TBD
+
+For all primitive Scala types or Spark SQL (see `org.apache.spark.sql.types`) types which can be part of Spark RDD/DataFrame we provide mapping into H2O vector types (numeric, categorical, string, time, UUID - see `water.fvec.Vec`):
+
+| Scala type | SQL type   | H2O type |
+|------------|------------| ---------|
+| _NA_       | BinaryType | Numeric  |
+| Byte       | ByteType   | Numeric  | 
+| Short      | ShortType  | Numeric  | 
+|Integer     | IntegerType| Numeric  |
+|Long        | LongType   | Numeric  |
+|Float       | FloatType  | Numeric  |
+|Double      | DoubleType | Numeric  |
+|String      | StringType | String   |
+|Boolean     | BooleanType| Numeric  |
+|java.sql.TimeStamp| TimestampType | Time|
 
 ---
 
@@ -378,10 +416,8 @@ TBD
 ## Running Unit Tests
 To invoke tests, the following JVM options are required:
   - `-Dspark.testing=true`
-  - `-Dspark.test.home=/Users/michal/Tmp/spark/spark-1.1.0-bin-cdh4/`
+  - `-Dspark.test.home=/Users/michal/Tmp/spark/spark-1.5.1-bin-cdh4/`
 
-## Overhead Estimation
-TBD
 
 ## Application Development
 You can find Sparkling Water self-contained application skeleton in [Droplet repository](https://github.com/h2oai/h2o-droplets/tree/master/sparkling-water-droplet).

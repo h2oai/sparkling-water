@@ -1,5 +1,7 @@
 description = "Sparkling Water Core"
 
+apply from: "$rootDir/gradle/utils.gradle"
+
 dependencies {
   // Required for h2o-app (we need UI)
   compile("ai.h2o:h2o-app:${h2oVersion}") {
@@ -26,6 +28,8 @@ dependencies {
   compile "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
   // - MLLib component
   compile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
+  // - Spark REPL
+  compile "org.apache.spark:spark-repl_${scalaBinaryVersion}:${sparkVersion}"
 
   // Add joda optional convert library which is required in Scala environment
   compile "org.joda:joda-convert:1.7"
@@ -68,38 +72,23 @@ test {
     // Pass list of jars required for testing
     systemProperty "sparkling.test.assembly", "${configurations.testAssembly.artifacts.file.join(',')}"
 
+    systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-test")
+    systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-test")
+
     // Run with assertions ON
     enableAssertions = true
 
     // For a new JVM for each test class
     forkEvery = 1
+
+    // Increase heap size
+    maxHeapSize = "2g"
+
+    // Increase PermGen
+    jvmArgs "-XX:MaxPermSize=256m"
+
+    // Working dir will be root project
+    workingDir = rootDir
 }
 
 test.dependsOn testJar
-
-/**
- * Find dependencies from 'configuration.runtime' matching given specification.
- *
- * Specification is given in form group_name:module_name
- *
- * @param d list of specifications.
- * @return
- */
-public FileCollection dep(List<String> d) {
-    Configuration conf = configurations.runtime
-    List<String[]> depsSpec = d.collect { it.split(":")}
-    Set<ResolvedDependency> toInclude = []
-    resolve(conf.resolvedConfiguration.firstLevelModuleDependencies, toInclude, depsSpec)
-    files( toInclude.collect {
-        it.moduleArtifacts*.file
-    }.flatten())
-}
-
-void resolve(Set<ResolvedDependency> deps, Set<ResolvedDependency> includeDeps, List<String[]> depsSpec) {
-    deps.each { d->
-        if (depsSpec.any { ds -> d.moduleGroup==ds[0] && d.moduleName==ds[1] })
-            if (includeDeps.add(d)) {
-                resolve(d.children, includeDeps, depsSpec)
-            }
-    }
-}

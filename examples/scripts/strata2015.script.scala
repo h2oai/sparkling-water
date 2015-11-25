@@ -1,12 +1,14 @@
-//
-// Strata script 2015-02-19
-//
-// Run: bin/sparkling-shell
-//
-
-val DIR_PREFIX = "/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/"
-
+/**
+ * Launch following commands:
+ *   export MASTER="local-cluster[3,2,4096]"
+ *   bin/sparkling-shell -i examples/scripts/strata2015.script.scala
+ *
+ * When running using spark shell or using scala rest API:
+ *    SQLContext is available as sqlContext
+ *    SparkContext is available as sc
+ */
 // Common imports
+import org.apache.spark.SparkFiles
 import org.apache.spark.h2o._
 import org.apache.spark.examples.h2o._
 import org.apache.spark.examples.h2o.DemoUtils._
@@ -16,24 +18,23 @@ import hex.tree.gbm.GBMModel.GBMParameters
 
 val sc:org.apache.spark.SparkContext = null
 
-// Initialize Spark SQLContext
-implicit val sqlContext = new SQLContext(sc)
+// Create SQL support
+implicit val sqlContext = SQLContext.getOrCreate(sc)
 import sqlContext.implicits._
 
-
-// Create H2OContext to execute H2O code on Spark cluster
+// Start H2O services
 implicit val h2oContext = new H2OContext(sc).start()
 import h2oContext._
 
+val location = "examples/bigdata/laptop/citibike-nyc/"
+val fileNames = Seq[String]("2013-07.csv","2013-08.csv","2013-09.csv","2013-10.csv","2013-11.csv","2013-12.csv")
+val filesPaths = fileNames.map(name => location + name) :+ location+"31081_New_York_City__Hourly_2013.csv"
 
-//
-// Load data into H2O by using H2O parser - use only 2013 data.
-//
+// Register files to SparkContext
+addFiles(sc, filesPaths:_*)
 
-val dataFiles = Array[String](
-      "2013-07.csv", "2013-08.csv", "2013-09.csv", "2013-10.csv",
-      "2013-11.csv", "2013-12.csv").map(f => new java.io.File(DIR_PREFIX, f).toURI)
-// Load and parse data
+// Load and parse data into H2O
+val dataFiles = fileNames.map(name => new java.io.File(SparkFiles.get(name)).toURI)
 val bikesDF = new H2OFrame(dataFiles:_*)
 // Rename columns and remove all spaces in header
 val colNames = bikesDF.names().map( n => n.replace(' ', '_'))
@@ -98,7 +99,7 @@ def buildModel(df: H2OFrame, trees: Int = 100, depth: Int = 6):R2 = {
     // Score datasets
     Seq(train,test,hold).foreach(gbmModel.score(_).delete)
     // Collect R2 metrics
-    val result = R2("Model #1", r2(gbmModel, train), r2(gbmModel, test), r2(gbmModel, hold))
+    val result = R2("Model #1", ModelMetricsSupport.r2(gbmModel, train), r2(gbmModel, test), r2(gbmModel, hold))
     // Perform clean-up
     Seq(train, test, hold).foreach(_.delete())
     result
@@ -110,7 +111,7 @@ def buildModel(df: H2OFrame, trees: Int = 100, depth: Int = 6):R2 = {
 val result1 = buildModel(finalBikeDF)
 
 // Load weather data in NY 2013
-val weatherData = sc.textFile(DIR_PREFIX + "31081_New_York_City__Hourly_2013.csv")
+val weatherData = sc.textFile(SparkFiles.get("31081_New_York_City__Hourly_2013.csv"))
 // Parse data and filter them
 val weatherRdd = weatherData.map(_.split(",")).
   map(row => NYWeatherParse(row)).

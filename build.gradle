@@ -18,7 +18,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.2'
         classpath 'org.github.mansur.scalastyle:gradle-scalastyle-plugin_2.10:0.4.1'
         classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.7.1'
         // https://github.com/researchgate/gradle-release
@@ -39,6 +39,15 @@ ext {
 
     integTestProjects = [
       project(':sparkling-water-examples')
+    ]
+    scalaProjects = [
+      project(':sparkling-water-core'),
+      project(':sparkling-water-examples'),
+      project(':sparkling-water-ml'),
+      project(':sparkling-water-assembly')
+    ]
+    pythonProjects = [
+      project(':sparkling-water-py')
     ]
 }
 
@@ -84,19 +93,18 @@ configure(subprojects) { project ->
         maven {
             url "http://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
         }
-
-        // Temporary jitpack.io repository
-        maven {
-             url "https://jitpack.io"
-        }
-
         // Should be enabled only in development mode
         if (h2oBuild == '99999') mavenLocal()
     }
 
 
-    // All subprojects are scala project so apply the plugin directly
-    apply from: "$rootDir/gradle/scala.gradle"
+    if (project in scalaProjects) {
+      apply from: "$rootDir/gradle/scala.gradle"
+    }
+    if (project in pythonProjects) {
+      apply from: "$rootDir/gradle/python.gradle"
+    }
+
     // All subprojects needs Spark support
     apply from: "$rootDir/gradle/spark.gradle"
 
@@ -150,5 +158,5 @@ task buildSparklingWaterDist(type: Exec) {
 task dist(dependsOn: buildSparklingWaterDist)
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '2.7'
+  gradleVersion = '2.8'
 }

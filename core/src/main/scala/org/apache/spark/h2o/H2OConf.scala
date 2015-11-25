@@ -26,12 +26,14 @@ import org.apache.spark.SparkConf
 trait H2OConf {
 
   /* Require Spar config */
-  private[spark] def sparkConf:SparkConf
+  private[spark] def sparkConf: SparkConf
   // Precondition
   require(sparkConf != null, "sparkConf was null")
 
   /* Initialize configuration */
   // Collect configuration properties
+  import H2OConf._
+
   def numH2OWorkers = sparkConf.getInt(PROP_CLUSTER_SIZE._1, PROP_CLUSTER_SIZE._2)
   def useFlatFile   = sparkConf.getBoolean(PROP_USE_FLATFILE._1, PROP_USE_FLATFILE._2)
   def basePort      = sparkConf.getInt(PROP_PORT_BASE._1, PROP_PORT_BASE._2)
@@ -42,6 +44,8 @@ trait H2OConf {
   def defaultCloudSize  = sparkConf.getInt(PROP_DEFAULT_CLUSTER_SIZE._1, PROP_DEFAULT_CLUSTER_SIZE._2)
   def h2oNodeLogLevel   = sparkConf.get(PROP_NODE_LOG_LEVEL._1, PROP_NODE_LOG_LEVEL._2)
   def h2oClientLogLevel = sparkConf.get(PROP_CLIENT_LOG_LEVEL._1, PROP_CLIENT_LOG_LEVEL._2)
+  def h2oNodeLogDir   = sparkConf.get(PROP_NODE_LOG_DIR._1, PROP_NODE_LOG_DIR._2)
+  def h2oClientLogDir = sparkConf.get(PROP_CLIENT_LOG_DIR._1, PROP_CLIENT_LOG_DIR._2)
   def networkMask   = sparkConf.getOption(PROP_NETWORK_MASK._1)
   def nthreads      = sparkConf.getInt(PROP_NTHREADS._1, PROP_NTHREADS._2)
   def disableGA     = sparkConf.getBoolean(PROP_DISABLE_GA._1, PROP_DISABLE_GA._2)
@@ -56,6 +60,62 @@ trait H2OConf {
   def loginConf     = sparkConf.getOption(PROP_LOGIN_CONF._1)
   def userName      = sparkConf.getOption(PROP_USER_NAME._1)
 
+
+  /**
+   * Produce arguments for H2O node based on this config.
+   * @return array of H2O launcher command line arguments
+   */
+  def getH2ONodeArgs: Array[String] = (getH2OCommonOptions ++ Seq("-log_level", h2oNodeLogLevel)).toArray
+
+  /**
+   * Get arguments for H2O client.
+   * @return array of H2O client arguments.
+   */
+
+  def getH2OClientArgs: Array[String] = (
+    getH2OCommonOptions
+      ++ Seq("-quiet")
+      ++ (if (hashLogin) Seq("-hash_login") else Nil)
+      ++ (if (ldapLogin) Seq("-ldap_login") else Nil)
+      ++ Seq("-log_level", h2oClientLogLevel)
+      ++ Seq("-log_dir", h2oClientLogDir)
+      ++ Seq(
+        ("-ice_root", clientIcedDir.orNull),
+        ("-port", if (clientWebPort > 0) clientWebPort else null),
+        ("-jks", jks.orNull),
+        ("-jks_pass", jksPass.orNull),
+        ("-login_conf", loginConf.orNull),
+        ("-user_name", userName.orNull)
+      ).filter(_._2 != null).flatMap(x => Seq(x._1, x._2.toString))
+    ).toArray
+
+  private def getH2OCommonOptions:Seq[String] =
+    // Option in form key=value
+    Seq(
+      ("-name", cloudName),
+      ("-nthreads", if (nthreads > 0) nthreads else null),
+      ("-network", networkMask.orNull),
+      ("-baseport", basePort))
+      .filter(x => x._2 != null)
+      .flatMap(x => Seq(x._1, x._2.toString)) ++ // Append single boolean options
+      Seq(("-ga_opt_out", disableGA))
+        .filter(_._2).map(x => x._1)
+
+  override def toString: String =
+    s"""Sparkling Water configuration:
+         |  workers      : $numH2OWorkers
+         |  cloudName    : $cloudName
+         |  flatfile     : $useFlatFile
+         |  basePort     : $basePort
+         |  cloudTimeout : $cloudTimeout
+         |  h2oNodeLog   : $h2oNodeLogLevel
+         |  h2oClientLog : $h2oClientLogLevel
+         |  nthreads     : $nthreads
+         |  drddMulFactor: $drddMulFactor""".stripMargin
+
+}
+
+object H2OConf {
   /* Configuration properties */
 
   /** Configuration property - use flatfile for H2O cloud formation. */
@@ -78,6 +138,10 @@ trait H2OConf {
   val PROP_NODE_LOG_LEVEL = ("spark.ext.h2o.node.log.level", "INFO")
   /** H2O log leve for client running in Spark driver */
   val PROP_CLIENT_LOG_LEVEL = ("spark.ext.h2o.client.log.level", "WARN")
+  /** Location of log directory for remote nodes. */
+  val PROP_NODE_LOG_DIR = ("spark.ext.h2o.node.log.dir", null.asInstanceOf[String])
+  /** Location of log directory for the driver instance. */
+  val PROP_CLIENT_LOG_DIR = ("spark.ext.h2o.client.log.dir", defaultLogDir)
   /** Subnet selector for h2o if IP guess fail - useful if 'spark.ext.h2o.flatfile' is false
     * and we are trying to guess right IP on mi*/
   val PROP_NETWORK_MASK = ("spark.ext.h2o.network.mask", null.asInstanceOf[String])
@@ -110,60 +174,7 @@ trait H2OConf {
   /** Override user name for cluster. */
   val PROP_USER_NAME = ("spark.ext.h2o.user.name", null.asInstanceOf[String])
 
-  /**
-   * Produce arguments for H2O node based on this config.
-   * @return array of H2O launcher command line arguments
-   */
-  def getH2ONodeArgs: Array[String] = (getH2OCommonOptions ++ Seq("-log_level", h2oNodeLogLevel)).toArray
-
-  /**
-   * Get arguments for H2O client.
-   * @return array of H2O client arguments.
-   */
-
-  def getH2OClientArgs: Array[String] = (
-    getH2OCommonOptions
-      ++ Seq("-quiet")
-      ++ (if (hashLogin) Seq("-hash_login") else Nil)
-      ++ (if (ldapLogin) Seq("-ldap_login") else Nil)
-      ++ Seq("-log_level", h2oClientLogLevel)
-      ++ Seq("-log_dir", clientLogDir)
-      ++ Seq(
-        ("-ice_root", clientIcedDir.orNull),
-        ("-port", if (clientWebPort > 0) clientWebPort else null),
-        ("-jks", jks.orNull),
-        ("-jks_pass", jksPass.orNull),
-        ("-login_conf", loginConf.orNull),
-        ("-user_name", userName.orNull)
-      ).filter(_._2 != null).flatMap(x => Seq(x._1, x._2.toString))
-    ).toArray
-
-  private def getH2OCommonOptions:Seq[String] =
-    // Option in form key=value
-    Seq(
-      ("-name", cloudName),
-      ("-nthreads", if (nthreads > 0) nthreads else null),
-      ("-network", networkMask.orNull),
-      ("-baseport", basePort))
-      .filter(x => x._2 != null)
-      .flatMap(x => Seq(x._1, x._2.toString)) ++ // Append single boolean options
-      Seq(("-ga_opt_out", disableGA))
-        .filter(_._2).map(x => x._1)
-
-  private def clientLogDir: String = {
+  private[spark] def defaultLogDir: String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs"
   }
-
-  override def toString: String =
-    s"""Sparkling Water configuration:
-         |  workers      : $numH2OWorkers
-         |  cloudName    : $cloudName
-         |  flatfile     : $useFlatFile
-         |  basePort     : $basePort
-         |  cloudTimeout : $cloudTimeout
-         |  h2oNodeLog   : $h2oNodeLogLevel
-         |  h2oClientLog : $h2oClientLogLevel
-         |  nthreads     : $nthreads
-         |  drddMulFactor: $drddMulFactor""".stripMargin
-
 }

@@ -21,10 +21,7 @@ DIST_BUILD_DIR="${DIST_DIR}build/"
 
 cat > "$TOPDIR/demofiles.list" <<EOF
 bin/
-bin/launch-spark-cloud.sh
-bin/run-example.sh
-bin/sparkling-shell
-bin/sparkling-env.sh
+$(find bin -type f)
 assembly/build/libs/sparkling-water-assembly-$VERSION-all.jar
 examples/README.md
 examples/scripts/chicagoCrimeSmall.script.scala
@@ -51,8 +48,13 @@ docker/sparkling-test/
 docker/sparkling-test/build.sh
 docker/sparkling-test/base/
 docker/sparkling-test/base/Dockerfile
+$(find py/dist/ -type f -name '*.egg')
+$(find py/examples/ -type f)
+$(find py/pysparkling -type f -name '*.py')
 LICENSE
 README.md
+DEVEL.md
+CHANGELOG.md
 gradle.properties
 EOF
 

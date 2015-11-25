@@ -31,3 +31,6 @@ demofiles.list
 
 # H2O stuff #
 h2ologs/
+
+# generated custom config for jupyter
+jupyter_custom_config/

@@ -55,6 +55,6 @@ object ChicagoCrimeAppSmall extends SparkContextSupport {
     }
 
     // Shutdown full stack
-    app.shutdown(sc)
+    app.shutdown()
   }
 }

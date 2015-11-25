@@ -26,7 +26,7 @@ import org.apache.spark.sql.catalyst.expressions.{GenericMutableRow, Row}
 import org.apache.spark.sql.types._
 import org.apache.spark.{Partition, TaskContext}
 import water.fvec.H2OFrame
-import water.parser.ValueString
+import water.parser.BufferedString
 
 /**
  * H2O H2OFrame wrapper providing RDD[Row] API.
@@ -50,7 +50,7 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
       /** Mutable row returned by iterator */
       val mutableRow = new GenericMutableRow(ncols)
       /** Dummy muttable holder for String values */
-      val valStr = new ValueString()
+      val valStr = new BufferedString()
       /** Types for of columns */
       // FIXME: should be cached
       lazy val types = fr.vecs().map( v => vecTypeToDataType(v))
@@ -72,15 +72,17 @@ class H2OSchemaRDD(@transient val h2oContext: H2OContext,
               case DoubleType => chk.atd(row)
               case BooleanType => chk.at8(row) == 1
               case StringType =>
-                if (chk.vec().isEnum) {
-                  chk.vec().domain()(chk.at8(row).asInstanceOf[Int])
+                val utf8 = if (chk.vec().isCategorical) {
+                  val str = chk.vec().domain()(chk.at8(row).asInstanceOf[Int])
+                  str
                 } else if (chk.vec().isString) {
                   chk.atStr(valStr, row)
-                  valStr.toString
+                  valStr.bytesToString()
                 } else if (chk.vec().isUUID) {
                   val uuid = new UUID(chk.at16h(row), chk.at16l(row))
                   uuid.toString
-                } else None
+                } else null
+                utf8
               case TimestampType => new java.sql.Timestamp(chk.at8(row))
               case _ => ???
             }
