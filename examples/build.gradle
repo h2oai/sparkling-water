@@ -3,6 +3,14 @@ description = "Sparkling Water Examples"
 apply from: "$rootDir/gradle/utils.gradle"
 apply from: "$rootDir/gradle/scriptsTest.gradle"
 
+idea {
+
+    module {
+        jdkName='inheried'
+        testSourceDirs += new File('examples/src/scriptsTest/scala')
+        testSourceDirs += new File('examples/src/integTest/scala')
+    }
+}
 dependencies {
   // Sparkling Water Core
   compile( project(":sparkling-water-core") ) {

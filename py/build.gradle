@@ -5,6 +5,13 @@ import java.nio.file.Path
 import java.util.zip.GZIPOutputStream
 import static java.nio.file.StandardCopyOption.*;
 
+idea{
+    module {
+        inheritOutputDirs = false
+        outputDir = file('py/build/main')
+        testOutputDir = file('py/build/test')
+    }
+}
 description = "PySparkling - Sparkling-Water Python Package"
 
 dependencies {
