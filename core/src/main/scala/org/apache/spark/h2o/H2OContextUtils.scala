@@ -56,7 +56,7 @@ private[spark] object H2OContextUtils {
     nodes.groupBy(_._1).map(_._2.head).toArray.sortWith(_._1 < _._1)
   }
 
-  def getIp(env: SparkEnv) = env.actorSystem.settings.config.getString("akka.remote.netty.tcp.hostname")
+  def getIp(env: SparkEnv) = env.rpcEnv.address.host //settings.config.getString("akka.remote.netty.tcp.hostname")
 
   def saveAsFile(content: String): File = {
     val tmpDir = createTempDir()
@@ -230,7 +230,8 @@ private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.Ha
   @volatile var flatFile:Option[String] = None
 
   override def notifyAboutEmbeddedWebServerIpPort(ip: InetAddress, port: Int): Unit = {
-    val thisNodeInfo = (SparkEnv.get.executorId, ip.getHostName, port)
+    val env = SparkEnv.get
+    val thisNodeInfo = (env.executorId, getIp(env), port)
     flatfileBVariable.synchronized {
       flatfileBVariable += thisNodeInfo
       flatfileBVariable.notifyAll()
