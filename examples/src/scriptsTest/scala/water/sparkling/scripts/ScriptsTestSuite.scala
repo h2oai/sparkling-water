@@ -1,4 +1,4 @@
-package water.scripts
+package water.sparkling.scripts
 
 import java.io._
 import java.nio.file.StandardCopyOption
@@ -12,8 +12,8 @@ import scala.collection.mutable
 
 
 /**
- * Test for the scripts in the example/scripts directory
- */
+  * Test for the scripts in the example/scripts directory
+  */
 @RunWith(classOf[JUnitRunner])
 class ScriptsTestSuite extends FunSuite with ScriptsTestHelper with org.apache.spark.Logging {
 

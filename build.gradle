@@ -69,7 +69,13 @@ configure(allprojects) { project ->
       junitVersion       = '4.11'
     }
 }
-
+idea{
+    module {
+        inheritOutputDirs = false
+        outputDir = file('build/main')
+        testOutputDir = file('build/test')
+    }
+}
 // 
 // Common configuration for all subprojects
 //
