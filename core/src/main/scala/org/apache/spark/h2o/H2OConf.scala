@@ -36,7 +36,9 @@ trait H2OConf {
 
   def numH2OWorkers = sparkConf.getInt(PROP_CLUSTER_SIZE._1, PROP_CLUSTER_SIZE._2)
   def useFlatFile   = sparkConf.getBoolean(PROP_USE_FLATFILE._1, PROP_USE_FLATFILE._2)
-  def basePort      = sparkConf.getInt(PROP_PORT_BASE._1, PROP_PORT_BASE._2)
+  def clientIp      = sparkConf.getOption(PROP_CLIENT_IP._1)
+  def clientBasePort = sparkConf.getInt(PROP_CLIENT_PORT_BASE._1, PROP_CLIENT_PORT_BASE._2)
+  def nodeBasePort   = sparkConf.getInt(PROP_NODE_PORT_BASE._1, PROP_NODE_PORT_BASE._2)
   def cloudTimeout  = sparkConf.getInt(PROP_CLOUD_TIMEOUT._1, PROP_CLOUD_TIMEOUT._2)
   def drddMulFactor = sparkConf.getInt(PROP_DUMMY_RDD_MUL_FACTOR._1, PROP_DUMMY_RDD_MUL_FACTOR._2)
   def numRddRetries = sparkConf.getInt(PROP_SPREADRDD_RETRIES._1, PROP_SPREADRDD_RETRIES._2)
@@ -65,7 +67,9 @@ trait H2OConf {
    * Produce arguments for H2O node based on this config.
    * @return array of H2O launcher command line arguments
    */
-  def getH2ONodeArgs: Array[String] = (getH2OCommonOptions ++ Seq("-log_level", h2oNodeLogLevel)).toArray
+  def getH2ONodeArgs: Array[String] = (getH2OCommonOptions ++
+                                       Seq("-log_level", h2oNodeLogLevel,
+                                           "-baseport", nodeBasePort.toString)).toArray
 
   /**
    * Get arguments for H2O client.
@@ -79,6 +83,7 @@ trait H2OConf {
       ++ (if (ldapLogin) Seq("-ldap_login") else Nil)
       ++ Seq("-log_level", h2oClientLogLevel)
       ++ Seq("-log_dir", h2oClientLogDir)
+      ++ Seq("-baseport", clientBasePort.toString)
       ++ Seq(
         ("-ice_root", clientIcedDir.orNull),
         ("-port", if (clientWebPort > 0) clientWebPort else null),
@@ -94,8 +99,7 @@ trait H2OConf {
     Seq(
       ("-name", cloudName),
       ("-nthreads", if (nthreads > 0) nthreads else null),
-      ("-network", networkMask.orNull),
-      ("-baseport", basePort))
+      ("-network", networkMask.orNull))
       .filter(x => x._2 != null)
       .flatMap(x => Seq(x._1, x._2.toString)) ++ // Append single boolean options
       Seq(("-ga_opt_out", disableGA))
@@ -103,16 +107,16 @@ trait H2OConf {
 
   override def toString: String =
     s"""Sparkling Water configuration:
-         |  workers      : $numH2OWorkers
-         |  cloudName    : $cloudName
-         |  flatfile     : $useFlatFile
-         |  basePort     : $basePort
-         |  cloudTimeout : $cloudTimeout
-         |  h2oNodeLog   : $h2oNodeLogLevel
-         |  h2oClientLog : $h2oClientLogLevel
-         |  nthreads     : $nthreads
-         |  drddMulFactor: $drddMulFactor""".stripMargin
-
+         |  workers        : $numH2OWorkers
+         |  cloudName      : $cloudName
+         |  flatfile       : $useFlatFile
+         |  clientBasePort : $clientBasePort
+         |  nodeBasePort   : $nodeBasePort
+         |  cloudTimeout   : $cloudTimeout
+         |  h2oNodeLog     : $h2oNodeLogLevel
+         |  h2oClientLog   : $h2oClientLogLevel
+         |  nthreads       : $nthreads
+         |  drddMulFactor  : $drddMulFactor""".stripMargin
 }
 
 object H2OConf {
@@ -124,8 +128,6 @@ object H2OConf {
     * Value -1 means automatic detection of cluster size.
     */
   val PROP_CLUSTER_SIZE = ( "spark.ext.h2o.cluster.size", -1 )
-  /** Configuration property - base port used for individual H2O nodes configuration. */
-  val PROP_PORT_BASE = ( "spark.ext.h2o.port.base", 54321 )
   /** Configuration property - timeout for cloud up. */
   val PROP_CLOUD_TIMEOUT = ("spark.ext.h2o.cloud.timeout", 60*1000)
   /** Configuration property - number of retries to create an RDD spreat over all executors */
@@ -154,6 +156,12 @@ object H2OConf {
   val PROP_CLIENT_WEB_PORT = ("spark.ext.h2o.client.web.port", -1)
   /** Location of iced directory for the driver instance. */
   val PROP_CLIENT_ICED_DIR = ("spark.ext.h2o.client.iced.dir", null.asInstanceOf[String])
+  /** Configuration property - base port used for individual H2O nodes configuration. */
+  val PROP_NODE_PORT_BASE = ( "spark.ext.h2o.node.port.base", 54321 )
+  /** FIXME: documentation UPDATE */
+  val PROP_CLIENT_PORT_BASE = ( "spark.ext.h2o.client.port.base", 54321 )
+  val PROP_CLIENT_IP = ("spark.ext.h2o.client.ip", null.asInstanceOf[String])
+
   /** Location of iced directory for Spark nodes */
   val PROP_NODE_ICED_DIR = ("spark.ext.h2o.node.iced.dir", null.asInstanceOf[String])
 

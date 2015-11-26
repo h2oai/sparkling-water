@@ -210,10 +210,11 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + executors.length)
       // Get arguments for this launch including flatfile
       // And also ask for client mode
-      val h2oClientArgs = toH2OArgs(getH2OClientArgs ++ Array("-ip", getIp(SparkEnv.get), "-client"),
+      val h2oClientIp = clientIp.getOrElse(getIp(SparkEnv.get))
+      val h2oClientArgs = toH2OArgs(getH2OClientArgs ++ Array("-ip", h2oClientIp, "-client"),
                               this,
                               executors)
-      logDebug(s"Arguments used for launching h2o nodes: ${h2oClientArgs.mkString(" ")}")
+      logDebug(s"Arguments used for launching h2o client node: ${h2oClientArgs.mkString(" ")}")
       // Launch H2O
       H2OStarter.start(h2oClientArgs, false)
     }
