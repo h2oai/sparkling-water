@@ -14,5 +14,5 @@ install:
 env:
   - SPARK_HOME="./spark-1.4.1-bin-cdh4/"
 
-script: ./gradlew clean build -x test -x integTest -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME
+script: ./gradlew clean build -x check -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME
 
