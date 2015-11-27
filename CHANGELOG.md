@@ -9,6 +9,7 @@ ChangeLog
     - to perform transformation between Spark DataFrame and H2O Frame
   - Fix all scripts and create automatic tests for them
   - [SW-39] pySparkling: use Sparkling Water from Python
+  - Model serialization support
 
   - Fixes
     - [PUBDEV-282](https://0xdata.atlassian.net/browse/PUBDEV-282) Create windows batch scripts for starting sparkling-shell and running examples
@@ -21,6 +22,7 @@ ChangeLog
     - [SW-40](https://0xdata.atlassian.net/browse/SW-40)  PySparkling: as\_h2o\_frame method accepts name of target H2O Frame
     - [SW-41](https://0xdata.atlassian.net/browse/SW-41) H2OContext#asH2OFrame now
       accepts name for resulting H2OFrame.
+    - fix idea setup
 
 ##v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame

@@ -27,6 +27,8 @@ task clean(group: "Build tasks", description: "Clean up the project", type: Dele
   delete file("build/")
 }
 
+task uploadArchives(group: "Release", description: "Upload all archives")
+
 build.dependsOn compile
 build.dependsOn check
 
