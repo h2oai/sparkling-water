@@ -169,4 +169,5 @@ task wrapper(type: Wrapper) {
 
 task clean(group: "Build tasks", description: "Clean up the project", type: Delete) {
     delete file("build/")
+    delete file("h2ologs/")
 }

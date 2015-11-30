@@ -17,6 +17,8 @@
 
 package org.apache.spark.h2o
 
+import java.net.{URLClassLoader, URL}
+
 import org.apache.spark._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.h2o.H2OContextUtils._
@@ -43,7 +45,7 @@ import scala.util.Random
  *
  * It provides implicit conversion from RDD -> H2OLikeRDD and back.
  */
-class H2OContext (@transient val sparkContext: SparkContext) extends {
+class H2OContext private (@transient val sparkContext: SparkContext) extends {
     val sparkConf = sparkContext.getConf
   } with org.apache.spark.Logging
   with H2OConf
@@ -345,16 +347,64 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   }
 }
 
+object H2OContextHolder{
+  val instance: H2OContext = null
+}
+
 object H2OContext extends Logging {
 
+  def addURLToSystemClassLoader(url: URL) {
+    val systemClassLoader = ClassLoader.getSystemClassLoader.asInstanceOf[URLClassLoader]
+    val classLoaderClass = classOf[URLClassLoader]
+    try {
+      val method = classLoaderClass.getDeclaredMethod("addURL", classOf[URL])
+      method.setAccessible(true)
+      method.invoke(systemClassLoader, url)
+    } catch {
+      case e: Exception => e.printStackTrace();
+    }
+  }
+
+  def loadIfNotSet(sc: SparkContext)= {
+    val systemClassLoader = ClassLoader.getSystemClassLoader.asInstanceOf[URLClassLoader]
+    sc.jars.foreach{
+      jar => if( systemClassLoader.findResource(jar)==null){
+
+        addURLToSystemClassLoader(new URL(jar))
+      }
+    }
+  }
+var instance: H2OContext = null
   /**
-   * Create a new or return existing H2OContext.
-   *
-   * @param sparkContext
-   * @return
-   */
-  def getOrCreate(sparkContext: SparkContext): H2OContext = {
-    new H2OContext(sparkContext)
+    * Create a new or return existing H2OContext.
+    *
+    * @param sc Spark Context
+    * @return H2O Context
+    */
+  def getOrCreate(sc: SparkContext): H2OContext = {
+    loadIfNotSet(sc)
+    this.synchronized {
+      val ru = scala.reflect.runtime.universe
+      val mirror = ru.runtimeMirror(getClass.getClassLoader)
+
+      val h2oModuleSymbol = ru.typeOf[H2OContextHolder.type].termSymbol.asModule
+      val moduleMirror = mirror.reflectModule(h2oModuleSymbol)
+      val instanceMirror = mirror.reflect(moduleMirror.instance)
+
+      val h2oTerm = ru.typeOf[H2OContextHolder.type].declaration(ru.newTermName("instance")).asTerm.accessed.asTerm
+      val fieldMirror = instanceMirror.reflectField(h2oTerm)
+
+      var instance:H2OContext = fieldMirror.get.asInstanceOf[H2OContext]
+      if (instance == null) {
+        val H2OContextClazz = ClassLoader.getSystemClassLoader.loadClass(classOf[H2OContext].getName)
+        val constructor = H2OContextClazz.getDeclaredConstructor(classOf[SparkContext])
+        constructor.setAccessible(true)
+        instance = constructor.newInstance(sc).asInstanceOf[H2OContext]
+        fieldMirror.set(instance)
+        instance.start()
+      }
+      instance
+    }
   }
 
   /** Transform SchemaRDD into H2O Frame */

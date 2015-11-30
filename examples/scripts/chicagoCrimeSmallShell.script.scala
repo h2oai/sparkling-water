@@ -3,10 +3,12 @@
 *    export MASTER="local-cluster[3,2,4096]"
  *   bin/sparkling-shell -i examples/scripts/chicagoCrimeSmallShell.script.scala --conf spark.executor.memory=3G
  *
- * When running using spark shell or using scala rest API:
- *    SQLContext is available as sqlContext
- *    SparkContext is available as sc
- */
+  * When running using spark shell or using scala rest API:
+  *    SQLContext is available as sqlContext
+  *     - if you want to use sqlContext implicitly, you have to redefine it like: implicit val sqlContext = sqlContext,
+  *      butter better is to use it like this: implicit val sqlContext = SQLContext.getOrCreate(sc)
+  *    SparkContext is available as sc
+  */
 // Create an environment
 import _root_.hex.Distribution.Family
 import _root_.hex.deeplearning.DeepLearningModel
@@ -23,7 +25,7 @@ import org.apache.spark.sql.types._
 implicit val sqlContext = SQLContext.getOrCreate(sc)
 
 // Start H2O services
-implicit val h2oContext = new H2OContext(sc).start()
+implicit val h2oContext = H2OContext.getOrCreate(sc)
 import h2oContext._
 
 

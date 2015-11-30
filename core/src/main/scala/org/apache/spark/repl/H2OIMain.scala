@@ -1024,8 +1024,6 @@ import scala.util.control.ControlThrowable
   @DeveloperApi
   def close() {
     reporter.flush()
-    //TODO: FIX
-    // classServer.stop()
   }
 
 

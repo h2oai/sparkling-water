@@ -34,3 +34,6 @@ h2ologs/
 
 # generated custom config for jupyter
 jupyter_custom_config/
+
+# big data folder
+examples/bigdata

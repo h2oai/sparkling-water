@@ -2,7 +2,6 @@ description = "Sparkling Water Examples"
 
 apply from: "$rootDir/gradle/utils.gradle"
 apply from: "$rootDir/gradle/scriptsTest.gradle"
-
 idea {
     module {
         jdkName='inheried'
@@ -116,7 +115,6 @@ scriptsTest {
   systemProperty "sparkling.test.log.dir", new File(project.getBuildDir(), "h2ologs-test")
   systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-stest")
   systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-stest")
-
 
   // Set fat jar location
   systemProperty "sparkling.fat.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"

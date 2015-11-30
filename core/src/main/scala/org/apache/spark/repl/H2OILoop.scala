@@ -62,6 +62,7 @@ import scala.util.Properties.{javaVersion, jdkHome}
 class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkContext, var h2oContext: H2OContext, var sessionID: Int
                 ) extends AnyRef with LoopCommands with H2OILoopInit with Logging {
 
+  def getInterpreter() = intp
   /** Show the history */
   private lazy val historyCommand = new LoopCommand("history", "show the history (optional num is commands to show)") {
     override def usage = "[num]"
@@ -276,28 +277,91 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
     baos.reset()
     result
   }
+   def exceptionOccurred(): Boolean = {
+    if(intp.valueOfTerm("_lastExceptionHolder").isDefined){
+      true
+    }else{
+      false
+    }
+  }
 
+  def clearExceptionFlag() = {
+    // reset the exception flag
+    intp.beQuietDuring {
+      intp.interpret("val _lastExceptionHolder: Throwable = null")
+    }
+  }
+  def clearStatusFlag() = {
+    // reset the status flag
+    intp.beQuietDuring{
+      intp.interpret("val _replExecutionStatus = \"Success\"")
+    }
+  }
+
+  private def setSuccess() = {
+    intp.beQuietDuring {
+      // Allow going to Success only from Incomplete
+      if (intp.valueOfTerm("_replExecutionStatus").isDefined) {
+        if (intp.valueOfTerm("_replExecutionStatus").get.toString == CodeResults.Incomplete.toString) {
+          intp.interpret("val _replExecutionStatus = \"Success\"")
+        }
+      }
+    }
+  }
+
+  private def setIncomplete() = {
+    intp.beQuietDuring {
+    // Allow going to Incomplete only from Success
+    if (intp.valueOfTerm("_replExecutionStatus").isDefined) {
+      if (intp.valueOfTerm("_replExecutionStatus").get.toString == CodeResults.Success.toString) {
+        intp.interpret("val _replExecutionStatus = \"Incomplete\"")
+      }
+    }
+    }
+  }
+  private def setError() = {
+    intp.beQuietDuring{
+      if (intp.valueOfTerm("_replExecutionStatus").isDefined) {
+        intp.interpret("val _replExecutionStatus = \"Error\"")
+      }
+    }
+  }
   /**
    * Run bunch of code in a string
    * @param code
    * @return
    */
-  def runCode(code: String): String = {
+  def runCode(code: String): CodeResults.Value = {
     import java.io.{BufferedReader, StringReader}
     // set the input stream
     val input = new BufferedReader(new StringReader(code))
     in = SimpleReader(input, out, false)
-    // redirect output from console to our own stream
 
+    intp.beQuietDuring{
+      intp.interpret("val _lastExceptionHolder: Throwable = null")
+      intp.interpret("val _replExecutionStatus: String = \"Success\"")
+    }
+    // redirect output from console to our own stream
     scala.Console.withOut(printStream) {
       try loop()
       catch AbstractOrMissingHandler()
     }
-    if (intp.reporter.hasErrors) {
-      "Error"
-    } else {
-      "Success"
+    if(intp.valueOfTerm("lastException").isDefined){
+      intp.beQuietDuring{
+        intp.interpret("val _lastExceptionHolder: Throwable = lastException")
+      }
     }
+    if(exceptionOccurred()){
+      clearExceptionFlag()
+      return CodeResults.Exception
+    }else if(intp.valueOfTerm("_replExecutionStatus").get.toString == CodeResults.Error.toString){
+      clearStatusFlag()
+      return CodeResults.Error
+    }else if(intp.valueOfTerm("_replExecutionStatus").get.toString == CodeResults.Incomplete.toString){
+      clearStatusFlag()
+      return CodeResults.Incomplete
+    }
+    CodeResults.Success
   }
 
   /**
@@ -899,8 +963,12 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
     def reallyInterpret = {
       val reallyResult = intp.interpret(code)
       (reallyResult, reallyResult match {
-        case IR.Error       => None
-        case IR.Success     => Some(code)
+        case IR.Error       =>
+         setError()
+          None
+        case IR.Success     =>
+          setSuccess()
+          Some(code)
         case IR.Incomplete  =>
           if (in.interactive && code.endsWith("\n\n")) {
             echo("You typed two blank lines.  Starting a new command.")
@@ -912,10 +980,19 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
               // parser thinks the input is still incomplete, but since this is
               // a file being read non-interactively we want to fail.  So we send
               // it straight to the compiler for the nice error message.
-              intp.compileString(code)
+
+              // the interpreter thinks the code is incomplete, but it does not have to be exactly true
+              // we try to compile the code, if it's ok, the code is correct, otherwise is really incomplete
+              if(intp.compileString(code)){
+                setSuccess()
+              }else{
+                setIncomplete()
+              }
               None
 
-            case line => interpretStartingWith(code + "\n" + line)
+            case line =>
+              setIncomplete()
+              interpretStartingWith(code + "\n" + line)
           }
       })
     }
