@@ -3,6 +3,8 @@ sudo: false
 
 jdk:
   - oraclejdk7
+  - oraclejdk8
+  - openjdk7
 
 scala:
   - 2.10.4
@@ -13,6 +15,11 @@ install:
 
 env:
   - SPARK_HOME="./spark-1.4.1-bin-cdh4/"
+
+cache:
+    directories:
+        - $HOME/.m2
+        - $HOME/.gradle
 
 script: ./gradlew clean build -x check -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME
 
