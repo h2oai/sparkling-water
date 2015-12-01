@@ -4,7 +4,6 @@ apply from: "$rootDir/gradle/utils.gradle"
 apply from: "$rootDir/gradle/scriptsTest.gradle"
 
 idea {
-
     module {
         jdkName='inheried'
         testSourceDirs += new File('examples/src/scriptsTest/scala')
@@ -54,6 +53,8 @@ artifacts {
 }
 
 integTest {
+  def testEnv = detectEnvironment()
+
   // Pass references to libraries to test launcher
   systemProperty "spark.testing",   "true"
   systemProperty "spark.test.home", "${sparkHome}"
@@ -63,23 +64,34 @@ integTest {
   // Pass list of jars required for testing
   systemProperty "sparkling.test.assembly", "${configurations.integTestAssembly.artifacts.file.join(',')}"
   systemProperty "sparkling.test.jar", "${integTestJar.archivePath}"
-  systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest")
-  systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest")
-
 
   jvmArgs '-XX:MaxPermSize=384m'
 
     //configurations.integTestRuntime. { println(it)}
 
   // Decide which tests should be launch here based on environment
-  switch ( detectEnvironment() ) {
+  switch (testEnv) {
     case "yarn":
+      systemProperty "sparkling.test.environment", "${testEnv}"
+      systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}"
+      systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}"
+
       include "water/sparkling/itest/yarn/**"
       break
+
     case "standalone":
+      systemProperty "sparkling.test.environment", "${testEnv}"
+      systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}"
+      systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}"
+
       include "water/sparkling/itest/standalone/**"
       break
+
     case "local":
+      systemProperty "sparkling.test.environment", "${testEnv}"
+      systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}")
+      systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}")
+
       include "water/sparkling/itest/local/**"
       break
   }
@@ -91,7 +103,7 @@ integTest {
   // Working dir will be root project
   workingDir = rootDir
   // Increase test runner memory
-  maxHeapSize = "2g"
+  maxHeapSize = "4g"
 
   // Show standard out and standard error of the test JVM(s) on the console
   // DEBUG testLogging.showStandardStreams = true
