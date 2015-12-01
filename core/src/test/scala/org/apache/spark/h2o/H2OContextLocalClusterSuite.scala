@@ -47,7 +47,7 @@ class H2OContextLocalClusterSuite extends FunSuite
   // IGNORED since we are not able to initialize client in the process several times
   ignore("2nd run to verify that test does not overlap") {
     val conf = defaultSparkConf.setJars(swassembly :: Nil)
-    sc = new SparkContext("local-cluster[3,2,721]", "test-local-cluster", conf)
+    sc = new SparkContext("local-cluster[3,2,1024]", "test-local-cluster", conf)
     hc = new H2OContext(sc).start()
 
     resetContext()
