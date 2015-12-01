@@ -25,7 +25,7 @@ class ChicagoCrimeTestSuite extends FunSuite with SparkITest {
         conf("spark.executor.instances", 3)
         conf("spark.executor.memory", "8g")
         conf("spark.ext.h2o.port.base", 63331)
-        conf("spark.driver.memory", "4g")
+        conf("spark.driver.memory", "8g")
       }
     )
   }
@@ -33,7 +33,17 @@ class ChicagoCrimeTestSuite extends FunSuite with SparkITest {
 
 object ChicagoCrimeTest extends SparkContextSupport {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
+    try {
+      test(args)
+    } catch {
+      case t:Throwable => {
+        water.H2O.exit(-1)
+      }
+    }
+  }
+
+  def test(args: Array[String]) {
     val sc = new SparkContext(configure("ChicagoCrimeTest"))
     // SQL support
     val sqlContext = new SQLContext(sc)
