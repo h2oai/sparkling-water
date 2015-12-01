@@ -1,11 +1,6 @@
 import org.apache.tools.ant.taskdefs.condition.Os
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Path
-import java.util.zip.GZIPOutputStream
-import static java.nio.file.StandardCopyOption.*;
 
-idea{
+idea {
     module {
         inheritOutputDirs = false
         outputDir = file('py/build/main')

@@ -27,7 +27,7 @@ class KMeansITestSuite extends FunSuite with SparkITest {
         conf("spark.executor.instances", 6) // 10 executor instances
         conf("spark.executor.memory", "8g") // 20g per executor
         conf("spark.ext.h2o.port.base", 63331) //Start at baseport 63331
-        conf("spark.driver.memory", "4g")
+        conf("spark.driver.memory", "8g")
         conf("spark.executor.cores", 32) //Use up all the cores on the machines
       }
     )
@@ -39,7 +39,18 @@ class KMeansITestSuite extends FunSuite with SparkITest {
  * transforming them into RDD and launching MLlib K-means.
  */
 object KMeansITest {
+
   def main(args: Array[String]): Unit = {
+    try {
+      test(args)
+    } catch {
+      case t:Throwable => {
+        water.H2O.exit(-1)
+      }
+    }
+  }
+
+  def test(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("KMeansITest")
     val sc = new SparkContext(conf)
     val h2oContext = new H2OContext(sc).start()
@@ -111,6 +122,6 @@ object KMeansITest {
     // Shutdown Spark
     sc.stop()
     // Shutdown H2O explicitly
-    water.H2O.shutdown(0)
+    water.H2O.exit(0)
   }
 }

@@ -19,7 +19,7 @@ class HexDev64TestSuite extends FunSuite with SparkITest {
         conf("spark.executor.instances", 6) // 10 executor instances
         conf("spark.executor.memory", "8g") // 20g per executor
         conf("spark.ext.h2o.port.base", 63331)
-        conf("spark.driver.memory", "4g")
+        conf("spark.driver.memory", "8g")
       }
     )
   }
@@ -27,6 +27,16 @@ class HexDev64TestSuite extends FunSuite with SparkITest {
 
 object HexDev64Test {
   def main(args: Array[String]): Unit = {
+    try {
+      test(args)
+    } catch {
+      case t:Throwable => {
+        water.H2O.exit(-1)
+      }
+    }
+  }
+
+  def test(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("HexDev64Test")
     val sc = new SparkContext(conf)
     val h2oContext = new H2OContext(sc).start()
@@ -54,6 +64,6 @@ object HexDev64Test {
     // Shutdown Spark
     sc.stop()
     // Shutdown H2O explicitly (at least the driver)
-    water.H2O.shutdown(0)
+    water.H2O.exit(0)
   }
 }

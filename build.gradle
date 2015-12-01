@@ -69,7 +69,7 @@ configure(allprojects) { project ->
       junitVersion       = '4.11'
     }
 }
-idea{
+idea {
     module {
         inheritOutputDirs = false
         outputDir = file('build/main')
@@ -165,4 +165,8 @@ task dist(dependsOn: buildSparklingWaterDist)
 
 task wrapper(type: Wrapper) {
   gradleVersion = '2.9'
+}
+
+task clean(group: "Build tasks", description: "Clean up the project", type: Delete) {
+    delete file("build/")
 }
