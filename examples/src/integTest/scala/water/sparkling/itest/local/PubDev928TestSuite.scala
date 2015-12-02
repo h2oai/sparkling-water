@@ -26,6 +26,8 @@ class PubDev928TestSuite extends FunSuite with SparkITest {
     launch("water.sparkling.itest.local.PubDev928Test",
       env {
         sparkMaster("local-cluster[3,2,1024]")
+        conf("spark.executor.memory", "1g")
+        conf("spark.driver.memory", "1g")
       }
     )
   }

@@ -23,6 +23,8 @@ class RegularExamplesSuite extends FunSuite with SparkITest {
     launch( "org.apache.spark.examples.h2o.AirlinesWithWeatherDemo",
       env {
         sparkMaster("local-cluster[3,2,1024]")
+        conf("spark.executor.memory", "1g")
+        conf("spark.driver.memory", "1g")
       }
     )
   }
@@ -35,6 +37,8 @@ class RegularExamplesSuite1 extends FunSuite with SparkITest {
     launch( "org.apache.spark.examples.h2o.AirlinesWithWeatherDemo2",
       env {
         sparkMaster("local-cluster[3,2,1024]")
+        conf("spark.executor.memory", "1g")
+        conf("spark.driver.memory", "1g")
       }
     )
   }
@@ -47,6 +51,8 @@ class RegularExamplesSuite2 extends FunSuite with SparkITest {
     launch( "org.apache.spark.examples.h2o.DeepLearningDemo",
       env {
         sparkMaster("local-cluster[3,2,1024]")
+        conf("spark.executor.memory", "1g")
+        conf("spark.driver.memory", "1g")
       }
     )
   }
@@ -59,6 +65,8 @@ class RegularExamplesSuite3 extends FunSuite with SparkITest {
     launch( "org.apache.spark.examples.h2o.DeepLearningDemoWithoutExtension",
       env {
         sparkMaster("local-cluster[3,2,1024]")
+        conf("spark.executor.memory", "1g")
+        conf("spark.driver.memory", "1g")
       }
     )
   }
@@ -71,6 +79,8 @@ class RegularExamplesSuite4 extends FunSuite with SparkITest {
     launch( "org.apache.spark.examples.h2o.ProstateDemo",
       env {
         sparkMaster("local-cluster[3,2,1024]")
+        conf("spark.executor.memory", "1g")
+        conf("spark.driver.memory", "1g")
       }
     )
   }
@@ -83,6 +93,8 @@ class RegularExamplesSuite5 extends FunSuite with SparkITest {
     launch( "org.apache.spark.examples.h2o.HamOrSpamDemo",
       env {
         sparkMaster("local-cluster[3,2,1024]")
+        conf("spark.executor.memory", "1g")
+        conf("spark.driver.memory", "1g")
       }
     )
   }
@@ -95,6 +107,8 @@ class RegularExamplesSuite6 extends FunSuite with SparkITest {
     launch( "org.apache.spark.examples.h2o.ChicagoCrimeAppSmall",
       env {
         sparkMaster("local-cluster[3,2,1024]")
+        conf("spark.executor.memory", "1g")
+        conf("spark.driver.memory", "1g")
       }
     )
   }
@@ -107,6 +121,8 @@ class RegularExamplesSuite7 extends FunSuite with SparkITest {
     launch( "org.apache.spark.examples.h2o.CraigslistJobTitlesApp",
       env {
         sparkMaster("local-cluster[3,2,1024]")
+        conf("spark.executor.memory", "1g")
+        conf("spark.driver.memory", "1g")
       }
     )
   }
