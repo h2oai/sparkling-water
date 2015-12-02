@@ -38,8 +38,8 @@ trait SparkITest extends BeforeAndAfterEach { self: Suite =>
       Seq("--conf", "spark.ext.h2o.disable.ga=true") ++
       Seq("--conf", "spark.driver.extraJavaOptions=-XX:MaxPermSize=384m") ++
       Seq("--conf", "hdp.version="+env.hdpVersion) ++
+      Seq("--conf", s"spark.ext.h2o.cloud.name=sparkling-water-${className.replace('.','-')}") ++
       Seq[String](env.testJar)
-
 
     if(!env.sparkMaster.startsWith("yarn")) {
       SparkSubmit.main(cmdLine.toArray)
