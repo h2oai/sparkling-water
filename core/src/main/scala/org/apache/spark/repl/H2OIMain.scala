@@ -49,6 +49,7 @@ import scala.tools.reflect.StdRuntimeTags._
 import scala.tools.util.PathResolver
 import scala.util.control.ControlThrowable
 
+// scalastyle:off
 /** An interpreter for Scala code. It is slighlty modified for H2O purposes so it can be used in the
   * environemnt where multiple interpretrs exist and are using the same http class server.
   *
@@ -1907,3 +1908,4 @@ class H2OISettings(intp: H2OIMain) extends Logging {
                             | %s
                             | }""".stripMargin.format(allSettingsString)
 }
+// scalastyle:on

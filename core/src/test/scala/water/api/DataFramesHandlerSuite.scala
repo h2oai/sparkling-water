@@ -51,7 +51,7 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
     import sqlContext.implicits._
 
     val rdd = sc.parallelize(1 to 10)
-    val rid = "df_"+rdd.id
+    val rid = "df_" + rdd.id
 
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
@@ -64,11 +64,16 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
     assert (result.dataFrames(0).dataframe_id == rid, "IDs should match")
 
     val schema = parseSchema(result.dataFrames(0).schema)
-    assert (schema.length == df.schema.length, "Number of fields in schemas should be the same")
-    assert (schema.fields(0).name.equals(df.schema.fields(0).name),"Name of the first field in StructType should be the same")
-    assert (schema.fields(0).nullable == df.schema.fields(0).nullable, "Nullable attribute of the first field in StructType should be the same")
-    assert (schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName), "DataType attribute of the first field in StructType should be the same")
-    assert (schema.fields(0).metadata == Metadata.empty, "Metadata should be empty")
+    assert (schema.length == df.schema.length,
+            "Number of fields in schemas should be the same")
+    assert (schema.fields(0).name.equals(df.schema.fields(0).name),
+            "Name of the first field in StructType should be the same")
+    assert (schema.fields(0).nullable == df.schema.fields(0).nullable,
+            "Nullable attribute of the first field in StructType should be the same")
+    assert (schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName),
+            "DataType attribute of the first field in StructType should be the same")
+    assert (schema.fields(0).metadata == Metadata.empty,
+            "Metadata should be empty")
   }
 
   test("DataFrameHandler.getDataFrame() method where DataFrame has non empty metadata") {
@@ -88,11 +93,16 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
     assert (result.dataframe.dataframe_id == name, "IDs should match")
     assert (result.msg.equals("OK"),"Status should be OK")
     val schema = parseSchema(result.dataframe.schema)
-    assert (schema.length == df.schema.length, "Number of fields in schemas should be the same")
-    assert (schema.fields(0).name.equals(df.schema.fields(0).name),"Name of the first field in StructType should be the same")
-    assert (schema.fields(0).nullable == df.schema.fields(0).nullable, "Nullable attribute of the first field in StructType should be the same")
-    assert (schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName), "DataType attribute of the first field in StructType should be the same")
-    assert (schema.fields(0).metadata.getDoubleArray("percentiles").sameElements(percentiles), "Metadata should match, comparing percentiles")
+    assert (schema.length == df.schema.length,
+            "Number of fields in schemas should be the same")
+    assert (schema.fields(0).name.equals(df.schema.fields(0).name),
+            "Name of the first field in StructType should be the same")
+    assert (schema.fields(0).nullable == df.schema.fields(0).nullable,
+            "Nullable attribute of the first field in StructType should be the same")
+    assert (schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName),
+            "DataType attribute of the first field in StructType should be the same")
+    assert (schema.fields(0).metadata.getDoubleArray("percentiles").sameElements(percentiles),
+            "Metadata should match, comparing percentiles")
   }
 
   test("DataFramesHandler.toH2OFrame() method"){

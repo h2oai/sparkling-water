@@ -1,3 +1,5 @@
+apply plugin: 'base'
+
 configurations {
   compile {
   }
@@ -15,17 +17,9 @@ configurations {
   }
 }
 
-task compile(group: "Build tasks", description: "Compile this project")
+task compile(group: "Build", description: "Compile this project")
 
-task build(group: "Build tasks", description: "Build and test this project")
-
-task check(group: "Verification tasks", description: "Check this project")
-
-task test(group: "Verification tasks", description: "Test this project")
-
-task clean(group: "Build tasks", description: "Clean up the project", type: Delete) {
-  delete file("build/")
-}
+task test(group: "Verification", description: "Test this project")
 
 task uploadArchives(group: "Release", description: "Upload all archives")
 

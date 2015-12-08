@@ -39,7 +39,7 @@ class RDDsHandler(val sc: SparkContext) extends Handler {
   def getRDD(version: Int, s: RDDWithMsgV3): RDDWithMsgV3 = {
     val r = s.createAndFillImpl()
     if (sc.getPersistentRDDs.get(s.searched_rdd_id).isEmpty) {
-      s.msg = "RDD with id \""+s.searched_rdd_id+"\" does not exist"
+      s.msg = s"RDD with id '${s.searched_rdd_id}' does not exist"
     } else {
       r.rdd = IcedRDDInfo.fromRdd(sc.getPersistentRDDs.get(s.searched_rdd_id).get)
       s.fillFromImpl(r)

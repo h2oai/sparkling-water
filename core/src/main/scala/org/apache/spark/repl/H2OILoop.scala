@@ -57,6 +57,7 @@ import scala.util.Properties.{javaVersion, jdkHome}
   *  @author  Lex Spoon
   *  @version 1.2
   */
+// scalastyle:off
 @DeveloperApi
 class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkContext, var h2oContext: H2OContext, var sessionID: Int
                 ) extends AnyRef with LoopCommands with H2OILoopInit with Logging {
@@ -1106,6 +1107,7 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
     override protected def parentClassLoader = SparkHelper.explicitParentLoader(settings).getOrElse(classOf[H2OILoop].getClassLoader)
   }
 
+  // scalastyle:off
   private object paste extends Pasted {
     val ContinueString = "     | "
     val PromptString = "scala> "
@@ -1115,6 +1117,7 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
       intp interpret line
       echo("")
     }
+    // scalastyle:on
 
     def transcript(start: String) = {
       echo("\n// Detected repl transcript paste: ctrl-D to finish.\n")
@@ -1124,3 +1127,4 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
 
   initH2OILoop()
 }
+// scalastyle:on

@@ -42,8 +42,9 @@ private[repl] trait H2OExprTyper extends Logging {
       val scanner = newUnitParser(code)
       val result  = rule(scanner)
 
-      if (!reporter.hasErrors)
+      if (!reporter.hasErrors) {
         scanner.accept(EOF)
+      }
 
       result
     }

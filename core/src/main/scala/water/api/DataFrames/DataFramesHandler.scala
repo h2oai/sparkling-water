@@ -43,12 +43,12 @@ class DataFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extend
   def getDataFrame(version: Int, s: DataFrameWithMsgV3): DataFrameWithMsgV3 = {
     val r = s.createAndFillImpl()
     if(!sqlContext.tableNames().toList.contains(s.searched_dataframe_id)){
-      s.msg = "DataFrame with id \""+s.searched_dataframe_id+"\" does not exist"
+      s.msg = s"DataFrame with id '${s.searched_dataframe_id}' does not exist"
     }else{
       val dataFrame = sqlContext.table(s.searched_dataframe_id)
       r.dataframe = new IcedDataFrameInfo(s.searched_dataframe_id, dataFrame.schema.json)
       s.fillFromImpl(r)
-      s.msg="OK"
+      s.msg = "OK"
     }
     s
   }
@@ -62,7 +62,7 @@ class DataFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extend
   def toH2OFrame(version: Int, s: H2OFrameIDV3): H2OFrameIDV3 = {
     if(!sqlContext.tableNames().toList.contains(s.dataframe_id)){
       s.h2oframe_id=""
-      s.msg = "DataFrame with id \""+s.dataframe_id+"\" does not exist, can not proceed with the transformation"
+      s.msg = s"DataFrame with id '${s.dataframe_id}' does not exist, can not proceed with the transformation"
     }else{
       val dataFrame: DataFrame = sqlContext.table(s.dataframe_id)
       val h2oFrame = h2OContext.asH2OFrame(dataFrame)

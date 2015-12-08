@@ -481,7 +481,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   test("H2OFrame[Simple StructType] to DataFrame[flattened StructType]") {
     import sqlContext.implicits._
     val num = 20
-    val values = (1 to num).map(x => PrimitiveA(x, "name="+x))
+    val values = (1 to num).map(x => PrimitiveA(x, "name=" + x))
     val srdd:DataFrame = sc.parallelize(values).toDF
     // Convert to H2OFrame
     val dataFrame = hc.asH2OFrame(srdd)
@@ -492,7 +492,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   test("DataFrame[flattened StructType] to H2OFrame[Composed StructType]") {
     import sqlContext.implicits._
     val num = 20
-    val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name="+x), x*3.14))
+    val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 3.14))
     val srdd:DataFrame = sc.parallelize(values).toDF
     // Convert to H2OFrame
     val dataFrame = hc.asH2OFrame(srdd)

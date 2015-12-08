@@ -531,10 +531,15 @@ object H2OContext extends Logging {
             case IntegerType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Int] else subRow.getInt(aidx))
             case LongType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Long] else subRow.getLong(aidx))
             case FloatType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Float] else subRow.getFloat(aidx))
-            case DoubleType => chk.addNum(if (isAry)
-              ary(aryIdx).asInstanceOf[Double]
-              else if (isVec) subRow.getAs[mllib.linalg.Vector](aidx)(idx - startOfSeq)
-              else subRow.getDouble(aidx))
+            case DoubleType => chk.addNum(if (isAry) {
+                ary(aryIdx).asInstanceOf[Double]
+              } else {
+                if (isVec) {
+                  subRow.getAs[mllib.linalg.Vector](aidx)(idx - startOfSeq)
+                } else {
+                  subRow.getDouble(aidx)
+                }
+              })
             case StringType => {
               val sv = if (isAry) ary(aryIdx).asInstanceOf[String] else subRow.getString(aidx)
               // Always produce string vectors
