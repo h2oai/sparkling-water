@@ -21,9 +21,9 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
- * A simple wrapper to allow launching H2O itself on the
- * top of Spark.
- */
+  * A simple wrapper to allow launching H2O itself on the
+  * top of Spark.
+  */
 object SparklingWaterDriver {
 
   /** Entry point */
@@ -35,7 +35,7 @@ object SparklingWaterDriver {
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
     // Start H2O cluster only
-    new H2OContext(sc).start()
+    H2OContext.getOrCreate(sc)
 
     // Infinite wait
     this.synchronized(while (true) {

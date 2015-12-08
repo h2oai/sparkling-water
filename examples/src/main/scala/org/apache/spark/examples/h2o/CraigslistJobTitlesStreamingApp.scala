@@ -47,7 +47,7 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport with ModelSer
     val ssc = new StreamingContext(sc, Seconds(10))
     val sqlContext = new SQLContext(sc)
     // Start H2O services
-    val h2oContext = new H2OContext(sc).start()
+    val h2oContext = H2OContext.getOrCreate(sc)
 
     // Build an initial model
     val staticApp = new CraigslistJobTitlesApp()(sc, sqlContext, h2oContext)

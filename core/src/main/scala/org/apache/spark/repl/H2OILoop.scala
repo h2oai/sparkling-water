@@ -205,7 +205,7 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
      if (isReplPower) powerCommands else Nil
    )*/
 
-  def initH2OILoop(): Unit = savingContextLoader {
+  def initH2OILoop(): Unit = {
     if (getMaster() == "yarn-client") System.setProperty("SPARK_YARN_MODE", "true")
     this.settings = createSettings()
     createInterpreter()

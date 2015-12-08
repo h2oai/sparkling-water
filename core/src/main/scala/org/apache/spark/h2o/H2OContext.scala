@@ -45,14 +45,11 @@ import scala.util.Random
  *
  * It provides implicit conversion from RDD -> H2OLikeRDD and back.
  */
-class H2OContext private (@transient val sparkContext: SparkContext) extends {
+class H2OContext private[this](@transient val sparkContext: SparkContext) extends {
     val sparkConf = sparkContext.getConf
   } with org.apache.spark.Logging
   with H2OConf
   with Serializable {
-
-  /** Supports call from java environments. */
-  def this(sparkContext: JavaSparkContext) = this(sparkContext.sc)
 
   /** Runtime list of active H2O nodes */
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
@@ -161,7 +158,7 @@ class H2OContext private (@transient val sparkContext: SparkContext) extends {
   //def sparkUI = sparkContext.ui.map(ui => ui.appUIAddress)
 
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
-  def start(h2oWorkers: Int):H2OContext = {
+  private def start(h2oWorkers: Int):H2OContext = {
     import H2OConf._
     sparkConf.set(PROP_CLUSTER_SIZE._1, h2oWorkers.toString)
     start()
@@ -169,7 +166,7 @@ class H2OContext private (@transient val sparkContext: SparkContext) extends {
   }
 
   /** Initialize Sparkling H2O and start H2O cloud. */
-  def start(): H2OContext = {
+  private def start(): H2OContext = {
     import H2OConf._
     // Setup properties for H2O configuration
     sparkConf.set(PROP_CLOUD_NAME._1,
@@ -225,7 +222,6 @@ class H2OContext private (@transient val sparkContext: SparkContext) extends {
     // Register web API for client
     H2OContext.registerClientWebAPI(sparkContext, this)
     H2O.finalizeRegistration()
-
     // Fill information about H2O client
     localClientIp = H2O.SELF_ADDRESS.getHostAddress
     localClientPort = H2O.API_PORT
@@ -278,7 +274,7 @@ class H2OContext private (@transient val sparkContext: SparkContext) extends {
             | If you are running regular application, please, specify number of Spark workers
             | via ${H2OConf.PROP_CLUSTER_SIZE._1} Spark configuration property.
             | If you are running from shell,
-            | you can try: val h2oContext = new H2OContext().start(<number of Spark workers>)
+            | you can try: val h2oContext = H2OContext.getOrCreate(sc,<number of Spark workers>)
             |
             |""".stripMargin
       )
@@ -369,19 +365,17 @@ object H2OContext extends Logging {
     val systemClassLoader = ClassLoader.getSystemClassLoader.asInstanceOf[URLClassLoader]
     sc.jars.foreach{
       jar => if( systemClassLoader.findResource(jar)==null){
-
-        addURLToSystemClassLoader(new URL(jar))
+        if(jar.startsWith("file://")){
+          addURLToSystemClassLoader(new URL(jar))
+        }else{
+          addURLToSystemClassLoader(new URL("file://" + jar))
+        }
       }
     }
   }
-var instance: H2OContext = null
-  /**
-    * Create a new or return existing H2OContext.
-    *
-    * @param sc Spark Context
-    * @return H2O Context
-    */
-  def getOrCreate(sc: SparkContext): H2OContext = {
+  var instance: H2OContext = null
+
+  private def getOrCreate(sc:SparkContext, h2oWorkers: Option[Int]): H2OContext = {
     loadIfNotSet(sc)
     this.synchronized {
       val ru = scala.reflect.runtime.universe
@@ -401,10 +395,44 @@ var instance: H2OContext = null
         constructor.setAccessible(true)
         instance = constructor.newInstance(sc).asInstanceOf[H2OContext]
         fieldMirror.set(instance)
-        instance.start()
+        if(h2oWorkers.isEmpty){
+          instance.start()
+        }else{
+          instance.start(h2oWorkers.get)
+        }
       }
       instance
     }
+  }
+
+  /**
+    * Get existing H2O Context or initialize Sparkling H2O and start H2O cloud with specified number of workers
+    *
+    * @param sc Spark Context
+    * @return H2O Context
+    */
+  def getOrCreate(sc: SparkContext, h2oWorkers: Int): H2OContext = {
+    getOrCreate(sc, Some(h2oWorkers))
+  }
+
+  /**
+    * Get existing H2O Context or initialize Sparkling H2O and start H2O cloud with default number of workers
+    *
+    * @param sc Spark Context
+    * @return H2O Context
+    */
+  def getOrCreate(sc: SparkContext): H2OContext = {
+    getOrCreate(sc, None)
+  }
+
+  /** Supports call from java environments. */
+  def getOrCreate(sc: JavaSparkContext): H2OContext = {
+    getOrCreate(sc.sc, None)
+  }
+
+  /** Supports call from java environments. */
+  def getOrCreate(sc: JavaSparkContext, h2oWorkers: Int): H2OContext = {
+    getOrCreate(sc.sc,Some(h2oWorkers))
   }
 
   /** Transform SchemaRDD into H2O Frame */
@@ -666,12 +694,7 @@ var instance: H2OContext = null
   }
 
   private[h2o] def registerClientWebAPI(sc: SparkContext, h2OContext: H2OContext): Unit = {
-    /** Need: SW-45
-    //this is here to override the SQLContext by the spark shell, this instance than can be obtained using SQLContext.getOrCreate(sc)
-    new SQLContext(sc)
-
-    //registerScalaIntEndp(sc, h2OContext)
-    */
+    registerScalaIntEndp(sc, h2OContext)
     registerDataFramesEndp(sc, h2OContext)
     registerH2OFramesEndp(sc, h2OContext)
     registerRDDsEndp(sc)

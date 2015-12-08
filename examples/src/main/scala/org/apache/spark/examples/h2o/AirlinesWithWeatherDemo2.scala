@@ -41,7 +41,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
     val conf: SparkConf = configure("Sparkling Water Meetup: Use Airlines and Weather Data for delay prediction")
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
-    val h2oContext = new H2OContext(sc).start()
+    val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
     // Setup environment
     addFiles(sc,

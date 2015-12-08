@@ -163,7 +163,7 @@ The Sparkling Water provides following primitives, which are the basic classes u
 If `SparkContext` is available, initialize and start H2O context: 
 ```scala
 val sc:SparkContext = ...
-val hc = new H2OContext(sc).start()
+val hc = H2OContext.getOrCreate(sc)
 ```
 
 The call will:
@@ -229,12 +229,12 @@ The following configuration properties can be passed to Spark to configure Spark
 ### Starting H2O Services
 ```scala
 val sc:SparkContext = ...
-val hc = new H2OContext(sc).start()
+val hc = H2OContext.getOrCreate(sc)
 ```
 
-When the number of Spark nodes is known, it can be specified in `start` call:
+When the number of Spark nodes is known, it can be specified in `getOrCreate` call:
 ```scala
-val hc = new H2OContext(sc).start(3)
+val hc = H2OContext.getOrCreate(3)
 ```
 
 ---
@@ -445,7 +445,7 @@ You can find Sparkling Water self-contained application skeleton in [Droplet rep
 
 <a name="TestCases"></a>
 ## Testing Scenarios
- 1. Initialize H2O on top of Spark by running  `new H2OContext(sc).start()` and verifying that H2O was properly initialized on all Spark nodes. 
+ 1. Initialize H2O on top of Spark by running  `H2OContext.getOrCreate(sc)` and verifying that H2O was properly initialized on all Spark nodes.
  2. Load data with help from the H2O API from various data sources:
    * local disk
    * HDFS
@@ -474,7 +474,7 @@ Spark 1.4.0 or later is required.
   ```scala
   import org.apache.spark.h2o._
   val sc = new SparkContext(conf)
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   import h2oContext._
   ```
 2. Load data: 
@@ -483,7 +483,7 @@ Spark 1.4.0 or later is required.
       ```scala
       val sc = new SparkContext(conf)
       import org.apache.spark.h2o._
-      val h2oContext = new H2OContext(sc).start()
+      val h2oContext = H2OContext.getOrCreate(sc)
       import java.io.File
       val df: H2OFrame = new H2OFrame(new File("examples/smalldata/allyears2k_headers.csv.gz"))
       ```
@@ -494,7 +494,7 @@ Spark 1.4.0 or later is required.
    ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
   val uri = new java.net.URI(path)
   val airlinesHF = new H2OFrame(uri)
@@ -504,7 +504,7 @@ Spark 1.4.0 or later is required.
    ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
   val uri = new java.net.URI(path)
   val airlinesHF = new H2OFrame(uri)
@@ -515,7 +515,7 @@ Spark 1.4.0 or later is required.
   ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
   val hf: H2OFrame = h2oContext.asH2OFrame(rdd)
   ```
@@ -524,7 +524,7 @@ Spark 1.4.0 or later is required.
   ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   import org.apache.spark.sql._
   val sqlContext = new SQLContext(sc)
   import sqlContext.implicits._
@@ -536,7 +536,7 @@ Spark 1.4.0 or later is required.
   ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val rdd = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
   val hf: H2OFrame = h2oContext.asH2OFrame(rdd)
   val newRdd = h2oContext.asRDD[IntHolder](hf)
@@ -546,7 +546,7 @@ Spark 1.4.0 or later is required.
   ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   import org.apache.spark.sql._
   val sqlContext = new SQLContext(sc)
   import sqlContext.implicits._
@@ -560,7 +560,7 @@ Spark 1.4.0 or later is required.
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
   import org.apache.spark.examples.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val path = "examples/smalldata/prostate.csv"
   val prostateText = sc.textFile(path)
   val prostateRDD = prostateText.map(_.split(",")).map(row => ProstateParse(row))
@@ -581,7 +581,7 @@ Spark 1.4.0 or later is required.
   import org.apache.spark.h2o._
   import org.apache.spark.examples.h2o._
   import java.io.File
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val path = "examples/smalldata/prostate.csv"
   val prostateHF = new H2OFrame(new File(path))
   val prostateRDD = h2oContext.asRDD[Prostate](prostateHF)

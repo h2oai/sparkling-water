@@ -53,7 +53,7 @@ object KMeansITest {
   def test(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("KMeansITest")
     val sc = new SparkContext(conf)
-    val h2oContext = new H2OContext(sc).start()
+    val h2oContext = H2OContext.getOrCreate(sc)
 
     import h2oContext._
     // Import all year airlines into H2O

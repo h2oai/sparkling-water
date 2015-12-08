@@ -37,7 +37,7 @@ object DeepLearningDemo extends SparkContextSupport {
     addFiles(sc, absPath("examples/smalldata/allyears2k_headers.csv.gz"))
 
     // Run H2O cluster inside Spark cluster
-    val h2oContext = new H2OContext(sc).start()
+    val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
 
     //

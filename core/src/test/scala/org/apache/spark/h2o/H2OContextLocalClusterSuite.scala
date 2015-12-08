@@ -37,7 +37,7 @@ class H2OContextLocalClusterSuite extends FunSuite
     // For distributed testing we need to pass around jar containing all implementation classes plus test classes
     val conf = defaultSparkConf.setJars(swassembly :: Nil)
     sc = new SparkContext("local-cluster[3,2,1024]", "test-local-cluster", conf)
-    hc = new H2OContext(sc).start()
+    hc = H2OContext.getOrCreate(sc)
 
     assert(water.H2O.CLOUD.members().length == 3, "H2O cloud should have 3 members")
     // Does not reset
@@ -48,7 +48,7 @@ class H2OContextLocalClusterSuite extends FunSuite
   ignore("2nd run to verify that test does not overlap") {
     val conf = defaultSparkConf.setJars(swassembly :: Nil)
     sc = new SparkContext("local-cluster[3,2,721]", "test-local-cluster", conf)
-    hc = new H2OContext(sc).start()
+    hc = H2OContext.getOrCreate(sc)
 
     resetContext()
   }

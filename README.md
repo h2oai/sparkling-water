@@ -80,7 +80,7 @@ bin/sparkling-shell
 And initialize H2OContext 
 ```scala
 import org.apache.spark.h2o._
-val hc = new H2OContext(sc).start()
+val hc = H2OContext.getOrCreate(sc)
 ```
 
 > H2OContext start H2O services on top of Spark cluster and provides primitives for transformations between H2O and Spark datastructures.

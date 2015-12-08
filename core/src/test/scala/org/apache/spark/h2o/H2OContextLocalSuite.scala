@@ -33,7 +33,7 @@ class H2OContextLocalSuite extends FunSuite
 
   test("verify H2O cloud building on local JVM") {
     sc = new SparkContext("local", "test-local", defaultSparkConf)
-    hc = new H2OContext(sc).start()
+    hc = H2OContext.getOrCreate(sc)
     // Number of nodes should be on
     assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 members")
     // Make sure that H2O is running

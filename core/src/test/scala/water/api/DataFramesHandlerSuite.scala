@@ -41,7 +41,7 @@ import scala.util.parsing.json.{JSONObject, JSON}
 @RunWith(classOf[JUnitRunner])
 class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
   sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-  hc = new H2OContext(sc).start()
+  hc = H2OContext.getOrCreate(sc)
   // Shared h2oContext
   val h2oContext = hc
   // Shared sqlContext

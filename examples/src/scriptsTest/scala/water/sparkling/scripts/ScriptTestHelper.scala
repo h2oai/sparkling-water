@@ -33,7 +33,7 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
   def defaultConf: SparkConf = {
     val swfatjar = sys.props.getOrElse("sparkling.fat.jar",
       fail("The variable 'sparkling.fat.jar' is not set! It should point to assembly jar file."))
-    val conf = new SparklingConf(false).sparkConf.setAppName("Script testing")
+    val conf = new SparklingConf().setAppName("Script testing")
       .set("spark.driver.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.executor.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.driver.extraClassPath", "file://" + swfatjar)

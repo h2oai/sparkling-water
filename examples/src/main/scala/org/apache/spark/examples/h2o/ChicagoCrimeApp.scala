@@ -261,7 +261,7 @@ object ChicagoCrimeApp extends SparkContextSupport {
     // SQL support
     val sqlContext = new SQLContext(sc)
     // Start H2O services
-    val h2oContext = new H2OContext(sc).start()
+    val h2oContext = H2OContext.getOrCreate(sc)
 
     val app = new ChicagoCrimeApp(
                 weatherFile = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoAllWeather.csv",

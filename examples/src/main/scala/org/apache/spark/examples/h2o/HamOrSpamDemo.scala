@@ -46,7 +46,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
     // Register input file as Spark file
     addFiles(sc, absPath("examples/smalldata/" + DATAFILE))
     // Initialize H2O context
-    implicit val h2oContext = new H2OContext(sc).start()
+    implicit val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
     // Initialize SQL context
     implicit val sqlContext = new SQLContext(sc)

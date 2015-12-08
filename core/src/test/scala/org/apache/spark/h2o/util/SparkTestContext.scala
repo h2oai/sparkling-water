@@ -19,7 +19,7 @@ package org.apache.spark.h2o.util
 
 import io.netty.util.internal.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{SparklingConf, H2OContext}
 import org.scalatest.{Suite, BeforeAndAfterAll, BeforeAndAfterEach}
 
 /**
@@ -43,14 +43,14 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
     hc = null
   }
 
-  def defaultSparkConf =  new SparkConf().set("spark.ext.h2o.disable.ga", "true")
+  def defaultSparkConf =  new SparklingConf().set("spark.ext.h2o.disable.ga", "true")
 }
 
 /** This fixture create a Spark context once and share it over whole run of test suite. */
 trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
 
   def createSparkContext:SparkContext
-  def createH2OContext(sc:SparkContext):H2OContext = new H2OContext(sc).start()
+  def createH2OContext(sc:SparkContext):H2OContext = H2OContext.getOrCreate(sc)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -70,7 +70,7 @@ trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
 trait PerTestSparkTestContext extends SparkTestContext { self: Suite =>
 
   def createSparkContext:SparkContext
-  def createH2OContext(sc:SparkContext):H2OContext = new H2OContext(sc).start()
+  def createH2OContext(sc:SparkContext):H2OContext = H2OContext.getOrCreate(sc)
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()

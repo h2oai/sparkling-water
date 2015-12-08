@@ -47,7 +47,7 @@ import scala.reflect.ClassTag
 class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
   sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-  hc = new H2OContext(sc).start()
+  hc = H2OContext.getOrCreate(sc)
   // Shared sqlContext
   val h2oContext = hc
   val sqlContext = new SQLContext(sc)
