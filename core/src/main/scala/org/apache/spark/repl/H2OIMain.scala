@@ -22,7 +22,7 @@
 
 package org.apache.spark.repl
 
-import java.io.File
+import java.io.{StringWriter, File}
 import java.net.URL
 import java.util.concurrent.Future
 
@@ -87,6 +87,7 @@ import scala.util.control.ControlThrowable
  class H2OIMain(val sharedCLHelper: ClassLoaderHelper,
                 initialSettings: Settings,
                 val out: JPrintWriter,
+                val outWriter: StringWriter,
                 val sessionID: Int,
                propagateExceptions: Boolean = false)
   extends H2OImports with Logging {
@@ -1819,7 +1820,7 @@ object H2OIMain {
     }
   }
 
-  abstract class StrippingTruncatingWriter(out: JPrintWriter)
+  abstract class StrippingTruncatingWriter(out: JPrintWriter, outWriter: StringWriter)
     extends JPrintWriter(out)
     with StrippingWriter
     with TruncatingWriter {
@@ -1827,10 +1828,13 @@ object H2OIMain {
 
     def clean(str: String): String = truncate(strip(str))
 
-    override def write(str: String) = super.write(clean(str))
+    override def write(str: String) = {
+      super.flush()
+      outWriter.getBuffer.setLength(0)
+      super.write(clean(str))}
   }
 
-  class ReplStrippingWriter(intp: H2OIMain) extends StrippingTruncatingWriter(intp.out) {
+  class ReplStrippingWriter(intp: H2OIMain) extends StrippingTruncatingWriter(intp.out, intp.outWriter) {
 
     import intp._
 

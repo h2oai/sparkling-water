@@ -269,7 +269,7 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
   }
 
   /**
-   * Redirected printed output comming from commands written in the interpreter
+   * Redirected printed output coming from commands written in the interpreter
    * @return
    */
   def printedOutput: String = {
@@ -1175,7 +1175,7 @@ class H2OILoop(val sharedClHelper: ClassLoaderHelper,var sparkContext: SparkCont
       intp.reporter printMessage afterTyper(msg)
   }
 
-  class H2OILoopInterpreter extends H2OIMain(sharedClHelper,settings, out, sessionID) {
+  class H2OILoopInterpreter extends H2OIMain(sharedClHelper,settings, out, outWriter, sessionID) {
     outer =>
     override private[repl] lazy val formatting = new Formatting {
       def prompt = H2OILoop.this.prompt
