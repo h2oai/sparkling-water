@@ -1,6 +1,7 @@
 package water.sparkling.itest
 
 import org.apache.spark.deploy.SparkSubmit
+import org.apache.spark.repl.REPLClassServerUtils
 import org.scalatest.{BeforeAndAfterEach, Tag, Suite}
 import scala.collection.mutable
 
@@ -82,6 +83,7 @@ trait SparkITest extends BeforeAndAfterEach { self: Suite =>
 
   private class TestEnvironment extends IntegTestEnv {
     val conf = mutable.HashMap.empty[String,String] += "spark.testing" -> "true"
+    conf += "spark.repl.class.uri" -> REPLClassServerUtils.classServerUri
     override def sparkConf: mutable.Map[String, String] = conf
   }
 
