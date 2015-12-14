@@ -365,7 +365,7 @@ object H2OContext extends Logging {
     val systemClassLoader = ClassLoader.getSystemClassLoader.asInstanceOf[URLClassLoader]
     sc.jars.foreach{
       jar => if( systemClassLoader.findResource(jar)==null){
-        if(jar.startsWith("file://")){
+        if(jar.startsWith("file:")){
           addURLToSystemClassLoader(new URL(jar))
         }else{
           addURLToSystemClassLoader(new URL("file://" + jar))
