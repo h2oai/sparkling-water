@@ -45,6 +45,8 @@ object KMeansITest {
       test(args)
     } catch {
       case t:Throwable => {
+        System.err.println(t.toString)
+        System.err.println(t.getStackTrace.toString)
         water.H2O.exit(-1)
       }
     }
