@@ -123,11 +123,11 @@ object H2OConf {
   /* Configuration properties */
 
   /** Configuration property - use flatfile for H2O cloud formation. */
-  val PROP_USE_FLATFILE = ( "spark.ext.h2o.flatfile", true)
+  val PROP_USE_FLATFILE = ("spark.ext.h2o.flatfile", true)
   /** Configuration property - expected number of workers of H2O cloud.
     * Value -1 means automatic detection of cluster size.
     */
-  val PROP_CLUSTER_SIZE = ( "spark.ext.h2o.cluster.size", -1 )
+  val PROP_CLUSTER_SIZE = ("spark.ext.h2o.cluster.size", -1)
   /** Configuration property - timeout for cloud up. */
   val PROP_CLOUD_TIMEOUT = ("spark.ext.h2o.cloud.timeout", 60*1000)
   /** Configuration property - number of retries to create an RDD spreat over all executors */
@@ -135,7 +135,7 @@ object H2OConf {
   /** Configuration property - name of H2O cloud */
   val PROP_CLOUD_NAME = ("spark.ext.h2o.cloud.name", "sparkling-water-")
   /** Starting size of cluster in case that size is not explicitelly passed */
-  val PROP_DEFAULT_CLUSTER_SIZE = ( "spark.ext.h2o.default.cluster.size,", 20)
+  val PROP_DEFAULT_CLUSTER_SIZE = ("spark.ext.h2o.default.cluster.size", 20)
   /* H2O internal log level for launched remote nodes. */
   val PROP_NODE_LOG_LEVEL = ("spark.ext.h2o.node.log.level", "INFO")
   /** H2O log leve for client running in Spark driver */
