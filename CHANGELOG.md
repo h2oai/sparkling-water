@@ -10,7 +10,7 @@ ChangeLog
   - Fix all scripts and create automatic tests for them
   - [SW-39] pySparkling: use Sparkling Water from Python
   - Model serialization support
-
+  - Upgrade of H2O dependency to 3.6.0.8
   - Fixes
     - [PUBDEV-282](https://0xdata.atlassian.net/browse/PUBDEV-282) Create windows batch scripts for starting sparkling-shell and running examples
     - [SW-5, SW-17, SW-25](https://0xdata.atlassian.net/browse/SW-25) Remove categorical handling during asH2OFrame() transformation
@@ -23,6 +23,9 @@ ChangeLog
     - [SW-41](https://0xdata.atlassian.net/browse/SW-41) H2OContext#asH2OFrame now
       accepts name for resulting H2OFrame.
     - fix idea setup
+    - fixes in coding typos
+      - cloud name was ignored
+      - wrong property name
 
 ##v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame

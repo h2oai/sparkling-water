@@ -169,8 +169,10 @@ class H2OContext private[this](@transient val sparkContext: SparkContext) extend
   private def start(): H2OContext = {
     import H2OConf._
     // Setup properties for H2O configuration
-    sparkConf.set(PROP_CLOUD_NAME._1,
-      PROP_CLOUD_NAME._2 + System.getProperty("user.name", "cloud_" + Random.nextInt(42)))
+    if (!sparkConf.contains(PROP_CLOUD_NAME._1)) {
+      sparkConf.set(PROP_CLOUD_NAME._1,
+                    PROP_CLOUD_NAME._2 + System.getProperty("user.name", "cloud_" + Random.nextInt(42)))
+    }
 
     // Check Spark environment and reconfigure some values
     H2OContext.checkAndUpdateSparkEnv(sparkConf)
