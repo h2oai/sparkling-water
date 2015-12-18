@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+##v1.5.7 (2015-12-18)
+  - Upgrade of H2O dependency to 3.6.0.8
+  - Fixes of typos in code
+
 ##v1.5.4, 1.5.5, 1.5.6 (2015-11-6)
   - Attach metadata derived from H2OFrame to Spark DataFrame
   - Improved logging subsystem
