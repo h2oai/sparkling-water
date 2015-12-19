@@ -12,10 +12,12 @@ DRIVER_MEMORY=${DRIVER_MEMORY:-2G}
 # Default MASTER
 MASTER=${MASTER:-"local-cluster[3,2,2048]"}
 export MASTER
+EXTRA_DRIVER_PROPS=$(grep "^spark.driver.extraJavaOptions" $SPARK_HOME/conf/spark-defaults.conf 2>/dev/null | sed -e 's/spark.driver.extraJavaOptions//' )
 
 banner
 
 (
  cd $TOPDIR
- $SPARK_HOME/bin/spark-shell --jars $TOPDIR/assembly/build/libs/$FAT_JAR --driver-class-path $TOPDIR/assembly/build/libs/$FAT_JAR --driver-memory $DRIVER_MEMORY --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" "$@"
+ # If extra java properties are defined use them and append our property
+ $SPARK_HOME/bin/spark-shell --jars $TOPDIR/assembly/build/libs/$FAT_JAR --driver-class-path $TOPDIR/assembly/build/libs/$FAT_JAR --driver-memory $DRIVER_MEMORY --conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS -XX:MaxPermSize=384m" "$@"
 )

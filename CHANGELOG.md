@@ -26,6 +26,7 @@ ChangeLog
     - fixes in coding typos
       - cloud name was ignored
       - wrong property name
+    - fix a bug in launch scripts overriding default value of `spark.driver.extraJavaOptions`
 
 ##v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame
