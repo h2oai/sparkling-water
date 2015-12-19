@@ -334,6 +334,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   override def toString: String = {
     s"""
       |Sparkling Water Context:
+      | * H2O name: ${H2O.ARGS.name}
       | * number of executors: ${h2oNodes.size}
       | * list of used executors:
       |  (executorId, host, port)
