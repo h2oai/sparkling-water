@@ -345,66 +345,23 @@ class H2OContext private[this](@transient val sparkContext: SparkContext) extend
   }
 }
 
-object H2OContextHolder{
-  val instance: H2OContext = null
-}
-
 object H2OContext extends Logging {
 
-  def addURLToSystemClassLoader(url: URL) {
-    val systemClassLoader = ClassLoader.getSystemClassLoader.asInstanceOf[URLClassLoader]
-    val classLoaderClass = classOf[URLClassLoader]
-    try {
-      val method = classLoaderClass.getDeclaredMethod("addURL", classOf[URL])
-      method.setAccessible(true)
-      method.invoke(systemClassLoader, url)
-    } catch {
-      case e: Exception => e.printStackTrace();
-    }
-  }
+  private[this] var instance: H2OContext = null
 
-  def loadIfNotSet(sc: SparkContext)= {
-    val systemClassLoader = ClassLoader.getSystemClassLoader.asInstanceOf[URLClassLoader]
-    sc.jars.foreach{
-      jar => if( systemClassLoader.findResource(jar)==null){
-        if(jar.startsWith("file:")){
-          addURLToSystemClassLoader(new URL(jar))
-        }else{
-          addURLToSystemClassLoader(new URL("file://" + jar))
-        }
+  private def getOrCreate(sc: SparkContext, h2oWorkers: Option[Int]): H2OContext = {
+    if (instance == null) {
+      val h2oContextClazz = classOf[H2OContext]
+      val ctor = h2oContextClazz.getDeclaredConstructor(classOf[SparkContext])
+      ctor.setAccessible(true)
+      instance = ctor.newInstance(sc)
+      if (h2oWorkers.isEmpty) {
+        instance.start()
+      } else {
+        instance.start(h2oWorkers.get)
       }
     }
-  }
-  var instance: H2OContext = null
-
-  private def getOrCreate(sc:SparkContext, h2oWorkers: Option[Int]): H2OContext = {
-    loadIfNotSet(sc)
-    this.synchronized {
-      val ru = scala.reflect.runtime.universe
-      val mirror = ru.runtimeMirror(getClass.getClassLoader)
-
-      val h2oModuleSymbol = ru.typeOf[H2OContextHolder.type].termSymbol.asModule
-      val moduleMirror = mirror.reflectModule(h2oModuleSymbol)
-      val instanceMirror = mirror.reflect(moduleMirror.instance)
-
-      val h2oTerm = ru.typeOf[H2OContextHolder.type].declaration(ru.newTermName("instance")).asTerm.accessed.asTerm
-      val fieldMirror = instanceMirror.reflectField(h2oTerm)
-
-      var instance:H2OContext = fieldMirror.get.asInstanceOf[H2OContext]
-      if (instance == null) {
-        val H2OContextClazz = ClassLoader.getSystemClassLoader.loadClass(classOf[H2OContext].getName)
-        val constructor = H2OContextClazz.getDeclaredConstructor(classOf[SparkContext])
-        constructor.setAccessible(true)
-        instance = constructor.newInstance(sc).asInstanceOf[H2OContext]
-        fieldMirror.set(instance)
-        if(h2oWorkers.isEmpty){
-          instance.start()
-        }else{
-          instance.start(h2oWorkers.get)
-        }
-      }
-      instance
-    }
+    instance
   }
 
   /**
