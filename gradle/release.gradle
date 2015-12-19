@@ -6,6 +6,7 @@ release {
   // Safe point - do releases only from release branch - can be deleted in future
   //requireBranch = "release"
   failOnUnversionedFiles = false
+  preCommitText = ":tada: "
 }
 
 // Helper task uploading all artifacts
