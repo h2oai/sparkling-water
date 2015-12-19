@@ -1,6 +1,9 @@
 ChangeLog
 =========
 
+##v1.5.8 (2015-12-18)
+  - Fix a bug in launch script overriding default value of spark.driver.extraProperties
+
 ##v1.5.7 (2015-12-18)
   - Upgrade of H2O dependency to 3.6.0.8
   - Fixes of typos in code

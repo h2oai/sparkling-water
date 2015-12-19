@@ -35,7 +35,9 @@ object SparklingWaterDriver {
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
     // Start H2O cluster only
-    new H2OContext(sc).start()
+    val hc = new H2OContext(sc).start()
+
+    println(hc);
 
     // Infinite wait
     this.synchronized(while (true) {
