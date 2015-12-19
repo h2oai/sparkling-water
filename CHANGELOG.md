@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-##v1.5.8 (2015-12-18)
+##v1.5.8, v1.5.9 (2015-12-18)
   - Fix a bug in launch script overriding default value of spark.driver.extraProperties
 
 ##v1.5.7 (2015-12-18)
