@@ -32,13 +32,13 @@ class ClassLoaderHelper(val sc: SparkContext) {
   private var _runtimeClassLoader: URLClassLoader with ExposeAddUrl = null // wrapper exposing addURL
 
   if(sc.isLocal){
-    prepareLocalClassLoader
+    prepareLocalClassLoader()
   }else{
-    prepareRemoteClassLoader
+    prepareRemoteClassLoader()
   }
 
 
-  private def prepareRemoteClassLoader = {
+  private def prepareRemoteClassLoader() = {
     if (Main.interp != null) {
       setClassLoaderToSerializers(Main.interp.intp.classLoader)
       _replClassLoader = Main.interp.intp.classLoader
@@ -51,9 +51,9 @@ class ClassLoaderHelper(val sc: SparkContext) {
    * Add directory with classes defined in REPL to the classloader
    which is used in the local mode. This classloader is obtained using reflections.
    */
-  private def prepareLocalClassLoader =  {
+  private def prepareLocalClassLoader() =  {
     val f  =  SparkEnv.get.serializer.getClass.getSuperclass.getDeclaredField("defaultClassLoader")
-    f.setAccessible(true);
+    f.setAccessible(true)
     val value =  f.get(SparkEnv.get.serializer)
     value match {
       case v : Option[_] => {
@@ -78,9 +78,7 @@ class ClassLoaderHelper(val sc: SparkContext) {
   def ensureREPLClassLoader(classLoader: AbstractFileClassLoader) = this.synchronized{
     if(_replClassLoader == null) {
       _replClassLoader = classLoader
-      if(!sc.isLocal){
-        setClassLoaderToSerializers(_replClassLoader)
-      }
+      setClassLoaderToSerializers(_replClassLoader)
     }
   }
   def resetREPLCLassLoader() : Unit = this.synchronized{

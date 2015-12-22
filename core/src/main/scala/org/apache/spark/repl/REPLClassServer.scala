@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 /**
- * This code is based on code org.apache.spark.repl.SparkIMain released under Apache 2.0"
- * Link to Github: https://github.com/apache/spark/blob/master/repl/scala-2.10/src/main/scala/org/apache/spark/repl/SparkIMain.scala
- * Author:  Paul Phillips
- */
+  * This code is based on code org.apache.spark.repl.SparkIMain released under Apache 2.0"
+  * Link to Github: https://github.com/apache/spark/blob/master/repl/scala-2.10/src/main/scala/org/apache/spark/repl/SparkIMain.scala
+  * Author:  Paul Phillips
+  */
 
 package org.apache.spark.repl
 
@@ -27,9 +27,9 @@ import org.apache.spark.{HttpServer, Logging, SecurityManager, SparkConf}
 
 
 /**
- * HTTP Server containing classes defined in repl
- */
-private[repl] object REPLCLassServer extends Logging {
+  * HTTP Server containing classes defined in repl
+  */
+private[repl] object REPLClassServer extends Logging {
 
   lazy val getClassOutputDirectory = outputDir
   /** Local directory to save .class files too */
@@ -63,4 +63,3 @@ private[repl] object REPLCLassServer extends Logging {
     _isRunning
   }
 }
-

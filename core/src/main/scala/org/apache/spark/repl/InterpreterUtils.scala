@@ -18,10 +18,6 @@ package org.apache.spark.repl
 
 import java.net.URL
 
-import org.apache.spark.{SparkContext, SparkEnv}
-import org.apache.spark.util.MutableURLClassLoader
-
-import scala.tools.nsc.interpreter.AbstractFileClassLoader
 import scala.tools.nsc.util.ScalaClassLoader.URLClassLoader
 
 /**
@@ -30,22 +26,34 @@ import scala.tools.nsc.util.ScalaClassLoader.URLClassLoader
 
 object REPLClassServerUtils {
 
+  /**
+    * Return class server output direcotory of REPL Class server.
+    * @return
+    */
   def getClassOutputDir = {
     if (Main.interp != null) {
+      // Application was started using SparkSubmit
       Main.interp.intp.getClassOutputDirectory
     } else {
-      REPLCLassServer.getClassOutputDirectory
+        REPLClassServer.getClassOutputDirectory
     }
   }
 
+
+  /**
+    * Return class server uri for REPL Class server.
+    * In local mode the class server is not actually used, all we need is just output directory
+    * @return
+    */
   def classServerUri = {
     if (Main.interp != null) {
+      // Application was started using SparkSubmit
       Main.interp.intp.classServerUri
     } else {
-      if (!REPLCLassServer.isRunning) {
-        REPLCLassServer.start()
+      if (!REPLClassServer.isRunning) {
+        REPLClassServer.start()
       }
-    REPLCLassServer.classServerUri
+      REPLClassServer.classServerUri
   }
   }
 

@@ -17,7 +17,7 @@
 
 package water
 
-import org.apache.spark.h2o.{SparklingConf, H2OContext}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
@@ -29,7 +29,7 @@ object SparklingWaterDriver {
   /** Entry point */
   def main(args: Array[String]) {
     // Configure this application
-    val conf: SparkConf = new SparklingConf().setAppName("Sparkling Water")
+    val conf: SparkConf = new SparkConf().setAppName("Sparkling Water")
     conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local"))
 
     // Create SparkContext to execute application on Spark cluster
@@ -41,7 +41,7 @@ object SparklingWaterDriver {
 
     // Infinite wait
     this.synchronized(while (true) {
-      wait
+      wait()
     })
   }
 }

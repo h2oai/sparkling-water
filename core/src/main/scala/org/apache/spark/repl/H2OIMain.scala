@@ -1829,8 +1829,12 @@ object H2OIMain {
     def clean(str: String): String = truncate(strip(str))
 
     override def write(str: String) = {
-      super.flush()
-      outWriter.getBuffer.setLength(0)
+      // when testing print whole interpreter response
+      if(!sys.props.contains("spark.testing")){
+        super.flush()
+        outWriter.getBuffer.setLength(0)
+      }
+
       super.write(clean(str))}
   }
 

@@ -12,7 +12,7 @@ import org.scalatest.junit.JUnitRunner
 class BasicInterpreterTests extends ScriptsTestHelper{
 
   override protected def beforeAll(): Unit = {
-    sparklingConf = defaultConf.setMaster("local-cluster[3,2,1024]")
+    sparkConf = defaultConf.setMaster("local-cluster[3,2,1024]")
     super.beforeAll()
   }
   test("Code with exception") {
@@ -39,13 +39,13 @@ class BasicInterpreterTests extends ScriptsTestHelper{
 @RunWith(classOf[JUnitRunner])
 class ScriptChicagoCrimeHDFS extends ScriptsTestHelper{
   override protected def beforeAll(): Unit = {
-    sparklingConf = defaultConf.setMaster("local-cluster[3,2,4512]")
+    sparkConf = defaultConf.setMaster("local-cluster[3,2,4512]")
       .set("spark.driver.memory", "4G")
       .set("spark.executor.memory", "4G")
     super.beforeAll()
   }
-  // This test uses hdfs on one of the local h2o server which is not available from the outside world
-  ignore("chicagoCrimeLarge.script.scala ") {
+
+  test("chicagoCrimeLarge.script.scala ") {
     val result = launchScript(h2OContext, "chicagoCrimeLarge.script.scala")
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
   }
@@ -54,7 +54,7 @@ class ScriptChicagoCrimeHDFS extends ScriptsTestHelper{
 @RunWith(classOf[JUnitRunner])
 class ScriptChicagoCrimeSmall extends ScriptsTestHelper{
   override protected def beforeAll(): Unit = {
-    sparklingConf = defaultConf.setMaster("local-cluster[3,2,2048]")
+    sparkConf = defaultConf.setMaster("local-cluster[3,2,2048]")
       .set("spark.driver.memory", "2G")
       .set("spark.executor.memory", "2G")
     super.beforeAll()
@@ -68,7 +68,7 @@ class ScriptChicagoCrimeSmall extends ScriptsTestHelper{
 @RunWith(classOf[JUnitRunner])
 class ScriptChicagoCrimeSmallShell extends ScriptsTestHelper{
   override protected def beforeAll(): Unit = {
-    sparklingConf = defaultConf.setMaster("local-cluster[3,2,4096]")
+    sparkConf = defaultConf.setMaster("local-cluster[3,2,4096]")
       .set("spark.driver.memory", "4G")
       .set("spark.executor.memory", "4G")
     super.beforeAll()
@@ -82,7 +82,7 @@ class ScriptChicagoCrimeSmallShell extends ScriptsTestHelper{
 @RunWith(classOf[JUnitRunner])
 class ScriptHamOrSpam extends ScriptsTestHelper{
   override protected def beforeAll(): Unit = {
-    sparklingConf = defaultConf.setMaster("local-cluster[3,2,4096]")
+    sparkConf = defaultConf.setMaster("local-cluster[3,2,4096]")
       .set("spark.driver.memory", "4G")
       .set("spark.executor.memory", "4G")
     super.beforeAll()
@@ -104,7 +104,7 @@ class ScriptHamOrSpam extends ScriptsTestHelper{
 @RunWith(classOf[JUnitRunner])
 class ScriptCraigListJobTitles extends ScriptsTestHelper{
   override protected def beforeAll(): Unit = {
-    sparklingConf = defaultConf.setMaster("local-cluster[3,2,4096]")
+    sparkConf = defaultConf.setMaster("local-cluster[3,2,4096]")
       .set("spark.driver.memory", "4G")
       .set("spark.executor.memory", "4G")
     super.beforeAll()
@@ -122,7 +122,7 @@ class ScriptCraigListJobTitles extends ScriptsTestHelper{
 @RunWith(classOf[JUnitRunner])
 class ScriptStrata2015 extends ScriptsTestHelper{
   override protected def beforeAll(): Unit = {
-    sparklingConf = defaultConf.setMaster("local-cluster[3,2,4096]")
+    sparkConf = defaultConf.setMaster("local-cluster[3,2,4096]")
       .set("spark.driver.memory", "4G")
       .set("spark.executor.memory", "4G")
     super.beforeAll()
@@ -141,7 +141,7 @@ class ScriptStrata2015 extends ScriptsTestHelper{
 @RunWith(classOf[JUnitRunner])
 class ScriptStrataAirlines extends ScriptsTestHelper{
   override protected def beforeAll(): Unit = {
-    sparklingConf = defaultConf.setMaster("local-cluster[3,2,4096]")
+    sparkConf = defaultConf.setMaster("local-cluster[3,2,4096]")
       .set("spark.driver.memory", "4G")
       .set("spark.executor.memory", "4G")
     super.beforeAll()

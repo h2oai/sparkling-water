@@ -13,12 +13,12 @@ import scala.collection.mutable.ListBuffer
 
 trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with BeforeAndAfterAll {
   self: Suite =>
-  var sparklingConf: SparkConf = _
+  var sparkConf: SparkConf = _
   var sc: SparkContext = _
   var h2OContext:H2OContext = _
 
   override protected def beforeAll(): Unit = {
-    sc = new SparkContext(sparklingConf)
+    sc = new SparkContext(sparkConf)
     h2OContext = H2OContext.getOrCreate(sc)
     super.beforeAll()
   }
@@ -31,13 +31,13 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
   }
 
   def defaultConf: SparkConf = {
-    val swfatjar = sys.props.getOrElse("sparkling.fat.jar",
+    val assemblyJar = sys.props.getOrElse("sparkling.fat.jar",
       fail("The variable 'sparkling.fat.jar' is not set! It should point to assembly jar file."))
     val conf = new SparklingConf().setAppName("Script testing")
       .set("spark.driver.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.executor.extraJavaOptions", "-XX:MaxPermSize=384m")
-      .set("spark.driver.extraClassPath", "file://" + swfatjar)
-      .setJars(Array("file://" + swfatjar))
+      .set("spark.driver.extraClassPath", assemblyJar)
+      .setJars(Array(assemblyJar))
 
     conf
   }
