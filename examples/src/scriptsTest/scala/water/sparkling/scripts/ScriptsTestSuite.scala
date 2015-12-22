@@ -45,7 +45,7 @@ class ScriptChicagoCrimeHDFS extends ScriptsTestHelper{
     super.beforeAll()
   }
 
-  test("chicagoCrimeLarge.script.scala ") {
+  ignore("chicagoCrimeLarge.script.scala ") {
     val result = launchScript(h2OContext, "chicagoCrimeLarge.script.scala")
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
   }

@@ -304,7 +304,7 @@ class H2OContext private[this](@transient val sparkContext: SparkContext) extend
     } else {
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers! Retrying again...")
 
-      createSpreadRDD(nretries-1, mfactor*2, nworkers,numTriesSame+1)
+      createSpreadRDD(nretries-1, mfactor*2, nworkers, numTriesSame + 1)
     }
   }
 
