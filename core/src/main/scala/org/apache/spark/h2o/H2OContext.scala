@@ -23,6 +23,7 @@ import org.apache.spark._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
+import org.apache.spark.scheduler.{SparkListenerExecutorAdded, SparkListener}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import water._
@@ -165,6 +166,12 @@ class H2OContext private[this](@transient val sparkContext: SparkContext) extend
 
   }
 
+  /**
+    *Specifies maximum number of iterations where the number of executors remained the same
+    * The spreadRDD function is stopped once the variable numTriesSame reached this number
+    */
+  private final val SUBSEQUENT_NUM_OF_TRIES=3
+
   /** Initialize Sparkling H2O and start H2O cloud. */
   private def start(): H2OContext = {
     import H2OConf._
@@ -176,11 +183,17 @@ class H2OContext private[this](@transient val sparkContext: SparkContext) extend
 
     // Check Spark environment and reconfigure some values
     H2OContext.checkAndUpdateSparkEnv(sparkConf)
-
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
-    val (spreadRDD, spreadRDDNodes) = createSpreadRDD(numRddRetries, drddMulFactor, numH2OWorkers)
 
+    val (spreadRDD, spreadRDDNodes) = createSpreadRDD(numRddRetries, drddMulFactor, numH2OWorkers, 0)
+
+    //attach listener which shutdown H2O when we bump into executor we didn't discover during the spreadRDD phase
+    sparkContext.addSparkListener(new SparkListener(){
+      override def onExecutorAdded(executorAdded: SparkListenerExecutorAdded): Unit = {
+        throw new IllegalArgumentException("Executor without H2O instance discovered, killing the cloud!")
+      }
+    })
     // Start H2O nodes
     // Get executors to execute H2O
     val allExecutorIds = spreadRDDNodes.map(_._1).distinct
@@ -247,7 +260,7 @@ class H2OContext private[this](@transient val sparkContext: SparkContext) extend
   private
   def createSpreadRDD(nretries: Int,
                       mfactor: Int,
-                      nworkers: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
+                      nworkers: Int, numTriesSame: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
     logDebug(s"  Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, nworkers=${nworkers}")
     // Non-positive value of nworkers means automatic detection of number of workers
     val nSparkExecBefore = numOfSparkExecutors
@@ -258,7 +271,6 @@ class H2OContext private[this](@transient val sparkContext: SparkContext) extend
 
     // Collect information about executors in Spark cluster
     val nodes = collectNodesInfo(spreadRDD)
-
     // Verify that all executors participate in execution
     val nSparkExecAfter = numOfSparkExecutors
     val sparkExecutors = nodes.map(_._1).distinct.length
@@ -283,14 +295,16 @@ class H2OContext private[this](@transient val sparkContext: SparkContext) extend
     } else if (nSparkExecAfter != nSparkExecBefore) {
       // Repeat if we detect change in number of executors reported by storage level
       logInfo(s"Detected ${nSparkExecBefore} before, and ${nSparkExecAfter} spark executors after! Retrying again...")
-      createSpreadRDD(nretries-1, mfactor, nworkers)
-    } else if ((nworkers>0 && sparkExecutors == nworkers || nworkers<=0) && sparkExecutors == nSparkExecAfter) {
-      // Return result only if we are sure that number of detected executors seems ok
+      createSpreadRDD(nretries-1, mfactor, nworkers, 0)
+    } else if ((nworkers>0 && sparkExecutors == nworkers || nworkers<=0) && sparkExecutors == nSparkExecAfter || numTriesSame==SUBSEQUENT_NUM_OF_TRIES) {
+      // Return result only if we are sure that number of detected executors seems ok or if the number of executors didn't change in the last
+      // SUBSEQUENT_NUM_OF_TRIES iterations
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers!")
       (new InvokeOnNodesRDD(nodes, sparkContext), nodes)
     } else {
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers! Retrying again...")
-      createSpreadRDD(nretries-1, mfactor*2, nworkers)
+
+      createSpreadRDD(nretries-1, mfactor*2, nworkers,numTriesSame+1)
     }
   }
 
