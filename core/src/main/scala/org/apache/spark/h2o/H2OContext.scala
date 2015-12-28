@@ -18,6 +18,7 @@
 package org.apache.spark.h2o
 
 import java.net.{URLClassLoader, URL}
+import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
@@ -46,11 +47,14 @@ import scala.util.Random
  *
  * It provides implicit conversion from RDD -> H2OLikeRDD and back.
  */
-class H2OContext private[this](@transient val sparkContext: SparkContext) extends {
+class H2OContext (@transient val sparkContext: SparkContext) extends {
     val sparkConf = sparkContext.getConf
   } with org.apache.spark.Logging
   with H2OConf
   with Serializable {
+
+  /** Supports call from java environments. */
+  def this(sparkContext: JavaSparkContext) = this(sparkContext.sc)
 
   /** Runtime list of active H2O nodes */
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
@@ -159,7 +163,7 @@ class H2OContext private[this](@transient val sparkContext: SparkContext) extend
   //def sparkUI = sparkContext.ui.map(ui => ui.appUIAddress)
 
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
-  private def start(h2oWorkers: Int):H2OContext = {
+  def start(h2oWorkers: Int):H2OContext = {
     import H2OConf._
     sparkConf.set(PROP_CLUSTER_SIZE._1, h2oWorkers.toString)
     start()
@@ -173,7 +177,7 @@ class H2OContext private[this](@transient val sparkContext: SparkContext) extend
   private final val SUBSEQUENT_NUM_OF_TRIES=3
 
   /** Initialize Sparkling H2O and start H2O cloud. */
-  private def start(): H2OContext = {
+  def start(): H2OContext = {
     import H2OConf._
     // Setup properties for H2O configuration
     if (!sparkConf.contains(PROP_CLOUD_NAME._1)) {
@@ -358,25 +362,33 @@ class H2OContext private[this](@transient val sparkContext: SparkContext) extend
       |  Open H2O Flow in browser: http://${h2oLocalClient} (CMD + click in Mac OSX)
     """.stripMargin
   }
+
+  H2OContext.setInstantiatedContext(this)
 }
 
 object H2OContext extends Logging {
 
-  private[this] var instance: H2OContext = null
-
-  private def getOrCreate(sc: SparkContext, h2oWorkers: Option[Int]): H2OContext = {
-    if (instance == null) {
-      val h2oContextClazz = classOf[H2OContext]
-      val ctor = h2oContextClazz.getDeclaredConstructor(classOf[SparkContext])
-      ctor.setAccessible(true)
-      instance = ctor.newInstance(sc)
-      if (h2oWorkers.isEmpty) {
-        instance.start()
-      } else {
-        instance.start(h2oWorkers.get)
+  private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {
+    synchronized {
+      val ctx = instantiatedContext.get()
+      if (ctx == null) {
+        instantiatedContext.set(h2oContext)
       }
     }
-    instance
+  }
+
+  @transient private val instantiatedContext = new AtomicReference[H2OContext]()
+
+  private def getOrCreate(sc: SparkContext, h2oWorkers: Option[Int]): H2OContext = synchronized {
+    if (instantiatedContext.get() == null) {
+      instantiatedContext.set(new H2OContext(sc))
+      if(h2oWorkers.isEmpty){
+        instantiatedContext.get().start()
+      }else{
+        instantiatedContext.get().start(h2oWorkers.get)
+      }
+    }
+    instantiatedContext.get()
   }
 
   /**
