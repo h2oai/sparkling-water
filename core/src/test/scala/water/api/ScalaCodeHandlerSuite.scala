@@ -18,7 +18,7 @@ package water.api
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.util.SparkTestContext
+import org.apache.spark.h2o.util.{SharedSparkTestContext, SparkTestContext}
 import org.apache.spark.sql.SQLContext
 import org.junit.Ignore
 import org.junit.runner.RunWith
@@ -30,15 +30,16 @@ import water.api.scalaInt._
  * Test suite for scalaint end-points
  */
 @RunWith(classOf[JUnitRunner])
-@Ignore
-class ScalaCodeHandlerSuite extends FunSuite with SparkTestContext {
-  sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-  hc = H2OContext.getOrCreate(sc)
-  // Shared h2oContext
-  val h2oContext = hc
-  // Shared sqlContext
-  implicit val sqlContext = new SQLContext(sc)
+class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext {
 
+  @transient var h2oContext: H2OContext = _
+  implicit var sqlContext: SQLContext = _
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    h2oContext = hc
+    sqlContext = SQLContext.getOrCreate(sc)
+  }
   test("ScalaCodeHandler.initSession() method"){
 
     val scalaCodeHandler = new ScalaCodeHandler(sc,h2oContext)
@@ -112,7 +113,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SparkTestContext {
     req.code = "println(\"text\")"
     val result = scalaCodeHandler.interpret(3,req)
 
-    assert(result.output.equals("text\n"),"Printed output should equal to text")
+    assert(result.output.equals("text\n"),"Printed output should be equal to \"text\"")
     assert(result.status.equals("Success"),"Status should be Success")
     assert(result.response.equals(""),"Response should be empty")
   }
@@ -197,4 +198,5 @@ class ScalaCodeHandlerSuite extends FunSuite with SparkTestContext {
     assert(result3.status.equals("Success"),"Status should be Success")
     assert(!result3.response.equals(""),"Response should not be empty")
   }
+
 }

@@ -80,7 +80,7 @@ org.apache.spark.repl.Main
               }
                     """)
       command("""
-        @transient val sqlContext = {
+            @transient implicit val sqlContext = {
           val _sqlContext = org.apache.spark.sql.SQLContext.getOrCreate(sc)
           _sqlContext
         }
