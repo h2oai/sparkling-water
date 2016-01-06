@@ -174,7 +174,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     *Specifies maximum number of iterations where the number of executors remained the same
     * The spreadRDD function is stopped once the variable numTriesSame reached this number
     */
-  private final val SUBSEQUENT_NUM_OF_TRIES=3
+  private final val SUBSEQUENT_NUM_OF_TRIES = 3
 
   /** Initialize Sparkling H2O and start H2O cloud. */
   def start(): H2OContext = {
