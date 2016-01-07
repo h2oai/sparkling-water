@@ -14,28 +14,28 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.repl
 
-import java.net.URL
+package org.apache.spark.repl.h2o.commons
 
-import scala.tools.nsc.util.ScalaClassLoader.URLClassLoader
+import org.apache.spark.SparkContext
+import org.apache.spark.repl.Main
+import org.apache.spark.repl.h2o.H2OInterpreter
 
 /**
- * Various utils for working with REPL class server
- */
-
-object REPLClassServerUtils {
+  * Various helper methods for working with REPL
+  */
+object InterpreterHelper {
 
   /**
-    * Return class server output direcotory of REPL Class server.
+    * Return class server output directory of REPL Class server.
     * @return
     */
-  def getClassOutputDir = {
+  def classOutputDir = {
     if (Main.interp != null) {
       // Application was started using SparkSubmit
       Main.interp.intp.getClassOutputDirectory
     } else {
-        REPLClassServer.getClassOutputDirectory
+      ClassServer.getClassOutputDirectory
     }
   }
 
@@ -50,15 +50,22 @@ object REPLClassServerUtils {
       // Application was started using SparkSubmit
       Main.interp.intp.classServerUri
     } else {
-      if (!REPLClassServer.isRunning) {
-        REPLClassServer.start()
+      if (!ClassServer.isRunning) {
+        ClassServer.start()
       }
-      REPLClassServer.classServerUri
-  }
+      ClassServer.classServerUri
+    }
   }
 
-}
+  var sharedReplConfig: SharedReplConfig = _
+  def initReplConfig(sc: SparkContext) = {
+    sharedReplConfig = new SharedReplConfig(sc)
+  }
 
-private[repl] trait ExposeAddUrl extends URLClassLoader {
-  def addNewUrl(url: URL) = this.addURL(url)
+  def createInterpreter(sesionID: Int): H2OInterpreter ={
+    if(sharedReplConfig == null){
+      throw new RuntimeException("Shared Repl configuration needs to be initialized before creating interpreter")
+    }
+    new H2OInterpreter(sharedReplConfig, sesionID)
+  }
 }

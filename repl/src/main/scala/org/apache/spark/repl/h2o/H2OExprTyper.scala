@@ -20,7 +20,7 @@
  * Link on Github: https://github.com/apache/spark/blob/master/repl/scala-2.10/src/main/scala/org/apache/spark/repl/SparkExprTyper.scala
  * Author: Paul Phillips
  */
-package org.apache.spark.repl
+package org.apache.spark.repl.h2o
 
 import org.apache.spark.Logging
 

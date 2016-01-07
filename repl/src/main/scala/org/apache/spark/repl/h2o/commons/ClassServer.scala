@@ -20,7 +20,7 @@
   * Author:  Paul Phillips
   */
 
-package org.apache.spark.repl
+package org.apache.spark.repl.h2o.commons
 
 import org.apache.spark.util.Utils
 import org.apache.spark.{HttpServer, Logging, SecurityManager, SparkConf}
@@ -29,7 +29,7 @@ import org.apache.spark.{HttpServer, Logging, SecurityManager, SparkConf}
 /**
   * HTTP Server containing classes defined in repl
   */
-private[repl] object REPLClassServer extends Logging {
+private[repl] object ClassServer extends Logging {
 
   lazy val getClassOutputDirectory = outputDir
   /** Local directory to save .class files too */
@@ -44,7 +44,7 @@ private[repl] object REPLClassServer extends Logging {
   logInfo("Directory to save .class files to = " + outputDir)
   /** Jetty server that will serve our classes to worker nodes */
   private val classServerPort = conf.getInt("spark.replClassServer.port", 0)
-  private val classServer = new HttpServer(conf, outputDir, new SecurityManager(conf), classServerPort, "HTTP class server")
+  private var classServer = new HttpServer(conf, outputDir, new SecurityManager(conf), classServerPort, "HTTP class server")
   private var _isRunning = false
 
   def start() ={
@@ -56,7 +56,10 @@ private[repl] object REPLClassServer extends Logging {
   def classServerUri = classServer.uri
 
   def close() {
-    classServer.stop()
+    if(classServer != null){
+      classServer.stop()
+      classServer == null
+    }
   }
 
   def isRunning: Boolean = {

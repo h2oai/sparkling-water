@@ -20,15 +20,16 @@
  * Author:  Martin Odersky
  */
 
-package org.apache.spark.repl
+package org.apache.spark.repl.h2o
 
-import java.io.{StringWriter, File}
+import java.io.File
 import java.net.URL
 import java.util.concurrent.Future
 
 import org.apache.spark._
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.repl.H2OIMain.CodeAssembler
+import org.apache.spark.repl.h2o.H2OIMain.CodeAssembler
+import org.apache.spark.repl.h2o.commons.{IntpResponseWriter, InterpreterHelper, ExposeAddUrl, SharedReplConfig}
 
 import scala.Predef.{println => _, _}
 import scala.collection.mutable
@@ -84,12 +85,11 @@ import scala.util.control.ControlThrowable
   * @author Lex Spoon
   */
 @DeveloperApi
- class H2OIMain(val sharedCLHelper: ClassLoaderHelper,
+ class H2OIMain(val sharedReplConfig: SharedReplConfig,
                 initialSettings: Settings,
-                val out: JPrintWriter,
-                val outWriter: StringWriter,
+                val interpreterWriter: IntpResponseWriter,
                 val sessionID: Int,
-               propagateExceptions: Boolean = false)
+                propagateExceptions: Boolean = false)
   extends H2OImports with Logging {
   imain =>
 
@@ -97,7 +97,7 @@ import scala.util.control.ControlThrowable
 
   /** Local directory to save .class files too */
   private lazy val outputDir = {
-   REPLClassServerUtils.getClassOutputDir
+   InterpreterHelper.classOutputDir
   }
 
   if (SPARK_DEBUG_REPL) {
@@ -134,7 +134,7 @@ import scala.util.control.ControlThrowable
    */
   @DeveloperApi
   def classServerUri = {
-   REPLClassServerUtils.classServerUri
+    InterpreterHelper.classServerUri
   }
 
   /** We're going to go to some trouble to initialize the compiler asynchronously.
@@ -184,7 +184,7 @@ import scala.util.control.ControlThrowable
   */
 
   private lazy val repllog: Logger = new Logger {
-    val out: JPrintWriter = imain.out
+    val out: JPrintWriter = imain.interpreterWriter
     val isInfo: Boolean = BooleanProp keyExists "scala.repl.info"
     val isDebug: Boolean = BooleanProp keyExists "scala.repl.debug"
     val isTrace: Boolean = BooleanProp keyExists "scala.repl.trace"
@@ -432,7 +432,7 @@ import scala.util.control.ControlThrowable
   @DeveloperApi
   def addUrlsToClassPath(urls: URL*): Unit = {
     new Run // Needed to force initialization of "something" to correctly load Scala classes from jars
-    sharedCLHelper.addUrlsToClasspath(urls: _*) // Add jars/classes to runtime for execution
+    sharedReplConfig.addUrlsToClasspath(urls: _*) // Add jars/classes to runtime for execution
     updateCompilerClassPath(urls: _*) // Add jars/classes to compile time for compiling
   }
 
@@ -483,7 +483,8 @@ import scala.util.control.ControlThrowable
    */
   @DeveloperApi
   protected def parentClassLoader: ClassLoader =
-    SparkHelper.explicitParentLoader(settings).getOrElse(this.getClass.getClassLoader)
+    SparkHelper.explicitParentLoader(settings).getOrElse(classOf[H2OInterpreter].getClassLoader)
+    //SparkHelper.explicitParentLoader(settings).getOrElse(this.getClass.getClassLoader)
 
   /* A single class loader is used for all commands interpreted by this Interpreter.
    It would also be possible to create a new class loader for each command
@@ -499,19 +500,19 @@ import scala.util.control.ControlThrowable
   definitions.
   */
   private def resetClassLoader() = {
-    logDebug("Setting new classloader: was " + sharedCLHelper.REPLCLassLoader)
-    sharedCLHelper.resetREPLCLassLoader()
+    logDebug("Setting new classloader: was " + sharedReplConfig.REPLCLassLoader)
+    sharedReplConfig.resetREPLCLassLoader()
     ensureClassLoader()
   }
 
   private final def ensureClassLoader() {
-    sharedCLHelper.ensureREPLClassLoader(makeClassLoader())
+    sharedReplConfig.ensureREPLClassLoader(makeClassLoader())
   }
 
   // NOTE: Exposed to repl package since used by SparkILoop
   private[repl] def classLoader: AbstractFileClassLoader = {
     ensureClassLoader()
-    sharedCLHelper.REPLCLassLoader
+    sharedReplConfig.REPLCLassLoader
   }
 
   private class TranslatingClassLoader(parent: ClassLoader) extends AbstractFileClassLoader(virtualDirectory, parent) {
@@ -534,8 +535,8 @@ import scala.util.control.ControlThrowable
     new TranslatingClassLoader(parentClassLoader match {
       case null => ScalaClassLoader fromURLs compilerClasspath
       case p =>
-        sharedCLHelper.ensureRuntimeCLassLoader(new URLClassLoader(compilerClasspath, p) with ExposeAddUrl)
-        sharedCLHelper.runtimeClassLoader
+        sharedReplConfig.ensureRuntimeCLassLoader(new URLClassLoader(compilerClasspath, p) with ExposeAddUrl)
+        sharedReplConfig.runtimeClassLoader
     })
 
   private def getInterpreterClassLoader = classLoader
@@ -784,7 +785,7 @@ import scala.util.control.ControlThrowable
             val (raw1, raw2) = content splitAt lastpos0
             logDebug("[raw] " + raw1 + "   <--->   " + raw2)
 
-            val adjustment = (raw1.reverse takeWhile (ch => (ch != ';') && (ch != '\n'))).size
+            val adjustment = (raw1.reverse takeWhile (ch => (ch != ';') && (ch != '\n'))).length
             val lastpos = lastpos0 - adjustment
 
             // the source code split at the laboriously determined position.
@@ -837,7 +838,7 @@ import scala.util.control.ControlThrowable
    *         incomplete code, compilation error, or runtime error
    */
   @DeveloperApi
-  def interpret(line: String): IR.Result = interpret(line, false)
+  def interpret(line: String): IR.Result = interpret(line, synthetic = false)
 
   /**
    * Interpret one line of input. All feedback, including parse errors
@@ -853,7 +854,7 @@ import scala.util.control.ControlThrowable
    *         incomplete code, compilation error, or runtime error
    */
   @DeveloperApi
-  def interpretSynthetic(line: String): IR.Result = interpret(line, true)
+  def interpretSynthetic(line: String): IR.Result = interpret(line, synthetic = true)
 
   private def interpret(line: String, synthetic: Boolean): IR.Result = {
     def loadAndRunReq(req: Request) = {
@@ -1820,7 +1821,7 @@ object H2OIMain {
     }
   }
 
-  abstract class StrippingTruncatingWriter(out: JPrintWriter, outWriter: StringWriter)
+  abstract class StrippingTruncatingWriter(out: IntpResponseWriter)
     extends JPrintWriter(out)
     with StrippingWriter
     with TruncatingWriter {
@@ -1829,16 +1830,10 @@ object H2OIMain {
     def clean(str: String): String = truncate(strip(str))
 
     override def write(str: String) = {
-      // when testing print whole interpreter response
-      if(!sys.props.contains("spark.testing")){
-        super.flush()
-        outWriter.getBuffer.setLength(0)
-      }
-
-      super.write(clean(str))}
+      out.write(clean(str))}
   }
 
-  class ReplStrippingWriter(intp: H2OIMain) extends StrippingTruncatingWriter(intp.out, intp.outWriter) {
+  class ReplStrippingWriter(intp: H2OIMain) extends StrippingTruncatingWriter(intp.interpreterWriter) {
 
     import intp._
 

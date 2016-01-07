@@ -18,11 +18,11 @@ package water.api
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.util.{SharedSparkTestContext, SparkTestContext}
+import org.apache.spark.h2o.util.SharedSparkTestContext
+import org.apache.spark.repl.h2o.H2OInterpreter
 import org.apache.spark.sql.SQLContext
-import org.junit.Ignore
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{BeforeAndAfterEach, FunSuite}
 import org.scalatest.junit.JUnitRunner
 import water.api.scalaInt._
 
@@ -30,20 +30,32 @@ import water.api.scalaInt._
  * Test suite for scalaint end-points
  */
 @RunWith(classOf[JUnitRunner])
-class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext {
+class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with BeforeAndAfterEach {
 
   @transient var h2oContext: H2OContext = _
   implicit var sqlContext: SQLContext = _
+  var scalaCodeHandler: ScalaCodeHandler = _
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
   override def beforeAll(): Unit = {
     super.beforeAll()
     h2oContext = hc
     sqlContext = SQLContext.getOrCreate(sc)
   }
+  override def afterAll(): Unit = {
+    super.afterAll()
+    h2oContext.stop(true)
+  }
+
+  override protected def beforeEach(): Unit = {
+    scalaCodeHandler = new ScalaCodeHandler(sc)
+  }
+
+  test("ScalaCodeHandler after initialization"){
+    assert(scalaCodeHandler.mapIntr.isEmpty, "Number of currently used interpreters should be equal to 0")
+    assert(scalaCodeHandler.freeInterpreters.size() == 1, "Number of prepared but not used interpreters should be equal to 1")
+  }
+
   test("ScalaCodeHandler.initSession() method"){
-
-    val scalaCodeHandler = new ScalaCodeHandler(sc,h2oContext)
-
     val req = new ScalaSessionIdV3
     val result = scalaCodeHandler.initSession(3,req)
 
@@ -55,8 +67,6 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext {
   }
 
   test("ScalaCodeHandler.destroySession() method, destroy existing session"){
-    val scalaCodeHandler = new ScalaCodeHandler(sc,h2oContext)
-
     // create new session
     val reqSession = new ScalaSessionIdV3
     scalaCodeHandler.initSession(3,reqSession)
@@ -66,25 +76,21 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext {
     val result = scalaCodeHandler.destroySession(3,reqMsg)
 
     assert(result.msg.equals("Session closed"),"Message should be equal to \"Session closed\"")
-    assert(scalaCodeHandler.mapIntr.size == 0, "Number of currently used interpreters should be equal to 0")
+    assert(scalaCodeHandler.mapIntr.isEmpty, "Number of currently used interpreters should be equal to 0")
     assert(scalaCodeHandler.mapIntr.get(1).isEmpty, "The value in the interpreters hashmap with the key 1 should be empty")
   }
 
   test("ScalaCodeHandler.destroySession() method, destroy non-existing session"){
-    val scalaCodeHandler = new ScalaCodeHandler(sc,h2oContext)
-
     val reqMsg = new ScalaMsgV3
     reqMsg.session_id=3
     val result = scalaCodeHandler.destroySession(3,reqMsg)
 
     assert(result.msg.equals("Session does not exist"),"Message should be equal to \"Session does not exist\"")
-    assert(scalaCodeHandler.mapIntr.size == 0, "Number of currently used interpreters should be equal to 0")
+    assert(scalaCodeHandler.mapIntr.isEmpty, "Number of currently used interpreters should be equal to 0")
     assert(scalaCodeHandler.mapIntr.get(3).isEmpty, "The value in the interpreters hashmap with the key 3 should be empty")
   }
 
   test("ScalaCodeHandler.getSessions() method"){
-    val scalaCodeHandler = new ScalaCodeHandler(sc,h2oContext)
-
     // create first interpreter
     val reqSession1 = new ScalaSessionIdV3
     scalaCodeHandler.initSession(3,reqSession1)
@@ -101,8 +107,6 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext {
   }
 
   test("ScalaCodeHandler.interpret() method, printing"){
-    val scalaCodeHandler = new ScalaCodeHandler(sc,h2oContext)
-
     // create interpreter
     val reqSession = new ScalaSessionIdV3
     scalaCodeHandler.initSession(3,reqSession)
@@ -119,8 +123,6 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext {
   }
 
   test("ScalaCodeHandler.interpret() method, using unknown function"){
-    val scalaCodeHandler = new ScalaCodeHandler(sc,h2oContext)
-
     // create interpreter
     val reqSession = new ScalaSessionIdV3
     scalaCodeHandler.initSession(3,reqSession)
@@ -133,12 +135,10 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext {
 
     assert(result.output.equals(""),"Printed output should be empty")
     assert(result.status.equals("Error"),"Status should be Error")
-    assert(result.response.equals("<console>:29: error: not found: value foo\n              foo\n              ^\n"),"Response should not be empty")
+    assert(result.response.equals("<console>:27: error: not found: value foo\n              foo\n              ^\n"),"Response should not be empty")
   }
 
   test("ScalaCodeHandler.interpret() method, using previously defined class"){
-    val scalaCodeHandler = new ScalaCodeHandler(sc,h2oContext)
-
     // create interpreter
     val reqSession = new ScalaSessionIdV3
     scalaCodeHandler.initSession(3,reqSession)
@@ -164,8 +164,6 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext {
 
 
   test("ScalaCodeHandler.interpret() method, using sqlContext,h2oContext and sparkContext"){
-    val scalaCodeHandler = new ScalaCodeHandler(sc,h2oContext)
-
     // create interpreter
     val reqSession = new ScalaSessionIdV3
     scalaCodeHandler.initSession(3,reqSession)

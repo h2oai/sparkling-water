@@ -46,7 +46,7 @@ artifacts {
   integTestAssembly integTestJar
 
   // pull selected dependencies
-  dep(testDependencies + [ "ai.h2o:sparkling-water-core", "ai.h2o:h2o-scala_${scalaBinaryVersion}" ]).each {
+  dep(testDependencies + ["ai.h2o:sparkling-water-repl", "ai.h2o:sparkling-water-core", "ai.h2o:h2o-scala_${scalaBinaryVersion}" ]).each {
     integTestAssembly it
   }
 }
@@ -63,7 +63,6 @@ integTest {
   // Pass list of jars required for testing
   systemProperty "sparkling.test.assembly", "${configurations.integTestAssembly.artifacts.file.join(',')}"
   systemProperty "sparkling.test.jar", "${integTestJar.archivePath}"
-
   jvmArgs '-XX:MaxPermSize=384m'
 
   // Decide which tests should be launch here based on environment

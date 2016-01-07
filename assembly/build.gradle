@@ -24,6 +24,7 @@ shadowJar {
     // DO NOT Forget to update a list of jars used in testAssembly task
     include(project(":sparkling-water-core"))
     include(project(":sparkling-water-examples"))
+    include(project(":sparkling-water-repl"))
     include(dependency("ai.h2o:h2o-core"))
     include(dependency("ai.h2o:h2o-scala_${scalaBinaryVersion}"))
     include(dependency("ai.h2o:h2o-app"))

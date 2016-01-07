@@ -9,7 +9,7 @@
  *      butter better is to use it like this: implicit val sqlContext = SQLContext.getOrCreate(sc)
  *    SparkContext is available as sc
  */
-import _root_.hex.deeplearning.{DeepLearningModel}
+import _root_.hex.deeplearning.DeepLearningModel
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.{SparkFiles, mllib}

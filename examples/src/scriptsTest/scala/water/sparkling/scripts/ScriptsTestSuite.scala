@@ -4,7 +4,7 @@
 
 package water.sparkling.scripts
 
-import org.apache.spark.repl.CodeResults
+import org.apache.spark.repl.h2o.commons.{InterpreterHelper, CodeResults}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -16,12 +16,12 @@ class BasicInterpreterTests extends ScriptsTestHelper{
     super.beforeAll()
   }
   test("Code with exception") {
-    val result = launchCode(h2OContext, "throw new Exception(\"Exception Message\")")
+    val result = launchCode("throw new Exception(\"Exception Message\")")
     assert(result.codeExecutionStatus==CodeResults.Exception, "Problem during interpreting the script!")
   }
 
   test("Incomplete code") {
-    val result = launchCode(h2OContext, "val num = ")
+    val result = launchCode("val num = ")
     assert(result.codeExecutionStatus==CodeResults.Incomplete, "Code execution status should be Incomplete!")
   }
 
@@ -29,9 +29,22 @@ class BasicInterpreterTests extends ScriptsTestHelper{
     val inspections = new ScriptInspections()
     inspections.addTermToCheck("num")
 
-    val result = launchCode(h2OContext, "val num = 42", inspections)
+    val result = launchCode("val num = 42", inspections)
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
     assert(result.realTermValues.get("num").get=="42","Value of term \"num\" should be 42")
+  }
+
+
+  test("Test successful call after exception occurred") {
+    InterpreterHelper.initReplConfig(sc)
+    val loop = InterpreterHelper.createInterpreter(1)
+    val result = launchCodeWithIntp("throw new Exception(\"Exception Message\")",loop)
+    assert(result.codeExecutionStatus==CodeResults.Exception, "Problem during interpreting the script!")
+
+    val result2 = launchCodeWithIntp("val a = 42",loop)
+    assert(result2.codeExecutionStatus==CodeResults.Success, "Now it should end up as Success!")
+
+    loop.closeInterpreter()
   }
 }
 
@@ -46,7 +59,7 @@ class ScriptChicagoCrimeHDFS extends ScriptsTestHelper{
   }
 
   ignore("chicagoCrimeLarge.script.scala ") {
-    val result = launchScript(h2OContext, "chicagoCrimeLarge.script.scala")
+    val result = launchScript("chicagoCrimeLarge.script.scala")
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
   }
 }
@@ -60,7 +73,7 @@ class ScriptChicagoCrimeSmall extends ScriptsTestHelper{
     super.beforeAll()
   }
   test("chicagoCrimeSmall.script.scala ") {
-    val result = launchScript(h2OContext, "chicagoCrimeSmall.script.scala")
+    val result = launchScript("chicagoCrimeSmall.script.scala")
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
   }
 }
@@ -74,7 +87,7 @@ class ScriptChicagoCrimeSmallShell extends ScriptsTestHelper{
     super.beforeAll()
   }
   test("chicagoCrimeSmallShell.script.scala") {
-    val result = launchScript(h2OContext, "chicagoCrimeSmallShell.script.scala")
+    val result = launchScript( "chicagoCrimeSmallShell.script.scala")
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
   }
 }
@@ -94,7 +107,7 @@ class ScriptHamOrSpam extends ScriptsTestHelper{
     inspections.addSnippet("val answer2 = isSpam(\"We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?\", dlModel, hashingTF, idfModel, h2oContext)")
     inspections.addTermToCheck("answer2")
 
-    val result = launchScript(h2OContext, "hamOrSpam.script.scala",inspections)
+    val result = launchScript("hamOrSpam.script.scala",inspections)
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
     assert(result.realTermValues.get("answer1").get=="false","Value of term \"answer1\" should be false")
     assert(result.realTermValues.get("answer2").get=="true","Value of term \"answer2\" should be true")
@@ -110,7 +123,7 @@ class ScriptCraigListJobTitles extends ScriptsTestHelper{
     super.beforeAll()
   }
   test("craigslistJobTitles.script.scala ") {
-    val result = launchScript(h2OContext, "craigslistJobTitles.script.scala")
+    val result = launchScript("craigslistJobTitles.script.scala")
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
   }
 }
@@ -129,7 +142,7 @@ class ScriptStrata2015 extends ScriptsTestHelper{
   }
 
   test("strata2015.script.scala") {
-    val result = launchScript(h2OContext, "strata2015.script.scala")
+    val result = launchScript("strata2015.script.scala")
     var msg = "Problem during interpreting the script!"
     if(result.codeExecutionStatus==CodeResults.Exception){
       msg = "Exception occurred during the execution. One possible cause could be missing necessary citibike-nyc data files in examples/bigdata/laptop/citibike-nyc/ folder."
@@ -147,7 +160,7 @@ class ScriptStrataAirlines extends ScriptsTestHelper{
     super.beforeAll()
   }
   test("StrataAirlines.script.scala") {
-    val result = launchScript(h2OContext, "StrataAirlines.script.scala")
+    val result = launchScript("StrataAirlines.script.scala")
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
   }
 }

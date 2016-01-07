@@ -14,12 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.repl
+package org.apache.spark.repl.h2o.commons
 
 import java.net.URL
 
+import org.apache.spark.repl.Main
 import org.apache.spark.util.MutableURLClassLoader
-import org.apache.spark.{SparkEnv, SparkContext}
+import org.apache.spark.{SparkContext, SparkEnv}
 
 import scala.tools.nsc.interpreter.AbstractFileClassLoader
 import scala.tools.nsc.util.ScalaClassLoader.URLClassLoader
@@ -27,7 +28,7 @@ import scala.tools.nsc.util.ScalaClassLoader.URLClassLoader
 /**
  * Various helper methods for classloaders used in the REPL environment
  */
-class ClassLoaderHelper(val sc: SparkContext) {
+class SharedReplConfig(val sc: SparkContext) {
   private var _replClassLoader: AbstractFileClassLoader = null
   private var _runtimeClassLoader: URLClassLoader with ExposeAddUrl = null // wrapper exposing addURL
 
@@ -36,7 +37,6 @@ class ClassLoaderHelper(val sc: SparkContext) {
   }else{
     prepareRemoteClassLoader()
   }
-
 
   private def prepareRemoteClassLoader() = {
     if (Main.interp != null) {
@@ -58,7 +58,7 @@ class ClassLoaderHelper(val sc: SparkContext) {
     value match {
       case v : Option[_] => {
         v.get match {
-          case cl: MutableURLClassLoader => cl.addURL(REPLClassServerUtils.getClassOutputDir.toURI.toURL)
+          case cl: MutableURLClassLoader => cl.addURL(InterpreterHelper.classOutputDir.toURI.toURL)
           case _ =>
         }
       }
@@ -101,4 +101,9 @@ class ClassLoaderHelper(val sc: SparkContext) {
       urls.foreach(_runtimeClassLoader.addNewUrl)
     }
   }
+
+}
+
+private[repl] trait ExposeAddUrl extends URLClassLoader {
+  def addNewUrl(url: URL) = this.addURL(url)
 }

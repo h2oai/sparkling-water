@@ -20,7 +20,7 @@
  * Author: Paul Phillips
  */
 
-package org.apache.spark.repl
+package org.apache.spark.repl.h2o
 
 import scala.collection.mutable
 

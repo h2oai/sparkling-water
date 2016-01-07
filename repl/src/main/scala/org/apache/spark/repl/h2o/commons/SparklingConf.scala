@@ -14,12 +14,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+package org.apache.spark.repl.h2o.commons
 
-package org.apache.spark.repl
+import org.apache.spark.SparkConf
 
 /**
-  * Enum representing possible results of code interpreted in scala interpreter
+  * Wrapper around spark configuration
+  * @param loadDefaults
   */
-object CodeResults extends Enumeration {
-val Success, Error, Incomplete, Exception = Value
+class SparklingConf(loadDefaults: Boolean) extends SparkConf {
+
+  /** Create a SparkConf that loads defaults from system properties and the classpath */
+  def this() = this(true)
+
+  this.set("spark.repl.class.uri", InterpreterHelper.classServerUri)
 }

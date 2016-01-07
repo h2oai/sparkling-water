@@ -14,19 +14,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.h2o
 
-import org.apache.spark.SparkConf
-import org.apache.spark.repl.REPLClassServerUtils
+package org.apache.spark.repl.h2o.commons
 
-/**
-  * Wrapper around spark configuration
-  * @param loadDefaults
-  */
-class SparklingConf(loadDefaults: Boolean) extends SparkConf {
+import java.io.{ByteArrayOutputStream, PrintStream}
 
-  /** Create a SparkConf that loads defaults from system properties and the classpath */
-  def this() = this(true)
 
-  this.set("spark.repl.class.uri", REPLClassServerUtils.classServerUri)
+class IntpConsoleStream() extends PrintStream(new ByteArrayOutputStream()){
+  def reset(): Unit ={
+    out.asInstanceOf[ByteArrayOutputStream].reset()
+  }
+  def content: String = {
+    out.toString
+  }
 }
+

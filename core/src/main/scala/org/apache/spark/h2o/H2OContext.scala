@@ -678,9 +678,8 @@ object H2OContext extends Logging {
       conf.set("spark.locality.wait", "30000")
     }
   }
-
   private[h2o] def registerClientWebAPI(sc: SparkContext, h2OContext: H2OContext): Unit = {
-    registerScalaIntEndp(sc, h2OContext)
+    registerScalaIntEndp(sc)
     registerDataFramesEndp(sc, h2OContext)
     registerH2OFramesEndp(sc, h2OContext)
     registerRDDsEndp(sc)
@@ -752,8 +751,8 @@ object H2OContext extends Logging {
 
   }
 
-  private def registerScalaIntEndp(sc: SparkContext, h2OContext: H2OContext) = {
-    val scalaCodeHandler = new ScalaCodeHandler(sc, h2OContext)
+  private def registerScalaIntEndp(sc: SparkContext) = {
+    val scalaCodeHandler = new ScalaCodeHandler(sc)
     def scalaCodeFactory = new HandlerFactory {
       override def create(aClass: Class[_ <: Handler]): Handler = scalaCodeHandler
     }
