@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 import setuptools
 from codecs import open
 from os import path
-import pysparkling
+#import pysparkling
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
@@ -62,8 +62,10 @@ setup(
     ],
     keywords='machine learning, data mining, statistical analysis, modeling, big data, distributed, parallel',
 
-    packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
+
+    package_dir={ 'pysparkling' : 'pysparkling', 'h2o' : 'build/dep/h2o' },
+    packages=find_packages(exclude=['contrib', 'docs', 'tests*']) + find_packages('build/dep'),
 
     # run-time dependencies
-    install_requires=['requests', 'tabulate', 'h2o'],
+    install_requires=['requests', 'tabulate'],
 )
