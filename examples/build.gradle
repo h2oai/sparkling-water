@@ -67,8 +67,6 @@ integTest {
 
   jvmArgs '-XX:MaxPermSize=384m'
 
-    //configurations.integTestRuntime. { println(it)}
-
   // Decide which tests should be launch here based on environment
   switch (testEnv) {
     case "yarn":
