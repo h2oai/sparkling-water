@@ -7,62 +7,89 @@ idea {
         testOutputDir = file('py/build/test')
     }
 }
+
 description = "PySparkling - Sparkling-Water Python Package"
 
 dependencies {
   compile project(path: ':sparkling-water-assembly', configuration: 'shadow')
 }
 
-ext {
-    PROJECT_VERSION = version
-    T = getProjectDir().toString()
-}
-
 task createVersionFile << {
-    File version_file = new File([T, "version.txt"].join(File.separator))
-    def version_txt = PROJECT_VERSION
+    File version_file = new File(getProjectDir(), "version.txt")
+    def version_txt = version
     version_file.write(version_txt)
 }
 
-task distPython(type: Exec) {
+def preparePythonEnv(environment) {
     def SPARK_HOME = System.getenv("SPARK_HOME")
     def H2O_HOME = System.getenv("H2O_HOME")
+    def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
 
     if (SPARK_HOME != null) {
         environment['PYTHONPATH'] = SPARK_HOME + File.separator + "python" + File.pathSeparator +
-                                    SPARK_HOME + File.separator + "python" + File.separator + "lib" + File.separator + "py4j-0.8.2.1-src.zip";
+                                    SPARK_HOME + File.separator + "python" + File.separator + "lib" + File.separator + "py4j-0.8.2.1-src.zip" +
+                                    File.pathSeparator + environment["PYTHONPATH"]
     }
+
     if (H2O_HOME != null) {
         environment['PYTHONPATH'] = H2O_HOME + File.separator + "h2o-py" + File.pathSeparator + environment["PYTHONPATH"]
     }
+
+    if (H2O_PYTHON_WHEEL != null) {
+        environment['PYTHONPATH'] = H2O_PYTHON_WHEEL + File.pathSeparator + environment["PYTHONPATH"]
+    }
+}
+
+task distPython(type: Exec) {
+    preparePythonEnv(environment)
+
+    def H2O_HOME = System.getenv("H2O_HOME")
+    def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
+
+    // Copy H2O dependency
+    if (H2O_HOME != null) {
+        // Prepare dependencies
+        doFirst {
+            copy {
+                from "${H2O_HOME}/h2o-py/h2o"
+                into 'build/dep/h2o'
+            }
+        }
+
+    }
+
+    if (H2O_PYTHON_WHEEL != null) {
+        doFirst {
+            copy {
+                from zipTree(H2O_PYTHON_WHEEL)
+                into 'build/dep'
+                include 'h2o/**'
+            }
+        }
+    }
+
     commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_egg","bdist_wheel"])
 }
 
 task testPython(type: Exec, dependsOn: configurations.compile) {
-    def SPARK_HOME = System.getenv("SPARK_HOME")
-    def H2O_HOME = System.getenv("H2O_HOME")
-    if (SPARK_HOME != null) {
-        environment['PYTHONPATH'] = SPARK_HOME + File.separator + "python" + File.pathSeparator +
-                SPARK_HOME + File.separator + "python" + File.separator + "build" + File.pathSeparator +
-                SPARK_HOME + File.separator + "python" + File.separator + "lib" + File.separator + "py4j-0.8.2.1-src.zip" + File.pathSeparator +
-                "./" + File.pathSeparator + System.getenv("PYTHONPATH")
-    }
-    if (H2O_HOME != null) {
-        environment['PYTHONPATH'] = H2O_HOME + File.separator + "h2o-py" + File.pathSeparator + environment["PYTHONPATH"]
-    }
+    preparePythonEnv(environment)
 
     environment['SPARK_CLASSPATH'] = "${configurations.compile.join(',')}"
-  print(environment['SPARK_CLASSPATH'])
     commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test*.py"])
-
 }
-def testsPath = new File("./tests")
 
 task cleanPython(type: Delete) {
     delete file("dist/"),
             file("pySparkling.egg-info/"), 
             fileTree(dir: projectDir, include: '**/*.pyc'),
             file("version.txt")
+}
+
+task printH2OWheelPackage << {
+    description = "Print location of H2O Python Wheel package for download"
+    println("http://h2o-release.s3.amazonaws.com/h2o/"
+                    + (h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master")
+                    + "/${h2oBuild}/Python/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl")
 }
 
 clean.dependsOn cleanPython
@@ -74,14 +101,6 @@ task buildPython(dependsOn: distPython)
 build.dependsOn buildPython
 
 test.dependsOn testPython
-
-//
-// Helper methods
-//
-def getOS() {
-    String os = [Os.FAMILY_WINDOWS, Os.FAMILY_MAC, Os.FAMILY_UNIX].find { String family -> Os.isFamily(family) }
-    return os
-}
 
 def getOsSpecificCommandLine(args) { 
   return Os.isFamily(Os.FAMILY_WINDOWS) ? ['cmd', '/c'] + args : args 
