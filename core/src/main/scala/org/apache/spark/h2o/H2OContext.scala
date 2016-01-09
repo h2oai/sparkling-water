@@ -182,7 +182,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // Setup properties for H2O configuration
     if (!sparkConf.contains(PROP_CLOUD_NAME._1)) {
       sparkConf.set(PROP_CLOUD_NAME._1,
-                    PROP_CLOUD_NAME._2 + System.getProperty("user.name", "cloud_" + Random.nextInt(42)))
+                    PROP_CLOUD_NAME._2 + System.getProperty("user.name", "cluster") + "_" + Random.nextInt())
     }
 
     // Check Spark environment and reconfigure some values
