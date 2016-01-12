@@ -45,7 +45,6 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
   // Shared h2oContext
   val h2oContext = hc
   // Shared sqlContext
-  SQLContext.clearActive()
   implicit val sqlContext = SQLContext.getOrCreate(sc)
 
   test("DataFrameHandler.list() method") {
