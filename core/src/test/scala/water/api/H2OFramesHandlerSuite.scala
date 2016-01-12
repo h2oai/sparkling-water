@@ -46,7 +46,7 @@ class H2OFramesHandlerSuite extends FunSuite with SparkTestContext {
   // Shared h2oContext
   val h2oContext = hc
   // Shared sqlContext
-  implicit val sqlContext = new SQLContext(sc)
+  implicit val sqlContext = SQLContext.getOrCreate(sc)
 
   test("H2OFramesHandler.toDataFrame() method"){
     // create H2OFrame which will be used for the transformation
