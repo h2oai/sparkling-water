@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+##v1.5.10 (2016-01-11)
+  - [SW-51] Bundle pySparkling with release and enable its testing on test machines
+  - [SW-60] Move ModelUtils to sparkling-water-core module
+
 ##v1.5.8, v1.5.9 (2015-12-18)
   - Fix a bug in launch script overriding default value of spark.driver.extraProperties
 
