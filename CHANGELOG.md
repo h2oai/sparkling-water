@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+#v1.4.10 (2016-01-13)
+  - [SW-51](https://0xdata.atlassian.net/browse/SW-51) Bundle pySparkling with release and enable its testing on test machines
+  - [SW-60](https://0xdata.atlassian.net/browse/SW-60) Move ModelUtils to sparkling-water-core module
+
 #v1.4.9 (2015-12-18)
   - Upgrade of H2O dependency to 3.6.0.8
   - Fixes of typos in code
