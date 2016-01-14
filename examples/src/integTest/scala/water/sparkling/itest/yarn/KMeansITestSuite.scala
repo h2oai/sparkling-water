@@ -119,7 +119,7 @@ object KMeansITest {
     println("H2O: Time to Build (s) = " + H2OKMBuildTime)
 
     val relativeMeanDiff = (sparkWSSSE - h2oWSSSE)/sparkWSSSE
-    assert (relativeMeanDiff < 0.01, "Within Set Sum of Squared Errors matches!")
+    assert (relativeMeanDiff < 0.1, "Within Set Sum of Squared Errors matches!")
 
     // Shutdown Spark
     sc.stop()
