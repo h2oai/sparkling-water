@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.repl.h2o.commons
+package org.apache.spark.repl.h2o
 
 import org.apache.spark.SparkConf
 
@@ -27,5 +27,5 @@ class SparklingConf(loadDefaults: Boolean) extends SparkConf {
   /** Create a SparkConf that loads defaults from system properties and the classpath */
   def this() = this(true)
 
-  this.set("spark.repl.class.uri", InterpreterHelper.classServerUri)
+  this.set("spark.repl.class.uri", H2OInterpreter.classServerUri)
 }

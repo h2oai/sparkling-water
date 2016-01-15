@@ -20,14 +20,14 @@
   * Author:  Paul Phillips
   */
 
-package org.apache.spark.repl.h2o.commons
+package org.apache.spark.repl.h2o
 
 import org.apache.spark.util.Utils
 import org.apache.spark.{HttpServer, Logging, SecurityManager, SparkConf}
 
 
 /**
-  * HTTP Server containing classes defined in repl
+  * HTTP Server storing classes defined in REPL
   */
 private[repl] object ClassServer extends Logging {
 
@@ -39,12 +39,10 @@ private[repl] object ClassServer extends Logging {
     Utils.createTempDir(rootDir)
   }
   private val conf = new SparkConf()
-  private val SPARK_DEBUG_REPL: Boolean = System.getenv("SPARK_DEBUG_REPL") == "1"
-
   logInfo("Directory to save .class files to = " + outputDir)
   /** Jetty server that will serve our classes to worker nodes */
   private val classServerPort = conf.getInt("spark.replClassServer.port", 0)
-  private var classServer = new HttpServer(conf, outputDir, new SecurityManager(conf), classServerPort, "HTTP class server")
+  private val classServer = new HttpServer(conf, outputDir, new SecurityManager(conf), classServerPort, "HTTP class server")
   private var _isRunning = false
 
   def start() ={

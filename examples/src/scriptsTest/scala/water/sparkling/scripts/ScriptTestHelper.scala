@@ -2,8 +2,7 @@ package water.sparkling.scripts
 
 import java.io.File
 
-import org.apache.spark.repl.h2o.H2OInterpreter
-import org.apache.spark.repl.h2o.commons.{InterpreterHelper, SparklingConf, CodeResults}
+import org.apache.spark.repl.h2o.{SparklingConf, CodeResults, H2OInterpreter}
 import org.apache.spark.{SparkContext, SparkConf}
 import org.scalatest.{Suite, BeforeAndAfterAll, FunSuite}
 
@@ -68,8 +67,7 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
     val sourceFile = new File("examples" + File.separator + "scripts" + File.separator + scriptName)
 
     val code = scala.io.Source.fromFile(sourceFile).mkString
-    InterpreterHelper.initReplConfig(sc)
-    val loop = InterpreterHelper.createInterpreter(1)
+    val loop = new H2OInterpreter(sc, sessionId = 1)
     val res = launch(code,loop, inspections)
     loop.closeInterpreter()
     res
@@ -78,8 +76,7 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
   def launchCode(code: String, inspections: ScriptInspections = new ScriptInspections()): ScriptTestResult = {
     logInfo("\n\n\n\n\nLAUNCHING CODE:\n" + code + "\n\n\n\n\n")
 
-    InterpreterHelper.initReplConfig(sc)
-    val loop = InterpreterHelper.createInterpreter(1)
+    val loop = new H2OInterpreter(sc, sessionId = 1)
     val res = launch(code,loop, inspections)
     loop.closeInterpreter()
     res

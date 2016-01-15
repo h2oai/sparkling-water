@@ -4,7 +4,7 @@
 
 package water.sparkling.scripts
 
-import org.apache.spark.repl.h2o.commons.{InterpreterHelper, CodeResults}
+import org.apache.spark.repl.h2o.{H2OInterpreter, CodeResults}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -36,8 +36,7 @@ class BasicInterpreterTests extends ScriptsTestHelper{
 
 
   test("Test successful call after exception occurred") {
-    InterpreterHelper.initReplConfig(sc)
-    val loop = InterpreterHelper.createInterpreter(1)
+    val loop = new H2OInterpreter(sc, sessionId = 1)
     val result = launchCodeWithIntp("throw new Exception(\"Exception Message\")",loop)
     assert(result.codeExecutionStatus==CodeResults.Exception, "Problem during interpreting the script!")
 

@@ -15,17 +15,11 @@
 * limitations under the License.
 */
 
-package org.apache.spark.repl.h2o.commons
+package org.apache.spark.repl.h2o
 
-import java.io.{ByteArrayOutputStream, PrintStream}
-
-
-class IntpConsoleStream() extends PrintStream(new ByteArrayOutputStream()){
-  def reset(): Unit ={
-    out.asInstanceOf[ByteArrayOutputStream].reset()
-  }
-  def content: String = {
-    out.toString
-  }
+/**
+  * Enum representing possible results of code interpreted in scala interpreter
+  */
+object CodeResults extends Enumeration {
+val Success, Error, Incomplete, Exception = Value
 }
-

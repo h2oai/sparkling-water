@@ -24,9 +24,8 @@ package org.apache.spark.repl.h2o
 
 import java.net.URI
 
-import org.apache.spark.Logging
-import org.apache.spark.repl.SparkILoop
-import org.apache.spark.repl.h2o.commons.{CodeResults, IntpConsoleStream, IntpResponseWriter, SharedReplConfig}
+import org.apache.spark.{SparkContext, Logging}
+import org.apache.spark.repl.{Main, SparkILoop}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.util.Utils
 
@@ -37,11 +36,14 @@ import scala.tools.nsc._
 import scala.tools.nsc.interpreter.{Results => IR, _}
 import scala.tools.nsc.util._
 
-
-class H2OInterpreter(val sharedReplConfig: SharedReplConfig, var sessionID: Int) extends Logging {
+/**
+  * H2O Interpreter which is use to interpret scala code
+  * @param sparkContext spark context
+  * @param sessionId session ID for interpreter
+  */
+class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends Logging {
 
   private val ContinueString = "     | "
-  private val sparkContext = sharedReplConfig.sc
   private val consoleStream = new IntpConsoleStream()
   private val responseWriter = new IntpResponseWriter()
   private var replExecutionStatus = CodeResults.Success
@@ -52,8 +54,7 @@ class H2OInterpreter(val sharedReplConfig: SharedReplConfig, var sessionID: Int)
 
   def closeInterpreter() {
     if (intp ne null) {
-      intp.close()
-      intp = null
+      intp.reporter.flush()
     }
   }
 
@@ -146,7 +147,7 @@ class H2OInterpreter(val sharedReplConfig: SharedReplConfig, var sessionID: Int)
     val totalClassPath = addedJars.foldLeft(
       settings.classpath.value)((l, r) => ClassPath.join(l, r))
     this.settings.classpath.value = totalClassPath
-    new H2OIMain(sharedReplConfig, settings, responseWriter, sessionID)
+    H2OIMain.createInterpreter(sparkContext, settings, responseWriter,sessionId)
   }
 
   /**
@@ -321,3 +322,35 @@ class H2OInterpreter(val sharedReplConfig: SharedReplConfig, var sessionID: Int)
   initializeInterpreter()
 }
 
+object H2OInterpreter{
+  /**
+    * Return class server output directory of REPL Class server.
+    * @return
+    */
+  def classOutputDir = {
+    if (org.apache.spark.repl.Main.interp != null) {
+      // Application was started using SparkSubmit
+      org.apache.spark.repl.Main.interp.intp.getClassOutputDirectory
+    } else {
+      ClassServer.getClassOutputDirectory
+    }
+  }
+
+
+  /**
+    * Return class server uri for REPL Class server.
+    * In local mode the class server is not actually used, all we need is just output directory
+    * @return
+    */
+  def classServerUri = {
+    if (org.apache.spark.repl.Main.interp != null) {
+      // Application was started using SparkSubmit
+      org.apache.spark.repl.Main.interp.intp.classServerUri
+    } else {
+      if (!ClassServer.isRunning) {
+        ClassServer.start()
+      }
+      ClassServer.classServerUri
+    }
+  }
+}

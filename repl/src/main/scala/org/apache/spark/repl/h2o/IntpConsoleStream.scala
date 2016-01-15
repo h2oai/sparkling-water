@@ -15,26 +15,17 @@
 * limitations under the License.
 */
 
-package org.apache.spark.repl.h2o.commons
+package org.apache.spark.repl.h2o
 
-import java.io.StringWriter
-
-import scala.tools.nsc.interpreter.JPrintWriter
+import java.io.{ByteArrayOutputStream, PrintStream}
 
 
-class IntpResponseWriter() extends JPrintWriter(new StringWriter()){
+class IntpConsoleStream() extends PrintStream(new ByteArrayOutputStream()){
   def reset(): Unit ={
-    out.asInstanceOf[StringWriter].getBuffer.setLength(0)
+    out.asInstanceOf[ByteArrayOutputStream].reset()
   }
   def content: String = {
     out.toString
   }
-
-  override def write(s: String): Unit = {
-    // when running tests, store whole interpreter response
-    if(!sys.props.contains("spark.testing")){
-      reset()
-    }
-    super.write(s)
-  }
 }
+

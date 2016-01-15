@@ -18,7 +18,6 @@ package water.api.scalaInt
 
 import org.apache.spark.SparkContext
 import org.apache.spark.repl.h2o.H2OInterpreter
-import org.apache.spark.repl.h2o.commons.InterpreterHelper
 import water.Iced
 import water.api.Handler
 
@@ -30,7 +29,6 @@ import scala.compat.Platform
  */
 class ScalaCodeHandler(val sc: SparkContext) extends Handler {
 
-  InterpreterHelper.initReplConfig(sc)
   val intrPoolSize = 1
   // 1 only for development purposes
   val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
@@ -57,7 +55,7 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler {
 
   def initSession(version: Int, s: ScalaSessionIdV3): ScalaSessionIdV3 = {
     val intp = fetchInterpreter()
-    s.session_id = intp.sessionID
+    s.session_id = intp.sessionId
     s
   }
 
@@ -65,7 +63,7 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler {
     this.synchronized {
                         if (!freeInterpreters.isEmpty) {
                           val intp = freeInterpreters.poll()
-                          mapIntr.put(intp.sessionID, (intp, Platform.currentTime))
+                          mapIntr.put(intp.sessionId, (intp, Platform.currentTime))
                           new Thread(new Runnable {
                             def run(): Unit = {
                               createIntpInPool()
@@ -75,8 +73,8 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler {
                         } else {
                           // pool is empty at the moment and is being filled, return new interpreter without using the pool
                           val id = createID()
-                          val intp = InterpreterHelper.createInterpreter(id)
-                          mapIntr.put(intp.sessionID, (intp, Platform.currentTime))
+                          val intp = new H2OInterpreter(sc, id)
+                          mapIntr.put(intp.sessionId, (intp, Platform.currentTime))
                           intp
                         }
                       }
@@ -124,7 +122,7 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler {
 
   def createIntpInPool(): H2OInterpreter = {
     val id = createID()
-    val intp = InterpreterHelper.createInterpreter(id)
+    val intp = new H2OInterpreter(sc, id)
     freeInterpreters.add(intp)
     intp
   }

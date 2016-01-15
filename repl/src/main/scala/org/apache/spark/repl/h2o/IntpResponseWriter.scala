@@ -15,11 +15,26 @@
 * limitations under the License.
 */
 
-package org.apache.spark.repl.h2o.commons
+package org.apache.spark.repl.h2o
 
-/**
-  * Enum representing possible results of code interpreted in scala interpreter
-  */
-object CodeResults extends Enumeration {
-val Success, Error, Incomplete, Exception = Value
+import java.io.StringWriter
+
+import scala.tools.nsc.interpreter.JPrintWriter
+
+
+class IntpResponseWriter() extends JPrintWriter(new StringWriter()){
+  def reset(): Unit ={
+    out.asInstanceOf[StringWriter].getBuffer.setLength(0)
+  }
+  def content: String = {
+    out.toString
+  }
+
+  override def write(s: String): Unit = {
+    // when running tests, store whole interpreter response
+    if(!sys.props.contains("spark.testing")){
+      reset()
+    }
+    super.write(s)
+  }
 }
