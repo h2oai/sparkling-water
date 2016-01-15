@@ -33,7 +33,7 @@ object HexDev64Test {
     } catch {
       case t: Throwable => {
         System.err.println(t.toString)
-        System.err.println(t.getStackTrace.toString)
+        t.printStackTrace()
         water.H2O.exit(-1)
       }
     }

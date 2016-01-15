@@ -309,7 +309,7 @@ Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
  > Configure the Python path variable `PYTHONPATH`:
   ```
   export PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/build:$PYTHONPATH
-  export PYTHONPATH=$SPARK_HOME/python/lib/py4j-0.8.2.1-src.zip:$PYTHONPATH
+  export PYTHONPATH=$SPARK_HOME/python/lib/py4j-0.9-src.zip:$PYTHONPATH
   ```
 
 * Trying to import a class from the `hex` package in Sparkling Shell but getting weird error:

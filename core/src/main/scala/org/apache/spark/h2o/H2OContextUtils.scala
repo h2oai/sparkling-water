@@ -38,7 +38,14 @@ private[spark] object H2OContextUtils {
   /** Helper type expression a tuple of ExecutorId, IP, port */
   type NodeDesc = (String, String, Int)
 
-  def getIp(env: SparkEnv) = env.rpcEnv.address.host //settings.config.getString("akka.remote.netty.tcp.hostname")
+  /**
+    * Return IP of this node based on SparkEnv
+    * @param env  SparkEnv instance
+    * @return  ip of the node or localhost ip
+    */
+  def getIp(env: SparkEnv) =
+    if (env.rpcEnv.address != null) env.rpcEnv.address.host
+    else java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString(".")
 
   def saveAsFile(content: String): File = {
     val tmpDir = createTempDir()
@@ -94,7 +101,7 @@ private[spark] object H2OContextUtils {
     // Try to launch H2O
     val executorStatus = spreadRDD.map { nodeDesc =>  // RDD partition index
       assert(nodeDesc._2 == getIp(SparkEnv.get),  // Make sure we are running on right node
-        s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getIp(SparkEnv.get)})")
+         s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getIp(SparkEnv.get)})")
       // Launch the node
       val sparkEnv = SparkEnv.get
       // Define log dir
@@ -166,9 +173,11 @@ private[spark] object H2OContextUtils {
     val flatFile = bc.value.toArray
     val flatFileString = toFlatFileString(flatFile)
     // Pass flatfile around cluster
+
     spreadRDD.foreach { nodeDesc =>
-      assert(nodeDesc._2 == getIp(SparkEnv.get)) // Make sure we are running on right node
-      val executorId = SparkEnv.get.executorId
+      val env = SparkEnv.get
+      assert(nodeDesc._2 == getIp(env), s"nodeDesc=${nodeDesc} == ${getIp(env)}") // Make sure we are running on right node
+      val executorId = env.executorId
 
       val econf = water.H2O.getEmbeddedH2OConfig().asInstanceOf[SparklingWaterConfig]
       // Setup flatfile for waiting guys
@@ -288,5 +297,4 @@ private object H2OStartedSignal {
     started = true
   }
 }
-
 

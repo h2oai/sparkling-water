@@ -16,7 +16,7 @@
 */
 package water.api
 
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.h2o.util.SharedSparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -30,7 +30,8 @@ import water.exceptions.H2ONotFoundArgumentException
 @RunWith(classOf[JUnitRunner])
 class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local")
+  val sparkConf = new SparkConf().setMaster("local[*]").setAppName("test-local")
+  override def createSparkContext: SparkContext = new SparkContext(sparkConf)
 
   test("RDDsHandler.list() method") {
     val rname = "Test"

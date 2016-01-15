@@ -1,6 +1,5 @@
 package water.sparkling.itest
 
-import org.apache.spark.repl.h2o.H2OInterpreter
 import org.scalatest.{BeforeAndAfterEach, Suite, Tag}
 
 import scala.collection.mutable
@@ -32,7 +31,8 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
       Seq("--conf", "spark.ext.h2o.disable.ga=true") ++
       Seq("--conf", s"spark.ext.h2o.cloud.name=sparkling-water-${className.replace('.','-')}-${Random.nextInt()}") ++
       Seq("--conf", s"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
-      Seq("--conf", s"spark.yarn.am.extraJavaOptions=-Dhdp.version=${env.hdpVersion}") ++
+      Seq("--conf", s"spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
+      Seq("--conf", s"spark.executor.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", s"spark.test.home=$sparkHome") ++
       Seq("--conf", s"spark.driver.extraClassPath=${env.assemblyJar}") ++
       env.sparkConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++
@@ -91,7 +91,6 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
 
   private class TestEnvironment extends IntegTestEnv {
     val conf = mutable.HashMap.empty[String,String] += "spark.testing" -> "true"
-    conf += "spark.repl.class.uri" -> H2OInterpreter.classServerUri
     override def sparkConf: mutable.Map[String, String] = conf
   }
   object env {
