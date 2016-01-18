@@ -26,8 +26,6 @@ String getSparkMaster() {
         logger.info("Found spark master: ${sh}")
         return sh
     } else {
-        logger.warn("Cannot find Spark master - " +
-                "please specify MASTER env variable or pass -PsparkMaster property to gradle script")
         return null
     }
 }

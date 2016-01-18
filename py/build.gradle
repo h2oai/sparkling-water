@@ -14,14 +14,25 @@ dependencies {
   compile project(path: ':sparkling-water-assembly', configuration: 'shadow')
 }
 
+//
+// Create a file with version for Python dist task
+//
 task createVersionFile << {
     File version_file = new File(getProjectDir(), "version.txt")
     def version_txt = version
     version_file.write(version_txt)
 }
 
+//
+// Represents a location of H2O Wheel Package
+//
+def h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"}/${h2oBuild}/Python/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl"
+
+//
+// Prepare Python environment to execute python commands
+//
 def preparePythonEnv(environment) {
-    def SPARK_HOME = System.getenv("SPARK_HOME")
+    def SPARK_HOME = ext.sparkHome
     def H2O_HOME = System.getenv("H2O_HOME")
     def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
 
@@ -38,15 +49,40 @@ def preparePythonEnv(environment) {
     if (H2O_PYTHON_WHEEL != null) {
         environment['PYTHONPATH'] = H2O_PYTHON_WHEEL + File.pathSeparator + environment["PYTHONPATH"]
     }
+}
 
-    if(H2O_HOME ==null && H2O_PYTHON_WHEEL == null){
-        // fail the build
-        throw new GradleException('Neither one of H2O_HOME an H2O_PYTHON_WHEEL properties is not set!' +
-                'Please set H2O_HOME property to h2o source directory or H2O_PYTHON_WHEEL to H2O\'s wheel file and restart the build.')
+//
+// Initial task checking setup of all properties required
+// by Python build
+//
+task checkPythonEnv << {
+    def SPARK_HOME = sparkHome
+    def H2O_HOME = System.getenv("H2O_HOME")
+    def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
+
+    if (SPARK_HOME == null) throw new InvalidUserDataException("SPARK_HOME needs to be defined!")
+
+    if (H2O_HOME == null && H2O_PYTHON_WHEEL == null) {
+        throw new InvalidUserDataException("""
+Both properties H2O_HOME and H2O_PYTHON_WHEEL were not found!
+
+Please specify:
+ - H2O_HOME to point to H2O Git repo version ${h2oMajorVersion}.${h2oBuild}
+or
+ - H2O_PYTHON_WHEEL to point to downloaded H2O Python Wheel package version ${h2oMajorVersion}.${h2oBuild}
+   For example:
+
+    mkdir -p \$(pwd)/private/
+    curl ${h2oPythonWheelPackageLocation} > \$(pwd)/private/h2o.whl
+    export H2O_PYTHON_WHEEL=\$(pwd)/private/h2o.whl
+""")
     }
 }
 
-task distPython(type: Exec) {
+//
+// Make PySparkling distribution egg package
+//
+task distPython(type: Exec, dependsOn: checkPythonEnv) {
     preparePythonEnv(environment)
 
     def H2O_HOME = System.getenv("H2O_HOME")
@@ -74,16 +110,22 @@ task distPython(type: Exec) {
         }
     }
 
-    commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_egg","bdist_wheel"])
+    commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_egg"])
 }
 
-task testPython(type: Exec, dependsOn: configurations.compile) {
+//
+// Test python against Spark cloud
+//
+task testPython(type: Exec, dependsOn: [configurations.compile, checkPythonEnv] ) {
     preparePythonEnv(environment)
 
     environment['SPARK_CLASSPATH'] = "${configurations.compile.join(',')}"
     commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test*.py"])
 }
 
+//
+// Cleanup
+//
 task cleanPython(type: Delete) {
     delete file("dist/"),
             file("pySparkling.egg-info/"), 
@@ -91,13 +133,17 @@ task cleanPython(type: Delete) {
             file("version.txt")
 }
 
+//
+// Just print location of H2O Python Wheel package with respect to a configured version of H2O dependency
+//
 task printH2OWheelPackage << {
     description = "Print location of H2O Python Wheel package for download"
-    println("http://h2o-release.s3.amazonaws.com/h2o/"
-                    + (h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master")
-                    + "/${h2oBuild}/Python/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl")
+    println(h2oPythonWheelPackageLocation)
 }
 
+//
+// Setup execution graph
+//
 clean.dependsOn cleanPython
 createVersionFile.dependsOn cleanPython
 distPython.dependsOn createVersionFile
