@@ -38,6 +38,12 @@ def preparePythonEnv(environment) {
     if (H2O_PYTHON_WHEEL != null) {
         environment['PYTHONPATH'] = H2O_PYTHON_WHEEL + File.pathSeparator + environment["PYTHONPATH"]
     }
+
+    if(H2O_HOME ==null && H2O_PYTHON_WHEEL == null){
+        // fail the build
+        throw new GradleException('Neither one of H2O_HOME an H2O_PYTHON_WHEEL properties is not set!' +
+                'Please set H2O_HOME property to h2o source directory or H2O_PYTHON_WHEEL to H2O\'s wheel file and restart the build.')
+    }
 }
 
 task distPython(type: Exec) {
