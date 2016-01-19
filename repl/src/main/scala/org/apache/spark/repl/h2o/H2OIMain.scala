@@ -155,16 +155,18 @@ object H2OIMain {
 
   private def initialize(sc: SparkContext): Unit = {
     if (sc.isLocal) {
+      // using master set to local or local[*]
       prepareLocalClassLoader()
+      interpreterClassloader = new InterpreterClassLoader()
     } else {
       if (Main.interp != null) {
         interpreterClassloader = new InterpreterClassLoader(Main.interp.intp.classLoader)
       } else {
+        // non local mode, application not started using SparkSubmit
         interpreterClassloader = new InterpreterClassLoader()
       }
-      setClassLoaderToSerializers(interpreterClassloader)
     }
-
+    setClassLoaderToSerializers(interpreterClassloader)
   }
   def getInterpreterClassloader: InterpreterClassLoader = {
     interpreterClassloader

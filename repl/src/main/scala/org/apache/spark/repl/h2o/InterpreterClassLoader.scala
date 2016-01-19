@@ -17,7 +17,7 @@
 
 package org.apache.spark.repl.h2o
 
-import java.util.regex.Pattern
+import java.util.Scanner
 
 /**
   * Interpreter classloader which allows multiple interpreters to coexist
@@ -27,19 +27,16 @@ class InterpreterClassLoader(val mainClassLoader: Option[ClassLoader]) extends C
 
   def this() = this(None)
 
-  override def findClass(name: String): Class[_] = {
-    if (name.startsWith("_intp_id")) {
-      val matcher = Pattern.compile("intp_id_\\d+_").matcher(name)
-      matcher.find()
-      val intp_id = Integer.valueOf(matcher.group())
-      H2OIMain.existingInterpreters.get(intp_id).get.classLoader.findClass(name)
+  override def loadClass(name: String): Class[_] = {
+    if (name.startsWith("intp_id")) {
+      val intp_id = new Scanner(name).useDelimiter("\\D+").nextInt()
+      H2OIMain.existingInterpreters.get(intp_id).get.classLoader.loadClass(name)
+    } else if(mainClassLoader.isDefined) {
+      mainClassLoader.get.loadClass(name)
     } else {
-      if (mainClassLoader.isDefined) {
-        mainClassLoader.get.loadClass(name)
-      } else {
-        super.findClass(name)
-      }
+      super.loadClass(name)
     }
   }
+
 }
 
