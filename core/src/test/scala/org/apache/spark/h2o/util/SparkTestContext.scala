@@ -18,8 +18,7 @@
 package org.apache.spark.h2o.util
 
 import io.netty.util.internal.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
-import org.apache.spark.repl.h2o.SparklingConf
-import org.apache.spark.{SparkContext}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.h2o.H2OContext
 import org.scalatest.{Suite, BeforeAndAfterAll, BeforeAndAfterEach}
 
@@ -44,7 +43,7 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
     hc = null
   }
 
-  def defaultSparkConf =  new SparklingConf().set("spark.ext.h2o.disable.ga", "true")
+  def defaultSparkConf =  new SparkConf().set("spark.ext.h2o.disable.ga", "true")
 }
 
 /** This fixture create a Spark context once and share it over whole run of test suite. */

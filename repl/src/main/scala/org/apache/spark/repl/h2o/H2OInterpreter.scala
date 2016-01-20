@@ -325,6 +325,7 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
 object H2OInterpreter{
   /**
     * Return class server output directory of REPL Class server.
+ *
     * @return
     */
   def classOutputDir = {
@@ -332,7 +333,7 @@ object H2OInterpreter{
       // Application was started using SparkSubmit
       org.apache.spark.repl.Main.interp.intp.getClassOutputDirectory
     } else {
-      ClassServer.getClassOutputDirectory
+      REPLClassServer.getClassOutputDirectory
     }
   }
 
@@ -340,6 +341,7 @@ object H2OInterpreter{
   /**
     * Return class server uri for REPL Class server.
     * In local mode the class server is not actually used, all we need is just output directory
+ *
     * @return
     */
   def classServerUri = {
@@ -347,10 +349,7 @@ object H2OInterpreter{
       // Application was started using SparkSubmit
       org.apache.spark.repl.Main.interp.intp.classServerUri
     } else {
-      if (!ClassServer.isRunning) {
-        ClassServer.start()
-      }
-      ClassServer.classServerUri
+      REPLClassServer.classServerUri
     }
   }
 }

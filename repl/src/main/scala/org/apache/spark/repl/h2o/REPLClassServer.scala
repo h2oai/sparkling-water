@@ -29,7 +29,19 @@ import org.apache.spark.{HttpServer, Logging, SecurityManager, SparkConf}
 /**
   * HTTP Server storing classes defined in REPL
   */
-private[repl] object ClassServer extends Logging {
+object REPLClassServer extends Logging {
+
+  /**
+    * Exposed because of pySparkling integration tests since we have to set our own spark.repl.class.uri
+    * @param args
+    */
+  def main(args: Array[String]): Unit ={
+    println(classServerUri)
+    // Infinite wait
+    this.synchronized(while (true) {
+      wait()
+    })
+  }
 
   lazy val getClassOutputDirectory = outputDir
   /** Local directory to save .class files too */
@@ -51,7 +63,12 @@ private[repl] object ClassServer extends Logging {
     logInfo("Class server started, URI = " + classServerUri)
   }
 
-  def classServerUri = classServer.uri
+  def classServerUri: String  = synchronized {
+    if(!_isRunning) {
+     start()
+    }
+    classServer.uri
+  }
 
   def close() {
     if(classServer != null){

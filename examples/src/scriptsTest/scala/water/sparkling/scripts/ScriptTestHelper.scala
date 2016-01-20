@@ -2,7 +2,7 @@ package water.sparkling.scripts
 
 import java.io.File
 
-import org.apache.spark.repl.h2o.{SparklingConf, CodeResults, H2OInterpreter}
+import org.apache.spark.repl.h2o.{CodeResults, H2OInterpreter}
 import org.apache.spark.{SparkContext, SparkConf}
 import org.scalatest.{Suite, BeforeAndAfterAll, FunSuite}
 
@@ -30,7 +30,8 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
   def defaultConf: SparkConf = {
     val assemblyJar = sys.props.getOrElse("sparkling.fat.jar",
       fail("The variable 'sparkling.fat.jar' is not set! It should point to assembly jar file."))
-    val conf = new SparklingConf().setAppName("Script testing")
+    val conf = new SparkConf().setAppName("Script testing")
+      .set("spark.repl.class.uri",H2OInterpreter.classServerUri)
       .set("spark.driver.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.executor.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.driver.extraClassPath", assemblyJar)
