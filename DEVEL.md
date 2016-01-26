@@ -39,6 +39,11 @@
   - [Integration Tests Example](#IntegExample)
 - [Troubleshooting and Log Locations](#Logging)
 - [Sparkling Shell Console Output](#log4j)
+- [H2O Frame as Spark's Data Source](#DataSource)
+  - [Usage in Python - pySparkling](#DataSourcePython)
+  - [Usage in Scala](#DataSourceScala)
+  - [Specifying Saving Mode](#SavingMode)
+  
 
 --- 
  
@@ -669,3 +674,131 @@ to:
   ```
   
 ---
+
+<a name="DataSource"></a>
+## H2O Frame as Spark's Data Source
+ The way how H2O Frame can be used as Spark's Data Source differs a little bit in Python and Scala. 
+<a name="DataSourcePython"></a>
+### Usage in Python - pySparkling
+
+####  Reading from H2O Frame
+Let's suppose we have H2OFrame `frame`.
+
+There are two ways how dataframe can be loaded from H2OFrame in pySparkling: 
+
+```
+df = sqlContext.read.format("h2o").option("key",frame.frame_id).load()
+```
+
+or
+
+```
+df = sqlContext.read.format("h2o").load(frame.frame_id)
+```
+
+#### Saving to H2O Frame
+Let's suppose we have DataFrame `df`.
+
+There are two ways how dataframe can be saved as H2OFrame in pySparkling: 
+
+```
+df.write.format("h2o").option("key","new_key").save()
+```
+
+or
+
+```
+df.write.format("h2o").save("new_key")
+```
+
+Both variants save dataframe as H2OFrame with key "new_key". They won't succeed if the H2OFrame with the same key already exists.
+
+#### Loading & Saving Options
+If the key is specified as 'key' option and also in the load/save method, the option 'key' is preferred
+
+```
+df = sqlContext.read.from("h2o").option("key","key_one").load("key_two")
+```
+
+or
+
+```
+df = sqlContext.read.from("h2o").option("key","key_one").save("key_two")
+```
+
+In both examples, "key_one" is used.
+
+<a name="DataSourceScala"></a>
+### Usage in Scala
+
+####  Reading from H2O Frame
+Let's suppose we have H2OFrame `frame`
+
+The shortest way how dataframe can be loaded from H2OFrame with default settings is:
+
+```
+val df = sqlContext.read.h2o(frame.key)
+```
+
+There are two more ways how dataframe can be loaded from H2OFrame allowing us to specify additional options:
+
+```
+val df = sqlContext.read.format("h2o").option("key",frame.key.toString).load()
+```
+
+or
+
+```
+val df = sqlContext.read.format("h2o").load(frame.key.toString)
+```
+
+#### Saving to H2O Frame
+Let's suppose we have DataFrame `df`
+
+The shortest way how dataframe can be saved as H2O Frame with default settings is:
+
+```
+df.write.h2o("new_key")
+```
+
+There are two more ways how dataframe can be saved as H2OFrame allowing us to specify additional options:
+
+```
+df.write.format("h2o").option("key","new_key").save()
+```
+
+or
+
+```
+df.write.format("h2o").save("new_key")
+```
+
+All three variants save dataframe as H2OFrame with key "new_key". They won't succeed if the H2O Frame with the same key already exists
+
+#### Loading & Saving Options
+If the key is specified as 'key' option and also in the load/save method, the option 'key' is preferred
+
+```
+val df = sqlContext.read.from("h2o").option("key","key_one").load("key_two")
+```
+
+or
+
+```
+val df = sqlContext.read.from("h2o").option("key","key_one").save("key_two")
+```
+
+In both examples, "key_one" is used.
+
+<a name="SavingMode"></a>
+### Specifying Saving Mode
+There are four save modes available when saving data using Data Source API- see http://spark.apache.org/docs/latest/sql-programming-guide.html#save-modes
+
+If "append" mode is used, an existing H2OFrame with the same key is deleted and new one containing union of
+all rows from original H2O Frame and appended Data Frame is created with the same key.
+
+If "overwrite" mode is used, an existing H2OFrame with the same key is deleted and new one with the new rows is created with the same key.
+
+If "error" mode is used and a H2OFrame with the specified key already exists, exception is thrown.
+
+if "ignore" mode is used and a H2OFrame with the specified key already exists, no data are changed.
