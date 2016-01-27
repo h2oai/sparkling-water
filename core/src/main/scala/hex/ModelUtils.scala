@@ -18,6 +18,7 @@
 package hex
 
 import hex.Model.Output
+import water.util.ArrayUtils
 
 /**
  * Helper class to access package-private methods of Model API.
@@ -29,6 +30,8 @@ object ModelUtils {
     val nclasses = modelOutput.nclasses()
     val classNames = modelOutput.classNames()
     val pred = m.score0(row, new Array[Double](nclasses + 1))
-    (classNames(pred(0).asInstanceOf[Int]), pred slice (1, pred.length))
+    val predProb = pred slice (1, pred.length)
+    val maxProbIdx = ArrayUtils.maxIndex(predProb)
+    (classNames(maxProbIdx), predProb)
   }
 }
