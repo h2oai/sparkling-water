@@ -8,16 +8,16 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.app.SparkContextSupport
-import water.sparkling.itest.SparkITest
+import water.sparkling.itest.IntegTestHelper
 
 /**
- * Test following Alex's chicago crime demo.
- */
+  * Test following Alex's chicago crime demo.
+  */
 @RunWith(classOf[JUnitRunner])
-class ChicagoCrimeTestSuite extends FunSuite with SparkITest {
+class ChicagoCrimeTestSuite extends FunSuite with IntegTestHelper {
 
   test("Chicago Crime Demo") {
-    launch( "water.sparkling.itest.yarn.ChicagoCrimeTest",
+    launch("water.sparkling.itest.yarn.ChicagoCrimeTest",
       env {
         sparkMaster("yarn-client")
         // Configure YARN environment
@@ -37,7 +37,17 @@ object ChicagoCrimeTest extends SparkContextSupport {
     try {
       test(args)
     } catch {
+<<<<<<< HEAD
       case t:Throwable => {
+||||||| parent of 57b8bdb... [SW-77] pySparkling integration tests
+      case t:Throwable => {
+        System.err.println(t.toString)
+        System.err.println(t.getStackTrace.toString)
+=======
+      case t: Throwable => {
+        System.err.println(t.toString)
+        System.err.println(t.getStackTrace.toString)
+>>>>>>> 57b8bdb... [SW-77] pySparkling integration tests
         water.H2O.exit(-1)
       }
     }
@@ -52,29 +62,29 @@ object ChicagoCrimeTest extends SparkContextSupport {
 
     val app = new ChicagoCrimeApp(
       weatherFile = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoAllWeather.csv",
-      censusFile =  "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCensus.csv",
-      crimesFile =  "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCrimes.csv")(sc, sqlContext, h2oContext)
+      censusFile = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCensus.csv",
+      crimesFile = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCrimes.csv")(sc, sqlContext, h2oContext)
     // Load data
     val (weatherTable, censusTable, crimesTable) = app.loadAll()
     // Train model
     val (gbmModel, dlModel) = app.train(weatherTable, censusTable, crimesTable)
 
     val crimeExamples = Seq(
-      Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET",false, 422, 4, 7, 46, 18),
-      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE",false, 923, 9, 14, 63, 11))
+      Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", false, 422, 4, 7, 46, 18),
+      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", false, 923, 9, 14, 63, 11))
 
     for (crime <- crimeExamples) {
-      val arrestProbGBM = 100*app.scoreEvent(crime,
+      val arrestProbGBM = 100 * app.scoreEvent(crime,
         gbmModel,
         censusTable)(sqlContext, h2oContext)
-      val arrestProbDL = 100*app.scoreEvent(crime,
+      val arrestProbDL = 100 * app.scoreEvent(crime,
         dlModel,
         censusTable)(sqlContext, h2oContext)
       println(
         s"""
            |Crime: $crime
-            |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
-            |  Probability of arrest best on GBM: ${arrestProbGBM} %                                                                |
+           |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
+           |  Probability of arrest best on GBM: ${arrestProbGBM} %                                                                |
         """.stripMargin)
     }
 

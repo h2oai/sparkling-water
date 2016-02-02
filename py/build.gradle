@@ -120,8 +120,56 @@ task testPython(type: Exec, dependsOn: [configurations.compile, checkPythonEnv] 
     preparePythonEnv(environment)
 
     environment['SPARK_CLASSPATH'] = "${configurations.compile.join(',')}"
-    commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test*.py"])
+    commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "unit_tests.py"])
 }
+
+//
+// Run python integration tests
+//
+task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
+    preparePythonEnv(environment)
+    def testEnv = detectEnvironment()
+
+    // Pass references to libraries to test launcher
+    environment["sparkling.pysparkling.egg"] = new File("py/dist/pySparkling-${version.replace("-","_")}-py2.7.egg").getAbsolutePath()
+    environment["spark.testing"] = "true"
+    environment["spark.test.home"] = "${sparkHome}"
+    environment["sparkling.test.hdp.version"] = "${hdpVersion}"
+    if (sparkMaster != null)
+        environment["spark.master"] = "${sparkMaster}"
+    // Pass list of jars required for testing
+    environment["sparkling.assembly.jar"] =  "${configurations.compile.join(',')}"
+
+    // Decide which tests should be launch here based on environment
+    switch (testEnv) {
+        case "yarn":
+            environment["sparkling.test.environment"] = "${testEnv}"
+            environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}"
+            environment["spark.ext.h2o.client.log.dir"] =  "h2ologs-itest-${testEnv}"
+
+            commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "tests_integ_yarn.py"])
+            break
+
+        case "standalone":
+            environment["sparkling.test.environment"] = "${testEnv}"
+            environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}"
+            environment["spark.ext.h2o.client.log.dir"] = "h2ologs-itest-${testEnv}"
+
+            commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "tests_integ_standalone.py.py"])
+            break
+
+        case "local":
+            environment["sparkling.test.environment"] = "${testEnv}"
+            environment["spark.ext.h2o.node.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}").getAbsolutePath()
+            environment["spark.ext.h2o.client.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}").getAbsolutePath()
+
+            commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "tests_integ_local.py"])
+            break
+    }
+}
+
+// Run integration tests as part of build
+check.dependsOn integTestPython
 
 //
 // Cleanup
@@ -156,4 +204,14 @@ test.dependsOn testPython
 
 def getOsSpecificCommandLine(args) { 
   return Os.isFamily(Os.FAMILY_WINDOWS) ? ['cmd', '/c'] + args : args 
+}
+
+def detectEnvironment(defaultEnv = "local") {
+    def denv = [ project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
+                    System.properties["sparklingTestEnv"],
+                    defaultEnv
+    ].find { h -> h!=null } // first match
+    // Return env
+    logger.info("* Detected '$denv' Sparkling test environment (configure via property 'sparklingTestEnv')")
+    denv
 }

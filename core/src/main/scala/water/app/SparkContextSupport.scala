@@ -19,7 +19,7 @@ package water.app
 import java.net.URI
 import java.io.File
 
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.{SparkFiles, SparkContext, SparkConf}
 
 /**
  * Publish useful method to configure Spark context.
@@ -36,6 +36,9 @@ trait SparkContextSupport {
   def addFiles(sc: SparkContext, files: String*): Unit = {
     files.foreach(f => sc.addFile(f))
   }
+  def enforceLocalSparkFile(file: String): String ={
+    "file://" + SparkFiles.get(file)
+  }
 
   def absPath(path: String): String = new java.io.File(path).getAbsolutePath
 
@@ -45,7 +48,7 @@ trait SparkContextSupport {
     val fos = new FileOutputStream(new File(destination))
     val oos = new ObjectOutputStream(fos)
     oos.writeObject(model)
-    oos.close
+    oos.close()
   }
 
   def loadSparkModel[M](source: URI) : M = {

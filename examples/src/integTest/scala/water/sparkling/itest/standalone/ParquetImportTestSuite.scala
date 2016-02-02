@@ -2,22 +2,22 @@ package water.sparkling.itest.standalone
 
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.SparkITest
+import water.sparkling.itest.IntegTestHelper
 
 /**
- * Test for Parquet Import : Save small airlines data as Parquet File, 
- * import Parquet file into Spark as DataFrame, then run Deep Learning
- * using H2O*
- */
+  * Test for Parquet Import : Save small airlines data as Parquet File,
+  * import Parquet file into Spark as DataFrame, then run Deep Learning
+  * using H2O*
+  */
 @RunWith(classOf[JUnitRunner])
-class ParquetImportTestSuite extends FunSuite with SparkITest {
+class ParquetImportTestSuite extends FunSuite with IntegTestHelper {
 
   test("Parquet File Import test") {
-    launch( "water.sparkling.itest.standalone.ParquetImportTest",
+    launch("water.sparkling.itest.standalone.ParquetImportTest",
       env {
         // spark.master is passed via environment
         // Configure Standalone environment
@@ -31,7 +31,8 @@ class ParquetImportTestSuite extends FunSuite with SparkITest {
 }
 
 object ParquetImportTest {
-  def main(args: Array[String]): Unit = {
+
+  def test(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("ParquetImportTest")
 
     // Launch H2O
@@ -46,12 +47,12 @@ object ParquetImportTest {
     parquetFile.registerTempTable("parquetFile")
 
     // Check Parquet file copies correctly
-    val AllFlights : H2OFrame = parquetFile
-    assert (AllFlights.numRows == parquetFile.count, "Transfer of H2ORDD to SparkRDD completed!")
-    
+    val AllFlights: H2OFrame = parquetFile
+    assert(AllFlights.numRows == parquetFile.count, "Transfer of H2ORDD to SparkRDD completed!")
+
     // Filter SchemaRdd and push to H2O as H2O H2OFrame
     val ORDFlights = parquetFile.filter("Dest == ORD")
-    assert (ORDFlights.count == 313943, "Correctly filtered out all ORD flights!")
+    assert(ORDFlights.count == 313943, "Correctly filtered out all ORD flights!")
 
     // Run Deep Learning on H2O Data Frame
     import hex.deeplearning.DeepLearning
@@ -68,9 +69,7 @@ object ParquetImportTest {
     val predictionH2OFrame = dlModel.score(ORDFlights)('predict)
     val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
-    sc.stop()
-    // Shutdown H2O explicitly (at least the driver)
-    water.H2O.shutdown(0)
+    // Shutdown Spark cluster and H2O
+    h2oContext.stop(stopSparkContext = true)
   }
 }
-
