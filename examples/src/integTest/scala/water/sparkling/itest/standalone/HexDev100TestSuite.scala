@@ -1,24 +1,24 @@
 package water.sparkling.itest.standalone
 
 import hex.Distribution
-import org.apache.spark.h2o._
+import org.apache.spark.h2o.{DoubleHolder, H2OContext}
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.SparkITest
-
+import water.fvec.H2OFrame
+import water.sparkling.itest.IntegTestHelper
 
 /**
- * Test for Jira Hex-Dev 100 : Import airlines data and run a host of classification models,
- * including GBM, GLM, and Deep Learning. 
- */
+  * Test for Jira Hex-Dev 100 : Import airlines data and run a host of classification models,
+  * including GBM, GLM, and Deep Learning.
+  */
 @RunWith(classOf[JUnitRunner])
-class HexDev100TestSuite extends FunSuite with SparkITest {
+class HexDev100TestSuite extends FunSuite with IntegTestHelper {
 
   ignore("HEX-DEV 100 test") {
-    launch( "water.sparkling.itest.standalone.HexDev100Test",
+    launch("water.sparkling.itest.standalone.HexDev100Test",
       env {
         // spark.master is passed via environment
         // Configure Standalone environment
@@ -32,7 +32,8 @@ class HexDev100TestSuite extends FunSuite with SparkITest {
 }
 
 object HexDev100Test {
-  def main(args: Array[String]): Unit = {
+
+  def test(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("HexDev100Test")
     val sc = new SparkContext(conf)
     val h2oContext = new H2OContext(sc).start()
@@ -49,11 +50,11 @@ object HexDev100Test {
     airlinesDataFrame.registerTempTable("AirlinesDataTable")
     // Drop all columns except "Year", "Month", "DayOfWeek", "Origin", "Dest", "UniqueCarrier", "Distance", "FlightNum", "IsDepDelayed"
     val airlinesTable = sqlContext.sql(
-          """SELECT
-            |f.Year, f.Month, f.DayOfWeek,
-            |f.Origin, f.Dest, f.UniqueCarrier,
-            |f.Distance, f.FlightNum, f.IsDepDelayed
-            |FROM AirlinesDataTable f""".stripMargin)
+      """SELECT
+        |f.Year, f.Month, f.DayOfWeek,
+        |f.Origin, f.Dest, f.UniqueCarrier,
+        |f.Distance, f.FlightNum, f.IsDepDelayed
+        |FROM AirlinesDataTable f""".stripMargin)
 
 
     // Run deep learning to produce model classifying delayed flights
@@ -107,9 +108,7 @@ object HexDev100Test {
     println("Finished running GLM,GBM, and Deep Learning on airlines dataset.")
     println("""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""")
 
-    sc.stop()
-    // Shutdown H2O explicitly (at least the driver)
-    water.H2O.shutdown(0)
+    // Shutdown Spark cluster and H2O
+    h2oContext.stop(stopSparkContext = true)
   }
 }
-

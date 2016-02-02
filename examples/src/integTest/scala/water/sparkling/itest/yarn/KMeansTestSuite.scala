@@ -9,17 +9,14 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.{SparkITest, YarnTest}
+import water.sparkling.itest.{IntegTestHelper, YarnTest}
 import water.util.Timer
 
-/**
- * Created by michal on 2/9/15.
- */
 @RunWith(classOf[JUnitRunner])
-class KMeansITestSuite extends FunSuite with SparkITest {
+class KMeansITestSuite extends FunSuite with IntegTestHelper {
 
   test("MLlib KMeans on airlines_all data", YarnTest) {
-    launch( "water.sparkling.itest.yarn.KMeansITest",
+    launch("water.sparkling.itest.yarn.KMeansITest",
       env {
         sparkMaster("yarn-client")
         // Configure YARN environment
@@ -35,16 +32,18 @@ class KMeansITestSuite extends FunSuite with SparkITest {
 }
 
 /**
- * Test runner loading large airlines data from YARN HDFS via H2O API
- * transforming them into RDD and launching MLlib K-means.
- */
+  * Test runner loading large airlines data from YARN HDFS via H2O API
+  * transforming them into RDD and launching MLlib K-means.
+  */
 object KMeansITest {
 
   def main(args: Array[String]): Unit = {
     try {
       test(args)
     } catch {
-      case t:Throwable => {
+      case t: Throwable => {
+        System.err.println(t.toString)
+        System.err.println(t.getStackTrace.toString)
         water.H2O.exit(-1)
       }
     }
@@ -92,7 +91,7 @@ object KMeansITest {
     )
     val sqlQueryTime = sqlQueryTimer.time
 
-    assert (airlinesData.numRows == airlinesTable.count, "Transfer of H2ORDD to SparkRDD completed!")
+    assert(airlinesData.numRows == airlinesTable.count, "Transfer of H2ORDD to SparkRDD completed!")
 
     // Run Kmeans in Spark  on indices 10,19,26 (FlightNo, Distance, WeatherDelay)
 
@@ -103,25 +102,23 @@ object KMeansITest {
 
     // Predict on Spark's Kmeans
     val sparkPredRDD = clusters.predict(airlinesVectorRDD)
-    val srdd : DataFrame = sparkPredRDD.map(v => IntHolder(Option(v))).toDF
-    val df : H2OFrame = srdd
+    val srdd: DataFrame = sparkPredRDD.map(v => IntHolder(Option(v))).toDF
+    val df: H2OFrame = srdd
     val sparkClusterCounts = sparkPredRDD.countByValue()
 
     // Get Within Set Sum of Squared Errors
     val sparkWSSSE = clusters.computeCost(airlinesVectorRDD)
-    val h2oWSSSE = KmeansModel._output._withinss.fold(0.0)(_+_)
+    val h2oWSSSE = KmeansModel._output._withinss.fold(0.0)(_ + _)
 
     println("Spark: Within Set Sum of Squared Errors = " + sparkWSSSE)
     println("Spark: Time to Build (s) = " + SparkKMBuildTime)
     println("H2O: Within Set Sum of Squared Errors = " + h2oWSSSE)
     println("H2O: Time to Build (s) = " + H2OKMBuildTime)
 
-    val relativeMeanDiff = (sparkWSSSE - h2oWSSSE)/sparkWSSSE
-    assert (relativeMeanDiff < 0.1, "Within Set Sum of Squared Errors matches!")
+    val relativeMeanDiff = (sparkWSSSE - h2oWSSSE) / sparkWSSSE
+    assert(relativeMeanDiff < 0.1, "Within Set Sum of Squared Errors matches!")
 
-    // Shutdown Spark
-    sc.stop()
-    // Shutdown H2O explicitly
-    water.H2O.exit(0)
+    // Shutdown Spark cluster and H2O
+    h2oContext.stop(stopSparkContext = true)
   }
 }

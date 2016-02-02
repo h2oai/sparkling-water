@@ -1,5 +1,5 @@
 //
-// Support for testing scripts
+// Script tests support
 //
 
 sourceSets {
@@ -17,13 +17,6 @@ configurations {
     scriptsTestRuntime.extendsFrom testRuntime
 }
 
-// Add a new configuration containing only jars needed for test run
-configurations {
-    scriptsTestAssembly {
-        description = 'Contains only jars needed to run integration tests on top of Spark.'
-        transitive = false
-    }
-}
 
 task scriptsTest(type: Test) {
     group = 'Verification'
@@ -32,7 +25,7 @@ task scriptsTest(type: Test) {
     classpath = sourceSets.scriptsTest.runtimeClasspath
 }
 
-// Create jar
+// Create jar containing scripts test classes
 task scriptsTestJar(type: Jar, dependsOn: scriptsTestClasses) {
     group = "Build"
     description = "Assembles a jar archive with scripts test classes."

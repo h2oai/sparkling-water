@@ -10,6 +10,7 @@ idea {
         testSourceDirs += new File('examples/src/integTest/scala')
     }
 }
+
 dependencies {
   // Sparkling Water Core
   compile( project(":sparkling-water-core") ) {
@@ -25,8 +26,8 @@ dependencies {
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
   testCompile "junit:junit:4.11"
-
-    // Integration tests requirements
+  
+  // Integration tests requirements
   integTestCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
   integTestCompile "junit:junit:4.11"
 
@@ -35,21 +36,6 @@ dependencies {
 
   // Put Spark Assembly on runtime path
   integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar' )
-}
-
-//
-// Setup tests environment for integration and scripts tests
-//
-artifacts {
-  integTestAssembly jar
-  // No tests for examples
-  //integTestAssembly testJar
-  integTestAssembly integTestJar
-
-  // pull selected dependencies
-  dep(testDependencies + [ "ai.h2o:sparkling-water-core", "ai.h2o:h2o-scala_${scalaBinaryVersion}" ]).each {
-    integTestAssembly it
-  }
 }
 
 integTest {
@@ -62,9 +48,8 @@ integTest {
   if (sparkMaster != null)
     systemProperty "spark.master", "${sparkMaster}"
   // Pass list of jars required for testing
-  systemProperty "sparkling.test.assembly", "${configurations.integTestAssembly.artifacts.file.join(',')}"
-  systemProperty "sparkling.test.jar", "${integTestJar.archivePath}"
-
+  systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
+  systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
   jvmArgs '-XX:MaxPermSize=384m'
 
   // Decide which tests should be launch here based on environment
@@ -114,10 +99,8 @@ scriptsTest {
   systemProperty "sparkling.test.log.dir", new File(project.getBuildDir(), "h2ologs-test")
   systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-stest")
   systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-stest")
-
-
-  // Set fat jar location
-  systemProperty "sparkling.fat.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
+  // Set sparkling water assembly jar location
+  systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
   // Run with assertions ON
   enableAssertions = true
   // For a new JVM for each test class

@@ -5,13 +5,13 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.SparkITest
+import water.sparkling.itest.IntegTestHelper
 
 @RunWith(classOf[JUnitRunner])
-class HexDev64TestSuite extends FunSuite with SparkITest {
+class HexDev64TestSuite extends FunSuite with IntegTestHelper {
 
   test("HEX-DEV 64 test - airlines on big data") {
-    launch( "water.sparkling.itest.yarn.HexDev64Test",
+    launch("water.sparkling.itest.yarn.HexDev64Test",
       env {
         sparkMaster("yarn-client")
         // Configure YARN environment
@@ -26,11 +26,14 @@ class HexDev64TestSuite extends FunSuite with SparkITest {
 }
 
 object HexDev64Test {
+
   def main(args: Array[String]): Unit = {
     try {
       test(args)
     } catch {
-      case t:Throwable => {
+      case t: Throwable => {
+        System.err.println(t.toString)
+        System.err.println(t.getStackTrace.toString)
         water.H2O.exit(-1)
       }
     }
@@ -47,7 +50,7 @@ object HexDev64Test {
     val timer1 = new water.util.Timer
     val d = new java.net.URI(path)
     val airlinesData = new H2OFrame(d)
-    val timeToParse = timer1.time/1000
+    val timeToParse = timer1.time / 1000
     println("Time it took to parse 116 million airlines = " + timeToParse + "secs")
 
     // Transfer data from H2O to Spark RDD
@@ -57,13 +60,12 @@ object HexDev64Test {
     val timer2 = new water.util.Timer
     implicit val sqlContext = new SQLContext(sc)
     val airlinesDataFrame = asDataFrame(airlinesData)(sqlContext)
-    val timeToTransfer = timer2.time/1000
+    val timeToTransfer = timer2.time / 1000
     println("Time it took to convert data to SparkRDD = " + timeToTransfer + "secs")
 
-    assert (airlinesData.numRows == airlinesDataFrame.count, "Transfer of H2ORDD to SparkRDD completed!")
-    // Shutdown Spark
-    sc.stop()
-    // Shutdown H2O explicitly (at least the driver)
-    water.H2O.exit(0)
+    assert(airlinesData.numRows == airlinesDataFrame.count, "Transfer of H2ORDD to SparkRDD completed!")
+
+    // Shutdown Spark cluster and H2O
+    h2oContext.stop(stopSparkContext = true)
   }
 }
