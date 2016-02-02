@@ -103,6 +103,8 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport {
     if (System.getProperty("spark.ext.h2o.preserve.executors")==null) {
       sc.stop()
     }
-    // This will block in cluster mode since we have H2O launched in driver
+
+    // Shutdown H2O
+    h2oContext.stop()
   }
 }

@@ -17,13 +17,6 @@ configurations {
     integTestRuntime.extendsFrom testRuntime
 }
 
-// Add a new configuration containing only jars needed for test run
-configurations {
-    integTestAssembly {
-        description = 'Contains only jars needed to run integration tests on top of Spark.'
-        transitive = false
-    }
-}
 
 task integTest(type: Test) {
     group = 'Verification'
@@ -32,7 +25,7 @@ task integTest(type: Test) {
     classpath = sourceSets.integTest.runtimeClasspath
 }
 
-// Create jar
+// Create jar containing integration test classes
 task integTestJar(type: Jar, dependsOn: integTestClasses) {
     group = "Build"
     description = "Assembles a jar archive with integration test classes."
@@ -41,10 +34,9 @@ task integTestJar(type: Jar, dependsOn: integTestClasses) {
     from sourceSets.integTest.output
 }
 
-// TO run integration tests jar is required
-integTest.dependsOn jar
-integTest.dependsOn testJar
-integTest.dependsOn integTestJar
-
 // Run integration tests as part of build
 check.dependsOn integTest
+
+// Dependencies
+integTest.dependsOn integTestJar
+integTest.dependsOn ":sparkling-water-assembly:shadowJar"

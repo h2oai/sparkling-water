@@ -1,7 +1,7 @@
 package water.sparkling.itest.local
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.h2o._
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
 import org.apache.spark.sql.SQLContext
@@ -9,13 +9,13 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.app.SparkContextSupport
-import water.sparkling.itest.{LocalTest, SparkITest}
+import water.sparkling.itest.{LocalTest, IntegTestHelper}
 
 /**
- * PUBDEV-457 test suite.
- */
+  * PUBDEV-457 test suite.
+  */
 @RunWith(classOf[JUnitRunner])
-class PubDev457TestSuite extends FunSuite with SparkITest {
+class PubDev457Suite extends FunSuite with IntegTestHelper {
 
   test("Launch simple ML pipeline using H2O", LocalTest) {
     launch("water.sparkling.itest.local.PubDev457Test",
@@ -31,6 +31,7 @@ class PubDev457TestSuite extends FunSuite with SparkITest {
 object PubDev457Test extends SparkContextSupport {
 
   case class LabeledDocument(id: Long, text: String, label: Double)
+
   case class Document(id: Long, text: String)
 
   def main(args: Array[String]): Unit = {
@@ -60,11 +61,14 @@ object PubDev457Test extends SparkContextSupport {
     val transformed = model.transform(training.toDF)
 
     val transformedDF: H2OFrame = transformed
-    assert (transformedDF.numRows == 4)
-    assert (transformedDF.numCols == 1009)
+    assert(transformedDF.numRows == 4)
+    assert(transformedDF.numCols == 1009)
 
     val transformedFeaturesDF: H2OFrame = transformed.select("features")
-    assert (transformedFeaturesDF.numRows == 4)
-    assert (transformedFeaturesDF.numCols == 1000)
+    assert(transformedFeaturesDF.numRows == 4)
+    assert(transformedFeaturesDF.numCols == 1000)
+
+    // Shutdown Spark cluster and H2O
+    h2oContext.stop(stopSparkContext = true)
   }
 }

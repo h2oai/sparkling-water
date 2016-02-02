@@ -17,13 +17,13 @@
 
 package org.apache.spark.examples.h2o
 
+import hex.Distribution.Family
 import hex.deeplearning.DeepLearningModel
 import hex.deeplearning.DeepLearningParameters.Activation
 import hex.tree.gbm.GBMModel
-import hex.Distribution.Family
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{VecUtils, H2OContext, H2OFrame}
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.DateTimeFormat
@@ -142,8 +142,7 @@ class ChicagoCrimeApp( weatherFile: String,
                activation: Activation = Activation.RectifierWithDropout, hidden:Array[Int] = Array(200,200))
              (implicit h2oContext: H2OContext) : DeepLearningModel = {
     import h2oContext._
-    import hex.deeplearning.DeepLearning
-    import hex.deeplearning.DeepLearningParameters
+    import hex.deeplearning.{DeepLearning, DeepLearningParameters}
 
     val dlParams = new DeepLearningParameters()
     dlParams._train = train

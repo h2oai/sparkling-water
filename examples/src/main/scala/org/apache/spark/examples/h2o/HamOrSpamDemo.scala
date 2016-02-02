@@ -23,7 +23,7 @@ import org.apache.spark.h2o._
 import org.apache.spark.mllib.feature.{HashingTF, IDF, IDFModel}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
-import org.apache.spark.{SparkConf, SparkContext, SparkFiles, mllib}
+import org.apache.spark.{SparkConf, SparkContext, mllib}
 import water.app.{ModelMetricsSupport, SparkContextSupport}
 
 /**
@@ -97,12 +97,13 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
        """.stripMargin)
     })
 
-    sc.stop()
+    // Shutdown Spark cluster and H2O
+    h2oContext.stop(stopSparkContext = true)
   }
 
   /** Data loader */
   def load(sc: SparkContext, dataFile: String): RDD[Array[String]] = {
-    sc.textFile(SparkFiles.get(dataFile)).map(l => l.split("\t")).filter(r => !r(0).isEmpty)
+    sc.textFile(enforceLocalSparkFile(dataFile)).map(l => l.split("\t")).filter(r => !r(0).isEmpty)
   }
 
   /** Text message tokenizer.
@@ -189,7 +190,6 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
     //println(prediction)
     prediction.vecs()(1).at(0) < hamThreshold
   }
-
 
 }
 

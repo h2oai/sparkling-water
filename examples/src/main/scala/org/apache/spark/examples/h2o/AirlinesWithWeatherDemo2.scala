@@ -20,8 +20,7 @@ package org.apache.spark.examples.h2o
 import java.io.File
 
 import hex.FrameSplitter
-import hex.deeplearning.DeepLearning
-import hex.deeplearning.DeepLearningParameters
+import hex.deeplearning.{DeepLearning, DeepLearningParameters}
 import hex.deeplearning.DeepLearningParameters.Activation
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
@@ -29,7 +28,7 @@ import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
 import org.apache.spark.h2o.{Frame, H2OContext, H2OFrame}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
+import org.apache.spark.{SparkFiles, SparkConf, SparkContext}
 import water.Key
 import water.app.SparkContextSupport
 
@@ -49,7 +48,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
       absPath("examples/smalldata/year2005.csv.gz"))
 
     //val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
-    val wrawdata = sc.textFile(SparkFiles.get("Chicago_Ohare_International_Airport.csv"),3).cache()
+    val wrawdata = sc.textFile(enforceLocalSparkFile("Chicago_Ohare_International_Airport.csv"),3).cache()
     val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
 
     //
@@ -142,6 +141,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
     val gbmPredictTable = gbmModel.score(testTable)('predict)
     printf( residualPlotRCode(gbmPredictTable, 'predict, testTable, 'ArrDelay) )
 
-    sc.stop()
+    // Shutdown Spark cluster and H2O
+    h2oContext.stop(stopSparkContext = true)
   }
 }

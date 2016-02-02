@@ -19,9 +19,9 @@ package org.apache.spark.examples.h2o
 
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.kmeans.{KMeans, KMeansModel}
+import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkContext, SparkFiles}
 import water._
 import water.app.SparkContextSupport
 
@@ -47,7 +47,7 @@ object ProstateDemo extends SparkContextSupport {
 
     // Load raw data
     val parse = ProstateParse
-    val rawdata = sc.textFile(SparkFiles.get("prostate.csv"), 2)
+    val rawdata = sc.textFile(enforceLocalSparkFile("prostate.csv"), 2)
     // Parse data into plain RDD[Prostate]
     val table = rawdata.map(_.split(",")).map(line => parse(line))
 
@@ -64,9 +64,8 @@ object ProstateDemo extends SparkContextSupport {
     val model = runKmeans(result)
     println(model)
 
-    // FIXME: shutdown H2O cloud not JVMs since we are embedded inside Spark JVM
-    // Stop Spark local worker; stop H2O worker
-    sc.stop()
+    // Shutdown Spark cluster and H2O
+    h2oContext.stop(stopSparkContext = true)
   }
 
   private def runKmeans[T](trainDataFrame: H2OFrame): KMeansModel = {

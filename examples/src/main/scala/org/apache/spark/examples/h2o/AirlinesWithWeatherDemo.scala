@@ -19,13 +19,12 @@ package org.apache.spark.examples.h2o
 
 import java.io.File
 
-import hex.deeplearning.DeepLearning
-import hex.deeplearning.DeepLearningParameters
+import hex.deeplearning.{DeepLearning, DeepLearningParameters}
 import hex.deeplearning.DeepLearningParameters.Activation
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
+import org.apache.spark.{SparkFiles, SparkConf, SparkContext}
 import water.app.SparkContextSupport
 
 
@@ -45,7 +44,7 @@ object AirlinesWithWeatherDemo extends SparkContextSupport {
       absPath("examples/smalldata/allyears2k_headers.csv.gz"))
 
     //val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
-    val wrawdata = sc.textFile(SparkFiles.get("Chicago_Ohare_International_Airport.csv"),3).cache()
+    val wrawdata = sc.textFile(enforceLocalSparkFile("Chicago_Ohare_International_Airport.csv"),3).cache()
     val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
 
     //
@@ -120,7 +119,8 @@ object AirlinesWithWeatherDemo extends SparkContextSupport {
         |plot( compare[,1:2] )
         |
       """.stripMargin)
-    // Shutdown Spark cluster
-    sc.stop()
+
+    // Shutdown Spark cluster and H2O
+    h2oContext.stop(stopSparkContext = true)
   }
 }

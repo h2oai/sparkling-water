@@ -7,16 +7,17 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.SparkITest
+import water.sparkling.itest.IntegTestHelper
+
 
 /**
- * Test for Jira Hex-Dev 62 : Import airlines data into Spark and then pass it to H2O.
- */
+  * Test for Jira Hex-Dev 62 : Import airlines data into Spark and then pass it to H2O.
+  */
 @RunWith(classOf[JUnitRunner])
-class HexDev62TestSuite extends FunSuite with SparkITest {
+class HexDev62TestSuite extends FunSuite with IntegTestHelper {
 
   ignore("HEX-DEV 62 test") {
-    launch( "water.sparkling.itest.standalone.HexDev62Test",
+    launch("water.sparkling.itest.standalone.HexDev62Test",
       env {
         // spark.master is passed via environment
         // Configure Standalone environment
@@ -42,21 +43,19 @@ object HexDev62Test {
     val timer1 = new water.util.Timer
     val airlinesRaw = sc.textFile(path)
     val airlinesRDD = airlinesRaw.map(_.split(",")).map(row => AirlinesParse(row)).filter(!_.isWrongRow())
-    val timeToParse = timer1.time/1000
+    val timeToParse = timer1.time / 1000
     println("Time it took to parse 116 million airlines = " + timeToParse + "secs")
 
     // Convert RDD to H2O Frame
     val timer2 = new water.util.Timer
-    val airlinesData : H2OFrame = airlinesRDD
-    val timeToH2O = timer2.time/1000
+    val airlinesData: H2OFrame = airlinesRDD
+    val timeToH2O = timer2.time / 1000
     println("Time it took to transfer a Spark RDD to H2O Frame = " + timeToH2O + "secs")
-    
+
     // Check H2OFrame is imported correctly
-    assert (airlinesData.numRows == airlinesRDD.count, "Transfer of H2ORDD to SparkRDD completed!")
-    
-    sc.stop()
-    // Shutdown H2O explicitly (at least the driver)
-    water.H2O.shutdown(0)
+    assert(airlinesData.numRows == airlinesRDD.count, "Transfer of H2ORDD to SparkRDD completed!")
+
+    // Shutdown Spark cluster and H2O
+    h2oContext.stop(stopSparkContext = true)
   }
 }
-

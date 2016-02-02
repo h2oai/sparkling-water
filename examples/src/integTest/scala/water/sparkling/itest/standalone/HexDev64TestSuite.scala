@@ -5,17 +5,17 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.SparkITest
+import water.sparkling.itest.IntegTestHelper
 
 
 /**
- * Test for Jira Hex-Dev 64 : Import airlines data into H2O and then pass it to Spark.
- */
+  * Test for Jira Hex-Dev 64 : Import airlines data into H2O and then pass it to Spark.
+  */
 @RunWith(classOf[JUnitRunner])
-class HexDev64TestSuite extends FunSuite with SparkITest {
+class HexDev64TestSuite extends FunSuite with IntegTestHelper {
 
   test("HEX-DEV 64 test - airlines on big data") {
-    launch( "water.sparkling.itest.standalone.HexDev64Test",
+    launch("water.sparkling.itest.tests.HexDev64Test",
       env {
         // spark.master is passed via environment
         // Configure Standalone environment
@@ -40,7 +40,7 @@ object HexDev64Test {
     val timer1 = new water.util.Timer
     val d = new java.net.URI(path)
     val airlinesData = new H2OFrame(d)
-    val timeToParse = timer1.time/1000
+    val timeToParse = timer1.time / 1000
     println("Time it took to parse 116 million airlines = " + timeToParse + "secs")
 
     // Transfer data from H2O to Spark RDD
@@ -50,13 +50,13 @@ object HexDev64Test {
     val timer2 = new water.util.Timer
     implicit val sqlContext = new SQLContext(sc)
     val airlinesDataFrame = asDataFrame(airlinesData)(sqlContext)
-    val timeToTransfer = timer2.time/1000
+    val timeToTransfer = timer2.time / 1000
     println("Time it took to convert data to SparkRDD = " + timeToTransfer + "secs")
 
-    assert (airlinesData.numRows == airlinesDataFrame.count, "Transfer of H2ORDD to SparkRDD completed!")
-    // Shutdown Spark
-    sc.stop()
-    // Shutdown H2O explicitly (at least the driver)
-    water.H2O.shutdown(0)
+    assert(airlinesData.numRows == airlinesDataFrame.count, "Transfer of H2ORDD to SparkRDD completed!")
+
+    // Shutdown Spark cluster and H2O
+    h2oContext.stop(stopSparkContext = true)
   }
 }
+
