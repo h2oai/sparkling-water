@@ -49,7 +49,7 @@ class RDDsHandler(val sc: SparkContext) extends Handler {
   }
 }
 
-private[api] class IcedRDDInfo(val rdd_id: Int,
+private[api] class IcedRDDInfo(val id: Int,
                                val name: String,
                                val partitions: Int) extends Iced[IcedRDDInfo] {
 
