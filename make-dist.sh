@@ -38,18 +38,9 @@ examples/smalldata/chicagoAllWeather.csv
 examples/smalldata/chicagoCensus.csv
 examples/smalldata/chicagoCrimes10k.csv
 examples/smalldata/craigslistJobTitles.csv
-docker/
-docker/README.md
-docker/bin/
-docker/bin/run-example.sh
-docker/bin/sparkling-shell
-docker/build.sh
-docker/sparkling-test/
-docker/sparkling-test/build.sh
-docker/sparkling-test/base/
-docker/sparkling-test/base/Dockerfile
+$(find docker/ -type f | grep -v iml$)
 $(find py/dist/ -type f -name '*.egg')
-$(find py/examples/ -type f)
+$(find py/examples/ -type f | grep -v h2ologs | grep -v metastore_db)
 $(find py/pysparkling -type f -name '*.py')
 LICENSE
 README.md
