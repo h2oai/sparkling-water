@@ -19,6 +19,8 @@ package org.apache.spark.rdd
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.util.SharedSparkTestContext
 import org.apache.spark.h2o._
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.regression.LabeledPoint
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -157,6 +159,39 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
     dataFrame.delete()
   }
+
+  test("RDD[LabeledPoint] ( Dense Vector, same size ) to H2OFrame[LabeledPoint]"){
+    val p1= LabeledPoint(0,Vectors.dense(1,2,3,4))
+    val p2= LabeledPoint(1,Vectors.dense(5,6,7,8))
+    val rdd = sc.parallelize(Seq(p1,p2), 10)
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count() == 2, "Number of rows should match")
+  }
+
+  test("RDD[LabeledPoint] ( Dense Vector, different size ) to H2OFrame[LabeledPoint]"){
+    val p1= LabeledPoint(0,Vectors.dense(1,2,3,4,5,6))
+    val p2= LabeledPoint(1,Vectors.dense(7,8))
+    val rdd = sc.parallelize(Seq(p1,p2))
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count() == 2, "Number of rows should match")
+  }
+
+  test("RDD[LabeledPoint] ( Sparse Vector, same size ) to H2OFrame[LabeledPoint]"){
+    val p1= LabeledPoint(0,Vectors.sparse(4,Array(1,3),Array(3.0,8.1)))
+    val p2= LabeledPoint(1,Vectors.sparse(4,Array(0),Array(3.14)))
+    val rdd = sc.parallelize(Seq(p1,p2), 10)
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count() == 2, "Number of rows should match")
+  }
+
+  test("RDD[LabeledPoint] ( Sparse Vector, different size ) to H2OFrame[LabeledPoint]"){
+    val p1= LabeledPoint(0,Vectors.sparse(4,Array(1,3),Array(3.0,8.1)))
+    val p2= LabeledPoint(1,Vectors.sparse(7,Array(0,5,6),Array(1.0, 11, 8)))
+    val rdd = sc.parallelize(Seq(p1,p2))
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count() == 2, "Number of rows should match")
+  }
+
 
 
   private type RowValueAssert = (Long, Vec) => Unit

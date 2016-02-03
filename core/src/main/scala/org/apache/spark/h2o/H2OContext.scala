@@ -20,6 +20,7 @@ package org.apache.spark.h2o
 import org.apache.spark._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.h2o.H2OContextUtils._
+import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -59,45 +60,49 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   private var localClientIp: String = _
   /** REST port of H2O client */
   private var localClientPort: Int = _
+  
+  /** Implicit conversion from RDD[Supported type] to H2OFrame */
+  implicit def asH2OFrameFromRDDProduct[A <: Product : TypeTag](rdd : RDD[A]): H2OFrame = asH2OFrame(rdd,None)
+  implicit def asH2OFrameFromRDDString(rdd: RDD[String]): H2OFrame = asH2OFrame(rdd,None)
+  implicit def asH2OFrameFromRDDBool(rdd: RDD[Boolean]): H2OFrame = asH2OFrame(rdd,None)
+  implicit def asH2OFrameFromRDDDouble(rdd: RDD[Double]): H2OFrame = asH2OFrame(rdd,None)
+  implicit def asH2OFrameFromRDDLong(rdd: RDD[Long]): H2OFrame = asH2OFrame(rdd,None)
+  implicit def asH2OFrameFromRDDLabeledPoint(rdd: RDD[LabeledPoint]): H2OFrame = asH2OFrame(rdd,None)
+
+  /** Implicit conversion from RDD[Supported type] to H2OFrame key */
+  implicit def toH2OFrameKeyFromRDDProduct[A <: Product : TypeTag](rdd : RDD[A]): Key[_] = toH2OFrameKey(rdd,None)
+  implicit def toH2OFrameKeyFromRDDString(rdd: RDD[String]): Key[_] = toH2OFrameKey(rdd,None)
+  implicit def toH2OFrameKeyFromRDDBool(rdd: RDD[Boolean]): Key[_] = toH2OFrameKey(rdd,None)
+  implicit def toH2OFrameKeyFromRDDDouble(rdd: RDD[Double]): Key[_] = toH2OFrameKey(rdd,None)
+  implicit def toH2OFrameKeyFromRDDLong(rdd: RDD[Long]): Key[_] = toH2OFrameKey(rdd,None)
+  implicit def toH2OFrameKeyFromRDDLabeledPoint(rdd: RDD[LabeledPoint]): Key[_] = toH2OFrameKey(rdd,None)
+
+  /** Transforms RDD[Supported type] to H2OFrame */
+  def asH2OFrame(rdd: SupportedRDD): H2OFrame = asH2OFrame(rdd, None)
+  def asH2OFrame(rdd: SupportedRDD, frameName: Option[String]): H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd, frameName)
+  def asH2OFrame(rdd: SupportedRDD, frameName: String): H2OFrame = asH2OFrame(rdd, Option(frameName))
+
+  /** Transforms RDD[Supported type] to H2OFrame key */
+  def toH2OFrameKey(rdd: SupportedRDD): Key[_] = toH2OFrameKey(rdd, None)
+  def toH2OFrameKey(rdd: SupportedRDD, frameName: Option[String]): Key[_] = asH2OFrame(rdd, frameName)._key
+  def toH2OFrameKey(rdd: SupportedRDD, frameName: String): Key[_] = toH2OFrameKey(rdd, Option(frameName))
 
   /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
   implicit def asH2OFrame(df : DataFrame) : H2OFrame = asH2OFrame(df, None)
   def asH2OFrame(df : DataFrame, frameName: Option[String]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, df, if (frameName != null) frameName else None)
   def asH2OFrame(df : DataFrame, frameName: String) : H2OFrame = asH2OFrame(df, Option(frameName))
 
-  /** Implicit conversion from typed RDD to H2O's DataFrame */
-  implicit def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A]) : H2OFrame = asH2OFrame(rdd, None)
-  def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A], frameName: Option[String]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, rdd, frameName)
-  def asH2OFrame[A <: Product : TypeTag](rdd : RDD[A], frameName: String) : H2OFrame = asH2OFrame(rdd, Option(frameName))
-
-  /** Implicit conversion from RDD[Primitive type] ( where primitive type can be String, Double, Float or Int) to appropriate H2OFrame */
-  implicit def asH2OFrame(primitiveType: PrimitiveType): H2OFrame = asH2OFrame(primitiveType, None)
-  def asH2OFrame(primitiveType: PrimitiveType, frameName: Option[String]): H2OFrame = H2OContext.toH2OFrame(sparkContext, primitiveType, frameName)
-  def asH2OFrame(primitiveType: PrimitiveType, frameName: String): H2OFrame = asH2OFrame(primitiveType, Option(frameName))
-
   /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
   implicit def toH2OFrameKey(rdd : DataFrame) : Key[Frame] = toH2OFrameKey(rdd, None)
   def toH2OFrameKey(rdd : DataFrame, frameName: Option[String]) : Key[Frame] = asH2OFrame(rdd, frameName)._key
   def toH2OFrameKey(rdd : DataFrame, frameName: String) : Key[Frame] = toH2OFrameKey(rdd, Option(frameName))
 
-  /** Implicit conversion from typed RDD to H2O's DataFrame */
-  implicit def toH2OFrameKey[A <: Product : TypeTag](rdd : RDD[A]) : Key[_] = toH2OFrameKey(rdd, None)
-  def toH2OFrameKey[A <: Product : TypeTag](rdd : RDD[A], frameName: Option[String]) : Key[_] = asH2OFrame(rdd, frameName)._key
-  def toH2OFrameKey[A <: Product : TypeTag](rdd : RDD[A], frameName: String) : Key[_] = toH2OFrameKey(rdd, Option(frameName))
-
-  /** Implicit conversion from RDD[Primitive type] ( where primitive type can be String, Boolean, Double, Float, Int,
-    * Long, Short or Byte ) to appropriate H2O's DataFrame */
-  implicit def toH2OFrameKey(primitiveType: PrimitiveType): Key[_] = toH2OFrameKey(primitiveType, None)
-  def toH2OFrameKey(primitiveType: PrimitiveType, frameName: Option[String]): Key[_] = asH2OFrame(primitiveType, frameName)._key
-  def toH2OFrameKey(primitiveType: PrimitiveType, frameName: String): Key[_] = toH2OFrameKey(primitiveType, Option(frameName))
-
-
   /** Implicit conversion from Frame to DataFrame */
   implicit def asH2OFrame(fr: Frame) : H2OFrame = new H2OFrame(fr)
 
+  /** Create a new H2OFrame based on existing Frame referenced by its key.*/
   def asH2OFrame(s: String): H2OFrame = new H2OFrame(s)
 
-  /** Returns a key of given frame */
   implicit def toH2OFrameKey(fr: Frame): Key[Frame] = fr._key
 
   /**
@@ -327,6 +332,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   /**
    * Return true if running inside spark/sparkling water test.
+ *
    * @return true if the actual run is test run
    */
   private def isTesting = sparkContext.conf.contains("spark.testing") || sys.props.contains("spark.testing")
@@ -411,7 +417,7 @@ object H2OContext extends Logging {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
     // Create chunks on remote nodes
-    val rows = sc.runJob(rdd, perRDDPartition(keyName, vecTypes) _) // eager, not lazy, evaluation
+    val rows = sc.runJob(rdd, perTypedRDDPartition(keyName, vecTypes) _) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
     rows.foreach{ case(cidx, nrows) => res(cidx) = nrows }
 
@@ -419,30 +425,30 @@ object H2OContext extends Logging {
     new H2OFrame(finalizeFrame(keyName, res, vecTypes))
   }
 
-  /** Transform RDD[Primitive type] ( where primitive type can be String, Double, Float or Int) to appropriate H2OFrame */
-  def toH2OFrame(sc: SparkContext, primitive: PrimitiveType, frameKeyName: Option[String]): H2OFrame = primitive.toH2OFrame(sc, frameKeyName)
+  /** Transform supported type for conversion to H2OFrame*/
+  def toH2OFrame(sc: SparkContext, rdd: SupportedRDD, frameKeyName: Option[String]): H2OFrame = rdd.toH2OFrame(sc, frameKeyName)
 
   /** Transform RDD[String] to appropriate H2OFrame */
-  def toH2OFrameFromRDDString(sc: SparkContext, rdd: RDD[String], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
+  def toH2OFrameFromRDDString(sc: SparkContext, rdd: RDD[String], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitiveRDD(sc, rdd, frameKeyName)
 
   /** Transform RDD[Int] to appropriate H2OFrame */
-  def toH2OFrameFromRDDInt(sc: SparkContext, rdd: RDD[Int], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
+  def toH2OFrameFromRDDInt(sc: SparkContext, rdd: RDD[Int], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitiveRDD(sc, rdd, frameKeyName)
 
   /** Transform RDD[Float] to appropriate H2OFrame */
-  def toH2OFrameFromRDDFloat(sc: SparkContext, rdd: RDD[Float], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
+  def toH2OFrameFromRDDFloat(sc: SparkContext, rdd: RDD[Float], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitiveRDD(sc, rdd, frameKeyName)
 
   /** Transform RDD[Double] to appropriate H2OFrame */
-  def toH2OFrameFromRDDDouble(sc: SparkContext, rdd: RDD[Double], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
+  def toH2OFrameFromRDDDouble(sc: SparkContext, rdd: RDD[Double], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitiveRDD(sc, rdd, frameKeyName)
 
   /** Transform RDD[Long] to appropriate H2OFrame */
-  def toH2OFrameFromRDDLong(sc: SparkContext, rdd: RDD[Long], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
+  def toH2OFrameFromRDDLong(sc: SparkContext, rdd: RDD[Long], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitiveRDD(sc, rdd, frameKeyName)
 
   /** Transform RDD[Double] to appropriate H2OFrame */
-  def toH2OFrameFromRDDBool(sc: SparkContext, rdd: RDD[Boolean], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitive(sc, rdd, frameKeyName)
+  def toH2OFrameFromRDDBool(sc: SparkContext, rdd: RDD[Boolean], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitiveRDD(sc, rdd, frameKeyName)
 
   private[this]
-  def toH2OFrameFromPrimitive[T: TypeTag](sc: SparkContext, rdd: RDD[T], frameKeyName: Option[String]): H2OFrame = {
-    import org.apache.spark.h2o.H2OPrimitiveTypesUtils._
+  def toH2OFrameFromPrimitiveRDD[T: TypeTag](sc: SparkContext, rdd: RDD[T], frameKeyName: Option[String]): H2OFrame = {
+    import org.apache.spark.h2o.H2OProductUtils._
     import org.apache.spark.h2o.ReflectionUtils._
 
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
@@ -454,7 +460,7 @@ object H2OContext extends Logging {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
 
-    val rows = sc.runJob(rdd, perPrimitivePartition(keyName, vecTypes) _) // eager, not lazy, evaluation
+    val rows = sc.runJob(rdd, perPrimitiveRDDPartition(keyName, vecTypes) _) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
     rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
 
@@ -462,8 +468,36 @@ object H2OContext extends Logging {
     new H2OFrame(finalizeFrame(keyName, res, vecTypes))
   }
 
+
+  /** Transform RDD[LabeledPoint] to appropriate H2OFrame */
+  def toH2OFrameFromRDDLabeledPoint(sc: SparkContext, rdd: RDD[LabeledPoint], frameKeyName: Option[String]): H2OFrame = {
+    import org.apache.spark.h2o.H2OProductUtils._
+    import org.apache.spark.h2o.ReflectionUtils._
+    // first convert vector to dense vector
+    val rddDense = rdd.map(labeledPoint => new LabeledPoint(labeledPoint.label,labeledPoint.features.toDense))
+    val numFeatures = rddDense.map(labeledPoint => labeledPoint.features.size)
+    val maxNumFeatures = numFeatures.max()
+    val minNumFeatures = numFeatures.min()
+    if(minNumFeatures<maxNumFeatures){
+      // Features vectors of different sizes, filling missing with n/a
+      print("WARNING: Converting RDD[LabeledPoint] to H2OFrame where features vectors have different size, filling missing with n/a")
+    }
+    val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
+    val fnames = (Seq[String]("label")++0.until(maxNumFeatures).map(num => "feature"+num).toSeq).toArray[String]
+    val ftypes = 0.until(maxNumFeatures+1).map(_ => typ(typeOf[Double]))
+    val vecTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
+    // Make an H2O data Frame - but with no backing data (yet)
+    initFrame(keyName, fnames)
+    val rows = sc.runJob(rddDense, perLabeledPointRDDPartition(keyName, vecTypes, maxNumFeatures) _) // eager, not lazy, evaluation
+    val res = new Array[Long](rdd.partitions.length)
+    rows.foreach { case (cidx,  nrows) => res(cidx) = nrows }
+
+    // Add Vec headers per-Chunk, and finalize the H2O Frame
+    new H2OFrame(finalizeFrame(keyName, res, vecTypes))
+  }
+
   private
-  def perPrimitivePartition[T](keystr: String, vecTypes: Array[Byte])
+  def perPrimitiveRDDPartition[T](keystr: String, vecTypes: Array[Byte])
                               (context: TaskContext, it: Iterator[T]): (Int, Long) = {
     // An array of H2O NewChunks; A place to record all the data in this partition
     val nchks = water.fvec.FrameUtils.createNewChunks(keystr, vecTypes, context.partitionId)
@@ -556,7 +590,7 @@ object H2OContext extends Logging {
   }
 
   private
-  def perRDDPartition[A<:Product](keystr:String, vecTypes: Array[Byte])
+  def perTypedRDDPartition[A<:Product](keystr:String, vecTypes: Array[Byte])
                                  ( context: TaskContext, it: Iterator[A] ): (Int,Long) = {
     // An array of H2O NewChunks; A place to record all the data in this partition
     val nchks = water.fvec.FrameUtils.createNewChunks(keystr, vecTypes, context.partitionId)
@@ -582,6 +616,37 @@ object H2OContext extends Logging {
     water.fvec.FrameUtils.closeNewChunks(nchks)
     // Return Partition# and rows in this Partition
     (context.partitionId,nchks(0)._len)
+  }
+
+  private
+  def perLabeledPointRDDPartition(keystr: String, vecTypes: Array[Byte], maxNumFeatures: Int)
+                                 (context: TaskContext, it: Iterator[LabeledPoint]): (Int, Long) = {
+    // An array of H2O NewChunks; A place to record all the data in this partition
+    val chunks = water.fvec.FrameUtils.createNewChunks(keystr, vecTypes, context.partitionId)
+    it.foreach(labeledPoint => {
+      // For all LabeledPoints in RDD
+      var nextChunkId = 0
+
+      // Add LabeledPoint label
+      chunks(nextChunkId).addNum(labeledPoint.label)
+      nextChunkId = nextChunkId + 1
+
+      for( i<-0 until labeledPoint.features.size) {
+        // For all features...
+        chunks(nextChunkId).addNum(labeledPoint.features(i))
+        nextChunkId =nextChunkId + 1
+      }
+
+      for( i<-labeledPoint.features.size until maxNumFeatures){
+        // Fill missing features with n/a
+        chunks(nextChunkId).addNA()
+        nextChunkId = nextChunkId + 1
+      }
+    })
+    // Compress & write out the Partition/Chunks
+    water.fvec.FrameUtils.closeNewChunks(chunks)
+    // Return Partition# and rows in this Partition
+    (context.partitionId, chunks(0)._len)
   }
 
   private
