@@ -30,7 +30,7 @@ class DataFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extend
 
   def list(version: Int, s: DataFramesV3): DataFramesV3 = {
     val r = s.createAndFillImpl()
-    r.dataFrames = fetchAll()
+    r.dataframes = fetchAll()
     s.fillFromImpl(r)
     s
   }
@@ -75,7 +75,7 @@ class DataFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extend
 
 /** Simple implementation pojo holding list of DataFrames */
 private[api] class DataFrames extends Iced[DataFrames] {
-  var dataFrames: Array[IcedDataFrameInfo] = _
+  var dataframes: Array[IcedDataFrameInfo] = _
 }
 
 private[api] class IcedDataFrameInfo(val dataframe_id: String, val schema: String) extends Iced[IcedDataFrameInfo] {

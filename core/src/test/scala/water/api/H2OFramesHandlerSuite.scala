@@ -17,24 +17,16 @@
 package water.api
 
 import java.io.File
-import java.util
 
-import com.google.gson.{JsonObject, JsonParser}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.util.{SparkTestContext, SharedSparkTestContext}
+import org.apache.spark.h2o.util.SparkTestContext
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.types.{StructField, DataType, Metadata, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.DKV
-import water.api.DataFrames.{H2OFrameIDV3, DataFrameV3, DataFramesV3, DataFramesHandler}
-import water.api.H2OFrames.{H2OFramesHandler, DataFrameIDV3}
-import water.api.RDDs.{RDDsV3, RDDsHandler}
-import water.fvec.{Frame, H2OFrame}
-
-import scala.util.parsing.json.{JSONObject, JSON}
+import water.api.H2OFrames.{DataFrameIDV3, H2OFramesHandler}
+import water.fvec.H2OFrame
 
 /**
  * Test suite for h2oframes end-points

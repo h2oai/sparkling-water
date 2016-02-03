@@ -19,11 +19,10 @@ package water.api
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
 import org.apache.spark.h2o.util.SharedSparkTestContext
-import org.apache.spark.repl.h2o.H2OInterpreter
 import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfterEach, FunSuite}
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{BeforeAndAfterEach, FunSuite}
 import water.api.scalaInt._
 
 /**

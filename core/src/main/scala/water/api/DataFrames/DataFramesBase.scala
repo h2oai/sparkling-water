@@ -23,5 +23,5 @@ import water.api.{API, Schema}
  */
 class DataFramesBase[I <: DataFrames, S <: DataFramesBase[I, S]] extends Schema[I, S] {
   @API(help = "List of DataFrames", direction = API.Direction.OUTPUT)
-  val dataFrames: Array[DataFrameV3] = null
+  val dataframes: Array[DataFrameV3] = null
 }

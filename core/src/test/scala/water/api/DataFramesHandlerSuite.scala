@@ -17,23 +17,19 @@
 package water.api
 
 import java.io.File
-import java.util
 
-import com.google.gson.{JsonObject, JsonParser}
+import com.google.gson.JsonParser
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.util.{SparkTestContext, SharedSparkTestContext}
+import org.apache.spark.h2o.util.SparkTestContext
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.types.{StructField, DataType, Metadata, StructType}
+import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.DKV
 import water.api.DataFrames._
-import water.api.RDDs.{RDDsV3, RDDsHandler}
 import water.fvec.{Frame, H2OFrame}
-
-import scala.util.parsing.json.{JSONObject, JSON}
 
 /**
  * Test suite for dataframes end-points
@@ -60,10 +56,10 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
 
     val req = new DataFramesV3
     val result = dataFramesHandler.list(3, req)
-    assert (result.dataFrames.length == 1, "Number of created and persisted DataFramess should be 1")
-    assert (result.dataFrames(0).dataframe_id == rid, "IDs should match")
+    assert (result.dataframes.length == 1, "Number of created and persisted DataFramess should be 1")
+    assert (result.dataframes(0).dataframe_id == rid, "IDs should match")
 
-    val schema = parseSchema(result.dataFrames(0).schema)
+    val schema = parseSchema(result.dataframes(0).schema)
     assert (schema.length == df.schema.length,
             "Number of fields in schemas should be the same")
     assert (schema.fields(0).name.equals(df.schema.fields(0).name),
