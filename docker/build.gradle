@@ -1,0 +1,82 @@
+apply plugin: 'base'
+apply plugin: 'com.bmuschko.docker-remote-api'
+
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+
+defaultTasks 'createDockerFile'
+description = "Sparkling-Water Docker Support"
+
+ext {
+    sparkling_water_release = sparkVersion.substring(0,sparkVersion.lastIndexOf("."))
+    sparkling_water_build = new URL("http://h2o-release.s3.amazonaws.com/sparkling-water/rel-${sparkling_water_release}/latest").getText().trim()
+    sparkling_water_file_name = "sparkling-water-${sparkling_water_release}.${sparkling_water_build}"
+    spark_file_name = "spark-${sparkVersion}-bin-hadoop2.6"
+    spark_download_url = "http://mirrors.ocf.berkeley.edu/apache/spark/spark-${sparkVersion}/${spark_file_name}.tgz"
+    sparkling_water_download_url = "http://h2o-release.s3.amazonaws.com/sparkling-water/rel-${sparkling_water_release}/${sparkling_water_build}/${sparkling_water_file_name}.zip"
+    docker_file = file('sparkling-water/base/Dockerfile')
+}
+
+task createDockerfile(type: Dockerfile) {
+    destFile = docker_file
+    from 'ubuntu:trusty'
+
+    maintainer """h2o.ai "h2o.ai" """
+
+    // Install Java 7
+    runCommand """\\
+                |   apt-get -q -y update && \\
+                |   apt-get -y install software-properties-common && \\
+                |   add-apt-repository ppa:webupd8team/java && \\
+                |   apt-get -q -y update && \\
+                |   ( echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections ) && \\
+                |   apt-get -y install oracle-java7-installer && \\
+                |   apt-get -y install oracle-java7-set-default && \\
+                |   apt-get clean
+               """.stripMargin()
+
+    // Install additional tools
+    runCommand """\\
+                |    apt-get -y install \\
+                |      less \\
+                |      curl \\
+                |      sudo \\
+                |      unzip && \\
+                |    apt-get clean && \\
+                |    rm -rf /var/lib/apt/lists/* \\
+                |    rm -rf /var/cache/apt/*
+                """.stripMargin()
+
+    // Install Spark
+    runCommand """\\
+                |   curl -s ${spark_download_url} | tar -xz -C /opt && \\
+                |   ln -s /opt/${spark_file_name} /opt/spark && \\
+                |   mkdir /opt/spark/work && \\
+                |   chmod 0777 /opt/spark/work
+               """.stripMargin()
+
+    // Install Sparkling water
+    runCommand """\\
+                |   curl -s ${sparkling_water_download_url} --output sw.zip && \\
+                |   unzip sw.zip -d /opt/ && \\
+                |   ln -s /opt/${sparkling_water_file_name} /opt/sparkling-water && \\
+                |   rm -f sw.zip
+               """.stripMargin()
+
+    // Setup environment
+    environmentVariable("SPARK_HOME","/opt/spark")
+    environmentVariable("SPARKLING_WATER_HOME","/opt/sparkling-water")
+
+    exposePort 4040, 54321
+
+    workingDir "/opt/sparkling-water"
+}
+
+task cleanDockerfile(type: Delete) {
+    delete docker_file
+}
+
+//
+// Configure execution graph
+//
+build.dependsOn createDockerfile
+clean.dependsOn cleanDockerfile

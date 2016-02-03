@@ -17,5 +17,5 @@
 # limitations under the License.
 #
 
-docker build -t sparkling-test-base sparkling-test/base/
+docker build -t sparkling-water-base sparkling-water/base/
 
