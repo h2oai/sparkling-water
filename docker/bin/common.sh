@@ -17,6 +17,21 @@
 # limitations under the License.
 #
 
+# Check if docker is running
+if ! docker info > /dev/null; then
+  echo "Exiting..."
+  exit -1
+fi
 
-docker run -i -t --rm sparkling-water-base bin/run-example.sh --master "local[*]" "$@"
+REQUIRED_MEMORY="5"
+DOCKER_MEMORY=$(docker info | grep "Total Memory" | sed -e "s/Total Memory: //")
+
+memory_size=${DOCKER_MEMORY/ [a-zA-Z]*/}
+memory_unit=${DOCKER_MEMORY/[0-9\.]* /}
+
+is_memory_enough=$(bc -l <<< "$memory_size > $REQUIRED_MEMORY")
+
+if [[ "$memory_unit" != "GiB" ]] || [[ "$is_memory_enough" != "1" ]]; then
+    echo "WARN: Docker reports $DOCKER_MEMORY total memory, but the Sparkling Water Dockerfile needs ${REQUIRED_MEMORY}G!" 
+fi
 
