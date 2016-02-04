@@ -16,6 +16,8 @@
  */
 package org.apache.spark.rdd
 
+import java.sql.Timestamp
+
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.util.SharedSparkTestContext
 import org.apache.spark.h2o._
@@ -155,6 +157,30 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     // Create RDD with 100 String values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10).map(v => v.toString)
     // PUBDEV-1173
+    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    dataFrame.delete()
+  }
+
+  test("RDD[Byte] to H2OFrame[Numeric]") {
+    // Create RDD with 100 Byte values, 10 values per 1 Spark partition
+    val rdd = sc.parallelize(1 to 100, 10).map(v => v.toByte)
+    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    dataFrame.delete()
+  }
+
+  test("RDD[Short] to H2OFrame[Numeric]") {
+    // Create RDD with 100 Short values, 10 values per 1 Spark partition
+    val rdd = sc.parallelize(1 to 100, 10).map(v => v.toShort)
+    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
+    dataFrame.delete()
+  }
+
+  test("RDD[java.sql.Timestamp] to H2OFrame[Time]") {
+    // Create RDD with 100 Timestamp values, 10 values per 1 Spark partition
+    val rdd = sc.parallelize(1 to 100, 10).map(v => new Timestamp(v.toLong))
     val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
     assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
     dataFrame.delete()
