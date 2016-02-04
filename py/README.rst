@@ -16,6 +16,12 @@ This module depends on *requests* and *tabulate* modules, both of which are avai
 
 The Sparkling-Water Python Module
 =====================
+If you want to run a prebuild stable version - 
+
+	wget http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.5/10/sparkling-water-1.5.10.zip
+
+	unzip sparkling-water-1.5.10.zip
+
 To run a pySparkling interactive shell:
     
     export SPARK_HOME="/path/to/spark/installation"
