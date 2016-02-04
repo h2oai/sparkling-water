@@ -55,7 +55,7 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     rddReq.searched_rdd_id =  rdd.id
 
     val result = rddsHandler.getRDD(3,rddReq)
-    assert (result.rdd.rdd_id == rdd.id, "Original ID and obtained ID should match")
+    assert (result.rdd.id == rdd.id, "Original ID and obtained ID should match")
     assert (result.rdd.name.equals(rname), "Name matches")
     assert (result.rdd.partitions == rpart, "Number of partitions matches")
     assert (result.msg.equals("OK"),"Status should be OK")
