@@ -70,6 +70,7 @@ object ReflectionUtils {
       case t if t <:< definitions.ShortTpe      => classOf[java.lang.Short]
       case t if t <:< definitions.ByteTpe       => classOf[java.lang.Byte]
       case t if t <:< definitions.BooleanTpe    => classOf[java.lang.Boolean]
+      case t if t <:< typeOf[java.sql.Timestamp] => classOf[java.sql.Timestamp]
       case t => throw new IllegalArgumentException(s"Type $t is not supported!")
     }
   }

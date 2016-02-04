@@ -67,6 +67,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   implicit def asH2OFrameFromRDDBool(rdd: RDD[Boolean]): H2OFrame = asH2OFrame(rdd,None)
   implicit def asH2OFrameFromRDDDouble(rdd: RDD[Double]): H2OFrame = asH2OFrame(rdd,None)
   implicit def asH2OFrameFromRDDLong(rdd: RDD[Long]): H2OFrame = asH2OFrame(rdd,None)
+  implicit def asH2OFrameFromRDDByte(rdd: RDD[Byte]): H2OFrame = asH2OFrame(rdd,None)
+  implicit def asH2OFrameFromRDDShort(rdd: RDD[Short]): H2OFrame = asH2OFrame(rdd,None)
+  implicit def asH2OFrameFromRDDTimeStamp(rdd: RDD[java.sql.Timestamp]): H2OFrame = asH2OFrame(rdd,None)
   implicit def asH2OFrameFromRDDLabeledPoint(rdd: RDD[LabeledPoint]): H2OFrame = asH2OFrame(rdd,None)
 
   /** Implicit conversion from RDD[Supported type] to H2OFrame key */
@@ -75,6 +78,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   implicit def toH2OFrameKeyFromRDDBool(rdd: RDD[Boolean]): Key[_] = toH2OFrameKey(rdd,None)
   implicit def toH2OFrameKeyFromRDDDouble(rdd: RDD[Double]): Key[_] = toH2OFrameKey(rdd,None)
   implicit def toH2OFrameKeyFromRDDLong(rdd: RDD[Long]): Key[_] = toH2OFrameKey(rdd,None)
+  implicit def toH2OFrameKeyFromRDDByte(rdd: RDD[Byte]): Key[_] = toH2OFrameKey(rdd,None)
+  implicit def toH2OFrameKeyFromRDDShort(rdd: RDD[Short]): Key[_] = toH2OFrameKey(rdd,None)
+  implicit def toH2OFrameKeyFromRDDTimeStamp(rdd: RDD[java.sql.Timestamp]): Key[_] = toH2OFrameKey(rdd,None)
   implicit def toH2OFrameKeyFromRDDLabeledPoint(rdd: RDD[LabeledPoint]): Key[_] = toH2OFrameKey(rdd,None)
 
   /** Transforms RDD[Supported type] to H2OFrame */
@@ -407,7 +413,7 @@ object H2OContext extends Logging {
 
   /** Transform typed RDD into H2O Frame */
   def toH2OFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A], frameKeyName: Option[String]) : H2OFrame = {
-    import org.apache.spark.h2o.H2OProductUtils._
+    import org.apache.spark.h2o.H2OTypeUtils._
     import org.apache.spark.h2o.ReflectionUtils._
 
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
@@ -447,9 +453,18 @@ object H2OContext extends Logging {
   /** Transform RDD[Double] to appropriate H2OFrame */
   def toH2OFrameFromRDDBool(sc: SparkContext, rdd: RDD[Boolean], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitiveRDD(sc, rdd, frameKeyName)
 
+  /** Transform RDD[Short] to appropriate H2OFrame */
+  def toH2OFrameFromRDDShort(sc: SparkContext, rdd: RDD[Short], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitiveRDD(sc, rdd, frameKeyName)
+
+  /** Transform RDD[Byte] to appropriate H2OFrame */
+  def toH2OFrameFromRDDByte(sc: SparkContext, rdd: RDD[Byte], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitiveRDD(sc, rdd, frameKeyName)
+
+  /** Transform RDD[Byte] to appropriate H2OFrame */
+  def toH2OFrameFromRDDTimeStamp(sc: SparkContext, rdd: RDD[java.sql.Timestamp], frameKeyName: Option[String]): H2OFrame = toH2OFrameFromPrimitiveRDD(sc, rdd, frameKeyName) // scalastyle:ignore
+
   private[this]
   def toH2OFrameFromPrimitiveRDD[T: TypeTag](sc: SparkContext, rdd: RDD[T], frameKeyName: Option[String]): H2OFrame = {
-    import org.apache.spark.h2o.H2OProductUtils._
+    import org.apache.spark.h2o.H2OTypeUtils._
     import org.apache.spark.h2o.ReflectionUtils._
 
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
@@ -472,7 +487,7 @@ object H2OContext extends Logging {
 
   /** Transform RDD[LabeledPoint] to appropriate H2OFrame */
   def toH2OFrameFromRDDLabeledPoint(sc: SparkContext, rdd: RDD[LabeledPoint], frameKeyName: Option[String]): H2OFrame = {
-    import org.apache.spark.h2o.H2OProductUtils._
+    import org.apache.spark.h2o.H2OTypeUtils._
     import org.apache.spark.h2o.ReflectionUtils._
     // first convert vector to dense vector
     val rddDense = rdd.map(labeledPoint => new LabeledPoint(labeledPoint.label,labeledPoint.features.toDense))
@@ -481,11 +496,11 @@ object H2OContext extends Logging {
     val minNumFeatures = numFeatures.min()
     if(minNumFeatures<maxNumFeatures){
       // Features vectors of different sizes, filling missing with n/a
-      print("WARNING: Converting RDD[LabeledPoint] to H2OFrame where features vectors have different size, filling missing with n/a")
+      logWarning("WARNING: Converting RDD[LabeledPoint] to H2OFrame where features vectors have different size, filling missing with n/a")
     }
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
-    val fnames = (Seq[String]("label")++0.until(maxNumFeatures).map(num => "feature"+num).toSeq).toArray[String]
-    val ftypes = 0.until(maxNumFeatures+1).map(_ => typ(typeOf[Double]))
+    val fnames = (Seq[String]("label") ++ 0.until(maxNumFeatures).map(num => "feature" + num).toSeq).toArray[String]
+    val ftypes = 0.until(maxNumFeatures + 1).map(_ => typ(typeOf[Double]))
     val vecTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
@@ -508,12 +523,11 @@ object H2OContext extends Logging {
       // For all rows in RDD
       val chk = nchks(0) // There is only one chunk
       r match {
-        case t: Int => chk.addNum(t.toDouble)
-        case t: Double => chk.addNum(t)
-        case t: Float => chk.addNum(t.toDouble)
-        case t: Long => chk.addNum(t.toDouble)
-        case t: Boolean => chk.addNum(if(t) 1 else 0)
-        case str: String => chk.addStr(valStr.setTo(str))
+        case n: Number  => chk.addNum(n.doubleValue())
+        case n: Boolean => chk.addNum(if (n) 1 else 0)
+        case n: String  => chk.addStr(valStr.setTo(n))
+        case n : java.sql.Timestamp => chk.addNum(n.asInstanceOf[java.sql.Timestamp].getTime())
+        case _ => chk.addNA()
       }
     })
     // Compress & write out the Partition/Chunks
@@ -609,6 +623,7 @@ object H2OContext extends Logging {
           case n: Number  => chk.addNum(n.doubleValue())
           case n: Boolean => chk.addNum(if (n) 1 else 0)
           case n: String  => chk.addStr(valStr.setTo(n))
+          case n : java.sql.Timestamp => chk.addNum(n.asInstanceOf[java.sql.Timestamp].getTime())
           case _ => chk.addNA()
         }
       }
