@@ -17,6 +17,8 @@
 package water.api.RDDs
 
 import org.apache.spark.SparkContext
+import org.apache.spark.h2o.{H2OFrame, H2OContext}
+import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import water.Iced
 import water.api.Handler
@@ -24,16 +26,16 @@ import water.api.Handler
 /**
  * RDDs handler.
  */
-class RDDsHandler(val sc: SparkContext) extends Handler {
+class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
 
-  def list(version:Int, s: RDDsV3): RDDsV3 = {
+  def list(version: Int, s: RDDsV3): RDDsV3 = {
     val r = s.createAndFillImpl()
     r.rdds = fetchAll()
     s.fillFromImpl(r)
     s
   }
 
-  def fetchAll():Array[IcedRDDInfo] =
+  def fetchAll(): Array[IcedRDDInfo] =
     sc.getPersistentRDDs.values.map(IcedRDDInfo.fromRdd(_)).toArray
 
   def getRDD(version: Int, s: RDDWithMsgV3): RDDWithMsgV3 = {
@@ -44,6 +46,39 @@ class RDDsHandler(val sc: SparkContext) extends Handler {
       r.rdd = IcedRDDInfo.fromRdd(sc.getPersistentRDDs.get(s.searched_rdd_id).get)
       s.fillFromImpl(r)
       s.msg = "OK"
+    }
+    s
+  }
+
+  private[RDDsHandler] def convertToH2OFrame(rdd: RDD[_]): H2OFrame = {
+    if (rdd.isEmpty()) {
+      // transform empty Seq in order to create empty H2OFrame
+      h2oContext.asH2OFrame(sc.parallelize(Seq.empty[Int]))
+    } else {
+       rdd.first() match {
+        case t if t.isInstanceOf[Double] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Double]])
+        case t if t.isInstanceOf[LabeledPoint] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[LabeledPoint]])
+        case t if t.isInstanceOf[Boolean] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Boolean]])
+        case t if t.isInstanceOf[String] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[String]])
+        case t if t.isInstanceOf[Int] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Int]])
+        case t if t.isInstanceOf[Float] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Float]])
+        case t if t.isInstanceOf[Long] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Long]])
+        case t if t.isInstanceOf[java.sql.Timestamp] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[java.sql.Timestamp]])
+        case t if t.isInstanceOf[Product] => H2OContext.toH2OFrameFromPureProduct(sc, rdd.asInstanceOf[RDD[Product]], None)
+        case t => throw new IllegalArgumentException(s"Do not understand type $t")
+      }
+    }
+  }
+
+  def toH2OFrame(version: Int, s: RDD2H2OFrameIDV3): RDD2H2OFrameIDV3 = {
+    if (sc.getPersistentRDDs.get(s.rdd_id).isEmpty) {
+      s.h2oframe_id = ""
+      s.msg = s"RDD with id '${s.rdd_id}' does not exist, can not proceed with the transformation"
+    } else {
+      val rdd = sc.getPersistentRDDs.get(s.rdd_id).get
+      val h2oframe = convertToH2OFrame(rdd)
+      s.h2oframe_id = h2oframe._key.toString
+      s.msg = "Success"
     }
     s
   }
@@ -74,4 +109,9 @@ private[api] class RDDs extends Iced[RDDs] {
 }
 
 
+private[api] class IcedRDD2H2OFrameID(val rdd_id: Integer) extends Iced[IcedRDD2H2OFrameID] {
+
+  def this() = this(-1) // initialize with empty values, this is used by the createImpl method in the
+  //RequestServer, as it calls constructor without any arguments
+}
 

@@ -51,11 +51,11 @@ class H2OFramesHandlerSuite extends FunSuite with SparkTestContext {
   test("H2OFramesHandler.toDataFrame() method"){
     // create H2OFrame which will be used for the transformation
     val h2oFrame = new H2OFrame(new File("./examples/smalldata/prostate.csv"))
-    val h2OFramesHandler = new H2OFramesHandler(sc,h2oContext)
+    val h2oFramesHandler = new H2OFramesHandler(sc,h2oContext)
 
     val req = new DataFrameIDV3
     req.h2oframe_id = h2oFrame._key.toString
-    val result = h2OFramesHandler.toDataFrame(3,req)
+    val result = h2oFramesHandler.toDataFrame(3,req)
 
     // get the data frame using obtained id
     val df = sqlContext.table(result.dataframe_id)
@@ -69,10 +69,10 @@ class H2OFramesHandlerSuite extends FunSuite with SparkTestContext {
   }
 
   test("H2OFramesHandler.toDataFrame() method, trying to convert H2OFrame which does not exist"){
-    val h2OFramesHandler = new H2OFramesHandler(sc,h2oContext)
+    val h2oFramesHandler = new H2OFramesHandler(sc,h2oContext)
     val req = new DataFrameIDV3
     req.h2oframe_id = "does_not_exist"
-    val result = h2OFramesHandler.toDataFrame(3,req)
+    val result = h2oFramesHandler.toDataFrame(3,req)
     assert (result.dataframe_id.equals(""), "Returned H2O Frame id should be empty")
     assert (!result.msg.equals("OK"), "Status is not OK - it is message saying that given H2OFrame does not exist")
   }

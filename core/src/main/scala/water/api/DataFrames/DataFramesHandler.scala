@@ -25,7 +25,7 @@ import water.api.Handler
 /**
  * DataFrames handler.
  */
-class DataFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extends Handler {
+class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
   val sqlContext = SQLContext.getOrCreate(sc)
 
   def list(version: Int, s: DataFramesV3): DataFramesV3 = {
@@ -65,7 +65,7 @@ class DataFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extend
       s.msg = "DataFrame with id \""+s.dataframe_id+"\" does not exist, can not proceed with the transformation"
     }else{
       val dataFrame: DataFrame = sqlContext.table(s.dataframe_id)
-      val h2oFrame = h2OContext.asH2OFrame(dataFrame)
+      val h2oFrame = h2oContext.asH2OFrame(dataFrame)
       s.h2oframe_id = h2oFrame._key.toString
       s.msg="Success"
     }

@@ -21,6 +21,7 @@ import org.apache.spark._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.h2o.H2OTypeUtils._
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -30,10 +31,12 @@ import water.api.H2OFrames.H2OFramesHandler
 import water.api.RDDs.RDDsHandler
 import water.api._
 import water.api.scalaInt.ScalaCodeHandler
+import water.fvec.Vec
 import water.parser.BufferedString
 
 import scala.annotation.tailrec
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -339,7 +342,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   /**
    * Return true if running inside spark/sparkling water test.
- *
+   *
+   * @return true if the actual run is test run
+   *
    * @return true if the actual run is test run
    */
   private def isTesting = sparkContext.conf.contains("spark.testing") || sys.props.contains("spark.testing")
@@ -411,6 +416,44 @@ object H2OContext extends Logging {
     }
   }
 
+  private def inferFieldType(value : Any): Class[_] ={
+    value match {
+      case n: Byte  => classOf[java.lang.Byte]
+      case n: Short => classOf[java.lang.Short]
+      case n: Int => classOf[java.lang.Integer]
+      case n: Long => classOf[java.lang.Long]
+      case n: Float => classOf[java.lang.Float]
+      case n: Double => classOf[java.lang.Double]
+      case n: Boolean => classOf[java.lang.Boolean]
+      case n: String => classOf[java.lang.String]
+      case n: java.sql.Timestamp => classOf[java.sql.Timestamp]
+      case q => throw new IllegalArgumentException(s"Do not understand type $q")
+    }
+  }
+
+  def toH2OFrameFromPureProduct(sc: SparkContext, rdd: RDD[Product], frameKeyName: Option[String]): H2OFrame = {
+    val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
+
+    // infer the type
+    val first = rdd.first()
+    val fnames = 0.until(first.productArity).map(idx => "f" + idx).toArray[String]
+    val ftypes = new ListBuffer[Class[_]]()
+    val it = first.productIterator
+    while(it.hasNext){
+      ftypes+=inferFieldType(it.next())
+    }
+    // Collect H2O vector types for all input types
+    val vecTypes = ftypes.toArray[Class[_]].indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
+    // Make an H2O data Frame - but with no backing data (yet)
+    initFrame(keyName, fnames)
+    // Create chunks on remote nodes
+    val rows = sc.runJob(rdd, perTypedRDDPartition(keyName, vecTypes) _) // eager, not lazy, evaluation
+    val res = new Array[Long](rdd.partitions.length)
+    rows.foreach{ case(cidx, nrows) => res(cidx) = nrows }
+
+    // Add Vec headers per-Chunk, and finalize the H2O Frame
+    new H2OFrame(finalizeFrame(keyName, res, vecTypes))
+  }
   /** Transform typed RDD into H2O Frame */
   def toH2OFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A], frameKeyName: Option[String]) : H2OFrame = {
     import org.apache.spark.h2o.H2OTypeUtils._
@@ -693,37 +736,36 @@ object H2OContext extends Logging {
     }
   }
 
-  private[h2o] def registerClientWebAPI(sc: SparkContext, h2OContext: H2OContext): Unit = {
+  private[h2o] def registerClientWebAPI(sc: SparkContext, h2oContext: H2OContext): Unit = {
     /** Need: SW-45
     //this is here to override the SQLContext by the spark shell, this instance than can be obtained using SQLContext.getOrCreate(sc)
     new SQLContext(sc)
-
     //registerScalaIntEndp(sc, h2OContext)
     */
-    registerDataFramesEndp(sc, h2OContext)
-    registerH2OFramesEndp(sc, h2OContext)
-    registerRDDsEndp(sc)
+    registerDataFramesEndp(sc, h2oContext)
+    registerH2OFramesEndp(sc, h2oContext)
+    registerRDDsEndp(sc, h2oContext)
   }
 
-  private def registerH2OFramesEndp(sc: SparkContext, h2OContext: H2OContext) = {
+  private def registerH2OFramesEndp(sc: SparkContext, h2oContext: H2OContext) = {
 
-    val h2OFramesHandler = new H2OFramesHandler(sc, h2OContext)
+    val h2oFramesHandler = new H2OFramesHandler(sc, h2oContext)
 
-    def h2OFramesFactory = new HandlerFactory {
-      override def create(handler: Class[_ <: Handler]): Handler = h2OFramesHandler
+    def h2oFramesFactory = new HandlerFactory {
+      override def create(handler: Class[_ <: Handler]): Handler = h2oFramesHandler
     }
 
     RequestServer.register("/3/h2oframes/(?<h2oframe_id>.*)/dataframe", "POST",
                            classOf[H2OFramesHandler], "toDataFrame",
                            null,
                            "Transform H2OFrame with given id to DataFrame",
-                           h2OFramesFactory);
+                           h2oFramesFactory);
 
   }
 
-  private def registerRDDsEndp(sc: SparkContext) = {
+  private def registerRDDsEndp(sc: SparkContext, h2oContext: H2OContext) = {
 
-    val rddsHandler = new RDDsHandler(sc)
+    val rddsHandler = new RDDsHandler(sc, h2oContext)
 
     def rddsFactory = new HandlerFactory {
       override def create(aClass: Class[_ <: Handler]): Handler = rddsHandler
@@ -741,11 +783,17 @@ object H2OContext extends Logging {
                            "Get frame in the H2O distributed K/V store with the given ID",
                            rddsFactory)
 
+    RequestServer.register("/3/RDDs/(?<rdd_id>[0-9a-zA-Z_]+)/h2oframe", "POST",
+      classOf[RDDsHandler], "toH2OFrame",
+      null,
+      "Transform RDD with the given id to H2OFrame",
+      rddsFactory)
+
   }
 
-  private def registerDataFramesEndp(sc: SparkContext, h2OContext: H2OContext) = {
+  private def registerDataFramesEndp(sc: SparkContext, h2oContext: H2OContext) = {
 
-    val dataFramesHandler = new DataFramesHandler(sc, h2OContext)
+    val dataFramesHandler = new DataFramesHandler(sc, h2oContext)
 
     def dataFramesfactory = new HandlerFactory {
       override def create(aClass: Class[_ <: Handler]): Handler = dataFramesHandler
