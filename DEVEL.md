@@ -388,6 +388,32 @@ For all primitive Scala types or Spark SQL (see `org.apache.spark.sql.types`) ty
 
 ---
 
+### Type mapping between H2O H2OFrame types and RDD\[T\] types
+
+As type T we support following types:
+
+| T          |
+|------------|
+| _NA_       |
+| Byte       |
+| Short      |
+|Integer     |
+|Long        |
+|Float       |
+|Double      | 
+|String      |
+|Boolean     |
+|java.sql.TimeStamp |
+|Any scala class extending scala `Product` |
+|org.apache.spark.mllib.regression.LabeledPoint|
+
+As is specified in the table, Sparkling Water provides support for transforming arbitrary scala class extending `Product`, which are for example all case classes.
+
+
+
+---
+
+
 <a name="CallAlgos"></a>
 ### Calling H2O Algorithms
 
