@@ -36,7 +36,7 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     val rpart = 21
     val rdd = sc.parallelize(1 to 10, rpart).setName(rname).cache()
 
-    val rddsHandler = new RDDsHandler(sc)
+    val rddsHandler = new RDDsHandler(sc, hc)
     val result = rddsHandler.list(3, new RDDsV3)
     assert (result.rdds.length == 1, "Number of created and persisted RDDs should be 1")
     assert (result.rdds(0).name.equals(rname), "Name matches")
@@ -50,7 +50,7 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     val rpart = 21
     val rdd = sc.parallelize(1 to 100,rpart).setName(rname).cache()
 
-    val rddsHandler = new RDDsHandler(sc)
+    val rddsHandler = new RDDsHandler(sc, hc)
     val rddReq = new RDDWithMsgV3
     rddReq.searched_rdd_id =  rdd.id
 
@@ -62,7 +62,7 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
   }
 
   test("RDDsHandler.getRDD() method, querying non-existing RDD"){
-    val rddsHandler = new RDDsHandler(sc)
+    val rddsHandler = new RDDsHandler(sc,hc)
 
     val rddReq = new RDDWithMsgV3
     rddReq.searched_rdd_id =  0

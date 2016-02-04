@@ -26,7 +26,7 @@ import water.{DKV, Iced}
 /**
  * Handles transformation between DataFrame and H2OFrame based on the request
  */
-class H2OFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extends Handler {
+class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
   implicit val sqlContext = SQLContext.getOrCreate(sc)
 
   def toDataFrame(version: Int, s: DataFrameIDV3): DataFrameIDV3 = {
@@ -37,12 +37,12 @@ class H2OFramesHandler(val sc: SparkContext, val h2OContext: H2OContext) extends
     }else{
       val h2oFrame: H2OFrame = value.className() match {
         case name if name.equals(classOf[Frame].getName) => {
-          h2OContext.asH2OFrame(value.get[Frame]())
+          h2oContext.asH2OFrame(value.get[Frame]())
         }
         case name if name.equals(classOf[H2OFrame].getName) => value.get[H2OFrame]()
       }
 
-      val dataFrame = h2OContext.asDataFrame(h2oFrame)
+      val dataFrame = h2oContext.asDataFrame(h2oFrame)
       dataFrame.rdd.cache()
       s.dataframe_id = "df_" + dataFrame.rdd.id.toString
       s.msg = "Success"
