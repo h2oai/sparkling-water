@@ -9,10 +9,13 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class BasicInterpreterTests extends ScriptsTestHelper{
+class BasicInterpreterTests extends ScriptsTestHelper {
 
   override protected def beforeAll(): Unit = {
-    sparkConf = defaultConf.setMaster("local-cluster[3,2,1024]")
+    sparkConf = defaultConf
+      .setMaster("local-cluster[3,2,2048]")
+      .set("spark.driver.memory", "2G")
+      .set("spark.executor.memory", "2G")
     super.beforeAll()
   }
   test("Code with exception") {

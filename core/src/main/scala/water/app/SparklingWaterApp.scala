@@ -16,21 +16,21 @@
 */
 package water.app
 
-import java.io.{FileOutputStream, File}
+import java.io.{File, FileOutputStream, InputStream, OutputStream}
 import java.net.URI
 
 import hex.Distribution.Family
-import hex.deeplearning.DeepLearningParameters.Activation
-import hex.deeplearning.{DeepLearningParameters, DeepLearning, DeepLearningModel}
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
+import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.tree.gbm.GBMModel
 import hex.{Model, ModelMetrics}
+import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.SparkContext
 import water.fvec.Frame
-import water.Key
-import water.Keyed
-import water.serial.ObjectTreeBinarySerializer
+import water.persist.Persist
+import water.{AutoBuffer, H2O, Key, Keyed}
 
 /**
  * A simple application trait to define Sparkling Water applications.
@@ -73,6 +73,7 @@ object ModelMetricsSupport extends ModelMetricsSupport
 trait DeepLearningSupport {
 
   def DLModel(train: H2OFrame, valid: H2OFrame, response: String,
+              modelId: String = "model",
               epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
               activation: Activation = Activation.RectifierWithDropout,
               hidden: Array[Int] = Array(200, 200)): DeepLearningModel = {
@@ -92,7 +93,7 @@ trait DeepLearningSupport {
     dlParams._hidden = hidden
 
     // Create a job
-    val dl = new DeepLearning(dlParams)
+    val dl = new DeepLearning(dlParams, water.Key.make(modelId))
     val model = dl.trainModel.get
     model
   }
@@ -110,7 +111,6 @@ trait GBMSupport {
     import hex.tree.gbm.GBMModel.GBMParameters
 
     val gbmParams = new GBMParameters()
-    gbmParams._model_id = water.Key.make(modelId)
     gbmParams._train = train._key
     gbmParams._valid = if (test != null) {
       test._key
@@ -122,7 +122,7 @@ trait GBMSupport {
     gbmParams._max_depth = depth
     gbmParams._distribution = family
 
-    val gbm = new GBM(gbmParams)
+    val gbm = new GBM(gbmParams, water.Key.make(modelId))
     val model = gbm.trainModel.get
     model
   }
@@ -137,17 +137,17 @@ trait ModelSerializationSupport {
 
   def exportH2OModel(model : Model[_,_,_], destination: URI): URI = {
     val modelKey = model._key.asInstanceOf[Key[_ <: Keyed[_ <: Keyed[_ <: AnyRef]]]]
-    val keysToExport = model.getPublishedKeys()
-    // Prepend model key
-    keysToExport.add(0, modelKey)
+    val p: Persist = H2O.getPM.getPersistForURI(destination)
+    val os: OutputStream = p.create(destination.toString, true)
+    model.writeAll(new AutoBuffer(os, true)).close
 
-    new ObjectTreeBinarySerializer().save(keysToExport, destination)
     destination
   }
 
   def loadH2OModel[M <: Model[_, _, _]](source: URI) : M = {
-    val l = new ObjectTreeBinarySerializer().load(source)
-    l.get(0).get().asInstanceOf[M]
+    val p: Persist = H2O.getPM.getPersistForURI(source)
+    val is: InputStream = p.open(source.toString)
+    Keyed.readAll(new AutoBuffer(is)).asInstanceOf[M]
   }
 
   def exportPOJOModel(model : Model[_, _,_], destination: URI): URI = {

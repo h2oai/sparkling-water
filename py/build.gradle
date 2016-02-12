@@ -73,7 +73,7 @@ or
    For example:
 
     mkdir -p \$(pwd)/private/
-    curl ${h2oPythonWheelPackageLocation} > \$(pwd)/private/h2o.whl
+    curl -s ${h2oPythonWheelPackageLocation} > \$(pwd)/private/h2o.whl
     export H2O_PYTHON_WHEEL=\$(pwd)/private/h2o.whl
 """)
     }
@@ -119,6 +119,8 @@ task distPython(type: Exec, dependsOn: checkPythonEnv) {
 task testPython(type: Exec, dependsOn: [configurations.compile, checkPythonEnv] ) {
     preparePythonEnv(environment)
 
+    environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
+    environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
     environment['SPARK_CLASSPATH'] = "${configurations.compile.join(',')}"
     commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "unit_tests.py"])
 }
@@ -144,24 +146,24 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
     switch (testEnv) {
         case "yarn":
             environment["sparkling.test.environment"] = "${testEnv}"
-            environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}"
-            environment["spark.ext.h2o.client.log.dir"] =  "h2ologs-itest-${testEnv}"
+            environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}/nodes"
+            environment["spark.ext.h2o.client.log.dir"] =  "h2ologs-itest-${testEnv}/client"
 
             commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "tests_integ_yarn.py"])
             break
 
         case "standalone":
             environment["sparkling.test.environment"] = "${testEnv}"
-            environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}"
-            environment["spark.ext.h2o.client.log.dir"] = "h2ologs-itest-${testEnv}"
+            environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}/nodes"
+            environment["spark.ext.h2o.client.log.dir"] = "h2ologs-itest-${testEnv}/client"
 
             commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "tests_integ_standalone.py.py"])
             break
 
         case "local":
             environment["sparkling.test.environment"] = "${testEnv}"
-            environment["spark.ext.h2o.node.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}").getAbsolutePath()
-            environment["spark.ext.h2o.client.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}").getAbsolutePath()
+            environment["spark.ext.h2o.node.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/nodes").getAbsolutePath()
+            environment["spark.ext.h2o.client.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client").getAbsolutePath()
 
             commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "tests_integ_local.py"])
             break

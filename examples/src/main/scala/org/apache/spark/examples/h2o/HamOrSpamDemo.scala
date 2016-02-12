@@ -17,7 +17,8 @@
 
 package org.apache.spark.examples.h2o
 
-import hex.deeplearning.{DeepLearning, DeepLearningModel, DeepLearningParameters}
+import hex.deeplearning.{DeepLearningModel, DeepLearning}
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.feature.{HashingTF, IDF, IDFModel}
@@ -85,8 +86,8 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
     val validMetrics = binomialMM(dlModel, valid)
     println(
       s"""
-         |AUC on train data = ${trainMetrics.auc._auc}
-         |AUC on valid data = ${validMetrics.auc._auc}
+         |AUC on train data = ${trainMetrics.auc}
+         |AUC on valid data = ${validMetrics.auc}
        """.stripMargin)
 
     // Detect spam messages
@@ -151,7 +152,6 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
     import h2oContext._
     // Build a model
     val dlParams = new DeepLearningParameters()
-    dlParams._model_id = water.Key.make("dlModel.hex")
     dlParams._train = train
     dlParams._valid = valid
     dlParams._response_column = 'target
@@ -160,7 +160,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
     dlParams._hidden = hidden
 
     // Create a job
-    val dl = new DeepLearning(dlParams)
+    val dl = new DeepLearning(dlParams, water.Key.make("dlModel.hex"))
     val dlModel = dl.trainModel.get
 
     // Compute metrics on both datasets

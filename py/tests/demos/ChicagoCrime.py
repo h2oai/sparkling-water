@@ -21,7 +21,7 @@ def refine_date_col(data, col, pattern):
     # Create weekend and season cols
     # Spring = Mar, Apr, May. Summer = Jun, Jul, Aug. Autumn = Sep, Oct. Winter = Nov, Dec, Jan, Feb.
     # data["Weekend"]   = [1 if x in ("Sun", "Sat") else 0 for x in data["WeekDay"]]
-    data["Weekend"] = (data["WeekDay"] == "Sun" or data["WeekDay"] == "Sat").ifelse(1, 0)[0]
+    data["Weekend"] = ((data["WeekDay"] == "Sun") | (data["WeekDay"] == "Sat"))
     data["Season"] = data["Month"].cut([0, 2, 5, 7, 10, 12], ["Winter", "Spring", "Summer", "Autumn", "Winter"])
 
 
@@ -96,7 +96,7 @@ f_weather = f_weather[1:]
 
 # Transform census table
 # Remove all spaces from column names (causing problems in Spark SQL)
-col_names = map(lambda s: s.strip().replace(' ', '_'), f_census.col_names)
+col_names = map(lambda s: s.strip().replace(' ', '_').replace('+', '_'), f_census.col_names)
 
 # Update column names in the table
 # f_weather.names = col_names
@@ -207,3 +207,12 @@ for crime in crime_examples:
        |  Probability of arrest best on DeepLearning: """+str(arrestProbGLM)+"""
        |  Probability of arrest best on GBM: """+str(arrestProbGBM)+"""
         """)
+
+# Need to shutdown Spark at the end
+#sc.stop()
+#h2o.shutdown()
+
+# Kill process directly
+import os
+os._exit(0)
+

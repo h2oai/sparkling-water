@@ -22,7 +22,7 @@ import unittest
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SQLContext
 import subprocess
-
+from random import randrange
 
 class IntegTestEnv:
     def __init__(self):
@@ -73,7 +73,7 @@ class IntegTestSuite(unittest.TestCase):
         # Disable GA collection by default
         cmd_line.extend(["--conf", 'spark.ext.h2o.disable.ga=true'])
         # remove ".py" from cloud name
-        cmd_line.extend(["--conf", 'spark.ext.h2o.cloud.name=sparkling-water-'+script_name[:-3]])
+        cmd_line.extend(["--conf", 'spark.ext.h2o.cloud.name=sparkling-water-'+script_name[:-3]+randrange(65536)])
         cmd_line.extend(["--conf", '"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version='+self.test_env.hdp_version+'"'])
         cmd_line.extend(["--conf", '"spark.yarn.am.extraJavaOptions=-Dhdp.version='+self.test_env.hdp_version+'"'])
         cmd_line.extend(["--conf", 'spark.test.home='+spark_home])

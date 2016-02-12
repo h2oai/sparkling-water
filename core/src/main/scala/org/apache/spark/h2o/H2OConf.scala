@@ -62,6 +62,8 @@ trait H2OConf {
   def loginConf     = sparkConf.getOption(PROP_LOGIN_CONF._1)
   def userName      = sparkConf.getOption(PROP_USER_NAME._1)
 
+  def subseqTries  = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
+
 
   /**
    * Produce arguments for H2O node based on this config.
@@ -181,6 +183,8 @@ object H2OConf {
   val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", null.asInstanceOf[String])
   /** Override user name for cluster. */
   val PROP_USER_NAME = ("spark.ext.h2o.user.name", null.asInstanceOf[String])
+  /** Subsequent successful tries to figure out size of Spark cluster which are producing same number of nodes. */
+  val PROP_SUBSEQ_TRIES = ("spark.ext.h2o.subseq.tries", 5)
 
   private[spark] def defaultLogDir: String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs"

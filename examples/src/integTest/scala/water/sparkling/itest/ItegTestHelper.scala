@@ -4,6 +4,7 @@ import org.apache.spark.repl.h2o.H2OInterpreter
 import org.scalatest.{BeforeAndAfterEach, Suite, Tag}
 
 import scala.collection.mutable
+import scala.util.Random
 
 /**
  * Integration test support to be run on top of Spark.
@@ -25,11 +26,11 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
       "--class", className,
       "--jars", env.assemblyJar,
       "--verbose",
-      "--master", env.sparkMaster)++
+      "--master", env.sparkMaster) ++
       env.sparkConf.get("spark.driver.memory").map(m => Seq("--driver-memory", m)).getOrElse(Nil) ++
       // Disable GA collection by default
       Seq("--conf", "spark.ext.h2o.disable.ga=true") ++
-      Seq("--conf", s"spark.ext.h2o.cloud.name=sparkling-water-${className.replace('.','-')}") ++
+      Seq("--conf", s"spark.ext.h2o.cloud.name=sparkling-water-${className.replace('.','-')}-${Random.nextInt()}") ++
       Seq("--conf", s"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", s"spark.yarn.am.extraJavaOptions=-Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", s"spark.test.home=$sparkHome") ++

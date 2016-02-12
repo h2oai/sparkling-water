@@ -183,12 +183,6 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   }
 
-  /**
-    *Specifies maximum number of iterations where the number of executors remained the same
-    * The spreadRDD function is stopped once the variable numTriesSame reached this number
-    */
-  private final val SUBSEQUENT_NUM_OF_TRIES = 3
-
   /** Initialize Sparkling H2O and start H2O cloud. */
   def start(): H2OContext = {
     import H2OConf._
@@ -277,7 +271,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   private
   def createSpreadRDD(nretries: Int,
                       mfactor: Int,
-                      nworkers: Int, numTriesSame: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
+                      nworkers: Int,  // Number of request workers
+                      numTriesSame: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
     logDebug(s"  Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, nworkers=${nworkers}")
     // Non-positive value of nworkers means automatic detection of number of workers
     val nSparkExecBefore = numOfSparkExecutors
@@ -313,7 +308,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       // Repeat if we detect change in number of executors reported by storage level
       logInfo(s"Detected ${nSparkExecBefore} before, and ${nSparkExecAfter} spark executors after! Retrying again...")
       createSpreadRDD(nretries-1, mfactor, nworkers, 0)
-    } else if ((nworkers>0 && sparkExecutors == nworkers || nworkers<=0) && sparkExecutors == nSparkExecAfter || numTriesSame==SUBSEQUENT_NUM_OF_TRIES) {
+    } else if (((nworkers > 0 && sparkExecutors == nworkers || nworkers<=0) && sparkExecutors == nSparkExecAfter) && numTriesSame == subseqTries) {
       // Return result only if we are sure that number of detected executors seems ok or if the number of executors didn't change in the last
       // SUBSEQUENT_NUM_OF_TRIES iterations
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers!")
@@ -777,7 +772,7 @@ object H2OContext extends Logging {
     val fr = new water.fvec.Frame(Key.make(keyName))
     water.fvec.FrameUtils.preparePartialFrame(fr, names)
     // Save it directly to DKV
-    fr.update(null)
+    fr.update()
   }
   private
   def finalizeFrame[T](keyName: String,

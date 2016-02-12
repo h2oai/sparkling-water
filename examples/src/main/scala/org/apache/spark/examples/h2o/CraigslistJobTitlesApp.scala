@@ -25,7 +25,6 @@ import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, mllib}
-import water.Key
 import water.app.{GBMSupport, ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
 
 /**

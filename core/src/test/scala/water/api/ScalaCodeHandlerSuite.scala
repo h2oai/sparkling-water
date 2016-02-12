@@ -169,13 +169,11 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
 
     val req1 = new ScalaCodeV3
     req1.session_id = reqSession.session_id
-    req1.code = "val rdd = sc.parallelize(1 to 100).map(v=>v+10);rdd.cache"
+    req1.code = "val rdd = sc.parallelize(1 to 100, 8).map(v=>v+10);rdd.cache"
     val result1 = scalaCodeHandler.interpret(3,req1)
     assert(result1.output.equals(""),"Printed output should be empty")
     assert(result1.status.equals("Success"),"Status should be Success")
-    assert(result1.response
-             .equals("rdd: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[5] at map at <console>:28\n" +
-                     "res0: rdd.type = MapPartitionsRDD[5] at map at <console>:28\n"),
+    assert(result1.response.contains("rdd: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD"),
            "Response should not be empty")
 
     val req2 = new ScalaCodeV3

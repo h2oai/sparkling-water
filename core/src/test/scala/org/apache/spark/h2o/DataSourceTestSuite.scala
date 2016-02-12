@@ -29,7 +29,7 @@ import water.DKV
   * Test using H2O Frame as Spark SQL data source
   */
 @RunWith(classOf[JUnitRunner])
-class DataSourceTestSuite extends FunSuite with SharedSparkTestContext{
+class DataSourceTestSuite extends FunSuite with SharedSparkTestContext {
   @transient implicit var sqlContext: SQLContext = _
 
   override def beforeAll(): Unit = {
@@ -40,7 +40,7 @@ class DataSourceTestSuite extends FunSuite with SharedSparkTestContext{
   val swassembly = sys.props.getOrElse("sparkling.test.assembly",
     fail("The variable 'sparkling.test.assembly' is not set! It should point to assembly jar file."))
 
-  override def createSparkContext: SparkContext = new SparkContext("local-cluster[3,2,1024]", "test-data-sources",
+  override def createSparkContext: SparkContext = new SparkContext("local-cluster[3,2,2048]", "test-data-sources",
     conf = defaultSparkConf.setJars(swassembly :: Nil))
 
 

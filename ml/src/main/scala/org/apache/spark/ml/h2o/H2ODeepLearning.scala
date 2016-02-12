@@ -17,7 +17,8 @@
 
 package org.apache.spark.ml.h2o
 
-import hex.deeplearning.{DeepLearning, DeepLearningModel, DeepLearningParameters}
+import hex.deeplearning.{DeepLearning, DeepLearningModel}
+import DeepLearningModel.DeepLearningParameters
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.param.{ParamMap, Param, Params}

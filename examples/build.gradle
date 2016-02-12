@@ -56,24 +56,24 @@ integTest {
   switch (testEnv) {
     case "yarn":
       systemProperty "sparkling.test.environment", "${testEnv}"
-      systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}"
-      systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}"
+      systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}/nodes"
+      systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}/client"
 
       include "water/sparkling/itest/yarn/**"
       break
 
     case "standalone":
       systemProperty "sparkling.test.environment", "${testEnv}"
-      systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}"
-      systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}"
+      systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}/nodes"
+      systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}/client"
 
       include "water/sparkling/itest/standalone/**"
       break
 
     case "local":
       systemProperty "sparkling.test.environment", "${testEnv}"
-      systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}")
-      systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}")
+      systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/nodes")
+      systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client")
 
       include "water/sparkling/itest/local/**"
       break
@@ -86,7 +86,7 @@ integTest {
   // Working dir will be root project
   workingDir = rootDir
   // Increase test runner memory
-  maxHeapSize = "5g"
+  maxHeapSize = "4g"
 
   // Show standard out and standard error of the test JVM(s) on the console
   // DEBUG testLogging.showStandardStreams = true
@@ -97,8 +97,8 @@ scriptsTest {
   systemProperty "spark.testing",   "true"
   systemProperty "spark.test.home", "${sparkHome}"
   systemProperty "sparkling.test.log.dir", new File(project.getBuildDir(), "h2ologs-test")
-  systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-stest")
-  systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-stest")
+  systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-stest/nodes")
+  systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-stest/client")
 
   // Set sparkling water assembly jar location
   systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
@@ -108,7 +108,7 @@ scriptsTest {
   forkEvery = 1
   jvmArgs '-XX:MaxPermSize=384m'
   // Increase test runner memory
-  maxHeapSize = "5g"
+  maxHeapSize = "4g"
   // Working dir will be root project
   workingDir = rootDir
 }
