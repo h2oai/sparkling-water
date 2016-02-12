@@ -21,5 +21,5 @@ banner
 (
  cd $TOPDIR
  # If extra java properties are defined use them and append our property
- $SPARK_HOME/bin/spark-shell --jars $TOPDIR/assembly/build/libs/$FAT_JAR --driver-memory $DRIVER_MEMORY --conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS -XX:MaxPermSize=384m" "$ARGS"
+ $SPARK_HOME/bin/spark-shell --jars $TOPDIR/assembly/build/libs/$FAT_JAR --driver-memory $DRIVER_MEMORY --conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS -XX:MaxPermSize=384m" "$0"
 )

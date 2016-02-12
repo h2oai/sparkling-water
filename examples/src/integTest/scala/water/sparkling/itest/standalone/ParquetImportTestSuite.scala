@@ -56,7 +56,7 @@ object ParquetImportTest {
 
     // Run Deep Learning on H2O Data Frame
     import hex.deeplearning.DeepLearning
-    import hex.deeplearning.DeepLearningParameters
+    import hex.deeplearning.DeepLearningModel.DeepLearningParameters
     val dlParams = new DeepLearningParameters()
     dlParams._epochs = 10
     dlParams._train = ORDFlights

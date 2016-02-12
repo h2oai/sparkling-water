@@ -16,7 +16,7 @@
 val DATAFILE="examples/smalldata/smsData.txt"
 
 import hex.deeplearning.{DeepLearningModel, DeepLearning}
-import hex.deeplearning.DeepLearningParameters
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.mllib
@@ -74,7 +74,6 @@ def buildDLModel(train: Frame, valid: Frame,
   import h2oContext._
   // Build a model
   val dlParams = new DeepLearningParameters()
-  dlParams._model_id = Key.make("dlModel.hex")
   dlParams._train = train
   dlParams._valid = valid
   dlParams._response_column = 'target
@@ -83,7 +82,7 @@ def buildDLModel(train: Frame, valid: Frame,
   dlParams._hidden = hidden
 
   // Create a job
-  val dl = new DeepLearning(dlParams)
+  val dl = new DeepLearning(dlParams, Key.make("dlModel.hex"))
   val dlModel = dl.trainModel.get
 
   // Compute metrics on both datasets
@@ -136,8 +135,8 @@ val dlModel = buildDLModel(train, valid)
 // Collect model metrics and evaluate model quality
 val trainMetrics = ModelMetricsSupport.binomialMM(dlModel, train)
 val validMetrics = ModelMetricsSupport.binomialMM(dlModel, valid)
-println(trainMetrics.auc._auc)
-println(validMetrics.auc._auc)
+println(trainMetrics.auc)
+println(validMetrics.auc)
 
 // Spam detector
 def isSpam(msg: String,

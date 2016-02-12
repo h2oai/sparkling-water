@@ -37,17 +37,9 @@ object ChicagoCrimeTest extends SparkContextSupport {
     try {
       test(args)
     } catch {
-<<<<<<< HEAD
-      case t:Throwable => {
-||||||| parent of 57b8bdb... [SW-77] pySparkling integration tests
-      case t:Throwable => {
-        System.err.println(t.toString)
-        System.err.println(t.getStackTrace.toString)
-=======
       case t: Throwable => {
         System.err.println(t.toString)
         System.err.println(t.getStackTrace.toString)
->>>>>>> 57b8bdb... [SW-77] pySparkling integration tests
         water.H2O.exit(-1)
       }
     }

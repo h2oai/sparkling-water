@@ -16,7 +16,7 @@
 #
 
 """
-Unit tests for PySparkling; 
+Unit tests for PySparkling;
 """
 
 import os
@@ -32,7 +32,7 @@ class ReusedPySparklingTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        conf = SparkConf().setAppName("test").setMaster("local-cluster[3,1,1024]")
+        conf = SparkConf().setAppName("puunit-test").setMaster("local-cluster[3,1,2048]").set("spark.ext.h2o.disable.ga","true").set("spark.driver.memory", "2g").set("spark.executor.memory", "2g").set("spark.ext.h2o.client.log.level", "DEBUG")
         cls._sc = SparkContext(conf=conf)
         cls._hc = H2OContext(cls._sc)
         cls._hc.start()

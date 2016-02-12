@@ -41,7 +41,7 @@ def createWeatherTable(datafile: String): H2OFrame = {
   val table = loadData(datafile)
   // Remove first column since we do not need it
   table.remove(0).remove()
-  table.update(null)
+  table.update()
   table
 }
 
@@ -53,7 +53,7 @@ def createCensusTable(datafile: String): H2OFrame = {
   // Rename columns: replace ' ' by '_'
   val colNames = table.names().map( n => n.trim.replace(' ', '_').replace('+','_'))
   table._names = colNames
-  table.update(null)
+  table.update()
   table
 }
 
@@ -71,7 +71,7 @@ def createCrimeTable(datafile: String, datePattern:String, dateTimeZone:String):
   // Remove Date column
   table.remove(2).remove()
   // Update in DKV
-  table.update(null)
+  table.update()
   table
 }
 
@@ -154,8 +154,9 @@ def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
 def DLModel(train: H2OFrame, test: H2OFrame, response: String)
            (implicit h2oContext: H2OContext) : DeepLearningModel = {
   import h2oContext._
+
   import hex.deeplearning.DeepLearning
-  import hex.deeplearning.DeepLearningParameters
+  import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 
   val dlParams = new DeepLearningParameters()
   dlParams._train = train
@@ -196,11 +197,11 @@ val (trainMetricsDL, testMetricsDL) = binomialMetrics(dlModel, train, test)
 println(
   s"""Model performance:
      |  GBM:
-     |    train AUC = ${trainMetricsGBM.auc._auc}
-      |    test  AUC = ${testMetricsGBM.auc._auc}
+     |    train AUC = ${trainMetricsGBM.auc}
+      |    test  AUC = ${testMetricsGBM.auc}
       |  DL:
-      |    train AUC = ${trainMetricsDL.auc._auc}
-      |    test  AUC = ${testMetricsDL.auc._auc}
+      |    train AUC = ${trainMetricsDL.auc}
+      |    test  AUC = ${testMetricsDL.auc}
       """.stripMargin)
 
 //

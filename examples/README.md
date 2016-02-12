@@ -146,7 +146,7 @@ You can configure Sparkling Water using the following variables:
   ```scala
   val bigDataFrame: H2OFrame = bigTable // implicit conversion from RDD to DataFrame
   for( i <- 0 to 2) bigDataFrame.replace(i, bigDataFrame.vec(i).toEnum)
-  bigDataFrame.update(null)
+  bigDataFrame.update()
   ```
 
 11. Run deep learning to produce a model estimating arrival delay:

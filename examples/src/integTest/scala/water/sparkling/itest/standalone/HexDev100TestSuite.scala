@@ -59,7 +59,7 @@ object HexDev100Test {
 
     // Run deep learning to produce model classifying delayed flights
     import hex.deeplearning.DeepLearning
-    import hex.deeplearning.DeepLearningParameters
+    import hex.deeplearning.DeepLearningModel.DeepLearningParameters
     val dlParams = new DeepLearningParameters()
     dlParams._epochs = 10
     dlParams._train = airlinesTable

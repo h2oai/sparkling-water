@@ -5,7 +5,6 @@ import java.io.File
 import hex.splitframe.ShuffleSplitFrame
 import hex.tree.gbm.GBMModel
 import hex.{ModelMetrics, ModelMetricsSupervised}
-import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o.{H2OFrame, H2OContext}
 import org.apache.spark.sql.{SQLContext, DataFrame}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -55,7 +54,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
     // Rename columns and remove all spaces in header
     val colNames = dataf.names().map( n => n.replace(' ', '_'))
     dataf._names = colNames
-    dataf.update(null)
+    dataf.update()
     gTimer.stop("H2O: parse")
 
     //
@@ -68,7 +67,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
     //
     dataf.add(new TimeSplit().doIt(startTimeF))
     // Do not forget to update frame in K/V store
-    dataf.update(null)
+    dataf.update()
     println(dataf)
     gTimer.stop("H2O: split start time column")
 

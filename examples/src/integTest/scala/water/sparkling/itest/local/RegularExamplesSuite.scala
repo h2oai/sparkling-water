@@ -22,9 +22,9 @@ class AirlinesWithWeatherDemoSuite extends FunSuite with IntegTestHelper {
   test("Launch AirlinesWithWeatherDemo", LocalTest) {
     launch("org.apache.spark.examples.h2o.AirlinesWithWeatherDemo",
       env {
-        sparkMaster("local-cluster[3,2,1024]")
-        conf("spark.executor.memory", "1g")
-        conf("spark.driver.memory", "1g")
+        sparkMaster("local-cluster[3,2,2048]")
+        conf("spark.executor.memory", "2g")
+        conf("spark.driver.memory", "2g")
       }
     )
   }
@@ -36,9 +36,9 @@ class AirlinesWithWeatherDemo2Suite extends FunSuite with IntegTestHelper {
   test("Launch AirlinesWithWeatherDemo2", LocalTest) {
     launch("org.apache.spark.examples.h2o.AirlinesWithWeatherDemo2",
       env {
-        sparkMaster("local-cluster[3,2,1024]")
-        conf("spark.executor.memory", "1g")
-        conf("spark.driver.memory", "1g")
+        sparkMaster("local-cluster[3,2,2048]")
+        conf("spark.executor.memory", "2g")
+        conf("spark.driver.memory", "2g")
       }
     )
   }
@@ -50,9 +50,9 @@ class DeepLearnigDemoSuite extends FunSuite with IntegTestHelper {
   test("Launch DeepLearnigDemo", LocalTest) {
     launch("org.apache.spark.examples.h2o.DeepLearningDemo",
       env {
-        sparkMaster("local-cluster[3,2,1024]")
-        conf("spark.executor.memory", "1g")
-        conf("spark.driver.memory", "1g")
+        sparkMaster("local-cluster[3,2,2048]")
+        conf("spark.executor.memory", "2g")
+        conf("spark.driver.memory", "2g")
       }
     )
   }
@@ -64,9 +64,9 @@ class DeepLearningDemoWithoutExtensionSuite extends FunSuite with IntegTestHelpe
   test("Launch DeepLearningDemoWithoutExtension", LocalTest) {
     launch("org.apache.spark.examples.h2o.DeepLearningDemoWithoutExtension",
       env {
-        sparkMaster("local-cluster[3,2,1024]")
-        conf("spark.executor.memory", "1g")
-        conf("spark.driver.memory", "1g")
+        sparkMaster("local-cluster[3,2,2048]")
+        conf("spark.executor.memory", "2g")
+        conf("spark.driver.memory", "2g")
       }
     )
   }
@@ -78,9 +78,9 @@ class ProstateDemoSuite extends FunSuite with IntegTestHelper {
   test("Launch ProstateDemo", LocalTest) {
     launch("org.apache.spark.examples.h2o.ProstateDemo",
       env {
-        sparkMaster("local-cluster[3,2,1024]")
-        conf("spark.executor.memory", "1g")
-        conf("spark.driver.memory", "1g")
+        sparkMaster("local-cluster[3,2,2048]")
+        conf("spark.executor.memory", "2g")
+        conf("spark.driver.memory", "2g")
       }
     )
   }
@@ -92,9 +92,9 @@ class HamOrSpamDemoSuite extends FunSuite with IntegTestHelper {
   test("Launch HamOrSpamDemo", LocalTest) {
     launch("org.apache.spark.examples.h2o.HamOrSpamDemo",
       env {
-        sparkMaster("local-cluster[3,2,1024]")
-        conf("spark.executor.memory", "1g")
-        conf("spark.driver.memory", "1g")
+        sparkMaster("local-cluster[3,2,2048]")
+        conf("spark.executor.memory", "2g")
+        conf("spark.driver.memory", "2g")
       }
     )
   }
@@ -106,9 +106,9 @@ class ChicagoCrimeAppSmallSuite extends FunSuite with IntegTestHelper {
   test("Launch Chicago Crime Demo", LocalTest) {
     launch("org.apache.spark.examples.h2o.ChicagoCrimeAppSmall",
       env {
-        sparkMaster("local-cluster[3,2,1024]")
-        conf("spark.executor.memory", "1g")
-        conf("spark.driver.memory", "1g")
+        sparkMaster("local-cluster[3,2,3072]")
+        conf("spark.executor.memory", "3g")
+        conf("spark.driver.memory", "3g")
       }
     )
   }
@@ -120,9 +120,9 @@ class CraigslistJobTitlesAppSuite extends FunSuite with IntegTestHelper {
   test("Launch Craigslist App Demo", LocalTest) {
     launch("org.apache.spark.examples.h2o.CraigslistJobTitlesApp",
       env {
-        sparkMaster("local-cluster[3,2,1024]")
-        conf("spark.executor.memory", "1g")
-        conf("spark.driver.memory", "1g")
+        sparkMaster("local-cluster[3,2,2048]")
+        conf("spark.executor.memory", "2g")
+        conf("spark.driver.memory", "2g")
       }
     )
   }

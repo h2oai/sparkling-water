@@ -72,8 +72,8 @@ test {
     // Pass list of jars required for testing
     systemProperty "sparkling.test.assembly", "${configurations.testAssembly.artifacts.file.join(',')}"
 
-    systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-test")
-    systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-test")
+    systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-test/nodes")
+    systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-test/client")
 
     // Run with assertions ON
     enableAssertions = true
@@ -82,7 +82,7 @@ test {
     forkEvery = 1
 
     // Increase heap size
-    maxHeapSize = "5g"
+    maxHeapSize = "4g"
 
     // Increase PermGen
     jvmArgs "-XX:MaxPermSize=256m"
