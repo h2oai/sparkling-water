@@ -3,8 +3,9 @@ package org.apache.spark.examples.h2o
 import java.io.File
 
 import hex.FrameSplitter
-import hex.deeplearning.{DeepLearning, DeepLearningParameters}
-import hex.deeplearning.DeepLearningParameters.Activation
+import hex.deeplearning.DeepLearning
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import DeepLearningParameters.Activation
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode

@@ -644,7 +644,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
                                  data: Array[Array[T]], h2oType: Byte, colDomains: Array[Array[String]] = null): H2OFrame = {
     var f: Frame = new Frame(Key.make(fname))
     FrameUtils.preparePartialFrame(f,colNames)
-    f.update(null)
+    f.update()
 
     for( i <- 0 to chunkLayout.length-1) { createNC(fname, data(i), i, chunkLayout(i).toInt, Array(h2oType)) }
 

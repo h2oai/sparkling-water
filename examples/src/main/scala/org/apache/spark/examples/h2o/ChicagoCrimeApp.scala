@@ -2,7 +2,8 @@ package org.apache.spark.examples.h2o
 
 import hex.Distribution.Family
 import hex.deeplearning.DeepLearningModel
-import hex.deeplearning.DeepLearningParameters.Activation
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import hex.tree.gbm.GBMModel
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkContext
@@ -90,11 +91,11 @@ class ChicagoCrimeApp( weatherFile: String,
     println(
       s"""Model performance:
           |  GBM:
-          |    train AUC = ${trainMetricsGBM.auc._auc}
-          |    test  AUC = ${testMetricsGBM.auc._auc}
+          |    train AUC = ${trainMetricsGBM.auc}
+          |    test  AUC = ${testMetricsGBM.auc}
           |  DL:
-          |    train AUC = ${trainMetricsDL.auc._auc}
-          |    test  AUC = ${testMetricsDL.auc._auc}
+          |    train AUC = ${trainMetricsDL.auc}
+          |    test  AUC = ${testMetricsDL.auc}
       """.stripMargin)
 
     (gbmModel, dlModel)
@@ -125,7 +126,7 @@ class ChicagoCrimeApp( weatherFile: String,
                activation: Activation = Activation.RectifierWithDropout, hidden:Array[Int] = Array(200,200))
              (implicit h2oContext: H2OContext) : DeepLearningModel = {
     import h2oContext._
-    import hex.deeplearning.{DeepLearning, DeepLearningParameters}
+    import hex.deeplearning.DeepLearning
 
     val dlParams = new DeepLearningParameters()
     dlParams._train = train
@@ -178,7 +179,7 @@ class ChicagoCrimeApp( weatherFile: String,
     val table = loadData(datafile)
     // Remove first column since we do not need it
     table.remove(0).remove()
-    table.update(null)
+    table.update()
     table
   }
 
@@ -187,7 +188,7 @@ class ChicagoCrimeApp( weatherFile: String,
     // Rename columns: replace ' ' by '_'
     val colNames = table.names().map( n => n.trim.replace(' ', '_').replace('+','_'))
     table._names = colNames
-    table.update(null)
+    table.update()
     table
   }
 
@@ -202,7 +203,7 @@ class ChicagoCrimeApp( weatherFile: String,
     // Remove Date column
     table.remove(2).remove()
     // Update in DKV
-    table.update(null)
+    table.update()
     table
   }
 
@@ -353,8 +354,7 @@ class RefineDateColumn(val datePattern: String,
     val result = new H2OFrame(
       doAll(Array[Byte](Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM), inputCol).outputFrame(
         Array[String]("Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"),
-        Array[Array[String]](null, null, null, null, null, null,
-          ChicagoCrimeApp.SEASONS, null)))
+        Array[Array[String]](null, null, null, null, null, null, ChicagoCrimeApp.SEASONS, null)))
     if (col.isCategorical) inputCol.remove()
     result
   }

@@ -76,7 +76,6 @@ object ProstateDemo extends SparkContextSupport {
     val job = new KMeans(params)
     // Launch a job and wait for the end.
     val kmm = job.trainModel.get
-    job.remove()
     // Print the JSON model
     println(new String(kmm._output.writeJSON(new AutoBuffer()).buf()))
     // Return a model

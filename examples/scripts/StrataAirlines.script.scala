@@ -59,20 +59,19 @@ val bigTable = sqlContext.sql(
           |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
 
 val trainFrame:H2OFrame = bigTable
-trainFrame.replace(19, trainFrame.vec("IsDepDelayed").toEnum)
-trainFrame.update(null)
+trainFrame.replace(19, trainFrame.vec("IsDepDelayed").toCategoricalVec)
+trainFrame.update()
 
 // Run deep learning to produce model estimating arrival delay
 import _root_.hex.deeplearning.DeepLearning
-import _root_.hex.deeplearning.DeepLearningParameters
+import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters
 val dlParams = new DeepLearningParameters()
 dlParams._epochs = 100
 dlParams._train = trainFrame
 dlParams._response_column = 'IsDepDelayed
 dlParams._variable_importances = true
-dlParams._model_id = Key.make("dlModel.hex")
 // Create a job
-val dl = new DeepLearning(dlParams)
+val dl = new DeepLearning(dlParams, Key.make("dlModel.hex"))
 val dlModel = dl.trainModel.get
 
 // Use model to estimate delay on training data
@@ -87,8 +86,7 @@ val glmParams = new GLMParameters(Family.binomial)
 glmParams._train = bigTable
 glmParams._response_column = 'IsDepDelayed
 glmParams._alpha = Array[Double](0.5)
-glmParams._model_id = Key.make("glmModel.hex")
-val glm = new GLM(glmParams)
+val glm = new GLM(glmParams, Key.make("glmModel.hex"))
 val glmModel = glm.trainModel().get()
 
 // Use model to estimate delay on training data

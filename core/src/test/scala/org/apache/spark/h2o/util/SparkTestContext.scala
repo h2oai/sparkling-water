@@ -43,7 +43,12 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
     hc = null
   }
 
-  def defaultSparkConf =  new SparkConf().set("spark.ext.h2o.disable.ga", "true")
+  def defaultSparkConf =  new SparkConf()
+      .set("spark.ext.h2o.disable.ga", "true")
+      .set("spark.driver.memory", "2G")
+      .set("spark.executor.memory", "2G")
+      .set("spark.app.id", self.getClass.getSimpleName)
+      .set("spark.ext.h2o.client.log.level", "DEBUG")
 }
 
 /** This fixture create a Spark context once and share it over whole run of test suite. */

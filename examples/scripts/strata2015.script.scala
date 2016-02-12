@@ -38,7 +38,7 @@ val bikesDF = new H2OFrame(dataFiles:_*)
 // Rename columns and remove all spaces in header
 val colNames = bikesDF.names().map( n => n.replace(' ', '_'))
 bikesDF._names = colNames
-bikesDF.update(null)
+bikesDF.update()
 
 //
 // Transform start time to days from Epoch
@@ -48,7 +48,7 @@ val startTimeF = bikesDF('starttime)
 // Add a new column
 bikesDF.add(new TimeSplit().doIt(startTimeF))
 // Do not forget to update frame in K/V store
-bikesDF.update(null)
+bikesDF.update()
 
 //
 // Transform H2OFrame into DataFrame

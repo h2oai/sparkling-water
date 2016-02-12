@@ -1,6 +1,7 @@
 package water.sparkling.itest.local
 
-import hex.deeplearning.{DeepLearning, DeepLearningParameters}
+import hex.deeplearning.DeepLearning
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.SparkContext
 import org.apache.spark.examples.h2o.Airlines
 import org.apache.spark.h2o.H2OContext
@@ -24,9 +25,9 @@ class PubDev928Suite extends FunSuite with IntegTestHelper {
   test("Verify scoring on 0-length chunks", LocalTest) {
     launch("water.sparkling.itest.local.PubDev928Test",
       env {
-        sparkMaster("local-cluster[3,2,1024]")
-        conf("spark.executor.memory", "1g")
-        conf("spark.driver.memory", "1g")
+        sparkMaster("local-cluster[3,2,2048]")
+        conf("spark.executor.memory", "2g")
+        conf("spark.driver.memory", "2g")
       }
     )
   }
@@ -62,7 +63,7 @@ object PubDev928Test extends SparkContextSupport {
       'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
       'Distance, 'IsDepDelayed)
     train.replace(train.numCols() - 1, train.lastVec().toCategoricalVec)
-    train.update(null)
+    train.update()
     println(s"Any vec chunk cnt: ${train.anyVec().nChunks()}")
     // Configure Deep Learning algorithm
     val dlParams = new DeepLearningParameters()

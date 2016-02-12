@@ -84,7 +84,9 @@ configure(subprojects) { project ->
     version = rootProject.version
 
     repositories {
-
+        // Should be enabled only in development mode
+        if (h2oBuild == '99999') mavenLocal()
+        
         mavenCentral()
 
         maven {
@@ -99,10 +101,7 @@ configure(subprojects) { project ->
         maven {
             url "http://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
         }
-        // Should be enabled only in development mode
-        if (h2oBuild == '99999') mavenLocal()
     }
-
 
     if (project in scalaProjects) {
       apply from: "$rootDir/gradle/scala.gradle"

@@ -194,7 +194,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
-    val (spreadRDD, spreadRDDNodes) = createSpreadRDD(numRddRetries, drddMulFactor, numH2OWorkers)
+    val (spreadRDD, spreadRDDNodes) = createSpreadRDD(numRddRetries, drddMulFactor, numH2OWorkers, 0)
 
     // Start H2O nodes
     // Get executors to execute H2O
@@ -263,7 +263,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   private
   def createSpreadRDD(nretries: Int,
                       mfactor: Int,
-                      nworkers: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
+                      nworkers: Int,  // Number of request workers
+                      numTriesSame: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
     logDebug(s"  Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, nworkers=${nworkers}")
     // Non-positive value of nworkers means automatic detection of number of workers
     val nSparkExecBefore = numOfSparkExecutors
@@ -299,14 +300,15 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     } else if (nSparkExecAfter != nSparkExecBefore) {
       // Repeat if we detect change in number of executors reported by storage level
       logInfo(s"Detected ${nSparkExecBefore} before, and ${nSparkExecAfter} spark executors after! Retrying again...")
-      createSpreadRDD(nretries-1, mfactor, nworkers)
-    } else if ((nworkers>0 && sparkExecutors == nworkers || nworkers<=0) && sparkExecutors == nSparkExecAfter) {
-      // Return result only if we are sure that number of detected executors seems ok
+      createSpreadRDD(nretries-1, mfactor, nworkers, 0)
+    } else if (((nworkers > 0 && sparkExecutors == nworkers || nworkers<=0) && sparkExecutors == nSparkExecAfter) && numTriesSame == subseqTries) {
+      // Return result only if we are sure that number of detected executors seems ok or if the number of executors didn't change in the last
+      // SUBSEQUENT_NUM_OF_TRIES iterations
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers!")
       (new InvokeOnNodesRDD(nodes, sparkContext), nodes)
     } else {
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers! Retrying again...")
-      createSpreadRDD(nretries-1, mfactor*2, nworkers)
+      createSpreadRDD(nretries-1, mfactor*2, nworkers, numTriesSame + 1)
     }
   }
 
@@ -713,7 +715,7 @@ object H2OContext extends Logging {
     val fr = new water.fvec.Frame(Key.make(keyName))
     water.fvec.FrameUtils.preparePartialFrame(fr, names)
     // Save it directly to DKV
-    fr.update(null)
+    fr.update()
   }
   private
   def finalizeFrame[T](keyName: String,

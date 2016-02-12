@@ -20,9 +20,9 @@ class PubDev457Suite extends FunSuite with IntegTestHelper {
   test("Launch simple ML pipeline using H2O", LocalTest) {
     launch("water.sparkling.itest.local.PubDev457Test",
       env {
-        sparkMaster("local-cluster[3,2,1024]")
-        conf("spark.executor.memory", "1g")
-        conf("spark.driver.memory", "1g")
+        sparkMaster("local-cluster[3,2,2048]")
+        conf("spark.executor.memory", "2g")
+        conf("spark.driver.memory", "2g")
       }
     )
   }

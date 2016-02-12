@@ -10,6 +10,47 @@ import org.scalatest.junit.JUnitRunner
 
 import scala.collection.mutable
 
+/*@RunWith(classOf[JUnitRunner])
+class BasicInterpreterTests extends ScriptsTestHelper {
+
+  override protected def beforeAll(): Unit = {
+    sparkConf = defaultConf
+      .setMaster("local-cluster[3,2,2048]")
+      .set("spark.driver.memory", "2G")
+      .set("spark.executor.memory", "2G")
+    super.beforeAll()
+  }
+  test("Code with exception") {
+    val result = launchCode("throw new Exception(\"Exception Message\")")
+    assert(result.codeExecutionStatus==CodeResults.Exception, "Problem during interpreting the script!")
+  }
+
+  test("Incomplete code") {
+    val result = launchCode("val num = ")
+    assert(result.codeExecutionStatus==CodeResults.Incomplete, "Code execution status should be Incomplete!")
+  }
+
+  test("Simple script which ends successfully") {
+    val inspections = new ScriptInspections()
+    inspections.addTermToCheck("num")
+
+    val result = launchCode("val num = 42", inspections)
+    assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
+    assert(result.realTermValues.get("num").get=="42","Value of term \"num\" should be 42")
+  }
+
+
+  test("Test successful call after exception occurred") {
+    val loop = new H2OInterpreter(sc, sessionId = 1)
+    val result = launchCodeWithIntp("throw new Exception(\"Exception Message\")",loop)
+    assert(result.codeExecutionStatus==CodeResults.Exception, "Problem during interpreting the script!")
+
+    val result2 = launchCodeWithIntp("val a = 42",loop)
+    assert(result2.codeExecutionStatus==CodeResults.Success, "Now it should end up as Success!")
+
+    loop.closeInterpreter()
+  }
+}*/
 
 /**
   * Test for the scripts in the example/scripts directory
