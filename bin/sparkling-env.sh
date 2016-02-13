@@ -6,6 +6,17 @@ function checkSparkHome() {
   fi
 }
 
+function getMasterArg() {
+    # Find master in arguments
+    while [[ $# > 0 ]] 
+    do
+      case "$1" in
+          --master*) shift; echo $1
+      esac
+      shift
+    done
+}
+
 if [ -z $TOPDIR ]; then
   echo "Caller has to setup TOPDIR variable!"
   exit -1
@@ -22,6 +33,9 @@ FAT_JAR="sparkling-water-assembly-$VERSION-all.jar"
 FAT_JAR_FILE="$TOPDIR/assembly/build/libs/$FAT_JAR"
 PY_EGG="pySparkling-${VERSION//-/_}-py2.7.egg"
 PY_EGG_FILE="$TOPDIR/py/dist/$PY_EGG"
+
+# Default master
+DEFAULT_MASTER="local[*]"
 
 # Setup loging and outputs
 tmpdir="${TMPDIR:-"/tmp/"}/$USER/"
