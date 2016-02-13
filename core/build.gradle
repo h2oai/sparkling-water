@@ -82,7 +82,7 @@ test {
     forkEvery = 1
 
     // Increase heap size
-    maxHeapSize = "4g"
+    maxHeapSize = "5g"
 
     // Increase PermGen
     jvmArgs "-XX:MaxPermSize=256m"
