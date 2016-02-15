@@ -5,6 +5,9 @@
  *
  * When running using spark shell or using scala rest API:
  *    - SQLContext is available as sqlContext
+ *    - if you want to use sqlContext implicitly, you have to redefine it like:
+ *      implicit val sqlContext = sqlContext,
+ *      but better is to use it like this: implicit val sqlContext = SQLContext.getOrCreate(sc)
  *    - SparkContext is available as sc
  */
 //

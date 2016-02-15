@@ -5,11 +5,13 @@
   export SPARK_HOME=/path/to/your/sparkhome
   export MASTER="local-cluster[3,2,4096]"
 
-  bin/sparkling-shell --conf spark.executor.memory=3G  -i examples/scripts/mlconf_2015_hamSpam.script.script.scala
+  bin/sparkling-shell --conf spark.executor.memory=3G  -i examples/scripts/hamOrSpam.script.scala
 
   * When running using spark shell or using scala rest API:
-  *    SQLContext is available as sqlContext
-  *    SparkContext is available as sc
+  *    - SQLContext is available as sqlContext
+  *      - if you want to use sqlContext implicitly, you have to redefine it like: implicit val sqlContext = sqlContext,
+  *        but better is to use it like this: implicit val sqlContext = SQLContext.getOrCreate(sc)
+  *    - SparkContext is available as sc
 */
 
 // Input data
