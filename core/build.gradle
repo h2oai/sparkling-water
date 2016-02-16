@@ -28,8 +28,9 @@ dependencies {
   compile "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
   // - MLLib component
   compile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
-  // - Spark REPL
-  compile "org.apache.spark:spark-repl_${scalaBinaryVersion}:${sparkVersion}"
+
+  // Sparkling Water REPL
+  compile(project(':sparkling-water-repl'))
 
   // Add joda optional convert library which is required in Scala environment
   compile "org.joda:joda-convert:1.7"

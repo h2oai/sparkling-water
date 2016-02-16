@@ -3,10 +3,12 @@
  *   export MASTER="local-cluster[3,2,4096]"
  *   bin/sparkling-shell -i examples/scripts/strata2015.script.scala
  *
- * When running using spark shell or using scala rest API:
- *    SQLContext is available as sqlContext
- *    SparkContext is available as sc
- */
+  * When running using spark shell or using scala rest API:
+  *    SQLContext is available as sqlContext
+  *     - if you want to use sqlContext implicitly, you have to redefine it like: implicit val sqlContext = sqlContext,
+  *      butter better is to use it like this: implicit val sqlContext = SQLContext.getOrCreate(sc)
+  *    SparkContext is available as sc
+  */
 // Common imports
 import org.apache.spark.SparkFiles
 import org.apache.spark.h2o._
@@ -23,7 +25,7 @@ implicit val sqlContext = SQLContext.getOrCreate(sc)
 import sqlContext.implicits._
 
 // Start H2O services
-implicit val h2oContext = new H2OContext(sc).start()
+implicit val h2oContext = H2OContext.getOrCreate(sc)
 import h2oContext._
 
 val location = "examples/bigdata/laptop/citibike-nyc/"

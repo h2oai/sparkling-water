@@ -92,17 +92,8 @@ class H2OContext(object):
         jvm = self._jvm
         sc = self._sc
         gw = self._gw
-        # Load class
-        jhc_klazz = jvm.java.lang.Thread.currentThread().getContextClassLoader().loadClass("org.apache.spark.h2o.H2OContext")
-        # Find ctor with right spark context
-        jctor_def = gw.new_array(jvm.Class, 1)
-        jctor_def[0] = sc._jsc.getClass()
-        jhc_ctor = jhc_klazz.getConstructor(jctor_def)
-        jctor_params = gw.new_array(jvm.Object, 1)
-        jctor_params[0] = sc._jsc
-        # Create instance of class
-        jhc = jhc_ctor.newInstance(jctor_params)
-        self._jhc = jhc
+
+        self._jhc = jvm.org.apache.spark.h2o.H2OContext.getOrCreate(sc._jsc)
         self._client_ip = None
         self._client_port = None
 
@@ -118,7 +109,6 @@ class H2OContext(object):
           init_h2o_client : initialize H2O Python client (default is True)
           strict_version_check : perform strict version check of H2O Python client against H2O Rest API
         """
-        self._jhc.start()
         self._client_ip = self._jhc.h2oLocalClientIp()
         self._client_port = self._jhc.h2oLocalClientPort()
 

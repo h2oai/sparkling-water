@@ -17,23 +17,19 @@
 package water.api
 
 import java.io.File
-import java.util
 
-import com.google.gson.{JsonObject, JsonParser}
+import com.google.gson.JsonParser
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.util.{SparkTestContext, SharedSparkTestContext}
+import org.apache.spark.h2o.util.SparkTestContext
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.types.{StructField, DataType, Metadata, StructType}
+import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.DKV
 import water.api.DataFrames._
-import water.api.RDDs.{RDDsV3, RDDsHandler}
 import water.fvec.{Frame, H2OFrame}
-
-import scala.util.parsing.json.{JSONObject, JSON}
 
 /**
  * Test suite for dataframes end-points
@@ -41,17 +37,17 @@ import scala.util.parsing.json.{JSONObject, JSON}
 @RunWith(classOf[JUnitRunner])
 class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
   sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-  hc = new H2OContext(sc).start()
+  hc = H2OContext.getOrCreate(sc)
   // Shared h2oContext
   val h2oContext = hc
   // Shared sqlContext
-  implicit val sqlContext = new SQLContext(sc)
+  implicit val sqlContext = SQLContext.getOrCreate(sc)
 
   test("DataFrameHandler.list() method") {
     import sqlContext.implicits._
 
     val rdd = sc.parallelize(1 to 10)
-    val rid = "df_"+rdd.id
+    val rid = "df_" + rdd.id
 
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
@@ -60,15 +56,20 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
 
     val req = new DataFramesV3
     val result = dataFramesHandler.list(3, req)
-    assert (result.dataFrames.length == 1, "Number of created and persisted DataFramess should be 1")
-    assert (result.dataFrames(0).dataframe_id == rid, "IDs should match")
+    assert (result.dataframes.length == 1, "Number of created and persisted DataFramess should be 1")
+    assert (result.dataframes(0).dataframe_id == rid, "IDs should match")
 
-    val schema = parseSchema(result.dataFrames(0).schema)
-    assert (schema.length == df.schema.length, "Number of fields in schemas should be the same")
-    assert (schema.fields(0).name.equals(df.schema.fields(0).name),"Name of the first field in StructType should be the same")
-    assert (schema.fields(0).nullable == df.schema.fields(0).nullable, "Nullable attribute of the first field in StructType should be the same")
-    assert (schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName), "DataType attribute of the first field in StructType should be the same")
-    assert (schema.fields(0).metadata == Metadata.empty, "Metadata should be empty")
+    val schema = parseSchema(result.dataframes(0).schema)
+    assert (schema.length == df.schema.length,
+            "Number of fields in schemas should be the same")
+    assert (schema.fields(0).name.equals(df.schema.fields(0).name),
+            "Name of the first field in StructType should be the same")
+    assert (schema.fields(0).nullable == df.schema.fields(0).nullable,
+            "Nullable attribute of the first field in StructType should be the same")
+    assert (schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName),
+            "DataType attribute of the first field in StructType should be the same")
+    assert (schema.fields(0).metadata == Metadata.empty,
+            "Metadata should be empty")
   }
 
   test("DataFrameHandler.getDataFrame() method where DataFrame has non empty metadata") {
@@ -88,11 +89,16 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
     assert (result.dataframe.dataframe_id == name, "IDs should match")
     assert (result.msg.equals("OK"),"Status should be OK")
     val schema = parseSchema(result.dataframe.schema)
-    assert (schema.length == df.schema.length, "Number of fields in schemas should be the same")
-    assert (schema.fields(0).name.equals(df.schema.fields(0).name),"Name of the first field in StructType should be the same")
-    assert (schema.fields(0).nullable == df.schema.fields(0).nullable, "Nullable attribute of the first field in StructType should be the same")
-    assert (schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName), "DataType attribute of the first field in StructType should be the same")
-    assert (schema.fields(0).metadata.getDoubleArray("percentiles").sameElements(percentiles), "Metadata should match, comparing percentiles")
+    assert (schema.length == df.schema.length,
+            "Number of fields in schemas should be the same")
+    assert (schema.fields(0).name.equals(df.schema.fields(0).name),
+            "Name of the first field in StructType should be the same")
+    assert (schema.fields(0).nullable == df.schema.fields(0).nullable,
+            "Nullable attribute of the first field in StructType should be the same")
+    assert (schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName),
+            "DataType attribute of the first field in StructType should be the same")
+    assert (schema.fields(0).metadata.getDoubleArray("percentiles").sameElements(percentiles),
+            "Metadata should match, comparing percentiles")
   }
 
   test("DataFramesHandler.toH2OFrame() method"){

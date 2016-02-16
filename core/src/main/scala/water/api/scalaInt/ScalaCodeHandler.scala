@@ -17,8 +17,7 @@
 package water.api.scalaInt
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.H2OContext
-import org.apache.spark.repl.{ClassLoaderHelper, H2OILoop}
+import org.apache.spark.repl.h2o.H2OInterpreter
 import water.Iced
 import water.api.Handler
 
@@ -28,16 +27,14 @@ import scala.compat.Platform
 /**
  * ScalaCode Handler
  */
-class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
-
-  val sharedClHelper = new ClassLoaderHelper(sc)
+class ScalaCodeHandler(val sc: SparkContext) extends Handler {
 
   val intrPoolSize = 1
   // 1 only for development purposes
-  val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OILoop]
+  val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
   val timeout = 300000
   // 5 minutes in milliseconds
-  var mapIntr = new TrieMap[Int, (H2OILoop, Long)]
+  var mapIntr = new TrieMap[Int, (H2OInterpreter, Long)]
   var lastIdUsed = 0
   initializeHandler()
 
@@ -51,22 +48,22 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
       val intp = mapIntr(s.session_id)._1
       s.status = intp.runCode(s.code).toString
       s.response = intp.interpreterResponse
-      s.output = intp.printedOutput
+      s.output = intp.consoleOutput
     }
     s
   }
 
   def initSession(version: Int, s: ScalaSessionIdV3): ScalaSessionIdV3 = {
     val intp = fetchInterpreter()
-    s.session_id = intp.sessionID
+    s.session_id = intp.sessionId
     s
   }
 
-  def fetchInterpreter(): H2OILoop = {
+  def fetchInterpreter(): H2OInterpreter = {
     this.synchronized {
                         if (!freeInterpreters.isEmpty) {
                           val intp = freeInterpreters.poll()
-                          mapIntr.put(intp.sessionID, (intp, Platform.currentTime))
+                          mapIntr.put(intp.sessionId, (intp, Platform.currentTime))
                           new Thread(new Runnable {
                             def run(): Unit = {
                               createIntpInPool()
@@ -76,8 +73,8 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
                         } else {
                           // pool is empty at the moment and is being filled, return new interpreter without using the pool
                           val id = createID()
-                          val intp = ScalaCodeHandler.initializeInterpreter(sharedClHelper,sc, h2oContext, id)
-                          mapIntr.put(intp.sessionID, (intp, Platform.currentTime))
+                          val intp = new H2OInterpreter(sc, id)
+                          mapIntr.put(intp.sessionId, (intp, Platform.currentTime))
                           intp
                         }
                       }
@@ -104,7 +101,7 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
     val checkThread = new Thread(new Runnable {
       def run() {
         while (true) {
-          mapIntr.foreach { case (id: Int, (intr: H2OILoop, lastChecked: Long)) =>
+          mapIntr.foreach { case (id: Int, (intr: H2OInterpreter, lastChecked: Long)) =>
             if (Platform.currentTime - lastChecked >= timeout) {
               mapIntr(id)._1.closeInterpreter()
               mapIntr -= id
@@ -123,9 +120,9 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
     }
   }
 
-  def createIntpInPool(): H2OILoop = {
+  def createIntpInPool(): H2OInterpreter = {
     val id = createID()
-    val intp = ScalaCodeHandler.initializeInterpreter(sharedClHelper, sc, h2oContext, id)
+    val intp = new H2OInterpreter(sc, id)
     freeInterpreters.add(intp)
     intp
   }
@@ -137,15 +134,6 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
                       }
   }
 }
-
-object ScalaCodeHandler {
-
-  def initializeInterpreter(sharedClHelper: ClassLoaderHelper,sparkContext: SparkContext, h2oContext: H2OContext,
-                            sessionID: Int): H2OILoop = {
-    new H2OILoop(sharedClHelper,sparkContext, h2oContext, sessionID)
-  }
-}
-
 
 private[api] class IcedCode(val session_id: Int, val code: String) extends Iced[IcedCode] {
 

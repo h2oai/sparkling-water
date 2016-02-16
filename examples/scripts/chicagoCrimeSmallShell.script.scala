@@ -4,8 +4,8 @@
  *   bin/sparkling-shell -i examples/scripts/chicagoCrimeSmallShell.script.scala --conf spark.executor.memory=3G
  *
  * When running using spark shell or using scala rest API:
- *    SQLContext is available as sqlContext
- *    SparkContext is available as sc
+ *    - SQLContext is available as sqlContext
+ *    - SparkContext is available as sc
  */
 //
 // Prepare environment
@@ -25,7 +25,7 @@ import org.apache.spark.sql.types._
 implicit val sqlContext = SQLContext.getOrCreate(sc)
 
 // Start H2O services
-implicit val h2oContext = new H2OContext(sc).start()
+implicit val h2oContext = H2OContext.getOrCreate(sc)
 import h2oContext._
 
 

@@ -33,7 +33,7 @@ class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
     val value = DKV.get(s.h2oframe_id)
     if(value == null){
       s.dataframe_id=""
-      s.msg = "H2OFrame with id \""+s.h2oframe_id+"\" does not exist, can not proceed with the transformation"
+      s.msg = s"H2OFrame with id '${s.h2oframe_id}' does not exist, can not proceed with the transformation"
     }else{
       val h2oFrame: H2OFrame = value.className() match {
         case name if name.equals(classOf[Frame].getName) => {

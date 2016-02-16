@@ -90,7 +90,7 @@ You can configure Sparkling Water using the following variables:
 3. Create an H<sub>2</sub>O cloud using all 3 Spark workers:
   ```scala
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   import h2oContext._
   ```
 
@@ -238,7 +238,7 @@ The initialization of H2O remains the same, with the exception of importing data
 import org.apache.spark.h2o._
 import org.apache.spark.examples.h2o._
 // Create H2O context
-val h2oContext = new H2OContext(sc).start()
+val h2oContext = H2OContext.getOrCreate(sc)
 // Export H2O context to the 
 import h2oContext._
 

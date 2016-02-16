@@ -17,12 +17,15 @@
 
 package org.apache.spark.h2o
 
+import java.util.concurrent.atomic.AtomicReference
+
 import org.apache.spark._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.h2o.H2OTypeUtils._
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
+import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import water._
@@ -191,11 +194,17 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
     // Check Spark environment and reconfigure some values
     H2OContext.checkAndUpdateSparkEnv(sparkConf)
-
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
+
     val (spreadRDD, spreadRDDNodes) = createSpreadRDD(numRddRetries, drddMulFactor, numH2OWorkers, 0)
 
+    //attach listener which shutdown H2O when we bump into executor we didn't discover during the spreadRDD phase
+    sparkContext.addSparkListener(new SparkListener(){
+      override def onExecutorAdded(executorAdded: SparkListenerExecutorAdded): Unit = {
+        throw new IllegalArgumentException("Executor without H2O instance discovered, killing the cloud!")
+      }
+    })
     // Start H2O nodes
     // Get executors to execute H2O
     val allExecutorIds = spreadRDDNodes.map(_._1).distinct
@@ -239,7 +248,6 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     // Register web API for client
     H2OContext.registerClientWebAPI(sparkContext, this)
     H2O.finalizeRegistration()
-
     // Fill information about H2O client
     localClientIp = H2O.SELF_ADDRESS.getHostAddress
     localClientPort = H2O.API_PORT
@@ -275,7 +283,6 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
     // Collect information about executors in Spark cluster
     val nodes = collectNodesInfo(spreadRDD)
-
     // Verify that all executors participate in execution
     val nSparkExecAfter = numOfSparkExecutors
     val sparkExecutors = nodes.map(_._1).distinct.length
@@ -293,7 +300,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
             | If you are running regular application, please, specify number of Spark workers
             | via ${H2OConf.PROP_CLUSTER_SIZE._1} Spark configuration property.
             | If you are running from shell,
-            | you can try: val h2oContext = new H2OContext().start(<number of Spark workers>)
+            | you can try: val h2oContext = H2OContext.getOrCreate(sc,<number of Spark workers>)
             |
             |""".stripMargin
       )
@@ -308,6 +315,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       (new InvokeOnNodesRDD(nodes, sparkContext), nodes)
     } else {
       logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers! Retrying again...")
+
       createSpreadRDD(nretries-1, mfactor*2, nworkers, numTriesSame + 1)
     }
   }
@@ -364,18 +372,63 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       |  Open H2O Flow in browser: http://${h2oLocalClient} (CMD + click in Mac OSX)
     """.stripMargin
   }
+
+  H2OContext.setInstantiatedContext(this)
 }
 
 object H2OContext extends Logging {
 
+  private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {
+    synchronized {
+      val ctx = instantiatedContext.get()
+      if (ctx == null) {
+        instantiatedContext.set(h2oContext)
+      }
+    }
+  }
+
+  @transient private val instantiatedContext = new AtomicReference[H2OContext]()
+
+  private def getOrCreate(sc: SparkContext, h2oWorkers: Option[Int]): H2OContext = synchronized {
+    if (instantiatedContext.get() == null) {
+      instantiatedContext.set(new H2OContext(sc))
+      if(h2oWorkers.isEmpty){
+        instantiatedContext.get().start()
+      }else{
+        instantiatedContext.get().start(h2oWorkers.get)
+      }
+    }
+    instantiatedContext.get()
+  }
+
   /**
-   * Create a new or return existing H2OContext.
-   *
-   * @param sparkContext
-   * @return
-   */
-  def getOrCreate(sparkContext: SparkContext): H2OContext = {
-    new H2OContext(sparkContext)
+    * Get existing H2O Context or initialize Sparkling H2O and start H2O cloud with specified number of workers
+    *
+    * @param sc Spark Context
+    * @return H2O Context
+    */
+  def getOrCreate(sc: SparkContext, h2oWorkers: Int): H2OContext = {
+    getOrCreate(sc, Some(h2oWorkers))
+  }
+
+  /**
+    * Get existing H2O Context or initialize Sparkling H2O and start H2O cloud with default number of workers
+    *
+    * @param sc Spark Context
+    * @return H2O Context
+    */
+  def getOrCreate(sc: SparkContext): H2OContext = {
+    getOrCreate(sc, None)
+  }
+
+  /** Supports call from java environments. */
+  def getOrCreate(sc: JavaSparkContext): H2OContext = {
+    getOrCreate(sc.sc, None)
+  }
+
+  /** Supports call from java environments. */
+  def getOrCreate(sc: JavaSparkContext, h2oWorkers: Int): H2OContext = {
+    getOrCreate(sc.sc,Some(h2oWorkers))
   }
 
   /** Transform SchemaRDD into H2O Frame */
@@ -625,10 +678,15 @@ object H2OContext extends Logging {
             case IntegerType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Int] else subRow.getInt(aidx))
             case LongType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Long] else subRow.getLong(aidx))
             case FloatType => chk.addNum(if (isAry) ary(aryIdx).asInstanceOf[Float] else subRow.getFloat(aidx))
-            case DoubleType => chk.addNum(if (isAry)
-              ary(aryIdx).asInstanceOf[Double]
-              else if (isVec) subRow.getAs[mllib.linalg.Vector](aidx)(idx - startOfSeq)
-              else subRow.getDouble(aidx))
+            case DoubleType => chk.addNum(if (isAry) {
+                ary(aryIdx).asInstanceOf[Double]
+              } else {
+                if (isVec) {
+                  subRow.getAs[mllib.linalg.Vector](aidx)(idx - startOfSeq)
+                } else {
+                  subRow.getDouble(aidx)
+                }
+              })
             case StringType => {
               val sv = if (isAry) ary(aryIdx).asInstanceOf[String] else subRow.getString(aidx)
               // Always produce string vectors
@@ -735,14 +793,8 @@ object H2OContext extends Logging {
       conf.set("spark.locality.wait", "30000")
     }
   }
-
   private[h2o] def registerClientWebAPI(sc: SparkContext, h2oContext: H2OContext): Unit = {
-    /** Need: SW-45
-    //this is here to override the SQLContext by the spark shell, this instance than can be obtained using SQLContext.getOrCreate(sc)
-    new SQLContext(sc)
-
-    //registerScalaIntEndp(sc, h2OContext)
-    */
+    registerScalaIntEndp(sc)
     registerDataFramesEndp(sc, h2oContext)
     registerH2OFramesEndp(sc, h2oContext)
     registerRDDsEndp(sc, h2oContext)
@@ -820,8 +872,8 @@ object H2OContext extends Logging {
 
   }
 
-  private def registerScalaIntEndp(sc: SparkContext, h2OContext: H2OContext) = {
-    val scalaCodeHandler = new ScalaCodeHandler(sc, h2OContext)
+  private def registerScalaIntEndp(sc: SparkContext) = {
+    val scalaCodeHandler = new ScalaCodeHandler(sc)
     def scalaCodeFactory = new HandlerFactory {
       override def create(aClass: Class[_ <: Handler]): Handler = scalaCodeHandler
     }

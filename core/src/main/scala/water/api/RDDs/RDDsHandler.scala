@@ -41,7 +41,7 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
   def getRDD(version: Int, s: RDDWithMsgV3): RDDWithMsgV3 = {
     val r = s.createAndFillImpl()
     if (sc.getPersistentRDDs.get(s.searched_rdd_id).isEmpty) {
-      s.msg = "RDD with id \""+s.searched_rdd_id+"\" does not exist"
+      s.msg = s"RDD with id '${s.searched_rdd_id}' does not exist"
     } else {
       r.rdd = IcedRDDInfo.fromRdd(sc.getPersistentRDDs.get(s.searched_rdd_id).get)
       s.fillFromImpl(r)
@@ -83,7 +83,7 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
   }
 }
 
-private[api] class IcedRDDInfo(val rdd_id: Int,
+private[api] class IcedRDDInfo(val id: Int,
                                val name: String,
                                val partitions: Int) extends Iced[IcedRDDInfo] {
 

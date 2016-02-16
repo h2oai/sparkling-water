@@ -22,7 +22,7 @@ SET MASTER=local-cluster[3,2,2048]
 call :banner
 
 cd %TOPDIR%
-%SPARK_HOME%/bin/spark-shell.cmd --jars %TOPDIR%/assembly/build/libs/%FAT_JAR% --driver-class-path %TOPDIR%/assembly/build/libs/%FAT_JAR% --driver-memory %DRIVER_MEMORY% --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" %*
+%SPARK_HOME%/bin/spark-shell.cmd --jars %TOPDIR%/assembly/build/libs/%FAT_JAR% --driver-memory %DRIVER_MEMORY% --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" %*
 
 exit /b %ERRORLEVEL%
 rem end of main script

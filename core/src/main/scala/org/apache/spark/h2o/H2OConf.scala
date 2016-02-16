@@ -152,7 +152,7 @@ object H2OConf {
   /** Limit for number of threads used by H2O, default -1 means unlimited */
   val PROP_NTHREADS = ("spark.ext.h2o.nthreads", -1)
   /** Disable GA tracking */
-  val PROP_DISABLE_GA = ("spark.ext.h2o.disable.ga", false)
+  val PROP_DISABLE_GA = ("spark.ext.h2o.disable.ga", true)
   /** Exact client port to access web UI.
     * The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`. */
   val PROP_CLIENT_WEB_PORT = ("spark.ext.h2o.client.web.port", -1)

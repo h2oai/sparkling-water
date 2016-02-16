@@ -5,6 +5,8 @@
  *
  * When running using spark shell or using scala rest API:
  *    SQLContext is available as sqlContext
+ *     - if you want to use sqlContext implicitly, you have to redefine it like: implicit val sqlContext = sqlContext,
+ *      butter better is to use it like this: implicit val sqlContext = SQLContext.getOrCreate(sc)
  *    SparkContext is available as sc
  *
  * Needs access to H2O internal HDFS storage or change paths below.
@@ -17,7 +19,7 @@ import org.apache.spark.sql.SQLContext
 // Create SQL support
 implicit val sqlContext = SQLContext.getOrCreate(sc)
 // Start H2O services
-implicit val h2oContext = new H2OContext(sc).start()
+implicit val h2oContext = H2OContext.getOrCreate(sc)
 
 val app = new ChicagoCrimeApp(
   weatherFile = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoAllWeather.csv",
