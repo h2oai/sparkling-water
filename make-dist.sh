@@ -26,7 +26,7 @@ assembly/build/libs/sparkling-water-assembly-$VERSION-all.jar
 examples/README.md
 examples/scripts/chicagoCrimeSmall.script.scala
 examples/scripts/chicagoCrimeSmallShell.script.scala
-examples/scripts/mlconf_2015_hamSpam.script.scala
+examples/scripts/hamOrSpam.script.scala
 examples/scripts/StrataAirlines.script.scala
 examples/scripts/craigslistJobTitles.script.scala
 examples/smalldata/allyears2k_headers.csv.gz

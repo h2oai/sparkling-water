@@ -14,13 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package hex
 
 import hex.Model.Output
 import water.util.ArrayUtils
 
 /**
- * Simple access method
+ * Helper class to access package-private methods of Model API.
  */
 object ModelUtils {
 

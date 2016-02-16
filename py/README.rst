@@ -16,12 +16,6 @@ This module depends on *requests* and *tabulate* modules, both of which are avai
 
 The Sparkling-Water Python Module
 =====================
-If you want to run a prebuild stable version - 
-
-	wget http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.5/10/sparkling-water-1.5.10.zip
-
-	unzip sparkling-water-1.5.10.zip
-
 To run a pySparkling interactive shell:
     
     export SPARK_HOME="/path/to/spark/installation"
@@ -99,9 +93,8 @@ What is PySparkling Water-
 
 	PySparkling Water is an integration of Python with Sparkling water. It allows user to start H2O services on a spark cluster from Python API.
 	
-	In the PySparkling Water driver programme, Spark context(sc), that uses Py4J to start the driver JVM and the JAVA spark Context, is used to create H2O context(hc), that in turn starts H2O cloud in the Spark ecosystem. Once the H2O cluster is up, H2O-Python package is used to interact with it and run H2O algorithms. All pure H2O calls are executed via H2O's rest api interface. 
+	In the PySparkling Water driver program, Spark context(sc), that uses Py4J to start the driver JVM and the JAVA spark Context, is used to create H2O context(hc), that in turn starts H2O cloud in the Spark ecosystem. Once the H2O cluster is up, H2O-Python package is used to interact with it and run H2O algorithms. All pure H2O calls are executed via H2O's rest api interface. Users can easily integrate their regular PySpark workflow with H2O algorithms using PySparkling Water.
 	
 	PySparkling Water programs can be launched as an application or in an interactive shell or notebook environment. 
 	
 
-   

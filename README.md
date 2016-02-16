@@ -93,7 +93,7 @@ bin/sparkling-shell
 And initialize H2OContext 
 ```scala
 import org.apache.spark.h2o._
-val hc = new H2OContext(sc).start()
+val hc = H2OContext.getOrCreate(sc)
 ```
 
 > H2OContext start H2O services on top of Spark cluster and provides primitives for transformations between H2O and Spark datastructures.
@@ -124,9 +124,26 @@ bin/run-example.sh
 For more details about the demo, please see the [README.md](examples/README.md) file in the [examples directory](examples/).
 
 ---
+
 <a name="MoreExamples"></a>
 #### Additional Examples
 You can find more examples in the [examples folder](examples/).
+
+## Running (Scala) Sparkling Water in IntelliJ IDEA
+
+*  In IDEA, install the Scala plugin for IDEA
+*  In a Terminal:
+
+```
+git clone https://github.com/h2oai/sparkling-water.git
+cd sparkling-water
+./gradlew idea
+open sparkling-water.ipr
+```
+
+*  In IDEA, open the file sparkling-water/core/src/main/scala/water/SparklingWaterDriver.scala
+*  [ Wait for IDEA indexing to complete so the Run and Debug choices are available ]
+*  In IDEA, Run or Debug SparklingWaterDriver (via right-click)
 
 ---
 <a name="PySparkling"></a>

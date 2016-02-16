@@ -5,9 +5,11 @@
  *
  * When running using spark shell or using scala rest API:
  *    SQLContext is available as sqlContext
+ *     - if you want to use sqlContext implicitly, you have to redefine it like: implicit val sqlContext = sqlContext,
+ *      butter better is to use it like this: implicit val sqlContext = SQLContext.getOrCreate(sc)
  *    SparkContext is available as sc
  */
-import _root_.hex.deeplearning.{DeepLearningModel}
+import _root_.hex.deeplearning.DeepLearningModel
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.{SparkFiles, mllib}
@@ -90,7 +92,7 @@ import sqlContext.implicits._
 
 // Start H2O services
 import org.apache.spark.h2o._
-implicit val h2oContext = new H2OContext(sc).start()
+implicit val h2oContext = H2OContext.getOrCreate(sc)
 import h2oContext._
 
 
@@ -101,6 +103,7 @@ val hamSpam = data.map( r => r(0))
 val message = data.map( r => r(1))
 // Tokenize message content
 val tokens = tokenize(message)
+
 
 // Build IDF model
 var (hashingTF, idfModel, tfidf) = buildIDFModel(tokens)
@@ -140,8 +143,8 @@ def isSpam(msg: String,
            hamThreshold: Double = 0.5):Boolean = {
   val msgRdd = sc.parallelize(Seq(msg))
   val msgVector: DataFrame = idfModel.transform(
-                              hashingTF.transform (
-                                tokenize (msgRdd))).map(v => SMS("?", v)).toDF
+    hashingTF.transform (
+      tokenize (msgRdd))).map(v => SMS("?", v)).toDF
   val msgTable: H2OFrame = h2oContext.asH2OFrame(msgVector)
   msgTable.remove(0) // remove first column
   val prediction = dlModel.score(msgTable)
@@ -151,4 +154,3 @@ def isSpam(msg: String,
 
 println(isSpam("Michal, h2oworld party tonight in MV?", dlModel, hashingTF, idfModel, h2oContext))
 println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", dlModel, hashingTF, idfModel, h2oContext))
-

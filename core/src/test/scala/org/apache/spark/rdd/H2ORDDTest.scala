@@ -84,7 +84,7 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
       val dom = vec.domain()
       val value = dom(vec.at8(row).asInstanceOf[Int]) // value stored at row-th
       // Using == since int should be mapped strictly to doubles
-      assert (row+1 == value.toInt, "The H2OFrame values should match row numbers")
+      assert (row + 1 == value.toInt, "The H2OFrame values should match row numbers")
     })
     // Clean up
     dataFrame.delete()

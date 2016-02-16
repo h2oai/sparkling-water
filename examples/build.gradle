@@ -2,7 +2,6 @@ description = "Sparkling Water Examples"
 
 apply from: "$rootDir/gradle/utils.gradle"
 apply from: "$rootDir/gradle/scriptsTest.gradle"
-
 idea {
     module {
         jdkName='inheried'
@@ -37,6 +36,7 @@ dependencies {
   // Put Spark Assembly on runtime path
   integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar' )
 }
+
 
 integTest {
   def testEnv = detectEnvironment()
@@ -101,8 +101,7 @@ scriptsTest {
   systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-stest/client")
 
   // Set sparkling water assembly jar location
-systemProperty "sparkling.fat.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
-
+  systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
   // Run with assertions ON
   enableAssertions = true
   // For a new JVM for each test class

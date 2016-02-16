@@ -39,6 +39,11 @@
   - [Integration Tests Example](#IntegExample)
 - [Troubleshooting and Log Locations](#Logging)
 - [Sparkling Shell Console Output](#log4j)
+- [H2O Frame as Spark's Data Source](#DataSource)
+  - [Usage in Python - pySparkling](#DataSourcePython)
+  - [Usage in Scala](#DataSourceScala)
+  - [Specifying Saving Mode](#SavingMode)
+  
 
 --- 
  
@@ -163,6 +168,12 @@ The Sparkling Water provides following primitives, which are the basic classes u
 If `SparkContext` is available, initialize and start H2O context: 
 ```scala
 val sc:SparkContext = ...
+val hc = H2OContext.getOrCreate(sc)
+```
+
+or:
+```scala
+val sc:SparkContext = ...
 val hc = new H2OContext(sc).start()
 ```
 
@@ -171,6 +182,8 @@ The call will:
  2. Launch H2O services on each detected executor
  3. Create a cloud for H2O services based on the list of executors
  4. Verify the H2O cloud status
+
+The former variant is preferred, because it initiates and starts H2O Context in one call and also can be used to obtain already existing H2OContext, but it does semantically the same as the latter variant.
 
 ---
 <a name="Config"></a>
@@ -230,13 +243,26 @@ The following configuration properties can be passed to Spark to configure Spark
 ### Starting H2O Services
 ```scala
 val sc:SparkContext = ...
+val hc = H2OContext.getOrCreate(sc)
+```
+
+or:
+```scala
+val sc:SparkContext = ...
 val hc = new H2OContext(sc).start()
 ```
 
-When the number of Spark nodes is known, it can be specified in `start` call:
+When the number of Spark nodes is known, it can be specified in `getOrCreate` call:
 ```scala
-val hc = new H2OContext(sc).start(3)
+val hc = H2OContext.getOrCreate(sc, numOfSparkNodes)
 ```
+
+or in `start` method of H2O Context:
+```scala
+val hc = new H2OContext(sc).start(numOfSparkNodes)
+```
+
+The former variant is preferred, because it initiates and starts H2O Context in one call and also can be used to obtain already existing H2OContext, but it does semantically the same as the latter variant.
 
 ---
 <a name="MemorySetup"></a>
@@ -472,7 +498,7 @@ You can find Sparkling Water self-contained application skeleton in [Droplet rep
 
 <a name="TestCases"></a>
 ## Testing Scenarios
- 1. Initialize H2O on top of Spark by running  `new H2OContext(sc).start()` and verifying that H2O was properly initialized on all Spark nodes. 
+ 1. Initialize H2O on top of Spark by running  `H2OContext.getOrCreate(sc)` and verifying that H2O was properly initialized on all Spark nodes.
  2. Load data with help from the H2O API from various data sources:
    * local disk
    * HDFS
@@ -501,7 +527,7 @@ Spark 1.4.0 or later is required.
   ```scala
   import org.apache.spark.h2o._
   val sc = new SparkContext(conf)
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   import h2oContext._
   ```
 2. Load data: 
@@ -510,7 +536,7 @@ Spark 1.4.0 or later is required.
       ```scala
       val sc = new SparkContext(conf)
       import org.apache.spark.h2o._
-      val h2oContext = new H2OContext(sc).start()
+      val h2oContext = H2OContext.getOrCreate(sc)
       import java.io.File
       val df: H2OFrame = new H2OFrame(new File("examples/smalldata/allyears2k_headers.csv.gz"))
       ```
@@ -521,7 +547,7 @@ Spark 1.4.0 or later is required.
    ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
   val uri = new java.net.URI(path)
   val airlinesHF = new H2OFrame(uri)
@@ -531,7 +557,7 @@ Spark 1.4.0 or later is required.
    ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
   val uri = new java.net.URI(path)
   val airlinesHF = new H2OFrame(uri)
@@ -542,7 +568,7 @@ Spark 1.4.0 or later is required.
   ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
   val hf: H2OFrame = h2oContext.asH2OFrame(rdd)
   ```
@@ -551,7 +577,7 @@ Spark 1.4.0 or later is required.
   ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   import org.apache.spark.sql._
   val sqlContext = new SQLContext(sc)
   import sqlContext.implicits._
@@ -563,7 +589,7 @@ Spark 1.4.0 or later is required.
   ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val rdd = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
   val hf: H2OFrame = h2oContext.asH2OFrame(rdd)
   val newRdd = h2oContext.asRDD[IntHolder](hf)
@@ -573,7 +599,7 @@ Spark 1.4.0 or later is required.
   ```scala
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   import org.apache.spark.sql._
   val sqlContext = new SQLContext(sc)
   import sqlContext.implicits._
@@ -587,7 +613,7 @@ Spark 1.4.0 or later is required.
   val sc = new SparkContext(conf)
   import org.apache.spark.h2o._
   import org.apache.spark.examples.h2o._
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val path = "examples/smalldata/prostate.csv"
   val prostateText = sc.textFile(path)
   val prostateRDD = prostateText.map(_.split(",")).map(row => ProstateParse(row))
@@ -608,7 +634,7 @@ Spark 1.4.0 or later is required.
   import org.apache.spark.h2o._
   import org.apache.spark.examples.h2o._
   import java.io.File
-  val h2oContext = new H2OContext(sc).start()
+  val h2oContext = H2OContext.getOrCreate(sc)
   val path = "examples/smalldata/prostate.csv"
   val prostateHF = new H2OFrame(new File(path))
   val prostateRDD = h2oContext.asRDD[Prostate](prostateHF)
@@ -675,3 +701,131 @@ to:
   ```
   
 ---
+
+<a name="DataSource"></a>
+## H2O Frame as Spark's Data Source
+ The way how H2O Frame can be used as Spark's Data Source differs a little bit in Python and Scala. 
+<a name="DataSourcePython"></a>
+### Usage in Python - pySparkling
+
+####  Reading from H2O Frame
+Let's suppose we have H2OFrame `frame`.
+
+There are two ways how dataframe can be loaded from H2OFrame in pySparkling: 
+
+```
+df = sqlContext.read.format("h2o").option("key",frame.frame_id).load()
+```
+
+or
+
+```
+df = sqlContext.read.format("h2o").load(frame.frame_id)
+```
+
+#### Saving to H2O Frame
+Let's suppose we have DataFrame `df`.
+
+There are two ways how dataframe can be saved as H2OFrame in pySparkling: 
+
+```
+df.write.format("h2o").option("key","new_key").save()
+```
+
+or
+
+```
+df.write.format("h2o").save("new_key")
+```
+
+Both variants save dataframe as H2OFrame with key "new_key". They won't succeed if the H2OFrame with the same key already exists.
+
+#### Loading & Saving Options
+If the key is specified as 'key' option and also in the load/save method, the option 'key' is preferred
+
+```
+df = sqlContext.read.from("h2o").option("key","key_one").load("key_two")
+```
+
+or
+
+```
+df = sqlContext.read.from("h2o").option("key","key_one").save("key_two")
+```
+
+In both examples, "key_one" is used.
+
+<a name="DataSourceScala"></a>
+### Usage in Scala
+
+####  Reading from H2O Frame
+Let's suppose we have H2OFrame `frame`
+
+The shortest way how dataframe can be loaded from H2OFrame with default settings is:
+
+```
+val df = sqlContext.read.h2o(frame.key)
+```
+
+There are two more ways how dataframe can be loaded from H2OFrame allowing us to specify additional options:
+
+```
+val df = sqlContext.read.format("h2o").option("key",frame.key.toString).load()
+```
+
+or
+
+```
+val df = sqlContext.read.format("h2o").load(frame.key.toString)
+```
+
+#### Saving to H2O Frame
+Let's suppose we have DataFrame `df`
+
+The shortest way how dataframe can be saved as H2O Frame with default settings is:
+
+```
+df.write.h2o("new_key")
+```
+
+There are two more ways how dataframe can be saved as H2OFrame allowing us to specify additional options:
+
+```
+df.write.format("h2o").option("key","new_key").save()
+```
+
+or
+
+```
+df.write.format("h2o").save("new_key")
+```
+
+All three variants save dataframe as H2OFrame with key "new_key". They won't succeed if the H2O Frame with the same key already exists
+
+#### Loading & Saving Options
+If the key is specified as 'key' option and also in the load/save method, the option 'key' is preferred
+
+```
+val df = sqlContext.read.from("h2o").option("key","key_one").load("key_two")
+```
+
+or
+
+```
+val df = sqlContext.read.from("h2o").option("key","key_one").save("key_two")
+```
+
+In both examples, "key_one" is used.
+
+<a name="SavingMode"></a>
+### Specifying Saving Mode
+There are four save modes available when saving data using Data Source API- see http://spark.apache.org/docs/latest/sql-programming-guide.html#save-modes
+
+If "append" mode is used, an existing H2OFrame with the same key is deleted and new one containing union of
+all rows from original H2O Frame and appended Data Frame is created with the same key.
+
+If "overwrite" mode is used, an existing H2OFrame with the same key is deleted and new one with the new rows is created with the same key.
+
+If "error" mode is used and a H2OFrame with the specified key already exists, exception is thrown.
+
+if "ignore" mode is used and a H2OFrame with the specified key already exists, no data are changed.

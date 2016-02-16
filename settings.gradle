@@ -5,6 +5,7 @@ include 'examples'
 include 'ml'
 include 'assembly'
 include 'py'
+include 'repl'
 include 'docker'
 
 // Prefix all projects with sparkling-water name

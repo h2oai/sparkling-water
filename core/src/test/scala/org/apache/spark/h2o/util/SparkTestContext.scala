@@ -55,7 +55,7 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
 trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
 
   def createSparkContext:SparkContext
-  def createH2OContext(sc:SparkContext):H2OContext = new H2OContext(sc).start()
+  def createH2OContext(sc:SparkContext):H2OContext = H2OContext.getOrCreate(sc)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -75,7 +75,7 @@ trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
 trait PerTestSparkTestContext extends SparkTestContext { self: Suite =>
 
   def createSparkContext:SparkContext
-  def createH2OContext(sc:SparkContext):H2OContext = new H2OContext(sc).start()
+  def createH2OContext(sc:SparkContext):H2OContext = H2OContext.getOrCreate(sc)
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()

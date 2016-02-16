@@ -1,3 +1,20 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package org.apache.spark.examples.h2o
 
 import org.joda.time.{DateTimeZone, MutableDateTime}
@@ -173,14 +190,14 @@ object WeatherParse extends Serializable {
     val b = if (row.length==9) 0 else 1 // base index
     val d = parseDate(row(b)).getOrElse( (None, None, None) )
     Weather(d._1, d._2, d._3,
-            int  (row(b+1)),
-            int  (row(b+2)),
-            float(row(b+3)),
-            float(row(b+4)),
-            float(row(b+5)),
-            float(row(b+6)),
-            float(row(b+7)),
-            float(row(b+8))
+            int  (row(b + 1)),
+            int  (row(b + 2)),
+            float(row(b + 3)),
+            float(row(b + 4)),
+            float(row(b + 5)),
+            float(row(b + 6)),
+            float(row(b + 7)),
+            float(row(b + 8))
     )
   }
 
@@ -211,11 +228,12 @@ object NYWeatherParse extends Serializable {
     val monthLocal = float(row(1))
     val dayLocal =   float(row(2))
     val hourLocal =  float(row(3))
-    val msec:Option[Long] = if (yearLocal.isDefined && monthLocal.isDefined && dayLocal.isDefined && hourLocal.isDefined)
+    val msec:Option[Long] = if (yearLocal.isDefined && monthLocal.isDefined && dayLocal.isDefined && hourLocal.isDefined) {
       Some(new MutableDateTime(yearLocal.get.toInt,
         monthLocal.get.toInt, dayLocal.get.toInt, hourLocal.get.toInt, 0, 0, 0, DateTimeZone.UTC).getMillis)
-      else
-      None
+      } else {
+        None
+      }
     // Compute days since epoch
     val days = if (msec.isDefined) Some(msec.get / (1000*60*60*24)) else None
 

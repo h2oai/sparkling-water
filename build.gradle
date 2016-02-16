@@ -19,7 +19,7 @@ buildscript {
 
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.2'
-        classpath 'org.github.mansur.scalastyle:gradle-scalastyle-plugin_2.10:0.4.1'
+        classpath 'org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.10:0.8.2'
         classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.7.1'
         classpath 'net.researchgate:gradle-release:2.0.2'
         classpath 'com.adaptc.gradle:nexus-workflow:0.6'
@@ -34,7 +34,8 @@ ext {
     // Published projects
     publishedProjects = [
       project(':sparkling-water-core'),
-      project(':sparkling-water-examples')
+      project(':sparkling-water-examples'),
+      project(':sparkling-water-repl')
     ]
 
     integTestProjects = [
@@ -44,7 +45,8 @@ ext {
       project(':sparkling-water-core'),
       project(':sparkling-water-examples'),
       project(':sparkling-water-ml'),
-      project(':sparkling-water-assembly')
+      project(':sparkling-water-assembly'),
+      project(':sparkling-water-repl')
     ]
     pythonProjects = [
       project(':sparkling-water-py')
@@ -168,4 +170,7 @@ task wrapper(type: Wrapper) {
 
 task clean(group: "Build tasks", description: "Clean up the project", type: Delete) {
     delete file("build/")
+    delete file("h2ologs/")
+    delete file("null/")
 }
+

@@ -17,12 +17,12 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.util.{SparkTestContext, LocalSparkClusterContext}
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}
-import water.util.IcedInt
-import water.{Key, DKV}
+import org.apache.spark.h2o.util.SparkTestContext
 import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+import water.util.IcedInt
+import water.{DKV, Iced, Key}
 
 /**
  * Testing creation of H2O cloud in distributed environment.
@@ -33,12 +33,14 @@ class H2OContextLocalSuite extends FunSuite
 
   test("verify H2O cloud building on local JVM") {
     sc = new SparkContext("local[*]", "test-local", defaultSparkConf)
-    hc = H2OContext.getOrCreate(sc).start()
+    hc = H2OContext.getOrCreate(sc)
     // Number of nodes should be on
     assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 members")
     // Make sure that H2O is running
     assert(water.H2O.store_size() == 0)
-    DKV.put(Key.make(), new IcedInt(43))
+    // We need to do this magic since H2O's IcedInt does not propagate self type properly
+    val icedInt: Iced[IcedInt] = new IcedInt(43).asInstanceOf[Iced[IcedInt]]
+    DKV.put(Key.make(), icedInt)
     assert(water.H2O.store_size() == 1)
     // Reset this context
     resetContext()

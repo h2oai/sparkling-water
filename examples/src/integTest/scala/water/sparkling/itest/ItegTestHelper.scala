@@ -1,6 +1,8 @@
 package water.sparkling.itest
 
+import org.apache.spark.repl.h2o.H2OInterpreter
 import org.scalatest.{BeforeAndAfterEach, Suite, Tag}
+
 import scala.collection.mutable
 import scala.util.Random
 
@@ -89,6 +91,7 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
 
   private class TestEnvironment extends IntegTestEnv {
     val conf = mutable.HashMap.empty[String,String] += "spark.testing" -> "true"
+    conf += "spark.repl.class.uri" -> H2OInterpreter.classServerUri
     override def sparkConf: mutable.Map[String, String] = conf
   }
   object env {

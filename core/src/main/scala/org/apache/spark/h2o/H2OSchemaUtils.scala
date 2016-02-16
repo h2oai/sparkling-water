@@ -122,15 +122,16 @@ object H2OSchemaUtils {
   /** Return flattenized type - recursively transforms StrucType into Seq of encapsulated types. */
   def flatSchema(s: StructType, typeName: Option[String] = None, nullable: Boolean = false): Seq[StructField] = {
     s.fields.flatMap(f =>
-      if (f.dataType.isInstanceOf[StructType])
+      if (f.dataType.isInstanceOf[StructType]) {
         flatSchema(f.dataType.asInstanceOf[StructType],
-          typeName.map(s => s"$s${f.name}.").orElse(Option(s"${f.name}.")),
-          nullable || f.nullable)
-      else
+                   typeName.map(s => s"$s${f.name}.").orElse(Option(s"${f.name}.")),
+                   nullable || f.nullable)
+      } else {
         Seq(StructField(
           typeName.map(n => s"$n${f.name}").getOrElse(f.name),
           f.dataType,
-          f.nullable || nullable)))
+          f.nullable || nullable))
+      })
   }
 
   /** Returns expanded schema

@@ -1,0 +1,10 @@
+description = "Sparkling Water Repl Package"
+
+apply from: "$rootDir/gradle/utils.gradle"
+
+dependencies {
+    // Spark REPL
+    compile "org.apache.spark:spark-repl_${scalaBinaryVersion}:${sparkVersion}"
+    // H2O Scala API
+    compile "ai.h2o:h2o-scala_${scalaBinaryVersion}:${h2oVersion}"
+}

@@ -15,21 +15,21 @@
 * limitations under the License.
 */
 /**
- * This code is based on code org.apache.spark.repl.SparkIMain released under Apache 2.0"
- * Link to Github: https://github.com/apache/spark/blob/master/repl/scala-2.10/src/main/scala/org/apache/spark/repl/SparkIMain.scala
- * Author:  Paul Phillips
- */
+  * This code is based on code org.apache.spark.repl.SparkIMain released under Apache 2.0"
+  * Link to Github: https://github.com/apache/spark/blob/master/repl/scala-2.10/src/main/scala/org/apache/spark/repl/SparkIMain.scala
+  * Author:  Paul Phillips
+  */
 
-package org.apache.spark.repl
+package org.apache.spark.repl.h2o
 
 import org.apache.spark.util.Utils
 import org.apache.spark.{HttpServer, Logging, SecurityManager, SparkConf}
 
 
 /**
- * HTTP Server containing classes defined in repl
- */
-private[repl] object REPLCLassServer extends Logging {
+  * HTTP Server storing classes defined in REPL
+  */
+private[repl] object REPLClassServer extends Logging {
 
   lazy val getClassOutputDirectory = outputDir
   /** Local directory to save .class files too */
@@ -39,8 +39,6 @@ private[repl] object REPLCLassServer extends Logging {
     Utils.createTempDir(rootDir)
   }
   private val conf = new SparkConf()
-  private val SPARK_DEBUG_REPL: Boolean = System.getenv("SPARK_DEBUG_REPL") == "1"
-
   logInfo("Directory to save .class files to = " + outputDir)
   /** Jetty server that will serve our classes to worker nodes */
   private val classServerPort = conf.getInt("spark.replClassServer.port", 0)
@@ -53,14 +51,21 @@ private[repl] object REPLCLassServer extends Logging {
     logInfo("Class server started, URI = " + classServerUri)
   }
 
-  def classServerUri = classServer.uri
+  def classServerUri: String  = synchronized {
+    if(!_isRunning) {
+     start()
+    }
+    classServer.uri
+  }
 
   def close() {
-    classServer.stop()
+    if(classServer != null){
+      classServer.stop()
+      classServer == null
+    }
   }
 
   def isRunning: Boolean = {
     _isRunning
   }
 }
-

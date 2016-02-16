@@ -25,7 +25,7 @@ import water.api.Schema;
 public class RDDV3 extends Schema<IcedRDDInfo, RDDV3> {
 
     @API(help = "RDD ID", direction = API.Direction.INOUT)
-    public int rdd_id;
+    public int id;
 
     @API(help = "RDD Name", direction = API.Direction.OUTPUT)
     public String name;
