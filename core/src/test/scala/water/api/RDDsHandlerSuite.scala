@@ -17,11 +17,12 @@
 package water.api
 
 import org.apache.spark.SparkContext
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.util.SharedSparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.RDDs.{RDDWithMsgV3, RDDsHandler, RDDsV3}
+import water.api.RDDs.{RDD2H2OFrameIDV3, RDDWithMsgV3, RDDsHandler, RDDsV3}
 
 /**
  * Test method of RDDsHandler.
@@ -61,6 +62,44 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     assert (result.msg.equals("OK"),"Status should be OK")
   }
 
+  test("RDDsHandler.toH2OFrame() method simple type"){
+    //Create and persist RDD
+    val rname = "Test"
+    val rpart = 21
+
+    val rdd = sc.parallelize(1 to 100,rpart).setName(rname).cache()
+
+    val rddsHandler = new RDDsHandler(sc, hc)
+    val rddReq = new RDD2H2OFrameIDV3
+    rddReq.rdd_id =  rdd.id
+
+    val result = rddsHandler.toH2OFrame(3,rddReq)
+    val h2oframe = hc.asH2OFrame(result.h2oframe_id)
+    assert (result.msg.equals("Success"),"Status should be Success")
+    assert (h2oframe.numCols() == 1, "Number of columns should match")
+    assert (h2oframe.names().sameElements(Seq("values")),"Column names should match")
+    assert (h2oframe.numRows() == rdd.count(), "Number of rows should match")
+  }
+
+  test("RDDsHandler.toH2OFrame() method - product class"){
+    //Create and persist RDD
+    val rname = "Test"
+    val rpart = 21
+
+    val rdd = sc.parallelize(Seq(A(1,"A"),A(2,"B"),A(3,"C")),rpart).setName(rname).cache()
+
+    val rddsHandler = new RDDsHandler(sc, hc)
+    val rddReq = new RDD2H2OFrameIDV3
+    rddReq.rdd_id =  rdd.id
+
+    val result = rddsHandler.toH2OFrame(3,rddReq)
+    val h2oframe = hc.asH2OFrame(result.h2oframe_id)
+    assert (result.msg.equals("Success"),"Status should be Success")
+    assert (h2oframe.numCols() == 2, "Number of columns should match")
+    assert (h2oframe.names().sameElements(Seq("f0","f1")),"Column names should match")
+    assert (h2oframe.numRows() == rdd.count(), "Number of rows should match")
+  }
+
   test("RDDsHandler.getRDD() method, querying non-existing RDD"){
     val rddsHandler = new RDDsHandler(sc,hc)
 
@@ -72,3 +111,5 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     assert (!result.msg.equals("OK"),"Status is not OK - it is message saying that given rdd does not exist")
   }
 }
+
+case class A(num: Int, str: String) extends Serializable

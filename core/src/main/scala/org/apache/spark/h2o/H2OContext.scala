@@ -473,18 +473,19 @@ object H2OContext extends Logging {
 
   private def inferFieldType(value : Any): Class[_] ={
     value match {
-      case n: Byte  => classOf[Byte]
-      case n: Short => classOf[Short]
-      case n: Int => classOf[Int]
-      case n: Long => classOf[Long]
-      case n: Float => classOf[Float]
-      case n: Double => classOf[Double]
-      case n: Boolean => classOf[Boolean]
-      case n: String => classOf[String]
+      case n: Byte  => classOf[java.lang.Byte]
+      case n: Short => classOf[java.lang.Short]
+      case n: Int => classOf[java.lang.Integer]
+      case n: Long => classOf[java.lang.Long]
+      case n: Float => classOf[java.lang.Float]
+      case n: Double => classOf[java.lang.Double]
+      case n: Boolean => classOf[java.lang.Boolean]
+      case n: String => classOf[java.lang.String]
       case n: java.sql.Timestamp => classOf[java.sql.Timestamp]
       case q => throw new IllegalArgumentException(s"Do not understand type $q")
     }
   }
+
   def toH2OFrameFromPureProduct(sc: SparkContext, rdd: RDD[Product], frameKeyName: Option[String]): H2OFrame = {
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
 
