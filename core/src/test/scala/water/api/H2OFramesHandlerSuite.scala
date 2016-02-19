@@ -20,7 +20,7 @@ import java.io.File
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.util.SparkTestContext
+import org.apache.spark.h2o.util.{SharedSparkTestContext, SparkTestContext}
 import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -29,39 +29,34 @@ import water.api.H2OFrames.{DataFrameIDV3, H2OFramesHandler}
 import water.fvec.H2OFrame
 
 /**
- * Test suite for h2oframes end-points
+ * Test suite for H2OFrames handler
  */
 @RunWith(classOf[JUnitRunner])
-class H2OFramesHandlerSuite extends FunSuite with SparkTestContext {
-  sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-  hc = H2OContext.getOrCreate(sc)
-  // Shared h2oContext
-  val h2oContext = hc
-  // Shared sqlContext
-  implicit val sqlContext = SQLContext.getOrCreate(sc)
+class H2OFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
   test("H2OFramesHandler.toDataFrame() method"){
     // create H2OFrame which will be used for the transformation
     val h2oFrame = new H2OFrame(new File("./examples/smalldata/prostate.csv"))
-    val h2oFramesHandler = new H2OFramesHandler(sc,h2oContext)
+    val h2oFramesHandler = new H2OFramesHandler(sc,hc)
 
     val req = new DataFrameIDV3
     req.h2oframe_id = h2oFrame._key.toString
     val result = h2oFramesHandler.toDataFrame(3,req)
 
     // get the data frame using obtained id
-    val df = sqlContext.table(result.dataframe_id)
+    val df = sqlc.table(result.dataframe_id)
 
     assert (result.msg.equals("Success"),"Status should be Success")
     assert (df.columns.size == h2oFrame.numCols(), "Number of columns should match")
     assert (df.columns.sameElements(h2oFrame.names()),"Column names should match")
     assert (df.count() == h2oFrame.numRows(), "Number of rows should match")
-    assert (sqlContext.tableNames().size == 1, "Number of stored DataFrames should be 1")
+    assert (sqlc.tableNames().size == 1, "Number of stored DataFrames should be 1")
 
   }
 
   test("H2OFramesHandler.toDataFrame() method, trying to convert H2OFrame which does not exist"){
-    val h2oFramesHandler = new H2OFramesHandler(sc,h2oContext)
+    val h2oFramesHandler = new H2OFramesHandler(sc,hc)
     val req = new DataFrameIDV3
     req.h2oframe_id = "does_not_exist"
     val result = h2oFramesHandler.toDataFrame(3,req)

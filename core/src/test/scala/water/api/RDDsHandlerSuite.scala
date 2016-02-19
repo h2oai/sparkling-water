@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import water.api.RDDs.{RDDWithMsgV3, RDDsHandler, RDDsV3}
 
 /**
- * Test method of RDDsHandler.
+ * Test suite for RDDs handler
  */
 @RunWith(classOf[JUnitRunner])
 class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
@@ -95,7 +95,7 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     val h2oframe = hc.asH2OFrame(result.h2oframe_id)
     assert (result.msg.equals("Success"),"Status should be Success")
     assert (h2oframe.numCols() == 2, "Number of columns should match")
-    assert (h2oframe.names().sameElements(Seq("f0","f1")),"Column names should match")
+    assert (h2oframe.names().sortWith((x, y) => x < y).sameElements(Seq("f0","f1")),"Column names should match")
     assert (h2oframe.numRows() == rdd.count(), "Number of rows should match")
   }
 

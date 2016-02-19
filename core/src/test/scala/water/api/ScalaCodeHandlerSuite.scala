@@ -17,33 +17,20 @@
 package water.api
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o._
 import org.apache.spark.h2o.util.SharedSparkTestContext
-import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 import water.api.scalaInt._
 
 /**
- * Test suite for scalaint end-points
+ * Test suite for ScalaCode handler
  */
 @RunWith(classOf[JUnitRunner])
 class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with BeforeAndAfterEach {
 
-  @transient var h2oContext: H2OContext = _
-  implicit var sqlContext: SQLContext = _
   var scalaCodeHandler: ScalaCodeHandler = _
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    h2oContext = hc
-    sqlContext = SQLContext.getOrCreate(sc)
-  }
-  override def afterAll(): Unit = {
-    super.afterAll()
-    h2oContext.stop(true)
-  }
 
   override protected def beforeEach(): Unit = {
     scalaCodeHandler = new ScalaCodeHandler(sc)
