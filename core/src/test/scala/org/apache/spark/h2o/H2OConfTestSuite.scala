@@ -48,13 +48,8 @@ with Matchers with BeforeAndAfter with SparkTestContext {
       .set("spark.ext.h2o.client.web.port", "13321")
       .set("spark.ext.h2o.dummy.rdd.mul.factor", "2")
 
-    //Just create H2OContext without starting it - we do not want to add public method for H2OContext for creating
-    //the context without starting it, so we use reflections to call private constructor
     sc = new SparkContext("local", "test-local", sparkConf)
-    val testClass = classOf[H2OContext]
-    val ctor = testClass.getDeclaredConstructor(classOf[SparkContext])
-    ctor.setAccessible(true)
-    hc = ctor.newInstance(sc)
+    hc = new H2OContext(sc)
 
     // Test passed values
     assert(hc.useFlatFile == false)
