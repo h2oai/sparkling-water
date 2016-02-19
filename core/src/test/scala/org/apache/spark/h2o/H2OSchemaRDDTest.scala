@@ -14,27 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.rdd
+package org.apache.spark.h2o
 
 import java.io.File
 import java.sql.Timestamp
 import java.util.UUID
 
 import hex.splitframe.ShuffleSplitFrame
-import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o.H2OSchemaUtils.flatSchema
-import org.apache.spark.h2o.util.SparkTestContext
-import org.apache.spark.h2o._
+import org.apache.spark.h2o.util.SharedSparkTestContext
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.{SparkContext, mllib}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.fvec.Frame
 import water.fvec._
-import water.parser.{Categorical, BufferedString}
+import water.parser.BufferedString
 import water.{DKV, Key}
 
 import scala.reflect.ClassTag
@@ -44,20 +41,15 @@ import scala.reflect.ClassTag
  * Testing schema for h2o schema rdd transformation.
  */
 @RunWith(classOf[JUnitRunner])
-class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
+class H2OSchemaRDDTest extends FunSuite with SharedSparkTestContext {
 
-  sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-  hc = H2OContext.getOrCreate(sc)
-  // Shared sqlContext
-  val h2oContext = hc
-  val sqlContext = new SQLContext(sc)
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
   test("test creation of H2OSchemaRDD") {
+    val h2oContext = hc
     import h2oContext._
-
     // FIXME: create different shapes of frame
     val dataFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert(dataFrame.numRows() == schemaRdd.count(), "Number of lines in dataframe and in schema has to be same")
@@ -66,13 +58,12 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
   // H2OFrame to RDD[T] JUnits
   test("H2OFrame[T_NUM] to RDD[Prostate]") {
+    val h2oContext = hc
     import h2oContext._
     val dataFrame: H2OFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
     assert (dataFrame.vec(0).isNumeric & dataFrame.vec(1).isNumeric & dataFrame.vec(2).isNumeric &
       dataFrame.vec(3).isNumeric & dataFrame.vec(4).isNumeric & dataFrame.vec(5).isNumeric & dataFrame.vec(6).isNumeric
       & dataFrame.vec(7).isNumeric & dataFrame.vec(8).isNumeric)
-
-    implicit val sqlContext = new SQLContext(sc)
     val rdd = asRDD[Prostate](dataFrame)
 
     assert (rdd.count == dataFrame.numRows())
@@ -84,6 +75,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
 
   // H2OFrame to DataFrame[T] JUnits
   test("PUBDEV-766 H2OFrame[T_ENUM] to DataFrame[StringType]") {
+    val h2oContext = hc
     import h2oContext._
     val fname: String = "testEnum.hex"
     val colNames: Array[String] = Array("C0")
@@ -94,7 +86,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.vec(0).chunkForChunkIdx(0).at8(0) == 1)
     assert (dataFrame.vec(0).isCategorical())
 
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert (schemaRdd.count == dataFrame.numRows())
@@ -108,6 +99,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("H2OFrame[T_TIME] to DataFrame[TimestampType]") {
+    val h2oContext = hc
     import h2oContext._
     val fname: String = "testTime.hex"
     val colNames: Array[String] = Array("C0")
@@ -118,7 +110,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.vec(0).chunkForChunkIdx(1).at8(1) == 1428517566L)
     assert (dataFrame.vec(0).isTime())
 
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert (schemaRdd.count == dataFrame.numRows())
@@ -132,6 +123,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("H2OFrame[T_NUM(Byte)] to DataFrame[ByteType]") {
+    val h2oContext = hc
     import h2oContext._
     val fname: String = "testByte.hex"
     val colNames: Array[String] = Array("C0")
@@ -143,7 +135,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.vec(0).chunkForChunkIdx(1).at8(4) == 8)
     assert (dataFrame.vec(0).isNumeric())
 
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert (schemaRdd.count == dataFrame.numRows())
@@ -157,6 +148,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("H2OFrame[T_NUM(Short)] to DataFrame[ShortType]") {
+    val h2oContext = hc
     import h2oContext._
     val fname: String = "testShort.hex"
     val colNames: Array[String] = Array("C0")
@@ -168,7 +160,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.vec(0).chunkForChunkIdx(1).at8(4) == 208)
     assert (dataFrame.vec(0).isNumeric())
 
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert (schemaRdd.count == dataFrame.numRows())
@@ -182,6 +173,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("H2OFrame[T_NUM(Integer)] to DataFrame[IntegerType]") {
+    val h2oContext = hc
     import h2oContext._
     val fname: String = "testInteger.hex"
     val colNames: Array[String] = Array("C0")
@@ -193,7 +185,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.vec(0).chunkForChunkIdx(1).at8(4) == 100008)
     assert (dataFrame.vec(0).isNumeric())
 
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert (schemaRdd.count == dataFrame.numRows())
@@ -207,6 +198,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("PUBDEV-767 H2OFrame[T_NUM(Long)] to DataFrame[LongType]") {
+    val h2oContext = hc
     import h2oContext._
     val fname: String = "testLong.hex"
     val colNames: Array[String] = Array("C0")
@@ -217,7 +209,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.vec(0).chunkForChunkIdx(1).at8(1) == -8589934595L)
     assert (dataFrame.vec(0).isNumeric())
 
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert (schemaRdd.count == dataFrame.numRows())
@@ -231,6 +222,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("H2OFrame[T_NUM(Double)] to DataFrame[DoubleType]") {
+    val h2oContext = hc
     import h2oContext._
     val fname: String = "testDouble.hex"
     val colNames: Array[String] = Array("C0")
@@ -241,7 +233,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.vec(0).chunkForChunkIdx(1).atd(1) == 100.00012)
     assert (dataFrame.vec(0).isNumeric())
 
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert (schemaRdd.count == dataFrame.numRows())
@@ -255,6 +246,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("H2OFrame[T_STR] to DataFrame[StringType]") {
+    val h2oContext = hc
     import h2oContext._
     val fname: String = "testString.hex"
     val colNames: Array[String] = Array("C0")
@@ -267,7 +259,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     assert (dataFrame.vec(0).chunkForChunkIdx(2).atStr(new BufferedString(),1).toString.equals("string8"))
     assert (dataFrame.vec(0).isString())
 
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert (schemaRdd.count == dataFrame.numRows())
@@ -281,6 +272,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("PUBDEV-771 H2OFrame[T_UUID] to DataFrame[StringType]") {
+    val h2oContext = hc
     import h2oContext._
     val fname: String = "testUUID.hex"
     val colNames: Array[String] = Array("C0")
@@ -302,7 +294,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
         dataFrame.vec(0).chunkForChunkIdx(0).at16h(0))
     assert (dataFrame.vec(0).isUUID())
 
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert (schemaRdd.count == dataFrame.numRows())
@@ -317,12 +308,12 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("test RDD to H2OFrame to DataFrame way") {
+    val h2oContext = hc
     import h2oContext._
 
     val rdd = sc.parallelize(1 to 10000, 1000).map(i => IntHolder(Some(i)))
     val dataFrame:H2OFrame = rdd
 
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert (rdd.count == dataFrame.numRows())
@@ -382,6 +373,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("DataFrame[Byte] to H2OFrame[Numeric]") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val srdd:DataFrame = sc.parallelize(-127 to 127).map(v => ByteField(v.asInstanceOf[Byte])).toDF()
@@ -392,6 +384,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("DataFrame[Short] to H2OFrame[Numeric]") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val srdd:DataFrame = sc.parallelize(-2048 to 4096).map(v => ShortField(v.asInstanceOf[Short])).toDF()
@@ -402,6 +395,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("DataFrame[Int] to H2OFrame[Numeric]") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Int.MinValue, Int.MaxValue, 0, -100, 200, -5000, 568901)
@@ -413,6 +407,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("DataFrame[Long] to H2OFrame[Numeric]") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Long.MinValue, Long.MaxValue, 0L, -100L, 200L, -5000L, 5689323201L, -432432433335L)
@@ -424,6 +419,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("DataFrame[Float] to H2OFrame[Numeric]") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Float.MinValue, Float.MaxValue, -33.33.toFloat, 200.001.toFloat, -5000.34.toFloat)
@@ -435,6 +431,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("DataFrame[Double] to H2OFrame[Numeric]") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Double.MinValue, Double.MaxValue, -33.33, 200.001, -5000.34)
@@ -446,6 +443,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("DataFrame[String] to H2OFrame[String]") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val domSize = 3000
@@ -463,6 +461,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("DataFrame[TimeStamp] to H2OFrame[Time]") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 20
@@ -479,6 +478,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("H2OFrame[Simple StructType] to DataFrame[flattened StructType]") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 20
     val values = (1 to num).map(x => PrimitiveA(x, "name=" + x))
@@ -490,6 +490,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("DataFrame[flattened StructType] to H2OFrame[Composed StructType]") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 20
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 3.14))
@@ -501,6 +502,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("DataFrame[Int] to H2OFrame with empty partitions (error detected in calling ShuffleSplitFrame)") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = 1 to 100
@@ -514,6 +516,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("Expand composed schema of RDD") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 2
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 1.0))
@@ -536,6 +539,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("Expand schema with array") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 5
     val values = (1 to num).map(x => PrimitiveB(1 to x))
@@ -565,6 +569,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("Expand schema with dense vectors") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 2
     val values = (1 to num).map(x => PrimitiveC(Vectors.dense((1 to x).map(1.0*_).toArray)))
@@ -588,6 +593,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("Expand schema with sparse vectors") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 3
     val values = (0 until num).map(x =>
@@ -615,6 +621,7 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
   }
 
   test("Add metadata to Dataframe") {
+    val h2oContext = hc
     import h2oContext._
     val fname: String = "testMetadata.hex"
     val colNames: Array[String] = Array("C0")
@@ -622,7 +629,6 @@ class H2OSchemaRDDTest extends FunSuite with SparkTestContext {
     val data: Array[Array[Long]] = Array((1L to 50L).toArray, (51L to 100L).toArray)
     val dataFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
     println(dataFrame.vec(0).pctiles())
-    implicit val sqlContext = new SQLContext(sc)
     val schemaRdd = asDataFrame(dataFrame)
 
     assert(schemaRdd.schema("C0").metadata.getDouble("min") == 1L)

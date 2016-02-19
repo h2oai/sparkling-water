@@ -14,10 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.rdd
+package org.apache.spark.h2o
 
-import org.apache.spark.h2o.H2OSchemaUtils
-import org.apache.spark.sql.types.{IntegerType, DoubleType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner

@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.rdd
+package org.apache.spark.h2o
 
 import java.sql.Timestamp
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.util.SharedSparkTestContext
-import org.apache.spark.h2o._
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.fvec.Vec
-import water.parser.{Categorical, BufferedString}
+import water.parser.{BufferedString, Categorical}
 
 /**
  * Testing schema for h2o schema rdd transformation.

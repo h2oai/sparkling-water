@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.h2o
+package water.sparkling.itest.local
 
 import org.apache.spark.SparkContext
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.util.SparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

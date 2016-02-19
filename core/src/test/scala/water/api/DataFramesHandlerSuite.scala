@@ -20,9 +20,7 @@ import java.io.File
 
 import com.google.gson.JsonParser
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o._
-import org.apache.spark.h2o.util.SparkTestContext
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.h2o.util.SharedSparkTestContext
 import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -32,27 +30,22 @@ import water.api.DataFrames._
 import water.fvec.{Frame, H2OFrame}
 
 /**
- * Test suite for dataframes end-points
+ * Test suite for DataFrames handler
  */
 @RunWith(classOf[JUnitRunner])
-class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
-  sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-  hc = H2OContext.getOrCreate(sc)
-  // Shared h2oContext
-  val h2oContext = hc
-  // Shared sqlContext
-  implicit val sqlContext = SQLContext.getOrCreate(sc)
+class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
 
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
   test("DataFrameHandler.list() method") {
-    import sqlContext.implicits._
-
     val rdd = sc.parallelize(1 to 10)
     val rid = "df_" + rdd.id
-
+    val sqlContext = sqlc
+    import sqlContext.implicits._
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
+
     df.registerTempTable(rid)
-    val dataFramesHandler = new DataFramesHandler(sc,h2oContext)
+    val dataFramesHandler = new DataFramesHandler(sc,hc)
 
     val req = new DataFramesV3
     val result = dataFramesHandler.list(3, req)
@@ -76,11 +69,11 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
 
     val h2oframe = new H2OFrame(new File("./examples/smalldata/prostate.csv"))
     // we have created dataFrame from already existing h2oFrame, metadata are included
-    val df = h2oContext.asDataFrame(h2oframe)
+    val df = hc.asDataFrame(h2oframe)
     val name= "prostate"
     df.registerTempTable(name)
     val percentiles = df.schema.fields(0).metadata.getDoubleArray("percentiles")
-    val dataFramesHandler = new DataFramesHandler(sc,h2oContext)
+    val dataFramesHandler = new DataFramesHandler(sc,hc)
 
     val req = new DataFrameWithMsgV3
     req.searched_dataframe_id = name
@@ -102,14 +95,14 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
   }
 
   test("DataFramesHandler.toH2OFrame() method"){
+    val sqlContext = sqlc
     import sqlContext.implicits._
-
     val rdd = sc.parallelize(1 to 10)
     val name = "numbers"
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
     df.registerTempTable(name)
-    val dataFramesHandler = new DataFramesHandler(sc,h2oContext)
+    val dataFramesHandler = new DataFramesHandler(sc,hc)
 
     val req = new H2OFrameIDV3
     req.dataframe_id = name
@@ -119,7 +112,7 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
     val value = DKV.get(result.h2oframe_id)
     val h2oFrame: H2OFrame = value.className() match {
       case name if name.equals(classOf[Frame].getName) => {
-        h2oContext.asH2OFrame(value.get[Frame]())
+        hc.asH2OFrame(value.get[Frame]())
       }
       case name if name.equals(classOf[H2OFrame].getName) => value.get[H2OFrame]()
     }
@@ -131,7 +124,7 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
 
 
   test("DataFramesHandler.getDataFrame() method, querying non existing data frame"){
-    val dataFramesHandler = new DataFramesHandler(sc,h2oContext)
+    val dataFramesHandler = new DataFramesHandler(sc,hc)
     val req = new DataFrameWithMsgV3
     req.searched_dataframe_id = "does_not_exist"
     val result = dataFramesHandler.getDataFrame(3, req)
@@ -140,7 +133,7 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
   }
 
   test("DataFramesHandler.toH2OFrame() method, trying to convert dataframe which does not exist"){
-    val dataFramesHandler = new DataFramesHandler(sc,h2oContext)
+    val dataFramesHandler = new DataFramesHandler(sc,hc)
     val req = new H2OFrameIDV3
     req.dataframe_id = "does_not_exist"
     val result = dataFramesHandler.toH2OFrame(3, req)
@@ -165,4 +158,5 @@ class DataFramesHandlerSuite extends FunSuite with SparkTestContext {
     }
     return new StructType(structFields)
   }
+
 }
