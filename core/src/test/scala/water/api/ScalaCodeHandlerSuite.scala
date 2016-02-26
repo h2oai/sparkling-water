@@ -22,6 +22,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 import water.api.scalaInt._
+import water.exceptions.H2ONotFoundArgumentException
 
 /**
  * Test suite for ScalaCode handler
@@ -57,21 +58,19 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
     val reqSession = new ScalaSessionIdV3
     scalaCodeHandler.initSession(3,reqSession)
 
-    val reqMsg = new ScalaMsgV3
+    val reqMsg = new ScalaSessionIdV3
     reqMsg.session_id=reqSession.session_id
-    val result = scalaCodeHandler.destroySession(3,reqMsg)
-
-    assert(result.msg.equals("Session closed"),"Message should be equal to \"Session closed\"")
+    scalaCodeHandler.destroySession(3,reqMsg)
     assert(scalaCodeHandler.mapIntr.isEmpty, "Number of currently used interpreters should be equal to 0")
     assert(scalaCodeHandler.mapIntr.get(1).isEmpty, "The value in the interpreters hashmap with the key 1 should be empty")
   }
 
   test("ScalaCodeHandler.destroySession() method, destroy non-existing session"){
-    val reqMsg = new ScalaMsgV3
+    val reqMsg = new ScalaSessionIdV3
     reqMsg.session_id=3
-    val result = scalaCodeHandler.destroySession(3,reqMsg)
-
-    assert(result.msg.equals("Session does not exist"),"Message should be equal to \"Session does not exist\"")
+    intercept[H2ONotFoundArgumentException] {
+      scalaCodeHandler.destroySession(3,reqMsg)
+    }
     assert(scalaCodeHandler.mapIntr.isEmpty, "Number of currently used interpreters should be equal to 0")
     assert(scalaCodeHandler.mapIntr.get(3).isEmpty, "The value in the interpreters hashmap with the key 3 should be empty")
   }

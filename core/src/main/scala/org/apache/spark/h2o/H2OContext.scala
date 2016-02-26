@@ -813,8 +813,8 @@ object H2OContext extends Logging {
     RequestServer.register("/3/h2oframes/(?<h2oframe_id>.*)/dataframe", "POST",
                            classOf[H2OFramesHandler], "toDataFrame",
                            null,
-                           "Transform H2OFrame with given id to DataFrame",
-                           h2oFramesFactory);
+                           "Transform H2OFrame with given ID to Spark's DataFrame",
+                           h2oFramesFactory)
 
   }
 
@@ -829,19 +829,19 @@ object H2OContext extends Logging {
     RequestServer.register("/3/RDDs", "GET",
                            classOf[RDDsHandler], "list",
                            null,
-                           "Return all Frames in the H2O distributed K/V store.",
+                           "Return all RDDs within Spark cloud",
                            rddsFactory)
 
-    RequestServer.register("/3/RDDs/(?<searched_rdd_id>[0-9]+)", "POST",
+    RequestServer.register("/3/RDDs/(?<rdd_id>[0-9]+)", "POST",
                            classOf[RDDsHandler], "getRDD",
                            null,
-                           "Get frame in the H2O distributed K/V store with the given ID",
+                           "Get RDD with the given ID from Spark cloud",
                            rddsFactory)
 
     RequestServer.register("/3/RDDs/(?<rdd_id>[0-9a-zA-Z_]+)/h2oframe", "POST",
       classOf[RDDsHandler], "toH2OFrame",
       null,
-      "Transform RDD with the given id to H2OFrame",
+      "Transform RDD with the given ID to H2OFrame",
       rddsFactory)
 
   }
@@ -857,19 +857,19 @@ object H2OContext extends Logging {
     RequestServer.register("/3/dataframes", "GET",
                            classOf[DataFramesHandler], "list",
                            null,
-                           "Return all DataFrames.",
+                           "Return all Spark's DataFrames",
                            dataFramesfactory)
 
-    RequestServer.register("/3/dataframes/(?<searched_dataframe_id>[0-9a-zA-Z_]+)", "POST",
+    RequestServer.register("/3/dataframes/(?<dataframe_id>[0-9a-zA-Z_]+)", "POST",
                            classOf[DataFramesHandler], "getDataFrame",
                            null,
-                           "Get DataFrame with the given id",
+                           "Get Spark's DataFrame with the given ID",
                            dataFramesfactory)
 
     RequestServer.register("/3/dataframes/(?<dataframe_id>[0-9a-zA-Z_]+)/h2oframe", "POST",
                            classOf[DataFramesHandler], "toH2OFrame",
                            null,
-                           "Transform DataFrame with the given id to H2OFrame",
+                           "Transform Spark's DataFrame with the given ID to H2OFrame",
                            dataFramesfactory)
 
   }

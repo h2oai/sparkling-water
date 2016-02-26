@@ -19,7 +19,7 @@ package water.api.scalaInt
 import water.api.{API, Schema}
 
 /**
- * Schema used for representing all valid scala interpreters sessions
+ * Schema representing [GET] /3/scalaint endpoint
  */
 class ScalaSessionsV3 extends Schema[IcedSessions, ScalaSessionsV3] {
 

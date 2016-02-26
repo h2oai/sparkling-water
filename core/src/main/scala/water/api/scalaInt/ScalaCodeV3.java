@@ -21,7 +21,7 @@ import water.api.API;
 import water.api.Schema;
 
 /**
- * Schema used for representing scala code
+ * Schema representing [POST] /3/scalaint/&lt;session_id&gt; endpoint.
  */
 public class ScalaCodeV3 extends Schema<IcedCode, ScalaCodeV3> {
 

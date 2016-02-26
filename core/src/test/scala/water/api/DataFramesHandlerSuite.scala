@@ -27,6 +27,7 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.DKV
 import water.api.DataFrames._
+import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.{Frame, H2OFrame}
 
 /**
@@ -75,13 +76,12 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     val percentiles = df.schema.fields(0).metadata.getDoubleArray("percentiles")
     val dataFramesHandler = new DataFramesHandler(sc,hc)
 
-    val req = new DataFrameWithMsgV3
-    req.searched_dataframe_id = name
+    val req = new DataFrameV3
+    req.dataframe_id = name
     val result = dataFramesHandler.getDataFrame(3, req)
 
-    assert (result.dataframe.dataframe_id == name, "IDs should match")
-    assert (result.msg.equals("OK"),"Status should be OK")
-    val schema = parseSchema(result.dataframe.schema)
+    assert (result.dataframe_id == name, "IDs should match")
+    val schema = parseSchema(result.schema)
     assert (schema.length == df.schema.length,
             "Number of fields in schemas should be the same")
     assert (schema.fields(0).name.equals(df.schema.fields(0).name),
@@ -106,6 +106,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
 
     val req = new H2OFrameIDV3
     req.dataframe_id = name
+    req.h2oframe_id ="requested_name"
     val result = dataFramesHandler.toH2OFrame(3, req)
 
     // create h2o frame for the given id
@@ -116,7 +117,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
       }
       case name if name.equals(classOf[H2OFrame].getName) => value.get[H2OFrame]()
     }
-    assert (result.msg.equals("Success"),"Status should be Success")
+    assert (h2oFrame.key.toString == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
     assert (h2oFrame.numCols()==df.columns.size, "Number of columns should match")
     assert (h2oFrame.names().sameElements(df.columns),"Column names should match")
     assert (h2oFrame.numRows() == df.count(), "Number of rows should match")
@@ -125,20 +126,21 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
 
   test("DataFramesHandler.getDataFrame() method, querying non existing data frame"){
     val dataFramesHandler = new DataFramesHandler(sc,hc)
-    val req = new DataFrameWithMsgV3
-    req.searched_dataframe_id = "does_not_exist"
-    val result = dataFramesHandler.getDataFrame(3, req)
-    assert (result.dataframe == null, "Returned dataframe should be null")
-    assert (!result.msg.equals("OK"), "Status is not OK - it is message saying that given dataframe does not exist")
+    val req = new DataFrameV3
+    req.dataframe_id = "does_not_exist"
+    intercept[H2ONotFoundArgumentException] {
+      dataFramesHandler.getDataFrame(3, req)
+    }
   }
 
   test("DataFramesHandler.toH2OFrame() method, trying to convert dataframe which does not exist"){
     val dataFramesHandler = new DataFramesHandler(sc,hc)
     val req = new H2OFrameIDV3
     req.dataframe_id = "does_not_exist"
-    val result = dataFramesHandler.toH2OFrame(3, req)
-    assert (result.h2oframe_id.equals(""), "Returned H2O Frame id should be empty")
-    assert (!result.msg.equals("OK"), "Status is not OK - it is message saying that given dataframe does not exist")
+
+    intercept[H2ONotFoundArgumentException] {
+      dataFramesHandler.toH2OFrame(3, req)
+    }
   }
 
   def parseSchema(schemaString: String) : StructType = {
@@ -156,7 +158,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
       val metadata = Metadata.fromJson(field.get("metadata").toString)
       structFields(i) = new StructField(name,dataType,nullable,metadata)
     }
-    return new StructType(structFields)
+    new StructType(structFields)
   }
 
 }

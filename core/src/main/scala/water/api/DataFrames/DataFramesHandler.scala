@@ -21,9 +21,10 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import water.Iced
 import water.api.Handler
+import water.exceptions.H2ONotFoundArgumentException
 
 /**
- * DataFrames handler.
+ * Handler for all Spark's DataFrame related queries
  */
 class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
   val sqlContext = SQLContext.getOrCreate(sc)
@@ -37,59 +38,43 @@ class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extend
 
   def fetchAll(): Array[IcedDataFrameInfo] = {
     val names = sqlContext.tableNames()
-    names.map(name => new IcedDataFrameInfo(name, sqlContext.table(name).schema.json))
+    names.map(name => new IcedDataFrameInfo(name, sqlContext.table(name).rdd.partitions.length, sqlContext.table(name).schema.json))
   }
 
-  def getDataFrame(version: Int, s: DataFrameWithMsgV3): DataFrameWithMsgV3 = {
-    val r = s.createAndFillImpl()
-    if(!sqlContext.tableNames().toList.contains(s.searched_dataframe_id)){
-      s.msg = s"DataFrame with id '${s.searched_dataframe_id}' does not exist"
-    }else{
-      val dataFrame = sqlContext.table(s.searched_dataframe_id)
-      r.dataframe = new IcedDataFrameInfo(s.searched_dataframe_id, dataFrame.schema.json)
-      s.fillFromImpl(r)
-      s.msg = "OK"
+  def getDataFrame(version: Int, s: DataFrameV3): DataFrameV3 = {
+    if(!sqlContext.tableNames().toList.contains(s.dataframe_id)){
+      throw new H2ONotFoundArgumentException(s"DataFrame with id '${s.dataframe_id}' does not exist!")
     }
+    val dataFrame = sqlContext.table(s.dataframe_id)
+    s.schema = dataFrame.schema.json
+    s.partitions = dataFrame.rdd.partitions.length
     s
   }
 
-  /**
-   * Transform to H2OFrame end return ID of the frame
-   * @param version
-   * @param s
-   * @return
-   */
   def toH2OFrame(version: Int, s: H2OFrameIDV3): H2OFrameIDV3 = {
     if(!sqlContext.tableNames().toList.contains(s.dataframe_id)){
-      s.h2oframe_id=""
-      s.msg = s"DataFrame with id '${s.dataframe_id}' does not exist, can not proceed with the transformation"
-    }else{
-      val dataFrame: DataFrame = sqlContext.table(s.dataframe_id)
-      val h2oFrame = h2oContext.asH2OFrame(dataFrame)
-      s.h2oframe_id = h2oFrame._key.toString
-      s.msg="Success"
+      throw new H2ONotFoundArgumentException(s"DataFrame with id '${s.dataframe_id}' does not exist, can not proceed with the transformation!")
     }
+    val dataFrame: DataFrame = sqlContext.table(s.dataframe_id)
+    val h2oFrame = if( s.h2oframe_id == null ) h2oContext.asH2OFrame(dataFrame) else h2oContext.asH2OFrame(dataFrame,s.h2oframe_id.toLowerCase())
+    s.h2oframe_id = h2oFrame._key.toString
     s
   }
 }
 
-/** Simple implementation pojo holding list of DataFrames */
+/** Simple POJO holding list of DataFrames */
 private[api] class DataFrames extends Iced[DataFrames] {
   var dataframes: Array[IcedDataFrameInfo] = _
 }
 
-private[api] class IcedDataFrameInfo(val dataframe_id: String, val schema: String) extends Iced[IcedDataFrameInfo] {
-  def this() = this("df_-1", "{}") // initialize with empty values, this is used by the createImpl method in the
+private[api] class IcedDataFrameInfo(val dataframe_id: String, val partitions: Int, val schema: String) extends Iced[IcedDataFrameInfo] {
+  def this() = this(null, -1, null) // initialize with empty values, this is used by the createImpl method in the
   //RequestServer, as it calls constructor without any arguments
 }
 
-private[api] class IcedDataFrameWithMsgInfo() extends Iced[IcedDataFrameWithMsgInfo]{
-  var dataframe: IcedDataFrameInfo = _
-}
 
+private[api] class IcedH2OFrameID(val dataframe_id: String, val h2oframe_id: String) extends Iced[IcedH2OFrameID] {
 
-private[api] class IcedH2OFrameID(val dataframe_id: String) extends Iced[IcedH2OFrameID] {
-
-  def this() = this("") // initialize with empty values, this is used by the createImpl method in the
+  def this() = this(null, null) // initialize with empty values, this is used by the createImpl method in the
   //RequestServer, as it calls constructor without any arguments
 }

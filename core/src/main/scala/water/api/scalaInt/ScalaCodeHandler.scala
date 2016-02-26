@@ -21,16 +21,15 @@ import org.apache.spark.h2o.H2OConf
 import org.apache.spark.repl.h2o.H2OInterpreter
 import water.Iced
 import water.api.Handler
+import water.exceptions.H2ONotFoundArgumentException
 
 import scala.collection.concurrent.TrieMap
 import scala.compat.Platform
 
 /**
- * ScalaCode Handler
+ * Handler for all Scala related endpoints
  */
 class ScalaCodeHandler(val sc: SparkContext) extends Handler with H2OConf{
-
-
 
   val intrPoolSize = scalaIntDefaultNum
   val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
@@ -40,17 +39,15 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler with H2OConf{
   initializeHandler()
 
   def interpret(version: Int, s: ScalaCodeV3): ScalaCodeV3 = {
-    // check if session_id is set
+    // check if session exists
     if (s.session_id == -1 || !mapIntr.isDefinedAt(s.session_id)) {
-      // session ID not set
-      s.response = "Create session ID using the address /3/scalaint"
-    } else {
-      mapIntr += s.session_id ->(mapIntr(s.session_id)._1, Platform.currentTime) // update the time
-      val intp = mapIntr(s.session_id)._1
-      s.status = intp.runCode(s.code).toString
-      s.response = intp.interpreterResponse
-      s.output = intp.consoleOutput
+      throw new H2ONotFoundArgumentException("Session does not exists. Create session using the address /3/scalaint!")
     }
+    mapIntr += s.session_id ->(mapIntr(s.session_id)._1, Platform.currentTime) // update the time
+    val intp = mapIntr(s.session_id)._1
+    s.status = intp.runCode(s.code).toString
+    s.response = intp.interpreterResponse
+    s.output = intp.consoleOutput
     s
   }
 
@@ -81,14 +78,12 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler with H2OConf{
                       }
   }
 
-  def destroySession(version: Int, s: ScalaMsgV3): ScalaMsgV3 = {
+  def destroySession(version: Int, s: ScalaSessionIdV3): ScalaSessionIdV3 = {
     if(!mapIntr.contains(s.session_id)){
-      s.msg = "Session does not exist"
-    }else{
-      mapIntr(s.session_id)._1.closeInterpreter()
-      mapIntr -= s.session_id
-      s.msg = "Session closed"
+      throw new H2ONotFoundArgumentException("Session does not exists. Create session using the address /3/scalaint!")
     }
+    mapIntr(s.session_id)._1.closeInterpreter()
+    mapIntr -= s.session_id
     s
   }
 
@@ -135,24 +130,22 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler with H2OConf{
                       }
   }
 
-  /* Require Spar config */
+  /* Required Spark config */
   override def sparkConf: SparkConf = sc.getConf
 }
 
 private[api] class IcedCode(val session_id: Int, val code: String) extends Iced[IcedCode] {
 
-  def this() = this(-1,
-                    "") // initialize with dummy values, this is used by the createImpl method in the
+  def this() = this(-1, null)
+  // initialize with dummy values, this is used by the createImpl method in the
   //RequestServer, as it calls constructor without any arguments
 }
 
 private[api] class IcedSessions extends Iced[IcedSessions] {}
 
-private[api] class IcedMsg(val session_id: Int) extends Iced[IcedMsg] {
+private[api] class IcedSessionId(val rdd_id: Integer) extends Iced[IcedSessionId] {
 
-  def this() = this(-1)
+  def this() = this(-1) // initialize with empty values, this is used by the createImpl method in the
+  //RequestServer, as it calls constructor without any arguments
 }
-
-private[api] class IcedSessionId extends Iced[IcedSessionId] {}
-
 
