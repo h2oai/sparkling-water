@@ -20,15 +20,12 @@ import water.api.API;
 import water.api.Schema;
 
 /**
- * Schema used for representing frame name
+ * Schema representing /3/h2oframes/&lt;h2oframe_id&gt;/dataframe
  */
 public class DataFrameIDV3 extends Schema<IcedDataFrameID, DataFrameIDV3> {
-    @API(help = "Id of H2OFrame to be transformed", direction = API.Direction.INPUT)
+    @API(help = "ID of H2OFrame to be transformed", direction = API.Direction.INPUT)
     public String h2oframe_id;
 
-    @API(help = "Id of transformed DataFrame", direction = API.Direction.OUTPUT)
+    @API(help = "ID of generated Spark's DataFrame", direction = API.Direction.INOUT)
     public String dataframe_id;
-
-    @API(help = "Additional message", direction = API.Direction.OUTPUT)
-    public String msg;
 }

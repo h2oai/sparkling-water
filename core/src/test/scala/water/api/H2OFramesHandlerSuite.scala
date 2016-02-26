@@ -26,6 +26,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.api.H2OFrames.{DataFrameIDV3, H2OFramesHandler}
+import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.H2OFrame
 
 /**
@@ -42,12 +43,12 @@ class H2OFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
 
     val req = new DataFrameIDV3
     req.h2oframe_id = h2oFrame._key.toString
+    req.dataframe_id = "requested_name"
     val result = h2oFramesHandler.toDataFrame(3,req)
 
     // get the data frame using obtained id
     val df = sqlc.table(result.dataframe_id)
-
-    assert (result.msg.equals("Success"),"Status should be Success")
+    assert (sqlc.tableNames().contains("requested_name"), "DataFrame should be stored in table named \"requested_name\"")
     assert (df.columns.size == h2oFrame.numCols(), "Number of columns should match")
     assert (df.columns.sameElements(h2oFrame.names()),"Column names should match")
     assert (df.count() == h2oFrame.numRows(), "Number of rows should match")
@@ -59,8 +60,8 @@ class H2OFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     val h2oFramesHandler = new H2OFramesHandler(sc,hc)
     val req = new DataFrameIDV3
     req.h2oframe_id = "does_not_exist"
-    val result = h2oFramesHandler.toDataFrame(3,req)
-    assert (result.dataframe_id.equals(""), "Returned H2O Frame id should be empty")
-    assert (!result.msg.equals("OK"), "Status is not OK - it is message saying that given H2OFrame does not exist")
+    intercept[H2ONotFoundArgumentException] {
+      h2oFramesHandler.toDataFrame(3,req)
+    }
   }
 }

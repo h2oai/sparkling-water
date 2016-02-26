@@ -14,22 +14,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api.RDDs;
+package water.api.scalaInt;
 
 import water.api.API;
 import water.api.Schema;
 
 /**
- * Endpoint representing single RDD.
+ * Schema representing [POST] and [DELETE] /3/scalaint endpoint
  */
-public class RDDWithMsgV3  extends Schema<IcedRDDWithMsgInfo, RDDWithMsgV3> {
-
-    @API(help = "Searched rdd id", direction = API.Direction.INPUT)
-    public int searched_rdd_id;
-
-    @API(help = "RDD", direction = API.Direction.OUTPUT)
-    public RDDV3 rdd;
-
-    @API(help = "Additional message", direction = API.Direction.OUTPUT)
-    public String msg;
+public class ScalaSessionIdV3  extends Schema<IcedSessionId, ScalaSessionIdV3> {
+    @API(help = "Session id identifying the correct interpreter", direction = API.Direction.INOUT)
+    public int session_id;
 }
