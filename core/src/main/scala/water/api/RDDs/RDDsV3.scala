@@ -16,9 +16,12 @@
 */
 package water.api.RDDs
 
-/**
- * Schema for /3/RDDs endopoint
- */
-class RDDsV3 extends RDDsBase[RDDs, RDDsV3] {
+import water.api.{API, Schema}
 
+/**
+ * Schema representing [GET] /3/RDDs endpoint
+ */
+class RDDsV3 extends Schema[RDDs, RDDsV3] {
+  @API(help = "List of RDDs", direction = API.Direction.OUTPUT)
+  val rdds: Array[RDDV3] = null
 }
