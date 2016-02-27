@@ -2,6 +2,13 @@
 // Integration tests support
 //
 
+idea {
+    module {
+        jdkName='inheried'
+        testSourceDirs += file('src/integTest/scala')
+    }
+}
+
 sourceSets {
     integTest {
         scala.srcDir file('src/integTest/scala')
@@ -23,6 +30,49 @@ task integTest(type: Test) {
     description = 'Runs all integration tests'
     testClassesDir = sourceSets.integTest.output.classesDir
     classpath = sourceSets.integTest.runtimeClasspath
+
+    //
+    // Defaults shared by all integration tests
+    //
+
+    // Run with assertions ON
+    enableAssertions = true
+    // For a new JVM for each test class
+    forkEvery = 1
+    // Working dir will be root project
+    workingDir = rootDir
+    // Increase test runner memory
+    maxHeapSize = "4g"
+    // Increase PermGen for forked JVM
+    jvmArgs '-XX:MaxPermSize=384m'
+
+    def testEnv = detectEnvironment()
+    // Decide which tests should be launch here based on environment
+    switch (testEnv) {
+        case "yarn":
+            systemProperty "sparkling.test.environment", "${testEnv}"
+            systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}/nodes"
+            systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}/client"
+
+            include "water/sparkling/itest/yarn/**"
+            break
+
+        case "standalone":
+            systemProperty "sparkling.test.environment", "${testEnv}"
+            systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}/nodes"
+            systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}/client"
+
+            include "water/sparkling/itest/standalone/**"
+            break
+
+        case "local":
+            systemProperty "sparkling.test.environment", "${testEnv}"
+            systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/nodes")
+            systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client")
+
+            include "water/sparkling/itest/local/**"
+            break
+    }
 }
 
 // Create jar containing integration test classes
@@ -40,3 +90,18 @@ check.dependsOn integTest
 // Dependencies
 integTest.dependsOn integTestJar
 integTest.dependsOn ":sparkling-water-assembly:shadowJar"
+
+// Setup properties
+ext {
+    integTestEnvironment = detectEnvironment()
+}
+
+String detectEnvironment(String defaultEnv = "local") {
+    String denv = [ project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
+                    System.properties["sparklingTestEnv"],
+                    defaultEnv
+    ].find { h -> h!=null } // first match
+    // Return env
+    logger.info("* Detected '$denv' Sparkling test environment (configure via property 'sparklingTestEnv')")
+    denv
+}

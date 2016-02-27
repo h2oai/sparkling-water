@@ -2,13 +2,6 @@ description = "Sparkling Water Examples"
 
 apply from: "$rootDir/gradle/utils.gradle"
 apply from: "$rootDir/gradle/scriptsTest.gradle"
-idea {
-    module {
-        jdkName='inheried'
-        testSourceDirs += new File('examples/src/scriptsTest/scala')
-        testSourceDirs += new File('examples/src/integTest/scala')
-    }
-}
 
 dependencies {
   // Sparkling Water Core
@@ -37,56 +30,15 @@ dependencies {
   integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar' )
 }
 
-
 integTest {
-  def testEnv = detectEnvironment()
-
-  // Pass references to libraries to test launcher
+// Pass references to libraries to test launcher
   systemProperty "spark.testing",   "true"
   systemProperty "spark.test.home", "${sparkHome}"
   systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
-  if (sparkMaster != null)
-    systemProperty "spark.master", "${sparkMaster}"
+
   // Pass list of jars required for testing
   systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
   systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
-  jvmArgs '-XX:MaxPermSize=384m'
-
-  // Decide which tests should be launch here based on environment
-  switch (testEnv) {
-    case "yarn":
-      systemProperty "sparkling.test.environment", "${testEnv}"
-      systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}/nodes"
-      systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}/client"
-
-      include "water/sparkling/itest/yarn/**"
-      break
-
-    case "standalone":
-      systemProperty "sparkling.test.environment", "${testEnv}"
-      systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}/nodes"
-      systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}/client"
-
-      include "water/sparkling/itest/standalone/**"
-      break
-
-    case "local":
-      systemProperty "sparkling.test.environment", "${testEnv}"
-      systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/nodes")
-      systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client")
-
-      include "water/sparkling/itest/local/**"
-      break
-  }
-
-  // Run with assertions ON
-  enableAssertions = true
-  // For a new JVM for each test class
-  forkEvery = 1
-  // Working dir will be root project
-  workingDir = rootDir
-  // Increase test runner memory
-  maxHeapSize = "4g"
 
   // Show standard out and standard error of the test JVM(s) on the console
   // DEBUG testLogging.showStandardStreams = true
