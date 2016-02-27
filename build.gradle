@@ -37,8 +37,8 @@ ext {
       project(':sparkling-water-examples'),
       project(':sparkling-water-repl')
     ]
-
     integTestProjects = [
+      project(':sparkling-water-core'),
       project(':sparkling-water-examples')
     ]
     scalaProjects = [
@@ -122,28 +122,6 @@ configure(subprojects) { project ->
 
     if (project in integTestProjects) {
         apply from: "$rootDir/gradle/itest.gradle"
-    }
-
-    ext {
-        // List of dependencies required for testing
-        // They will compose assembly passed to Spark cluster
-        testDependencies = ["ai.h2o:h2o-core",
-                        "ai.h2o:h2o-algos",
-                        "ai.h2o:h2o-app",
-                        "ai.h2o:h2o-persist-hdfs",
-                        "ai.h2o:h2o-genmodel",
-                        "joda-time:joda-time",
-                        "org.joda:joda-convert",
-                        "org.javassist:javassist",
-                        "gov.nist.math:jama",
-                        "com.google.code.gson:gson",
-                        "com.google.guava:guava",
-                        "ai.h2o:reflections",
-                        "ai.h2o:google-analytics-java",
-                        "com.github.tony19:named-regexp",
-                        "org.eclipse.jetty.aggregate:jetty-servlet",
-                        "org.eclipse.jetty:jetty-server",
-                        "org.eclipse.jetty:jetty-plus:8.1.17.v20150415"]
     }
 }
 

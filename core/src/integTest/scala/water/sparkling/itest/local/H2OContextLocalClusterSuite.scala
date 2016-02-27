@@ -30,8 +30,8 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 class H2OContextLocalClusterSuite extends FunSuite
   with Matchers with BeforeAndAfter with SparkTestContext {
 
-  val swassembly = sys.props.getOrElse("sparkling.test.assembly",
-    fail("The variable 'sparkling.test.assembly' is not set! It should point to assembly jar file."))
+  val swassembly = sys.props.getOrElse("sparkling.assembly.jar",
+    fail("The variable 'sparkling.assembly.jar' is not set! It should point to assembly jar file."))
 
   test("verify H2O cloud building on local cluster") {
     // For distributed testing we need to pass around jar containing all implementation classes plus test classes

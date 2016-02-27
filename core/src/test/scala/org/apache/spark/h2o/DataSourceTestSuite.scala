@@ -31,11 +31,8 @@ import water.DKV
 @RunWith(classOf[JUnitRunner])
 class DataSourceTestSuite extends FunSuite with SharedSparkTestContext {
 
-  val swassembly = sys.props.getOrElse("sparkling.test.assembly",
-    fail("The variable 'sparkling.test.assembly' is not set! It should point to assembly jar file."))
-
-  override def createSparkContext: SparkContext = new SparkContext("local-cluster[3,2,2048]", "test-data-sources",
-    conf = defaultSparkConf.setJars(swassembly :: Nil))
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-data-sources",
+    conf = defaultSparkConf)
 
 
   test("Reading H2OFrame using short variant") {
