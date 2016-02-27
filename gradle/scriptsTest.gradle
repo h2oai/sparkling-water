@@ -2,6 +2,13 @@
 // Script tests support
 //
 
+idea {
+    module {
+        jdkName='inheried'
+        testSourceDirs += file('src/scriptsTest/scala')
+    }
+}
+
 sourceSets {
     scriptsTest {
         scala.srcDir file('src/scriptsTest/scala')

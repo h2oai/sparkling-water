@@ -41,37 +41,19 @@ dependencies {
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
   testCompile "junit:junit:4.11"
-}
 
-// Add a new configuration containing only jars needed for test run
-configurations {
-    testAssembly {
-        description = 'Contains only jars needed to run tests on top of Spark.'
-        transitive = false
-    }
-}
+  // Integration tests requirements
+  integTestCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
+  integTestCompile "junit:junit:4.11"
 
-//
-// Setup artifacts for testing on top of Spark cluster
-// - should contain all dependencies required to build an assembly executable on Spark
-artifacts {
-    testAssembly jar
-    testAssembly testJar
-
-    // pull selected dependencies
-    dep(testDependencies).each {
-        testAssembly it
-    }
+  // Put Spark Assembly on runtime path
+  integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar' )
 }
 
 // Setup test environment for Spark
 test {
     // Test environment
     systemProperty "spark.testing",   "true"
-
-    systemProperty "spark.test.home", "${sparkHome}"
-    // Pass list of jars required for testing
-    systemProperty "sparkling.test.assembly", "${configurations.testAssembly.artifacts.file.join(',')}"
 
     systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-test/nodes")
     systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-test/client")
@@ -93,3 +75,15 @@ test {
 }
 
 test.dependsOn testJar
+
+integTest {
+    // Pass references to libraries to test launcher
+    systemProperty "spark.testing",   "true"
+    systemProperty "spark.test.home", "${sparkHome}"
+    systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
+
+    // Pass list of jars required for testing
+    systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
+    systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
+}
+
