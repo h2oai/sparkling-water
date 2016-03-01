@@ -25,6 +25,8 @@ import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.h2o.H2OTypeUtils._
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
+import org.apache.spark.scheduler.cluster.CoarseGrainedSchedulerBackend
+import org.apache.spark.scheduler.local.LocalBackend
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -161,11 +163,6 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   def asDataFrame(fr : H2OFrame)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
   def asDataFrame(s : String)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(new H2OFrame(s))
 
-
-  /** Detected number of Spark executors
-    * Property value is derived from SparkContext during creation of H2OContext. */
-  private def numOfSparkExecutors = if (sparkContext.isLocal) 1 else sparkContext.getExecutorStorageStatus.length - 1
-
   def h2oLocalClient = this.localClientIp + ":" + this.localClientPort
 
   def h2oLocalClientIp = this.localClientIp
@@ -176,6 +173,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   //def sparkUI = sparkContext.ui.map(ui => ui.appUIAddress)
 
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
+  @deprecated(message = "Use start() method.", since = "1.4.11")
   def start(h2oWorkers: Int):H2OContext = {
     import H2OConf._
     sparkConf.set(PROP_CLUSTER_SIZE._1, h2oWorkers.toString)
@@ -197,7 +195,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
 
-    val (spreadRDD, spreadRDDNodes) = createSpreadRDD(numRddRetries, drddMulFactor, numH2OWorkers, 0)
+    val (spreadRDD, spreadRDDNodes) = createSpreadRDD()
 
     //attach listener which shutdown H2O when we bump into executor we didn't discover during the spreadRDD phase
     sparkContext.addSparkListener(new SparkListener(){
@@ -218,7 +216,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
                but H2O is running only on ${executorIds.length} nodes!""")
     }
     // Execute H2O on given nodes
-    logInfo(s"""Launching H2O on following nodes: ${spreadRDDNodes.mkString(",")}""")
+    logInfo(s"""Launching H2O on following ${spreadRDDNodes.length} nodes: ${spreadRDDNodes.mkString(",")}""")
 
     var h2oNodeArgs = getH2ONodeArgs
     // Disable web on h2o nodes in non-local mode
@@ -267,58 +265,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     H2O.exit(0)
   }
 
-  @tailrec
-  private
-  def createSpreadRDD(nretries: Int,
-                      mfactor: Int,
-                      nworkers: Int,  // Number of request workers
-                      numTriesSame: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
-    logDebug(s"  Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, nworkers=${nworkers}")
-    // Non-positive value of nworkers means automatic detection of number of workers
-    val nSparkExecBefore = numOfSparkExecutors
-    val workers = if (nworkers > 0) nworkers else if (nSparkExecBefore > 0) nSparkExecBefore else defaultCloudSize
-    val spreadRDD =
-      sparkContext.parallelize(0 until mfactor*workers,
-        mfactor*workers).persist()
+  private def createSpreadRDD() = new SpreadRDDBuilder(sparkContext,
+                                                       H2OContextUtils.guessTotalExecutorSize(sparkContext)).build()
 
-    // Collect information about executors in Spark cluster
-    val nodes = collectNodesInfo(spreadRDD)
-    // Verify that all executors participate in execution
-    val nSparkExecAfter = numOfSparkExecutors
-    val sparkExecutors = nodes.map(_._1).distinct.length
-    // Delete RDD
-    spreadRDD.unpersist()
-    if ((sparkExecutors < nworkers || nSparkExecAfter != nSparkExecBefore)
-          && nretries == 0) {
-      throw new IllegalArgumentException(
-        s"""Cannot execute H2O on all Spark executors:
-            | Expected number of H2O workers is ${nworkers}
-            | Detected number of Spark workers is $sparkExecutors
-            | Num of Spark executors before is $nSparkExecBefore
-            | Num of Spark executors after is $nSparkExecAfter
-            |
-            | If you are running regular application, please, specify number of Spark workers
-            | via ${H2OConf.PROP_CLUSTER_SIZE._1} Spark configuration property.
-            | If you are running from shell,
-            | you can try: val h2oContext = H2OContext.getOrCreate(sc,<number of Spark workers>)
-            |
-            |""".stripMargin
-      )
-    } else if (nSparkExecAfter != nSparkExecBefore) {
-      // Repeat if we detect change in number of executors reported by storage level
-      logInfo(s"Detected ${nSparkExecBefore} before, and ${nSparkExecAfter} spark executors after! Retrying again...")
-      createSpreadRDD(nretries-1, mfactor, nworkers, 0)
-    } else if (((nworkers > 0 && sparkExecutors == nworkers || nworkers<=0) && sparkExecutors == nSparkExecAfter) && numTriesSame == subseqTries) {
-      // Return result only if we are sure that number of detected executors seems ok or if the number of executors didn't change in the last
-      // SUBSEQUENT_NUM_OF_TRIES iterations
-      logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers!")
-      (new InvokeOnNodesRDD(nodes, sparkContext), nodes)
-    } else {
-      logInfo(s"Detected ${sparkExecutors} spark executors for ${nworkers} H2O workers! Retrying again...")
-
-      createSpreadRDD(nretries-1, mfactor*2, nworkers, numTriesSame + 1)
-    }
-  }
 
   def createH2ORDD[A <: Product: TypeTag: ClassTag](fr: H2OFrame): RDD[A] = {
     new H2ORDD[A](this,fr)
@@ -353,8 +302,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
    * Return true if running inside spark/sparkling water test.
    *
    * @return true if the actual run is test run
-   *
-   * @return true if the actual run is test run
+    * @return true if the actual run is test run
    */
   private def isTesting = sparkContext.conf.contains("spark.testing") || sys.props.contains("spark.testing")
 
@@ -773,6 +721,7 @@ object H2OContext extends Logging {
     // Save it directly to DKV
     fr.update()
   }
+
   private
   def finalizeFrame[T](keyName: String,
                        res: Array[Long],
@@ -783,14 +732,22 @@ object H2OContext extends Logging {
     fr
   }
 
+  /** Check Spark environment and warn about possible problems. */
   private
   def checkAndUpdateSparkEnv(conf: SparkConf): Unit = {
     // If 'spark.executor.instances' is specified update H2O property as well
     conf.getOption("spark.executor.instances").foreach(v => conf.set("spark.ext.h2o.cluster.size", v))
     // Increase locality timeout since h2o-specific tasks can be long computing
-    if (conf.getInt("spark.locality.wait",3000) <= 3000) {
+    if (conf.getInt("spark.locality.wait", 3000) <= 3000) {
       logWarning(s"Increasing 'spark.locality.wait' to value 30000")
       conf.set("spark.locality.wait", "30000")
+    }
+
+    if (!conf.contains("spark.scheduler.minRegisteredResourcesRatio")) {
+      logWarning("The property 'spark.scheduler.minRegisteredResourcesRatio' is not specified!\n" +
+                 "We recommend to pass `--conf spark.scheduler.minRegisteredResourcesRatio=1`")
+      // Setup the property but at this point it does not make good sense
+      conf.set("spark.scheduler.minRegisteredResourcesRatio", "1")
     }
   }
   private[h2o] def registerClientWebAPI(sc: SparkContext, h2oContext: H2OContext): Unit = {

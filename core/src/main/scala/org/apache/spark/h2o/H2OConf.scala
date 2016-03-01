@@ -34,7 +34,7 @@ trait H2OConf {
   // Collect configuration properties
   import H2OConf._
 
-  def numH2OWorkers = sparkConf.getInt(PROP_CLUSTER_SIZE._1, PROP_CLUSTER_SIZE._2)
+  def numH2OWorkers = sparkConf.getOption(PROP_CLUSTER_SIZE._1).map(_.toInt)
   def useFlatFile   = sparkConf.getBoolean(PROP_USE_FLATFILE._1, PROP_USE_FLATFILE._2)
   def clientIp      = sparkConf.getOption(PROP_CLIENT_IP._1)
   def clientBasePort = sparkConf.getInt(PROP_CLIENT_PORT_BASE._1, PROP_CLIENT_PORT_BASE._2)
@@ -128,9 +128,9 @@ object H2OConf {
   /** Configuration property - use flatfile for H2O cloud formation. */
   val PROP_USE_FLATFILE = ("spark.ext.h2o.flatfile", true)
   /** Configuration property - expected number of workers of H2O cloud.
-    * Value -1 means automatic detection of cluster size.
+    * Value None means automatic detection of cluster size.
     */
-  val PROP_CLUSTER_SIZE = ("spark.ext.h2o.cluster.size", -1)
+  val PROP_CLUSTER_SIZE = ("spark.ext.h2o.cluster.size", None)
   /** Configuration property - timeout for cloud up. */
   val PROP_CLOUD_TIMEOUT = ("spark.ext.h2o.cloud.timeout", 60*1000)
   /** Configuration property - number of retries to create an RDD spreat over all executors */
