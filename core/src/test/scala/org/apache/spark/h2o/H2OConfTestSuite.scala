@@ -53,7 +53,7 @@ with Matchers with BeforeAndAfter with SparkTestContext {
 
     // Test passed values
     assert(hc.useFlatFile == false)
-    assert(hc.numH2OWorkers == 42)
+    assert(hc.numH2OWorkers == Some(42))
     assert(hc.clientBasePort == 1267)
     assert(hc.nodeBasePort == 32333)
     assert(hc.clientIp == Some("10.0.0.100"))
