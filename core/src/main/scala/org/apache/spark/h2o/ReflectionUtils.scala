@@ -74,4 +74,9 @@ object ReflectionUtils {
       case t => throw new IllegalArgumentException(s"Type $t is not supported!")
     }
   }
+
+  def reflector(ref: AnyRef) = new {
+    def getV[T](name: String): T = ref.getClass.getMethods.find(_.getName == name).get.invoke(ref).asInstanceOf[T]
+    def setV(name: String, value: Any): Unit = ref.getClass.getMethods.find(_.getName == name + "_$eq").get.invoke(ref, value.asInstanceOf[AnyRef])
+  }
 }

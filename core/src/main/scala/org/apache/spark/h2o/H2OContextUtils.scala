@@ -21,6 +21,8 @@ import java.io.File
 import java.net.InetAddress
 
 import org.apache.spark.h2o.H2OContextUtils._
+import org.apache.spark.scheduler.cluster.{YarnSchedulerBackend, CoarseGrainedSchedulerBackend}
+import org.apache.spark.scheduler.local.LocalBackend
 import org.apache.spark.scheduler.{SparkListenerBlockManagerAdded, SparkListenerBlockManagerRemoved}
 import org.apache.spark.{Accumulable, SparkContext, SparkEnv}
 import water.H2OStarter
@@ -29,32 +31,12 @@ import water.init.AbstractEmbeddedH2OConfig
 import scala.collection.mutable
 
 /**
- * Support methods.
+ * Support methods for H2OContext.
  */
 private[spark] object H2OContextUtils {
 
   /** Helper type expression a tuple of ExecutorId, IP, port */
   type NodeDesc = (String, String, Int)
-
-  /** Generates and distributes a flatfile around Spark cluster.
-    *
-    * @param distRDD simple RDD to fork execution on.
-    * @return list of node descriptions (executorId, executorIP, -1)
-    */
-  def collectNodesInfo(distRDD: RDD[Int]): Array[NodeDesc] = {
-    // Collect flatfile - tuple of (executorId, IP, -1)
-    val nodes = distRDD.mapPartitionsWithIndex { (idx, it) =>
-      val env = SparkEnv.get
-      Iterator.single(
-        ( env.executorId,
-        // java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString("."),
-        // Use existing Akka setup since Spark at this point is already communicating
-        getIp(env),
-        -1 ) )
-    }.collect()
-    // Take only unique executors
-    nodes.groupBy(_._1).map(_._2.head).toArray.sortWith(_._1 < _._1)
-  }
 
   def getIp(env: SparkEnv) = env.rpcEnv.address.host //settings.config.getString("akka.remote.netty.tcp.hostname")
 
@@ -107,6 +89,8 @@ private[spark] object H2OContextUtils {
     // Create global accumulator for list of nodes IP:PORT
     val bc = sc.accumulableCollection(new mutable.HashSet[NodeDesc]())
     val isLocal = sc.isLocal
+    val userSpecifiedCloudSize = sc.getConf.getOption("spark.executor.instances").map(_.toInt)
+
     // Try to launch H2O
     val executorStatus = spreadRDD.map { nodeDesc =>  // RDD partition index
       assert(nodeDesc._2 == getIp(SparkEnv.get),  // Make sure we are running on right node
@@ -215,6 +199,30 @@ private[spark] object H2OContextUtils {
     }
     throw new IllegalStateException(s"Failed to create temporary directory $baseDir / $baseName")
   }
+
+  private[spark] def guessTotalExecutorSize(sc: SparkContext): Option[Int] = {
+    sc.conf.getOption("spark.executor.instances")
+      .map(_.toInt)
+      .orElse(getCommandArg("--num-executors").map(_.toInt))
+      .orElse({
+        val sb = sc.schedulerBackend
+
+        val num = sb match {
+          case b: LocalBackend => Some(1)
+          case b: YarnSchedulerBackend => Some(ReflectionUtils.reflector(b).getV[Int]("totalExpectedExecutors"))
+          //case b: CoarseGrainedSchedulerBackend => b.numExistingExecutors
+          case _ => None
+        }
+        num
+      })
+  }
+
+  private def getCommandArg(argName: String): Option[String] = {
+    val cmdLine = System.getProperty("sun.java.command", "").split(" ").map(_.trim)
+    val valueIdx = (for (i <- 0 until cmdLine.length; if (cmdLine(i).equals(argName))) yield i + 1).headOption
+    valueIdx.filter(i => i < cmdLine.length).map(i => cmdLine(i))
+  }
+
 }
 
 /**
