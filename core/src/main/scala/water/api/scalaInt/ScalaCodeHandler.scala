@@ -16,15 +16,14 @@
 */
 package water.api.scalaInt
 
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.repl.h2o.H2OInterpreter
+import org.apache.spark.{SparkConf, SparkContext}
 import water.Iced
 import water.api.Handler
 import water.exceptions.H2ONotFoundArgumentException
 
 import scala.collection.concurrent.TrieMap
-import scala.compat.Platform
 
 /**
  * Handler for all Scala related endpoints
@@ -33,18 +32,16 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler with H2OConf{
 
   val intrPoolSize = scalaIntDefaultNum
   val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
-  val timeout = scalaIntTimeout
-  var mapIntr = new TrieMap[Int, (H2OInterpreter, Long)]
+  var mapIntr = new TrieMap[Int, H2OInterpreter]
   var lastIdUsed = 0
-  initializeHandler()
+  initializeInterpeterPool()
 
   def interpret(version: Int, s: ScalaCodeV3): ScalaCodeV3 = {
     // check if session exists
     if (s.session_id == -1 || !mapIntr.isDefinedAt(s.session_id)) {
       throw new H2ONotFoundArgumentException("Session does not exists. Create session using the address /3/scalaint!")
     }
-    mapIntr += s.session_id ->(mapIntr(s.session_id)._1, Platform.currentTime) // update the time
-    val intp = mapIntr(s.session_id)._1
+    val intp = mapIntr(s.session_id)
     s.status = intp.runCode(s.code).toString
     s.response = intp.interpreterResponse
     s.output = intp.consoleOutput
@@ -61,10 +58,10 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler with H2OConf{
     this.synchronized {
                         if (!freeInterpreters.isEmpty) {
                           val intp = freeInterpreters.poll()
-                          mapIntr.put(intp.sessionId, (intp, Platform.currentTime))
+                          mapIntr.put(intp.sessionId, intp)
                           new Thread(new Runnable {
                             def run(): Unit = {
-                              createIntpInPool()
+                              createInterpreterInPool()
                             }
                           }).start()
                           intp
@@ -72,7 +69,7 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler with H2OConf{
                           // pool is empty at the moment and is being filled, return new interpreter without using the pool
                           val id = createID()
                           val intp = new H2OInterpreter(sc, id)
-                          mapIntr.put(intp.sessionId, (intp, Platform.currentTime))
+                          mapIntr.put(intp.sessionId, intp)
                           intp
                         }
                       }
@@ -82,7 +79,7 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler with H2OConf{
     if(!mapIntr.contains(s.session_id)){
       throw new H2ONotFoundArgumentException("Session does not exists. Create session using the address /3/scalaint!")
     }
-    mapIntr(s.session_id)._1.closeInterpreter()
+    mapIntr(s.session_id).closeInterpreter()
     mapIntr -= s.session_id
     s
   }
@@ -92,31 +89,13 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler with H2OConf{
     s
   }
 
-  def initializeHandler(): Unit = {
-    initializePool()
-    val checkThread = new Thread(new Runnable {
-      def run() {
-        while (true) {
-          mapIntr.foreach { case (id: Int, (intr: H2OInterpreter, lastChecked: Long)) =>
-            if (Platform.currentTime - lastChecked >= timeout) {
-              mapIntr(id)._1.closeInterpreter()
-              mapIntr -= id
-            }
-                          }
-          Thread.sleep(timeout)
-        }
-      }
-    })
-    checkThread.start()
-  }
-
-  def initializePool(): Unit = {
+  def initializeInterpeterPool(): Unit = {
     for (i <- 0 until intrPoolSize) {
-      createIntpInPool()
+      createInterpreterInPool()
     }
   }
 
-  def createIntpInPool(): H2OInterpreter = {
+  def createInterpreterInPool(): H2OInterpreter = {
     val id = createID()
     val intp = new H2OInterpreter(sc, id)
     freeInterpreters.add(intp)
