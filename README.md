@@ -16,16 +16,16 @@
 
 
 Sparkling Water integrates H<sub>2</sub>O's fast scalable machine learning engine with Spark. It provides: 
- - utilities to publish Spark data structures (RDDs, DataFrames) as H2O's frames and vice versa. 
+ - Utilities to publish Spark data structures (RDDs, DataFrames) as H2O's frames and vice versa. 
  - DSL to use Spark data structures as input for H2O's algorithms
- - basic building blocks to create ML applications utilizing Spark and H2O APIs
- - Python interface enabling use of Sparkling Water directly from pyspark
+ - Basic building blocks to create ML applications utilizing Spark and H2O APIs
+ - Python interface enabling use of Sparkling Water directly from pySpark
 
 ## Getting Started
 
 ### Select right version
 The Sparkling Water is developed in multiple parallel branches.
-Each branch corresponds to Spark major release (e.g., branch rel-1.5 provides implementation of Sparkling Water for Spark 1.5).
+Each branch corresponds to a Spark major release (e.g., branch **rel-1.5** provides implementation of Sparkling Water for Spark **1.5**).
 
 Please, switch to the right branch:
  - For Spark 1.6 use branch [rel-1.6](https://github.com/h2oai/sparkling-water/tree/rel-1.6)
@@ -60,76 +60,177 @@ Then use the provided `gradlew` to build project:
 ---
 <a name="Binary"></a>
 ### Download Binaries
+For each Sparkling Water you can download binaries here:
    * [Sparkling Water - Latest version](http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html)
-   
-  > Note: For each version of Spark there is a corresponding Sparkling Water version (i.e., for Spark 1.5 we provide Sparkling water and Maven artifacts with version 1.5.X) 
+   * [Sparkling Water - Latest 1.6 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.6/latest.html)
+   * [Sparkling Water - Latest 1.5 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.5/latest.html)
+   * [Sparkling Water - Latest 1.4 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.4/latest.html)
+   * [Sparkling Water - Latest 1.3 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.3/latest.html)
+
+---
+### Maven
+Each Sparkling Water release is published into Maven central. Right now we publish artifacts only for Scala 2.10.
+
+The artifacts coordinates are:
+ - `ai.h2o:sparkling-water-core_2.10:{{version}}` - includes core of Sparkling Water.
+ - `ai.h2o:sparkling-water-examples_2.10:{{version}}` - includes example applications.
+
+> Note: The `{{version}}` reference to a release version of Sparkling Water, for example: `ai.h2o:sparkling-water-examples_2.10:1.4.11`
+
+The full list of published packages is available [here](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*).
+
+---
+## Use Sparkling Water
+
+Sparkling Water is distributed as a Spark application library which can be used by any Spark application. 
+Furthermore, we provide also zip distribution which bundles the library and shell scripts.
+
+There are several ways of using Sparkling Water:
+  - Sparkling Shell
+  - Sparkling Water driver
+  - Spark Shell and include Sparkling Water library via `--jars` or `--packages` option
+  - Spark Submit and include Sparkling Water library via `--jars` or `--packages` option
+  - pySpark with pySparkling
 
 ---
 <a name="SparkShell"></a>
 ### Run Sparkling shell
 
-The Sparkling shell provides a regular Spark shell that supports creation of an H<sub>2</sub>O cloud and execution of H<sub>2</sub>O algorithms.
+The Sparkling shell encapsulates a regular Spark shell and append Sparkling Water library on the classpath via `--jars` option. 
+The Sparkling Shell supports creation of an H<sub>2</sub>O cloud and execution of H<sub>2</sub>O algorithms.
 
-First, build a package containing Sparkling water:
-```
-./gradlew assemble
-```
+1. First, build a package containing Sparkling water:
+  ```
+  ./gradlew assemble
+  ```
 
-Configure the location of Spark cluster:
-```
-export SPARK_HOME="/path/to/spark/installation"
-export MASTER="local-cluster[3,2,1024]"
-```
+2. Configure the location of Spark cluster:
+  ```
+  export SPARK_HOME="/path/to/spark/installation"
+  export MASTER="local-cluster[3,2,2048]"
+  ```
 
-> In this case, `local-cluster[3,2,1024]` points to embedded cluster of 3 worker nodes, each with 2 cores and 1G of memory.
+  > In this case, `local-cluster[3,2,2048]` points to embedded cluster of 3 worker nodes, each with 2 cores and 2G of memory.
 
-And run Sparkling Shell:
-```
-bin/sparkling-shell
-```
+3. Run Sparkling Shell:
+  ```
+  bin/sparkling-shell
+  ```
 
-> Sparkling Shell accepts common Spark Shell arguments. For example, to increase memory allocated by each executor, use the `spark.executor.memory` parameter: `bin/sparkling-shell --conf "spark.executor.memory=4g"`
+  > Sparkling Shell accepts common Spark Shell arguments. For example, to increase memory allocated by each executor, use the `spark.executor.memory` parameter: `bin/sparkling-shell --conf "spark.executor.memory=4g"`
 
-And initialize H2OContext 
-```scala
-import org.apache.spark.h2o._
-val hc = H2OContext.getOrCreate(sc)
-```
+4. Initialize H2OContext 
+  ```scala
+  import org.apache.spark.h2o._
+  val hc = H2OContext.getOrCreate(sc)
+  ```
 
-> H2OContext start H2O services on top of Spark cluster and provides primitives for transformations between H2O and Spark datastructures.
+  > H2OContext start H2O services on top of Spark cluster and provides primitives for transformations between H2O and Spark datastructures.
 
 ---
 
 <a name="RunExample"></a>
 ### Run examples
+The Sparkling Water distribution includes also a set of examples. You can find there implementation in [example folder](example/). 
+You can run them in the following way:
 
-Build a package that can be submitted to Spark cluster:
-```
-./gradlew assemble
-```
+1. Build a package that can be submitted to Spark cluster:
+  ```
+  ./gradlew assemble
+  ```
 
-Set the configuration of the demo Spark cluster (for example, `local-cluster[3,2,1024]`)
+2. Set the configuration of the demo Spark cluster (for example, `local-cluster[3,2,1024]`)
+  ```
+  export SPARK_HOME="/path/to/spark/installation"
+  export MASTER="local-cluster[3,2,1024]"
+  ```
+  > In this example, the description `local-cluster[3,2,1024]` causes creation of a local cluster consisting of 3 workers.
 
-```
-export SPARK_HOME="/path/to/spark/installation"
-export MASTER="local-cluster[3,2,1024]"
-```
-> In this example, the description `local-cluster[3,2,1024]` causes creation of a local cluster consisting of 3 workers.
+3. And run the example:
+  ```
+  bin/run-example.sh
+  ```
 
-And run the example:
-```
-bin/run-example.sh
-```
-
-For more details about the demo, please see the [README.md](examples/README.md) file in the [examples directory](examples/).
-
----
+For more details about examples, please see the [README.md](examples/README.md) file in the [examples directory](examples/).
 
 <a name="MoreExamples"></a>
 #### Additional Examples
 You can find more examples in the [examples folder](examples/).
 
-## Running (Scala) Sparkling Water in IntelliJ IDEA
+---
+<a name="PySparkling"></a>
+### Run PySparkling
+Sparkling Water can be also used directly from pySpark.
+
+1. First, build a package:
+  ```
+  ./gradlew build -x check
+  ```
+
+2. Configure the location of Spark distribution and cluster:
+  ```
+  export SPARK_HOME="/path/to/spark/installation"
+  export MASTER="local-cluster[3,2,1024]"
+  ```
+
+3. And run pySparkling shell:
+  ```
+  bin/pysparkling
+  ```
+
+  > The `pysparkling` shell accepts common `pyspark` arguments. 
+
+4. Initialize H2OContext 
+  ```python
+  import pysparkling
+  hc = H2OContext(sc).start()
+  ```
+
+> To run `pysparkling` on top of Spark cluster, H2O Python package is required. You can install it via `pip` or point to it via `PYTHONPATH` shell variable: `export PYTHONPATH=$PYTHONPATH:$H2O_HOME/h2o-py`
+
+> To use Python notebook with `pysparkling` you need to specify `IPYTHON_OPTS` shell variable: `IPYTHON_OPTS="notebook" bin/pysparkling`
+
+> To use iPython with `pysparkling` you need to specify `PYSPARK_PYTHON` shell variable: `PYSPARK_PYTHON="ipython" bin/pysparkling`
+
+---
+<a name="Packages"></a>
+### Use Sparkling Water via Spark Packages
+Sparkling Water is also published as a Spark package. 
+You can use it directly from your Spark distribution.
+
+For example, if you have Spark version 1.4 and would like to use Sparkling Water version 1.4.11 and launch example `CraigslistJobTitlesStreamingApp`, then you can use the following command:
+
+```bash
+$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.4.11,ai.h2o:sparkling-water-examples_2.10:1.4.11 --class org.apache.spark.examples.h2o.CraigslistJobTitlesStreamingApp /dev/null
+```
+The Spark option `--packages` points to published Sparkling Water packages in Maven repository.
+
+
+The similar command works for `spark-shell`:
+```bash
+$SPARK_HOME/bin/spark-shell --packages ai.h2o:sparkling-water-core_2.10:1.4.11,ai.h2o:sparkling-water-examples_2.10:1.4.11 
+```
+
+
+The same command works for Python programs:
+```bash
+$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.4.11,ai.h2o:sparkling-water-examples_2.10:1.4.11 example.py
+```
+
+> Note: When you are using Spark packages you do not need to download Sparkling Water distribution! Spark installation is sufficient!
+
+---  
+
+<a name="Docker"></a>
+### Docker Support
+
+See [docker/README.md](docker/README.md) to learn about Docker support.
+
+---
+
+## Develop with Sparkling Water
+
+### Setup Sparkling Water in IntelliJ IDEA
 
 *  In IDEA, install the Scala plugin for IDEA
 *  In a Terminal:
@@ -143,77 +244,14 @@ open sparkling-water.ipr
 
 *  In IDEA, open the file sparkling-water/core/src/main/scala/water/SparklingWaterDriver.scala
 *  [ Wait for IDEA indexing to complete so the Run and Debug choices are available ]
-*  In IDEA, Run or Debug SparklingWaterDriver (via right-click)
+*  In IDEA, _Run_ or _Debug_ SparklingWaterDriver (via right-click)
 
----
-<a name="PySparkling"></a>
-## PySparkling
-Sparkling Water can be also used directly from pySpark
+### Develop applications with Sparkling Water
 
-First, build a package:
-```
-./gradlew build -x check
-```
-
-Configure the location of Spark distribution and cluster:
-```
-export SPARK_HOME="/path/to/spark/installation"
-export MASTER="local-cluster[3,2,1024]"
-```
-
-And run pySparkling shell:
-```
-bin/pysparkling
-```
-
-> The `pysparkling` shell accepts common `pyspark` arguments. 
-
-And initialize H2OContext 
-```python
-import pysparkling
-hc = H2OContext(sc).start()
-```
-
-> To run `pysparkling` on top of Spark cluster, H2O Python package is required. You can install it via `pip` or point to it via `PYTHONPATH` shell variable: `export PYTHONPATH=$PYTHONPATH:$H2O_HOME/h2o-py`
-
-> To use Python notebook with `pysparkling` you need to specify `IPYTHON_OPTS` shell variable: `IPYTHON_OPTS="notebook" bin/pysparkling`
-
-> To use iPython with `pysparkling` you need to specify `PYSPARK_PYTHON` shell variable: `PYSPARK_PYTHON="ipython" bin/pysparkling`
-
----
-<a name="Packages"></a>
-## Sparkling Water as Spark Package
-Sparkling Water is also published as a Spark package. 
-You can use it directly from your Spark distribution.
-
-For example, if you have Spark version 1.5 and would like to use Sparkling Water version 1.5.2 and launch example `CraigslistJobTitlesStreamingApp`, then you can use the following command:
-
-```bash
-$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.5.2,ai.h2o:sparkling-water-examples_2.10:1.5.2 --class org.apache.spark.examples.h2o.CraigslistJobTitlesStreamingApp /dev/null
-```
-The Spark option `--packages` points to published Sparkling Water packages in Maven repository.
+An application using Sparkling Water is regular Spark application which bundling Sparkling Water library.
+See Sparkling Water Droplet providing an example application [here](https://github.com/h2oai/h2o-droplets/tree/master/sparkling-water-droplet).
 
 
-The similar command works for `spark-shell`:
-```bash
-$SPARK_HOME/bin/spark-shell --packages ai.h2o:sparkling-water-core_2.10:1.5.2,ai.h2o:sparkling-water-examples_2.10:1.5.2 
-```
-
-
-The same command works for Python programs:
-```bash
-$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.5.2,ai.h2o:sparkling-water-examples_2.10:1.5.2 example.py
-```
-
-> Note: When you are using Spark packages you do not need to download Sparkling Water distribution! Spark installation is sufficient!
-
-
----  
-<a name="Docker"></a>
-### Docker Support
-
-See [docker/README.md](docker/README.md) to learn about Docker support.
- 
 ---
 <a name="Contrib"></a>
 ## Contributing
@@ -223,7 +261,7 @@ Look at our [list of JIRA tasks](https://0xdata.atlassian.net/issues/?filter=136
 ---
 <a name="Issues"></a>
 ## Issues 
-To report issues, please use our JIRA page at [http://jira.h2o.ai/](http://jira.h2o.ai/).
+To report issues, please use our JIRA page at [http://jira.h2o.ai/](https://0xdata.atlassian.net/projects/SW/issues).
 
 ---
 <a name="MailList"></a>
@@ -246,6 +284,7 @@ Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
   ```
   export SPARK_LOCAL_IP='127.0.0.1'
   ```  
+
 * How do I increase the amount of memory assigned to the Spark executors in Sparkling Shell?
  
  > Sparkling Shell accepts common Spark Shell arguments. For example, to increase
@@ -265,8 +304,23 @@ Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
 
  > Specify `--conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m"`
  
-<a name="Diagram"></a>
-#Diagram of Sparkling Water on YARN
+* How do I add Apache Spark classes to Python path?
+ 
+ > Configure the Python path variable `PYTHONPATH`:
+  ```
+  export PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/build:$PYTHONPATH
+  export PYTHONPATH=$SPARK_HOME/python/lib/py4j-0.8.2.1-src.zip:$PYTHONPATH
+  ```
 
-The following illustration depicts the topology of a Sparkling Water cluster of three nodes running on YARN: 
- ![Diagram](design-doc/images/Sparkling Water cluster.png)
+* Trying to import a class from the `hex` package in Sparkling Shell but getting weird error:
+  ```
+  error: missing arguments for method hex in object functions;
+  follow this method with '_' if you want to treat it as a partially applied
+  ```
+
+  > In this case you are probably using Spark 1.5 which is importing SQL functions
+    into Spark Shell environment. Please use the following syntax to import a class 	from the `hex` package:
+    ```
+    import _root_.hex.tree.gbm.GBM
+    ```    
+    
