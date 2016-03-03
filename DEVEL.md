@@ -8,9 +8,9 @@
   - [Supported Data Sources](#DataSource)
   - [Supported Data Formats](#DataFormat)
   - [Data Sharing](#DataShare)
-  - [Supported Execution Environments](#ExecEnv)
   - [Provided Primitives](#ProvPrim)
 - [Running on Select Target Platforms](#TargetPlatforms)
+  - [Local](#Local)
   - [Standalone](#Standalone)
   - [YARN](#YARN)
   - [Mesos](#Mesos)
@@ -73,7 +73,7 @@ inside a Spark executor, which is created after application submission.
 At this point, H2O starts services, including distributed KV store and memory manager,
 and orchestrates them into a cloud. The topology of the created cloud matches the topology of the underlying Spark cluster exactly.
 
- ![Topology](design-doc/images/Topology.png)
+ ![Topology](design-doc/images/Sparkling Water cluster.png)
 
 When H2O services are running, it is possible to create H2O data structures, call H2O algorithms, and transfer values from/to RDD.
 
@@ -93,8 +93,8 @@ algorithms into the Spark platform, enabling:
 <a name="DataSource"></a> 
 ### Supported Data Sources
 Currently, Sparkling Water can use the following data source types:
- - standard RDD API to load data and transform them into H2OFrame
- - H2O API to load data directly into H2OFrame from:
+ - standard RDD API to load data and transform them into `H2OFrame`
+ - H2O API to load data directly into `H2OFrame` from:
    - local file(s)
    - HDFS file(s)
    - S3 file(s)
@@ -112,25 +112,16 @@ Sparkling Water can read data stored in the following formats:
 ---
 <a name="DataShare"></a>
 ### Data Sharing
-Sparkling Water enables transformation between different types of RDDs and H2O's H2OFrame, and vice versa.
+Sparkling Water enables transformation between different types of Spark `RDD` and H2O's `H2OFrame`, and vice versa.
 
  ![Data Sharing](design-doc/images/DataShare.png)
 
-When converting from H2OFrame to RDD, a wrapper is created around the H2O H2OFrame to provide an RDD-like API. In this case, no data is duplicated; instead, the data is served directly from then underlying H2OFrame.
+When converting from `H2OFrame` to `RDD`, a wrapper is created around the `H2OFrame` to provide an RDD-like API. In this case, no data is duplicated; instead, the data is served directly from then underlying `H2OFrame`.
 
-Converting in the opposite direction (from RDD to H2OFrame) introduces data duplication, since it transfers data from RDD storage into H2OFrame. However, data stored in H2OFrame is heavily compressed. 
+Converting in the opposite direction (i.e, from Spark `RDD`/`DataFrame` to `H2OFrame`) needs evaluation of data stored in Spark `RDD` and transfer them from RDD storage into `H2OFrame`. However, data stored in `H2OFrame` is heavily compressed. 
 
 <!--TODO: estimation of overhead -->
-
----
-<a name="ExecEnv"></a> 
-### Supported Execution Environments
-Sparkling Water can run on top of Spark in the following ways:
- -  as a local cluster (master points to one of values `local`, `local[*]`, or `local-cluster[...]`
- -  as a standalone cluster
- -  in a YARN environment
-
----
+----
 <a name="ProvPrim"></a>
 ### Provided Primitives
 The Sparkling Water provides following primitives, which are the basic classes used by Spark components:
@@ -149,6 +140,19 @@ The Sparkling Water provides following primitives, which are the basic classes u
 <a name="TargetPlatforms"></a>
 # Running on Select Target Platforms
 
+Sparkling Water can run on top of Spark in the various ways described in the following sections.
+
+If the Sparkling Water application is submitted using `./spark-submit` script, it is necessary to set `spark.repl.class.uri` configuration property with the `H2OInterpreter.classServerUri` inside the application code. So for example, the spark config would look like:
+
+```
+val conf: SparkConf = new SparkConf().setAppName("Sparkling Water Application").set("spark.repl.class.uri",H2OInterpreter.classServerUri)
+```
+
+This step does not have to be done when starting Sparkling Water using `./sparkling-shell` script.
+<a name="Local"></a>
+## Local
+In this case Sparkling Water runs as a local cluster (Spark master variable points to one of values `local`, `local[*]`, or `local-cluster[...]`
+
 <a name="Standalone"></a>
 ## Standalone
 [Spark documentation - running Standalone cluster](http://spark.apache.org/docs/latest/spark-standalone.html)
@@ -156,6 +160,23 @@ The Sparkling Water provides following primitives, which are the basic classes u
 <a name="YARN"></a>
 ## YARN
 [Spark documentation - running Spark Application on YARN](http://spark.apache.org/docs/latest/running-on-yarn.html)
+
+When submitting Sparkling Water application to CHD or Apache Hadoop cluster, the command to submit may look like:
+```
+./spark-submit --master=yarn-client --class water.SparklingWaterDriver --conf "spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=current"
+--driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-XX:MaxPermSize=384m -Dhdp.version=current"
+sparkling-water-assembly-1.5.11-all.jar
+```
+
+When submitting sparkling water application to HDP Cluster, the command to submit may look like:
+```
+./spark-submit --master=yarn-client --class water.SparklingWaterDriver --conf "spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=current"
+--driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-XX:MaxPermSize=384m -Dhdp.version=current"
+sparkling-water-assembly-1.5.11-all.jar
+```
+Apart from the typical spark configuration it is necessary to add `-XX:MaxPermSize=384m` (or higher, but 384m is minimum) to both `spark.executor.extraClassPath` and `spark.yarn.am.extraJavaOptions` (or for client mode, `spark.driver.extraJavaOptions` for cluster mode) configuration properties in order to run Sparkling Water correctly.
+
+The only difference between HDP cluster and both CDH and Apache hadoop clusters is that we need to add `-Dhdp.version=current` to both `spark.executor.extraClassPath` and `spark.yarn.am.extraJavaOptions` (resp., `spark.driver.extraJavaOptions`) configuration properties in the HDP case.
 
 <a name="Mesos"></a>
 ## Mesos
@@ -216,7 +237,7 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.cloud.timeout`| `60*1000` | Timeout (in msec) for cloud  |
 |`spark.ext.h2o.spreadrdd.retries` | `10` | Number of retries for creation of an RDD covering all existing Spark executors. |
 |`spark.ext.h2o.cloud.name`| `sparkling-water-` | Name of H2O cloud. |
-|`spark.ext.h2o.network.mask`|--|Subnet selector for H2O if IP detection fails - useful for detecting the correct IP if 'spark.ext.h2o.flatfile' is false.* |
+|`spark.ext.h2o.network.mask`|--|Subnet selector for H2O if IP detection fails - useful for detecting the correct IP if 'spark.ext.h2o.flatfile' is false. |
 |`spark.ext.h2o.nthreads`|`-1`|Limit for number of threads used by H2O, default `-1` means unlimited.|
 |`spark.ext.h2o.disable.ga`|`false`|Disable Google Analytics tracking for embedded H2O.|
 |`spark.ext.h2o.subseq.tries`|`5`|Subsequent successful tries to figure out size of Spark cluster which are producing the same number of nodes.|
@@ -230,11 +251,6 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.scala.int.default.num`|`1`|Number of executors started at the start of h2o services.|
 
 ---
-
-%%### Pass property to Sparkling Shell
-%%TODO: example of arg passing from sparkling shell.
-
-%%### Passing property to Spark submit
 
 <a name="RunSW"></a>
 # Running Sparkling Water
