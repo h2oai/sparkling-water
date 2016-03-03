@@ -227,7 +227,6 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.client.log.level`| `INFO`| H2O internal log level used for H2O client running inside Spark driver. |
 |`spark.ext.h2o.client.log.dir`| ` System.getProperty("user.dir") + File.separator + "h2ologs"`| Location of h2o logs on driver machine. |
 |`spark.ext.h2o.client.web.port`|`-1`|Exact client port to access web UI. The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`.|
-|`spark.ext.scala.int.timeout`|`7200000`|Limit in milliseconds after unused scala interpreter is closed, by default set to 2 hours.|
 |`spark.ext.scala.int.default.num`|`1`|Number of executors started at the start of h2o services.|
 
 ---
