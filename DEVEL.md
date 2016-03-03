@@ -39,6 +39,7 @@
   - [Integration Tests Example](#IntegExample)
 - [Troubleshooting and Log Locations](#Logging)
 - [Sparkling Shell Console Output](#log4j)
+- [Sparkling Water Tuning](#SparklingWaterTuning) 
 
 --- 
  
@@ -699,3 +700,27 @@ to:
   ```
   
 ---
+<a name="SparklingWaterTuning"></a>
+## Sparkling Water Tuning
+For running Sparkling Water general recommendation are:
+  - increase available memory in driver and executors (options `spark.driver.memory` resp., `spark.yarn.am.memory` and  `spark.executor.memory`), 
+  - make cluster homogeneous - use the same value for driver and executor memory
+  - increase PermGen size if you are running on top of Java7 (options `spark.driver.extraJavaOptions` resp., `spark.yarn.am.extraJavaOptions` and `spark.executor.extraJavaOptions`)
+  - in rare cases, it helps to increase `spark.yarn.driver.memoryOverhead`, `spark.yarn.am.memoryOverhead`, or `spark.yarn.executor.memoryOverhead`
+
+For running Sparkling Water on top of Yarn:
+  - make sure that Yarn provides stable containers, do not use preemptive Yarn scheduler
+  - make sure that Spark application manager has enough memory and increase PermGen size
+  - in case of a container failure Yarn should not restart container and application should gracefully terminate
+
+
+Furthermore, we recommend to configure the following Spark properties to speedup and stabilize creation of H2O services on top of Spark cluster:
+
+| Property | Context | Value | Explanation |
+|----------|---------|-------|-------------|
+| `spark.locality.wait` | all | `3000` | Number of seconds to wait for task launch on data-local node. We recommend to increase since we would like to make sure that H2O tasks are processed locally with data.|
+| `spark.scheduler.minRegisteredResourcesRatio` | all| `1` | Make sure that Spark starts scheduling when it sees 100% of resources. |
+| `spark.task.maxFailures` | all | `1`| Do not try to retry failed tasks. |
+| `spark...extraJavaOptions` | all| `-XX:MaxPermSize=384m` | Increase PermGen size if you are running on Java7. Make sure to configure it on driver/executor/Yarn application manager. |
+| `spark.yarn.....memoryOverhead` | yarn | increase | Increase memoryOverhead if it is necessary. |
+| `spark.yarn.max.executor.failures` | yarn | `1` | Do not try restart executors after failure and directly fail computation. |
