@@ -50,7 +50,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
     // new interpreter is automatically created, so the last ID used should be equal to 2
     assert(scalaCodeHandler.mapIntr.size == 1, "Number of currently used interpreters should be equal to 1")
     assert(scalaCodeHandler.mapIntr.get(1).nonEmpty, "The value in the interpreters hashmap with the key 1 should not be empty")
-    assert(scalaCodeHandler.mapIntr.get(1).get._1.sessionId == 1, "ID attached to the interpreter should be equal to 1")
+    assert(scalaCodeHandler.mapIntr.get(1).get.sessionId == 1, "ID attached to the interpreter should be equal to 1")
   }
 
   test("ScalaCodeHandler.destroySession() method, destroy existing session"){

@@ -63,7 +63,6 @@ trait H2OConf {
   def userName      = sparkConf.getOption(PROP_USER_NAME._1)
 
   def subseqTries  = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
-  def scalaIntTimeout = sparkConf.getInt(PROP_SCALA_INT_TIMEOUT._1,PROP_SCALA_INT_TIMEOUT._2)
   def scalaIntDefaultNum = sparkConf.getInt(PROP_SCALA_INT_DEFAULT_NUM._1, PROP_SCALA_INT_DEFAULT_NUM._2)
 
   /**
@@ -186,8 +185,6 @@ object H2OConf {
   val PROP_USER_NAME = ("spark.ext.h2o.user.name", null.asInstanceOf[String])
   /** Subsequent successful tries to figure out size of Spark cluster which are producing same number of nodes. */
   val PROP_SUBSEQ_TRIES = ("spark.ext.h2o.subseq.tries", 5)
-  /** Limit in milliseconds after unused scala interpreter is closed, by default set to 2 hours */
-  val PROP_SCALA_INT_TIMEOUT = ("spark.ext.scala.int.timeout",7200000)
   /** Number of executors started at the start of h2o services, by default 1 */
   val PROP_SCALA_INT_DEFAULT_NUM = ("spark.ext.scala.int.default.num",1)
   private[spark] def defaultLogDir: String = {
