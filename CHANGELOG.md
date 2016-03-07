@@ -1,19 +1,16 @@
 ChangeLog
 =========
 
-## In current master
-  - Attach metadata derived from H2OFrame to Spark DataFrame
-  - Improved logging subsystem
-  - Expose new REST end-points
-    - to interpret Scala code
-    - to perform transformation between Spark DataFrame and H2O Frame
-  - Fix all scripts and create automatic tests for them
-  - [SW-39] pySparkling: use Sparkling Water from Python
-  - Model serialization support
-  - Upgrade of H2O dependency to 3.6.0.8
-  - Fixes
+##v1.6.0 (2016-03-15)
+  - Bug fixes
+    - Fix idea setup script
+    - Fix cloud name - make it unique
+    - Fix bug in launching scripts which were overriding default Spark settings provide by use in `cond/spark-defaults.conf`
     - [PUBDEV-282](https://0xdata.atlassian.net/browse/PUBDEV-282) Create windows batch scripts for starting sparkling-shell and running examples
+    - [SW-4](https://0xdata.atlassian.net/browse/SW-4) - InvokeOnNodesRDD locality fix
     - [SW-5, SW-17, SW-25](https://0xdata.atlassian.net/browse/SW-25) Remove categorical handling during asH2OFrame() transformation
+    - [SW-10](https://0xdata.atlassian.net/browse/SW-10) - Use new Spark 1.5 RpcEnv to obtain executor IPs
+    - [SW-16](https://0xdata.atlassian.net/browse/SW-16) - Update docker file based on current version
     - [SW-20](https://0xdata.atlassian.net/browse/SW-20) H2OFrame provides nicer API accepting parser setup
     - [SW-32](https://0xdata.atlassian.net/browse/SW-32) Update documentation and remove top-level images folder
     - [SW-33](https://0xdata.atlassian.net/browse/SW-33) Remove usage of deprecated VecUtils class
@@ -21,12 +18,37 @@ ChangeLog
     - [SW-39](https://0xdata.atlassian.net/browse/SW-39)  PySparkling: Support of Sparkling Water from PySpark
     - [SW-40](https://0xdata.atlassian.net/browse/SW-40)  PySparkling: as\_h2o\_frame method accepts name of target H2O Frame
     - [SW-41](https://0xdata.atlassian.net/browse/SW-41) H2OContext#asH2OFrame now
-      accepts name for resulting H2OFrame.
-    - fix idea setup
-    - fixes in coding typos
-      - cloud name was ignored
-      - wrong property name
-    - fix a bug in launch scripts overriding default value of `spark.driver.extraJavaOptions`
+    - [SW-43](https://0xdata.atlassian.net/browse/SW-43) - Fix script tests
+    - [SW-45](https://0xdata.atlassian.net/browse/SW-45) - Fix interpreter initialization
+    - [SW-47](https://0xdata.atlassian.net/browse/SW-47) - Server test.h2o.ai: Enable python tests for post-push tests and relese 1.5 branch
+    - [SW-48](https://0xdata.atlassian.net/browse/SW-48) - Fix H2O jetty webport to listen on 0.0.0.0 not on given ip
+    - [SW-61](https://0xdata.atlassian.net/browse/SW-61) - Remove `--driver-classpath` parameter from sparkling-shell
+    - [SW-65](https://0xdata.atlassian.net/browse/SW-65) - Add pysparkling instruction to download page
+    - [SW-68](https://0xdata.atlassian.net/browse/SW-68) - AskCraig list demo always returns accounting category
+    - [SW-69](https://0xdata.atlassian.net/browse/SW-69) - Flow: getRDDs does not show id
+    - [SW-70](https://0xdata.atlassian.net/browse/SW-70) - Support for Spark `LabeledPoint` in `RDD[T]`
+    - [SW-94](https://0xdata.atlassian.net/browse/SW-94) - Fix Maven dependency between projects
+    - [SW-97](https://0xdata.atlassian.net/browse/SW-97) - Spark 1.6 support
+  - Improvements
+    - Attach metadata derived from H2OFrame to Spark DataFrame
+    - Improved logging subsystem
+    - Model serialization support
+    - Expose new REST end-points
+      - to interpret Scala code
+      - to perform transformation between Spark DataFrame and H2O Frame
+    - Fix all scripts and create automatic tests for them
+    - [SW-39](https://0xdata.atlassian.net/browse/SW-39) - pySparkling: use Sparkling Water from Python
+    - [SW-27](https://0xdata.atlassian.net/browse/SW-27) - Support Spark SQL data sources
+    - [SW-63](https://0xdata.atlassian.net/browse/SW-63) - Repl separation into a dedicated sparkling-water-repl module
+    - [SW-66](https://0xdata.atlassian.net/browse/SW-66) - Warn if neither one of `H2O_HOME` or `H2O_PYTHON_WHEEL` properties is not set
+    - [SW-73](https://0xdata.atlassian.net/browse/SW-73) - List all available branches in README.md
+    - [SW-75](https://0xdata.atlassian.net/browse/SW-75) - RDDHandler should expose REST api for transformation from RDD to H2OFrame
+    - [SW-76](https://0xdata.atlassian.net/browse/SW-76) - Upgrade H2O version to Tukey release (3.8.0.3)
+    - [SW-78](https://0xdata.atlassian.net/browse/SW-78) - Sparking-shell: Change default spark master to `local[*]`
+    - [SW-91](https://0xdata.atlassian.net/browse/SW-91) - Update Sparkling Water tuning documentation
+    - [SW-92](https://0xdata.atlassian.net/browse/SW-92) - Update development doc with information how to submit app on yarn
+    - [SW-93](https://0xdata.atlassian.net/browse/SW-78) - Upgrade H2O dependency to Turan release (3.8.1.1)
+
 
 ##v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame
