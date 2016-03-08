@@ -12,7 +12,7 @@ ChangeLog
     - [SW-68](https://0xdata.atlassian.net/browse/SW-68) - AskCraig list demo always returns accounting category
     - [SW-69](https://0xdata.atlassian.net/browse/SW-69) - Flow: getRDDs does not show id
     - [SW-70](https://0xdata.atlassian.net/browse/SW-70) - Support for Spark `LabeledPoint` in `RDD[T]` 
- - Improvements
+  - Improvements
     - [SW-27](https://0xdata.atlassian.net/browse/SW-27) - Support Spark SQL data sources
     - [SW-63](https://0xdata.atlassian.net/browse/SW-63) - Repl separation into a dedicated sparkling-water-repl module
     - [SW-66](https://0xdata.atlassian.net/browse/SW-66) - Warn if neither one of `H2O_HOME` or `H2O_PYTHON_WHEEL` properties is not set
