@@ -3,6 +3,9 @@
 // This is a multi-module build file.
 //
 
+// Show how much time we spend in gradle tasks
+apply plugin: "build-time-tracker"
+
 // For multiproject setup we have to apply release plugin here (we share same release number cross all modules)
 if (project.hasProperty("doRelease")) {
     apply from: 'gradle/release.gradle'
@@ -24,9 +27,9 @@ buildscript {
         classpath 'net.researchgate:gradle-release:2.0.2'
         classpath 'com.adaptc.gradle:nexus-workflow:0.6'
         classpath 'com.bmuschko:gradle-docker-plugin:2.6.5'
+        classpath "net.rdrei.android.buildtimetracker:gradle-plugin:0.5.+"
     }
 }
-
 //
 // Common configuration
 //
@@ -77,6 +80,17 @@ idea {
         testOutputDir = file('build/test')
     }
 }
+
+buildtimetracker {
+    reporters {
+        summary {
+            ordered false
+            threshold 50
+            barstyle "unicode"
+        }
+    }
+}
+
 // 
 // Common configuration for all subprojects
 //
