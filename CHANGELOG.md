@@ -3,6 +3,10 @@ ChangeLog
 
 ##v1.5.11 (2016-03-07)
   - Bug fixes
+    - [SW-94](https://0xdata.atlassian.net/browse/SW-94) - Fix Maven dependency between projects
+
+##v1.5.11 (2016-03-07)
+  - Bug fixes
     - [SW-10](https://0xdata.atlassian.net/browse/SW-10) - Use new Spark 1.5 RpcEnv to obtain executor IPs
     - [SW-16](https://0xdata.atlassian.net/browse/SW-16) - Update docker file based on current version
     - [SW-43](https://0xdata.atlassian.net/browse/SW-43) - Fix script tests
