@@ -1,11 +1,5 @@
 apply plugin: 'scala'
 
-// Specify properties
-project.ext {
-  scalaBinaryVersion = '2.10'
-  scalaVersion = '2.10.4'
-}
-
 // Activate Zinc compiler and configure scalac
 tasks.withType(ScalaCompile) {
     scalaCompileOptions.useCompileDaemon = false
@@ -13,8 +7,10 @@ tasks.withType(ScalaCompile) {
     scalaCompileOptions.additionalParameters = ['-target:jvm-1.6']
 }
 
-jar {
-  baseName = "${project.name}_${scalaBinaryVersion}"
+project.archivesBaseName = "${project.name}_${scalaBinaryVersion}"
+
+project.tasks.withType(AbstractArchiveTask) { AbstractArchiveTask task ->
+    task.baseName = "${project.name}_${scalaBinaryVersion}"
 }
 
 // Create jar
@@ -42,36 +38,10 @@ artifacts {
     archives scaladocJar
 }
 
-/* To enable scalatest Runner insteadof using JUnitRunner
-// buildscript: classpath 'com.github.maiflai:gradle-scalatest:0.4'
-// Enable scalatests
-//apply plugin: 'scalatest'
-
-dependencies {
-    testRuntime 'org.pegdown:pegdown:1.1.0'
-}
-*/
-
 test {
     maxParallelForks = 1
 }
 
 // Enable scalastyle
 apply from: "$rootDir/gradle/scalastyle.gradle"
-
-
-/*
-
-task scalaTest(dependsOn: testClasses) << {
-    ant.taskdef(name: 'scalatest',
-            classname: 'org.scalatest.tools.ScalaTestAntTask',
-            classpath: sourceSets.test.runtimeClasspath.asPath
-    )
-    ant.scalatest(runpath: sourceSets.test.compileClasspath,
-            fork: 'false',
-            haltonfailure: 'true',
-            suite: 'TranslatorTest')
-            { reporter(type: 'stdout') }
-}
- */
 
