@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-##v1.5.11 (2016-03-07)
+##v1.5.12 (2016-03-10)
   - Bug fixes
     - [SW-94](https://0xdata.atlassian.net/browse/SW-94) - Fix Maven dependency between projects
 
