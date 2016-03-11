@@ -20,7 +20,7 @@ buildscript {
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
         classpath 'org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.10:0.8.2'
-        classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.7.1'
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
         classpath 'net.researchgate:gradle-release:2.0.2'
         classpath 'com.adaptc.gradle:nexus-workflow:0.6'
         classpath 'com.bmuschko:gradle-docker-plugin:2.6.5'
@@ -33,20 +33,19 @@ buildscript {
 ext {
     // Published projects
     publishedProjects = [
+      project(':sparkling-water-repl'),
       project(':sparkling-water-core'),
-      project(':sparkling-water-examples'),
-      project(':sparkling-water-repl')
+      project(':sparkling-water-examples')
     ]
     integTestProjects = [
       project(':sparkling-water-core'),
       project(':sparkling-water-examples')
     ]
     scalaProjects = [
+      project(':sparkling-water-repl'),
       project(':sparkling-water-core'),
       project(':sparkling-water-examples'),
       project(':sparkling-water-ml'),
-      project(':sparkling-water-assembly'),
-      project(':sparkling-water-repl')
     ]
     pythonProjects = [
       project(':sparkling-water-py')
