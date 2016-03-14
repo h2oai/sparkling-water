@@ -35,8 +35,8 @@ import scala.collection.mutable
  */
 private[spark] object H2OContextUtils {
 
-  /** Helper type expression a tuple of ExecutorId, IP, port */
-  type NodeDesc = (String, String, Int)
+  /** Helper type expression a tuple of ExecutorId, IP, port, hostname */
+  type NodeDesc = (String, String, Int, String)
 
   /**
     * Return IP of this node based on SparkEnv
@@ -46,6 +46,10 @@ private[spark] object H2OContextUtils {
   def getIp(env: SparkEnv) =
     if (env.rpcEnv.address != null) env.rpcEnv.address.host
     else java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString(".")
+
+  //noinspection ScalaDeprecation
+  def getHostname(env: SparkEnv) =
+    env.actorSystem.settings.config.getString("akka.remote.netty.tcp.hostname")
 
   def saveAsFile(content: String): File = {
     val tmpDir = createTempDir()
@@ -61,7 +65,7 @@ private[spark] object H2OContextUtils {
   }
 
   def toFlatFileString(executors: Array[NodeDesc]):String = {
-    executors.map( en => s"${en._2}:${en._3}").mkString("\n")
+    executors.map(en => s"${en._2}:${en._3}").mkString("\n")
   }
 
   def toH2OArgs(h2oArgs: Array[String], h2oConf: H2OConf, executors: Array[NodeDesc]): Array[String] = {
@@ -248,7 +252,7 @@ private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.Ha
 
   override def notifyAboutEmbeddedWebServerIpPort(ip: InetAddress, port: Int): Unit = {
     val env = SparkEnv.get
-    val thisNodeInfo = (env.executorId, getIp(env), port)
+    val thisNodeInfo = (env.executorId, getIp(env), port, getHostname(env))
     flatfileBVariable.synchronized {
       flatfileBVariable += thisNodeInfo
       flatfileBVariable.notifyAll()
