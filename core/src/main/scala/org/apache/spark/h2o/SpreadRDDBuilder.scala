@@ -104,7 +104,9 @@ class SpreadRDDBuilder(sc: SparkContext,
           // java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString("."),
           // Use existing Akka setup since Spark at this point is already communicating
           getIp(env),
-          -1 ) )
+          -1,
+          getHostname(env))
+      )
     }.collect()
     // Take only unique executors
     nodes.groupBy(_._1).map(_._2.head).toArray.sortWith(_._1 < _._1)
