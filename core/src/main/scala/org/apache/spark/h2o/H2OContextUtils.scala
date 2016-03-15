@@ -45,7 +45,7 @@ private[spark] object H2OContextUtils {
     */
   def getIp(env: SparkEnv) =
     if (env.rpcEnv.address != null) env.rpcEnv.address.host
-    else java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString(".")
+    else getHostname(env)
 
   //noinspection ScalaDeprecation
   def getHostname(env: SparkEnv) =
