@@ -276,7 +276,11 @@ Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
 
 * Where do I find the Spark logs?
   
- > Spark logs are located in the directory `$SPARK_HOME/work/app-<AppName>` (where `<AppName>` is the name of your application. 
+ > **Standalone mode**: Spark executor logs are located in the directory `$SPARK_HOME/work/app-<AppName>` (where `<AppName>` is the name of your application). The location contains also stdout/stderr from H2O.
+ 
+ > **YARN mode**: The executors logs are available via `yarn logs -applicationId <appId>` command. Driver logs are by default printed to console, however, H2O also writes logs into `current_dir/h2ologs`.
+ 
+ > The location of H2O driver logs can be controlled via Spark property `spark.ext.h2o.client.log.dir` (pass via `--conf`) option.
  
 * Spark is very slow during initialization or H2O does not form a cluster. What should I do?
   
