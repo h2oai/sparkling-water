@@ -8,7 +8,7 @@ description = "Sparkling-Water Docker Support"
 
 ext {
     sparkling_water_release = sparkVersion.substring(0,sparkVersion.lastIndexOf("."))
-    sparkling_water_build = "snehulak" //new URL("http://h2o-release.s3.amazonaws.com/sparkling-water/rel-${sparkling_water_release}/latest").getText().trim()
+    sparkling_water_build = version.substring(version.lastIndexOf(".")+1) 
     sparkling_water_file_name = "sparkling-water-${sparkling_water_release}.${sparkling_water_build}"
     spark_file_name = "spark-${sparkVersion}-bin-hadoop2.6"
     spark_download_url = "http://mirrors.ocf.berkeley.edu/apache/spark/spark-${sparkVersion}/${spark_file_name}.tgz"
