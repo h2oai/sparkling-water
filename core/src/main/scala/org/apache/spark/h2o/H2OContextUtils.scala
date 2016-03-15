@@ -38,7 +38,14 @@ private[spark] object H2OContextUtils {
   /** Helper type expression a tuple of ExecutorId, IP, port */
   type NodeDesc = (String, String, Int)
 
-  def getIp(env: SparkEnv) = env.rpcEnv.address.host //settings.config.getString("akka.remote.netty.tcp.hostname")
+  /**
+    * Return IP of this node based on SparkEnv
+    * @param env  SparkEnv instance
+    * @return  ip of the node or localhost ip
+    */
+  def getIp(env: SparkEnv) =
+    if (env.rpcEnv.address != null) env.rpcEnv.address.host
+    else java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString(".")
 
   def saveAsFile(content: String): File = {
     val tmpDir = createTempDir()
