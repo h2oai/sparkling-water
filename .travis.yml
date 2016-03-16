@@ -10,8 +10,7 @@ scala:
   - 2.10.4
 
 install:
-  - wget "http://d3kbcqa49mib13.cloudfront.net/spark-1.4.1-bin-cdh4.tgz"
-  - mkdir spark && tar xvf "spark-1.4.1-bin-cdh4.tgz" -C spark
+  - test -d "$SPARK_HOME" || ( wget "http://d3kbcqa49mib13.cloudfront.net/spark-1.4.1-bin-cdh4.tgz" && mkdir spark && tar xvf "spark-1.4.1-bin-cdh4.tgz" -C spark )
 
 env:
   - SPARK_HOME="$HOME/spark/"
