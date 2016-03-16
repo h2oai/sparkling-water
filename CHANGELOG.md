@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-##v1.6.0 (2016-03-15)
+##v1.6.1 (2016-03-15)
   - Bug fixes
     - Fix idea setup script
     - Fix cloud name - make it unique
