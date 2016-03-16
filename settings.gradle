@@ -2,7 +2,8 @@ rootProject.name = 'sparkling-water'
 
 include 'core'
 include 'examples'
-include 'ml'
+// Disable for now
+//include 'ml'
 include 'assembly'
 include 'py'
 include 'repl'

@@ -11,15 +11,16 @@ scala:
 
 install:
   - wget "http://d3kbcqa49mib13.cloudfront.net/spark-1.4.1-bin-cdh4.tgz"
-  - tar xvf "spark-1.4.1-bin-cdh4.tgz"
+  - mkdir spark && tar xvf "spark-1.4.1-bin-cdh4.tgz" -C spark
 
 env:
-  - SPARK_HOME="./spark-1.4.1-bin-cdh4/"
+  - SPARK_HOME="$HOME/spark/"
 
 cache:
     directories:
         - $HOME/.m2
         - $HOME/.gradle
+        - $HOME/spark
 
 script: ./gradlew clean build -x check -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME
 
