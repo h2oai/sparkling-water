@@ -16,10 +16,14 @@ install:
 env:
   - SPARK_HOME="$HOME/spark/"
 
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+
 cache:
     directories:
         - $HOME/.m2
-        - $HOME/.gradle
+        - $HOME/.gradle/caches/
+        - $HOME/.gradle/wrapper/
         - $HOME/spark
 
 script: ./gradlew clean build -x check -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME
