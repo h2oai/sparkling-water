@@ -1,6 +1,34 @@
 ChangeLog
 =========
 
+#v1.4.11 (2016-03-17)
+  - Bug fixes
+    - [SW-4](https://0xdata.atlassian.net/browse/SW-4) - InvokeOnNodesRDD task locality fixed
+    - [SW-16](https://0xdata.atlassian.net/browse/SW-16) - Update docker file based on current version
+    - [SW-61](https://0xdata.atlassian.net/browse/SW-61) - Remove `--driver-classpath` parameter from sparkling-shell
+    - [SW-68](https://0xdata.atlassian.net/browse/SW-68) - AskCraig list demo always returns accounting category
+    - [SW-69](https://0xdata.atlassian.net/browse/SW-69) - Flow: getRDDs does not show id
+    - [SW-70](https://0xdata.atlassian.net/browse/SW-70) - Support for Spark `LabeledPoint` in `RDD[T]` 
+    - [SW-94](https://0xdata.atlassian.net/browse/SW-94) - Fix Maven dependency between projects
+  - Improvements
+    - [SW-63](https://0xdata.atlassian.net/browse/SW-63) - Repl separation into a dedicated sparkling-water-repl module
+    - [SW-66](https://0xdata.atlassian.net/browse/SW-66) - Warn if neither one of `H2O_HOME` or `H2O_PYTHON_WHEEL` properties is not set
+    - [SW-73](https://0xdata.atlassian.net/browse/SW-73) - List all available branches in README.md
+    - [SW-74](https://0xdata.atlassian.net/browse/SW-74) - Ensure we are consistent with supported types for conversion.
+    - [SW-75](https://0xdata.atlassian.net/browse/SW-75) - RDDHandler should expose REST api for transformation from RDD to H2OFrame
+    - [SW-76](https://0xdata.atlassian.net/browse/SW-76) - Upgrade H2O version to Tukey release (3.8.0.3)
+    - [SW-77](https://0xdata.atlassian.net/browse/SW-77) - pySparkling integration tests
+    - [SW-78](https://0xdata.atlassian.net/browse/SW-78) - Sparking-shell: Change default spark master to `local[*]`
+    - [SW-82](https://0xdata.atlassian.net/browse/SW-82) - Rest API enhancement and cleaning
+    - [SW-83](https://0xdata.atlassian.net/browse/SW-83) - Increase scala interpreter timeout & make corresponding values configurable 
+    - [SW-84](https://0xdata.atlassian.net/browse/SW-84) - Make local tests consistent and move tests running on cluster to integration tests
+    - [SW-86](https://0xdata.atlassian.net/browse/SW-86) - Integration tests for sparkling-water-core
+    - [SW-87](https://0xdata.atlassian.net/browse/SW-87) - Try to help H2O clouding process with providing more information about Spark environment
+    - [SW-90](https://0xdata.atlassian.net/browse/SW-90) - Remove scala interpreter timeout so the interpreters are bound to H2O lifecycle
+    - [SW-91](https://0xdata.atlassian.net/browse/SW-91) - Update Sparkling Water tuning documentation
+    - [SW-92](https://0xdata.atlassian.net/browse/SW-92) - Update development doc with information how to submit app on yarn
+    - [SW-93](https://0xdata.atlassian.net/browse/SW-93) - Upgrade H2O dependency to Turan release (3.8.1.1)
+
 #v1.4.10 (2016-01-13)
   - [SW-51](https://0xdata.atlassian.net/browse/SW-51) Bundle pySparkling with release and enable its testing on test machines
   - [SW-60](https://0xdata.atlassian.net/browse/SW-60) Move ModelUtils to sparkling-water-core module
