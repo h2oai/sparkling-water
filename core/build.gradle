@@ -68,12 +68,11 @@ test {
     maxHeapSize = "4g"
 
     // Increase PermGen
-    jvmArgs "-XX:MaxPermSize=256m"
+    jvmArgs '-XX:MaxPermSize=384m'
 
     // Working dir will be root project
     workingDir = rootDir
 }
-
 test.dependsOn testJar
 
 integTest {

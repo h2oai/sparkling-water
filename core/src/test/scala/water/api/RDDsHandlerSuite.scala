@@ -30,8 +30,7 @@ import water.exceptions.H2ONotFoundArgumentException
 @RunWith(classOf[JUnitRunner])
 class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
 
-  val sparkConf = new SparkConf().setMaster("local[*]").setAppName("test-local")
-  override def createSparkContext: SparkContext = new SparkContext(sparkConf)
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local")
 
   test("RDDsHandler.list() method") {
     val rname = "Test"
@@ -61,7 +60,6 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     assert (result.name.equals(rname), "Name matches")
     assert (result.partitions == rpart, "Number of partitions matches")
   }
-
 
   test("RDDsHandler.toH2OFrame() method simple type"){
     //Create and persist RDD

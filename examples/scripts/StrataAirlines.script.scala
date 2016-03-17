@@ -72,7 +72,6 @@ dlParams._epochs = 100
 dlParams._train = trainFrame
 dlParams._response_column = 'IsDepDelayed
 dlParams._variable_importances = true
-
 // Create a job
 val dl = new DeepLearning(dlParams, Key.make("dlModel.hex"))
 val dlModel = dl.trainModel.get

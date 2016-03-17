@@ -17,8 +17,7 @@ import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.sql.SQLContext
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
-
-val sc:org.apache.spark.SparkContext = null
+import water.app.ModelMetricsSupport
 
 // Create SQL support
 implicit val sqlContext = SQLContext.getOrCreate(sc)
