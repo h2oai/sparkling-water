@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+#v1.4.12 (2016-03-18)
+  - Improvements
+    - [SW-98](https://0xdata.atlassian.net/browse/SW-98) - Upgrade H2O dependency to version including security support
+
 #v1.4.11 (2016-03-17)
   - Bug fixes
     - [SW-4](https://0xdata.atlassian.net/browse/SW-4) - InvokeOnNodesRDD task locality fixed
