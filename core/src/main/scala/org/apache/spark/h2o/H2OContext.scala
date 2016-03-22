@@ -752,7 +752,9 @@ object H2OContext extends Logging {
     }
   }
   private[h2o] def registerClientWebAPI(sc: SparkContext, h2oContext: H2OContext): Unit = {
-    registerScalaIntEndp(sc)
+    if(h2oContext.h2oReplEnabled){
+      registerScalaIntEndp(sc)
+    }
     registerDataFramesEndp(sc, h2oContext)
     registerH2OFramesEndp(sc, h2oContext)
     registerRDDsEndp(sc, h2oContext)
