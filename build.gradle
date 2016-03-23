@@ -27,7 +27,7 @@ buildscript {
         classpath 'net.researchgate:gradle-release:2.0.2'
         classpath 'com.adaptc.gradle:nexus-workflow:0.6'
         classpath 'com.bmuschko:gradle-docker-plugin:2.6.5'
-        classpath "net.rdrei.android.buildtimetracker:gradle-plugin:0.5.+"
+        classpath "net.rdrei.android.buildtimetracker:gradle-plugin:0.5.0"
     }
 }
 //
