@@ -49,6 +49,7 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
     .set("spark.executor.memory", "2G")
     .set("spark.app.id", self.getClass.getSimpleName)
     .set("spark.ext.h2o.client.log.level", "DEBUG")
+    .set("spark.ext.h2o.repl.enabled","false") // disable repl in tests
     .set("spark.scheduler.minRegisteredResourcesRatio", "1")
 }
 
