@@ -78,6 +78,7 @@ class IntegTestSuite(unittest.TestCase):
         cmd_line.extend(["--conf", '"spark.yarn.am.extraJavaOptions=-Dhdp.version='+self.test_env.hdp_version+'"'])
         cmd_line.extend(["--conf", 'spark.test.home='+spark_home])
         cmd_line.extend(["--conf", 'spark.scheduler.minRegisteredResourcesRatio=1'])
+        cmd_line.extend(["--conf", 'spark.ext.h2o.repl.enabled=false']) #  disable repl in tests
         cmd_line.extend(["--conf", 'spark.driver.extraClassPath='+self.test_env.sw_assembly])
         cmd_line.extend(["--py-files", self.test_env.egg])
         for k, v in self.test_env.spark_conf.items():

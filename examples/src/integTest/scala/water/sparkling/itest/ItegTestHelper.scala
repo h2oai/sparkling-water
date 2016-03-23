@@ -34,7 +34,8 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
       Seq("--conf", s"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", s"spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", s"spark.executor.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
-      Seq("--conf",  "spark.scheduler.minRegisteredResourcesRatio=1") ++
+      Seq("--conf", "spark.scheduler.minRegisteredResourcesRatio=1") ++
+      Seq("--conf", "spark.ext.h2o.repl.enabled=false") ++ // disable repl in tests
       Seq("--conf", s"spark.test.home=$sparkHome") ++
       Seq("--conf", s"spark.driver.extraClassPath=${env.assemblyJar}") ++
       env.sparkConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++

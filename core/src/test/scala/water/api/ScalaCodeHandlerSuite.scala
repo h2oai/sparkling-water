@@ -31,7 +31,7 @@ import water.exceptions.H2ONotFoundArgumentException
 class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with BeforeAndAfterEach {
 
   var scalaCodeHandler: ScalaCodeHandler = _
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf.set("spark.ext.h2o.repl.enabled","true"))
 
   override protected def beforeEach(): Unit = {
     scalaCodeHandler = new ScalaCodeHandler(sc)
