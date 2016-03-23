@@ -24,14 +24,15 @@ package org.apache.spark.repl.h2o
 
 import java.net.URI
 
-import org.apache.spark.{SparkContext, Logging}
-import org.apache.spark.repl.{Main, SparkILoop}
+import org.apache.spark.repl.SparkILoop
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.util.Utils
+import org.apache.spark.{Logging, SparkContext}
 
 import scala.Predef.{println => _, _}
 import scala.annotation.tailrec
 import scala.language.{existentials, implicitConversions, postfixOps}
+import scala.reflect._
 import scala.tools.nsc._
 import scala.tools.nsc.interpreter.{Results => IR, _}
 import scala.tools.nsc.util._
@@ -157,14 +158,19 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
   private def createSettings(): Settings = {
     val settings = new Settings()
     settings.usejavacp.value = true
+    val loader = classTag[H2OInterpreter].runtimeClass.getClassLoader
+    // Check if app.class.path resource on given classloader is set. In case it exists, set it as classpath
+    // ( instead of using java class path right away)
+    // This solves problem explained here: https://gist.github.com/harrah/404272
+    val method = settings.getClass.getSuperclass.getDeclaredMethod("getClasspath",classOf[String],classOf[ClassLoader])
+    method.setAccessible(true)
+    if(method.invoke(settings, "app",loader).asInstanceOf[Option[String]].isDefined){
+      settings.usejavacp.value = false
+      settings.embeddedDefaults(loader)
+    }
 
     // synchronous calls
     settings.Yreplsync.value = true
-    // add jars to the interpreter ( needed for the hadoop )
-    for (jar <- sparkContext.jars) {
-      settings.classpath.append(jar)
-      settings.bootclasspath.append(jar)
-    }
 
     for (jar <- sparkContext.addedJars) {
       settings.bootclasspath.append(jar._1)
