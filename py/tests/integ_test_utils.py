@@ -20,7 +20,6 @@ import os
 import sys
 import unittest
 from pyspark import SparkContext, SparkConf
-from pyspark.sql import SQLContext
 import subprocess
 from random import randrange
 
@@ -62,15 +61,14 @@ class IntegTestSuite(unittest.TestCase):
 
     def launch(self, script_name):
         spark_home = os.environ["SPARK_HOME"]
-        cmd_line = [IntegTestSuite.get_submit_script(spark_home)]
-        cmd_line.append("--verbose")
+        cmd_line = [IntegTestSuite.get_submit_script(spark_home), "--verbose"]
         cmd_line.extend(["--master", self.test_env.spark_master])
         if self.test_env.spark_conf.has_key("spark.driver.memory"):
             cmd_line.extend(["--driver-memory", self.test_env.spark_conf.get("spark.driver.memory")])
         # Disable GA collection by default
         cmd_line.extend(["--conf", 'spark.ext.h2o.disable.ga=true'])
         # remove ".py" from cloud name
-        cmd_line.extend(["--conf", 'spark.ext.h2o.cloud.name=sparkling-water-'+script_name[:-3]+randrange(65536)])
+        cmd_line.extend(["--conf", 'spark.ext.h2o.cloud.name=sparkling-water-'+str(script_name[:-3])+str(randrange(65536))])
         cmd_line.extend(["--conf", '"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version='+self.test_env.hdp_version+'"'])
         cmd_line.extend(["--conf", '"spark.yarn.am.extraJavaOptions=-Dhdp.version='+self.test_env.hdp_version+'"'])
         cmd_line.extend(["--conf", 'spark.test.home='+spark_home])
@@ -82,8 +80,8 @@ class IntegTestSuite(unittest.TestCase):
         # Add python script
         cmd_line.append(script_name)
         # Launch it via command line
-        return_code = subprocess.call(' '.join(cmd_line), shell=True)
-        self.assertTrue(return_code == 0, "Process ended in a wrong way")
+        return_code = subprocess.call(cmd_line)
+        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code "+str(return_code))
 
     # Determines whether we run on Windows or Unix and return correct spark-submit script location
     @staticmethod
@@ -100,3 +98,6 @@ class IntegTestSuite(unittest.TestCase):
 
     def spark_master(self, master):
         self.test_env.spark_master = master
+
+
+

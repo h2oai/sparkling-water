@@ -19,9 +19,7 @@
 Integration tests for pySparkling for Spark running in YARN mode
 """
 from integ_test_utils import IntegTestSuite
-
-import traceback
-
+import test_utils
 
 class YarnIntegTestSuite(IntegTestSuite):
 
@@ -30,8 +28,12 @@ class YarnIntegTestSuite(IntegTestSuite):
             # Configure YARN environment
             self.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
             self.conf("spark.executor.instances", 3)
-            self.conf("spark.executor.memory", "8g")
+            self.conf("spark.executor.memory", "2g")
             self.conf("spark.ext.h2o.port.base", 63331)
-            self.conf("spark.driver.memory", "8g")
+            self.conf("spark.driver.memory", "2g")
 
-            self.launch("tests/demos/ChicagoCrime.py")
+            self.launch("examples/scripts/ChicagoCrimeDemo.py")
+
+
+if __name__ == '__main__':
+        test_utils.run_tests(YarnIntegTestSuite, file_name="py_integ_yarn_tests_report")

@@ -1,4 +1,5 @@
 from h2o.frame import H2OFrame
+from h2o.connection import H2OConnection
 
 class FrameConversions:
 
@@ -52,3 +53,9 @@ class FrameConversions:
         j_h2o_frame = h2oContext._jhc.asH2OFrame(df._jdf)
         j_h2o_frame_key = j_h2o_frame.key()
         return H2OFrame.from_java_h2o_frame(j_h2o_frame,j_h2o_frame_key)
+
+    @staticmethod
+    def init_scala_int_session():
+        res = H2OConnection.post("scalaint")
+        session_id = res.json()["session_id"]
+        return session_id
