@@ -1,7 +1,7 @@
-import pysparkling
+from pysparkling import *
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
-
+import h2o
 # initiate SparkContext
 sc = SparkContext("local", "App Name", pyFiles=[])
 
@@ -9,4 +9,8 @@ sc = SparkContext("local", "App Name", pyFiles=[])
 sqlContext = SQLContext(sc)
 
 # initiate H2OContext
-hc = pysparkling.H2OContext(sc).start()
+hc = H2OContext(sc).start()
+
+# stop H2O and Spark services
+h2o.shutdown(prompt=False)
+sc.stop()

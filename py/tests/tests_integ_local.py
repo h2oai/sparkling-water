@@ -19,7 +19,11 @@
 Integration tests for pySparkling for Spark running in local
 """
 from integ_test_utils import IntegTestSuite
-
+import test_utils
 
 class LocalIntegTestSuite(IntegTestSuite):
     pass
+
+
+if __name__ == '__main__':
+    test_utils.run_tests(LocalIntegTestSuite, file_name="py_integ_local_tests_report")

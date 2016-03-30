@@ -165,44 +165,9 @@ You can find more examples in the [examples folder](examples/).
 ---
 <a name="PySparkling"></a>
 ### Run PySparkling
-Sparkling Water can be also used directly from pySpark.
-
-In order to use PySparkling, please ensure the following python packages are available on the system:  `six`, `future`, `requests` and `tabulate`.
-The required packages are installed automatically in case when PySparkling is installed from PyPi (this option will be available soon).
-
-1. First, build a package:
-  ```
-  ./gradlew build -x check
-  ```
-
-2. Configure the location of Spark distribution and cluster:
-  ```
-  export SPARK_HOME="/path/to/spark/installation"
-  export MASTER="local-cluster[3,2,1024]"
-  ```
-
-3. And run pySparkling shell:
-  ```
-  bin/pysparkling
-  ```
-
-  > The `pysparkling` shell accepts common `pyspark` arguments. 
-
-4. Initialize H2OContext 
-  ```python
-  import pysparkling
-  hc = H2OContext(sc).start()
-  ```
-
-> To run `pysparkling` on top of Spark cluster, H2O Python package is required. You can install it via `pip` or point to it via `PYTHONPATH` shell variable: `export PYTHONPATH=$PYTHONPATH:$H2O_HOME/h2o-py`
-
-> To use Python notebook with `pysparkling` you need to specify `IPYTHON_OPTS` shell variable: `IPYTHON_OPTS="notebook" bin/pysparkling`
-
-> To use iPython with `pysparkling` you need to specify `PYSPARK_PYTHON` shell variable: `PYSPARK_PYTHON="ipython" bin/pysparkling`
-
-### Use PySparkling in Databricks Cloud
-To use PySparkling in Databricks cloud please attach PySparkling egg file as a library and attach this library to an existing cluster. After this step you can use PySparkling in a notebook 
-attached to the cluster in exactly same way as from pySparkling shell.
+Sparkling Water can be also used directly from PySpark.
+ 
+See [py/README.md](py/README.rst) to learn about PySparkling.
 
 ---
 <a name="Packages"></a>

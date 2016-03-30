@@ -1,10 +1,10 @@
 import h2o
 from datetime import datetime
 from pytz import timezone
-from pyspark import SparkContext, SparkConf
-from pyspark.sql import SQLContext
+from pyspark import SparkContext, SparkConf, SparkFiles
+from pyspark.sql import SQLContext, Row
 import os
-from pysparkling.context import H2OContext
+from pysparkling import *
 
 # Refine date column
 def refine_date_col(data, col, pattern):
@@ -36,7 +36,7 @@ def get_season(dt):
         return "Winter"
 
 
-# create Crime representation
+# Create crime class which is used as a data holder on which prediction is done
 def crime(date,
           iucr,
           primaryType,
@@ -56,28 +56,33 @@ def crime(date,
     dt = datetime.strptime("02/08/2015 11:43:58 PM",'%d/%m/%Y %I:%M:%S %p')
     dt.replace(tzinfo=timezone("Etc/UTC"))
 
-    crime = {}
-    crime["Year"] = dt.year
-    crime["Month"] = dt.month
-    crime["Day"] = dt.day
-    crime["WeekNum"] = dt.isocalendar()[1]
-    crime["HourOfDay"] = dt.hour
-    crime["Weekend"] = 1 if dt.weekday() == 5 or dt.weekday() == 6 else 0
-    crime["Season"] = get_season(dt.month)
-    crime["WeekDay"] = dt.strftime('%a')  #gets the day of week in short format - Mon, Tue ...
-    crime["IUCR"] = iucr
-    crime["Primary_Type"] = primaryType
-    crime["Location_Description"] = locationDescr
-    crime["Domestic"] = True if domestic else False
-    crime["Beat"] = beat
-    crime["District"] = district
-    crime["Ward"] = ward
-    crime["Community_Area"] = communityArea
-    crime["FBI_Code"] = fbiCode
-    crime["minTemp"] = minTemp
-    crime["maxTemp"] = maxTemp
-    crime["meanTemp"] = meanTemp
+    crime = Row(
+            Year = dt.year,
+            Month = dt.month,
+            Day = dt.day,
+            WeekNum = dt.isocalendar()[1],
+            HourOfDay = dt.hour,
+            Weekend = 1 if dt.weekday() == 5 or dt.weekday() == 6 else 0,
+            Season = get_season(dt.month),
+            WeekDay = dt.strftime('%a'),  #gets the day of week in short format - Mon, Tue ...
+            IUCR = iucr,
+            Primary_Type = primaryType,
+            Location_Description = locationDescr,
+            Domestic = True if domestic else False,
+            Beat = beat,
+            District = district,
+            Ward = ward,
+            Community_Area = communityArea,
+            FBI_Code = fbiCode,
+            minTemp = minTemp,
+            maxTemp = maxTemp,
+            meanTemp = meanTemp
+    )
     return crime
+
+# This is just helper function returning path to data-files
+def _locate(example_name):
+    return "../examples/smalldata/" + example_name
 
 conf = SparkConf().setAppName("ChicagoCrimeTest").setIfMissing("spark.master", os.getenv("spark.master", "local[*]"))
 sc = SparkContext(conf=conf)
@@ -85,10 +90,24 @@ sc = SparkContext(conf=conf)
 sqlContext = SQLContext(sc)
 # Start H2O services
 h2oContext = H2OContext(sc).start()
+# Define file names
+chicagoAllWeather = "chicagoAllWeather.csv"
+chicagoCensus = "chicagoCensus.csv"
+chicagoCrimes10k = "chicagoCrimes10k.csv"
 
-f_weather = h2o.import_file("hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoAllWeather.csv")
-f_census = h2o.import_file("hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCensus.csv")
-f_crimes = h2o.import_file("hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCrimes.csv")
+# Add files to Spark Cluster
+sc.addFile(_locate(chicagoAllWeather))
+sc.addFile(_locate(chicagoCensus))
+sc.addFile(_locate(chicagoCrimes10k))
+
+# Since we have already loaded files into spark, we have to use h2o.upload_file instead of h2o.import_file since
+# h2o.import_file expects cluster-relative path (ie. the file on this path can be accessed from all the machines on the cluster)
+# but SparkFiles.get(..) already give us relative path to the file on a current node which h2o.upload_file can handle ( it uploads file
+# located on current node and distributes it to the H2O cluster)
+f_weather = h2o.upload_file(SparkFiles.get(chicagoAllWeather))
+f_census = h2o.upload_file(SparkFiles.get(chicagoCensus))
+f_crimes = h2o.upload_file(SparkFiles.get(chicagoCrimes10k))
+
 
 # Transform weather table
 # Remove 1st column (date)
@@ -155,25 +174,44 @@ crimeWithWeatherHF["Primary_Type"] = crimeWithWeatherHF["Primary_Type"].asfactor
 crimeWithWeatherHF["Location_Description"] = crimeWithWeatherHF["Location_Description"].asfactor()
 crimeWithWeatherHF["Domestic"] = crimeWithWeatherHF["Domestic"].asfactor()
 
-# Split final data table
-ratios = [0.8]
-frs = crimeWithWeatherHF.split_frame(ratios)
-train = frs[0]
-test = frs[1]
+# Split frame into two - we use one as the training frame and the second one as the validation frame
+splits = crimeWithWeatherHF.split_frame(ratios=[0.8])
+train = splits[0]
+test = splits[1]
 
-gbm_model = h2o.gbm(x=train.drop("Arrest"),
-                    y=train["Arrest"],
-                    validation_x=test.drop("Arrest"),
-                    validation_y=test["Arrest"],
-                    ntrees=50,
-                    max_depth=3,
-                    learn_rate=0.1,
-                    distribution="bernoulli")
+# Prepare column names
+predictor_columns = train.drop("Arrest").col_names
+response_column = "Arrest"
 
-dl_model = h2o.deeplearning(x=train.drop("Arrest"),
-                            y=train["Arrest"],
-                            validation_x=test.drop("Arrest"),
-                            validation_y=test["Arrest"])
+# Create and train GBM model
+from h2o.estimators.gbm import H2OGradientBoostingEstimator
+
+# Prepare model based on the given set of parameters
+gbm_model = H2OGradientBoostingEstimator(  ntrees       = 50,
+                                           max_depth    = 3,
+                                           learn_rate   = 0.1,
+                                           distribution = "bernoulli"
+                                           )
+
+# Train the model
+gbm_model.train(x            = predictor_columns,
+                y                = response_column,
+                training_frame   = train,
+                validation_frame = test
+                )
+
+# Create and train deeplearning model
+from h2o.estimators.deeplearning import H2ODeepLearningEstimator
+
+# Prepare model based on the given set of parameters
+dl_model = H2ODeepLearningEstimator()
+
+# Train the model
+dl_model.train(x            = predictor_columns,
+               y                = response_column,
+               training_frame   = train,
+               validation_frame = test
+               )
 
 # Create crimes examples
 crime_examples = [
@@ -181,7 +219,6 @@ crime_examples = [
     crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE",False, 923, 9, 14, 63, 11)]
 
 # For given crime and model returns probability of crime.
-
 def score_event(crime, model, censusTable):
     srdd = sqlContext.createDataFrame([crime])
     # Join table with census data
@@ -194,25 +231,20 @@ def score_event(crime, model, censusTable):
     row["Domestic"] = row["Domestic"].asfactor()
 
     predictTable = model.predict(row)
-    #FIXME: for glmModel table predictTable does not contain column "true"
     probOfArrest = predictTable["true"][0,0]
     return probOfArrest
 
 for crime in crime_examples:
-    arrestProbGLM = 100*score_event(crime, gbm_model, df_census)
-    arrestProbGBM = 100*score_event(crime, dl_model, df_census)
+    arrestProbGBM = 100*score_event(crime, gbm_model, df_census)
+    arrestProbDLM = 100*score_event(crime, dl_model, df_census)
 
     print("""
        |Crime: """+str(crime)+"""
-       |  Probability of arrest best on DeepLearning: """+str(arrestProbGLM)+"""
+       |  Probability of arrest best on DeepLearning: """+str(arrestProbDLM)+"""
        |  Probability of arrest best on GBM: """+str(arrestProbGBM)+"""
         """)
 
-# Need to shutdown Spark at the end
-#sc.stop()
-#h2o.shutdown()
-
-# Kill process directly
-import os
-os._exit(0)
+# stop H2O and Spark services
+h2o.shutdown(prompt=False)
+sc.stop()
 
