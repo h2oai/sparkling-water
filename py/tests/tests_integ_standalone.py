@@ -19,7 +19,11 @@
  Integration tests for pySparkling for spark running in Standalone mode
 """
 from integ_test_utils import IntegTestSuite
-
+import test_utils
 
 class StandaloneIntegTestSuite(IntegTestSuite):
     pass
+
+
+if __name__ == '__main__':
+    test_utils.run_tests(StandaloneIntegTestSuite, file_name="py_integ_standalone_tests_report")

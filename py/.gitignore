@@ -1,3 +1,5 @@
+/examples/notebooks/h2ologs
+/examples/notebooks/metastore_db
 # ipython nootebook checkpoints
 examples/notebooks/.ipynb_checkpoints
 

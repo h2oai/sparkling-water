@@ -126,7 +126,7 @@ task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
     environment['PYTHONPATH'] = new File("py/dist/pySparkling-${version.replace("-","_")}-py2.7.egg").getAbsolutePath() +  File.pathSeparator + environment['PYTHONPATH']
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
     environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
-    commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "unit_tests.py"])
+    commandLine getOsSpecificCommandLine(["python", "tests/tests_unit.py"])
 }
 
 //
@@ -151,7 +151,7 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
             environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}/nodes"
             environment["spark.ext.h2o.client.log.dir"] =  "h2ologs-itest-${testEnv}/client"
 
-            commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "tests_integ_yarn.py"])
+            commandLine getOsSpecificCommandLine(["python", "tests/tests_integ_yarn.py"])
             break
 
         case "standalone":
@@ -159,7 +159,7 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
             environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}/nodes"
             environment["spark.ext.h2o.client.log.dir"] = "h2ologs-itest-${testEnv}/client"
 
-            commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "tests_integ_standalone.py.py"])
+            commandLine getOsSpecificCommandLine(["python", "tests/tests_integ_standalone.py"])
             break
 
         case "local":
@@ -167,7 +167,7 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
             environment["spark.ext.h2o.node.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/nodes").getAbsolutePath()
             environment["spark.ext.h2o.client.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client").getAbsolutePath()
 
-            commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "tests_integ_local.py"])
+            commandLine getOsSpecificCommandLine(["python", "tests/tests_integ_local.py"])
             break
     }
 }
