@@ -19,23 +19,19 @@
 Unit tests for PySparkling;
 """
 
-import os
 import unittest
 from pyspark import SparkContext, SparkConf
 from pysparkling.context import H2OContext
-from h2o.frame import H2OFrame
-
-# We need spark home for testing
-SPARK_HOME = os.environ["SPARK_HOME"]
+import h2o
+import test_utils
 
 class ReusedPySparklingTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        conf = SparkConf().setAppName("puunit-test").setMaster("local-cluster[3,1,2048]").set("spark.ext.h2o.disable.ga","true").set("spark.driver.memory", "2g").set("spark.executor.memory", "2g").set("spark.ext.h2o.client.log.level", "DEBUG")
+        conf = SparkConf().setAppName("pyunit-test").setMaster("local-cluster[3,1,2048]").set("spark.ext.h2o.disable.ga","true").set("spark.driver.memory", "2g").set("spark.executor.memory", "2g").set("spark.ext.h2o.client.log.level", "DEBUG")
         cls._sc = SparkContext(conf=conf)
-        cls._hc = H2OContext(cls._sc)
-        cls._hc.start()
+        cls._hc = H2OContext(cls._sc).start()
 
     @classmethod
     def tearDownClass(cls):
@@ -117,10 +113,9 @@ class FrameTransformationsTest(ReusedPySparklingTestCase):
 
     # test transformation from h2o frame to data frame, when given h2o frame was created without calling as_h2o_frame
     # on h2o context
-    @unittest.skip("not implemented so far")
     def test_h2o_frame_2_data_frame_new(self):
         hc = self._hc
-        h2o_frame = H2OFrame(file_path="../examples/smalldata/prostate.csv")
+        h2o_frame = h2o.upload_file("../examples/smalldata/prostate.csv")
         df = hc.as_spark_frame(h2o_frame)
         self.assertEquals(df.count(), h2o_frame.nrow, "Number of rows should match")
         self.assertEquals(len(df.columns), h2o_frame.ncol, "Number of columns should match")
@@ -136,4 +131,8 @@ class FrameTransformationsTest(ReusedPySparklingTestCase):
         self.assertEquals(df.count(), h2o_frame.nrow, "Number of rows should match")
         self.assertEquals(len(df.columns), h2o_frame.ncol, "Number of columns should match")
         self.assertEquals(df.columns,h2o_frame.names, "Column names should match")
+
+
+if __name__ == '__main__':
+    test_utils.run_tests(FrameTransformationsTest,file_name="py_unit_tests_report")
 

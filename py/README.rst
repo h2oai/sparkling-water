@@ -8,58 +8,103 @@ Prerequisites:
 
 For windows users, please grab a .whl from http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
 
-This module depends on *requests* and *tabulate* modules, both of which are available on pypi:
+In order to use PySparkling, it requires the following runtime python dependencies to be available on the system: *requests*, *tabulate*, *six* and *future* modules, all of which are available on PyPi:
 
 .. code-block:: bash
 
   $ pip install requests
   $ pip install tabulate
+  $ pip install six
+  $ pip install future
+  
+The required packages are installed automatically in case PySparkling is installed from PyPi (this option will be available soon).
+
+
 
 The Sparkling-Water Python Module
 =================================
 
-To run a pySparkling interactive shell:
-    
+Prepare the environment
+-----------------------
+1. Either clone and build Sparkling Water project
+
+.. code-block:: bash
+
+    git clone http://github.com/h2oai/sparkling-water
+    cd sparkling-water
+    ./gradlew build -x check
+
+
+or download and unpack sparkling water release from  `here
+<http://www.h2o.ai/download/sparkling-water/choose>`_.
+
+2. Configure the location of Spark distribution and cluster:
+
 .. code-block:: bash
 
     export SPARK_HOME="/path/to/spark/installation"
-    export MASTER='local-cluster[3,2,2040]'
-    export SPARKLING_HOME="/path/to/SparklingWater/installation"
-    $SPARKLING_HOME/bin/pysparkling
+    export MASTER='local-cluster[3,2,2048]'
 
-On a notebook
-    
+
+Run PySparkling interactive shell
+---------------------------------
+
+1. Ensure you are in the Sparkling Water project directory and run PySparkling shell:
+
 .. code-block:: bash
 
-    IPYTHON_OPTS="notebook" $SPARKLING_HOME/bin/pysparkling
+    bin/pysparkling
 
-On YARN
-    
+
+The *pysparkling* shell accepts common *pyspark* arguments.
+
+
+For running on YARN and other supported platforms please see `Running Sparkling Water on supported platforms
+<https://github.com/h2oai/sparkling-water/blob/master/DEVEL.md#TargetPlatforms>`_.
+
+
+2. Initialize H2OContext
+
+.. code:: python
+
+      from pysparkling import *
+      import h2o
+      hc = H2OContext(sc).start()
+
+
+Run IPython Notebook with PySparkling
+-------------------------------------
 .. code-block:: bash
 
-    export SPARK_HOME="/path/to/spark/installation"
-    export HADOOP_CONF_DIR=/etc/hadoop/conf
-    export SPARKLING_HOME="/path/to/SparklingWater/installation"
-    $SPARKLING_HOME/bin/pysparkling --num-executors 3 --executor-memory 20g --executor-cores 10 --driver-memory 20g --master yarn-client
-    
-To initialize H2O context and import H2O-Python library-
-    
+    IPYTHON_OPTS="notebook" bin/pysparkling
+
+
+Run IPython with PySparkling
+----------------------------
 .. code-block:: bash
 
-    from pysparkling import *
-    hc= H2OContext(sc).start()
-    import h2o
+    PYSPARK_PYTHON="ipython" bin/pysparkling
 
-To run as a Spark Package-
-	
+
+Use PySparkling as Spark Package
+--------------------------------
 .. code-block:: bash
 
 	$SPARK_HOME/bin/spark-submit
 	--packages ai.h2o:sparkling-water-core_2.10:1.4.10  
-	--py-files $SPARKLING_HOME/py/dist/pySparkling-1.4.10-py2.7.egg  $SPARKLING_HOME/py/examples/scripts/H2OContextDemo.py 
+	--py-files $SPARKLING_HOME/py/dist/pySparkling-1.4.10-py2.7.egg  ./py/examples/scripts/ChicagoCrimeDemo.py
 
-An introduction
-===============
+Use PySparkling in Databricks Cloud
+-----------------------------------
+
+To use PySparkling in Databricks cloud, add PySparkling egg file as a library and attach this library to an existing cluster. After this step you can use PySparkling in a notebook
+attached to the cluster in exactly same way as from pySparkling shell.
+
+The PySparkling egg file is available in *py/dist* directory in both built Sparkling Water project and downloaded Sparkling Water release.
+
+	
+An introduction to PySparkling
+==============================
 
 What is H2O?
 ------------
