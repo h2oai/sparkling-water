@@ -7,9 +7,5 @@ source $TOPDIR/bin/sparkling-env.sh
 checkSparkHome
 
 PYTHONPATH=$PY_EGG_FILE:$PYTHONPATH \
-$SPARK_HOME/bin/pyspark \
- --conf spark.executor.extraClassPath=$TOPDIR/assembly/build/libs/$FAT_JAR \
- --conf spark.driver.extraClassPath=$TOPDIR/assembly/build/libs/$FAT_JAR \
- --py-files $PY_EGG_FILE \
- --jars $TOPDIR/assembly/build/libs/$FAT_JAR "$@"
+$SPARK_HOME/bin/pyspark --py-files $PY_EGG_FILE "$@"
 
