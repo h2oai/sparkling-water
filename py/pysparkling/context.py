@@ -89,32 +89,33 @@ class H2OContext(object):
         #   java_import(sc._jvm, "org.apache.spark.h2o.*")
         # because of https://issues.apache.org/jira/browse/SPARK-5185
         # So lets load class directly via classloader
+        # This is finally fixed in Spark 2.0 ( along with other related issues)
         jvm = self._jvm
         sc = self._sc
         gw = self._gw
+        jhc_klazz = self._jvm.java.lang.Thread.currentThread().getContextClassLoader().loadClass("org.apache.spark.h2o.H2OContext")
+        # Find ctor with right spark context
+        jctor_def = gw.new_array(jvm.Class, 1)
+        jctor_def[0] = sc._jsc.getClass()
+        jhc_ctor = jhc_klazz.getConstructor(jctor_def)
+        jctor_params = gw.new_array(jvm.Object, 1)
+        jctor_params[0] = sc._jsc
+        # Create instance of class
+        self._jhc = jhc_ctor.newInstance(jctor_params)
 
-        self._jhc = jvm.org.apache.spark.h2o.H2OContext.getOrCreate(sc._jsc)
-        self._client_ip = None
-        self._client_port = None
-
-    def start(self, init_h2o_client = True, strict_version_check = False):
+    def start(self):
         """
         Start H2OContext.
 
         It initializes H2O services on each node in Spark cluster and creates
         H2O python client.
-
-        Parameters
-        ----------
-          init_h2o_client : initialize H2O Python client (default is True)
-          strict_version_check : perform strict version check of H2O Python client against H2O Rest API
         """
-        self._client_ip = self._jhc.h2oLocalClientIp()
-        self._client_port = self._jhc.h2oLocalClientPort()
 
         if (has_h2o):
-            if (init_h2o_client):
-                h2o.init(ip=self._client_ip, port=self._client_port, strict_version_check = strict_version_check)
+            self._jhc.start()
+            self._client_ip = self._jhc.h2oLocalClientIp()
+            self._client_port = self._jhc.h2oLocalClientPort()
+            h2o.init(ip=self._client_ip, port=self._client_port,start_h2o=False, strict_version_check=False)
             return self
         else:
             println("H2O package is not available!")
