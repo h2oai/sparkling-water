@@ -33,21 +33,11 @@ def h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h
 //
 def preparePythonEnv(environment) {
     def SPARK_HOME = ext.sparkHome
-    def H2O_HOME = System.getenv("H2O_HOME")
-    def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
 
     if (SPARK_HOME != null) {
         environment['PYTHONPATH'] = SPARK_HOME + File.separator + "python" + File.pathSeparator +
                                     SPARK_HOME + File.separator + "python" + File.separator + "lib" + File.separator + "py4j-0.8.2.1-src.zip" +
-                                    File.pathSeparator + environment["PYTHONPATH"]
-    }
-
-    if (H2O_HOME != null) {
-        environment['PYTHONPATH'] = H2O_HOME + File.separator + "h2o-py" + File.pathSeparator + environment["PYTHONPATH"]
-    }
-
-    if (H2O_PYTHON_WHEEL != null) {
-        environment['PYTHONPATH'] = H2O_PYTHON_WHEEL + File.pathSeparator + environment["PYTHONPATH"]
+                                    File.pathSeparator + environment['PYTHONPATH']
     }
 }
 
@@ -77,6 +67,26 @@ or
     export H2O_PYTHON_WHEEL=\$(pwd)/private/h2o.whl
 """)
     }
+
+  if(H2O_HOME != null && H2O_PYTHON_WHEEL !=null){
+      logger.info("Both \"H2O_HOME\" and \"H2O_PYTHON_WHEEL\" properties are set. Using \"H2O_HOME\"!")
+  }
+
+}
+
+def copyH2OFromH2OHome(String H2O_HOME){
+        copy {
+            from "${H2O_HOME}/h2o-py/h2o"
+            into 'build/dep/h2o'
+        }
+}
+
+def copyH2OFromH2OWheel(String H2O_PYTHON_WHEEL){
+        copy {
+            from zipTree(H2O_PYTHON_WHEEL)
+            into 'build/dep'
+            include 'h2o/**'
+        }
 }
 
 //
@@ -84,44 +94,38 @@ or
 //
 task distPython(type: Exec, dependsOn: checkPythonEnv) {
     preparePythonEnv(environment)
+    doFirst {
+        def H2O_HOME = System.getenv("H2O_HOME")
+        def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
 
-    def H2O_HOME = System.getenv("H2O_HOME")
-    def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
-
-    // Copy H2O dependency
-    if (H2O_HOME != null) {
-        // Prepare dependencies
-        doFirst {
-            copy {
-                from "${H2O_HOME}/h2o-py/h2o"
-                into 'build/dep/h2o'
-            }
+        if(H2O_HOME !=null && H2O_PYTHON_WHEEL !=null){
+            // if both properties are set, give precedence to H2O_HOME
+            copyH2OFromH2OHome(H2O_HOME)
+        }else if(H2O_HOME!=null){
+            copyH2OFromH2OHome(H2O_HOME)
+        }else if(H2O_PYTHON_WHEEL!=null){
+            copyH2OFromH2OWheel(H2O_PYTHON_WHEEL)
         }
 
-    }
-
-    if (H2O_PYTHON_WHEEL != null) {
-        doFirst {
-            copy {
-                from zipTree(H2O_PYTHON_WHEEL)
-                into 'build/dep'
-                include 'h2o/**'
-            }
+        copy {
+            from "${configurations.compile.join(',')}"
+            into 'build/dep/jars'
+            rename ".*", "sparkling_water_assembly.jar"
         }
+        (new File('py/build/dep/jars/__init__.py')).write("#Sparkling-water JAR holder for pySparkling module.")
     }
-
     commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_egg"])
 }
 
 //
 // Test python against Spark cloud
 //
-task testPython(type: Exec, dependsOn: [configurations.compile, checkPythonEnv] ) {
+task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
     preparePythonEnv(environment)
-
+    // add PySparkling egg on PYTHONPATH so unittests can see all the modules within this egg file
+    environment['PYTHONPATH'] = new File("py/dist/pySparkling-${version.replace("-","_")}-py2.7.egg").getAbsolutePath() +  File.pathSeparator + environment['PYTHONPATH']
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
     environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
-    environment['SPARK_CLASSPATH'] = "${configurations.compile.join(',')}"
     commandLine getOsSpecificCommandLine(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "unit_tests.py"])
 }
 
@@ -139,8 +143,6 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
     environment["sparkling.test.hdp.version"] = "${hdpVersion}"
     if (sparkMaster != null)
         environment["spark.master"] = "${sparkMaster}"
-    // Pass list of jars required for testing
-    environment["sparkling.assembly.jar"] =  "${configurations.compile.join(',')}"
 
     // Decide which tests should be launch here based on environment
     switch (testEnv) {

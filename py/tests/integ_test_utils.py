@@ -26,8 +26,6 @@ from random import randrange
 
 class IntegTestEnv:
     def __init__(self):
-        self.sw_assembly = IntegTestEnv.get_env_org_fail("sparkling.assembly.jar",
-                                                         "The variable 'sparkling.assembly.jar' is not set! It should point to assembly jar file.")
         self.spark_master = IntegTestEnv.get_env_org_fail("MASTER",
                                                           "The variable 'MASTER' should point to Spark cluster")
         self.hdp_version = IntegTestEnv.get_env_org_fail("sparkling.test.hdp.version",
@@ -65,7 +63,6 @@ class IntegTestSuite(unittest.TestCase):
     def launch(self, script_name):
         spark_home = os.environ["SPARK_HOME"]
         cmd_line = [IntegTestSuite.get_submit_script(spark_home)]
-        cmd_line.extend(["--jars", self.test_env.sw_assembly])
         cmd_line.append("--verbose")
         cmd_line.extend(["--master", self.test_env.spark_master])
         if self.test_env.spark_conf.has_key("spark.driver.memory"):
@@ -79,7 +76,6 @@ class IntegTestSuite(unittest.TestCase):
         cmd_line.extend(["--conf", 'spark.test.home='+spark_home])
         cmd_line.extend(["--conf", 'spark.scheduler.minRegisteredResourcesRatio=1'])
         cmd_line.extend(["--conf", 'spark.ext.h2o.repl.enabled=false']) #  disable repl in tests
-        cmd_line.extend(["--conf", 'spark.driver.extraClassPath='+self.test_env.sw_assembly])
         cmd_line.extend(["--py-files", self.test_env.egg])
         for k, v in self.test_env.spark_conf.items():
             cmd_line.extend(["--conf", k+'='+str(v)])

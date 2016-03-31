@@ -3,16 +3,10 @@ from pyspark.sql.dataframe import DataFrame
 from pyspark.rdd import RDD
 from pyspark.sql import SQLContext
 from h2o.frame import H2OFrame
+import h2o
 from pysparkling.utils import FrameConversions as fc
 import warnings
-
-try:
-    import h2o
-    from h2o.frame import H2OFrame
-    has_h2o = True
-except Exception:
-    println("H2O package is not available!")
-    has_h2o = False
+from pkg_resources import resource_filename
 
 def _monkey_patch_H2OFrame(hc):
     @staticmethod
@@ -64,6 +58,8 @@ def _get_first(rdd):
 
     return rdd.first()
 
+def get_sw_jar():
+    return resource_filename("jars", 'sparkling_water_assembly.jar')
 
 class H2OContext(object):
 
@@ -77,6 +73,21 @@ class H2OContext(object):
 
     def _do_init(self, sparkContext):
         self._sc = sparkContext
+
+        # Add Sparkling water assembly JAR to driver
+        url = self._sc._jvm.java.net.URL("file://"+get_sw_jar())
+        # Assuming that context class loader is always instance of URLClassLoader ( which should be always true)
+        cl = self._sc._jvm.Thread.currentThread().getContextClassLoader()
+
+        # explicitly check if we run on databricks cloud since there we must add the jar to the parent of context class loader
+        if cl.getClass().getName()=='com.databricks.backend.daemon.driver.DriverLocal$DriverLocalClassLoader':
+            cl.getParent().addURL(url)
+        else:
+            cl.addURL(url)
+
+        # Add Sparkling water assembly JAR to executors
+        self._sc._jsc.addJar(get_sw_jar())
+
         # do not instantiate sqlContext when already one exists
         self._jsqlContext = self._sc._jvm.SQLContext.getOrCreate(self._sc._jsc.sc())
         self._sqlContext = SQLContext(sparkContext,self._jsqlContext)
@@ -110,16 +121,11 @@ class H2OContext(object):
         It initializes H2O services on each node in Spark cluster and creates
         H2O python client.
         """
-
-        if (has_h2o):
-            self._jhc.start()
-            self._client_ip = self._jhc.h2oLocalClientIp()
-            self._client_port = self._jhc.h2oLocalClientPort()
-            h2o.init(ip=self._client_ip, port=self._client_port,start_h2o=False, strict_version_check=False)
-            return self
-        else:
-            println("H2O package is not available!")
-            return None
+        self._jhc.start()
+        self._client_ip = self._jhc.h2oLocalClientIp()
+        self._client_port = self._jhc.h2oLocalClientPort()
+        h2o.init(ip=self._client_ip, port=self._client_port,start_h2o=False, strict_version_check=False)
+        return self
 
     def stop(self):
         warnings.warn("H2OContext stopping is not yet supported...")

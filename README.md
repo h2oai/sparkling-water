@@ -51,9 +51,14 @@ for the latest Spark version. They are back-ported into older Sparkling Water ve
 Download Spark installation and point environment variable `SPARK_HOME` to it.
 Then use the provided `gradlew` to build project:
 
+In order to build the whole project, one of the following properties needs to be set: 
+`H2O_HOME`, which should point to location of local h2o project directory, or `H2O_PYTHON_WHEEL`, which should point to H2O Python Wheel.
+
+If you are not sure which property to set, just run
 ```
 ./gradlew build
 ```
+and the commands which sets the `H2O_PYTHON_WHEEL` will be shown on your console and can be copy-pasted into your terminal. After setting the property, the build needs to be rerun.
 
 > To avoid running tests, use the `-x test -x integTest` option. 
 
@@ -162,6 +167,9 @@ You can find more examples in the [examples folder](examples/).
 ### Run PySparkling
 Sparkling Water can be also used directly from pySpark.
 
+In order to use PySparkling, please ensure the following python packages are available on the system:  `six`, `future`, `requests` and `tabulate`.
+The required packages are installed automatically in case when PySparkling is installed from PyPi (this option will be available soon).
+
 1. First, build a package:
   ```
   ./gradlew build -x check
@@ -191,6 +199,10 @@ Sparkling Water can be also used directly from pySpark.
 > To use Python notebook with `pysparkling` you need to specify `IPYTHON_OPTS` shell variable: `IPYTHON_OPTS="notebook" bin/pysparkling`
 
 > To use iPython with `pysparkling` you need to specify `PYSPARK_PYTHON` shell variable: `PYSPARK_PYTHON="ipython" bin/pysparkling`
+
+### Use PySparkling in Databricks Cloud
+To use PySparkling in Databricks cloud please attach PySparkling egg file as a library and attach this library to an existing cluster. After this step you can use PySparkling in a notebook 
+attached to the cluster in exactly same way as from pySparkling shell.
 
 ---
 <a name="Packages"></a>
