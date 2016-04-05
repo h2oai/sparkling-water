@@ -65,6 +65,7 @@ trait H2OConf {
   def subseqTries  = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
   def scalaIntDefaultNum = sparkConf.getInt(PROP_SCALA_INT_DEFAULT_NUM._1, PROP_SCALA_INT_DEFAULT_NUM._2)
   def h2oReplEnabled = sparkConf.getBoolean(PROP_REPL_ENABLED._1,PROP_REPL_ENABLED._2)
+  def clusterTopologyListenerEnabled = sparkConf.getBoolean(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1,PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._2)
   /**
    * Produce arguments for H2O node based on this config.
    * @return array of H2O launcher command line arguments
@@ -189,7 +190,8 @@ object H2OConf {
   val PROP_SCALA_INT_DEFAULT_NUM = ("spark.ext.scala.int.default.num",1)
   /** Enable/Disable Sparkling-Water REPL **/
   val PROP_REPL_ENABLED = ("spark.ext.h2o.repl.enabled",true)
-
+  /** Enable/Disable listener which kills H2O when there is a change in underlying cluster's topology**/
+  val PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED = ("spark.ext.h2o.topology.change.listener.enabled",true)
   private[spark] def defaultLogDir: String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs"
   }
