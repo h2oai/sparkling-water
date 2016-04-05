@@ -197,12 +197,14 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
     val (spreadRDD, spreadRDDNodes) = createSpreadRDD()
 
-    //attach listener which shutdown H2O when we bump into executor we didn't discover during the spreadRDD phase
-    sparkContext.addSparkListener(new SparkListener(){
-      override def onExecutorAdded(executorAdded: SparkListenerExecutorAdded): Unit = {
-        throw new IllegalArgumentException("Executor without H2O instance discovered, killing the cloud!")
-      }
-    })
+    if(clusterTopologyListenerEnabled){
+      //attach listener which shutdown H2O when we bump into executor we didn't discover during the spreadRDD phase
+      sparkContext.addSparkListener(new SparkListener(){
+        override def onExecutorAdded(executorAdded: SparkListenerExecutorAdded): Unit = {
+          throw new IllegalArgumentException("Executor without H2O instance discovered, killing the cloud!")
+        }
+      })
+    }
     // Start H2O nodes
     // Get executors to execute H2O
     val allExecutorIds = spreadRDDNodes.map(_._1).distinct

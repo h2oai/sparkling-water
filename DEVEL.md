@@ -246,6 +246,7 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.client.web.port`|`-1`|Exact client port to access web UI. The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`.|
 |`spark.ext.scala.int.default.num`|`1`|Number of executors started at the start of h2o services.|
 |`spark.ext.h2o.repl.enabled`|`true`|Decides whether H2O repl is initialized or not. The repl is initialized by default.|
+|`spark.ext.h2o.topology.change.listener.enabled`|`true`|Decides whether listener which kills h2o cloud on the change of underlying cluster's topology is enabled or not.|
 
 ---
 
