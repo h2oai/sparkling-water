@@ -1,6 +1,6 @@
 function checkSparkHome() {
   # Example class prefix
-  if [ ! -d "$SPARK_HOME" ]; then
+  if [ ! -f "$SPARK_HOME/bin/spark-submit" ]; then
     echo "Please setup SPARK_HOME variable to your Spark installation!"
     exit -1
   fi
@@ -21,6 +21,14 @@ if [ -z $TOPDIR ]; then
   echo "Caller has to setup TOPDIR variable!"
   exit -1
 fi
+
+function checkSparkVersion() {
+installed_spark_version=`$SPARK_HOME/bin/spark-submit --version 2>&1 | grep version | sed -e "s/.*version //"`
+if [ $SPARK_VERSION != $installed_spark_version ]; then
+    echo "You are trying to use Sparkling Water built for Spark ${SPARK_VERSION}, but your \$SPARK_HOME(=$SPARK_HOME) property points to Spark of version ${installed_spark_version}. Please ensure correct Spark is provided and re-run Sparkling Water."
+    exit -1
+fi
+}
 
 # Version of this distribution
 VERSION=$( cat $TOPDIR/gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//" )

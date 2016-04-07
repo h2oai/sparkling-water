@@ -5,6 +5,8 @@ TOPDIR=$(cd `dirname $0`/.. &&  pwd)
 source $TOPDIR/bin/sparkling-env.sh
 # Verify there is Spark installation
 checkSparkHome
+# Verify if correct Spark version is used
+checkSparkVersion
 
 DRIVER_CLASS=water.SparklingWaterDriver
 

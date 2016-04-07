@@ -5,6 +5,9 @@ TOPDIR=$(cd `dirname $0`/.. &&  pwd)
 source $TOPDIR/bin/sparkling-env.sh
 # Verify there is Spark installation
 checkSparkHome
+# Verify if correct Spark version is used
+checkSparkVersion
+
 
 PYTHONPATH=$PY_EGG_FILE:$PYTHONPATH \
 $SPARK_HOME/bin/pyspark --py-files $PY_EGG_FILE "$@"
