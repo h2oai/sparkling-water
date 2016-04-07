@@ -1,4 +1,4 @@
-import org.apache.tools.ant.taskdefs.condition.Os
+apply from: "$rootDir/gradle/utils.gradle"
 
 idea {
     module {
@@ -205,10 +205,6 @@ task buildPython(dependsOn: distPython)
 build.dependsOn buildPython
 
 test.dependsOn testPython
-
-def getOsSpecificCommandLine(args) { 
-  return Os.isFamily(Os.FAMILY_WINDOWS) ? ['cmd', '/c'] + args : args 
-}
 
 def detectEnvironment(defaultEnv = "local") {
     def denv = [ project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,

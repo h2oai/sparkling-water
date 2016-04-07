@@ -1,3 +1,5 @@
+# generated resource file containing Spark version for which Sparkling Water was built
+core/src/main/resources/spark.version
 *.class
 
 # Mobile Tools for Java (J2ME)
