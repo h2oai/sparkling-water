@@ -1,4 +1,7 @@
-/* Get spark home value from local environmnet */
+apply from: "$rootDir/gradle/utils.gradle"
+
+import org.apache.tools.ant.taskdefs.condition.Os
+/* Get spark home value from local environment */
 String getSparkHome() {
     String sh =
         [ project.hasProperty("sparkHome") ? project["sparkHome"] : null,
@@ -9,13 +12,12 @@ String getSparkHome() {
         logger.info("Found spark home: ${sh}")
         return sh
     } else {
-        logger.warn("Cannot find Spark home - " +
+        throw new InvalidUserDataException("Cannot find Spark home - " +
                 "please specify SPARK_HOME env variable or pass -PsparkHome property to gradle script")
-        return null
     }
 }
 
-/* Get spark home value from local environmnet */
+/* Get spark home value from local environment */
 String getSparkMaster() {
     String sh =
             [ project.hasProperty("sparkMaster") ? project["sparkMaster"] : null,
@@ -29,6 +31,41 @@ String getSparkMaster() {
         return null
     }
 }
+String getSParkSubmitScriptName(){
+    if(isWindowsBased()){
+        return "spark-submit.cmd"
+    }else{
+        return "spark-submit"
+    }
+}
+String getSparkSubmitScriptPath(){
+    new File(new File(getSparkHome()),"bin" + File.separator + getSParkSubmitScriptName()).absolutePath
+}
+String getSystemSparkVersion()  {
+   // We need to pass current Spark home to script which determines the Spark version
+   // This is needed in cases when we specify sparkHome using -P in gradle
+   // In that case gradle SPARK_HOME is set to specified Spark location but global SPARK_HOME is unchanged
+   // and we need to temporary change it in child process to get the correct Spark version
+   def commandEnvVars
+   if(isWindowsBased()){
+    // In case of Windows we can't set environment variables in execute command as it breaks the build
+    commandEnvVars = null
+   }else{
+    commandEnvVars = ["SPARK_HOME="+getSparkHome()]
+   }
+
+   def command
+   if(isWindowsBased()){
+       // In case of Windows we can't set environment variable in execute command so we set it them as part of the command
+       command = getOsSpecificCommandLine(["SET SPARK_HOME=${getSparkHome()} &", getSparkSubmitScriptPath(), "--version"]).join(" ")
+   }else{
+       command = getOsSpecificCommandLine([getSparkSubmitScriptPath(), "--version"]).join(" ")
+   }
+   def commandOutput = command.execute(commandEnvVars,null).err.text
+   def version_line = commandOutput.readLines().find{ it.contains("version")}
+   return version_line.replaceAll(".*version ","")
+}
+
 
 String getHdpVersion() {
   String sh =
@@ -37,6 +74,12 @@ String getHdpVersion() {
               System.env['HDP_VERSION']
             ].find { h -> h!=null }
   return sh
+}
+
+void checkSparkVersion(){
+    if(getSystemSparkVersion() != ext.sparkVersion){
+        throw new InvalidUserDataException("You are trying to build Sparkling Water for Spark $ext.sparkVersion, but your \$SPARK_HOME(=${getSparkHome()}) property points to Spark of version ${getSystemSparkVersion()}. Please ensure correct Spark is provided and re-run Sparkling Water.")
+    }
 }
 
 // Useful task to setup idea test configuration
@@ -55,3 +98,7 @@ task printIntegTestEnv << {
 ext.sparkHome = getSparkHome()
 ext.sparkMaster = getSparkMaster()
 ext.hdpVersion = getHdpVersion()
+ext.checkSparkVersion = this.&checkSparkVersion
+
+// Run the check
+checkSparkVersion()

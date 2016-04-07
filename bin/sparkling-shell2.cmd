@@ -5,8 +5,7 @@ set TOPDIR=%~dp0..
 call %TOPDIR%\bin\sparkling-env.cmd
 rem Verify there is Spark installation
 call :checkSparkHome
-
-
+call :checkSparkVersion
 rem end of checking Sparkling environment
 
 rem Default memory for shell
@@ -27,12 +26,23 @@ cd %TOPDIR%
 exit /b %ERRORLEVEL%
 rem end of main script
 
+
 rem define functions
+:checkSparkVersion
+for /f "delims=" %%i in ( 'CMD /C %SPARK_HOME%/bin/spark-submit.cmd --version 2^>^&1 1^>NUL ^| find "version" ') do set linewithversion=%%i
+set INSTALLED_SPARK_VERSION=%linewithversion:~-5%
+
+if NOT "%INSTALLED_SPARK_VERSION%"=="%SPARK_VERSION%" (
+   echo You are trying to use Sparkling Water built for Spark %SPARK_VERSION%, but your %%SPARK_HOME(=%SPARK_HOME%^) property points to Spark of version %INSTALLED_SPARK_VERSION%. Please ensure correct Spark is provided and re-run Sparkling Water.
+   call :haltHelper 2> nul
+	)
+exit /b 0
+
 :checkSparkHome
 rem Example class prefix
-if not exist "%SPARK_HOME%\" (
+if not exist "%SPARK_HOME%/bin/spark-submit.cmd" (
    echo Please setup SPARK_HOME variable to your Spark installation!
-   exit /b -1
+   call :haltHelper 2> nul
 )
 exit /b 0
 
@@ -46,3 +56,9 @@ echo   Spark build version       : %SPARK_VERSION%
 echo ----
 echo[
 exit /b 0
+
+:haltHelper
+() 
+exit /b 1
+
+

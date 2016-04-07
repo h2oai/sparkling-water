@@ -46,6 +46,7 @@ import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 import scala.util.Random
+import scala.util.control.NoStackTrace
 
 /**
  * Simple H2O context motivated by SQLContext.
@@ -183,6 +184,12 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   /** Initialize Sparkling H2O and start H2O cloud. */
   def start(): H2OContext = {
+    if(!isRunningOnCorrectSpark){
+      throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${designatedSparkVersion}," +
+        s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
+        s" points to Spark of version ${sparkContext.version}. Please ensure correct Spark is provided and" +
+        s" re-run Sparkling Water.")
+    }
     import H2OConf._
     // Setup properties for H2O configuration
     if (!sparkConf.contains(PROP_CLOUD_NAME._1)) {
@@ -321,6 +328,20 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       |
       |  Open H2O Flow in browser: http://${h2oLocalClient} (CMD + click in Mac OSX)
     """.stripMargin
+  }
+
+  /** Checks whether version of provided Spark is the same as Spark's version designated for this Sparkling Water version.
+    * We check for correct version in shell scripts and during the build but we need to do the check also in the code in cases when the user
+    * executes for example spark-shell command with sparkling water assembly jar passed as --jars and initiates H2OContext.
+    * (Because in that case no check for correct Spark version has been done so far.)
+    */
+  private def isRunningOnCorrectSpark = sparkContext.version.startsWith(designatedSparkVersion)
+  /**
+    * Returns Spark version for which is this version of Sparkling Water designated
+    */
+  def designatedSparkVersion = {
+    val stream = getClass.getResourceAsStream("/spark.version")
+    scala.io.Source.fromInputStream(stream).mkString
   }
 
   H2OContext.setInstantiatedContext(this)
@@ -864,3 +885,5 @@ object H2OContext extends Logging {
                            scalaCodeFactory)
   }
 }
+
+class WrongSparkVersion(msg: String) extends Exception(msg) with NoStackTrace{}

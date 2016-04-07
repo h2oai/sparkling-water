@@ -73,7 +73,14 @@ test {
     // Working dir will be root project
     workingDir = rootDir
 }
+
+task createSparkVersionFile << {
+    File version_file = file("src/main/resources/spark.version")
+    version_file.write(sparkVersion)
+}
+
 test.dependsOn testJar
+processResources.dependsOn createSparkVersionFile
 
 integTest {
     // Pass references to libraries to test launcher
