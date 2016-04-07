@@ -1,34 +1,16 @@
-// Common functions used by more subprojects
-/**
- * Find dependencies from 'configuration.runtime' matching given specification.
- *
- * Specification is given in form group_name:module_name
- *
- * @param d list of specifications.
- * @return
- */
-public FileCollection dep(List<String> d) {
-    Configuration conf = configurations.runtime
-    List<String[]> depsSpec = d.collect { it.split(":")}
-    Set<ResolvedDependency> toInclude = []
-    resolve(conf.resolvedConfiguration.firstLevelModuleDependencies, toInclude, depsSpec)
-    files( toInclude.collect {
-        it.moduleArtifacts*.file
-    }.flatten())
+// Common functions used by more sub-projects
+import org.apache.tools.ant.taskdefs.condition.Os
+
+def getOsSpecificCommandLine(args) {
+    return isWindowsBased() ? ['cmd', '/c'] + args : args
 }
 
-void resolve(Set<ResolvedDependency> deps, Set<ResolvedDependency> includeDeps, List<String[]> depsSpec) {
-    deps.each { d->
-        if (depsSpec.any { ds -> d.moduleGroup==ds[0] && d.moduleName==ds[1] })
-            if (includeDeps.add(d)) {
-                resolve(d.children, includeDeps, depsSpec)
-            }
-    }
+def isWindowsBased(){
+    return Os.isFamily(Os.FAMILY_WINDOWS)
 }
 
-/// Export methods by turning them into closures
+// Export methods by turning them into closures
 ext{
-    dep = this.&dep
-    resolve = this.&resolve
+    getOsSpecificCommandLine = this.&getOsSpecificCommandLine
+    isWindowsBased = this.&isWindowsBased
 }
-
