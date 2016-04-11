@@ -239,7 +239,6 @@ import org.apache.spark.h2o._
 import org.apache.spark.examples.h2o._
 // Create H2O context
 val h2oContext = H2OContext.getOrCreate(sc)
-// Export H2O context to the 
 import h2oContext._
 
 // URI to access HDFS file
