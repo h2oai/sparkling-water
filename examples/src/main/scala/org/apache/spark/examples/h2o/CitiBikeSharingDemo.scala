@@ -50,6 +50,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
     val sc = new SparkContext(conf)
     implicit val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
+    import h2oContext.implicits._
 
     implicit val sqlContext = new SQLContext(sc)
     import sqlContext.implicits._
@@ -159,7 +160,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
   def r2(model: GBMModel, fr: Frame) =  ModelMetrics.getFromDKV(model, fr).asInstanceOf[ModelMetricsSupervised].r2()
 
   def buildModel(df: H2OFrame)(implicit gTimer: GTimer, h2oContext: H2OContext) = {
-    import h2oContext._
+    import h2oContext.implicits._
     //
     // Split into train and test parts
     //

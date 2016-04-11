@@ -38,7 +38,8 @@ class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
 
     val h2oFrame: H2OFrame = value.className() match {
       case name if name.equals(classOf[Frame].getName) => {
-        h2oContext.asH2OFrame(value.get[Frame]())
+        import h2oContext.implicits._
+        value.get[Frame]()
       }
       case name if name.equals(classOf[H2OFrame].getName) => value.get[H2OFrame]()
     }

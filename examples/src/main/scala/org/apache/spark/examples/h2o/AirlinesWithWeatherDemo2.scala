@@ -43,6 +43,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
+    import h2oContext.implicits._
     // Setup environment
     addFiles(sc,
       absPath("examples/smalldata/Chicago_Ohare_International_Airport.csv"),
