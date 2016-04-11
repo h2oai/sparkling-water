@@ -85,13 +85,7 @@ def buildDLModel(train: Frame, valid: Frame,
 
   // Create a job
   val dl = new DeepLearning(dlParams, Key.make("dlModel.hex"))
-  val dlModel = dl.trainModel.get
-
-  // Compute metrics on both datasets
-  dlModel.score(train).delete()
-  dlModel.score(valid).delete()
-
-  dlModel
+  dl.trainModel.get
 }
 
 // Create SQL support

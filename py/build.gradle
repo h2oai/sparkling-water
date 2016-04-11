@@ -117,13 +117,20 @@ task distPython(type: Exec, dependsOn: checkPythonEnv) {
     commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_egg"])
 }
 
+configurations{
+    eggs
+}
+
+artifacts {
+    eggs new File("py/dist/pySparkling-${version.replace("-","_")}-py2.7.egg").getAbsoluteFile()
+}
 //
 // Test python against Spark cloud
 //
 task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
     preparePythonEnv(environment)
     // add PySparkling egg on PYTHONPATH so unittests can see all the modules within this egg file
-    environment['PYTHONPATH'] = new File("py/dist/pySparkling-${version.replace("-","_")}-py2.7.egg").getAbsolutePath() +  File.pathSeparator + environment['PYTHONPATH']
+    environment['PYTHONPATH'] = configurations.eggs.artifacts.file.join(File.separator) +  File.pathSeparator + environment['PYTHONPATH']
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
     environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
     commandLine getOsSpecificCommandLine(["python", "tests/tests_unit.py"])
@@ -137,7 +144,7 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
     def testEnv = detectEnvironment()
 
     // Pass references to libraries to test launcher
-    environment["sparkling.pysparkling.egg"] = new File("py/dist/pySparkling-${version.replace("-","_")}-py2.7.egg").getAbsolutePath()
+    environment["sparkling.pysparkling.egg"] = configurations.eggs.artifacts.file.join(File.separator)
     environment["spark.testing"] = "true"
     environment["spark.test.home"] = "${sparkHome}"
     environment["sparkling.test.hdp.version"] = "${hdpVersion}"

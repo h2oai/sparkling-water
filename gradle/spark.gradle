@@ -1,6 +1,5 @@
 apply from: "$rootDir/gradle/utils.gradle"
 
-import org.apache.tools.ant.taskdefs.condition.Os
 /* Get spark home value from local environment */
 String getSparkHome() {
     String sh =
@@ -84,15 +83,18 @@ void checkSparkVersion(){
 
 // Useful task to setup idea test configuration
 task printTestEnv << {
-    println("-Dspark.testing=true\n" +
-            "-Dspark.test.home=${getSparkHome()}\n" +
-            "-Dsparkling.test.assembly=${configurations.testAssembly.artifacts.file.join(',')}\n")
+    println("-Dspark.testing=true\n")
 }
-
 task printIntegTestEnv << {
     println("-Dspark.testing=true\n" +
-            "-Dspark.test.home=${getSparkHome()}\n" +
-            "-Dsparkling.test.assembly=${configurations.integTestAssembly.artifacts.file.join(',')}\n")
+            "-Dsparkling.assembly.jar=${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}\n" +
+            "-Dparkling.itest.jar=${integTestJar.archivePath}\n"+
+            "-Dsparkling.pysparkling.egg=${project(":sparkling-water-py").configurations.eggs.artifacts.file.join(',')}\n"+
+            "-Dsparkling.test.hdp.version=current")
+}
+
+task printScriptsTestEnv << {
+    println("-Dsparkling.assembly.jar=${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}\n")
 }
 
 ext.sparkHome = getSparkHome()
