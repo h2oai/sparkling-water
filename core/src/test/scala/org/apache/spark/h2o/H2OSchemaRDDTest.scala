@@ -288,7 +288,7 @@ class H2OSchemaRDDTest extends FunSuite with SharedSparkTestContext {
 
   test("test RDD to H2OFrame to DataFrame way") {
     val h2oContext = hc
-    import h2oContext._
+    import h2oContext.implicits._
 
     val rdd = sc.parallelize(1 to 10000, 1000).map(i => IntHolder(Some(i)))
     val h2oFrame:H2OFrame = rdd

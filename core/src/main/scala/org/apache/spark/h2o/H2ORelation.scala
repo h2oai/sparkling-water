@@ -48,12 +48,12 @@ case class H2ORelation(
 
   override def buildScan(requiredColumns: Array[String]): RDD[Row] = {
     if(requiredColumns.length == 0){
-      // if no required columns are specified, return all
-      buildScan()
+        // if no required columns are specified, return all
+        buildScan()
     }else{
-    import h2oContext._
-    val frame = DKV.getGet[H2OFrame](key).subframe(requiredColumns)
-    h2oContext.asDataFrame(frame).rdd
+      import h2oContext.implicits._
+      val frame: H2OFrame = DKV.getGet[H2OFrame](key).subframe(requiredColumns)
+      h2oContext.asDataFrame(frame).rdd
   }
   }
 

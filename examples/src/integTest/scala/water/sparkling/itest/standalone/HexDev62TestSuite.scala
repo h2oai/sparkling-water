@@ -35,7 +35,7 @@ object HexDev62Test {
     val conf = new SparkConf().setAppName("HexDev62Test")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)
-    import h2oContext._
+    import h2oContext.implicits._
 
     // Import all year airlines into SPARK
     implicit val sqlContext = new SQLContext(sc)

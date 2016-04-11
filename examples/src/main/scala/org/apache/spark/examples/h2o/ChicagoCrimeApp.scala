@@ -51,7 +51,7 @@ class ChicagoCrimeApp( weatherFile: String,
     // Prepare environment
     @transient implicit val sqlc = sqlContext
     @transient implicit val h2oc = h2oContext
-    import h2oContext._
+    import h2oContext.implicits._
 
     // Register tables in SQL Context
     weatherTable.registerTempTable("chicagoWeather")
@@ -121,7 +121,7 @@ class ChicagoCrimeApp( weatherFile: String,
   def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
                ntrees:Int = 10, depth:Int = 6, family: Family = Family.bernoulli)
               (implicit h2oContext: H2OContext) : GBMModel = {
-    import h2oContext._
+    import h2oContext.implicits._
     import hex.tree.gbm.GBM
     import hex.tree.gbm.GBMModel.GBMParameters
 
@@ -142,7 +142,7 @@ class ChicagoCrimeApp( weatherFile: String,
                epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
                activation: Activation = Activation.RectifierWithDropout, hidden:Array[Int] = Array(200,200))
              (implicit h2oContext: H2OContext) : DeepLearningModel = {
-    import h2oContext._
+    import h2oContext.implicits._
     import hex.deeplearning.DeepLearning
 
     val dlParams = new DeepLearningParameters()
@@ -236,7 +236,7 @@ class ChicagoCrimeApp( weatherFile: String,
    */
   def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: DataFrame)
                 (implicit sqlContext: SQLContext, h2oContext: H2OContext): Float = {
-    import h2oContext._
+    import h2oContext.implicits._
     import sqlContext.implicits._
     // Create a single row table
     val srdd: DataFrame = sqlContext.sparkContext.parallelize(Seq(crime)).toDF

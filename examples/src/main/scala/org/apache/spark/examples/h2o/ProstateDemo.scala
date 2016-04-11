@@ -41,7 +41,7 @@ object ProstateDemo extends SparkContextSupport {
 
     // Run H2O cluster inside Spark cluster
     val h2oContext = H2OContext.getOrCreate(sc)
-    import h2oContext._
+    import h2oContext.implicits._
 
     // We do not need to wait for H2O cloud since it will be launched by backend
 

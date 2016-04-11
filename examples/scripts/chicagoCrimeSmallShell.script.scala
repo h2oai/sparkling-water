@@ -27,6 +27,7 @@ implicit val sqlContext = SQLContext.getOrCreate(sc)
 // Start H2O services
 implicit val h2oContext = H2OContext.getOrCreate(sc)
 import h2oContext._
+import h2oContext.implicits._
 
 
 //
@@ -134,7 +135,7 @@ openFlow
 def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
              ntrees:Int = 10, depth:Int = 6, distribution: Family = Family.bernoulli)
             (implicit h2oContext: H2OContext) : GBMModel = {
-  import h2oContext._
+  import h2oContext.implicits._
   import _root_.hex.tree.gbm.GBM
   import _root_.hex.tree.gbm.GBMModel.GBMParameters
 
@@ -153,7 +154,6 @@ def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
 
 def DLModel(train: H2OFrame, test: H2OFrame, response: String)
            (implicit h2oContext: H2OContext) : DeepLearningModel = {
-  import h2oContext._
   import _root_.hex.deeplearning.DeepLearning
   import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters
 
@@ -208,7 +208,7 @@ println(
 //
 def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: DataFrame)
               (implicit sqlContext: SQLContext, h2oContext: H2OContext): Float = {
-  import h2oContext._
+  import h2oContext.implicits._
   import sqlContext.implicits._
   // Create a single row table
   val srdd:DataFrame = sqlContext.sparkContext.parallelize(Seq(crime)).toDF()
