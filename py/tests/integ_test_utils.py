@@ -25,12 +25,15 @@ from random import randrange
 
 class IntegTestEnv:
     def __init__(self):
+
+        self.spark_home = IntegTestEnv.get_env_org_fail("SPARK_HOME","The variable 'SPARK_HOME' should point to Spark home directory.")
+
         self.spark_master = IntegTestEnv.get_env_org_fail("MASTER",
-                                                          "The variable 'MASTER' should point to Spark cluster")
+                                                          "The variable 'MASTER' should contain Spark cluster mode.")
         self.hdp_version = IntegTestEnv.get_env_org_fail("sparkling.test.hdp.version",
-                                                         "The variable 'sparkling.test.hdp.version' is not set! It should containing version of hdp used")
+                                                         "The variable 'sparkling.test.hdp.version' is not set! It should contain version of hdp used")
         self.egg = IntegTestEnv.get_env_org_fail("sparkling.pysparkling.egg",
-                                                              "The variable 'sparkling.pysparkling.egg' is not set! It should point pySparkling egg file")
+                                                              "The variable 'sparkling.pysparkling.egg' is not set! It should point to PySparkling egg file")
         self.spark_conf = {}
         self.verbose = True
 
@@ -60,8 +63,7 @@ class IntegTestSuite(unittest.TestCase):
         return conf
 
     def launch(self, script_name):
-        spark_home = os.environ["SPARK_HOME"]
-        cmd_line = [IntegTestSuite.get_submit_script(spark_home), "--verbose"]
+        cmd_line = [IntegTestSuite.get_submit_script(self.test_env.spark_home), "--verbose"]
         cmd_line.extend(["--master", self.test_env.spark_master])
         if self.test_env.spark_conf.has_key("spark.driver.memory"):
             cmd_line.extend(["--driver-memory", self.test_env.spark_conf.get("spark.driver.memory")])
@@ -71,7 +73,7 @@ class IntegTestSuite(unittest.TestCase):
         cmd_line.extend(["--conf", 'spark.ext.h2o.cloud.name=sparkling-water-'+str(script_name[:-3])+str(randrange(65536))])
         cmd_line.extend(["--conf", '"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version='+self.test_env.hdp_version+'"'])
         cmd_line.extend(["--conf", '"spark.yarn.am.extraJavaOptions=-Dhdp.version='+self.test_env.hdp_version+'"'])
-        cmd_line.extend(["--conf", 'spark.test.home='+spark_home])
+        cmd_line.extend(["--conf", 'spark.test.home='+self.test_env.spark_home])
         cmd_line.extend(["--conf", 'spark.scheduler.minRegisteredResourcesRatio=1'])
         cmd_line.extend(["--conf", 'spark.ext.h2o.repl.enabled=false']) #  disable repl in tests
         cmd_line.extend(["--py-files", self.test_env.egg])
