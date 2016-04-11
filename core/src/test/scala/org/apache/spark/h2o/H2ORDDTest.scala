@@ -40,85 +40,84 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
   test("RDD[IntHolder] to H2OFrame and back") {
 
     val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
-    val dataFrame:H2OFrame = hc.asH2OFrame(rdd)
+    val h2oFrame:H2OFrame = hc.asH2OFrame(rdd)
 
-    assertBasicInvariants(rdd, dataFrame, (row, vec) => {
+    assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
       val row1 = row + 1
       val value = vec.at8(row) // value stored at row-th
       assert (row1 == value, "The H2OFrame values should match row numbers+1")
     })
     // Clean up
-    dataFrame.delete()
+    h2oFrame.delete()
     rdd.unpersist()
   }
 
   test("RDD[DoubleHolder] to H2OFrame and back") {
 
     val rdd = sc.parallelize(1 to 1000, 100).map( v => DoubleHolder(Some(v)))
-    val dataFrame:H2OFrame = hc.asH2OFrame(rdd)
+    val h2oFrame:H2OFrame = hc.asH2OFrame(rdd)
 
-    assertBasicInvariants(rdd, dataFrame, (row, vec) => {
+    assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
       val row1 = row + 1
       val value = vec.at(row) // value stored at row-th
       // Using == since int should be mapped strictly to doubles
       assert (row1 == value, "The H2OFrame values should match row numbers+1")
     })
     // Clean up
-    dataFrame.delete()
+    h2oFrame.delete()
     rdd.unpersist()
   }
 
   test("RDD[StringHolder] to H2OFrame[Enum] and back") {
 
     val rdd = sc.parallelize(1 to 1000, 100).map( v => StringHolder(Some(v.toString)))
-    val dataFrame : H2OFrame = hc.asH2OFrame(rdd)
+    val h2oFrame : H2OFrame = hc.asH2OFrame(rdd)
 
-    assert (dataFrame.vec(0).isString, "The vector type should be of string type")
-    assert (dataFrame.vec(0).domain() == null, "The vector domain should be <null>")
+    assert (h2oFrame.vec(0).isString, "The vector type should be of string type")
+    assert (h2oFrame.vec(0).domain() == null, "The vector domain should be <null>")
 
     // Transform string vector to categorical
-    dataFrame.replace(0, dataFrame.vec(0).toCategoricalVec).remove()
+    h2oFrame.replace(0, h2oFrame.vec(0).toCategoricalVec).remove()
 
-    assertBasicInvariants(rdd, dataFrame, (row, vec) => {
+    assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
       val dom = vec.domain()
       val value = dom(vec.at8(row).asInstanceOf[Int]) // value stored at row-th
       // Using == since int should be mapped strictly to doubles
       assert (row + 1 == value.toInt, "The H2OFrame values should match row numbers")
     })
     // Clean up
-    dataFrame.delete()
+    h2oFrame.delete()
     rdd.unpersist()
   }
 
   test("RDD[StringHolder] to H2OFrame[String] and back") {
 
     val rdd = sc.parallelize(1 to (Categorical.MAX_CATEGORICAL_COUNT + 1), 100).map( v => StringHolder(Some(v.toString)))
-    val dataFrame : H2OFrame = hc.asH2OFrame(rdd)
+    val h2oFrame : H2OFrame = hc.asH2OFrame(rdd)
 
-    assert (dataFrame.vec(0).isString, "The vector type should be string")
-    assert (dataFrame.vec(0).domain() == null, "The vector should have null domain")
+    assert (h2oFrame.vec(0).isString, "The vector type should be string")
+    assert (h2oFrame.vec(0).domain() == null, "The vector should have null domain")
     val valueString = new BufferedString()
-    assertBasicInvariants(rdd, dataFrame, (row, vec) => {
+    assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
       val row1 = (row + 1).toString
       val value = vec.atStr(valueString, row) // value stored at row-th
       // Using == since int should be mapped strictly to doubles
       assert (row1.equals(value.toString), "The H2OFrame values should match row numbers+1")
     })
     // Clean up
-    dataFrame.delete()
+    h2oFrame.delete()
     rdd.unpersist()
   }
 
   test("PUBDEV-458 - from Rdd[IntHolder] to H2OFrame and back") {
     val h2oContext = hc
     import h2oContext._
-
     val rdd = sc.parallelize(1 to 100, 10).map(i => IntHolder(Some(i)))
-    val dataFrame:H2OFrame = rdd
+    val h2oFrame:H2OFrame = rdd
 
-    val back2rdd = asRDD[PUBDEV458Type](rdd)
-    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    assert(back2rdd.count == dataFrame.numRows(), "Number of rows should match")
+    val back2rdd = hc.asRDD[PUBDEV458Type](rdd)
+    assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
+    assert(back2rdd.count == h2oFrame.numRows(), "Number of rows should match")
   }
 
   // PUBDEV-1173
@@ -126,9 +125,9 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     // Create RDD with 100 Int values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10)
     // PUBDEV-1173
-    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
-    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    dataFrame.delete()
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
+    h2oFrame.delete()
   }
 
   // PUBDEV-1173
@@ -136,9 +135,9 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     // Create RDD with 100 Float values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10).map(v => v.toFloat)
     // PUBDEV-1173
-    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
-    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    dataFrame.delete()
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
+    h2oFrame.delete()
   }
 
   // PUBDEV-1173
@@ -146,9 +145,9 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     // Create RDD with 100 Double values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10).map(v => v.toDouble)
     // PUBDEV-1173
-    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
-    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    dataFrame.delete()
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
+    h2oFrame.delete()
   }
 
   // PUBDEV-1173
@@ -156,33 +155,33 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     // Create RDD with 100 String values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10).map(v => v.toString)
     // PUBDEV-1173
-    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
-    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    dataFrame.delete()
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
+    h2oFrame.delete()
   }
 
   test("RDD[Byte] to H2OFrame[Numeric]") {
     // Create RDD with 100 Byte values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10).map(v => v.toByte)
-    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
-    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    dataFrame.delete()
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
+    h2oFrame.delete()
   }
 
   test("RDD[Short] to H2OFrame[Numeric]") {
     // Create RDD with 100 Short values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10).map(v => v.toShort)
-    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
-    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    dataFrame.delete()
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
+    h2oFrame.delete()
   }
 
   test("RDD[java.sql.Timestamp] to H2OFrame[Time]") {
     // Create RDD with 100 Timestamp values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10).map(v => new Timestamp(v.toLong))
-    val dataFrame: H2OFrame = hc.asH2OFrame(rdd)
-    assert(rdd.count == dataFrame.numRows(), "Number of rows should match")
-    dataFrame.delete()
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
+    h2oFrame.delete()
   }
 
   test("RDD[LabeledPoint] ( Dense Vector, same size ) to H2OFrame[LabeledPoint]"){
@@ -190,7 +189,7 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     val p2= LabeledPoint(1,Vectors.dense(5,6,7,8))
     val rdd = sc.parallelize(Seq(p1,p2), 10)
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
-    assert(rdd.count() == 2, "Number of rows should match")
+    assert(rdd.count() == h2oFrame.numRows(), "Number of rows should match")
   }
 
   test("RDD[LabeledPoint] ( Dense Vector, different size ) to H2OFrame[LabeledPoint]"){
@@ -198,7 +197,7 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     val p2= LabeledPoint(1,Vectors.dense(7,8))
     val rdd = sc.parallelize(Seq(p1,p2))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
-    assert(rdd.count() == 2, "Number of rows should match")
+    assert(rdd.count() == h2oFrame.numRows(), "Number of rows should match")
   }
 
   test("RDD[LabeledPoint] ( Sparse Vector, same size ) to H2OFrame[LabeledPoint]"){
@@ -206,7 +205,7 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     val p2= LabeledPoint(1,Vectors.sparse(4,Array(0),Array(3.14)))
     val rdd = sc.parallelize(Seq(p1,p2), 10)
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
-    assert(rdd.count() == 2, "Number of rows should match")
+    assert(rdd.count() == h2oFrame.numRows(), "Number of rows should match")
   }
 
   test("RDD[LabeledPoint] ( Sparse Vector, different size ) to H2OFrame[LabeledPoint]"){
@@ -214,7 +213,7 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     val p2= LabeledPoint(1,Vectors.sparse(7,Array(0,5,6),Array(1.0, 11, 8)))
     val rdd = sc.parallelize(Seq(p1,p2))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
-    assert(rdd.count() == 2, "Number of rows should match")
+    assert(rdd.count() == h2oFrame.numRows(), "Number of rows should match")
   }
 
 

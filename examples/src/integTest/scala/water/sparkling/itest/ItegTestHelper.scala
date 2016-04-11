@@ -20,9 +20,8 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
     * @param env Spark environment
     */
   def launch(className: String, env: IntegTestEnv): Unit = {
-    val sparkHome = System.getenv("SPARK_HOME")
     val cmdToLaunch = Seq[String](
-      getSubmitScript(sparkHome),
+      getSubmitScript(env.sparkHome),
       "--class", className,
       "--jars", env.assemblyJar,
       "--verbose",
@@ -36,7 +35,7 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
       Seq("--conf", s"spark.executor.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", "spark.scheduler.minRegisteredResourcesRatio=1") ++
       Seq("--conf", "spark.ext.h2o.repl.enabled=false") ++ // disable repl in tests
-      Seq("--conf", s"spark.test.home=$sparkHome") ++
+      Seq("--conf", s"spark.test.home=${env.sparkHome}") ++
       Seq("--conf", s"spark.driver.extraClassPath=${env.assemblyJar}") ++
       env.sparkConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++
       Seq[String](env.itestJar)
@@ -74,6 +73,11 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
   }
 
   trait IntegTestEnv {
+
+    lazy val sparkHome = sys.props.getOrElse("SPARK_HOME",
+      sys.props.getOrElse("spark.test.home",
+      fail("None of both 'SPARK_HOME' and 'spark.test.home' variables is not set! It should point to Spark home directory.")))
+
     lazy val assemblyJar = sys.props.getOrElse("sparkling.assembly.jar",
       fail("The variable 'sparkling.assembly.jar' is not set! It should point to assembly jar file."))
 
@@ -82,10 +86,10 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
 
     lazy val sparkMaster = sys.props.getOrElse("MASTER",
       sys.props.getOrElse("spark.master",
-        fail("The variable 'MASTER' should point to Spark cluster")))
+        fail("None of both 'MASTER' and 'spark.master' variables is not set! It should specify Spark mode.")))
 
     lazy val hdpVersion = sys.props.getOrElse("sparkling.test.hdp.version",
-      fail("The variable 'sparkling.test.hdp.version' is not set! It should containg version of hdp used"))
+      fail("The variable 'sparkling.test.hdp.version' is not set! It should contain version of hdp used."))
 
     def verbose:Boolean = true
 
