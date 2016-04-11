@@ -38,7 +38,7 @@ object PubDev457Test extends SparkContextSupport {
     val conf = configure("PUBDEV-457")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)
-    import h2oContext._
+    import h2oContext.implicits._
     val sqlContext = new SQLContext(sc)
     import sqlContext.implicits._
 

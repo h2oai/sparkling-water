@@ -38,6 +38,7 @@ object HexDev100Test {
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
+    import h2oContext.implicits._
 
     // Import all year airlines into H2O
     val path = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines_all.csv"

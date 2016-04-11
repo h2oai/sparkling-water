@@ -53,8 +53,9 @@ object KMeansITest {
     val conf = new SparkConf().setAppName("KMeansITest")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)
-
     import h2oContext._
+    import h2oContext.implicits._
+
     // Import all year airlines into H2O
     val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
     val timer1 = new water.util.Timer

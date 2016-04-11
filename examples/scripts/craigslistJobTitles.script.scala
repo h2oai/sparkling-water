@@ -122,6 +122,7 @@ case class CRAIGSLIST(target: String, a: mllib.linalg.Vector)
 import org.apache.spark.h2o._
 val h2oContext = H2OContext.getOrCreate(sc)
 import h2oContext._
+import h2oContext.implicits._
 
 val resultRDD: DataFrame = XXXlabels.zip(title_vectors).map(v => CRAIGSLIST(v._1, v._2)).toDF
 

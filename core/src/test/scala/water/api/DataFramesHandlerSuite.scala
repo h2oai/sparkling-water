@@ -113,7 +113,9 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     val value = DKV.get(result.h2oframe_id)
     val h2oFrame: H2OFrame = value.className() match {
       case name if name.equals(classOf[Frame].getName) => {
-        hc.asH2OFrame(value.get[Frame]())
+        val h2oContext = hc
+        import h2oContext.implicits._
+        value.get[Frame]()
       }
       case name if name.equals(classOf[H2OFrame].getName) => value.get[H2OFrame]()
     }

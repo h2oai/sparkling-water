@@ -111,7 +111,7 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
 
   test("PUBDEV-458 - from Rdd[IntHolder] to H2OFrame and back") {
     val h2oContext = hc
-    import h2oContext._
+    import h2oContext.implicits._
     val rdd = sc.parallelize(1 to 100, 10).map(i => IntHolder(Some(i)))
     val h2oFrame:H2OFrame = rdd
 
