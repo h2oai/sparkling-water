@@ -73,7 +73,7 @@ def buildDLModel(train: Frame, valid: Frame,
                  epochs: Int = 10, l1: Double = 0.001, l2: Double = 0.0,
                  hidden: Array[Int] = Array[Int](200, 200))
                 (implicit h2oContext: H2OContext): DeepLearningModel = {
-  import h2oContext._
+  import h2oContext.implicits._
   // Build a model
   val dlParams = new DeepLearningParameters()
   dlParams._train = train
@@ -95,7 +95,7 @@ import sqlContext.implicits._
 // Start H2O services
 import org.apache.spark.h2o._
 implicit val h2oContext = H2OContext.getOrCreate(sc)
-import h2oContext._
+import h2oContext.implicits._
 
 // Data load
 val data = load(DATAFILE)

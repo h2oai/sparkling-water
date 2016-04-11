@@ -25,6 +25,7 @@ import sqlContext.implicits._
 // Start H2O services
 val h2oContext = H2OContext.getOrCreate(sc)
 import h2oContext._
+import h2oContext.implicits._
 
 // Register files to SparkContext
 addFiles(sc,

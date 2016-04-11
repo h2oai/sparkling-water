@@ -75,7 +75,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
 
     // FIXME should use Model#score(double[]) method but it is now wrong and need to be fixed
     import sqlContext.implicits._
-    import h2oContext._
+    import h2oContext.implicits._
     val frameToPredict: H2OFrame = sc.parallelize(Seq(vec)).map(v => JobOffer(null, v)).toDF
     frameToPredict.remove(0).remove()
     val prediction = model.score(frameToPredict)
@@ -138,7 +138,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     })
 
     // Transform RDD into DF and then to HF
-    import h2oContext._
+    import h2oContext.implicits._
     import sqlContext.implicits._
     val h2oFrame: H2OFrame = finalRdd.toDF
     h2oFrame.replace(h2oFrame.find("category"), h2oFrame.vec("category").toCategoricalVec).remove()

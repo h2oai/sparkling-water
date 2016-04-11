@@ -39,6 +39,7 @@ object ParquetImportTest {
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
+    import h2oContext.implicits._
 
     implicit val sqlContext = new SQLContext(sc)
 

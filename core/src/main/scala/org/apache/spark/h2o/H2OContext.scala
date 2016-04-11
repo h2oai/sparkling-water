@@ -22,11 +22,9 @@ import java.util.concurrent.atomic.AtomicReference
 import org.apache.spark._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.h2o.H2OContextUtils._
-import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.h2o.H2OTypeUtils._
+import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
-import org.apache.spark.scheduler.cluster.CoarseGrainedSchedulerBackend
-import org.apache.spark.scheduler.local.LocalBackend
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -36,10 +34,8 @@ import water.api.H2OFrames.H2OFramesHandler
 import water.api.RDDs.RDDsHandler
 import water.api._
 import water.api.scalaInt.ScalaCodeHandler
-import water.fvec.Vec
 import water.parser.BufferedString
 
-import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
@@ -58,6 +54,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   } with org.apache.spark.Logging
   with H2OConf
   with Serializable {
+  self =>
 
   /** Supports call from java environments. */
   def this(sparkContext: JavaSparkContext) = this(sparkContext.sc)
@@ -69,28 +66,6 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   private var localClientIp: String = _
   /** REST port of H2O client */
   private var localClientPort: Int = _
-  
-  /** Implicit conversion from RDD[Supported type] to H2OFrame */
-  implicit def asH2OFrameFromRDDProduct[A <: Product : TypeTag](rdd : RDD[A]): H2OFrame = asH2OFrame(rdd,None)
-  implicit def asH2OFrameFromRDDString(rdd: RDD[String]): H2OFrame = asH2OFrame(rdd,None)
-  implicit def asH2OFrameFromRDDBool(rdd: RDD[Boolean]): H2OFrame = asH2OFrame(rdd,None)
-  implicit def asH2OFrameFromRDDDouble(rdd: RDD[Double]): H2OFrame = asH2OFrame(rdd,None)
-  implicit def asH2OFrameFromRDDLong(rdd: RDD[Long]): H2OFrame = asH2OFrame(rdd,None)
-  implicit def asH2OFrameFromRDDByte(rdd: RDD[Byte]): H2OFrame = asH2OFrame(rdd,None)
-  implicit def asH2OFrameFromRDDShort(rdd: RDD[Short]): H2OFrame = asH2OFrame(rdd,None)
-  implicit def asH2OFrameFromRDDTimeStamp(rdd: RDD[java.sql.Timestamp]): H2OFrame = asH2OFrame(rdd,None)
-  implicit def asH2OFrameFromRDDLabeledPoint(rdd: RDD[LabeledPoint]): H2OFrame = asH2OFrame(rdd,None)
-
-  /** Implicit conversion from RDD[Supported type] to H2OFrame key */
-  implicit def toH2OFrameKeyFromRDDProduct[A <: Product : TypeTag](rdd : RDD[A]): Key[_] = toH2OFrameKey(rdd,None)
-  implicit def toH2OFrameKeyFromRDDString(rdd: RDD[String]): Key[_] = toH2OFrameKey(rdd,None)
-  implicit def toH2OFrameKeyFromRDDBool(rdd: RDD[Boolean]): Key[_] = toH2OFrameKey(rdd,None)
-  implicit def toH2OFrameKeyFromRDDDouble(rdd: RDD[Double]): Key[_] = toH2OFrameKey(rdd,None)
-  implicit def toH2OFrameKeyFromRDDLong(rdd: RDD[Long]): Key[_] = toH2OFrameKey(rdd,None)
-  implicit def toH2OFrameKeyFromRDDByte(rdd: RDD[Byte]): Key[_] = toH2OFrameKey(rdd,None)
-  implicit def toH2OFrameKeyFromRDDShort(rdd: RDD[Short]): Key[_] = toH2OFrameKey(rdd,None)
-  implicit def toH2OFrameKeyFromRDDTimeStamp(rdd: RDD[java.sql.Timestamp]): Key[_] = toH2OFrameKey(rdd,None)
-  implicit def toH2OFrameKeyFromRDDLabeledPoint(rdd: RDD[LabeledPoint]): Key[_] = toH2OFrameKey(rdd,None)
 
   /** Transforms RDD[Supported type] to H2OFrame */
   def asH2OFrame(rdd: SupportedRDD): H2OFrame = asH2OFrame(rdd, None)
@@ -102,24 +77,21 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   def toH2OFrameKey(rdd: SupportedRDD, frameName: Option[String]): Key[_] = asH2OFrame(rdd, frameName)._key
   def toH2OFrameKey(rdd: SupportedRDD, frameName: String): Key[_] = toH2OFrameKey(rdd, Option(frameName))
 
-  /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
-  implicit def asH2OFrame(df : DataFrame) : H2OFrame = asH2OFrame(df, None)
+  /** Transform DataFrame to H2OFrame */
+  def asH2OFrame(df : DataFrame): H2OFrame = asH2OFrame(df, None)
   def asH2OFrame(df : DataFrame, frameName: Option[String]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, df, if (frameName != null) frameName else None)
   def asH2OFrame(df : DataFrame, frameName: String) : H2OFrame = asH2OFrame(df, Option(frameName))
 
-  /** Implicit conversion from Spark DataFrame to H2O's DataFrame */
-  implicit def toH2OFrameKey(rdd : DataFrame) : Key[Frame] = toH2OFrameKey(rdd, None)
-  def toH2OFrameKey(rdd : DataFrame, frameName: Option[String]) : Key[Frame] = asH2OFrame(rdd, frameName)._key
-  def toH2OFrameKey(rdd : DataFrame, frameName: String) : Key[Frame] = toH2OFrameKey(rdd, Option(frameName))
-
-  /** Implicit conversion from Frame to DataFrame */
-  implicit def asH2OFrame(fr: Frame) : H2OFrame = new H2OFrame(fr)
+  /** Transform DataFrame to H2OFrame key */
+  def toH2OFrameKey(df : DataFrame): Key[Frame] = toH2OFrameKey(df, None)
+  def toH2OFrameKey(df : DataFrame, frameName: Option[String]) : Key[Frame] = asH2OFrame(df, frameName)._key
+  def toH2OFrameKey(df : DataFrame, frameName: String) : Key[Frame] = toH2OFrameKey(df, Option(frameName))
 
   /** Create a new H2OFrame based on existing Frame referenced by its key.*/
   def asH2OFrame(s: String): H2OFrame = new H2OFrame(s)
 
-  implicit def toH2OFrameKey(fr: Frame): Key[Frame] = fr._key
-
+  /** Create a new H2OFrame based on existing Frame */
+  def asH2OFrame(fr: Frame): H2OFrame = new H2OFrame(fr)
   /**
    * Support for calls from Py4J
    */
@@ -147,9 +119,6 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   /** Returns key of the H2O's DataFrame conversed from RDD[Long]*/
   def asH2OFrameFromRDDLongKey(rdd: JavaRDD[Long], frameName: String): Key[Frame] = asH2OFrameFromRDDLong(rdd, frameName)._key
-
-  /** Transform given Scala symbol to String */
-  implicit def symbolToString(sy: scala.Symbol): String = sy.name
 
   /** Convert given H2O frame into a RDD type */
   @deprecated("Use asRDD instead", "0.2.3")
@@ -343,7 +312,13 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     val stream = getClass.getResourceAsStream("/spark.version")
     scala.io.Source.fromInputStream(stream).mkString
   }
-
+  // scalastyle:off
+  // Disable style checker so "implicits" object can start with lowercase i
+  /** Define implicits available via h2oContext.implicits._*/
+  object implicits extends H2OContextImplicits with Serializable {
+    protected override def _h2oContext: H2OContext = self
+  }
+  // scalastyle:on
   H2OContext.setInstantiatedContext(this)
 }
 

@@ -39,6 +39,7 @@ object DeepLearningDemo extends SparkContextSupport {
     // Run H2O cluster inside Spark cluster
     val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
+    import h2oContext.implicits._
 
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)

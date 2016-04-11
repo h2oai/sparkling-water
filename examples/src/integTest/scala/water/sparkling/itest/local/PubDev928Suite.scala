@@ -40,6 +40,7 @@ object PubDev928Test extends SparkContextSupport {
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
+    import h2oContext.implicits._
     val sqlContext = new SQLContext(sc)
     import sqlContext.implicits._
 
