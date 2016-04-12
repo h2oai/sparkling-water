@@ -36,6 +36,7 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
       .set("spark.driver.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.executor.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.driver.extraClassPath", assemblyJar)
+      .set("spark.scheduler.minRegisteredResourcesRatio","1")
       .setJars(Array(assemblyJar))
 
     conf

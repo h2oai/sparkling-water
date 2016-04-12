@@ -855,4 +855,4 @@ object H2OContext extends Logging {
   }
 }
 
-class WrongSparkVersion(msg: String) extends Exception(msg) with NoStackTrace{}
+class WrongSparkVersion(msg: String) extends Exception(msg) with NoStackTrace {}

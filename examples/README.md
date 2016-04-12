@@ -81,17 +81,17 @@ You can configure Sparkling Water using the following variables:
 1. Run Sparkling shell with an embedded cluster:
   ```
   export SPARK_HOME="/path/to/spark/installation"
-  export MASTER="local-cluster[3,2,1024]"
+  export MASTER="local[*]"
   bin/sparkling-shell
   ```
 
 2. To see the Sparkling shell (i.e., Spark driver) status, go to [http://localhost:4040/](http://localhost:4040/).
 
-3. Create an H<sub>2</sub>O cloud using all 3 Spark workers:
+3. Initialize H2O services on top of Spark cluster:
   ```scala
   import org.apache.spark.h2o._
   val h2oContext = H2OContext.getOrCreate(sc)
-  import h2oContext._
+  import h2oContext.implicits._
   ```
 
 4. Load weather data for Chicago international airport (ORD), with help from the RDD API:
@@ -152,8 +152,8 @@ You can configure Sparkling Water using the following variables:
 11. Run deep learning to produce a model estimating arrival delay:
   ```scala
   import hex.deeplearning.DeepLearning
-  import hex.deeplearning.DeepLearningParameters  
-  import hex.deeplearning.DeepLearningParameters.Activation
+  import hex.deeplearning.DeepLearningModel.DeepLearningParameters  
+  import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
   val dlParams = new DeepLearningParameters()
   dlParams._train = bigDataFrame
   dlParams._response_column = 'ArrDelay
@@ -202,47 +202,3 @@ You can configure Sparkling Water using the following variables:
   nrow(compare)
   plot( compare[,1:2] )
   ```
-
----
-<a name="Hadoop"></a>
-#Sparkling Water on Hadoop
-
-Compatible Hadoop Distributions: CDH4, CDH5, and HDP2.1
-
-1) To install on your Hadoop Cluster, clone the git repository and make a build:
-
-```
-git clone https://github.com/0xdata/sparkling-water.git 
-cd sparkling-water
-./gradlew build
-```
-2) Set `MASTER` to the IP address of where your Spark Master Node is launched and set `SPARK_HOME` to the location of your Spark installation. In the example below the path for `SPARK_HOME` is the default location of Spark preinstalled on a CDH5 cluster. Please change `MASTER` below:
-
-```
-export MASTER="spark://mr-0xd9-precise1.0xdata.loc:7077"
-export SPARK_HOME="/opt/cloudera/parcels/CDH-5.2.0-1.cdh5.2.0.p0.11/lib/spark"
-```
-
-3) Launch Sparkling Shell:
-
-```
-./bin/sparkling-shell
-```
----
-<a name="ImportData"></a>
-## Import Data from HDFS
-
-The initialization of H2O remains the same, with the exception of importing data from a HDFS path. Please change path variable below to one suitable for your data.
-
-```scala
-import org.apache.spark.h2o._
-import org.apache.spark.examples.h2o._
-// Create H2O context
-val h2oContext = H2OContext.getOrCreate(sc)
-import h2oContext._
-
-// URI to access HDFS file
-val path = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines_all.05p.csv"
-val d = new java.net.URI(path)
-val f = new DataFrame(d)
-```
