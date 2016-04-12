@@ -23,11 +23,11 @@ if [ -z $TOPDIR ]; then
 fi
 
 function checkSparkVersion() {
-installed_spark_version=`$SPARK_HOME/bin/spark-submit --version 2>&1 | grep version | sed -e "s/.*version //"`
-if [ $SPARK_VERSION != $installed_spark_version ]; then
+  installed_spark_version=$($SPARK_HOME/bin/spark-submit --version 2>&1 | grep version | sed -e "s/.*version //" | sed -e "s/\([0-9][0-9]*.[0-9][0-9]*\).*/\1/")
+  if ! [[ "$SPARK_VERSION" =~ "$installed_spark_version".* ]]; then
     echo "You are trying to use Sparkling Water built for Spark ${SPARK_VERSION}, but your \$SPARK_HOME(=$SPARK_HOME) property points to Spark of version ${installed_spark_version}. Please ensure correct Spark is provided and re-run Sparkling Water."
     exit -1
-fi
+  fi
 }
 
 # Version of this distribution

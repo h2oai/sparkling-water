@@ -18,9 +18,10 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.SparkConf
+import org.apache.spark.h2o.H2OConf._
 
 /**
- * Just simple configuration holder which is representing
+  * Just simple configuration holder which is representing
  * properties passed from user to H2O App.
  */
 trait H2OConf {
@@ -64,10 +65,13 @@ trait H2OConf {
 
   def subseqTries  = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
   def scalaIntDefaultNum = sparkConf.getInt(PROP_SCALA_INT_DEFAULT_NUM._1, PROP_SCALA_INT_DEFAULT_NUM._2)
-  def h2oReplEnabled = sparkConf.getBoolean(PROP_REPL_ENABLED._1,PROP_REPL_ENABLED._2)
-  def clusterTopologyListenerEnabled = sparkConf.getBoolean(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1,PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._2)
+  def isH2OReplEnabled = sparkConf.getBoolean(PROP_REPL_ENABLED._1,PROP_REPL_ENABLED._2)
+  def isClusterTopologyListenerEnabled = sparkConf.getBoolean(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1,PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._2)
+  def isSparkVersionCheckEnabled = sparkConf.getBoolean(PROP_SPARK_VERSION_CHECK_ENABLED._1,PROP_SPARK_VERSION_CHECK_ENABLED._2)
+
   /**
    * Produce arguments for H2O node based on this config.
+   *
    * @return array of H2O launcher command line arguments
    */
   def getH2ONodeArgs: Array[String] = (getH2OCommonOptions ++
@@ -76,7 +80,8 @@ trait H2OConf {
 
   /**
    * Get arguments for H2O client.
-   * @return array of H2O client arguments.
+    *
+    * @return array of H2O client arguments.
    */
 
   def getH2OClientArgs: Array[String] = (
@@ -107,6 +112,21 @@ trait H2OConf {
       .flatMap(x => Seq(x._1, x._2.toString)) ++ // Append single boolean options
       Seq(("-ga_opt_out", disableGA))
         .filter(_._2).map(x => x._1)
+
+  /**
+    * Returns Major Spark version for which is this version of Sparkling Water designated.
+    *
+    * For example, for 1.6.1 returns 1.6
+    */
+  def buildSparkMajorVersion = {
+    val stream = getClass.getResourceAsStream("/spark.version")
+    val version = scala.io.Source.fromInputStream(stream).mkString
+    if (version.count(_ == '.') == 1) { // e.g., 1.6
+      version
+    } else { // 1.4
+      version.substring(0, version.lastIndexOf('.'))
+    }
+  }
 
   override def toString: String =
     s"""Sparkling Water configuration:
@@ -192,6 +212,9 @@ object H2OConf {
   val PROP_REPL_ENABLED = ("spark.ext.h2o.repl.enabled",true)
   /** Enable/Disable listener which kills H2O when there is a change in underlying cluster's topology**/
   val PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED = ("spark.ext.h2o.topology.change.listener.enabled",true)
+  /** Enable/Disable check for Spark version. */
+  val PROP_SPARK_VERSION_CHECK_ENABLED = ("spark.ext.h2o.spark.version.check.enabled",true)
+
   private[spark] def defaultLogDir: String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs"
   }
