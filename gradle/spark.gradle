@@ -11,8 +11,7 @@ String getSparkHome() {
         logger.info("Found spark home: ${sh}")
         return sh
     } else {
-        throw new InvalidUserDataException("Cannot find Spark home - " +
-                "please specify SPARK_HOME env variable or pass -PsparkHome property to gradle script")
+        return null
     }
 }
 
@@ -30,17 +29,22 @@ String getSparkMaster() {
         return null
     }
 }
-String getSParkSubmitScriptName(){
+String getSparkSubmitScriptName(){
     if(isWindowsBased()){
         return "spark-submit.cmd"
     }else{
         return "spark-submit"
     }
 }
-String getSparkSubmitScriptPath(){
-    new File(new File(getSparkHome()),"bin" + File.separator + getSParkSubmitScriptName()).absolutePath
+String getSparkSubmitScriptPath(String sparkHome){
+    new File(new File((String) sparkHome), "bin" + File.separator + getSparkSubmitScriptName()).absolutePath
 }
+
 String getSystemSparkVersion()  {
+   String sparkHome = getSparkHome()
+   if (sparkHome == null)
+       throw new InvalidUserDataException("Cannot find Spark home - " +
+                                          "please specify SPARK_HOME env variable or pass -PsparkHome property to gradle script")
    // We need to pass current Spark home to script which determines the Spark version
    // This is needed in cases when we specify sparkHome using -P in gradle
    // In that case gradle SPARK_HOME is set to specified Spark location but global SPARK_HOME is unchanged
@@ -56,9 +60,9 @@ String getSystemSparkVersion()  {
    def command
    if(isWindowsBased()){
        // In case of Windows we can't set environment variable in execute command so we set it them as part of the command
-       command = getOsSpecificCommandLine(["SET SPARK_HOME=${getSparkHome()} &", getSparkSubmitScriptPath(), "--version"]).join(" ")
+       command = getOsSpecificCommandLine(["SET SPARK_HOME=${getSparkHome()} &", getSparkSubmitScriptPath(sparkHome), "--version"]).join(" ")
    }else{
-       command = getOsSpecificCommandLine([getSparkSubmitScriptPath(), "--version"]).join(" ")
+       command = getOsSpecificCommandLine([getSparkSubmitScriptPath(sparkHome), "--version"]).join(" ")
    }
    def commandOutput = command.execute(commandEnvVars,null).err.text
    def version_line = commandOutput.readLines().find{ it.contains("version")}
@@ -75,8 +79,10 @@ String getHdpVersion() {
   return sh
 }
 
-void checkSparkVersion(){
-    if(getSystemSparkVersion() != ext.sparkVersion){
+void checkSparkVersion() {
+    String systemSparkVersion = getSystemSparkVersion()
+    String majorSparkVersion = systemSparkVersion.count(".") == 1 ? systemSparkVersion : systemSparkVersion.substring(0, systemSparkVersion.lastIndexOf('.'))
+    if (!ext.sparkVersion.startsWith(majorSparkVersion)){
         throw new InvalidUserDataException("You are trying to build Sparkling Water for Spark $ext.sparkVersion, but your \$SPARK_HOME(=${getSparkHome()}) property points to Spark of version ${getSystemSparkVersion()}. Please ensure correct Spark is provided and re-run Sparkling Water.")
     }
 }
@@ -102,5 +108,16 @@ ext.sparkMaster = getSparkMaster()
 ext.hdpVersion = getHdpVersion()
 ext.checkSparkVersion = this.&checkSparkVersion
 
-// Run the check
-checkSparkVersion()
+// Run the check but not at configuration time!
+// It needs to run at execution time of build file.
+
+task checkSparkVersionTask << {
+    checkSparkVersion()
+}
+
+afterEvaluate { project ->
+    Task task = project.tasks.findByName("check")
+    if (task != null) {
+        task.dependsOn checkSparkVersionTask
+    }
+}
