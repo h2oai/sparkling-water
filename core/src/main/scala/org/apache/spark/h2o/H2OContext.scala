@@ -154,7 +154,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   /** Initialize Sparkling H2O and start H2O cloud. */
   def start(): H2OContext = {
     if(!isRunningOnCorrectSpark){
-      throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${designatedSparkVersion}," +
+      throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${buildSparkMajorVersion}," +
         s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
         s" points to Spark of version ${sparkContext.version}. Please ensure correct Spark is provided and" +
         s" re-run Sparkling Water.")
@@ -173,7 +173,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
     val (spreadRDD, spreadRDDNodes) = createSpreadRDD()
 
-    if(clusterTopologyListenerEnabled){
+    if(isClusterTopologyListenerEnabled){
       //attach listener which shutdown H2O when we bump into executor we didn't discover during the spreadRDD phase
       sparkContext.addSparkListener(new SparkListener(){
         override def onExecutorAdded(executorAdded: SparkListenerExecutorAdded): Unit = {
@@ -304,14 +304,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     * executes for example spark-shell command with sparkling water assembly jar passed as --jars and initiates H2OContext.
     * (Because in that case no check for correct Spark version has been done so far.)
     */
-  private def isRunningOnCorrectSpark = sparkContext.version.startsWith(designatedSparkVersion)
-  /**
-    * Returns Spark version for which is this version of Sparkling Water designated
-    */
-  def designatedSparkVersion = {
-    val stream = getClass.getResourceAsStream("/spark.version")
-    scala.io.Source.fromInputStream(stream).mkString
-  }
+  private def isRunningOnCorrectSpark = sparkContext.version.startsWith(buildSparkMajorVersion)
+
   // scalastyle:off
   // Disable style checker so "implicits" object can start with lowercase i
   /** Define implicits available via h2oContext.implicits._*/
@@ -750,7 +744,7 @@ object H2OContext extends Logging {
     }
   }
   private[h2o] def registerClientWebAPI(sc: SparkContext, h2oContext: H2OContext): Unit = {
-    if(h2oContext.h2oReplEnabled){
+    if(h2oContext.isH2OReplEnabled){
       registerScalaIntEndp(sc)
     }
     registerDataFramesEndp(sc, h2oContext)
