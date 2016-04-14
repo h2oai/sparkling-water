@@ -163,9 +163,7 @@ class ChicagoCrimeApp( weatherFile: String,
 
   def binomialMetrics[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
                 (model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
-    model.score(train).delete()
-    model.score(test).delete()
-    (binomialMM(model,train), binomialMM(model, test))
+    (modelMetrics(model,train), modelMetrics(model, test))
   }
 
 

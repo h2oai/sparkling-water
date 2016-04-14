@@ -17,6 +17,7 @@
 
 package org.apache.spark.examples.h2o
 
+import hex.ModelMetricsBinomial
 import hex.deeplearning.{DeepLearningModel, DeepLearning}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.examples.h2o.DemoUtils._
@@ -82,8 +83,8 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
     val dlModel = buildDLModel(train, valid)
 
     // Collect model metrics
-    val trainMetrics = binomialMM(dlModel, train)
-    val validMetrics = binomialMM(dlModel, valid)
+    val trainMetrics = modelMetrics[ModelMetricsBinomial](dlModel, train)
+    val validMetrics = modelMetrics[ModelMetricsBinomial](dlModel, valid)
     println(
       s"""
          |AUC on train data = ${trainMetrics.auc}
