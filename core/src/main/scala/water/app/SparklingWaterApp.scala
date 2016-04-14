@@ -51,20 +51,24 @@ trait SparklingWaterApp {
   }
 }
 
-// FIXME: should be published by h2o-scala interface
+/**
+  * Interface to access different model metrics provided by H2O model.
+  */
 trait ModelMetricsSupport {
 
-  def r2(model: GBMModel, fr: Frame) = hex.ModelMetrics.getFromDKV(model, fr)
-    .asInstanceOf[hex.ModelMetricsSupervised].r2()
+  /* Helper class to have nice API */
+  class ModelMetricsExtractor[T <: ModelMetrics] {
+    def apply[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
+             (model: Model[M,P,O], fr: Frame): T = {
+      // Fetch model metrics and rescore if it is necessary
+      if (ModelMetrics.getFromDKV(model, fr).asInstanceOf[T] == null) {
+        model.score(fr).delete()
+      }
+      ModelMetrics.getFromDKV(model, fr).asInstanceOf[T]
+    }
+  }
 
-  def modelMetrics[T <: ModelMetrics, M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-  (model: Model[M, P, O], fr: Frame) = ModelMetrics.getFromDKV(model, fr).asInstanceOf[T]
-
-  def binomialMM[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-  (model: Model[M, P, O], fr: Frame) = modelMetrics[hex.ModelMetricsBinomial, M, P, O](model, fr)
-
-  def multinomialMM[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-  (model: Model[M, P, O], fr: Frame) = modelMetrics[hex.ModelMetricsMultinomial, M, P, O](model, fr)
+  def modelMetrics[T <: ModelMetrics] = new ModelMetricsExtractor[T]
 }
 
 // Create companion object

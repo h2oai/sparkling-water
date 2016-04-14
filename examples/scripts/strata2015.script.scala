@@ -17,6 +17,7 @@ import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.sql.SQLContext
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
+import hex.ModelMetricsSupervised
 import water.app.ModelMetricsSupport
 
 // Create SQL support
@@ -102,7 +103,10 @@ def buildModel(df: H2OFrame, trees: Int = 100, depth: Int = 6)(implicit h2oConte
     // Score datasets
     Seq(train,test,hold).foreach(gbmModel.score(_).delete)
     // Collect R2 metrics
-    val result = R2("Model #1", ModelMetricsSupport.r2(gbmModel, train), r2(gbmModel, test), r2(gbmModel, hold))
+    val result = R2("Model #1",
+                    ModelMetricsSupport.modelMetrics[ModelMetricsSupervised](gbmModel, train).r2(),
+                    ModelMetricsSupport.modelMetrics[ModelMetricsSupervised](gbmModel, test).r2(),
+                    ModelMetricsSupport.modelMetrics[ModelMetricsSupervised](gbmModel, hold).r2())
     // Perform clean-up
     Seq(train, test, hold).foreach(_.delete())
     result

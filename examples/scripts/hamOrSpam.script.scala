@@ -19,6 +19,7 @@ val DATAFILE="examples/smalldata/smsData.txt"
 
 import hex.deeplearning.{DeepLearningModel, DeepLearning}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.ModelMetricsBinomial
 import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.mllib
@@ -130,8 +131,8 @@ val dlModel = buildDLModel(train, valid)
  * The following code is appended life during presentation.
  */
 // Collect model metrics and evaluate model quality
-val trainMetrics = ModelMetricsSupport.binomialMM(dlModel, train)
-val validMetrics = ModelMetricsSupport.binomialMM(dlModel, valid)
+val trainMetrics = ModelMetricsSupport.modelMetrics[ModelMetricsBinomial](dlModel, train)
+val validMetrics = ModelMetricsSupport.modelMetrics[ModelMetricsBinomial](dlModel, valid)
 println(trainMetrics.auc)
 println(validMetrics.auc)
 
