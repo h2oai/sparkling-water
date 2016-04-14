@@ -91,6 +91,7 @@ You can configure Sparkling Water using the following variables:
   ```scala
   import org.apache.spark.h2o._
   val h2oContext = H2OContext.getOrCreate(sc)
+  import h2oContext._
   import h2oContext.implicits._
   ```
 
@@ -144,8 +145,8 @@ You can configure Sparkling Water using the following variables:
   
 10. Transform the first 3 columns containing date information into enum columns:
   ```scala
-  val bigDataFrame: H2OFrame = bigTable // implicit conversion from RDD to DataFrame
-  for( i <- 0 to 2) bigDataFrame.replace(i, bigDataFrame.vec(i).toEnum)
+  val bigDataFrame: H2OFrame = h2oContext.asH2OFrame(bigTable)
+  for( i <- 0 to 2) bigDataFrame.replace(i, bigDataFrame.vec(i).toCategoricalVec)
   bigDataFrame.update()
   ```
 
@@ -186,10 +187,10 @@ You can configure Sparkling Water using the following variables:
   # Import H2O library
   library(h2o)
   # Initialize H2O R-client
-  h = h2o.init()
+  h2o.init()
   # Fetch prediction and actual data, use remembered keys
-  pred = h2o.getFrame(h, "dframe_b5f449d0c04ee75fda1b9bc865b14a69")
-  act = h2o.getFrame (h, "frame_rdd_14_b429e8b43d2d8c02899ccb61b72c4e57")
+  pred = h2o.getFrame("dframe_b5f449d0c04ee75fda1b9bc865b14a69")
+  act = h2o.getFrame ("frame_rdd_14_b429e8b43d2d8c02899ccb61b72c4e57")
   # Select right columns
   predDelay = pred$predict
   actDelay = act$ArrDelay
