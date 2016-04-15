@@ -115,7 +115,7 @@ private[repl] class H2OIMain private(initialSettings: Settings,
     _isInitializedField.setAccessible(true)
     synchronized {
       if (_isInitializedField.get(this) == null) {
-        _isInitializedField.set(this,io.spawn {
+        _isInitializedField.set(this, io.spawn {
           try _initialize()
           finally postInitSignal
         })
