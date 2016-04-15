@@ -17,6 +17,8 @@
 
 package org.apache.spark.h2o
 
+import water.api.API
+
 /**
  * Work with reflection only inside this helper.
  */
@@ -78,5 +80,16 @@ object ReflectionUtils {
   def reflector(ref: AnyRef) = new {
     def getV[T](name: String): T = ref.getClass.getMethods.find(_.getName == name).get.invoke(ref).asInstanceOf[T]
     def setV(name: String, value: Any): Unit = ref.getClass.getMethods.find(_.getName == name + "_$eq").get.invoke(ref, value.asInstanceOf[AnyRef])
+  }
+
+  /** Return API annotation assigned with the given field
+    * or null.
+    *
+    * @param klazz  class to query
+    * @param fieldName  field name to query
+    * @return instance of API annotation assigned with the field or null
+    */
+  def api(klazz: Class[_], fieldName: String): API = {
+    klazz.getField(fieldName).getAnnotation(classOf[API])
   }
 }

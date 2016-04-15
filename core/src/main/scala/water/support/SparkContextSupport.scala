@@ -59,5 +59,4 @@ trait SparkContextSupport {
     newModel
   }
 }
-
 object SparkContextSupport extends SparkContextSupport
