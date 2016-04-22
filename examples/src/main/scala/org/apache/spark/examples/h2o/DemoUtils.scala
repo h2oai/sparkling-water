@@ -21,7 +21,7 @@ import hex.{ModelMetrics, FrameSplitter}
 import hex.splitframe.ShuffleSplitFrame
 import hex.tree.gbm.GBMModel
 import hex.Model
-import org.apache.spark.h2o.{VecUtils, H2OContext, H2OFrame}
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.{SparkConf, SparkContext}
 import water.fvec.{NewChunk, Frame, Chunk}
 import water.parser.BufferedString
