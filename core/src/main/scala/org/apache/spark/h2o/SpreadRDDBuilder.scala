@@ -56,7 +56,7 @@ class SpreadRDDBuilder(sc: SparkContext,
     val spreadRDD = sc.parallelize(0 until mfactor*expectedWorkers, mfactor*expectedWorkers + 1).persist()
     // Collect information about executors in Spark cluster
     val visibleNodes = collectNodesInfo(spreadRDD)
-    val numVisibleNodes = visibleNodes.map(_._1).distinct.length
+    val numVisibleNodes = visibleNodes.map(_.executorId).distinct.length
     // Number of Spark executors after distributed operation
     val nSparkExecAfter = numOfSparkExecutors
     // Delete RDD
@@ -93,23 +93,17 @@ class SpreadRDDBuilder(sc: SparkContext,
   /** Generates and distributes a flatfile around Spark cluster.
     *
     * @param distRDD simple RDD to fork execution on.
-    * @return list of node descriptions (executorId, executorIP, -1)
+    * @return list of node descriptions NodeDesc(executorId, executorHostName, -1)
     */
   def collectNodesInfo(distRDD: RDD[Int]): Array[NodeDesc] = {
     // Collect flatfile - tuple of (executorId, IP, -1)
     val nodes = distRDD.mapPartitionsWithIndex { (idx, it) =>
       val env = SparkEnv.get
-      Iterator.single(
-        ( env.executorId,
-          // java.net.InetAddress.getLocalHost.getAddress.map(_ & 0xFF).mkString("."),
-          // Use existing Akka setup since Spark at this point is already communicating
-          getIp(env),
-          -1,
-          getHostname(env))
+      Iterator.single(NodeDesc(env.executorId, getHostname(env), -1)
       )
     }.collect()
     // Take only unique executors
-    nodes.groupBy(_._1).map(_._2.head).toArray.sortWith(_._1 < _._1)
+    nodes.groupBy(_.executorId).map(_._2.head).toArray.sortWith(_.executorId < _.executorId)
   }
 
   /**

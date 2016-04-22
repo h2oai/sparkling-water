@@ -30,12 +30,11 @@ class InvokeOnNodesRDD(nodes:Seq[NodeDesc], sc: SparkContext) extends RDD[NodeDe
     Iterator.single(split.asInstanceOf[PartitionWithNodeInfo].nodeDesc)
   }
 
-  override protected def getPartitions: Array[Partition] = nodes.zip(0 until nodes.length).map(n =>
+  override protected def getPartitions: Array[Partition] = nodes.zipWithIndex.map(n =>
     new PartitionWithNodeInfo(id, n._2, n._1)).toArray
 
-
   override protected def getPreferredLocations(split: Partition): Seq[String] =
-    if (split != null) Seq(split.asInstanceOf[PartitionWithNodeInfo].nodeDesc._4) else Nil
+    if (split != null) Seq(split.asInstanceOf[PartitionWithNodeInfo].nodeDesc.hostname) else Nil
 
   private[h2o]
   class PartitionWithNodeInfo(rddId: Int, idx: Int, val nodeDesc: NodeDesc) extends Partition {

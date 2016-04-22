@@ -183,7 +183,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     }
     // Start H2O nodes
     // Get executors to execute H2O
-    val allExecutorIds = spreadRDDNodes.map(_._1).distinct
+    val allExecutorIds = spreadRDDNodes.map(_.executorId).distinct
     val executorIds = allExecutorIds
     // The collected executors based on IDs should match
     assert(spreadRDDNodes.length == executorIds.length,
@@ -211,7 +211,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + executors.length)
       // Get arguments for this launch including flatfile
       // And also ask for client mode
-      val h2oClientIp = clientIp.getOrElse(getIp(SparkEnv.get))
+      val h2oClientIp = clientIp.getOrElse(getHostname(SparkEnv.get))
       val h2oClientArgs = toH2OArgs(getH2OClientArgs ++ Array("-ip", h2oClientIp, "-client"),
                               this,
                               executors)
