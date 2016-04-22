@@ -21,7 +21,7 @@ import java.io.File
 import java.net.InetAddress
 
 import org.apache.spark.h2o.H2OContextUtils._
-import org.apache.spark.scheduler.cluster.{YarnSchedulerBackend, CoarseGrainedSchedulerBackend}
+import org.apache.spark.scheduler.cluster.YarnSchedulerBackend
 import org.apache.spark.scheduler.local.LocalBackend
 import org.apache.spark.scheduler.{SparkListenerBlockManagerAdded, SparkListenerBlockManagerRemoved}
 import org.apache.spark.{Accumulable, SparkContext, SparkEnv}
@@ -35,21 +35,17 @@ import scala.collection.mutable
  */
 private[spark] object H2OContextUtils {
 
-  /** Helper type expression a tuple of ExecutorId, IP, port, hostname */
-  type NodeDesc = (String, String, Int, String)
+  /** Helper class containing ExecutorId, hostname and port */
+  case class NodeDesc(executorId: String, hostname: String, port: Int){
+    override def productPrefix = ""
+  }
 
   /**
-    * Return IP of this node based on SparkEnv
+    * Return hostname of this node based on SparkEnv
     * @param env  SparkEnv instance
-    * @return  ip of the node or localhost ip
+    * @return  hostname of the node
     */
-  def getIp(env: SparkEnv) =
-    if (env.rpcEnv.address != null) env.rpcEnv.address.host
-    else getHostname(env)
-
-  //noinspection ScalaDeprecation
-  def getHostname(env: SparkEnv) =
-    env.actorSystem.settings.config.getString("akka.remote.netty.tcp.hostname")
+  def getHostname(env: SparkEnv) = env.blockManager.blockManagerId.host
 
   def saveAsFile(content: String): File = {
     val tmpDir = createTempDir()
@@ -65,7 +61,7 @@ private[spark] object H2OContextUtils {
   }
 
   def toFlatFileString(executors: Array[NodeDesc]):String = {
-    executors.map(en => s"${en._2}:${en._3}").mkString("\n")
+    executors.map(en => s"${en.hostname}:${en.port}").mkString("\n")
   }
 
   def toH2OArgs(h2oArgs: Array[String], h2oConf: H2OConf, executors: Array[NodeDesc]): Array[String] = {
@@ -104,8 +100,8 @@ private[spark] object H2OContextUtils {
 
     // Try to launch H2O
     val executorStatus = spreadRDD.map { nodeDesc =>  // RDD partition index
-      assert(nodeDesc._2 == getIp(SparkEnv.get),  // Make sure we are running on right node
-        s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getIp(SparkEnv.get)})")
+      assert(nodeDesc.hostname == getHostname(SparkEnv.get),  // Make sure we are running on right node
+         s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getHostname(SparkEnv.get)})")
       // Launch the node
       val sparkEnv = SparkEnv.get
       // Define log dir
@@ -124,8 +120,8 @@ private[spark] object H2OContextUtils {
       }
       val executorId = sparkEnv.executorId
       try {
-        // Get node this node IP
-        val ip = nodeDesc._2
+        // Get node this node hostname
+        val ip = nodeDesc.hostname
         val launcherArgs = toH2OArgs(
           h2oArgs
             ++ Array("-ip", ip)
@@ -178,8 +174,9 @@ private[spark] object H2OContextUtils {
     val flatFileString = toFlatFileString(flatFile)
     // Pass flatfile around cluster
     spreadRDD.foreach { nodeDesc =>
-      assert(nodeDesc._2 == getIp(SparkEnv.get)) // Make sure we are running on right node
-      val executorId = SparkEnv.get.executorId
+      val env = SparkEnv.get
+      assert(nodeDesc.hostname == getHostname(env), s"nodeDesc=${nodeDesc} == ${getHostname(env)}") // Make sure we are running on right node
+      val executorId = env.executorId
 
       val econf = water.H2O.getEmbeddedH2OConfig().asInstanceOf[SparklingWaterConfig]
       // Setup flatfile for waiting guys
@@ -250,7 +247,7 @@ private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.Ha
 
   override def notifyAboutEmbeddedWebServerIpPort(ip: InetAddress, port: Int): Unit = {
     val env = SparkEnv.get
-    val thisNodeInfo = (env.executorId, getIp(env), port, getHostname(env))
+    val thisNodeInfo = NodeDesc(env.executorId, getHostname(env), port)
     flatfileBVariable.synchronized {
       flatfileBVariable += thisNodeInfo
       flatfileBVariable.notifyAll()
