@@ -347,6 +347,7 @@ object H2OContext extends Logging {
     * @param sc Spark Context
     * @return H2O Context
     */
+  @deprecated(message = "Use getOrCreate(sc: SparkContext) method.", since = "1.5.11")
   def getOrCreate(sc: SparkContext, h2oWorkers: Int): H2OContext = {
     getOrCreate(sc, Some(h2oWorkers))
   }
@@ -367,6 +368,7 @@ object H2OContext extends Logging {
   }
 
   /** Supports call from java environments. */
+  @deprecated(message = "Use getOrCreate(sc: JavaSparkContext) method.", since = "1.5.11")
   def getOrCreate(sc: JavaSparkContext, h2oWorkers: Int): H2OContext = {
     getOrCreate(sc.sc,Some(h2oWorkers))
   }
