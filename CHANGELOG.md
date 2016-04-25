@@ -1,6 +1,27 @@
 ChangeLog
 =========
 
+#v1.4.13 (2016-04-25)
+  - Bug fixes
+    - [SW-12](https://0xdata.atlassian.net/browse/SW-12) - Provides an inner class encapsulating implicit conversion like SQLContext does
+    - [SW-50](https://0xdata.atlassian.net/browse/SW-50) - Reject attempts to run Sparkling Water/pySparkling with wrong version of Spark
+    - [SW-80](https://0xdata.atlassian.net/browse/SW-80) - Add all pySparkling dependencies to pySparkling egg file
+    - [SW-104](https://0xdata.atlassian.net/browse/SW-104) - pysparkling overrides extraClassPath configuration
+    - [SW-105](https://0xdata.atlassian.net/browse/SW-105) - Have an option to disable listener for changes of Spark cluster topology
+    - [SW-107](https://0xdata.atlassian.net/browse/SW-107) - Initiation of H2OContext in pySparkling ends up with "Calling a package" py4j exception
+    - [SW-109](https://0xdata.atlassian.net/browse/SW-109) - Make PySparkling up-to-date with current H2O and SW and major pySparkling bug fixing and refactoring
+    - [SW-110](https://0xdata.atlassian.net/browse/SW-110) - Wrong Spark location in travis build
+    - [SW-116](https://0xdata.atlassian.net/browse/SW-116) - Sparkling Water examples/README needs update
+    - [SW-119](https://0xdata.atlassian.net/browse/SW-119) - Return correct executor hostname during spreadRDD phase
+  - Improvements
+    - [SW-37](https://0xdata.atlassian.net/browse/SW-37) - During test run warn/fail if the `SPARK_HOME` version is different from spark version used during build
+    - [SW-85](https://0xdata.atlassian.net/browse/SW-85) - Follow Spark way in using implicits
+    - [SW-98](https://0xdata.atlassian.net/browse/SW-98) - Upgrade H2O dependency to 3.8.1.4
+    - [SW-99](https://0xdata.atlassian.net/browse/SW-99) - Allow disabling/enabling REPL using configuration property
+    - [SW-102](https://0xdata.atlassian.net/browse/SW-102) - Speedup tests by disabling REPL in tests which don't require it
+    - [SW-115](https://0xdata.atlassian.net/browse/SW-115) - Increase H2O dependency to rel-turchin
+    - [SW-120](https://0xdata.atlassian.net/browse/SW-120) - Remove deprecated VecUtils
+
 #v1.4.12 (2016-03-18)
   - Improvements
     - [SW-98](https://0xdata.atlassian.net/browse/SW-98) - Upgrade H2O dependency to version including security support
