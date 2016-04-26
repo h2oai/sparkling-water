@@ -76,6 +76,8 @@ test {
 
 task createSparkVersionFile << {
     File version_file = file("src/main/resources/spark.version")
+    // Create parent directories if not created yet
+    version_file.getParentFile().mkdirs()
     version_file.write(sparkVersion)
 }
 
