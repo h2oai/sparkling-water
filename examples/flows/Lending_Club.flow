@@ -1,0 +1,201 @@
+{
+  "version": "1.0.0",
+  "cells": [
+    {
+      "type": "md",
+      "input": "# Lending Club"
+    },
+    {
+      "type": "md",
+      "input": "> Train two models\n>  - binomial model to accept/decline loan application\n>  - regression model to provide interest rate for accepted loan application"
+    },
+    {
+      "type": "md",
+      "input": "## Data source\n\n> Download loan data from LendingClub.com - https://www.lendingclub.com/info/download-data.action"
+    },
+    {
+      "type": "md",
+      "input": "## Import data as H2O Frame"
+    },
+    {
+      "type": "cs",
+      "input": "importFiles"
+    },
+    {
+      "type": "cs",
+      "input": "importFiles [ \"/Users/michal/tmp/lendingclub/LoanStats3a.csv\" ]"
+    },
+    {
+      "type": "cs",
+      "input": "setupParse paths: [ \"/Users/michal/tmp/lendingclub/LoanStats3a.csv\" ]"
+    },
+    {
+      "type": "cs",
+      "input": "parseFiles\n  paths: [\"/Users/michal/tmp/lendingclub/LoanStats3a.csv\"]\n  destination_frame: \"LoanStats3a.hex\"\n  parse_type: \"CSV\"\n  separator: 44\n  number_columns: 111\n  single_quotes: false\n  column_names: [\"id\",\"member_id\",\"loan_amnt\",\"funded_amnt\",\"funded_amnt_inv\",\"term\",\"int_rate\",\"installment\",\"grade\",\"sub_grade\",\"emp_title\",\"emp_length\",\"home_ownership\",\"annual_inc\",\"verification_status\",\"issue_d\",\"loan_status\",\"pymnt_plan\",\"url\",\"desc\",\"purpose\",\"title\",\"zip_code\",\"addr_state\",\"dti\",\"delinq_2yrs\",\"earliest_cr_line\",\"inq_last_6mths\",\"mths_since_last_delinq\",\"mths_since_last_record\",\"open_acc\",\"pub_rec\",\"revol_bal\",\"revol_util\",\"total_acc\",\"initial_list_status\",\"out_prncp\",\"out_prncp_inv\",\"total_pymnt\",\"total_pymnt_inv\",\"total_rec_prncp\",\"total_rec_int\",\"total_rec_late_fee\",\"recoveries\",\"collection_recovery_fee\",\"last_pymnt_d\",\"last_pymnt_amnt\",\"next_pymnt_d\",\"last_credit_pull_d\",\"collections_12_mths_ex_med\",\"mths_since_last_major_derog\",\"policy_code\",\"application_type\",\"annual_inc_joint\",\"dti_joint\",\"verification_status_joint\",\"acc_now_delinq\",\"tot_coll_amt\",\"tot_cur_bal\",\"open_acc_6m\",\"open_il_6m\",\"open_il_12m\",\"open_il_24m\",\"mths_since_rcnt_il\",\"total_bal_il\",\"il_util\",\"open_rv_12m\",\"open_rv_24m\",\"max_bal_bc\",\"all_util\",\"total_rev_hi_lim\",\"inq_fi\",\"total_cu_tl\",\"inq_last_12m\",\"acc_open_past_24mths\",\"avg_cur_bal\",\"bc_open_to_buy\",\"bc_util\",\"chargeoff_within_12_mths\",\"delinq_amnt\",\"mo_sin_old_il_acct\",\"mo_sin_old_rev_tl_op\",\"mo_sin_rcnt_rev_tl_op\",\"mo_sin_rcnt_tl\",\"mort_acc\",\"mths_since_recent_bc\",\"mths_since_recent_bc_dlq\",\"mths_since_recent_inq\",\"mths_since_recent_revol_delinq\",\"num_accts_ever_120_pd\",\"num_actv_bc_tl\",\"num_actv_rev_tl\",\"num_bc_sats\",\"num_bc_tl\",\"num_il_tl\",\"num_op_rev_tl\",\"num_rev_accts\",\"num_rev_tl_bal_gt_0\",\"num_sats\",\"num_tl_120dpd_2m\",\"num_tl_30dpd\",\"num_tl_90g_dpd_24m\",\"num_tl_op_past_12m\",\"pct_tl_nvr_dlq\",\"percent_bc_gt_75\",\"pub_rec_bankruptcies\",\"tax_liens\",\"tot_hi_cred_lim\",\"total_bal_ex_mort\",\"total_bc_limit\",\"total_il_high_credit_limit\"]\n  column_types: [\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Enum\",\"Numeric\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Numeric\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"String\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Numeric\",\"Numeric\",\"Enum\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Numeric\",\"Enum\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Numeric\",\"Enum\",\"Enum\",\"Numeric\",\"Enum\",\"Numeric\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Numeric\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Numeric\",\"Numeric\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Enum\",\"Numeric\",\"Numeric\",\"Enum\",\"Enum\",\"Enum\",\"Enum\"]\n  delete_on_done: true\n  check_header: 1\n  chunk_size: 1296896"
+    },
+    {
+      "type": "md",
+      "input": "## Explore data"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"LoanStats3a.hex\""
+    },
+    {
+      "type": "md",
+      "input": "## Explore individual columns"
+    },
+    {
+      "type": "cs",
+      "input": "getColumnSummary \"LoanStats3a.hex\", \"loan_status\""
+    },
+    {
+      "type": "cs",
+      "input": "getColumnSummary \"LoanStats3a.hex\", \"int_rate\""
+    },
+    {
+      "type": "md",
+      "input": "## Problems\n\n>  - data  are in wrong format (String v. Float)\n>  - too noisy\n\n> *Solution*\n> - transform data into expected format\n> - extract data which we need for model training"
+    },
+    {
+      "type": "md",
+      "input": "## Extract columns"
+    },
+    {
+      "type": "sca",
+      "input": "val cols = Array(\"loan_status\",\"loan_amnt\",\"term\",\"int_rate\", \"emp_length\",\"home_ownership\",\"annual_inc\", \"annual_inc_joint\", \"purpose\",\"addr_state\",\"dti\", \"dti_joint\", \"delinq_2yrs\",\"earliest_cr_line\", \"revol_util\",\"total_acc\",\"verification_status\", \"verification_status_joint\", \"desc\")\n\n// Select columns\nval loanDataHF = new H2OFrame(\"LoanStats3a.hex\")(cols)"
+    },
+    {
+      "type": "md",
+      "input": "## Publish H2O Frame as Spark DataFrame"
+    },
+    {
+      "type": "sca",
+      "input": "val h2oContext = H2OContext.getOrCreate(sc)\n\nval loanDataDF = h2oContext.asDataFrame(loanDataHF)\nloanDataDF.printSchema"
+    },
+    {
+      "type": "md",
+      "input": "## Transformations"
+    },
+    {
+      "type": "md",
+      "input": "### From multi-value loan statuses to BAD/GOOD loan"
+    },
+    {
+      "type": "sca",
+      "input": "import org.apache.spark.sql.functions._\n    val toLoanStatus = udf[String, String](status => status.trim.toLowerCase() match {\n      case \"fully paid\" => \"good\"\n      case _ => \"bad\"\n    })"
+    },
+    {
+      "type": "md",
+      "input": "### From string '1.5%' to a float number"
+    },
+    {
+      "type": "sca",
+      "input": "val toNumericRate = udf[Float, String](rate => {\n      val num = if (rate != null) rate.stripSuffix(\"%\").trim else \"\"\n      if (!num.isEmpty) num.toFloat else Float.NaN\n    })"
+    },
+    {
+      "type": "md",
+      "input": "### Transforming Spark dataframe"
+    },
+    {
+      "type": "sca",
+      "input": "val loansDF = loanDataDF.\n        filter(\"loan_status != 'Current'\").\n        drop(\"annual_inc_joint\").\n        drop(\"verification_status_joint\").\n        drop(\"dti_joint\").\n        drop(\"desc\").\n        withColumn(\"loan_status\", toLoanStatus($\"loan_status\")).\n        withColumn(\"int_rate\", toNumericRate($\"int_rate\")).\n        withColumn(\"revol_util\", toNumericRate($\"revol_util\"))\n"
+    },
+    {
+      "type": "md",
+      "input": "## Transformation of Spark DataFrame into H2O Frame"
+    },
+    {
+      "type": "sca",
+      "input": "val loansHF = h2oContext.asH2OFrame(loansDF, \"loansHF\")"
+    },
+    {
+      "type": "md",
+      "input": "## Memory cleanup"
+    },
+    {
+      "type": "sca",
+      "input": "loanDataHF.delete()"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"loansHF\""
+    },
+    {
+      "type": "md",
+      "input": "## Still not enough - need to transform String columns into categoricals"
+    },
+    {
+      "type": "sca",
+      "input": "Seq(\"loan_status\", \"term\", \"emp_length\", \"home_ownership\", \"purpose\", \"addr_state\", \"verification_status\", \"earliest_cr_line\").foreach(colName =>\n      loansHF.replace(loansHF.find(colName), loansHF.vec(colName).toCategoricalVec).remove()\n    )\nloansHF.update()\n"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"loansHF\""
+    },
+    {
+      "type": "md",
+      "input": "## Split data for model training"
+    },
+    {
+      "type": "cs",
+      "input": "assist splitFrame, \"loansHF\""
+    },
+    {
+      "type": "cs",
+      "input": "splitFrame \"loansHF\", [0.25], [\"loansHF_0.250\",\"loansHF_0.750\"], 42"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"loansHF_0.750\""
+    },
+    {
+      "type": "cs",
+      "input": "assist buildModel, null, training_frame: \"loansHF_0.750\""
+    },
+    {
+      "type": "md",
+      "input": "## Build \"BadLoan\" GBM model  \n\n - binomial model accepting loan\n    - 100 trees\n    - 0.05 learning rate\n - on-the-fly validation\n - advanced stopping criterion \n - learning rate annealing\n - needs to ignore column \"int_rate\""
+    },
+    {
+      "type": "cs",
+      "input": "buildModel 'gbm', {\"model_id\":\"BadLoanModel\",\"training_frame\":\"loansHF_0.750\",\"validation_frame\":\"loansHF_0.250\",\"nfolds\":0,\"response_column\":\"loan_status\",\"ignored_columns\":[\"int_rate\"],\"ignore_const_cols\":true,\"ntrees\":\"100\",\"max_depth\":5,\"min_rows\":10,\"nbins\":20,\"seed\":-1,\"learn_rate\":\"0.05\",\"distribution\":\"AUTO\",\"sample_rate\":1,\"score_each_iteration\":false,\"score_tree_interval\":0,\"balance_classes\":false,\"nbins_top_level\":1024,\"nbins_cats\":1024,\"r2_stopping\":0.999999,\"stopping_rounds\":\"2\",\"stopping_metric\":\"AUTO\",\"stopping_tolerance\":\"0.0001\",\"max_runtime_secs\":0,\"checkpoint\":\"\",\"col_sample_rate\":1,\"col_sample_rate_per_tree\":1,\"min_split_improvement\":0,\"random_split_points\":false,\"build_tree_one_node\":false,\"learn_rate_annealing\":\"0.94\",\"sample_rate_per_class\":[],\"col_sample_rate_change_per_level\":1,\"max_abs_leafnode_pred\":\"Infinity\"}"
+    },
+    {
+      "type": "cs",
+      "input": "getModel \"BadLoanModel\""
+    },
+    {
+      "type": "md",
+      "input": "## Build \"InterestRate\" GBM model  \n\n - regression model to predict interest rate only for good loans\n    - 100 trees\n    - 0.05 learning rate\n - on-the-fly validation after each iteration\n - advanced stopping criterion \n - learning rate annealing\n - \"bad loans\" are automatically skipped since they have not defined \"interest rate\""
+    },
+    {
+      "type": "cs",
+      "input": "assist buildModel, null, training_frame: \"loansHF_0.750\""
+    },
+    {
+      "type": "cs",
+      "input": "buildModel 'gbm', {\"model_id\":\"InterestRateModel\",\"training_frame\":\"loansHF_0.750\",\"validation_frame\":\"loansHF_0.250\",\"nfolds\":0,\"response_column\":\"int_rate\",\"ignored_columns\":[\"loan_status\"],\"ignore_const_cols\":true,\"ntrees\":\"100\",\"max_depth\":5,\"min_rows\":10,\"nbins\":20,\"seed\":-1,\"learn_rate\":\"0.05\",\"distribution\":\"AUTO\",\"sample_rate\":1,\"score_each_iteration\":true,\"score_tree_interval\":0,\"nbins_top_level\":1024,\"nbins_cats\":1024,\"r2_stopping\":0.999999,\"stopping_rounds\":\"2\",\"stopping_metric\":\"AUTO\",\"stopping_tolerance\":\"0.0001\",\"max_runtime_secs\":0,\"checkpoint\":\"\",\"col_sample_rate\":1,\"col_sample_rate_per_tree\":1,\"min_split_improvement\":0,\"random_split_points\":false,\"build_tree_one_node\":false,\"learn_rate_annealing\":\"0.93\",\"sample_rate_per_class\":[],\"col_sample_rate_change_per_level\":1,\"max_abs_leafnode_pred\":\"Infinity\"}"
+    },
+    {
+      "type": "cs",
+      "input": "getModel \"InterestRateModel\""
+    },
+    {
+      "type": "md",
+      "input": "## Export models as code\n\n> Obtain models from distributed KV store"
+    },
+    {
+      "type": "sca",
+      "input": "import _root_.hex.tree.gbm.GBMModel\nimport java.io.File\nval badLoanModel: GBMModel  = water.DKV.getGet(\"BadLoanModel\")\nval interestRateModel: GBMModel = water.DKV.getGet(\"InterestRateModel\")\n"
+    },
+    {
+      "type": "md",
+      "input": "> Export them as code"
+    },
+    {
+      "type": "sca",
+      "input": "import water.app._\nModelSerializationSupport.exportPOJOModel(badLoanModel, new File(\"/Users/michal/tmp/lendingclub/BadLoanModel.java\").toURI)\nModelSerializationSupport.exportPOJOModel(interestRateModel, new File(\"/Users/michal/tmp/lendingclub/InterestRateModel.java\").toURI)"
+    }
+  ]
+}
