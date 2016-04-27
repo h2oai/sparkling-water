@@ -24,7 +24,7 @@ import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.scheduler.cluster.YarnSchedulerBackend
 import org.apache.spark.scheduler.local.LocalBackend
 import org.apache.spark.scheduler.{SparkListenerBlockManagerAdded, SparkListenerBlockManagerRemoved}
-import org.apache.spark.{Accumulable, SparkContext, SparkEnv}
+import org.apache.spark.{Accumulable, SparkConf, SparkContext, SparkEnv}
 import water.H2OStarter
 import water.init.AbstractEmbeddedH2OConfig
 
@@ -231,7 +231,6 @@ private[spark] object H2OContextUtils {
     val valueIdx = (for (i <- 0 until cmdLine.length; if (cmdLine(i).equals(argName))) yield i + 1).headOption
     valueIdx.filter(i => i < cmdLine.length).map(i => cmdLine(i))
   }
-
 }
 
 /**
