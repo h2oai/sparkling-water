@@ -166,8 +166,8 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
                     PROP_CLOUD_NAME._2 + System.getProperty("user.name", "cluster") + "_" + Random.nextInt())
     }
 
-    // Check Spark environment and reconfigure some values
-    H2OContext.checkAndUpdateSparkEnv(sparkConf)
+    // Check Spark environment and reconfigure some values (Note: this is useless in more of the cases since SparkContext is already running)
+    H2OContext.checkAndUpdateSparkEnv(sparkContext, sparkConf)
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
 
@@ -524,7 +524,6 @@ object H2OContext extends Logging {
     new H2OFrame(finalizeFrame(keyName, res, vecTypes))
   }
 
-
   /** Transform RDD[LabeledPoint] to appropriate H2OFrame */
   def toH2OFrameFromRDDLabeledPoint(sc: SparkContext, rdd: RDD[LabeledPoint], frameKeyName: Option[String]): H2OFrame = {
     import org.apache.spark.h2o.H2OTypeUtils._
@@ -730,16 +729,16 @@ object H2OContext extends Logging {
 
   /** Check Spark environment and warn about possible problems. */
   private
-  def checkAndUpdateSparkEnv(conf: SparkConf): Unit = {
+  def checkAndUpdateSparkEnv(sparkContext: SparkContext, conf: SparkConf): Unit = {
     // If 'spark.executor.instances' is specified update H2O property as well
     conf.getOption("spark.executor.instances").foreach(v => conf.set("spark.ext.h2o.cluster.size", v))
     // Increase locality timeout since h2o-specific tasks can be long computing
-    if (conf.getInt("spark.locality.wait", 3000) <= 3000) {
+    if (conf.getInt("spark.locality.wait", 3000) <= 3000 && !sparkContext.isLocal) {
       logWarning(s"Increasing 'spark.locality.wait' to value 30000")
       conf.set("spark.locality.wait", "30000")
     }
 
-    if (!conf.contains("spark.scheduler.minRegisteredResourcesRatio")) {
+    if (!conf.contains("spark.scheduler.minRegisteredResourcesRatio") && !sparkContext.isLocal) {
       logWarning("The property 'spark.scheduler.minRegisteredResourcesRatio' is not specified!\n" +
                  "We recommend to pass `--conf spark.scheduler.minRegisteredResourcesRatio=1`")
       // Setup the property but at this point it does not make good sense
