@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+#v1.4.14 (2016-04-27)
+  - Bug fixes
+    - [SW-124](https://0xdata.atlassian.net/browse/SW-124)  - Hotfix to avoid NPE in MetadataHandler caused by PUBDEV-2879
+
 #v1.4.13 (2016-04-25)
   - Bug fixes
     - [SW-12](https://0xdata.atlassian.net/browse/SW-12) - Provides an inner class encapsulating implicit conversion like SQLContext does
