@@ -1,0 +1,177 @@
+{
+  "version": "1.0.0",
+  "cells": [
+    {
+      "type": "md",
+      "input": "# Sparkling Water Brings ML Power of H2O"
+    },
+    {
+      "type": "md",
+      "input": "## Bubbles\n\n> **\"Google, what is bubble\"?**\n\n> A thin sphere of H2O enclosing air or another gas.\n\nBut our goal is to predit color of bubble."
+    },
+    {
+      "type": "md",
+      "input": "### Generate Sparkling bubbles\n\n  - use Spark API\n  - generate random points in 2D space\n    - `X`, `Y`, `color` and `weight`\n    - `color` is corellated with `X`, `Y`\n    - `weight` is random"
+    },
+    {
+      "type": "sca",
+      "input": "import scala.util.Random\n\n// Create a Spark DataFrame\nval df = sc.parallelize(1 to 1000).map(v => {\n   val x = Random.nextDouble()*4 \n   val y = Random.nextDouble()*4\n   val weight = Random.nextDouble()/10\n   val color = if (((x+y).toInt & 1) == 1) \"red\" else \"blue\"\n   (x, y, weight, color)\n   }).toDF(\"X\", \"Y\", \"weight\", \"color\")\n"
+    },
+    {
+      "type": "md",
+      "input": "### Publish bubbles as H2O frame\n\n - get `H2OContext` via `H2OContext.getOrCreate(sc)`\n - publish generated Spark DataFrame `df` via calling `hc.asH2OFrame`"
+    },
+    {
+      "type": "sca",
+      "input": "// Get H2OContext\nval hc = H2OContext.getOrCreate(sc)\n// Publish Spark DataFrame as H2OFrame\nval bubbles = hc.asH2OFrame(df, \"bubbles\")\n// Print bubbles\nprintln(bubbles)"
+    },
+    {
+      "type": "md",
+      "input": "### Show me available H2O frames"
+    },
+    {
+      "type": "cs",
+      "input": "getFrames "
+    },
+    {
+      "type": "md",
+      "input": "### Show me bubbles frame content"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"bubbles\""
+    },
+    {
+      "type": "md",
+      "input": "### Transform color column to categorical column"
+    },
+    {
+      "type": "cs",
+      "input": "changeColumnType frame: \"bubbles\", column: \"color\", type: 'enum'"
+    },
+    {
+      "type": "md",
+      "input": "### Show me the bubbles"
+    },
+    {
+      "type": "cs",
+      "input": "plot (g) -> g(\n  g.point(\n      g.position \"X\", \"Y\"\n          g.fillColor g.factor(\"color\"), g.range [\"blue\", \"red\"]\n          g.size \"weight\"\n          )\n  g.from inspect \"data\", getFrame \"bubbles\"\n  g.bounds 800, 800\n)"
+    },
+    {
+      "type": "md",
+      "input": "### Prepare data for modeling - split"
+    },
+    {
+      "type": "cs",
+      "input": "splitFrame \"bubbles\", [0.25], [\"train_bubbles\",\"valid_bubbles\"]"
+    },
+    {
+      "type": "md",
+      "input": "### Build a GBM model"
+    },
+    {
+      "type": "cs",
+      "input": "buildModel"
+    },
+    {
+      "type": "cs",
+      "input": "buildModel 'gbm', {\"model_id\":\"bubbles-model\",\"training_frame\":\"train_bubbles\",\"validation_frame\":\"valid_bubbles\",\"nfolds\":0,\"response_column\":\"color\",\"ignored_columns\":[],\"ignore_const_cols\":true,\"ntrees\":50,\"max_depth\":5,\"min_rows\":10,\"nbins\":20,\"nbins_cats\":1024,\"seed\":-1,\"learn_rate\":0.1,\"distribution\":\"AUTO\",\"sample_rate\":1,\"col_sample_rate\":1,\"col_sample_rate_per_tree\":1,\"score_each_iteration\":false,\"score_tree_interval\":0,\"balance_classes\":false,\"r2_stopping\":0.999999,\"stopping_rounds\":0,\"stopping_metric\":\"AUTO\",\"stopping_tolerance\":0.001,\"max_runtime_secs\":0,\"build_tree_one_node\":false,\"checkpoint\":\"\",\"nbins_top_level\":1024}"
+    },
+    {
+      "type": "md",
+      "input": "### Explore the model!"
+    },
+    {
+      "type": "cs",
+      "input": "getModel \"bubbles-model\""
+    },
+    {
+      "type": "md",
+      "input": "### Make a prediction"
+    },
+    {
+      "type": "cs",
+      "input": "predict model: \"bubbles-model\""
+    },
+    {
+      "type": "cs",
+      "input": "predict model: \"bubbles-model\", frame: \"valid_bubbles\", predictions_frame: \"prediction\""
+    },
+    {
+      "type": "md",
+      "input": "### Explore the predicted values"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"prediction\""
+    },
+    {
+      "type": "cs",
+      "input": "getFrameData \"prediction\""
+    },
+    {
+      "type": "md",
+      "input": "### Merge validation data and predicted values"
+    },
+    {
+      "type": "sca",
+      "input": "// Get reference to validation data\nval validation = new H2OFrame(\"valid_bubbles\")\n// Append validation to predicted data\nval prediction = new H2OFrame(\"prediction\").add(validation)\n// Udpdate table in DKV\nprediction.update()\n"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"prediction\""
+    },
+    {
+      "type": "md",
+      "input": "### Let use Spark!\n\n> To generate prediction error"
+    },
+    {
+      "type": "md",
+      "input": "#### First publish H2O frame as Spark DataFrame"
+    },
+    {
+      "type": "sca",
+      "input": "val hc = H2OContext.getOrCreate(sc)\nval prediction = new H2OFrame(\"prediction\")\nval predictionDF = hc.asDataFrame(prediction)\npredictionDF.printSchema()"
+    },
+    {
+      "type": "md",
+      "input": "#### Compute prediction error using DataFrame API"
+    },
+    {
+      "type": "sca",
+      "input": "println(s\"Number of mispredicted/total rows: ${predictionDF.where(\"predict != color\").count()}/${predictionDF.count}\")\nval error = 100*predictionDF.where(\"predict != color\").count().toDouble / predictionDF.count\nprintln(f\"Error = ${error}%.2f %%\")"
+    },
+    {
+      "type": "md",
+      "input": "### Find only misspredicted bubbles\n\n> And publish results back as H2O frame"
+    },
+    {
+      "type": "sca",
+      "input": "val misspredictedPoints = predictionDF.where(\"predict != color\")\nval misspredictedPointsHF = hc.asH2OFrame(misspredictedPoints, \"misspredictions\")"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"misspredictions\""
+    },
+    {
+      "type": "md",
+      "input": "### Plot misspredicted bubbles"
+    },
+    {
+      "type": "cs",
+      "input": "plot (g) -> g(\n  g.point(\n      g.position \"X\", \"Y\"\n      g.fillColor g.factor(\"predict\"), g.range ['red', 'blue']\n      g.strokeColor g.factor(\"color\"), g.range ['blue', 'red']\n\n      g.size g.value 12\n      g.lineWidth g.value 5\n  )\n  g.from inspect \"data\", getFrame \"misspredictions\"\n  g.bounds 800, 800\n)"
+    },
+    {
+      "type": "md",
+      "input": "### Plot validation data"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameData \"misspredictions\""
+    },
+    {
+      "type": "cs",
+      "input": "plot (g) -> g(\n  g.point(\n      g.position \"X\", \"Y\"\n      g.fillColor g.factor(\"color\"), g.range ['blue', 'red']\n\n      g.size g.value 12\n  )\n  g.from inspect \"data\", getFrame \"valid_bubbles\"\n  g.bounds 800, 800\n)"
+    }
+  ]
+}
