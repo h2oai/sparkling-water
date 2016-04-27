@@ -785,13 +785,13 @@ object H2OContext extends Logging {
                            "Return all RDDs within Spark cloud",
                            rddsFactory)
 
-    RequestServer.register("/3/RDDs/(?<rdd_id>[0-9]+)", "POST",
+    RequestServer.register("/3/RDDs/(?<rdd_id>.*)", "POST",
                            classOf[RDDsHandler], "getRDD",
                            null,
                            "Get RDD with the given ID from Spark cloud",
                            rddsFactory)
 
-    RequestServer.register("/3/RDDs/(?<rdd_id>[0-9a-zA-Z_]+)/h2oframe", "POST",
+    RequestServer.register("/3/RDDs/(?<rdd_id>.*)/h2oframe", "POST",
       classOf[RDDsHandler], "toH2OFrame",
       null,
       "Transform RDD with the given ID to H2OFrame",
@@ -813,13 +813,13 @@ object H2OContext extends Logging {
                            "Return all Spark's DataFrames",
                            dataFramesfactory)
 
-    RequestServer.register("/3/dataframes/(?<dataframe_id>[0-9a-zA-Z_]+)", "POST",
+    RequestServer.register("/3/dataframes/(?<dataframe_id>.*)", "POST",
                            classOf[DataFramesHandler], "getDataFrame",
                            null,
                            "Get Spark's DataFrame with the given ID",
                            dataFramesfactory)
 
-    RequestServer.register("/3/dataframes/(?<dataframe_id>[0-9a-zA-Z_]+)/h2oframe", "POST",
+    RequestServer.register("/3/dataframes/(?<dataframe_id>.*)/h2oframe", "POST",
                            classOf[DataFramesHandler], "toH2OFrame",
                            null,
                            "Transform Spark's DataFrame with the given ID to H2OFrame",
@@ -832,7 +832,7 @@ object H2OContext extends Logging {
     def scalaCodeFactory = new HandlerFactory {
       override def create(aClass: Class[_ <: Handler]): Handler = scalaCodeHandler
     }
-    RequestServer.register("/3/scalaint/(?<session_id>[0-9]+)", "POST",
+    RequestServer.register("/3/scalaint/(?<session_id>.*)", "POST",
                            classOf[ScalaCodeHandler], "interpret",
                            null,
                            "Interpret the code and return the result",
@@ -850,7 +850,7 @@ object H2OContext extends Logging {
                            "Return all active session IDs",
                            scalaCodeFactory)
 
-    RequestServer.register("/3/scalaint/(?<session_id>[0-9]+)", "DELETE",
+    RequestServer.register("/3/scalaint/(?<session_id>.*)", "DELETE",
                            classOf[ScalaCodeHandler], "destroySession",
                            null,
                            "Return session id for communication with scala interpreter",
