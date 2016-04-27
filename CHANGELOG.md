@@ -13,6 +13,7 @@ ChangeLog
     - [SW-110](https://0xdata.atlassian.net/browse/SW-110) - Wrong Spark location in travis build
     - [SW-116](https://0xdata.atlassian.net/browse/SW-116) - Sparkling Water examples/README needs update
     - [SW-119](https://0xdata.atlassian.net/browse/SW-119) - Return correct executor hostname during spreadRDD phase
+    - [PUBDEV-2879](https://0xdata.atlassian.net/browse/PUBDEV-2879) - Hot fix for NPE inside MetadataHandler
   - Improvements
     - [SW-37](https://0xdata.atlassian.net/browse/SW-37) - During test run warn/fail if the `SPARK_HOME` version is different from spark version used during build
     - [SW-85](https://0xdata.atlassian.net/browse/SW-85) - Follow Spark way in using implicits
