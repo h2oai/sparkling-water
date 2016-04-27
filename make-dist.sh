@@ -38,6 +38,7 @@ examples/smalldata/chicagoAllWeather.csv
 examples/smalldata/chicagoCensus.csv
 examples/smalldata/chicagoCrimes10k.csv
 examples/smalldata/craigslistJobTitles.csv
+$(find examples/flows/ -type f)
 $(find docker/ -type f | grep -v iml$)
 $(find py/dist/ -type f -name '*.egg')
 $(find py/examples/ -type f | grep -v h2ologs | grep -v metastore_db)
