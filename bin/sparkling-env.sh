@@ -39,7 +39,9 @@ SPARK_VERSION=$(cat $TOPDIR/gradle.properties | grep sparkVersion | sed -e "s/.*
 # Fat jar for this distribution
 FAT_JAR="sparkling-water-assembly-$VERSION-all.jar"
 FAT_JAR_FILE="$TOPDIR/assembly/build/libs/$FAT_JAR"
-PY_EGG="pySparkling-${VERSION//-/_}-py2.7.egg"
+major_version=`echo $VERSION | cut -d . -f 1,2`
+version_without_snapshot=`echo $VERSION | cut -d - -f 1`
+PY_EGG="h2o_pysparkling_${major_version}-${version_without_snapshot}-py2.7.egg"
 PY_EGG_FILE="$TOPDIR/py/dist/$PY_EGG"
 
 # Default master

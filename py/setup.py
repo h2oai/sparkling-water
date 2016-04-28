@@ -6,15 +6,18 @@ from os import path
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
-with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
+with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Get the version from the relevant file
 with open(path.join(here, 'version.txt'), encoding='utf-8') as f:
     version = f.read()
 
+
+version = version.replace("-SNAPSHOT","")
+index = version.index('.', version.index('.') + 1)
 setup(
-    name='pySparkling',
+    name='h2o_pysparkling_'+version[:index],
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -23,33 +26,16 @@ setup(
     description='Sparkling Water integrates H2O\'s Fast Scalable Machine Learning with Spark',
     long_description=long_description,
 
-    # The project's main homepage.
-    url='https://github.com/h2oai/sparkling-water.git',
-
-    # Author details
+    url='https://github.com/h2oai/sparkling-water',
+    download_url='https://github.com/h2oai/sparkling-water/',
     author='H2O.ai',
     author_email='support@h2o.ai',
-
-    # Choose your license
     license='Apache v2',
-
-    # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
-        'Development Status :: 4 - Beta',
-
-        # Indicate who your project is intended for
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
-
-        # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: Apache v2',
-
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
@@ -61,10 +47,11 @@ setup(
     keywords='machine learning, data mining, statistical analysis, modeling, big data, distributed, parallel',
 
 
-    package_dir={ 'pysparkling' : 'pysparkling', 'h2o' : 'build/dep/h2o', 'jars':'build/dep/jars'},
-    packages=find_packages(exclude=['contrib', 'docs', 'tests*']) + find_packages('build/dep'),
+    package_dir={ 'pysparkling' : 'pysparkling', 'h2o' : 'h2o', 'sparkling_water':'sparkling_water'},
+    # find python packages starting in the current directory
+    packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
 
     # run-time dependencies
     install_requires=['six','future', 'requests', 'tabulate'],
-    package_data={'jars': ['*.jar']},
+    package_data={'sparkling_water': ['*.jar']},
 )

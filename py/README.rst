@@ -1,3 +1,17 @@
+PySparkling and Spark Version
+=============================
+There exist multiple pySparkling packages, each is intended to be used with different Spark version.
+
+ - h2o_pysparkling_1.6 - for Spark 1.6.x
+ - h2o_pysparkling_1.5 - for Spark 1.5.x
+ - h2o_pysparkling_1.4 - for Spark 1.4.x
+
+So for example, to install pySparkling for Spark 1.6, the command would look like:
+
+.. code-block:: bash
+
+    pip install h2o_pysparkling_1.6
+
 Setup and Installation
 ======================
 
@@ -17,7 +31,7 @@ In order to use PySparkling, it requires the following runtime python dependenci
   $ pip install six
   $ pip install future
   
-The required packages are installed automatically in case PySparkling is installed from PyPi (this option will be available soon).
+The required packages are installed automatically in case when PySparkling is installed from PyPi.
 
 
 
@@ -43,7 +57,7 @@ or download and unpack sparkling water release from  `here
 .. code-block:: bash
 
     export SPARK_HOME="/path/to/spark/installation"
-    export MASTER='local-cluster[3,2,2048]'
+    export MASTER='local[*]'
 
 
 Run PySparkling interactive shell
