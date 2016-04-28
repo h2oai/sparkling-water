@@ -59,7 +59,7 @@ def _get_first(rdd):
     return rdd.first()
 
 def get_sw_jar():
-    return resource_filename("jars", 'sparkling_water_assembly.jar')
+    return resource_filename("sparkling_water", 'sparkling_water_assembly.jar')
 
 class H2OContext(object):
 

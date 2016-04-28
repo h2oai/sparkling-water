@@ -77,14 +77,14 @@ or
 def copyH2OFromH2OHome(String H2O_HOME){
         copy {
             from "${H2O_HOME}/h2o-py/h2o"
-            into 'build/dep/h2o'
+            into 'h2o'
         }
 }
 
 def copyH2OFromH2OWheel(String H2O_PYTHON_WHEEL){
         copy {
             from zipTree(H2O_PYTHON_WHEEL)
-            into 'build/dep'
+            into '.'
             include 'h2o/**'
         }
 }
@@ -109,10 +109,10 @@ task distPython(type: Exec, dependsOn: checkPythonEnv) {
 
         copy {
             from "${configurations.compile.join(',')}"
-            into 'build/dep/jars'
+            into 'sparkling_water'
             rename ".*", "sparkling_water_assembly.jar"
         }
-        (new File('py/build/dep/jars/__init__.py')).write("#Sparkling-water JAR holder for pySparkling module.")
+        (new File('py/sparkling_water/__init__.py')).write("#Sparkling-water JAR holder for pySparkling module.")
     }
     commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_egg"])
 }
@@ -122,7 +122,7 @@ configurations{
 }
 
 artifacts {
-    eggs new File("py/dist/pySparkling-${version.replace("-","_")}-py2.7.egg").getAbsoluteFile()
+    eggs new File("py/dist/h2o_pySparkling_${version.substring(0, version.lastIndexOf('.'))}-${version.replace("-","_")}-py2.7.egg").getAbsoluteFile()
 }
 //
 // Test python against Spark cloud
@@ -187,9 +187,11 @@ check.dependsOn integTestPython
 //
 task cleanPython(type: Delete) {
     delete file("dist/"),
-            file("pySparkling.egg-info/"), 
+            file("h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}.egg-info/"),
             fileTree(dir: projectDir, include: '**/*.pyc'),
-            file("version.txt")
+            file("version.txt"),
+            file("h2o/"),
+            file("sparkling_water/")
 }
 
 //
