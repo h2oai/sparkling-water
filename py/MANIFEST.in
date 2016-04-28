@@ -1,6 +1,7 @@
-include DESCRIPTION.rst
+# here include file which are packed using sdist ( for example when uploading to PyPi)
 include version.txt
-
+include jars/
+include h2o/
 # If using Python 2.6 or less, then have to include package data, even though
 # it's already declared in setup.py
 # include sample/*.dat

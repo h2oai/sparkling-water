@@ -30,7 +30,7 @@ object SparklingWaterDriver {
   def main(args: Array[String]) {
     // Configure this application
     val conf: SparkConf = new SparkConf().setAppName("Sparkling Water")
-    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local"))
+    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local-cluster[3,2,1024]")).set("spark.ext.h2o.repl.enabled","false")
 
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
