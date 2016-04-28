@@ -14,10 +14,8 @@ with open(path.join(here, 'version.txt'), encoding='utf-8') as f:
     version = f.read()
 
 
-version = version.replace("-SNAPSHOT","")
-index = version.index('.', version.index('.') + 1)
 setup(
-    name='h2o_pysparkling_'+version[:index],
+    name='h2o_pysparkling_'+version[:version.rindex(".")],
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
