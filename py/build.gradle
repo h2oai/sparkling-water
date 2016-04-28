@@ -19,7 +19,7 @@ dependencies {
 //
 task createVersionFile << {
     File version_file = new File(getProjectDir(), "version.txt")
-    def version_txt = version
+    def version_txt = version.replace("-SNAPSHOT","")
     version_file.write(version_txt)
 }
 
@@ -122,7 +122,7 @@ configurations{
 }
 
 artifacts {
-    eggs new File("py/dist/h2o_pySparkling_${version.substring(0, version.lastIndexOf('.'))}-${version.replace("-","_")}-py2.7.egg").getAbsoluteFile()
+    eggs new File("py/dist/h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}-${version.replace("-SNAPSHOT","")}-py2.7.egg").getAbsoluteFile()
 }
 //
 // Test python against Spark cloud
