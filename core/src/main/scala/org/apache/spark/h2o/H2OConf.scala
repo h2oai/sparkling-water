@@ -60,6 +60,7 @@ trait H2OConf {
   def jksPass       = sparkConf.getOption(PROP_JKS_PASS._1)
   def hashLogin     = sparkConf.getBoolean(PROP_HASH_LOGIN._1, PROP_HASH_LOGIN._2)
   def ldapLogin     = sparkConf.getBoolean(PROP_LDAP_LOGIN._1, PROP_LDAP_LOGIN._2)
+  def kerberosLogin = sparkConf.getBoolean(PROP_KERBEROS_LOGIN._1, PROP_KERBEROS_LOGIN._2)
   def loginConf     = sparkConf.getOption(PROP_LOGIN_CONF._1)
   def userName      = sparkConf.getOption(PROP_USER_NAME._1)
 
@@ -89,6 +90,7 @@ trait H2OConf {
       ++ Seq("-quiet")
       ++ (if (hashLogin) Seq("-hash_login") else Nil)
       ++ (if (ldapLogin) Seq("-ldap_login") else Nil)
+      ++ (if (kerberosLogin) Seq("-kerberos_login") else Nil)
       ++ Seq("-log_level", h2oClientLogLevel)
       ++ Seq("-log_dir", h2oClientLogDir)
       ++ Seq("-baseport", clientBasePort.toString)
@@ -200,6 +202,8 @@ object H2OConf {
   val PROP_HASH_LOGIN = ("spark.ext.h2o.hash.login", false)
   /** Enable LDAP login. */
   val PROP_LDAP_LOGIN = ("spark.ext.h2o.ldap.login", false)
+  /** Enable Kerberos login. */
+  val PROP_KERBEROS_LOGIN = ("spark.ext.h2o.kerberos.login", false)
   /** Login configuration file. */
   val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", null.asInstanceOf[String])
   /** Override user name for cluster. */
