@@ -63,12 +63,12 @@ class SpreadRDDBuilder(sc: SparkContext,
     spreadRDD.unpersist()
 
     // Decide about visible state
-    if ((numVisibleNodes < numExecutors.getOrElse(-1) || nSparkExecAfter != nSparkExecBefore)
+    if ((numVisibleNodes < expectedWorkers || nSparkExecAfter != nSparkExecBefore)
         && nretries == 0) {
       // We tried many times, but we were not able to get right number of executors
       throw new IllegalArgumentException(
         s"""Cannot execute H2O on all Spark executors:
-            | Expected number of H2O workers is ${numExecutors} (hint=${numExecutorHint})
+            | Expected number of H2O workers is $numExecutorHint
             | Detected number of Spark workers is $numVisibleNodes
             | Num of Spark executors before is $nSparkExecBefore
             | Num of Spark executors after is $nSparkExecAfter
@@ -76,16 +76,15 @@ class SpreadRDDBuilder(sc: SparkContext,
       )
     } else if (nSparkExecAfter != nSparkExecBefore || nSparkExecAfter != numVisibleNodes) {
       // We detected change in number of executors
-      logInfo(s"Detected ${nSparkExecBefore} before, and ${nSparkExecAfter} spark executors after, backend#isReady=${isBackendReady()}! Retrying again...")
+      logInfo(s"Detected $nSparkExecBefore before, and $nSparkExecAfter spark executors after, backend#isReady=${isBackendReady()}! Retrying again...")
       build(nretries - 1, 2*mfactor, 0)
-    } else if ((!numExecutors.isDefined && numTriesSame == subseqTries)
-               || (!numExecutors.isDefined && numVisibleNodes == numExecutorHint.getOrElse(-1))
-               || (numExecutors.isDefined && numExecutors.get == numVisibleNodes)
-               || (numExecutors.isDefined && numTriesSame == subseqTries)) {
-      logInfo(s"Detected ${numVisibleNodes} spark executors for ${numExecutors} H2O workers!")
+    } else if (( numTriesSame == subseqTries)
+               || (numExecutors.isEmpty && numVisibleNodes == expectedWorkers)
+               || (numExecutors.isDefined && numExecutors.get == numVisibleNodes)) {
+      logInfo(s"Detected $numVisibleNodes spark executors for $expectedWorkers H2O workers!")
       (new InvokeOnNodesRDD(visibleNodes, sc), visibleNodes)
     } else {
-      logInfo(s"Detected ${numVisibleNodes} spark executors for ${numExecutors} H2O workers, backend#isReady=${isBackendReady()}! Retrying again...")
+      logInfo(s"Detected $numVisibleNodes spark executors for $expectedWorkers H2O workers, backend#isReady=${isBackendReady()}! Retrying again...")
       build(nretries-1, mfactor, numTriesSame + 1)
     }
   }
