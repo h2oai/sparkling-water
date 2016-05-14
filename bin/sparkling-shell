@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+    #!/usr/bin/env bash
 
 # Top-level directory for this product
 TOPDIR=$(cd `dirname $0`/..; pwd)

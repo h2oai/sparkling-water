@@ -26,7 +26,6 @@ dependencies {
   }
 
   // Spark components
-
   // - core
   compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
   // - SQL component
@@ -98,4 +97,3 @@ integTest {
     systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
     systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
 }
-

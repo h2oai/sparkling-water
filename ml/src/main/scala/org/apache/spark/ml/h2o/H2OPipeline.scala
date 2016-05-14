@@ -19,8 +19,9 @@ package org.apache.spark.ml.h2o
 
 import org.apache.spark.annotation.Since
 import org.apache.spark.ml.Pipeline.SharedReadWrite
-import org.apache.spark.ml.{PipelineStage, Transformer, PipelineModel, Pipeline}
+import org.apache.spark.ml.{Pipeline, PipelineModel, PipelineStage, Transformer}
 import _root_.org.apache.spark.sql.DataFrame
+import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 
 /**

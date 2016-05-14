@@ -120,7 +120,9 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
 
   /** Transforms RDD[Supported type] to H2OFrame key */
   def toH2OFrameKey(rdd: SupportedRDD): Key[_] = toH2OFrameKey(rdd, None)
+
   def toH2OFrameKey(rdd: SupportedRDD, frameName: Option[String]): Key[_] = asH2OFrame(rdd, frameName)._key
+
   def toH2OFrameKey(rdd: SupportedRDD, frameName: String): Key[_] = toH2OFrameKey(rdd, Option(frameName))
 
   /** Transform DataFrame to H2OFrame */
@@ -129,11 +131,13 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
   def asH2OFrame(df : DataFrame, frameName: String) : H2OFrame = asH2OFrame(df, Option(frameName))
 
   /** Transform DataFrame to H2OFrame key */
-  def toH2OFrameKey(df : DataFrame): Key[Frame] = toH2OFrameKey(df, None)
-  def toH2OFrameKey(df : DataFrame, frameName: Option[String]) : Key[Frame] = asH2OFrame(df, frameName)._key
-  def toH2OFrameKey(df : DataFrame, frameName: String) : Key[Frame] = toH2OFrameKey(df, Option(frameName))
+  def toH2OFrameKey(df: DataFrame): Key[Frame] = toH2OFrameKey(df, None)
 
-  /** Create a new H2OFrame based on existing Frame referenced by its key.*/
+  def toH2OFrameKey(df: DataFrame, frameName: Option[String]): Key[Frame] = asH2OFrame(df, frameName)._key
+
+  def toH2OFrameKey(df: DataFrame, frameName: String): Key[Frame] = toH2OFrameKey(df, Option(frameName))
+
+  /** Create a new H2OFrame based on existing Frame referenced by its key. */
   def asH2OFrame(s: String): H2OFrame = new H2OFrame(s)
 
   /** Create a new H2OFrame based on existing Frame */
@@ -203,10 +207,11 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
 
   // scalastyle:off
   // Disable style checker so "implicits" object can start with lowercase i
-  /** Define implicits available via h2oContext.implicits._*/
+  /** Define implicits available via h2oContext.implicits._ */
   object implicits extends H2OContextImplicits with Serializable {
     protected override def _h2oContext: H2OContext = self
   }
+
   // scalastyle:on
 }
 
@@ -219,6 +224,13 @@ object H2OContext extends Logging{
         instantiatedContext.set(h2oContext)
       }
     }
+  }
+
+  def getSparkContext(): SparkContext = {
+    if(instantiatedContext.get() == null) {
+      throw new IllegalStateException("H2O context has to be first initialized!")
+    }
+    instantiatedContext.get().sparkContext
   }
 
   @transient private val instantiatedContext = new AtomicReference[H2OContext]()
@@ -257,7 +269,6 @@ object H2OContext extends Logging{
   def getOrCreate(sc: SparkContext): H2OContext = {
     getOrCreate(sc, new H2OConf(sc))
   }
-
 }
 
 class WrongSparkVersion(msg: String) extends Exception(msg) with NoStackTrace

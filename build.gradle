@@ -89,7 +89,7 @@ configure(subprojects) { project ->
     repositories {
         // Should be enabled only in development mode
         if (h2oBuild == '99999') mavenLocal()
-        
+
         mavenCentral()
 
         maven {
