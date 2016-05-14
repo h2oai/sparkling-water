@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "cells": [
+    {
+      "type": "sca",
+      "input": "import org.apache.spark.mllib.linalg.Vectors\nimport scala.util.Random\nval df = sc.parallelize(1 to 50).map(v => {\n  val values = Array.fill(5){0}.map(x => Random.nextDouble())\n  // Use this for regression instead of binomial. Threshold has to be set to NaN during model building\n  //val label = Math.round(Random.nextDouble())\n  val label = if(Math.round(Random.nextDouble()) > 0.5) \"1\" else \"0\"\n  (label, Vectors.dense(values))\n  }).toDF(\"Label\", \"Vector\")\n\nval hc = H2OContext.getOrCreate(sc)\nhc.asH2OFrame(df, \"bubbles\")\nval weightsDF = sc.parallelize(Array(Tuple1(Vectors.dense(1,1,1,1,1)))).toDF(\"Vector\")\nhc.asH2OFrame(weightsDF, \"weights\")"
+    },
+    {
+      "type": "cs",
+      "input": "changeColumnType frame: \"bubbles\", column: \"Label\", type: 'enum'"
+    },
+    {
+      "type": "cs",
+      "input": "buildModel \"svm\""
+    },
+    {
+      "type": "cs",
+      "input": "buildModel 'svm', {\"model_id\":\"test1\",\"training_frame\":\"bubbles\",\"response_column\":\"Label\",\"initial_weights_frame\":\"weights\",\"nfolds\":0,\"add_intercept\":false,\"step_size\":1,\"reg_param\":0.01,\"convergence_tol\":0.001,\"mini_batch_fraction\":1,\"threshold\":0,\"updater\":\"L2\",\"gradient\":\"Hinge\",\"ignored_columns\":[],\"ignore_const_cols\":true}"
+    },
+    {
+      "type": "cs",
+      "input": "getModel \"test1\""
+    },
+    {
+      "type": "cs",
+      "input": "predict model: \"test1\""
+    },
+    {
+      "type": "cs",
+      "input": "predict model: \"test1\", frame: \"bubbles\", predictions_frame: \"prediction-test1\""
+    },
+    {
+      "type": "cs",
+      "input": "bindFrames \"combined-prediction-test1\", [ \"prediction-test1\", \"bubbles\" ]"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"combined-prediction-test1\""
+    },
+    {
+      "type": "cs",
+      "input": "getFrameData \"combined-prediction-test1\""
+    }
+  ]
+}
