@@ -27,7 +27,7 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.mllib.feature.Word2VecModel
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.streaming.{Seconds, StreamingContext}
-import water.app.{ModelSerializationSupport, SparkContextSupport}
+import water.support.{ModelSerializationSupport, SparkContextSupport}
 
 /**
   * Streaming app using saved models.

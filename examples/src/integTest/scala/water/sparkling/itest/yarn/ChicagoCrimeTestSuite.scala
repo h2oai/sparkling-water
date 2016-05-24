@@ -7,8 +7,8 @@ import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.app.SparkContextSupport
 import water.sparkling.itest.IntegTestHelper
+import water.support.SparkContextSupport
 
 /**
   * Test following Alex's chicago crime demo.

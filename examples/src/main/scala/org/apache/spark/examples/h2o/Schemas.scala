@@ -36,7 +36,7 @@ case class Prostate(ID      :Option[Long]  ,
 object ProstateParse extends Serializable {
   val EMPTY = Prostate(None, None, None, None, None, None, None, None, None)
   def apply(row: Array[String]): Prostate = {
-    import org.apache.spark.examples.h2o.SchemaUtils._
+    import water.support.ParseSupport._
     if (row.length < 9) EMPTY
     else Prostate(long(row(0)), int(row(1)), int(row(2)), int(row(3)), int(row(4)), int(row(5)), float(row(6)), float(row(7)), int(row(8)) )
   }
@@ -129,7 +129,7 @@ class Airlines (val Year              :Option[Int],
 /** A dummy csv parser for airlines dataset. */
 object AirlinesParse extends Serializable {
   def apply(row: Array[String]): Airlines = {
-    import SchemaUtils._
+    import water.support.ParseSupport._
     new Airlines(int (row( 0)), // Year
       int (row( 1)), // Month
       int (row( 2)), // DayofMonth
@@ -180,7 +180,7 @@ case class Weather( val Year   : Option[Int],
 }
 
 object WeatherParse extends Serializable {
-  import org.apache.spark.examples.h2o.SchemaUtils._
+  import water.support.ParseSupport._
   type DATE = (Option[Int], Option[Int], Option[Int]) // Year, Month, Day
 
   val datePattern1 = """(\d\d\d\d)-(\d\d)-(\d\d)""".r("year", "month", "day")
@@ -221,7 +221,7 @@ case class NYWeather(val Days: Option[Long],
 }
 
 object NYWeatherParse extends Serializable {
-  import org.apache.spark.examples.h2o.SchemaUtils._
+  import water.support.ParseSupport._
 
   def apply(row: Array[String]): NYWeather = {
     val yearLocal =  float(row(0))
