@@ -22,19 +22,48 @@ import java.io.File
 import hex.FrameSplitter
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import DeepLearningParameters.Activation
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
-import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
-import org.apache.spark.h2o.{Frame, H2OContext, H2OFrame}
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkFiles, SparkConf, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
 import water.Key
-import water.app.SparkContextSupport
+import water.fvec.Frame
+import water.support.SparkContextSupport
 
 /** Demo for meetup presented at 12/17/2014 */
 object AirlinesWithWeatherDemo2 extends SparkContextSupport {
+
+  def residualPlotRCode(prediction:Frame, predCol: String, actual:Frame, actCol:String, h2oContext: H2OContext = null):String = {
+    val (ip, port) = if (h2oContext != null) {
+      val s = h2oContext.h2oLocalClient.split(":")
+      (s(0), s(1))
+    } else {
+      ("127.0.0.1", "54321")
+    }
+
+    s"""# R script for residual plot
+        |library(h2o)
+        |h = h2o.init(ip="${ip}", port=${port})
+        |
+        |pred = h2o.getFrame(h, "${prediction._key}")
+        |act = h2o.getFrame (h, "${actual._key}")
+        |
+        |predDelay = pred$$${predCol}
+        |actDelay = act$$${actCol}
+        |
+        |nrow(actDelay) == nrow(predDelay)
+        |
+        |residuals = predDelay - actDelay
+        |
+        |compare = cbind (as.data.frame(actDelay$$ArrDelay), as.data.frame(residuals$$predict))
+        |nrow(compare)
+        |plot( compare[,1:2] )
+        |
+      """.stripMargin
+  }
 
   def main(args: Array[String]): Unit = {
     // Configure this application

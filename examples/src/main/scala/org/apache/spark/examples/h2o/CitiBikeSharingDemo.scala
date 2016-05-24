@@ -26,8 +26,8 @@ import org.apache.spark.h2o.{H2OFrame, H2OContext}
 import org.apache.spark.sql.{SQLContext, DataFrame}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.joda.time.MutableDateTime
-import water.app.SparkContextSupport
 import water.fvec.{Vec, NewChunk, Chunk, Frame}
+import water.support.SparkContextSupport
 import water.util.Timer
 import water.{Key, MRTask}
 import scala.collection.mutable

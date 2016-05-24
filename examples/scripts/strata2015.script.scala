@@ -11,15 +11,15 @@
   */
 // Common imports
 import org.apache.spark.SparkFiles
+
 import org.apache.spark.h2o._
 import org.apache.spark.examples.h2o._
-import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.sql.SQLContext
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.ModelMetricsSupervised
-import water.app.ModelMetricsSupport
 
+import water.support.{H2OFrameSupport, SparkContextSupport, ModelMetricsSupport}
 // Create SQL support
 implicit val sqlContext = SQLContext.getOrCreate(sc)
 import sqlContext.implicits._
@@ -34,7 +34,7 @@ val fileNames = Seq[String]("2013-07.csv","2013-08.csv","2013-09.csv","2013-10.c
 val filesPaths = fileNames.map(name => location + name) :+ location+"31081_New_York_City__Hourly_2013.csv"
 
 // Register files to SparkContext
-addFiles(sc, filesPaths:_*)
+SparkContextSupport.addFiles(sc, filesPaths:_*)
 
 // Load and parse data into H2O
 val dataFiles = fileNames.map(name => new java.io.File(SparkFiles.get(name)).toURI)
@@ -83,13 +83,24 @@ val daysVec = bikesPerDayDF('Days)
 // Run transformation TimeTransform
 val finalBikeDF = bikesPerDayDF.add(new TimeTransform().doIt(daysVec))
 
+// Define metrics holder
+case class R2(name:String, train:Double, test:Double, hold:Double) {
+  override def toString: String =
+    s"""
+       |Results for $name:
+       |  - R2 on train = ${train}
+       |  - R2 on test  = ${test}
+       |  - R2 on hold  = ${hold}
+      """.stripMargin
+}
+
 //
 // Define function to build a model
 //
 def buildModel(df: H2OFrame, trees: Int = 100, depth: Int = 6)(implicit h2oContext: H2OContext):R2 = {
     import h2oContext.implicits._
     // Split into train and test parts
-    val frs = splitFrame(df, Seq("train.hex", "test.hex", "hold.hex"), Seq(0.6, 0.3, 0.1))
+    val frs = H2OFrameSupport.splitFrame(df, Seq("train.hex", "test.hex", "hold.hex"), Seq(0.6, 0.3, 0.1))
     val (train, test, hold) = (frs(0), frs(1), frs(2))
     // Configure GBM parameters
     val gbmParams = new GBMParameters()
@@ -107,6 +118,7 @@ def buildModel(df: H2OFrame, trees: Int = 100, depth: Int = 6)(implicit h2oConte
                     ModelMetricsSupport.modelMetrics[ModelMetricsSupervised](gbmModel, train).r2(),
                     ModelMetricsSupport.modelMetrics[ModelMetricsSupervised](gbmModel, test).r2(),
                     ModelMetricsSupport.modelMetrics[ModelMetricsSupervised](gbmModel, hold).r2())
+
     // Perform clean-up
     Seq(train, test, hold).foreach(_.delete())
     result

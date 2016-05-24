@@ -11,12 +11,13 @@
   */
 // Common imports
 import org.apache.spark.SparkFiles
-import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.examples.h2o._
 import org.apache.spark.sql.SQLContext
 import water.Key
 import java.io.File
+
+import water.support.SparkContextSupport.addFiles
 
 // Create SQL support
 implicit val sqlContext = SQLContext.getOrCreate(sc)
@@ -30,8 +31,7 @@ import h2oContext.implicits._
 // Register files to SparkContext
 addFiles(sc,
   "examples/smalldata/year2005.csv.gz",
-  "examples/smalldata/Chicago_Ohare_International_Airport.csv"
-)
+  "examples/smalldata/Chicago_Ohare_International_Airport.csv")
 
 // Import all year airlines data into H2O
 val airlinesData = new H2OFrame(new File(SparkFiles.get("year2005.csv.gz")))

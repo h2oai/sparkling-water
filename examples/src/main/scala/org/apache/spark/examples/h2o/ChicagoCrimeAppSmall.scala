@@ -20,7 +20,7 @@ package org.apache.spark.examples.h2o
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, SparkFiles}
-import water.app.SparkContextSupport
+import water.support.SparkContextSupport
 
 /**
  * Chicago crime app on small data.
