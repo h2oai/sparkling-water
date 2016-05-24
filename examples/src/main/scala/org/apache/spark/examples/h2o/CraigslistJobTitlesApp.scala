@@ -25,7 +25,7 @@ import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, mllib}
-import water.app.{GBMSupport, ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
+import water.support._
 
 /**
  * This application use word2vec to build a model
@@ -35,7 +35,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
                             (@transient override val sc: SparkContext,
                               @transient override val sqlContext: SQLContext,
                               @transient override val h2oContext: H2OContext) extends SparklingWaterApp
-                            with SparkContextSupport with GBMSupport with ModelMetricsSupport with Serializable {
+                            with SparkContextSupport with GBMSupport with ModelMetricsSupport with H2OFrameSupport with Serializable {
 
   // Import companion object methods
   import CraigslistJobTitlesApp._
@@ -54,7 +54,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
   def buildModels(datafile: String = jobsFile, modelName: String): (Model[_,_,_], Word2VecModel) = {
     // Get training frame and word to vec model for data
     val (allDataFrame, w2vModel) = createH2OFrame(datafile)
-    val frs = DemoUtils.splitFrame(allDataFrame, Array("train.hex", "valid.hex"), Array(0.8, 0.2))
+    val frs = splitFrame(allDataFrame, Array("train.hex", "valid.hex"), Array(0.8, 0.2))
     val (trainFrame, validFrame) = (h2oContext.asH2OFrame(frs(0)), h2oContext.asH2OFrame(frs(1)))
 
     val gbmModel = GBMModel(trainFrame, validFrame, "category", modelName, ntrees = 50)

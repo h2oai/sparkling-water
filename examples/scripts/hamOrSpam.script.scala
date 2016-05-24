@@ -10,18 +10,18 @@
  *    SparkContext is available as sc
  */
 import _root_.hex.deeplearning.DeepLearningModel
+
 import _root_.hex.ModelMetricsBinomial
-import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.{SparkFiles, mllib}
 import org.apache.spark.mllib.feature.{IDFModel, IDF, HashingTF}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, DataFrame}
 import water.Key
-import water.app.ModelMetricsSupport
+import water.support.{H2OFrameSupport, SparkContextSupport, ModelMetricsSupport}
 
 // Register files to SparkContext
-addFiles(sc,"examples/smalldata/smsData.txt")
+SparkContextSupport.addFiles(sc,"examples/smalldata/smsData.txt")
 // One training message
 case class SMS(target: String, fv: mllib.linalg.Vector)
 
@@ -113,7 +113,7 @@ table.replace(table.find("target"), table.vec("target").toCategoricalVec).remove
 // Split table
 val keys = Array[String]("train.hex", "valid.hex")
 val ratios = Array[Double](0.8)
-val frs = split(table, keys, ratios)
+val frs = H2OFrameSupport.split(table, keys, ratios)
 val (train, valid) = (frs(0), frs(1))
 table.delete()
 

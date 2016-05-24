@@ -25,7 +25,7 @@ import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, SparkFiles}
-import water.app.SparkContextSupport
+import water.support.SparkContextSupport
 
 
 object DeepLearningDemo extends SparkContextSupport {

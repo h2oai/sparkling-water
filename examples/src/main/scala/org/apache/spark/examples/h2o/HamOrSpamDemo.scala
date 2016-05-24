@@ -20,13 +20,12 @@ package org.apache.spark.examples.h2o
 import hex.ModelMetricsBinomial
 import hex.deeplearning.{DeepLearningModel, DeepLearning}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import org.apache.spark.examples.h2o.DemoUtils._
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.feature.{HashingTF, IDF, IDFModel}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext, mllib}
-import water.app.{ModelMetricsSupport, SparkContextSupport}
+import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
 
 /**
  * Demo for NYC meetup and MLConf 2015.
@@ -34,7 +33,7 @@ import water.app.{ModelMetricsSupport, SparkContextSupport}
  * It predicts spam text messages.
  * Training dataset is available in the file smalldata/smsData.txt.
  */
-object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
+object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H2OFrameSupport{
 
   val DATAFILE="smsData.txt"
   val TEST_MSGS = Seq(
@@ -63,7 +62,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport {
     val tokens = tokenize(message)
 
     // Build IDF model
-    var (hashingTF, idfModel, tfidf) = buildIDFModel(tokens)
+    val (hashingTF, idfModel, tfidf) = buildIDFModel(tokens)
 
     // Merge response with extracted vectors
     val resultRDD: DataFrame = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2)).toDF

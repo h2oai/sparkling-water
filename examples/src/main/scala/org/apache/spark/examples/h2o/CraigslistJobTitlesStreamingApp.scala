@@ -25,7 +25,7 @@ import org.apache.spark.examples.h2o.CraigslistJobTitlesApp.show
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.streaming._
-import water.app.{ModelSerializationSupport, SparkContextSupport}
+import water.support.{ModelSerializationSupport, SparkContextSupport}
 
 /**
  * Variant of Craigslist App with streaming support to classify

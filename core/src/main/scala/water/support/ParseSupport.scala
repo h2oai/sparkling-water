@@ -14,12 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+package water.support
 
-package org.apache.spark.examples.h2o
-
-/** Simple support for parsing data. */
-object SchemaUtils {
-
+/**
+  * Simple support for parsing data.
+  */
+trait ParseSupport {
   def int  (s:String):Option[Int]     = if (isValid(s)) parseInt(s)   else None
   def long (s:String):Option[Long]    = if (isValid(s)) parseLong(s)  else None
   def float(s:String):Option[Float]   = if (isValid(s)) parseFloat(s) else None
@@ -55,3 +55,5 @@ object SchemaUtils {
 
   def isValid(s:String) = !isNA(s)
 }
+
+object ParseSupport extends ParseSupport
