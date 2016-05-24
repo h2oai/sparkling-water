@@ -10,9 +10,9 @@ import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.app.SparkContextSupport
 import water.fvec.H2OFrame
 import water.sparkling.itest.{LocalTest, IntegTestHelper}
+import water.support.SparkContextSupport
 
 /**
   * PUBDEV-928 test suite.

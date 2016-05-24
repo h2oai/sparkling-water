@@ -30,9 +30,9 @@ import org.joda.time.DateTimeConstants._
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.MRTask
-import water.app.{ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
 import water.fvec.{Chunk, NewChunk, Vec}
 import water.parser.BufferedString
+import water.support.{H2OFrameSupport, ModelMetricsSupport, SparklingWaterApp, SparkContextSupport}
 
 /**
  * Chicago Crimes Application predicting probability of arrest in Chicago.
@@ -45,7 +45,7 @@ class ChicagoCrimeApp( weatherFile: String,
                      ( @transient override val sc: SparkContext,
                        @transient override val sqlContext: SQLContext,
                        @transient override val h2oContext: H2OContext) extends SparklingWaterApp
-                      with ModelMetricsSupport {
+                      with ModelMetricsSupport with H2OFrameSupport {
 
   def train(weatherTable: DataFrame, censusTable: DataFrame, crimesTable: DataFrame): (GBMModel, DeepLearningModel) = {
     // Prepare environment
@@ -79,12 +79,11 @@ class ChicagoCrimeApp( weatherFile: String,
     //crimeWeather.printSchema()
     val crimeWeatherDF:H2OFrame = crimeWeather
     // Transform all string columns into categorical
-    DemoUtils.allStringVecToCategorical(crimeWeatherDF)
+    allStringVecToCategorical(crimeWeatherDF)
 
     //
     // Split final data table
     //
-    import org.apache.spark.examples.h2o.DemoUtils._
     val keys = Array[String]("train.hex", "test.hex")
     val ratios = Array[Double](0.8, 0.2)
     val frs = splitFrame(crimeWeatherDF, keys, ratios)
@@ -241,7 +240,7 @@ class ChicagoCrimeApp( weatherFile: String,
     // Join table with census data
     val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
     // Transform all string columns into categorical
-    DemoUtils.allStringVecToCategorical(row)
+    allStringVecToCategorical(row)
 
     val predictTable = model.score(row)
     val probOfArrest = predictTable.vec("true").at(0)

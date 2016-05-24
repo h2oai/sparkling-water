@@ -15,11 +15,13 @@ import _root_.hex.deeplearning.DeepLearningModel
 import _root_.hex.tree.gbm.GBMModel
 import _root_.hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkFiles
-import org.apache.spark.examples.h2o.DemoUtils.{addFiles, splitFrame}
-import org.apache.spark.examples.h2o.{DemoUtils, Crime, RefineDateColumn}
+import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
+import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
+import water.fvec.H2OFrame
+import water.support.{H2OFrameSupport, SparkContextSupport, ModelMetricsSupport}
 
 // Create SQL support
 implicit val sqlContext = SQLContext.getOrCreate(sc)
@@ -79,7 +81,7 @@ def createCrimeTable(datafile: String, datePattern:String, dateTimeZone:String):
 //
 // Load data
 //
-addFiles(sc,
+SparkContextSupport.addFiles(sc,
   "examples/smalldata/chicagoAllWeather.csv",
   "examples/smalldata/chicagoCensus.csv",
   "examples/smalldata/chicagoCrimes10k.csv"
@@ -117,14 +119,14 @@ val crimeWeather = sqlContext.sql(
 crimeWeather.printSchema()
 val crimeWeatherDF:H2OFrame = crimeWeather
 // Transform all string columns into categorical
-DemoUtils.allStringVecToCategorical(crimeWeatherDF)
+H2OFrameSupport.allStringVecToCategorical(crimeWeatherDF)
 
 //
 // Split final data table
 //
 val keys = Array[String]("train.hex", "test.hex")
 val ratios = Array[Double](0.8, 0.2)
-val frs = splitFrame(crimeWeatherDF, keys, ratios)
+val frs = H2OFrameSupport.splitFrame(crimeWeatherDF, keys, ratios)
 val (train, test) = (frs(0), frs(1))
 
 //
@@ -212,7 +214,7 @@ def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: DataFrame)
   val srdd:DataFrame = sqlContext.sparkContext.parallelize(Seq(crime)).toDF()
   // Join table with census data
   val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
-  DemoUtils.allStringVecToCategorical(row)
+  H2OFrameSupport.allStringVecToCategorical(row)
   val predictTable = model.score(row)
   val probOfArrest = predictTable.vec("true").at(0)
 

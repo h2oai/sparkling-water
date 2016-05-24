@@ -23,7 +23,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.sql.SQLContext
 import water._
-import water.app.SparkContextSupport
+import water.support.SparkContextSupport
 
 /* Demonstrates:
    - data transfer from RDD into H2O
