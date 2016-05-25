@@ -433,7 +433,7 @@ For all primitive Scala types or Spark SQL (see `org.apache.spark.sql.types`) ty
 |Double      | DoubleType | Numeric  |
 |String      | StringType | String   |
 |Boolean     | BooleanType| Numeric  |
-|java.sql.TimeStamp| TimestampType | Time|
+|java.sql.Timestamp| TimestampType | Time|
 
 ---
 
