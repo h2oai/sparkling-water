@@ -18,8 +18,9 @@
 package org.apache.spark.rdd
 
 
-import org.apache.spark.h2o.{H2OFrame, H2OContext, ReflectionUtils}
+import org.apache.spark.h2o.{H2OContext, H2OFrame, ReflectionUtils}
 import org.apache.spark.{Partition, TaskContext}
+import water.fvec.Frame
 import water.parser.BufferedString
 
 import scala.reflect.ClassTag
@@ -30,13 +31,13 @@ import scala.reflect.runtime.universe._
  */
 
 private[spark]
-class H2ORDD[A <: Product: TypeTag: ClassTag] private (@transient val h2oContext: H2OContext,
-                                                       @transient val frame: H2OFrame,
-                                                       val colNames: Array[String])
-  extends RDD[A](h2oContext.sparkContext, Nil) with H2ORDDLike {
+class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val h2oContext: H2OContext,
+                                                                  @transient val frame: T,
+                                                                  val colNames: Array[String])
+  extends RDD[A](h2oContext.sparkContext, Nil) with H2ORDDLike[T] {
 
   // Get column names before building an RDD
-  def this(h2oContext: H2OContext, fr : H2OFrame ) = this(h2oContext,fr,ReflectionUtils.names[A])
+  def this(h2oContext: H2OContext, fr : T) = this(h2oContext,fr,ReflectionUtils.names[A])
   // Check that H2OFrame & given Scala type are compatible
   if (colNames.length > 1) {
     colNames.foreach { name =>
