@@ -34,7 +34,7 @@ object H2OSchemaUtils {
   val ARRAY_TYPE : Byte  = 1
   val VEC_TYPE : Byte = 2
 
-  def createSchema(f: H2OFrame): StructType = {
+  def createSchema[T <: Frame](f: T): StructType = {
     val types = new Array[StructField](f.numCols())
     val vecs = f.vecs()
     val names = f.names()

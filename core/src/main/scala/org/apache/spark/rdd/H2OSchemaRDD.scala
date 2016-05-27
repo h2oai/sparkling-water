@@ -37,9 +37,9 @@ import water.parser.BufferedString
  * @param frame
  */
 private[spark]
-class H2OSchemaRDD(@transient val h2oContext: H2OContext,
-                   @transient val frame: H2OFrame)
-  extends RDD[InternalRow](h2oContext.sparkContext, Nil) with H2ORDDLike {
+class H2OSchemaRDD[T <: water.fvec.Frame](@transient val h2oContext: H2OContext,
+                   @transient val frame: T)
+  extends RDD[InternalRow](h2oContext.sparkContext, Nil) with H2ORDDLike[T] {
 
   @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
