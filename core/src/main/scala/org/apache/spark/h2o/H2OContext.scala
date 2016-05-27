@@ -125,12 +125,20 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   def toRDD[A <: Product: TypeTag: ClassTag](fr : H2OFrame) : RDD[A] = asRDD[A](fr)
 
   /** Convert given H2O frame into a Product RDD type */
-  def asRDD[A <: Product: TypeTag: ClassTag](fr : H2OFrame) : RDD[A] = createH2ORDD[A](fr)
+  def asRDD[A <: Product: TypeTag: ClassTag](fr : H2OFrame) : RDD[A] = createH2ORDD[A, H2OFrame](fr)
+
+  /** A generic convert of Frame into Product RDD type
+    *
+    * This code: hc.asRDD[PUBDEV458Type](rdd) will need to be call as hc.asRDD[PUBDEV458Type].apply(rdd)
+    */
+  def asRDD[A <: Product : TypeTag : ClassTag] = new {
+    def apply[T <: Frame](fr: T): RDD[A] = createH2ORDD[A, T](fr)
+  }
 
   /** Convert given H2O frame into DataFrame type */
   @deprecated("1.3", "Use asDataFrame")
-  def asSchemaRDD(fr : H2OFrame)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
-  def asDataFrame(fr : H2OFrame)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
+  def asSchemaRDD[T <: Frame](fr : T)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
+  def asDataFrame[T <: Frame](fr : T)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
   def asDataFrame(s : String)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(new H2OFrame(s))
 
   def h2oLocalClient = this.localClientIp + ":" + this.localClientPort
@@ -247,11 +255,11 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
                                                        H2OContextUtils.guessTotalExecutorSize(sparkContext)).build()
 
 
-  def createH2ORDD[A <: Product: TypeTag: ClassTag](fr: H2OFrame): RDD[A] = {
-    new H2ORDD[A](this,fr)
+  def createH2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame](fr: T): RDD[A] = {
+    new H2ORDD[A, T](this, fr)
   }
 
-  def createH2OSchemaRDD(fr: H2OFrame)(implicit sqlContext: SQLContext): DataFrame = {
+  def createH2OSchemaRDD[T <: Frame](fr: T)(implicit sqlContext: SQLContext): DataFrame = {
     val h2oSchemaRDD = new H2OSchemaRDD(this, fr)
     import org.apache.spark.sql.H2OSQLContextUtils.internalCreateDataFrame
     internalCreateDataFrame(h2oSchemaRDD, H2OSchemaUtils.createSchema(fr))(sqlContext)

@@ -59,7 +59,7 @@ abstract class H2OContextImplicits {
   implicit def asH2OFrameFromFrame(fr: Frame) : H2OFrame = new H2OFrame(fr)
 
   /** Implicit conversion from Frame(H2O) to H2OFrame key */
-  implicit def toH2OFrameKeyFromFrame(fr: Frame): Key[Frame] = fr._key
+  implicit def toH2OFrameKeyFromFrame[T <: Frame](fr: T): Key[Frame] = fr._key
 
   /** Transform given Scala symbol to String */
   implicit def symbolToString(sy: scala.Symbol): String = sy.name
