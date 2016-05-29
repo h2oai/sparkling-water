@@ -81,7 +81,7 @@ class H2OContext(object):
 
         # explicitly check if we run on databricks cloud since there we must add the jar to the parent of context class loader
         if cl.getClass().getName()=='com.databricks.backend.daemon.driver.DriverLocal$DriverLocalClassLoader':
-            cl.getParent().addURL(url)
+            cl.getParent().getParent().addURL(url)
         else:
             cl.addURL(url)
 
