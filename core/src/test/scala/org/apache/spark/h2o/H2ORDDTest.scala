@@ -115,7 +115,7 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     val rdd = sc.parallelize(1 to 100, 10).map(i => IntHolder(Some(i)))
     val h2oFrame:H2OFrame = rdd
 
-    val back2rdd = hc.asRDD[PUBDEV458Type](rdd)
+    val back2rdd = hc.asRDD[PUBDEV458Type](h2oFrame)
     assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
     assert(back2rdd.count == h2oFrame.numRows(), "Number of rows should match")
   }
