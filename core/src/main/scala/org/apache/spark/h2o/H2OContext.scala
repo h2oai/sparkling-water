@@ -635,7 +635,7 @@ object H2OContext extends Logging {
               // Always produce string vectors
               chk.addStr(valStr.setTo(sv))
             }
-            case TimestampType => chk.addNum(row.getAs[java.sql.Timestamp](aidx).getTime())
+            case TimestampType => chk.addNum(subRow.getAs[java.sql.Timestamp](aidx).getTime())
             case _ => chk.addNA()
           }
         }

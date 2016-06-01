@@ -445,11 +445,31 @@ class H2OSchemaRDDTest extends FunSuite with SharedSparkTestContext {
 
     val num = 20
     val values = (1 to num).map(v => new Timestamp(v))
-    val srdd:DataFrame = sc.parallelize(values).map(v => TimestampField(v)).toDF
+    val srdd: DataFrame = sc.parallelize(values).map(v => TimestampField(v)).toDF
     val h2oFrame = hc.asH2OFrame(srdd)
 
     assertH2OFrameInvariants(srdd, h2oFrame)
     assert (h2oFrame.vec(0).isTime())
+  }
+
+  test("DataFrame[Struct(TimeStamp)] to H2OFrame[Time]") {
+    val sqlContext = sqlc
+    import sqlContext.implicits._
+
+    val num = 20
+    val values = (1 to num).map(v =>
+                                  ComposedWithTimestamp(
+                                    PrimitiveA(v, v.toString),
+                                    TimestampField(new Timestamp(v))
+                                  ))
+    val srdd: DataFrame = sc.parallelize(values).toDF
+    srdd.printSchema()
+    val h2oFrame = hc.asH2OFrame(srdd)
+
+    assertH2OFrameInvariants(srdd, h2oFrame)
+    assert(h2oFrame.vec(0).isNumeric)
+    assert(h2oFrame.vec(1).isString)
+    assert(h2oFrame.vec(2).isTime)
   }
 
   ignore("H2OFrame[Time] to DataFrame[TimeStamp]") {
@@ -741,6 +761,7 @@ case class TimestampField(v: Timestamp)
 
 case class PrimitiveA(n: Int, name: String)
 case class ComposedA(a: PrimitiveA, weight: Double)
+case class ComposedWithTimestamp(a: PrimitiveA, v: TimestampField)
 
 case class PrimitiveB(f: Seq[Int])
 
