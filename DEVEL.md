@@ -248,7 +248,7 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.repl.enabled`|`true`|Decides whether H2O repl is initialized or not. The repl is initialized by default.|
 |`spark.ext.h2o.topology.change.listener.enabled`|`true`|Decides whether listener which kills h2o cloud on the change of underlying cluster's topology is enabled or not.|
 |`spark.ext.h2o.spark.version.check.enabled`|`true`|Enables check if runtime Spark version matches build time Spark version.|
-
+|`spark.ext.h2o.exit.on.unsupported.spark.param`|`true`|If unsupported Spark parameters is detected, then application is forced to shutdown.|
 
 ---
 
