@@ -1,5 +1,5 @@
 language: scala
-sudo: false
+sudo: true
 
 jdk:
   - oraclejdk7
@@ -7,7 +7,7 @@ jdk:
   - openjdk7
 
 scala:
-  - 2.10.4
+  - 2.10.6
 
 install:
   - ( test -d "$SPARK_HOME" && test "$(ls -A "$SPARK_HOME")" ) || ( wget -O spark.tgz "http://mirrors.ocf.berkeley.edu/apache/spark/spark-1.5.1/spark-1.5.1-bin-cdh4.tgz" && mkdir -p "$SPARK_HOME" && tar xvf "spark.tgz" -C "$SPARK_HOME" --strip-components 1 )
@@ -25,5 +25,11 @@ cache:
         - $HOME/.gradle/wrapper/
         - $SPARK_HOME
 
-script: ./gradlew clean build -x check -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME
+script: ./gradlew clean build -x integTest -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME
 
+# To solve BufferOverflow on OpenJDK7: see https://github.com/travis-ci/travis-ci/issues/5227
+before_install:
+  - cat /etc/hosts # optionally check the content *before*
+  - sudo hostname "$(hostname | cut -c1-63)"
+  - sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | sudo tee /etc/hosts
+  - cat /etc/hosts # optionally check the content *after*
