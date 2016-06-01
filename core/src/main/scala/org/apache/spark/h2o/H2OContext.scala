@@ -175,7 +175,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     }
 
     // Check Spark environment and reconfigure some values (Note: this is useless in more of the cases since SparkContext is already running)
-    H2OContext.checkAndUpdateSparkEnv(sparkContext, sparkConf)
+    H2OContext.checkAndUpdateSparkEnv(sparkContext, sparkConf, isFailOnUnsupportedSparkParamEnabled)
     logInfo(s"Starting H2O services: " + super[H2OConf].toString)
     // Create dummy RDD distributed over executors
 
@@ -326,6 +326,10 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 }
 
 object H2OContext extends Logging {
+
+  val UNSUPPORTED_SPARK_OPTIONS = Seq(
+    ("spark.dynamicAllocation.enabled", "true"),
+    ("spark.speculation", "true"))
 
   private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {
     synchronized {
@@ -737,7 +741,7 @@ object H2OContext extends Logging {
 
   /** Check Spark environment and warn about possible problems. */
   private
-  def checkAndUpdateSparkEnv(sparkContext: SparkContext, conf: SparkConf): Unit = {
+  def checkAndUpdateSparkEnv(sparkContext: SparkContext, conf: SparkConf, exitOnUnsupportedParam: Boolean): Unit = {
     // If 'spark.executor.instances' is specified update H2O property as well
     conf.getOption("spark.executor.instances").foreach(v => conf.set("spark.ext.h2o.cluster.size", v))
     // Increase locality timeout since h2o-specific tasks can be long computing
@@ -752,6 +756,18 @@ object H2OContext extends Logging {
       // Setup the property but at this point it does not make good sense
       conf.set("spark.scheduler.minRegisteredResourcesRatio", "1")
     }
+
+    H2OContext.UNSUPPORTED_SPARK_OPTIONS.foreach(opt => if (conf.contains(opt._1) && (opt._2 == None || conf.get(opt._1) == opt._2)) {
+      logWarning(s"Unsupported options ${opt._1} detected!")
+      if (exitOnUnsupportedParam) {
+        logWarning(
+          s"""
+            |The application is going down, since the parameter ${H2OConf.PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM} is true!
+            |If you would like to skip the fail call, please, specify the value of the parameter to false.
+          """.stripMargin)
+        throw new IllegalArgumentException(s"Unsupported argument: ${opt}")
+      }
+    })
   }
   private[h2o] def registerClientWebAPI(sc: SparkContext, h2oContext: H2OContext): Unit = {
     if(h2oContext.isH2OReplEnabled){
