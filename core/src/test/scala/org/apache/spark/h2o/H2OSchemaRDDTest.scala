@@ -463,7 +463,6 @@ class H2OSchemaRDDTest extends FunSuite with SharedSparkTestContext {
                                     TimestampField(new Timestamp(v))
                                   ))
     val srdd: DataFrame = sc.parallelize(values).toDF
-    srdd.printSchema()
     val h2oFrame = hc.asH2OFrame(srdd)
 
     assertH2OFrameInvariants(srdd, h2oFrame)
