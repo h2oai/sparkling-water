@@ -62,7 +62,7 @@ configure(allprojects) { project ->
 
     // Version of main components
     ext {
-      scalaVersion       = '2.10.4'
+      scalaVersion       = '2.10.6'
       scalaBinaryVersion = '2.10'
       // h2oBuild property is defined in gradle.properties
       h2oVersion         = "$h2oMajorVersion.$h2oBuild"
