@@ -1,6 +1,29 @@
 ChangeLog
 =========
 
+##v1.6.4 (2016-06-02)
+  - Bug fixes
+    - [SW-125](https://0xdata.atlassian.net/browse/SW-125) - PySparkling changes in order to upload the package to PyPI
+    - [SW-130](https://0xdata.atlassian.net/browse/SW-130) - Launch spark cloud script is obsolete 
+    - [SW-132](https://0xdata.atlassian.net/browse/SW-132) - Hotfix for missing REPL field if running on top of CDH5.7
+    - [SW-137](https://0xdata.atlassian.net/browse/SW-137) - Fix classloading of sparkling water jar in pysparkling in Databricks 
+    - [SW-141](https://0xdata.atlassian.net/browse/SW-141) - Timestamp in hierarchical Spark structure is incorrectly transformed into H2OFrame
+    - [SW-149](https://0xdata.atlassian.net/browse/SW-149) - Use H2OContext.get() method where H2O Context is expected to be running
+  
+  - Improvements
+    - [SW-127](https://0xdata.atlassian.net/browse/SW-127) - Add Kerberos authentication to Flow
+    - [SW-131](https://0xdata.atlassian.net/browse/SW-131) - Refactor DemoUtils into multiple Support traits and remove it
+    - [SW-134](https://0xdata.atlassian.net/browse/SW-134) - Prototype implementation of ML pipelines with H2O algorithms (motivation example HamOrSpam)
+    - [SW-135](https://0xdata.atlassian.net/browse/SW-135) - Integrate GBM into Spark ML pipelines
+    - [SW-136](https://0xdata.atlassian.net/browse/SW-136) - Replace strictly type API using H2OFrame by `T <: Frame`
+    - [SW-138](https://0xdata.atlassian.net/browse/SW-138) - Upgrade H2O version to the latest Turchin version
+    - [SW-142](https://0xdata.atlassian.net/browse/SW-142) - Report unsupported parameters
+    - [SW-143](https://0xdata.atlassian.net/browse/SW-143) - Travis build now performs junit testing
+    - [SW-144](https://0xdata.atlassian.net/browse/SW-144) - Enable Junit testing under Travis
+    - [SW-146](https://0xdata.atlassian.net/browse/SW-146) - How to run Sparkling Water on top of Zeppelin
+    - [SW-148](https://0xdata.atlassian.net/browse/SW-148) - Documentation for pySparkling on top of Databricks Cloud
+    - [SW-150](https://0xdata.atlassian.net/browse/SW-150) - Introduce Scala API for Frame join operations
+
 ##v1.6.3 (2016-04-27)
   - Bug fixes
     - [SW-124](https://0xdata.atlassian.net/browse/SW-124)  - Hotfix to avoid NPE in MetadataHandler caused by PUBDEV-2879
