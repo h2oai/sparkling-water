@@ -13,6 +13,11 @@ ChangeLog
     - [SW-110](https://0xdata.atlassian.net/browse/SW-110) - Wrong Spark location in travis build
     - [SW-116](https://0xdata.atlassian.net/browse/SW-116) - Sparkling Water examples/README needs update
     - [SW-119](https://0xdata.atlassian.net/browse/SW-119) - Return correct executor hostname during spreadRDD phase
+    - [SW-124](https://0xdata.atlassian.net/browse/SW-124)  - Hotfix to avoid NPE in MetadataHandler caused by PUBDEV-2879
+    - [SW-125](https://0xdata.atlassian.net/browse/SW-125) - PySparkling changes in order to upload the package to PyPI
+    - [SW-130](https://0xdata.atlassian.net/browse/SW-130) - Launch spark cloud script is obsolete
+    - [SW-137](https://0xdata.atlassian.net/browse/SW-137) - Fix classloading of sparkling water jar in pysparkling in Databricks
+    - [SW-141](https://0xdata.atlassian.net/browse/SW-141) - Timestamp in hierarchical Spark structure is incorrectly transformed into H2OFrame
     - [PUBDEV-2879](https://0xdata.atlassian.net/browse/PUBDEV-2879) - Hot fix for NPE inside MetadataHandler
   - Improvements
     - [SW-37](https://0xdata.atlassian.net/browse/SW-37) - During test run warn/fail if the `SPARK_HOME` version is different from spark version used during build
@@ -22,6 +27,13 @@ ChangeLog
     - [SW-102](https://0xdata.atlassian.net/browse/SW-102) - Speedup tests by disabling REPL in tests which don't require it
     - [SW-115](https://0xdata.atlassian.net/browse/SW-115) - Increase H2O dependency to rel-turchin
     - [SW-120](https://0xdata.atlassian.net/browse/SW-120) - Remove deprecated VecUtils
+    - [SW-127](https://0xdata.atlassian.net/browse/SW-127) - Add Kerberos authentication to Flow
+    - [SW-131](https://0xdata.atlassian.net/browse/SW-131) - Refactor DemoUtils into multiple Support traits and remove it
+    - [SW-134](https://0xdata.atlassian.net/browse/SW-134) - Prototype implementation of ML pipelines with H2O algorithms (motivation example HamOrSpam)
+    - [SW-135](https://0xdata.atlassian.net/browse/SW-135) - Integrate GBM into Spark ML pipelines
+    - [SW-136](https://0xdata.atlassian.net/browse/SW-136) - Replace strictly type API using H2OFrame by `T <: Frame`
+    - [SW-138](https://0xdata.atlassian.net/browse/SW-138) - Upgrade H2O version to the latest Turchin version
+    - [SW-142](https://0xdata.atlassian.net/browse/SW-142) - Report unsupported parameters
 
 ##v1.6.1 (2016-03-15)
   - Bug fixes
