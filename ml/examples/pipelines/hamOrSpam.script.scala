@@ -23,10 +23,10 @@ import water.fvec.H2OFrame
 
 
 val smsDataFileName = "smsData.txt"
-val smsDataFilePath = "examples/smalldata/"+smsDataFileName
+val smsDataFilePath = "examples/smalldata/" + smsDataFileName
 
 // Register files to SparkContext
-SparkContextSupport.addFiles(sc,smsDataFilePath)
+SparkContextSupport.addFiles(sc, smsDataFilePath)
 
 // This method loads the data, perform some basic filtering and create Spark's dataframe
 def load(dataFile: String)(implicit sqlContext: SQLContext): DataFrame = {
