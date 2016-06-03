@@ -32,7 +32,6 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll {
     val assemblyJar = sys.props.getOrElse("sparkling.assembly.jar",
       fail("The variable 'sparkling.assembly.jar' is not set! It should point to assembly jar file."))
     val conf = new SparkConf().setAppName("Script testing")
-      .set("spark.repl.class.uri", H2OInterpreter.classServerUri)
       .set("spark.ext.h2o.repl.enabled","false") // disable repl in tests
       .set("spark.driver.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.executor.extraJavaOptions", "-XX:MaxPermSize=384m")

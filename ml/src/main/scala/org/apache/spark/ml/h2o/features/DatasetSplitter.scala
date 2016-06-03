@@ -25,7 +25,7 @@ import org.apache.spark.ml.h2o.OneTimeTransformer
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
+import org.apache.spark.sql.{DataFrame, Dataset, SQLContext, SparkSession}
 import water.fvec.{Frame, H2OFrame}
 import water.{DKV, Key}
 
@@ -97,7 +97,6 @@ object DatasetSplitter extends MLReadable[DatasetSplitter]{
       val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
 
       implicit val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements")
-      implicit val sqlContext = SQLContext.getOrCreate(sc)
       val datasetSplitter = new DatasetSplitter(metadata.uid)
       DefaultParamsReader.getAndSetParams(datasetSplitter, metadata)
       datasetSplitter

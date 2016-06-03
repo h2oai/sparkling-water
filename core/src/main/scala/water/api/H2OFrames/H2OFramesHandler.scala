@@ -18,7 +18,7 @@ package water.api.H2OFrames
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 import water.api.Handler
 import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.Frame
@@ -28,7 +28,7 @@ import water.{DKV, Iced}
  * Handler for all H2OFrame related queries
  */
 class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
-  implicit val sqlContext = SQLContext.getOrCreate(sc)
+  implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
 
   def toDataFrame(version: Int, s: DataFrameIDV3): DataFrameIDV3 = {
     val value = DKV.get(s.h2oframe_id)

@@ -19,6 +19,8 @@ package org.apache.spark.h2o.utils
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.h2o.H2OContext
+import org.apache.spark.sql.SparkSession
 import org.scalatest.Suite
 
 /** This fixture create a Spark context once and share it over whole run of test suite.
@@ -31,8 +33,9 @@ trait PerTestSparkTestContext extends SparkTestContext { self: Suite =>
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
+    FIXME switch order - first spark session then spark context
     sc = createSparkContext
-    sqlc = SQLContext.getOrCreate(sc)
+    sqlc = SparkSession.builder().getOrCreate().sqlContext
     hc = createH2OContext(sc, new H2OConf(sc))
   }
 

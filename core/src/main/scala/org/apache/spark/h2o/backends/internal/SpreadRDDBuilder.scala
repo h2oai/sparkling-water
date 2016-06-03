@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.backends.internal
 
+
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.SharedBackendUtils

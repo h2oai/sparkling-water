@@ -18,7 +18,7 @@
 package org.apache.spark.examples.h2o
 
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkContext, SparkFiles}
 import water.support.SparkContextSupport
 
@@ -37,7 +37,7 @@ object ChicagoCrimeAppSmall extends SparkContextSupport {
       absPath("examples/smalldata/chicagoCrimes10k.csv")
     )
     // SQL support
-    val sqlContext = new SQLContext(sc)
+    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // Start H2O services
     val h2oContext = H2OContext.getOrCreate(sc)
 

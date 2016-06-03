@@ -23,7 +23,7 @@ import hex.Model.Output
 import org.apache.spark.SparkContext
 import org.apache.spark.examples.h2o.CraigslistJobTitlesApp.show
 import org.apache.spark.h2o._
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming._
 import water.support.{ModelSerializationSupport, SparkContextSupport}
 
@@ -45,7 +45,7 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport with ModelSer
     // Prepare environment
     val sc = new SparkContext(configure("CraigslistJobTitlesStreamingApp"))
     val ssc = new StreamingContext(sc, Seconds(10))
-    val sqlContext = new SQLContext(sc)
+    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // Start H2O services
     val h2oContext = H2OContext.getOrCreate(sc)
 

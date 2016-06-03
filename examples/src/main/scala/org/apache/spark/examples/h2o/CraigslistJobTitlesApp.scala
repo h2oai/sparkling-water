@@ -23,7 +23,7 @@ import org.apache.spark.h2o._
 import org.apache.spark.mllib.feature.{Word2Vec, Word2VecModel}
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.{SparkContext, mllib}
 import water.support._
 
@@ -187,7 +187,7 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
   def main(args: Array[String]): Unit = {
     // Prepare environment
     val sc = new SparkContext(configure("CraigslistJobTitlesApp"))
-    val sqlContext = new SQLContext(sc)
+    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // Start H2O services
     val h2oContext = H2OContext.getOrCreate(sc)
 

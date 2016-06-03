@@ -20,13 +20,12 @@ import org.apache.spark
 import org.apache.spark.h2o._
 import org.apache.spark.ml.feature.StopWordsRemover
 import org.apache.spark.mllib.feature.{HashingTF, IDF}
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.MRTask
-import water.support.ModelMetricsSupport
-import water.support.SparkContextSupport
 import water.fvec._
+import water.support.{ModelMetricsSupport, SparkContextSupport}
 
 object AmazonFineFood extends SparkContextSupport with ModelMetricsSupport {
 
@@ -34,7 +33,7 @@ object AmazonFineFood extends SparkContextSupport with ModelMetricsSupport {
     val conf: SparkConf = configure("Amazon Fine Food Review Sentiment Analysis")
     val sc = new SparkContext(conf)
 
-    implicit val sqlContext = SQLContext.getOrCreate(sc)
+    implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     @transient val hc = H2OContext.getOrCreate(sc)
 
     val reviews = new H2OFrame(new java.io.File("/Users/michal/Tmp/amazon-fine-foods/Reviews.csv"))

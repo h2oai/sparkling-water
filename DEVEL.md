@@ -143,13 +143,6 @@ The Sparkling Water provides following primitives, which are the basic classes u
 
 Sparkling Water can run on top of Spark in the various ways described in the following sections.
 
-If the Sparkling Water application is submitted using `./spark-submit` script, it is necessary to set `spark.repl.class.uri` configuration property with the `H2OInterpreter.classServerUri` inside the application code. So for example, the spark config would look like:
-
-```
-val conf: SparkConf = new SparkConf().setAppName("Sparkling Water Application").set("spark.repl.class.uri",H2OInterpreter.classServerUri)
-```
-
-This step does not have to be done when starting Sparkling Water using `./sparkling-shell` script.
 <a name="Local"></a>
 ## Local
 In this case Sparkling Water runs as a local cluster (Spark master variable points to one of values `local`, `local[*]`, or `local-cluster[...]`

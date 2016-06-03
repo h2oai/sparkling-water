@@ -30,7 +30,8 @@ import water.exceptions.H2ONotFoundArgumentException
 @RunWith(classOf[JUnitRunner])
 class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+  val sparkConf = defaultSparkConf.setMaster("local[*]").setAppName("test-local")
+  override def createSparkContext: SparkContext = new SparkContext(sparkConf)
 
   test("RDDsHandler.list() method") {
     val rname = "Test"

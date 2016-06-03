@@ -21,7 +21,10 @@ import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
+
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
+import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.scalatest.{Suite, BeforeAndAfterAll, BeforeAndAfterEach}
 
 /**
   * Helper trait to simplify initialization and termination of Spark/H2O contexts.
@@ -45,7 +48,7 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
     hc = null
   }
 
-  def defaultSparkConf =  {
+  def defaultSparkConf =  H2OConf.checkSparkConf({
     val sc = new SparkConf()
       .set("spark.ext.h2o.disable.ga", "true")
       .set("spark.driver.memory", "2G")
@@ -57,7 +60,7 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
       .set("spark.ext.h2o.backend.cluster.mode", sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
     sys.props.get("spark.ext.h2o.client.ip").map(value => sc.set("spark.ext.h2o.client.ip", value))
     sc
-  }
+  })
 }
 
 object SparkTestContext {
@@ -77,5 +80,4 @@ object SparkTestContext {
       stop(sc)
     }
   }
-
 }

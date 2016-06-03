@@ -25,7 +25,7 @@ import hex.tree.gbm.GBMModel
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTimeZone, MutableDateTime}
@@ -267,7 +267,7 @@ object ChicagoCrimeApp extends SparkContextSupport {
     // Prepare environment
     val sc = new SparkContext(configure("ChicagoCrimeTest"))
     // SQL support
-    val sqlContext = new SQLContext(sc)
+    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // Start H2O services
     val h2oContext = H2OContext.getOrCreate(sc)
 
