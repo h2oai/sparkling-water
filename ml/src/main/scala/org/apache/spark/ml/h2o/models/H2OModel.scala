@@ -80,8 +80,8 @@ private[models] abstract class H2OModelReader[T <: H2OModel[T, M] : ClassTag, M 
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
     val file = new File(path, defaultFileName)
     val model = ModelSerializationSupport.loadH2OModel[M](file.toURI)
-    val h2oContext = H2OContext.getOrCreate(sc)
-    val sqLContext = SQLContext.getOrCreate(sc)
+    implicit val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in order to use H2O pipelines elements"))
+    val sqlContext = SQLContext.getOrCreate(sc)
     val h2oModel = make(model, metadata.uid)(h2oContext, sqlContext)
     DefaultParamsReader.getAndSetParams(h2oModel, metadata)
     h2oModel

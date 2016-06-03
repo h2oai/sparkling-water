@@ -39,7 +39,10 @@ case class H2ORelation(
               key: String)
               (implicit @transient val sqlContext: SQLContext) extends BaseRelation with TableScan with PrunedScan with Logging {
 
-  implicit lazy private val h2oContext = H2OContext.getOrCreate(sqlContext.sparkContext)
+
+  implicit lazy val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in order" +
+    " to save/load frames using H2O Data source"))
+
   val schema = DataSourceUtils.getSparkSQLSchema(key)
 
   override def buildScan(): RDD[Row] = {
@@ -58,5 +61,3 @@ case class H2ORelation(
   }
 
 }
-
-
