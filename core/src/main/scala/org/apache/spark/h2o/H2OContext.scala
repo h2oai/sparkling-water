@@ -25,6 +25,7 @@ import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.h2o.H2OTypeUtils._
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
+import org.apache.spark.repl.SparkIMain
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -769,7 +770,15 @@ object H2OContext extends Logging {
     })
   }
   private[h2o] def registerClientWebAPI(sc: SparkContext, h2oContext: H2OContext): Unit = {
-    if(h2oContext.isH2OReplEnabled){
+    // Workaround for [SW-132]
+    val doEnableRepl = h2oContext.isH2OReplEnabled && {
+      try classOf[SparkIMain].getDeclaredField("classServer")
+      catch {
+        case e: NoSuchFieldException => false
+      }
+      true
+    }
+    if (doEnableRepl) {
       registerScalaIntEndp(sc)
     }
     registerDataFramesEndp(sc, h2oContext)
