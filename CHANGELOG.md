@@ -16,6 +16,7 @@ ChangeLog
     - [SW-124](https://0xdata.atlassian.net/browse/SW-124)  - Hotfix to avoid NPE in MetadataHandler caused by PUBDEV-2879
     - [SW-125](https://0xdata.atlassian.net/browse/SW-125) - PySparkling changes in order to upload the package to PyPI
     - [SW-130](https://0xdata.atlassian.net/browse/SW-130) - Launch spark cloud script is obsolete
+    - [SW-132](https://0xdata.atlassian.net/browse/SW-132) - Hotfix for missing REPL field if running on top of CDH5.7 
     - [SW-137](https://0xdata.atlassian.net/browse/SW-137) - Fix classloading of sparkling water jar in pysparkling in Databricks
     - [SW-141](https://0xdata.atlassian.net/browse/SW-141) - Timestamp in hierarchical Spark structure is incorrectly transformed into H2OFrame
     - [PUBDEV-2879](https://0xdata.atlassian.net/browse/PUBDEV-2879) - Hot fix for NPE inside MetadataHandler
