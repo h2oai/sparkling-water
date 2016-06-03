@@ -342,6 +342,14 @@ object H2OContext extends Logging {
 
   @transient private val instantiatedContext = new AtomicReference[H2OContext]()
 
+  /**
+    * Tries to get existing H2O Context. If it has been created, returns Option containing this H2O Context, otherwise
+    * returns None
+    *
+    * @return Option containing H2O Context or None
+    */
+  def get(): Option[H2OContext] = Option(instantiatedContext.get())
+
   private def getOrCreate(sc: SparkContext, h2oWorkers: Option[Int]): H2OContext = synchronized {
     if (instantiatedContext.get() == null) {
       instantiatedContext.set(new H2OContext(sc))

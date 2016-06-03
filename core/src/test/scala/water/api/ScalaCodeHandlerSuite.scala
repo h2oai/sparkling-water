@@ -17,6 +17,7 @@
 package water.api
 
 import org.apache.spark.SparkContext
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.util.SharedSparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -152,7 +153,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
     // create interpreter
     val reqSession = new ScalaSessionIdV3
     scalaCodeHandler.initSession(3,reqSession)
-
+    
     val req1 = new ScalaCodeV3
     req1.session_id = reqSession.session_id
     req1.code = "val rdd = sc.parallelize(1 to 100, 8).map(v=>v+10);rdd.cache"
