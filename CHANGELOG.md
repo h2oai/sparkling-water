@@ -34,6 +34,9 @@ ChangeLog
     - [SW-136](https://0xdata.atlassian.net/browse/SW-136) - Replace strictly type API using H2OFrame by `T <: Frame`
     - [SW-138](https://0xdata.atlassian.net/browse/SW-138) - Upgrade H2O version to the latest Turchin version
     - [SW-142](https://0xdata.atlassian.net/browse/SW-142) - Report unsupported parameters
+    - [SW-143](https://0xdata.atlassian.net/browse/SW-143) - Travis build now performs junit testing
+    - [SW-144](https://0xdata.atlassian.net/browse/SW-144) - Enable Junit testing under Travis
+    - [SW-146](https://0xdata.atlassian.net/browse/SW-146) - How to run Sparkling Water on top of Zeppelin
 
 ##v1.6.1 (2016-03-15)
   - Bug fixes
