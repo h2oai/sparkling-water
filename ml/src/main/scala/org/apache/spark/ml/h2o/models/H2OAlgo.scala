@@ -123,7 +123,7 @@ private[models] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <
     val file = new File(path, defaultFileName)
     val ois = new ObjectInputStream(new FileInputStream(file))
     val parameters = ois.readObject().asInstanceOf[P]
-    implicit val h2oContext = H2OContext.getOrCreate(sc)
+    implicit val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in order to use H2O pipelines elements"))
     implicit val sqLContext = SQLContext.getOrCreate(sc)
     val h2oAlgo = make[A, P](parameters, metadata.uid, h2oContext, sqlContext)
     DefaultParamsReader.getAndSetParams(h2oAlgo, metadata)

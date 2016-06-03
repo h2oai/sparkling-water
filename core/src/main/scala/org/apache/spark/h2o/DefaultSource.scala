@@ -60,8 +60,7 @@ class DefaultSource
     * Creates a new relation for data store in H2OFrame given parameters.
     * Parameters have to include 'key'
     */
-  override def createRelation(
-                               sqlContext: SQLContext,
+  override def createRelation( sqlContext: SQLContext,
                                parameters: Map[String, String],
                                schema: StructType): H2ORelation = {
     val key = checkKey(parameters)
@@ -69,28 +68,30 @@ class DefaultSource
     H2ORelation(key)(sqlContext)
   }
 
-  override def createRelation(
-                               sqlContext: SQLContext,
+  override def createRelation( sqlContext: SQLContext,
                                mode: SaveMode,
                                parameters: Map[String, String],
                                data: DataFrame): BaseRelation = {
     val key = checkKey(parameters)
     val originalFrame = DKV.getGet[H2OFrame](key)
-    implicit val h2oContext = H2OContext.getOrCreate(sqlContext.sparkContext)
-      if(originalFrame!=null){
-        mode match {
-          case SaveMode.Append =>
-            sys.error("Appending to H2O Frame is not supported.")
-          case SaveMode.Overwrite =>
-            DataSourceUtils.overwrite(key, originalFrame, data)
-          case SaveMode.ErrorIfExists =>
-            sys.error(s"Frame with key '$key' already exists.")
-          case SaveMode.Ignore => // do nothing
-        }
-      }else{
-        // save as H2O Frame
-        h2oContext.asH2OFrame(data,key)
+
+    implicit val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in" +
+      " oder to save/load frames using H2O Data source"))
+
+    if(originalFrame!=null){
+      mode match {
+        case SaveMode.Append =>
+          sys.error("Appending to H2O Frame is not supported.")
+        case SaveMode.Overwrite =>
+          DataSourceUtils.overwrite(key, originalFrame, data)
+        case SaveMode.ErrorIfExists =>
+          sys.error(s"Frame with key '$key' already exists.")
+        case SaveMode.Ignore => // do nothing
       }
+    }else{
+      // save as H2O Frame
+      h2oContext.asH2OFrame(data,key)
+    }
 
     createRelation(sqlContext, parameters, data.schema)
   }

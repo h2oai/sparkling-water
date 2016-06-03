@@ -105,13 +105,14 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
     intp = createInterpreter()
     addThunk(
       intp.beQuietDuring{
-        intp.bind("sc","org.apache.spark.SparkContext", sparkContext ,List("@transient"))
-        intp.bind("sqlContext","org.apache.spark.sql.SQLContext",SQLContext.getOrCreate(sparkContext),List("@transient","implicit"))
+        intp.bind("sc","org.apache.spark.SparkContext", sparkContext, List("@transient"))
+        intp.bind("sqlContext","org.apache.spark.sql.SQLContext", SQLContext.getOrCreate(sparkContext), List("@transient","implicit"))
 
         command(
           """
             @transient val h2oContext = {
-              val _h2oContext = org.apache.spark.h2o.H2OContext.getOrCreate(sc)
+              val _h2oContext = org.apache.spark.h2o.H2OContext.get().getOrElse(throw new RuntimeException(
+              "H2OContext has to be started in order to use H2O REPL"))
               _h2oContext
             }
           """)
