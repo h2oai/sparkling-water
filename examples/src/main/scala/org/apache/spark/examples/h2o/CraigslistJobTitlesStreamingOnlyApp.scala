@@ -25,7 +25,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.examples.h2o.CraigslistJobTitlesApp._
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.mllib.feature.Word2VecModel
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import water.support.{ModelSerializationSupport, SparkContextSupport}
 
@@ -38,7 +38,7 @@ object CraigslistJobTitlesStreamingOnlyApp extends SparkContextSupport with Mode
     // Prepare environment
     val sc = new SparkContext(configure("CraigslistJobTitlesStreamingOnlyApp"))
     val ssc = new StreamingContext(sc, Seconds(10))
-    val sqlContext = new SQLContext(sc)
+    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // Start H2O services
     val h2oContext = H2OContext.getOrCreate(sc)
     val staticApp = new CraigslistJobTitlesApp()(sc, sqlContext, h2oContext)

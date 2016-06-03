@@ -22,13 +22,12 @@ import java.net.InetAddress
 import org.apache.spark.h2o.backends.{SharedBackendUtils, SharedH2OConf}
 import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.h2o.{H2OConf, RDD}
+import org.apache.spark.internal.Logging
 import org.apache.spark.scheduler.local.LocalSchedulerBackend
-import org.apache.spark.{Accumulable, SparkContext, SparkEnv}
+import org.apache.spark.util.CollectionAccumulator
+import org.apache.spark.{SparkContext, SparkEnv}
 import water.H2OStarter
 import water.init.AbstractEmbeddedH2OConfig
-
-import scala.collection.mutable
-
 
 /**
   * Various helper methods used in the internal backend
@@ -93,7 +92,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
                 networkMask: Option[String]):Array[NodeDesc] = {
 
     // Create global accumulator for list of nodes IP:PORT
-    val bc = sc.accumulableCollection(new mutable.HashSet[NodeDesc]())
+    val bc = sc.collectionAccumulator[NodeDesc]
     val isLocal = sc.isLocal
     val userSpecifiedCloudSize = sc.getConf.getOption("spark.executor.instances").map(_.toInt)
 
@@ -169,7 +168,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
         s"executorStatus=${executorStatus.mkString(",")}")
     }
     // Create flatfile string and pass it around cluster
-    val flatFile = bc.value.toArray
+    val flatFile = bc.value.toArray(new Array[NodeDesc](bc.value.size()))
     val flatFileString = toFlatFileString(flatFile)
     // Pass flatfile around cluster
 
@@ -223,9 +222,9 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
  *
  * @param flatfileBVariable Spark's accumulable variable
  */
-private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.HashSet[NodeDesc], NodeDesc],
+private class SparklingWaterConfig(val flatfileBVariable: CollectionAccumulator[NodeDesc],
                                    val sparkHostname: Option[String])
-  extends AbstractEmbeddedH2OConfig with org.apache.spark.internal.Logging {
+  extends AbstractEmbeddedH2OConfig with Logging {
 
     /** String containing a flatfile string filled asynchronously by different thread. */
     @volatile var flatFile:Option[String] = None
@@ -236,7 +235,7 @@ private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.Ha
     val hostname = sparkHostname.getOrElse(ip.getHostAddress)
     val thisNodeInfo = NodeDesc(env.executorId, hostname, port)
     flatfileBVariable.synchronized {
-      flatfileBVariable += thisNodeInfo
+      flatfileBVariable.add(thisNodeInfo)
       flatfileBVariable.notifyAll()
 
     }

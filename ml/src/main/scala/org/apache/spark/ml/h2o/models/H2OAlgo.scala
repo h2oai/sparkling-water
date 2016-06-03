@@ -19,18 +19,18 @@ package org.apache.spark.ml.h2o.models
 import java.io._
 
 import hex.Model
+import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.{Param, ParamMap}
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
+import org.apache.spark.sql.{Dataset, SQLContext, SparkSession}
 import water.Key
 import water.fvec.Frame
 
 import scala.reflect.ClassTag
-import org.apache.hadoop.fs.Path
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
@@ -132,7 +132,6 @@ private[models] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <
     val ois = new ObjectInputStream(new FileInputStream(file))
     val parameters = ois.readObject().asInstanceOf[P]
     implicit val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements")
-    implicit val sqLContext = SQLContext.getOrCreate(sc)
     val h2oAlgo = make[A, P](parameters, metadata.uid, h2oContext, sqlContext)
     DefaultParamsReader.getAndSetParams(h2oAlgo, metadata)
     h2oAlgo

@@ -26,6 +26,15 @@ import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.utils.{H2OContextUtils, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
+import org.apache.spark.h2o.H2OContextUtils._
+import org.apache.spark.h2o.H2OTypeUtils._
+import org.apache.spark.internal.Logging
+import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
+import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import water._
 import water.util.LogUtil
 
@@ -52,7 +61,6 @@ import scala.util.control.NoStackTrace
   * property spark.ext.h2o.mode which can be set in script starting sparkling-water or
   * can be set in H2O configuration class H2OConf
   */
-
 /**
   * Create new H2OContext based on provided H2O configuration
   *
@@ -172,18 +180,26 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
   def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true)(implicit sqlContext: SQLContext): DataFrame = toDataFrame(this, fr, copyMetadata)
   def asDataFrame(s: String, copyMetadata: Boolean)(implicit sqlContext: SQLContext): DataFrame = toDataFrame(this, new H2OFrame(s), copyMetadata)
 
+  /** Returns location of REST API of H2O client */
   def h2oLocalClient = this.localClientIp + ":" + this.localClientPort
 
+  /** Returns IP of H2O client */
   def h2oLocalClientIp = this.localClientIp
 
+  /** Returns port where H2O REST API is exposed */
   def h2oLocalClientPort = this.localClientPort
 
+  /** Set log level for the client running in driver */
   def setH2OClientLogLevel(level: String): Unit = LogUtil.setH2OClientLogLevel(level)
 
+  /** Set log level for all H2O services running on executors */
   def setH2ONodeLogLevel(level: String): Unit = LogUtil.setH2ONodeLogLevel(level)
 
-  // For now disable opening Spark UI
-  //def sparkUI = sparkContext.ui.map(ui => ui.appUIAddress)
+  /** Set H2O log level for the client and all executors */
+  def setH2OLogLevel(level: String): Unit = {
+    LogUtil.setH2OClientLogLevel(level)
+    LogUtil.setH2ONodeLogLevel(level)
+  }
 
   /** Stops H2O context.
     *

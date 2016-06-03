@@ -47,7 +47,7 @@ package object h2o {
   * Adds a method, `h2o`, to DataFrameWriter that allows you to write h2o frames using
     * the DataFileWriter. It's alias for sqlContext.write.format("org.apache.spark.h2o").option("key","new_frame_key").save()
   */
-  implicit class H2ODataFrameWriter(writer: DataFrameWriter[Row]) {
+  implicit class H2ODataFrameWriter[T](writer: DataFrameWriter[T]) {
     def h2o(key: String): Unit = writer.format("org.apache.spark.h2o").save(key)
     def h2o(key: water.Key[_]): Unit = h2o(key.toString)
   }

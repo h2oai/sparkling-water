@@ -23,7 +23,7 @@ import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
 import water.support.SparkContextSupport
 

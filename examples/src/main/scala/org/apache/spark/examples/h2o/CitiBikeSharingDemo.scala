@@ -22,14 +22,15 @@ import java.io.File
 import hex.splitframe.ShuffleSplitFrame
 import hex.tree.gbm.GBMModel
 import hex.{ModelMetrics, ModelMetricsSupervised}
-import org.apache.spark.h2o.{H2OFrame, H2OContext}
-import org.apache.spark.sql.{SQLContext, DataFrame}
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.joda.time.MutableDateTime
-import water.fvec.{Vec, NewChunk, Chunk, Frame}
+import water.fvec.{Chunk, Frame, NewChunk, Vec}
 import water.support.SparkContextSupport
 import water.util.Timer
 import water.{Key, MRTask}
+
 import scala.collection.mutable
 
 /**
@@ -52,7 +53,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
     import h2oContext._
     import h2oContext.implicits._
 
-    implicit val sqlContext = new SQLContext(sc)
+    implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     import sqlContext.implicits._
 
     // Make a shared timer

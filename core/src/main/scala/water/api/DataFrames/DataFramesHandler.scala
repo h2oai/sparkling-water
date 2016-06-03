@@ -18,7 +18,7 @@ package water.api.DataFrames
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import water.Iced
 import water.api.Handler
 import water.exceptions.H2ONotFoundArgumentException
@@ -27,7 +27,7 @@ import water.exceptions.H2ONotFoundArgumentException
  * Handler for all Spark's DataFrame related queries
  */
 class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
-  val sqlContext = SQLContext.getOrCreate(sc)
+  val sqlContext = SparkSession.builder().getOrCreate().sqlContext
 
   def list(version: Int, s: DataFramesV3): DataFramesV3 = {
     val r = s.createAndFillImpl()

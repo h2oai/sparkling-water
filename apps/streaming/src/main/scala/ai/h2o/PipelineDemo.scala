@@ -18,6 +18,7 @@ package ai.h2o
 
 import org.apache.spark.streaming._
 import org.apache.spark.h2o._
+import org.apache.spark.sql.SparkSession
 import water.support.SparkContextSupport
 
 object PipelineDemo extends SparkContextSupport {
@@ -33,7 +34,7 @@ object PipelineDemo extends SparkContextSupport {
     // Create the context
     val ssc = new StreamingContext(sparkConf, Seconds(1))
     val hc = H2OContext.getOrCreate(ssc.sparkContext)
-    val sqlContext = new org.apache.spark.sql.SQLContext(ssc.sparkContext)
+    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // this is used to implicitly convert an RDD to a DataFrame.
     import sqlContext.implicits._
 
