@@ -87,7 +87,7 @@ def _locate(example_name):
 conf = SparkConf().setAppName("ChicagoCrimeTest").setIfMissing("spark.master", os.getenv("spark.master", "local[*]"))
 sc = SparkContext(conf=conf)
 # SQL support
-sqlContext = SQLContext(sc)
+sqlContext = SQLContext.getOrCreate(sc)
 # Start H2O services
 h2oContext = H2OContext(sc).start()
 # Define file names
