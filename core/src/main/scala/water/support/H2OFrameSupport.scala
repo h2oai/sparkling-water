@@ -22,7 +22,7 @@ import org.apache.spark.h2o._
 import water.Key
 import water.fvec.Frame
 
-trait H2OFrameSupport{
+trait H2OFrameSupport extends JoinSupport {
 
   def splitFrame(df: H2OFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
     val ks = keys.map(Key.make[Frame](_)).toArray
