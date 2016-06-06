@@ -1,0 +1,153 @@
+{
+  "version": "1.0.0",
+  "cells": [
+    {
+      "type": "md",
+      "input": "# Amazon Fine Food \n\n> The Amazon Fine Food Reviews dataset consists of 568,454 food reviews Amazon users left up to October 2012.\n\n> This data was originally published on SNAP as part of the paper: _J. McAuley and J. Leskovec. From amateurs to connoisseurs: modeling the evolution of user expertise through online reviews. WWW, 2013_.\n"
+    },
+    {
+      "type": "md",
+      "input": "## Load the data\n\n> Download data from the [repository](https://www.kaggle.com/snap/amazon-fine-food-reviews) and store it on your local cluster"
+    },
+    {
+      "type": "sca",
+      "input": "val reviews = new H2OFrame(new java.io.File(\"/Users/michal/Tmp/amazon-fine-foods/Reviews.csv\"))"
+    },
+    {
+      "type": "cs",
+      "input": "getFrames"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"Reviews.hex\""
+    },
+    {
+      "type": "md",
+      "input": "## Remove useless columns"
+    },
+    {
+      "type": "sca",
+      "input": "// We do not need redundant data\nreviews.remove(\"Id\").remove\nreviews.remove(\"ProfileName\").remove\n\n// // Update frame in distributed memory\nreviews.update"
+    },
+    {
+      "type": "md",
+      "input": "## Refine time column\n\n> In this case `Time` column contains number of seconds from epoch. We translate it into several new columns to help algorithms to pick right pattern.\n\n> For this case we write H2O's `MRTask` which generates `Day`, `Month`, `Year`, `DayOfWeek` and `Hour` columns:\n\n```scala\nclass RefineTime extends MRTask[RefineTime] {\n  override def map(in: Array[Chunk], out: Array[NewChunk]): Unit = {\n    val mdt = new MutableDateTime(DateTimeZone.UTC)\n    val timeCol = in(5 /* Index of Time column*/)\n    val (dayNC, monthNC, yearNC, dayOfWeekNC, hourNC) = (out(0), out(1), out(2), out(3), out(4))\n    for (row <- 0 until timeCol._len) {\n      val time = timeCol.at8(row) * 1000 /* JODA API expect millis seconds from epoch */\n      mdt.setMillis(time)\n      dayNC.addNum(mdt.getDayOfMonth, 0)\n      monthNC.addNum(mdt.getMonthOfYear, 0)\n      yearNC.addNum(mdt.getYear, 0)\n      dayOfWeekNC.addNum(mdt.getDayOfWeek, 0)\n      hourNC.addNum(mdt.getHourOfDay, 0)\n    }\n  }\n}\n```"
+    },
+    {
+      "type": "sca",
+      "input": "import org.apache.spark.examples.h2o.RefineTime\nimport water.fvec.Vec\n\n// Launch a new distributed operations producing 5 new vectors\nval refinedTime = new RefineTime().doAll(5, Vec.T_NUM, reviews).outputFrame(Array(\"Day\", \"Month\", \"Year\", \"DayOfWeek\", \"Hour\"), null /* no domains */)\n\n// Add new columns into original Review Frame and remove the Time column\nreviews.add(refinedTime).remove(\"Time\").remove()\n// Update frame in distributed memory\nreviews.update"
+    },
+    {
+      "type": "md",
+      "input": "## Explore data with help of Spark SQL and H2O APIs\n\n### Publish the H2O frame as Spark DataFrame"
+    },
+    {
+      "type": "sca",
+      "input": "// First get a reference to the existing H2O context\n@transient val hc = H2OContext.getOrCreate(sc)\n\n// Publish the H2O frame as Spark DataFrame\nval df = hc.asDataFrame(reviews)\n// And print its schema\ndf.printSchema()"
+    },
+    {
+      "type": "md",
+      "input": "### Compute average score per year"
+    },
+    {
+      "type": "sca",
+      "input": "val avgScorePerYear = hc.asH2OFrame(df.groupBy(\"Year\").agg(mean(\"Score\"), count(\"Score\")), \"avgScorePerYear\")"
+    },
+    {
+      "type": "md",
+      "input": "### Plot the results"
+    },
+    {
+      "type": "cs",
+      "input": "plot (g) -> g(\n  g.point(\n    g.position g.factor(\"Year\"), \"avg(Score)\"\n    g.fillColor \"count(Score)\", g.range 'lightblue', 'red'\n    g.size \"count(Score)\", g.range 8, 30\n  )\n  g.from inspect \"data\", getFrame \"avgScorePerYear\"\n  g.bounds 500, null\n)"
+    },
+    {
+      "type": "md",
+      "input": "### Compute average score per month"
+    },
+    {
+      "type": "sca",
+      "input": "val avgScorePerMonth = hc.asH2OFrame(df.groupBy(\"Month\").agg(mean(\"Score\"), count(\"Score\")), \"avgScorePerMonth\")"
+    },
+    {
+      "type": "cs",
+      "input": "plot (g) -> g(\n  g.rect(\n    g.position g.factor(\"Month\"), \"avg(Score)\"\n    g.fillColor \"count(Score)\", g.range 'orange', 'red'\n    g.fillColor g.value \"orange\"\n    g.fillOpacity \"count(Score)\", g.range 0.15, 1\n  )\n  g.from inspect \"data\", getFrame \"avgScorePerMonth\"\n  g.bounds 500, 200\n)"
+    },
+    {
+      "type": "md",
+      "input": "### Computer average score per day"
+    },
+    {
+      "type": "sca",
+      "input": "val avgScorePerDay = hc.asH2OFrame(df.groupBy(\"DayOfWeek\").agg(mean(\"Score\"), count(\"Score\")), \"avgScorePerDay\")"
+    },
+    {
+      "type": "cs",
+      "input": "plot (g) -> g(\n  g.rect(\n    g.position g.factor(\"DayOfWeek\"), \"count(Score)\"\n    g.fillColor g.value \"orange\"\n    g.fillOpacity \"avg(Score)\", g.range 0.15, 1\n  )\n  g.from inspect \"data\", getFrame \"avgScorePerDay\"\n  g.bounds 500, 200\n)"
+    },
+    {
+      "type": "md",
+      "input": "## Prepare data for modeling\n\n> The idea is to model sentiment based on Score of review, Summary and time when the review was performed. In this case we skip all neutral reviews, but focus on positive/negative scores.\n\n> Steps:\n>   1. Select columns `Score`, `Month`, `Day`, `DayOfWeek`, `Summary`\n>   2. Define UDF to transform score (0..5) to binary `positive`/`negative`\n>   3. Use TF-IDF to vectorize summary column "
+    },
+    {
+      "type": "sca",
+      "input": "val sentimentDF = hc.asDataFrame(reviews('Score, 'Month, 'Day, 'DayOfWeek, 'Summary))"
+    },
+    {
+      "type": "md",
+      "input": "### UDF to transform score column to binary column"
+    },
+    {
+      "type": "sca",
+      "input": "val toBinaryScore = udf { score: Byte => if (score < 3.toByte) \"negative\" else \"positive\" }"
+    },
+    {
+      "type": "md",
+      "input": "### UDF to tokenize the message"
+    },
+    {
+      "type": "sca",
+      "input": "val toTokens = udf { summary: String => {\n      import org.apache.spark.examples.h2o.H2OStopWords._\n      summary.split(\",\")\n        .map(v => v.trim.toLowerCase.replaceAll(\"[^\\\\p{IsAlphabetic}]\", \"\"))\n          .filter(v => !English.contains(v))\n  }\n}"
+    },
+    {
+      "type": "md",
+      "input": "### UDF to vectorize tokens\n\n> Using HashingTF to vectorized the list of tokens"
+    },
+    {
+      "type": "sca",
+      "input": "import org.apache.spark.mllib.feature.{HashingTF, IDF}\nval hashingTF = new HashingTF(1024) \nval toNumericFeatures = udf { terms: Seq[_] => hashingTF.transform(terms) }"
+    },
+    {
+      "type": "md",
+      "input": "### Apply transformation"
+    },
+    {
+      "type": "sca",
+      "input": "val vectorizedFrame = sentimentDF.where(\"Score != 3\").\n      withColumn(\"Score\", toBinaryScore(col(\"Score\"))).\n      withColumn(\"Summary\", toNumericFeatures(toTokens(col(\"Summary\"))))"
+    },
+    {
+      "type": "md",
+      "input": "### UDF to scale numeric vectors using inverse document frequency approach\n"
+    },
+    {
+      "type": "sca",
+      "input": "val idfInput = vectorizedFrame.select(\"Summary\").map { case Row(v: org.apache.spark.mllib.linalg.Vector) => v}\nval idfModel = new IDF(minDocFreq = 1).fit(idfInput)\n\nval toIdf = udf { vector: org.apache.spark.mllib.linalg.Vector => idfModel.transform(vector)}"
+    },
+    {
+      "type": "md",
+      "input": "### Apply generated IDF model"
+    },
+    {
+      "type": "sca",
+      "input": "val finalFrame: DataFrame = vectorizedFrame.withColumn(\"Summary\", toIdf(col(\"Summary\")))\nfinalFrame.printSchema()"
+    },
+    {
+      "type": "md",
+      "input": "## Transform Spark's DataFrame into H2O's Frame\n\n> Data is ready to perform modeling task"
+    },
+    {
+      "type": "sca",
+      "input": "val p = hc.asH2OFrame(finalFrame, \"finalFrame\")\n// Cleanup\nreviews.delete()"
+    }
+  ]
+}
