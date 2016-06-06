@@ -19,6 +19,7 @@ ChangeLog
     - [SW-132](https://0xdata.atlassian.net/browse/SW-132) - Hotfix for missing REPL field if running on top of CDH5.7 
     - [SW-137](https://0xdata.atlassian.net/browse/SW-137) - Fix classloading of sparkling water jar in pysparkling in Databricks
     - [SW-141](https://0xdata.atlassian.net/browse/SW-141) - Timestamp in hierarchical Spark structure is incorrectly transformed into H2OFrame
+    - [SW-149](https://0xdata.atlassian.net/browse/SW-149) - Use H2OContext.get() method where H2O Context is expected to be running
     - [PUBDEV-2879](https://0xdata.atlassian.net/browse/PUBDEV-2879) - Hot fix for NPE inside MetadataHandler
   - Improvements
     - [SW-37](https://0xdata.atlassian.net/browse/SW-37) - During test run warn/fail if the `SPARK_HOME` version is different from spark version used during build
@@ -38,6 +39,8 @@ ChangeLog
     - [SW-143](https://0xdata.atlassian.net/browse/SW-143) - Travis build now performs junit testing
     - [SW-144](https://0xdata.atlassian.net/browse/SW-144) - Enable Junit testing under Travis
     - [SW-146](https://0xdata.atlassian.net/browse/SW-146) - How to run Sparkling Water on top of Zeppelin
+    - [SW-148](https://0xdata.atlassian.net/browse/SW-148) - Documentation for pySparkling on top of Databricks Cloud
+    - [SW-150](https://0xdata.atlassian.net/browse/SW-150) - Introduce Scala API for Frame join operations
 
 ##v1.6.1 (2016-03-15)
   - Bug fixes
