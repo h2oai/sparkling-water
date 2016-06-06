@@ -30,7 +30,7 @@ import water.Key
 import water.fvec.Frame
 
 import scala.reflect.ClassTag
-
+import org.apache.hadoop.fs.Path
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
@@ -106,9 +106,17 @@ private[models] class H2OAlgorithmWriter[T <: H2OAlgorithm[_, _]](instance: T) e
 
   @Since("1.6.0") override protected
   def saveImpl(path: String): Unit = {
+    val hadoopConf = sc.hadoopConfiguration
     DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val file = new File(path, instance.defaultFileName)
-    val oos = new ObjectOutputStream(new FileOutputStream(file,false))
+    val outputPath = if (path.startsWith("file://")) {
+      new Path(path, instance.defaultFileName)
+    } else {
+      new Path("file://" + path, instance.defaultFileName)
+    }
+    val fs = outputPath.getFileSystem(hadoopConf)
+    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    fs.create(qualifiedOutputPath)
+    val oos = new ObjectOutputStream(new FileOutputStream(new File(qualifiedOutputPath.toUri), false))
     oos.writeObject(instance.getParams)
   }
 }

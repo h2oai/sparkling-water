@@ -434,7 +434,7 @@ For all primitive Scala types or Spark SQL (see `org.apache.spark.sql.types`) ty
 |Double      | DoubleType | Numeric  |
 |String      | StringType | String   |
 |Boolean     | BooleanType| Numeric  |
-|java.sql.TimeStamp| TimestampType | Time|
+|java.sql.Timestamp| TimestampType | Time|
 
 ---
 
@@ -453,7 +453,7 @@ As type T we support following types:
 |Double      | 
 |String      |
 |Boolean     |
-|java.sql.TimeStamp |
+|java.sql.Timestamp |
 |Any scala class extending scala `Product` |
 |org.apache.spark.mllib.regression.LabeledPoint|
 
