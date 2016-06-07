@@ -13,17 +13,9 @@ class H2OConf(object):
     def _do_init(self, spark_context):
         self._sc = spark_context
         jvm = self._sc._jvm
-        gw = self._sc._gateway
         jsc = self._sc._jsc
-        conf_klazz = jvm.java.lang.Thread.currentThread().getContextClassLoader().loadClass("org.apache.spark.h2o.H2OConf")
-        # Find constructor with right arguments
-        constructor_def = gw.new_array(jvm.Class, 1)
-        constructor_def[0] = jsc.getClass()
-        jconf_constructor = conf_klazz.getConstructor(constructor_def)
-        constructor_params = gw.new_array(jvm.Object, 1)
-        constructor_params[0] = jsc
         # Create instance of H2OConf class
-        self._jconf = jconf_constructor.newInstance(constructor_params)
+        self._jconf = jvm.org.apache.spark.h2o.H2OConf(jsc)
 
     def _get_option(self, option):
         if option.isDefined():

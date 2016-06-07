@@ -20,7 +20,6 @@ Unit tests for PySparkling;
 """
 
 import unittest
-
 from pysparkling.context import H2OContext
 from pysparkling.conf import H2OConf
 from pyspark import SparkContext, SparkConf

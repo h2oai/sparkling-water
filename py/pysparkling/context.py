@@ -2,6 +2,7 @@ from pyspark.context import SparkContext
 from pyspark.sql.dataframe import DataFrame
 from pyspark.rdd import RDD
 from pyspark.sql import SQLContext
+from pyspark.sql import SparkSession
 from h2o.frame import H2OFrame
 from pysparkling.initializer import  Initializer
 from pysparkling.conf import H2OConf
@@ -81,8 +82,10 @@ class H2OContext(object):
     def __do_init(self, spark_context):
         self._sc = spark_context
         # do not instantiate SQL Context when already one exists
-        self._jsql_context = self._sc._jvm.SQLContext.getOrCreate(self._sc._jsc.sc())
-        self._sql_context = SQLContext(spark_context, self._jsql_context)
+        self._ss = SparkSession.builder.getOrCreate()
+        self._sql_context = SQLContext(spark_context, self._ss)
+        self._jsql_context = self._ss._jwrapped
+
         self._jsc = self._sc._jsc
         self._jvm = self._sc._jvm
         self._gw = self._sc._gateway
@@ -101,35 +104,19 @@ class H2OContext(object):
         h2o_context = H2OContext(spark_context)
 
         jvm = h2o_context._jvm # JVM
-        gw = h2o_context._gw # Py4J Gateway
         jsc = h2o_context._jsc # JavaSparkContext
 
-        # Imports Sparkling Water into current JVM view
-        # We cannot use directly Py4j to import Sparkling Water packages
-        #   java_import(sc._jvm, "org.apache.spark.h2o.*")
-        # because of https://issues.apache.org/jira/browse/SPARK-5185
-        # So lets load class directly via classloader
-        # This is finally fixed in Spark 2.0 ( along with other related issues)
-
-        # Call the corresponding getOrCreate method
-        jhc_klazz = jvm.java.lang.Thread.currentThread().getContextClassLoader().loadClass("org.apache.spark.h2o.JavaH2OContext")
-        conf_klazz = jvm.java.lang.Thread.currentThread().getContextClassLoader().loadClass("org.apache.spark.h2o.H2OConf")
-        method_def = gw.new_array(jvm.Class, 2)
-        method_def[0] = jsc.getClass()
-        method_def[1] = conf_klazz
-        method = jhc_klazz.getMethod("getOrCreate", method_def)
-        method_params = gw.new_array(jvm.Object, 2)
-        method_params[0] = jsc
         if conf is not None:
             selected_conf = conf
         else:
             selected_conf = H2OConf(spark_context)
-        method_params[1] = selected_conf._jconf
-        jhc = method.invoke(None, method_params)
+        # Create H2OContext
+        jhc = jvm.org.apache.spark.h2o.JavaH2OContext.getOrCreate(jsc, selected_conf._jconf)
         h2o_context._jhc = jhc
         h2o_context._conf = selected_conf
         h2o_context._client_ip = jhc.h2oLocalClientIp()
         h2o_context._client_port = jhc.h2oLocalClientPort()
+        # Create H2O REST API client
         h2o.init(ip=h2o_context._client_ip, port=h2o_context._client_port, start_h2o=False, strict_version_check=False)
         h2o.is_initialized = True
         return h2o_context
@@ -170,7 +157,7 @@ class H2OContext(object):
         if isinstance(h2o_frame, H2OFrame):
             j_h2o_frame = h2o_frame.get_java_h2o_frame()
             jdf = self._jhc.asDataFrame(j_h2o_frame, copy_metadata, self._jsql_context)
-            return DataFrame(jdf,self._sql_context)
+            return DataFrame(jdf, self._sql_context)
 
     def as_h2o_frame(self, dataframe, framename = None):
         """

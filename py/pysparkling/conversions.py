@@ -44,12 +44,12 @@ class FrameConversions:
         return H2OFrame.from_java_h2o_frame(j_h2o_frame,j_h2o_frame_key)
 
     @staticmethod
-    def _as_h2o_frame_from_complex_type(h2oContext,dataframe, frame_name):
+    def _as_h2o_frame_from_complex_type(h2oContext, dataframe, frame_name):
         # Creates a DataFrame from an RDD of tuple/list, list or pandas.DataFrame.
         # On scala backend, to transform RDD of Product to H2OFrame, we need to know Type Tag.
         # Since there is no alternative for Product class in Python, we first transform the rdd to dataframe
         # and then transform it to H2OFrame.
-        df = h2oContext._sql_context.createDataFrame(dataframe)
+        df = h2oContext._ss.createDataFrame(dataframe)
         j_h2o_frame = h2oContext._jhc.asH2OFrame(df._jdf, frame_name)
         j_h2o_frame_key = j_h2o_frame.key()
         return H2OFrame.from_java_h2o_frame(j_h2o_frame,j_h2o_frame_key)
