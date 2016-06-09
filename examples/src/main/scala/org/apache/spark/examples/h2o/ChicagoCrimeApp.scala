@@ -31,8 +31,8 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.MRTask
 import water.fvec.{Chunk, NewChunk, Vec}
-import water.parser.BufferedString
-import water.support.{H2OFrameSupport, ModelMetricsSupport, SparklingWaterApp, SparkContextSupport}
+import water.parser.{BufferedString, ParseSetup}
+import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
 
 /**
  * Chicago Crimes Application predicting probability of arrest in Chicago.
@@ -187,7 +187,11 @@ class ChicagoCrimeApp( weatherFile: String,
     (weatherTable, censusTable, crimeTable)
   }
 
-  private def loadData(datafile: String): H2OFrame = new H2OFrame(new java.net.URI(datafile))
+  private def loadData(datafile: String, modifyParserSetup: ParseSetup => ParseSetup = identity[ParseSetup]): H2OFrame = {
+    val uri = java.net.URI.create(datafile)
+    val parseSetup = modifyParserSetup(water.fvec.H2OFrame.parserSetup(uri))
+    new H2OFrame(parseSetup, new java.net.URI(datafile))
+  }
 
   def createWeatherTable(datafile: String): H2OFrame = {
     val table = loadData(datafile)
@@ -207,7 +211,14 @@ class ChicagoCrimeApp( weatherFile: String,
   }
 
   def createCrimeTable(datafile: String): H2OFrame = {
-    val table = loadData(datafile)
+    val table = loadData(datafile, (parseSetup: ParseSetup) => {
+      val colNames = parseSetup.getColumnNames
+      val typeNames = parseSetup.getColumnTypes
+      colNames.indices.foreach { idx =>
+        if (colNames(idx) == "Date") typeNames(idx) = Vec.T_STR
+      }
+      parseSetup
+    })
     // Refine date into multiple columns
     val dateCol = table.vec(2)
     table.add(new RefineDateColumn(datePattern, dateTimeZone).doIt(dateCol))
