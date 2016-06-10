@@ -19,12 +19,12 @@ import hex.tree.gbm.GBMModel
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkFiles
 import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
-import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
-import water.fvec.H2OFrame
-import water.support.{H2OFrameSupport, SparkContextSupport, ModelMetricsSupport}
+import water.fvec.{H2OFrame, Vec}
+import water.parser.ParseSetup
+import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
 
 // Create SQL support
 implicit val sqlContext = SQLContext.getOrCreate(sc)
@@ -38,7 +38,11 @@ import h2oContext.implicits._
 //
 // H2O Data loader using H2O API
 //
-def loadData(datafile: String): H2OFrame = new H2OFrame(new java.net.URI(datafile))
+def loadData(datafile: String, modifyParserSetup: ParseSetup => ParseSetup = identity[ParseSetup]): H2OFrame = {
+  val uri = java.net.URI.create(datafile)
+  val parseSetup = modifyParserSetup(water.fvec.H2OFrame.parserSetup(uri))
+  new H2OFrame(parseSetup, new java.net.URI(datafile))
+}
 
 //
 // Loader for weather data
@@ -67,7 +71,14 @@ def createCensusTable(datafile: String): H2OFrame = {
 // Load and modify crime data
 //
 def createCrimeTable(datafile: String, datePattern:String, dateTimeZone:String): H2OFrame = {
-  val table = loadData(datafile)
+  val table = loadData(datafile, (parseSetup: ParseSetup) => {
+    val colNames = parseSetup.getColumnNames
+    val typeNames = parseSetup.getColumnTypes
+    colNames.indices.foreach { idx =>
+      if (colNames(idx) == "Date") typeNames(idx) = Vec.T_STR
+    }
+    parseSetup
+  })
   // Refine date into multiple columns
   val dateCol = table.vec(2)
   table.add(new RefineDateColumn(datePattern, dateTimeZone).doIt(dateCol))
@@ -185,14 +196,9 @@ val gbmModel = GBMModel(train, test, 'Arrest)
 val dlModel = DLModel(train, test, 'Arrest)
 
 // Collect model metrics
-def binomialMetrics[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-  (model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
-  import water.app.ModelMetricsSupport._
-  (modelMetrics(model,train), modelMetrics(model, test))
-}
-
-val (trainMetricsGBM, testMetricsGBM) = binomialMetrics(gbmModel, train, test)
-val (trainMetricsDL, testMetricsDL) = binomialMetrics(dlModel, train, test)
+import water.app.ModelMetricsSupport._
+val (trainMetricsGBM, testMetricsGBM) = (modelMetrics[ModelMetricsBinomial](gbmModel, train), modelMetrics[ModelMetricsBinomial](gbmModel, test))
+val (trainMetricsDL, testMetricsDL) = (modelMetrics[ModelMetricsBinomial](dlModel, train), modelMetrics[ModelMetricsBinomial](dlModel, test))
 
 //
 // Print Scores of GBM & Deep Learning
