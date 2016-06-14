@@ -4,7 +4,7 @@ apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
     // Spark REPL
-    compile "org.apache.spark:spark-repl_${scalaBinaryVersion}:${sparkVersion}"
+    compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
     // H2O Scala API
-    compile "ai.h2o:h2o-scala_${scalaBinaryVersion}:${h2oVersion}"
+    compile "ai.h2o:h2o-scala_${scalaBaseVersion}:${h2oVersion}"
 }

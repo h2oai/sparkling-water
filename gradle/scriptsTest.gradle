@@ -36,7 +36,7 @@ task scriptsTest(type: Test) {
 task scriptsTestJar(type: Jar, dependsOn: scriptsTestClasses) {
     group = "Build"
     description = "Assembles a jar archive with scripts test classes."
-    baseName = "${project.name}_${scalaBinaryVersion}"
+    baseName = "${project.name}_${scalaBaseVersion}"
     appendix = 'scriptsTest'
     from sourceSets.scriptsTest.output
 }
