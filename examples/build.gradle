@@ -13,18 +13,18 @@ dependencies {
   compile "org.scala-lang:scala-library:${scalaVersion}"
 
   // Add streaming
-  compile "org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}"
+  compile "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
 
   // And use scalatest for Scala testing
-  testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
+  testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"
   
   // Integration tests requirements
-  integTestCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
+  integTestCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   integTestCompile "junit:junit:4.11"
 
   // To enable Idea compiler even for integTestCode which use mllib
-  /*integTestCompile*/ compile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
+  /*integTestCompile*/ compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
   // Put Spark Assembly on runtime path
   integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar' )
