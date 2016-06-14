@@ -79,7 +79,7 @@ task integTest(type: Test) {
 task integTestJar(type: Jar, dependsOn: integTestClasses) {
     group = "Build"
     description = "Assembles a jar archive with integration test classes."
-    baseName = "${project.name}_${scalaBinaryVersion}"
+    baseName = "${project.name}_${scalaBaseVersion}"
     appendix = 'itest'
     from sourceSets.integTest.output
 }
