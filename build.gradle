@@ -46,6 +46,7 @@ ext {
       project(':sparkling-water-core'),
       project(':sparkling-water-examples'),
       //project(':sparkling-water-ml'),
+      project(':sparkling-water-app-streaming'),
     ]
     pythonProjects = [
       project(':sparkling-water-py')

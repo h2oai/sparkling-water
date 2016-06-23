@@ -1,0 +1,18 @@
+description = "Sparkling Water Pipelining"
+
+// Support local launch of application 
+apply plugin: 'application'
+mainClassName = "ai.h2o.PipelineDemo"
+
+dependencies {
+  // Sparkling Water Core
+  compile( project(":sparkling-water-core") ) {
+    exclude group: "javax.servlet", module: "servlet-api"
+  }
+  // Spark Streaming
+  compile "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
+
+  // Add Scala library
+  compile "org.scala-lang:scala-library:${scalaVersion}"
+}
+
