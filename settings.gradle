@@ -8,6 +8,12 @@ include 'assembly'
 include 'py'
 include 'repl'
 include 'docker'
+include 'app-streaming'
 
 // Prefix all projects with sparkling-water name
-rootProject.children.each { it.name = rootProject.name + "-" + it.name }
+rootProject.children.each { project ->
+    if (project.name.startsWith("app-")) {
+        project.projectDir = new File(settingsDir, "apps/" + project.name.replaceAll("app-", "")) 
+    }
+    project.name = rootProject.name + "-" + project.name 
+}
