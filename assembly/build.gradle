@@ -32,6 +32,8 @@ shadowJar {
     include(dependency("ai.h2o:h2o-algos"))
     include(dependency("ai.h2o:h2o-persist-hdfs"))
     include(dependency("ai.h2o:h2o-genmodel"))
+    include(dependency("ai.h2o:h2o-avro-parser"))
+    include(dependency("ai.h2o:h2o-persist-s3"))
     include(dependency("joda-time:joda-time"))
     include(dependency("org.joda:joda-convert"))
     include(dependency("org.javassist:javassist"))
@@ -41,6 +43,9 @@ shadowJar {
     include(dependency("ai.h2o:reflections"))
     include(dependency("ai.h2o:google-analytics-java"))
     include(dependency("com.github.tony19:named-regexp"))
+    include(dependency("com.amazonaws:aws-java-sdk-s3"))
+    include(dependency("com.amazonaws:aws-java-sdk-kms"))
+    include(dependency("com.amazonaws:aws-java-sdk-core"))
 
     include(dependency("org.eclipse.jetty.aggregate:jetty-servlet"))
     include(dependency("org.eclipse.jetty:jetty-server"))
