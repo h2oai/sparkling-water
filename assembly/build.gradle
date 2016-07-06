@@ -32,6 +32,7 @@ shadowJar {
     include(dependency("ai.h2o:h2o-algos"))
     include(dependency("ai.h2o:h2o-persist-hdfs"))
     include(dependency("ai.h2o:h2o-genmodel"))
+    include(dependency("ai.h2o:h2o-avro-parser"))
     include(dependency("joda-time:joda-time"))
     include(dependency("org.joda:joda-convert"))
     include(dependency("org.javassist:javassist"))
