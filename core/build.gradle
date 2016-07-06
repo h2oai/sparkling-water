@@ -21,6 +21,9 @@ dependencies {
       exclude(group: "org.apache.hadoop", module: "hadoop-client")
   }
 
+  compile("ai.h2o:h2o-persist-s3:${h2oVersion}") {
+  }
+
   // Spark 1.2.0 release
   // - core
   compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
