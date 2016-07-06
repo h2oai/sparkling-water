@@ -24,9 +24,10 @@ import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.scheduler.cluster.YarnSchedulerBackend
 import org.apache.spark.scheduler.local.LocalBackend
 import org.apache.spark.scheduler.{SparkListenerBlockManagerAdded, SparkListenerBlockManagerRemoved}
-import org.apache.spark.{Accumulable, SparkConf, SparkContext, SparkEnv}
+import org.apache.spark.{Accumulable, SparkContext, SparkEnv}
 import water.H2OStarter
 import water.init.AbstractEmbeddedH2OConfig
+import water.parser.{ParserProvider, ParserService}
 
 import scala.collection.mutable
 
@@ -103,6 +104,12 @@ private[spark] object H2OContextUtils {
     val executorStatus = spreadRDD.map { nodeDesc =>  // RDD partition index
       assert(nodeDesc.hostname == getHostname(SparkEnv.get),  // Make sure we are running on right node
          s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getHostname(SparkEnv.get)})")
+      // The first step is to configure properly ParserProviders
+      val numberOfParserProviders = ThreadUtils.withContextClassLoader(classOf[ParserProvider].getClassLoader) {
+        ParserService.INSTANCE.getAllProviderNames(true).length
+      }
+      assert(numberOfParserProviders > 0, "There should be at least one parser provider")
+
       // Launch the node
       val sparkEnv = SparkEnv.get
       // Define log dir
