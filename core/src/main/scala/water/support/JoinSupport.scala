@@ -18,7 +18,7 @@ package water.support
 
 import org.apache.spark.h2o.Frame
 import water.munging.JoinMethod
-import water.rapids.Exec
+import water.rapids.Rapids
 
 /**
   * A wrapper to call H2O Merge operation.
@@ -42,7 +42,7 @@ trait JoinSupport {
                               toStr(allY),
                               method.name)
     val session = new water.rapids.Session()
-    val ret = Exec.exec(rCode, session)
+    val ret = Rapids.exec(rCode, session)
     ret.getFrame
   }
 
