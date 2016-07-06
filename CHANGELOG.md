@@ -21,6 +21,8 @@ ChangeLog
     - [SW-148](https://0xdata.atlassian.net/browse/SW-148) - Documentation for pySparkling on top of Databricks Cloud
     - [SW-150](https://0xdata.atlassian.net/browse/SW-150) - Introduce Scala API for Frame join operations
     - [SW-155](https://0xdata.atlassian.net/browse/SW-155) - Upgrade H2O dependency to 3.8.3.2
+    - [SW-156](https://0xdata.atlassian.net/browse/SW-156) - Option to control console verbosity of H2O
+    - [SW-157](https://0xdata.atlassian.net/browse/SW-157) - Include H2O S3 persist layer in the final Sparkling Water assembly
 
 #v1.4.14 (2016-04-27)
   - Bug fixes
