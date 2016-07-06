@@ -22,6 +22,7 @@ dependencies {
   }
 
   compile("ai.h2o:h2o-persist-s3:${h2oVersion}") {
+      exclude(group: "com.fasterxml.jackson.core")
   }
 
   // Spark 1.2.0 release
