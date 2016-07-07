@@ -91,7 +91,8 @@ private[spark] object H2OContextUtils {
   def startH2O( sc: SparkContext,
                 spreadRDD: RDD[NodeDesc],
                 numOfExecutors: Int,
-                h2oArgs: Array[String]):Array[NodeDesc] = {
+                h2oArgs: Array[String],
+                networkMask: Option[String]):Array[NodeDesc] = {
 
     // Create global accumulator for list of nodes IP:PORT
     val bc = sc.accumulableCollection(new mutable.HashSet[NodeDesc]())
@@ -120,11 +121,12 @@ private[spark] object H2OContextUtils {
       }
       val executorId = sparkEnv.executorId
       try {
-        // Get node this node hostname
+        // Get this node hostname
         val ip = nodeDesc.hostname
+        // Always trust Spark networking except when network mask is specified
         val launcherArgs = toH2OArgs(
           h2oArgs
-            ++ Array("-ip", ip)
+            ++ networkMask.map(mask => Array("-network", mask)).getOrElse(Array("-ip", ip))
             ++ Array("-log_dir", logDir),
           None)
         // Do not launch H2O several times

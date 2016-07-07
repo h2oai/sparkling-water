@@ -208,20 +208,21 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     var h2oNodeArgs = getH2ONodeArgs
     // Disable web on h2o nodes in non-local mode
     if(!sparkContext.isLocal){
-      h2oNodeArgs = h2oNodeArgs++Array("-disable_web")
+      h2oNodeArgs = h2oNodeArgs ++ Array("-disable_web")
     }
     logDebug(s"Arguments used for launching h2o nodes: ${h2oNodeArgs.mkString(" ")}")
-    val executors = startH2O(sparkContext, spreadRDD, spreadRDDNodes.length, h2oNodeArgs)
+    val executors = startH2O(sparkContext, spreadRDD, spreadRDDNodes.length, h2oNodeArgs, nodeNetworkMask)
     // Store runtime information
     h2oNodes.append( executors:_* )
 
     // Connect to a cluster via H2O client, but only in non-local case
     if (!sparkContext.isLocal) {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + executors.length)
-      // Get arguments for this launch including flatfile
-      // And also ask for client mode
+      // Do not use IP if network mask is specified
       val h2oClientIp = clientIp.getOrElse(getHostname(SparkEnv.get))
-      val h2oClientArgs = toH2OArgs(getH2OClientArgs ++ Array("-ip", h2oClientIp, "-client"),
+      // Get arguments for this launch including flatfile
+      val h2oClientArgs = toH2OArgs(
+                              getH2OClientArgs(h2oClientIp),
                               this,
                               executors)
       logDebug(s"Arguments used for launching h2o client node: ${h2oClientArgs.mkString(" ")}")
