@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+##v1.5.16 (2016-07-07)
+  - Hot fix
+    - [SW-154](https://0xdata.atlassian.net/browse/SW-154) - When network mask was specified, the flatfile was still generated based on Spark reported information
+
 ##v1.5.15 (2016-07-06)
   - Bug fixes
     - [SW-125](https://0xdata.atlassian.net/browse/SW-125) - PySparkling changes in order to upload the package to PyPI
