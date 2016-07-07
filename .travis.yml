@@ -10,7 +10,7 @@ scala:
   - 2.10.6
 
 install:
-  - ( test -d "$SPARK_HOME" && test "$(ls -A "$SPARK_HOME")" ) || ( wget -O spark.tgz "http://mirrors.ocf.berkeley.edu/apache/spark/spark-1.5.1/spark-1.5.1-bin-cdh4.tgz" && mkdir -p "$SPARK_HOME" && tar xvf "spark.tgz" -C "$SPARK_HOME" --strip-components 1 )
+  - ( test -d "$SPARK_HOME" && test "$(ls -A "$SPARK_HOME")" ) || ( wget -O spark.tgz "http://mirrors.ocf.berkeley.edu/apache/spark/spark-1.5.2/spark-1.5.2-bin-cdh4.tgz" && mkdir -p "$SPARK_HOME" && tar xvf "spark.tgz" -C "$SPARK_HOME" --strip-components 1 )
 
 env:
   - SPARK_HOME="$HOME/spark/"
