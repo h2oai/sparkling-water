@@ -233,23 +233,24 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.cloud.timeout`| `60*1000` | Timeout (in msec) for cloud  |
 |`spark.ext.h2o.spreadrdd.retries` | `10` | Number of retries for creation of an RDD covering all existing Spark executors. |
 |`spark.ext.h2o.cloud.name`| `sparkling-water-` | Name of H2O cloud. |
-|`spark.ext.h2o.network.mask`|--|Subnet selector for H2O if IP detection fails - useful for detecting the correct IP if 'spark.ext.h2o.flatfile' is false. |
 |`spark.ext.h2o.nthreads`|`-1`|Limit for number of threads used by H2O, default `-1` means unlimited.|
 |`spark.ext.h2o.disable.ga`|`false`|Disable Google Analytics tracking for embedded H2O.|
 |`spark.ext.h2o.subseq.tries`|`5`|Subsequent successful tries to figure out size of Spark cluster which are producing the same number of nodes.|
+|`spark.ext.h2o.exit.on.unsupported.spark.param`|`true`|If unsupported Spark parameters is detected, then application is forced to shutdown.|
+|`spark.ext.h2o.topology.change.listener.enabled`|`true`|Decides whether listener which kills h2o cloud on the change of underlying cluster's topology is enabled or not.|
+|`spark.ext.h2o.spark.version.check.enabled`|`true`|Enables check if runtime Spark version matches build time Spark version.|
+|`spark.ext.h2o.repl.enabled`|`true`|Decides whether H2O repl is initialized or not. The repl is initialized by default.|
+|`spark.ext.scala.int.default.num`|`1`|Number of executors started at the start of h2o services.|
 | **H2O server node parameters** |||
 |`spark.ext.h2o.node.log.level`| `INFO`| H2O internal log level used for launched H2O nodes. |
 |`spark.ext.h2o.node.log.dir`| ` System.getProperty("user.dir") + File.separator + "h2ologs"` or YARN container dir| Location of h2o logs on executor machine. |
+|`spark.ext.h2o.node.network.mask`|--|Subnet selector for H2O running inside Spark executors, this disables using IP reported by Spark but tries to find IP based on the specified mask.|
 | **H2O client parameters** |||
 |`spark.ext.h2o.client.log.level`| `INFO`| H2O internal log level used for H2O client running inside Spark driver. |
 |`spark.ext.h2o.client.log.dir`| ` System.getProperty("user.dir") + File.separator + "h2ologs"`| Location of h2o logs on driver machine. |
 |`spark.ext.h2o.client.web.port`|`-1`|Exact client port to access web UI. The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`.|
-|`spark.ext.scala.int.default.num`|`1`|Number of executors started at the start of h2o services.|
-|`spark.ext.h2o.repl.enabled`|`true`|Decides whether H2O repl is initialized or not. The repl is initialized by default.|
-|`spark.ext.h2o.topology.change.listener.enabled`|`true`|Decides whether listener which kills h2o cloud on the change of underlying cluster's topology is enabled or not.|
-|`spark.ext.h2o.spark.version.check.enabled`|`true`|Enables check if runtime Spark version matches build time Spark version.|
-|`spark.ext.h2o.exit.on.unsupported.spark.param`|`true`|If unsupported Spark parameters is detected, then application is forced to shutdown.|
 |`spark.ext.h2o.client.verbose`|`false`|The client outputs verbosed log output directly into console. Enabling the flag increases the client log level to INFO.|
+|`spark.ext.h2o.client.network.mask`|--|Subnet selector for H2O client, this disables using IP reported by Spark but tries to find IP based on the specifed mask.|
 
 ---
 
