@@ -16,11 +16,11 @@
 */
 package org.apache.spark.h2o.util
 
-import io.netty.util.internal.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
+import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.h2o.H2OContext
-import org.scalatest.{Suite, BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
 /**
   * Helper trait to simplify initialization and termination of Spark/H2O contexts.

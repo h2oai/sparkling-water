@@ -34,8 +34,12 @@ package object h2o {
   // Alias for
   type RDD[X] = org.apache.spark.rdd.RDD[X]
 
-  case class IntHolder   (result: Option[Int])
+  type Dataset[X] = org.apache.spark.sql.Dataset[X]
+
+  case class ByteHolder  (result: Option[Byte])
   case class DoubleHolder(result: Option[Double])
+  case class IntHolder   (result: Option[Int])
+  case class ShortHolder (result: Option[Short])
   case class StringHolder(result: Option[String])
 
 

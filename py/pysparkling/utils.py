@@ -1,5 +1,5 @@
 from h2o.frame import H2OFrame
-from h2o.connection import H2OConnection
+from h2o.backend import H2OConnection
 
 class FrameConversions:
 
