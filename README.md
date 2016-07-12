@@ -49,6 +49,8 @@ for the latest Spark version. They are back-ported into older Sparkling Water ve
 ### Build
 
 Download Spark installation and point environment variable `SPARK_HOME` to it.
+Befure building this project, you may want to build Spark: go to Spark folder and do `sbt assembly`.
+
 Then use the provided `gradlew` to build project:
 
 In order to build the whole project, one of the following properties needs to be set: 
