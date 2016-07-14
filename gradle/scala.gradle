@@ -7,17 +7,17 @@ tasks.withType(ScalaCompile) {
     scalaCompileOptions.additionalParameters = ['-target:jvm-1.6']
 }
 
-project.archivesBaseName = "${project.name}_${scalaBinaryVersion}"
+project.archivesBaseName = "${project.name}_${scalaBaseVersion}"
 
 project.tasks.withType(AbstractArchiveTask) { AbstractArchiveTask task ->
-    task.baseName = "${project.name}_${scalaBinaryVersion}"
+    task.baseName = "${project.name}_${scalaBaseVersion}"
 }
 
 // Create jar
 task testJar(type: Jar, dependsOn: testClasses) {
     group = "Build"
     description = "Assembles a jar archive with test classes."
-    baseName = "${project.name}_${scalaBinaryVersion}"
+    baseName = "${project.name}_${scalaBaseVersion}"
     appendix = 'test'
     from sourceSets.test.output
 }

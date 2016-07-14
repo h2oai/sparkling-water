@@ -47,13 +47,15 @@ trait H2OConf {
   def defaultCloudSize  = sparkConf.getInt(PROP_DEFAULT_CLUSTER_SIZE._1, PROP_DEFAULT_CLUSTER_SIZE._2)
   def h2oNodeLogLevel   = sparkConf.get(PROP_NODE_LOG_LEVEL._1, PROP_NODE_LOG_LEVEL._2)
   def h2oClientLogLevel = sparkConf.get(PROP_CLIENT_LOG_LEVEL._1, PROP_CLIENT_LOG_LEVEL._2)
-  def h2oNodeLogDir   = sparkConf.get(PROP_NODE_LOG_DIR._1, PROP_NODE_LOG_DIR._2)
-  def h2oClientLogDir = sparkConf.get(PROP_CLIENT_LOG_DIR._1, PROP_CLIENT_LOG_DIR._2)
-  def networkMask   = sparkConf.getOption(PROP_NETWORK_MASK._1)
+  def h2oNodeLogDir     = sparkConf.get(PROP_NODE_LOG_DIR._1, PROP_NODE_LOG_DIR._2)
+  def h2oClientLogDir   = sparkConf.get(PROP_CLIENT_LOG_DIR._1, PROP_CLIENT_LOG_DIR._2)
+  def clientNetworkMask = sparkConf.getOption(PROP_CLIENT_NETWORK_MASK._1)
+  def nodeNetworkMask   = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
   def nthreads      = sparkConf.getInt(PROP_NTHREADS._1, PROP_NTHREADS._2)
   def disableGA     = sparkConf.getBoolean(PROP_DISABLE_GA._1, PROP_DISABLE_GA._2)
   def clientWebPort = sparkConf.getInt(PROP_CLIENT_WEB_PORT._1, PROP_CLIENT_WEB_PORT._2)
   def clientIcedDir = sparkConf.getOption(PROP_CLIENT_ICED_DIR._1)
+  def clientVerboseOutput = sparkConf.getBoolean(PROP_CLIENT_VERBOSE._1, PROP_CLIENT_VERBOSE._2)
   def nodeIcedDir   = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
 
   def jks           = sparkConf.getOption(PROP_JKS._1)
@@ -86,13 +88,14 @@ trait H2OConf {
     * @return array of H2O client arguments.
    */
 
-  def getH2OClientArgs: Array[String] = (
+  def getH2OClientArgs(ip: String): Array[String] = (
     getH2OCommonOptions
-      ++ Seq("-quiet")
+      ++ Seq("-client")
+      ++ (if (!clientVerboseOutput) Seq("-quiet") else Nil)
       ++ (if (hashLogin) Seq("-hash_login") else Nil)
       ++ (if (ldapLogin) Seq("-ldap_login") else Nil)
       ++ (if (kerberosLogin) Seq("-kerberos_login") else Nil)
-      ++ Seq("-log_level", h2oClientLogLevel)
+      ++ Seq("-log_level", if (clientVerboseOutput) incLogLevel(h2oClientLogLevel, "INFO") else h2oClientLogLevel)
       ++ Seq("-log_dir", h2oClientLogDir)
       ++ Seq("-baseport", clientBasePort.toString)
       ++ Seq(
@@ -101,16 +104,16 @@ trait H2OConf {
         ("-jks", jks.orNull),
         ("-jks_pass", jksPass.orNull),
         ("-login_conf", loginConf.orNull),
-        ("-user_name", userName.orNull)
+        ("-user_name", userName.orNull),
+        clientNetworkMask.map(mask => ("-network", mask)).getOrElse(("-ip", ip))
       ).filter(_._2 != null).flatMap(x => Seq(x._1, x._2.toString))
     ).toArray
 
-  private def getH2OCommonOptions:Seq[String] =
+  private def getH2OCommonOptions: Seq[String] =
     // Option in form key=value
     Seq(
       ("-name", cloudName),
-      ("-nthreads", if (nthreads > 0) nthreads else null),
-      ("-network", networkMask.orNull))
+      ("-nthreads", if (nthreads > 0) nthreads else null))
       .filter(x => x._2 != null)
       .flatMap(x => Seq(x._1, x._2.toString)) ++ // Append single boolean options
       Seq(("-ga_opt_out", disableGA))
@@ -143,6 +146,24 @@ trait H2OConf {
          |  h2oClientLog   : $h2oClientLogLevel
          |  nthreads       : $nthreads
          |  drddMulFactor  : $drddMulFactor""".stripMargin
+
+  /**
+    * Increment log level to at least desired minimal log level.
+    * @param logLevel  actual log level
+    * @param minLogLevel  desired minimal log level
+    * @return if logLevel is less verbose than minLogLeve then minLogLevel, else logLevel
+    */
+  private def incLogLevel(logLevel: String, minLogLevel: String): String = {
+    val logLevels = Seq( ("OFF", 0), ("FATAL", 1), ("ERROR", 2),
+                         ("WARN", 3), ("INFO", 4), ("DEBUG", 5), ("TRACE", 6), ("ALL", 7))
+    val ll = logLevels.find(t => t._1 == logLevel)
+    val mll = logLevels.find(t => t._1 == minLogLevel)
+    if (mll.isEmpty) {
+      logLevel
+    } else {
+      ll.map(v => if (v._2 < mll.get._2) minLogLevel else logLevel).getOrElse(minLogLevel)
+    }
+  }
 }
 
 object H2OConf {
@@ -170,9 +191,10 @@ object H2OConf {
   val PROP_NODE_LOG_DIR = ("spark.ext.h2o.node.log.dir", null.asInstanceOf[String])
   /** Location of log directory for the driver instance. */
   val PROP_CLIENT_LOG_DIR = ("spark.ext.h2o.client.log.dir", defaultLogDir)
-  /** Subnet selector for h2o if IP guess fail - useful if 'spark.ext.h2o.flatfile' is false
-    * and we are trying to guess right IP on mi*/
-  val PROP_NETWORK_MASK = ("spark.ext.h2o.network.mask", null.asInstanceOf[String])
+  /** Subnet selector for H2O client - if the mask is specified then Spark network setup is not discussed. */
+  val PROP_CLIENT_NETWORK_MASK = ("spark.ext.h2o.client.network.mask", null.asInstanceOf[String])
+  /** Subnet selector for H2O nodes running inside executors - if the mask is specified then Spark network setup is not discussed. */
+  val PROP_NODE_NETWORK_MASK = ("spark.ext.h2o.node.network.mask", null.asInstanceOf[String])
   /** Limit for number of threads used by H2O, default -1 means unlimited */
   val PROP_NTHREADS = ("spark.ext.h2o.nthreads", -1)
   /** Disable GA tracking */
@@ -184,9 +206,12 @@ object H2OConf {
   val PROP_CLIENT_ICED_DIR = ("spark.ext.h2o.client.iced.dir", null.asInstanceOf[String])
   /** Configuration property - base port used for individual H2O nodes configuration. */
   val PROP_NODE_PORT_BASE = ( "spark.ext.h2o.node.port.base", 54321 )
-  /** FIXME: documentation UPDATE */
+  /** Base port for finding non-allocated port for H2O client. */
   val PROP_CLIENT_PORT_BASE = ( "spark.ext.h2o.client.port.base", 54321 )
+  /** Explicit client IP */
   val PROP_CLIENT_IP = ("spark.ext.h2o.client.ip", null.asInstanceOf[String])
+  /** Print detailed messages to client stdout */
+  val PROP_CLIENT_VERBOSE = ("spark.ext.h2o.client.verbose", false)
 
   /** Location of iced directory for Spark nodes */
   val PROP_NODE_ICED_DIR = ("spark.ext.h2o.node.iced.dir", null.asInstanceOf[String])

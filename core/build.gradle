@@ -13,7 +13,7 @@ dependencies {
   }
 
   // H2O Scala API
-  compile "ai.h2o:h2o-scala_${scalaBinaryVersion}:${h2oVersion}"
+  compile "ai.h2o:h2o-scala_${scalaBaseVersion}:${h2oVersion}"
   // H2O Persistent layer
   compile("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
       // Cannot use here: transitive = false since Gradle is producing wrong POM file
@@ -21,13 +21,17 @@ dependencies {
       exclude(group: "org.apache.hadoop", module: "hadoop-client")
   }
 
+  compile("ai.h2o:h2o-persist-s3:${h2oVersion}") {
+      exclude(group: "com.fasterxml.jackson.core")
+  }
+
   // Spark 1.2.0 release
   // - core
-  compile "org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}"
+  compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
   // - SQL component
-  compile "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
+  compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
   // - MLLib component
-  compile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
+  compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
   // Sparkling Water REPL
   compile(project(':sparkling-water-repl'))
@@ -39,11 +43,11 @@ dependencies {
   compile "org.scala-lang:scala-library:${scalaVersion}"
 
   // And use scalatest for Scala testing
-  testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
+  testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"
 
   // Integration tests requirements
-  integTestCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
+  integTestCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   integTestCompile "junit:junit:4.11"
 
   // Put Spark Assembly on runtime path
