@@ -42,14 +42,3 @@ class H2ODatasetTest  extends FunSuite with SharedSparkTestContext {
       "H2OFrame column name should be 'result' since Holder object was used to define Dataset")
   }
 }
-
-class PUBDEV458Type(val result: Option[Int]) extends Product with Serializable {
-  //def this() = this(None)
-  override def canEqual(that: Any):Boolean = that.isInstanceOf[PUBDEV458Type]
-  override def productArity: Int = 1
-  override def productElement(n: Int) =
-    n match {
-      case 0 => result
-      case _ => throw new IndexOutOfBoundsException(n.toString)
-    }
-}
