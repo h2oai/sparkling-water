@@ -16,11 +16,11 @@
 */
 package org.apache.spark.h2o.util
 
-import io.netty.util.internal.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
+import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
+import org.apache.spark.h2o.{H2OContext, H2OSQLContext}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.h2o.H2OContext
-import org.scalatest.{Suite, BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
 /**
   * Helper trait to simplify initialization and termination of Spark/H2O contexts.
@@ -29,6 +29,7 @@ import org.scalatest.{Suite, BeforeAndAfterAll, BeforeAndAfterEach}
 trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self: Suite =>
   @transient var sc: SparkContext = _
   @transient var hc: H2OContext = _
+  @transient var hsc: H2OSQLContext = _
   @transient implicit var sqlc: SQLContext = _
 
   override def beforeAll() {

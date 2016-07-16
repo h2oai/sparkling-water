@@ -326,7 +326,22 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   H2OContext.setInstantiatedContext(this)
 }
 
+class H2OSQLContext(@transient val sqlContext: SQLContext) extends H2OContext(sqlContext.sparkContext) {
+
+/** Transforms Dataset[Supported type] to H2OFrame */
+def asH2OFrame(ds: SupportedDataset): H2OFrame = asH2OFrame(ds, None)
+def asH2OFrame(ds: SupportedDataset, frameName: Option[String]): H2OFrame =
+  ds.toH2OFrame(sqlContext, frameName)
+def asH2OFrame(ds: SupportedDataset, frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
+}
+
 object H2OContext extends Logging {
+
+  // copypaste from toH2OFrameFromRDD - seems like RDD and Dataset don't have any meaningful common traits
+  def toH2OFrameFromDataset[T <: Product](sc: SparkContext, ds: Dataset[T], frameKeyName: Option[String]): H2OFrame = {
+    val rdd: RDD[Product] = ds.rdd.asInstanceOf[RDD[Product]]
+    toH2OFrameFromPureProduct(sc, rdd, frameKeyName)
+  }
 
   val UNSUPPORTED_SPARK_OPTIONS = Seq(
     ("spark.dynamicAllocation.enabled", "true"),
@@ -465,7 +480,7 @@ object H2OContext extends Logging {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
     // Create chunks on remote nodes
-    val rows = sc.runJob(rdd, perTypedRDDPartition(keyName, vecTypes) _) // eager, not lazy, evaluation
+    val rows = sc.runJob(rdd, perTypedDataPartition(keyName, vecTypes) _) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
     rows.foreach{ case(cidx, nrows) => res(cidx) = nrows }
 
@@ -485,7 +500,7 @@ object H2OContext extends Logging {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
     // Create chunks on remote nodes
-    val rows = sc.runJob(rdd, perTypedRDDPartition(keyName, vecTypes) _) // eager, not lazy, evaluation
+    val rows = sc.runJob(rdd, perTypedDataPartition(keyName, vecTypes) _) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
     rows.foreach{ case(cidx, nrows) => res(cidx) = nrows }
 
@@ -670,7 +685,7 @@ object H2OContext extends Logging {
   }
 
   private
-  def perTypedRDDPartition[A<:Product](keystr:String, vecTypes: Array[Byte])
+  def perTypedDataPartition[A<:Product](keystr:String, vecTypes: Array[Byte])
                                  ( context: TaskContext, it: Iterator[A] ): (Int,Long) = {
     // An array of H2O NewChunks; A place to record all the data in this partition
     val nchks = water.fvec.FrameUtils.createNewChunks(keystr, vecTypes, context.partitionId)
@@ -766,6 +781,7 @@ object H2OContext extends Logging {
       conf.set("spark.scheduler.minRegisteredResourcesRatio", "1")
     }
 
+    // TODO(vlad): this comparison, opt._2 == None, won't work (comparing string to Option)
     H2OContext.UNSUPPORTED_SPARK_OPTIONS.foreach(opt => if (conf.contains(opt._1) && (opt._2 == None || conf.get(opt._1) == opt._2)) {
       logWarning(s"Unsupported options ${opt._1} detected!")
       if (exitOnUnsupportedParam) {
