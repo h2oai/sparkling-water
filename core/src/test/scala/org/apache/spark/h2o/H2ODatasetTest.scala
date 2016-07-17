@@ -6,6 +6,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.fvec.Vec
+import water.parser.BufferedString
 
 /**
   * Testing schema for h2o schema spark dataset transformation.
@@ -18,7 +19,8 @@ case class SamplePerson(name: String, age: Int, email: String)
 class H2ODatasetTest  extends FunSuite with SharedSparkTestContext {
   val people:List[SamplePerson] = SamplePerson("Hermione Granger", 15, "hgranger@griffindor.edu.uk")::
                SamplePerson("Ron Weasley", 14, "rweasley@griffindor.edu.uk")::
-               SamplePerson("Harry Potter", 14, "hpotter@griffindor.edu.uk")::Nil
+               SamplePerson("Harry Potter", 14, "hpotter@griffindor.edu.uk")::
+    SamplePerson("Lucius Malfoy", 13, "lucius@slitherin.edu.uk")::Nil
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
   test("Dataset[SamplePerson] to H2OFrame and back") {
@@ -29,15 +31,15 @@ class H2ODatasetTest  extends FunSuite with SharedSparkTestContext {
 
     import sqlContext.implicits._
 
-    val ds = sqlContext.createDataset(people)//(encoderFor[SamplePerson])
-
+    val ds = sqlContext.createDataset(people)
     val h2oFrame:H2OFrame = hsc.asH2OFrame(ds)
 
     assertBasicInvariants(ds, h2oFrame, (row, vec) => {
-      val row1 = row + 1
-      val value = vec.at8(row) // value stored at row-th
-      assert (row1 == value, "The H2OFrame values should match row numbers+1")
-    })
+      val sample = people(row.toInt)
+      val valueString = new BufferedString()
+      val value = vec.atStr(valueString, row) // value stored at row-th
+      assert (sample.name == value.toString, s"The H2OFrame values should match")
+    }, List("name", "age", "email"))
 //    val backToDs = hsc.asDataset
 
     val asrdd = hc.asRDD[SamplePerson](h2oFrame)
@@ -50,8 +52,8 @@ class H2ODatasetTest  extends FunSuite with SharedSparkTestContext {
 
   private type RowValueAssert = (Long, Vec) => Unit
 
-  private def assertBasicInvariants[T<:Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert): Unit = {
-    assertHolderProperties(df)
+  private def assertBasicInvariants[T<:Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String]): Unit = {
+    assertHolderProperties(df, names)
     assert (ds.count == df.numRows(), "Number of rows in H2OFrame and Dataset should match")
     // Check numbering
     val vec = df.vec(0)
@@ -63,11 +65,12 @@ class H2ODatasetTest  extends FunSuite with SharedSparkTestContext {
     }
   }
 
-  private def assertHolderProperties(df: H2OFrame): Unit = {
-
-    assert (df.numCols() == 1, s"H2OFrame should contain single column, have ${df.numCols()}")
-    assert (df.names().length == 1, s"H2OFrame column names should have single value, have ${df.names().length}")
-    assert (df.names()(0).equals("result"),
-      "H2OFrame column name should be 'result' since Holder object was used to define Dataset")
+  private def assertHolderProperties(df: H2OFrame, names: List[String]): Unit = {
+    val actualNames = df.names().toList
+    val numCols = names.length
+    assert (df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
+    assert (df.names().length == numCols, s"H2OFrame column names should be $numCols in size, have ${df.names().length}")
+    assert (actualNames.equals(names),
+      s"H2OFrame column names should be $names since Holder object was used to define Dataset, but it is $actualNames")
   }
 }

@@ -339,8 +339,9 @@ object H2OContext extends Logging {
 
   // copypaste from toH2OFrameFromRDD - seems like RDD and Dataset don't have any meaningful common traits
   def toH2OFrameFromDataset[T <: Product](sc: SparkContext, ds: Dataset[T], frameKeyName: Option[String]): H2OFrame = {
+    val fieldNames = ds.schema.fieldNames
     val rdd: RDD[Product] = ds.rdd.asInstanceOf[RDD[Product]]
-    toH2OFrameFromPureProduct(sc, rdd, frameKeyName)
+    toH2OFrameFromPureProduct(sc, rdd, frameKeyName, fieldNames)
   }
 
   val UNSUPPORTED_SPARK_OPTIONS = Seq(
@@ -464,12 +465,14 @@ object H2OContext extends Logging {
     }
   }
 
-  def toH2OFrameFromPureProduct(sc: SparkContext, rdd: RDD[Product], frameKeyName: Option[String]): H2OFrame = {
+  val defaultFieldNames = (i: Int) => "f" + i
+
+  def toH2OFrameFromPureProduct(sc: SparkContext, rdd: RDD[Product], frameKeyName: Option[String], fieldNames: Int => String = defaultFieldNames): H2OFrame = {
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
 
     // infer the type
     val first = rdd.first()
-    val fnames = 0.until(first.productArity).map(idx => "f" + idx).toArray[String]
+    val fnames = (0.until(first.productArity)map fieldNames).toArray[String]
     val ftypes = new ListBuffer[Class[_]]()
     val it = first.productIterator
     while(it.hasNext){
