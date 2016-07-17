@@ -17,7 +17,7 @@
 package org.apache.spark.h2o.util
 
 import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
-import org.apache.spark.h2o.{H2OContext, H2OSQLContext}
+import org.apache.spark.h2o.{H2OSQLContext, H2OContext}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
@@ -29,8 +29,8 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self: Suite =>
   @transient var sc: SparkContext = _
   @transient var hc: H2OContext = _
-  @transient var hsc: H2OSQLContext = _
   @transient implicit var sqlc: SQLContext = _
+  lazy val hsc: H2OSQLContext = new H2OSQLContext(sqlc)
 
   override def beforeAll() {
     System.setProperty("spark.testing", "true")
