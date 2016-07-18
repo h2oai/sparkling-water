@@ -38,7 +38,6 @@ import water.api.scalaInt.ScalaCodeHandler
 import water.parser.BufferedString
 
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -472,14 +471,13 @@ object H2OContext extends Logging {
 
     // infer the type
     val first = rdd.first()
-    val fnames = (0.until(first.productArity)map fieldNames).toArray[String]
-    val ftypes = new ListBuffer[Class[_]]()
-    val it = first.productIterator
-    while(it.hasNext){
-      ftypes+=inferFieldType(it.next())
-    }
+    val fnames = (0 until first.productArity map fieldNames).toArray[String]
+
+    val ftypes = first.productIterator map inferFieldType
+
     // Collect H2O vector types for all input types
-    val vecTypes = ftypes.toArray[Class[_]].indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
+    val vecTypes = ftypes map dataTypeToVecType toArray
+
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
     // Create chunks on remote nodes

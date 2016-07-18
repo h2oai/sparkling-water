@@ -18,7 +18,10 @@
 package org.apache.spark.rdd
 
 
-import org.apache.spark.h2o.{H2OContext, H2OFrame, ReflectionUtils}
+import java.lang
+import java.lang.reflect.Constructor
+
+import org.apache.spark.h2o.{H2OContext, ReflectionUtils}
 import org.apache.spark.{Partition, TaskContext}
 import water.fvec.Frame
 import water.parser.BufferedString
@@ -48,65 +51,14 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     }
   }
   val types = ReflectionUtils.types[A](colNames)
-  @transient val jc = implicitly[ClassTag[A]].runtimeClass
-  @transient val cs = jc.getConstructors
-  @transient val ccr = cs.collectFirst(
-        { case c if (c.getParameterTypes.length==colNames.length) => c })
-        .getOrElse( {
-                      throw new IllegalArgumentException(
-                        s"Constructor must take exactly ${colNames.length} args")})
+  val jc = implicitly[ClassManifest[A]].runtimeClass
 
   /**
    * :: DeveloperApi ::
    * Implemented by subclasses to compute a given partition.
    */
   override def compute(split: Partition, context: TaskContext): Iterator[A] = {
-    val kn = keyName
-    new H2OChunkIterator[A] {
-      override val keyName = kn
-      override val partIndex = split.index
-
-      val jc = implicitly[ClassTag[A]].runtimeClass
-      val cs = jc.getConstructors
-      val ccr = cs.collectFirst({
-                case c if (c.getParameterTypes.length==colNames.length) => c
-              })
-        .getOrElse({
-            throw new IllegalArgumentException(
-                  s"Constructor must take exactly ${colNames.length} args")
-      })
-      /** Dummy muttable holder for String values */
-      val valStr = new BufferedString()
-
-      def next(): A = {
-        val data = new Array[Option[Any]](chks.length)
-          for (
-            idx <- 0 until chks.length;
-            chk = chks (idx);
-            typ = types(idx)
-          ) {
-            val value = if (chk.isNA(row)) None
-            else typ match {
-              case q if q == classOf[Integer]           => Some(chk.at8(row).asInstanceOf[Int])
-              case q if q == classOf[java.lang.Long]    => Some(chk.at8(row))
-              case q if q == classOf[java.lang.Double]  => Some(chk.atd(row))
-              case q if q == classOf[java.lang.Float]   => Some(chk.atd(row))
-              case q if q == classOf[java.lang.Boolean] => Some(chk.at8(row) == 1)
-              case q if q == classOf[String] =>
-                if (chk.vec().isCategorical) {
-                  Some(chk.vec().domain()(chk.at8(row).asInstanceOf[Int]))
-                } else if (chk.vec().isString) {
-                  chk.atStr(valStr, row)
-                  Some(valStr.toString)
-                } else None
-              case _ => None
-            }
-            data(idx) = value
-          }
-        row += 1
-        ccr.newInstance(data:_*).asInstanceOf[A]
-      }
-    }
+    new H2ORDDIterator(keyName, split.index)
   }
 
   /** Pass thru an RDD if given one, else pull from the H2O Frame */
@@ -117,4 +69,85 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     res
   }
 
+  class H2ORDDIterator(val keyName: String, val partIndex: Int) extends H2OChunkIterator[A] {
+    /** Dummy muttable holder for String values */
+    val valStr = new BufferedString()
+
+    def extractData: Array[Option[Any]] = {
+      val data = new Array[Option[Any]](chks.length)
+      for (
+        idx <- chks.indices;
+        chk = chks(idx);
+        typ = types(idx)
+      ) {
+        val value = if (chk.isNA(row)) None
+        else typ match {
+          case q if q == classOf[Integer] => Some(chk.at8(row).asInstanceOf[Int])
+          case q if q == classOf[lang.Long] => Some(chk.at8(row))
+          case q if q == classOf[lang.Double] => Some(chk.atd(row))
+          case q if q == classOf[lang.Float] => Some(chk.atd(row))
+          case q if q == classOf[lang.Boolean] => Some(chk.at8(row) == 1)
+          case q if q == classOf[String] =>
+            if (chk.vec().isCategorical) {
+              Some(chk.vec().domain()(chk.at8(row).asInstanceOf[Int]))
+            } else if (chk.vec().isString) {
+              chk.atStr(valStr, row)
+              Some(valStr.toString)
+            } else None
+          case _ => None
+        }
+        data(idx) = value
+      }
+      data
+    }
+
+    def next(): A = {
+      val options: Array[Option[Any]] = extractData
+      val values: List[Array[Object]] = try {
+        val extractedValues: Array[Object] = for {
+          opt <- options
+          v: AnyRef = opt.get.asInstanceOf[AnyRef]
+        } yield v
+
+        extractedValues :: Nil
+      } catch {
+        case oops: Exception => Nil
+      }
+      val optionValues: Array[AnyRef] = options.map(x => x)
+      val allDataArrays: List[Array[AnyRef]] = optionValues::values
+
+      row += 1
+
+      def build(c: Constructor[_], data: Array[AnyRef]): Option[A] = try {
+        Some(c.newInstance(data:_*).asInstanceOf[A])
+      } catch { case something => None }
+
+      val res: Seq[A] = for {
+        ccr <- constructors
+        data <- allDataArrays
+        instance <- build(ccr, data)
+      } yield instance
+
+      res.toList match {
+        case Nil  => throw new scala.IllegalArgumentException(
+          s"Failed to find an appropriate $jc constructor for given args")
+        case unique::Nil => unique
+        case one::two::Nil  => throw new scala.IllegalArgumentException(
+          s"found more than une $jc constructor for given args - can't choose")
+      }
+    }
+  }
+
+  lazy val constructors: Seq[Constructor[_]] = {
+
+    val cs = jc.getConstructors
+    val found = cs.collect {
+      case c if c.getParameterTypes.length == colNames.length => c
+    }
+
+    if (found.isEmpty) throw new scala.IllegalArgumentException(
+      s"Constructor must take exactly ${colNames.length} args")
+
+    found
+  }
 }

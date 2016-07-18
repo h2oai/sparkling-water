@@ -17,9 +17,10 @@ case class SamplePerson(name: String, age: Int, email: String)
 
 @RunWith(classOf[JUnitRunner])
 class H2ODatasetTest  extends FunSuite with SharedSparkTestContext {
-  val people:List[SamplePerson] = SamplePerson("Hermione Granger", 15, "hgranger@griffindor.edu.uk")::
-               SamplePerson("Ron Weasley", 14, "rweasley@griffindor.edu.uk")::
-               SamplePerson("Harry Potter", 14, "hpotter@griffindor.edu.uk")::
+  val people:List[SamplePerson] =
+    SamplePerson("Hermione Granger", 15, "hgranger@griffindor.edu.uk")::
+    SamplePerson("Ron Weasley", 14, "rweasley@griffindor.edu.uk")::
+    SamplePerson("Harry Potter", 14, "hpotter@griffindor.edu.uk")::
     SamplePerson("Lucius Malfoy", 13, "lucius@slitherin.edu.uk")::Nil
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
@@ -37,14 +38,17 @@ class H2ODatasetTest  extends FunSuite with SharedSparkTestContext {
     assertBasicInvariants(ds, h2oFrame, (row, vec) => {
       val sample = people(row.toInt)
       val valueString = new BufferedString()
+
       val value = vec.atStr(valueString, row) // value stored at row-th
       assert (sample.name == value.toString, s"The H2OFrame values should match")
     }, List("name", "age", "email"))
 //    val backToDs = hsc.asDataset
 
     val asrdd = hc.asRDD[SamplePerson](h2oFrame)
+    val asDS = asrdd.toDS()
+    val extracted = asDS.collect() // this one crashes
     assert(ds.count == h2oFrame.numRows(), "Number of rows should match")
-    assert(asrdd.count == h2oFrame.numRows(), "Number of rows should match")
+//    assert(asrdd.count == h2oFrame.numRows(), "Number of rows should match")
     // Clean up
     h2oFrame.delete()
     ds.unpersist()
