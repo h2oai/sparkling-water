@@ -120,7 +120,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
 
       def build(c: Constructor[_], data: Array[AnyRef]): Option[A] = try {
         Some(c.newInstance(data:_*).asInstanceOf[A])
-      } catch { case something => None }
+      } catch { case something: Exception => None }
 
       val res: Seq[A] = for {
         ccr <- constructors
@@ -132,7 +132,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
         case Nil  => throw new scala.IllegalArgumentException(
           s"Failed to find an appropriate $jc constructor for given args")
         case unique::Nil => unique
-        case one::two::Nil  => throw new scala.IllegalArgumentException(
+        case one::two::more  => throw new scala.IllegalArgumentException(
           s"found more than une $jc constructor for given args - can't choose")
       }
     }
