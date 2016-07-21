@@ -27,7 +27,6 @@ import water.parser.BufferedString
 
 /**
   * Testing schema for h2o schema spark dataset transformation.
-  * Created by vpatryshev on 7/15/16.
   */
 
 case class SamplePerson(name: String, age: Int, email: String)
