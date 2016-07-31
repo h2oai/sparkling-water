@@ -20,8 +20,8 @@ package org.apache.spark.h2o
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.util.SharedSparkTestContext
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import water.fvec.Vec
 import water.parser.BufferedString
 
@@ -30,67 +30,124 @@ import water.parser.BufferedString
   */
 
 case class SamplePerson(name: String, age: Int, email: String)
+case class WeirdPerson(email: String, age: Int, name: String)
+case class SampleCompany(officialName: String, count: Int, url: String)
+case class SampleAccount(email: String, name: String, age: Int)
+case class SampleCat(name: String, age: Int)
 
 @RunWith(classOf[JUnitRunner])
-class H2ODatasetTest  extends FunSuite with SharedSparkTestContext {
-  val people:List[SamplePerson] =
-    SamplePerson("Hermione Granger", 15, "hgranger@griffindor.edu.uk")::
-    SamplePerson("Ron Weasley", 14, "rweasley@griffindor.edu.uk")::
-    SamplePerson("Harry Potter", 14, "hpotter@griffindor.edu.uk")::
-    SamplePerson("Lucius Malfoy", 13, "lucius@slitherin.edu.uk")::Nil
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAndAfterAll {
 
-  test("Dataset[SamplePerson] to H2OFrame and back") {
-    val sqlContext = hsc.sqlContext
-//    val rdd:RDD[Product] = sqlContext.sparkContext.parallelize(people)
-//    val df = rdd.toDF()
-//    df.registerTempTable("TestDataSamplePerson")
+  val dataSource =
+      ("Hermione Granger", 15, "hgranger@griffindor.edu.uk") ::
+      ("Ron Weasley", 14, "rweasley@griffindor.edu.uk") ::
+      ("Harry Potter", 14, "hpotter@griffindor.edu.uk") ::
+      ("Lucius Malfoy", 13, "lucius@slitherin.edu.uk") :: Nil
+
+  val samplePeople: List[SamplePerson] = dataSource map SamplePerson.tupled
+
+  lazy val sqlContext = hsc.sqlContext
+  lazy val testSourceDataset = {
+    import sqlContext.implicits._
+    sqlContext.createDataset(samplePeople)
+  }
+
+  def testH2oFrame: H2OFrame = hsc.asH2OFrame(testSourceDataset)
+
+  import scala.reflect.ClassTag
+  import scala.reflect.runtime.universe._
+
+  def readWholeFrame[T <: Product : TypeTag : ClassTag](frame: H2OFrame) = {
 
     import sqlContext.implicits._
 
-    val ds = sqlContext.createDataset(people)
-    val h2oFrame:H2OFrame = hsc.asH2OFrame(ds)
+    val asrdd: RDD[T] = hc.asRDD[T](frame)
+    val asDS = asrdd.toDS()
+    val extracted = asDS.collect()
+    extracted
+  }
 
-    assertBasicInvariants(ds, h2oFrame, (row, vec) => {
-      val sample = people(row.toInt)
+  //  def extractAll[T] = {
+  //    val asrdd: RDD[SamplePerson] = hc.asRDD[SamplePerson](h2oFrame)
+  //    val asDS = asrdd.toDS()
+  //    val extracted = asDS.collect()
+  //  }
+
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+
+  override def afterAll(): Unit = {
+    testH2oFrame.delete()
+    testSourceDataset.unpersist()
+  }
+
+  def matchData[T](actual: Seq[T], expected:Seq[T]): Unit = {
+    for {p <- expected} assert(actual.contains(p), s"$p not found in the result $actual")
+    for {p <- actual} assert(expected.contains(p), s"Did not expect $p in the result $expected")
+    assert(actual.toSet == expected.toSet, "Oops, did not match the people")
+  }
+
+  def checkWith[T <: Product: TypeTag: ClassTag](cons: (String, Int, String) => T): Unit = {
+    val samples = dataSource map { case (n, a, e) => cons(n,a,e) }
+    val extracted = readWholeFrame[T](testH2oFrame)
+    matchData(extracted, samples)
+  }
+
+  test("Dataset[SamplePerson] to H2OFrame and back") {
+
+    assertBasicInvariants(testSourceDataset, testH2oFrame, (row, vec) => {
+      val sample = samplePeople(row.toInt)
       val valueString = new BufferedString()
 
-      val value = vec.atStr(valueString, row) // value stored at row-th
-      assert (sample.name == value.toString, s"The H2OFrame values should match")
+      val value = vec.atStr(valueString, row)
+      assert(sample.name == value.toString, s"The H2OFrame values should match")
     }, List("name", "age", "email"))
-//    val backToDs = hsc.asDataset
 
-    val asrdd = hc.asRDD[SamplePerson](h2oFrame)
-    val asDS = asrdd.toDS()
-    val extracted = asDS.collect() // this one crashes
-    assert(ds.count == h2oFrame.numRows(), "Number of rows should match")
-//    assert(asrdd.count == h2oFrame.numRows(), "Number of rows should match")
-    // Clean up
-    h2oFrame.delete()
-    ds.unpersist()
+    val extracted = readWholeFrame[SamplePerson](testH2oFrame)
+
+    assert(testSourceDataset.count == testH2oFrame.numRows(), "Number of rows should match")
+
+    matchData(extracted, samplePeople)
+  }
+
+  test("Datasets with a type that does not match") {
+
+    intercept[IllegalArgumentException] {
+      hc.asRDD[SampleCompany](testH2oFrame)
+      fail(s"Should not have accepted mismatching data")
+    }
+  }
+
+  test("Datasets with two different types") {
+    checkWith ((n, a, e) => WeirdPerson(e, a, n))
+  }
+
+  test("Datasets with two different types and misplaced positions") {
+    checkWith ((n, a, e) => SampleAccount(e, n, a))
+  }
+
+  test("Datasets with a projection") {
+    checkWith ((n, a, e) => SampleCat(n, a))
   }
 
   private type RowValueAssert = (Long, Vec) => Unit
 
-  private def assertBasicInvariants[T<:Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String]): Unit = {
+  private def assertBasicInvariants[T <: Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String]): Unit = {
     assertHolderProperties(df, names)
-    assert (ds.count == df.numRows(), "Number of rows in H2OFrame and Dataset should match")
-    // Check numbering
+    assert(ds.count == df.numRows(), "Number of rows in H2OFrame and Dataset should match")
+
     val vec = df.vec(0)
-    var row = 0
-    while(row < df.numRows()) {
-      assert (!vec.isNA(row), "The H2OFrame should not contain any NA values")
-      rowAssert (row, vec)
-      row += 1
+    for (row <- Range(0, df.numRows().toInt)) {
+      assert(!vec.isNA(row), "The H2OFrame should not contain any NA values")
+      rowAssert(row, vec)
     }
   }
 
   private def assertHolderProperties(df: H2OFrame, names: List[String]): Unit = {
     val actualNames = df.names().toList
     val numCols = names.length
-    assert (df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
-    assert (df.names().length == numCols, s"H2OFrame column names should be $numCols in size, have ${df.names().length}")
-    assert (actualNames.equals(names),
+    assert(df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
+    assert(df.names().length == numCols, s"H2OFrame column names should be $numCols in size, have ${df.names().length}")
+    assert(actualNames.equals(names),
       s"H2OFrame column names should be $names since Holder object was used to define Dataset, but it is $actualNames")
   }
 }

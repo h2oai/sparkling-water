@@ -69,30 +69,36 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     res
   }
 
+  def opt[T](op: => Any): Option[T] = try {
+    Option(op.asInstanceOf[T])
+  } catch {
+    case x: Exception => None
+  }
+
   class H2ORDDIterator(val keyName: String, val partIndex: Int) extends H2OChunkIterator[A] {
     /** Dummy muttable holder for String values */
     val valStr = new BufferedString()
 
-    def extractData: Array[Option[Any]] = {
-      val data = new Array[Option[Any]](chks.length)
+    def extractOptions: Array[Option[Any]] = {
+      val data = new Array[Option[Any]](types.length)
       for (
-        idx <- chks.indices;
+        idx <- types.indices;
         chk = chks(idx);
         typ = types(idx)
       ) {
         val value = if (chk.isNA(row)) None
         else typ match {
-          case q if q == classOf[Integer] => Some(chk.at8(row).asInstanceOf[Int])
-          case q if q == classOf[lang.Long] => Some(chk.at8(row))
-          case q if q == classOf[lang.Double] => Some(chk.atd(row))
-          case q if q == classOf[lang.Float] => Some(chk.atd(row))
-          case q if q == classOf[lang.Boolean] => Some(chk.at8(row) == 1)
+          case q if q == classOf[Integer] => opt(chk.at8(row).asInstanceOf[Int])
+          case q if q == classOf[lang.Long] => opt(chk.at8(row))
+          case q if q == classOf[lang.Double] => opt(chk.atd(row))
+          case q if q == classOf[lang.Float] => opt(chk.atd(row))
+          case q if q == classOf[lang.Boolean] => opt(chk.at8(row) == 1)
           case q if q == classOf[String] =>
             if (chk.vec().isCategorical) {
-              Some(chk.vec().domain()(chk.at8(row).asInstanceOf[Int]))
+              opt(chk.vec().domain()(chk.at8(row).asInstanceOf[Int]))
             } else if (chk.vec().isString) {
               chk.atStr(valStr, row)
-              Some(valStr.toString)
+              opt(valStr.toString)
             } else None
           case _ => None
         }
@@ -102,7 +108,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     }
 
     def next(): A = {
-      val options: Array[Option[Any]] = extractData
+      val options: Array[Option[Any]] = extractOptions
       val values: List[Array[Object]] = try {
         val extractedValues: Array[Object] = for {
           opt <- options
@@ -118,14 +124,10 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
 
       row += 1
 
-      def build(c: Constructor[_], data: Array[AnyRef]): Option[A] = try {
-        Some(c.newInstance(data:_*).asInstanceOf[A])
-      } catch { case something: Exception => None }
-
       val res: Seq[A] = for {
-        ccr <- constructors
+        builder <- builders
         data <- allDataArrays
-        instance <- build(ccr, data)
+        instance <- builder(data)
       } yield instance
 
       res.toList match {
@@ -150,4 +152,10 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
 
     found
   }
+
+  case class Builder(c:  Constructor[_]) {
+    def apply(data: Array[AnyRef]): Option[A] = opt(c.newInstance(data:_*).asInstanceOf[A])
+  }
+
+  lazy val builders = constructors map Builder
 }

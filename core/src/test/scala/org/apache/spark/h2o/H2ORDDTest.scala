@@ -32,6 +32,7 @@ import water.parser.{BufferedString, Categorical}
  * Testing schema for h2o schema rdd transformation.
  */
 // FIXME this should be only trait but used in different SparkContext
+// DODO(vpatryshev): need to add a case where product extracted is smaller length than product stored
 @RunWith(classOf[JUnitRunner])
 class H2ORDDTest extends FunSuite with SharedSparkTestContext {
 
