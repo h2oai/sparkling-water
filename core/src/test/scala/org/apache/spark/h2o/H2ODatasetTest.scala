@@ -67,12 +67,6 @@ class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAnd
     extracted
   }
 
-  //  def extractAll[T] = {
-  //    val asrdd: RDD[SamplePerson] = hc.asRDD[SamplePerson](h2oFrame)
-  //    val asDS = asrdd.toDS()
-  //    val extracted = asDS.collect()
-  //  }
-
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
   override def afterAll(): Unit = {

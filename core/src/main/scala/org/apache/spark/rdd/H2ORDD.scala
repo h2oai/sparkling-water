@@ -23,7 +23,7 @@ import java.lang.reflect.Constructor
 
 import org.apache.spark.h2o.{H2OContext, ReflectionUtils}
 import org.apache.spark.{Partition, TaskContext}
-import water.fvec.Frame
+import water.fvec.{Chunk, Frame}
 import water.parser.BufferedString
 
 import scala.reflect.ClassTag
@@ -79,32 +79,49 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     /** Dummy muttable holder for String values */
     val valStr = new BufferedString()
 
+    val columnMapping: Map[Int, Int] = try {
+      val mappings = for {
+        i <- types.indices
+        name = colNames(i)
+        j = fr.names().indexOf(name)
+      } yield (i,j)
+
+      val bads = mappings collect {case (i,j) if j < 0 => colNames(j)}
+      if (bads.nonEmpty) throw new scala.IllegalArgumentException(s"Missing columns: ${bads mkString ","}")
+
+      mappings.toMap
+    }
+
     def extractOptions: Array[Option[Any]] = {
       val data = new Array[Option[Any]](types.length)
-      for (
-        idx <- types.indices;
-        chk = chks(idx);
-        typ = types(idx)
-      ) {
-        val value = if (chk.isNA(row)) None
-        else typ match {
-          case q if q == classOf[Integer] => opt(chk.at8(row).asInstanceOf[Int])
-          case q if q == classOf[lang.Long] => opt(chk.at8(row))
-          case q if q == classOf[lang.Double] => opt(chk.atd(row))
-          case q if q == classOf[lang.Float] => opt(chk.atd(row))
-          case q if q == classOf[lang.Boolean] => opt(chk.at8(row) == 1)
-          case q if q == classOf[String] =>
-            if (chk.vec().isCategorical) {
-              opt(chk.vec().domain()(chk.at8(row).asInstanceOf[Int]))
-            } else if (chk.vec().isString) {
-              chk.atStr(valStr, row)
-              opt(valStr.toString)
-            } else None
-          case _ => None
-        }
-        data(idx) = value
+      for {
+        i <- types.indices
+        j = columnMapping(i)
+        chk = chks(j)
+        typ = types(i)
+      } {
+        data(i) = valueOf(chk, typ)
       }
       data
+    }
+
+    def valueOf(chk: Chunk, typ: Class[_]): Option[Nothing] = {
+      if (chk.isNA(row)) None
+      else typ match {
+        case q if q == classOf[Integer] => opt(chk.at8(row).asInstanceOf[Int])
+        case q if q == classOf[lang.Long] => opt(chk.at8(row))
+        case q if q == classOf[lang.Double] => opt(chk.atd(row))
+        case q if q == classOf[lang.Float] => opt(chk.atd(row))
+        case q if q == classOf[lang.Boolean] => opt(chk.at8(row) == 1)
+        case q if q == classOf[String] =>
+          if (chk.vec().isCategorical) {
+            opt(chk.vec().domain()(chk.at8(row).asInstanceOf[Int]))
+          } else if (chk.vec().isString) {
+            chk.atStr(valStr, row)
+            opt(valStr.toString)
+          } else None
+        case _ => None
+      }
     }
 
     def next(): A = {
@@ -123,7 +140,6 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       val allDataArrays: List[Array[AnyRef]] = optionValues::values
 
       row += 1
-
       val res: Seq[A] = for {
         builder <- builders
         data <- allDataArrays
@@ -154,8 +170,10 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
   }
 
   case class Builder(c:  Constructor[_]) {
-    def apply(data: Array[AnyRef]): Option[A] = opt(c.newInstance(data:_*).asInstanceOf[A])
+    def apply(data: Array[AnyRef]): Option[A] = {
+      opt(c.newInstance(data:_*).asInstanceOf[A])
+    }
   }
 
-  lazy val builders = constructors map Builder
+  private lazy val builders = constructors map Builder
 }
