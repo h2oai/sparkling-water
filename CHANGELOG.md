@@ -1,6 +1,20 @@
 ChangeLog
 =========
 
+##v1.6.6 (2016-08-03)
+  - Bug
+    - [SW-154](https://0xdata.atlassian.net/browse/SW-154) - Network mask is used in the wrong way on executors
+    - [SW-156](https://0xdata.atlassian.net/browse/SW-156) - Option for switching off quite mode
+    - [SW-157](https://0xdata.atlassian.net/browse/SW-157) - Include new S3 persist layer in Sparkling Water assembly
+
+  - Improvement
+    - [SW-125](https://0xdata.atlassian.net/browse/SW-125) - Upgrade H2O dependency to 3.8.3.2
+    - Streaming example
+
+##v1.6.5 (2016-06-06)
+  - Hotfix
+    - Fix of REPL initialization
+
 ##v1.6.4 (2016-06-02)
   - Bug fixes
     - [SW-125](https://0xdata.atlassian.net/browse/SW-125) - PySparkling changes in order to upload the package to PyPI
