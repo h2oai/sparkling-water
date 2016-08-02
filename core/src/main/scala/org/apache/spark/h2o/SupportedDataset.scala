@@ -20,18 +20,53 @@ package org.apache.spark.h2o
 import org.apache.spark.sql.SQLContext
 
 import scala.language.implicitConversions
+import scala.reflect.runtime.universe._
 
   /**
   * Magnet pattern (Type Class pattern) for conversion from various case classes to their appropriate H2OFrame using
   * the method with the same name
   */
-trait SupportedDataset {
+trait SupportedDataset[T] {
+    val typeTag: TypeTag[T]
   def toH2OFrame(sc: SQLContext, frameKeyName: Option[String]): H2OFrame
 }
 
 object SupportedDataset {
 
-  implicit def toH2OFrameFromDataset[T <: Product](ds: Dataset[T]): SupportedDataset = new SupportedDataset {
-    override def toH2OFrame(sc: SQLContext, frameKeyName: Option[String]): H2OFrame = H2OContext.toH2OFrameFromDataset(sc.sparkContext, ds, frameKeyName)
+  implicit def toH2OFrameFromDataset[T <: Product](ds: Dataset[T])(implicit ttag:TypeTag[T]): SupportedDataset[T] = new SupportedDataset[T] {
+    val typeTag = ttag
+    override def toH2OFrame(sc: SQLContext, frameKeyName: Option[String]): H2OFrame = {
+      val tpe = ttag.tpe
+      val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
+      val defaultConstructor =
+        if (constructorSymbol.isMethod) constructorSymbol.asMethod
+        else {
+          val ctors = constructorSymbol.asTerm.alternatives
+          ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
+        }
+
+      val params: List[(String, Type)] = defaultConstructor.paramss.flatten map {
+        sym => sym.name.toString -> tpe.member(sym.name).asMethod.returnType
+      }
+
+      val fieldNames = ds.schema.fieldNames
+
+      val rdd: RDD[Product] = try {
+        ds.rdd.asInstanceOf[RDD[Product]]
+      } catch {
+        case oops: Exception =>
+          oops.printStackTrace()
+          throw oops
+      }
+      val res = try {
+        val prototype = H2OContext.FromPureProduct(sc.sparkContext, rdd, frameKeyName)
+        prototype.withFields(params)
+      } catch {
+        case oops: Exception =>
+          oops.printStackTrace()
+          throw oops
+      }
+      res
+    }
   }
 }

@@ -34,6 +34,7 @@ case class WeirdPerson(email: String, age: Int, name: String)
 case class SampleCompany(officialName: String, count: Int, url: String)
 case class SampleAccount(email: String, name: String, age: Int)
 case class SampleCat(name: String, age: Int)
+case class PartialPerson(name: Option[String], age: Option[Int], email: Option[String])
 
 @RunWith(classOf[JUnitRunner])
 class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAndAfterAll {
@@ -46,6 +47,16 @@ class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAnd
 
   val samplePeople: List[SamplePerson] = dataSource map SamplePerson.tupled
 
+  val samplePartialPeople: List[PartialPerson] = dataSource flatMap {case (n,a,e) =>
+    PartialPerson(Some(n), Some(a), Some(e))::
+      PartialPerson(Some(n), Some(a), None)::
+      PartialPerson(Some(n), None, Some(e))::
+      PartialPerson(None, Some(a), Some(e))::
+      PartialPerson(Some(n), None, None)::
+      PartialPerson(None, None, Some(e))::
+      Nil
+  }
+
   lazy val sqlContext = hsc.sqlContext
   lazy val testSourceDataset = {
     import sqlContext.implicits._
@@ -53,6 +64,13 @@ class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAnd
   }
 
   def testH2oFrame: H2OFrame = hsc.asH2OFrame(testSourceDataset)
+
+  lazy val testSourceDatasetWithPartialData = {
+    import sqlContext.implicits._
+    sqlContext.createDataset(samplePartialPeople)
+  }
+
+  def testH2oFrametWithPartialData: H2OFrame = hsc.asH2OFrame(testSourceDatasetWithPartialData)
 
   import scala.reflect.ClassTag
   import scala.reflect.runtime.universe._
@@ -123,11 +141,32 @@ class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAnd
     checkWith ((n, a, e) => SampleCat(n, a))
   }
 
+  test("Converting Total Dataset to Optional") {
+    checkWith ((n, a, e) => PartialPerson(Some(n), Some(a), Some(e)))
+  }
+
+  test("Dataset[PartialPerson] to H2OFrame and back") {
+
+    assertBasicInvariants(testSourceDatasetWithPartialData, testH2oFrametWithPartialData, (row, vec) => {
+      val sample = samplePartialPeople(row.toInt)
+      val valueString = new BufferedString()
+
+      val value = vec.atStr(valueString, row)
+      assert(sample.name == value.toString, s"The H2OFrame values should match")
+    }, List("name", "age", "email"))
+
+    val extracted = readWholeFrame[SamplePerson](testH2oFrametWithPartialData)
+
+    assert(testSourceDatasetWithPartialData.count == testH2oFrametWithPartialData.numRows(), "Number of rows should match")
+
+    matchData(extracted, samplePartialPeople)
+  }
+
   private type RowValueAssert = (Long, Vec) => Unit
 
   private def assertBasicInvariants[T <: Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String]): Unit = {
     assertHolderProperties(df, names)
-    assert(ds.count == df.numRows(), "Number of rows in H2OFrame and Dataset should match")
+    assert(ds.count == df.numRows(), s"Number of rows in H2OFrame (${df.numRows()}) and Dataset (${ds.count}) should match")
 
     val vec = df.vec(0)
     for (row <- Range(0, df.numRows().toInt)) {

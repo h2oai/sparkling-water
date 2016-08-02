@@ -38,7 +38,7 @@ import water.api.scalaInt.ScalaCodeHandler
 import water.parser.BufferedString
 
 import scala.collection.mutable
-import scala.language.implicitConversions
+import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 import scala.util.Random
@@ -162,7 +162,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   /** Initialize Sparkling H2O and start H2O cloud. */
   def start(): H2OContext = {
     if(!isRunningOnCorrectSpark){
-      throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${buildSparkMajorVersion}," +
+      throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark $buildSparkMajorVersion," +
         s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
         s" points to Spark of version ${sparkContext.version}. Please ensure correct Spark is provided and" +
         s" re-run Sparkling Water.")
@@ -266,7 +266,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   }
 
   /** Open H2O Flow running in this client. */
-  def openFlow(): Unit = openURI(s"http://${h2oLocalClient}")
+  def openFlow(): Unit = openURI(s"http://$h2oLocalClient")
   /** Open Spark task manager. */
   //def openSparkUI(): Unit = sparkUI.foreach(openURI(_))
 
@@ -280,7 +280,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       if (Desktop.isDesktopSupported) {
         Desktop.getDesktop.browse(new java.net.URI(uri))
       } else {
-        logWarning(s"Desktop support is missing! Cannot open browser for ${uri}")
+        logWarning(s"Desktop support is missing! Cannot open browser for $uri")
       }
     }
   }
@@ -304,7 +304,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
       |  ${h2oNodes.mkString("\n  ")}
       |  ------------------------
       |
-      |  Open H2O Flow in browser: http://${h2oLocalClient} (CMD + click in Mac OSX)
+      |  Open H2O Flow in browser: http://$h2oLocalClient (CMD + click in Mac OSX)
     """.stripMargin
   }
 
@@ -328,20 +328,13 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 class H2OSQLContext(@transient val sqlContext: SQLContext) extends H2OContext(sqlContext.sparkContext) {
 
 /** Transforms Dataset[Supported type] to H2OFrame */
-def asH2OFrame(ds: SupportedDataset): H2OFrame = asH2OFrame(ds, None)
-def asH2OFrame(ds: SupportedDataset, frameName: Option[String]): H2OFrame =
+def asH2OFrame[T](ds: SupportedDataset[T]): H2OFrame = asH2OFrame(ds, None)
+def asH2OFrame[T](ds: SupportedDataset[T], frameName: Option[String]): H2OFrame =
   ds.toH2OFrame(sqlContext, frameName)
-def asH2OFrame(ds: SupportedDataset, frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
+def asH2OFrame[T](ds: SupportedDataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
 }
 
 object H2OContext extends Logging {
-
-  // copypaste from toH2OFrameFromRDD - seems like RDD and Dataset don't have any meaningful common traits
-  def toH2OFrameFromDataset[T <: Product](sc: SparkContext, ds: Dataset[T], frameKeyName: Option[String]): H2OFrame = {
-    val fieldNames = ds.schema.fieldNames
-    val rdd: RDD[Product] = ds.rdd.asInstanceOf[RDD[Product]]
-    toH2OFrameFromPureProduct(sc, rdd, frameKeyName, fieldNames)
-  }
 
   val UNSUPPORTED_SPARK_OPTIONS = Seq(
     ("spark.dynamicAllocation.enabled", "true"),
@@ -435,7 +428,7 @@ object H2OContext extends Logging {
       // Create a new chunks corresponding to spark partitions
       // Note: Eager, not lazy, evaluation
       val rows = sc.runJob(dfRdd, perSQLPartition(keyName, flatRddSchema, vecTypes) _)
-      val res = new Array[Long](dfRdd.partitions.size)
+      val res = new Array[Long](dfRdd.partitions.length)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows}
 
       // Add Vec headers per-Chunk, and finalize the H2O Frame
@@ -466,31 +459,62 @@ object H2OContext extends Logging {
 
   val defaultFieldNames = (i: Int) => "f" + i
 
-  def toH2OFrameFromPureProduct(sc: SparkContext, rdd: RDD[Product], frameKeyName: Option[String], fieldNames: Int => String = defaultFieldNames): H2OFrame = {
+  case class MetaInfo(names:Array[String], vecTypes: Array[Byte]) {
+    require(names.length > 0, "Empty meta info does not make sense")
+    require(names.length == vecTypes.length, s"Different lengths: ${names.length} names, ${vecTypes.length} types")
+  }
+
+  case class FromPureProduct(sc: SparkContext, rdd: RDD[Product], frameKeyName: Option[String]) {
+    import scala.reflect.runtime.universe._
+
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
 
-    // infer the type
-    val first = rdd.first()
-    val fnames = (0 until first.productArity map fieldNames).toArray[String]
+    def withDefaultFieldNames = withFieldNames(defaultFieldNames)
 
-    val ftypes = first.productIterator map inferFieldType
+    def withFieldNames(fieldNames: Int => String): H2OFrame = {
+      val meta = metaInfo(fieldNames)
+      withMeta(meta)
+    }
 
-    // Collect H2O vector types for all input types
-    val vecTypes = ftypes map dataTypeToVecType toArray
+    def withFields(tuples: List[(String, Type)]): H2OFrame = {
+      val meta = metaInfo(tuples)
+      withMeta(meta)
+    }
 
-    // Make an H2O data Frame - but with no backing data (yet)
-    initFrame(keyName, fnames)
-    // Create chunks on remote nodes
-    val rows = sc.runJob(rdd, perTypedDataPartition(keyName, vecTypes) _) // eager, not lazy, evaluation
-    val res = new Array[Long](rdd.partitions.length)
-    rows.foreach{ case(cidx, nrows) => res(cidx) = nrows }
+    def withMeta(meta: MetaInfo): H2OFrame = {
+      // Make an H2O data Frame - but with no backing data (yet)
+      initFrame(keyName, meta.names)
+      // Create chunks on remote nodes
+      val rows = sc.runJob(rdd, partitionJob(keyName, meta.vecTypes)) // eager, not lazy, evaluation
+      val res = new Array[Long](rdd.partitions.length)
+      rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
 
-    // Add Vec headers per-Chunk, and finalize the H2O Frame
-    new H2OFrame(finalizeFrame(keyName, res, vecTypes))
+      // Add Vec headers per-Chunk, and finalize the H2O Frame
+      new H2OFrame(finalizeFrame(keyName, res, meta.vecTypes))
+    }
+
+    def metaInfo(fieldNames: Int => String): MetaInfo = {
+      val first = rdd.first()
+      val fnames: Array[String] = (0 until first.productArity map fieldNames).toArray[String]
+
+      val ftypes = first.productIterator map inferFieldType
+
+      // Collect H2O vector types for all input types
+      val vecTypes:Array[Byte] = ftypes map dataTypeToVecType toArray
+
+      MetaInfo(fnames, vecTypes)
+    }
+
+    def metaInfo(tuples: List[(String, Type)]): MetaInfo = {
+      val names = tuples map (_._1) toArray
+      val vecTypes = tuples map (nt => dataTypeToVecType(nt._2)) toArray
+
+      MetaInfo(names, vecTypes)
+     }
   }
+
   /** Transform typed RDD into H2O Frame */
   def toH2OFrame[A <: Product : TypeTag](sc: SparkContext, rdd: RDD[A], frameKeyName: Option[String]) : H2OFrame = {
-    import org.apache.spark.h2o.H2OTypeUtils._
     import org.apache.spark.h2o.ReflectionUtils._
 
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
@@ -501,12 +525,16 @@ object H2OContext extends Logging {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, fnames)
     // Create chunks on remote nodes
-    val rows = sc.runJob(rdd, perTypedDataPartition(keyName, vecTypes) _) // eager, not lazy, evaluation
+    val rows = sc.runJob(rdd, partitionJob(keyName, vecTypes)) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
     rows.foreach{ case(cidx, nrows) => res(cidx) = nrows }
 
     // Add Vec headers per-Chunk, and finalize the H2O Frame
     new H2OFrame(finalizeFrame(keyName, res, vecTypes))
+  }
+
+  def partitionJob[A <: Product : TypeTag](keyName: String, vecTypes: Array[Byte]): (TaskContext, Iterator[Product]) => (Int, Long) = {
+    perTypedDataPartition(keyName, vecTypes) _
   }
 
   /** Transform supported type for conversion to H2OFrame*/
@@ -667,11 +695,11 @@ object H2OContext extends Logging {
                   subRow.getDouble(aidx)
                 }
               })
-            case StringType => {
+            case StringType =>
               val sv = if (isAry) ary(aryIdx).asInstanceOf[String] else subRow.getString(aidx)
               // Always produce string vectors
               chk.addStr(valStr.setTo(sv))
-            }
+
             case TimestampType => chk.addNum(subRow.getAs[java.sql.Timestamp](aidx).getTime())
             case _ => chk.addNA()
           }
@@ -791,7 +819,7 @@ object H2OContext extends Logging {
             |The application is going down, since the parameter ${H2OConf.PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM} is true!
             |If you would like to skip the fail call, please, specify the value of the parameter to false.
           """.stripMargin)
-        throw new IllegalArgumentException(s"Unsupported argument: ${opt}")
+        throw new IllegalArgumentException(s"Unsupported argument: $opt")
       }
     })
   }
