@@ -51,7 +51,39 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     }
   }
   val types = ReflectionUtils.types[A](colNames)
+
   val jc = implicitly[ClassManifest[A]].runtimeClass
+
+  type Deserializer = (Chunk, Int) => Any
+  private val DefaultDeserializer: Deserializer = (chk: Chunk, row: Int) => null
+
+  def extractStringLike(chk: Chunk, row: Int): String = {
+    if (chk.vec().isCategorical) {
+      chk.vec().domain()(chk.at8(row).asInstanceOf[Int])
+    } else if (chk.vec().isString) {
+      val valStr = new BufferedString()
+      chk.atStr(valStr, row)
+      valStr.toString
+    } else null
+  }
+
+  private val allExtractors: Map[Class[_], Deserializer] = Map(
+    classOf[Integer]      -> ((chk: Chunk, row: Int) => chk.at8(row).asInstanceOf[Int]),
+    classOf[lang.Long]    -> ((chk: Chunk, row: Int) => chk.at8(row)),
+    classOf[lang.Double]  -> ((chk: Chunk, row: Int) => chk.atd(row)),
+    classOf[lang.Float]   -> ((chk: Chunk, row: Int) => chk.atd(row)),
+    classOf[lang.Boolean] -> ((chk: Chunk, row: Int) => chk.at8(row) == 1),
+    classOf[String]       -> ((chk: Chunk, row: Int) => extractStringLike(chk, row)))
+
+  private val extractorsMap: Map[Class[_], Deserializer] = allExtractors withDefaultValue DefaultDeserializer
+
+  val extractors = extractorsMap compose types
+
+  def opt[T](op: => Any): Option[T] = try {
+    Option(op.asInstanceOf[T])
+  } catch {
+    case x: Exception => None
+  }
 
   /**
    * :: DeveloperApi ::
@@ -69,15 +101,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     res
   }
 
-  def opt[T](op: => Any): Option[T] = try {
-    Option(op.asInstanceOf[T])
-  } catch {
-    case x: Exception => None
-  }
-
   class H2ORDDIterator(val keyName: String, val partIndex: Int) extends H2OChunkIterator[A] {
-    /** Dummy muttable holder for String values */
-    val valStr = new BufferedString()
 
     val columnMapping: Map[Int, Int] = try {
       val mappings = for {
@@ -98,30 +122,11 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
         i <- types.indices
         j = columnMapping(i)
         chk = chks(j)
-        typ = types(i)
+        ex = extractors(i)
       } {
-        data(i) = valueOf(chk, typ)
+        data(i) = opt(ex(chk, row)) // notice the trick: opt takes care of nulls and exceptions
       }
       data
-    }
-
-    def valueOf(chk: Chunk, typ: Class[_]): Option[Nothing] = {
-      if (chk.isNA(row)) None
-      else typ match {
-        case q if q == classOf[Integer] => opt(chk.at8(row).asInstanceOf[Int])
-        case q if q == classOf[lang.Long] => opt(chk.at8(row))
-        case q if q == classOf[lang.Double] => opt(chk.atd(row))
-        case q if q == classOf[lang.Float] => opt(chk.atd(row))
-        case q if q == classOf[lang.Boolean] => opt(chk.at8(row) == 1)
-        case q if q == classOf[String] =>
-          if (chk.vec().isCategorical) {
-            opt(chk.vec().domain()(chk.at8(row).asInstanceOf[Int]))
-          } else if (chk.vec().isString) {
-            chk.atStr(valStr, row)
-            opt(valStr.toString)
-          } else None
-        case _ => None
-      }
     }
 
     private var hd: Option[A] = None
@@ -167,10 +172,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       } yield instance
 
       res.toList match {
-        case Nil =>
-          None
-        //throw new scala.IllegalArgumentException(
-        //s"Failed to find an appropriate $jc constructor for given args")
+        case Nil => None
         case unique :: Nil => Option(unique)
         case one :: two :: more => throw new scala.IllegalArgumentException(
           s"found more than une $jc constructor for given args - can't choose")
