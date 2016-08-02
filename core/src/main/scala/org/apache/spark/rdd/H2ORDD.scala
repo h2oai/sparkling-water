@@ -84,9 +84,9 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
         i <- types.indices
         name = colNames(i)
         j = fr.names().indexOf(name)
-      } yield (i,j)
+      } yield (i, j)
 
-      val bads = mappings collect {case (i,j) if j < 0 => colNames(j)}
+      val bads = mappings collect { case (i, j) if j < 0 => colNames(j) }
       if (bads.nonEmpty) throw new scala.IllegalArgumentException(s"Missing columns: ${bads mkString ","}")
 
       mappings.toMap
@@ -124,7 +124,27 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       }
     }
 
+    private var hd: Option[A] = None
+    private var total = 0
+
+    override def hasNext = {
+      while (!hd.isDefined && super.hasNext) {
+        hd = readOne()
+        total += 1
+      }
+      hd.isDefined
+    }
+
     def next(): A = {
+      if (hasNext) {
+        val a = hd.get
+        hd = None
+        a
+      } else
+        throw new NoSuchElementException(s"No more elements in this iterator: found $total out of $nrows")
+    }
+
+    private def readOne(): Option[A] = {
       val options: Array[Option[Any]] = extractOptions
       val values: List[Array[Object]] = try {
         val extractedValues: Array[Object] = for {
@@ -137,7 +157,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
         case oops: Exception => Nil
       }
       val optionValues: Array[AnyRef] = options.map(x => x)
-      val allDataArrays: List[Array[AnyRef]] = optionValues::values
+      val allDataArrays: List[Array[AnyRef]] = optionValues :: values
 
       row += 1
       val res: Seq[A] = for {
@@ -147,11 +167,12 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       } yield instance
 
       res.toList match {
-        case Nil  =>
-          throw new scala.IllegalArgumentException(
-          s"Failed to find an appropriate $jc constructor for given args")
-        case unique::Nil => unique
-        case one::two::more  => throw new scala.IllegalArgumentException(
+        case Nil =>
+          None
+        //throw new scala.IllegalArgumentException(
+        //s"Failed to find an appropriate $jc constructor for given args")
+        case unique :: Nil => Option(unique)
+        case one :: two :: more => throw new scala.IllegalArgumentException(
           s"found more than une $jc constructor for given args - can't choose")
       }
     }

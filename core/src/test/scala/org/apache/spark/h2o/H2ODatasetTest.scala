@@ -162,6 +162,21 @@ class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAnd
     matchData(extracted, samplePartialPeople)
   }
 
+  test("Dataset[PartialPerson] - extracting SamplePersons") {
+
+    assertBasicInvariants(testSourceDatasetWithPartialData, testH2oFrametWithPartialData, (row, vec) => {
+      val sample = samplePartialPeople(row.toInt)
+      val valueString = new BufferedString()
+
+      val value = vec.atStr(valueString, row)
+      assert(sample.name == Option(value).map(_.toString), s"The H2OFrame values should match")
+    }, List("name", "age", "email"), true)
+
+    val extracted = readWholeFrame[SamplePerson](testH2oFrametWithPartialData)
+
+    matchData(extracted, samplePeople) // the idea is, all sample people are there, the rest is ignored
+  }
+
   private type RowValueAssert = (Long, Vec) => Unit
 
   private def assertBasicInvariants[T <: Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String], isPartial: Boolean = false): Unit = {
