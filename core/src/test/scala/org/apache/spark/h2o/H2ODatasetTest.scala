@@ -152,10 +152,10 @@ class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAnd
       val valueString = new BufferedString()
 
       val value = vec.atStr(valueString, row)
-      assert(sample.name == value.toString, s"The H2OFrame values should match")
-    }, List("name", "age", "email"))
+      assert(sample.name == Option(value).map(_.toString), s"The H2OFrame values should match")
+    }, List("name", "age", "email"), true)
 
-    val extracted = readWholeFrame[SamplePerson](testH2oFrametWithPartialData)
+    val extracted = readWholeFrame[PartialPerson](testH2oFrametWithPartialData)
 
     assert(testSourceDatasetWithPartialData.count == testH2oFrametWithPartialData.numRows(), "Number of rows should match")
 
@@ -164,13 +164,13 @@ class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAnd
 
   private type RowValueAssert = (Long, Vec) => Unit
 
-  private def assertBasicInvariants[T <: Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String]): Unit = {
+  private def assertBasicInvariants[T <: Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String], isPartial: Boolean = false): Unit = {
     assertHolderProperties(df, names)
     assert(ds.count == df.numRows(), s"Number of rows in H2OFrame (${df.numRows()}) and Dataset (${ds.count}) should match")
 
     val vec = df.vec(0)
     for (row <- Range(0, df.numRows().toInt)) {
-      assert(!vec.isNA(row), "The H2OFrame should not contain any NA values")
+      if (!isPartial) assert(!vec.isNA(row), "The H2OFrame should not contain any NA values")
       rowAssert(row, vec)
     }
   }

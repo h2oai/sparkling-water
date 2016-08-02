@@ -147,7 +147,8 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       } yield instance
 
       res.toList match {
-        case Nil  => throw new scala.IllegalArgumentException(
+        case Nil  =>
+          throw new scala.IllegalArgumentException(
           s"Failed to find an appropriate $jc constructor for given args")
         case unique::Nil => unique
         case one::two::more  => throw new scala.IllegalArgumentException(
