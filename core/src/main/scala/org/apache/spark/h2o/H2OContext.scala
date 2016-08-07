@@ -729,7 +729,9 @@ object H2OContext extends Logging {
             case _ => fld
         }
         x match {
-          case n: Number  => chk.addNum(n.doubleValue())
+          case n: Number  => {
+            chk.addNum(n.doubleValue())
+          }
           case n: Boolean => chk.addNum(if (n) 1 else 0)
           case n: String  => chk.addStr(valStr.setTo(n))
           case n : java.sql.Timestamp => chk.addNum(n.asInstanceOf[java.sql.Timestamp].getTime())

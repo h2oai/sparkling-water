@@ -68,21 +68,26 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
   }
 
   private val allExtractors: Map[Class[_], Deserializer] = Map(
-    classOf[Integer]      -> ((chk: Chunk, row: Int) => chk.at8(row).asInstanceOf[Int]),
-    classOf[lang.Long]    -> ((chk: Chunk, row: Int) => chk.at8(row)),
+    classOf[lang.Boolean] -> ((chk: Chunk, row: Int) => chk.at8(row) == 1),
+    classOf[lang.Byte]    -> ((chk: Chunk, row: Int) => {
+      val found = chk.at8(row)
+        found.asInstanceOf[Byte]
+    }),
     classOf[lang.Double]  -> ((chk: Chunk, row: Int) => chk.atd(row)),
     classOf[lang.Float]   -> ((chk: Chunk, row: Int) => chk.atd(row)),
-    classOf[lang.Boolean] -> ((chk: Chunk, row: Int) => chk.at8(row) == 1),
+    classOf[Integer]      -> ((chk: Chunk, row: Int) => chk.at8(row).asInstanceOf[Int]),
+    classOf[lang.Long]    -> ((chk: Chunk, row: Int) => chk.at8(row)),
+    classOf[lang.Short]   -> ((chk: Chunk, row: Int) => chk.at8(row).asInstanceOf[Short]),
     classOf[String]       -> ((chk: Chunk, row: Int) => extractStringLike(chk, row)))
 
   private val extractorsMap: Map[Class[_], Deserializer] = allExtractors withDefaultValue DefaultDeserializer
 
   val extractors = extractorsMap compose types
 
-  def opt[T](op: => Any): Option[T] = try {
-    Option(op.asInstanceOf[T])
+  def opt[X](op: => Any): Option[X] = try {
+    Option(op.asInstanceOf[X])
   } catch {
-    case x: Exception => None
+    case ex: Exception => None
   }
 
   /**
@@ -133,7 +138,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     private var total = 0
 
     override def hasNext = {
-      while (!hd.isDefined && super.hasNext) {
+      while (hd.isEmpty && super.hasNext) {
         hd = readOne()
         total += 1
       }

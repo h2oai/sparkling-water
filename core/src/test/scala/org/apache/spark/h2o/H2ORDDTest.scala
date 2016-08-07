@@ -69,6 +69,38 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     rdd.unpersist()
   }
 
+  test("RDD[ByteHolder] to H2OFrame and back") {
+
+    val rdd = sc.parallelize(1 to 1000, 100).map( v => ByteHolder(Some(v.toByte)))
+    val h2oFrame:H2OFrame = hc.asH2OFrame(rdd)
+
+    assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
+      val row1 = row + 1
+      val value = vec.at8(row) // value stored at row-th
+      // Using == since int should be mapped strictly to bytes
+      assert (row1.toByte == value, "The H2OFrame values should match row numbers+1")
+    })
+    // Clean up
+    h2oFrame.delete()
+    rdd.unpersist()
+  }
+
+  test("RDD[ShortHolder] to H2OFrame and back") {
+
+    val rdd = sc.parallelize(1 to 1000, 100).map( v => ShortHolder(Some(v.toShort)))
+    val h2oFrame:H2OFrame = hc.asH2OFrame(rdd)
+
+    assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
+      val row1 = row + 1
+      val value = vec.at8(row) // value stored at row-th
+      // Using == since int should be mapped strictly to shorts
+      assert (row1 == value, "The H2OFrame values should match row numbers+1")
+    })
+    // Clean up
+    h2oFrame.delete()
+    rdd.unpersist()
+  }
+
   test("RDD[StringHolder] to H2OFrame[Enum] and back") {
 
     val rdd = sc.parallelize(1 to 1000, 100).map( v => StringHolder(Some(v.toString)))
