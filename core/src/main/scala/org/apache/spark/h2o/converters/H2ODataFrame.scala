@@ -18,37 +18,36 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o._
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.H2OSchemaUtils._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
-import org.apache.spark.{Partition, SparkContext, TaskContext}
-import language.postfixOps
+import org.apache.spark.{Partition, TaskContext}
+
+import scala.language.postfixOps
 
 /**
  * H2O H2OFrame wrapper providing RDD[Row]=DataFrame API.
  *
  * @param frame frame which will be wrapped as DataFrame
  * @param requiredColumns  list of the columns which should be provided by iterator, null means all
- * @param sc an instance of Spark context
+ * @param hc an instance of H2O Context
  */
 private[spark]
 class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
                                           val requiredColumns: Array[String])
-                                         (@transient val sc: SparkContext) extends {
-  override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
-}
-  with RDD[InternalRow](sc, Nil) with H2ORDDLike[T] {
+                                         (@transient val hc: H2OContext)
+  extends {
+    override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+  } with RDD[InternalRow](hc.sparkContext, Nil) with H2ORDDLike[T] {
 
   def this(@transient frame: T)
-          (@transient sc: SparkContext) = this(frame, null)(sc)
+          (@transient hc: H2OContext) = this(frame, null)(hc)
 
 
-  val typesAll: Array[DataType] = frame.vecs().indices.map(idx => vecTypeToDataType(frame.vec(idx))).toArray
-  /** Create new types list which describes expected types in a way external H2O backend can use it. This list
-    * contains types in a format same for H2ODataFrame and H2ORDD */
-  val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, typesAll)
+  val types: Array[DataType] = frame.vecs().indices.map(idx => vecTypeToDataType(frame.vec(idx))).toArray
+  override val expectedTypes: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
   val colNames = frame.names()
 
   @DeveloperApi
@@ -57,13 +56,10 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
     // Prepare iterator
     val iterator = new H2OChunkIterator[InternalRow] {
 
-      /** Frame reference */
       override val keyName = frameKeyName
-      /** Processed partition index */
       override val partIndex = split.index
-
       // TODO(vlad): take care of the cases when names are missing in colNames - an exception?
-      val selectedColumnIndices = (if (requiredColumns == null) {
+      override val selectedColumnIndices = (if (requiredColumns == null) {
         colNames.indices
       } else {
         requiredColumns.toSeq.map{ name => colNames.indexOf(name) }
@@ -72,31 +68,13 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
       // Make sure that column selection is consistent
       // scalastyle:off
       assert(requiredColumns != null && selectedColumnIndices.length == requiredColumns.length,
-             "Column selection missing a column!")
+        "Column selection missing a column!")
       // scalastyle:on
 
-      private val filteredTypes = selectedColumnIndices map typesAll
-
-    /** Filtered list of types used for data transfer */
-      val expectedTypes: Option[Array[Byte]]  =
-      // TODO(vlad): use Option's map
-      if (expectedTypesAll.isDefined){
-        Some(selectedColumnIndices.map(expectedTypesAll.get))
-      }else{
-        None
-      }
-
-      /* Converter context */
-      override val converterCtx: ReadConverterContext =
-      ConverterUtils.getReadConverterContext(isExternalBackend,
-        keyName,
-        chksLocation,
-        expectedTypes,
-        partIndex)
+      private val filteredTypes = selectedColumnIndices map types
 
       /*a sequence of converters, per column*/
       private val columnConverters = filteredTypes map converterCtx.get
-
 
       private def readRow: InternalRow = {
           val optionalData: Seq[Option[Any]] =
@@ -120,4 +98,5 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
     // Wrap the iterator to backend specific wrapper
     ConverterUtils.getIterator[InternalRow](isExternalBackend, iterator)
   }
+
 }

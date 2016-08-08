@@ -1,7 +1,11 @@
 package water.sparkling.scripts
 
 import java.io.File
+import java.net.InetAddress
 
+import org.apache.spark.h2o.backends.SharedH2OConf._
+import org.apache.spark.h2o.backends.external.ExternalBackendConf
+import org.apache.spark.h2o.utils.ExternalClusterModeTestHelper
 import org.apache.spark.repl.h2o.{CodeResults, H2OInterpreter}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Suite}
@@ -10,17 +14,28 @@ import scala.collection.immutable.HashMap
 import scala.collection.mutable.ListBuffer
 
 
-trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with BeforeAndAfterAll {
+trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with BeforeAndAfterAll with ExternalClusterModeTestHelper{
   self: Suite =>
   var sparkConf: SparkConf = _
   var sc: SparkContext = _
 
   override protected def beforeAll(): Unit = {
+    val cloudName = uniqueCloudName("scripts-tests")
+    sparkConf.set(PROP_CLOUD_NAME._1, cloudName)
+    sparkConf.set(PROP_CLIENT_IP._1, InetAddress.getLocalHost.getHostAddress)
+    val cloudSize = 2
+    sparkConf.set(ExternalBackendConf.PROP_EXTERNAL_H2O_NODES._1, cloudSize.toString)
     sc = new SparkContext(sparkConf)
+    if(testsInExternalMode(sc.getConf)){
+      startCloud(cloudSize, cloudName, InetAddress.getLocalHost.getHostAddress)
+    }
     super.beforeAll()
   }
 
   override protected def afterAll(): Unit = {
+    if(testsInExternalMode(sc.getConf)){
+      stopCloud()
+    }
     if(sc!=null){
       sc.stop()
     }
@@ -37,6 +52,7 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
       .set("spark.executor.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.driver.extraClassPath", assemblyJar)
       .set("spark.scheduler.minRegisteredResourcesRatio","1")
+      .set("spark.ext.h2o.backend.cluster.mode", sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
       .setJars(Array(assemblyJar))
 
     conf

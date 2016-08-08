@@ -17,15 +17,18 @@
 
 package org.apache.spark.h2o
 
+import java.util.concurrent.atomic.AtomicReference
+
 import org.apache.spark.api.java.JavaSparkContext
+import org.apache.spark.h2o.backends.external.ExternalBackendConf
 import org.apache.spark.h2o.backends.internal.InternalBackendConf
-import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.{Logging, SparkContext, SparkEnv}
 
 /**
   * Configuration holder which is representing
   * properties passed from user to Sparkling Water.
   */
-class H2OConf(@transient val sc: SparkContext) extends Logging with InternalBackendConf {
+class H2OConf(@transient val sc: SparkContext) extends Logging with ExternalBackendConf with InternalBackendConf {
 
   /** Support for creating H2OConf in Java environments */
   def this(jsc: JavaSparkContext) = this(jsc.sc)
@@ -84,9 +87,12 @@ class H2OConf(@transient val sc: SparkContext) extends Logging with InternalBack
   /** Get a parameter as a boolean, falling back to a default if not set */
   def getBoolean(key: String, defaultValue: Boolean): Boolean = sparkConf.getBoolean(key, defaultValue)
 
-  override def toString: String = internalConfString
-}
 
-object H2OConf {
-  def apply(sc: SparkContext) = new H2OConf(sc)
+  override def toString: String = {
+    if(runsInExternalClusterMode){
+      externalConfString
+    }else{
+      internalConfString
+    }
+  }
 }

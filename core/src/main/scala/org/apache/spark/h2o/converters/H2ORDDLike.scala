@@ -27,17 +27,21 @@ private[converters] trait H2ORDDLike[T <: Frame] {
   /** Underlying DataFrame */
   @transient val frame: T
 
+  /** Is the external backend in use */
+  val isExternalBackend: Boolean
+
   /** Cache frame key to get H2OFrame from the K/V store */
   val frameKeyName: String = frame._key.toString
 
   /** Number of chunks per a vector */
   val numChunks: Int = frame.anyVec().nChunks()
 
-  /** Is the external backend in use */
-  val isExternalBackend: Boolean
-
   /** Chunk locations helps us to determine the node which really has the data we needs. */
   val chksLocation = if (isExternalBackend) Some(FrameUtils.getChunksLocations(frame)) else None
+
+  /** Create new types list which describes expected types in a way external H2O backend can use it. This list
+  * contains types in a format same for H2ODataFrame and H2ORDD */
+  val expectedTypes: Option[Array[Byte]]
 
   protected def getPartitions: Array[Partition] = {
     val res = new Array[Partition](numChunks)
@@ -47,13 +51,24 @@ private[converters] trait H2ORDDLike[T <: Frame] {
 
   /** Base implementation for iterator over rows stored in chunks for given partition. */
   trait H2OChunkIterator[+A] extends Iterator[A] {
+
+    /** Selected column indices */
+    val selectedColumnIndices: Array[Int]
+
     /* Key of pointing to underlying dataframe */
     val keyName: String
     /* Partition index */
     val partIndex: Int
 
     /* Converter context */
-    val converterCtx: ReadConverterContext
+    lazy val converterCtx: ReadConverterContext =
+      ConverterUtils.getReadConverterContext(
+        keyName,
+        partIndex,
+        // we need to send list of all expected types, not only the list filtered for expected columns
+        // because on the h2o side we get the expected type using index from selectedColumnIndices array
+        ExternalBackendInfo(chksLocation, expectedTypes, selectedColumnIndices)
+      )
 
     override def hasNext: Boolean = converterCtx.hasNext
   }

@@ -23,6 +23,7 @@ from pyspark import SparkContext, SparkConf
 import subprocess
 from random import randrange
 import test_utils
+from external_cluster_test_utils import ExternalClusterTestHelper
 
 
 class IntegTestEnv:
@@ -47,10 +48,23 @@ class IntegTestSuite(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_env = IntegTestEnv()
+        if ExternalClusterTestHelper.tests_in_external_mode():
+            cloud_name = ExternalClusterTestHelper.unique_cloud_name("integ-test")
+            cloud_ip = ExternalClusterTestHelper.local_ip()
+            cls.external_cluster_test_helper = ExternalClusterTestHelper()
+            cls.conf("spark.ext.h2o.cloud.name", cloud_name)
+            cls.conf("spark.ext.h2o.client.ip", cloud_ip)
+            cls.conf("spark.ext.h2o.backend.cluster.mode", "external")
+            cls.external_cluster_test_helper.start_cloud(2, cloud_name, cloud_ip)
+        else:
+            cls.conf("spark.ext.h2o.backend.cluster.mode", "internal")
+
 
 
     @classmethod
     def tearDownClass(cls):
+        if ExternalClusterTestHelper.tests_in_external_mode():
+            cls.external_cluster_test_helper.stop_cloud()
         cls.test_env = None
 
     @staticmethod

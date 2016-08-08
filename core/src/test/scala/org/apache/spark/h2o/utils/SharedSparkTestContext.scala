@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
   * Helper trait to simplify initialization and termination of Spark/H2O contexts.
   *
   */
-trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
+trait SharedSparkTestContext extends SparkTestContext with ExternalClusterModeTestHelper { self: Suite =>
 
   def createSparkContext:SparkContext
 
@@ -43,10 +43,17 @@ trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
     super.beforeAll()
     sc = createSparkContext
     sqlc = SQLContext.getOrCreate(sc)
-    hc = createH2OContext(sc, new H2OConf(sc))
+    if(testsInExternalMode(sc.getConf)){
+      startCloud(2, sc.getConf)
+    }
+    hc = createH2OContext(sc, new H2OConf(sc).setNumOfExternalH2ONodes(2))
   }
 
+
   override def afterAll(): Unit = {
+    if(testsInExternalMode(sc.getConf)){
+      stopCloud()
+    }
     resetContext()
     super.afterAll()
   }

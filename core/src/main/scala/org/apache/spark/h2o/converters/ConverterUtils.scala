@@ -19,9 +19,11 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark.TaskContext
 import org.apache.spark.h2o._
+import org.apache.spark.h2o.backends.external.{ExternalReadConverterContext, ExternalWriteConverterContext}
 import org.apache.spark.h2o.backends.internal.{InternalReadConverterContext, InternalWriteConverterContext}
 import org.apache.spark.h2o.utils.NodeDesc
-import water.{DKV, Key}
+import org.apache.spark.sql.types._
+import water.{ExternalFrameHandler, DKV, Key}
 
 import scala.collection.immutable
 import scala.collection.mutable.ListBuffer
@@ -83,7 +85,12 @@ private[converters] trait ConverterUtils {
     initFrame(keyName, colNames)
 
     // prepare rdd and required metadata based on the used backend
-    val (preparedRDD, uploadPlan) = (rdd, None)
+    val (preparedRDD, uploadPlan) = if(hc.getConf.runsInExternalClusterMode){
+       val res = ExternalWriteConverterContext.scheduleUpload[T](rdd)
+      (res._1, Some(res._2))
+    }else{
+      (rdd, None)
+    }
 
     val operation: SparkJob[T] = func(keyName, vecTypes, uploadPlan)
 
@@ -103,18 +110,21 @@ object ConverterUtils extends ConverterUtils {
   type ConversionFunction[T] = (String, Array[Byte], Option[immutable.Map[Int, NodeDesc]]) => SparkJob[T]
 
 
-  def getWriteConverterContext(uploadPlan: Option[immutable.Map[Int, NodeDesc]],
-                               partitionId: Int): WriteConverterContext = {
-    val converterContext = new InternalWriteConverterContext()
+  def getWriteConverterContext(uploadPlan: Option[immutable.Map[Int, NodeDesc]], partitionId: Int): WriteConverterContext = {
+    val converterContext = if (uploadPlan.isDefined) {
+      new ExternalWriteConverterContext(uploadPlan.get(partitionId))
+    } else {
+      new InternalWriteConverterContext()
+    }
     converterContext
   }
 
-  def getReadConverterContext(isExternalBackend: Boolean,
-                              keyName: String,
-                              chksLocation: Option[Array[NodeDesc]],
-                              types: Option[Array[Byte]],
-                              chunkIdx: Int): ReadConverterContext = {
-    val converterContext = new InternalReadConverterContext(keyName, chunkIdx)
+  def getReadConverterContext(keyName: String, chunkIdx: Int, extra: Option[ExternalBackendInfo]): ReadConverterContext = {
+    val converterContext = if (extra.isDefined) { // metainfo external cluster is not empty => use external cluster
+      new ExternalReadConverterContext(keyName, chunkIdx, extra.get.chksLocation(chunkIdx), extra.get.expectedTypes, extra.get.selectedColumnIndices)
+    } else {
+      new InternalReadConverterContext(keyName, chunkIdx)
+    }
     converterContext
   }
 
@@ -128,6 +138,8 @@ object ConverterUtils extends ConverterUtils {
   def getIterator[T](isExternalBackend: Boolean,
                      iterator: Iterator[T]): Iterator[T] = {
     if (isExternalBackend) {
+      // When user ask to read whatever number of rows, buffer them all, because we can't keep the connection
+      // to h2o opened indefinitely
       val rows = new ListBuffer[T]()
       while (iterator.hasNext) {
         rows += iterator.next()
@@ -138,11 +150,52 @@ object ConverterUtils extends ConverterUtils {
     }
   }
 
-  def prepareExpectedTypes[T: TypeTag](isExternalBackend: Boolean,
-                                       types: Array[T]): Option[Array[Byte]] = {
-    // For now return None because internal backend is used at all cases and we don't need any additional info at this time.
-    None
-  }
+  def prepareExpectedTypes[T: TypeTag](isExternalBackend: Boolean, types: Array[T]): Option[Array[Byte]] =
+    if(!isExternalBackend){
+      None
+    }else {
+      typeOf[T] match {
+        case t if t =:= typeOf[DataType] =>
+          Some(types.map {
+            case ByteType => ExternalFrameHandler.T_INTEGER
+            case ShortType => ExternalFrameHandler.T_INTEGER
+            case IntegerType => ExternalFrameHandler.T_INTEGER
+            case LongType => ExternalFrameHandler.T_INTEGER
+            case FloatType => ExternalFrameHandler.T_INTEGER
+            case DoubleType => ExternalFrameHandler.T_DOUBLE
+            case BooleanType => ExternalFrameHandler.T_INTEGER
+            case StringType => ExternalFrameHandler.T_STRING
+            case TimestampType => ExternalFrameHandler.T_INTEGER
+          })
+        case t if t =:= typeOf[Class[_]] =>
+          Some(types.map {
+            case q if q == classOf[Integer] => ExternalFrameHandler.T_INTEGER
+            case q if q == classOf[java.lang.Long] => ExternalFrameHandler.T_INTEGER
+            case q if q == classOf[java.lang.Double] => ExternalFrameHandler.T_DOUBLE
+            case q if q == classOf[java.lang.Float] => ExternalFrameHandler.T_INTEGER
+            case q if q == classOf[java.lang.Boolean] => ExternalFrameHandler.T_INTEGER
+            case q if q == classOf[String] => ExternalFrameHandler.T_STRING
+          })
+      }
+    }
+}
 
+
+
+class ExternalBackendInfo private (val chksLocation: Array[NodeDesc],
+                                   val expectedTypes: Array[Byte],
+                                   val selectedColumnIndices: Array[Int])
+
+object ExternalBackendInfo{
+  def apply(chksLocation: Option[Array[NodeDesc]],
+            expectedTypes: Option[Array[Byte]],
+            selectedColumnIndices: Array[Int]): Option[ExternalBackendInfo] = {
+
+    if(chksLocation.isDefined){
+      Some(new ExternalBackendInfo(chksLocation.get, expectedTypes.get, selectedColumnIndices))
+    }else{
+      None
+    }
+  }
 }
 

@@ -33,10 +33,17 @@ trait PerTestSparkTestContext extends SparkTestContext { self: Suite =>
     super.beforeEach()
     sc = createSparkContext
     sqlc = SQLContext.getOrCreate(sc)
-    hc = createH2OContext(sc, new H2OConf(sc))
+
+    if(testsInExternalMode(sc.getConf)){
+      startCloud(2, sc.getConf)
+    }
+    hc = createH2OContext(sc, new H2OConf(sc).setNumOfExternalH2ONodes(2))
   }
 
   override protected def afterEach(): Unit = {
+    if(testsInExternalMode(sc.getConf)){
+      stopCloud()
+    }
     resetContext()
     super.afterEach()
   }
