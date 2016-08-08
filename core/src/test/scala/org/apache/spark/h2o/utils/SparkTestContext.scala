@@ -14,19 +14,23 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.h2o.util
 
-import io.netty.util.internal.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
+package org.apache.spark.h2o.utils
+
+import java.net.InetAddress
+
+import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.h2o.H2OContext
-import org.scalatest.{Suite, BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
 /**
   * Helper trait to simplify initialization and termination of Spark/H2O contexts.
   *
   */
 trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self: Suite =>
+
   @transient var sc: SparkContext = _
   @transient var hc: H2OContext = _
   @transient implicit var sqlc: SQLContext = _
@@ -42,6 +46,7 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
     sc = null
     hc = null
   }
+
   def defaultSparkConf =  new SparkConf()
     .set("spark.ext.h2o.disable.ga", "true")
     .set("spark.driver.memory", "2G")
@@ -50,6 +55,8 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
     .set("spark.ext.h2o.client.log.level", "DEBUG")
     .set("spark.ext.h2o.repl.enabled","false") // disable repl in tests
     .set("spark.scheduler.minRegisteredResourcesRatio", "1")
+    .set("spark.ext.h2o.backend.cluster.mode", sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
+    .set("spark.ext.h2o.client.ip", InetAddress.getLocalHost.getHostAddress)
 }
 
 object SparkTestContext {
@@ -71,4 +78,3 @@ object SparkTestContext {
   }
 
 }
-

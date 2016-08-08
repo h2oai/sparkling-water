@@ -14,12 +14,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package water.fvec
+
+import org.apache.spark.h2o.utils.NodeDesc
+
 
 /**
  * This is a simple bridge to access package-private/protected members.
  */
-object FrameUtils {
+trait FrameUtils {
 
   /** @see Frame#preparePartialFrame */
   def preparePartialFrame(fr: Frame, names: Array[String]): Unit = {
@@ -45,4 +49,22 @@ object FrameUtils {
     val chks = vecs.indices.map(idx => vecs(idx).chunkForChunkIdx(cidx))
     chks.toArray
   }
+
+  /**
+    * Get the home nodes of chunks. Since all the Vecs in a Frame belong to the same Vec.VectorGroup we can only ask one vec
+    * for its chunks' home nodes (it is then same for the rest of the vectors)
+    * @param fr frame on which determine home nodes of chunks
+    * @return mapping of chunk index to node description
+    */
+  def getChunksLocations(fr: Frame): Array[NodeDesc] = {
+    val chunkCount = fr.anyVec().nChunks()
+    val cidxToH2ONode = new Array[NodeDesc](chunkCount)
+    (0 until chunkCount).foreach { cidx =>
+      // SW-172: FIXME this is expensive since we are creating NodeDesc for each call - they should be interned!
+      cidxToH2ONode(cidx) = NodeDesc.fromH2ONode(fr.anyVec().chunkKey(cidx).home_node())
+    }
+    cidxToH2ONode
+  }
 }
+
+object FrameUtils extends FrameUtils

@@ -98,6 +98,37 @@ There are several ways of using Sparkling Water:
   - pySpark with pySparkling
 
 ---
+
+H2O cloud is created automatically during the call of `H2OContext.getOrCreate`. Since it's not
+technically possible to get number of executors in Spark, we try to discover all executors at the initiation of `H2OContext`
+and we start H2O instance inside of each discovered executor. This solution is easiest to deploy; however when Spark
+or YARN kills the executor - which is not an unusual case - the whole H2O cluster goes down since h2o doesn't support high 
+availability. 
+
+
+Here we show a few examples how H2OContext can be started.
+
+Explicitly specify internal backend on `H2OConf`
+```
+val conf = new H2OConf(sc).setInternalClusterMode()
+val h2oContext = H2OContext.getOrCreate(sc, conf)
+```
+
+If `spark.ext.h2o.backend.cluster.mode` property was set to `internal` either on command line or on the `SparkConf` class
+ we can call:
+```
+val h2oContext = H2OContext.getOrCreate(sc) 
+```
+
+or
+
+```
+val conf = new H2OConf(sc)
+val h2oContext = H2OContext.getOrCreate(sc, conf)
+```
+
+
+
 <a name="SparkShell"></a>
 ### Run Sparkling shell
 

@@ -15,16 +15,17 @@
 * limitations under the License.
 */
 
-package org.apache.spark.rdd
+package org.apache.spark.h2o.converters
 
 import org.apache.spark.Partition
-import water.fvec.{Chunk, Frame}
+import water.fvec.{Frame, FrameUtils}
 import water.{DKV, Key}
+import scala.reflect.runtime.universe._
 
 /**
  * Contains functions that are shared between all H2ORDD types (i.e., Scala, Java)
  */
-private[rdd] trait H2ORDDLike[T <: Frame] {
+private[converters] trait H2ORDDLike[T <: Frame] {
   /** Underlying DataFrame */
   @transient val frame: T
 
@@ -34,6 +35,12 @@ private[rdd] trait H2ORDDLike[T <: Frame] {
   /** Number of chunks per a vector */
   val numChunks: Int = frame.anyVec().nChunks()
 
+  /** Is the external backend in use */
+  val isExternalBackend: Boolean
+
+  /** Chunk locations helps us to determine the node which really has the data we needs. */
+  val chksLocation = if (isExternalBackend) Some(FrameUtils.getChunksLocations(frame)) else None
+
   protected def getPartitions: Array[Partition] = {
     val res = new Array[Partition](numChunks)
     for(i <- 0 until numChunks) res(i) = new Partition { val index = i }
@@ -42,23 +49,29 @@ private[rdd] trait H2ORDDLike[T <: Frame] {
 
   /** Base implementation for iterator over rows stored in chunks for given partition. */
   trait H2OChunkIterator[+A] extends Iterator[A] {
+
     /* Key of pointing to underlying dataframe */
     val keyName: String
     /* Partition index */
     val partIndex: Int
     /* Lazily fetched dataframe from K/V store */
     lazy val fr: Frame = getFrame()
-    /* Chunks for this partition */
-    lazy val chks: Array[Chunk] = water.fvec.FrameUtils.getChunks(fr, partIndex)
-    /* Number of rows in this partition */
-    lazy val nrows = chks(0)._len
-    /* Number of columns in the dataset */
+    /* Number of columns in the full dataset */
     lazy val ncols = fr.numCols()
 
-    /* Iterator state: Actual row */
-    var row: Int = 0
+    /** Create new types list which describes expected types in a way external H2O backend can use it. This list
+      * contains types in a format same for H2ODataFrame and H2ORDD */
+    val expectedTypes: Option[Array[Byte]]
 
-    def hasNext: Boolean = row < nrows
+    /* Converter context */
+    lazy val converterCtx: ReadConverterContext =
+      ConverterUtils.getReadConverterContext(isExternalBackend,
+                                             keyName,
+                                             chksLocation,
+                                             expectedTypes,
+                                             partIndex)
+
+    override def hasNext: Boolean = converterCtx.hasNext
 
     private def getFrame() = DKV.get(Key.make(keyName)).get.asInstanceOf[Frame]
   }

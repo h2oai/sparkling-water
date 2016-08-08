@@ -15,79 +15,78 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o
+package org.apache.spark.h2o.backends.internal
 
-import java.io.File
 import java.net.InetAddress
 
-import org.apache.spark.h2o.H2OContextUtils._
+import org.apache.spark.h2o.backends.{SharedBackendUtils, SharedH2OConf}
+import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
+import org.apache.spark.h2o.{H2OConf, RDD}
 import org.apache.spark.scheduler.cluster.YarnSchedulerBackend
 import org.apache.spark.scheduler.local.LocalBackend
-import org.apache.spark.scheduler.{SparkListenerBlockManagerAdded, SparkListenerBlockManagerRemoved}
-import org.apache.spark.{Accumulable, SparkConf, SparkContext, SparkEnv}
+import org.apache.spark.{Accumulable, SparkContext, SparkEnv}
 import water.H2OStarter
 import water.init.AbstractEmbeddedH2OConfig
 
 import scala.collection.mutable
 
+
 /**
- * Support methods for H2OContext.
- */
-private[spark] object H2OContextUtils {
+  * Various helper methods used in the internal backend
+  */
+private[internal] trait InternalBackendUtils extends SharedBackendUtils{
 
-  /** Helper class containing ExecutorId, hostname and port */
-  case class NodeDesc(executorId: String, hostname: String, port: Int){
-    override def productPrefix = ""
+  def checkUnsupportedSparkOptions(unsupportedSparkOptions: Seq[(String, String)], conf: H2OConf): Unit ={
+    unsupportedSparkOptions.foreach(opt => if (conf.contains(opt._1) && (opt._2 == None || conf.get(opt._1) == opt._2)) {
+      logWarning(s"Unsupported options ${opt._1} detected!")
+      if (conf.isFailOnUnsupportedSparkParamEnabled) {
+        logWarning(
+          s"""
+             |The application is going down, since the parameter ${SharedH2OConf.PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM} is true!
+             |If you would like to skip the fail call, please, specify the value of the parameter to false.
+        """.stripMargin)
+        throw new IllegalArgumentException(s"Unsupported argument: ${opt}")
+      }
+    })
   }
 
-  /**
-    * Return hostname of this node based on SparkEnv
-    * @param env  SparkEnv instance
-    * @return  hostname of the node
-    */
-  def getHostname(env: SparkEnv) = env.blockManager.blockManagerId.host
-
-  def saveAsFile(content: String): File = {
-    val tmpDir = createTempDir()
-    tmpDir.deleteOnExit()
-    val flatFile = new File(tmpDir, "flatfile.txt")
-    val p = new java.io.PrintWriter(flatFile)
-    try {
-      p.print(content)
-    } finally {
-      p.close()
-    }
-    flatFile
-  }
-
-  def toFlatFileString(executors: Array[NodeDesc]):String = {
-    executors.map(en => s"${en.hostname}:${en.port}").mkString("\n")
-  }
-
-  def toH2OArgs(h2oArgs: Array[String], h2oConf: H2OConf, executors: Array[NodeDesc]): Array[String] = {
+  def toH2OArgs(h2oArgs: Array[String], conf: H2OConf, executors: Array[NodeDesc]): Array[String] = {
     toH2OArgs(
       h2oArgs,
-      if (h2oConf.useFlatFile) Some(toFlatFileString(executors))
+      if (conf.useFlatFile) Some(toFlatFileString(executors))
       else None)
   }
 
-  def toH2OArgs(h2oArgs: Array[String], flatFileString: Option[String]): Array[String] = {
+  private[this] def toH2OArgs(h2oArgs: Array[String], flatFileString: Option[String]): Array[String] = {
     val launcherArgs = flatFileString
       .map(f => saveAsFile(f))
       .map(f => h2oArgs ++ Array("-flatfile", f.getAbsolutePath))
       .getOrElse(h2oArgs)
     launcherArgs
   }
+  /**
+    * Produce arguments for H2O node based on provided configuration
+    *
+    * @return array of H2O launcher command line arguments
+    */
+  def getH2ONodeArgs(conf: H2OConf): Array[String] = (getH2OCommonArgs(conf) ++
+    Seq("-log_level", conf.h2oNodeLogLevel, "-baseport", conf.nodeBasePort.toString)).toArray
+
+
+  def toFlatFileString(executors: Array[NodeDesc]):String = {
+    executors.map(en => s"${en.hostname}:${en.port}").mkString("\n")
+  }
 
   /**
-   * Start H2O nodes on given executors.
-   *
-   * @param sc  Spark context
-   * @param spreadRDD  helper RDD spread over all executors
-   * @param numOfExecutors number of executors in Spark cluster
-   * @param h2oArgs arguments passed to H2O instances
-   * @return flatfile string if flatfile mode is enabled, else None
-   */
+    * Start H2O nodes on given executors.
+    *
+    * @param sc  Spark context
+    * @param spreadRDD  helper RDD spread over all executors
+    * @param numOfExecutors number of executors in Spark cluster
+    * @param h2oArgs arguments passed to H2O instances
+    * @param networkMask node network mask
+    * @return flatfile string if flatfile mode is enabled, else None
+    */
   def startH2O( sc: SparkContext,
                 spreadRDD: RDD[NodeDesc],
                 numOfExecutors: Int,
@@ -102,7 +101,7 @@ private[spark] object H2OContextUtils {
     // Try to launch H2O
     val executorStatus = spreadRDD.map { nodeDesc =>  // RDD partition index
       assert(nodeDesc.hostname == getHostname(SparkEnv.get),  // Make sure we are running on right node
-         s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getHostname(SparkEnv.get)})")
+        s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getHostname(SparkEnv.get)})")
       // Launch the node
       val sparkEnv = SparkEnv.get
       // Define log dir
@@ -111,12 +110,11 @@ private[spark] object H2OContextUtils {
         if (s != null) {
           return s + java.io.File.separator
         }
-
-        if (sparkEnv.conf.contains(H2OConf.PROP_NODE_LOG_DIR._1)) {
-          sparkEnv.conf.get(H2OConf.PROP_NODE_LOG_DIR._1)
+        if (sparkEnv.conf.contains(InternalBackendConf.PROP_NODE_LOG_DIR._1)) {
+          sparkEnv.conf.get(InternalBackendConf.PROP_NODE_LOG_DIR._1)
         } else {
           // Needs to be executed at remote node!
-          H2OConf.defaultLogDir
+          SharedH2OConf.defaultLogDir
         }
       }
       val executorId = sparkEnv.executorId
@@ -142,7 +140,7 @@ private[spark] object H2OContextUtils {
                   H2OStarter.start(launcherArgs, !isLocal)
                   // Signal via singleton object that h2o was started on this node
                   H2OStartedSignal.synchronized {
-                    H2OStartedSignal.setStarted
+                    H2OStartedSignal.setStarted()
                     H2OStartedSignal.notifyAll()
                   }
                 }
@@ -159,7 +157,7 @@ private[spark] object H2OContextUtils {
           e.printStackTrace()
           println(
             s""""Cannot start H2O node because: ${e.getMessage}
-               | h2o parameters: ${h2oArgs.mkString(",")}
+                | h2o parameters: ${h2oArgs.mkString(",")}
              """.stripMargin)
           (executorId, false)
         }
@@ -167,7 +165,7 @@ private[spark] object H2OContextUtils {
     }.collect()
     // The accumulable should contain all IP:PORTs from all exeuctors
     if (bc.value.size != numOfExecutors ||
-        executorStatus.groupBy(_._1).flatMap( x => x._2.find(_._2)).size != numOfExecutors) {
+      executorStatus.groupBy(_._1).flatMap( x => x._2.find(_._2)).size != numOfExecutors) {
       throw new RuntimeException(s"Cannot launch H2O on executors: numOfExecutors=${numOfExecutors}, " +
         s"executorStatus=${executorStatus.mkString(",")}")
     }
@@ -179,7 +177,6 @@ private[spark] object H2OContextUtils {
     spreadRDD.foreach { nodeDesc =>
       val env = SparkEnv.get
       assert(nodeDesc.hostname == getHostname(env), s"nodeDesc=${nodeDesc} == ${getHostname(env)}") // Make sure we are running on right node
-      val executorId = env.executorId
 
       val econf = water.H2O.getEmbeddedH2OConfig().asInstanceOf[SparklingWaterConfig]
       // Setup flatfile for waiting guys
@@ -194,21 +191,6 @@ private[spark] object H2OContextUtils {
     }
     // Return flatfile
     flatFile
-  }
-
-  val TEMP_DIR_ATTEMPTS = 1000
-
-  private def createTempDir(): File = {
-    def baseDir = new File(System.getProperty("java.io.tmpdir"))
-    def baseName = System.currentTimeMillis() + "-"
-
-    var cnt = 0
-    while (cnt < TEMP_DIR_ATTEMPTS) {// infinite loop
-      val tempDir = new File(baseDir, baseName + cnt)
-      if (tempDir.mkdir()) return tempDir
-      cnt += 1
-    }
-    throw new IllegalStateException(s"Failed to create temporary directory $baseDir / $baseName")
   }
 
   private[spark] def guessTotalExecutorSize(sc: SparkContext): Option[Int] = {
@@ -230,10 +212,10 @@ private[spark] object H2OContextUtils {
 
   private def getCommandArg(argName: String): Option[String] = {
     val cmdLine = System.getProperty("sun.java.command", "").split(" ").map(_.trim)
-    val valueIdx = (for (i <- 0 until cmdLine.length; if (cmdLine(i).equals(argName))) yield i + 1).headOption
+    val valueIdx = (for (i <- cmdLine.indices; if cmdLine(i).equals(argName)) yield i + 1).headOption
     valueIdx.filter(i => i < cmdLine.length).map(i => cmdLine(i))
   }
-}
+
 
 /**
  * Embedded config for passing around information of ip and port of created H2O instance.
@@ -245,8 +227,8 @@ private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.Ha
                                    val sparkHostname: Option[String])
   extends AbstractEmbeddedH2OConfig with org.apache.spark.Logging {
 
-  /** String containing a flatfile string filled asynchroniously by different thread. */
-  @volatile var flatFile:Option[String] = None
+    /** String containing a flatfile string filled asynchronously by different thread. */
+    @volatile var flatFile:Option[String] = None
 
   override def notifyAboutEmbeddedWebServerIpPort(ip: InetAddress, port: Int): Unit = {
     val env = SparkEnv.get
@@ -256,48 +238,36 @@ private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.Ha
     flatfileBVariable.synchronized {
       flatfileBVariable += thisNodeInfo
       flatfileBVariable.notifyAll()
+
     }
   }
 
-  override def notifyAboutCloudSize(ip: InetAddress, port: Int, size: Int): Unit = {
-    /* do nothing */
-  }
+    override def notifyAboutCloudSize(ip: InetAddress, port: Int, size: Int): Unit = {
+      /* do nothing */
+    }
 
-  override def fetchFlatfile(): String = {
-    this.synchronized { while (flatFile.isEmpty) this.wait() }
+    override def fetchFlatfile(): String = {
+      this.synchronized { while (flatFile.isEmpty) this.wait() }
 
-    flatFile.get
-  }
+      flatFile.get
+    }
 
-  override def providesFlatfile(): Boolean = true
+    override def providesFlatfile(): Boolean = true
 
-  override def exit(status: Int): Unit = { /* do nothing */ }
+    override def exit(status: Int): Unit = { /* do nothing */ }
 
-  override def print(): Unit = logInfo("""Debug info: NA""")
-}
-
-/**
- * Spark environment listener to kill H2O cloud
- * if number of Spark block managers change.
- */
-private[h2o]
-trait SparkEnvListener extends org.apache.spark.scheduler.SparkListener { self: H2OContext =>
-
-  override def onBlockManagerAdded(blockManagerAdded: SparkListenerBlockManagerAdded): Unit = {
-    println("--------------------> onBlockManagerAdded: " + blockManagerAdded)
-  }
-
-  override def onBlockManagerRemoved(blockManagerRemoved: SparkListenerBlockManagerRemoved): Unit = {
-    println("--------------------> onBlockManagerRemoved: " + blockManagerRemoved)
+    override def print(): Unit = logInfo("""Debug info: NA""")
   }
 }
+
+private[internal] object InternalBackendUtils extends InternalBackendUtils
 
 // JVM private H2O is fully initialized signal.
 // Ugly, but what we can do with h2o
 private object H2OStartedSignal {
   @volatile private var started = false
   def isStarted = started
-  def setStarted: Unit = {
+  def setStarted(): Unit = {
     started = true
   }
 }

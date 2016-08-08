@@ -70,6 +70,8 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
     val conf: SparkConf = configure("Sparkling Water Meetup: Use Airlines and Weather Data for delay prediction")
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
+    implicit val sqlContext = SQLContext.getOrCreate(sc)
+    import sqlContext.implicits._ // import implicit conversions
     val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
     import h2oContext.implicits._
@@ -87,15 +89,13 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
     // Use super-fast advanced H2O CSV parser !!!
     val airlinesData = new H2OFrame(new File(SparkFiles.get("year2005.csv.gz")))
 
-    val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
+    val airlinesTable = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
     // Select flights only to ORD
     val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
 
     flightsToORD.count
     println(s"\nFlights to ORD: ${flightsToORD.count}\n")
 
-    implicit val sqlContext = new SQLContext(sc)
-    import sqlContext.implicits._ // import implicit conversions
     flightsToORD.toDF.registerTempTable("FlightsToORD")
     weatherTable.toDF.registerTempTable("WeatherORD")
 

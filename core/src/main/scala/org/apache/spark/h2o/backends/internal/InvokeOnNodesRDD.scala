@@ -15,11 +15,12 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o
+package org.apache.spark.h2o.backends.internal
 
-import org.apache.spark.{TaskContext, Partition, SparkContext}
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.H2OContextUtils.NodeDesc
+import org.apache.spark.h2o.utils.NodeDesc
+import org.apache.spark.rdd.RDD
+import org.apache.spark.{Partition, SparkContext, TaskContext}
 
 /** Special kind of RDD which is used to invoke code on all executors detected in cluster. */
 private[h2o]

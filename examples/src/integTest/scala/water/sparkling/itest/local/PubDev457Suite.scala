@@ -8,8 +8,9 @@ import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.{LocalTest, IntegTestHelper}
 import water.support.SparkContextSupport
+import water.sparkling.itest.{IntegTestStopper, LocalTest, IntegTestHelper}
+
 
 /**
   * PUBDEV-457 test suite.
@@ -28,13 +29,13 @@ class PubDev457Suite extends FunSuite with IntegTestHelper {
   }
 }
 
-object PubDev457Test extends SparkContextSupport {
+object PubDev457Test extends SparkContextSupport with IntegTestStopper{
 
   case class LabeledDocument(id: Long, text: String, label: Double)
 
   case class Document(id: Long, text: String)
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit = exitOnException{
     val conf = configure("PUBDEV-457")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)

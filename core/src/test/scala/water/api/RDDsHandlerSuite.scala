@@ -16,12 +16,12 @@
 */
 package water.api
 
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.h2o.util.SharedSparkTestContext
+import org.apache.spark.SparkContext
+import org.apache.spark.h2o.utils.SharedSparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.RDDs.{RDDV3, RDD2H2OFrameIDV3, RDDsHandler, RDDsV3}
+import water.api.RDDs.{RDD2H2OFrameIDV3, RDDV3, RDDsHandler, RDDsV3}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
@@ -30,8 +30,7 @@ import water.exceptions.H2ONotFoundArgumentException
 @RunWith(classOf[JUnitRunner])
 class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
 
-  val sparkConf = new SparkConf().setMaster("local[*]").setAppName("test-local")
-  override def createSparkContext: SparkContext = new SparkContext(sparkConf)
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
   test("RDDsHandler.list() method") {
     val rname = "Test"
@@ -87,18 +86,18 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     val rname = "Test"
     val rpart = 21
 
-    val rdd = sc.parallelize(Seq(A(1,"A"),A(2,"B"),A(3,"C")),rpart).setName(rname).cache()
+    val rdd = sc.parallelize(Seq(A(1,"A"),A(2,"B"),A(3,"C")), rpart).setName(rname).cache()
 
     val rddsHandler = new RDDsHandler(sc, hc)
     val rddReq = new RDD2H2OFrameIDV3
     rddReq.rdd_id =  rdd.id
     rddReq.h2oframe_id = "requested_name"
 
-    val result = rddsHandler.toH2OFrame(3,rddReq)
+    val result = rddsHandler.toH2OFrame(3, rddReq)
     val h2oframe = hc.asH2OFrame(result.h2oframe_id)
     assert (h2oframe.key.toString == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
     assert (h2oframe.numCols() == 2, "Number of columns should match")
-    assert (h2oframe.names().sortWith((x, y) => x < y).sameElements(Seq("f0","f1")),"Column names should match")
+    assert (h2oframe.names().sorted.sameElements(Seq("f0","f1")),"Column names should match")
     assert (h2oframe.numRows() == rdd.count(), "Number of rows should match")
   }
 

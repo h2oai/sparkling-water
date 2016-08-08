@@ -193,12 +193,6 @@ val sc:SparkContext = ...
 val hc = H2OContext.getOrCreate(sc)
 ```
 
-or:
-```scala
-val sc:SparkContext = ...
-val hc = new H2OContext(sc).start()
-```
-
 The call will:
  1. Collect the number and host names of the executors (worker nodes) in the Spark cluster
  2. Launch H2O services on each detected executor
@@ -226,38 +220,57 @@ The environment must contain the property `SPARK_HOME` that points to the Spark 
 <a name="Properties"></a>
 ### Sparkling Water Configuration Properties
 
-The following configuration properties can be passed to Spark to configure Sparking Water:
+The following configuration properties can be passed to Spark to configure Sparking Water
 
+####Configuration properties independent on selected backend
 | Property name | Default value | Description |
 |---------------|---------------|-------------|
 | **Generic parameters** |||
-|`spark.ext.h2o.flatfile` | `true`| Use flatfile (instead of multicast) approach for creating H2O cloud |
-|`spark.ext.h2o.cluster.size` | `-1` |Expected number of workers of H2O cloud. Use -1 to automatically detect the cluster size. This number must be equal to number of Spark workers.|
-|`spark.ext.h2o.port.base`| `54321`| Base port used for individual H2O node configuration.|
-|`spark.ext.h2o.port.incr`| `2` | Increment added to base port to find the next available port.|
-|`spark.ext.h2o.cloud.timeout`| `60*1000` | Timeout (in msec) for cloud  |
-|`spark.ext.h2o.spreadrdd.retries` | `10` | Number of retries for creation of an RDD covering all existing Spark executors. |
-|`spark.ext.h2o.cloud.name`| `sparkling-water-` | Name of H2O cloud. |
+|`spark.ext.h2o.cloud.name`| `sparkling-water-` | Name of H2O cloud.|
 |`spark.ext.h2o.nthreads`|`-1`|Limit for number of threads used by H2O, default `-1` means unlimited.|
 |`spark.ext.h2o.disable.ga`|`false`|Disable Google Analytics tracking for embedded H2O.|
-|`spark.ext.h2o.subseq.tries`|`5`|Subsequent successful tries to figure out size of Spark cluster which are producing the same number of nodes.|
-|`spark.ext.h2o.exit.on.unsupported.spark.param`|`true`|If unsupported Spark parameters is detected, then application is forced to shutdown.|
-|`spark.ext.h2o.topology.change.listener.enabled`|`true`|Decides whether listener which kills h2o cloud on the change of underlying cluster's topology is enabled or not.|
-|`spark.ext.h2o.spark.version.check.enabled`|`true`|Enables check if runtime Spark version matches build time Spark version.|
 |`spark.ext.h2o.repl.enabled`|`true`|Decides whether H2O repl is initialized or not. The repl is initialized by default.|
 |`spark.ext.scala.int.default.num`|`1`|Number of executors started at the start of h2o services.|
-| **H2O server node parameters** |||
-|`spark.ext.h2o.node.log.level`| `INFO`| H2O internal log level used for launched H2O nodes. |
-|`spark.ext.h2o.node.log.dir`| ` System.getProperty("user.dir") + File.separator + "h2ologs"` or YARN container dir| Location of h2o logs on executor machine. |
-|`spark.ext.h2o.node.network.mask`|--|Subnet selector for H2O running inside Spark executors, this disables using IP reported by Spark but tries to find IP based on the specified mask.|
-| **H2O client parameters** |||
-|`spark.ext.h2o.client.log.level`| `INFO`| H2O internal log level used for H2O client running inside Spark driver. |
-|`spark.ext.h2o.client.log.dir`| ` System.getProperty("user.dir") + File.separator + "h2ologs"`| Location of h2o logs on driver machine. |
+|`spark.ext.h2o.topology.change.listener.enabled`|`true`|Decides whether listener which kills h2o cloud on the change of underlying cluster's topology is enabled or not.|
+|`spark.ext.h2o.spark.version.check.enabled`|`true`|Enables check if runtime Spark version matches build time Spark version.|
+|`spark.ext.h2o.exit.on.unsupported.spark.param`|`true`|If unsupported Spark parameters is detected, then application is forced to shutdown.|
+|`spark.ext.h2o.jks`|`null`|Path to Java KeyStore file.|
+|`spark.ext.h2o.jks.pass`|`null`|Password for Java KeyStore file.|
+|`spark.ext.h2o.hash.login`|`false`|Enable hash login.|
+|`spark.ext.h2o.ldap.login`|`false`|Enable LDAP login.|
+|`spark.ext.h2o.kerberos.login`|`false`|Enable Kerberos login.|
+|`spark.ext.h2o.login.conf`|`null`|Login configuration file.|
+|`spark.ext.h2o.user.name`|`null`|Override user name for cluster.|
+| **H2O client parameters** ||| 
+|`spark.ext.h2o.client.ip`|`null`|IP of H2O client node |
+|`spark.ext.h2o.client.iced.dir`|`null`|Location of iced directory for the driver instance.|
+|`spark.ext.h2o.client.log.level`| `INFO`| H2O internal log level used for H2O client running inside Spark driver.|
+|`spark.ext.h2o.client.log.dir`| ` System.getProperty("user.dir") + File.separator + "h2ologs"`| Location of h2o logs on driver machine.|
+|`spark.ext.h2o.client.port.base`|`54321`| Port on which H2O client publishes its API. If already occupied, the next odd port is tried and so on.|
 |`spark.ext.h2o.client.web.port`|`-1`|Exact client port to access web UI. The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`.|
 |`spark.ext.h2o.client.verbose`|`false`|The client outputs verbosed log output directly into console. Enabling the flag increases the client log level to INFO.|
 |`spark.ext.h2o.client.network.mask`|--|Subnet selector for H2O client, this disables using IP reported by Spark but tries to find IP based on the specifed mask.|
-
 ---
+
+####Internal backend configuration properties
+| Property name | Default value | Description |
+|---------------|---------------|-------------|
+| **Generic parameters** |||
+|`spark.ext.h2o.flatfile` | `true`|Use flatfile (instead of multicast) approach for creating H2O cloud.|
+|`spark.ext.h2o.cluster.size`| `-1` |Expected number of workers of H2O cloud. Use -1 to automatically detect the cluster size. This number must be equal to number of Spark workers.|
+|`spark.ext.h2o.port.base`| `54321`| Base port used for individual H2O node configuration.|
+|`spark.ext.h2o.cloud.timeout`| `60*1000` |Timeout (in msec) for cloud.|
+|`spark.ext.h2o.dummy.rdd.mul.factor`| `10`|Multiplication factor for dummy RDD generation. Size of dummy RDD is spark.ext.h2o.cluster.size*spark.ext.h2o.dummy.rdd.mul.factor.|
+|`spark.ext.h2o.spreadrdd.retries`| `10` |Number of retries for creation of an RDD covering all existing Spark executors.|
+|`spark.ext.h2o.default.cluster.size`| `20`|Starting size of cluster in case that size is not explicitly passed.|
+|`spark.ext.h2o.node.iced.dir`| `null`|Location of iced directory for Spark nodes.|
+|`spark.ext.h2o.subseq.tries`|`5`|Subsequent successful tries to figure out size of Spark cluster which are producing the same number of nodes.|
+| **H2O server node parameters** |||
+|`spark.ext.h2o.node.network.mask`|--|Subnet selector for H2O running inside Spark executors, this disables using IP reported by Spark but tries to find IP based on the specified mask.|
+|`spark.ext.h2o.node.log.level`| `INFO`| H2O internal log level used for launched H2O nodes.|
+|`spark.ext.h2o.node.log.dir`| ` System.getProperty("user.dir") + File.separator + "h2ologs"` or YARN container dir| Location of h2o logs on executor machine.|
+---
+
 
 <a name="RunSW"></a>
 # Running Sparkling Water
@@ -270,24 +283,6 @@ The following configuration properties can be passed to Spark to configure Spark
 val sc:SparkContext = ...
 val hc = H2OContext.getOrCreate(sc)
 ```
-
-or:
-```scala
-val sc:SparkContext = ...
-val hc = new H2OContext(sc).start()
-```
-
-When the number of Spark nodes is known, it can be specified in `getOrCreate` call:
-```scala
-val hc = H2OContext.getOrCreate(sc, numOfSparkNodes)
-```
-
-or in `start` method of H2O Context:
-```scala
-val hc = new H2OContext(sc).start(numOfSparkNodes)
-```
-
-The former variant is preferred, because it initiates and starts H2O Context in one call and also can be used to obtain already existing H2OContext, but it does semantically the same as the latter variant.
 
 ---
 <a name="MemorySetup"></a>

@@ -21,10 +21,16 @@ dependencies {
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"
-  
+
+  // to reuse some utils test classes defined in the core
+  testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
+
   // Integration tests requirements
   integTestCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   integTestCompile "junit:junit:4.11"
+
+  // to reuse some utils test classes defined in the core
+  integTestCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
 
   // To enable Idea compiler even for integTestCode which use mllib
   /*integTestCompile*/ compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
@@ -34,7 +40,6 @@ dependencies {
 }
 
 integTest {
-// Pass references to libraries to test launcher
   systemProperty "spark.testing",   "true"
   systemProperty "spark.test.home", "${sparkHome}"
   systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
@@ -66,14 +71,4 @@ scriptsTest {
   maxHeapSize = "4g"
   // Working dir will be root project
   workingDir = rootDir
-}
-
-String detectEnvironment(String defaultEnv = "local") {
-  String denv = [ project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
-    System.properties["sparklingTestEnv"],
-    defaultEnv
-  ].find { h -> h!=null } // first match
-  // Return env
-  logger.info("* Detected '$denv' Sparkling test environment (configure via property 'sparklingTestEnv')")
-  denv
 }

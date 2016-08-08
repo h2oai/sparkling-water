@@ -16,6 +16,7 @@
 */
 package org.apache.spark.h2o
 
+import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite

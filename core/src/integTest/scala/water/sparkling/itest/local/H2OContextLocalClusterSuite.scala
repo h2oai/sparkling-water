@@ -17,8 +17,8 @@
 package water.sparkling.itest.local
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.util.SparkTestContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.utils.SparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -37,7 +37,7 @@ class H2OContextLocalClusterSuite extends FunSuite
     // For distributed testing we need to pass around jar containing all implementation classes plus test classes
     val conf = defaultSparkConf.setJars(swassembly :: Nil)
     sc = new SparkContext("local-cluster[3,2,2048]", "test-local-cluster", conf)
-    hc = H2OContext.getOrCreate(sc)
+    hc = H2OContext.getOrCreate(sc, new H2OConf(sc))
 
     assert(water.H2O.CLOUD.members().length == 3, "H2O cloud should have 3 members")
     // Does not reset

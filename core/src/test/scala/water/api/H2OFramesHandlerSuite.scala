@@ -19,9 +19,7 @@ package water.api
 import java.io.File
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o._
-import org.apache.spark.h2o.util.{SharedSparkTestContext, SparkTestContext}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.h2o.utils.SharedSparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -49,10 +47,10 @@ class H2OFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     // get the data frame using obtained id
     val df = sqlc.table(result.dataframe_id)
     assert (sqlc.tableNames().contains("requested_name"), "DataFrame should be stored in table named \"requested_name\"")
-    assert (df.columns.size == h2oFrame.numCols(), "Number of columns should match")
+    assert (df.columns.length == h2oFrame.numCols(), "Number of columns should match")
     assert (df.columns.sameElements(h2oFrame.names()),"Column names should match")
     assert (df.count() == h2oFrame.numRows(), "Number of rows should match")
-    assert (sqlc.tableNames().size == 1, "Number of stored DataFrames should be 1")
+    assert (sqlc.tableNames().length == 1, "Number of stored DataFrames should be 1")
 
   }
 

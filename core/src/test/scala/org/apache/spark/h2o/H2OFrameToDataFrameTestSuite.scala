@@ -21,8 +21,8 @@ import java.sql.Timestamp
 import java.util.UUID
 
 import hex.splitframe.ShuffleSplitFrame
-import org.apache.spark.h2o.H2OSchemaUtils.flatSchema
-import org.apache.spark.h2o.util.SharedSparkTestContext
+import org.apache.spark.h2o.utils.{SharedSparkTestContext, H2OSchemaUtils}
+import H2OSchemaUtils.flatSchema
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
@@ -41,7 +41,7 @@ import scala.reflect.ClassTag
  * Testing schema for h2o schema rdd transformation.
  */
 @RunWith(classOf[JUnitRunner])
-class H2OSchemaRDDTest extends FunSuite with SharedSparkTestContext {
+class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
@@ -743,7 +743,7 @@ class H2OSchemaRDDTest extends FunSuite with SharedSparkTestContext {
   }
 }
 
-object H2OSchemaRDDTest {
+object H2OFrameToDataFrameTestSuite {
 
 }
 
