@@ -150,8 +150,9 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
         val a = hd.get
         hd = None
         a
-      } else
+      } else {
         throw new NoSuchElementException(s"No more elements in this iterator: found $total out of $nrows")
+      }
     }
 
     private def readOne(): Option[A] = {

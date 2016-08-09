@@ -49,7 +49,7 @@ import scala.util.control.NoStackTrace
  *
  * It provides implicit conversion from RDD -> H2OLikeRDD and back.
  */
-class H2OContext (@transient val sparkContext: SparkContext) extends {
+class H2OContext (@transient val sparkContext: SparkContext, sqlc: SQLContext) extends {
     val sparkConf = sparkContext.getConf
   } with org.apache.spark.Logging
   with H2OConf
@@ -57,7 +57,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   self =>
 
   /** Supports call from java environments. */
-  def this(sparkContext: JavaSparkContext) = this(sparkContext.sc)
+  def this(sparkContext: JavaSparkContext)(implicit sqlc: SQLContext) = this(sparkContext.sc, sqlc)
 
   /** Runtime list of active H2O nodes */
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
@@ -80,7 +80,13 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   /** Transform DataFrame to H2OFrame */
   def asH2OFrame(df : DataFrame): H2OFrame = asH2OFrame(df, None)
   def asH2OFrame(df : DataFrame, frameName: Option[String]) : H2OFrame = H2OContext.toH2OFrame(sparkContext, df, if (frameName != null) frameName else None)
+
   def asH2OFrame(df : DataFrame, frameName: String) : H2OFrame = asH2OFrame(df, Option(frameName))
+  /** Transforms Dataset[Supported type] to H2OFrame */
+  def asH2OFrame[T](ds: SupportedDataset[T]): H2OFrame = asH2OFrame(ds, None)
+  def asH2OFrame[T](ds: SupportedDataset[T], frameName: Option[String]): H2OFrame =
+    ds.toH2OFrame(sqlc, frameName)
+  def asH2OFrame[T](ds: SupportedDataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
 
   /** Transform DataFrame to H2OFrame key */
   def toH2OFrameKey(df : DataFrame): Key[Frame] = toH2OFrameKey(df, None)
@@ -137,9 +143,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   /** Convert given H2O frame into DataFrame type */
   @deprecated("1.3", "Use asDataFrame")
-  def asSchemaRDD[T <: Frame](fr : T)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
-  def asDataFrame[T <: Frame](fr : T)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
-  def asDataFrame(s : String)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(new H2OFrame(s))
+  def asSchemaRDD[T <: Frame](fr : T)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)(sqlContext)
+  def asDataFrame[T <: Frame](fr : T)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)(sqlContext)
+  def asDataFrame(s : String)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(new H2OFrame(s))(sqlContext)
 
   def h2oLocalClient = this.localClientIp + ":" + this.localClientPort
 
@@ -153,10 +159,13 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   /** Initialize Sparkling H2O and start H2O cloud with specified number of workers. */
   @deprecated(message = "Use start() method.", since = "1.5.11")
   def start(h2oWorkers: Int):H2OContext = {
-    import H2OConf._
-    sparkConf.set(PROP_CLUSTER_SIZE._1, h2oWorkers.toString)
+    setClusterSize(h2oWorkers)
     start()
+  }
 
+  // TODO(vlad): figure out whether this is still needed
+  def setClusterSize(n: Int): Unit = {
+    sparkConf.set(H2OConf.PROP_CLUSTER_SIZE._1, n.toString)
   }
 
   /** Initialize Sparkling H2O and start H2O cloud. */
@@ -325,15 +334,6 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
   H2OContext.setInstantiatedContext(this)
 }
 
-class H2OSQLContext(@transient val sqlContext: SQLContext) extends H2OContext(sqlContext.sparkContext) {
-
-/** Transforms Dataset[Supported type] to H2OFrame */
-def asH2OFrame[T](ds: SupportedDataset[T]): H2OFrame = asH2OFrame(ds, None)
-def asH2OFrame[T](ds: SupportedDataset[T], frameName: Option[String]): H2OFrame =
-  ds.toH2OFrame(sqlContext, frameName)
-def asH2OFrame[T](ds: SupportedDataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
-}
-
 object H2OContext extends Logging {
 
   val UNSUPPORTED_SPARK_OPTIONS = Seq(
@@ -352,21 +352,19 @@ object H2OContext extends Logging {
   @transient private val instantiatedContext = new AtomicReference[H2OContext]()
 
   /**
-    * Tries to get existing H2O Context. If it has been created, returns Option containing this H2O Context, otherwise
-    * returns None
+    * Tries to get existing H2O Context. If it has been created, returns this H2O Context, otherwise
+    * returns creates a new one
     *
-    * @return Option containing H2O Context or None
+    * @return H2OContext
     */
   def get(): Option[H2OContext] = Option(instantiatedContext.get())
 
-  private def getOrCreate(sc: SparkContext, h2oWorkers: Option[Int]): H2OContext = synchronized {
+  private def getOrCreate(sc: SparkContext, h2oWorkers: Option[Int])(implicit sqlContext: SQLContext): H2OContext = synchronized {
+    // TODO(vlad): figure out how thread-safe are these operations IRL
     if (instantiatedContext.get() == null) {
-      instantiatedContext.set(new H2OContext(sc))
-      if(h2oWorkers.isEmpty){
-        instantiatedContext.get().start()
-      }else{
-        instantiatedContext.get().start(h2oWorkers.get)
-      }
+      instantiatedContext.set(new H2OContext(sc, sqlContext))
+      h2oWorkers foreach instantiatedContext.get().setClusterSize
+      instantiatedContext.get().start()
     }
     instantiatedContext.get()
   }
@@ -378,8 +376,8 @@ object H2OContext extends Logging {
     * @return H2O Context
     */
   @deprecated(message = "Use getOrCreate(sc: SparkContext) method.", since = "1.5.11")
-  def getOrCreate(sc: SparkContext, h2oWorkers: Int): H2OContext = {
-    getOrCreate(sc, Some(h2oWorkers))
+  def getOrCreate(sc: SparkContext, h2oWorkers: Int)(implicit sqlContext: SQLContext): H2OContext = {
+    getOrCreate(sc, Some(h2oWorkers))(sqlContext)
   }
 
   /**
@@ -389,18 +387,18 @@ object H2OContext extends Logging {
     * @return H2O Context
     */
   def getOrCreate(sc: SparkContext): H2OContext = {
-    getOrCreate(sc, None)
+    getOrCreate(sc, None)(new SQLContext(sc))
   }
 
   /** Supports call from java environments. */
   def getOrCreate(sc: JavaSparkContext): H2OContext = {
-    getOrCreate(sc.sc, None)
+    getOrCreate(sc.sc, None)(new SQLContext(sc))
   }
 
   /** Supports call from java environments. */
   @deprecated(message = "Use getOrCreate(sc: JavaSparkContext) method.", since = "1.5.11")
-  def getOrCreate(sc: JavaSparkContext, h2oWorkers: Int): H2OContext = {
-    getOrCreate(sc.sc,Some(h2oWorkers))
+  def getOrCreate(sc: JavaSparkContext, h2oWorkers: Int)(implicit sqlContext: SQLContext): H2OContext = {
+    getOrCreate(sc.sc,Some(h2oWorkers))(sqlContext)
   }
 
   /** Transform SchemaRDD into H2O Frame */
@@ -464,12 +462,19 @@ object H2OContext extends Logging {
     require(names.length == vecTypes.length, s"Different lengths: ${names.length} names, ${vecTypes.length} types")
   }
 
+  def keyName(rdd: RDD[_], frameKeyName: Option[String]) = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
+
   case class FromPureProduct(sc: SparkContext, rdd: RDD[Product], frameKeyName: Option[String]) {
+
     import scala.reflect.runtime.universe._
 
-    val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
+    def buildH2OFrame(kn: String, vecTypes: Array[Byte], res: Array[Long]): H2OFrame = {
+      new H2OFrame(finalizeFrame(kn, res, vecTypes))
+    }
 
-    def withDefaultFieldNames = withFieldNames(defaultFieldNames)
+    def withDefaultFieldNames() = {
+      withFieldNames(defaultFieldNames)
+    }
 
     def withFieldNames(fieldNames: Int => String): H2OFrame = {
       val meta = metaInfo(fieldNames)
@@ -482,15 +487,17 @@ object H2OContext extends Logging {
     }
 
     def withMeta(meta: MetaInfo): H2OFrame = {
+
+      val kn: String = keyName(rdd, frameKeyName)
       // Make an H2O data Frame - but with no backing data (yet)
-      initFrame(keyName, meta.names)
+      initFrame(kn, meta.names)
       // Create chunks on remote nodes
-      val rows = sc.runJob(rdd, partitionJob(keyName, meta.vecTypes)) // eager, not lazy, evaluation
+      val rows = sc.runJob(rdd, partitionJob(kn, meta.vecTypes)) // eager, not lazy, evaluation
       val res = new Array[Long](rdd.partitions.length)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
 
       // Add Vec headers per-Chunk, and finalize the H2O Frame
-      new H2OFrame(finalizeFrame(keyName, res, meta.vecTypes))
+      buildH2OFrame(kn, meta.vecTypes, res)
     }
 
     def metaInfo(fieldNames: Int => String): MetaInfo = {
@@ -510,7 +517,7 @@ object H2OContext extends Logging {
       val vecTypes = tuples map (nt => dataTypeToVecType(nt._2)) toArray
 
       MetaInfo(names, vecTypes)
-     }
+    }
   }
 
   /** Transform typed RDD into H2O Frame */
@@ -534,7 +541,7 @@ object H2OContext extends Logging {
   }
 
   def partitionJob[A <: Product : TypeTag](keyName: String, vecTypes: Array[Byte]): (TaskContext, Iterator[Product]) => (Int, Long) = {
-    perTypedDataPartition(keyName, vecTypes) _
+    perTypedDataPartition(keyName, vecTypes)
   }
 
   /** Transform supported type for conversion to H2OFrame*/
@@ -729,9 +736,7 @@ object H2OContext extends Logging {
             case _ => fld
         }
         x match {
-          case n: Number  => {
-            chk.addNum(n.doubleValue())
-          }
+          case n: Number  => chk.addNum(n.doubleValue())
           case n: Boolean => chk.addNum(if (n) 1 else 0)
           case n: String  => chk.addStr(valStr.setTo(n))
           case n : java.sql.Timestamp => chk.addNum(n.asInstanceOf[java.sql.Timestamp].getTime())
