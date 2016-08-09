@@ -363,7 +363,7 @@ object H2OContext extends Logging {
     // TODO(vlad): figure out how thread-safe are these operations IRL
     if (instantiatedContext.get() == null) {
       instantiatedContext.set(new H2OContext(sc, sqlContext))
-      h2oWorkers foreach instantiatedContext.get().setClusterSize
+      h2oWorkers foreach (instantiatedContext.get().setClusterSize)
       instantiatedContext.get().start()
     }
     instantiatedContext.get()
