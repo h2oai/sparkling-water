@@ -1,6 +1,14 @@
 ChangeLog
 =========
 
+##v1.4.16 (2016-08-09)
+  - Bug
+    - [SW-154](https://0xdata.atlassian.net/browse/SW-154) - Network mask is used in the wrong way on executors
+
+  - Improvement
+    - [SW-163](https://0xdata.atlassian.net/browse/SW-163) - Upgrade H2O dependency to 3.10.0.3
+    - Streaming example 
+
 ##v1.4.15 (2016-07-05)
   - Bug fixes
     - [SW-125](https://0xdata.atlassian.net/browse/SW-125) - PySparkling changes in order to upload the package to PyPI
