@@ -17,10 +17,10 @@
 
 package org.apache.spark.h2o
 
-import org.apache.spark.sql.{DataFrame, SaveMode, SQLContext}
+import org.apache.spark.sql.{DataFrame, H2OFrameRelation, SQLContext, SaveMode}
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
-import water.DKV
+import water.{DKV, Key}
 
 /**
   * Provides access to H2OFrame from pure SQL statements (i.e. for users of the
@@ -62,10 +62,10 @@ class DefaultSource
     */
   override def createRelation( sqlContext: SQLContext,
                                parameters: Map[String, String],
-                               schema: StructType): H2ORelation = {
+                               schema: StructType): H2OFrameRelation[_] = {
     val key = checkKey(parameters)
 
-    H2ORelation(key)(sqlContext)
+    H2OFrameRelation(getFrame(key))(sqlContext)
   }
 
   override def createRelation( sqlContext: SQLContext,
@@ -88,11 +88,13 @@ class DefaultSource
           sys.error(s"Frame with key '$key' already exists.")
         case SaveMode.Ignore => // do nothing
       }
-    }else{
+    } else {
       // save as H2O Frame
       h2oContext.asH2OFrame(data,key)
     }
 
     createRelation(sqlContext, parameters, data.schema)
   }
+
+  private def getFrame[T <: Frame](keyName: String) = DKV.get(Key.make(keyName)).get.asInstanceOf[T]
 }

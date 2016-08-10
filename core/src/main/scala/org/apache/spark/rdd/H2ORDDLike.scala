@@ -17,25 +17,28 @@
 
 package org.apache.spark.rdd
 
-import org.apache.spark.h2o.{H2OFrame, H2OContext}
-import water.{Key, DKV}
+import org.apache.spark.Partition
 import water.fvec.{Chunk, Frame}
+import water.{DKV, Key}
 
 /**
  * Contains functions that are shared between all H2ORDD types (i.e., Scala, Java)
  */
 private[rdd] trait H2ORDDLike[T <: Frame] {
-  /** Context for this RDD */
-  @transient val h2oContext : H2OContext
   /** Underlying DataFrame */
   @transient val frame: T
 
   /** Cache frame key to get H2OFrame from the K/V store */
-  // FIXME: we should be able to use water.Key here
-  val keyName: String = frame._key.toString
+  val frameKeyName: String = frame._key.toString
 
-  //private[rdd] def baseRDD: H2ORDD[]
+  /** Number of chunks per a vector */
+  val numChunks: Int = frame.anyVec().nChunks()
 
+  protected def getPartitions: Array[Partition] = {
+    val res = new Array[Partition](numChunks)
+    for(i <- 0 until numChunks) res(i) = new Partition { val index = i }
+    res
+  }
 
   /** Base implementation for iterator over rows stored in chunks for given partition. */
   trait H2OChunkIterator[+A] extends Iterator[A] {
