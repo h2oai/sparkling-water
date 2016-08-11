@@ -91,7 +91,8 @@ private[spark] object H2OContextUtils {
   def startH2O( sc: SparkContext,
                 spreadRDD: RDD[NodeDesc],
                 numOfExecutors: Int,
-                h2oArgs: Array[String]):Array[NodeDesc] = {
+                h2oArgs: Array[String],
+                networkMask: Option[String]):Array[NodeDesc] = {
 
     // Create global accumulator for list of nodes IP:PORT
     val bc = sc.accumulableCollection(new mutable.HashSet[NodeDesc]())
@@ -120,11 +121,12 @@ private[spark] object H2OContextUtils {
       }
       val executorId = sparkEnv.executorId
       try {
-        // Get node this node hostname
+        // Get this node hostname
         val ip = nodeDesc.hostname
+        // Always trust Spark networking except when network mask is specified
         val launcherArgs = toH2OArgs(
           h2oArgs
-            ++ Array("-ip", ip)
+            ++ networkMask.map(mask => Array("-network", mask)).getOrElse(Array("-ip", ip))
             ++ Array("-log_dir", logDir),
           None)
         // Do not launch H2O several times
@@ -133,7 +135,7 @@ private[spark] object H2OContextUtils {
             if (water.H2O.START_TIME_MILLIS.get() == 0) {
               val t = new Thread("H2O Launcher thread") {
                 override def run(): Unit = {
-                  water.H2O.setEmbeddedH2OConfig(new SparklingWaterConfig(bc))
+                  water.H2O.setEmbeddedH2OConfig(new SparklingWaterConfig(bc, if (networkMask.isEmpty) Some(ip) else None))
                   // Finalize REST API only if running in non-local mode.
                   // In local mode, we are not going to create H2O client
                   // but use executor's H2O instance directly.
@@ -239,7 +241,8 @@ private[spark] object H2OContextUtils {
  *
  * @param flatfileBVariable Spark's accumulable variable
  */
-private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.HashSet[NodeDesc], NodeDesc])
+private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.HashSet[NodeDesc], NodeDesc],
+                                   val sparkHostname: Option[String])
   extends AbstractEmbeddedH2OConfig with org.apache.spark.Logging {
 
   /** String containing a flatfile string filled asynchroniously by different thread. */
@@ -247,7 +250,9 @@ private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.Ha
 
   override def notifyAboutEmbeddedWebServerIpPort(ip: InetAddress, port: Int): Unit = {
     val env = SparkEnv.get
-    val thisNodeInfo = NodeDesc(env.executorId, getHostname(env), port)
+    // assert: ip.isDefined && ip == getHostname(env)
+    val hostname = sparkHostname.getOrElse(ip.getHostAddress)
+    val thisNodeInfo = NodeDesc(env.executorId, hostname, port)
     flatfileBVariable.synchronized {
       flatfileBVariable += thisNodeInfo
       flatfileBVariable.notifyAll()

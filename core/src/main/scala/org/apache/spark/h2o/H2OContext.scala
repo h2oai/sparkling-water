@@ -38,7 +38,8 @@ import water.api.scalaInt.ScalaCodeHandler
 import water.parser.BufferedString
 
 import scala.collection.mutable
-import scala.language.{implicitConversions, postfixOps}
+import scala.collection.mutable.ListBuffer
+import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 import scala.util.Random
@@ -216,20 +217,21 @@ class H2OContext (@transient val sparkContext: SparkContext, sqlc: SQLContext) e
     var h2oNodeArgs = getH2ONodeArgs
     // Disable web on h2o nodes in non-local mode
     if(!sparkContext.isLocal){
-      h2oNodeArgs = h2oNodeArgs++Array("-disable_web")
+      h2oNodeArgs = h2oNodeArgs ++ Array("-disable_web")
     }
     logDebug(s"Arguments used for launching h2o nodes: ${h2oNodeArgs.mkString(" ")}")
-    val executors = startH2O(sparkContext, spreadRDD, spreadRDDNodes.length, h2oNodeArgs)
+    val executors = startH2O(sparkContext, spreadRDD, spreadRDDNodes.length, h2oNodeArgs, nodeNetworkMask)
     // Store runtime information
     h2oNodes.append( executors:_* )
 
     // Connect to a cluster via H2O client, but only in non-local case
     if (!sparkContext.isLocal) {
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + executors.length)
-      // Get arguments for this launch including flatfile
-      // And also ask for client mode
+      // Do not use IP if network mask is specified
       val h2oClientIp = clientIp.getOrElse(getHostname(SparkEnv.get))
-      val h2oClientArgs = toH2OArgs(getH2OClientArgs ++ Array("-ip", h2oClientIp, "-client"),
+      // Get arguments for this launch including flatfile
+      val h2oClientArgs = toH2OArgs(
+                              getH2OClientArgs(h2oClientIp),
                               this,
                               executors)
       logDebug(s"Arguments used for launching h2o client node: ${h2oClientArgs.mkString(" ")}")
@@ -636,7 +638,7 @@ object H2OContext extends Logging {
       r match {
         case n: Number  => chk.addNum(n.doubleValue())
         case n: Boolean => chk.addNum(if (n) 1 else 0)
-        case n: String  => chk.addStr(valStr.setTo(n))
+        case n: String  => chk.addStr(valStr.set(n))
         case n : java.sql.Timestamp => chk.addNum(n.asInstanceOf[java.sql.Timestamp].getTime())
         case _ => chk.addNA()
       }
@@ -706,7 +708,6 @@ object H2OContext extends Logging {
               val sv = if (isAry) ary(aryIdx).asInstanceOf[String] else subRow.getString(aidx)
               // Always produce string vectors
               chk.addStr(valStr.setTo(sv))
-
             case TimestampType => chk.addNum(subRow.getAs[java.sql.Timestamp](aidx).getTime())
             case _ => chk.addNA()
           }
@@ -738,7 +739,7 @@ object H2OContext extends Logging {
         x match {
           case n: Number  => chk.addNum(n.doubleValue())
           case n: Boolean => chk.addNum(if (n) 1 else 0)
-          case n: String  => chk.addStr(valStr.setTo(n))
+          case n: String  => chk.addStr(valStr.set(n))
           case n : java.sql.Timestamp => chk.addNum(n.asInstanceOf[java.sql.Timestamp].getTime())
           case _ => chk.addNA()
         }
@@ -856,9 +857,8 @@ object H2OContext extends Logging {
       override def create(handler: Class[_ <: Handler]): Handler = h2oFramesHandler
     }
 
-    RequestServer.register("/3/h2oframes/(?<h2oframe_id>.*)/dataframe", "POST",
+    RequestServer.registerEndpoint("getDataFrame","POST", "/3/h2oframes/{h2oframe_id}/dataframe",
                            classOf[H2OFramesHandler], "toDataFrame",
-                           null,
                            "Transform H2OFrame with given ID to Spark's DataFrame",
                            h2oFramesFactory)
 
@@ -872,21 +872,18 @@ object H2OContext extends Logging {
       override def create(aClass: Class[_ <: Handler]): Handler = rddsHandler
     }
 
-    RequestServer.register("/3/RDDs", "GET",
+    RequestServer.registerEndpoint("listRDDs", "GET", "/3/RDDs",
                            classOf[RDDsHandler], "list",
-                           null,
                            "Return all RDDs within Spark cloud",
                            rddsFactory)
 
-    RequestServer.register("/3/RDDs/(?<rdd_id>.*)", "POST",
+    RequestServer.registerEndpoint("getRDD", "POST", "/3/RDDs/{rdd_id}",
                            classOf[RDDsHandler], "getRDD",
-                           null,
                            "Get RDD with the given ID from Spark cloud",
                            rddsFactory)
 
-    RequestServer.register("/3/RDDs/(?<rdd_id>.*)/h2oframe", "POST",
+    RequestServer.registerEndpoint("rddToH2OFrame", "POST", "/3/RDDs/{rdd_id}/h2oframe",
       classOf[RDDsHandler], "toH2OFrame",
-      null,
       "Transform RDD with the given ID to H2OFrame",
       rddsFactory)
 
@@ -900,21 +897,18 @@ object H2OContext extends Logging {
       override def create(aClass: Class[_ <: Handler]): Handler = dataFramesHandler
     }
 
-    RequestServer.register("/3/dataframes", "GET",
+    RequestServer.registerEndpoint("listDataFrames", "GET", "/3/dataframes",
                            classOf[DataFramesHandler], "list",
-                           null,
                            "Return all Spark's DataFrames",
                            dataFramesfactory)
 
-    RequestServer.register("/3/dataframes/(?<dataframe_id>.*)", "POST",
+    RequestServer.registerEndpoint("getDataFrame", "POST", "/3/dataframes/{dataframe_id}",
                            classOf[DataFramesHandler], "getDataFrame",
-                           null,
                            "Get Spark's DataFrame with the given ID",
                            dataFramesfactory)
 
-    RequestServer.register("/3/dataframes/(?<dataframe_id>.*)/h2oframe", "POST",
+    RequestServer.registerEndpoint("dataFrametoH2OFrame", "POST", "/3/dataframes/{dataframe_id}/h2oframe",
                            classOf[DataFramesHandler], "toH2OFrame",
-                           null,
                            "Transform Spark's DataFrame with the given ID to H2OFrame",
                            dataFramesfactory)
 
@@ -925,27 +919,23 @@ object H2OContext extends Logging {
     def scalaCodeFactory = new HandlerFactory {
       override def create(aClass: Class[_ <: Handler]): Handler = scalaCodeHandler
     }
-    RequestServer.register("/3/scalaint/(?<session_id>.*)", "POST",
+    RequestServer.registerEndpoint("interpretScalaCode", "POST" ,"/3/scalaint/{session_id}",
                            classOf[ScalaCodeHandler], "interpret",
-                           null,
                            "Interpret the code and return the result",
                            scalaCodeFactory)
 
-    RequestServer.register("/3/scalaint", "POST",
+    RequestServer.registerEndpoint("initScalaSession", "POST", "/3/scalaint",
                            classOf[ScalaCodeHandler], "initSession",
-                           null,
                            "Return session id for communication with scala interpreter",
                            scalaCodeFactory)
 
-    RequestServer.register("/3/scalaint", "GET",
+    RequestServer.registerEndpoint("getScalaSessions", "GET" ,"/3/scalaint",
                            classOf[ScalaCodeHandler], "getSessions",
-                           null,
                            "Return all active session IDs",
                            scalaCodeFactory)
 
-    RequestServer.register("/3/scalaint/(?<session_id>.*)", "DELETE",
+    RequestServer.registerEndpoint("destroyScalaSession", "DELETE", "/3/scalaint/{session_id}",
                            classOf[ScalaCodeHandler], "destroySession",
-                           null,
                            "Return session id for communication with scala interpreter",
                            scalaCodeFactory)
   }
