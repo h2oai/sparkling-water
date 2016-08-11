@@ -19,7 +19,7 @@ package org.apache.spark.rdd
 
 
 import org.apache.spark.h2o.{H2OContext, H2OFrame, ReflectionUtils}
-import org.apache.spark.{Partition, TaskContext}
+import org.apache.spark.{Partition, SparkContext, TaskContext}
 import water.fvec.Frame
 import water.parser.BufferedString
 
@@ -31,13 +31,15 @@ import scala.reflect.runtime.universe._
  */
 
 private[spark]
-class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val h2oContext: H2OContext,
-                                                                  @transient val frame: T,
+class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val frame: T,
                                                                   val colNames: Array[String])
-  extends RDD[A](h2oContext.sparkContext, Nil) with H2ORDDLike[T] {
+                                                                 (@transient sparkContext: SparkContext)
+  extends RDD[A](sparkContext, Nil) with H2ORDDLike[T] {
 
   // Get column names before building an RDD
-  def this(h2oContext: H2OContext, fr : T) = this(h2oContext,fr,ReflectionUtils.names[A])
+  def this(@transient fr : T)
+          (@transient sparkContext: SparkContext) = this(fr, ReflectionUtils.names[A])(sparkContext)
+
   // Check that H2OFrame & given Scala type are compatible
   if (colNames.length > 1) {
     colNames.foreach { name =>
@@ -61,7 +63,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
    * Implemented by subclasses to compute a given partition.
    */
   override def compute(split: Partition, context: TaskContext): Iterator[A] = {
-    val kn = keyName
+    val kn = frameKeyName
     new H2OChunkIterator[A] {
       override val keyName = kn
       override val partIndex = split.index
@@ -108,13 +110,4 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       }
     }
   }
-
-  /** Pass thru an RDD if given one, else pull from the H2O Frame */
-  override protected def getPartitions: Array[Partition] = {
-    val num = frame.anyVec().nChunks()
-    val res = new Array[Partition](num)
-    for( i <- 0 until num ) res(i) = new Partition { val index = i }
-    res
-  }
-
 }
