@@ -50,13 +50,6 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     }
   }
   val types = ReflectionUtils.types[A](colNames)
-  @transient val jc = implicitly[ClassTag[A]].runtimeClass
-  @transient val cs = jc.getConstructors
-  @transient val ccr = cs.collectFirst(
-        { case c if (c.getParameterTypes.length==colNames.length) => c })
-        .getOrElse( {
-                      throw new IllegalArgumentException(
-                        s"Constructor must take exactly ${colNames.length} args")})
 
   /**
    * :: DeveloperApi ::
