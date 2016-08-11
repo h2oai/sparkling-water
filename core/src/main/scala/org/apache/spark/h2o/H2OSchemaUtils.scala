@@ -34,34 +34,40 @@ object H2OSchemaUtils {
   val ARRAY_TYPE : Byte  = 1
   val VEC_TYPE : Byte = 2
 
-  def createSchema[T <: Frame](f: T): StructType = {
+  def createSchema[T <: Frame](f: T, copyMetadata: Boolean): StructType = {
     val types = new Array[StructField](f.numCols())
     val vecs = f.vecs()
     val names = f.names()
     for (i <- 0 until f.numCols()) {
       val vec = vecs(i)
-      var metadata = (new MetadataBuilder).
-        putLong("count", vec.length()).
-        putLong("naCnt", vec.naCnt())
+      types(i) = if (copyMetadata) {
+        var metadata = (new MetadataBuilder).
+          putLong("count", vec.length()).
+          putLong("naCnt", vec.naCnt())
 
-      if (vec.isCategorical) {
-        metadata = metadata.putStringArray("vals", vec.domain()).
-          putLong("cardinality", vec.cardinality().toLong)
-      } else if (vec.isNumeric) {
-        metadata = metadata.
-          putDouble("min", vec.min()).
-          putDouble("mean", vec.mean()).
-          putDoubleArray("percentiles", vec.pctiles()).
-          putDouble("max", vec.max()).
-          putDouble("std", vec.sigma()).
-          putDouble("sparsity", vec.nzCnt()/vec.length().toDouble)
+        if (vec.isCategorical) {
+          metadata = metadata.putStringArray("vals", vec.domain()).
+            putLong("cardinality", vec.cardinality().toLong)
+        } else if (vec.isNumeric) {
+          metadata = metadata.
+            putDouble("min", vec.min()).
+            putDouble("mean", vec.mean()).
+            putDoubleArray("percentiles", vec.pctiles()).
+            putDouble("max", vec.max()).
+            putDouble("std", vec.sigma()).
+            putDouble("sparsity", vec.nzCnt() / vec.length().toDouble)
+        }
+        StructField(
+          names(i), // Name of column
+          vecTypeToDataType(vec), // Catalyst type of column
+          vec.naCnt() > 0,
+          metadata.build())
+      } else {
+        StructField(
+          names(i), // Name of column
+          vecTypeToDataType(vec), // Catalyst type of column
+          vec.naCnt() > 0)
       }
-      types(i) = StructField(
-        names(i), // Name of column
-        vecTypeToDataType(vec), // Catalyst type of column
-        vec.naCnt() > 0,
-        metadata.build()
-      )
     }
     StructType(types)
   }

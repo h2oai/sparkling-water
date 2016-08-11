@@ -24,7 +24,7 @@ import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.h2o.H2OContextUtils._
 import org.apache.spark.h2o.H2OTypeUtils._
 import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
+import org.apache.spark.rdd.H2ORDD
 import org.apache.spark.repl.SparkIMain
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.sql.types._
@@ -138,9 +138,9 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
   /** Convert given H2O frame into DataFrame type */
   @deprecated("1.3", "Use asDataFrame")
-  def asSchemaRDD[T <: Frame](fr : T)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
-  def asDataFrame[T <: Frame](fr : T)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr)
-  def asDataFrame(s : String)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(new H2OFrame(s))
+  def asSchemaRDD[T <: Frame](fr : T, copyMetadata: Boolean = true)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr, copyMetadata)
+  def asDataFrame[T <: Frame](fr : T, copyMetadata: Boolean = true)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(fr, copyMetadata)
+  def asDataFrame(s : String, copyMetadata: Boolean)(implicit sqlContext: SQLContext) : DataFrame = createH2OSchemaRDD(new H2OFrame(s), copyMetadata)
 
   def h2oLocalClient = this.localClientIp + ":" + this.localClientPort
 
@@ -265,12 +265,13 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     * Create a Spark DataFrame from given H2O frame.
     *
     * @param fr  an instnace of H2O frame
+    * @param copyMetadata  copy H2O metadata into Spark DataFrame
     * @param sqlContext  running sqlContext
     * @tparam T  type of H2O frame
     * @return  a new DataFrame
     */
-  def createH2OSchemaRDD[T <: Frame](fr: T)(implicit sqlContext: SQLContext): DataFrame = {
-    val ss = new H2OFrameRelation(fr)(sqlContext)
+  def createH2OSchemaRDD[T <: Frame](fr: T, copyMetadata: Boolean)(implicit sqlContext: SQLContext): DataFrame = {
+    val ss = new H2OFrameRelation(fr, copyMetadata)(sqlContext)
     sqlContext.baseRelationToDataFrame(ss)
   }
 
