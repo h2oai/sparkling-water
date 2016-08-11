@@ -28,7 +28,7 @@ import org.apache.spark.rdd.{H2ORDD, H2OSchemaRDD}
 import org.apache.spark.repl.SparkIMain
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
 import water._
 import water.api.DataFrames.DataFramesHandler
 import water.api.H2OFrames.H2OFramesHandler
@@ -258,13 +258,20 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
 
 
   def createH2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame](fr: T): RDD[A] = {
-    new H2ORDD[A, T](this, fr)
+    new H2ORDD[A, T](fr)(sparkContext)
   }
 
+  /**
+    * Create a Spark DataFrame from given H2O frame.
+    *
+    * @param fr  an instnace of H2O frame
+    * @param sqlContext  running sqlContext
+    * @tparam T  type of H2O frame
+    * @return  a new DataFrame
+    */
   def createH2OSchemaRDD[T <: Frame](fr: T)(implicit sqlContext: SQLContext): DataFrame = {
-    val h2oSchemaRDD = new H2OSchemaRDD(this, fr)
-    import org.apache.spark.sql.H2OSQLContextUtils.internalCreateDataFrame
-    internalCreateDataFrame(h2oSchemaRDD, H2OSchemaUtils.createSchema(fr))(sqlContext)
+    val ss = new H2OFrameRelation(fr)(sqlContext)
+    sqlContext.baseRelationToDataFrame(ss)
   }
 
   /** Open H2O Flow running in this client. */
