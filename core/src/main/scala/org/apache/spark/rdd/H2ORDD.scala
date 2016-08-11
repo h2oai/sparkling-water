@@ -17,8 +17,7 @@
 
 package org.apache.spark.rdd
 
-
-import java.lang
+import language.postfixOps
 import java.lang.reflect.Constructor
 
 import org.apache.spark.h2o.{H2OContext, ReflectionUtils}
@@ -50,11 +49,13 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       }
     }
   }
-  val types = ReflectionUtils.types[A](colNames)
 
-  val jc = implicitly[ClassManifest[A]].runtimeClass
+  private val columnTypeNames = ReflectionUtils.typeNames[A](colNames)
 
-  type Deserializer = (Chunk, Int) => Any
+  private val jc = implicitly[ClassManifest[A]].runtimeClass
+
+  private type Deserializer = (Chunk, Int) => Any
+
   private val DefaultDeserializer: Deserializer = (chk: Chunk, row: Int) => null
 
   def extractStringLike(chk: Chunk, row: Int): String = {
@@ -64,27 +65,31 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       val valStr = new BufferedString()
       chk.atStr(valStr, row)
       valStr.toString
+//      // TODO(vlad): fix BufferedString, so it does not throw if buffer is null
+//      if(valStr.getBuffer() == null) null else valStr.toString
     } else null
   }
 
-  private val allExtractors: Map[Class[_], Deserializer] = Map(
-    classOf[lang.Boolean] -> ((chk: Chunk, row: Int) => chk.at8(row) == 1),
-    classOf[lang.Byte]    -> ((chk: Chunk, row: Int) => {
-      val found = chk.at8(row)
-        found.asInstanceOf[Byte]
-    }),
-    classOf[lang.Double]  -> ((chk: Chunk, row: Int) => chk.atd(row)),
-    classOf[lang.Float]   -> ((chk: Chunk, row: Int) => chk.atd(row)),
-    classOf[Integer]      -> ((chk: Chunk, row: Int) => chk.at8(row).asInstanceOf[Int]),
-    classOf[lang.Long]    -> ((chk: Chunk, row: Int) => chk.at8(row)),
-    classOf[lang.Short]   -> ((chk: Chunk, row: Int) => chk.at8(row).asInstanceOf[Short]),
-    classOf[String]       -> ((chk: Chunk, row: Int) => extractStringLike(chk, row)))
+  private val plainExtractors: Map[String, Deserializer] = Map(
+    "Boolean" -> ((chk: Chunk, row: Int) => chk.at8(row) == 1),
+    "Byte"    -> ((chk: Chunk, row: Int) => chk.at8(row).toByte),
+    "Double"  -> ((chk: Chunk, row: Int) => chk.atd(row)),
+    "Float"   -> ((chk: Chunk, row: Int) => chk.atd(row)),
+    "Integer" -> ((chk: Chunk, row: Int) => chk.at8(row).asInstanceOf[Int]),
+    "Long"    -> ((chk: Chunk, row: Int) => chk.at8(row)),
+    "Short"   -> ((chk: Chunk, row: Int) => chk.at8(row).asInstanceOf[Short]),
+    "String"  -> ((chk: Chunk, row: Int) => extractStringLike(chk, row)))
 
-  private val extractorsMap: Map[Class[_], Deserializer] = allExtractors withDefaultValue DefaultDeserializer
+  private def returnOption[X](op: (Chunk, Int) => X) = (chk: Chunk, row: Int) => opt(op(chk, row))
 
-  val extractors = extractorsMap compose types
+  private val allExtractors: Map[String, Deserializer] = plainExtractors ++
+    (plainExtractors map {case (key, op) => s"Option[$key]" -> returnOption(op)})
 
-  def opt[X](op: => Any): Option[X] = try {
+  private val extractorsMap: Map[String, Deserializer] = allExtractors withDefaultValue DefaultDeserializer
+
+  val extractors = extractorsMap compose columnTypeNames
+
+  private def opt[X](op: => Any): Option[X] = try {
     Option(op.asInstanceOf[X])
   } catch {
     case ex: Exception => None
@@ -110,7 +115,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
 
     val columnMapping: Map[Int, Int] = try {
       val mappings = for {
-        i <- types.indices
+        i <- columnTypeNames.indices
         name = colNames(i)
         j = fr.names().indexOf(name)
       } yield (i, j)
@@ -121,17 +126,16 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       mappings.toMap
     }
 
-    def extractOptions: Array[Option[Any]] = {
-      val data = new Array[Option[Any]](types.length)
-      for {
-        i <- types.indices
-        j = columnMapping(i)
-        chk = chks(j)
-        ex = extractors(i)
-      } {
-        data(i) = opt(ex(chk, row)) // notice the trick: opt takes care of nulls and exceptions
-      }
+    private def cell(i: Int) = {
+      val j = columnMapping(i)
+      val chunk = chks(j)
+      val ex = extractors(i)
+      val data = ex(chunk, row).asInstanceOf[Object]
       data
+    }
+
+    def extractRow: Option[Array[AnyRef]] = opt {
+      columnTypeNames.indices map cell toArray
     }
 
     private var hd: Option[A] = None
@@ -156,24 +160,12 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     }
 
     private def readOne(): Option[A] = {
-      val options: Array[Option[Any]] = extractOptions
-      val values: List[Array[Object]] = try {
-        val extractedValues: Array[Object] = for {
-          opt <- options
-          v: AnyRef = opt.get.asInstanceOf[AnyRef]
-        } yield v
-
-        extractedValues :: Nil
-      } catch {
-        case oops: Exception => Nil
-      }
-      val optionValues: Array[AnyRef] = options.map(x => x)
-      val allDataArrays: List[Array[AnyRef]] = optionValues :: values
+      val dataOpt = extractRow
 
       row += 1
       val res: Seq[A] = for {
         builder <- builders
-        data <- allDataArrays
+        data <- dataOpt
         instance <- builder(data)
       } yield instance
 
