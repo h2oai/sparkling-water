@@ -141,7 +141,7 @@ class H2OContext(object):
     def show(self):
         print self
 
-    def as_spark_frame(self, h2o_frame):
+    def as_spark_frame(self, h2o_frame, copy_metadata = True):
         """
         Transforms given H2OFrame to Spark DataFrame
 
@@ -155,7 +155,7 @@ class H2OContext(object):
         """
         if isinstance(h2o_frame,H2OFrame):
             j_h2o_frame = h2o_frame.get_java_h2o_frame()
-            jdf = self._jhc.asDataFrame(j_h2o_frame, self._jsqlContext)
+            jdf = self._jhc.asDataFrame(j_h2o_frame, copy_metadata, self._jsqlContext)
             return DataFrame(jdf,self._sqlContext)
 
     def as_h2o_frame(self, dataframe, framename = None):

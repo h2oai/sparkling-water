@@ -65,7 +65,7 @@ class DefaultSource
                                schema: StructType): H2OFrameRelation[_] = {
     val key = checkKey(parameters)
 
-    H2OFrameRelation(getFrame(key))(sqlContext)
+    H2OFrameRelation(getFrame(key), true)(sqlContext)
   }
 
   override def createRelation( sqlContext: SQLContext,

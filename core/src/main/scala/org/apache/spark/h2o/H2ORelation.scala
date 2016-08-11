@@ -22,9 +22,9 @@ import org.apache.spark.sql.types.StructType
 import water.DKV
 
 object DataSourceUtils {
-  def getSparkSQLSchema(key: String): StructType = {
+  def getSparkSQLSchema(key: String, copyMetadata: Boolean = true): StructType = {
     val frame = DKV.getGet[H2OFrame](key)
-    H2OSchemaUtils.createSchema(frame)
+    H2OSchemaUtils.createSchema(frame, copyMetadata)
   }
 
   def overwrite(key: String,originalFrame: H2OFrame, newDataFrame: DataFrame)(implicit h2oContext: H2OContext): Unit = {

@@ -18,7 +18,7 @@
 package org.apache.spark.sql
 
 import org.apache.spark.h2o.H2OSchemaUtils
-import org.apache.spark.rdd.{H2OSchemaRDDInternal, RDD}
+import org.apache.spark.rdd.{H2OSchemaRDD, H2OSchemaRDDInternal, RDD}
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.sources.{BaseRelation, PrunedScan, TableScan}
 import org.apache.spark.sql.types.StructType
@@ -36,7 +36,8 @@ object H2OSQLContextUtils {
 
 /** H2O relation implementing column filter operation.
   */
-case class H2OFrameRelation[T <: Frame](@transient h2oFrame: T)
+case class H2OFrameRelation[T <: Frame](@transient h2oFrame: T,
+                                        @transient copyMetadata: Boolean)
                                        (@transient val sqlContext: SQLContext)
   extends BaseRelation with TableScan with PrunedScan /* with PrunedFilterScan */  {
 
@@ -45,7 +46,7 @@ case class H2OFrameRelation[T <: Frame](@transient h2oFrame: T)
 
   override val needConversion = false
 
-  override val schema: StructType = H2OSchemaUtils.createSchema(h2oFrame)
+  override val schema: StructType = H2OSchemaUtils.createSchema(h2oFrame, copyMetadata)
 
   override def buildScan(): RDD[Row] =
     new H2OSchemaRDDInternal(h2oFrame)(sqlContext.sparkContext).asInstanceOf[RDD[Row]]
