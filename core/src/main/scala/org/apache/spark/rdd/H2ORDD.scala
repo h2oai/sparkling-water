@@ -120,7 +120,10 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
         j = fr.names().indexOf(name)
       } yield (i, j)
 
-      val bads = mappings collect { case (i, j) if j < 0 => colNames(j) }
+      val bads = mappings collect { case (i, j) if j < 0 => {
+        if (i < colNames.length) colNames(i) else s"Unknown index $i (column of type ${columnTypeNames(i)}"
+        }
+      }
       if (bads.nonEmpty) throw new scala.IllegalArgumentException(s"Missing columns: ${bads mkString ","}")
 
       mappings.toMap

@@ -707,7 +707,7 @@ object H2OContext extends Logging {
             case StringType =>
               val sv = if (isAry) ary(aryIdx).asInstanceOf[String] else subRow.getString(aidx)
               // Always produce string vectors
-              chk.addStr(valStr.setTo(sv))
+              chk.addStr(valStr.set(sv))
             case TimestampType => chk.addNum(subRow.getAs[java.sql.Timestamp](aidx).getTime())
             case _ => chk.addNA()
           }
