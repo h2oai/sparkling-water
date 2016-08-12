@@ -60,8 +60,7 @@ trait FrameUtils {
     val chunkCount = fr.anyVec().nChunks()
     val cidxToH2ONode = new Array[NodeDesc](chunkCount)
     (0 until chunkCount).foreach { cidx =>
-      // SW-172: FIXME this is expensive since we are creating NodeDesc for each call - they should be interned!
-      cidxToH2ONode(cidx) = NodeDesc.fromH2ONode(fr.anyVec().chunkKey(cidx).home_node())
+      cidxToH2ONode(cidx) = NodeDesc(fr.anyVec().chunkKey(cidx).home_node())
     }
     cidxToH2ONode
   }

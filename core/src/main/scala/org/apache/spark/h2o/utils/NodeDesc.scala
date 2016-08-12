@@ -18,6 +18,7 @@
 package org.apache.spark.h2o.utils
 
 import water.H2ONode
+import water.nbhm.NonBlockingHashMap
 
 /** Helper class containing node ID, hostname and port.
   *
@@ -31,8 +32,28 @@ case class NodeDesc(nodeId: String, hostname: String, port: Int) {
 }
 
 object NodeDesc {
-  def fromH2ONode(node: H2ONode): NodeDesc = {
+  def apply(node: H2ONode): NodeDesc = {
+    intern(node)
+  }
+
+  private[utils] def fromH2ONode(node: H2ONode): NodeDesc = {
     val ipPort = node.getIpPortString.split(":")
     NodeDesc(node.index().toString, ipPort(0), Integer.parseInt(ipPort(1)))
   }
+
+  private[utils] def intern(node: H2ONode): NodeDesc = {
+    var nodeDesc = INTERN_CACHE.get(node)
+    if (nodeDesc != null) {
+      return nodeDesc
+    } else {
+      nodeDesc = fromH2ONode(node)
+      val oldNodeDesc = INTERN_CACHE.putIfAbsent(node, nodeDesc)
+      if (oldNodeDesc != null) {
+        return oldNodeDesc
+      } else {
+        return nodeDesc
+      }
+    }
+  }
+  val INTERN_CACHE = new NonBlockingHashMap[H2ONode, NodeDesc]
 }
