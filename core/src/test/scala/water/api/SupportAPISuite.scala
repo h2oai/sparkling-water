@@ -17,7 +17,7 @@
 package water.api
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.util.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedSparkTestContext
 import org.scalatest.FunSuite
 import water.fvec.{AppendableVec, Frame, NewChunk, Vec}
 import water.munging.JoinMethod

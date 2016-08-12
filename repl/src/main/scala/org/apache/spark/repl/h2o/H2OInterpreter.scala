@@ -39,6 +39,7 @@ import scala.tools.nsc.util._
 
 /**
   * H2O Interpreter which is use to interpret scala code
+  *
   * @param sparkContext spark context
   * @param sessionId session ID for interpreter
   */
@@ -65,6 +66,7 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
 
   /**
     * Get response of interpreter
+    *
     * @return
     */
   def interpreterResponse: String = {
@@ -73,6 +75,7 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
 
   /**
     * Redirected printed output coming from commands written in the interpreter
+    *
     * @return
     */
   def consoleOutput: String = {
@@ -81,6 +84,7 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
 
   /**
     * Run scala code in a string
+    *
     * @param code Code to be compiled end executed
     * @return
     */

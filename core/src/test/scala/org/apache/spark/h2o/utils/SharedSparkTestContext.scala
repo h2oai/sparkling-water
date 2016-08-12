@@ -14,27 +14,34 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.h2o.util
+package org.apache.spark.h2o.utils
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.backends.SharedH2OConf._
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.sql.SQLContext
 import org.scalatest.Suite
-
-/** This fixture create a Spark context once and share it over whole run of test suite. */
+/**
+  * Helper trait to simplify initialization and termination of Spark/H2O contexts.
+  *
+  */
 trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
 
+
   def createSparkContext:SparkContext
-  def createH2OContext(sc:SparkContext):H2OContext = H2OContext.getOrCreate(sc)
+
+  def createH2OContext(sc: SparkContext, conf: H2OConf): H2OContext = {
+    H2OContext.getOrCreate(sc, conf)
+  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     sc = createSparkContext
     sqlc = SQLContext.getOrCreate(sc)
-    hc = createH2OContext(sc)
+    hc = createH2OContext(sc, new H2OConf(sc))
   }
 
-  override protected def afterAll(): Unit = {
+  override def afterAll(): Unit = {
     resetContext()
     super.afterAll()
   }

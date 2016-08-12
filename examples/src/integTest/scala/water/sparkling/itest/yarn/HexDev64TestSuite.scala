@@ -5,7 +5,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.IntegTestHelper
+import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
 
 @RunWith(classOf[JUnitRunner])
 class HexDev64TestSuite extends FunSuite with IntegTestHelper {
@@ -25,21 +25,9 @@ class HexDev64TestSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object HexDev64Test {
+object HexDev64Test extends IntegTestStopper{
 
-  def main(args: Array[String]): Unit = {
-    try {
-      test(args)
-    } catch {
-      case t: Throwable => {
-        System.err.println(t.toString)
-        t.printStackTrace()
-        water.H2O.exit(-1)
-      }
-    }
-  }
-
-  def test(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit = exitOnException{
     val conf = new SparkConf().setAppName("HexDev64Test")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)

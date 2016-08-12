@@ -17,8 +17,8 @@
 package water.sparkling.itest.local
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.util.SparkTestContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.utils.SparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -34,7 +34,7 @@ class H2OContextLocalSuite extends FunSuite
 
   test("verify H2O cloud building on local JVM") {
     sc = new SparkContext("local[*]", "test-local", defaultSparkConf)
-    hc = H2OContext.getOrCreate(sc)
+    hc = H2OContext.getOrCreate(sc, new H2OConf(sc))
     // Number of nodes should be on
     assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 members")
     // Make sure that H2O is running

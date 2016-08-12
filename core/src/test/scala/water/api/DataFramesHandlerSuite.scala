@@ -20,7 +20,7 @@ import java.io.File
 
 import com.google.gson.JsonParser
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.util.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedSparkTestContext
 import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -46,7 +46,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     val df = rdd.toDF("nums")
 
     df.registerTempTable(rid)
-    val dataFramesHandler = new DataFramesHandler(sc,hc)
+    val dataFramesHandler = new DataFramesHandler(sc, hc)
 
     val req = new DataFramesV3
     val result = dataFramesHandler.list(3, req)
@@ -109,18 +109,13 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     req.h2oframe_id ="requested_name"
     val result = dataFramesHandler.toH2OFrame(3, req)
 
-    // create h2o frame for the given id
-    val value = DKV.get(result.h2oframe_id)
-    val h2oFrame: H2OFrame = value.className() match {
-      case name if name.equals(classOf[Frame].getName) => {
-        val h2oContext = hc
-        import h2oContext.implicits._
-        value.get[Frame]()
-      }
-      case name if name.equals(classOf[H2OFrame].getName) => value.get[H2OFrame]()
-    }
+    // get h2o frame for the given id
+    val h2oContext = hc
+    import h2oContext.implicits._
+    val h2oFrame = DKV.getGet[Frame](result.h2oframe_id)
+
     assert (h2oFrame.key.toString == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
-    assert (h2oFrame.numCols()==df.columns.size, "Number of columns should match")
+    assert (h2oFrame.numCols()==df.columns.length, "Number of columns should match")
     assert (h2oFrame.names().sameElements(df.columns),"Column names should match")
     assert (h2oFrame.numRows() == df.count(), "Number of rows should match")
   }
@@ -146,8 +141,6 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
   }
 
   def parseSchema(schemaString: String) : StructType = {
-    import com.google.gson.Gson
-    val gson = new Gson()
     val parser = new JsonParser
     val obj = parser.parse(schemaString).getAsJsonObject
     val fields = obj.get("fields").getAsJsonArray

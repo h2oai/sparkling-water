@@ -9,7 +9,7 @@ sc = SparkContext("local", "App Name", pyFiles=[])
 sqlContext = SQLContext(sc)
 
 # initiate H2OContext
-hc = H2OContext(sc).start()
+hc = H2OContext.getOrCreate(sc)
 
 # stop H2O and Spark services
 h2o.shutdown(prompt=False)

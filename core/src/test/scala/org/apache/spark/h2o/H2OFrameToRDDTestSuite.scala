@@ -19,7 +19,7 @@ package org.apache.spark.h2o
 import java.sql.Timestamp
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.util.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedSparkTestContext
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.junit.runner.RunWith
@@ -29,9 +29,8 @@ import water.fvec.Vec
 import water.parser.{BufferedString, Categorical}
 
 /**
- * Testing schema for h2o schema rdd transformation.
+ * Testing schema for rdd  to h2o frame transformations.
  */
-// FIXME this should be only trait but used in different SparkContext
 @RunWith(classOf[JUnitRunner])
 class H2ORDDTest extends FunSuite with SharedSparkTestContext {
 
@@ -112,9 +111,8 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
   test("PUBDEV-458 - from Rdd[IntHolder] to H2OFrame and back") {
     val h2oContext = hc
     import h2oContext.implicits._
-    val rdd = sc.parallelize(1 to 100, 10).map(i => IntHolder(Some(i)))
+    val rdd = sc.parallelize(1 to 1000000, 10).map(i => IntHolder(Some(i)))
     val h2oFrame:H2OFrame = rdd
-
     val back2rdd = hc.asRDD[PUBDEV458Type](h2oFrame)
     assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
     assert(back2rdd.count == h2oFrame.numRows(), "Number of rows should match")

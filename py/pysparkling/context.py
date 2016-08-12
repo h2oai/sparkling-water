@@ -3,10 +3,11 @@ from pyspark.sql.dataframe import DataFrame
 from pyspark.rdd import RDD
 from pyspark.sql import SQLContext
 from h2o.frame import H2OFrame
+from pysparkling.initializer import  Initializer
+from pysparkling.conf import H2OConf
 import h2o
-from pysparkling.utils import FrameConversions as fc
+from pysparkling.conversions import FrameConversions as fc
 import warnings
-from pkg_resources import resource_filename
 
 def _monkey_patch_H2OFrame(hc):
     @staticmethod
@@ -58,42 +59,50 @@ def _get_first(rdd):
 
     return rdd.first()
 
-def get_sw_jar():
-    return resource_filename("sparkling_water", 'sparkling_water_assembly.jar')
+
 
 class H2OContext(object):
 
-    def __init__(self, sparkContext):
+    def __init__(self, spark_context):
+        """
+         This constructor is used just to initialize the environment. It does not start H2OContext.
+         To start H2OContext use one of the getOrCreate methods. This constructor is internally used in those methods
+        """
         try:
-            self._do_init(sparkContext)
-            # Hack H2OFrame from h2o package
+            self.__do_init(spark_context)
             _monkey_patch_H2OFrame(self)
+            # loads sparkling water jar only if it hasn't been already loaded
+            Initializer.load_sparkling_jar(spark_context)
+
         except:
             raise
 
-    def _do_init(self, sparkContext):
-        self._sc = sparkContext
 
-        # Add Sparkling water assembly JAR to driver
-        url = self._sc._jvm.java.net.URL("file://"+get_sw_jar())
-        # Assuming that context class loader is always instance of URLClassLoader ( which should be always true)
-        cl = self._sc._jvm.Thread.currentThread().getContextClassLoader()
+    def __do_init(self, spark_context):
+        self._sc = spark_context
+        # do not instantiate SQL Context when already one exists
+        self._jsql_context = self._sc._jvm.SQLContext.getOrCreate(self._sc._jsc.sc())
+        self._sql_context = SQLContext(spark_context, self._jsql_context)
+        self._jsc = self._sc._jsc
+        self._jvm = self._sc._jvm
+        self._gw = self._sc._gateway
 
-        # explicitly check if we run on databricks cloud since there we must add the jar to the parent of context class loader
-        if cl.getClass().getName()=='com.databricks.backend.daemon.driver.DriverLocal$DriverLocalClassLoader':
-            cl.getParent().getParent().addURL(url)
-        else:
-            cl.addURL(url)
+    @staticmethod
+    def getOrCreate(spark_context, conf = None):
+        """
+         Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
+         configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
+         If the values are not found the default values are used in most of the cases. The default cluster mode
+         is internal, ie. spark.ext.h2o.external.cluster.mode=false
 
-        # Add Sparkling water assembly JAR to executors
-        self._sc._jsc.addJar(get_sw_jar())
+         param - Spark Context
+         returns H2O Context
+        """
+        h2o_context = H2OContext(spark_context)
 
-        # do not instantiate sqlContext when already one exists
-        self._jsqlContext = self._sc._jvm.SQLContext.getOrCreate(self._sc._jsc.sc())
-        self._sqlContext = SQLContext(sparkContext,self._jsqlContext)
-        self._jsc = sparkContext._jsc
-        self._jvm = sparkContext._jvm
-        self._gw = sparkContext._gateway
+        jvm = h2o_context._jvm # JVM
+        gw = h2o_context._gw # Py4J Gateway
+        jsc = h2o_context._jsc # JavaSparkContext
 
         # Imports Sparkling Water into current JVM view
         # We cannot use directly Py4j to import Sparkling Water packages
@@ -101,31 +110,28 @@ class H2OContext(object):
         # because of https://issues.apache.org/jira/browse/SPARK-5185
         # So lets load class directly via classloader
         # This is finally fixed in Spark 2.0 ( along with other related issues)
-        jvm = self._jvm
-        sc = self._sc
-        gw = self._gw
-        jhc_klazz = self._jvm.java.lang.Thread.currentThread().getContextClassLoader().loadClass("org.apache.spark.h2o.H2OContext")
-        # Find ctor with right spark context
-        jctor_def = gw.new_array(jvm.Class, 1)
-        jctor_def[0] = sc._jsc.getClass()
-        jhc_ctor = jhc_klazz.getConstructor(jctor_def)
-        jctor_params = gw.new_array(jvm.Object, 1)
-        jctor_params[0] = sc._jsc
-        # Create instance of class
-        self._jhc = jhc_ctor.newInstance(jctor_params)
 
-    def start(self):
-        """
-        Start H2OContext.
-
-        It initializes H2O services on each node in Spark cluster and creates
-        H2O python client.
-        """
-        self._jhc.start()
-        self._client_ip = self._jhc.h2oLocalClientIp()
-        self._client_port = self._jhc.h2oLocalClientPort()
-        h2o.init(ip=self._client_ip, port=self._client_port,start_h2o=False, strict_version_check=False)
-        return self
+        # Call the corresponding getOrCreate method
+        jhc_klazz = jvm.java.lang.Thread.currentThread().getContextClassLoader().loadClass("org.apache.spark.h2o.JavaH2OContext")
+        conf_klazz = jvm.java.lang.Thread.currentThread().getContextClassLoader().loadClass("org.apache.spark.h2o.H2OConf")
+        method_def = gw.new_array(jvm.Class, 2)
+        method_def[0] = jsc.getClass()
+        method_def[1] = conf_klazz
+        method = jhc_klazz.getMethod("getOrCreate", method_def)
+        method_params = gw.new_array(jvm.Object, 2)
+        method_params[0] = jsc
+        if conf is not None:
+            selected_conf = conf
+        else:
+            selected_conf = H2OConf(spark_context)
+        method_params[1] = selected_conf._jconf
+        jhc = method.invoke(None, method_params)
+        h2o_context._jhc = jhc
+        h2o_context._conf = selected_conf
+        h2o_context._client_ip = jhc.h2oLocalClientIp()
+        h2o_context._client_port = jhc.h2oLocalClientPort()
+        h2o.init(ip=h2o_context._client_ip, port=h2o_context._client_port, start_h2o=False, strict_version_check=False)
+        return h2o_context
 
     def stop(self):
         warnings.warn("H2OContext stopping is not yet supported...")
@@ -141,6 +147,9 @@ class H2OContext(object):
     def show(self):
         print self
 
+    def get_conf(self):
+        return self._conf
+
     def as_spark_frame(self, h2o_frame, copy_metadata = True):
         """
         Transforms given H2OFrame to Spark DataFrame
@@ -148,15 +157,16 @@ class H2OContext(object):
         Parameters
         ----------
           h2o_frame : H2OFrame
+          copy_metadata: Bool = True
 
         Returns
         -------
           Spark DataFrame
         """
-        if isinstance(h2o_frame,H2OFrame):
+        if isinstance(h2o_frame, H2OFrame):
             j_h2o_frame = h2o_frame.get_java_h2o_frame()
-            jdf = self._jhc.asDataFrame(j_h2o_frame, copy_metadata, self._jsqlContext)
-            return DataFrame(jdf,self._sqlContext)
+            jdf = self._jhc.asDataFrame(j_h2o_frame, copy_metadata, self._jsql_context)
+            return DataFrame(jdf,self._sql_context)
 
     def as_h2o_frame(self, dataframe, framename = None):
         """

@@ -8,7 +8,9 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.fvec.H2OFrame
-import water.sparkling.itest.IntegTestHelper
+import water.sparkling.itest.standalone.ParquetImportTest._
+import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
+
 
 /**
   * Test for Jira Hex-Dev 100 : Import airlines data and run a host of classification models,
@@ -31,9 +33,9 @@ class HexDev100TestSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object HexDev100Test {
+object HexDev100Test extends IntegTestStopper{
 
-  def test(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit = exitOnException{
     val conf = new SparkConf().setAppName("HexDev100Test")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)

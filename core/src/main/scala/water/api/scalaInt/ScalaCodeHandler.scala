@@ -16,9 +16,9 @@
 */
 package water.api.scalaInt
 
-import org.apache.spark.h2o.H2OConf
+import org.apache.spark.SparkContext
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.repl.h2o.H2OInterpreter
-import org.apache.spark.{SparkConf, SparkContext}
 import water.Iced
 import water.api.Handler
 import water.exceptions.H2ONotFoundArgumentException
@@ -28,9 +28,9 @@ import scala.collection.concurrent.TrieMap
 /**
  * Handler for all Scala related endpoints
  */
-class ScalaCodeHandler(val sc: SparkContext) extends Handler with H2OConf{
+class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler{
 
-  val intrPoolSize = scalaIntDefaultNum
+  val intrPoolSize = h2oContext.getConf.scalaIntDefaultNum
   val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
   var mapIntr = new TrieMap[Int, H2OInterpreter]
   var lastIdUsed = 0
@@ -108,9 +108,6 @@ class ScalaCodeHandler(val sc: SparkContext) extends Handler with H2OConf{
                         lastIdUsed
                       }
   }
-
-  /* Required Spark config */
-  override def sparkConf: SparkConf = sc.getConf
 }
 
 private[api] class IcedCode(val session_id: Int, val code: String) extends Iced[IcedCode] {

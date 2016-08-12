@@ -13,7 +13,7 @@
 import org.apache.spark.SparkFiles
 import org.apache.spark.h2o._
 import org.apache.spark.examples.h2o._
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import water.Key
 import java.io.File
 
@@ -40,8 +40,8 @@ val airlinesData = new H2OFrame(new File(SparkFiles.get("year2005.csv.gz")))
 val wrawdata = sc.textFile(SparkFiles.get("Chicago_Ohare_International_Airport.csv"),8).cache()
 val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
 
-// Transfer data from H2O to Spark RDD
-val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
+// Transfer data from H2O to Spark DataFrame
+val airlinesTable = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
 val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
 
 // Use Spark SQL to join flight and weather data in spark
@@ -60,6 +60,7 @@ val bigTable = sqlContext.sql(
           |FROM FlightsToORD f
           |JOIN WeatherORD w
           |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
+
 
 val trainFrame:H2OFrame = bigTable
 trainFrame.replace(19, trainFrame.vec("IsDepDelayed").toCategoricalVec)

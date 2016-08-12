@@ -22,34 +22,32 @@ import unittest
 from pyspark import SparkContext, SparkConf
 import subprocess
 from random import randrange
+import test_utils
+
 
 class IntegTestEnv:
     def __init__(self):
 
-        self.spark_home = IntegTestEnv.get_env_org_fail("SPARK_HOME","The variable 'SPARK_HOME' should point to Spark home directory.")
+        self.spark_home = test_utils.get_env_org_fail("SPARK_HOME","The variable 'SPARK_HOME' should point to Spark home directory.")
 
-        self.spark_master = IntegTestEnv.get_env_org_fail("MASTER",
+        self.spark_master = test_utils.get_env_org_fail("MASTER",
                                                           "The variable 'MASTER' should contain Spark cluster mode.")
-        self.hdp_version = IntegTestEnv.get_env_org_fail("sparkling.test.hdp.version",
+
+        self.hdp_version = test_utils.get_env_org_fail("sparkling.test.hdp.version",
                                                          "The variable 'sparkling.test.hdp.version' is not set! It should contain version of hdp used")
-        self.egg = IntegTestEnv.get_env_org_fail("sparkling.pysparkling.egg",
+
+        self.egg = test_utils.get_env_org_fail("sparkling.pysparkling.egg",
                                                               "The variable 'sparkling.pysparkling.egg' is not set! It should point to PySparkling egg file")
         self.spark_conf = {}
         self.verbose = True
 
-    @staticmethod
-    def get_env_org_fail(prop_name, fail_msg):
-        try:
-            return os.environ[prop_name]
-        except KeyError:
-            print fail_msg
-            sys.exit(1)
-
 
 class IntegTestSuite(unittest.TestCase):
+
     @classmethod
     def setUpClass(cls):
         cls.test_env = IntegTestEnv()
+
 
     @classmethod
     def tearDownClass(cls):

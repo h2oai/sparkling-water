@@ -36,6 +36,9 @@ object DeepLearningDemo extends SparkContextSupport {
     val sc = new SparkContext(conf)
     addFiles(sc, absPath("examples/smalldata/allyears2k_headers.csv.gz"))
 
+    implicit val sqlContext = SQLContext.getOrCreate(sc)
+    import sqlContext.implicits._ // import implicit conversions
+
     // Run H2O cluster inside Spark cluster
     val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
@@ -49,16 +52,13 @@ object DeepLearningDemo extends SparkContextSupport {
     //
     // Use H2O to RDD transformation
     //
-    val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
+    val airlinesTable = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
     println(s"\n===> Number of all flights via RDD#count call: ${airlinesTable.count()}\n")
     println(s"\n===> Number of all flights via H2O#Frame#count: ${airlinesData.numRows()}\n")
 
     //
     // Filter data with help of Spark SQL
     //
-
-    val sqlContext = new SQLContext(sc)
-    import sqlContext.implicits._ // import implicit conversions
     airlinesTable.toDF.registerTempTable("airlinesTable")
 
     // Select only interesting columns and flights with destination in SFO

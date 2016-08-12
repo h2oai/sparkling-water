@@ -68,9 +68,9 @@ or
 """)
     }
 
-  if(H2O_HOME != null && H2O_PYTHON_WHEEL !=null){
-      logger.info("Both \"H2O_HOME\" and \"H2O_PYTHON_WHEEL\" properties are set. Using \"H2O_HOME\"!")
-  }
+    if(H2O_HOME != null && H2O_PYTHON_WHEEL !=null){
+        logger.info("Both \"H2O_HOME\" and \"H2O_PYTHON_WHEEL\" properties are set. Using \"H2O_HOME\"!")
+    }
 
 }
 

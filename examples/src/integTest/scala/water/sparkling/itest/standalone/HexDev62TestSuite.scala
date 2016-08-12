@@ -7,7 +7,7 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.IntegTestHelper
+import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
 
 
 /**
@@ -30,8 +30,9 @@ class HexDev62TestSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object HexDev62Test {
-  def main(args: Array[String]): Unit = {
+object HexDev62Test extends IntegTestStopper{
+
+  def main(args: Array[String]): Unit = exitOnException{
     val conf = new SparkConf().setAppName("HexDev62Test")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)

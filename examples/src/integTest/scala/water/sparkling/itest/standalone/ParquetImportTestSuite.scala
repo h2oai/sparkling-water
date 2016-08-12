@@ -6,7 +6,7 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.IntegTestHelper
+import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
 
 /**
   * Test for Parquet Import : Save small airlines data as Parquet File,
@@ -30,9 +30,9 @@ class ParquetImportTestSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object ParquetImportTest {
+object ParquetImportTest extends IntegTestStopper{
 
-  def test(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit = exitOnException{
     val conf = new SparkConf().setAppName("ParquetImportTest")
 
     // Launch H2O

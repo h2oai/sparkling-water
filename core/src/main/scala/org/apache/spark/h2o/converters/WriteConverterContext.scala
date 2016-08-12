@@ -14,28 +14,25 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.h2o.util
 
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.H2OContext
-import org.scalatest.Suite
+package org.apache.spark.h2o.converters
 
-/** This fixture create a Spark context once and share it over whole run of test suite.
+/**
+  * Methods which each WriteConverterContext has to implement.
   *
-  * FIXME: this cannot be used yet, since H2OContext cannot be recreated in JVM. */
-trait PerTestSparkTestContext extends SparkTestContext { self: Suite =>
+  * Write Converter Context is a class which holds the state of connection/chunks and allows us to write/upload to those chunks
+  * via unified API
+  */
+trait WriteConverterContext {
+  def createChunks(keyName: String, vecTypes: Array[Byte], chunkId: Int)
+  def closeChunks()
+  def put(columnNum: Int, n: Number)
 
-  def createSparkContext:SparkContext
-  def createH2OContext(sc:SparkContext):H2OContext = H2OContext.getOrCreate(sc)
+  def put(columnNum: Int, n: Boolean)
+  def put(columnNum: Int, n: java.sql.Timestamp)
+  def put(columnNum: Int, n: String)
+  def putNA(columnNum: Int)
 
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
-    sc = createSparkContext
-    hc = createH2OContext(sc)
-  }
-
-  override protected def afterEach(): Unit = {
-    resetContext()
-    super.afterEach()
-  }
+  def numOfRows: Long
+  def increaseRowCounter()
 }
