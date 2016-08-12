@@ -3,8 +3,8 @@ package water.sparkling.scripts
 import java.io.File
 
 import org.apache.spark.repl.h2o.{CodeResults, H2OInterpreter}
-import org.apache.spark.{SparkContext, SparkConf}
-import org.scalatest.{Suite, BeforeAndAfterAll, FunSuite}
+import org.apache.spark.{SparkConf, SparkContext}
+import org.scalatest.{BeforeAndAfterAll, FunSuite, Suite}
 
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.ListBuffer
@@ -20,18 +20,18 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
     super.beforeAll()
   }
 
-
   override protected def afterAll(): Unit = {
     if(sc!=null){
       sc.stop()
     }
+    super.afterAll()
   }
 
   def defaultConf: SparkConf = {
     val assemblyJar = sys.props.getOrElse("sparkling.assembly.jar",
       fail("The variable 'sparkling.assembly.jar' is not set! It should point to assembly jar file."))
     val conf = new SparkConf().setAppName("Script testing")
-      .set("spark.repl.class.uri",H2OInterpreter.classServerUri)
+      .set("spark.repl.class.uri", H2OInterpreter.classServerUri)
       .set("spark.ext.h2o.repl.enabled","false") // disable repl in tests
       .set("spark.driver.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.executor.extraJavaOptions", "-XX:MaxPermSize=384m")
@@ -41,6 +41,7 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
 
     conf
   }
+
 
   private def launch(code: String, loop: H2OInterpreter, inspections: ScriptInspections): ScriptTestResult = {
     val testResult = new ScriptTestResult()
@@ -57,7 +58,7 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
 
     inspections.termsAndValues.foreach {
       termName =>
-        testResult.addTermValue(termName,loop.valueOfTerm(termName).get.toString)
+        testResult.addTermValue(termName, loop.valueOfTerm(termName).get.toString)
     }
 
     testResult
@@ -71,7 +72,7 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
 
     val code = scala.io.Source.fromFile(sourceFile).mkString
     val loop = new H2OInterpreter(sc, sessionId = 1)
-    val res = launch(code,loop, inspections)
+    val res = launch(code, loop, inspections)
     loop.closeInterpreter()
     res
   }

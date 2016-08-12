@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o
 
+import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.StructType
 import water.DKV
@@ -27,8 +28,8 @@ object DataSourceUtils {
     H2OSchemaUtils.createSchema(frame, copyMetadata)
   }
 
-  def overwrite(key: String,originalFrame: H2OFrame, newDataFrame: DataFrame)(implicit h2oContext: H2OContext): Unit = {
+  def overwrite(key: String, originalFrame: Frame, newDataFrame: DataFrame)(implicit h2oContext: H2OContext): Unit = {
     originalFrame.remove()
-    h2oContext.asH2OFrame(newDataFrame,key)
+    h2oContext.asH2OFrame(newDataFrame, key)
   }
 }

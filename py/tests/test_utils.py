@@ -17,10 +17,36 @@
 
 import unittest
 import os
+from pyspark import SparkContext, SparkConf
 
+
+
+def asert_h2o_frame(test_suite, h2o_frame, rdd):
+    test_suite.assertEquals(h2o_frame.nrow, rdd.count(),"Number of rows should match")
+    test_suite.assertEquals(h2o_frame.ncol, 1,"Number of columns should equal 1")
+    test_suite.assertEquals(h2o_frame.names, ["values"],"Column should be name values")
+
+
+def get_default_spark_conf():
+    return SparkConf(). \
+        setAppName("pyunit-test"). \
+        setMaster("local-cluster[3,1,2048]"). \
+        set("spark.ext.h2o.disable.ga","true"). \
+        set("spark.driver.memory", "2g"). \
+        set("spark.executor.memory", "2g"). \
+        set("spark.ext.h2o.client.log.level", "DEBUG"). \
+        set("spark.ext.h2o.repl.enabled", "false")
+
+def set_up_class(cls):
+   pass
+
+
+def tear_down_class(cls):
+    cls._sc.stop()
 
 # Runs python tests and by default reports to console.
 # If filename is specified it additionally reports output to file with that name into py/build directory
+
 def run_tests(suite, file_name=None):
     if file_name is not None:
         reports_file = 'build'+os.sep+file_name+".txt"
@@ -36,3 +62,11 @@ def run_tests(suite, file_name=None):
         # Run tests and print to console
         testsuite = unittest.TestLoader().loadTestsFromTestCase(suite)
         unittest.TextTestRunner(verbosity=2).run(testsuite)
+
+
+def get_env_org_fail(prop_name, fail_msg):
+    try:
+        return os.environ[prop_name]
+    except KeyError:
+        print fail_msg
+        sys.exit(1)

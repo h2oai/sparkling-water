@@ -7,7 +7,7 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.IntegTestHelper
+import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
 
 /**
   * Test suite for given JIRA bug.
@@ -31,21 +31,9 @@ class HexDev62TestSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object HexDev62Test {
+object HexDev62Test extends IntegTestStopper{
 
-  def main(args: Array[String]): Unit = {
-    try {
-      test(args)
-    } catch {
-      case t: Throwable => {
-        System.err.println(t.toString)
-        t.printStackTrace()
-        water.H2O.exit(-1)
-      }
-    }
-  }
-
-  def test(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit = exitOnException{
     val conf = new SparkConf().setAppName("HexDev62Test")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)

@@ -17,20 +17,17 @@
 
 package org.apache.spark.h2o
 
-import org.apache.spark.sql.{DataFrame, H2OFrameRelation, SQLContext, SaveMode}
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{DataFrame, H2OFrameRelation, SQLContext, SaveMode}
 import water.{DKV, Key}
 
 /**
   * Provides access to H2OFrame from pure SQL statements (i.e. for users of the
   * JDBC server).
   */
-class DefaultSource
-  extends RelationProvider
-  with SchemaRelationProvider
-  with CreatableRelationProvider
-  with DataSourceRegister{
+class DefaultSource extends RelationProvider
+    with SchemaRelationProvider with CreatableRelationProvider with DataSourceRegister{
 
   /**
     * Short alias for spark-csv data source.
@@ -50,9 +47,8 @@ class DefaultSource
     * Creates a new relation for data store in H2OFrame given parameters.
     * Parameters have to include 'key'
     */
-  override def createRelation(
-                               sqlContext: SQLContext,
-                               parameters: Map[String, String]): BaseRelation = {
+  override def createRelation(sqlContext: SQLContext,
+                              parameters: Map[String, String]): BaseRelation = {
     createRelation(sqlContext, parameters, null)
   }
 
@@ -60,9 +56,9 @@ class DefaultSource
     * Creates a new relation for data store in H2OFrame given parameters.
     * Parameters have to include 'key'
     */
-  override def createRelation( sqlContext: SQLContext,
-                               parameters: Map[String, String],
-                               schema: StructType): H2OFrameRelation[_] = {
+  override def createRelation(sqlContext: SQLContext,
+                              parameters: Map[String, String],
+                              schema: StructType): H2OFrameRelation[_] = {
     val key = checkKey(parameters)
 
     H2OFrameRelation(getFrame(key), true)(sqlContext)
@@ -73,11 +69,14 @@ class DefaultSource
                                parameters: Map[String, String],
                                data: DataFrame): BaseRelation = {
     val key = checkKey(parameters)
-    val originalFrame = DKV.getGet[H2OFrame](key)
-
-    implicit val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in" +
-      " oder to save/load frames using H2O Data source"))
-
+    val originalFrame = DKV.getGet[Frame](key)
+    implicit val h2oContext = {
+      if(H2OContext.get().isEmpty){
+        throw new RuntimeException("H2OContext has to be started in order to save/load data using H2O Data source.")
+      }else{
+        H2OContext.get().get
+      }
+    }
     if(originalFrame!=null){
       mode match {
         case SaveMode.Append =>
@@ -90,7 +89,7 @@ class DefaultSource
       }
     } else {
       // save as H2O Frame
-      h2oContext.asH2OFrame(data,key)
+      h2oContext.asH2OFrame(data, key)
     }
 
     createRelation(sqlContext, parameters, data.schema)

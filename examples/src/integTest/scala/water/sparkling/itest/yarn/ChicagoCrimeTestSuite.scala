@@ -7,8 +7,8 @@ import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.IntegTestHelper
 import water.support.SparkContextSupport
+import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
 
 /**
   * Test following Alex's chicago crime demo.
@@ -31,21 +31,9 @@ class ChicagoCrimeTestSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object ChicagoCrimeTest extends SparkContextSupport {
+object ChicagoCrimeTest extends SparkContextSupport with IntegTestStopper {
 
-  def main(args: Array[String]): Unit = {
-    try {
-      test(args)
-    } catch {
-      case t: Throwable => {
-        System.err.println(t.toString)
-        t.printStackTrace()
-        water.H2O.exit(-1)
-      }
-    }
-  }
-
-  def test(args: Array[String]) {
+  def main(args: Array[String]): Unit = exitOnException{
     val sc = new SparkContext(configure("ChicagoCrimeTest"))
     // SQL support
     val sqlContext = new SQLContext(sc)

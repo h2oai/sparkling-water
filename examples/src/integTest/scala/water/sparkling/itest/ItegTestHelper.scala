@@ -1,5 +1,6 @@
 package water.sparkling.itest
 
+import java.io.{PrintWriter, StringWriter}
 import org.scalatest.{BeforeAndAfterEach, Suite, Tag}
 
 import scala.collection.mutable
@@ -10,7 +11,7 @@ import scala.util.Random
  */
 trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
 
-  private var testEnv:IntegTestEnv = _
+  private var testEnv: IntegTestEnv = _
 
   /** Launch given class name via SparkSubmit and use given environment
     * to configure SparkSubmit command line.
@@ -113,3 +114,19 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
 object YarnTest extends Tag("water.sparkling.itest.YarnTest")
 object LocalTest extends Tag("water.sparkling.itest.LocalTest")
 object StandaloneTest extends Tag("water.sparkling.itest.StandaloneTest")
+
+
+trait IntegTestStopper extends org.apache.spark.Logging {
+
+  def exitOnException(f: => Unit): Unit ={
+    try {
+      f
+    } catch {
+      case t: Throwable => {
+        logError("Test throws exception!", t)
+        t.printStackTrace()
+        water.H2O.exit(-1)
+      }
+    }
+  }
+}

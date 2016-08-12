@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.h2o
+package org.apache.spark.h2o.utils
 
 import water.fvec.Vec
 

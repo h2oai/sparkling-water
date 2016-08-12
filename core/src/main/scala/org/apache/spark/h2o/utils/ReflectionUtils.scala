@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o
+package org.apache.spark.h2o.utils
 
 import water.api.API
 

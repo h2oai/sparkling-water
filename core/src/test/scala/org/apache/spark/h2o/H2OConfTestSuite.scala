@@ -17,17 +17,17 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.{SparkContext, SparkConf}
-import org.apache.spark.h2o.util.SparkTestContext
+import org.apache.spark.h2o.utils.SparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}
 import org.scalatest.junit.JUnitRunner
 
 /**
- * Test passing parameters via SparkConf.
- */
+  * Test passing parameters via SparkConf.
+  */
 @RunWith(classOf[JUnitRunner])
 class H2OConfTestSuite extends FunSuite
-with Matchers with BeforeAndAfter with SparkTestContext {
+  with Matchers with BeforeAndAfter with SparkTestContext {
 
   test("test H2OConf parameters") {
     val sparkConf = new SparkConf()
@@ -50,28 +50,33 @@ with Matchers with BeforeAndAfter with SparkTestContext {
       .set("spark.ext.h2o.dummy.rdd.mul.factor", "2")
 
     sc = new SparkContext("local", "test-local", sparkConf)
-    hc = new H2OContext(sc)
+
+    // We don't need to have H2OContext here started and since it has private constructor
+    // and getOrCreate methods automatically start H2OContext, we use a little bit of reflection
+    val ctor = classOf[H2OContext].getDeclaredConstructor(classOf[SparkContext], classOf[H2OConf])
+    ctor.setAccessible(true)
+    hc = ctor.newInstance(sc, new H2OConf(sc))
+    val conf = hc.getConf
 
     // Test passed values
-    assert(hc.useFlatFile == false)
-    assert(hc.numH2OWorkers == Some(42))
-    assert(hc.clientBasePort == 1267)
-    assert(hc.nodeBasePort == 32333)
-    assert(hc.clientIp == Some("10.0.0.100"))
-    assert(hc.cloudTimeout == 10*1000)
-    assert(hc.numRddRetries == 2)
-    assert(hc.cloudName == "test-sparkling-cloud-")
-    assert(hc.h2oNodeLogLevel == "DEBUG")
-    assert(hc.h2oClientLogLevel == "DEBUG")
-    assert(hc.clientNetworkMask == Some("127.0.0.1/32"))
-    assert(hc.nodeNetworkMask == Some("0.0.0.1/24"))
-    assert(hc.nthreads == 7)
-    assert(hc.disableGA == true)
-    assert(hc.clientWebPort == 13321)
-    assert(hc.drddMulFactor == 2)
+    assert(conf.useFlatFile == false)
+    assert(conf.numH2OWorkers == Some(42))
+    assert(conf.clientBasePort == 1267)
+    assert(conf.nodeBasePort == 32333)
+    assert(conf.clientIp == Some("10.0.0.100"))
+    assert(conf.cloudTimeout == 10*1000)
+    assert(conf.numRddRetries == 2)
+    assert(conf.cloudName.isDefined)
+    assert(conf.cloudName == Some("test-sparkling-cloud-"))
+    assert(conf.h2oNodeLogLevel == "DEBUG")
+    assert(conf.h2oClientLogLevel == "DEBUG")
+    assert(conf.clientNetworkMask == Some("127.0.0.1/32"))
+    assert(conf.nodeNetworkMask == Some("0.0.0.1/24"))
+    assert(conf.nthreads == 7)
+    assert(conf.disableGA == true)
+    assert(conf.clientWebPort == 13321)
+    assert(conf.drddMulFactor == 2)
 
     resetContext()
   }
-
-  class DummyH2OContext(val sparkConf: SparkConf) extends H2OConf
 }

@@ -15,15 +15,13 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o
+package org.apache.spark.h2o.utils
 
+import org.apache.spark.h2o._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.{SparkContext, mllib}
 import water.fvec.Vec
-import water.parser.Categorical
-
-import scala.collection.mutable
 
 /**
  * Utilities for working with Spark SQL component.
@@ -225,6 +223,7 @@ object H2OSchemaUtils {
   }
 
   /** Collect max size of stored arrays and MLLib vectors.
+ *
     * @return list of max sizes for array types, followed by max sizes for vector types. */
   private[h2o]
   def collectMaxArrays(sc: SparkContext,

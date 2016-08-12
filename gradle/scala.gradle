@@ -1,4 +1,5 @@
 apply plugin: 'scala'
+apply from: "$rootDir/gradle/utils.gradle"
 
 // Activate Zinc compiler and configure scalac
 tasks.withType(ScalaCompile) {

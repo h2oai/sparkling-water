@@ -15,30 +15,35 @@
 * limitations under the License.
 */
 
-package org.apache.spark.rdd
+package org.apache.spark.h2o.converters
 
 
-import org.apache.spark.h2o.{H2OContext, H2OFrame, ReflectionUtils}
+import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.utils.ReflectionUtils
+import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
 import water.fvec.Frame
-import water.parser.BufferedString
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
- * Convert H2OFrame into an RDD (lazily)
- */
-
+  * Convert H2OFrame into an RDD (lazily).
+  * @param frame  an instance of H2O frame
+  * @param colNames names of columns
+  * @param sc  an instance of Spark context
+  * @tparam A  type for resulting RDD
+  * @tparam T  specific type of H2O frame
+  */
 private[spark]
 class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val frame: T,
                                                                   val colNames: Array[String])
-                                                                 (@transient sparkContext: SparkContext)
-  extends RDD[A](sparkContext, Nil) with H2ORDDLike[T] {
+                                                                 (@transient sc: SparkContext)
+  extends RDD[A](sc, Nil) with H2ORDDLike[T] {
 
   // Get column names before building an RDD
   def this(@transient fr : T)
-          (@transient sparkContext: SparkContext) = this(fr, ReflectionUtils.names[A])(sparkContext)
+          (@transient sc: SparkContext) = this(fr, ReflectionUtils.names[A])(sc)
 
   // Check that H2OFrame & given Scala type are compatible
   if (colNames.length > 1) {
@@ -49,58 +54,55 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       }
     }
   }
+
   val types = ReflectionUtils.types[A](colNames)
+  override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
 
   /**
    * :: DeveloperApi ::
    * Implemented by subclasses to compute a given partition.
    */
   override def compute(split: Partition, context: TaskContext): Iterator[A] = {
-    val kn = frameKeyName
-    new H2OChunkIterator[A] {
-      override val keyName = kn
-      override val partIndex = split.index
+
+    val iterator = new H2OChunkIterator[A] {
 
       val jc = implicitly[ClassTag[A]].runtimeClass
       val cs = jc.getConstructors
       val ccr = cs.collectFirst({
-                case c if (c.getParameterTypes.length==colNames.length) => c
+                case c if c.getParameterTypes.length == colNames.length => c
               })
         .getOrElse({
             throw new IllegalArgumentException(
                   s"Constructor must take exactly ${colNames.length} args")
       })
-      /** Dummy muttable holder for String values */
-      val valStr = new BufferedString()
+
+      override val expectedTypes: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
+      override val keyName = frameKeyName
+      override val partIndex = split.index
 
       def next(): A = {
-        val data = new Array[Option[Any]](chks.length)
-          for (
-            idx <- 0 until chks.length;
-            chk = chks (idx);
-            typ = types(idx)
-          ) {
-            val value = if (chk.isNA(row)) None
-            else typ match {
-              case q if q == classOf[Integer]           => Some(chk.at8(row).asInstanceOf[Int])
-              case q if q == classOf[java.lang.Long]    => Some(chk.at8(row))
-              case q if q == classOf[java.lang.Double]  => Some(chk.atd(row))
-              case q if q == classOf[java.lang.Float]   => Some(chk.atd(row))
-              case q if q == classOf[java.lang.Boolean] => Some(chk.at8(row) == 1)
-              case q if q == classOf[String] =>
-                if (chk.vec().isCategorical) {
-                  Some(chk.vec().domain()(chk.at8(row).asInstanceOf[Int]))
-                } else if (chk.vec().isString) {
-                  chk.atStr(valStr, row)
-                  Some(valStr.toString)
-                } else None
-              case _ => None
-            }
-            data(idx) = value
+        val data = new Array[Option[Any]](ncols)
+        // FIXME: this is not perfect since ncols does not need to match number of names
+        (0 until ncols).foreach{ idx =>
+          val value = if (converterCtx.isNA(idx)) None
+          else types(idx) match {
+            case q if q == classOf[Integer]           => Some(converterCtx.getInt(idx))
+            case q if q == classOf[java.lang.Long]    => Some(converterCtx.getLong(idx))
+            case q if q == classOf[java.lang.Double]  => Some(converterCtx.getDouble(idx))
+            case q if q == classOf[java.lang.Float]   => Some(converterCtx.getFloat(idx))
+            case q if q == classOf[java.lang.Boolean] => Some(converterCtx.getBoolean(idx))
+            case q if q == classOf[String] => Option(converterCtx.getString(idx))
+            case _ => None
           }
-        row += 1
+          data(idx) = value
+        }
+
+        converterCtx.increaseRowIdx()
+        // Create instance for the extracted row
         ccr.newInstance(data:_*).asInstanceOf[A]
       }
     }
+
+    ConverterUtils.getIterator[A](isExternalBackend, iterator)
   }
 }
