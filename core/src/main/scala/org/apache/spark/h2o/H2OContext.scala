@@ -38,7 +38,6 @@ import water.api.scalaInt.ScalaCodeHandler
 import water.parser.BufferedString
 
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -46,13 +45,13 @@ import scala.util.Random
 import scala.util.control.NoStackTrace
 
 /**
- * Simple H2O context motivated by SQLContext.
- *
- * It provides implicit conversion from RDD -> H2OLikeRDD and back.
- */
+  * Simple H2O context motivated by SQLContext.
+  *
+  * It provides implicit conversion from RDD -> H2OLikeRDD and back.
+  */
 class H2OContext (@transient val sparkContext: SparkContext, sqlc: SQLContext) extends {
-    val sparkConf = sparkContext.getConf
-  } with org.apache.spark.Logging
+  val sparkConf = sparkContext.getConf
+} with org.apache.spark.Logging
   with H2OConf
   with Serializable {
   self =>
