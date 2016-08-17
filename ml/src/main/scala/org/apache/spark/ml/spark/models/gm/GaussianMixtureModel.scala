@@ -16,21 +16,22 @@
  */
 package org.apache.spark.ml.spark.models.gm
 
-import hex.{ClusteringModel, ModelMetricsClustering}
+import hex.ClusteringModel.ClusteringOutput
+import hex._
 import hex.ModelMetricsClustering.MetricBuilderClustering
 import org.apache.spark.ml.spark.models.gm.GaussianMixtureModel.GaussianMixtureOutput
 import water.{Key, Keyed}
 
 object GaussianMixtureModel {
 
-  class GaussianMixtureOutput(val b: GaussianMixture) extends ClusteringModel.ClusteringOutput {
+  class GaussianMixtureOutput(val b: GaussianMixture) extends ClusteringOutput(b) {
 
+    // TODO check how many of those we can set from Spark model
     var _iterations: Int = 0
     var _avg_centroids_chg: Array[Double] = Array[Double](Double.NaN)
     var _withinss: Array[Double] = null
     var _size: Array[Long] = null
     var _tot_withinss: Double = .0
-    var _history_withinss: Array[Double] = new Array[Double](0)
     var _totss: Double = .0
     var _betweenss: Double = .0
     var _categorical_column_count: Int = 0

@@ -16,27 +16,43 @@
  */
 package hex.schemas
 
-import hex.schemas.GaussianMixtureModelV3.GaussianMixtureOutputV3
+import hex.schemas.GaussianMixtureModelV3.GaussianMixtureModelOutputV3
 import hex.schemas.GaussianMixtureV3.GaussianMixtureParametersV3
-import org.apache.spark.ml.spark.models.gm.{GaussianMixtureModel, GaussianMixtureParameters}
+import org.apache.spark.ml.spark.models.gm.{ClusteringUtils, GaussianMixtureModel, GaussianMixtureParameters}
 import org.apache.spark.ml.spark.models.gm.GaussianMixtureModel.GaussianMixtureOutput
-import water.api.schemas3.{ModelOutputSchemaV3, ModelSchemaV3}
+import water.api.API
+import water.api.schemas3.{ModelOutputSchemaV3, ModelSchemaV3, TwoDimTableV3}
 
 class GaussianMixtureModelV3 extends ModelSchemaV3[GaussianMixtureModel,
   GaussianMixtureModelV3,
   GaussianMixtureParameters,
   GaussianMixtureParametersV3,
   GaussianMixtureOutput,
-  GaussianMixtureOutputV3] {
+  GaussianMixtureModelOutputV3] {
 
   override def createParametersSchema(): GaussianMixtureParametersV3 = new GaussianMixtureParametersV3
 
-  override def createOutputSchema(): GaussianMixtureOutputV3 = new GaussianMixtureOutputV3
+  override def createOutputSchema(): GaussianMixtureModelOutputV3 = new GaussianMixtureModelOutputV3
+
+  override def createImpl(): GaussianMixtureModel = new GaussianMixtureModel(model_id.key, parameters.createImpl, null)
 
 }
 
 object GaussianMixtureModelV3 {
-  final class GaussianMixtureOutputV3 extends ModelOutputSchemaV3[GaussianMixtureOutput, GaussianMixtureOutputV3] {
+  final class GaussianMixtureModelOutputV3 extends ModelOutputSchemaV3[GaussianMixtureOutput, GaussianMixtureModelOutputV3] {
+    @API(help = "Cluster Centers[k][features]")
+    var centers: TwoDimTableV3 = _
 
+    @API(help = "Cluster Centers[k][features] on Standardized Data")
+    var centers_std: TwoDimTableV3 = _
+
+    override def fillFromImpl(impl: GaussianMixtureOutput): GaussianMixtureModelOutputV3 = {
+      val gmv3: GaussianMixtureModelOutputV3 = super.fillFromImpl(impl)
+      gmv3.centers = new TwoDimTableV3().fillFromImpl(ClusteringUtils.createCenterTable(impl, false))
+      if (impl._centers_std_raw != null) {
+        gmv3.centers_std = new TwoDimTableV3().fillFromImpl(ClusteringUtils.createCenterTable(impl, true))
+      }
+      gmv3
+    }
   }
 }
