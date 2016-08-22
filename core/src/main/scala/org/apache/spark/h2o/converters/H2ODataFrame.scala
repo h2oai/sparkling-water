@@ -36,46 +36,68 @@ import org.apache.spark.{Partition, SparkContext, TaskContext}
 private[spark]
 class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
                                           val requiredColumns: Array[String])
-                                         (@transient val sc: SparkContext)
-  extends RDD[InternalRow](sc, Nil) with H2ORDDLike[T] {
+                                         (@transient val sc: SparkContext) extends {
+  override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
+}
+  with RDD[InternalRow](sc, Nil) with H2ORDDLike[T] {
 
   def this(@transient frame: T)
           (@transient sc: SparkContext) = this(frame, null)(sc)
 
-  override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
+
+  val typesAll = frame.vecs().indices.map(idx => vecTypeToDataType(frame.vec(idx))).toArray
+  /** Create new types list which describes expected types in a way external H2O backend can use it. This list
+    * contains types in a format same for H2ODataFrame and H2ORDD */
+  val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, typesAll)
+  val colNames = frame.names()
 
   @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
+
     // Prepare iterator
     val iterator = new H2OChunkIterator[InternalRow] {
+
       /** Frame reference */
       override val keyName = frameKeyName
       /** Processed partition index */
       override val partIndex = split.index
+
       /** Selected column indices */
       val selectedColumnIndices = if (requiredColumns == null) {
-        fr.names().indices
+        colNames.indices
       } else {
-        requiredColumns.toSeq.map { name =>
-          fr.find(name)
-        }
+        requiredColumns.toSeq.map{ name => colNames.indexOf(name) }
       }
+
       // Make sure that column selection is consistent
       // scalastyle:off
       assert(requiredColumns != null && selectedColumnIndices.length == requiredColumns.length,
              "Column selection missing a column!")
       // scalastyle:on
 
-      /** Types used for data transfer */
-      val types = selectedColumnIndices.map(idx => vecTypeToDataType(fr.vec(idx))).toArray
-      override val expectedTypes: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
+      val filteredTypes = selectedColumnIndices.map(idx => typesAll(idx)).toArray
+      /** Filtered list of types used for data transfer */
+      val expectedTypes: Option[Array[Byte]]  =
+      if (expectedTypesAll.isDefined){
+        Some(selectedColumnIndices.map(idx => expectedTypesAll.get(idx)).toArray)
+      }else{
+        None
+      }
+
+      /* Converter context */
+      override val converterCtx: ReadConverterContext =
+      ConverterUtils.getReadConverterContext(isExternalBackend,
+        keyName,
+        chksLocation,
+        expectedTypes,
+        partIndex)
 
       override def next(): InternalRow = {
         /** Mutable reusable row returned by iterator */
         val mutableRow = new GenericMutableRow(selectedColumnIndices.length)
         selectedColumnIndices.indices.foreach { idx =>
           val i = selectedColumnIndices(idx)
-          val typ = types(idx)
+          val typ = filteredTypes(idx)
           if (converterCtx.isNA(i)) {
             mutableRow.setNullAt(idx)
           } else {
@@ -99,7 +121,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
       }
     }
 
-    // Wrap the iterator to backend specifc wrapper
+    // Wrap the iterator to backend specific wrapper
     ConverterUtils.getIterator[InternalRow](isExternalBackend, iterator)
   }
 }
