@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.converters
 
 
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
@@ -39,7 +39,9 @@ private[spark]
 class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val frame: T,
                                                                   val colNames: Array[String])
                                                                  (@transient sc: SparkContext)
-  extends RDD[A](sc, Nil) with H2ORDDLike[T] {
+  extends {
+    override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
+  } with RDD[A](sc, Nil) with H2ORDDLike[T] {
 
   // Get column names before building an RDD
   def this(@transient fr : T)
@@ -55,8 +57,10 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     }
   }
 
+  /** Number of columns in the full dataset */
+  val numCols = frame.numCols()
   val types = ReflectionUtils.types[A](colNames)
-  override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
+  val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
 
   /**
    * :: DeveloperApi ::
@@ -76,14 +80,22 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
                   s"Constructor must take exactly ${colNames.length} args")
       })
 
-      override val expectedTypes: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
       override val keyName = frameKeyName
       override val partIndex = split.index
+      val expectedTypes: Option[Array[Byte]] = expectedTypesAll
+
+      /* Converter context */
+      override val converterCtx: ReadConverterContext =
+      ConverterUtils.getReadConverterContext(isExternalBackend,
+        keyName,
+        chksLocation,
+        expectedTypes,
+        partIndex)
 
       def next(): A = {
-        val data = new Array[Option[Any]](ncols)
+        val data = new Array[Option[Any]](numCols)
         // FIXME: this is not perfect since ncols does not need to match number of names
-        (0 until ncols).foreach{ idx =>
+        (0 until numCols).foreach{ idx =>
           val value = if (converterCtx.isNA(idx)) None
           else types(idx) match {
             case q if q == classOf[Integer]           => Some(converterCtx.getInt(idx))
