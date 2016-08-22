@@ -21,7 +21,7 @@ import org.apache.spark.Logging
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
+import org.apache.spark.listeners.{ExecutorAddNotSupportedListener}
 import water.api.RestAPIManager
 import water.{H2O, H2OStarter}
 
@@ -70,11 +70,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     if(hc.getConf.isClusterTopologyListenerEnabled){
       // Attach listener which kills H2O cluster when new Spark executor has been launched ( which means
       // that this executors hasn't been discovered during the spreadRDD phase)
-      hc.sparkContext.addSparkListener(new SparkListener(){
-        override def onExecutorAdded(executorAdded: SparkListenerExecutorAdded): Unit = {
-          throw new IllegalArgumentException("Executor without H2O instance discovered, killing the cloud!")
-        }
-      })
+      hc.sparkContext.addSparkListener(new ExecutorAddNotSupportedListener())
     }
 
     // Start H2O nodes
