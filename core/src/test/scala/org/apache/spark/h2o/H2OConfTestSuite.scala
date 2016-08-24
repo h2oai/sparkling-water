@@ -16,6 +16,7 @@
 */
 package org.apache.spark.h2o
 
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.junit.runner.RunWith
@@ -53,13 +54,13 @@ class H2OConfTestSuite extends FunSuite
 
     // We don't need to have H2OContext here started and since it has private constructor
     // and getOrCreate methods automatically start H2OContext, we use a little bit of reflection
-    val ctor = classOf[H2OContext].getDeclaredConstructor(classOf[SparkContext], classOf[H2OConf])
+    val ctor = classOf[H2OContext].getDeclaredConstructor(classOf[SparkContext], classOf[H2OConf], classOf[SQLContext])
     ctor.setAccessible(true)
-    hc = ctor.newInstance(sc, new H2OConf(sc))
+    hc = ctor.newInstance(sc, new H2OConf(sc), SQLContext.getOrCreate(sc))
     val conf = hc.getConf
 
     // Test passed values
-    assert(conf.useFlatFile == false)
+    assert(!conf.useFlatFile)
     assert(conf.numH2OWorkers == Some(42))
     assert(conf.clientBasePort == 1267)
     assert(conf.nodeBasePort == 32333)
@@ -73,7 +74,7 @@ class H2OConfTestSuite extends FunSuite
     assert(conf.clientNetworkMask == Some("127.0.0.1/32"))
     assert(conf.nodeNetworkMask == Some("0.0.0.1/24"))
     assert(conf.nthreads == 7)
-    assert(conf.disableGA == true)
+    assert(conf.disableGA)
     assert(conf.clientWebPort == 13321)
     assert(conf.drddMulFactor == 2)
 

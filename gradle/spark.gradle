@@ -65,7 +65,9 @@ String getSystemSparkVersion()  {
        command = getOsSpecificCommandLine([getSparkSubmitScriptPath(sparkHome), "--version"]).join(" ")
    }
    def commandOutput = command.execute(commandEnvVars,null).err.text
-   def version_line = commandOutput.readLines().find{ it.contains("version")}
+   def response = commandOutput.readLines()
+   def version_line = response.find{ it.contains("version")}
+   if (version_line == null) throw new InvalidUserDataException("Failed to detect Spark version, command was " + command + ", response was\n" + response)
    return version_line.replaceAll(".*version ","")
 }
 

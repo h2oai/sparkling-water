@@ -56,19 +56,19 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   // H2OFrame to RDD[T] JUnits
-  test("H2OFrame[T_NUM] to RDD[Prostate]") {
-    val h2oFrame: H2OFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
-    assert (h2oFrame.vec(0).isNumeric & h2oFrame.vec(1).isNumeric & h2oFrame.vec(2).isNumeric &
-      h2oFrame.vec(3).isNumeric & h2oFrame.vec(4).isNumeric & h2oFrame.vec(5).isNumeric & h2oFrame.vec(6).isNumeric
-      & h2oFrame.vec(7).isNumeric & h2oFrame.vec(8).isNumeric)
-    val rdd = hc.asRDD[Prostate](h2oFrame)
-
-    assert (rdd.count == h2oFrame.numRows())
-    assert (rdd.take(5)(4).productArity == 9)
-    assert (rdd.take(8)(7).AGE.get == 61)
-
-    h2oFrame.delete()
-  }
+//  test("H2OFrame[T_NUM] to RDD[Prostate]") {
+//    val h2oFrame: H2OFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
+//    assert (h2oFrame.vec(0).isNumeric & h2oFrame.vec(1).isNumeric & h2oFrame.vec(2).isNumeric &
+//      h2oFrame.vec(3).isNumeric & h2oFrame.vec(4).isNumeric & h2oFrame.vec(5).isNumeric & h2oFrame.vec(6).isNumeric
+//      & h2oFrame.vec(7).isNumeric & h2oFrame.vec(8).isNumeric)
+//    val rdd = hc.asRDD[Prostate](h2oFrame)
+//
+//    assert (rdd.count == h2oFrame.numRows())
+//    assert (rdd.take(5)(4).productArity == 9)
+//    assert (rdd.take(8)(7).AGE.get == 61)
+//
+//    h2oFrame.delete()
+//  }
 
   // H2OFrame to DataFrame[T] JUnits
   test("PUBDEV-766 H2OFrame[T_ENUM] to DataFrame[StringType]") {

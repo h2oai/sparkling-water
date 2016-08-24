@@ -17,16 +17,17 @@
 package org.apache.spark.h2o.utils
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.backends.SharedH2OConf._
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.{Holder, H2OConf, H2OContext}
 import org.apache.spark.sql.SQLContext
 import org.scalatest.Suite
+
+import scala.collection.mutable
+
 /**
   * Helper trait to simplify initialization and termination of Spark/H2O contexts.
   *
   */
 trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
-
 
   def createSparkContext:SparkContext
 
@@ -46,3 +47,30 @@ trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
     super.afterAll()
   }
 }
+
+class PUBDEV458Type(val result: Option[Int]) extends Holder[Int] with Product with Serializable {
+  //def this() = this(None)
+  override def canEqual(that: Any): Boolean = that.isInstanceOf[PUBDEV458Type]
+
+  override def productArity: Int = 1
+
+  override def productElement(n: Int) =
+    n match {
+      case 0 => result
+      case _ => throw new IndexOutOfBoundsException(n.toString)
+    }
+
+  override def toString = s"PUBDEV458Type($result)"
+}
+
+class TestMemory[T] extends scala.collection.mutable.HashSet[T] with mutable.SynchronizedSet[T] {
+  def put(xh: Holder[T]): Unit = xh.result foreach put
+
+  def put(x: T): Unit = {
+    if (this contains x) {
+      throw new IllegalStateException(s"Duplicate element $x in test memory")
+    }
+    add(x)
+  }
+}
+

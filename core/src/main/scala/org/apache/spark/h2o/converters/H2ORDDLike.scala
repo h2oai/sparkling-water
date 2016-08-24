@@ -23,7 +23,8 @@ import water.fvec.{Frame, FrameUtils}
 /**
  * Contains functions that are shared between all H2ORDD types (i.e., Scala, Java)
  */
-private[converters] trait H2ORDDLike[T <: Frame] {
+//private[converters]
+trait H2ORDDLike[T <: Frame] {
   /** Underlying DataFrame */
   @transient val frame: T
 
@@ -47,10 +48,8 @@ private[converters] trait H2ORDDLike[T <: Frame] {
 
   /** Base implementation for iterator over rows stored in chunks for given partition. */
   trait H2OChunkIterator[+A] extends Iterator[A] {
-
     /* Key of pointing to underlying dataframe */
     val keyName: String
-
     /* Partition index */
     val partIndex: Int
 
@@ -58,7 +57,6 @@ private[converters] trait H2ORDDLike[T <: Frame] {
     val converterCtx: ReadConverterContext
 
     override def hasNext: Boolean = converterCtx.hasNext
-
   }
 
 }

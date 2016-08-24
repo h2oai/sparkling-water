@@ -28,7 +28,8 @@ import scala.collection.mutable.ListBuffer
 import scala.reflect.runtime.universe._
 
 
-private[converters] trait ConverterUtils {
+//private[converters] - will uncomment when H2OContext moves into converters
+trait ConverterUtils {
 
 
   def initFrame[T](keyName: String, names: Array[String]):Unit = {
@@ -58,12 +59,11 @@ private[converters] trait ConverterUtils {
     // Fetch cached frame from DKV
     val frameVal = DKV.get(keyName)
 
-    if(frameVal != null){
-      Some(new H2OFrame(frameVal.get.asInstanceOf[Frame]))
-    }else{
-      None
-    }
+    // TODO(vlad): get rid of casting, take care of failures
+    Option(frameVal) map (v => new H2OFrame(v.get.asInstanceOf[Frame]))
   }
+
+  import ConverterUtils._
 
   /**
     * Converts the RDD to H2O Frame using specified conversion function
@@ -79,14 +79,16 @@ private[converters] trait ConverterUtils {
     * @return H2O Frame
     */
   def convert[T](hc: H2OContext, rdd : RDD[T], keyName: String, colNames: Array[String], vecTypes: Array[Byte],
-                 func: ( (String, Array[Byte], Option[immutable.Map[Int, NodeDesc]]) => (TaskContext, Iterator[T]) => (Int, Long))) = {
+                 func: ConversionFunction[T]) = {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, colNames)
 
     // prepare rdd and required metadata based on the used backend
     val (preparedRDD, uploadPlan) = (rdd, None)
 
-    val rows = hc.sparkContext.runJob(preparedRDD, func(keyName, vecTypes, uploadPlan)) // eager, not lazy, evaluation
+    val operation: SparkJob[T] = func(keyName, vecTypes, uploadPlan)
+
+    val rows = hc.sparkContext.runJob(preparedRDD, operation) // eager, not lazy, evaluation
     val res = new Array[Long](preparedRDD.partitions.length)
     rows.foreach { case (cidx,  nrows) => res(cidx) = nrows }
     // Add Vec headers per-Chunk, and finalize the H2O Frame
@@ -95,6 +97,13 @@ private[converters] trait ConverterUtils {
 }
 
 object ConverterUtils {
+
+  // TODO(vlad): clean this up
+  type SparkJob[T] = (TaskContext, Iterator[T]) => (Int, Long)
+
+  type ConversionFunction[T] = (String, Array[Byte], Option[immutable.Map[Int, NodeDesc]]) => SparkJob[T]
+
+
   def getWriteConverterContext(uploadPlan: Option[immutable.Map[Int, NodeDesc]],
                                partitionId: Int): WriteConverterContext = {
     val converterContext = new InternalWriteConverterContext()
@@ -110,6 +119,13 @@ object ConverterUtils {
     converterContext
   }
 
+  def getReadConverterContext(keyName: String,
+                              chunkIdx: Int): ReadConverterContext = {
+    val converterContext = new InternalReadConverterContext(keyName, chunkIdx)
+    converterContext
+  }
+
+  // TODO(vlad): get rid of boolean; rename
   def getIterator[T](isExternalBackend: Boolean,
                      iterator: Iterator[T]): Iterator[T] = {
     if (isExternalBackend) {
