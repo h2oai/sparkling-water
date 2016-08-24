@@ -25,9 +25,6 @@ import water.munging.JoinMethod
 import scala.collection.immutable.IndexedSeq
 import scala.reflect.ClassTag
 
-/**
-  * Created by michal on 6/3/16.
-  */
 class SupportAPISuite extends FunSuite with SharedSparkTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
