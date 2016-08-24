@@ -19,6 +19,7 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
+import org.apache.log4j.{Level, LogManager}
 import org.apache.spark._
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
@@ -26,6 +27,7 @@ import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.utils.{H2OContextUtils, NodeDesc}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import water._
+import water.util.{Log, LogUtil}
 
 import scala.collection.mutable
 import scala.language.implicitConversions
@@ -170,6 +172,10 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
   def h2oLocalClientIp = this.localClientIp
 
   def h2oLocalClientPort = this.localClientPort
+
+  def setH2OClientLogLevel(level: String): Unit = LogUtil.setH2OClientLogLevel(level)
+
+  def setH2ONodeLogLevel(level: String): Unit = LogUtil.setH2ONodeLogLevel(level)
 
   // For now disable opening Spark UI
   //def sparkUI = sparkContext.ui.map(ui => ui.appUIAddress)
