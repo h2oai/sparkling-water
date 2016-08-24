@@ -90,7 +90,8 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
     val req = new ScalaSessionsV3
     val result = scalaCodeHandler.getSessions(3, req)
 
-    assert(result.sessions.sorted.sameElements(Array(1, 2)), "Array of active sessions should contain 1 and 2")
+    val actualSessionIds = result.sessions.sorted
+    assert(actualSessionIds.sameElements(Array(1,2)), s"Array of active sessions should contain 1 and 2, but it is [${actualSessionIds.mkString(",")}]")
     assert(scalaCodeHandler.mapIntr.size == 2, "Number of currently used interpreters should be equal to 2")
   }
 

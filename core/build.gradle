@@ -76,6 +76,7 @@ test {
 
     // Working dir will be root project
     workingDir = rootDir
+    testLogging.showStandardStreams = true
 }
 
 task createSparkVersionFile << {

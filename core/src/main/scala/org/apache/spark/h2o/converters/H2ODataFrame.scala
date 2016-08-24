@@ -53,21 +53,18 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
 
   @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
-
     // Prepare iterator
     val iterator = new H2OChunkIterator[InternalRow] {
-
       /** Frame reference */
       override val keyName = frameKeyName
       /** Processed partition index */
       override val partIndex = split.index
-
       /** Selected column indices */
       val selectedColumnIndices = if (requiredColumns == null) {
         colNames.indices
       } else {
         requiredColumns.toSeq.map{ name => colNames.indexOf(name) }
-      }
+        }
 
       // Make sure that column selection is consistent
       // scalastyle:off
@@ -117,6 +114,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
       }
     }
 
+    // TODO(vlad): get rid of booleanness
     // Wrap the iterator to backend specific wrapper
     ConverterUtils.getIterator[InternalRow](isExternalBackend, iterator)
   }
