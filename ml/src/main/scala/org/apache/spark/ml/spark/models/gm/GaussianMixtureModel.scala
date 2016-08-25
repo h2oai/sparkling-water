@@ -20,6 +20,11 @@ import hex.ClusteringModel.ClusteringOutput
 import hex._
 import hex.ModelMetricsClustering.MetricBuilderClustering
 import org.apache.spark.ml.spark.models.gm.GaussianMixtureModel.GaussianMixtureOutput
+import org.apache.spark.mllib.clustering
+import org.apache.spark.mllib.linalg.{Matrices, Vectors}
+import org.apache.spark.mllib.stat.distribution
+import water.codegen.CodeGeneratorPipeline
+import water.util.SBPrintStream
 import water.{Key, Keyed}
 
 object GaussianMixtureModel {
@@ -37,6 +42,10 @@ object GaussianMixtureModel {
     var _categorical_column_count: Int = 0
     var _training_time_ms: Array[Long] = Array[Long](System.currentTimeMillis)
 
+    var _weights: Array[Double] = null
+    var _mu: Array[Array[Double]] = null
+    var _sigma: Array[Array[Double]] = null
+    var _sigma_cols: Array[Int] = null
   }
 
 }
@@ -46,10 +55,47 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
                                        val output: GaussianMixtureOutput)
   extends ClusteringModel[GaussianMixtureModel, GaussianMixtureParameters, GaussianMixtureOutput](selfKey, parms, output) {
 
+  private var weights: Array[Double] = null
+  private var mg: Array[distribution.MultivariateGaussian]  = null
+  private var sparkModel: clustering.GaussianMixtureModel = null
+
+  def init() = {
+    weights = _output._weights
+    mg = _output
+      ._sigma
+      .zip(_output._sigma_cols)
+      .zip(_output._mu)
+      .map { case ((sig, cols), mean) =>
+        new org.apache.spark.mllib.stat.distribution.MultivariateGaussian(
+          Vectors.dense(mean),
+          Matrices.dense(sig.length / cols, cols, sig))
+      }
+    sparkModel = new clustering.GaussianMixtureModel(_output._weights, mg)
+  }
+
   override def makeMetricBuilder(domain: Array[String]): MetricBuilderClustering = {
       assert(domain == null)
+    // TODO implement a proper metrics builder
       new ModelMetricsClustering.MetricBuilderClustering(_output.nfeatures, _parms._k)
   }
 
-  override def score0(data: Array[Double], preds: Array[Double]): Array[Double] = ???
+  override def score0(data: Array[Double], preds: Array[Double]): Array[Double] = {
+    preds(0) = sparkModel.predict(Vectors.dense(data))
+    preds
+  }
+
+  override protected def toJavaInit(sb: SBPrintStream, fileCtx: CodeGeneratorPipeline): SBPrintStream = {
+    val sbInitialized = super.toJavaInit(sb, fileCtx)
+    // TODO implement
+    sbInitialized
+  }
+
+  override protected def toJavaPredictBody(bodySb: SBPrintStream,
+                                           classCtx: CodeGeneratorPipeline,
+                                           fileCtx: CodeGeneratorPipeline,
+                                           verboseCode: Boolean) {
+    // TODO implement
+
+  }
+
 }

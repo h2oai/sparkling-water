@@ -22,22 +22,19 @@ public class GaussianMixtureV3 extends
                 "fold_column",
                 "ignored_columns",
                 "k",
-                "max_iterations",
+                "convergence_tolerance",
                 "standardize",
                 "seed"
         };
 
-        @API(help="Maximum training iterations", gridable = true)
-        public int _max_iterations = 100;
-
         @API(help = "Convergence tolerance", level = API.Level.secondary, gridable = true)
-        public double _convergence_tolerance = 0.01;
+        public double convergence_tolerance = 0.01;
 
         @API(help = "Standardize columns", level = API.Level.secondary, gridable = true)
         public boolean standardize = true;
 
         @API(help = "RNG Seed", level = API.Level.expert, gridable = true)
-        public long _seed = Utils.random().nextLong();
+        public long seed = Utils.random().nextLong();
 
     }
 

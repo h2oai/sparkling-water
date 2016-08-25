@@ -34,8 +34,6 @@ class GaussianMixtureModelV3 extends ModelSchemaV3[GaussianMixtureModel,
 
   override def createOutputSchema(): GaussianMixtureModelOutputV3 = new GaussianMixtureModelOutputV3
 
-  override def createImpl(): GaussianMixtureModel = new GaussianMixtureModel(model_id.key, parameters.createImpl, null)
-
 }
 
 object GaussianMixtureModelV3 {

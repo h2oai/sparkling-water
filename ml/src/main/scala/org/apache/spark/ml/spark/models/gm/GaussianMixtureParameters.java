@@ -11,7 +11,7 @@ public class GaussianMixtureParameters extends ClusteringModel.ClusteringParamet
 
     @Override
     public String fullName() {
-        return "Gaussian Mixture";
+        return "Gaussian Mixture(*)";
     }
 
     @Override
@@ -26,5 +26,11 @@ public class GaussianMixtureParameters extends ClusteringModel.ClusteringParamet
     public double _convergence_tolerance = 0.01;
     public long _seed = Utils.random().nextLong();
     public boolean _standardize = true;
+
+    public void validate(GaussianMixture gm) {
+        if (_max_iterations < 0 || _max_iterations > 1e6) {
+            gm.error("_max_iterations", " max_iterations must be between 0 and 1e6");
+        }
+    }
 
 }
