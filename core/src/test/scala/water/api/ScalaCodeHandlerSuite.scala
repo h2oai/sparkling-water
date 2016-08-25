@@ -151,12 +151,10 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
     assert(result2.response.equals("num: Foo = Foo(42)\n"), "Response should not be empty")
   }
 
-
   test("ScalaCodeHandler.interpret() method, using sqlContext, h2oContext and sparkContext"){
     // create interpreter
     val reqSession = new ScalaSessionIdV3
     scalaCodeHandler.initSession(3, reqSession)
-    
     val req1 = new ScalaCodeV3
     req1.session_id = reqSession.session_id
     req1.code = "val rdd = sc.parallelize(1 to 100, 8).map(v=>v+10);rdd.cache"
@@ -170,7 +168,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
     req2.code = "val h2oFrame = h2oContext.asH2OFrame(rdd)"
     val result2 = scalaCodeHandler.interpret(3, req2)
     assert(result2.output.equals(""), "Printed output should be empty")
-    assert(result2.status.equals("Success"), "Status should be Success ")
+    assert(result2.status.equals("Success"), s"Status should be Success, got ${result2.status}, reason: ${result2.response} ")
     assert(!result2.response.equals(""), "Response should not be empty")
 
     val req3 = new ScalaCodeV3

@@ -26,7 +26,6 @@ import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.utils.{H2OContextUtils, NodeDesc}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import water._
-import water.parser.BufferedString
 
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
@@ -231,12 +230,20 @@ object H2OContext extends Logging {
   @transient private val instantiatedContext = new AtomicReference[H2OContext]()
 
   /**
-    * Tries to get existing H2O Context. If it has been created, returns this H2O Context, otherwise
-    * returns creates a new one
+    * Tries to get existing H2O Context. If it is not there, ok.
+    * Note that this method has to be here because otherwise ScalaCodeHandlerSuite will fail in one of the tests.
+    * If you want to throw an exception when the context is missing, use ensure()
+    * If you want to create the context if it is not missing, use getOrCreate() (if you can).
     *
     * @return Option containing H2O Context or None
     */
   def get(): Option[H2OContext] = Option(instantiatedContext.get())
+
+  def ensure(onError: => String = "H2OContext has to be started in order to save/load data using H2O Data source."): H2OContext =
+    Option(instantiatedContext.get()) getOrElse {
+      throw new RuntimeException(onError)
+    }
+
 
   /**
     * Get existing or create new H2OContext based on provided H2O configuration
@@ -263,131 +270,6 @@ object H2OContext extends Logging {
     */
   def getOrCreate(sc: SparkContext): H2OContext = {
     getOrCreate(sc, new H2OConf(sc))
-  }
-
-  val defaultFieldNames = (i: Int) => "f" + i
-
-  private def buildH2OFrame(kn: String, vecTypes: Array[Byte], res: Array[Long]): H2OFrame = {
-    val u = this.asInstanceOf[ConverterUtils]
-    new H2OFrame(u.finalizeFrame(kn, res, vecTypes))
-  }
-
-  case class MetaInfo(names:Array[String], vecTypes: Array[Byte]) {
-    require(names.length > 0, "Empty meta info does not make sense")
-    require(names.length == vecTypes.length, s"Different lengths: ${names.length} names, ${vecTypes.length} types")
-  }
-
-  private
-  def initFrame[T](keyName: String, names: Array[String]):Unit = {
-    val fr = new water.fvec.Frame(Key.make(keyName))
-    water.fvec.FrameUtils.preparePartialFrame(fr, names)
-    // Save it directly to DKV
-    fr.update()
-  }
-
-  def keyName(rdd: RDD[_], frameKeyName: Option[String]) = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
-
-  case class FromPureProduct(sc: SparkContext, rdd: RDD[Product], frameKeyName: Option[String]) {
-
-    import scala.reflect.runtime.universe._
-
-    def withDefaultFieldNames() = {
-      withFieldNames(defaultFieldNames)
-    }
-
-    def withFieldNames(fieldNames: Int => String): H2OFrame = {
-      val meta = metaInfo(fieldNames)
-      withMeta(meta)
-    }
-
-    def withFields(fields: List[(String, Type)]): H2OFrame = {
-      val meta = metaInfo(fields)
-      withMeta(meta)
-    }
-
-    def withMeta(meta: MetaInfo): H2OFrame = {
-
-      val kn: String = keyName(rdd, frameKeyName)
-      // Make an H2O data Frame - but with no backing data (yet)
-      initFrame(kn, meta.names)
-      // Create chunks on remote nodes
-      val rows = sc.runJob(rdd, partitionJob(kn, meta.vecTypes)) // eager, not lazy, evaluation
-      val res = new Array[Long](rdd.partitions.length)
-      rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
-
-      // Add Vec headers per-Chunk, and finalize the H2O Frame
-      buildH2OFrame(kn, meta.vecTypes, res)
-    }
-
-    private
-    def perTypedDataPartition[A<:Product](keystr:String, vecTypes: Array[Byte])
-                                         ( context: TaskContext, it: Iterator[A] ): (Int,Long) = {
-      // An array of H2O NewChunks; A place to record all the data in this partition
-      val nchks = water.fvec.FrameUtils.createNewChunks(keystr, vecTypes, context.partitionId)
-
-      val valStr = new BufferedString()
-      it.foreach(prod => { // For all rows which are subtype of Product
-        for( i <- 0 until prod.productArity ) { // For all fields...
-        val fld = prod.productElement(i)
-          val chk = nchks(i)
-          val x = fld match {
-            case Some(n) => n
-            case _ => fld
-          }
-          x match {
-            case n: Number  => chk.addNum(n.doubleValue())
-            case n: Boolean => chk.addNum(if (n) 1 else 0)
-            case n: String  => chk.addStr(valStr.set(n))
-            case n : java.sql.Timestamp => chk.addNum(n.asInstanceOf[java.sql.Timestamp].getTime())
-            case _ => chk.addNA()
-          }
-        }
-      })
-      // Compress & write out the Partition/Chunks
-      water.fvec.FrameUtils.closeNewChunks(nchks)
-      // Return Partition# and rows in this Partition
-      (context.partitionId,nchks(0)._len)
-    }
-
-    def partitionJob[A <: Product : TypeTag](keyName: String, vecTypes: Array[Byte]): (TaskContext, Iterator[Product]) => (Int, Long) = {
-      perTypedDataPartition(keyName, vecTypes)
-    }
-
-    private def inferFieldType(value : Any): Class[_] ={
-      value match {
-        case n: Byte  => classOf[java.lang.Byte]
-        case n: Short => classOf[java.lang.Short]
-        case n: Int => classOf[java.lang.Integer]
-        case n: Long => classOf[java.lang.Long]
-        case n: Float => classOf[java.lang.Float]
-        case n: Double => classOf[java.lang.Double]
-        case n: Boolean => classOf[java.lang.Boolean]
-        case n: String => classOf[java.lang.String]
-        case n: java.sql.Timestamp => classOf[java.sql.Timestamp]
-        case q => throw new IllegalArgumentException(s"Do not understand type $q")
-      }
-    }
-
-    import org.apache.spark.h2o.utils.H2OTypeUtils._
-
-    def metaInfo(fieldNames: Int => String): MetaInfo = {
-      val first = rdd.first()
-      val fnames: Array[String] = (0 until first.productArity map fieldNames).toArray[String]
-
-      val ftypes = first.productIterator map inferFieldType
-
-      // Collect H2O vector types for all input types
-      val vecTypes:Array[Byte] = ftypes map dataTypeToVecType toArray
-
-      MetaInfo(fnames, vecTypes)
-    }
-
-    def metaInfo(tuples: List[(String, Type)]): MetaInfo = {
-      val names = tuples map (_._1) toArray
-      val vecTypes = tuples map (nt => dataTypeToVecType(nt._2)) toArray
-
-      MetaInfo(names, vecTypes)
-    }
   }
 
 }

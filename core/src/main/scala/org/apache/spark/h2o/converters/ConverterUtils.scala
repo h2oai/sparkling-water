@@ -96,7 +96,7 @@ trait ConverterUtils {
   }
 }
 
-object ConverterUtils {
+object ConverterUtils extends ConverterUtils {
 
   // TODO(vlad): clean this up
   type SparkJob[T] = (TaskContext, Iterator[T]) => (Int, Long)
