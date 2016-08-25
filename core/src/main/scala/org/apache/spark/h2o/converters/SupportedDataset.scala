@@ -15,8 +15,9 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o
+package org.apache.spark.h2o.converters
 
+import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
 
 import scala.language.implicitConversions
@@ -59,6 +60,7 @@ object SupportedDataset {
           throw oops
       }
       val res = try {
+
         val prototype = H2OContext.FromPureProduct(sc.sparkContext, rdd, frameKeyName)
         prototype.withFields(params)
       } catch {

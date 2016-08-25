@@ -16,12 +16,11 @@
 */
 package org.apache.spark.h2o
 
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 /**
   * Test passing parameters via SparkConf.
@@ -54,9 +53,9 @@ class H2OConfTestSuite extends FunSuite
 
     // We don't need to have H2OContext here started and since it has private constructor
     // and getOrCreate methods automatically start H2OContext, we use a little bit of reflection
-    val ctor = classOf[H2OContext].getDeclaredConstructor(classOf[SparkContext], classOf[H2OConf], classOf[SQLContext])
+    val ctor = classOf[H2OContext].getDeclaredConstructor(classOf[SparkContext], classOf[H2OConf])
     ctor.setAccessible(true)
-    hc = ctor.newInstance(sc, new H2OConf(sc), SQLContext.getOrCreate(sc))
+    hc = ctor.newInstance(sc, new H2OConf(sc))
     val conf = hc.getConf
 
     // Test passed values

@@ -58,13 +58,11 @@ import scala.util.control.NoStackTrace
   * @param sparkContext Spark Context
   * @param conf H2O configuration
   */
-class H2OContext private (@transient val sparkContext: SparkContext, @transient conf: H2OConf, sqlc: SQLContext) extends org.apache.spark.Logging
+class H2OContext private (@transient val sparkContext: SparkContext, @transient conf: H2OConf) extends org.apache.spark.Logging
   with Serializable with SparkDataFrameConverter with SupportedRDDConverter with H2OContextUtils{
   self =>
 
-  // TODO(vlad): remove it asap, it's temporary
-  //  /** Supports call from java environments. */
-  //  def this(sparkContext: JavaSparkContext, @transient conf: H2OConf) = this(sparkContext.sc, conf)
+  val sqlc: SQLContext = SQLContext.getOrCreate(sparkContext)
 
   /** IP of H2O client */
   private var localClientIp: String = _
@@ -236,7 +234,7 @@ object H2OContext extends Logging {
     * Tries to get existing H2O Context. If it has been created, returns this H2O Context, otherwise
     * returns creates a new one
     *
-    * @return H2OContext
+    * @return Option containing H2O Context or None
     */
   def get(): Option[H2OContext] = Option(instantiatedContext.get())
 
@@ -247,10 +245,9 @@ object H2OContext extends Logging {
     * @param conf H2O configuration
     * @return H2O Context
     */
-  def getOrCreate(sc: SparkContext, conf: H2OConf)(implicit sqlContext: SQLContext): H2OContext = synchronized {
-    // TODO(vlad): figure out how thread-safe are these operations IRL
+  def getOrCreate(sc: SparkContext, conf: H2OConf): H2OContext = synchronized {
     if (instantiatedContext.get() == null) {
-      instantiatedContext.set(new H2OContext(sc, conf, sqlContext))
+      instantiatedContext.set(new H2OContext(sc, conf))
       instantiatedContext.get().init()
     }
     instantiatedContext.get()
@@ -265,12 +262,12 @@ object H2OContext extends Logging {
     * @return H2O Context
     */
   def getOrCreate(sc: SparkContext): H2OContext = {
-    getOrCreate(sc, new H2OConf(sc))(SQLContext.getOrCreate(sc))
+    getOrCreate(sc, new H2OConf(sc))
   }
 
   val defaultFieldNames = (i: Int) => "f" + i
 
-  def buildH2OFrame(kn: String, vecTypes: Array[Byte], res: Array[Long]): H2OFrame = {
+  private def buildH2OFrame(kn: String, vecTypes: Array[Byte], res: Array[Long]): H2OFrame = {
     val u = this.asInstanceOf[ConverterUtils]
     new H2OFrame(u.finalizeFrame(kn, res, vecTypes))
   }
@@ -288,16 +285,6 @@ object H2OContext extends Logging {
     fr.update()
   }
 
-  //  private
-  //  def finalizeFrame[T](keyName: String,
-  //                       res: Array[Long],
-  //                       colTypes: Array[Byte],
-  //                       colDomains: Array[Array[String]] = null):Frame = {
-  //    val fr:Frame = DKV.get(keyName).get.asInstanceOf[Frame]
-  //    water.fvec.FrameUtils.finalizePartialFrame(fr, res, colDomains, colTypes)
-  //    fr
-  //  }
-
   def keyName(rdd: RDD[_], frameKeyName: Option[String]) = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
 
   case class FromPureProduct(sc: SparkContext, rdd: RDD[Product], frameKeyName: Option[String]) {
@@ -313,8 +300,8 @@ object H2OContext extends Logging {
       withMeta(meta)
     }
 
-    def withFields(tuples: List[(String, Type)]): H2OFrame = {
-      val meta = metaInfo(tuples)
+    def withFields(fields: List[(String, Type)]): H2OFrame = {
+      val meta = metaInfo(fields)
       withMeta(meta)
     }
 

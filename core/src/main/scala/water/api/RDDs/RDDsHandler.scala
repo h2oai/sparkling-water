@@ -63,9 +63,8 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
         case t if t.isInstanceOf[Float] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Float]], name)
         case t if t.isInstanceOf[Long] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Long]], name)
         case t if t.isInstanceOf[java.sql.Timestamp] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[java.sql.Timestamp]], name)
-        case t if t.isInstanceOf[Product] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Product]], name)
-// !!! TODO(vlad): enable it
-//        case t if t.isInstanceOf[Product] => h2oContext.FromPureProduct(sc, rdd.asInstanceOf[RDD[Product]], name).withDefaultFieldNames()
+//        case t if t.isInstanceOf[Product] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Product]], name)
+        case t if t.isInstanceOf[Product] => H2OContext.FromPureProduct(sc, rdd.asInstanceOf[RDD[Product]], name).withDefaultFieldNames()
         case t => throw new IllegalArgumentException(s"Do not understand type $t")
       }
     }
