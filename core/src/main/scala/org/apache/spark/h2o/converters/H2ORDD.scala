@@ -95,7 +95,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     "Short"   -> ((source: ReadConverterContext) => (col: Int) => source.getShort(col)),
     "String"  -> ((source: ReadConverterContext) => (col: Int) => source.getString(col)))
 
-  private def returnOption[X](op: ReadConverterContext => Int => X) = (source: ReadConverterContext) => (col: Int) => opt(op(source)(col))
+  private def returnOption[X](deserialize: ReadConverterContext => Int => X) = (source: ReadConverterContext) => (col: Int) => opt(deserialize(source)(col))
 
   type TypeName = String
 
@@ -138,20 +138,18 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
 
   class H2ORDDIterator(val keyName: String, val partIndex: Int) extends H2OChunkIterator[A] {
 
-    private def cell(i: Int) = {
+    private def convertPerColumn(i: Int) = {
       val j = columnMapping(i)
       val ex = extractors(i)(converterCtx)
       val data = ex(j).asInstanceOf[Object]
-      //      println(s"@$i/$j = $data")
       data
     }
 
     def extractRow: Option[Array[AnyRef]] = {
       val rowOpt = opt {
-        val objects: IndexedSeq[Object] = columnTypeNames.indices map cell
+        val objects: IndexedSeq[Object] = columnTypeNames.indices map convertPerColumn
         val row = objects toArray
 
-        //        println(s"${converterCtx.rowIdx} -> ${res mkString ":"}")
         row
       }
       converterCtx.increaseRowIdx()

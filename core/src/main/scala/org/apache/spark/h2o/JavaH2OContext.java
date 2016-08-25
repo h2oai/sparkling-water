@@ -164,9 +164,7 @@ which is not nice.
      * @return Java H2O Context
      */
     public static JavaH2OContext getOrCreate(JavaSparkContext jsc, H2OConf conf){
-        SparkContext sc = jsc.sc();
-        SQLContext sqc = SQLContext.getOrCreate(sc);
-        return new JavaH2OContext(H2OContext.getOrCreate(sc, conf, sqc));
+        return new JavaH2OContext(H2OContext.getOrCreate(jsc.sc(), conf));
     }
 
 
