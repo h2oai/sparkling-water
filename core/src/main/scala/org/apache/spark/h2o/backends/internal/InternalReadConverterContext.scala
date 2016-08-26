@@ -21,6 +21,7 @@ import java.util.UUID
 
 import org.apache.spark.h2o.converters.ReadConverterContext
 import water.fvec.{Chunk, Frame}
+import water.parser.BufferedString
 import water.{DKV, Key}
 
 class InternalReadConverterContext(override val keyName: String, override val chunkIdx: Int) extends ReadConverterContext{
@@ -51,20 +52,19 @@ class InternalReadConverterContext(override val keyName: String, override val ch
   override def getString(columnNum: Int): String = if(isNA(columnNum)){
     null.asInstanceOf[String]
   }else {
-    {
-      if (chks(columnNum).vec().isCategorical) {
-        val str = chks(columnNum).vec().domain()(chks(columnNum).at8(rowIdx).asInstanceOf[Int])
-        str
-      } else if (chks(columnNum).vec().isString) {
-        chks(columnNum).atStr(valStr, rowIdx) // TODO improve this.
-        valStr.toString
-      } else if (chks(columnNum).vec().isUUID) {
-        val uuid = new UUID(chks(columnNum).at16h(rowIdx), chks(columnNum).at16l(rowIdx))
+    if (chks(columnNum).vec().isCategorical) {
+      val str = chks(columnNum).vec().domain()(chks(columnNum).at8(rowIdx).asInstanceOf[Int])
+      str
+    } else if (chks(columnNum).vec().isString) {
+      val valStr = new BufferedString()
+      chks(columnNum).atStr(valStr, rowIdx) // TODO improve this.
+      valStr.toString
+    } else if (chks(columnNum).vec().isUUID) {
+      val uuid = new UUID(chks(columnNum).at16h(rowIdx), chks(columnNum).at16l(rowIdx))
         uuid.toString
-      } else {
-        assert(assertion = false, "Should never be here")
-        null
-      }
+    } else {
+      assert(assertion = false, "Should never be here")
+      null
     }
   }
 

@@ -178,8 +178,6 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       }
     }
 
-    private def readOne(): Option[A] = {
-      val dataOpt = extractRow
     /**
       * This function takes a row of raw data (array of Objects) and transforms it
       * to a value of type A (if possible).
