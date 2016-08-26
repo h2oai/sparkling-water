@@ -47,14 +47,7 @@ trait ReadConverterContext {
   def getFloat(columnNum: Int): Float = getDouble(columnNum).toFloat
   def getBoolean(columnNum: Int): Boolean = getLong(columnNum) == 1
   def getTimestamp(columnNum: Int): Long  = getLong(columnNum) * 1000L
-  def getUTF8String(columnNum: Int): UTF8String = {
-    val str = getString(columnNum)
-    if(str == null){
-      null
-    }else{
-      UTF8String.fromString(str)
-    }
-  }
+  def getUTF8String(columnNum: Int): UTF8String = UTF8String.fromString(getString(columnNum))
 
   def isNA(columnNum: Int): Boolean
   def getLong(columnNum: Int): Long

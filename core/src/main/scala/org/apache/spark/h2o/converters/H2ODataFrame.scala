@@ -98,21 +98,17 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
         selectedColumnIndices.indices.foreach { idx =>
           val i = selectedColumnIndices(idx)
           val typ = filteredTypes(idx)
-          if (converterCtx.isNA(i)) {
-            mutableRow.setNullAt(idx)
-          } else {
-            typ match {
-              case ByteType => mutableRow.setByte(idx, converterCtx.getByte(i))
-              case ShortType => mutableRow.setShort(idx, converterCtx.getShort(i))
-              case IntegerType => mutableRow.setInt(idx, converterCtx.getInt(i))
-              case LongType => mutableRow.setLong(idx, converterCtx.getLong(i))
-              case FloatType => mutableRow.setFloat(idx, converterCtx.getFloat(i))
-              case DoubleType => mutableRow.setDouble(idx, converterCtx.getDouble(i))
-              case BooleanType => mutableRow.setBoolean(idx, converterCtx.getBoolean(i))
-              case StringType => mutableRow.update(idx, converterCtx.getUTF8String(i))
-              case TimestampType => mutableRow.setLong(idx, converterCtx.getTimestamp(i))
-              case _ => ???
-            }
+          typ match {
+            case ByteType => mutableRow.setByte(idx, converterCtx.getByte(i))
+            case ShortType => mutableRow.setShort(idx, converterCtx.getShort(i))
+            case IntegerType => mutableRow.setInt(idx, converterCtx.getInt(i))
+            case LongType => mutableRow.setLong(idx, converterCtx.getLong(i))
+            case FloatType => mutableRow.setFloat(idx, converterCtx.getFloat(i))
+            case DoubleType => mutableRow.setDouble(idx, converterCtx.getDouble(i))
+            case BooleanType => mutableRow.setBoolean(idx, converterCtx.getBoolean(i))
+            case StringType => mutableRow.update(idx, converterCtx.getUTF8String(i))
+            case TimestampType => mutableRow.setLong(idx, converterCtx.getTimestamp(i))
+            case _ => throw new scala.IllegalArgumentException(s"Type $typ not supported for conversion from H2OFrame to Spark's Dataframe")
           }
         }
         converterCtx.increaseRowIdx()
