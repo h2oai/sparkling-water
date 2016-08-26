@@ -74,7 +74,8 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
    * Implemented by subclasses to compute a given partition.
    */
   override def compute(split: Partition, context: TaskContext): Iterator[A] = {
-    new H2ORDDIterator(frameKeyName, split.index)
+    val iterator = new H2ORDDIterator(frameKeyName, split.index)
+    ConverterUtils.getIterator[A](isExternalBackend, iterator)
   }
 
   private val columnTypeNames = ReflectionUtils.typeNames[A](colNamesInResult)
@@ -142,7 +143,6 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       val j = columnMapping(i)
       val ex = extractors(i)(converterCtx)
       val data = ex(j).asInstanceOf[Object]
-//      println(s"@$i/$j = $data")
       data
     }
 
@@ -151,7 +151,6 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
         val objects: IndexedSeq[Object] = columnTypeNames.indices map convertPerColumn
         val row = objects toArray
 
-//        println(s"${converterCtx.rowIdx} -> ${res mkString ":"}")
         row
       }
       converterCtx.increaseRowIdx()
@@ -179,6 +178,19 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
             }
       }
 
+    /**
+      * This function takes a row of raw data (array of Objects) and transforms it
+      * to a value of type A (if possible).
+      * extractRow gives us the array (if succeeds)
+      * On this array it tries to apply a builder that accepts that data.
+      * A Builder has a constructor inside.
+      * If exactly one attempt to build an instance succeeds, we are good.
+      * If no attempts succeeded, we return a None.
+      * If more than one constructor produced an instance, it means we are out of luck,
+      * there are too many constructors for this kind of data; and an exception is thrown.
+      *
+      * @return Option[A], that is Some(result:A), if succeeded, or else None
+      */
       private def readOne(): Option[A] = {
             val dataOpt = extractRow
 
