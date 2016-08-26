@@ -23,8 +23,7 @@ import water.fvec.{Frame, FrameUtils}
 /**
  * Contains functions that are shared between all H2ORDD types (i.e., Scala, Java)
  */
-//private[converters]
-trait H2ORDDLike[T <: Frame] {
+private[converters] trait H2ORDDLike[T <: Frame] {
   /** Underlying DataFrame */
   @transient val frame: T
 

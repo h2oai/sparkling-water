@@ -28,8 +28,7 @@ import scala.collection.mutable.ListBuffer
 import scala.reflect.runtime.universe._
 
 
-//private[converters] - will uncomment when H2OContext moves into converters
-trait ConverterUtils {
+private[converters] trait ConverterUtils {
 
 
   def initFrame[T](keyName: String, names: Array[String]):Unit = {
