@@ -6,14 +6,15 @@ jdk:
   - oraclejdk8
   - openjdk7
 
-scala:
-  - 2.10.6
-
 install:
   - ( test -d "$SPARK_HOME" && test "$(ls -A "$SPARK_HOME")" ) || ( wget -O spark.tgz "http://mirrors.ocf.berkeley.edu/apache/spark/spark-1.6.1/spark-1.6.1-bin-cdh4.tgz" && mkdir -p "$SPARK_HOME" && tar xvf "spark.tgz" -C "$SPARK_HOME" --strip-components 1 )
 
 env:
-  - SPARK_HOME="$HOME/spark16/"
+  global:
+    - SPARK_HOME="$HOME/spark16/"
+  matrix:
+    - SCALA_BASE_VERSION="2.11"
+    - SCALA_BASE_VERSION="2.10"
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -25,7 +26,7 @@ cache:
         - $HOME/.gradle/wrapper/
         - $SPARK_HOME
 
-script: ./gradlew clean build -x integTest -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME
+script: ./gradlew clean build -x integTest -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME -PscalaBaseVersion=$SCALA_BASE_VERSION
 
 # To solve BufferOverflow on OpenJDK7 we setup short hostname (<64characters)
 # See:

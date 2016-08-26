@@ -38,10 +38,12 @@ ext {
       project(':sparkling-water-examples'),
       project(':sparkling-water-ml')
     ]
+    // Project with integration tests
     integTestProjects = [
       project(':sparkling-water-core'),
       project(':sparkling-water-examples')
     ]
+    // Scala projects
     scalaProjects = [
       project(':sparkling-water-repl'),
       project(':sparkling-water-core'),
@@ -49,9 +51,14 @@ ext {
       project(':sparkling-water-ml'),
       project(':sparkling-water-app-streaming'),
     ]
+    // Python projects
     pythonProjects = [
       project(':sparkling-water-py')
     ]
+
+    defaultScalaBaseVersion = '2.11'
+    supportedScalaBaseVersions = ['2.10' : '2.10.6',
+                                  '2.11' : '2.11.8']
 }
 
 //
@@ -64,8 +71,9 @@ configure(allprojects) { project ->
 
     // Version of main components
     ext {
-      scalaVersion       = project.findProperty('scalaVersion') ?: '2.10.6'
-      scalaBaseVersion   = scalaVersion.substring(0, scalaVersion.lastIndexOf('.'))
+      scalaBaseVersion   = project.findProperty('scalaBaseVersion') ?: defaultScalaBaseVersion
+      scalaVersion       = supportedScalaBaseVersions[scalaBaseVersion]
+
       // h2oBuild property is defined in gradle.properties
       h2oVersion         = "$h2oMajorVersion.$h2oBuild"
       sparkVersion       = "$sparkVersion"
