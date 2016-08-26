@@ -195,7 +195,7 @@
     },
     {
       "type": "sca",
-      "input": "import water.app._\nModelSerializationSupport.exportPOJOModel(badLoanModel, new File(\"/Users/michal/tmp/lendingclub/BadLoanModel.java\").toURI)\nModelSerializationSupport.exportPOJOModel(interestRateModel, new File(\"/Users/michal/tmp/lendingclub/InterestRateModel.java\").toURI)"
+      "input": "import water.support._\nModelSerializationSupport.exportPOJOModel(badLoanModel, new File(\"/Users/michal/tmp/lendingclub/BadLoanModel.java\").toURI)\nModelSerializationSupport.exportPOJOModel(interestRateModel, new File(\"/Users/michal/tmp/lendingclub/InterestRateModel.java\").toURI)"
     }
   ]
 }
