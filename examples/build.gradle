@@ -3,6 +3,24 @@ description = "Sparkling Water Examples"
 apply from: "$rootDir/gradle/utils.gradle"
 apply from: "$rootDir/gradle/scriptsTest.gradle"
 
+project.ext.exampleResources = project.file("flows")
+
+sourceSets {
+    main {
+        resources {
+            srcDir("flows")
+        }
+    }
+}
+
+jar {
+    eachFile { f ->
+        if(new File(exampleResources, f.file.name).exists()) {
+            f.path = "www/flow/packs/examples/$f.name"
+        }
+    }
+}
+
 dependencies {
   // Sparkling Water Core
   compile( project(":sparkling-water-core") ) {
