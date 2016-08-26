@@ -96,17 +96,15 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
         val data = new Array[Option[Any]](numCols)
         // FIXME: this is not perfect since ncols does not need to match number of names
         (0 until numCols).foreach{ idx =>
-          val value = if (converterCtx.isNA(idx)) None
-          else types(idx) match {
-            case q if q == classOf[Integer]           => Some(converterCtx.getInt(idx))
-            case q if q == classOf[java.lang.Long]    => Some(converterCtx.getLong(idx))
-            case q if q == classOf[java.lang.Double]  => Some(converterCtx.getDouble(idx))
-            case q if q == classOf[java.lang.Float]   => Some(converterCtx.getFloat(idx))
-            case q if q == classOf[java.lang.Boolean] => Some(converterCtx.getBoolean(idx))
+          data(idx) = types(idx) match {
+            case q if q == classOf[Integer]           => Option(converterCtx.getInt(idx))
+            case q if q == classOf[java.lang.Long]    => Option(converterCtx.getLong(idx))
+            case q if q == classOf[java.lang.Double]  => Option(converterCtx.getDouble(idx))
+            case q if q == classOf[java.lang.Float]   => Option(converterCtx.getFloat(idx))
+            case q if q == classOf[java.lang.Boolean] => Option(converterCtx.getBoolean(idx))
             case q if q == classOf[String] => Option(converterCtx.getString(idx))
             case _ => None
           }
-          data(idx) = value
         }
 
         converterCtx.increaseRowIdx()

@@ -36,23 +36,35 @@ class InternalReadConverterContext(override val keyName: String, override val ch
 
   override def isNA(columnNum: Int): Boolean = chks(columnNum).isNA(rowIdx)
 
-  override def getLong(columnNum: Int): Long =  chks(columnNum).at8(rowIdx)
+  override def getLong(columnNum: Int): Long =  if(isNA(columnNum)){
+    null.asInstanceOf[Long]
+  }else {
+    chks(columnNum).at8(rowIdx)
+  }
 
-  override def getDouble(columnNum: Int): Double =  chks(columnNum).atd(rowIdx)
+  override def getDouble(columnNum: Int): Double =  if(isNA(columnNum)){
+    null.asInstanceOf[Double]
+  }else {
+    chks(columnNum).atd(rowIdx)
+  }
 
-  override def getString(columnNum: Int): String = {
-    if (chks(columnNum).vec().isCategorical) {
-      val str = chks(columnNum).vec().domain()(chks(columnNum).at8(rowIdx).asInstanceOf[Int])
-      str
-    } else if (chks(columnNum).vec().isString) {
-      chks(columnNum).atStr(valStr, rowIdx) // TODO improve this.
-      valStr.toString
-    } else if (chks(columnNum).vec().isUUID) {
-      val uuid = new UUID(chks(columnNum).at16h(rowIdx), chks(columnNum).at16l(rowIdx))
-      uuid.toString
-    } else{
-      assert(assertion = false, "Should never be here")
-      null
+  override def getString(columnNum: Int): String = if(isNA(columnNum)){
+    null.asInstanceOf[String]
+  }else {
+    {
+      if (chks(columnNum).vec().isCategorical) {
+        val str = chks(columnNum).vec().domain()(chks(columnNum).at8(rowIdx).asInstanceOf[Int])
+        str
+      } else if (chks(columnNum).vec().isString) {
+        chks(columnNum).atStr(valStr, rowIdx) // TODO improve this.
+        valStr.toString
+      } else if (chks(columnNum).vec().isUUID) {
+        val uuid = new UUID(chks(columnNum).at16h(rowIdx), chks(columnNum).at16l(rowIdx))
+        uuid.toString
+      } else {
+        assert(assertion = false, "Should never be here")
+        null
+      }
     }
   }
 
