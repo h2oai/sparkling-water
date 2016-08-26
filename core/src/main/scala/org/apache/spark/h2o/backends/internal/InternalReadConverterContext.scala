@@ -38,13 +38,13 @@ class InternalReadConverterContext(override val keyName: String, override val ch
 
   override def getLong(columnNum: Int): Long =  if(isNA(columnNum)){
     null.asInstanceOf[Long]
-  }else{
+  }else {
     chks(columnNum).at8(rowIdx)
   }
 
   override def getDouble(columnNum: Int): Double =  if(isNA(columnNum)){
     null.asInstanceOf[Double]
-  }else{
+  }else {
     chks(columnNum).atd(rowIdx)
   }
 
