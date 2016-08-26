@@ -43,6 +43,20 @@ test {
     maxParallelForks = 1
 }
 
+// add additional source set for desired scala version
+sourceSets {
+    main {
+        scala {
+            srcDir "src/main/scala_$scalaBaseVersion"
+        }
+    }
+    test {
+        scala {
+            srcDirs "src/test/scala_$scalaBaseVersion"
+        }
+    }
+}
+
 // Enable scalastyle
 apply from: "$rootDir/gradle/scalastyle.gradle"
 

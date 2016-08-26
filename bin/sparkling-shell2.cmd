@@ -53,6 +53,7 @@ echo   Spark master (MASTER)     : %MASTER%
 echo   Spark home   (SPARK_HOME) : %SPARK_HOME%
 echo   H2O build version         : %H2O_VERSION%.%H2O_BUILD% (%H2O_NAME%)
 echo   Spark build version       : %SPARK_VERSION%
+echo   Scala version             : %SCALA_VERSION%
 echo ----
 echo[
 exit /b 0
