@@ -227,12 +227,10 @@ class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAnd
     }
 
     def matchData[T <: Product](actual: Seq[T], expected:Seq[T]): Unit = {
-      for {p <- expected} {
-        assert(actual.contains(p), s"$p not found in the result $actual")
-      }
-      for {p <- actual} {
-        assert(expected.contains(p), s"Did not expect $p in the result $expected")
-      }
+      val missing = actual.diff(expected)
+      assert (missing.isEmpty, s"Not found: $missing")
+      val extra = actual.diff(expected)
+      assert (extra.isEmpty, s"Unexpected records: $extra")
     }
 
     def checkWith[T <: Product: TypeTag: ClassTag](constructor: (String, Int, String) => T): Unit = {
