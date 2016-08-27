@@ -18,7 +18,6 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.unsafe.types.UTF8String
-import water.parser.BufferedString
 
 
 /**
@@ -36,9 +35,6 @@ trait ReadConverterContext {
 
   /** Current row index */
   var rowIdx: Int = 0
-
-  /** Dummy mutable and reusable holder for String values */
-  val valStr = new BufferedString()
 
   def getByte(columnNum: Int): Byte = getLong(columnNum).toByte
   def getShort(columnNum: Int): Short = getLong(columnNum).toShort

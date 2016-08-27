@@ -49,6 +49,8 @@ for the latest Spark version. They are back-ported into older Sparkling Water ve
 ### Build
 
 Download Spark installation and point environment variable `SPARK_HOME` to it.
+Befure building this project, you may want to build Spark: go to Spark folder and do `sbt assembly`.
+
 Then use the provided `gradlew` to build project:
 
 In order to build the whole project, one of the following properties needs to be set: 
@@ -59,6 +61,14 @@ If you are not sure which property to set, just run
 ./gradlew build
 ```
 and the commands which sets the `H2O_PYTHON_WHEEL` will be shown on your console and can be copy-pasted into your terminal. After setting the property, the build needs to be rerun.
+
+Now, to have everything you need for Python Wheel, you may need to install Python Future, via `pip install future`.
+First, you may need to install pip. See http://stackoverflow.com/questions/17271319/installing-pip-on-mac-os-x
+```
+curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python
+sudo easy_install pip
+pip install future
+```
 
 > To avoid running tests, use the `-x test -x integTest` option. 
 
