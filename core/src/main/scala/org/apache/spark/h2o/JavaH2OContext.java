@@ -153,7 +153,7 @@ which is not nice.
      */
     public static JavaH2OContext getOrCreate(JavaSparkContext jsc){
         H2OConf conf = new H2OConf(jsc.sc());
-        return new JavaH2OContext(H2OContext.getOrCreate(jsc.sc(), conf));
+        return getOrCreate(jsc, conf);
     }
 
     /**

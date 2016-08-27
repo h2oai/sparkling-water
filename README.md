@@ -49,9 +49,11 @@ for the latest Spark version. They are back-ported into older Sparkling Water ve
 ### Build
 
 Download Spark installation and point environment variable `SPARK_HOME` to it.
+> Before building this project, you may want to build Spark in case you are using Spark source distribution: go to Spark folder and do `sbt assembly`.
+
 Then use the provided `gradlew` to build project:
 
-In order to build the whole project, one of the following properties needs to be set: 
+In order to build the whole project inlucding Python module, one of the following properties needs to be set: 
 `H2O_HOME`, which should point to location of local h2o project directory, or `H2O_PYTHON_WHEEL`, which should point to H2O Python Wheel.
 
 If you are not sure which property to set, just run
@@ -60,8 +62,19 @@ If you are not sure which property to set, just run
 ```
 and the commands which sets the `H2O_PYTHON_WHEEL` will be shown on your console and can be copy-pasted into your terminal. After setting the property, the build needs to be rerun.
 
-> To avoid running tests, use the `-x test -x integTest` option. 
+Now, to have everything you need for Python, you may need to install Python `future` library, via `pip install future`.
+First, you may need to install pip. See http://stackoverflow.com/questions/17271319/installing-pip-on-mac-os-x
+Use brew package manager or
+```
+curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python
+sudo easy_install pip
+pip install future
+```
 
+> To avoid running tests, use the `-x test -x integTest` or `-x check` option. 
+
+> To build only a specific module, use, for example, `./gradlew :sparkling-water-examples:build`.
+> To build test a specific module, use, for example,  `./gradlew :sparkling-water-examples:check`.
 ---
 <a name="Binary"></a>
 ### Download Binaries

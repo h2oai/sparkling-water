@@ -61,7 +61,7 @@ class DefaultSource extends RelationProvider
                               schema: StructType): H2OFrameRelation[_] = {
     val key = checkKey(parameters)
 
-    H2OFrameRelation(getFrame(key), true)(sqlContext)
+    H2OFrameRelation(getFrame(key), copyMetadata=true)(sqlContext)
   }
 
   override def createRelation( sqlContext: SQLContext,
@@ -70,13 +70,9 @@ class DefaultSource extends RelationProvider
                                data: DataFrame): BaseRelation = {
     val key = checkKey(parameters)
     val originalFrame = DKV.getGet[Frame](key)
-    implicit val h2oContext = {
-      if(H2OContext.get().isEmpty){
-        throw new RuntimeException("H2OContext has to be started in order to save/load data using H2O Data source.")
-      }else{
-        H2OContext.get().get
-      }
-    }
+    implicit val h2oContext:H2OContext =
+      H2OContext.ensure("H2OContext has to be started in order to save/load data using H2O Data source.")
+
     if(originalFrame!=null){
       mode match {
         case SaveMode.Append =>
