@@ -42,9 +42,9 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     val h2oFrame:H2OFrame = hc.asH2OFrame(rdd)
 
     assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
-      val nextRowId = rowIdx + 1
+      val nextRowIdx = rowIdx + 1
       val value = vec.at8(rowIdx) // value stored at rowIdx-th
-      assert (nextRowId == value, "The H2OFrame values should match row numbers+1")
+      assert (nextRowIdx == value, "The H2OFrame values should match row numbers+1")
     })
     // Clean up
     h2oFrame.delete()
@@ -59,13 +59,13 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     val h2oFrame:H2OFrame = hc.asH2OFrame(rdd)
 
     assertInvariantsWithNulls(rdd, h2oFrame, (rowIdx, vec) => {
-      val nextRowId = rowIdx + 1
-      almostDefined(nextRowId) match {
+      val nextRowIdx = rowIdx + 1
+      almostDefined(nextRowIdx) match {
         case Some(r) =>
           val value = vec.at8(rowIdx) // value stored at rowIdx-th
           assert (r == value, s"The H2OFrame values should match row numbers+1 = $r")
         case None =>
-          assert(vec.isNA(rowIdx), s"Row at $row must be NA")
+          assert(vec.isNA(rowIdx), s"Row at $rowIdx must be NA")
       }
     })
     // Clean up
@@ -120,10 +120,10 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     assert (h2oFrame.vec(0).domain() == null, "The vector should have null domain")
     val valueString = new BufferedString()
     assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
-      val nextRowId = (rowIdx + 1).toString
+      val nextRowIdx = (rowIdx + 1).toString
       val value = vec.atStr(valueString, rowIdx) // value stored at rowIdx-th
       // Using == since int should be mapped strictly to doubles
-      assert (nextRowId.equals(value.toString), "The H2OFrame values should match row numbers+1")
+      assert (nextRowIdx.equals(value.toString), "The H2OFrame values should match row numbers+1")
     })
     // Clean up
     h2oFrame.delete()
