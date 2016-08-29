@@ -99,12 +99,12 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
 
 
       private def readRow: InternalRow = {
-        val optionalData: Seq[Option[Any]] =
-          columnConverters.zipWithIndex map { case (c, i) => c(i) }
+          val optionalData: Seq[Option[Any]] =
+            columnConverters.zipWithIndex map { case (c, i) => c(selectedColumnIndices(i)) }
 
-        val nullableData: Seq[Any] = optionalData map (_ orNull)
+          val nullableData: Seq[Any] = optionalData map (_ orNull)
 
-        InternalRow.fromSeq(nullableData)
+          InternalRow.fromSeq(nullableData)
       }
 
       override def next(): InternalRow = {

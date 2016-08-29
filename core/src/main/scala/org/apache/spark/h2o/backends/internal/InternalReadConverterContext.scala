@@ -50,22 +50,22 @@ class InternalReadConverterContext(override val keyName: String, override val ch
   // TODO(vlad): try to move out all this logic to prepared extractors
   override def getString(columnNum: Int): Option[String] = get(columnNum, chunk =>
     {
-      val vector = chunk.vec()
-      if (vector.isCategorical) {
-        val str = vector.domain()(chunk.at8(rowIdx).toInt)
-        str
-      } else if (vector.isString) {
-        val valStr = new BufferedString()
-        chunk.atStr(valStr, rowIdx) // TODO improve this.
-        valStr.toString
-      } else if (vector.isUUID) {
-        val uuid = new UUID(chunk.at16h(rowIdx), chunk.at16l(rowIdx))
-        uuid.toString
-      } else {
-        assert(assertion = false, "Should never be here")
-        // TODO(vlad): this is temporarily here, to provide None is string is missing
-        null
-      }
+    val vector = chunk.vec()
+    if (vector.isCategorical) {
+      val str = vector.domain()(chunk.at8(rowIdx).toInt)
+      str
+    } else if (vector.isString) {
+      val valStr = new BufferedString()
+      chunk.atStr(valStr, rowIdx) // TODO improve this.
+      valStr.toString
+    } else if (vector.isUUID) {
+      val uuid = new UUID(chunk.at16h(rowIdx), chunk.at16l(rowIdx))
+      uuid.toString
+    } else {
+      assert(assertion = false, s"Should never be here, type is ${vector.get_type_str()}")
+      // TODO(vlad): this is temporarily here, to provide None is string is missing
+      null
+    }
     })
 
   private def underlyingFrame = DKV.get(Key.make(keyName)).get.asInstanceOf[Frame]
