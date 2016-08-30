@@ -95,14 +95,15 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       def next(): A = {
         val data = new Array[Option[Any]](numCols)
         // FIXME: this is not perfect since ncols does not need to match number of names
+        // TODO(vlad): use the same logic as in H2ODataFrame (and in H2ODataset)
         (0 until numCols).foreach{ idx =>
           data(idx) = types(idx) match {
-            case q if q == classOf[Integer]           => Option(converterCtx.getInt(idx))
-            case q if q == classOf[java.lang.Long]    => Option(converterCtx.getLong(idx))
-            case q if q == classOf[java.lang.Double]  => Option(converterCtx.getDouble(idx))
-            case q if q == classOf[java.lang.Float]   => Option(converterCtx.getFloat(idx))
-            case q if q == classOf[java.lang.Boolean] => Option(converterCtx.getBoolean(idx))
-            case q if q == classOf[String] => Option(converterCtx.getString(idx))
+            case q if q == classOf[Integer]           => converterCtx.getInt(idx)
+            case q if q == classOf[java.lang.Long]    => converterCtx.getLong(idx)
+            case q if q == classOf[java.lang.Double]  => converterCtx.getDouble(idx)
+            case q if q == classOf[java.lang.Float]   => converterCtx.getFloat(idx)
+            case q if q == classOf[java.lang.Boolean] => converterCtx.getBoolean(idx)
+            case q if q == classOf[String]            => converterCtx.getString(idx)
             case _ => None
           }
         }

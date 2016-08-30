@@ -1,6 +1,5 @@
 package water.sparkling.itest
 
-import java.io.{PrintWriter, StringWriter}
 import org.scalatest.{BeforeAndAfterEach, Suite, Tag}
 
 import scala.collection.mutable
@@ -42,7 +41,7 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
 
     import scala.sys.process._
     val proc = cmdToLaunch.!
-    assert (proc == 0, "Process finished in wrong way!")
+    assert (proc == 0, s"Process finished in wrong way! response=$proc from \n${cmdToLaunch mkString " "}")
 
   }
 
