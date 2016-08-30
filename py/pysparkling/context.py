@@ -131,6 +131,7 @@ class H2OContext(object):
         h2o_context._client_ip = jhc.h2oLocalClientIp()
         h2o_context._client_port = jhc.h2oLocalClientPort()
         h2o.init(ip=h2o_context._client_ip, port=h2o_context._client_port, start_h2o=False, strict_version_check=False)
+        h2o.is_initialized = True
         return h2o_context
 
     def stop(self):
@@ -138,7 +139,10 @@ class H2OContext(object):
         #self._jhc.stop(False)
 
     def __str__(self):
-        return "H2OContext: ip={}, port={} (open UI at http://{}:{} )".format(self._client_ip, self._client_port, self._client_ip, self._client_port)
+        if hasattr(self, 'is_initialized'):
+          return "H2OContext: ip={}, port={} (open UI at http://{}:{} )".format(self._client_ip, self._client_port, self._client_ip, self._client_port)
+        else:
+          return "H2OContext: --not initialized (call getOrCreate())"
 
     def __repr__(self):
         self.show()
