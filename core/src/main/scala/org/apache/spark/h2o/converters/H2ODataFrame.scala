@@ -22,9 +22,9 @@ import org.apache.spark.h2o._
 import org.apache.spark.h2o.utils.H2OSchemaUtils._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.types.DataType
 import org.apache.spark.{Partition, SparkContext, TaskContext}
+import language.postfixOps
 
 /**
  * H2O H2OFrame wrapper providing RDD[Row]=DataFrame API.
@@ -45,7 +45,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
           (@transient sc: SparkContext) = this(frame, null)(sc)
 
 
-  val typesAll = frame.vecs().indices.map(idx => vecTypeToDataType(frame.vec(idx))).toArray
+  val typesAll: Array[DataType] = frame.vecs().indices.map(idx => vecTypeToDataType(frame.vec(idx))).toArray
   /** Create new types list which describes expected types in a way external H2O backend can use it. This list
     * contains types in a format same for H2ODataFrame and H2ORDD */
   val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, typesAll)
@@ -62,12 +62,12 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
       /** Processed partition index */
       override val partIndex = split.index
 
-      /** Selected column indices */
-      val selectedColumnIndices = if (requiredColumns == null) {
+      // TODO(vlad): take care of the cases when names are missing in colNames - an exception?
+      val selectedColumnIndices = (if (requiredColumns == null) {
         colNames.indices
       } else {
         requiredColumns.toSeq.map{ name => colNames.indexOf(name) }
-      }
+      }) toArray
 
       // Make sure that column selection is consistent
       // scalastyle:off
@@ -75,11 +75,13 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
              "Column selection missing a column!")
       // scalastyle:on
 
-      val filteredTypes = selectedColumnIndices.map(idx => typesAll(idx)).toArray
-      /** Filtered list of types used for data transfer */
+      private val filteredTypes = selectedColumnIndices map typesAll
+
+    /** Filtered list of types used for data transfer */
       val expectedTypes: Option[Array[Byte]]  =
+      // TODO(vlad): use Option's map
       if (expectedTypesAll.isDefined){
-        Some(selectedColumnIndices.map(idx => expectedTypesAll.get(idx)).toArray)
+        Some(selectedColumnIndices.map(expectedTypesAll.get))
       }else{
         None
       }
@@ -92,31 +94,27 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
         expectedTypes,
         partIndex)
 
+      /*a sequence of converters, per column*/
+      private val columnConverters = filteredTypes map converterCtx.get
+
+
+      private def readRow: InternalRow = {
+          val optionalData: Seq[Option[Any]] =
+            columnConverters.zipWithIndex map {
+              case (converter, idx) => converter(selectedColumnIndices(idx))
+            }
+
+          val nullableData: Seq[Any] = optionalData map (_ orNull)
+
+          InternalRow.fromSeq(nullableData)
+      }
+
       override def next(): InternalRow = {
-        /** Mutable reusable row returned by iterator */
-        val mutableRow = new GenericMutableRow(selectedColumnIndices.length)
-        selectedColumnIndices.indices.foreach { idx =>
-          val i = selectedColumnIndices(idx)
-          val typ = filteredTypes(idx)
-          typ match {
-            case ByteType => mutableRow.setByte(idx, converterCtx.getByte(i))
-            case ShortType => mutableRow.setShort(idx, converterCtx.getShort(i))
-            case IntegerType => mutableRow.setInt(idx, converterCtx.getInt(i))
-            case LongType => mutableRow.setLong(idx, converterCtx.getLong(i))
-            case FloatType => mutableRow.setFloat(idx, converterCtx.getFloat(i))
-            case DoubleType => mutableRow.setDouble(idx, converterCtx.getDouble(i))
-            case BooleanType => mutableRow.setBoolean(idx, converterCtx.getBoolean(i))
-            case StringType => mutableRow.update(idx, converterCtx.getUTF8String(i))
-            case TimestampType => mutableRow.setLong(idx, converterCtx.getTimestamp(i))
-            case _ => throw new scala.IllegalArgumentException(s"Type $typ not supported for conversion from H2OFrame to Spark's Dataframe")
-          }
-        }
+        val row = readRow
         converterCtx.increaseRowIdx()
-        // Return result
-        mutableRow
+        row
       }
     }
-
     // Wrap the iterator to backend specific wrapper
     ConverterUtils.getIterator[InternalRow](isExternalBackend, iterator)
   }

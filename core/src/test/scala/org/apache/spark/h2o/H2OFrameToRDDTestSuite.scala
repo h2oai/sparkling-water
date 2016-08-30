@@ -41,10 +41,32 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
     val h2oFrame:H2OFrame = hc.asH2OFrame(rdd)
 
-    assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
-      val row1 = row + 1
-      val value = vec.at8(row) // value stored at row-th
-      assert (row1 == value, "The H2OFrame values should match row numbers+1")
+    assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
+      val nextRowIdx = rowIdx + 1
+      val value = vec.at8(rowIdx) // value stored at rowIdx-th
+      assert (nextRowIdx == value, "The H2OFrame values should match row numbers+1")
+    })
+    // Clean up
+    h2oFrame.delete()
+    rdd.unpersist()
+  }
+
+  test("RDD[IntHolder] with nulls, does it hold nulls?") {
+
+    def almostDefined(i: Long) = Some(i.toInt) filter (_ % 31 != 0)
+
+    val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(almostDefined(v)))
+    val h2oFrame:H2OFrame = hc.asH2OFrame(rdd)
+
+    assertInvariantsWithNulls(rdd, h2oFrame, (rowIdx, vec) => {
+      val nextRowIdx = rowIdx + 1
+      almostDefined(nextRowIdx) match {
+        case Some(r) =>
+          val value = vec.at8(rowIdx) // value stored at rowIdx-th
+          assert (r == value, s"The H2OFrame values should match row numbers+1 = $r")
+        case None =>
+          assert(vec.isNA(rowIdx), s"Row at $rowIdx must be NA")
+      }
     })
     // Clean up
     h2oFrame.delete()
@@ -56,11 +78,11 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     val rdd = sc.parallelize(1 to 1000, 100).map( v => DoubleHolder(Some(v)))
     val h2oFrame:H2OFrame = hc.asH2OFrame(rdd)
 
-    assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
-      val row1 = row + 1
-      val value = vec.at(row) // value stored at row-th
+    assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
+      val nextRowIdx = rowIdx + 1
+      val value = vec.at(rowIdx) // value stored at rowIdx-th
       // Using == since int should be mapped strictly to doubles
-      assert (row1 == value, "The H2OFrame values should match row numbers+1")
+      assert (nextRowIdx == value, "The H2OFrame values should match row numbers+1")
     })
     // Clean up
     h2oFrame.delete()
@@ -78,11 +100,11 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     // Transform string vector to categorical
     h2oFrame.replace(0, h2oFrame.vec(0).toCategoricalVec).remove()
 
-    assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
+    assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
       val dom = vec.domain()
-      val value = dom(vec.at8(row).asInstanceOf[Int]) // value stored at row-th
+      val value = dom(vec.at8(rowIdx).asInstanceOf[Int]) // value stored at rowIdx-th
       // Using == since int should be mapped strictly to doubles
-      assert (row + 1 == value.toInt, "The H2OFrame values should match row numbers")
+      assert (rowIdx + 1 == value.toInt, "The H2OFrame values should match row numbers")
     })
     // Clean up
     h2oFrame.delete()
@@ -97,16 +119,17 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     assert (h2oFrame.vec(0).isString, "The vector type should be string")
     assert (h2oFrame.vec(0).domain() == null, "The vector should have null domain")
     val valueString = new BufferedString()
-    assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
-      val row1 = (row + 1).toString
-      val value = vec.atStr(valueString, row) // value stored at row-th
+    assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
+      val nextRowIdx = (rowIdx + 1).toString
+      val value = vec.atStr(valueString, rowIdx) // value stored at rowIdx-th
       // Using == since int should be mapped strictly to doubles
-      assert (row1.equals(value.toString), "The H2OFrame values should match row numbers+1")
+      assert (nextRowIdx.equals(value.toString), "The H2OFrame values should match row numbers+1")
     })
     // Clean up
     h2oFrame.delete()
     rdd.unpersist()
   }
+
 
   test("PUBDEV-458 - from Rdd[IntHolder] to H2OFrame and back") {
     val h2oContext = hc
@@ -116,6 +139,23 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     val back2rdd = hc.asRDD[PUBDEV458Type](h2oFrame)
     assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
     assert(back2rdd.count == h2oFrame.numRows(), "Number of rows should match")
+  }
+
+  test("Options handled correctly (no null -> 0)") {
+    val h2oContext = hc
+    import h2oContext.implicits._
+
+    def almostDefined(i: Long) = Some(i.toInt) filter (_ % 31 != 0)
+
+    val rdd = sc.parallelize(1 to 1000000, 10).map(i => OptionAndNot(Some(i), almostDefined(i)))
+    val h2oFrame:H2OFrame = rdd
+    val back2rdd = hc.asRDD[OptionAndNot](h2oFrame)
+    assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
+    assert(back2rdd.count == h2oFrame.numRows(), "Number of rows should match")
+
+    back2rdd.foreach {
+      case OptionAndNot(x, xOpt) => if(xOpt != (x.flatMap(i => almostDefined(i)))) throw new IllegalStateException(s"Failed at $x/$xOpt")
+    }
   }
 
   // PUBDEV-1173
@@ -223,11 +263,24 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
     assert (rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
     // Check numbering
     val vec = df.vec(0)
-    var row = 0
-    while(row < df.numRows()) {
-      assert (!vec.isNA(row), "The H2OFrame should not contain any NA values")
-      rowAssert (row, vec)
-      row += 1
+    var rowIdx = 0
+    while(rowIdx < df.numRows()) {
+      assert (!vec.isNA(rowIdx), "The H2OFrame should not contain any NA values")
+      rowAssert (rowIdx, vec)
+      rowIdx += 1
+    }
+  }
+
+  private def assertInvariantsWithNulls[T<:Product](rdd: RDD[T], df: H2OFrame, rowAssert: RowValueAssert): Unit = {
+    assertHolderProperties(df)
+    assert (rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
+    // Check numbering
+
+    val vec = df.vec(0)
+    var rowIdx = 0
+    while(rowIdx < df.numRows()) {
+      rowAssert (rowIdx, vec)
+      rowIdx += 1
     }
   }
 
@@ -240,12 +293,22 @@ class H2ORDDTest extends FunSuite with SharedSparkTestContext {
 }
 
 class PUBDEV458Type(val result: Option[Int]) extends Product with Serializable {
-  //def this() = this(None)
   override def canEqual(that: Any):Boolean = that.isInstanceOf[PUBDEV458Type]
   override def productArity: Int = 1
   override def productElement(n: Int) =
     n match {
       case 0 => result
+      case _ => throw new IndexOutOfBoundsException(n.toString)
+    }
+}
+
+case class OptionAndNot(val x: Option[Int], val xOpt: Option[Int]) extends Serializable {
+  override def canEqual(that: Any):Boolean = that.isInstanceOf[OptionAndNot]
+  override def productArity: Int = 2
+  override def productElement(n: Int) =
+    n match {
+      case 0 => x
+      case 1 => xOpt
       case _ => throw new IndexOutOfBoundsException(n.toString)
     }
 }

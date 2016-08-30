@@ -21,6 +21,7 @@ import java.util.UUID
 
 import org.apache.spark.h2o.converters.ReadConverterContext
 import water.fvec.{Chunk, Frame}
+import water.parser.BufferedString
 import water.{DKV, Key}
 
 class InternalReadConverterContext(override val keyName: String, override val chunkIdx: Int) extends ReadConverterContext{
@@ -36,37 +37,36 @@ class InternalReadConverterContext(override val keyName: String, override val ch
 
   override def isNA(columnNum: Int): Boolean = chks(columnNum).isNA(rowIdx)
 
-  override def getLong(columnNum: Int): Long =  if(isNA(columnNum)){
-    null.asInstanceOf[Long]
-  }else {
-    chks(columnNum).at8(rowIdx)
-  }
-
-  override def getDouble(columnNum: Int): Double =  if(isNA(columnNum)){
-    null.asInstanceOf[Double]
-  }else {
-    chks(columnNum).atd(rowIdx)
-  }
-
-  override def getString(columnNum: Int): String = if(isNA(columnNum)){
-    null.asInstanceOf[String]
-  }else {
-    {
-      if (chks(columnNum).vec().isCategorical) {
-        val str = chks(columnNum).vec().domain()(chks(columnNum).at8(rowIdx).asInstanceOf[Int])
-        str
-      } else if (chks(columnNum).vec().isString) {
-        chks(columnNum).atStr(valStr, rowIdx) // TODO improve this.
-        valStr.toString
-      } else if (chks(columnNum).vec().isUUID) {
-        val uuid = new UUID(chks(columnNum).at16h(rowIdx), chks(columnNum).at16l(rowIdx))
-        uuid.toString
-      } else {
-        assert(assertion = false, "Should never be here")
-        null
-      }
+  private def get[T](columnNum: Int, read: Chunk => T): Option[T] =
+    if (isNA(columnNum)) {
+      None
+    } else {
+      Option(read(chks(columnNum)))
     }
-  }
+
+  override def getLong(columnNum: Int): Option[Long] =  get(columnNum, _.at8(rowIdx))
+  override def getDouble(columnNum: Int): Option[Double] = get(columnNum, _.atd(rowIdx))
+
+  // TODO(vlad): try to move out all this logic to prepared extractors
+  override def getString(columnNum: Int): Option[String] = get(columnNum, chunk =>
+    {
+    val vector = chunk.vec()
+    if (vector.isCategorical) {
+      val str = vector.domain()(chunk.at8(rowIdx).toInt)
+      str
+    } else if (vector.isString) {
+      val valStr = new BufferedString()
+      chunk.atStr(valStr, rowIdx) // TODO improve this.
+      valStr.toString
+    } else if (vector.isUUID) {
+      val uuid = new UUID(chunk.at16h(rowIdx), chunk.at16l(rowIdx))
+      uuid.toString
+    } else {
+      assert(assertion = false, s"Should never be here, type is ${vector.get_type_str()}")
+      // TODO(vlad): this is temporarily here, to provide None is string is missing
+      null
+    }
+    })
 
   private def underlyingFrame = DKV.get(Key.make(keyName)).get.asInstanceOf[Frame]
 
