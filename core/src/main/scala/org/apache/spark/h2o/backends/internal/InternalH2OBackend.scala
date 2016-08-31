@@ -109,7 +109,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     H2O.waitForCloudSize(executors.length, hc.getConf.cloudTimeout)
 
     // Register web API for client
-    RestAPIManager.registerClientWebAPI(hc)
+    RestAPIManager(hc).registerAll()
     H2O.finalizeRegistration()
     executors
   }
