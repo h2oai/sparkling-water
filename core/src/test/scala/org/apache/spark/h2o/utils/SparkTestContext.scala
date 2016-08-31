@@ -17,8 +17,6 @@
 
 package org.apache.spark.h2o.utils
 
-import java.net.InetAddress
-
 import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext
@@ -47,16 +45,19 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
     hc = null
   }
 
-  def defaultSparkConf =  new SparkConf()
-    .set("spark.ext.h2o.disable.ga", "true")
-    .set("spark.driver.memory", "2G")
-    .set("spark.executor.memory", "2G")
-    .set("spark.app.id", self.getClass.getSimpleName)
-    .set("spark.ext.h2o.client.log.level", "DEBUG")
-    .set("spark.ext.h2o.repl.enabled","false") // disable repl in tests
-    .set("spark.scheduler.minRegisteredResourcesRatio", "1")
-    .set("spark.ext.h2o.backend.cluster.mode", sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
-    .set("spark.ext.h2o.client.ip", InetAddress.getLocalHost.getHostAddress)
+  def defaultSparkConf =  {
+    val sc = new SparkConf()
+      .set("spark.ext.h2o.disable.ga", "true")
+      .set("spark.driver.memory", "2G")
+      .set("spark.executor.memory", "2G")
+      .set("spark.app.id", self.getClass.getSimpleName)
+      .set("spark.ext.h2o.client.log.level", "DEBUG")
+      .set("spark.ext.h2o.repl.enabled","false") // disable repl in tests
+      .set("spark.scheduler.minRegisteredResourcesRatio", "1")
+      .set("spark.ext.h2o.backend.cluster.mode", sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
+    sys.props.get("spark.ext.h2o.client.ip").map(value => sc.set("spark.ext.h2o.client.ip", value))
+    sc
+  }
 }
 
 object SparkTestContext {
