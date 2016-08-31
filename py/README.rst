@@ -90,16 +90,14 @@ Run IPython Notebook with PySparkling
 -------------------------------------
 .. code-block:: bash
 
-    IPYTHON_OPTS="notebook"
-    bin/pysparkling
+    IPYTHON_OPTS="notebook" bin/pysparkling
 
 
 Run IPython with PySparkling
 ----------------------------
 .. code-block:: bash
 
-    PYSPARK_PYTHON="ipython"
-    bin/pysparkling
+    PYSPARK_PYTHON="ipython" bin/pysparkling
 
 
 Use PySparkling as Spark Package
