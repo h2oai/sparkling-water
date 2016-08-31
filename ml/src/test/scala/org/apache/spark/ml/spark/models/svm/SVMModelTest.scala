@@ -17,7 +17,7 @@
 package org.apache.spark.ml.spark.models.svm
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.util.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedSparkTestContext
 import org.apache.spark.mllib.classification
 import org.apache.spark.mllib.linalg.Vectors
 import org.junit.runner.RunWith
@@ -34,8 +34,8 @@ class SVMModelTest extends FunSuite with SharedSparkTestContext {
   test("Should score the same regression value.") {
     val sqlContext = sqlc
     import sqlContext.implicits._
-    val hcContext = hc
-    import hcContext.implicits._
+    val h2oContext = hc
+    import h2oContext.implicits._
 
     // Generate random training data
     val trainRDD = sc.parallelize(1 to 50, 1).map(v => {
@@ -59,7 +59,7 @@ class SVMModelTest extends FunSuite with SharedSparkTestContext {
     parms._response_column = 'Label
     parms._initial_weights = weightsFrame
 
-    val svm = new SVM(parms)
+    val svm = new SVM(parms, h2oContext)
 
     // Train model
     val h2oSVMModel: SVMModel = svm.trainModel.get

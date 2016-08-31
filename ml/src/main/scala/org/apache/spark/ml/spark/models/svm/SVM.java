@@ -41,13 +41,17 @@ import java.util.Arrays;
 
 public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
 
-    public SVM(boolean startup_once) {
+    transient private final H2OContext hc;
+
+    public SVM(boolean startup_once, H2OContext hc) {
         super(new SVMParameters(), startup_once);
+        this.hc = hc;
     }
 
-    public SVM(SVMParameters parms) {
+    public SVM(SVMParameters parms, H2OContext hc) {
         super(parms);
         init(false);
+        this.hc = hc;
     }
 
     @Override
@@ -148,8 +152,8 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
 
     private final class SVMDriver extends Driver {
 
-        transient private SparkContext sc = H2OContext.getSparkContext();
-        transient private H2OContext h2oContext = H2OContext.getOrCreate(sc);
+        transient private H2OContext h2oContext = hc;
+        transient private SparkContext sc = hc.sparkContext();
         transient private SQLContext sqlContext = SQLContext.getOrCreate(sc);
 
         @Override
@@ -216,7 +220,7 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
         }
 
         private RDD<LabeledPoint> getTrainingData(Frame parms, String _response_column, int nfeatures) {
-            return h2oContext.createH2OSchemaRDD(new H2OFrame(parms), sqlContext)
+            return h2oContext.asDataFrame(new H2OFrame(parms), true, sqlContext)
                     .javaRDD()
                     .map(new RowToLabeledPoint(nfeatures, _response_column, parms.domains()[parms.find(_response_column)])).rdd();
         }
