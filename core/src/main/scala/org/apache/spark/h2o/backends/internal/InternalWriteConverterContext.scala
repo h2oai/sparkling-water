@@ -23,26 +23,26 @@ import org.apache.spark.h2o.converters.WriteConverterContext
 import water.fvec.{FrameUtils, NewChunk}
 
 class InternalWriteConverterContext extends WriteConverterContext{
-  var nchnks: Array[NewChunk] = _
+  private var chunks: Array[NewChunk] = _
   override def createChunks(keyName: String, vecTypes: Array[Byte], chunkId: Int): Unit = {
-   nchnks = FrameUtils.createNewChunks(keyName, vecTypes, chunkId)
+   chunks = FrameUtils.createNewChunks(keyName, vecTypes, chunkId)
   }
 
   override def closeChunks(): Unit = {
-    FrameUtils.closeNewChunks(nchnks)
+    FrameUtils.closeNewChunks(chunks)
   }
 
-  override def put(columnNum: Int, n: Number): Unit = nchnks(columnNum).addNum(n.doubleValue())
+  override def put(columnNum: Int, n: Number): Unit = chunks(columnNum).addNum(n.doubleValue())
 
-  override def put(columnNum: Int, n: Boolean): Unit =  nchnks(columnNum).addNum(if (n) 1 else 0)
+  override def put(columnNum: Int, n: Boolean): Unit =  chunks(columnNum).addNum(if (n) 1 else 0)
 
-  override def put(columnNum: Int, n: Timestamp): Unit = nchnks(columnNum).addNum(n.getTime)
+  override def put(columnNum: Int, n: Timestamp): Unit = chunks(columnNum).addNum(n.getTime)
 
-  override def put(columnNum: Int, str: String): Unit = nchnks(columnNum).addStr(str)
+  override def put(columnNum: Int, str: String): Unit = chunks(columnNum).addStr(str)
 
-  override def putNA(columnNum: Int): Unit = nchnks(columnNum).addNA()
+  override def putNA(columnNum: Int): Unit = chunks(columnNum).addNA()
 
   override def increaseRowCounter(): Unit = { }// empty on purpose, we can get number or rows without counter
 
-  override def numOfRows: Long = nchnks(0).len()
+  override def numOfRows: Long = chunks(0).len()
 }

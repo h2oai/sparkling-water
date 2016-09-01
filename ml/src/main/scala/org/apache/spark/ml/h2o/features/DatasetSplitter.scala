@@ -45,7 +45,7 @@ class DatasetSplitter(override val uid: String)
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Identifiable.randomUID("h2oFrameSplitter"))
 
   private def split(df: H2OFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
-    val ks = keys.map(Key.make[Frame](_)).toArray
+    val ks = keys.map(Key.make[Frame]).toArray
     val splitter = new FrameSplitter(df, ratios.toArray, ks, null)
     water.H2O.submitTask(splitter)
     // return results
@@ -96,7 +96,7 @@ object DatasetSplitter extends MLReadable[DatasetSplitter]{
     override def load(path: String): DatasetSplitter = {
       val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
 
-      implicit val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in order to use H2O pipelines elements"))
+      implicit val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements")
       implicit val sqlContext = SQLContext.getOrCreate(sc)
       val datasetSplitter = new DatasetSplitter(metadata.uid)
       DefaultParamsReader.getAndSetParams(datasetSplitter, metadata)

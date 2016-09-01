@@ -16,11 +16,11 @@
 */
 package org.apache.spark.h2o
 
-import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 /**
   * Test passing parameters via SparkConf.
@@ -59,7 +59,7 @@ class H2OConfTestSuite extends FunSuite
     val conf = hc.getConf
 
     // Test passed values
-    assert(conf.useFlatFile == false)
+    assert(!conf.useFlatFile)
     assert(conf.numH2OWorkers == Some(42))
     assert(conf.clientBasePort == 1267)
     assert(conf.nodeBasePort == 32333)
@@ -73,7 +73,7 @@ class H2OConfTestSuite extends FunSuite
     assert(conf.clientNetworkMask == Some("127.0.0.1/32"))
     assert(conf.nodeNetworkMask == Some("0.0.0.1/24"))
     assert(conf.nthreads == 7)
-    assert(conf.disableGA == true)
+    assert(conf.disableGA)
     assert(conf.clientWebPort == 13321)
     assert(conf.drddMulFactor == 2)
 

@@ -29,10 +29,10 @@ import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
-private[converters] object ProductRDDConverter extends Logging with ConverterUtils{
+private[h2o] object ProductRDDConverter extends Logging with ConverterUtils{
 
   /** Transform H2OFrame to Product RDD */
-  def toRDD[A <: Product: TypeTag: ClassTag, T <: Frame](hc: H2OContext, fr: T): RDD[A] = {
+  def toRDD[A <: Product: TypeTag: ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = {
     new H2ORDD[A, T](fr)(hc.sparkContext)
   }
 
@@ -91,6 +91,7 @@ private[converters] object ProductRDDConverter extends Logging with ConverterUti
     it.foreach(prod => { // For all rows which are subtype of Product
       for( i <- 0 until prod.productArity ) { // For all fields...
       val fld = prod.productElement(i)
+        // TODO(vlad): deal properly with Option
         val x = fld match {
           case Some(n) => n
           case _ => fld
@@ -116,7 +117,7 @@ private[converters] object ProductRDDConverter extends Logging with ConverterUti
   /**
     * Infers the type from Any, used for determining the types in Product RDD
     *
-    * @param value
+    * @param value the value the type of which we are trying to check, via reflection
     * @return
     */
   private[this] def inferFieldType(value : Any): Class[_] ={

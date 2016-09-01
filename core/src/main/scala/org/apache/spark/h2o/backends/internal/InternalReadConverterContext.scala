@@ -50,6 +50,7 @@ class InternalReadConverterContext(override val keyName: String, override val ch
   // TODO(vlad): try to move out all this logic to prepared extractors
   override def getString(columnNum: Int): Option[String] = get(columnNum, chunk =>
     {
+    val chunk = chks(columnNum)
     val vector = chunk.vec()
     if (vector.isCategorical) {
       val str = vector.domain()(chunk.at8(rowIdx).toInt)
