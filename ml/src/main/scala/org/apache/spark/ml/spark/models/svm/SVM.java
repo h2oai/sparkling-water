@@ -27,6 +27,7 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.rdd.RDD;
+import org.apache.spark.scheduler.*;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.types.DataTypes;
@@ -187,6 +188,95 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
             svm.optimizer().setConvergenceTol(_parms._convergence_tol);
             svm.optimizer().setGradient(_parms._gradient.get());
             svm.optimizer().setUpdater(_parms._updater.get());
+
+            SparkListener progressBar = new SparkListener() {
+                @Override
+                public void onApplicationStart(SparkListenerApplicationStart applicationStart) {
+                    super.onApplicationStart(applicationStart);
+                }
+
+                @Override
+                public void onJobStart(SparkListenerJobStart jobStart) {
+                    super.onJobStart(jobStart);
+                }
+
+                @Override
+                public void onBlockManagerRemoved(SparkListenerBlockManagerRemoved blockManagerRemoved) {
+                    super.onBlockManagerRemoved(blockManagerRemoved);
+                }
+
+                @Override
+                public void onExecutorRemoved(SparkListenerExecutorRemoved executorRemoved) {
+                    super.onExecutorRemoved(executorRemoved);
+                }
+
+                @Override
+                public void onUnpersistRDD(SparkListenerUnpersistRDD unpersistRDD) {
+                    super.onUnpersistRDD(unpersistRDD);
+                }
+
+                @Override
+                public void onTaskGettingResult(SparkListenerTaskGettingResult taskGettingResult) {
+                    super.onTaskGettingResult(taskGettingResult);
+                }
+
+                @Override
+                public void onExecutorAdded(SparkListenerExecutorAdded executorAdded) {
+                    super.onExecutorAdded(executorAdded);
+                }
+
+                @Override
+                public void onBlockUpdated(SparkListenerBlockUpdated blockUpdated) {
+                    super.onBlockUpdated(blockUpdated);
+                }
+
+                @Override
+                public void onEnvironmentUpdate(SparkListenerEnvironmentUpdate environmentUpdate) {
+                    super.onEnvironmentUpdate(environmentUpdate);
+                }
+
+                @Override
+                public void onTaskEnd(SparkListenerTaskEnd taskEnd) {
+                    super.onTaskEnd(taskEnd);
+                }
+
+                @Override
+                public void onBlockManagerAdded(SparkListenerBlockManagerAdded blockManagerAdded) {
+                    super.onBlockManagerAdded(blockManagerAdded);
+                }
+
+                @Override
+                public void onApplicationEnd(SparkListenerApplicationEnd applicationEnd) {
+                    super.onApplicationEnd(applicationEnd);
+                }
+
+                @Override
+                public void onStageCompleted(SparkListenerStageCompleted stageCompleted) {
+                    super.onStageCompleted(stageCompleted);
+                }
+
+                @Override
+                public void onTaskStart(SparkListenerTaskStart taskStart) {
+                    super.onTaskStart(taskStart);
+                }
+
+                @Override
+                public void onExecutorMetricsUpdate(SparkListenerExecutorMetricsUpdate executorMetricsUpdate) {
+                    super.onExecutorMetricsUpdate(executorMetricsUpdate);
+                }
+
+                @Override
+                public void onStageSubmitted(SparkListenerStageSubmitted stageSubmitted) {
+                    super.onStageSubmitted(stageSubmitted);
+                }
+
+                @Override
+                public void onJobEnd(SparkListenerJobEnd jobEnd) {
+                    super.onJobEnd(jobEnd);
+                }
+            };
+            
+            sc.addSparkListener();
 
             final org.apache.spark.mllib.classification.SVMModel trainedModel =
                     (null == _parms._initial_weights) ?
