@@ -17,6 +17,8 @@
 
 package water.api
 
+import java.util.ServiceLoader
+
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import water.api.DataFrames.DataFramesHandler
@@ -24,9 +26,34 @@ import water.api.H2OFrames.H2OFramesHandler
 import water.api.RDDs.RDDsHandler
 import water.api.scalaInt.ScalaCodeHandler
 
+trait RestApi {
+  def register(h2oContext: H2OContext): Unit
+}
+
+private[api] class RestAPIManager(hc: H2OContext) {
+  private val loader: ServiceLoader[RestApi] = ServiceLoader.load(classOf[RestApi])
+
+  def registerAll(): Unit = {
+    // Register first the core
+    register(CoreRestApi)
+    // Then additional APIs
+    import scala.collection.JavaConversions._
+    loader.reload()
+    loader.foreach(api => register(api))
+  }
+
+  def register(api: RestApi): Unit = {
+    api.register(hc)
+  }
+}
 
 object RestAPIManager {
-  def registerClientWebAPI(h2oContext: H2OContext): Unit = {
+  def apply(hc: H2OContext) = new RestAPIManager(hc)
+}
+
+private object CoreRestApi extends RestApi {
+
+  def register(h2oContext: H2OContext): Unit = {
     if(h2oContext.getConf.isH2OReplEnabled){
       registerScalaIntEndp(h2oContext.sparkContext, h2oContext)
     }
@@ -56,8 +83,8 @@ object RestAPIManager {
     def rddsFactory = new HandlerFactory {
       override def create(aClass: Class[_ <: Handler]): Handler = rddsHandler
     }
-   RequestServer.registerEndpoint("listRDDs", "GET", "/3/RDDs", classOf[RDDsHandler], "list",
-     "Return all RDDs within Spark cloud", rddsFactory)
+    RequestServer.registerEndpoint("listRDDs", "GET", "/3/RDDs", classOf[RDDsHandler], "list",
+      "Return all RDDs within Spark cloud", rddsFactory)
 
     RequestServer.registerEndpoint("getRDD", "POST", "/3/RDDs/{rdd_id}", classOf[RDDsHandler],
       "getRDD", "Get RDD with the given ID from Spark cloud", rddsFactory)

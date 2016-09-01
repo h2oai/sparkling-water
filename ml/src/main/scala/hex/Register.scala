@@ -17,16 +17,16 @@
 
 package hex
 
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.spark.models.svm.SVM
 import water.H2O
-import water.api.{GridSearchHandler, ModelBuilderHandler}
+import water.api.{GridSearchHandler, ModelBuilderHandler, RestApi}
 
-class Register extends water.api.AbstractRegister {
+class Register extends RestApi {
 
-  @throws[ClassNotFoundException]
-  override def register(relativeResourcePath: String) = {
+  override def register(hc: H2OContext) = {
 
-    val models = Seq(new SVM(true))
+    val models = Seq(new SVM(true, hc))
 
     for (algo <- models) {
       val base: String = algo.getClass.getSimpleName

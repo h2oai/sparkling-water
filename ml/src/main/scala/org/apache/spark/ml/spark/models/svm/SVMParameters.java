@@ -9,7 +9,7 @@ public class SVMParameters extends Model.Parameters {
     public String algoName() { return "SVM"; }
 
     @Override
-    public String fullName() { return "Support Vector Machine(*)"; }
+    public String fullName() { return "Support Vector Machine (*Spark*)"; }
 
     @Override
     public String javaName() { return SVMModel.class.getName(); }
