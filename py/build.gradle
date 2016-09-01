@@ -20,7 +20,7 @@ dependencies {
 task createVersionFile << {
     File version_file = new File(getProjectDir(), "version.txt")
     def version_txt = version.replace("-SNAPSHOT","")
-    version_file.write(version_txt)
+    version_file.write(version_txt+System.getProperty("line.separator")+scalaBaseVersion)
 }
 
 //

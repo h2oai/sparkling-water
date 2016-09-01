@@ -9,13 +9,14 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-# Get the version from the relevant file
+# Get the version and scala version from the relevant file
 with open(path.join(here, 'version.txt'), encoding='utf-8') as f:
-    version = f.read()
+    version = f.readline()
+    scala_version = f.readline()
 
 
 setup(
-    name='h2o_pysparkling_'+version[:version.rindex(".")],
+    name='h2o_pysparkling_'+scala_version+"_"+version[:version.rindex(".")],
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see

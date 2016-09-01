@@ -36,5 +36,6 @@ python setup.py sdist upload -r pypi
 
 
 5 - Don't forget to do this for each pySparkling release ( for Spark 1.5, Spark 1.6 ... )
+    and for each spark release publish it for both scala versions 2.10 and 2.11
 
 6 - That's it!
