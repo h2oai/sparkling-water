@@ -80,7 +80,7 @@ class DefaultSource extends RelationProvider
         case SaveMode.Overwrite =>
           DataSourceUtils.overwrite(key, originalFrame, data)
         case SaveMode.ErrorIfExists =>
-          sys.error(s"Frame with key '$key' already exists.")
+          sys.error(s"Frame with key '$key' already exists, if you want to override it set the save mode to override.")
         case SaveMode.Ignore => // do nothing
       }
     } else {
