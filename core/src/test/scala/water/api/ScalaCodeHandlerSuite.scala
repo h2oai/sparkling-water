@@ -124,7 +124,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
 
     assert(result.output.equals(""), "Printed output should be empty")
     assert(result.status.equals("Error"), "Status should be Error")
-    assert(result.response.equals("<console>:33: error: not found: value foo\n              foo\n              ^\n"), "Response should not be empty")
+    assert(result.response.contains(" error: not found: value foo\n              foo\n              ^\n"), "Response should not be empty")
   }
 
   test("ScalaCodeHandler.interpret() method, using previously defined class"){
