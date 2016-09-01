@@ -126,6 +126,7 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
           "org.apache.spark.sql.{DataFrame, Row, SQLContext}",
           "sqlContext.implicits._",
           "sqlContext.sql",
+          "org.apache.spark.sql._",
           "org.apache.spark.sql.functions._",
           "org.apache.spark.h2o._",
           "org.apache.spark._")
