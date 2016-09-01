@@ -131,19 +131,19 @@ private[models] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <
     val file = new File(path, defaultFileName)
     val ois = new ObjectInputStream(new FileInputStream(file))
     val parameters = ois.readObject().asInstanceOf[P]
-    implicit val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in order to use H2O pipelines elements"))
+    implicit val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements")
     implicit val sqLContext = SQLContext.getOrCreate(sc)
     val h2oAlgo = make[A, P](parameters, metadata.uid, h2oContext, sqlContext)
     DefaultParamsReader.getAndSetParams(h2oAlgo, metadata)
     h2oAlgo
   }
 
-  private def make[A : ClassTag, P <: Object : ClassTag]
-                  (p: P, uid: String, h2oContext: H2OContext, sqlContext: SQLContext):A = {
-    val pClass = implicitly[ClassTag[P]].runtimeClass
-    val aClass = implicitly[ClassTag[A]].runtimeClass
+  private def make[CT : ClassTag, X <: Object : ClassTag]
+                  (p: X, uid: String, h2oContext: H2OContext, sqlContext: SQLContext): CT = {
+    val pClass = implicitly[ClassTag[X]].runtimeClass
+    val aClass = implicitly[ClassTag[CT]].runtimeClass
     val ctor = aClass.getConstructor(pClass, classOf[String], classOf[H2OContext], classOf[SQLContext])
-    ctor.newInstance(p, uid, h2oContext, sqlContext).asInstanceOf[A]
+    ctor.newInstance(p, uid, h2oContext, sqlContext).asInstanceOf[CT]
   }
 }
 
