@@ -54,33 +54,33 @@ public class SVMV3 extends ModelBuilderSchema<SVM, SVMV3, SVMV3.SVMParametersV3>
                 "ignore_const_cols"
         };
 
-        @API(help="Add intercept.", direction=API.Direction.INPUT, gridable = true)
+        @API(help="Initial model weights.", direction=API.Direction.INOUT, gridable = true)
+        public KeyV3.FrameKeyV3 initial_weights_frame;
+
+        @API(help="Add intercept.", direction=API.Direction.INOUT, gridable = true, level = API.Level.expert)
         public boolean add_intercept = false;
 
-        @API(help="Set step size", direction=API.Direction.INPUT, gridable = true)
+        @API(help="Set step size", direction=API.Direction.INPUT, gridable = true, level = API.Level.expert)
         public double step_size = 1.0;
 
-        @API(help="Set regularization parameter", direction=API.Direction.INPUT, gridable = true)
+        @API(help="Set regularization parameter", direction=API.Direction.INPUT, gridable = true, level = API.Level.expert)
         public double reg_param = 0.01;
 
-        @API(help="Set convergence tolerance", direction=API.Direction.INPUT, gridable = true)
+        @API(help="Set convergence tolerance", direction=API.Direction.INPUT, gridable = true, level = API.Level.expert)
         public double convergence_tol = 0.001;
 
-        @API(help="Set mini batch fraction", direction=API.Direction.INPUT, gridable = true)
+        @API(help="Set mini batch fraction", direction=API.Direction.INPUT, gridable = true, level = API.Level.expert)
         public double mini_batch_fraction = 1.0;
 
         // TODO what exactly does INOUT do?? Should this be only INPUT?
-        @API(help="Set threshold that separates positive predictions from negative ones. NaN for raw prediction.", direction=API.Direction.INOUT, gridable = true)
+        @API(help="Set threshold that separates positive predictions from negative ones. NaN for raw prediction.", direction=API.Direction.INOUT, gridable = true, level = API.Level.expert)
         public double threshold = 0.0;
 
-        @API(help="Set the updater for SGD.", direction=API.Direction.INPUT, values = {"L2", "L1", "Simple"}, required = true, gridable = true)
+        @API(help="Set the updater for SGD.", direction=API.Direction.INPUT, values = {"L2", "L1", "Simple"}, required = true, gridable = true, level = API.Level.expert)
         public Updater updater = Updater.L2;
 
-        @API(help="Set the gradient computation type for SGD.", direction=API.Direction.INPUT, values = {"Hinge", "LeastSquares", "Logistic"}, required = true, gridable = true)
+        @API(help="Set the gradient computation type for SGD.", direction=API.Direction.INPUT, values = {"Hinge", "LeastSquares", "Logistic"}, required = true, gridable = true, level = API.Level.expert)
         public Gradient gradient = Gradient.Hinge;
-
-        @API(help="Initial model weights.", direction=API.Direction.INOUT, gridable = true)
-        public KeyV3.FrameKeyV3 initial_weights_frame;
 
         @Override
         public SVMParametersV3 fillFromImpl(SVMParameters impl) {
