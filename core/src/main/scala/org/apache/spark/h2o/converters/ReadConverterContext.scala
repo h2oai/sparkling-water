@@ -17,8 +17,8 @@
 
 package org.apache.spark.h2o.converters
 
-import org.apache.spark.sql.types._
-import org.apache.spark.unsafe.types.UTF8String
+import org.apache.spark.h2o.utils.ReflectionUtils._
+import org.apache.spark.h2o.utils.SupportedTypes.SimpleType
 
 import scala.language.postfixOps
 
@@ -29,46 +29,36 @@ import scala.language.postfixOps
   * via unified API
   */
 trait ReadConverterContext {
+
+  // TODO(vlad): figure out if this is needed
   /** Key pointing to underlying H2OFrame */
   val keyName: String
 
+  // TODO(vlad): figure out if this is needed
   /** Chunk Idx/Partition index */
   val chunkIdx: Int
 
   /** Current row index */
   var rowIdx: Int = 0
 
-  def getByte(columnNum: Int): Option[Byte] = getLong(columnNum) map (_.toByte)
-  def getShort(columnNum: Int): Option[Short] = getLong(columnNum) map (_.toShort)
-  def getInt(columnNum: Int): Option[Int] = getLong(columnNum) map (_.toInt)
-
-  def getFloat(columnNum: Int): Option[Float] = getDouble(columnNum) map (_.toFloat)
-  def getBoolean(columnNum: Int): Option[Boolean] = getLong(columnNum) map (1==)
-  def getTimestamp(columnNum: Int): Option[Long]  = getLong(columnNum) map (1000L*)
-  def getUTF8String(columnNum: Int): Option[UTF8String] = getString(columnNum) map UTF8String.fromString
-
-  def isNA(columnNum: Int): Boolean
-  def getLong(columnNum: Int): Option[Long]
-  def getDouble(columnNum: Int): Option[Double]
-  def getString(columnNum: Int): Option[String]
-
-  private type Getter = Int => Option[Any]
-
-  val get: DataType => Getter = Map[DataType, Getter](
-    ByteType -> getByte,
-    ShortType -> getShort,
-    IntegerType -> getInt,
-    LongType -> getLong,
-    FloatType -> getFloat,
-    DoubleType -> getDouble,
-    BooleanType -> getBoolean,
-    StringType -> getUTF8String,
-    TimestampType -> getTimestamp
-  ) withDefault (t => throw new scala.IllegalArgumentException(s"Type $t not supported for conversion from H2OFrame to Spark's Dataframe"))
-
-  def getNullable(dataType: DataType): (Int => Any) = (i: Int) => get(dataType)(i) orNull
-
   def numRows: Int
   def increaseRowIdx() = rowIdx += 1
+
   def hasNext = rowIdx < numRows
+
+
+  type OptionReader = Int => Option[Any]
+
+  type Reader = Int => Any
+
+  def readerMapByName: Map[NameOfType, Reader]
+
+  /**
+    * For a given array of source column indexes and required data types,
+    * produces an array of value providers.
+    *
+    * @param columnIndexesWithTypes lists which columns we need, and what are the required types
+    * @return an array of value providers. Each provider gives the current column value
+    */
+  def columnValueProviders(columnIndexesWithTypes: Array[(Int, SimpleType[_])]): Array[() => Option[Any]]
 }

@@ -19,6 +19,7 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark._
 import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.utils.ReflectionUtils._
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, NodeDesc}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
@@ -57,11 +58,7 @@ trait SparkDataFrameConverter extends Logging with ConverterUtils {
     // Patch the flat schema based on information about types
     val fnames = flatRddSchema.map(t => t._2.name).toArray
     // Transform datatype into h2o types
-    val vecTypes = flatRddSchema.indices
-      .map(idx => {
-        val f = flatRddSchema(idx)
-        dataTypeToVecType(f._2.dataType)
-      }).toArray
+    val vecTypes = flatRddSchema.map(f => vecTypeFor(f._2.dataType)).toArray
 
     convert[Row](hc, dfRdd, keyName, fnames, vecTypes, perSQLPartition(flatRddSchema))
   }
@@ -135,11 +132,11 @@ trait SparkDataFrameConverter extends Logging with ConverterUtils {
                 subRow.getDouble(aidx)
               }
             })
-            case StringType => {
+            case StringType =>
               val sv = if (isAry) ary(aryIdx).asInstanceOf[String] else subRow.getString(aidx)
               // Always produce string vectors
               con.put(idx, sv)
-            }
+
             case TimestampType => con.put(idx, subRow.getAs[java.sql.Timestamp](aidx))
             case _ => con.putNA(idx)
           }

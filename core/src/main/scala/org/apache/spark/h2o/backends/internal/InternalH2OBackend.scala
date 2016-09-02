@@ -63,7 +63,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
   /** Initialize Sparkling H2O and start H2O cloud. */
   override def init(): Array[NodeDesc] = {
 
-    logInfo(s"Starting H2O services: " + hc.getConf.toString)
+    logInfo(s"Starting H2O services: " + hc.getConf)
     // Create dummy RDD distributed over executors
     val (spreadRDD, spreadRDDNodes) = new SpreadRDDBuilder(hc, InternalBackendUtils.guessTotalExecutorSize(hc.sparkContext)).build()
 

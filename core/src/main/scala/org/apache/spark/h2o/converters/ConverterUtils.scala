@@ -124,7 +124,7 @@ object ConverterUtils extends ConverterUtils {
     converterContext
   }
 
-  // TODO(vlad): get rid of boolean; rename
+  // TODO(vlad): get rid of boolean; rename; get rid of mutability probably
   def getIterator[T](isExternalBackend: Boolean,
                      iterator: Iterator[T]): Iterator[T] = {
     if (isExternalBackend) {

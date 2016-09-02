@@ -16,15 +16,17 @@
  */
 package org.apache.spark.h2o.converters
 
+import java.io.File
 import java.sql.Timestamp
 import java.util.UUID
 
 import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
+import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OSchemaUtils.flatSchema
-import org.apache.spark.h2o.utils.TestData._
-import org.apache.spark.h2o.utils._
-import org.apache.spark.h2o.{IntHolder, RDD}
+import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedSparkTestContext}
+import org.apache.spark.h2o.{Frame => _, H2OFrame => _}
+import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
@@ -37,44 +39,46 @@ import water.{DKV, Key}
 import scala.reflect.ClassTag
 
 /**
- * Testing schema for h2o schema rdd transformation.
- */
+  * Testing Conversions between H2OFrame and Spark DataFrame
+  */
 @RunWith(classOf[JUnitRunner])
-class ConvertersTest extends FunSuite with SharedSparkTestContext {
+class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
-/* this test is under construction right now
+  test("Creation of H2ODataFrame") {
+    // FIXME: create different shapes of frame
+    val h2oFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
+
+    val dataFrame = hc.asDataFrame(h2oFrame)
+
+    assert(h2oFrame.numRows() == dataFrame.count(), "Number of lines in H2O Frame and in Spark DataFrame has to be same")
+    h2oFrame.delete()
+  }
+
+  // H2OFrame to DataFrame[T] JUnits
   test("PUBDEV-766 H2OFrame[T_ENUM] to DataFrame[StringType]") {
-    val fname: String = "Test1"
-    SparkDataFrameConverter.initFrame(fname, Array("ZERO", "ONE"))
-    val writer = new InternalWriteConverterContext
-    writer.createChunks(fname, Array(Vec.T_NUM, Vec.T_NUM), 1)
+    val fname: String = "testEnum.hex"
     val colNames: Array[String] = Array("C0")
     val chunkLayout: Array[Long] = Array(2L, 2L)
     val data: Array[Array[Integer]] = Array(Array(1, 0), Array(0, 1))
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_CAT, colDomains = Array(Array("ZERO", "ONE")))
-println("--------1-------")
+
     assert (h2oFrame.vec(0).chunkForChunkIdx(0).at8(0) == 1)
-    println("--------2-------")
     assert (h2oFrame.vec(0).isCategorical)
-    println("--------3-------")
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
     assert (dataFrame.count == h2oFrame.numRows())
-    println("--------4-------")
     assert (dataFrame.take(4)(3)(0) == "ONE")
-    println("--------5-------")
     assert (dataFrame.schema.fields(0) match{
       case StructField("C0",StringType,false, _) => true
       case _ => false
     })
-    println("--------6-------")
 
     h2oFrame.delete()
   }
-*/
+
   test("H2OFrame[T_TIME] to DataFrame[TimestampType]") {
     val fname: String = "testTime.hex"
     val colNames: Array[String] = Array("C0")
@@ -91,6 +95,52 @@ println("--------1-------")
     assert (dataFrame.take(4)(3)(0).asInstanceOf[Timestamp].getTime == 1428517566L)
     assert (dataFrame.schema.fields(0) match {
       case StructField("C0",TimestampType,false,_)=> true
+      case _ => false
+    })
+
+    h2oFrame.delete()
+  }
+
+  test("H2OFrame[T_NUM(Byte)] to DataFrame[ByteType]") {
+    val fname: String = "testByte.hex"
+    val colNames: Array[String] = Array("C0")
+    val chunkLayout: Array[Long] = Array(3L, 5L)
+    val data: Array[Array[Byte]] = Array(Array(-1, 2, -3) map (_.toByte),
+      Array(4, -5, 6, -7, 8) map (_.toByte))
+    val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
+
+    assert (h2oFrame.vec(0).chunkForChunkIdx(1).at8(4) == 8)
+    assert (h2oFrame.vec(0).isNumeric)
+
+    val dataFrame = hc.asDataFrame(h2oFrame)
+
+    assert (dataFrame.count == h2oFrame.numRows())
+    assert (dataFrame.take(8)(7)(0) == 8)
+    assert (dataFrame.schema.fields(0) match {
+      case StructField("C0",ByteType,false, _) => true
+      case _ => false
+    })
+
+    h2oFrame.delete()
+  }
+
+  test("H2OFrame[T_NUM(Short)] to DataFrame[ShortType]") {
+    val fname: String = "testShort.hex"
+    val colNames: Array[String] = Array("C0")
+    val chunkLayout: Array[Long] = Array(3L, 5L)
+    val data: Array[Array[Short]] = Array(Array(-200, 201, -202) map (_.toShort),
+      Array(204, -205, 206, -207, 208) map (_.toShort))
+    val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
+
+    assert (h2oFrame.vec(0).chunkForChunkIdx(1).at8(4) == 208)
+    assert (h2oFrame.vec(0).isNumeric)
+
+    val dataFrame = hc.asDataFrame(h2oFrame)
+
+    assert (dataFrame.count == h2oFrame.numRows())
+    assert (dataFrame.take(8)(7)(0) == 208)
+    assert (dataFrame.schema.fields(0) match {
+      case StructField("C0",ShortType,false, _) => true
       case _ => false
     })
 
@@ -169,8 +219,8 @@ println("--------1-------")
     val colNames: Array[String] = Array("C0")
     val chunkLayout: Array[Long] = Array(3L, 3L, 2L)
     val data: Array[Array[String]] = Array(Array("string1", "string2", "string3"),
-                                           Array("string4", "string5", "string6"),
-                                           Array("string7", "string8"))
+      Array("string4", "string5", "string6"),
+      Array("string7", "string8"))
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_STR)
 
     assert (h2oFrame.vec(0).chunkForChunkIdx(2).atStr(new BufferedString(),1).toString.equals("string8"))
@@ -222,151 +272,86 @@ println("--------1-------")
     h2oFrame.delete()
   }
 
-  test("test RDD to H2OFrame to DataFrame way") {
-    val h2oContext = hc
-    import h2oContext.implicits._
-
-    val rdd = sc.parallelize(1 to 10000, 1000).map(i => IntHolder(Some(i)))
-    val h2oFrame:H2OFrame = rdd
-
-    val dataFrame = hc.asDataFrame(h2oFrame)
-
-    assert (rdd.count == h2oFrame.numRows())
-    assert (rdd.count == dataFrame.count)
-  }
-
-  test("RDD[Byte] to H2OFrame[Numeric]") {
-    val rdd = sc.parallelize(-127 to 127).map(v => ByteField(v.asInstanceOf[Byte]))
-    val h2oFrame = hc.asH2OFrame(rdd)
-
-    assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
-  }
-
-  test("RDD[Short] to H2OFrame[Numeric]") {
-    val rdd = sc.parallelize(-2048 to 4096).map(v => ShortField(v.asInstanceOf[Short]))
-    val h2oFrame = hc.asH2OFrame(rdd)
-
-    assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
-  }
-
-  test("RDD[Int] to H2OFrame[Numeric]") {
-    val values = Seq(Int.MinValue, Int.MaxValue, 0, -100, 200, -5000, 568901)
-    val rdd = sc.parallelize(values).map(v => IntField(v))
-    val h2oFrame = hc.asH2OFrame(rdd)
-
-    assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
-  }
-
-  test("RDD[Long] to H2OFrame[Numeric]") {
-    val values = Seq(Long.MinValue, Long.MaxValue, 0L, -100L, 200L, -5000L, 5689323201L, -432432433335L)
-    val rdd = sc.parallelize(values).map(v => LongField(v))
-    val h2oFrame = hc.asH2OFrame(rdd)
-
-    assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
-  }
-
-  test("RDD[Float] to H2OFrame[Numeric]") {
-    val values = Seq(Float.MinValue, Float.MaxValue, -33.33.toFloat, 200.001.toFloat, -5000.34.toFloat)
-    val rdd = sc.parallelize(values).map(v => FloatField(v))
-    val h2oFrame = hc.asH2OFrame(rdd)
-
-    assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
-  }
-
-  test("RDD[Double] to H2OFrame[Numeric]") {
-    val values = Seq(Double.MinValue, Double.MaxValue, -33.33, 200.001, -5000.34)
-    val rdd = sc.parallelize(values).map(v => DoubleField(v))
-    val h2oFrame = hc.asH2OFrame(rdd)
-
-    assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
-  }
-
-  test("DataFrame[Byte] to H2OFrame[Numeric]") {
+  test("DataFrame[ByteField] to H2OFrame[Numeric]") {
     val sqlContext = sqlc
     import sqlContext.implicits._
 
-    val srdd:DataFrame = sc.parallelize(-127 to 127).map(v => ByteField(v.asInstanceOf[Byte])).toDF()
-    val h2oFrame = hc.asH2OFrame(srdd)
+    val df = sc.parallelize(-127 to 127).map(v => ByteField(v.asInstanceOf[Byte])).toDF()
+    val h2oFrame = hc.asH2OFrame(df)
 
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    assertH2OFrameInvariants(df, h2oFrame)
     assert (h2oFrame.vec(0).isNumeric)
   }
 
-  test("DataFrame[Short] to H2OFrame[Numeric]") {
+  test("DataFrame[ShortField] to H2OFrame[Numeric]") {
     val sqlContext = sqlc
     import sqlContext.implicits._
 
-    val srdd:DataFrame = sc.parallelize(-2048 to 4096).map(v => ShortField(v.asInstanceOf[Short])).toDF()
-    val h2oFrame = hc.asH2OFrame(srdd)
+    val df = sc.parallelize(-2048 to 4096).map(v => ShortField(v.asInstanceOf[Short])).toDF()
+    val h2oFrame = hc.asH2OFrame(df)
 
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    assertH2OFrameInvariants(df, h2oFrame)
     assert (h2oFrame.vec(0).isNumeric)
   }
 
-  test("DataFrame[Int] to H2OFrame[Numeric]") {
+  test("DataFrame[IntField] to H2OFrame[Numeric]") {
     val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Int.MinValue, Int.MaxValue, 0, -100, 200, -5000, 568901)
-    val srdd:DataFrame = sc.parallelize(values).map(v => IntField(v)).toDF()
-    val h2oFrame = hc.asH2OFrame(srdd)
+    val df = sc.parallelize(values).map(v => IntField(v)).toDF()
+    val h2oFrame = hc.asH2OFrame(df)
 
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    assertH2OFrameInvariants(df, h2oFrame)
     assert (h2oFrame.vec(0).isNumeric)
   }
 
-  test("DataFrame[Long] to H2OFrame[Numeric]") {
+  test("DataFrame[LongField] to H2OFrame[Numeric]") {
     val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Long.MinValue, Long.MaxValue, 0L, -100L, 200L, -5000L, 5689323201L, -432432433335L)
-    val srdd:DataFrame = sc.parallelize(values).map(v => LongField(v)).toDF()
-    val h2oFrame = hc.asH2OFrame(srdd)
+    val df = sc.parallelize(values).map(v => LongField(v)).toDF()
+    val h2oFrame = hc.asH2OFrame(df)
 
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    assertH2OFrameInvariants(df, h2oFrame)
     assert (h2oFrame.vec(0).isNumeric)
   }
 
-  test("DataFrame[Float] to H2OFrame[Numeric]") {
+  test("DataFrame[FloatField] to H2OFrame[Numeric]") {
     val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Float.MinValue, Float.MaxValue, -33.33.toFloat, 200.001.toFloat, -5000.34.toFloat)
-    val srdd:DataFrame = sc.parallelize(values).map(v => FloatField(v)).toDF
-    val h2oFrame = hc.asH2OFrame(srdd)
+    val df = sc.parallelize(values).map(v => FloatField(v)).toDF
+    val h2oFrame = hc.asH2OFrame(df)
 
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    assertH2OFrameInvariants(df, h2oFrame)
     assert (h2oFrame.vec(0).isNumeric)
   }
 
-  test("DataFrame[Double] to H2OFrame[Numeric]") {
+  test("DataFrame[DoubleField] to H2OFrame[Numeric]") {
     val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Double.MinValue, Double.MaxValue, -33.33, 200.001, -5000.34)
-    val srdd:DataFrame = sc.parallelize(values).map(v => DoubleField(v)).toDF
-    val h2oFrame = hc.asH2OFrame(srdd)
+    val df = sc.parallelize(values).map(v => DoubleField(v)).toDF
+    val h2oFrame = hc.asH2OFrame(df)
 
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    assertH2OFrameInvariants(df, h2oFrame)
     assert (h2oFrame.vec(0).isNumeric)
   }
 
-  test("DataFrame[String] to H2OFrame[String]") {
+  test("DataFrame[StringField] to H2OFrame[String]") {
     val sqlContext = sqlc
     import sqlContext.implicits._
 
     val domSize = 3000
     val values = (1 to domSize).map( v => StringField(v + "-value"))
-    val srdd:DataFrame = sc.parallelize(values).toDF()
-    val h2oFrame = hc.asH2OFrame(srdd)
+    val df = sc.parallelize(values).toDF()
+    val h2oFrame = hc.asH2OFrame(df)
 
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    assertH2OFrameInvariants(df, h2oFrame)
     assert (h2oFrame.vec(0).isString)
     assert (h2oFrame.domains()(0) == null)
     val catVec = h2oFrame.vec(0).toCategoricalVec
@@ -375,33 +360,33 @@ println("--------1-------")
     assert (catVec.domain().length == domSize)
   }
 
-  test("DataFrame[TimeStamp] to H2OFrame[Time]") {
+  test("DataFrame[TimeStampField] to H2OFrame[Time]") {
     val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 20
     val values = (1 to num).map(v => new Timestamp(v))
-    val srdd: DataFrame = sc.parallelize(values).map(v => TimestampField(v)).toDF
-    val h2oFrame = hc.asH2OFrame(srdd)
+    val df = sc.parallelize(values).map(v => TimestampField(v)).toDF
+    val h2oFrame = hc.asH2OFrame(df)
 
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    assertH2OFrameInvariants(df, h2oFrame)
     assert (h2oFrame.vec(0).isTime)
   }
 
-  test("DataFrame[Struct(TimeStamp)] to H2OFrame[Time]") {
+  test("DataFrame[Struct(TimeStampField)] to H2OFrame[Time]") {
     val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 20
     val values = (1 to num).map(v =>
-                                  ComposedWithTimestamp(
-                                    PrimitiveA(v, v.toString),
-                                    TimestampField(new Timestamp(v))
-                                  ))
-    val srdd: DataFrame = sc.parallelize(values).toDF
-    val h2oFrame = hc.asH2OFrame(srdd)
+      ComposedWithTimestamp(
+        PrimitiveA(v, v.toString),
+        TimestampField(new Timestamp(v))
+      ))
+    val df = sc.parallelize(values).toDF
+    val h2oFrame = hc.asH2OFrame(df)
 
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.vec(0).isNumeric)
     assert(h2oFrame.vec(1).isString)
     assert(h2oFrame.vec(2).isTime)
@@ -414,62 +399,148 @@ println("--------1-------")
   test("H2OFrame[Simple StructType] to DataFrame[flattened StructType]") {
     val sqlContext = sqlc
     import sqlContext.implicits._
+
     val num = 20
     val values = (1 to num).map(x => PrimitiveA(x, "name=" + x))
-    val srdd:DataFrame = sc.parallelize(values).toDF
-    // Convert to H2OFrame
-    val h2oFrame = hc.asH2OFrame(srdd)
+    val df = sc.parallelize(values).toDF
+    val h2oFrame = hc.asH2OFrame(df)
 
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    assertH2OFrameInvariants(df, h2oFrame)
   }
 
   test("DataFrame[flattened StructType] to H2OFrame[Composed StructType]") {
     val sqlContext = sqlc
     import sqlContext.implicits._
+
     val num = 20
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 3.14))
-    val srdd:DataFrame = sc.parallelize(values).toDF
-    // Convert to H2OFrame
-    val h2oFrame = hc.asH2OFrame(srdd)
+    val df = sc.parallelize(values).toDF
+    val h2oFrame = hc.asH2OFrame(df)
 
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    assertH2OFrameInvariants(df, h2oFrame)
   }
 
-  test("DataFrame[Int] to H2OFrame with empty partitions (error detected in calling ShuffleSplitFrame)") {
+  test("DataFrame[IntField] to H2OFrame with empty partitions (error detected in calling ShuffleSplitFrame)") {
     val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = 1 to 100
-    val srdd:DataFrame = sc.parallelize(values, 2000).map(v => IntField(v)).toDF
+    val df = sc.parallelize(values, 2000).map(v => IntField(v)).toDF
 
-    val h2oFrame = hc.asH2OFrame(srdd)
+    val h2oFrame = hc.asH2OFrame(df)
 
     ShuffleSplitFrame.shuffleSplitFrame(h2oFrame,
-        Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make[Frame]),
-        Array[Double](0.5, 0.3, 0.2), 1234567689L)
+      Array[String]("train.hex", "test.hex", "hold.hex") map Key.make[Frame],
+      Array[Double](0.5, 0.3, 0.2), 1234567689L)
   }
 
-  test("Expand composed schema of RDD") {
+  test("Expand composed schema of DataFrame") {
     val sqlContext = sqlc
     import sqlContext.implicits._
+
     val num = 2
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 1.0))
-    val srdd: DataFrame = sc.parallelize(values).toDF
+    val df = sc.parallelize(values).toDF
 
-    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, srdd)
+    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, df)
     assert(expandedSchema === Vector(
-      (List(0, 0), StructField("a.n", IntegerType, nullable=true), 0),
-      (List(0, 1), StructField("a.name", StringType, nullable=true), 0),
+      (List(0, 0), StructField("a.n", IntegerType), 0),
+      (List(0, 1), StructField("a.name", StringType), 0),
       (List(1), StructField("weight", DoubleType, nullable=false), 0)))
 
     // Verify transformation into dataframe
-    val h2oFrame = hc.asH2OFrame(srdd)
-    assertH2OFrameInvariants(srdd, h2oFrame)
+    val h2oFrame = hc.asH2OFrame(df)
+    assertH2OFrameInvariants(df, h2oFrame)
 
     // Verify data stored in h2oFrame after transformation
     assertVectorIntValues(h2oFrame.vec(0), Seq(1,2))
     assertVectorStringValues(h2oFrame.vec(1), Seq("name=1", "name=2"))
     assertVectorDoubleValues(h2oFrame.vec(2), Seq(1.0, 2.0))
+  }
+
+  test("Expand schema with array") {
+    val sqlContext = sqlc
+    import sqlContext.implicits._
+
+    val num = 5
+    val values = (1 to num).map(x => PrimitiveB(1 to x))
+    val df = sc.parallelize(values).toDF
+    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, df)
+    val metadatas = expandedSchema.map(f =>f._2.metadata)
+
+    assert(expandedSchema === Vector(
+      (List(0), StructField("f0", IntegerType, nullable=false, metadatas.head), 1),
+      (List(0), StructField("f1", IntegerType, nullable=false, metadatas(1)), 1),
+      (List(0), StructField("f2", IntegerType, nullable=false, metadatas(2)), 1),
+      (List(0), StructField("f3", IntegerType, nullable=false, metadatas(3)), 1),
+      (List(0), StructField("f4", IntegerType, nullable=false, metadatas(4)), 1)))
+
+    // Verify transformation into dataframe
+    val h2oFrame = hc.asH2OFrame(df)
+    // Basic invariants
+    assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
+    assert(5 == h2oFrame.numCols(), "Number columns should match")
+
+    // Verify data stored in h2oFrame after transformation
+    assertVectorIntValues(h2oFrame.vec(0), Seq(1, 1, 1, 1, 1))
+    assertVectorIntValues(h2oFrame.vec(1), Seq(-1, 2, 2, 2, 2))
+    assertVectorIntValues(h2oFrame.vec(2), Seq(-1, -1, 3, 3, 3))
+    assertVectorIntValues(h2oFrame.vec(3), Seq(-1, -1, -1, 4, 4))
+    assertVectorIntValues(h2oFrame.vec(4), Seq(-1, -1, -1, -1, 5))
+  }
+
+  test("Expand schema with dense vectors") {
+    val sqlContext = sqlc
+    import sqlContext.implicits._
+
+    val num = 2
+    val values = (1 to num).map(x => PrimitiveC(Vectors.dense((1 to x).map(1.0*_).toArray)))
+    val df = sc.parallelize(values).toDF
+    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, df)
+
+    assert (expandedSchema === Vector(
+      (List(0),StructField("f0",DoubleType),2),
+      (List(0),StructField("f1",DoubleType),2)))
+
+    // Verify transformation into DataFrame
+    val h2oFrame = hc.asH2OFrame(df)
+    // Basic invariants
+    assert( df.count == h2oFrame.numRows(), "Number of rows has to match")
+    assert( 2 == h2oFrame.numCols(), "Number columns should match")
+
+    // Verify data stored in h2oFrame after transformation
+    assertVectorDoubleValues(h2oFrame.vec(0), Seq(1.0,1.0))
+    // For vectors missing values are replaced by zeros
+    assertVectorDoubleValues(h2oFrame.vec(1), Seq(0.0, 2.0))
+  }
+
+  test("Expand schema with sparse vectors") {
+    val sqlContext = sqlc
+    import sqlContext.implicits._
+
+    val num = 3
+    val values = (0 until num).map(x =>
+      PrimitiveC(
+        Vectors.sparse(num, (0 until num).map(i => if (i == x) (i, 1.0) else (i, 0.0)) )
+      ))
+    val df = sc.parallelize(values).toDF()
+    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, df)
+
+    assert (expandedSchema === Vector(
+      (List(0),StructField("f0",DoubleType),2),
+      (List(0),StructField("f1",DoubleType),2),
+      (List(0),StructField("f2",DoubleType),2)))
+
+    // Verify transformation into DataFrame
+    val h2oFrame = hc.asH2OFrame(df)
+    // Basic invariants
+    assert( df.count == h2oFrame.numRows(), "Number of rows has to match")
+    assert( 3 == h2oFrame.numCols(), "Number columns should match")
+
+    // Verify data stored in h2oFrame after transformation
+    assertVectorDoubleValues(h2oFrame.vec(0), Seq(1.0,0.0,0.0))
+    assertVectorDoubleValues(h2oFrame.vec(1), Seq(0.0,1.0,0.0))
+    assertVectorDoubleValues(h2oFrame.vec(2), Seq(0.0,0.0,1.0))
   }
 
   test("Add metadata to Dataframe") {
@@ -486,10 +557,6 @@ println("--------1-------")
 
     h2oFrame.delete()
 
-    val fnameEnum: String = "testEnum.hex"
-    val colNamesEnum: Array[String] = Array("C0")
-    val chunkLayoutEnum: Array[Long] = Array(2L, 2L)
-    val dataEnum: Array[Array[Integer]] = Array(Array(1, 0), Array(0, 1))
     val h2oFrameEnum = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_CAT, colDomains = Array(Array("ZERO", "ONE")))
     val dataFrameEnum = hc.asDataFrame(h2oFrameEnum)
     assert(dataFrameEnum.schema("C0").metadata.getLong("cardinality") == 2L)
@@ -497,7 +564,7 @@ println("--------1-------")
   }
 
   def makeH2OFrame[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
-                                 data: Array[Array[T]], h2oType: Byte, colDomains: Array[Array[String]] = null): H2OFrame = {
+                                data: Array[Array[T]], h2oType: Byte, colDomains: Array[Array[String]] = null): H2OFrame = {
     var f: Frame = new Frame(Key.make(fname))
     FrameUtils.preparePartialFrame(f,colNames)
     f.update()
@@ -515,48 +582,29 @@ println("--------1-------")
     println(it.size)
   }
 
-  def assertH2OFrameInvariants(inputRDD: DataFrame, df: H2OFrame): Unit = {
-    assert( inputRDD.count == df.numRows(), "Number of rows has to match")
-    assert( df.numCols() == flatSchema(inputRDD.schema).length , "Number columns should match")
-  }
-
-  def assertRDDH2OFrameInvariants[T](inputRDD: RDD[T], df: H2OFrame): Unit = {
-    assert( inputRDD.count == df.numRows(), "Number of rows has to match")
-    inputRDD match {
-      case x if x.take(1)(0).isInstanceOf[ByteField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[ByteField].productArity, "Number columns should match")
-      case x if x.take(1)(0).isInstanceOf[ShortField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[ShortField].productArity, "Number columns should match")
-      case x if x.take(1)(0).isInstanceOf[LongField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[LongField].productArity, "Number columns should match")
-      case x if x.take(1)(0).isInstanceOf[IntField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[IntField].productArity, "Number columns should match")
-      case x if x.take(1)(0).isInstanceOf[FloatField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[FloatField].productArity, "Number columns should match")
-      case x if x.take(1)(0).isInstanceOf[DoubleField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[DoubleField].productArity, "Number columns should match")
-      case x => fail(s"Bad data $x")
-    }
+  def assertH2OFrameInvariants(inputDF: DataFrame, df: H2OFrame): Unit = {
+    assert( inputDF.count == df.numRows(), "Number of rows has to match")
+    assert( df.numCols() == flatSchema(inputDF.schema).length , "Number columns should match")
   }
 
   def assertVectorIntValues(vec: water.fvec.Vec, values: Seq[Int]): Unit = {
     (0 until vec.length().toInt).foreach { rIdx =>
       assert(if (vec.isNA(rIdx)) -1 == values(rIdx)
-        else vec.at8(rIdx) == values(rIdx), "values stored has to match to values in rdd")
+      else vec.at8(rIdx) == values(rIdx), "Values stored in H2OFrame has to match specified values")
     }
   }
 
   def assertVectorDoubleValues(vec: water.fvec.Vec, values: Seq[Double]): Unit = {
     (0 until vec.length().toInt).foreach { rIdx =>
       assert(if (vec.isNA(rIdx)) values(rIdx)==Double.NaN // this is Scala i can do NaN comparision
-        else vec.at(rIdx) == values(rIdx), "values stored has to match to values in rdd")
+      else vec.at(rIdx) == values(rIdx), "Values stored in H2OFrame has to match specified values")
     }
   }
 
   def assertVectorEnumValues(vec: water.fvec.Vec, values: Seq[String]): Unit = {
     val vecDom = vec.domain()
     (0 until vec.length().toInt).foreach { rIdx =>
-      assert(vecDom(vec.at8(rIdx).asInstanceOf[Int]) == values(rIdx), "values stored has to match to values in rdd")
+      assert(vecDom(vec.at8(rIdx).asInstanceOf[Int]) == values(rIdx), "Values stored in H2OFrame has to match specified values")
     }
   }
 
@@ -567,12 +615,7 @@ println("--------1-------")
         vec.isNA(rIdx) || {
           vec.atStr(valString, rIdx)
           valString.bytesToString() == values(rIdx)
-        }, "values stored has to match to values in rdd")
+        }, "Values stored in H2OFrame has to match specified values")
     }
   }
 }
-
-object ConvertersTestSuite {
-
-}
-
