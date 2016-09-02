@@ -31,7 +31,7 @@ class InterpreterClassLoader(val mainClassLoader: Option[ClassLoader]) extends C
     if (name.startsWith("intp_id")) {
       val intp_id = new Scanner(name).useDelimiter("\\D+").nextInt()
       H2OIMain.existingInterpreters.get(intp_id).get.classLoader.loadClass(name)
-    } else if(mainClassLoader.isDefined) {
+    } else if (mainClassLoader.isDefined) {
       mainClassLoader.get.loadClass(name)
     } else {
       super.loadClass(name)

@@ -54,7 +54,7 @@ object ProstateDemo extends SparkContextSupport {
     // Convert to SQL type RDD
     val sqlContext = new SQLContext(sc)
     import sqlContext.implicits._ // import implicit conversions
-    table.toDF.registerTempTable("prostate_table")
+    table.toDF.createOrReplaceTempView("prostate_table")
 
     // Invoke query on data; select a subsample
     val query = "SELECT * FROM prostate_table WHERE CAPSULE=1"

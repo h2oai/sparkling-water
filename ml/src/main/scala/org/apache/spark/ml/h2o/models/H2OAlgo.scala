@@ -25,7 +25,7 @@ import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.{Param, ParamMap}
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
 import water.Key
 import water.fvec.Frame
 
@@ -46,13 +46,13 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
     setParams(parameters.get)
   }
 
-  override def fit(dataset: DataFrame): M = {
+  override def fit(dataset: Dataset[_]): M = {
     import h2oContext.implicits._
     // check if trainKey is explicitly set
     val key = if(isSet(trainKey)){
       $(trainKey)
     } else {
-      h2oContext.toH2OFrameKey(dataset)
+      h2oContext.toH2OFrameKey(dataset.toDF())
     }
     setTrainKey(key)
     allStringVecToCategorical(key.get())

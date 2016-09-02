@@ -99,13 +99,13 @@ SparkContextSupport.addFiles(sc,
 )
 
 val weatherTable = asDataFrame(createWeatherTable(SparkFiles.get("chicagoAllWeather.csv")))(sqlContext)
-weatherTable.registerTempTable("chicagoWeather")
+weatherTable.createOrReplaceTempView("chicagoWeather")
 // Census data
 val censusTable = asDataFrame(createCensusTable(SparkFiles.get("chicagoCensus.csv")))(sqlContext)
-censusTable.registerTempTable("chicagoCensus")
+censusTable.createOrReplaceTempView("chicagoCensus")
 // Crime data
 val crimeTable  = asDataFrame(createCrimeTable(SparkFiles.get("chicagoCrimes10k.csv"), "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))(sqlContext)
-crimeTable.registerTempTable("chicagoCrime")
+crimeTable.createOrReplaceTempView("chicagoCrime")
 
 //
 // Join crime data with weather and census tables

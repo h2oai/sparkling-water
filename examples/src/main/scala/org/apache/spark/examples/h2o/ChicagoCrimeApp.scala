@@ -54,9 +54,9 @@ class ChicagoCrimeApp( weatherFile: String,
     import h2oContext.implicits._
 
     // Register tables in SQL Context
-    weatherTable.registerTempTable("chicagoWeather")
-    censusTable.registerTempTable("chicagoCensus")
-    crimesTable.registerTempTable("chicagoCrime")
+    weatherTable.createOrReplaceTempView("chicagoWeather")
+    censusTable.createOrReplaceTempView("chicagoCensus")
+    crimesTable.createOrReplaceTempView("chicagoCrime")
 
     //
     // Join crime data with weather and census tables
@@ -176,13 +176,13 @@ class ChicagoCrimeApp( weatherFile: String,
     import h2oContext._
     // Weather data
     val weatherTable = asDataFrame(createWeatherTable(weatherFile))
-    weatherTable.registerTempTable("chicagoWeather")
+    weatherTable.createOrReplaceTempView("chicagoWeather")
     // Census data
     val censusTable = asDataFrame(createCensusTable(censusFile))
-    censusTable.registerTempTable("chicagoCensus")
+    censusTable.createOrReplaceTempView("chicagoCensus")
     // Crime data
     val crimeTable  = asDataFrame(createCrimeTable(crimesFile))
-    crimeTable.registerTempTable("chicagoCrime")
+    crimeTable.createOrReplaceTempView("chicagoCrime")
 
     (weatherTable, censusTable, crimeTable)
   }

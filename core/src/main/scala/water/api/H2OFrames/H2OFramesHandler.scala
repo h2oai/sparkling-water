@@ -49,7 +49,7 @@ class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
     if(s.dataframe_id == null){
       s.dataframe_id = "df_" + dataFrame.rdd.id.toString
     }
-    dataFrame.registerTempTable(s.dataframe_id.toLowerCase)
+    dataFrame.createOrReplaceTempView(s.dataframe_id.toLowerCase)
     sqlContext.cacheTable(s.dataframe_id)
     s
   }

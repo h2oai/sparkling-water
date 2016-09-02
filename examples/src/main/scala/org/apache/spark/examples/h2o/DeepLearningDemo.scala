@@ -31,6 +31,7 @@ import water.support.SparkContextSupport
 object DeepLearningDemo extends SparkContextSupport {
 
   def main(args: Array[String]): Unit = {
+    FIXME use SparkSession here
     // Create Spark context which will drive computation.
     val conf = configure("Sparkling Water: Deep Learning on Airlines data")
     val sc = new SparkContext(conf)
@@ -59,7 +60,7 @@ object DeepLearningDemo extends SparkContextSupport {
     //
     // Filter data with help of Spark SQL
     //
-    airlinesTable.toDF.registerTempTable("airlinesTable")
+    airlinesTable.toDF.createOrReplaceTempView("airlinesTable")
 
     // Select only interesting columns and flights with destination in SFO
     val query = "SELECT * FROM airlinesTable WHERE Dest LIKE 'SFO'"

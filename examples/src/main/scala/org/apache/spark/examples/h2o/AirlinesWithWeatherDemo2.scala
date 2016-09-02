@@ -96,8 +96,8 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
     flightsToORD.count
     println(s"\nFlights to ORD: ${flightsToORD.count}\n")
 
-    flightsToORD.toDF.registerTempTable("FlightsToORD")
-    weatherTable.toDF.registerTempTable("WeatherORD")
+    flightsToORD.toDF.createOrReplaceTempView("FlightsToORD")
+    weatherTable.toDF.createOrReplaceTempView("WeatherORD")
 
     //
     // -- Join both tables and select interesting columns

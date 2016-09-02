@@ -45,8 +45,8 @@ val airlinesTable = h2oContext.asDataFrame(airlinesData).map(row => AirlinesPars
 val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
 
 // Use Spark SQL to join flight and weather data in spark
-flightsToORD.toDF.registerTempTable("FlightsToORD")
-weatherTable.toDF.registerTempTable("WeatherORD")
+flightsToORD.toDF.createOrReplaceTempView("FlightsToORD")
+weatherTable.toDF.createOrReplaceTempView("WeatherORD")
 
 // Perform SQL Join on both tables
 val bigTable = sqlContext.sql(

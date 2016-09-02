@@ -31,6 +31,7 @@ import water.support.SparkContextSupport
 object DeepLearningDemoWithoutExtension extends SparkContextSupport {
 
   def main(args: Array[String]): Unit = {
+    FIXME use spark session here
     // Create a Spark config
     val conf: SparkConf = configure("Sparkling water: DL demo without Spark modification")
 
@@ -59,8 +60,7 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport {
     //
     // Filter data with help of Spark SQL
     //
-
-    airlinesTable.toDF.registerTempTable("airlinesTable")
+    airlinesTable.toDF.createOrReplaceTempView("airlinesTable")
 
     // Select only interesting columns and flights with destination in SFO
     val query = "SELECT * FROM airlinesTable WHERE Dest LIKE 'SFO'"
