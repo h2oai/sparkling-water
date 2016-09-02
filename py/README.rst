@@ -2,15 +2,15 @@ PySparkling and Spark Version
 =============================
 There exist multiple pySparkling packages, each is intended to be used with different Spark version.
 
- - h2o_pysparkling_1.6 - for Spark 1.6.x
- - h2o_pysparkling_1.5 - for Spark 1.5.x
- - h2o_pysparkling_1.4 - for Spark 1.4.x
+ - h2o_pysparkling_2_10_1.6 - for Spark 1.6.x
+ - h2o_pysparkling_2_10_1.5 - for Spark 1.5.x
+ - h2o_pysparkling_2_10_1.4 - for Spark 1.4.x
 
-So for example, to install pySparkling for Spark 1.6, the command would look like:
+So for example, to install pySparkling for Spark 1.6 build for Scala 2.11, the command would look like:
 
 .. code-block:: bash
 
-    pip install h2o_pysparkling_1.6
+    pip install h2o_pysparkling_2.11_1.6
 
 Setup and Installation
 ======================
