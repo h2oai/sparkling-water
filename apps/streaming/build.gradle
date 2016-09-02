@@ -3,6 +3,9 @@ description = "Sparkling Water Pipelining"
 // Support local launch of application 
 apply plugin: 'application'
 mainClassName = "ai.h2o.PipelineDemo"
+// Disable distribution tasks
+distZip.enabled = false
+distTar.enabled = false
 
 dependencies {
   // Sparkling Water Core
