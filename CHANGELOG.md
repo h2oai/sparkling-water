@@ -1,14 +1,36 @@
 ChangeLog
 =========
 
+##v1.6.7 (2016-09-01)
+  - Bug
+    - [SW-71](https://0xdata.atlassian.net/browse/SW-71) - Expose the method `H2OContext#setLogLevel` to setup log level of H2O
+    - [SW-128](https://0xdata.atlassian.net/browse/SW-128) - Publish flows pack in GitHub repo and embed them in distribution JAR
+    - [SW-153](https://0xdata.atlassian.net/browse/SW-153) - ModelMetricsSupport is duplicated in code, removed
+    - [SW-168](https://0xdata.atlassian.net/browse/SW-168) - Solved slow-down for fat-dataset with many categorical columns
+    - [SW-176](https://0xdata.atlassian.net/browse/SW-176) - H2O context is failing on CDH-5.7.1 with Spark Version 1.6.0-CDH.5.7.1
+    - [SW-185](https://0xdata.atlassian.net/browse/SW-185) - Methods on frame can't be called in compute method on external cluster 
+    - [SW-186](https://0xdata.atlassian.net/browse/SW-186) - Hide checks whether incoming data is NA into convertorCtx
+    - [SW-191](https://0xdata.atlassian.net/browse/SW-191) - Better exception message in case dataframe with the desired key already exist when saving using datasource api
+    - [SW-192](https://0xdata.atlassian.net/browse/SW-192) - Add `org.apache.spark.sql._` to packages imported by default in REPL
+
+  - Improvement
+    - [SW-158](https://0xdata.atlassian.net/browse/SW-158) - Support Spark DataSet in the same way as RDD and DataFrame
+    - [SW-163](https://0xdata.atlassian.net/browse/SW-163) - Upgrade H2O dependency to the latest Turing release 3.10.0.6
+    - [SW-165](https://0xdata.atlassian.net/browse/SW-165) - Change default schema for Scala code to black one.
+    - [SW-170](https://0xdata.atlassian.net/browse/SW-170) - Unify H2OFrame datasource and asDataFrame API
+    - [SW-171](https://0xdata.atlassian.net/browse/SW-171) - Internal API refactoring to allow multiple backends
+    - [SW-172](https://0xdata.atlassian.net/browse/SW-172) - NodeDesc should be interned or use H2OKey instead of NodeDesc
+    - [SW-174](https://0xdata.atlassian.net/browse/SW-174) - Remove unused fields from H2ORDD
+    - [SW-177](https://0xdata.atlassian.net/browse/SW-177) - Refactor & Simplify REPL
+
 ##v1.6.6 (2016-08-03)
   - Bug
     - [SW-154](https://0xdata.atlassian.net/browse/SW-154) - Network mask is used in the wrong way on executors
-    - [SW-156](https://0xdata.atlassian.net/browse/SW-156) - Option for switching off quite mode
+    - [SW-156](https://0xdata.atlassian.net/browse/SW-156) - Option to control console verbosity mode
     - [SW-157](https://0xdata.atlassian.net/browse/SW-157) - Include new S3 persist layer in Sparkling Water assembly
 
   - Improvement
-    - [SW-125](https://0xdata.atlassian.net/browse/SW-125) - Upgrade H2O dependency to 3.8.3.2
+    - [SW-163](https://0xdata.atlassian.net/browse/SW-163) - Upgrade H2O dependency to 3.10.0.4
     - Streaming example
 
 ##v1.6.5 (2016-06-06)
