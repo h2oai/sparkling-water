@@ -17,6 +17,8 @@
 
 package org.apache.spark.h2o.converters
 
+import org.apache.spark.h2o.utils.ReflectionUtils._
+import org.apache.spark.h2o.utils.SupportedTypes
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
 
@@ -52,23 +54,43 @@ trait ReadConverterContext {
   def getDouble(columnNum: Int): Option[Double]
   def getString(columnNum: Int): Option[String]
 
-  private type Getter = Int => Option[Any]
-
-  val get: DataType => Getter = Map[DataType, Getter](
-    ByteType -> getByte,
-    ShortType -> getShort,
-    IntegerType -> getInt,
-    LongType -> getLong,
-    FloatType -> getFloat,
-    DoubleType -> getDouble,
-    BooleanType -> getBoolean,
-    StringType -> getUTF8String,
-    TimestampType -> getTimestamp
-  ) withDefault (t => throw new scala.IllegalArgumentException(s"Type $t not supported for conversion from H2OFrame to Spark's Dataframe"))
-
-  def getNullable(dataType: DataType): (Int => Any) = (i: Int) => get(dataType)(i) orNull
-
   def numRows: Int
   def increaseRowIdx() = rowIdx += 1
+
   def hasNext = rowIdx < numRows
+
+  case class OptionReader(name: Any, apply: Int => Option[Any]) {
+  }
+
+//  type OptionReader = Int => Option[Any]
+
+  import SupportedTypes._
+
+  val ReaderPerType = Map[SupportedType, Int => Option[Any]](
+    Byte -> getByte,
+    Short -> getShort,
+    Integer -> getInt,
+    Long -> getLong,
+    Float -> getFloat,
+    Double -> getDouble,
+    Boolean -> getBoolean,
+    String -> getUTF8String,
+    UTF8 -> getUTF8String,
+    Timestamp -> getTimestamp
+  ) withDefault (t => throw new scala.IllegalArgumentException(s"Type $t not supported for conversion from H2OFrame to Spark's Dataframe"))
+
+  def readerFor(dt: DataType): OptionReader = OptionReader(bySparkType(dt), ReaderPerType(bySparkType(dt)))
+
+  case class Reader(name: Any, apply: Int => Any)
+
+  val readerMapByName: Map[NameOfType, Reader]
+
+  /**
+    * For a given array of source column indexes and required data types,
+    * produces an array of value providers.
+    *
+    * @param columnIndexesWithTypes lists which columns we need, and what are the required types
+    * @return an array of value providers. Each provider gives the current column value
+    */
+  def columnValueProviders(columnIndexesWithTypes: Array[(Int, DataType)]): Array[() => Option[Any]]
 }

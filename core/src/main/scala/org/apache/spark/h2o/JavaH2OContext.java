@@ -81,23 +81,38 @@ which is not nice.
     }
 
 
-    /** Pass-through to H2OContext.asH2OFrame.  For API support only.*/
+    /**
+     * Pass-through to H2OContext.asH2OFrame.  For API support only.
+     * @param df data frame to pass for building an H2OFrame
+     */
     public H2OFrame asH2OFrame(DataFrame df){
         return hc.asH2OFrame(df);
     }
 
-    /** Pass-through to H2OContext.asH2OFrame.  For API support only.*/
+    /**
+     * Pass-through to H2OContext.asH2OFrame.  For API support only.
+     * @param df data frame to pass for building an H2OFrame
+     * @param frameName name of the new frame
+     */
     public H2OFrame asH2OFrame(DataFrame df, String frameName){
         return hc.asH2OFrame(df, frameName);
     }
 
 
-    /** Create a new H2OFrame based on existing Frame referenced by its key.*/
-    public H2OFrame asH2OFrame(String s){
+  /**
+   * Create a new H2OFrame based on existing Frame referenced by its key.
+   * @param s the key
+   * @return a new H2O frame
+   */
+  public H2OFrame asH2OFrame(String s){
         return hc.asH2OFrame(s);
     }
 
-    /** Create a new H2OFrame based on existing Frame */
+  /**
+   * Create a new H2OFrame based on existing Frame
+   * @param fr the frame to be used
+   * @return Java H2O Context
+   */
     public H2OFrame asH2OFrame(Frame fr){
         return hc.asH2OFrame(fr);
     }

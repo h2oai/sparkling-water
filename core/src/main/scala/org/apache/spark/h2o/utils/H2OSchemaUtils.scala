@@ -21,12 +21,12 @@ import org.apache.spark.h2o._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.{SparkContext, mllib}
-import water.fvec.Vec
 
 /**
  * Utilities for working with Spark SQL component.
  */
 object H2OSchemaUtils {
+  import ReflectionUtils._
 
   val NORMAL_TYPE : Byte = 0
   val ARRAY_TYPE : Byte  = 1
@@ -57,84 +57,32 @@ object H2OSchemaUtils {
         }
         StructField(
           names(i), // Name of column
-          vecTypeToDataType(vec), // Catalyst type of column
+          dataTypeFor(vec), // Catalyst type of column
           vec.naCnt() > 0,
           metadata.build())
       } else {
         StructField(
           names(i), // Name of column
-          vecTypeToDataType(vec), // Catalyst type of column
+          dataTypeFor(vec), // Catalyst type of column
           vec.naCnt() > 0)
       }
     }
     StructType(types)
   }
 
-  /**
-   * Return catalyst structural type for given H2O vector.
-   *
-   * The mapping of type is flat, if type is unrecognized
-   * {@link IllegalArgumentException} is thrown.
-   *
-   * @param v H2O vector
-   * @return catalyst data type
-   */
-  def vecTypeToDataType(v: Vec): DataType = {
-    v.get_type() match {
-      case Vec.T_BAD  => ByteType // vector is full of NAs, use any type
-      case Vec.T_NUM  => numericVecTypeToDataType(v)
-      case Vec.T_CAT  => StringType
-      case Vec.T_UUID => StringType
-      case Vec.T_STR  => StringType
-      case Vec.T_TIME => TimestampType
-      case typ => throw new IllegalArgumentException("Unknown vector type " + typ)
-    }
-  }
-
-  def numericVecTypeToDataType(v: Vec): DataType = {
-    if (v.isInt) {
-      val min = v.min()
-      val max = v.max()
-      if (min > Byte.MinValue && max < Byte.MaxValue) {
-        ByteType
-      } else if (min > Short.MinValue && max < Short.MaxValue) {
-        ShortType
-      } else if (min > Int.MinValue && max < Int.MaxValue) {
-        IntegerType
-      } else {
-        LongType
-      }
-    } else DoubleType
-  }
-
-  /** Method translating SQL types into Sparkling Water types */
-  def dataTypeToVecType(dt : DataType) : Byte = dt match {
-    case BinaryType  => Vec.T_NUM
-    case ByteType    => Vec.T_NUM
-    case ShortType   => Vec.T_NUM
-    case IntegerType => Vec.T_NUM
-    case LongType    => Vec.T_NUM
-    case FloatType   => Vec.T_NUM
-    case DoubleType  => Vec.T_NUM
-    case BooleanType => Vec.T_NUM
-    case TimestampType => Vec.T_TIME
-    case StringType  => Vec.T_STR
-    //case StructType  => dt.
-    case _ => throw new IllegalArgumentException(s"Unsupported type $dt")
-  }
-
   /** Return flattenized type - recursively transforms StrucType into Seq of encapsulated types. */
   def flatSchema(s: StructType, typeName: Option[String] = None, nullable: Boolean = false): Seq[StructField] = {
     s.fields.flatMap(f =>
-      if (f.dataType.isInstanceOf[StructType]) {
-        flatSchema(f.dataType.asInstanceOf[StructType],
-                   typeName.map(s => s"$s${f.name}.").orElse(Option(s"${f.name}.")),
-                   nullable || f.nullable)
-      } else {
-        Seq(StructField(
-          typeName.map(n => s"$n${f.name}").getOrElse(f.name),
-          f.dataType,
-          f.nullable || nullable))
+      f.dataType match {
+        case struct: StructType =>
+          flatSchema(struct,
+            typeName.map(s => s"$s${f.name}.").orElse(Option(s"${f.name}.")),
+            nullable || f.nullable)
+        case simple: DataType =>
+          Seq(StructField(
+            typeName.map(n => s"$n${f.name}").getOrElse(f.name),
+            simple,
+            f.nullable || nullable))
       })
   }
 
@@ -166,21 +114,21 @@ object H2OSchemaUtils {
       val path = tap._1
       val field = tap._2
       field.dataType match {
-        case ArrayType(aryType,nullable) => {
+        case ArrayType(aryType,nullable) =>
           val result = (0 until fmaxLens(arrayCnt)).map(i =>
             (path, StructField(field.name + i.toString, aryType, nullable), ARRAY_TYPE)
           )
           arrayCnt += 1
           result
-        }
-        case t if t.isInstanceOf[UserDefinedType[_]] => {
+
+        case t if t.isInstanceOf[UserDefinedType[_]] =>
           // t.isInstanceOf[UserDefinedType[mllib.linalg.Vector]]
           val result = (0 until fmaxLens(numOfArrayCols + vecCnt)).map(i =>
-            (path, StructField(field.name + i.toString, DoubleType, true), VEC_TYPE)
+            (path, StructField(field.name + i.toString, DoubleType, nullable = true), VEC_TYPE)
           )
           vecCnt += 1
           result
-        }
+
         case _ => Seq((path, field, NORMAL_TYPE))
       }
     }

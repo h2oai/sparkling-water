@@ -18,22 +18,20 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.utils.{H2OTypeUtils, NodeDesc, ReflectionUtils}
+import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.{Logging, TaskContext}
 import water.Key
-import water.fvec.H2OFrame
+import water.fvec.{H2OFrame, Vec}
 
 import scala.collection.immutable
 import scala.language.implicitConversions
-import scala.reflect.runtime.universe._
+import language.postfixOps
 
 private[converters] object LabeledPointConverter extends Logging with ConverterUtils{
 
   /** Transform RDD[LabeledPoint] to appropriate H2OFrame */
   def toH2OFrame(hc: H2OContext, rdd: RDD[LabeledPoint], frameKeyName: Option[String]): H2OFrame = {
-    import H2OTypeUtils._
-    import ReflectionUtils._
 
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
 
@@ -46,9 +44,8 @@ private[converters] object LabeledPointConverter extends Logging with ConverterU
       // Features vectors of different sizes, filling missing with n/a
       logWarning("WARNING: Converting RDD[LabeledPoint] to H2OFrame where features vectors have different size, filling missing with n/a")
     }
-    val fnames = (Seq[String]("label") ++ 0.until(maxNumFeatures).map(num => "feature" + num).toSeq).toArray[String]
-    val ftypes = 0.until(maxNumFeatures + 1).map(_ => typ(typeOf[Double]))
-    val vecTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
+    val fnames = ("label" :: 0.until(maxNumFeatures).map("feature" +).toList).toArray[String]
+    val vecTypes = Array.fill(maxNumFeatures + 1)(Vec.T_NUM)
 
     convert[LabeledPoint](hc, rdd, keyName, fnames, vecTypes, perLabeledPointRDDPartition(maxNumFeatures))
   }

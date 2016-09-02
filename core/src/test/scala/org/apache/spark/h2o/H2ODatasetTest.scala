@@ -17,9 +17,9 @@
 
 package org.apache.spark.h2o
 
+import org.apache.spark.SparkContext
 import org.apache.spark.h2o.converters.H2ORDD
 import org.apache.spark.h2o.utils.SharedSparkTestContext
-import org.apache.spark.{h2o, SparkContext}
 import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -27,30 +27,19 @@ import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import water.fvec.Vec
 import water.parser.BufferedString
 
+import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
-import language.postfixOps
 
 /**
   * Testing schema for h2o schema spark dataset transformation.
   */
 
-case class SamplePerson(name: String, age: Int, email: String)
-case class WeirdPerson(email: String, age: Int, name: String)
-case class SampleCompany(officialName: String, count: Int, url: String)
-case class SampleAccount(email: String, name: String, age: Int)
-case class SampleCat(name: String, age: Int)
-case class PartialPerson(name: Option[String], age: Option[Int], email: Option[String])
-case class SemiPartialPerson(name: String, age: Option[Int], email: Option[String])
-case class SampleString(x: String)
-case class SampleAltString(y: String)
-
 @RunWith(classOf[JUnitRunner])
 class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAndAfterAll {
+  import testdata._
 
   lazy val sqlContext = new SQLContext(sc)
-
-  import sqlContext.implicits._
 
   val dataSource =
       ("Hermione Granger", 15, "hgranger@griffindor.edu.uk") ::
@@ -77,6 +66,8 @@ class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAnd
   val sampleSemiPartialPeople: List[SemiPartialPerson] = samplePartialPeople map {
     case pp => SemiPartialPerson(pp.name orNull, pp.age, pp.email)
   }
+
+  import sqlContext.implicits._
 
   lazy val testSourceDatasetWithPartialData = sqlContext.createDataset(samplePartialPeople)
 
@@ -159,7 +150,7 @@ class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAnd
       val rdd1 = new H2ORDD[SemiPartialPerson, H2OFrame](testH2oFrametWithPartialData)(sc)
       val c1 = rdd1.count()
       assert(c1 > 0)
-      val rdd2: RDD[SemiPartialPerson] = hc.asRDD[h2o.SemiPartialPerson](testH2oFrametWithPartialData)
+      val rdd2: RDD[SemiPartialPerson] = hc.asRDD[SemiPartialPerson](testH2oFrametWithPartialData)
       assert(rdd2.count() > 0)
       val asDS = rdd2.toDS()
       assert(asDS.count() > 0)

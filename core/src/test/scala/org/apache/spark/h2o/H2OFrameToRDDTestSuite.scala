@@ -19,7 +19,7 @@ package org.apache.spark.h2o
 import java.sql.Timestamp
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.TestData._
+import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils._
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
@@ -223,7 +223,7 @@ class H2ORDDTest extends TestBase with SharedSparkTestContext {
 
     def almostDefined(i: Long) = Some(i.toInt) filter (_ % 31 != 0)
 
-    val rdd = sc.parallelize(1 to 1000000, 10).map(i => OptionAndNot(Some(i), almostDefined(i)))
+    val rdd = sc.parallelize(1 to 1000000, 10).map(i => testdata.OptionAndNot(Some(i), almostDefined(i)))
     val h2oFrame:H2OFrame = rdd
     val back2rdd = hc.asRDD[OptionAndNot](h2oFrame)
     assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
@@ -369,25 +369,4 @@ class H2ORDDTest extends TestBase with SharedSparkTestContext {
 object StaticStorage {
   val intIteratorTestMemory = new TestMemory[Int]
   val pubdev458TestMemory = new TestMemory[PUBDEV458Type]
-}
-
-class PUBDEV458Type(val result: Option[Int]) extends Product with Serializable {
-  override def canEqual(that: Any):Boolean = that.isInstanceOf[PUBDEV458Type]
-  override def productArity: Int = 1
-  override def productElement(n: Int) =
-    n match {
-      case 0 => result
-      case _ => throw new IndexOutOfBoundsException(n.toString)
-    }
-}
-
-case class OptionAndNot(val x: Option[Int], val xOpt: Option[Int]) extends Serializable {
-  override def canEqual(that: Any):Boolean = that.isInstanceOf[OptionAndNot]
-  override def productArity: Int = 2
-  override def productElement(n: Int) =
-    n match {
-      case 0 => x
-      case 1 => xOpt
-      case _ => throw new IndexOutOfBoundsException(n.toString)
-    }
 }
