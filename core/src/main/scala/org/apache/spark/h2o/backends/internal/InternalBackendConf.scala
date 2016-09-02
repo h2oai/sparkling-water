@@ -53,6 +53,12 @@ trait InternalBackendConf extends SharedH2OConf {
         |  h2oClientLog         : ${h2oClientLogLevel}
         |  nthreads             : ${nthreads}
         |  drddMulFactor        : $drddMulFactor""".stripMargin
+
+
+  def setH2ONodeLogLevel(level: String): H2OConf = {
+    sparkConf.set(PROP_NODE_LOG_LEVEL._1, level)
+    self
+  }
 }
 
 object InternalBackendConf {
