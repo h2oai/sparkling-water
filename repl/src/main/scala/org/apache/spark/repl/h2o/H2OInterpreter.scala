@@ -159,17 +159,15 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
 
   /**
     * Initialize the compiler settings
+    * @return
     */
   private def createSettings(): Settings = {
     val settings = new Settings()
-    // prevent each repl line from being run in a new thread
-    settings.Yreplsync.value = true
-
-    // Check if app.class.path resource on given classloader is set. In case it exists, set it as classpath
-    // instead of using java class path right away; otherwise use java class path
-    // This solves problem explained here: https://gist.github.com/harrah/404272
     settings.usejavacp.value = true
     val loader = classTag[H2OInterpreter].runtimeClass.getClassLoader
+    // Check if app.class.path resource on given classloader is set. In case it exists, set it as classpath
+    // ( instead of using java class path right away)
+    // This solves problem explained here: https://gist.github.com/harrah/404272
     val method = settings.getClass.getSuperclass.getDeclaredMethod("getClasspath",classOf[String],classOf[ClassLoader])
     method.setAccessible(true)
     if(method.invoke(settings, "app",loader).asInstanceOf[Option[String]].isDefined){
@@ -177,6 +175,13 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
       settings.embeddedDefaults(loader)
     }
 
+    // synchronous calls
+    settings.Yreplsync.value = true
+
+    for (jar <- sparkContext.addedJars) {
+      settings.bootclasspath.append(jar._1)
+      settings.classpath.append(jar._1)
+    }
     settings
   }
 
@@ -329,7 +334,7 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
   initializeInterpreter()
 }
 
-object H2OInterpreter{
+object H2OInterpreter {
   /**
     * Return class server output directory of REPL Class server.
  *
@@ -354,7 +359,8 @@ object H2OInterpreter{
   def classServerUri = {
     if (org.apache.spark.repl.Main.interp != null) {
       // Application was started using SparkSubmit
-      org.apache.spark.repl.Main.interp.intp.classServerUri
+      // MM commented > org.apache.spark.repl.Main.interp.intp.classServerUri
+      ""
     } else {
       REPLClassServer.classServerUri
     }

@@ -25,7 +25,7 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
 import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
 import water.support.ModelSerializationSupport
 
 import scala.reflect.ClassTag
@@ -40,8 +40,8 @@ abstract class H2OModel[S <: H2OModel[S, M],
 
   override def copy(extra: ParamMap): S = defaultCopy(extra)
 
-  override def transform(dataset: DataFrame): DataFrame = {
-    val frame: H2OFrame = h2oContext.asH2OFrame(dataset)
+  override def transform(dataset: Dataset[_]): DataFrame = {
+    val frame: H2OFrame = h2oContext.asH2OFrame(dataset.toDF())
     val prediction = model.score(frame)
     h2oContext.asDataFrame(prediction)(sqlContext)
   }

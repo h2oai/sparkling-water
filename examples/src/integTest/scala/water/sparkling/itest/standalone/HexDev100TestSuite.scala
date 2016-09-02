@@ -49,7 +49,7 @@ object HexDev100Test extends IntegTestStopper{
     // Pass into Spark to drop unused columns
     implicit val sqlContext = new SQLContext(sc)
     val airlinesDataFrame = asDataFrame(airlinesData)
-    airlinesDataFrame.registerTempTable("AirlinesDataTable")
+    airlinesDataFrame.createOrReplaceTempView("AirlinesDataTable")
     // Drop all columns except "Year", "Month", "DayOfWeek", "Origin", "Dest", "UniqueCarrier", "Distance", "FlightNum", "IsDepDelayed"
     val airlinesTable = sqlContext.sql(
       """SELECT

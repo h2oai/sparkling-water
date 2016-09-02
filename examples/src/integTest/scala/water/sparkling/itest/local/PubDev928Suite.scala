@@ -3,16 +3,16 @@ package water.sparkling.itest.local
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.SparkContext
-
-import org.apache.spark.examples.h2o.AirlinesParse
+import org.apache.spark.examples.h2o.{Airlines, AirlinesParse}
 import org.apache.spark.h2o.H2OContext
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.fvec.H2OFrame
 import water.support.SparkContextSupport
-import water.sparkling.itest.{IntegTestStopper, LocalTest, IntegTestHelper}
+import water.sparkling.itest.{IntegTestHelper, IntegTestStopper, LocalTest}
 
 
 /**
@@ -40,7 +40,6 @@ object PubDev928Test extends SparkContextSupport with IntegTestStopper {
     val conf = configure("PUBDEV-928")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)
-    import h2oContext.implicits._
     implicit val sqlContext = new SQLContext(sc)
     import sqlContext.implicits._
 
@@ -49,8 +48,8 @@ object PubDev928Test extends SparkContextSupport with IntegTestStopper {
     // We need to explicitly repartition data to 12 chunks/partitions since H2O parser handling
     // partitioning dynamically based on available number of CPUs
     println("Number of chunks before query: " + airlinesData.anyVec().nChunks())
-    val airlinesTable = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
-    airlinesTable.toDF.registerTempTable("airlinesTable")
+    val airlinesTable: RDD[Airlines] = h2oContext.asRDD[Airlines](airlinesData)
+    airlinesTable.toDF.createOrReplaceTempView("airlinesTable")
 
     val query = "SELECT * FROM airlinesTable WHERE Dest LIKE 'SFO'"
     // Transform result of SQL query directly into H2OFrame, but change number of
@@ -68,7 +67,7 @@ object PubDev928Test extends SparkContextSupport with IntegTestStopper {
     println(s"Any vec chunk cnt: ${train.anyVec().nChunks()}")
     // Configure Deep Learning algorithm
     val dlParams = new DeepLearningParameters()
-    dlParams._train = train
+    dlParams._train = train.key
     dlParams._response_column = 'IsDepDelayed
 
     val dl = new DeepLearning(dlParams)
@@ -85,7 +84,7 @@ object PubDev928Test extends SparkContextSupport with IntegTestStopper {
     assert((0 until av.nChunks()).exists(idx => av.chunkForChunkIdx(idx).len() == 0), "At least on chunk with 0-rows has to exist!")
 
     // And run scoring on dataset which contains at least one chunk with zero-lines
-    val predictionH2OFrame = dlModel.score(testFrame)('predict)
+    val predictionH2OFrame = dlModel.score(testFrame)("predict")
     assert(predictionH2OFrame.numRows() == testFrame.numRows())
 
     // Shutdown Spark cluster and H2O

@@ -2,15 +2,16 @@ package water.sparkling.scripts
 
 import java.io.File
 
+import org.apache.spark.h2o.FunSuiteWithLogging
 import org.apache.spark.repl.h2o.{CodeResults, H2OInterpreter}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfterAll, FunSuite, Suite}
+import org.scalatest.{BeforeAndAfterAll, Suite}
 
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.ListBuffer
 
 
-trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with BeforeAndAfterAll {
+trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll {
   self: Suite =>
   var sparkConf: SparkConf = _
   var sc: SparkContext = _

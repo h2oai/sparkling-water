@@ -22,7 +22,7 @@ import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.h2o.OneTimeTransformer
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.types.{StructField, StructType}
 
 /**
@@ -50,7 +50,7 @@ class ColRemover(override val uid: String) extends OneTimeTransformer with ColRe
     })
   }
 
-  override def transform(dataset: DataFrame): DataFrame = {
+  override def transform(dataset: Dataset[_]): DataFrame = {
     val columnsToRemove = if($(keep)){
       dataset.columns.filter(!$(columns).contains(_))
     }else{
@@ -60,7 +60,7 @@ class ColRemover(override val uid: String) extends OneTimeTransformer with ColRe
     columnsToRemove.foreach{
       col => resultDataset = resultDataset.drop(col)
     }
-    resultDataset
+    resultDataset.toDF()
   }
 
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)

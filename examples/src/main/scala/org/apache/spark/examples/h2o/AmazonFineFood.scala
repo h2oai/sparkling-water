@@ -18,7 +18,7 @@ package org.apache.spark.examples.h2o
 
 import org.apache.spark
 import org.apache.spark.h2o._
-import org.apache.spark.ml.feature.StopWords
+import org.apache.spark.ml.feature.StopWordsRemover
 import org.apache.spark.mllib.feature.{HashingTF, IDF}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -29,6 +29,7 @@ import water.support.SparkContextSupport
 import water.fvec._
 
 object AmazonFineFood extends SparkContextSupport with ModelMetricsSupport {
+
   def main(args: Array[String]): Unit = {
     val conf: SparkConf = configure("Amazon Fine Food Review Sentiment Analysis")
     val sc = new SparkContext(conf)
@@ -68,7 +69,7 @@ object AmazonFineFood extends SparkContextSupport with ModelMetricsSupport {
     val toTokens = udf { summary: String =>
       summary.split(",")
         .map(v => v.trim.toLowerCase.replaceAll("[^\\p{IsAlphabetic}]", ""))
-          .filter(v => !StopWords.English.contains(v))
+          .filter(v => !H2OStopWords.English.contains(v))
     }
 
     val hashingTF = new HashingTF(4096) // Larger space?
@@ -79,7 +80,7 @@ object AmazonFineFood extends SparkContextSupport with ModelMetricsSupport {
       .withColumn("Score", toBinaryScore(col("Score")))
       .withColumn("Summary", toNumericFeatures(toTokens(col("Summary"))))
 
-    val idfModel = new IDF(minDocFreq = 1).fit(vectorizedFrame.select("Summary").map { case Row(v: spark.mllib.linalg.Vector) => v})
+    val idfModel = new IDF(minDocFreq = 1).fit(vectorizedFrame.select("Summary").rdd.map { case Row(v: spark.mllib.linalg.Vector) => v})
     val toIdf = udf { vector: spark.mllib.linalg.Vector => idfModel.transform(vector)}
     val finalFrame: DataFrame = vectorizedFrame.withColumn("Summary", toIdf(col("Summary")))
     finalFrame.printSchema()
@@ -113,7 +114,7 @@ class RefineTime extends MRTask[RefineTime] {
 }
 
 object H2OStopWords {
-  val English = StopWords.English
+  val English = StopWordsRemover.loadDefaultStopWords("english")
 }
 
 /*

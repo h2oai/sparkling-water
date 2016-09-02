@@ -25,7 +25,7 @@ import org.apache.spark.ml.h2o.OneTimeTransformer
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
 import water.fvec.{Frame, H2OFrame}
 import water.{DKV, Key}
 
@@ -69,11 +69,11 @@ class DatasetSplitter(override val uid: String)
     schema
   }
 
-  override def transform(dataset: DataFrame): DataFrame = {
+  override def transform(dataset: Dataset[_]): DataFrame = {
     require($(keys).nonEmpty, "Keys can not be empty")
 
     import h2oContext.implicits._
-    split(dataset,$(keys),$(ratios))
+    split(dataset.toDF(),$(keys),$(ratios))
 
     val returnKey = if($(keys).contains($(trainKey))){
       $(trainKey)

@@ -22,8 +22,7 @@ import java.net.InetAddress
 import org.apache.spark.h2o.backends.{SharedBackendUtils, SharedH2OConf}
 import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.h2o.{H2OConf, RDD}
-import org.apache.spark.scheduler.cluster.YarnSchedulerBackend
-import org.apache.spark.scheduler.local.LocalBackend
+import org.apache.spark.scheduler.local.LocalSchedulerBackend
 import org.apache.spark.{Accumulable, SparkContext, SparkEnv}
 import water.H2OStarter
 import water.init.AbstractEmbeddedH2OConfig
@@ -34,7 +33,7 @@ import scala.collection.mutable
 /**
   * Various helper methods used in the internal backend
   */
-private[internal] trait InternalBackendUtils extends SharedBackendUtils{
+private[internal] trait InternalBackendUtils extends SharedBackendUtils {
 
   def checkUnsupportedSparkOptions(unsupportedSparkOptions: Seq[(String, String)], conf: H2OConf): Unit ={
     unsupportedSparkOptions.foreach(opt => if (conf.contains(opt._1) && (opt._2 == None || conf.get(opt._1) == opt._2)) {
@@ -201,8 +200,9 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils{
         val sb = sc.schedulerBackend
 
         val num = sb match {
-          case b: LocalBackend => Some(1)
-          case b: YarnSchedulerBackend => Some(ReflectionUtils.reflector(b).getV[Int]("totalExpectedExecutors"))
+          case b: LocalSchedulerBackend => Some(1)
+          // Use text reference to yarn backend to avoid having dependency on Spark's Yarn module
+          case b if b.getClass.getSimpleName == "YarnSchedulerBackend" => Some(ReflectionUtils.reflector(b).getV[Int]("totalExpectedExecutors"))
           //case b: CoarseGrainedSchedulerBackend => b.numExistingExecutors
           case _ => None
         }
@@ -225,7 +225,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils{
  */
 private class SparklingWaterConfig(val flatfileBVariable: Accumulable[mutable.HashSet[NodeDesc], NodeDesc],
                                    val sparkHostname: Option[String])
-  extends AbstractEmbeddedH2OConfig with org.apache.spark.Logging {
+  extends AbstractEmbeddedH2OConfig with org.apache.spark.internal.Logging {
 
     /** String containing a flatfile string filled asynchronously by different thread. */
     @volatile var flatFile:Option[String] = None

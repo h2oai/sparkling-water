@@ -95,7 +95,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
     val brdd = asDataFrame(dataf)
 
     // Register table and SQL table
-    brdd.registerTempTable("brdd")
+    brdd.createOrReplaceTempView("brdd")
 
     //
     // Do grouping with help of Spark SQL
@@ -135,8 +135,8 @@ object CitiBikeSharingDemo extends SparkContextSupport {
       .filter(_.HourLocal == Some(12))
 
     // Join with bike table
-    weatherRdd.toDF.registerTempTable("weatherRdd")
-    asDataFrame(finalTable).registerTempTable("bikesRdd")
+    weatherRdd.toDF.createOrReplaceTempView("weatherRdd")
+    asDataFrame(finalTable).createOrReplaceTempView("bikesRdd")
     //sql("SET spark.sql.shuffle.partitions=20")
     val bikesWeatherRdd = sqlContext.sql(
       """SELECT b.Days, b.start_station_id, b.bikes, b.Month, b.DayOfWeek,
@@ -215,7 +215,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
     brdd.count
 
     // Register table and SQL table
-    brdd.registerTempTable("brdd")
+    brdd.createOrReplaceTempView("brdd")
 
     val tGBduration = sqlContext.sql("SELECT bikeid, SUM(tripduration) FROM brdd GROUP BY bikeid")
     // Sort based on duration

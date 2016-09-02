@@ -19,15 +19,15 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
-import org.apache.log4j.{Level, LogManager}
 import org.apache.spark._
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.utils.{H2OContextUtils, NodeDesc}
+import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import water._
-import water.util.{Log, LogUtil}
+import water.util.LogUtil
 
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
@@ -59,7 +59,7 @@ import scala.util.control.NoStackTrace
   * @param sparkContext Spark Context
   * @param conf H2O configuration
   */
-class H2OContext private (@transient val sparkContext: SparkContext, @transient conf: H2OConf) extends org.apache.spark.Logging
+class H2OContext private (@transient val sparkContext: SparkContext, @transient conf: H2OConf) extends Logging
   with Serializable with SparkDataFrameConverter with SupportedRDDConverter with H2OContextUtils { self =>
 
   @transient val sqlc: SQLContext = SQLContext.getOrCreate(sparkContext)

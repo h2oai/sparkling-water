@@ -45,8 +45,8 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
 
-    df.registerTempTable(rid)
-    val dataFramesHandler = new DataFramesHandler(sc, hc)
+    df.createOrReplaceTempView(rid)
+    val dataFramesHandler = new DataFramesHandler(sc,hc)
 
     val req = new DataFramesV3
     val result = dataFramesHandler.list(3, req)
@@ -72,7 +72,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     // we have created dataFrame from already existing h2oFrame, metadata are included
     val df = hc.asDataFrame(h2oframe)
     val name= "prostate"
-    df.registerTempTable(name)
+    df.createOrReplaceTempView(name)
     val percentiles = df.schema.fields(0).metadata.getDoubleArray("percentiles")
     val dataFramesHandler = new DataFramesHandler(sc,hc)
 
@@ -101,7 +101,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     val name = "numbers"
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
-    df.registerTempTable(name)
+    df.createOrReplaceTempView(name)
     val dataFramesHandler = new DataFramesHandler(sc,hc)
 
     val req = new H2OFrameIDV3

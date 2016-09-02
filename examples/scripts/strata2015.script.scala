@@ -60,7 +60,7 @@ bikesDF.update()
 val bikesRdd = asDataFrame(bikesDF)
 
 // Register table and SQL table
-bikesRdd.registerTempTable("bikesRdd")
+bikesRdd.createOrReplaceTempView("bikesRdd")
 
 //
 // Do grouping with help of Spark SQL
@@ -139,8 +139,8 @@ val weatherRdd = weatherData.map(_.split(",")).
 
 
 // Join with bike table
-weatherRdd.toDF.registerTempTable("weatherRdd")
-asDataFrame(finalBikeDF).registerTempTable("bikesRdd")
+weatherRdd.toDF.createOrReplaceTempView("weatherRdd")
+asDataFrame(finalBikeDF).createOrReplaceTempView("bikesRdd")
 
 val bikesWeatherRdd = sqlContext.sql(
     """SELECT b.Days, b.start_station_id, b.bikes,

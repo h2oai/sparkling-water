@@ -45,7 +45,7 @@ object ParquetImportTest extends IntegTestStopper{
 
     // Import Parquet file into Spark as DataFrame
     val parquetFile = sqlContext.read.parquet("hdfs://mr-0xd6.0xdata.loc:8020/datasets/airlines/airlines.parquet")
-    parquetFile.registerTempTable("parquetFile")
+    parquetFile.createOrReplaceTempView("parquetFile")
 
     // Check Parquet file copies correctly
     val AllFlights: H2OFrame = parquetFile
