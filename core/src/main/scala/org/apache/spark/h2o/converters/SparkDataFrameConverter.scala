@@ -19,7 +19,8 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark._
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.utils.{H2OSchemaUtils, NodeDesc}
+import org.apache.spark.h2o.utils.ReflectionUtils._
+import org.apache.spark.h2o.utils.{H2OSchemaUtils, NodeDesc, ReflectionUtils}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
@@ -58,11 +59,7 @@ trait SparkDataFrameConverter extends Logging with ConverterUtils {
     // Patch the flat schema based on information about types
     val fnames = flatRddSchema.map(t => t._2.name).toArray
     // Transform datatype into h2o types
-    val vecTypes = flatRddSchema.indices
-      .map(idx => {
-        val f = flatRddSchema(idx)
-        dataTypeToVecType(f._2.dataType)
-      }).toArray
+    val vecTypes = flatRddSchema.map(f => vecTypeFor(f._2.dataType)).toArray
 
     convert[Row](hc, dfRdd, keyName, fnames, vecTypes, perSQLPartition(flatRddSchema))
   }
@@ -136,11 +133,11 @@ trait SparkDataFrameConverter extends Logging with ConverterUtils {
                 subRow.getDouble(aidx)
               }
             })
-            case StringType => {
+            case StringType =>
               val sv = if (isAry) ary(aryIdx).asInstanceOf[String] else subRow.getString(aidx)
               // Always produce string vectors
               con.put(idx, sv)
-            }
+
             case TimestampType => con.put(idx, subRow.getAs[java.sql.Timestamp](aidx))
             case _ => con.putNA(idx)
           }
@@ -159,23 +156,25 @@ trait SparkDataFrameConverter extends Logging with ConverterUtils {
 
   private def getVecLen(r: Row, idx: Int): Int = {
     val value = r.get(idx)
-    if (value.isInstanceOf[mllib.linalg.Vector]) {
-      value.asInstanceOf[mllib.linalg.Vector].size
-    } else if (value.isInstanceOf[ml.linalg.Vector]) {
-      value.asInstanceOf[ml.linalg.Vector].size
-    } else {
-      -1
+    value match {
+      case vector: mllib.linalg.Vector =>
+        vector.size
+      case vector: ml.linalg.Vector =>
+        vector.size
+      case _ =>
+        -1
     }
   }
 
   private def getVecVal(r: Row, ridx: Int, vidx: Int): Double = {
     val value = r.get(ridx)
-    if (value.isInstanceOf[mllib.linalg.Vector]) {
-      value.asInstanceOf[mllib.linalg.Vector](vidx)
-    } else if (value.isInstanceOf[ml.linalg.Vector]) {
-      value.asInstanceOf[ml.linalg.Vector](vidx)
-    } else {
-      throw new ArrayIndexOutOfBoundsException(s"Row: ${r}, row index: ${ridx}, vector index: ${vidx}")
+    value match {
+      case vector: mllib.linalg.Vector =>
+        vector(vidx)
+      case vector: ml.linalg.Vector =>
+        vector(vidx)
+      case _ =>
+        throw new ArrayIndexOutOfBoundsException(s"Row: ${r}, row index: ${ridx}, vector index: ${vidx}")
     }
   }
 }

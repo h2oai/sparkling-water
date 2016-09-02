@@ -100,7 +100,7 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
     h2oNodes.append(nodes:_*)
     localClientIp = H2O.SELF_ADDRESS.getHostAddress
     localClientPort = H2O.API_PORT
-    logInfo("Sparkling Water started, status of context: " + this.toString)
+    logInfo("Sparkling Water started, status of context: " + this)
 
     // Store this instance so it can be obtained using getOrCreate method
     H2OContext.setInstantiatedContext(this)

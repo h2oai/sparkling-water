@@ -49,9 +49,11 @@ trait SupportedRDD {
 
 private[this] object SupportedRDD {
 
-  implicit def toH2OFrameFromRDDJavaInt(rdd: RDD[java.lang.Integer]): SupportedRDD = new SupportedRDD {
+  class PrimitiveSupportedRDD[T: TypeTag](rdd: RDD[T]) extends SupportedRDD {
     override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
   }
+
+  implicit def toH2OFrameFromRDDJavaInt(rdd: RDD[java.lang.Integer]): SupportedRDD = new PrimitiveSupportedRDD(rdd)
 
   implicit def toH2OFrameFromRDDJavaByte(rdd: RDD[java.lang.Byte]): SupportedRDD = new SupportedRDD {
     override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
