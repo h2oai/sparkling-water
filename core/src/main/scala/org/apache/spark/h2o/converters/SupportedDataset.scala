@@ -17,9 +17,11 @@
 
 package org.apache.spark.h2o.converters
 
-import org.apache.spark.{TaskContext, SparkContext}
 import org.apache.spark.h2o._
+import org.apache.spark.h2o.utils.SupportedTypes.SupportedType
+import org.apache.spark.h2o.utils._
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkContext, TaskContext}
 import water.Key
 import water.parser.BufferedString
 
@@ -75,9 +77,10 @@ object SupportedDataset {
     }
   }
 
-  case class MetaInfo(names:Array[String], vecTypes: Array[Byte]) {
+  case class MetaInfo(names:Array[String], types: Array[SupportedType]) {
     require(names.length > 0, "Empty meta info does not make sense")
-    require(names.length == vecTypes.length, s"Different lengths: ${names.length} names, ${vecTypes.length} types")
+    require(names.length == types.length, s"Different lengths: ${names.length} names, ${types.length} types")
+    lazy val vecTypes: Array[Byte] = types map (_.vecType)
   }
 
   case class ProductFrameBuilder(sc: SparkContext, rdd: RDD[Product], frameKeyName: Option[String]) {
@@ -128,39 +131,18 @@ object SupportedDataset {
       buildH2OFrame(kn, meta.vecTypes, res)
     }
 
-
-    private def inferFieldType(value : Any): Class[_] ={
-      value match {
-        case n: Byte  => classOf[java.lang.Byte]
-        case n: Short => classOf[java.lang.Short]
-        case n: Int => classOf[java.lang.Integer]
-        case n: Long => classOf[java.lang.Long]
-        case n: Float => classOf[java.lang.Float]
-        case n: Double => classOf[java.lang.Double]
-        case n: Boolean => classOf[java.lang.Boolean]
-        case n: String => classOf[java.lang.String]
-        case n: java.sql.Timestamp => classOf[java.sql.Timestamp]
-        case q => throw new IllegalArgumentException(s"Do not understand type $q")
-      }
-    }
-
-    import org.apache.spark.h2o.utils.H2OTypeUtils._
+    import ReflectionUtils._
 
     def metaInfo(fieldNames: Int => String): MetaInfo = {
       val first = rdd.first()
       val fnames: Array[String] = (0 until first.productArity map fieldNames).toArray[String]
 
-      val ftypes = first.productIterator map inferFieldType
-
-      // Collect H2O vector types for all input types
-      val vecTypes:Array[Byte] = ftypes map dataTypeToVecType toArray
-
-      MetaInfo(fnames, vecTypes)
+      MetaInfo(fnames, memberTypes(first))
     }
 
     def metaInfo(tuples: List[(String, Type)]): MetaInfo = {
       val names = tuples map (_._1) toArray
-      val vecTypes = tuples map (nt => dataTypeToVecType(nt._2)) toArray
+      val vecTypes = tuples map (nt => supportedTypeFor(nt._2)) toArray
 
       MetaInfo(names, vecTypes)
     }

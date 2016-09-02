@@ -18,15 +18,14 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.utils.H2OTypeUtils._
-import org.apache.spark.h2o.utils.{H2OTypeUtils, NodeDesc, ReflectionUtils}
 import org.apache.spark.TaskContext
+import org.apache.spark.h2o.utils.NodeDesc
+import org.apache.spark.h2o.utils.ReflectionUtils._
 import org.apache.spark.internal.Logging
 import water.Key
 
 import scala.collection.immutable
-import scala.collection.mutable.ListBuffer
-import scala.language.implicitConversions
+import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
@@ -45,28 +44,20 @@ private[h2o] object ProductRDDConverter extends Logging with ConverterUtils {
     // infer the type
     val first = rdd.first()
     val fnames = 0.until(first.productArity).map(idx => "f" + idx).toArray[String]
-    val ftypes = new ListBuffer[Class[_]]()
-    val it = first.productIterator
-    while(it.hasNext){
-      ftypes+=inferFieldType(it.next())
-    }
-    // Collect H2O vector types for all input types
-    val vecTypes = ftypes.toArray[Class[_]].indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
+
+    val vecTypes = memberTypes(first) map (_.vecType)
 
     convert[Product](hc, rdd, keyName, fnames, vecTypes, perTypedRDDPartition())
   }
 
   /** Transform typed RDD into H2O Frame */
   def toH2OFrame[T <: Product : TypeTag](hc: H2OContext, rdd: RDD[T], frameKeyName: Option[String]) : H2OFrame = {
-    import H2OTypeUtils._
-    import ReflectionUtils._
 
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
 
-    val fnames = names[T]
-    val ftypes = types[T](fnames)
-    // Collect H2O vector types for all input types
-    val vecTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
+    // TODO(vlad): use ProductType for this
+    val fnames = fieldNamesOf[T]
+    val vecTypes = vecTypesOf[T]
 
     convert[T](hc, rdd, keyName, fnames, vecTypes, perTypedRDDPartition())
   }
@@ -115,24 +106,4 @@ private[h2o] object ProductRDDConverter extends Logging with ConverterUtils {
     (context.partitionId, con.numOfRows)
   }
 
-  /**
-    * Infers the type from Any, used for determining the types in Product RDD
-    *
-    * @param value the value the type of which we are trying to check, via reflection
-    * @return
-    */
-  private[this] def inferFieldType(value : Any): Class[_] ={
-    value match {
-      case n: Byte  => classOf[java.lang.Byte]
-      case n: Short => classOf[java.lang.Short]
-      case n: Int => classOf[java.lang.Integer]
-      case n: Long => classOf[java.lang.Long]
-      case n: Float => classOf[java.lang.Float]
-      case n: Double => classOf[java.lang.Double]
-      case n: Boolean => classOf[java.lang.Boolean]
-      case n: String => classOf[java.lang.String]
-      case n: java.sql.Timestamp => classOf[java.sql.Timestamp]
-      case q => throw new IllegalArgumentException(s"Do not understand type $q")
-    }
-  }
 }
