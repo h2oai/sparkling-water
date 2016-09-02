@@ -31,13 +31,15 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
-import water.Scope;
+import water.DKV;
 import water.fvec.Frame;
 import water.fvec.H2OFrame;
 import water.fvec.Vec;
 import water.util.Log;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
 
@@ -101,16 +103,19 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
             }
         }
 
-        for (Vec vec : _train.vecs()) {
-            if (!(vec.isNumeric() || vec.isTime() || vec.isCategorical())) {
-                error("_train", "SVM supports only frames with numeric values. But a " + vec.get_type_str() + " was found.");
+        Set<String> ignoredCols = null != _parms._ignored_columns ?
+                new HashSet<String>(Arrays.asList(_parms._ignored_columns)) :
+                new HashSet<String>();
+        for (int i = 0; i < _train.vecs().length; i++) {
+            Vec vec = _train.vec(i);
+            if (!ignoredCols.contains(_train.name(i)) && !(vec.isNumeric() || vec.isCategorical())) {
+                error("_train", "SVM supports only frames with numeric values (except for result column). But a " + vec.get_type_str() + " was found.");
             }
         }
 
         if (null != _parms._response_column && null == _train.vec(_parms._response_column)) {
             error("_train", "Training frame has to contain the response column.");
         }
-
 
         if (_train != null && _parms._response_column != null) {
             String[] responseDomains = responseDomains();
@@ -120,7 +125,6 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
                 }
 
                 if (!_train.vec(_parms._response_column).isNumeric()) {
-                    error("_threshold", "Threshold cannot be set for regression SVM. Set the threshold to NaN or modify the response column to an enum.");
                     error("_response_column", "Regression SVM requires the response column type to be numeric.");
                 }
             } else {
@@ -129,10 +133,11 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
                 }
 
                 if (responseDomains.length != 2) {
-                    error("_response_column", "Binomial SVM requires the response column's domain to be \"0\" and \"1\".");
+                    error("_response_column", "SVM requires the response column's domain to be of size 2.");
                 }
             }
         }
+
     }
 
     private String[] responseDomains() {
@@ -152,8 +157,8 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
 
     private final class SVMDriver extends Driver {
 
-        transient private H2OContext h2oContext = hc;
         transient private SparkContext sc = hc.sparkContext();
+        transient private H2OContext h2oContext = hc;
         transient private SQLContext sqlContext = SQLContext.getOrCreate(sc);
 
         @Override
@@ -193,8 +198,10 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
             model._output.iterations_$eq(_parms._max_iterations);
             model._output.interceptor_$eq(trainedModel.intercept());
 
-            model._output._training_metrics =
-                    SVMDriverUtil.computeMetrics(model, training, trainedModel, _parms.train(), responseDomains());
+            Frame train = DKV.<Frame>getGet(_parms._train);
+            model.score(train).delete();
+            model._output._training_metrics = ModelMetrics.getFromDKV(model, train);
+
             model.update(_job);
 
             _job.update(model._parms._max_iterations);
@@ -222,7 +229,7 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
         private RDD<LabeledPoint> getTrainingData(Frame parms, String _response_column, int nfeatures) {
             return h2oContext.asDataFrame(new H2OFrame(parms), true, sqlContext)
                     .javaRDD()
-                    .map(new RowToLabeledPoint(nfeatures, _response_column, parms.domains()[parms.find(_response_column)])).rdd();
+                    .map(new RowToLabeledPoint(nfeatures, _response_column, parms.domains())).rdd();
         }
     }
 }
@@ -230,9 +237,9 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
 class RowToLabeledPoint implements Function<Row, LabeledPoint> {
     private final int nfeatures;
     private final String _response_column;
-    private final String[] domains;
+    private final String[][] domains;
 
-    RowToLabeledPoint(int nfeatures, String response_column, String[] domains) {
+    RowToLabeledPoint(int nfeatures, String response_column, String[][] domains) {
         this.nfeatures = nfeatures;
         this._response_column = response_column;
         this.domains = domains;
@@ -243,15 +250,15 @@ class RowToLabeledPoint implements Function<Row, LabeledPoint> {
         StructField[] fields = row.schema().fields();
         double[] features = new double[nfeatures];
         for (int i = 0; i < nfeatures; i++) {
-            features[i] = toDouble(row.get(i), fields[i]);
+            features[i] = toDouble(row.get(i), fields[i], domains[i]);
         }
 
         return new LabeledPoint(
-                Arrays.binarySearch(domains, row.<String>getAs(_response_column)),
+                toDouble(row.<String>getAs(_response_column), fields[fields.length - 1], domains[domains.length - 1]),
                 Vectors.dense(features));
     }
 
-    private double toDouble(Object value, StructField fieldStruct) {
+    private double toDouble(Object value, StructField fieldStruct, String[] domain) {
         if (fieldStruct.dataType().sameType(DataTypes.ByteType)) {
             return ((Byte) value).doubleValue();
         }
@@ -269,7 +276,7 @@ class RowToLabeledPoint implements Function<Row, LabeledPoint> {
         }
 
         if (fieldStruct.dataType().sameType(DataTypes.StringType)) {
-            return Double.parseDouble(value.toString());
+            return Arrays.binarySearch(domain, value);
         }
 
         throw new IllegalArgumentException("Target column has to be an enum or a number. " + fieldStruct.toString());

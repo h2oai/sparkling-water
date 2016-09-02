@@ -55,13 +55,14 @@ class SVMModel private[svm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ <: AnyRef]]
     if(_parms._threshold.isNaN) { // Regression
       preds(0) = pred
     } else { // Binomial
+      val dt = defaultThreshold()
       if(pred > _parms._threshold) {
-        preds(2) = 1
-        preds(1) = -1
+        preds(2) = if(pred < dt) dt else pred
+        preds(1) = preds(2) - 1
         preds(0) = 1
       } else {
-        preds(2) = -1
-        preds(1) = 1
+        preds(2) = if(pred >= dt) dt - 1 else pred
+        preds(1) = preds(2) + 1
         preds(0) = 0
       }
     }
@@ -88,13 +89,14 @@ class SVMModel private[svm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ <: AnyRef]]
     if (_output.nclasses == 1) {
       bodySb.i.p("preds[0] = prediction;").nl
     } else {
+      bodySb.i.p("double dt = defaultThreshold();")
       bodySb.i.p(s"if(prediction > ${_parms._threshold}) {").nl
-      bodySb.i(1).p("preds[2] = 1;").nl
-      bodySb.i(1).p("preds[1] = -1;").nl
+      bodySb.i(1).p("preds[2] = pred < dt ? dt : pred;").nl
+      bodySb.i(1).p("preds[1] = preds[2] - 1;").nl
       bodySb.i(1).p("preds[0] = 1;").nl
       bodySb.i.p(s"} else {").nl
-      bodySb.i(1).p("preds[2] = -1;").nl
-      bodySb.i(1).p("preds[1] = 1;").nl
+      bodySb.i(1).p("preds[2] = pred >= dt ? dt - 1 : pred;").nl
+      bodySb.i(1).p("preds[1] = preds[2] + 1;").nl
       bodySb.i(1).p("preds[0] = 0;").nl
       bodySb.i.p(s"}").nl
     }
