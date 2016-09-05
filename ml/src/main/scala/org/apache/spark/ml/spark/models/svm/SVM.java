@@ -192,7 +192,7 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
             svm.optimizer().setGradient(_parms._gradient.get());
             svm.optimizer().setUpdater(_parms._updater.get());
 
-            ProgressListener progressBar = new ProgressListener(_job, RDDInfo.fromRdd(training), asScalaIterable(Arrays.<String>asList("treeAggregate")));
+            ProgressListener progressBar = new ProgressListener(sc, _job, RDDInfo.fromRdd(training), asScalaIterable(Arrays.<String>asList("treeAggregate")));
             
             sc.addSparkListener(progressBar);
 
