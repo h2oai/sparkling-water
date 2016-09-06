@@ -17,6 +17,7 @@
 
 package hex.schemas;
 
+import org.apache.spark.ml.spark.models.MissingValuesHandling;
 import org.apache.spark.ml.spark.models.svm.*;
 import water.DKV;
 import water.Key;
@@ -51,7 +52,8 @@ public class SVMV3 extends ModelBuilderSchema<SVM, SVMV3, SVMV3.SVMParametersV3>
                 "gradient",
 
                 "ignored_columns",
-                "ignore_const_cols"
+                "ignore_const_cols",
+                "missing_values_handling"
         };
 
         @API(help="Initial model weights.", direction=API.Direction.INOUT, gridable = true)
@@ -81,6 +83,11 @@ public class SVMV3 extends ModelBuilderSchema<SVM, SVMV3, SVMV3.SVMParametersV3>
 
         @API(help="Set the gradient computation type for SGD.", direction=API.Direction.INPUT, values = {"Hinge", "LeastSquares", "Logistic"}, required = true, gridable = true, level = API.Level.expert)
         public Gradient gradient = Gradient.Hinge;
+
+        @API(level = API.Level.expert, direction = API.Direction.INOUT, gridable = true,
+                values = {"NotAllowed", "Skip", "MeanImputation"},
+                help = "Handling of missing values. Either NotAllowed, Skip or MeanImputation.")
+        public MissingValuesHandling missing_values_handling;
 
         @Override
         public SVMParametersV3 fillFromImpl(SVMParameters impl) {
