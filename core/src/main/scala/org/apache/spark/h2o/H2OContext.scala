@@ -19,6 +19,7 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
+import org.apache.log4j.{Level, LogManager}
 import org.apache.spark._
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
@@ -26,9 +27,10 @@ import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.utils.{H2OContextUtils, NodeDesc}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import water._
+import water.util.{Log, LogUtil}
 
 import scala.collection.mutable
-import scala.language.implicitConversions
+import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 import scala.util.control.NoStackTrace
@@ -49,7 +51,7 @@ import scala.util.control.NoStackTrace
   * Cluster mode can be set using the spark configuration
   * property spark.ext.h2o.mode which can be set in script starting sparkling-water or
   * can be set in H2O configuration class H2OConf
- */
+  */
 
 /**
   * Create new H2OContext based on provided H2O configuration
@@ -58,9 +60,9 @@ import scala.util.control.NoStackTrace
   * @param conf H2O configuration
   */
 class H2OContext private (@transient val sparkContext: SparkContext, @transient conf: H2OConf) extends org.apache.spark.Logging
-  with Serializable with SparkDataFrameConverter with SupportedRDDConverter with H2OContextUtils{
-  self =>
+  with Serializable with SparkDataFrameConverter with SupportedRDDConverter with H2OContextUtils { self =>
 
+  @transient val sqlc: SQLContext = SQLContext.getOrCreate(sparkContext)
 
   /** IP of H2O client */
   private var localClientIp: String = _
@@ -85,7 +87,7 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
     * otherwise it creates new H2O cluster living in Spark
     */
   def init(): H2OContext = {
-    if(!isRunningOnCorrectSpark(sparkContext)){
+    if (!isRunningOnCorrectSpark(sparkContext)) {
       throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark $buildSparkMajorVersion," +
         s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
         s" points to Spark of version ${sparkContext.version}. Please ensure correct Spark is provided and" +
@@ -124,14 +126,19 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
   def toH2OFrameKey(rdd: SupportedRDD, frameName: String): Key[_] = toH2OFrameKey(rdd, Option(frameName))
 
   /** Transform DataFrame to H2OFrame */
-  def asH2OFrame(df : DataFrame): H2OFrame = asH2OFrame(df, None)
-  def asH2OFrame(df : DataFrame, frameName: Option[String]) : H2OFrame = toH2OFrame(this, df, frameName)
-  def asH2OFrame(df : DataFrame, frameName: String) : H2OFrame = asH2OFrame(df, Option(frameName))
+  def asH2OFrame(df: DataFrame): H2OFrame = asH2OFrame(df, None)
+  def asH2OFrame(df: DataFrame, frameName: Option[String]): H2OFrame = toH2OFrame(this, df, frameName)
+  def asH2OFrame(df: DataFrame, frameName: String): H2OFrame = asH2OFrame(df, Option(frameName))
+  /** Transforms Dataset[Supported type] to H2OFrame */
+  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T]): H2OFrame = asH2OFrame(ds, None)
+  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): H2OFrame =
+    ProductRDDConverter.toH2OFrame(self, ds.rdd, frameName)
+  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
 
   /** Transform DataFrame to H2OFrame key */
   def toH2OFrameKey(df : DataFrame): Key[Frame] = toH2OFrameKey(df, None)
-  def toH2OFrameKey(df : DataFrame, frameName: Option[String]) : Key[Frame] = asH2OFrame(df, frameName)._key
-  def toH2OFrameKey(df : DataFrame, frameName: String) : Key[Frame] = toH2OFrameKey(df, Option(frameName))
+  def toH2OFrameKey(df : DataFrame, frameName: Option[String]): Key[Frame] = asH2OFrame(df, frameName)._key
+  def toH2OFrameKey(df : DataFrame, frameName: String): Key[Frame] = toH2OFrameKey(df, Option(frameName))
 
   /** Create a new H2OFrame based on existing Frame referenced by its key.*/
   def asH2OFrame(s: String): H2OFrame = new H2OFrame(s)
@@ -145,7 +152,7 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
     * in case we are RDD[T] where T is class defined in REPL. This is because class T is created as inner class
     * and we are not able to create instance of class T without outer scope - which is impossible to get.
     * */
-  def asRDD[A <: Product: TypeTag: ClassTag](fr : H2OFrame) : RDD[A] = toRDD[A, H2OFrame](this, fr)
+  def asRDD[A <: Product : TypeTag : ClassTag](fr: H2OFrame): RDD[A] = toRDD[A, H2OFrame](this, fr)
 
   /** A generic convert of Frame into Product RDD type
     *
@@ -156,20 +163,24 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
     * This code: hc.asRDD[PUBDEV458Type](rdd) will need to be call as hc.asRDD[PUBDEV458Type].apply(rdd)
     */
   def asRDD[A <: Product : TypeTag : ClassTag] = new {
-      def apply[T <: Frame](fr: T): RDD[A] = toRDD[A, T](H2OContext.this, fr)
+    def apply[T <: Frame](fr: T): H2ORDD[A, T] = toRDD[A, T](H2OContext.this, fr)
   }
 
   /** Convert given H2O frame into DataFrame type */
   @deprecated("1.3", "Use asDataFrame")
-  def asSchemaRDD[T <: Frame](fr : T, copyMetadata: Boolean = true)(implicit sqlContext: SQLContext) : DataFrame = toDataFrame(this, fr, copyMetadata)
-  def asDataFrame[T <: Frame](fr : T, copyMetadata: Boolean = true)(implicit sqlContext: SQLContext) : DataFrame = toDataFrame(this, fr, copyMetadata)
-  def asDataFrame(s : String, copyMetadata: Boolean)(implicit sqlContext: SQLContext) : DataFrame = toDataFrame(this, new H2OFrame(s), copyMetadata)
+  def asSchemaRDD[T <: Frame](fr: T, copyMetadata: Boolean = true)(implicit sqlContext: SQLContext): DataFrame = toDataFrame(this, fr, copyMetadata)
+  def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true)(implicit sqlContext: SQLContext): DataFrame = toDataFrame(this, fr, copyMetadata)
+  def asDataFrame(s: String, copyMetadata: Boolean)(implicit sqlContext: SQLContext): DataFrame = toDataFrame(this, new H2OFrame(s), copyMetadata)
 
   def h2oLocalClient = this.localClientIp + ":" + this.localClientPort
 
   def h2oLocalClientIp = this.localClientIp
 
   def h2oLocalClientPort = this.localClientPort
+
+  def setH2OClientLogLevel(level: String): Unit = LogUtil.setH2OClientLogLevel(level)
+
+  def setH2ONodeLogLevel(level: String): Unit = LogUtil.setH2ONodeLogLevel(level)
 
   // For now disable opening Spark UI
   //def sparkUI = sparkContext.ui.map(ui => ui.appUIAddress)
@@ -188,15 +199,15 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
 
   override def toString: String = {
     s"""
-      |Sparkling Water Context:
-      | * H2O name: ${H2O.ARGS.name}
-      | * cluster size: ${h2oNodes.size}
-      | * list of used nodes:
-      |  (executorId, host, port)
-      |  ------------------------
-      |  ${h2oNodes.mkString("\n  ")}
-      |  ------------------------
-      |
+       |Sparkling Water Context:
+       | * H2O name: ${H2O.ARGS.name}
+       | * cluster size: ${h2oNodes.size}
+       | * list of used nodes:
+       |  (executorId, host, port)
+       |  ------------------------
+       |  ${h2oNodes.mkString("\n  ")}
+       |  ------------------------
+       |
       |  Open H2O Flow in browser: http://$h2oLocalClient (CMD + click in Mac OSX)
     """.stripMargin
   }
@@ -210,7 +221,7 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
   // scalastyle:on
 }
 
-object H2OContext extends Logging{
+object H2OContext extends Logging {
 
   private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {
     synchronized {
@@ -224,12 +235,20 @@ object H2OContext extends Logging{
   @transient private val instantiatedContext = new AtomicReference[H2OContext]()
 
   /**
-    * Tries to get existing H2O Context. If it has been created, returns Option containing this H2O Context, otherwise
-    * returns None
+    * Tries to get existing H2O Context. If it is not there, ok.
+    * Note that this method has to be here because otherwise ScalaCodeHandlerSuite will fail in one of the tests.
+    * If you want to throw an exception when the context is missing, use ensure()
+    * If you want to create the context if it is not missing, use getOrCreate() (if you can).
     *
     * @return Option containing H2O Context or None
     */
   def get(): Option[H2OContext] = Option(instantiatedContext.get())
+
+  def ensure(onError: => String = "H2OContext has to be started in order to save/load data using H2O Data source."): H2OContext =
+    Option(instantiatedContext.get()) getOrElse {
+      throw new RuntimeException(onError)
+    }
+
 
   /**
     * Get existing or create new H2OContext based on provided H2O configuration

@@ -34,29 +34,48 @@ object ReflectionUtils {
 
   def types[T: TypeTag] : Array[Class[_]] = types(typeOf[T], new Array[String](0))
 
-  def types(st: `Type`, filter: Array[String]): Array[Class[_]] = {
+  def types(st: `Type`, nameFilter: Array[String]): Array[Class[_]] = {
+    val attr = listMemberTypes(st, nameFilter)
+    types(attr)
+  }
+
+  def listMemberTypes(st: `Type`, nameFilter: Array[String]): Seq[`Type`] = {
     val formalTypeArgs = st.typeSymbol.asClass.typeParams
     val TypeRef(_, _, actualTypeArgs) = st
     val attr = st.members.sorted
       .filter(!_.isMethod)
-      .filter( s => filter.contains(s.name.toString.trim))
+      .filter( s => nameFilter.contains(s.name.toString.trim))
       .map( s =>
-      s.typeSignature.substituteTypes(formalTypeArgs, actualTypeArgs)
-    )
-    types(attr)
+        s.typeSignature.substituteTypes(formalTypeArgs, actualTypeArgs)
+      )
+    attr
+  }
+
+  def nameType(t: `Type`): String = {
+    val name = typ(t).getSimpleName
+    if (t <:< typeOf[Option[_]]) s"Option[$name]" else name
+  }
+
+  def typeNames[T: TypeTag](nameFilter: Array[String]): Seq[String] = {
+    val st: `Type` = typeOf[T]
+    val attr = listMemberTypes(st, nameFilter)
+    typeNames(attr)
+  }
+
+  def typeNames(tt: Seq[`Type`]) : Seq[String] = {
+    tt map nameType
   }
 
   def types(tt: Seq[`Type`]) : Array[Class[_]] = {
-    tt.map( typ(_) ).toArray
+    (tt map typ).toArray
   }
 
   def typ(tpe: `Type`) : Class[_] = {
     tpe match {
       // Unroll Option[_] type
-      case t if t <:< typeOf[Option[_]] => {
+      case t if t <:< typeOf[Option[_]] =>
         val TypeRef(_, _, Seq(optType)) = t
         typ(optType)
-      }
       case t if t <:< typeOf[String]            => classOf[String]
       case t if t <:< typeOf[java.lang.Integer] => classOf[java.lang.Integer]
       case t if t <:< typeOf[java.lang.Long]    => classOf[java.lang.Long]

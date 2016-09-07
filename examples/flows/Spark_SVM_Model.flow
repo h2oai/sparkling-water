@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "cells": [
+    {
+      "type": "cs",
+      "input": "importFiles [ \"https://s3.amazonaws.com/h2o-public-test-data/smalldata/airlines/allyears2k_headers.zip\" ]"
+    },
+    {
+      "type": "cs",
+      "input": "setupParse paths: [ \"https://s3.amazonaws.com/h2o-public-test-data/smalldata/airlines/allyears2k_headers.zip\" ]"
+    },
+    {
+      "type": "cs",
+      "input": "parseFiles\n  paths: [\"https://s3.amazonaws.com/h2o-public-test-data/smalldata/airlines/allyears2k_headers.zip\"]\n  destination_frame: \"allyears2k_headers.hex\"\n  parse_type: \"CSV\"\n  separator: 44\n  number_columns: 31\n  single_quotes: false\n  column_names: [\"Year\",\"Month\",\"DayofMonth\",\"DayOfWeek\",\"DepTime\",\"CRSDepTime\",\"ArrTime\",\"CRSArrTime\",\"UniqueCarrier\",\"FlightNum\",\"TailNum\",\"ActualElapsedTime\",\"CRSElapsedTime\",\"AirTime\",\"ArrDelay\",\"DepDelay\",\"Origin\",\"Dest\",\"Distance\",\"TaxiIn\",\"TaxiOut\",\"Cancelled\",\"CancellationCode\",\"Diverted\",\"CarrierDelay\",\"WeatherDelay\",\"NASDelay\",\"SecurityDelay\",\"LateAircraftDelay\",\"IsArrDelayed\",\"IsDepDelayed\"]\n  column_types: [\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Numeric\",\"Enum\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Enum\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Enum\"]\n  delete_on_done: true\n  check_header: 1\n  chunk_size: 144523"
+    },
+    {
+      "type": "cs",
+      "input": "buildModel 'svm', {\"model_id\":\"svm-model\",\"training_frame\":\"allyears2k_headers.hex\",\"response_column\":\"IsDepDelayed\",\"nfolds\":0,\"ignored_columns\":[\"Year\",\"DepTime\",\"CRSDepTime\",\"ArrTime\",\"CRSArrTime\",\"FlightNum\",\"TailNum\",\"ActualElapsedTime\",\"CRSElapsedTime\",\"AirTime\",\"ArrDelay\",\"DepDelay\",\"Distance\",\"TaxiIn\",\"TaxiOut\",\"Cancelled\",\"CancellationCode\",\"Diverted\",\"CarrierDelay\",\"WeatherDelay\",\"NASDelay\",\"SecurityDelay\",\"LateAircraftDelay\",\"IsArrDelayed\"],\"ignore_const_cols\":true,\"add_intercept\":true,\"step_size\":1,\"reg_param\":0.01,\"convergence_tol\":0.001,\"mini_batch_fraction\":1,\"threshold\":0,\"updater\":\"L2\",\"gradient\":\"Hinge\"}"
+    }
+  ]
+}

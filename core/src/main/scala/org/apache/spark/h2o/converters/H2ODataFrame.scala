@@ -22,9 +22,9 @@ import org.apache.spark.h2o._
 import org.apache.spark.h2o.utils.H2OSchemaUtils._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.types.DataType
 import org.apache.spark.{Partition, SparkContext, TaskContext}
+import language.postfixOps
 
 /**
  * H2O H2OFrame wrapper providing RDD[Row]=DataFrame API.
@@ -36,70 +36,88 @@ import org.apache.spark.{Partition, SparkContext, TaskContext}
 private[spark]
 class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
                                           val requiredColumns: Array[String])
-                                         (@transient val sc: SparkContext)
-  extends RDD[InternalRow](sc, Nil) with H2ORDDLike[T] {
+                                         (@transient val sc: SparkContext) extends {
+  override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
+}
+  with RDD[InternalRow](sc, Nil) with H2ORDDLike[T] {
 
   def this(@transient frame: T)
           (@transient sc: SparkContext) = this(frame, null)(sc)
 
-  override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
+
+  val typesAll: Array[DataType] = frame.vecs().indices.map(idx => vecTypeToDataType(frame.vec(idx))).toArray
+  /** Create new types list which describes expected types in a way external H2O backend can use it. This list
+    * contains types in a format same for H2ODataFrame and H2ORDD */
+  val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, typesAll)
+  val colNames = frame.names()
 
   @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
+
     // Prepare iterator
     val iterator = new H2OChunkIterator[InternalRow] {
+
       /** Frame reference */
       override val keyName = frameKeyName
       /** Processed partition index */
       override val partIndex = split.index
-      /** Selected column indices */
-      val selectedColumnIndices = if (requiredColumns == null) {
-        fr.names().indices
+
+      // TODO(vlad): take care of the cases when names are missing in colNames - an exception?
+      val selectedColumnIndices = (if (requiredColumns == null) {
+        colNames.indices
       } else {
-        requiredColumns.toSeq.map { name =>
-          fr.find(name)
-        }
-      }
+        requiredColumns.toSeq.map{ name => colNames.indexOf(name) }
+      }) toArray
+
       // Make sure that column selection is consistent
       // scalastyle:off
       assert(requiredColumns != null && selectedColumnIndices.length == requiredColumns.length,
              "Column selection missing a column!")
       // scalastyle:on
 
-      /** Types used for data transfer */
-      val types = selectedColumnIndices.map(idx => vecTypeToDataType(fr.vec(idx))).toArray
-      override val expectedTypes: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
+      private val filteredTypes = selectedColumnIndices map typesAll
+
+    /** Filtered list of types used for data transfer */
+      val expectedTypes: Option[Array[Byte]]  =
+      // TODO(vlad): use Option's map
+      if (expectedTypesAll.isDefined){
+        Some(selectedColumnIndices.map(expectedTypesAll.get))
+      }else{
+        None
+      }
+
+      /* Converter context */
+      override val converterCtx: ReadConverterContext =
+      ConverterUtils.getReadConverterContext(isExternalBackend,
+        keyName,
+        chksLocation,
+        expectedTypes,
+        partIndex)
+
+      /*a sequence of converters, per column*/
+      private val columnConverters = filteredTypes map converterCtx.get
+
+
+      private def readRow: InternalRow = {
+          val optionalData: Seq[Option[Any]] =
+            columnConverters.zipWithIndex map {
+              case (converter, idx) => converter(selectedColumnIndices(idx))
+            }
+
+          val nullableData: Seq[Any] = optionalData map (_ orNull)
+
+          InternalRow.fromSeq(nullableData)
+      }
 
       override def next(): InternalRow = {
-        /** Mutable reusable row returned by iterator */
-        val mutableRow = new GenericMutableRow(selectedColumnIndices.length)
-        selectedColumnIndices.indices.foreach { idx =>
-          val i = selectedColumnIndices(idx)
-          val typ = types(idx)
-          if (converterCtx.isNA(i)) {
-            mutableRow.setNullAt(idx)
-          } else {
-            typ match {
-              case ByteType => mutableRow.setByte(idx, converterCtx.getByte(i))
-              case ShortType => mutableRow.setShort(idx, converterCtx.getShort(i))
-              case IntegerType => mutableRow.setInt(idx, converterCtx.getInt(i))
-              case LongType => mutableRow.setLong(idx, converterCtx.getLong(i))
-              case FloatType => mutableRow.setFloat(idx, converterCtx.getFloat(i))
-              case DoubleType => mutableRow.setDouble(idx, converterCtx.getDouble(i))
-              case BooleanType => mutableRow.setBoolean(idx, converterCtx.getBoolean(i))
-              case StringType => mutableRow.update(idx, converterCtx.getUTF8String(i))
-              case TimestampType => mutableRow.setLong(idx, converterCtx.getTimestamp(i))
-              case _ => ???
-            }
-          }
-        }
+        val row = readRow
         converterCtx.increaseRowIdx()
-        // Return result
-        mutableRow
+        row
       }
     }
 
-    // Wrap the iterator to backend specifc wrapper
+    // TODO(vlad): get rid of booleanness
+    // Wrap the iterator to backend specific wrapper
     ConverterUtils.getIterator[InternalRow](isExternalBackend, iterator)
   }
 }

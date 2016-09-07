@@ -37,6 +37,7 @@ trait FrameUtils {
     fr.finalizePartialFrame(rowsPerChunk, colDomains, colTypes)
   }
 
+  // TODO(vlad): Introduce implicit value class that ensures chunks compatibility
   /** @see Frame#createNewChunks */
   def createNewChunks(name: String, vecTypes: Array[Byte], cidx: Int): Array[NewChunk] =
     Frame.createNewChunks(name, vecTypes, cidx)

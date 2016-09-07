@@ -90,7 +90,7 @@ class DataSourceTestSuite extends FunSuite with SharedSparkTestContext {
       dfNew.write.format("h2o").mode(SaveMode.ErrorIfExists).save("new_key")
     }
 
-    assert(thrown.getMessage == "Frame with key 'new_key' already exists.")
+    assert(thrown.getMessage == "Frame with key 'new_key' already exists, if you want to override it set the save mode to override.")
     h2oFrame.remove()
   }
 

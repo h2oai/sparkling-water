@@ -91,6 +91,11 @@ trait SharedH2OConf {
     sparkConf.set(PROP_CLIENT_IP._1, ip)
     self
   }
+
+  def setH2OClientLogLevel(level: String): H2OConf = {
+    sparkConf.set(PROP_CLIENT_LOG_LEVEL._1, level)
+    self
+  }
 }
 
 object SharedH2OConf {

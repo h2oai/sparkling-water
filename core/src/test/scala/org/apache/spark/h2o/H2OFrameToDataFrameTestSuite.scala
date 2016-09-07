@@ -21,12 +21,13 @@ import java.sql.Timestamp
 import java.util.UUID
 
 import hex.splitframe.ShuffleSplitFrame
-import org.apache.spark.h2o.utils.{SharedSparkTestContext, H2OSchemaUtils}
-import H2OSchemaUtils.flatSchema
+import org.apache.spark.SparkContext
+import org.apache.spark.h2o.utils.H2OSchemaUtils.flatSchema
+import org.apache.spark.h2o.utils.TestData._
+import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedSparkTestContext}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
-import org.apache.spark.{SparkContext, mllib}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -35,7 +36,6 @@ import water.parser.BufferedString
 import water.{DKV, Key}
 
 import scala.reflect.ClassTag
-
 
 /**
  * Testing schema for h2o schema rdd transformation.
@@ -62,10 +62,12 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
       h2oFrame.vec(3).isNumeric & h2oFrame.vec(4).isNumeric & h2oFrame.vec(5).isNumeric & h2oFrame.vec(6).isNumeric
       & h2oFrame.vec(7).isNumeric & h2oFrame.vec(8).isNumeric)
     val rdd = hc.asRDD[Prostate](h2oFrame)
+    def @@(i: Int) = rdd.take(i + 1)(i)
 
     assert (rdd.count == h2oFrame.numRows())
-    assert (rdd.take(5)(4).productArity == 9)
-    assert (rdd.take(8)(7).AGE.get == 61)
+    assert (@@(4).productArity == 9)
+    val sample7 = @@(7)
+    assert (sample7.AGE.get == 61)
 
     h2oFrame.delete()
   }
@@ -79,7 +81,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_CAT, colDomains = Array(Array("ZERO", "ONE")))
 
     assert (h2oFrame.vec(0).chunkForChunkIdx(0).at8(0) == 1)
-    assert (h2oFrame.vec(0).isCategorical())
+    assert (h2oFrame.vec(0).isCategorical)
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
@@ -101,12 +103,12 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_TIME)
 
     assert (h2oFrame.vec(0).chunkForChunkIdx(1).at8(1) == 1428517566L)
-    assert (h2oFrame.vec(0).isTime())
+    assert (h2oFrame.vec(0).isTime)
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
     assert (dataFrame.count == h2oFrame.numRows())
-    assert (dataFrame.take(4)(3)(0).asInstanceOf[Timestamp].getTime() == 1428517566L)
+    assert (dataFrame.take(4)(3)(0).asInstanceOf[Timestamp].getTime == 1428517566L)
     assert (dataFrame.schema.fields(0) match {
       case StructField("C0",TimestampType,false,_)=> true
       case _ => false
@@ -119,12 +121,12 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val fname: String = "testByte.hex"
     val colNames: Array[String] = Array("C0")
     val chunkLayout: Array[Long] = Array(3L, 5L)
-    val data: Array[Array[Byte]] = Array(Array(-1.toByte, 2.toByte, -3.toByte),
-      Array(4.toByte, -5.toByte, 6.toByte, -7.toByte, 8.toByte))
+    val data: Array[Array[Byte]] = Array(Array(-1, 2, -3) map (_.toByte),
+      Array(4, -5, 6, -7, 8) map (_.toByte))
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
 
     assert (h2oFrame.vec(0).chunkForChunkIdx(1).at8(4) == 8)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
@@ -142,12 +144,12 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val fname: String = "testShort.hex"
     val colNames: Array[String] = Array("C0")
     val chunkLayout: Array[Long] = Array(3L, 5L)
-    val data: Array[Array[Short]] = Array(Array(-200.toShort, 201.toShort, -202.toShort),
-      Array(204.toShort, -205.toShort, 206.toShort, -207.toShort, 208.toShort))
+    val data: Array[Array[Short]] = Array(Array(-200, 201, -202) map (_.toShort),
+      Array(204, -205, 206, -207, 208) map (_.toShort))
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
 
     assert (h2oFrame.vec(0).chunkForChunkIdx(1).at8(4) == 208)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
@@ -170,7 +172,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
 
     assert (h2oFrame.vec(0).chunkForChunkIdx(1).at8(4) == 100008)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
@@ -192,7 +194,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
 
     assert (h2oFrame.vec(0).chunkForChunkIdx(1).at8(1) == -8589934595L)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
@@ -214,7 +216,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
 
     assert (h2oFrame.vec(0).chunkForChunkIdx(1).atd(1) == 100.00012)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
@@ -238,7 +240,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_STR)
 
     assert (h2oFrame.vec(0).chunkForChunkIdx(2).atStr(new BufferedString(),1).toString.equals("string8"))
-    assert (h2oFrame.vec(0).isString())
+    assert (h2oFrame.vec(0).isString)
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
@@ -267,11 +269,11 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
         UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3f")))
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_UUID)
 
-    assert (UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3a").getLeastSignificantBits() ==
+    assert (UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3a").getLeastSignificantBits ==
       h2oFrame.vec(0).chunkForChunkIdx(0).at16l(0)                                           &
-      UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3a").getMostSignificantBits()        ==
+      UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3a").getMostSignificantBits        ==
         h2oFrame.vec(0).chunkForChunkIdx(0).at16h(0))
-    assert (h2oFrame.vec(0).isUUID())
+    assert (h2oFrame.vec(0).isUUID)
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
@@ -304,7 +306,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("RDD[Short] to H2OFrame[Numeric]") {
@@ -312,7 +314,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("RDD[Int] to H2OFrame[Numeric]") {
@@ -321,7 +323,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("RDD[Long] to H2OFrame[Numeric]") {
@@ -330,7 +332,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("RDD[Float] to H2OFrame[Numeric]") {
@@ -339,7 +341,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("RDD[Double] to H2OFrame[Numeric]") {
@@ -348,7 +350,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("DataFrame[Byte] to H2OFrame[Numeric]") {
@@ -359,7 +361,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(srdd)
 
     assertH2OFrameInvariants(srdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("DataFrame[Short] to H2OFrame[Numeric]") {
@@ -370,7 +372,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(srdd)
 
     assertH2OFrameInvariants(srdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("DataFrame[Int] to H2OFrame[Numeric]") {
@@ -382,7 +384,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(srdd)
 
     assertH2OFrameInvariants(srdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("DataFrame[Long] to H2OFrame[Numeric]") {
@@ -394,7 +396,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(srdd)
 
     assertH2OFrameInvariants(srdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("DataFrame[Float] to H2OFrame[Numeric]") {
@@ -406,7 +408,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(srdd)
 
     assertH2OFrameInvariants(srdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("DataFrame[Double] to H2OFrame[Numeric]") {
@@ -418,7 +420,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(srdd)
 
     assertH2OFrameInvariants(srdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric())
+    assert (h2oFrame.vec(0).isNumeric)
   }
 
   test("DataFrame[String] to H2OFrame[String]") {
@@ -431,7 +433,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(srdd)
 
     assertH2OFrameInvariants(srdd, h2oFrame)
-    assert (h2oFrame.vec(0).isString())
+    assert (h2oFrame.vec(0).isString)
     assert (h2oFrame.domains()(0) == null)
     val catVec = h2oFrame.vec(0).toCategoricalVec
     assert (catVec.isCategorical)
@@ -449,7 +451,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(srdd)
 
     assertH2OFrameInvariants(srdd, h2oFrame)
-    assert (h2oFrame.vec(0).isTime())
+    assert (h2oFrame.vec(0).isTime)
   }
 
   test("DataFrame[Struct(TimeStamp)] to H2OFrame[Time]") {
@@ -509,7 +511,7 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val h2oFrame = hc.asH2OFrame(srdd)
 
     ShuffleSplitFrame.shuffleSplitFrame(h2oFrame,
-        Array[String]("train.hex", "test.hex", "hold.hex").map(Key.make[Frame](_)),
+        Array[String]("train.hex", "test.hex", "hold.hex") map Key.make[Frame],
         Array[Double](0.5, 0.3, 0.2), 1234567689L)
   }
 
@@ -522,9 +524,9 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
 
     val expandedSchema = H2OSchemaUtils.expandedSchema(sc, srdd)
     assert(expandedSchema === Vector(
-      (List(0, 0), StructField("a.n", IntegerType, true), 0),
-      (List(0, 1), StructField("a.name", StringType, true), 0),
-      (List(1), StructField("weight", DoubleType, false), 0)))
+      (List(0, 0), StructField("a.n", IntegerType), 0),
+      (List(0, 1), StructField("a.name", StringType), 0),
+      (List(1), StructField("weight", DoubleType, nullable=false), 0)))
 
     // Verify transformation into dataframe
     val h2oFrame = hc.asH2OFrame(srdd)
@@ -546,11 +548,11 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val metadatas = expandedSchema.map(f =>f._2.metadata)
 
     assert(expandedSchema === Vector(
-      (List(0), StructField("f0", IntegerType, false, metadatas(0)), 1),
-      (List(0), StructField("f1", IntegerType, false, metadatas(1)), 1),
-      (List(0), StructField("f2", IntegerType, false, metadatas(2)), 1),
-      (List(0), StructField("f3", IntegerType, false, metadatas(3)), 1),
-      (List(0), StructField("f4", IntegerType, false, metadatas(4)), 1)))
+      (List(0), StructField("f0", IntegerType, nullable=false, metadatas.head), 1),
+      (List(0), StructField("f1", IntegerType, nullable=false, metadatas(1)), 1),
+      (List(0), StructField("f2", IntegerType, nullable=false, metadatas(2)), 1),
+      (List(0), StructField("f3", IntegerType, nullable=false, metadatas(3)), 1),
+      (List(0), StructField("f4", IntegerType, nullable=false, metadatas(4)), 1)))
 
     // Verify transformation into dataframe
     val h2oFrame = hc.asH2OFrame(srdd)
@@ -575,8 +577,8 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val expandedSchema = H2OSchemaUtils.expandedSchema(sc, srdd)
 
     assert (expandedSchema === Vector(
-      (List(0),StructField("f0",DoubleType,true),2),
-      (List(0),StructField("f1",DoubleType,true),2)))
+      (List(0),StructField("f0",DoubleType),2),
+      (List(0),StructField("f1",DoubleType),2)))
 
     // Verify transformation into dataframe
     val h2oFrame = hc.asH2OFrame(srdd)
@@ -602,9 +604,9 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     val expandedSchema = H2OSchemaUtils.expandedSchema(sc, srdd)
 
     assert (expandedSchema === Vector(
-      (List(0),StructField("f0",DoubleType,true),2),
-      (List(0),StructField("f1",DoubleType,true),2),
-      (List(0),StructField("f2",DoubleType,true),2)))
+      (List(0),StructField("f0",DoubleType),2),
+      (List(0),StructField("f1",DoubleType),2),
+      (List(0),StructField("f2",DoubleType),2)))
 
     // Verify transformation into dataframe
     val h2oFrame = hc.asH2OFrame(srdd)
@@ -648,37 +650,13 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
     FrameUtils.preparePartialFrame(f,colNames)
     f.update()
 
-    for( i <- 0 to chunkLayout.length-1) { createNC(fname, data(i), i, chunkLayout(i).toInt, Array(h2oType)) }
+    for( i <- chunkLayout.indices) { buildChunks(fname, data(i), i, Array(h2oType)) }
 
     f = DKV.get(fname).get()
 
     FrameUtils.finalizePartialFrame(f, chunkLayout, colDomains, Array(h2oType))
 
-    return new H2OFrame(f)
-  }
-
-  def createNC[T: ClassTag](fname: String, data: Array[T], cidx: Integer, len: Integer, h2oType: Array[Byte]): NewChunk = {
-    val nchunks: Array[NewChunk] = FrameUtils.createNewChunks(fname, h2oType, cidx)
-
-    data.foreach { el =>
-      el match {
-        case x if x.isInstanceOf[UUID]               => nchunks(0).addUUID(
-          x.asInstanceOf[UUID].getLeastSignificantBits(),
-          x.asInstanceOf[UUID].getMostSignificantBits())
-        case x if x.isInstanceOf[String]             => nchunks(0).addStr(new BufferedString(x.asInstanceOf[String]))
-        case x if x.isInstanceOf[Byte]               => nchunks(0).addNum(x.asInstanceOf[Byte])
-        case x if x.isInstanceOf[Short]              => nchunks(0).addNum(x.asInstanceOf[Short])
-        case x if x.isInstanceOf[Integer] &
-          h2oType(0) == Vec.T_CAT                      => nchunks(0).addCategorical(x.asInstanceOf[Integer])
-        case x if x.isInstanceOf[Integer] &
-          h2oType(0) != Vec.T_CAT                      => nchunks(0).addNum(x.asInstanceOf[Integer].toDouble)
-        case x if x.isInstanceOf[Long]               => nchunks(0).addNum(x.asInstanceOf[Long].toDouble)
-        case x if x.isInstanceOf[Double]             => nchunks(0).addNum(x.asInstanceOf[Double])
-        case _ => ???
-      }
-    }
-    FrameUtils.closeNewChunks(nchunks)
-    return nchunks(0)
+    new H2OFrame(f)
   }
 
   def fp(it:Iterator[Row]):Unit = {
@@ -705,19 +683,19 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
         assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[FloatField].productArity, "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[DoubleField] =>
         assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[DoubleField].productArity, "Number columns should match")
-      case _ => ???
+      case x => throw new IllegalArgumentException(s"Bad data: $x")
     }
   }
 
   def assertVectorIntValues(vec: water.fvec.Vec, values: Seq[Int]): Unit = {
-    (0 until vec.length().asInstanceOf[Int]).foreach { rIdx =>
+    (0 until vec.length().toInt).foreach { rIdx =>
       assert(if (vec.isNA(rIdx)) -1 == values(rIdx)
         else vec.at8(rIdx) == values(rIdx), "values stored has to match to values in rdd")
     }
   }
 
   def assertVectorDoubleValues(vec: water.fvec.Vec, values: Seq[Double]): Unit = {
-    (0 until vec.length().asInstanceOf[Int]).foreach { rIdx =>
+    (0 until vec.length().toInt).foreach { rIdx =>
       assert(if (vec.isNA(rIdx)) values(rIdx)==Double.NaN // this is Scala i can do NaN comparision
         else vec.at(rIdx) == values(rIdx), "values stored has to match to values in rdd")
     }
@@ -725,15 +703,16 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
 
   def assertVectorEnumValues(vec: water.fvec.Vec, values: Seq[String]): Unit = {
     val vecDom = vec.domain()
-    (0 until vec.length().asInstanceOf[Int]).foreach { rIdx =>
+    (0 until vec.length().toInt).foreach { rIdx =>
       assert(vecDom(vec.at8(rIdx).asInstanceOf[Int]) == values(rIdx), "values stored has to match to values in rdd")
     }
   }
 
   def assertVectorStringValues(vec: water.fvec.Vec, values: Seq[String]): Unit = {
     val valString = new BufferedString()
-    (0 until vec.length().asInstanceOf[Int]).foreach { rIdx =>
+    (0 until vec.length().toInt).foreach { rIdx =>
       assert(
+        // TODO(vlad): fix it, fix it!!!!
         if (vec.isNA(rIdx)) values(rIdx)==Double.NaN // this is Scala i can do NaN comparision
         else {
           vec.atStr(valString, rIdx)
@@ -745,35 +724,4 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
 
 object H2OFrameToDataFrameTestSuite {
 
-}
-
-// Helper classes for conversion from RDD to DataFrame
-// which expects T <: Product
-case class ByteField   (v: Byte)
-case class ShortField  (v: Short)
-case class IntField    (v: Int)
-case class LongField   (v: Long)
-case class FloatField  (v: Float)
-case class DoubleField (v: Double)
-case class StringField(v: String)
-case class TimestampField(v: Timestamp)
-
-case class PrimitiveA(n: Int, name: String)
-case class ComposedA(a: PrimitiveA, weight: Double)
-case class ComposedWithTimestamp(a: PrimitiveA, v: TimestampField)
-
-case class PrimitiveB(f: Seq[Int])
-
-case class PrimitiveC(f: mllib.linalg.Vector)
-
-case class Prostate(ID      :Option[Long]  ,
-                    CAPSULE :Option[Int]  ,
-                    AGE     :Option[Int]  ,
-                    RACE    :Option[Int]  ,
-                    DPROS   :Option[Int]  ,
-                    DCAPS   :Option[Int]  ,
-                    PSA     :Option[Float],
-                    VOL     :Option[Float],
-                    GLEASON :Option[Int]  ) {
-  def isWrongRow():Boolean = (0 until productArity).map( idx => productElement(idx)).forall(e => e==None)
 }
