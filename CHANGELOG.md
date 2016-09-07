@@ -1,8 +1,10 @@
 ChangeLog
 =========
 
-## Current master
-  - Bug fixes
+Current master
+--------------
+
+- Bug fixes
     - [SW-12](https://0xdata.atlassian.net/browse/SW-12) - Provides an inner class encapsulating implicit conversion like SQLContext does
     - [SW-50](https://0xdata.atlassian.net/browse/SW-50) - Reject attempts to run Sparkling Water/pySparkling with wrong version of Spark 
     - [SW-80](https://0xdata.atlassian.net/browse/SW-80) - Add all pySparkling dependencies to pySparkling egg file
@@ -21,7 +23,7 @@ ChangeLog
     - [SW-141](https://0xdata.atlassian.net/browse/SW-141) - Timestamp in hierarchical Spark structure is incorrectly transformed into H2OFrame
     - [SW-149](https://0xdata.atlassian.net/browse/SW-149) - Use H2OContext.get() method where H2O Context is expected to be running
     - [PUBDEV-2879](https://0xdata.atlassian.net/browse/PUBDEV-2879) - Hot fix for NPE inside MetadataHandler
-  - Improvements
+- Improvements
     - [SW-37](https://0xdata.atlassian.net/browse/SW-37) - During test run warn/fail if the `SPARK_HOME` version is different from spark version used during build
     - [SW-85](https://0xdata.atlassian.net/browse/SW-85) - Follow Spark way in using implicits
     - [SW-98](https://0xdata.atlassian.net/browse/SW-98) - Upgrade H2O dependency to 3.8.1.4
@@ -42,8 +44,10 @@ ChangeLog
     - [SW-148](https://0xdata.atlassian.net/browse/SW-148) - Documentation for pySparkling on top of Databricks Cloud
     - [SW-150](https://0xdata.atlassian.net/browse/SW-150) - Introduce Scala API for Frame join operations
 
-##v1.6.1 (2016-03-15)
-  - Bug fixes
+v1.6.1 (2016-03-15)
+-------------------
+
+- Bug fixes
     - Fix idea setup script
     - Fix cloud name - make it unique
     - Fix bug in launching scripts which were overriding default Spark settings provide by use in `cond/spark-defaults.conf`
@@ -70,7 +74,7 @@ ChangeLog
     - [SW-70](https://0xdata.atlassian.net/browse/SW-70) - Support for Spark `LabeledPoint` in `RDD[T]`
     - [SW-94](https://0xdata.atlassian.net/browse/SW-94) - Fix Maven dependency between projects
     - [SW-97](https://0xdata.atlassian.net/browse/SW-97) - Spark 1.6 support
-  - Improvements
+- Improvements
     - Attach metadata derived from H2OFrame to Spark DataFrame
     - Improved logging subsystem
     - Model serialization support
@@ -91,7 +95,9 @@ ChangeLog
     - [SW-93](https://0xdata.atlassian.net/browse/SW-78) - Upgrade H2O dependency to Turan release (3.8.1.1)
 
 
-##v1.4.0 (2015-07-06)
+v1.4.0 (2015-07-06)
+-------------------
+
   - Support of primitives type in transformation from RDD to H2OFrame
   - Support of Spark 1.4
   - New applications
@@ -101,7 +107,9 @@ ChangeLog
   - API improvements
   - follow Spark way to provide implicit conversions
 
-##v1.3.0 (2015-05-25)
+v1.3.0 (2015-05-25)
+-------------------
+
   - Major release of Sparkling Water
   - Depends on:
     - Spark 1.3.1
@@ -110,13 +118,17 @@ ChangeLog
     - H2O's DataFrame was renamed to H2OFrame
     - Spark's SchemaRDD was renamed to DataFrame
 
-##v1.2.0 (2015-05-18)
+v1.2.0 (2015-05-18)
+-------------------
+
   - Major release of Sparkling Water
   - Depends on:
     - Spark 1.2.0
     - H2O 3.0 Shannon release
 
-##v0.2.14 (2015-05-14)
+v0.2.14 (2015-05-14)
+--------------------
+
   - Upgrade h2o dependency to build 1205 including fixes in algos, infrastructure,
     and improvements in UI
   - Examples changed to support modified h2o API
@@ -126,13 +138,16 @@ ChangeLog
     - list of meetups with links to code and instructions
   - Fix a limit on number of columns in SchemaRDD (thanks @nfergu)
 
-##v0.2.13 (2015-05-01)
+v0.2.13 (2015-05-01)
+--------------------
   - Upgrade h2o dependency to build 1165
   - Introduce type alias DataFrame pointing to `water.fvec.H2OFrame`
   - Change naming of implicit operations `toDataFrame` to `toH2OFrame`
   - Chicago crime shell script 
 
-##v0.2.12 (2015-04-21)
+v0.2.12 (2015-04-21)
+--------------------
+
   - Upgraded H2O dev to 1109 build.
   - Applications 
     - Chicago crime application 
