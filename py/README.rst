@@ -84,20 +84,19 @@ Running the PySparkling Interactive Shell
     bin/pysparkling
 
 
-The *pysparkling* shell accepts common *pyspark* arguments.
+ The *pysparkling* shell accepts common *pyspark* arguments.
 
 
-For running on YARN and other supported platforms please see `Running Sparkling Water on supported platforms
-<https://github.com/h2oai/sparkling-water/blob/master/DEVEL.md#TargetPlatforms>`_.
+ For running on YARN and other supported platforms please see `Running Sparkling Water on supported platforms <../DEVEL.html#running-on-select-target-platforms>`_.
 
 
 2. Initialize H2OContext
 
-.. code:: python
+ .. code:: python
 
       from pysparkling import *
       import h2o
-      hc = H2OContext(sc).start()
+      hc = H2OContext.getOrCreate(sc)
 
 
 Running IPython Notebook with PySparkling
@@ -105,7 +104,8 @@ Running IPython Notebook with PySparkling
 
 .. code-block:: bash
 
-    IPYTHON_OPTS="notebook" bin/pysparkling
+    IPYTHON_OPTS="notebook" 
+    bin/pysparkling
 
 
 Running IPython with PySparkling
@@ -113,7 +113,8 @@ Running IPython with PySparkling
 
 .. code-block:: bash
 
-    PYSPARK_PYTHON="ipython" bin/pysparkling
+    PYSPARK_PYTHON="ipython" 
+    bin/pysparkling
 
 
 Using PySparkling as a Spark Package
@@ -121,9 +122,8 @@ Using PySparkling as a Spark Package
 
 .. code-block:: bash
 
-	$SPARK_HOME/bin/spark-submit
-	--packages ai.h2o:sparkling-water-core_2.10:1.6.1
-	--py-files $SPARKLING_HOME/py/dist/pySparkling-1.6.1-py2.7.egg  ./py/examples/scripts/ChicagoCrimeDemo.py
+  export SPARKLING_EGG=$(ls $SPARKLING_HOME/py/dist/)
+  $SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.6.1 --py-files $SPARKLING_EGG ./py/examples/scripts/ChicagoCrimeDemo.py
 
 
 Using PySparkling in a Databricks Cloud

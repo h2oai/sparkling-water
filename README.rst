@@ -78,6 +78,57 @@ Binaries for each Sparkling Water version are available here:
 - `Latest 1.4 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.4/latest.html>`__
 - `Latest 1.3 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.3/latest.html>`__
 
+Build Sparkling Water
+~~~~~~~~~~~~~~~~~~~~~
+
+1. Download Spark installation and point environment variable `SPARK_HOME` to it.
+
+ **Note**: Before building this project, you may want to build Spark in case you are using the Spark source distribution. To do this, navigate to the Spark folder and run ``sbt assembly``.
+
+2. Use the provided ``gradlew`` to build the project.
+
+ **Note**: In order to build the whole project, including the Python module, one of the following properties needs to be set: 
+
+  - ``H2O_HOME``, which should point to location of local h2o project directory or
+  - ``H2O_PYTHON_WHEEL``, which should point to H2O Python Wheel.
+
+ If you are not sure which property to set, just run
+
+  ::
+
+    ./gradlew build
+
+ The commands that set the ``H2O_PYTHON_WHEEL`` will display on your console and can be copied/pasted into your terminal. After setting the property, the build needs to be rerun.
+
+3. To have everything you need for Python, you may need to install the Python ``future`` library using ``pip install future``.
+(Refer to `http://stackoverflow.com/questions/17271319/installing-pip-on-mac-os-x <http://stackoverflow.com/questions/17271319/installing-pip-on-mac-os-x>`__ if you do not have pip installed.) Use brew package manager or
+
+::
+
+    curl https://bootstrap.pypa.io/ez_setup.py -o - | sudo python
+    sudo easy_install pip
+    pip install future
+
+**Notes**: 
+ 
+ - To avoid running tests, use the ``-x test -x integTest`` or the ``-x check`` option. 
+ - To build only a specific module, use, for example, ``./gradlew :sparkling-water-examples:build``.
+ - To build test a specific module, use, for example, ``./gradlew :sparkling-water-examples:check``.
+
+Maven
+~~~~~
+
+Each Sparkling Water release is published into Maven central. Right now we publish artifacts only for Scala 2.10.
+
+The artifacts coordinates are:
+
+- ``ai.h2o:sparkling-water-core_2.10:{{version}}`` - includes core of Sparkling Water.
+- ``ai.h2o:sparkling-water-examples_2.10:{{version}}`` - includes example applications.
+
+Note: ``{{version}}`` is reference to a release version of Sparkling Water, for example: ``ai.h2o:sparkling-water-examples_2.10:1.5.10``.
+
+The full list of published packages is available `here <http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*>`__.
+
 Additional Resources
 --------------------
 
