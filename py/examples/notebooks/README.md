@@ -1,34 +1,38 @@
-Launching iPython Examples
+iPython Examples
 =========================
 
-##Prerequisites:
+Prerequisites
+--------------
 
 - Python 2.7
 
----
 
 Install iPython Notebook
 -------------------------
 
 1. Download pip, a Python package manager (if it's not already installed):
 
-    `$ sudo easy_install pip`
+ ::
+
+	$ sudo easy_install pip
 
 2. Install iPython using pip install:
 
-    `$ sudo pip install "ipython[notebook]"`
+ ::
 
----
+	$ sudo pip install "ipython[notebook]"
 
-Install dependencies
---------------------
+Installation Dependencies
+-------------------------
 
 This module uses requests and tabulate modules, both of which are available on pypi, the Python package index.
+
+::
 
     $ sudo pip install requests
     $ sudo pip install tabulate
   
----
+------
 
 Install and Launch H2O
 ----------------------

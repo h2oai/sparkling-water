@@ -2,20 +2,44 @@
   "version": "1.0.0",
   "cells": [
     {
-      "type": "cs",
-      "input": "importFiles [ \"https://s3.amazonaws.com/h2o-public-test-data/smalldata/airlines/allyears2k_headers.zip\" ]"
+      "type": "sca",
+      "input": "import org.apache.spark.mllib.linalg.Vectors\nimport scala.util.Random\nval df = sc.parallelize(1 to 50).map(v => {\n  val values = Array.fill(5){0}.map(x => Random.nextDouble())\n  // Use this for regression instead of binomial. Threshold has to be set to NaN during model building\n  //val label = Math.round(Random.nextDouble())\n  val label = if(Math.round(Random.nextDouble()) > 0.5) \"1\" else \"0\"\n  (label, Vectors.dense(values))\n  }).toDF(\"Label\", \"Vector\")\n\nval hc = H2OContext.getOrCreate(sc)\nhc.asH2OFrame(df, \"bubbles\")\nval weightsDF = sc.parallelize(Array(Tuple1(Vectors.dense(1,1,1,1,1)))).toDF(\"Vector\")\nhc.asH2OFrame(weightsDF, \"weights\")"
     },
     {
       "type": "cs",
-      "input": "setupParse paths: [ \"https://s3.amazonaws.com/h2o-public-test-data/smalldata/airlines/allyears2k_headers.zip\" ]"
+      "input": "changeColumnType frame: \"bubbles\", column: \"Label\", type: 'enum'"
     },
     {
       "type": "cs",
-      "input": "parseFiles\n  paths: [\"https://s3.amazonaws.com/h2o-public-test-data/smalldata/airlines/allyears2k_headers.zip\"]\n  destination_frame: \"allyears2k_headers.hex\"\n  parse_type: \"CSV\"\n  separator: 44\n  number_columns: 31\n  single_quotes: false\n  column_names: [\"Year\",\"Month\",\"DayofMonth\",\"DayOfWeek\",\"DepTime\",\"CRSDepTime\",\"ArrTime\",\"CRSArrTime\",\"UniqueCarrier\",\"FlightNum\",\"TailNum\",\"ActualElapsedTime\",\"CRSElapsedTime\",\"AirTime\",\"ArrDelay\",\"DepDelay\",\"Origin\",\"Dest\",\"Distance\",\"TaxiIn\",\"TaxiOut\",\"Cancelled\",\"CancellationCode\",\"Diverted\",\"CarrierDelay\",\"WeatherDelay\",\"NASDelay\",\"SecurityDelay\",\"LateAircraftDelay\",\"IsArrDelayed\",\"IsDepDelayed\"]\n  column_types: [\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Numeric\",\"Enum\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Enum\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Enum\"]\n  delete_on_done: true\n  check_header: 1\n  chunk_size: 144523"
+      "input": "buildModel \"svm\""
     },
     {
       "type": "cs",
-      "input": "buildModel 'svm', {\"model_id\":\"svm-model\",\"training_frame\":\"allyears2k_headers.hex\",\"response_column\":\"IsDepDelayed\",\"nfolds\":0,\"ignored_columns\":[\"Year\",\"DepTime\",\"CRSDepTime\",\"ArrTime\",\"CRSArrTime\",\"FlightNum\",\"TailNum\",\"ActualElapsedTime\",\"CRSElapsedTime\",\"AirTime\",\"ArrDelay\",\"DepDelay\",\"Distance\",\"TaxiIn\",\"TaxiOut\",\"Cancelled\",\"CancellationCode\",\"Diverted\",\"CarrierDelay\",\"WeatherDelay\",\"NASDelay\",\"SecurityDelay\",\"LateAircraftDelay\",\"IsArrDelayed\"],\"ignore_const_cols\":true,\"add_intercept\":true,\"step_size\":1,\"reg_param\":0.01,\"convergence_tol\":0.001,\"mini_batch_fraction\":1,\"threshold\":0,\"updater\":\"L2\",\"gradient\":\"Hinge\"}"
+      "input": "buildModel 'svm', {\"model_id\":\"test1\",\"training_frame\":\"bubbles\",\"response_column\":\"Label\",\"initial_weights_frame\":\"weights\",\"nfolds\":0,\"add_intercept\":false,\"step_size\":1,\"reg_param\":0.01,\"convergence_tol\":0.001,\"mini_batch_fraction\":1,\"threshold\":0,\"updater\":\"L2\",\"gradient\":\"Hinge\",\"ignored_columns\":[],\"ignore_const_cols\":true}"
+    },
+    {
+      "type": "cs",
+      "input": "getModel \"test1\""
+    },
+    {
+      "type": "cs",
+      "input": "predict model: \"test1\""
+    },
+    {
+      "type": "cs",
+      "input": "predict model: \"test1\", frame: \"bubbles\", predictions_frame: \"prediction-test1\""
+    },
+    {
+      "type": "cs",
+      "input": "bindFrames \"combined-prediction-test1\", [ \"prediction-test1\", \"bubbles\" ]"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"combined-prediction-test1\""
+    },
+    {
+      "type": "cs",
+      "input": "getFrameData \"combined-prediction-test1\""
     }
   ]
 }

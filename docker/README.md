@@ -1,38 +1,53 @@
-# Docker Support
+Docker Support
+==============
 
-## Create DockerFile
+Create a Docker File
+--------------------
 
-Docker file can be created by calling ```./gradlew createDockerFile -PsparkVersion=version```, where ```version``` is spark version
-for which to generate docker file. Latest corresponding sparkling water release to be used within docker image is determined
-automatically based on spark version.
+A Docker file can be created by calling ```./gradlew createDockerFile -PsparkVersion=version```, where ```version``` is spark version for which to generate docker file. The latest corresponding Sparkling Water release to be used within the Docker image is determined automatically based on the Spark version.
 
-The gradle task can be called without the parameter as ```./gradlew createDockerFile```, which creates docker file for spark version
-defined in gradle.properties file.
+The gradle task can be called using ```./gradlew createDockerFile```, which creates a Docker file for the Spark version defined in gradle.properties file.
 
-## Container requirements
-To run Sparkling Water in the container, the host has to provide a machine with at least 5G of total memory.
-If this is not met, Sparkling Water scripts print warning but still attempt to run.
+Container Requirements
+----------------------
 
-## Building a container
+To run Sparkling Water in the container, the host has to provide a machine with at least 5G of total memory. If this is not met, Sparkling Water scripts will print a warning, but will still attempt to run.
 
-```
-$ cd docker && ./build.sh
-```
+Building a Container
+--------------------
 
-## Run bash inside container
+Use the following command to build a container.
 
-```
-$ cd docker && docker run  -i -t sparkling-water-base /bin/bash
-```
+::
 
-## Run Sparkling Shell inside container
+	$ cd docker && ./build.sh
 
-```
-$ cd docker && docker run -i -t --rm sparkling-water-base bin/sparkling-shell 
-```
 
-## Running examples in container
+Run Bash Inside a Container
+---------------------------
 
-```
-$ cd docker && docker run -i -t --rm sparkling-water-base bin/run-example.sh
-```
+Use the following command to run Bash inside of a container. 
+
+::
+
+	$ cd docker && docker run  -i -t sparkling-water-base /bin/bash
+
+
+Run Sparkling Shell Inside a Container
+--------------------------------------
+
+Use the following command to run Sparkling Shell inside of a container.
+
+::
+
+	$ cd docker && docker run -i -t --rm sparkling-water-base bin/sparkling-shell 
+
+Run Examples in a Container
+---------------------------
+
+Use the following command to run examples in a container. 
+
+::
+
+	$ cd docker && docker run -i -t --rm sparkling-water-base bin/run-example.sh
+
