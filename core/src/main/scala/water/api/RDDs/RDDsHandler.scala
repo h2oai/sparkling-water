@@ -50,6 +50,7 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
     s
   }
 
+  // TODO(vlad): fix this 'instanceOf'
   private[RDDsHandler] def convertToH2OFrame(rdd: RDD[_], name: Option[String]): H2OFrame = {
     if (rdd.isEmpty()) {
       // transform empty Seq in order to create empty H2OFrame
@@ -70,6 +71,7 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
     }
   }
 
+  // TODO(vlad): see the same code in DataFrames
   def toH2OFrame(version: Int, s: RDD2H2OFrameIDV3): RDD2H2OFrameIDV3 = {
     if (sc.getPersistentRDDs.get(s.rdd_id).isEmpty) {
       throw new H2ONotFoundArgumentException(s"RDD with ID '${s.rdd_id}' does not exist, can not proceed with the transformation!")

@@ -88,9 +88,9 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     Option(op.asInstanceOf[X])
   } catch {
     case ex: Exception =>
-      println(ex)
       None
   }
+
   // maps data columns to product components
   val columnMapping: Array[Int] =
     if (productType.isSingleton) Array(0) else multicolumnMapping
@@ -213,13 +213,13 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     found
   }
 
-  private case class Builder(c:  Constructor[_]) {
+  @transient private case class Builder(c:  Constructor[_]) {
     def apply(data: Array[AnyRef]): Option[A] = {
       val x = opt(c.newInstance(data:_*).asInstanceOf[A])
       x
     }
   }
 
-  private lazy val builders = constructors map Builder
+  @transient private lazy val builders = constructors map Builder
 
 }

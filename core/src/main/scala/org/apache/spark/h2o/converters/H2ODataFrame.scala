@@ -19,13 +19,14 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.utils.ReflectionUtils
+import org.apache.spark.h2o.utils.{SupportedTypes, ReflectionUtils}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.{Partition, SparkContext, TaskContext}
 
 import scala.language.postfixOps
+import SupportedTypes._
 
 /**
  * H2O H2OFrame wrapper providing RDD[Row]=DataFrame API.
@@ -49,7 +50,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
 
   /** Create new types list which describes expected types in a way external H2O backend can use it. This list
     * contains types in a format same for H2ODataFrame and H2ORDD */
-  lazy val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, typesAll)
+  val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, typesAll)
 
   val colNames = frame.names()
 
@@ -84,7 +85,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
         partIndex)
 
 
-      private val columnIndicesWithTypes: Array[(Int, DataType)] = selectedColumnIndices map (i => (i, typesAll(i)))
+      private val columnIndicesWithTypes: Array[(Int, SimpleType[_])] = selectedColumnIndices map (i => (i, bySparkType(typesAll(i))))
 
       /*a sequence of value providers, per column*/
       private val columnValueProviders: Array[() => Option[Any]] = converterCtx.columnValueProviders(columnIndicesWithTypes)

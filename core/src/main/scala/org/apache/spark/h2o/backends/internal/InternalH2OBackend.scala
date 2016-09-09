@@ -21,7 +21,7 @@ import org.apache.spark.Logging
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.listeners.{ExecutorAddNotSupportedListener}
+import org.apache.spark.listeners.ExecutorAddNotSupportedListener
 import water.api.RestAPIManager
 import water.{H2O, H2OStarter}
 
@@ -63,7 +63,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
   /** Initialize Sparkling H2O and start H2O cloud. */
   override def init(): Array[NodeDesc] = {
 
-    logInfo(s"Starting H2O services: " + hc.getConf.toString)
+    logInfo(s"Starting H2O services: " + hc.getConf)
     // Create dummy RDD distributed over executors
     val (spreadRDD, spreadRDDNodes) = new SpreadRDDBuilder(hc, InternalBackendUtils.guessTotalExecutorSize(hc.sparkContext)).build()
 

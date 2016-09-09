@@ -175,6 +175,7 @@ case class ProductMember(name: String, typeName: NameOfType) {
 
 case class ProductType(val members: Array[ProductMember]) {
   lazy val memberNames = members map (_.name)
+  // We keep names, because of a Scala 10.1 bug that does not allow to serialize TypeTags.
   lazy val memberTypeNames = members map (_.typeName)
 
   def arity = members.length

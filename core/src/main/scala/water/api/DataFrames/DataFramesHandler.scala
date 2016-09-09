@@ -51,6 +51,7 @@ class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extend
     s
   }
 
+  // TODO(vlad): see the same code in RDDsHandler
   def toH2OFrame(version: Int, s: H2OFrameIDV3): H2OFrameIDV3 = {
     if(!sqlContext.tableNames().toList.contains(s.dataframe_id)){
       throw new H2ONotFoundArgumentException(s"DataFrame with id '${s.dataframe_id}' does not exist, can not proceed with the transformation!")

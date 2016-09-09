@@ -18,9 +18,7 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.h2o.utils.ReflectionUtils._
-import org.apache.spark.h2o.utils.SupportedTypes
-import org.apache.spark.sql.types._
-import org.apache.spark.unsafe.types.UTF8String
+import org.apache.spark.h2o.utils.SupportedTypes.SimpleType
 
 import scala.language.postfixOps
 
@@ -31,59 +29,29 @@ import scala.language.postfixOps
   * via unified API
   */
 trait ReadConverterContext {
+
+  // TODO(vlad): figure out if this is needed
   /** Key pointing to underlying H2OFrame */
   val keyName: String
 
+  // TODO(vlad): figure out if this is needed
   /** Chunk Idx/Partition index */
   val chunkIdx: Int
 
   /** Current row index */
   var rowIdx: Int = 0
 
-  def getByte(columnNum: Int): Option[Byte] = getLong(columnNum) map (_.toByte)
-  def getShort(columnNum: Int): Option[Short] = getLong(columnNum) map (_.toShort)
-  def getInt(columnNum: Int): Option[Int] = getLong(columnNum) map (_.toInt)
-
-  def getFloat(columnNum: Int): Option[Float] = getDouble(columnNum) map (_.toFloat)
-  def getBoolean(columnNum: Int): Option[Boolean] = getLong(columnNum) map (1==)
-  def getTimestamp(columnNum: Int): Option[Long]  = getLong(columnNum) map (1000L*)
-  def getUTF8String(columnNum: Int): Option[UTF8String] = getString(columnNum) map UTF8String.fromString
-
-  def isNA(columnNum: Int): Boolean
-  def getLong(columnNum: Int): Option[Long]
-  def getDouble(columnNum: Int): Option[Double]
-  def getString(columnNum: Int): Option[String]
-
   def numRows: Int
   def increaseRowIdx() = rowIdx += 1
 
   def hasNext = rowIdx < numRows
 
-  case class OptionReader(name: Any, apply: Int => Option[Any]) {
-  }
 
-//  type OptionReader = Int => Option[Any]
+  type OptionReader = Int => Option[Any]
 
-  import SupportedTypes._
+  type Reader = Int => Any
 
-  val ReaderPerType = Map[SupportedType, Int => Option[Any]](
-    Byte -> getByte,
-    Short -> getShort,
-    Integer -> getInt,
-    Long -> getLong,
-    Float -> getFloat,
-    Double -> getDouble,
-    Boolean -> getBoolean,
-    String -> getUTF8String,
-    UTF8 -> getUTF8String,
-    Timestamp -> getTimestamp
-  ) withDefault (t => throw new scala.IllegalArgumentException(s"Type $t not supported for conversion from H2OFrame to Spark's Dataframe"))
-
-  def readerFor(dt: DataType): OptionReader = OptionReader(bySparkType(dt), ReaderPerType(bySparkType(dt)))
-
-  case class Reader(name: Any, apply: Int => Any)
-
-  val readerMapByName: Map[NameOfType, Reader]
+  def readerMapByName: Map[NameOfType, Reader]
 
   /**
     * For a given array of source column indexes and required data types,
@@ -92,5 +60,5 @@ trait ReadConverterContext {
     * @param columnIndexesWithTypes lists which columns we need, and what are the required types
     * @return an array of value providers. Each provider gives the current column value
     */
-  def columnValueProviders(columnIndexesWithTypes: Array[(Int, DataType)]): Array[() => Option[Any]]
+  def columnValueProviders(columnIndexesWithTypes: Array[(Int, SimpleType[_])]): Array[() => Option[Any]]
 }

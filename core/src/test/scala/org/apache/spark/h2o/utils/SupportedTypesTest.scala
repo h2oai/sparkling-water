@@ -121,16 +121,16 @@ class SupportedTypesTest extends FunSuite {
 
     def mustBe[T](expected: SupportedType, t: Type) = assert(SupportedTypes.byType(t) == expected)
 
-    mustBe(Optional(Boolean), typeOf[Option[scala.Boolean]])
-    mustBe(Optional(Byte), typeOf[Option[scala.Byte]])
-    mustBe(Optional(Short), typeOf[Option[scala.Short]])
-    mustBe(Optional(Integer), typeOf[Option[scala.Int]])
-    mustBe(Optional(Long), typeOf[Option[scala.Long]])
-    mustBe(Optional(Float), typeOf[Option[scala.Float]])
-    mustBe(Optional(Double), typeOf[Option[scala.Double]])
-    mustBe(Optional(Timestamp),typeOf[Option[java.sql.Timestamp]])
-    mustBe(Optional(String), typeOf[Option[String]])
-    mustBe(Optional(UTF8), typeOf[Option[UTF8String]])
+    mustBe(OptionalType(Boolean), typeOf[Option[scala.Boolean]])
+    mustBe(OptionalType(Byte), typeOf[Option[scala.Byte]])
+    mustBe(OptionalType(Short), typeOf[Option[scala.Short]])
+    mustBe(OptionalType(Integer), typeOf[Option[scala.Int]])
+    mustBe(OptionalType(Long), typeOf[Option[scala.Long]])
+    mustBe(OptionalType(Float), typeOf[Option[scala.Float]])
+    mustBe(OptionalType(Double), typeOf[Option[scala.Double]])
+    mustBe(OptionalType(Timestamp),typeOf[Option[java.sql.Timestamp]])
+    mustBe(OptionalType(String), typeOf[Option[String]])
+    mustBe(OptionalType(UTF8), typeOf[Option[UTF8String]])
   }
 
   test("Find By String") {

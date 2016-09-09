@@ -84,6 +84,7 @@ which is not nice.
     /**
      * Pass-through to H2OContext.asH2OFrame.  For API support only.
      * @param df data frame to pass for building an H2OFrame
+     * @return a new H2O frame
      */
     public H2OFrame asH2OFrame(DataFrame df){
         return hc.asH2OFrame(df);
@@ -93,6 +94,7 @@ which is not nice.
      * Pass-through to H2OContext.asH2OFrame.  For API support only.
      * @param df data frame to pass for building an H2OFrame
      * @param frameName name of the new frame
+     * @return a new H2O frame
      */
     public H2OFrame asH2OFrame(DataFrame df, String frameName){
         return hc.asH2OFrame(df, frameName);
@@ -117,17 +119,28 @@ which is not nice.
         return hc.asH2OFrame(fr);
     }
 
-    /** Convert given H2O frame into a Product RDD type */
-    public <A> JavaRDD<A> asRDD(H2OFrame fr){
+  /**
+   * Convert given H2O frame into a Product RDD type
+   * @param fr the frame to be used
+   * @param <A> type of data being handled
+   * @return a new RDD
+   */
+  public <A> JavaRDD<A> asRDD(H2OFrame fr){
         //TODO: Implement this conversion
        //return hc.asRDD(fr, (RDD<A>)JavaSparkContext.fakeClassTag())
         return null;
     }
 
-    /** Convert given H2O frame into DataFrame type */
-    public DataFrame asDataFrame(Frame fr, SQLContext sqlContext){
+  /**
+   * Convert given H2O frame into DataFrame type
+   * @param fr the frame to be used
+   * @param sqlContext sql context to be used for creating a frame
+   * @return a new data frame
+   */
+  public DataFrame asDataFrame(Frame fr, SQLContext sqlContext){
         return asDataFrame(fr, true, sqlContext);
     }
+
     /** Convert given H2O frame into DataFrame type */
     public DataFrame asDataFrame(Frame fr, boolean copyMetadata, SQLContext sqlContext){
         return hc.asDataFrame(fr, copyMetadata, sqlContext);

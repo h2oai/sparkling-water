@@ -16,6 +16,7 @@
 */
 package org.apache.spark.h2o.utils
 
+import org.apache.spark.h2o.utils.ReflectionUtils.NameOfType
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
 import water.fvec.Vec
@@ -36,6 +37,8 @@ object SupportedTypes extends Enumeration {
     def javaClass: Class[_]
 
     val matches: Type => Boolean
+
+    def name: NameOfType = toString
   }
 
   implicit val mirror = runtimeMirror(getClass.getClassLoader)
@@ -51,7 +54,7 @@ object SupportedTypes extends Enumeration {
     val matches = extraTypes.toSet + typeForClass(javaClass)
   }
 
-  final case class Optional[T: TypeTag](contentType: SimpleType[T]) extends SupportedType {
+  final case class OptionalType[T: TypeTag](contentType: SimpleType[T]) extends SupportedType {
     override def vecType: VecType = contentType.vecType
     override def sparkType: DataType = contentType.sparkType
     override def javaClass: Class[_] = contentType.javaClass
@@ -83,19 +86,20 @@ object SupportedTypes extends Enumeration {
 
   val allSimple: List[SimpleType[_]] = values.toList map val2type
 
-  val allOptional: List[Optional[_]] = allSimple map (t => Optional(t))
+  val allOptional: List[OptionalType[_]] = allSimple map (t => OptionalType(t))
 
   val all: List[SupportedType] = allSimple ++ allOptional
 
-  private def indexBy[F](f: SupportedType => F, what: List[SupportedType] = allSimple): Map[F, SupportedType] = what map (t => f(t) -> t) toMap
+  private def index[F, T <: SupportedType](what: List[T]) =  new {
+    def by(f: T => F): Map[F, T] = what map (t => f(t) -> t) toMap
+  }
 
-  val byClass: Map[Class[_], SupportedType] = indexBy (_.javaClass)
-
-  val byVecType: Map[VecType, SupportedType] = indexBy (_.vecType)
-
-  val bySparkType: Map[DataType, SupportedType] = indexBy (_.sparkType)
-
-  val byName = indexBy(_.toString, all)
+  val byClass:      Map[Class[_],      SimpleType[_]]   = index (allSimple)   by (_.javaClass)
+  val byVecType:    Map[VecType,       SimpleType[_]]   = index (allSimple)   by (_.vecType)
+  val bySparkType:  Map[DataType,      SimpleType[_]]   = index (allSimple)   by (_.sparkType)
+  val simpleByName: Map[NameOfType,    SimpleType[_]]   = index (allSimple)   by (_.name)
+  val byName:       Map[NameOfType,    SupportedType]   = index (all)         by (_.name)
+  val byBaseType:   Map[SimpleType[_], OptionalType[_]] = index (allOptional) by (_.contentType)
 
   def byType(tpe: Type) : SupportedType = {
     SupportedTypes.all find (_.matches(tpe)) getOrElse {
