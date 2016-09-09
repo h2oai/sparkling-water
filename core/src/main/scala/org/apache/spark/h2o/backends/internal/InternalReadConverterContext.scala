@@ -68,7 +68,7 @@ class InternalReadConverterContext(override val keyName: String, override val ch
 
   private def plainString(chunk: Chunk) = chunk.atStr(new BufferedString(), rowIdx).toString
 
-  val StringProviders = Map[Byte, (Chunk => String)](
+  private val StringProviders = Map[Byte, (Chunk => String)](
     Vec.T_CAT -> categoricalString,
     Vec.T_UUID -> uuidString,
     Vec.T_STR -> plainString
@@ -78,7 +78,7 @@ class InternalReadConverterContext(override val keyName: String, override val ch
   }
     )
 
-  def string(chunk: Chunk): String = StringProviders(chunk.vec().get_type())(chunk)
+  private def string(chunk: Chunk): String = StringProviders(chunk.vec().get_type())(chunk)
 
   // TODO(vlad): check if instead of stringification, we could use bytes
   private def utfString(chunk: Chunk) = UTF8String.fromString(string(chunk))
