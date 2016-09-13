@@ -11,7 +11,7 @@ public class GaussianMixtureParameters extends ClusteringModel.ClusteringParamet
 
     @Override
     public String fullName() {
-        return "Gaussian Mixture(*)";
+        return "Gaussian Mixture(*Spark*)";
     }
 
     @Override

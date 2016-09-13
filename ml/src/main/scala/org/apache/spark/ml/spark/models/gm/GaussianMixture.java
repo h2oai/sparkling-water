@@ -93,7 +93,7 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
             sparkGM.setMaxIterations(_parms._max_iterations);
             sparkGM.setSeed(_parms._seed);
 
-            RDD<Vector> trainingData = getTrainingData(_train);
+            RDD<Vector> trainingData = getTrainingData(_train, model._output.nfeatures());
             trainingData.cache();
 
             org.apache.spark.mllib.clustering.GaussianMixtureModel sparkGMModel = sparkGM.run(trainingData);
@@ -130,10 +130,10 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
 
         }
 
-        private RDD<Vector> getTrainingData(Frame training) {
+        private RDD<Vector> getTrainingData(Frame training, int nfeatures) {
             return h2oContext.asSchemaRDD(new H2OFrame(training), sqlContext)
                     .javaRDD()
-                    .map(new RowToLabeledPoint(training.domains()))
+                    .map(new RowToLabeledPoint(training.domains(), nfeatures))
                     .rdd();
         }
     }
@@ -142,16 +142,18 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
 class RowToLabeledPoint implements Function<Row, Vector> {
 
     private String[][] domains;
+    private int nfeatures;
 
-    RowToLabeledPoint(String[][] domains) {
+    RowToLabeledPoint(String[][] domains, int nfeatures) {
         this.domains = domains;
+        this.nfeatures = nfeatures;
     }
 
     @Override
     public Vector call(Row row) throws Exception {
         StructField[] fields = row.schema().fields();
-        double[] features = new double[row.length()];
-        for (int i = 0; i < row.length(); i++) {
+        double[] features = new double[nfeatures];
+        for (int i = 0; i < nfeatures; i++) {
             features[i] = toDouble(row.get(i), fields[i], domains[i]);
         }
         return Vectors.dense(features);

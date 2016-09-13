@@ -5,7 +5,6 @@ import water.util.TwoDimTable;
 public class ClusteringUtils {
 
     static public TwoDimTable create2DTable(
-            GaussianMixtureModel.GaussianMixtureOutput output,
             double[][] data,
             String colHeaderForRowHeader,
             String[] colHeaders,

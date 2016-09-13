@@ -53,7 +53,6 @@ object GaussianMixtureModelV3 {
       val gmv3: GaussianMixtureModelOutputV3 = super.fillFromImpl(impl)
       gmv3.weightsTable = new TwoDimTableV3().fillFromImpl(
         ClusteringUtils.create2DTable(
-          impl,
           Array[Array[Double]](impl._weights),
           "Weight",
           generateNames("W", impl._weights.length),
@@ -62,7 +61,6 @@ object GaussianMixtureModelV3 {
 
       gmv3.muTable = new TwoDimTableV3().fillFromImpl(
         ClusteringUtils.create2DTable(
-          impl,
           impl._mu,
           "Mean",
           generateNames("M", if(impl._mu.isEmpty) 0 else impl._mu.head.length),
@@ -71,7 +69,6 @@ object GaussianMixtureModelV3 {
 
       gmv3.sigmaTable = new TwoDimTableV3().fillFromImpl(
         ClusteringUtils.create2DTable(
-          impl,
           impl._sigma,
           "Variance",
           generateNames("V", if(impl._sigma.isEmpty) 0 else impl._sigma.head.length),
