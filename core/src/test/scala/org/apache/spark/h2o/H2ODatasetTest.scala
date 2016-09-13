@@ -37,25 +37,33 @@ import scala.reflect.runtime.universe._
 
 @RunWith(classOf[JUnitRunner])
 class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAndAfterAll {
+
   import testdata._
 
   lazy val sqlContext = new SQLContext(sc)
 
   val dataSource =
-      ("Hermione Granger", 15, "hgranger@griffindor.edu.uk") ::
+    ("Hermione Granger", 15, "hgranger@griffindor.edu.uk") ::
       ("Ron Weasley", 14, "rweasley@griffindor.edu.uk") ::
       ("Harry Potter", 14, "hpotter@griffindor.edu.uk") ::
       ("Lucius Malfoy", 13, "lucius@slitherin.edu.uk") :: Nil
 
   val samplePeople: List[SamplePerson] = dataSource map SamplePerson.tupled
 
-  val samplePartialPeople: List[PartialPerson] = dataSource flatMap {case (n,a,e) =>
-      PartialPerson(Some(n), Some(a), Some(e))::
-      PartialPerson(Some(n), Some(a), None)::
-      PartialPerson(Some(n), None, Some(e))::
-      PartialPerson(None, Some(a), Some(e))::
-      PartialPerson(Some(n), None, None)::
-      PartialPerson(None, None, Some(e))::
+  val samplePartialPeople: List[PartialPerson] = dataSource flatMap { case (n, a, e) =>
+    PartialPerson(Some(n), Some(a), Some(e)) ::
+      PartialPerson(Some(n), Some(a), None) ::
+      PartialPerson(Some(n), None, Some(e)) ::
+      PartialPerson(None, Some(a), Some(e)) ::
+      PartialPerson(Some(n), None, None) ::
+      PartialPerson(None, None, Some(e)) ::
+      Nil
+  }
+
+  val samplePartialPeopleWithAges: List[PartialPerson] = dataSource flatMap { case (n, a, e) =>
+    PartialPerson(Some(n), Some(a), Some(e)) ::
+      PartialPerson(Some(n), Some(a), None) ::
+      PartialPerson(None, Some(a), Some(e)) ::
       Nil
   }
 
@@ -82,154 +90,169 @@ class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAnd
     testSourceDataset.unpersist()
   }
 
-    test("Dataset[SamplePerson] to H2OFrame and back") {
+  test("Dataset[SamplePerson] to H2OFrame and back") {
 
-      assertBasicInvariants(testSourceDataset, testH2oFrame, (row, vec) => {
-        val sample = samplePeople(row.toInt)
-        val valueString = new BufferedString()
-        assert(!vec.isNA(row), "The H2OFrame should not contain any NA values")
+    assertBasicInvariants(testSourceDataset, testH2oFrame, (row, vec) => {
+      val sample = samplePeople(row.toInt)
+      val valueString = new BufferedString()
+      assert(!vec.isNA(row), "The H2OFrame should not contain any NA values")
 
-        val value = vec.atStr(valueString, row)
-        assert(sample.name == value.toString, s"The H2OFrame values should match")
-      }, List("name", "age", "email"))
+      val value = vec.atStr(valueString, row)
+      assert(sample.name == value.toString, s"The H2OFrame values should match")
+    }, List("name", "age", "email"))
 
-      val extracted = readWholeFrame[SamplePerson](testH2oFrame)
+    val extracted = readWholeFrame[SamplePerson](testH2oFrame)
 
-      assert(testSourceDataset.count == testH2oFrame.numRows(), "Number of rows should match")
+    assert(testSourceDataset.count == testH2oFrame.numRows(), "Number of rows should match")
 
-      matchData(extracted, samplePeople)
+    matchData(extracted, samplePeople)
+  }
+
+  test("Datasets with a type that does not match") {
+
+    intercept[IllegalArgumentException] {
+      hc.asRDD[SampleCompany](testH2oFrame)
+      fail(s"Should not have accepted mismatching data")
     }
+  }
 
-    test("Datasets with a type that does not match") {
+  test("Datasets with two different class names, same structure") {
+    checkWith((n, a, e) => WeirdPerson(e, a, n))
+  }
 
-      intercept[IllegalArgumentException] {
-        hc.asRDD[SampleCompany](testH2oFrame)
-        fail(s"Should not have accepted mismatching data")
-      }
-    }
+  test("Datasets with two different class names and misplaced positions") {
+    checkWith((n, a, e) => SampleAccount(e, n, a))
+  }
 
-    test("Datasets with two different class names, same structure") {
-      checkWith ((n, a, e) => WeirdPerson(e, a, n))
-    }
+  test("Datasets with a projection") {
+    checkWith((n, a, e) => SampleCat(n, a))
+  }
 
-    test("Datasets with two different class names and misplaced positions") {
-      checkWith ((n, a, e) => SampleAccount(e, n, a))
-    }
+  test("Datasets with a projection to singletons") {
+    checkWith((n, a, e) => SampleString(n))
+  }
 
-    test("Datasets with a projection") {
-      checkWith ((n, a, e) => SampleCat(n, a))
-    }
+  test("Converting Total Dataset to Optional") {
+    checkWith((n, a, e) => PartialPerson(Some(n), Some(a), Some(e)))
+  }
 
-    test("Datasets with a projection to singletons") {
-      checkWith ((n, a, e) => SampleString(n))
-    }
+  test("Dataset[PartialPerson] to H2OFrame and back") {
 
-    test("Converting Total Dataset to Optional") {
-      checkWith ((n, a, e) => PartialPerson(Some(n), Some(a), Some(e)))
-    }
+    val extracted = readWholeFrame[PartialPerson](testH2oFrametWithPartialData)
 
-    test("Dataset[PartialPerson] to H2OFrame and back") {
+    assert(testSourceDatasetWithPartialData.count == testH2oFrametWithPartialData.numRows(), "Number of rows should match")
 
-      val extracted = readWholeFrame[PartialPerson](testH2oFrametWithPartialData)
+    matchData(extracted, samplePartialPeople)
+  }
 
-      assert(testSourceDatasetWithPartialData.count == testH2oFrametWithPartialData.numRows(), "Number of rows should match")
-
-      matchData(extracted, samplePartialPeople)
-    }
-
-    test("Dataset[PartialPerson] - extracting SamplePersons with nulls and zeroes") {
-
+  test("Dataset[PartialPerson] - extracting SamplePersons with nulls") {
+    try {
       val extracted = readWholeFrame[SamplePerson](testH2oFrametWithPartialData)
+      println(extracted)
       matchData(extracted, samplePeopleWithPartialData)
+      fail("Should have caught an error")
+    } catch {
+      case x: Exception =>
+        assert(x.getMessage contains "column 1 value missing", s"Should have caught an error, got $x")
     }
+  }
 
-    test("Dataset[PartialPerson] - extracting SemiPartialPersons should give something") {
-      val rdd0 = new H2ORDD[PartialPerson, H2OFrame](testH2oFrametWithPartialData)(sc)
-      val c0 = rdd0.count()
-      assert(c0 == 24)
-      val rdd1 = new H2ORDD[SemiPartialPerson, H2OFrame](testH2oFrametWithPartialData)(sc)
-      val c1 = rdd1.count()
-      assert(c1 > 0)
-      val rdd2: RDD[SemiPartialPerson] = hc.asRDD[SemiPartialPerson](testH2oFrametWithPartialData)
-      assert(rdd2.count() > 0)
-      val asDS = rdd2.toDS()
-      assert(asDS.count() > 0)
-      val extracted = asDS.collect()
-      assert(extracted.nonEmpty)
+  test("Dataset[PartialPerson] - extracting SamplePersons with nulls only in strings") {
+    try {
+      lazy val testSourceDatasetWithPartialDataAgesPresent = sqlContext.createDataset(samplePartialPeopleWithAges)
+
+      val expected: List[SamplePerson] = samplePartialPeopleWithAges map (p => new SamplePerson(p.name.orNull, p.age.get, p.email.orNull))
+      val extracted = readWholeFrame[SamplePerson](hc.asH2OFrame(testSourceDatasetWithPartialDataAgesPresent))
+
+      matchData(extracted, expected)
+
+    } catch {
+      case x: Exception =>
+        fail(x.getMessage)
     }
+  }
 
-    test("Dataset[PartialPerson] - extracting SemiPartialPersons") {
-      val extracted = readWholeFrame[SemiPartialPerson](testH2oFrametWithPartialData)
+  test("Dataset[PartialPerson] - extracting SemiPartialPersons should give something") {
+    val rdd0 = new H2ORDD[PartialPerson, H2OFrame](testH2oFrametWithPartialData)(sc)
+    val c0 = rdd0.count()
+    assert(c0 == 24)
+    val rdd1 = new H2ORDD[SemiPartialPerson, H2OFrame](testH2oFrametWithPartialData)(sc)
+    val c1 = rdd1.count()
+    assert(c1 > 0)
+    val rdd2: RDD[SemiPartialPerson] = hc.asRDD[SemiPartialPerson](testH2oFrametWithPartialData)
+    assert(rdd2.count() > 0)
+    val asDS = rdd2.toDS()
+    assert(asDS.count() > 0)
+    val extracted = asDS.collect()
+    assert(extracted.nonEmpty)
+  }
 
-      matchData(extracted, sampleSemiPartialPeople)
-    }
+  test("Dataset[PartialPerson] - extracting SemiPartialPersons") {
+    val extracted = readWholeFrame[SemiPartialPerson](testH2oFrametWithPartialData)
 
-    test("Dataset[PartialPerson] - extracting SampleCats") {
+    matchData(extracted, sampleSemiPartialPeople)
+  }
 
-      assertBasicInvariants(testSourceDatasetWithPartialData, testH2oFrametWithPartialData, (row, vec) => {
-        val sample = samplePartialPeople(row.toInt)
-        val valueString = new BufferedString()
+  test("Dataset[PartialPerson] - extracting SampleCats") {
+    lazy val testSourceDatasetWithPartialDataAgesPresent = sqlContext.createDataset(samplePartialPeopleWithAges)
 
-        val value = if (vec.isNA(row)) null else vec.atStr(valueString, row)
-        assert(sample.name == Option(value).map(_.toString), s"The H2OFrame values should match")
-      }, List("name", "age", "email"))
-
-      val extracted = readWholeFrame[SampleCat](testH2oFrametWithPartialData)
-      val sampleCats = SampleCat(null, 0) :: SampleCat(null, 0) :: SampleCat(null, 0) :: SampleCat(null, 0) ::
-        dataSource .flatMap { case (n, a, e) =>
-          SampleCat(n,a)::SampleCat(n,a)::SampleCat(n, 0)::SampleCat(null, a):: SampleCat(n, 0)::SampleCat(null, a)::  Nil }
-
-      matchData(extracted, sampleCats) // the idea is, all sample people are there, the rest is ignored
-    }
-
-    private type RowValueAssert = (Long, Vec) => Unit
-
-    private def assertBasicInvariants[T <: Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String]): Unit = {
-      assertHolderProperties(df, names)
-      assert(ds.count == df.numRows(), s"Number of rows in H2OFrame (${df.numRows()}) and Dataset (${ds.count}) should match")
-
-      val vec = df.vec(0)
-      for (row <- Range(0, df.numRows().toInt)) {
-        rowAssert(row, vec)
+    val sampleCats =
+    samplePartialPeopleWithAges.flatMap { case p =>
+        SampleCat(p.name.orNull, p.age.get) :: SampleCat(p.name.orNull, p.age.get) :: Nil
       }
+    val extracted = readWholeFrame[SampleCat](hc.asH2OFrame(testSourceDatasetWithPartialDataAgesPresent))
+
+    matchData(extracted, sampleCats) // the idea is, all sample people are there, the rest is ignored
+  }
+
+  private type RowValueAssert = (Long, Vec) => Unit
+
+  private def assertBasicInvariants[T <: Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String]): Unit = {
+    assertHolderProperties(df, names)
+    assert(ds.count == df.numRows(), s"Number of rows in H2OFrame (${df.numRows()}) and Dataset (${ds.count}) should match")
+
+    val vec = df.vec(0)
+    for (row <- Range(0, df.numRows().toInt)) {
+      rowAssert(row, vec)
     }
+  }
 
-    private def assertHolderProperties(df: H2OFrame, names: List[String]): Unit = {
-      val actualNames = df.names().toList
-      val numCols = names.length
-      assert(df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
-      assert(df.names().length == numCols, s"H2OFrame column names should be $numCols in size, have ${df.names().length}")
-      assert(actualNames.equals(names),
-        s"H2OFrame column names should be $names since Holder object was used to define Dataset, but it is $actualNames")
-    }
+  private def assertHolderProperties(df: H2OFrame, names: List[String]): Unit = {
+    val actualNames = df.names().toList
+    val numCols = names.length
+    assert(df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
+    assert(df.names().length == numCols, s"H2OFrame column names should be $numCols in size, have ${df.names().length}")
+    assert(actualNames.equals(names),
+      s"H2OFrame column names should be $names since Holder object was used to define Dataset, but it is $actualNames")
+  }
 
-    lazy val testSourceDataset = {
-      import sqlContext.implicits._
-      sqlContext.createDataset(samplePeople)
-    }
+  lazy val testSourceDataset = {
+    import sqlContext.implicits._
+    sqlContext.createDataset(samplePeople)
+  }
 
-    def testH2oFrame: H2OFrame = hc.asH2OFrame(testSourceDataset)
+  def testH2oFrame: H2OFrame = hc.asH2OFrame(testSourceDataset)
 
-    def readWholeFrame[T <: Product : TypeTag : ClassTag](frame: H2OFrame) = {
+  def readWholeFrame[T <: Product : TypeTag : ClassTag](frame: H2OFrame) = {
 
-      import sqlContext.implicits._
+    import sqlContext.implicits._
 
-      val asrdd: RDD[T] = hc.asRDD[T](frame)
-      val asDS = asrdd.toDS()
-      val extracted = asDS.collect()
-      extracted
-    }
+    val asrdd: RDD[T] = hc.asRDD[T](frame)
+    val asDS = asrdd.toDS()
+    val extracted = asDS.collect()
+    extracted
+  }
 
-    def matchData[T <: Product](actual: Seq[T], expected:Seq[T]): Unit = {
-      val extra = actual.diff(expected)
-      assert (extra.isEmpty, s"Unexpected records: $extra")
-      val missing = actual.diff(expected)
-      assert (missing.isEmpty, s"Not found: $missing")
-    }
+  def matchData[T <: Product](actual: Seq[T], expected: Seq[T]): Unit = {
+    val extra = actual.diff(expected)
+    assert(extra.isEmpty, s"Unexpected records: $extra")
+    val missing = actual.diff(expected)
+    assert(missing.isEmpty, s"Not found: $missing")
+  }
 
-    def checkWith[T <: Product: TypeTag: ClassTag](constructor: (String, Int, String) => T): Unit = {
-      val samples = dataSource map { case (n, a, e) => constructor(n,a,e) }
-      val extracted = readWholeFrame[T](testH2oFrame)
-      matchData(extracted, samples)
-    }
+  def checkWith[T <: Product : TypeTag : ClassTag](constructor: (String, Int, String) => T): Unit = {
+    val samples = dataSource map { case (n, a, e) => constructor(n, a, e) }
+    val extracted = readWholeFrame[T](testH2oFrame)
+    matchData(extracted, samples)
+  }
 }

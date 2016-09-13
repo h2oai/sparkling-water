@@ -45,11 +45,11 @@ object SupportedTypes extends Enumeration {
   def typeForClass[T](clazz: Class[T])(implicit runtimeMirror: Mirror) = runtimeMirror.classSymbol(clazz).toType
   
   final case class SimpleType[T: TypeTag](
-                                vecType  : VecType,
-                                sparkType: DataType,
-                                javaClass: Class[_], // note, not always T, since T is scala class
-                                defaultValue: T,
-                                private val extraTypes : Type*
+                                           vecType  : VecType,
+                                           sparkType: DataType,
+                                           javaClass: Class[_], // note, not always T, since T is scala class
+                                           ifMissing: String => T,
+                                           private val extraTypes : Type*
       ) extends Val with SupportedType {
     val matches = extraTypes.toSet + typeForClass(javaClass)
   }
@@ -69,18 +69,24 @@ object SupportedTypes extends Enumeration {
 
   private val ZeroTime = new js.Timestamp(0L)
 
-  val Boolean   = SimpleType[scala.Boolean] (Vec.T_NUM,  BooleanType,   classOf[jl.Boolean  ], false, typeOf[Boolean])
-  val Byte      = SimpleType[scala.Byte   ] (Vec.T_NUM,  ByteType,      classOf[jl.Byte     ], 0.toByte, typeOf[Byte])
-  val Short     = SimpleType[scala.Short  ] (Vec.T_NUM,  ShortType,     classOf[jl.Short    ], 0.toShort, typeOf[Short])
-  val Integer   = SimpleType[scala.Int    ] (Vec.T_NUM,  IntegerType,   classOf[jl.Integer  ], 0, typeOf[Int])
-  val Long      = SimpleType[scala.Long   ] (Vec.T_NUM,  LongType,      classOf[jl.Long     ], 0L, typeOf[Long])
-  val Float     = SimpleType[scala.Float  ] (Vec.T_NUM,  FloatType,     classOf[jl.Float    ], scala.Float.NaN, typeOf[Float])
-  val Double    = SimpleType[scala.Double ] (Vec.T_NUM,  DoubleType,    classOf[jl.Double   ], scala.Double.NaN, typeOf[Double])
-  val Timestamp = SimpleType[js.Timestamp ] (Vec.T_TIME, TimestampType, classOf[js.Timestamp], ZeroTime)
-  val String    = SimpleType[String       ] (Vec.T_STR,  StringType,    classOf[String],       null, typeOf[String])
-  val UUID      = SimpleType[String       ] (Vec.T_UUID, StringType,    classOf[String],       null)
-  val Category  = SimpleType[String       ] (Vec.T_CAT,  StringType,    classOf[String],       null)
-  val UTF8      = SimpleType[UTF8String   ] (Vec.T_STR,  StringType,    classOf[String],       null, typeOf[UTF8String]) // TODO(vlad): figure it out
+  private def onNAthrow(what: String) = {
+    throw new IllegalArgumentException(s"$what value missing")
+  }
+  private def onNAreturn[T](value: T)(what: String) = value
+
+  val Boolean   = SimpleType[scala.Boolean] (Vec.T_NUM,  BooleanType,   classOf[jl.Boolean  ], onNAreturn(false), typeOf[Boolean])
+  val Byte      = SimpleType[scala.Byte   ] (Vec.T_NUM,  ByteType,      classOf[jl.Byte     ], onNAthrow, typeOf[Byte])
+  val Short     = SimpleType[scala.Short  ] (Vec.T_NUM,  ShortType,     classOf[jl.Short    ], onNAthrow, typeOf[Short])
+  val Integer   = SimpleType[scala.Int    ] (Vec.T_NUM,  IntegerType,   classOf[jl.Integer  ], onNAthrow, typeOf[Int])
+  val Long      = SimpleType[scala.Long   ] (Vec.T_NUM,  LongType,      classOf[jl.Long     ], onNAthrow, typeOf[Long])
+  val Float     = SimpleType[scala.Float  ] (Vec.T_NUM,  FloatType,     classOf[jl.Float    ], onNAreturn(scala.Float.NaN), typeOf[Float])
+  val Double    = SimpleType[scala.Double ] (Vec.T_NUM,  DoubleType,    classOf[jl.Double   ], onNAreturn(scala.Double.NaN), typeOf[Double])
+  val Timestamp = SimpleType[js.Timestamp ] (Vec.T_TIME, TimestampType, classOf[js.Timestamp], onNAthrow)
+  val String    = SimpleType[String       ] (Vec.T_STR,  StringType,    classOf[String],       onNAreturn(null), typeOf[String])
+  val UUID      = SimpleType[String       ] (Vec.T_UUID, StringType,    classOf[String],       onNAreturn(null))
+  val Category  = SimpleType[String       ] (Vec.T_CAT,  StringType,    classOf[String],       onNAreturn(null))
+  // TODO(vlad): figure it out, why
+  val UTF8      = SimpleType[UTF8String   ] (Vec.T_STR,  StringType,    classOf[String],       onNAreturn(null), typeOf[UTF8String])
 
   private implicit def val2type(v: Value): SimpleType[_] = v.asInstanceOf[SimpleType[_]]
 

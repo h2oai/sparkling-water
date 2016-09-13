@@ -46,9 +46,9 @@ class InternalReadConverterContext(override val keyName: String, override val ch
     } yield data
   }
 
-  private def returnSimple[T](defaultValue: T, read: Chunk => T)(columnNum: Int): T = {
+  private def returnSimple[T](ifMissing: String => T, read: Chunk => T)(columnNum: Int): T = {
     val chunk = chks(columnNum)
-    if (chunk.isNA(rowIdx)) defaultValue else read(chunk)
+      if (chunk.isNA(rowIdx)) ifMissing(s"Row $rowIdx column $columnNum") else read(chunk)
   }
 
   private def longAt(chunk: Chunk) = chunk.at8(rowIdx)
@@ -120,14 +120,11 @@ class InternalReadConverterContext(override val keyName: String, override val ch
 
   private lazy val SimpleReadersMap: Map[SimpleType[_], Reader] =
     ExtractorsTable map {
-      case (t, getter) => t -> returnSimple(t.defaultValue, getter) _
+      case (t, getter) => t -> returnSimple(t.ifMissing, getter) _
     } toMap
 
   private lazy val SimpleReaders: Map[SimpleType[_], Reader] = SimpleReadersMap withDefault
     (t => throw new scala.IllegalArgumentException(s"Type $t conversion is not supported in Sparkling Water"))
-
-  private def plainReaderFor(supportedType: SimpleType[_], optReader: OptionReader): Reader =
-    (col: Int) => optReader(col).getOrElse(supportedType.defaultValue)
 
   lazy val readerMapByName: Map[NameOfType, Reader] = (OptionReaders ++ SimpleReaders) map {
     case (supportedType, reader) => supportedType.name -> reader
