@@ -4,38 +4,34 @@ import water.util.TwoDimTable;
 
 public class ClusteringUtils {
 
-    // TODO this a copy from H2O core, needs to be removed and replaced with H2O core version after the refactoring gets released
-    static public TwoDimTable createCenterTable(GaussianMixtureModel.GaussianMixtureOutput output, boolean standardized) {
-        String name = standardized ? "Standardized Cluster Means" : "Cluster Means";
-        if(output._size() == null || output._names == null || output._domains == null || output._centers_raw == null ||
-                (standardized && output._centers_std_raw == null)) {
-            TwoDimTable table = new TwoDimTable(name, null, new String[] {"1"}, new String[]{"C1"}, new String[]{"double"},
-                    new String[]{"%f"}, "Centroid");
-            table.set(0,0,Double.NaN);
-            return table;
+    static public TwoDimTable create2DTable(
+            GaussianMixtureModel.GaussianMixtureOutput output,
+            double[][] data,
+            String colHeaderForRowHeader,
+            String[] colHeaders,
+            String name) {
+        if(data == null || data.length == 0) {
+            return new TwoDimTable(name, null, new String[] {}, new String[]{}, new String[]{},
+                    new String[]{}, colHeaderForRowHeader);
         }
 
-        String[] rowHeaders = new String[output._size().length];
-        for(int i = 0; i < rowHeaders.length; i++)
+        String[] rowHeaders = new String[data.length];
+        for(int i = 0; i < rowHeaders.length; i++){
             rowHeaders[i] = String.valueOf(i+1);
-        String[] colTypes = new String[output._names.length];
-        String[] colFormats = new String[output._names.length];
-        for (int i = 0; i < output._domains.length; ++i) {
-            colTypes[i] = output._domains[i] == null ? "double" : "String";
-            colFormats[i] = output._domains[i] == null ? "%f" : "%s";
         }
-        TwoDimTable table = new TwoDimTable(name, null, rowHeaders, output._names, colTypes, colFormats, "Centroid");
 
-        for (int j=0; j<output._domains.length; ++j) {
-            boolean string = output._domains[j] != null;
-            if (string) {
-                for (int i=0; i<output._centers_raw.length; ++i) {
-                    table.set(i, j, output._domains[j][(int)output._centers_raw[i][j]]);
-                }
-            } else {
-                for (int i=0; i<output._centers_raw.length; ++i) {
-                    table.set(i, j, standardized ? output._centers_std_raw[i][j] : output._centers_raw[i][j]);
-                }
+        String[] colTypes = new String[colHeaders.length];
+        String[] colFormats = new String[colHeaders.length];
+        for (int i = 0; i < data[0].length; ++i) {
+            colTypes[i] = "double";
+            colFormats[i] = "%f";
+        }
+
+        TwoDimTable table = new TwoDimTable(name, null, rowHeaders, colHeaders, colTypes, colFormats, colHeaderForRowHeader);
+
+        for (int i=0; i<data.length; ++i) {
+            for (int j=0; j<data[i].length; ++j) {
+                table.set(i, j, data[i][j]);
             }
         }
         return table;

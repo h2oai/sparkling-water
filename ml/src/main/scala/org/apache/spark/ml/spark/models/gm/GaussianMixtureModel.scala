@@ -20,6 +20,7 @@ import hex.ClusteringModel.ClusteringOutput
 import hex._
 import hex.ModelMetricsClustering.MetricBuilderClustering
 import org.apache.spark.ml.spark.models.gm.GaussianMixtureModel.GaussianMixtureOutput
+import org.apache.spark.ml.spark.models.gm.ModelMetricsGaussianMixture.MetricBuilderGaussianMixture
 import org.apache.spark.mllib.clustering
 import org.apache.spark.mllib.linalg.{Matrices, Vectors}
 import org.apache.spark.mllib.stat.distribution
@@ -31,15 +32,7 @@ object GaussianMixtureModel {
 
   class GaussianMixtureOutput(val b: GaussianMixture) extends ClusteringOutput(b) {
 
-    // TODO check how many of those we can set from Spark model
     var _iterations: Int = 0
-    var _avg_centroids_chg: Array[Double] = Array[Double](Double.NaN)
-    var _withinss: Array[Double] = null
-    var _size: Array[Long] = null
-    var _tot_withinss: Double = .0
-    var _totss: Double = .0
-    var _betweenss: Double = .0
-    var _categorical_column_count: Int = 0
     var _training_time_ms: Array[Long] = Array[Long](System.currentTimeMillis)
 
     var _weights: Array[Double] = null
@@ -73,10 +66,9 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
     sparkModel = new clustering.GaussianMixtureModel(_output._weights, mg)
   }
 
-  override def makeMetricBuilder(domain: Array[String]): MetricBuilderClustering = {
-      assert(domain == null)
-    // TODO implement a proper metrics builder
-      new ModelMetricsClustering.MetricBuilderClustering(_output.nfeatures, _parms._k)
+  override def makeMetricBuilder(domain: Array[String]): MetricBuilderGaussianMixture = {
+    assert(domain == null)
+    new ModelMetricsGaussianMixture.MetricBuilderGaussianMixture(_output.nfeatures(), _parms._k)
   }
 
   override def score0(data: Array[Double], preds: Array[Double]): Array[Double] = {

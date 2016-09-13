@@ -112,18 +112,18 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
 
             model.init();
 
-//            Frame train = DKV.<Frame>getGet(_parms._train);
-//            model.score(train).delete();
-//            model._output._training_metrics = ModelMetrics.getFromDKV(model, train);
+            Frame train = DKV.<Frame>getGet(_parms._train);
+            model.score(train).delete();
+            model._output._training_metrics = ModelMetrics.getFromDKV(model, train);
 
             model.update(_job);
 
             _job.update(model._parms._max_iterations);
 
             if (_valid != null) {
-//                model.score(_parms.valid()).delete();
-//                model._output._validation_metrics = ModelMetrics.getFromDKV(model, _parms.valid());
-//                model.update(_job);
+                model.score(_parms.valid()).delete();
+                model._output._validation_metrics = ModelMetrics.getFromDKV(model, _parms.valid());
+                model.update(_job);
             }
 
             Log.info(model._output._model_summary);

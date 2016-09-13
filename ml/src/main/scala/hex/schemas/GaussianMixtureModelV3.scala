@@ -38,18 +38,45 @@ class GaussianMixtureModelV3 extends ModelSchemaV3[GaussianMixtureModel,
 
 object GaussianMixtureModelV3 {
   final class GaussianMixtureModelOutputV3 extends ModelOutputSchemaV3[GaussianMixtureOutput, GaussianMixtureModelOutputV3] {
-    @API(help = "Cluster Centers[k][features]")
-    var centers: TwoDimTableV3 = _
+    @API(help = "Distribution weights.")
+    var weightsTable: TwoDimTableV3 = _
 
-    @API(help = "Cluster Centers[k][features] on Standardized Data")
-    var centers_std: TwoDimTableV3 = _
+    @API(help = "Distribution means.")
+    var muTable: TwoDimTableV3 = _
+
+    @API(help = "Distribution variances.")
+    var sigmaTable: TwoDimTableV3 = _
+
+    private def generateNames(prefix: String, length: Int): Array[String] = (0 until length).map(prefix+_).toArray
 
     override def fillFromImpl(impl: GaussianMixtureOutput): GaussianMixtureModelOutputV3 = {
       val gmv3: GaussianMixtureModelOutputV3 = super.fillFromImpl(impl)
-      gmv3.centers = new TwoDimTableV3().fillFromImpl(ClusteringUtils.createCenterTable(impl, false))
-      if (impl._centers_std_raw != null) {
-        gmv3.centers_std = new TwoDimTableV3().fillFromImpl(ClusteringUtils.createCenterTable(impl, true))
-      }
+      gmv3.weightsTable = new TwoDimTableV3().fillFromImpl(
+        ClusteringUtils.create2DTable(
+          impl,
+          Array[Array[Double]](impl._weights),
+          "Weight",
+          generateNames("W", impl._weights.length),
+          "Distribution weights")
+      )
+
+      gmv3.muTable = new TwoDimTableV3().fillFromImpl(
+        ClusteringUtils.create2DTable(
+          impl,
+          impl._mu,
+          "Mean",
+          generateNames("M", if(impl._mu.isEmpty) 0 else impl._mu.head.length),
+          "Distribution means")
+      )
+
+      gmv3.sigmaTable = new TwoDimTableV3().fillFromImpl(
+        ClusteringUtils.create2DTable(
+          impl,
+          impl._sigma,
+          "Variance",
+          generateNames("V", if(impl._sigma.isEmpty) 0 else impl._sigma.head.length),
+          "Distribution variances")
+      )
       gmv3
     }
   }
