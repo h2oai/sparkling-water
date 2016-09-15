@@ -1,42 +1,40 @@
 package org.apache.spark.ml.spark.models.gm;
 
 import hex.*;
+import org.apache.spark.mllib.ClusteringUtils;
 import water.fvec.Frame;
 
 public class ModelMetricsGaussianMixture extends ModelMetricsUnsupervised {
 
-    public ModelMetricsGaussianMixture(Model model, Frame frame) {
+    public final double _loglikelihood;
+
+    public double loglikelihood() {
+        return _loglikelihood;
+    }
+
+    public ModelMetricsGaussianMixture(Model model, Frame frame, double loglikelihood) {
         super(model, frame, 0, Double.NaN);
+        this._loglikelihood = loglikelihood;
     }
 
     public static class MetricBuilderGaussianMixture extends ModelMetricsUnsupervised.MetricBuilderUnsupervised {
 
-        public MetricBuilderGaussianMixture(int ncol, int nclust) {
+        private double _loglikelihood;
+
+        public MetricBuilderGaussianMixture(int ncol) {
             _work = new double[ncol];
         }
 
         @Override
         public double[] perRow(double[] preds, float[] dataRow, Model m) {
-            // TODO implement
+            GaussianMixtureModel gmm = (GaussianMixtureModel) m;
+            _loglikelihood = ClusteringUtils.perRowGaussianMixture(dataRow, gmm);
             return preds;
         }
 
         @Override
-        public void reduce(MetricBuilder mb) {
-            ModelMetricsGaussianMixture.MetricBuilderGaussianMixture mm = (ModelMetricsGaussianMixture.MetricBuilderGaussianMixture) mb;
-            super.reduce(mm);
-            // TODO implement
-        }
-
-        @Override
         public ModelMetrics makeModelMetrics(Model m, Frame f, Frame adaptedFrame, Frame preds) {
-            assert m instanceof ClusteringModel;
-            ClusteringModel clm = (ClusteringModel) m;
-            ModelMetricsGaussianMixture mm = new ModelMetricsGaussianMixture(m, f);;
-
-            // TODO implement
-
-            return m.addMetrics(mm);
+            return m.addMetrics(new ModelMetricsGaussianMixture(m, f, _loglikelihood));
         }
     }
 

@@ -68,7 +68,7 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
 
   override def makeMetricBuilder(domain: Array[String]): MetricBuilderGaussianMixture = {
     assert(domain == null)
-    new ModelMetricsGaussianMixture.MetricBuilderGaussianMixture(_output.nfeatures(), _parms._k)
+    new ModelMetricsGaussianMixture.MetricBuilderGaussianMixture(_output.nfeatures())
   }
 
   override def score0(data: Array[Double], preds: Array[Double]): Array[Double] = {

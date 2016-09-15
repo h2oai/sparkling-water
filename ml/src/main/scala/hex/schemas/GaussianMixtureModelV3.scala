@@ -18,8 +18,9 @@ package hex.schemas
 
 import hex.schemas.GaussianMixtureModelV3.GaussianMixtureModelOutputV3
 import hex.schemas.GaussianMixtureV3.GaussianMixtureParametersV3
-import org.apache.spark.ml.spark.models.gm.{ClusteringUtils, GaussianMixtureModel, GaussianMixtureParameters}
+import org.apache.spark.ml.spark.models.gm.{GaussianMixtureModel, GaussianMixtureParameters}
 import org.apache.spark.ml.spark.models.gm.GaussianMixtureModel.GaussianMixtureOutput
+import org.apache.spark.mllib.ClusteringUtils
 import water.api.API
 import water.api.schemas3.{ModelOutputSchemaV3, ModelSchemaV3, TwoDimTableV3}
 
