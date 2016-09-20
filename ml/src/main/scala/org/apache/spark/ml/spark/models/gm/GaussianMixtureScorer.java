@@ -71,8 +71,8 @@ public class GaussianMixtureScorer {
         Tuple2<Double[][], Double> dm =
                 ClusteringUtils.calculateCovarianceConstants(gaussian.sigma(), gaussian.mu());
         double[] delta = delta(data, gaussian.mu().toArray());
-        double[] v = multiply(dm._1, delta);
-        return Math.exp((dm._2 + multiply(v, v) * -0.5));
+        double[] v = multiplyMV(dm._1, delta);
+        return Math.exp((dm._2 + multiplyV(v, v) * -0.5));
     }
 
     /**
@@ -90,7 +90,7 @@ public class GaussianMixtureScorer {
      * @param vec
      * @return
      */
-    static double[] multiply(Double[][] matrix, double[] vec) {
+    static double[] multiplyMV(Double[][] matrix, double[] vec) {
         assert matrix.length != 0;
         int resSize = matrix.length;
         double[] res = new double[resSize];
@@ -110,7 +110,8 @@ public class GaussianMixtureScorer {
      * @param vec2 Second vector
      * @return Scala value
      */
-    static double multiply(double[] vec1, double[] vec2) {
+    static double multiplyV(double[] vec1, double[] vec2) {
+        assert vec1.length == vec2.length;
         double res = 0;
         for (int i = 0; i < vec1.length; i++) {
             res += (vec1[i] * vec2[i]);
