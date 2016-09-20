@@ -18,10 +18,9 @@ package org.apache.spark.ml.spark.models.gm
 
 import hex.ClusteringModel.ClusteringOutput
 import hex._
-import hex.ModelMetricsClustering.MetricBuilderClustering
 import org.apache.spark.ml.spark.models.gm.GaussianMixtureModel.GaussianMixtureOutput
 import org.apache.spark.ml.spark.models.gm.ModelMetricsGaussianMixture.MetricBuilderGaussianMixture
-import org.apache.spark.mllib.clustering
+import org.apache.spark.mllib.{ClusteringUtils, clustering}
 import org.apache.spark.mllib.linalg.{Matrices, Vectors}
 import org.apache.spark.mllib.stat.distribution
 import water.codegen.CodeGeneratorPipeline
@@ -73,6 +72,7 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
 
   override def score0(data: Array[Double], preds: Array[Double]): Array[Double] = {
     preds(0) = sparkModel.predict(Vectors.dense(data))
+    val predition = GaussianMixtureScorer.score(weights, sparkModel.gaussians, data)
     preds
   }
 
@@ -87,7 +87,6 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
                                            fileCtx: CodeGeneratorPipeline,
                                            verboseCode: Boolean) {
     // TODO implement
-
   }
 
 }
