@@ -47,9 +47,10 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
                                        val output: GaussianMixtureOutput)
   extends ClusteringModel[GaussianMixtureModel, GaussianMixtureParameters, GaussianMixtureOutput](selfKey, parms, output) {
 
+  private val epsilon: Double = ClusteringUtils.EPSILON
   private var weights: Array[Double] = null
   private var mg: Array[distribution.MultivariateGaussian]  = null
-  private var sparkModel: clustering.GaussianMixtureModel = null
+  var sparkModel: clustering.GaussianMixtureModel = null
 
   def init() = {
     weights = _output._weights
@@ -71,8 +72,7 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
   }
 
   override def score0(data: Array[Double], preds: Array[Double]): Array[Double] = {
-    preds(0) = sparkModel.predict(Vectors.dense(data))
-    val predition = GaussianMixtureScorer.score(weights, sparkModel.gaussians, data)
+    preds(0) = GaussianMixtureScorer.score(weights, sparkModel.gaussians, epsilon, data)
     preds
   }
 

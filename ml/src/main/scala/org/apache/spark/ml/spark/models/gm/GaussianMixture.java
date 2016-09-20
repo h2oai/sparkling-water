@@ -25,12 +25,16 @@ import water.util.Log;
 
 public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel, GaussianMixtureParameters, GaussianMixtureModel.GaussianMixtureOutput> {
 
-    public GaussianMixture(boolean startup_once) {
+    transient private final H2OContext hc;
+
+    public GaussianMixture(boolean startup_once, H2OContext hc) {
         super(new GaussianMixtureParameters(), startup_once);
+        this.hc = hc;
     }
 
-    public GaussianMixture(GaussianMixtureParameters parms) {
+    public GaussianMixture(GaussianMixtureParameters parms, H2OContext hc) {
         super(parms);
+        this.hc = hc;
         init(false);
     }
 
@@ -69,8 +73,8 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
 
     private class GaussianMixtureDriver extends Driver {
 
-        transient private H2OContext h2oContext = H2OContext.get().get();
-        transient private SparkContext sc = h2oContext.sparkContext();
+        transient private H2OContext h2oContext = hc;
+        transient private SparkContext sc = hc.sparkContext();
         transient private SQLContext sqlContext = SQLContext.getOrCreate(sc);
 
         @Override
@@ -131,7 +135,7 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
         }
 
         private RDD<Vector> getTrainingData(Frame training, int nfeatures) {
-            return h2oContext.asSchemaRDD(new H2OFrame(training), sqlContext)
+            return h2oContext.asDataFrame(new H2OFrame(training), true, sqlContext)
                     .javaRDD()
                     .map(new RowToLabeledPoint(training.domains(), nfeatures))
                     .rdd();
