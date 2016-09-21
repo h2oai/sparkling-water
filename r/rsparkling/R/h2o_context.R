@@ -14,7 +14,11 @@ h2o_context <- function(x, ...) {
 
 #' @export
 h2o_context.spark_connection <- function(x, ...) {
-  invoke_static(sc, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x))
+  hc <- invoke_static(sc, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x))
+  ip <- invoke(hc, "h2oLocalClientIp")
+  port <- invoke(hc, "h2oLocalClientPort")
+  h2o.init(ip = ip, port = port, strict_version_check = FALSE)
+  hc
 }
 
 #' @export
@@ -45,6 +49,19 @@ h2o_frame <- function(df) {
   df <- spark_dataframe(df)
 
   # convert it to an H2OFrame
-  invoke(h2o_context(df), "asH2OFrame", df)
+  jhf <- invoke(h2o_context(df), "asH2OFrame", df)
+  key <- invoke(invoke(jhf, "key"), "toString")
+  h2o.getFrame(key)
 }
 
+h2o_frame_to_tbl_spark <- function(hf) {
+  # FIXME: ensure we are dealing with a H2O frame
+  # Get SQLContext
+  sqlContext <- invoke_static(sc, "org.apache.spark.sql.SQLContext", "getOrCreate", spark_context(sc))
+  # Get H2OContext
+  hc <- h2o_context(sc)
+  # Invoke H2OContext#asDataFrame method on the backend
+  spark_df <- invoke(hc, "asDataFrame", h2o.getId(hf), TRUE, sqlContext)
+  # Register returned spark_jobj as a table for dplyr
+  sdf_register(spark_df)
+}
