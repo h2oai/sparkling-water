@@ -10,15 +10,22 @@ This package implements only the most basic functionality (creating an H2OContex
 
 ## Installation
 
-The **rsparkling** R package requires the **h2o** and **sparklyr** R packages to run.  We always recommend the latest stable version of H2O, which you can find on the [H2O R Downloads page](http://www.h2o.ai/download/h2o/r) and the [sparklyr page](http://spark.rstudio.com/index.html).
+The **rsparkling** R package requires the **h2o** and **sparklyr** R packages to run.  We always recommend the latest stable version of h2o / sparklyr, which you can find on the [H2O R Downloads page](http://www.h2o.ai/download/h2o/r) / [sparklyr page](http://spark.rstudio.com/index.html).
 
 
 ### Install RSparkling
-The latest stable version, compatible with the H2O "Turchin" release, be installed as follows:
+The latest stable version of RSparkling can be installed as follows:
 
 ```r
 library(devtools)
 devtools::install_github("h2oai/sparkling-water/tree/master/r/rsparkling")
+``` 
+
+The development version can be installed from the "rsparkling" branch as follows:
+
+```r
+library(devtools)
+devtools::install_github("h2oai/sparkling-water/tree/rsparkling/r/rsparkling")
 ``` 
 
 
@@ -29,7 +36,7 @@ First we connect to Spark. The call to `library(rsparkling)` will make the H2O f
 
 ``` r
 library(sparklyr)  # Spark + R
-library(rsparkling)  # Sparkling Water Machine Learning
+library(rsparkling)  # H2O Sparkling Water Machine Learning
 sc <- spark_connect(master = "local")
 ```
 
@@ -92,7 +99,7 @@ mtcars_tbl
 The use case we'd like to enable is calling the H2O algorithms and feature transformers directly on Spark DataFrames that we've manipulated with dplyr. This is indeed supported by the Sparkling Water package. Here though we'll just convert the Spark DataFrame into an H2O Frame to prove that it's possible:
 
 ``` r
-mtcars_hf <- h2o_frame(mtcars_tbl)
+mtcars_hf <- as_h2o_frame(mtcars_tbl)
 mtcars_hf
 ```
 
@@ -125,6 +132,37 @@ mtcars_hf
     ##      17               32.4    4                78.7   66                4.08                 2.2               19.47   1   1     4     1
     ##      18               30.4    4                75.7   52                4.93               1.615               18.52   1   1     4     2
     ##      19               33.9    4                71.1   65                4.22               1.835                19.9   1   1     4     1
+
+
+## Sparkling Water: H2O Machine Learning
+
+Here is an example where we train a Gradient Boosting Machine (GBM):
+
+``` r
+y <- "mpg"
+x <- setdiff(names(mtcars_hf), y)
+```
+
+``` r
+fit <- h2o.gbm(x = x, 
+               y = y, 
+               training_frame = mtcars_hf,
+               nfolds = 2, 
+               min_rows = 1)
+
+prediction_hf <- h2o.predict(fit, mtcars_hf)
+
+prediction_tbl <- as_spark_dataframe(prediction_hf)
+prediction_tbl
+```
+
+## Logs & Disconnect
+
+Look at the Spark log from R:
+
+``` r
+spark_log(sc, n = 100)
+```
 
 Now we disconnect from Spark, this will result in the H2OContext being stopped as well since it's owned by the spark shell process used by our Spark connection:
 
