@@ -18,34 +18,33 @@ package water.support
 
 import hex.FrameSplitter
 import hex.splitframe.ShuffleSplitFrame
-import org.apache.spark.h2o._
 import water.Key
 import water.fvec.Frame
 
 trait H2OFrameSupport extends JoinSupport {
 
-  def splitFrame(df: H2OFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
+  def splitFrame[T <: Frame](fr: T, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
     val ks = keys.map(Key.make[Frame](_)).toArray
-    val frs = ShuffleSplitFrame.shuffleSplitFrame(df, ks, ratios.toArray, 1234567689L)
+    val frs = ShuffleSplitFrame.shuffleSplitFrame(fr, ks, ratios.toArray, 1234567689L)
     frs
   }
 
-  def split(df: H2OFrame, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
+  def split[T <: Frame](fr: T, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
     val ks = keys.map(Key.make[Frame](_)).toArray
-    val splitter = new FrameSplitter(df, ratios.toArray, ks, null)
+    val splitter = new FrameSplitter(fr, ratios.toArray, ks, null)
     water.H2O.submitTask(splitter)
     // return results
     splitter.getResult
   }
 
-  def allStringVecToCategorical(hf: H2OFrame): H2OFrame = {
-    hf.vecs().indices
-      .filter(idx => hf.vec(idx).isString)
-      .foreach(idx => hf.replace(idx, hf.vec(idx).toCategoricalVec).remove())
+  def allStringVecToCategorical[T <: Frame](fr: T): T = {
+    fr.vecs().indices
+      .filter(idx => fr.vec(idx).isString)
+      .foreach(idx => fr.replace(idx, fr.vec(idx).toCategoricalVec).remove())
     // Update frame in DKV
-    water.DKV.put(hf)
+    water.DKV.put(fr)
     // Return it
-    hf
+    fr
   }
 }
 
