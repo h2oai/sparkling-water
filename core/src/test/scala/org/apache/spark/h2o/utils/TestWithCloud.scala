@@ -17,20 +17,25 @@
 package org.apache.spark.h2o.utils
 
 import org.junit.Assert._
+import org.scalatest.BeforeAndAfterAll
 import water.H2O
 
 /**
   * Test fixture to control cloud
   * from ater.TestUtil in H2O module
   */
-class TestCloud(size: Int, args: String*) extends TestBase {
+class TestWithCloud(size: Int, args: String*) extends TestBase with BeforeAndAfterAll {
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    stallTillCloudSize()
+  }
 
   private lazy val isInitialized: Boolean = try {
     H2O.main(args.toArray)
     H2O.registerRestApis(System.getProperty("user.dir"))
     true
   } catch {
-    case x => false
+    case x: Exception => false
   }
 
   protected lazy val initialKeyCount: Int = H2O.store_size

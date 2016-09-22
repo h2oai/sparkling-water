@@ -20,11 +20,10 @@ import java.io.File
 
 import hex.DataInfo
 import hex.glm.GLMModel.GLMParameters.Family
-import org.apache.spark.h2o.utils.TestCloud
+import org.apache.spark.h2o.utils.TestWithCloud
 import org.junit.Assert
 import org.junit.Assert._
 import org.junit.runner.RunWith
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.junit.JUnitRunner
 import water.fvec.{C0DChunk, Chunk, Frame, H2OFrame}
 import water.{MRTask, Scope}
@@ -33,10 +32,7 @@ import water.{MRTask, Scope}
   * Scala version of h2o's GLM test.
   */
 @RunWith(classOf[JUnitRunner])
-class GLMTest extends TestCloud(1) with BeforeAndAfterAll {
-  override def beforeAll: Unit = {
-    stallTillCloudSize()
-  }
+class GLMTest extends TestWithCloud(1) {
 
   def testScoring(m: GLMModel, fr: Frame) {
     Scope.enter()
