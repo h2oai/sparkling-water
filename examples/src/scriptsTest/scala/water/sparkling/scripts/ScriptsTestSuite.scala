@@ -166,3 +166,25 @@ class ScriptStrataAirlines extends ScriptsTestHelper{
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
   }
 }
+
+@RunWith(classOf[JUnitRunner])
+class ScriptPipelineHamOrSpam extends ScriptsTestHelper{
+  override protected def beforeAll(): Unit = {
+    sparkConf = defaultConf.setMaster("local-cluster[3,2,4096]")
+      .set("spark.driver.memory", "4G")
+      .set("spark.executor.memory", "4G")
+    super.beforeAll()
+  }
+  test("hamSpam.script.scala") {
+    val inspections = new ScriptInspections()
+    inspections.addSnippet("val answer1 = isSpam(\"Michal, h2oworld party tonight in MV?\", modelOfLoadedPipeline, h2oContext)")
+    inspections.addTermToCheck("answer1")
+    inspections.addSnippet("val answer2 = isSpam(\"We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?\", loadedModel, h2oContext)")
+    inspections.addTermToCheck("answer2")
+
+    val result = launchScript("hamOrSpam.script.scala", inspections, "pipelines")
+    assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
+    assert(result.realTermValues.get("answer1").get=="false","Value of term \"answer1\" should be false")
+    assert(result.realTermValues.get("answer2").get=="true","Value of term \"answer2\" should be true")
+  }
+}
