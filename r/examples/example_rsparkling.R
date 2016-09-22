@@ -8,6 +8,7 @@ library(rsparkling)
 sc <- spark_connect(master = "local")
 
 # Inspect the H2OContext for our Spark connection
+# This will also start an H2O cluster
 h2o_context(sc)
 
 # We can also view the H2O Flow web UI:
@@ -37,7 +38,7 @@ fit <- h2o.gbm(x = x,
 
 prediction_hf <- h2o.predict(fit, mtcars_hf)
 
-prediction_tbl <- as_spark_dataframe(prediction_hf)
+prediction_tbl <- as_spark_dataframe(prediction_hf, sc)
 prediction_tbl
 
 

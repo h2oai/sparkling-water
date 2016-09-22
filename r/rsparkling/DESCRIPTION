@@ -6,7 +6,8 @@ Authors@R: c(
   person(family = "RStudio", role = c("cph")))
 Imports:
     utils,
-    sparklyr (>= 0.3)
+    sparklyr (>= 0.3),
+    h2o
 Description: An extension package for sparklyr that provides an R interface to
     H2O Sparkling Water machine learning library.
 License: file LICENSE

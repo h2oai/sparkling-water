@@ -6,8 +6,10 @@
 \usage{
 as_h2o_frame(x)
 }
-\description{
-x A \code{spark_dataframe}
+\arguments{
+\item{x}{A \code{spark_dataframe}.}
 }
-\keyword{internal}
+\description{
+Convert a Spark DataFrame to an H2O Frame
+}
 

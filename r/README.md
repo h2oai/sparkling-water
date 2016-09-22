@@ -1,11 +1,9 @@
 # RSparkling
 
 
-RSparkling is a based on this proof of concept project by J.J. Allaire: [https://github.com/jjallaire/sparklingwater](https://github.com/jjallaire/sparklingwater) 
+RSparkling is package is an extension package for [sparkapi](https://github.com/rstudio/sparkapi) / [sparklyr](http://spark.rstudio.com) that creates an R front-end for a Spark package ([Sparking Water](https://spark-packages.org/package/h2oai/sparkling-water) from H2O).  This provides an interface to H2O's machine learning algorithms on Spark, using R.
 
-This package is an extension package for [sparkapi](https://github.com/rstudio/sparkapi) / [sparklyr](http://spark.rstudio.com) that creates an R front-end for a Spark package ([Sparking Water](https://spark-packages.org/package/h2oai/sparkling-water) from H2O).  This provides an interface to H2O's machine learning algorithms on Spark, using R.
-
-This package implements only the most basic functionality (creating an H2OContext, showing the H2O Flow interface, and converting a Spark DataFrame to an H2O Frame). 
+This package implements basic functionality (creating an H2OContext, showing the H2O Flow interface, and converting between Spark DataFrames and H2O Frames). 
 
 
 ## Installation
@@ -32,7 +30,7 @@ devtools::install_github("h2oai/sparkling-water/tree/rsparkling/r/rsparkling")
 
 ## Connecting to Spark
 
-First we connect to Spark. The call to `library(rsparkling)` will make the H2O functions available on the R search path and will also ensure that the dependencies required by the Sparkling Water package are included when we connect to Spark.
+The call to `library(rsparkling)` will make the H2O functions available on the R search path and will also ensure that the dependencies required by the Sparkling Water package are included when we connect to Spark. 
 
 ``` r
 library(sparklyr)  # Spark + R
@@ -136,24 +134,56 @@ mtcars_hf
 
 ## Sparkling Water: H2O Machine Learning
 
-Here is an example where we train a Gradient Boosting Machine (GBM):
+Here is an example where we train a Gradient Boosting Machine (GBM).
+
+### Prep data:
+Define the response and set of predictor variables:
 
 ``` r
 y <- "mpg"
 x <- setdiff(names(mtcars_hf), y)
 ```
 
+Let's split the data into a train and test set using H2O.  The `h2o.splitFrame` function defaults to a 75-25 split:
+
+``` r
+splits <- h2o.splitFrame(mtcars_hf, seed = 1)
+```
+
+### Training: 
+Now train an H2O GBM using the training H2OFrame.
+
 ``` r
 fit <- h2o.gbm(x = x, 
                y = y, 
-               training_frame = mtcars_hf,
-               nfolds = 2, 
-               min_rows = 1)
+               training_frame = splits[[1]],
+               min_rows = 1,
+               seed = 1)
+```
 
-prediction_hf <- h2o.predict(fit, mtcars_hf)
+### Model Performance:
 
-prediction_tbl <- as_spark_dataframe(prediction_hf)
-prediction_tbl
+We can evaluate the performance of the GBM by evaluating its performance on a test set.
+ 
+``` r
+fit <- h2o.performance(splits[[2]])
+```
+
+
+### Prediction: 
+
+To generate predictions on a test set, you do the following.  This will return an H2OFrame with a single (or multiple) columns of predicted values.  If regression, it will be a single colum, if binary classification it will be 3 columns and in multi-class prediction it will be C+1 columns (where C is the number of classes).
+
+``` r
+pred_hf <- h2o.predict(fit, newdata = splits[[2]])
+```
+
+
+Now let's say you want to make this H2OFrame available to Spark.  You can convert an H2OFrame into a Spark DataFrame using the `as_spark_dataframe` function:
+
+``` r
+pred_sdf <- as_spark_dataframe(pred_hf)
+pred_sdf
 ```
 
 ## Logs & Disconnect

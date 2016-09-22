@@ -2,14 +2,14 @@
 % Please edit documentation in R/h2o_context.R
 \name{h2o_context}
 \alias{h2o_context}
-\title{Get the H2OContext from another object}
+\title{Get the H2OContext. Will create the context if it has not been previously created.}
 \usage{
 h2o_context(x, ...)
 }
 \arguments{
-\item{x}{Object of type \code{spark_connection} or \code{spark_jobj}}
+\item{x}{Object of type \code{spark_connection} or \code{spark_jobj}.}
 }
 \description{
-Get the H2OContext. Will create the context if it hasn't been previously created.
+Get the H2OContext. Will create the context if it has not been previously created.
 }
 
