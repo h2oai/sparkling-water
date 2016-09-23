@@ -13,7 +13,7 @@ h2o_context.spark_connection <- function(x, ...) {
   hc <- sparklyr::invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", sparklyr::spark_context(x))
   ip <- sparklyr::invoke(hc, "h2oLocalClientIp")
   port <- sparklyr::invoke(hc, "h2oLocalClientPort")
-  h2o::h2o.init(ip = ip, port = port, strict_version_check = FALSE)  #should update strict_version_check to TRUE
+  invisible(capture.output(h2o::h2o.init(ip = ip, port = port, strict_version_check = FALSE)))  #should update strict_version_check to TRUE
   hc
 }
 
