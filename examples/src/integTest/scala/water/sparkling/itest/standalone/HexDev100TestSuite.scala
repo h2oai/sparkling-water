@@ -43,7 +43,7 @@ object HexDev100Test extends IntegTestStopper{
     import h2oContext.implicits._
 
     // Import all year airlines into H2O
-    val path = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines_all.csv"
+    val path = "hdfs://mr-0xd6.0xdata.loc:8020/datasets/airlines/airlines_all.csv"
     val uri = new java.net.URI(path)
     val airlinesData = new H2OFrame(uri)
 
