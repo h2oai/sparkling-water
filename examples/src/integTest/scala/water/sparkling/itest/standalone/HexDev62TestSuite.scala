@@ -40,7 +40,7 @@ object HexDev62Test extends IntegTestStopper{
 
     // Import all year airlines into SPARK
     implicit val sqlContext = new SQLContext(sc)
-    val path = "hdfs://mr-0xd6-precise1.0xdata.loc:8020/datasets/airlines/airlines_all.csv"
+    val path = "hdfs://mr-0xd6.0xdata.loc:8020/datasets/airlines/airlines_all.csv"
     val timer1 = new water.util.Timer
     val airlinesRaw = sc.textFile(path)
     val airlinesRDD = airlinesRaw.map(_.split(",")).map(row => AirlinesParse(row)).filter(!_.isWrongRow())

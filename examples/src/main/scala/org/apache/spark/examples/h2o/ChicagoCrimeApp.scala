@@ -272,9 +272,9 @@ object ChicagoCrimeApp extends SparkContextSupport {
     val h2oContext = H2OContext.getOrCreate(sc)
 
     val app = new ChicagoCrimeApp(
-                weatherFile = "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoAllWeather.csv",
-                censusFile =  "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCensus.csv",
-                crimesFile =  "hdfs://mr-0xd6-precise1.0xdata.loc/datasets/chicagoCrimes.csv")(sc, sqlContext, h2oContext)
+                weatherFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoAllWeather.csv",
+                censusFile =  "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCensus.csv",
+                crimesFile =  "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCrimes.csv")(sc, sqlContext, h2oContext)
     // Load data
     val (weatherTable,censusTable,crimesTable) = app.loadAll()
     // Train model
