@@ -83,7 +83,7 @@ For running on YARN and other supported platforms please see `Running Sparkling 
 
       from pysparkling import *
       import h2o
-      hc = H2OContext(sc).start()
+      hc = H2OContext.getOrCreate(sc)
 
 
 Run IPython Notebook with PySparkling
@@ -103,10 +103,8 @@ Run IPython with PySparkling
 Use PySparkling as Spark Package
 --------------------------------
 .. code-block:: bash
-
-	$SPARK_HOME/bin/spark-submit
-	--packages ai.h2o:sparkling-water-core_2.10:1.6.1
-	--py-files $SPARKLING_HOME/py/dist/pySparkling-1.6.1-py2.7.egg  ./py/examples/scripts/ChicagoCrimeDemo.py
+    export SPARKLING_EGG=$(ls -t py/dist/h2o_pysparkling*.egg | head -1)
+	$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.6.1 --py-files $SPARKLING_EGG ./py/examples/scripts/ChicagoCrimeDemo.py
 
 
 Use PySparkling in Databricks Cloud
