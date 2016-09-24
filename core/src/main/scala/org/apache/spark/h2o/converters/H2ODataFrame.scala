@@ -19,12 +19,14 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.utils.H2OSchemaUtils._
+import org.apache.spark.h2o.utils.{SupportedTypes, ReflectionUtils}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.{Partition, SparkContext, TaskContext}
-import language.postfixOps
+
+import scala.language.postfixOps
+import SupportedTypes._
 
 /**
  * H2O H2OFrame wrapper providing RDD[Row]=DataFrame API.
@@ -44,11 +46,12 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
   def this(@transient frame: T)
           (@transient sc: SparkContext) = this(frame, null)(sc)
 
+  val typesAll: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
 
-  val typesAll: Array[DataType] = frame.vecs().indices.map(idx => vecTypeToDataType(frame.vec(idx))).toArray
   /** Create new types list which describes expected types in a way external H2O backend can use it. This list
     * contains types in a format same for H2ODataFrame and H2ORDD */
   val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, typesAll)
+
   val colNames = frame.names()
 
   @DeveloperApi
@@ -69,22 +72,9 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
         requiredColumns.toSeq.map{ name => colNames.indexOf(name) }
       }) toArray
 
-      // Make sure that column selection is consistent
-      // scalastyle:off
-      assert(requiredColumns != null && selectedColumnIndices.length == requiredColumns.length,
-             "Column selection missing a column!")
-      // scalastyle:on
-
-      private val filteredTypes = selectedColumnIndices map typesAll
-
     /** Filtered list of types used for data transfer */
-      val expectedTypes: Option[Array[Byte]]  =
-      // TODO(vlad): use Option's map
-      if (expectedTypesAll.isDefined){
-        Some(selectedColumnIndices.map(expectedTypesAll.get))
-      }else{
-        None
-      }
+      val expectedTypes: Option[Array[Byte]] =
+        expectedTypesAll map (selectedColumnIndices map _)
 
       /* Converter context */
       override val converterCtx: ReadConverterContext =
@@ -94,15 +84,16 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
         expectedTypes,
         partIndex)
 
-      /*a sequence of converters, per column*/
-      private val columnConverters = filteredTypes map converterCtx.get
 
+      private val columnIndicesWithTypes: Array[(Int, SimpleType[_])] = selectedColumnIndices map (i => (i, bySparkType(typesAll(i))))
+
+      /*a sequence of value providers, per column*/
+      private val columnValueProviders: Array[() => Option[Any]] = converterCtx.columnValueProviders(columnIndicesWithTypes)
+
+      def readOptionalData: Seq[Option[Any]] = columnValueProviders map (_())
 
       private def readRow: InternalRow = {
-          val optionalData: Seq[Option[Any]] =
-            columnConverters.zipWithIndex map {
-              case (converter, idx) => converter(selectedColumnIndices(idx))
-            }
+          val optionalData: Seq[Option[Any]] = readOptionalData
 
           val nullableData: Seq[Any] = optionalData map (_ orNull)
 

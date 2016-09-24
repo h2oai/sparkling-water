@@ -17,15 +17,17 @@
 
 package org.apache.spark.h2o.backends.internal
 
-import java.util.UUID
-
 import org.apache.spark.h2o.converters.ReadConverterContext
-import water.fvec.{Chunk, Frame}
+import org.apache.spark.h2o.utils.ReflectionUtils.NameOfType
+import org.apache.spark.h2o.utils.SupportedTypes
+import org.apache.spark.unsafe.types.UTF8String
+import water.fvec.{Vec, Chunk, Frame}
 import water.parser.BufferedString
 import water.{DKV, Key}
 
-class InternalReadConverterContext(override val keyName: String, override val chunkIdx: Int) extends ReadConverterContext{
+import scala.language.postfixOps
 
+class InternalReadConverterContext(override val keyName: String, override val chunkIdx: Int) extends ReadConverterContext{
   /** Lazily fetched H2OFrame from K/V store */
   private lazy val fr: Frame = underlyingFrame
 
@@ -33,43 +35,106 @@ class InternalReadConverterContext(override val keyName: String, override val ch
   private lazy val chks: Array[Chunk] = water.fvec.FrameUtils.getChunks(fr, chunkIdx)
 
   /** Number of rows in this partition */
-  private lazy val nrows = chks(0)._len
+  lazy val numRows = chks(0)._len
 
-  override def isNA(columnNum: Int): Boolean = chks(columnNum).isNA(rowIdx)
+//  override def isNA(columnNum: Int): Boolean = chks(columnNum).isNA(rowIdx)
 
-  private def get[T](columnNum: Int, read: Chunk => T): Option[T] =
-    if (isNA(columnNum)) {
-      None
-    } else {
-      Option(read(chks(columnNum)))
-    }
+  private def returnOption[T](read: Chunk => T)(columnNum: Int): Option[T] = {
+    for {
+      chunk <- Option(chks(columnNum)) if !chunk.isNA(rowIdx)
+      data <- Option(read(chunk))
+    } yield data
+  }
 
-  override def getLong(columnNum: Int): Option[Long] =  get(columnNum, _.at8(rowIdx))
-  override def getDouble(columnNum: Int): Option[Double] = get(columnNum, _.atd(rowIdx))
-
-  // TODO(vlad): try to move out all this logic to prepared extractors
-  override def getString(columnNum: Int): Option[String] = get(columnNum, chunk =>
-    {
+  private def returnSimple[T](ifMissing: String => T, read: Chunk => T)(columnNum: Int): T = {
     val chunk = chks(columnNum)
-    val vector = chunk.vec()
-    if (vector.isCategorical) {
-      val str = vector.domain()(chunk.at8(rowIdx).toInt)
-      str
-    } else if (vector.isString) {
-      val valStr = new BufferedString()
-      chunk.atStr(valStr, rowIdx) // TODO improve this.
-      valStr.toString
-    } else if (vector.isUUID) {
-      val uuid = new UUID(chunk.at16h(rowIdx), chunk.at16l(rowIdx))
-      uuid.toString
-    } else {
-      assert(assertion = false, s"Should never be here, type is ${vector.get_type_str()}")
-      // TODO(vlad): this is temporarily here, to provide None is string is missing
-      null
-    }
-    })
+      if (chunk.isNA(rowIdx)) ifMissing(s"Row $rowIdx column $columnNum") else read(chunk)
+  }
+
+  private def longAt(chunk: Chunk) = chunk.at8(rowIdx)
+  private def doubleAt(chunk: Chunk) = chunk.atd(rowIdx)
+  private def booleanAt(chunk: Chunk) = longAt(chunk) == 1
+  private def byteAt(chunk: Chunk) = longAt(chunk).toByte
+  private def intAt(chunk: Chunk) = longAt(chunk).toInt
+  private def shortAt(chunk: Chunk) = longAt(chunk).toShort
+  private def floatAt(chunk: Chunk) = longAt(chunk).toFloat
+
+  private def categoricalString(chunk: Chunk) = chunk.vec().domain()(longAt(chunk).toInt)
+
+  private def uuidString(chunk: Chunk) = new java.util.UUID(chunk.at16h(rowIdx), chunk.at16l(rowIdx)).toString
+
+  // TODO(vlad): take care of this bad typing
+  private def timestamp(chunk: Chunk) = longAt(chunk) * 1000L
+
+  private def plainString(chunk: Chunk) = chunk.atStr(new BufferedString(), rowIdx).toString
+
+  private val StringProviders = Map[Byte, (Chunk => String)](
+    Vec.T_CAT -> categoricalString,
+    Vec.T_UUID -> uuidString,
+    Vec.T_STR -> plainString
+  ) withDefault((t:Byte) => {
+    assert(assertion = false, s"Should never be here, type is $t")
+    (_:Chunk) => null
+  }
+    )
+
+  private def string(chunk: Chunk): String = StringProviders(chunk.vec().get_type())(chunk)
+
+  // TODO(vlad): check if instead of stringification, we could use bytes
+  private def utfString(chunk: Chunk) = UTF8String.fromString(string(chunk))
 
   private def underlyingFrame = DKV.get(Key.make(keyName)).get.asInstanceOf[Frame]
 
-  override def numRows: Int = nrows
+  private val DefaultReader: Reader = (_:Int) => None
+
+  import SupportedTypes._
+  /**
+    * Given a a column number, returns an Option[T]
+    * with the value parsed according to the type.
+    * You can override it.
+    *
+    * A map from type name to option reader
+    */
+  private lazy val ExtractorsTable: Map[SimpleType[_], Chunk => _] = Map(
+    Boolean    -> booleanAt _,
+    Byte       -> byteAt _,
+    Double     -> doubleAt _,
+    Float      -> floatAt _,
+    Integer    -> intAt _,
+    Long       -> longAt _,
+    Short      -> shortAt _,
+    String     -> plainString _,
+    Category   -> categoricalString _,
+    UUID       -> uuidString _,
+    UTF8       -> utfString _,
+    Timestamp  -> timestamp _
+  )
+
+  private lazy val OptionReadersMap: Map[OptionalType[_], OptionReader] =
+    ExtractorsTable map {
+      case (t, getter) => SupportedTypes.byBaseType(t) -> returnOption(getter) _
+    } toMap
+
+  private lazy val OptionReaders: Map[OptionalType[_], OptionReader] = OptionReadersMap withDefault
+    (t => throw new scala.IllegalArgumentException(s"Type $t conversion is not supported in Sparkling Water"))
+
+  private lazy val SimpleReadersMap: Map[SimpleType[_], Reader] =
+    ExtractorsTable map {
+      case (t, getter) => t -> returnSimple(t.ifMissing, getter) _
+    } toMap
+
+  private lazy val SimpleReaders: Map[SimpleType[_], Reader] = SimpleReadersMap withDefault
+    (t => throw new scala.IllegalArgumentException(s"Type $t conversion is not supported in Sparkling Water"))
+
+  lazy val readerMapByName: Map[NameOfType, Reader] = (OptionReaders ++ SimpleReaders) map {
+    case (supportedType, reader) => supportedType.name -> reader
+  } toMap
+
+  def columnValueProviders(columnIndexesWithTypes: Array[(Int, SimpleType[_])]): Array[() => Option[Any]] = {
+    for {
+      (columIndex, supportedType) <- columnIndexesWithTypes
+      reader = OptionReaders(byBaseType(supportedType))
+      provider = () => reader.apply(columIndex)
+    } yield provider
+  }
 }

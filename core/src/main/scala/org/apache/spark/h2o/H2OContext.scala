@@ -19,7 +19,6 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
-import org.apache.log4j.{Level, LogManager}
 import org.apache.spark._
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
@@ -27,7 +26,7 @@ import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.utils.{H2OContextUtils, NodeDesc}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import water._
-import water.util.{Log, LogUtil}
+import water.util.LogUtil
 
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
@@ -102,7 +101,7 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
     h2oNodes.append(nodes:_*)
     localClientIp = H2O.SELF_ADDRESS.getHostAddress
     localClientPort = H2O.API_PORT
-    logInfo("Sparkling Water started, status of context: " + this.toString)
+    logInfo("Sparkling Water started, status of context: " + this)
 
     // Store this instance so it can be obtained using getOrCreate method
     H2OContext.setInstantiatedContext(this)

@@ -24,6 +24,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.DKV
+import testdata._
 
 /**
   * Test using H2O Frame as Spark SQL data source

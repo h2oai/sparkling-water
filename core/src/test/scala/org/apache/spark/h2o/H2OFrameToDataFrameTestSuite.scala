@@ -22,8 +22,8 @@ import java.util.UUID
 
 import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
+import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OSchemaUtils.flatSchema
-import org.apache.spark.h2o.utils.TestData._
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedSparkTestContext}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.types._

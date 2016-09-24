@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.utils.{H2OTypeUtils, NodeDesc, ReflectionUtils}
+import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.{Logging, TaskContext}
 import water.Key
 import water.fvec.H2OFrame
@@ -30,14 +30,12 @@ import scala.reflect.runtime.universe._
 private[converters] object PrimitiveRDDConverter extends Logging with ConverterUtils{
 
   def toH2OFrame[T: TypeTag](hc: H2OContext, rdd: RDD[T], frameKeyName: Option[String]): H2OFrame = {
-    import H2OTypeUtils._
     import ReflectionUtils._
 
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
 
     val fnames = Array[String]("values")
-    val ftypes = Array[Class[_]](typ(typeOf[T]))
-    val vecTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
+    val vecTypes = Array[Byte](vecTypeOf[T])
 
     convert[T](hc, rdd, keyName, fnames, vecTypes, perPrimitiveRDDPartition())
   }
