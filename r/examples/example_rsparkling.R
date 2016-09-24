@@ -2,6 +2,9 @@
 
 library(rsparkling) 
 
+# If requred, Spark can be installed via the sparklyr command:
+spark_install(version = "1.6.2")
+
 # Create a spark context
 sc <- spark_connect(master = "local")
 
