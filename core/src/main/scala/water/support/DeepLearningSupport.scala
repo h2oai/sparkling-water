@@ -23,7 +23,7 @@ import org.apache.spark.h2o._
 
 trait DeepLearningSupport {
 
-  def DLModel(train: H2OFrame, valid: H2OFrame, response: String,
+  def DLModel[T <: Frame](train: T, valid: T, response: String,
               modelId: String = "model",
               epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
               activation: Activation = Activation.RectifierWithDropout,
