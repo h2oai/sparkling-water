@@ -22,7 +22,7 @@ import org.apache.spark.h2o._
 
 trait GBMSupport {
 
-  def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
+  def GBMModel[T <: Frame](train: T, test: T, response: String,
                modelId: String = "model",
                ntrees: Int = 50, depth: Int = 6, family: Family = Family.AUTO): GBMModel = {
     import hex.tree.gbm.GBM
