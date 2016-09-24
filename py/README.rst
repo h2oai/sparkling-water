@@ -103,7 +103,7 @@ Run IPython with PySparkling
 Use PySparkling as Spark Package
 --------------------------------
 .. code-block:: bash
-    export SPARKLING_EGG=$(ls $SPARKLING_HOME/py/dist/)
+    export SPARKLING_EGG=$(ls -t py/dist/h2o_pysparkling*.egg | head -1)
 	$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.6.1 --py-files $SPARKLING_EGG ./py/examples/scripts/ChicagoCrimeDemo.py
 
 
