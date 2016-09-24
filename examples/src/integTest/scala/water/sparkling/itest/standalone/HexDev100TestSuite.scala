@@ -1,15 +1,14 @@
 package water.sparkling.itest.standalone
 
-import hex.Distribution
+import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.h2o.{DoubleHolder, H2OContext}
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.fvec.H2OFrame
-import water.sparkling.itest.standalone.ParquetImportTest._
-import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
+import water.sparkling.itest.{IntegTestHelper, IntegTestStopper}
 
 
 /**
@@ -98,7 +97,7 @@ object HexDev100Test extends IntegTestStopper{
     gbmParams._train = airlinesTable
     gbmParams._response_column = 'IsDepDelayed
     gbmParams._ntrees = 10
-    gbmParams._distribution = Distribution.Family.bernoulli
+    gbmParams._distribution = DistributionFamily.bernoulli
 
     val gbm = new GBM(gbmParams)
     val gbmModel = gbm.trainModel.get

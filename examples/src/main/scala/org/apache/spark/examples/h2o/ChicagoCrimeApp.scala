@@ -17,10 +17,10 @@
 
 package org.apache.spark.examples.h2o
 
-import hex.Distribution.Family
 import hex.deeplearning.DeepLearningModel
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
+import hex.genmodel.utils.DistributionFamily
 import hex.tree.gbm.GBMModel
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkContext
@@ -118,7 +118,7 @@ class ChicagoCrimeApp( weatherFile: String,
   }
 
   def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
-               ntrees:Int = 10, depth:Int = 6, family: Family = Family.bernoulli)
+               ntrees:Int = 10, depth:Int = 6, family: DistributionFamily = DistributionFamily.bernoulli)
               (implicit h2oContext: H2OContext) : GBMModel = {
     import h2oContext.implicits._
     import hex.tree.gbm.GBM
