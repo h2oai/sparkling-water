@@ -10,7 +10,7 @@
   *    SparkContext is available as sc
   */
 // Create an environment
-import _root_.hex.Distribution.Family
+import _root_.hex.genmodel.utils.DistributionFamily
 import _root_.hex.deeplearning.DeepLearningModel
 import _root_.hex.tree.gbm.GBMModel
 import _root_.hex.{Model, ModelMetricsBinomial}
@@ -146,7 +146,7 @@ val (train, test) = (frs(0), frs(1))
 openFlow
 
 def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
-             ntrees:Int = 10, depth:Int = 6, distribution: Family = Family.bernoulli)
+             ntrees:Int = 10, depth:Int = 6, distribution: DistributionFamily = DistributionFamily.bernoulli)
             (implicit h2oContext: H2OContext) : GBMModel = {
   import h2oContext.implicits._
   import _root_.hex.tree.gbm.GBM

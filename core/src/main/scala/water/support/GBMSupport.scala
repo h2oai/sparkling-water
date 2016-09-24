@@ -16,7 +16,7 @@
 */
 package water.support
 
-import hex.Distribution.Family
+import hex.genmodel.utils.DistributionFamily
 import hex.tree.gbm.GBMModel
 import org.apache.spark.h2o._
 
@@ -24,7 +24,9 @@ trait GBMSupport {
 
   def GBMModel[T <: Frame](train: T, test: T, response: String,
                modelId: String = "model",
-               ntrees: Int = 50, depth: Int = 6, family: Family = Family.AUTO): GBMModel = {
+               ntrees: Int = 50,
+               depth: Int = 6,
+               family: DistributionFamily = DistributionFamily.AUTO): GBMModel = {
     import hex.tree.gbm.GBM
     import hex.tree.gbm.GBMModel.GBMParameters
 

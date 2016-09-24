@@ -32,7 +32,7 @@ object SVMModel {
 
 }
 
-class SVMModel private[svm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ <: AnyRef]]],
+class SVMModel private[svm](val selfKey: Key[SVMModel],
                               val parms: SVMParameters,
                               val output: SVMModel.SVMOutput)
   extends Model[SVMModel, SVMParameters, SVMModel.SVMOutput](selfKey, parms, output) {
