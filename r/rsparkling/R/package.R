@@ -1,5 +1,5 @@
 
-#' @import sparklyr
+#' @import sparklyr h2o utils
 NULL
 
 # define required spark packages

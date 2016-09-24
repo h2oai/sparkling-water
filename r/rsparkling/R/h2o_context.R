@@ -1,24 +1,23 @@
-
 #' Get the H2OContext. Will create the context if it has not been previously created.
 #'
 #' @param x Object of type \code{spark_connection} or \code{spark_jobj}.
 #'
 #' @export
-h2o_context <- function(x, ...) {
+h2o_context <- function(x) {
   UseMethod("h2o_context")
 }
 
 #' @export
-h2o_context.spark_connection <- function(x, ...) {
+h2o_context.spark_connection <- function(x) {
   hc <- sparklyr::invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", sparklyr::spark_context(x))
   ip <- sparklyr::invoke(hc, "h2oLocalClientIp")
   port <- sparklyr::invoke(hc, "h2oLocalClientPort")
-  invisible(capture.output(h2o::h2o.init(ip = ip, port = port, strict_version_check = FALSE)))  #should update strict_version_check to TRUE
+  invisible(utils::capture.output(h2o::h2o.init(ip = ip, port = port, strict_version_check = FALSE)))  #should update strict_version_check to TRUE
   hc
 }
 
 #' @export
-h2o_context.spark_jobj <- function(x, ...) {
+h2o_context.spark_jobj <- function(x) {
   h2o_context(sparklyr::spark_connection(x))
 }
 

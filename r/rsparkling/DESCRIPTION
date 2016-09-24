@@ -2,12 +2,15 @@ Package: rsparkling
 Title: R Interface for H2O Sparkling Water
 Version: 0.1.0
 Authors@R: c(
-  person("JJ", "Allaire", role = c("aut", "cre"), email = "jj@rstudio.com"),
-  person(family = "RStudio", role = c("cph")))
-Imports:
+  person("JJ", "Allaire", role = c("aut"), email = "jj@rstudio.com"),
+  person("Erin", "LeDell", role = c("aut", "cre"), email = "erin@h2o.ai"),
+  person("Michal", "Malohlava", role = c("aut"), email = "michal@h2o.ai"),
+  person("RStudio", role = c("cph")),
+  person("H2O.ai", role = c("cph")))
+Depends:
     utils,
     sparklyr (>= 0.3),
-    h2o
+    h2o (>= 3.8.2.9)
 Description: An extension package for sparklyr that provides an R interface to
     H2O Sparkling Water machine learning library.
 License: file LICENSE

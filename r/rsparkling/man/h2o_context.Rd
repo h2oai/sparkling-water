@@ -4,7 +4,7 @@
 \alias{h2o_context}
 \title{Get the H2OContext. Will create the context if it has not been previously created.}
 \usage{
-h2o_context(x, ...)
+h2o_context(x)
 }
 \arguments{
 \item{x}{Object of type \code{spark_connection} or \code{spark_jobj}.}
