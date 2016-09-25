@@ -1,6 +1,20 @@
 ChangeLog
 =========
 
+##v1.6.8 (2016-09-26)
+  - Bug
+    - [SW-197](https://0xdata.atlassian.net/browse/SW-197) - Fix all mentions of H2OContext(sc) to H2OContext.getOrCreate(sc) in pysparkling
+    - [SW-201](https://0xdata.atlassian.net/browse/SW-201) - Methods in water.support classes should use  [T <: Frame] instead of H2OFrame
+    - [SW-202](https://0xdata.atlassian.net/browse/SW-202) - Pipeline scripts are not tested!
+    - [SW-205](https://0xdata.atlassian.net/browse/SW-205) - PySparkling tests launcher does not report error correctly
+  - Improvement
+    - [SW-163](https://0xdata.atlassian.net/browse/SW-163) - Upgrade H2O dependency to the latest Turing release
+    - [SW-182](https://0xdata.atlassian.net/browse/SW-182) - RSparkling R package
+    - [SW-204](https://0xdata.atlassian.net/browse/SW-204) - Distribute tests log4j logs to corresponding build directories
+    - [SWPRIVATE-18](https://0xdata.atlassian.net/browse/SWPRIVATE-18) - SVM progress bar should notify the user about changes
+  - Breaking API changes
+    - The enum `hex.Distribution.Family` is now `hex.genmodel.utils.DistributionFamily`
+
 ##v1.6.7 (2016-09-01)
   - Bug
     - [SW-71](https://0xdata.atlassian.net/browse/SW-71) - Expose the method `H2OContext#setLogLevel` to setup log level of H2O
