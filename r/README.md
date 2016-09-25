@@ -1,14 +1,34 @@
 # RSparkling
 
 
-The **rsparkling** R package is an extension package for [sparkapi](https://github.com/rstudio/sparkapi) / [sparklyr](http://spark.rstudio.com) that creates an R front-end for a Spark package ([Sparking Water](https://spark-packages.org/package/h2oai/sparkling-water) from H2O).  This provides an interface to H2O's machine learning algorithms on Spark, using R.
+The **rsparkling** R package is an extension package for
+[sparkapi](https://github.com/rstudio/sparkapi)
+/
+[sparklyr](http://spark.rstudio.com)
+that creates an R front-end for a Spark package
+([Sparkling Water](https://mvnrepository.com/search?q=h2o+sparkling+water)
+from
+[H2O](http://h2o.ai))
+.
+This provides an interface to H2O's machine learning algorithms on Spark, using R.
 
 This package implements basic functionality (creating an H2OContext, showing the H2O Flow interface, and converting between Spark DataFrames and H2O Frames). 
 
 
+## Additional Resources
+
+* [Main documentation site for Sparkling Water (and all H2O software projects)](http://docs.h2o.ai)
+* [H2O.ai website](http://h2o.ai)
+* Code for the example shown below is [here](examples/example_rsparkling.R).
+
+
 ## Installation
 
-The **rsparkling** R package requires the **h2o** and **sparklyr** R packages to run.  We always recommend the latest stable version of h2o / sparklyr, which you can find on the [H2O R Downloads page](http://www.h2o.ai/download/h2o/r) / [sparklyr page](http://spark.rstudio.com/index.html).
+The **rsparkling** R package requires the **h2o** and **sparklyr** R packages to run.
+
+Today (Sept. 2016, the initial github release of rsparkling) you must use H2O R package version [3.10.0.6](http://h2o-release.s3.amazonaws.com/h2o/rel-turing/6/index.html#R) (H2O "Turing" release, build 6), since that version of H2O is embedded in rsparkling.  This will be more flexible in the future.
+
+We recommend the latest stable version of [sparklyr](http://spark.rstudio.com/index.html).
 
 
 ### Install RSparkling
