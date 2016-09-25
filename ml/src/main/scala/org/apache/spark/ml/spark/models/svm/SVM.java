@@ -21,6 +21,7 @@ import hex.*;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.SparkContext;
 import org.apache.spark.h2o.H2OContext;
+import org.apache.spark.ml.spark.ProgressListener;
 import org.apache.spark.ml.spark.models.svm.SVMModel.SVMOutput;
 import org.apache.spark.mllib.classification.SVMWithSGD;
 import org.apache.spark.mllib.linalg.Vector;
@@ -31,6 +32,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
+import org.apache.spark.storage.RDDInfo;
 import water.DKV;
 import water.fvec.Frame;
 import water.fvec.H2OFrame;
@@ -40,6 +42,8 @@ import water.util.Log;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import static scala.collection.JavaConversions.*;
 
 public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
 
@@ -188,11 +192,18 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
             svm.optimizer().setGradient(_parms._gradient.get());
             svm.optimizer().setUpdater(_parms._updater.get());
 
+            ProgressListener progressBar = new ProgressListener(sc, _job, RDDInfo.fromRdd(training), asScalaIterable(Arrays.<String>asList("treeAggregate")));
+            
+            sc.addSparkListener(progressBar);
+
             final org.apache.spark.mllib.classification.SVMModel trainedModel =
                     (null == _parms._initial_weights) ?
                             svm.run(training) :
                             svm.run(training, vec2vec(_parms.initialWeights().vecs()));
             training.unpersist(false);
+
+
+            sc.listenerBus().listeners().remove(progressBar);
 
             model._output.weights_$eq(trainedModel.weights().toArray());
             model._output.iterations_$eq(_parms._max_iterations);
@@ -203,8 +214,6 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
             model._output._training_metrics = ModelMetrics.getFromDKV(model, train);
 
             model.update(_job);
-
-            _job.update(model._parms._max_iterations);
 
             if (_valid != null) {
                 model.score(_parms.valid()).delete();
