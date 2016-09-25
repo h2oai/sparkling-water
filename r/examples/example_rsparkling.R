@@ -1,8 +1,23 @@
 # Example of rsparkling for machine learning:
 
+# R packages you'll need to install up front if you don't already have them:
+#
+# install.packages("digest")
+# install.packages("devtools")
+# install.packages("dplyr")
+#
+# If you don't have the h2o package yet, first install the latest version from CRAN to grab all the dependencies:
+# install.packages("h2o")
+#
+# But this is the specific version of h2o that works with rsparkling today (Sept. 2016):
+# install.packages("h2o", type="source", repos=(c("http://h2o-release.s3.amazonaws.com/h2o/rel-turing/6/R")))
+#
+# devtools::install_github("h2oai/sparkling-water", subdir = "/r/rsparkling")
+# devtools::install_github("rstudio/sparklyr")
+
 library(rsparkling) 
 
-# If requred, Spark can be installed via the sparklyr command:
+# If you don't already have it installed, Spark can be installed via the sparklyr command:
 spark_install(version = "1.6.2")
 
 # Create a spark connection
@@ -73,5 +88,3 @@ spark_log(sc, n = 20)
 # Now we disconnect from Spark, this will result in the H2OContext being stopped as 
 # well since it's owned by the spark shell process used by our Spark connection:
 spark_disconnect(sc)
-
-
