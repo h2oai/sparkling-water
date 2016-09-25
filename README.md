@@ -8,8 +8,8 @@
 [travis]:https://travis-ci.org/h2oai/sparkling-water
 [travis img]:https://travis-ci.org/h2oai/sparkling-water.svg?branch=master
 
-[maven]:http://search.maven.org/#search|gav|1|g:"ai.h2o"%20AND%20a:"sparkling-water-core_2.10"
-[maven img]:https://maven-badges.herokuapp.com/maven-central/ai.h2o/sparkling-water-core_2.10/badge.svg
+[maven]:http://search.maven.org/#search|gav|1|g:"ai.h2o"%20AND%20a:"sparkling-water-core_2.11"
+[maven img]:https://maven-badges.herokuapp.com/maven-central/ai.h2o/sparkling-water-core_2.11/badge.svg
 
 [license]:LICENSE
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
@@ -28,6 +28,7 @@ The Sparkling Water is developed in multiple parallel branches.
 Each branch corresponds to a Spark major release (e.g., branch **rel-1.5** provides implementation of Sparkling Water for Spark **1.5**).
 
 Please, switch to the right branch:
+ - For Spark 1.6 use branch [rel-2.0](https://github.com/h2oai/sparkling-water/tree/rel-2.0)
  - For Spark 1.6 use branch [rel-1.6](https://github.com/h2oai/sparkling-water/tree/rel-1.6)
  - For Spark 1.5 use branch [rel-1.5](https://github.com/h2oai/sparkling-water/tree/rel-1.5)
  - For Spark 1.4 use branch [rel-1.4](https://github.com/h2oai/sparkling-water/tree/rel-1.4)
@@ -87,13 +88,14 @@ For each Sparkling Water you can download binaries here:
 
 ---
 ### Maven
-Each Sparkling Water release is published into Maven central. Right now we publish artifacts only for Scala 2.10.
+Each Sparkling Water release is published into Maven central. Right now we publish artifacts only for Scala 2.10 and Scala 2.11.
 
 The artifacts coordinates are:
- - `ai.h2o:sparkling-water-core_2.10:{{version}}` - includes core of Sparkling Water.
- - `ai.h2o:sparkling-water-examples_2.10:{{version}}` - includes example applications.
+ - `ai.h2o:sparkling-water-core_{{scala_version}}:{{version}}` - includes core of Sparkling Water.
+ - `ai.h2o:sparkling-water-examples_{{scala_version}}:{{version}}` - includes example applications.
 
-> Note: The `{{version}}` reference to a release version of Sparkling Water, for example: `ai.h2o:sparkling-water-examples_2.10:1.5.10`
+> Note: The `{{version}}` reference to a release version of Sparkling Water, the `{{scala_version}}` references to Scala base version (`2.10` or `2.11`).
+> For example: `ai.h2o:sparkling-water-examples_2.11:2.0.0`
 
 The full list of published packages is available [here](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*).
 
@@ -219,23 +221,23 @@ See [py/README.md](py/README.rst) to learn about PySparkling.
 Sparkling Water is also published as a Spark package. 
 You can use it directly from your Spark distribution.
 
-For example, if you have Spark version 1.5 and would like to use Sparkling Water version 1.5.2 and launch example `CraigslistJobTitlesStreamingApp`, then you can use the following command:
+For example, if you have Spark version 2.0 and would like to use Sparkling Water version 2.0.0 and launch example `CraigslistJobTitlesStreamingApp`, then you can use the following command:
 
 ```bash
-$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.5.2,ai.h2o:sparkling-water-examples_2.10:1.5.2 --class org.apache.spark.examples.h2o.CraigslistJobTitlesStreamingApp /dev/null
+$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.11:2.0.0,ai.h2o:sparkling-water-examples_2.11:2.0.0 --class org.apache.spark.examples.h2o.CraigslistJobTitlesStreamingApp /dev/null
 ```
 The Spark option `--packages` points to published Sparkling Water packages in Maven repository.
 
 
 The similar command works for `spark-shell`:
 ```bash
-$SPARK_HOME/bin/spark-shell --packages ai.h2o:sparkling-water-core_2.10:1.5.2,ai.h2o:sparkling-water-examples_2.10:1.5.2 
+$SPARK_HOME/bin/spark-shell --packages ai.h2o:sparkling-water-core_2.11:2.0.0,ai.h2o:sparkling-water-examples_2.11:2.0.0
 ```
 
 
 The same command works for Python programs:
 ```bash
-$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.5.2,ai.h2o:sparkling-water-examples_2.10:1.5.2 example.py
+$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.11:2.0.0,ai.h2o:sparkling-water-examples_2.11:2.0.0 example.py
 ```
 
 > Note: When you are using Spark packages you do not need to download Sparkling Water distribution! Spark installation is sufficient!

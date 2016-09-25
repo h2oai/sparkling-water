@@ -24,7 +24,7 @@ addFiles(sc,
   "examples/smalldata/chicagoCrimes10k.csv")
 
 // 3. Create SQL support
-implicit val sqlContext = SQLContext.getOrCreate(sc)
+implicit val sqlContext = spark.sqlContext
 // 4. Start H2O services
 implicit val h2oContext = H2OContext.getOrCreate(sc)
 

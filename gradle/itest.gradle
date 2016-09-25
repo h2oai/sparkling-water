@@ -73,6 +73,8 @@ task integTest(type: Test) {
             include "water/sparkling/itest/local/**"
             break
     }
+    // Also setup expected Scala version for Spark launcher
+    environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
 }
 
 // Create jar containing integration test classes

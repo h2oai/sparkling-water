@@ -24,7 +24,7 @@ import water.parser.ParseSetup
 import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
 
 // Create SQL support
-implicit val sqlContext = SQLContext.getOrCreate(sc)
+implicit val sqlContext = spark.sqlContext
 
 // Start H2O services
 implicit val h2oContext = H2OContext.getOrCreate(sc)

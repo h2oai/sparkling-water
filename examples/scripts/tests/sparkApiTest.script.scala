@@ -1,0 +1,1 @@
+val num2 = sc.parallelize(Seq('A', 'B', 'A', 'C')).map(n => (n, 1)).reduceByKey(_ + _).count

@@ -288,7 +288,6 @@ println("--------1-------")
   }
 
   test("DataFrame[Byte] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val srdd:DataFrame = sc.parallelize(-127 to 127).map(v => ByteField(v.asInstanceOf[Byte])).toDF()
@@ -299,7 +298,6 @@ println("--------1-------")
   }
 
   test("DataFrame[Short] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val srdd:DataFrame = sc.parallelize(-2048 to 4096).map(v => ShortField(v.asInstanceOf[Short])).toDF()
@@ -310,7 +308,6 @@ println("--------1-------")
   }
 
   test("DataFrame[Int] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Int.MinValue, Int.MaxValue, 0, -100, 200, -5000, 568901)
@@ -322,7 +319,6 @@ println("--------1-------")
   }
 
   test("DataFrame[Long] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Long.MinValue, Long.MaxValue, 0L, -100L, 200L, -5000L, 5689323201L, -432432433335L)
@@ -334,7 +330,6 @@ println("--------1-------")
   }
 
   test("DataFrame[Float] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Float.MinValue, Float.MaxValue, -33.33.toFloat, 200.001.toFloat, -5000.34.toFloat)
@@ -346,7 +341,6 @@ println("--------1-------")
   }
 
   test("DataFrame[Double] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Double.MinValue, Double.MaxValue, -33.33, 200.001, -5000.34)
@@ -358,7 +352,6 @@ println("--------1-------")
   }
 
   test("DataFrame[String] to H2OFrame[String]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val domSize = 3000
@@ -376,7 +369,6 @@ println("--------1-------")
   }
 
   test("DataFrame[TimeStamp] to H2OFrame[Time]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 20
@@ -389,7 +381,6 @@ println("--------1-------")
   }
 
   test("DataFrame[Struct(TimeStamp)] to H2OFrame[Time]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 20
@@ -412,7 +403,6 @@ println("--------1-------")
   }
 
   test("H2OFrame[Simple StructType] to DataFrame[flattened StructType]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 20
     val values = (1 to num).map(x => PrimitiveA(x, "name=" + x))
@@ -424,7 +414,6 @@ println("--------1-------")
   }
 
   test("DataFrame[flattened StructType] to H2OFrame[Composed StructType]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 20
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 3.14))
@@ -436,7 +425,6 @@ println("--------1-------")
   }
 
   test("DataFrame[Int] to H2OFrame with empty partitions (error detected in calling ShuffleSplitFrame)") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = 1 to 100
@@ -450,7 +438,6 @@ println("--------1-------")
   }
 
   test("Expand composed schema of RDD") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 2
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 1.0))

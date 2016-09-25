@@ -141,13 +141,12 @@
  <check level="error" class="org.scalastyle.file.NewLineAtEofChecker" enabled="true"></check>
  <check level="error" class="org.scalastyle.file.NoNewLineAtEofChecker" enabled="false"></check>
  <check level="error" class="org.apache.spark.scalastyle.SparkSpaceAfterCommentStartChecker" enabled="true"></check>
- <!--
  <check enabled="true" class="org.scalastyle.scalariform.EnsureSingleSpaceAfterTokenChecker" level="warning">
   <parameters>
    <parameter name="tokens">COLON, IF, COMMA</parameter>
   </parameters>
  </check>
- <check enabled="true" class="org.scalastyle.scalariform.EnsureSingleSpaceBeforeTokenChecker" level="warning">
+ <!--<check enabled="true" class="org.scalastyle.scalariform.EnsureSingleSpaceBeforeTokenChecker" level="warning">
   <parameters>
    <parameter name="tokens">LPAREN, LBRACE</parameter>
   </parameters>

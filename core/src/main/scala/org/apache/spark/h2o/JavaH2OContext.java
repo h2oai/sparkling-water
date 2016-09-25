@@ -22,7 +22,8 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.h2o.converters.SupportedRDD$;
 import org.apache.spark.mllib.regression.LabeledPoint;
-import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import scala.Option;
 import water.Key;
@@ -82,12 +83,12 @@ which is not nice.
 
 
     /** Pass-through to H2OContext.asH2OFrame.  For API support only.*/
-    public H2OFrame asH2OFrame(DataFrame df){
+    public H2OFrame asH2OFrame(Dataset<Row> df){
         return hc.asH2OFrame(df);
     }
 
     /** Pass-through to H2OContext.asH2OFrame.  For API support only.*/
-    public H2OFrame asH2OFrame(DataFrame df, String frameName){
+    public H2OFrame asH2OFrame(Dataset<Row> df, String frameName){
         return hc.asH2OFrame(df, frameName);
     }
 
@@ -110,36 +111,36 @@ which is not nice.
     }
 
     /** Convert given H2O frame into DataFrame type */
-    public DataFrame asDataFrame(Frame fr, SQLContext sqlContext){
+    public Dataset<Row> asDataFrame(Frame fr, SQLContext sqlContext){
         return asDataFrame(fr, true, sqlContext);
     }
     /** Convert given H2O frame into DataFrame type */
-    public DataFrame asDataFrame(Frame fr, boolean copyMetadata, SQLContext sqlContext){
+    public Dataset<Row> asDataFrame(Frame fr, boolean copyMetadata, SQLContext sqlContext){
         return hc.asDataFrame(fr, copyMetadata, sqlContext);
     }
 
 
     /** Convert given H2O frame into DataFrame type */
-    public DataFrame asDataFrame(String key, SQLContext sqlContext){
+    public Dataset<Row> asDataFrame(String key, SQLContext sqlContext){
         return asDataFrame(key, true, sqlContext);
     }
     /** Convert given H2O frame into DataFrame type */
-    public DataFrame asDataFrame(String key, boolean copyMetadata, SQLContext sqlContext){
+    public Dataset<Row> asDataFrame(String key, boolean copyMetadata, SQLContext sqlContext){
         return hc.asDataFrame(key, copyMetadata, sqlContext);
     }
 
     /** Pass-through to H2OContext.toH2OFrameKey.  For API support only.*/
-    public Key<Frame> toH2OFrameKey(DataFrame df){
+    public Key<Frame> toH2OFrameKey(Dataset<Row> df){
         return hc.toH2OFrameKey(df);
     }
 
     /** Pass-through to H2OContext.toH2OFrameKey.  For API support only.*/
-    public Key<Frame> toH2OFrameKey(DataFrame df, Option<String> frameName){
+    public Key<Frame> toH2OFrameKey(Dataset<Row> df, Option<String> frameName){
         return hc.toH2OFrameKey(df, frameName);
     }
 
     /** Pass-through to H2OContext.toH2OFrameKey.  For API support only.*/
-    public Key<Frame> toH2OFrameKey(DataFrame df, String frameName){
+    public Key<Frame> toH2OFrameKey(Dataset<Row> df, String frameName){
         return hc.toH2OFrameKey(df, frameName);
     }
 

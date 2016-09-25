@@ -4,12 +4,12 @@ import hex.kmeans.KMeansModel.KMeansParameters
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.clustering.KMeans
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.{IntegTestStopper, IntegTestHelper, YarnTest}
+import water.sparkling.itest.{IntegTestHelper, IntegTestStopper, YarnTest}
 import water.util.Timer
 
 @RunWith(classOf[JUnitRunner])
@@ -64,8 +64,7 @@ object KMeansITest extends IntegTestStopper{
     val H2OKMBuildTime = H2OKMTimer.time
 
     // Score in H2O
-    import org.apache.spark.sql.SQLContext
-    implicit val sqlContext = new SQLContext(sc)
+    implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     import sqlContext.implicits._
     val pred = KmeansModel.score(airlinesData)
     val predDF = asDataFrame(pred)

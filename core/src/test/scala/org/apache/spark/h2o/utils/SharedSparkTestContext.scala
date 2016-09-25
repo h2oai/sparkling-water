@@ -17,10 +17,11 @@
 package org.apache.spark.h2o.utils
 
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OConf, H2OContext, Holder}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.scalatest.Suite
 import water.fvec.{Chunk, FrameUtils, NewChunk, Vec}
 import water.parser.BufferedString
@@ -42,7 +43,6 @@ trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
   override def beforeAll(): Unit = {
     super.beforeAll()
     sc = createSparkContext
-    sqlc = SQLContext.getOrCreate(sc)
     hc = createH2OContext(sc, new H2OConf(sc))
   }
 
@@ -74,14 +74,14 @@ trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
   }
 }
 
-class TestMemory[T] extends scala.collection.mutable.HashSet[T] with scala.collection.mutable.SynchronizedSet[T] {
+class TestMemory[T] extends ConcurrentHashMap[T, Unit] {
   def put(xh: Holder[T]): Unit = xh.result foreach put
 
   def put(x: T): Unit = {
     if (this contains x) {
       throw new IllegalStateException(s"Duplicate element $x in test memory")
     }
-    add(x)
+    put(x, ())
   }
 }
 

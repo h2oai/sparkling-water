@@ -20,7 +20,7 @@ package org.apache.spark.h2o.utils
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
-import org.apache.spark.{SparkContext, mllib}
+import org.apache.spark.{SparkContext, ml, mllib}
 import water.fvec.Vec
 
 /**
@@ -242,8 +242,15 @@ object H2OSchemaUtils {
         if (!subRow.isNullAt(indx(i))) {
           val olen = if (k < numOfArrayTypes) { // it is array
             subRow.getAs[Seq[_]](indx(i)).length
-          } else { // it is vector
-            subRow.getAs[mllib.linalg.Vector](indx(i)).size
+          } else { // it is user defined type - we support vectors now only
+            val value = subRow.get(indx(i))
+            if (value.isInstanceOf[mllib.linalg.Vector]) {
+              subRow.getAs[mllib.linalg.Vector](indx(i)).size
+            } else if (value.isInstanceOf[ml.linalg.Vector]) {
+              subRow.getAs[ml.linalg.Vector](indx(i)).size
+            } else {
+              throw new UnsupportedOperationException(s"User defined type is not supported: ${value.getClass}")
+            }
           }
           // Set max
           if (olen > acc(k)) acc(k) = olen

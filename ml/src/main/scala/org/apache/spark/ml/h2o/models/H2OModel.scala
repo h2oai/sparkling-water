@@ -27,8 +27,6 @@ import org.apache.spark.ml.{Model => SparkModel}
 import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
 import water.support.ModelSerializationSupport
-import org.apache.spark.sql.{DataFrame, Dataset, SQLContext, SparkSession}
-import water.app.ModelSerializationSupport
 
 import scala.reflect.ClassTag
 

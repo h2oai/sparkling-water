@@ -2,12 +2,12 @@ package water.sparkling.itest.standalone
 
 import org.apache.spark.examples.h2o.AirlinesParse
 import org.apache.spark.h2o._
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
+import water.sparkling.itest.{IntegTestHelper, IntegTestStopper}
 
 
 /**
@@ -39,7 +39,7 @@ object HexDev62Test extends IntegTestStopper{
     import h2oContext.implicits._
 
     // Import all year airlines into SPARK
-    implicit val sqlContext = new SQLContext(sc)
+    implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     val path = "hdfs://mr-0xd6.0xdata.loc:8020/datasets/airlines/airlines_all.csv"
     val timer1 = new water.util.Timer
     val airlinesRaw = sc.textFile(path)

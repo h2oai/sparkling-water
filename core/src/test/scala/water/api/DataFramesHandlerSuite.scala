@@ -40,7 +40,6 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
   test("DataFrameHandler.list() method") {
     val rdd = sc.parallelize(1 to 10)
     val rid = "df_" + rdd.id
-    val sqlContext = sqlc
     import sqlContext.implicits._
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
@@ -95,7 +94,6 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFramesHandler.toH2OFrame() method"){
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val rdd = sc.parallelize(1 to 10)
     val name = "numbers"

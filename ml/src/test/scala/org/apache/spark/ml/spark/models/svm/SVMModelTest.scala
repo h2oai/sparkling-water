@@ -32,7 +32,6 @@ class SVMModelTest extends FunSuite with SharedSparkTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
   test("Should score the same regression value.") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val h2oContext = hc
     import h2oContext.implicits._
@@ -75,7 +74,5 @@ class SVMModelTest extends FunSuite with SharedSparkTestContext {
     val sparkPreds = sparkSVMModel.predict(trainRDD.map(_._2)).collect()
 
     assert( h2oPreds.sameElements(sparkPreds) )
-
   }
-
 }

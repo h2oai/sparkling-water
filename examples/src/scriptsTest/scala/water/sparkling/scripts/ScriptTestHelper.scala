@@ -17,7 +17,7 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll {
   var sc: SparkContext = _
 
   override protected def beforeAll(): Unit = {
-    sc = new SparkContext(sparkConf)
+    sc = new SparkContext(org.apache.spark.h2o.H2OConf.checkSparkConf(sparkConf))
     super.beforeAll()
   }
 
@@ -36,8 +36,10 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll {
       .set("spark.driver.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.executor.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.driver.extraClassPath", assemblyJar)
-      .set("spark.scheduler.minRegisteredResourcesRatio","1")
-      .setJars(Array(assemblyJar))
+      .set("spark.scheduler.minRegisteredResourcesRatio", "1")
+      .set("spark.task.maxFailures", "1") // Any task failures are suspicious
+      .set("spark.rpc.numRetries", "1") // Any RPC failures are suspicious
+    .setJars(Array(assemblyJar))
 
     conf
   }
@@ -49,7 +51,7 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll {
     testResult.setCodeResult(codeExecutionStatus)
     println("\n\nInterpreter Response:\n" + loop.interpreterResponse +"\n")
     println("\n\nPrinted output:\n" + loop.consoleOutput +"\n")
-    inspections.codeAndResponses.foreach{
+    inspections.codeAndResponses.foreach {
       snippet => {
         val snippetExecutionStatus = loop.runCode(snippet)
         testResult.addSnippetResult(snippet,snippetExecutionStatus)
@@ -58,7 +60,7 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll {
 
     inspections.termsAndValues.foreach {
       termName =>
-        testResult.addTermValue(termName, loop.valueOfTerm(termName).get.toString)
+        testResult.addTermValue(termName, loop.valueOfTerm(termName).map(_.toString).getOrElse("None"))
     }
 
     testResult
@@ -81,7 +83,7 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll {
     logInfo("\n\n\n\n\nLAUNCHING CODE:\n" + code + "\n\n\n\n\n")
 
     val loop = new H2OInterpreter(sc, sessionId = 1)
-    val res = launch(code,loop, inspections)
+    val res = launch(code, loop, inspections)
     loop.closeInterpreter()
     res
   }

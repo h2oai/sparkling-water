@@ -96,8 +96,8 @@ object DatasetSplitter extends MLReadable[DatasetSplitter]{
     override def load(path: String): DatasetSplitter = {
       val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
 
-      implicit val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements")
-      val datasetSplitter = new DatasetSplitter(metadata.uid)
+      val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements")
+      val datasetSplitter = new DatasetSplitter(metadata.uid)(h2oContext, sqlContext)
       DefaultParamsReader.getAndSetParams(datasetSplitter, metadata)
       datasetSplitter
     }

@@ -1,11 +1,12 @@
 package water.sparkling.itest.standalone
 
 import org.apache.spark.h2o._
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
+import water.sparkling.itest.{IntegTestHelper, IntegTestStopper}
 
 
 /**
@@ -45,11 +46,8 @@ object HexDev64Test extends IntegTestStopper{
     println("Time it took to parse 116 million airlines = " + timeToParse + "secs")
 
     // Transfer data from H2O to Spark RDD
-
-    import org.apache.spark.sql.SQLContext
-
     val timer2 = new water.util.Timer
-    implicit val sqlContext = new SQLContext(sc)
+    implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     val airlinesDataFrame = asDataFrame(airlinesData)(sqlContext)
     val timeToTransfer = timer2.time / 1000
     println("Time it took to convert data to SparkRDD = " + timeToTransfer + "secs")

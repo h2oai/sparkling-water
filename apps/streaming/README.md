@@ -5,8 +5,8 @@ This demo will show you how to take streaming data and create a "live" dataframe
 ## Requirements
 
 sbt
-Spark 1.6
-Sparkling Water 1.6.x
+Spark 2.0
+Sparkling Water 2.0.x
 Python
 
 ## Directions
@@ -18,7 +18,7 @@ Python
       --class ai.h2o.PipelineDemo \
       --master 'local[*]' \
       --driver-memory 2G \
-      --packages ai.h2o:sparkling-water-core_2.10:1.6.5 \
+      --packages ai.h2o:sparkling-water-core_2.11:2.0.0 \
       --conf spark.scheduler.minRegisteredResourcesRatio=1 \
       --conf spark.ext.h2o.repl.enabled=False \
       ./build/libs/*.jar \

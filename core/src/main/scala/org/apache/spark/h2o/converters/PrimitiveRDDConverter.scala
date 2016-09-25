@@ -19,7 +19,8 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark.h2o._
 import org.apache.spark.h2o.utils.{H2OTypeUtils, NodeDesc, ReflectionUtils}
-import org.apache.spark.{Logging, TaskContext}
+import org.apache.spark.TaskContext
+import org.apache.spark.internal.Logging
 import water.Key
 import water.fvec.H2OFrame
 

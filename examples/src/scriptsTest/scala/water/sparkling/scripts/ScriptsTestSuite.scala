@@ -48,6 +48,23 @@ class BasicInterpreterTests extends ScriptsTestHelper {
 
     loop.closeInterpreter()
   }
+
+  test("Test Spark API call via interpreter") {
+
+    val inspections = new ScriptInspections()
+    inspections.addTermToCheck("num1")
+    inspections.addTermToCheck("num2")
+    // FAILING: val num2 = sc.parallelize(Seq('A', 'B', 'A', 'C')).map(n => (n, 1)).reduceByKey(_ + _).count
+    val result = launchCode(
+      """
+        |val list = Seq(('A', 1), ('B', 2), ('A', 3))
+        |val num1 = sc.parallelize(list, 3).groupByKey.count
+        |val num2 = sc.parallelize(list, 3).reduceByKey(_ + _).count
+        |""".stripMargin, inspections)
+    assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
+    assert(result.realTermValues.get("num1").get == "2", "Value of term \"num\" should be 2")
+    assert(result.realTermValues.get("num2").get == "2", "Value of term \"num\" should be 3")
+  }
 }
 
 
@@ -186,5 +203,17 @@ class ScriptPipelineHamOrSpam extends ScriptsTestHelper{
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
     assert(result.realTermValues.get("answer1").get=="false","Value of term \"answer1\" should be false")
     assert(result.realTermValues.get("answer2").get=="true","Value of term \"answer2\" should be true")
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class TestSparkApiViaScript extends ScriptsTestHelper {
+  override protected def beforeAll(): Unit = {
+    sparkConf = defaultConf.setMaster("local-cluster[3, 3, 2048]")
+    super.beforeAll()
+  }
+  test("tests/sparkApiTest.script.scala") {
+    val result = launchScript("tests/sparkApiTest.script.scala")
+    assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
   }
 }

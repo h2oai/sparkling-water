@@ -17,7 +17,7 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SQLContext
 
 // Create SQL support
-implicit val sqlContext = SQLContext.getOrCreate(sc)
+implicit val sqlContext = spark.sqlContext
 // Start H2O services
 implicit val h2oContext = H2OContext.getOrCreate(sc)
 

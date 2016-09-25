@@ -2,7 +2,7 @@ package water.sparkling.itest.standalone
 
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.h2o.{DoubleHolder, H2OContext}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -47,7 +47,7 @@ object HexDev100Test extends IntegTestStopper{
     val airlinesData = new H2OFrame(uri)
 
     // Pass into Spark to drop unused columns
-    implicit val sqlContext = new SQLContext(sc)
+    implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     val airlinesDataFrame = asDataFrame(airlinesData)
     airlinesDataFrame.createOrReplaceTempView("AirlinesDataTable")
     // Drop all columns except "Year", "Month", "DayOfWeek", "Origin", "Dest", "UniqueCarrier", "Distance", "FlightNum", "IsDepDelayed"

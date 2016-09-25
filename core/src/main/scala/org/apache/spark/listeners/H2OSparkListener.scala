@@ -16,13 +16,9 @@
 */
 package org.apache.spark.listeners
 
-import org.apache.spark.scheduler.{SparkListener, SparkListenerEvent, SparkListenerExecutorAdded}
+import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 
 trait H2OSparkListener extends SparkListener {
-
-  // Fix for CDH 5.7 spark version which already implements some Spark 2.0 features
-  def onOtherEvent(event: SparkListenerEvent) { }
-
 }
 
 class ExecutorAddNotSupportedListener extends H2OSparkListener {

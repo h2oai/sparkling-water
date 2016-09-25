@@ -3,12 +3,12 @@ package water.sparkling.itest.yarn
 import org.apache.spark.SparkContext
 import org.apache.spark.examples.h2o.{ChicagoCrimeApp, Crime}
 import org.apache.spark.h2o._
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.sparkling.itest.{IntegTestHelper, IntegTestStopper}
 import water.support.SparkContextSupport
-import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
 
 /**
   * Test following Alex's chicago crime demo.
@@ -36,7 +36,7 @@ object ChicagoCrimeTest extends SparkContextSupport with IntegTestStopper {
   def main(args: Array[String]): Unit = exitOnException{
     val sc = new SparkContext(configure("ChicagoCrimeTest"))
     // SQL support
-    val sqlContext = new SQLContext(sc)
+    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // Start H2O services
     val h2oContext = H2OContext.getOrCreate(sc)
 

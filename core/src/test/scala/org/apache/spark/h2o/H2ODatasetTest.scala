@@ -19,8 +19,8 @@ package org.apache.spark.h2o
 
 import org.apache.spark.h2o.converters.H2ORDD
 import org.apache.spark.h2o.utils.SharedSparkTestContext
-import org.apache.spark.{h2o, SparkContext}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkContext, h2o}
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
@@ -48,9 +48,7 @@ case class SampleAltString(y: String)
 @RunWith(classOf[JUnitRunner])
 class H2ODatasetTest extends FunSuite with SharedSparkTestContext with BeforeAndAfterAll {
 
-  lazy val sqlContext = new SQLContext(sc)
-
-  import sqlContext.implicits._
+  import spark.implicits._
 
   val dataSource =
       ("Hermione Granger", 15, "hgranger@griffindor.edu.uk") ::
