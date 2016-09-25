@@ -12,11 +12,11 @@ The **rsparkling** R package requires the **h2o** and **sparklyr** R packages to
 
 
 ### Install RSparkling
-The latest stable version of RSparkling can be installed as follows:
+The latest stable version of rsparkling can be installed as follows:
 
 ```r
 library(devtools)
-devtools::install_github("h2oai/sparkling-water", subdir = "/r/rsparkling")
+devtools::install_github("h2oai/sparkling-water", ref = "master", subdir = "/r/rsparkling")
 ``` 
 
 The development version can be installed from the "rsparkling" branch as follows:
@@ -30,11 +30,23 @@ devtools::install_github("h2oai/sparkling-water", ref = "rsparkling", subdir = "
 
 ## Connecting to Spark
 
+If Spark needs to be installed, that can be done using the following sparklyr command:
+
+``` r
+library(sparklyr)
+spark_install(version = "1.6.2")
+```
+
+
 The call to `library(rsparkling)` will make the H2O functions available on the R search path and will also ensure that the dependencies required by the Sparkling Water package are included when we connect to Spark. 
 
 ``` r
-library(sparklyr)  # Spark + R
 library(rsparkling)  # H2O Sparkling Water Machine Learning
+```
+
+We must create a Spark connection as follows:
+
+``` r
 sc <- spark_connect(master = "local")
 ```
 

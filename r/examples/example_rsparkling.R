@@ -5,7 +5,7 @@ library(rsparkling)
 # If requred, Spark can be installed via the sparklyr command:
 spark_install(version = "1.6.2")
 
-# Create a spark context
+# Create a spark connection
 sc <- spark_connect(master = "local")
 
 # Inspect the H2OContext for our Spark connection
@@ -59,7 +59,7 @@ pred_hf <- h2o.predict(fit, newdata = splits[[2]])
 pred_hf
 
 # If we want these available in Spark:
-pred_sdf <- as_spark_dataframe(pred_hf, sc)
+pred_sdf <- as_spark_dataframe(sc, pred_hf)
 pred_sdf
 
 

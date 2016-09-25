@@ -50,11 +50,11 @@ as_h2o_frame <- function(x) {
 
 #' Convert an H2O Frame to a Spark DataFrame
 #'
-#' @param x An \code{H2OFrame}.
 #' @param sc Object of type \code{spark_connection}.
+#' @param x An \code{H2OFrame}.
 #'
 #' @export
-as_spark_dataframe <- function(x, sc) {
+as_spark_dataframe <- function(sc, x) {
   # TO DO: ensure we are dealing with a H2OFrame
   
   # Get SQLContext
