@@ -26,4 +26,4 @@ class StandaloneIntegTestSuite(IntegTestSuite):
 
 
 if __name__ == '__main__':
-    test_utils.run_tests(StandaloneIntegTestSuite, file_name="py_integ_standalone_tests_report")
+    test_utils.run_tests([StandaloneIntegTestSuite], file_name="py_integ_standalone_tests_report")
