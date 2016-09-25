@@ -42,7 +42,7 @@ fit <- h2o.gbm(x = x,
                training_frame = splits[[1]], 
                nfolds = 3, 
                min_rows = 1,
-               seeed = 1)
+               seed = 1)
 
 # Evaluate 3-fold cross-validated model performance:
 h2o.performance(fit, xval = TRUE)
