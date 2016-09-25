@@ -14,12 +14,17 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.util
+
+package org.apache.spark.h2o.utils
 
 import org.apache.log4j.{Level, LogManager}
 import water.MRTask
+import water.util.{Log, LogBridge}
 
-object LogUtil extends org.apache.spark.Logging {
+/**
+  * A simple helper to control H2O log subsystem
+  */
+object LogUtil extends org.apache.spark.internal.Logging {
 
   def setH2OClientLogLevel(level: String): Unit = {
     setLogLevel(
@@ -44,10 +49,12 @@ object LogUtil extends org.apache.spark.Logging {
     if (levelIdx < 0) {
       logWarn()
     } else {
+      // Setup log4j
       LogManager.getLogger("water.default").setLevel(Level.toLevel(level))
-      Log._level = levelIdx
+      // Setup log level for H2O
+      LogBridge.setH2OLogLevel(levelIdx)
       logChanged()
     }
   }
-
 }
+

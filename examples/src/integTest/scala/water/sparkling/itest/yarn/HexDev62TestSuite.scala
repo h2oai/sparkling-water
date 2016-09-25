@@ -2,12 +2,12 @@ package water.sparkling.itest.yarn
 
 import org.apache.spark.examples.h2o.AirlinesParse
 import org.apache.spark.h2o._
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
+import water.sparkling.itest.{IntegTestHelper, IntegTestStopper}
 
 /**
   * Test suite for given JIRA bug.
@@ -34,13 +34,13 @@ class HexDev62TestSuite extends FunSuite with IntegTestHelper {
 object HexDev62Test extends IntegTestStopper{
 
   def main(args: Array[String]): Unit = exitOnException{
-    val conf = new SparkConf().setAppName("HexDev62Test")
+    val conf = H2OConf.checkSparkConf(new SparkConf().setAppName("HexDev62Test"))
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext.implicits._
 
     // Import all year airlines into SPARK
-    implicit val sqlContext = new SQLContext(sc)
+    implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     val timer1 = new water.util.Timer
     val path = "hdfs://mr-0xd6.0xdata.loc:8020/datasets/airlines/airlines_all.csv"
     val airlinesRaw = sc.textFile(path)

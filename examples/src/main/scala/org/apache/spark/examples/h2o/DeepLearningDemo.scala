@@ -21,24 +21,19 @@ import java.io.File
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import org.apache.spark.SparkFiles
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.{SparkContext, SparkFiles}
-import water.support.SparkContextSupport
+import org.apache.spark.sql.Dataset
+import water.support.{SparkContextSupport, SparkSessionSupport}
 
 
-object DeepLearningDemo extends SparkContextSupport {
+object DeepLearningDemo extends SparkContextSupport with SparkSessionSupport {
 
   def main(args: Array[String]): Unit = {
-    FIXME use SparkSession here
     // Create Spark context which will drive computation.
     val conf = configure("Sparkling Water: Deep Learning on Airlines data")
-    val sc = new SparkContext(conf)
+    val sc = sparkContext(conf)
     addFiles(sc, absPath("examples/smalldata/allyears2k_headers.csv.gz"))
-
-    implicit val sqlContext = SQLContext.getOrCreate(sc)
-    import sqlContext.implicits._ // import implicit conversions
 
     // Run H2O cluster inside Spark cluster
     val h2oContext = H2OContext.getOrCreate(sc)
@@ -53,7 +48,8 @@ object DeepLearningDemo extends SparkContextSupport {
     //
     // Use H2O to RDD transformation
     //
-    val airlinesTable = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
+    import spark.implicits._
+    val airlinesTable : Dataset[Airlines] = h2oContext.asDataFrame(airlinesData)(sqlContext).map(row => AirlinesParse(row))
     println(s"\n===> Number of all flights via RDD#count call: ${airlinesTable.count()}\n")
     println(s"\n===> Number of all flights via H2O#Frame#count: ${airlinesData.numRows()}\n")
 

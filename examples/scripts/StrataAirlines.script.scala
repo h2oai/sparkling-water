@@ -20,7 +20,7 @@ import java.io.File
 import water.support.SparkContextSupport.addFiles
 
 // Create SQL support
-implicit val sqlContext = SQLContext.getOrCreate(sc)
+implicit val sqlContext = spark.sqlContext
 import sqlContext.implicits._
 
 // Start H2O services

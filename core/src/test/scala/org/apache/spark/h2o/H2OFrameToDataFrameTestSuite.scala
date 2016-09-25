@@ -354,7 +354,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("DataFrame[Byte] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val srdd:DataFrame = sc.parallelize(-127 to 127).map(v => ByteField(v.asInstanceOf[Byte])).toDF()
@@ -365,7 +364,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("DataFrame[Short] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val srdd:DataFrame = sc.parallelize(-2048 to 4096).map(v => ShortField(v.asInstanceOf[Short])).toDF()
@@ -376,7 +374,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("DataFrame[Int] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Int.MinValue, Int.MaxValue, 0, -100, 200, -5000, 568901)
@@ -388,7 +385,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("DataFrame[Long] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Long.MinValue, Long.MaxValue, 0L, -100L, 200L, -5000L, 5689323201L, -432432433335L)
@@ -400,7 +396,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("DataFrame[Float] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Float.MinValue, Float.MaxValue, -33.33.toFloat, 200.001.toFloat, -5000.34.toFloat)
@@ -412,7 +407,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("DataFrame[Double] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Double.MinValue, Double.MaxValue, -33.33, 200.001, -5000.34)
@@ -424,7 +418,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("DataFrame[String] to H2OFrame[String]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val domSize = 3000
@@ -442,7 +435,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("DataFrame[TimeStamp] to H2OFrame[Time]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 20
@@ -455,7 +447,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("DataFrame[Struct(TimeStamp)] to H2OFrame[Time]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 20
@@ -478,7 +469,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("H2OFrame[Simple StructType] to DataFrame[flattened StructType]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 20
     val values = (1 to num).map(x => PrimitiveA(x, "name=" + x))
@@ -490,7 +480,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("DataFrame[flattened StructType] to H2OFrame[Composed StructType]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 20
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 3.14))
@@ -502,7 +491,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("DataFrame[Int] to H2OFrame with empty partitions (error detected in calling ShuffleSplitFrame)") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = 1 to 100
@@ -516,7 +504,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("Expand composed schema of RDD") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 2
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 1.0))
@@ -539,7 +526,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("Expand schema with array") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 5
     val values = (1 to num).map(x => PrimitiveB(1 to x))
@@ -569,7 +555,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("Expand schema with dense vectors") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 2
     val values = (1 to num).map(x => PrimitiveC(Vectors.dense((1 to x).map(1.0*_).toArray)))
@@ -593,7 +578,6 @@ class H2OFrameToDataFrameTestSuite extends FunSuite with SharedSparkTestContext 
   }
 
   test("Expand schema with sparse vectors") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 3
     val values = (0 until num).map(x =>

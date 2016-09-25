@@ -4,12 +4,12 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.sparkling.itest.{IntegTestHelper, IntegTestStopper, LocalTest}
 import water.support.SparkContextSupport
-import water.sparkling.itest.{IntegTestStopper, LocalTest, IntegTestHelper}
 
 
 /**
@@ -40,7 +40,7 @@ object PubDev457Test extends SparkContextSupport with IntegTestStopper{
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext.implicits._
-    val sqlContext = new SQLContext(sc)
+    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     import sqlContext.implicits._
 
     val training = sc.parallelize(Seq(

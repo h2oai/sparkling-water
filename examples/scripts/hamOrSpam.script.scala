@@ -23,7 +23,7 @@ import water.support.{H2OFrameSupport, SparkContextSupport, ModelMetricsSupport}
 // Register files to SparkContext
 SparkContextSupport.addFiles(sc,"examples/smalldata/smsData.txt")
 // One training message
-case class SMS(target: String, fv: mllib.linalg.Vector)
+case class SMS(target: String, fv: org.apache.spark.mllib.linalg.Vector)
 
 // Data loader
 def load(dataFile: String): RDD[Array[String]] = {
@@ -82,7 +82,8 @@ def buildDLModel(train: Frame, valid: Frame,
 }
 
 // Create SQL support
-implicit val sqlContext = SQLContext.getOrCreate(sc)
+
+implicit val sqlContext = spark.sqlContext
 import sqlContext.implicits._
 
 // Start H2O services

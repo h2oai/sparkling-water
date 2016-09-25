@@ -20,7 +20,8 @@ package org.apache.spark.h2o.converters
 import org.apache.spark.h2o._
 import org.apache.spark.h2o.utils.H2OTypeUtils._
 import org.apache.spark.h2o.utils.{H2OTypeUtils, NodeDesc, ReflectionUtils}
-import org.apache.spark.{Logging, TaskContext}
+import org.apache.spark.TaskContext
+import org.apache.spark.internal.Logging
 import water.Key
 
 import scala.collection.immutable
@@ -29,7 +30,7 @@ import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
-private[h2o] object ProductRDDConverter extends Logging with ConverterUtils{
+private[h2o] object ProductRDDConverter extends Logging with ConverterUtils {
 
   /** Transform H2OFrame to Product RDD */
   def toRDD[A <: Product: TypeTag: ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = {

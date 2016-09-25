@@ -1,12 +1,12 @@
 package water.sparkling.itest.standalone
 
 import org.apache.spark.h2o._
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.sparkling.itest.{IntegTestStopper, IntegTestHelper}
+import water.sparkling.itest.{IntegTestHelper, IntegTestStopper}
 
 /**
   * Test for Parquet Import : Save small airlines data as Parquet File,
@@ -41,7 +41,7 @@ object ParquetImportTest extends IntegTestStopper{
     import h2oContext._
     import h2oContext.implicits._
 
-    implicit val sqlContext = new SQLContext(sc)
+    implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
 
     // Import Parquet file into Spark as DataFrame
     val parquetFile = sqlContext.read.parquet("hdfs://mr-0xd6.0xdata.loc:8020/datasets/airlines/airlines.parquet")

@@ -877,12 +877,12 @@ Using Sparkling Water from Zeppelin is easy since Sparkling Water is distributed
 In this case, before launching Zeppelin addition shell variable is needed:
 
 ```bash
-export SPARK_HOME=...# Spark 1.6 home
-export SPARK_SUBMIT_OPTIONS="--packages ai.h2o:sparkling-water-examples_2.10:1.6.3"
-bin/zeppelin.sh -Pspark-1.6
+export SPARK_HOME=...# Spark 2.0 home
+export SPARK_SUBMIT_OPTIONS="--packages ai.h2o:sparkling-water-examples_2.11:2.0.0"
+bin/zeppelin.sh -Pspark-2.0
 ```
 
-The command is using Spark 1.6 version and corresponding Sparkling Water package.
+The command is using Spark 2.0 version and corresponding Sparkling Water package.
 
 ### Using Zeppelin
 The use of Sparkling Water package is directly driven by Sparkling Water API. For example, getting `H2OContext` is straightforward:

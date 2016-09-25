@@ -26,12 +26,14 @@ import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
  */
 trait SparkContextSupport {
 
-  def configure(appName: String = "Sparkling Water Demo"): SparkConf = {
+  def configure(appName: String = "Sparkling Water Demo", defaultMaster: String = "local[*]"): SparkConf = {
     val conf = new SparkConf()
       .setAppName(appName)
-    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
+    conf.setIfMissing("spark.master", sys.env.getOrElse("spark.master", defaultMaster))
     conf
   }
+
+  def sparkContext(conf: SparkConf) = SparkContext.getOrCreate(conf)
 
   def addFiles(sc: SparkContext, files: String*): Unit = {
     files.foreach(f => sc.addFile(f))

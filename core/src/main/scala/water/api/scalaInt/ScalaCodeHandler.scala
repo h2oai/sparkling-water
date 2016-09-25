@@ -34,7 +34,7 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
   val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
   var mapIntr = new TrieMap[Int, H2OInterpreter]
   var lastIdUsed = 0
-  initializeInterpeterPool()
+  initializeInterpreterPool()
 
   def interpret(version: Int, s: ScalaCodeV3): ScalaCodeV3 = {
     // check if session exists
@@ -89,7 +89,7 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
     s
   }
 
-  def initializeInterpeterPool(): Unit = {
+  def initializeInterpreterPool(): Unit = {
     for (i <- 0 until intrPoolSize) {
       createInterpreterInPool()
     }

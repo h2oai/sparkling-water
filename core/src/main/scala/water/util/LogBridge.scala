@@ -14,12 +14,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+package water.util
 
-package org.apache.spark.repl.h2o
+object LogBridge {
 
-/**
-  * Enum representing possible results of code interpreted in scala interpreter
-  */
-object CodeResults extends Enumeration {
-  val Success, Error, Incomplete, Exception = Value
+  /**
+    * Setup log level for H2O log sub system.
+    * @param levelIdx
+    */
+  def setH2OLogLevel(levelIdx: Int): Unit = {
+    water.util.Log._level = levelIdx
+  }
 }

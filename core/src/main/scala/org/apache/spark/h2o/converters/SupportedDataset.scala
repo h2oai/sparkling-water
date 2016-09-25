@@ -41,7 +41,7 @@ object SupportedDataset {
     val typeTag = ttag
     override def toH2OFrame(sc: SQLContext, frameKeyName: Option[String]): H2OFrame = {
       val tpe = ttag.tpe
-      val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
+      val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR) // To be compatible with Scala 2.10
       val defaultConstructor =
         if (constructorSymbol.isMethod) constructorSymbol.asMethod
         else {
@@ -49,7 +49,7 @@ object SupportedDataset {
           ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
         }
 
-      val params: List[(String, Type)] = defaultConstructor.paramss.flatten map {
+      val params: List[(String, Type)] = defaultConstructor.paramss.flatten map { // To be compatible with Scala 2.10
         sym => sym.name.toString -> tpe.member(sym.name).asMethod.returnType
       }
 

@@ -14,12 +14,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+package water.support
 
-package org.apache.spark.repl.h2o
+import org.apache.spark.sql.SparkSession
 
 /**
-  * Enum representing possible results of code interpreted in scala interpreter
+  * Simplify usage of SparkSession from application code.
+  *
+  * Can be mixed only together with SparkContextSupport
   */
-object CodeResults extends Enumeration {
-  val Success, Error, Incomplete, Exception = Value
+trait SparkSessionSupport { self: SparkContextSupport =>
+
+  @transient lazy val spark = SparkSession.builder().getOrCreate()
+
+  @transient lazy val sqlContext = spark.sqlContext
 }

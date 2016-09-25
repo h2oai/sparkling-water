@@ -30,6 +30,9 @@ task scriptsTest(type: Test) {
     description = 'Runs all scripts tests'
     testClassesDir = sourceSets.scriptsTest.output.classesDir
     classpath = sourceSets.scriptsTest.runtimeClasspath
+
+    // Also setup expected Scala version for Spark launcher
+    environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
 }
 
 // Create jar containing scripts test classes

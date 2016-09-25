@@ -45,12 +45,13 @@ class H2OFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     val result = h2oFramesHandler.toDataFrame(3,req)
 
     // get the data frame using obtained id
-    val df = sqlc.table(result.dataframe_id)
-    assert (sqlc.tableNames().contains("requested_name"), "DataFrame should be stored in table named \"requested_name\"")
+    val df = sqlContext.table(result.dataframe_id)
+    assert (sqlContext.tableNames().contains("requested_name"), "DataFrame should be stored in table named \"requested_name\"")
     assert (df.columns.length == h2oFrame.numCols(), "Number of columns should match")
     assert (df.columns.sameElements(h2oFrame.names()),"Column names should match")
     assert (df.count() == h2oFrame.numRows(), "Number of rows should match")
-    assert (sqlc.tableNames().length == 1, "Number of stored DataFrames should be 1")
+    // Note: We need to be careful here and clean SparkSession properly
+    assert (sqlContext.tableNames().length == 1, "Number of stored DataFrames should be 1")
 
   }
 

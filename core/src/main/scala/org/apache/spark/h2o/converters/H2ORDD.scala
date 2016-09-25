@@ -144,24 +144,22 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     if (columnTypeNames.size == 1) Map(0->0) else multicolumnMapping
 
   def multicolumnMapping: Map[Int, Int] = {
-    try {
-      val mappings = for {
-        i <- columnTypeNames.indices
-        name = colNamesInResult(i)
-        j = colNamesInFrame.indexOf(name)
-      } yield (i, j)
+    val mappings = for {
+      i <- columnTypeNames.indices
+      name = colNamesInResult(i)
+      j = colNamesInFrame.indexOf(name)
+    } yield (i, j)
 
-      val bads = mappings collect {
-        case (i, j) if j < 0 =>
-          if (i < colNamesInResult.length) colNamesInResult(i) else s"[[$i]] (column of type ${columnTypeNames(i)}"
-      }
-
-      if (bads.nonEmpty) {
-        throw new scala.IllegalArgumentException(s"Missing columns: ${bads mkString ","}")
-      }
-
-      mappings.toMap
+    val bads = mappings collect {
+      case (i, j) if j < 0 =>
+        if (i < colNamesInResult.length) colNamesInResult(i) else s"[[$i]] (column of type ${columnTypeNames(i)}"
     }
+
+    if (bads.nonEmpty) {
+      throw new scala.IllegalArgumentException(s"Missing columns: ${bads mkString ","}")
+    }
+
+    mappings.toMap
   }
 
   class H2ORDDIterator(val keyName: String, val partIndex: Int) extends H2OChunkIterator[A] {

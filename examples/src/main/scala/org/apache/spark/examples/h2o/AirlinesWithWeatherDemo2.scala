@@ -18,6 +18,7 @@
 package org.apache.spark.examples.h2o
 
 import java.io.File
+import java.net.URLClassLoader
 
 import hex.FrameSplitter
 import hex.deeplearning.DeepLearning
@@ -26,15 +27,13 @@ import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
+import org.apache.spark.{SparkConf, SparkFiles}
 import water.Key
 import water.fvec.Frame
-import water.support.SparkContextSupport
+import water.support.{SparkContextSupport, SparkSessionSupport}
 
 /** Demo for meetup presented at 12/17/2014 */
-object AirlinesWithWeatherDemo2 extends SparkContextSupport {
+object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSupport {
 
   def residualPlotRCode(prediction:Frame, predCol: String, actual:Frame, actCol:String, h2oContext: H2OContext = null):String = {
     val (ip, port) = if (h2oContext != null) {
@@ -69,10 +68,11 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
     // Configure this application
     val conf: SparkConf = configure("Sparkling Water Meetup: Use Airlines and Weather Data for delay prediction")
     // Create SparkContext to execute application on Spark cluster
-    val sc = new SparkContext(conf)
-    implicit val sqlContext = SQLContext.getOrCreate(sc)
-    import sqlContext.implicits._ // import implicit conversions
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val sc = sparkContext(conf)
+
+    import spark.implicits._ // import implicit conversions
+
+    @transient val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
     import h2oContext.implicits._
     // Setup environment
@@ -89,7 +89,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
     // Use super-fast advanced H2O CSV parser !!!
     val airlinesData = new H2OFrame(new File(SparkFiles.get("year2005.csv.gz")))
 
-    val airlinesTable = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
+    val airlinesTable = h2oContext.asDataFrame(airlinesData)(sqlContext).map(row => AirlinesParse(row))
     // Select flights only to ORD
     val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
 
@@ -150,7 +150,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
     val dlModel = dl.trainModel.get
 
     val dlPredictTable = dlModel.score(testTable)('predict)
-    val predictionsFromDlModel = asDataFrame(dlPredictTable).collect
+    val predictionsFromDlModel = asDataFrame(dlPredictTable)(sqlContext).collect
                                 .map(row => if (row.isNullAt(0)) Double.NaN else row(0))
 
     println(predictionsFromDlModel.length)

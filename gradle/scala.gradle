@@ -41,6 +41,8 @@ artifacts {
 
 test {
     maxParallelForks = 1
+    // Also setup expected Scala version for Spark launcher
+    environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
 }
 
 // add additional source set for desired scala version

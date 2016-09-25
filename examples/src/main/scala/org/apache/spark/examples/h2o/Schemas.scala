@@ -117,7 +117,7 @@ class Airlines (val Year              :Option[Int],
     case 30 => IsDepDelayed
     case  _ => throw new IndexOutOfBoundsException(n.toString)
   }
-  override def toString:String = {
+  override def toString: String = {
     val sb = new StringBuffer
     for( i <- 0 until productArity )
       sb.append(productElement(i)).append(',')

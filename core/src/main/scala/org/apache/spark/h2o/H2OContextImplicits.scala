@@ -65,6 +65,4 @@ abstract class H2OContextImplicits {
   implicit def toH2OFrameKeyFromH2OFrame(fr: H2OFrame): Key[Frame] = fr.key
   /** Transform given Scala symbol to String */
   implicit def symbolToString(sy: scala.Symbol): String = sy.name
-
-
 }

@@ -17,7 +17,8 @@
 
 package org.apache.spark.h2o.utils
 
-import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.internal.Logging
+import org.apache.spark.SparkContext
 
 /**
   * Support methods for H2OContext.

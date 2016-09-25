@@ -17,7 +17,9 @@
 
 package org.apache.spark.h2o.backends.internal
 
-import org.apache.spark.{Logging, SparkEnv}
+import org.apache.spark.SparkEnv
+import org.apache.spark.internal.Logging
+
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
@@ -28,7 +30,7 @@ import water.{H2O, H2OStarter}
 import scala.util.Random
 
 
-class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with InternalBackendUtils with Logging{
+class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with InternalBackendUtils with Logging {
 
   override def stop(stopSparkContext: Boolean): Unit = {
     if (stopSparkContext) hc.sparkContext.stop()

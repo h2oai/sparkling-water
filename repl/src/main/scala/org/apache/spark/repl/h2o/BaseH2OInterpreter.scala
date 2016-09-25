@@ -47,7 +47,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   protected val responseWriter = new IntpResponseWriter()
   private var replExecutionStatus = CodeResults.Success
   protected var settings: Settings = _
-  private var intp: H2OIMain = _
+  protected var intp: H2OIMain = _
   private var in: InteractiveReader = _
   private[repl] var pendingThunks: List[() => Unit] = Nil
   val sparkConf = sparkContext.getConf
@@ -172,7 +172,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   }
 
   private def exceptionOccurred(): Boolean = {
-    intp.valueOfTerm("lastException").isDefined && intp.valueOfTerm("lastException").get != null
+    valueOfTerm("lastException").isDefined && valueOfTerm("lastException").get != null
   }
 
   private def setSuccess() = {

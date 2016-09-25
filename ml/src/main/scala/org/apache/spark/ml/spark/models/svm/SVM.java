@@ -33,6 +33,7 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.storage.RDDInfo;
+
 import water.DKV;
 import water.fvec.Frame;
 import water.fvec.H2OFrame;
@@ -192,7 +193,10 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
             svm.optimizer().setGradient(_parms._gradient.get());
             svm.optimizer().setUpdater(_parms._updater.get());
 
-            ProgressListener progressBar = new ProgressListener(sc, _job, RDDInfo.fromRdd(training), asScalaIterable(Arrays.<String>asList("treeAggregate")));
+            ProgressListener progressBar = new ProgressListener(sc,
+                                                                _job,
+                                                                RDDInfo.fromRdd(training),
+                                                                iterableAsScalaIterable(Arrays.asList("treeAggregate")));
             
             sc.addSparkListener(progressBar);
 
