@@ -26,4 +26,4 @@ class LocalIntegTestSuite(IntegTestSuite):
 
 
 if __name__ == '__main__':
-    test_utils.run_tests(LocalIntegTestSuite, file_name="py_integ_local_tests_report")
+    test_utils.run_tests([LocalIntegTestSuite], file_name="py_integ_local_tests_report")

@@ -145,6 +145,5 @@ class H2OConfTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    test_utils.run_tests(FrameTransformationsTest, file_name="py_unit_tests_report")
-    test_utils.run_tests(H2OConfTest, file_name="py_h2oconf_unit_tests_report")
-
+    test_utils.run_tests([FrameTransformationsTest, H2OConfTest], file_name="py_unit_tests_report")
+    #test_utils.run_tests([H2OConfTest], file_name="py_h2oconf_unit_tests_report")

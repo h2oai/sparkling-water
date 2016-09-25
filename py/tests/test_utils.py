@@ -47,12 +47,15 @@ def tear_down_class(cls):
 # Runs python tests and by default reports to console.
 # If filename is specified it additionally reports output to file with that name into py/build directory
 
-def run_tests(suite, file_name=None):
+def run_tests(cases, file_name=None):
+    alltests = [unittest.TestLoader().loadTestsFromTestCase(case) for case in cases]
+    testsuite = unittest.TestSuite(alltests)
+
+    result = None
     if file_name is not None:
         reports_file = 'build'+os.sep+file_name+".txt"
         f = open(reports_file, "w")
-        testsuite = unittest.TestLoader().loadTestsFromTestCase(suite)
-        unittest.TextTestRunner(f, verbosity=2).run(testsuite)
+        result = unittest.TextTestRunner(f, verbosity=2).run(testsuite)
         f.close()
 
         # Print output to console without running the tests again
@@ -60,9 +63,11 @@ def run_tests(suite, file_name=None):
             print fin.read()
     else:
         # Run tests and print to console
-        testsuite = unittest.TestLoader().loadTestsFromTestCase(suite)
-        unittest.TextTestRunner(verbosity=2).run(testsuite)
+        result = unittest.TextTestRunner(verbosity=2).run(testsuite)
 
+    if result is not None:
+        if len(result.errors) > 0 or len(result.failures) > 0:
+            raise Exception(result)
 
 def get_env_org_fail(prop_name, fail_msg):
     try:

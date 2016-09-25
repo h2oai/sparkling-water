@@ -36,4 +36,4 @@ class YarnIntegTestSuite(IntegTestSuite):
 
 
 if __name__ == '__main__':
-        test_utils.run_tests(YarnIntegTestSuite, file_name="py_integ_yarn_tests_report")
+        test_utils.run_tests([YarnIntegTestSuite], file_name="py_integ_yarn_tests_report")
