@@ -24,7 +24,7 @@ mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
 mtcars_tbl
 
 # Convert the Spark DataFrame into an H2OFrame
-mtcars_hf <- as_h2o_frame(mtcars_tbl)
+mtcars_hf <- as_h2o_frame(sc, mtcars_tbl)
 mtcars_hf
 
 
@@ -41,7 +41,8 @@ fit <- h2o.gbm(x = x,
                y = y, 
                training_frame = splits[[1]], 
                nfolds = 3, 
-               min_rows = 1)
+               min_rows = 1,
+               seeed = 1)
 
 # Evaluate 3-fold cross-validated model performance:
 h2o.performance(fit, xval = TRUE)

@@ -1,7 +1,7 @@
 # RSparkling
 
 
-RSparkling is package is an extension package for [sparkapi](https://github.com/rstudio/sparkapi) / [sparklyr](http://spark.rstudio.com) that creates an R front-end for a Spark package ([Sparking Water](https://spark-packages.org/package/h2oai/sparkling-water) from H2O).  This provides an interface to H2O's machine learning algorithms on Spark, using R.
+The **rsparkling** R package is an extension package for [sparkapi](https://github.com/rstudio/sparkapi) / [sparklyr](http://spark.rstudio.com) that creates an R front-end for a Spark package ([Sparking Water](https://spark-packages.org/package/h2oai/sparkling-water) from H2O).  This provides an interface to H2O's machine learning algorithms on Spark, using R.
 
 This package implements basic functionality (creating an H2OContext, showing the H2O Flow interface, and converting between Spark DataFrames and H2O Frames). 
 
@@ -81,7 +81,7 @@ h2o_flow(sc)
 
 ## H2O with Spark DataFrames
 
-Let's copy the mtcars dataset to to Spark so we can access it from Sparkling Water:
+As an example, let's copy the mtcars dataset to to Spark so we can access it from H2O Sparkling Water:
 
 ``` r
 library(dplyr)
@@ -106,10 +106,10 @@ mtcars_tbl
     ## 10  19.2     6 167.6   123  3.92 3.440 18.30     1     0     4     4
     ## # ... with more rows
 
-The use case we'd like to enable is calling the H2O algorithms and feature transformers directly on Spark DataFrames that we've manipulated with dplyr. This is indeed supported by the Sparkling Water package. Here though we'll just convert the Spark DataFrame into an H2O Frame to prove that it's possible:
+The use case we'd like to enable is calling the H2O algorithms and feature transformers directly on Spark DataFrames that we've manipulated with dplyr. This is indeed supported by the Sparkling Water package. Here is how you convert a Spark DataFrame into an H2O Frame:
 
 ``` r
-mtcars_hf <- as_h2o_frame(mtcars_tbl)
+mtcars_hf <- as_h2o_frame(sc, mtcars_tbl)
 mtcars_hf
 ```
 
@@ -146,20 +146,21 @@ mtcars_hf
 
 ## Sparkling Water: H2O Machine Learning
 
-Here is an example where we train a Gradient Boosting Machine (GBM).
+Using the same mtcars dataset, here is an example where we train a Gradient Boosting Machine (GBM) to predict "mpg".
 
 ### Prep data:
-Define the response and set of predictor variables:
+Define the response, `y`, and set of predictor variables, `x`:
 
 ``` r
 y <- "mpg"
 x <- setdiff(names(mtcars_hf), y)
 ```
 
-Let's split the data into a train and test set using H2O.  The `h2o.splitFrame` function defaults to a 75-25 split:
+Let's split the data into a train and test set using H2O.  The `h2o.splitFrame` function defaults to a 75-25 split (`ratios = 0.75`), but here we will make a 70-30 train-test split:
 
 ``` r
-splits <- h2o.splitFrame(mtcars_hf, seed = 1)
+# Split the mtcars H2O Frame into train & test sets
+splits <- h2o.splitFrame(mtcars_hf, ratios = 0.7, seed = 1)
 ```
 
 ### Training: 
@@ -171,14 +172,50 @@ fit <- h2o.gbm(x = x,
                training_frame = splits[[1]],
                min_rows = 1,
                seed = 1)
+print(fit)
 ```
+
+```
+Model Details:
+==============
+
+H2ORegressionModel: gbm
+Model ID:  GBM_model_R_1474763476171_1 
+Model Summary: 
+  number_of_trees number_of_internal_trees model_size_in_bytes min_depth
+1              50                       50               14807         5
+  max_depth mean_depth min_leaves max_leaves mean_leaves
+1         5    5.00000         17         21    18.64000
+
+
+H2ORegressionMetrics: gbm
+** Reported on training data. **
+
+MSE:  0.001211724
+RMSE:  0.03480983
+MAE:  0.02761402
+RMSLE:  0.001929304
+Mean Residual Deviance :  0.001211724
+```
+
 
 ### Model Performance:
 
 We can evaluate the performance of the GBM by evaluating its performance on a test set.
  
 ``` r
-fit <- h2o.performance(splits[[2]])
+perf <- h2o.performance(fit, newdata = splits[[2]])
+print(perf)
+```
+
+```
+H2ORegressionMetrics: gbm
+
+MSE:  2.707001
+RMSE:  1.645297
+MAE:  1.455267
+RMSLE:  0.08579109
+Mean Residual Deviance :  2.707001
 ```
 
 
@@ -188,15 +225,40 @@ To generate predictions on a test set, you do the following.  This will return a
 
 ``` r
 pred_hf <- h2o.predict(fit, newdata = splits[[2]])
+head(pred_hf)
 ```
+```
+   predict
+1 21.39512
+2 16.92804
+3 15.19558
+4 20.47695
+5 20.47695
+6 15.24433
+```			
 
 
 Now let's say you want to make this H2OFrame available to Spark.  You can convert an H2OFrame into a Spark DataFrame using the `as_spark_dataframe` function:
 
 ``` r
-pred_sdf <- as_spark_dataframe(pred_hf)
-pred_sdf
+pred_sdf <- as_spark_dataframe(sc, pred_hf)
+head(pred_sdf)
 ```
+```
+Source:   query [?? x 1]
+Database: spark connection master=local[8] app=sparklyr local=TRUE
+
+   predict
+     <dbl>
+1 21.39512
+2 16.92804
+3 15.19558
+4 20.47695
+5 20.47695
+6 15.24433
+```
+
+
 
 ## Logs & Disconnect
 

@@ -35,10 +35,14 @@ h2o_flow <- function(sc) {
 
 #' Convert a Spark DataFrame to an H2O Frame
 #'
+#' @param sc Object of type \code{spark_connection}.
 #' @param x A \code{spark_dataframe}.
 #'
 #' @export
-as_h2o_frame <- function(x) {
+as_h2o_frame <- function(sc, x) {
+  # sc is not actually required since the sc is monkey-patched into the Spark DataFrame
+  # it is kept as an argument for API consistency
+  
   # Ensure we are dealing with a Spark DataFrame (might be e.g. a tbl)
   x <- sparklyr::spark_dataframe(x)
 

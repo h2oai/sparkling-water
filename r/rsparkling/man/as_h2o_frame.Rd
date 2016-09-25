@@ -4,9 +4,11 @@
 \alias{as_h2o_frame}
 \title{Convert a Spark DataFrame to an H2O Frame}
 \usage{
-as_h2o_frame(x)
+as_h2o_frame(sc, x)
 }
 \arguments{
+\item{sc}{Object of type \code{spark_connection}.}
+
 \item{x}{A \code{spark_dataframe}.}
 }
 \description{
