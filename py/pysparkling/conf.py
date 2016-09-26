@@ -31,22 +31,56 @@ class H2OConf(object):
         else:
             return None
 
+
+    def runs_in_external_cluster_mode(self):
+        return self._jconf.runsInExternalClusterMode()
+
+    def runs_in_internal_cluster_mode(self):
+        return self._jconf.runsInInternalClusterMode()
+
     # setters for most common properties
     def set_cloud_name(self, cloud_name):
         self._jconf.setCloudName(cloud_name)
+        return self
+
+    def set_num_of_external_h2o_nodes(self, num_of_external_h2o_nodes):
+        self._jconf.setNumOfExternalH2ONodes(num_of_external_h2o_nodes)
+        return self
+
+    def set_internal_cluster_mode(self):
+        self._jconf.setInternalClusterMode()
+        return self
+
+    def set_external_cluster_mode(self):
+        self._jconf.setExternalClusterMode()
         return self
 
     def set_client_ip(self, ip):
         self._jconf.setClientIP(ip)
         return self
 
+    def set_client_network_mask(self, mask):
+        self._jconf.setClientNetworkMask(mask)
+        return self
+
     def set_flatfile_path(self, flatfile_path):
         self._jconf.setFlatFilePath(flatfile_path)
         return self
 
+    def set_h2o_cloud(self, ip, port):
+        self._jconf.setH2OCluster(ip, port)
+        return self
+    
     # getters
     def cloud_name(self):
         return self._get_option(self._jconf.cloudName())
+
+
+    def num_of_external_h2o_nodes(self):
+        return self._get_option(self._jconf.numOfExternalH2ONodes())
+
+    def flatfile_path(self):
+        return self._get_option(self._jconf.flatFilePath())
 
     def num_H2O_Workers(self):
         return self._get_option(self._jconf.numH2OWorkers())
@@ -81,6 +115,9 @@ class H2OConf(object):
     def subseq_tries(self):
         return self._jconf.subseqTries()
 
+
+    def backend_cluster_mode(self):
+        return self._jconf.backendClusterMode()
 
     def client_ip(self):
         return self._get_option(self._jconf.clientIp())
@@ -190,7 +227,14 @@ class H2OConf(object):
         """
         for conf in list_of_configurations:
             self._jconf.set(conf[0], conf[1])
-        self
+        return self
 
     def __str__(self):
         return self._jconf.toString()
+
+    def __repr__(self):
+        self.show()
+        return ""
+
+    def show(self):
+        print self

@@ -49,6 +49,7 @@ task checkPythonEnv << {
     def SPARK_HOME = sparkHome
     def H2O_HOME = System.getenv("H2O_HOME")
     def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
+    def H2O_JAR = System.getenv("H2O_JAR")
 
     if (SPARK_HOME == null) throw new InvalidUserDataException("SPARK_HOME needs to be defined!")
 
@@ -67,6 +68,22 @@ or
     export H2O_PYTHON_WHEEL=\$(pwd)/private/h2o.whl
 """)
     }
+
+    // if the spark.ext.h2o.backend.cluster.mode is set to external, then
+    // we need to have also H2O_JAR property set in order to be able to perform
+    // tests
+    if( detectClusterMode()=="external" && System.getenv("H2O_JAR")==null){
+        throw new InvalidUserDataException("""When running tests on external H2O Cluster, H2O_JAR property is required.
+
+Please set it, for example:
+
+mkdir -p \$(pwd)/private/
+curl -s ${h2oJarLocation()} > \$(pwd)/private/h2o.zip
+unzip h2o.zip
+export H2O_JAR=\$(pwd)/private/h2o/h2o.jar
+                                  """)
+    }
+
 
     if(H2O_HOME != null && H2O_PYTHON_WHEEL !=null){
         logger.info("Both \"H2O_HOME\" and \"H2O_PYTHON_WHEEL\" properties are set. Using \"H2O_HOME\"!")
@@ -130,6 +147,10 @@ artifacts {
 task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
     preparePythonEnv(environment)
     // add PySparkling egg on PYTHONPATH so unittests can see all the modules within this egg file
+    environment['spark.ext.h2o.backend.cluster.mode'] = detectClusterMode()
+
+    // sparkling assembly jar is here because of external h2o tests
+    environment["sparkling.assembly.jar"] = configurations.compile.join(',')
     environment['PYTHONPATH'] = configurations.eggs.artifacts.file.join(File.separator) +  File.pathSeparator + environment['PYTHONPATH']
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
     environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
@@ -144,6 +165,9 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
     def testEnv = detectEnvironment()
 
     // Pass references to libraries to test launcher
+    environment['spark.ext.h2o.backend.cluster.mode'] = detectClusterMode()
+    // sparkling assembly jar is here because of external h2o tests
+    environment["sparkling.assembly.jar"] = configurations.compile.join(',')
     environment["sparkling.pysparkling.egg"] = configurations.eggs.artifacts.file.join(File.separator)
     environment["spark.testing"] = "true"
     environment["spark.test.home"] = "${sparkHome}"

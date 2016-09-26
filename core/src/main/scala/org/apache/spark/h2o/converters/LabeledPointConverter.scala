@@ -46,7 +46,7 @@ private[converters] object LabeledPointConverter extends Logging with ConverterU
       // Features vectors of different sizes, filling missing with n/a
       logWarning("WARNING: Converting RDD[LabeledPoint] to H2OFrame where features vectors have different size, filling missing with n/a")
     }
-    val fnames = (Seq[String]("label") ++ 0.until(maxNumFeatures).map(num => "feature" + num).toSeq).toArray[String]
+    val fnames = (Seq[String]("label") ++ 0.until(maxNumFeatures).map(num => "feature" + num)).toArray[String]
     val ftypes = 0.until(maxNumFeatures + 1).map(_ => typ(typeOf[Double]))
     val vecTypes = ftypes.indices.map(idx => dataTypeToVecType(ftypes(idx))).toArray
 

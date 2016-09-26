@@ -43,6 +43,32 @@ test {
     maxParallelForks = 1
 }
 
+//
+// Initial task checking setup of all properties required
+// by scala tests
+//
+task checkScalaTestEnv << {
+
+    // if the spark.ext.h2o.backend.cluster.mode is set to external, then
+    // we need to have also H2O_JAR property set in order to be able to perform
+    // tests
+    if( detectClusterMode()=="external" && System.getenv("H2O_JAR")==null){
+
+        throw new InvalidUserDataException("""When running tests on external H2O Cluster, H2O_JAR property is required.
+
+Please set it, for example:
+
+mkdir -p \$(pwd)/private/
+curl -s ${h2oJarLocation()} > \$(pwd)/private/h2o.zip
+unzip h2o.zip
+export H2O_JAR=\$(pwd)/private/h2o/h2o.jar
+                                  """)
+    }
+}
+
+
+check.dependsOn(checkScalaTestEnv)
+
 // Enable scalastyle
 apply from: "$rootDir/gradle/scalastyle.gradle"
 

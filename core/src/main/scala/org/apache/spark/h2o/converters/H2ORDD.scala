@@ -19,14 +19,15 @@ package org.apache.spark.h2o.converters
 
 
 import java.lang.reflect.Constructor
-import language.postfixOps
-import org.apache.spark.h2o.H2OConf
+
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Partition, SparkContext, TaskContext}
+import org.apache.spark.{Partition, TaskContext}
 import water.fvec.Frame
 
 import scala.collection.immutable.IndexedSeq
+import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
@@ -35,21 +36,21 @@ import scala.reflect.runtime.universe._
   *
   * @param frame  an instance of H2O frame
   * @param colNamesInResult names of columns
-  * @param sc  an instance of Spark context
+  * @param hc  an instance of H2O context
   * @tparam A  type for resulting RDD
   * @tparam T  specific type of H2O frame
   */
 private[spark]
 class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val frame: T,
                                                                   val colNamesInResult: Array[String])
-                                                                 (@transient sc: SparkContext)
+                                                                 (@transient hc: H2OContext)
   extends {
-    override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
-  } with RDD[A](sc, Nil) with H2ORDDLike[T] {
+    override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+  } with RDD[A](hc.sparkContext, Nil) with H2ORDDLike[T] {
 
   // Get column names before building an RDD
   def this(@transient fr : T)
-          (@transient sc: SparkContext) = this(fr, ReflectionUtils.names[A])(sc)
+          (@transient hc: H2OContext) = this(fr, ReflectionUtils.names[A])(hc)
 
   // Check that H2OFrame & given Scala type are compatible
   if (colNamesInResult.length > 1) {
@@ -63,11 +64,9 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
 
   /** Number of columns in the full dataset */
   val numColsInFrame = frame.numCols()
-
   val colNamesInFrame = frame.names()
-
   val types = ReflectionUtils.types[A](colNamesInResult)
-  val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
+  override val expectedTypes: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
 
   /**
    * :: DeveloperApi ::
@@ -166,9 +165,6 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
 
   class H2ORDDIterator(val keyName: String, val partIndex: Int) extends H2OChunkIterator[A] {
 
-    override lazy val converterCtx: ReadConverterContext =
-      ConverterUtils.getReadConverterContext(keyName,
-        partIndex)
 
     private lazy val readers = columnReaders(converterCtx)
 
@@ -242,6 +238,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
           }
         }
 
+    override val selectedColumnIndices: Array[Int] = colNamesInFrame.indices.toArray
   }
 
 

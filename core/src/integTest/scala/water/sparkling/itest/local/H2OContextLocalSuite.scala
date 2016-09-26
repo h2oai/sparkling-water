@@ -34,7 +34,13 @@ class H2OContextLocalSuite extends FunSuite
 
   test("verify H2O cloud building on local JVM") {
     sc = new SparkContext("local[*]", "test-local", defaultSparkConf)
-    hc = H2OContext.getOrCreate(sc, new H2OConf(sc))
+    
+    // start h2o cloud in case of external cluster mode
+    if(testsInExternalMode(sc.getConf)){
+      startCloud(1, sc.getConf)
+    }
+    hc = H2OContext.getOrCreate(sc, new H2OConf(sc).setNumOfExternalH2ONodes(1))
+
     // Number of nodes should be on
     assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 members")
     // Make sure that H2O is running
@@ -43,6 +49,11 @@ class H2OContextLocalSuite extends FunSuite
     val icedInt: Iced[IcedInt] = new IcedInt(43).asInstanceOf[Iced[IcedInt]]
     DKV.put(Key.make(), icedInt)
     assert(water.H2O.store_size() == 1)
+
+    // stop h2o cloud in case of external cluster mode
+    if(testsInExternalMode(sc.getConf)){
+      stopCloud()
+    }
     // Reset this context
     resetContext()
   }

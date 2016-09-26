@@ -41,7 +41,7 @@ trait SparkDataFrameConverter extends Logging with ConverterUtils {
 
   def toDataFrame[T <: Frame](hc: H2OContext, fr: T, copyMetadata: Boolean)(implicit sqlContext: SQLContext): DataFrame = {
     // Relation referencing H2OFrame
-    val relation = new H2OFrameRelation(fr, copyMetadata)(sqlContext)
+    val relation = H2OFrameRelation(fr, copyMetadata)(sqlContext)
     sqlContext.baseRelationToDataFrame(relation)
   }
 
