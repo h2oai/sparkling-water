@@ -41,10 +41,9 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
     sc.getPersistentRDDs.values.map(IcedRDDInfo.fromRdd).toArray
 
   def getRDD(version: Int, s: RDDV3): RDDV3 = {
-    if (sc.getPersistentRDDs.get(s.rdd_id).isEmpty) {
-      throw new H2ONotFoundArgumentException(s"RDD with ID '${s.rdd_id}' does not exist!")
-    }
-    val rdd = sc.getPersistentRDDs.get(s.rdd_id).get
+    val rdd = sc.getPersistentRDDs.getOrElse(s.rdd_id,
+      throw new H2ONotFoundArgumentException(s"RDD with ID '${s.rdd_id}' does not exist!"))
+
     s.name = Option(rdd.name).getOrElse(rdd.id.toString)
     s.partitions = rdd.partitions.length
     s
@@ -73,12 +72,11 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
 
   // TODO(vlad): see the same code in DataFrames
   def toH2OFrame(version: Int, s: RDD2H2OFrameIDV3): RDD2H2OFrameIDV3 = {
-    if (sc.getPersistentRDDs.get(s.rdd_id).isEmpty) {
-      throw new H2ONotFoundArgumentException(s"RDD with ID '${s.rdd_id}' does not exist, can not proceed with the transformation!")
-    }
+    val rdd = sc.getPersistentRDDs.getOrElse(s.rdd_id,
+      throw new H2ONotFoundArgumentException(s"RDD with ID '${s.rdd_id}' does not exist, can not proceed with the transformation!"))
+
     // TODO(vlad): take care of the cases when the data are missing
-    val rdd = sc.getPersistentRDDs.get(s.rdd_id).get
-    val h2oFrame = if(s.h2oframe_id == null) convertToH2OFrame(rdd, None) else convertToH2OFrame(rdd,Some(s.h2oframe_id.toLowerCase))
+    val h2oFrame = convertToH2OFrame(rdd, Option(s.h2oframe_id) map (_.toLowerCase))
     s.h2oframe_id = h2oFrame._key.toString
     s
   }
