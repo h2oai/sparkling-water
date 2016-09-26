@@ -11,6 +11,7 @@ ChangeLog
     - [SW-163](https://0xdata.atlassian.net/browse/SW-163) - Upgrade H2O dependency to the latest Turing release
     - [SW-182](https://0xdata.atlassian.net/browse/SW-182) - RSparkling R package
     - [SW-204](https://0xdata.atlassian.net/browse/SW-204) - Distribute tests log4j logs to corresponding build directories
+    - [SW-210](https://0xdata.atlassian.net/browse/SW-210) - Log H2O client arguments before launching the client 
     - [SWPRIVATE-18](https://0xdata.atlassian.net/browse/SWPRIVATE-18) - SVM progress bar should notify the user about changes
   - Breaking API changes
     - The enum `hex.Distribution.Family` is now `hex.genmodel.utils.DistributionFamily`
