@@ -6,6 +6,8 @@ mainClassName = "ai.h2o.PipelineDemo"
 // Disable distribution tasks
 distZip.enabled = false
 distTar.enabled = false
+// - and remove its dependencies
+configurations.archives.artifacts.removeAll { it.archiveTask.is(distZip) || it.archiveTask.is(distTar) }
 
 dependencies {
   // Sparkling Water Core
