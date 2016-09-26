@@ -46,12 +46,9 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
   def this(@transient frame: T)
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
-  val typesAll: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
 
-  /** Create new types list which describes expected types in a way external H2O backend can use it. This list
-    * contains types in a format same for H2ODataFrame and H2ORDD */
-  val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, typesAll)
-
+  val types: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
+  override val expectedTypes: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
   val colNames = frame.names()
 
   @DeveloperApi
@@ -66,26 +63,13 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
       override val partIndex = split.index
 
       // TODO(vlad): take care of the cases when names are missing in colNames - an exception?
-      val selectedColumnIndices = (if (requiredColumns == null) {
+      override val selectedColumnIndices = (if (requiredColumns == null) {
         colNames.indices
       } else {
         requiredColumns.toSeq.map(colName => colNames.indexOf(colName))
       }) toArray
-
-    /** Filtered list of types used for data transfer */
-      val expectedTypes: Option[Array[Byte]] =
-        expectedTypesAll map (selectedColumnIndices map _)
-
-      /* Converter context */
-      override val converterCtx: ReadConverterContext =
-      ConverterUtils.getReadConverterContext(isExternalBackend,
-        keyName,
-        chksLocation,
-        expectedTypes,
-        partIndex)
-
-
-      private val columnIndicesWithTypes: Array[(Int, SimpleType[_])] = selectedColumnIndices map (i => (i, bySparkType(typesAll(i))))
+      
+      private val columnIndicesWithTypes: Array[(Int, SimpleType[_])] = selectedColumnIndices map (i => (i, bySparkType(types(i))))
 
       /*a sequence of value providers, per column*/
       private val columnValueProviders: Array[() => Option[Any]] = converterCtx.columnValueProviders(columnIndicesWithTypes)

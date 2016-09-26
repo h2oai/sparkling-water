@@ -50,7 +50,7 @@ private[converters] trait ConverterUtils {
 
   /**
     * Gets frame for specified key or none if that frame does not exist
- *
+    *
     * @param keyName key of the requested frame
     * @return option containing frame or none
     */
@@ -83,7 +83,11 @@ private[converters] trait ConverterUtils {
     initFrame(keyName, colNames)
 
     // prepare rdd and required metadata based on the used backend
-    val (preparedRDD, uploadPlan) = (rdd, None)
+    val (preparedRDD, uploadPlan) = if(hc.getConf.runsInExternalClusterMode){
+      throw new NotImplementedError("Not implemented at the moment")
+    }else{
+      (rdd, None)
+    }
 
     val operation: SparkJob[T] = func(keyName, vecTypes, uploadPlan)
 
@@ -105,16 +109,21 @@ object ConverterUtils extends ConverterUtils {
 
   def getWriteConverterContext(uploadPlan: Option[immutable.Map[Int, NodeDesc]],
                                partitionId: Int): WriteConverterContext = {
-    val converterContext = new InternalWriteConverterContext()
+    val converterContext = if (uploadPlan.isDefined) {
+      throw new NotImplementedError("Not implemented at the moment")
+    } else {
+      new InternalWriteConverterContext()
+    }
     converterContext
   }
 
-  def getReadConverterContext(isExternalBackend: Boolean,
-                              keyName: String,
-                              chksLocation: Option[Array[NodeDesc]],
-                              types: Option[Array[Byte]],
-                              chunkIdx: Int): ReadConverterContext = {
-    val converterContext = new InternalReadConverterContext(keyName, chunkIdx)
+  def getReadConverterContext(keyName: String, chunkIdx: Int,
+                              extra: Option[ExternalBackendInfo]): ReadConverterContext = {
+    val converterContext = if (extra.isDefined) { // metainfo external cluster is not empty => use external cluster
+      throw new NotImplementedError("Not implemented at the moment")
+    } else {
+      new InternalReadConverterContext(keyName, chunkIdx)
+    }
     converterContext
   }
 
@@ -128,6 +137,8 @@ object ConverterUtils extends ConverterUtils {
   def getIterator[T](isExternalBackend: Boolean,
                      iterator: Iterator[T]): Iterator[T] = {
     if (isExternalBackend) {
+      // When user ask to read whatever number of rows, buffer them all, because we can't keep the connection
+      // to h2o opened indefinitely
       val rows = new ListBuffer[T]()
       while (iterator.hasNext) {
         rows += iterator.next()
@@ -138,11 +149,30 @@ object ConverterUtils extends ConverterUtils {
     }
   }
 
-  def prepareExpectedTypes[T: TypeTag](isExternalBackend: Boolean,
-                                       types: Array[T]): Option[Array[Byte]] = {
-    // For now return None because internal backend is used at all cases and we don't need any additional info at this time.
-    None
-  }
+  def prepareExpectedTypes[T: TypeTag](isExternalBackend: Boolean, types: Array[T]): Option[Array[Byte]] =
+    if(!isExternalBackend){
+      None
+    }else {
+      throw new NotImplementedError("Not implemented at the moment")
+    }
+}
 
+
+
+class ExternalBackendInfo private (val chksLocation: Array[NodeDesc],
+                                   val expectedTypes: Array[Byte],
+                                   val selectedColumnIndices: Array[Int])
+
+object ExternalBackendInfo{
+  def apply(chksLocation: Option[Array[NodeDesc]],
+            expectedTypes: Option[Array[Byte]],
+            selectedColumnIndices: Array[Int]): Option[ExternalBackendInfo] = {
+
+    if(chksLocation.isDefined){
+      Some(new ExternalBackendInfo(chksLocation.get, expectedTypes.get, selectedColumnIndices))
+    }else{
+      None
+    }
+  }
 }
 
