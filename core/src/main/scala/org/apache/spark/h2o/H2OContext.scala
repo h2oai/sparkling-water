@@ -19,7 +19,6 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
-import org.apache.log4j.{Level, LogManager}
 import org.apache.spark._
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
@@ -27,7 +26,7 @@ import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.utils.{H2OContextUtils, NodeDesc}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import water._
-import water.util.{Log, LogUtil}
+import water.util.LogUtil
 
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
@@ -59,8 +58,9 @@ import scala.util.control.NoStackTrace
   * @param sparkContext Spark Context
   * @param conf H2O configuration
   */
-class H2OContext private (@transient val sparkContext: SparkContext, @transient conf: H2OConf) extends org.apache.spark.Logging
-  with Serializable with SparkDataFrameConverter with SupportedRDDConverter with H2OContextUtils { self =>
+class H2OContext private (@transient val sparkContext: SparkContext, @transient conf: H2OConf) extends Logging
+  with Serializable with SparkDataFrameConverter with SupportedRDDConverter with DatasetConverter
+  with H2OContextUtils { self =>
 
   @transient val sqlc: SQLContext = SQLContext.getOrCreate(sparkContext)
 
@@ -129,16 +129,21 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
   def asH2OFrame(df: DataFrame): H2OFrame = asH2OFrame(df, None)
   def asH2OFrame(df: DataFrame, frameName: Option[String]): H2OFrame = toH2OFrame(this, df, frameName)
   def asH2OFrame(df: DataFrame, frameName: String): H2OFrame = asH2OFrame(df, Option(frameName))
-  /** Transforms Dataset[Supported type] to H2OFrame */
-  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T]): H2OFrame = asH2OFrame(ds, None)
-  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): H2OFrame =
-    ProductRDDConverter.toH2OFrame(self, ds.rdd, frameName)
-  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
 
   /** Transform DataFrame to H2OFrame key */
   def toH2OFrameKey(df : DataFrame): Key[Frame] = toH2OFrameKey(df, None)
   def toH2OFrameKey(df : DataFrame, frameName: Option[String]): Key[Frame] = asH2OFrame(df, frameName)._key
   def toH2OFrameKey(df : DataFrame, frameName: String): Key[Frame] = toH2OFrameKey(df, Option(frameName))
+
+  /** Transforms Dataset[Supported type] to H2OFrame */
+  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T]): H2OFrame = asH2OFrame(ds, None)
+  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): H2OFrame = toH2OFrame(this, ds,frameName)
+  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
+
+  /** Transforms Dataset[Supported type] to H2OFrame key */
+  def toH2OFrameKey[T<: Product : TypeTag](ds: Dataset[T]): Key[Frame] = toH2OFrameKey(ds, None)
+  def toH2OFrameKey[T<: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): Key[Frame] = asH2OFrame(ds, frameName)._key
+  def toH2OFrameKey[T<: Product : TypeTag](ds: Dataset[T], frameName: String): Key[Frame] = toH2OFrameKey(ds, Option(frameName))
 
   /** Create a new H2OFrame based on existing Frame referenced by its key.*/
   def asH2OFrame(s: String): H2OFrame = new H2OFrame(s)
