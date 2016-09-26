@@ -23,7 +23,7 @@ import java.lang.reflect.Constructor
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.{ProductType, ReflectionUtils}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Partition, SparkContext, TaskContext}
+import org.apache.spark.{Partition, TaskContext}
 import water.fvec.Frame
 
 import scala.annotation.meta.{field, getter}
@@ -54,6 +54,8 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
 
   def mkString(seq: Seq[_], sep: Any) = if (seq == null) "(null)" else seq.mkString(sep.toString)
 
+  val colNamesInFrame = frame.names()
+
   // Check that H2OFrame & given Scala type are compatible
   if (!productType.isSingleton) {
     val problems = productType.members.filter { m => frame.find(m.name) == -1 } mkString ", "
@@ -64,9 +66,9 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     }
   }
 
-  lazy val colNamesInFrame = frame.names()
+
   val types = ReflectionUtils.types(typeOf[A])
-  val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
+  override val expectedTypes: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
 
   /**
     * :: DeveloperApi ::
@@ -109,9 +111,6 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
 
   class H2ORDDIterator(val keyName: String, val partIndex: Int) extends H2OChunkIterator[A] {
 
-    override lazy val converterCtx: ReadConverterContext =
-      ConverterUtils.getReadConverterContext(keyName,
-        partIndex)
 
     private lazy val readers = columnReaders(converterCtx)
 
@@ -119,6 +118,9 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       (columnMapping zip readers) map { case (j, r) => () =>
         r.apply(j).asInstanceOf[AnyRef] // this last trick converts primitives to java.lang wrappers
       }
+
+    override val selectedColumnIndices: Array[Int] = colNamesInFrame.indices.toArray
+
 
     def extractRow: Array[AnyRef] = {
       val rowOpt = convertPerColumn map (_ ())
