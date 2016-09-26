@@ -26,7 +26,7 @@ import scala.reflect.runtime.universe._
 
 
 /**
-  * This converter just wraps the existing RDD converters and hides the internal RDD covnerters
+  * This converter just wraps the existing RDD converters and hides the internal RDD converters
   */
 
 trait SupportedRDDConverter{
