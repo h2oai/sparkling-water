@@ -90,8 +90,6 @@ class H2OConf(@transient val sc: SparkContext) extends Logging with InternalBack
 }
 
 object H2OConf {
-  def apply(sc: SparkContext) = new H2OConf(sc)
-
   private var _sparkConfChecked = false
 
   def sparkConfChecked = _sparkConfChecked
@@ -102,3 +100,4 @@ object H2OConf {
     sparkConf
   }
 }
+

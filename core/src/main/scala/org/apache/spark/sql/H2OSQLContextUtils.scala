@@ -17,6 +17,7 @@
 
 package org.apache.spark.sql
 
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.converters.H2ODataFrame
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.rdd.RDD
@@ -42,6 +43,8 @@ case class H2OFrameRelation[T <: Frame](@transient h2oFrame: T,
                                        (@transient val sqlContext: SQLContext)
   extends BaseRelation with TableScan with PrunedScan /* with PrunedFilterScan */  {
 
+  lazy val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in order to do " +
+    "transformations between spark and h2o frames"))
   // Get rid of annoying print
   override def toString: String = getClass.getSimpleName
 
@@ -50,8 +53,8 @@ case class H2OFrameRelation[T <: Frame](@transient h2oFrame: T,
   override val schema: StructType = H2OSchemaUtils.createSchema(h2oFrame, copyMetadata)
 
   override def buildScan(): RDD[Row] =
-    new H2ODataFrame(h2oFrame)(sqlContext.sparkContext).asInstanceOf[RDD[Row]]
+    new H2ODataFrame(h2oFrame)(h2oContext).asInstanceOf[RDD[Row]]
 
   override def buildScan(requiredColumns: Array[String]): RDD[Row] =
-    new H2ODataFrame(h2oFrame, requiredColumns)(sqlContext.sparkContext).asInstanceOf[RDD[Row]]
+    new H2ODataFrame(h2oFrame, requiredColumns)(h2oContext).asInstanceOf[RDD[Row]]
 }
