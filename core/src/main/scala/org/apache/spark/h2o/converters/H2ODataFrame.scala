@@ -18,32 +18,33 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o._
-import org.apache.spark.h2o.utils.{SupportedTypes, ReflectionUtils}
+import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.utils.ReflectionUtils
+import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
-import org.apache.spark.{Partition, SparkContext, TaskContext}
+import org.apache.spark.{Partition, TaskContext}
 
 import scala.language.postfixOps
-import SupportedTypes._
 
 /**
  * H2O H2OFrame wrapper providing RDD[Row]=DataFrame API.
  *
  * @param frame frame which will be wrapped as DataFrame
  * @param requiredColumns  list of the columns which should be provided by iterator, null means all
- * @param sc an instance of Spark context
+ * @param hc an instance of H2O Context
  */
 private[spark]
 class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
                                           val requiredColumns: Array[String])
-                                         (@transient val sc: SparkContext) extends {
-  override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
-} with RDD[InternalRow](sc, Nil) with H2ORDDLike[T] {
+                                         (@transient val hc: H2OContext)
+  extends {
+    override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+  } with RDD[InternalRow](hc.sparkContext, Nil) with H2ORDDLike[T] {
 
   def this(@transient frame: T)
-          (@transient sc: SparkContext) = this(frame, null)(sc)
+          (@transient hc: H2OContext) = this(frame, null)(hc)
 
   val typesAll: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
 
