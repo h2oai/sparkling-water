@@ -56,6 +56,13 @@ abstract class H2OContextImplicits {
   /** Implicit conversion from Spark DataFrame to H2OFrame key */
   implicit def toH2OFrameKeyFromDataFrame(rdd : DataFrame) : Key[Frame] = _h2oContext.toH2OFrameKey(rdd, None)
 
+  /** Implicit conversion from Spark Dataset to H2OFrame */
+  implicit def asH2OFrameFromDataset[T<: Product : TypeTag](ds: Dataset[T]) : H2OFrame = _h2oContext.asH2OFrame(ds, None)
+
+  /** Implicit conversion from Spark Dataset to H2OFrame key */
+  implicit def toH2OFrameKeyFromDataset[T<: Product : TypeTag](ds: Dataset[T]) : Key[Frame] = _h2oContext.toH2OFrameKey(ds, None)
+
+
   /** Implicit conversion from Frame(H2O) to H2OFrame */
   implicit def asH2OFrameFromFrame(fr: Frame) : H2OFrame = new H2OFrame(fr)
 
