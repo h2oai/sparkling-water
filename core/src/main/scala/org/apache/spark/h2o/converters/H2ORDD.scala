@@ -20,7 +20,7 @@ package org.apache.spark.h2o.converters
 
 import java.lang.reflect.Constructor
 
-import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.{ProductType, ReflectionUtils}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
@@ -34,22 +34,23 @@ import scala.reflect.runtime.universe._
 /**
   * Convert H2OFrame into an RDD (lazily).
   *
-  * @param frame       an instance of H2O frame
+  * @param frame  an instance of H2O frame
   * @param productType pre-calculated deconstructed type of result
-  * @param sc          an instance of Spark context
-  * @tparam A type for resulting RDD
-  * @tparam T specific type of H2O frame
+  * @param hc  an instance of H2O context
+  * @tparam A  type for resulting RDD
+  * @tparam T  specific type of H2O frame
   */
 private[spark]
-class H2ORDD[A <: Product : TypeTag : ClassTag, T <: Frame] private(@transient val frame: T,
-                                                                    val productType: ProductType)
-                                                                   (@transient sc: SparkContext) extends {
-  override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
-} with RDD[A](sc, Nil) with H2ORDDLike[T] {
+class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val frame: T,
+                                                                  val productType: ProductType)
+                                                                 (@transient hc: H2OContext)
+  extends {
+    override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+  } with RDD[A](hc.sparkContext, Nil) with H2ORDDLike[T] {
 
   // Get product type before building an RDD
   def this(@transient fr: T)
-          (@transient sc: SparkContext) = this(fr, ProductType.create[A])(sc)
+          (@transient hc: H2OContext) = this(fr, ProductType.create[A])(hc)
 
   def mkString(seq: Seq[_], sep: Any) = if (seq == null) "(null)" else seq.mkString(sep.toString)
 
@@ -64,7 +65,6 @@ class H2ORDD[A <: Product : TypeTag : ClassTag, T <: Frame] private(@transient v
   }
 
   lazy val colNamesInFrame = frame.names()
-
   val types = ReflectionUtils.types(typeOf[A])
   val expectedTypesAll: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
 
