@@ -17,14 +17,12 @@
 
 package org.apache.spark.h2o.converters
 
+
 import org.apache.spark.h2o._
-import org.apache.spark.TaskContext
-import org.apache.spark.h2o.utils.NodeDesc
-import org.apache.spark.h2o.utils.ReflectionUtils._
+import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.internal.Logging
 import water.Key
 
-import scala.collection.immutable
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -32,78 +30,29 @@ import scala.reflect.runtime.universe._
 private[h2o] object ProductRDDConverter extends Logging with ConverterUtils {
 
   /** Transform H2OFrame to Product RDD */
-  def toRDD[A <: Product: TypeTag: ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = {
+  def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = {
     new H2ORDD[A, T](fr)(hc.sparkContext)
   }
 
   /** Transform RDD to H2OFrame. This method expects RDD of type Product without TypeTag */
   def toH2OFrame(hc: H2OContext, rdd: RDD[Product], frameKeyName: Option[String]): H2OFrame = {
-
-    val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
-
-    // infer the type
-    val first = rdd.first()
-    val fnames = 0.until(first.productArity).map(idx => "f" + idx).toArray[String]
-
-    val vecTypes = memberTypes(first) map (_.vecType)
-
-    convert[Product](hc, rdd, keyName, fnames, vecTypes, perTypedRDDPartition())
+    H2OFrameFromRDDProductBuilder(hc, rdd, frameKeyName).withDefaultFieldNames()
   }
 
   /** Transform typed RDD into H2O Frame */
-  def toH2OFrame[T <: Product : TypeTag](hc: H2OContext, rdd: RDD[T], frameKeyName: Option[String]) : H2OFrame = {
-
+  def toH2OFrame[T <: Product : TypeTag](hc: H2OContext, rdd: RDD[T], frameKeyName: Option[String]): H2OFrame = {
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
 
-    // TODO(vlad): use ProductType for this
-    val fnames = fieldNamesOf[T]
-    val vecTypes = vecTypesOf[T]
+    val fnames = ReflectionUtils.fieldNamesOf[T]
+    val ftypes = ReflectionUtils.types(typeOf[T])
 
-    convert[T](hc, rdd, keyName, fnames, vecTypes, perTypedRDDPartition())
+    // Collect H2O vector types for all input types
+    val vecTypes = ftypes.map(ReflectionUtils.vecTypeFor)
+
+    convert[T](hc, rdd, keyName, fnames, vecTypes, H2OFrameFromRDDProductBuilder.perTypedDataPartition())
+
   }
-
-  /**
-    *
-    * @param keyName key of the frame
-    * @param vecTypes h2o vec types
-    * @param uploadPlan plan which assigns each partition h2o node where the data from that partition will be uploaded
-    * @param context spark task context
-    * @param it iterator over data in the partition
-    * @tparam T type of data inside the RDD
-    * @return pair (partition ID, number of rows in this partition)
-    */
-  private[this]
-  def perTypedRDDPartition[T<:Product]()
-                                      (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[immutable.Map[Int, NodeDesc]])
-                                      ( context: TaskContext, it: Iterator[T] ): (Int,Long) = {
-    val con = ConverterUtils.getWriteConverterContext(uploadPlan, context.partitionId())
-    // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunks(keyName, vecTypes, context.partitionId())
-
-    it.foreach(prod => { // For all rows which are subtype of Product
-      for( i <- 0 until prod.productArity ) { // For all fields...
-      val fld = prod.productElement(i)
-        // TODO(vlad): deal properly with Option
-        val x = fld match {
-          case Some(n) => n
-          case _ => fld
-        }
-        x match {
-          case n: Number  => con.put(i, n)
-          case n: Boolean => con.put(i, n)
-          case n: String  => con.put(i, n)
-          case n : java.sql.Timestamp => con.put(i, n)
-          case _ => con.putNA(i)
-        }
-      }
-      con.increaseRowCounter()
-    })
-
-    //Compress & write data in partitions to H2O Chunks
-    con.closeChunks()
-
-    // Return Partition number and number of rows in this partition
-    (context.partitionId, con.numOfRows)
-  }
-
 }
+
+
+
