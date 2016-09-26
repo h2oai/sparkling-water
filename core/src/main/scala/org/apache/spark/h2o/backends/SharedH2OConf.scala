@@ -68,10 +68,7 @@ trait SharedH2OConf {
     self
   }
 
-  def setInternalClusterMode(): H2OConf = {
-    setBackendClusterMode("internal")
-    self
-  }
+  def setInternalClusterMode(): H2OConf = setBackendClusterMode("internal")
 
   def setReplDisabled(): H2OConf = {
     sparkConf.set(PROP_REPL_ENABLED._1, false.toString)
@@ -82,10 +79,7 @@ trait SharedH2OConf {
     self
   }
 
-  def setExternalClusterMode(): H2OConf = {
-    setBackendClusterMode("external")
-    self
-  }
+  def setExternalClusterMode(): H2OConf = setBackendClusterMode("external")
 
   def setClientIp(ip: String): H2OConf = {
     sparkConf.set(PROP_CLIENT_IP._1, ip)

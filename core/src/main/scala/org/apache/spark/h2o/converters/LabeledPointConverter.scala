@@ -47,7 +47,7 @@ private[converters] object LabeledPointConverter extends Logging with ConverterU
     }
     val fnames = ("label" :: 0.until(maxNumFeatures).map("feature" +).toList).toArray[String]
     val vecTypes = Array.fill(maxNumFeatures + 1)(Vec.T_NUM)
-
+    
     convert[LabeledPoint](hc, rdd, keyName, fnames, vecTypes, perLabeledPointRDDPartition(maxNumFeatures))
   }
 

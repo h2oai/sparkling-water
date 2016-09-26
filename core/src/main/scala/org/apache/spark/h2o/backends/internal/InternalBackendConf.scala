@@ -44,7 +44,7 @@ trait InternalBackendConf extends SharedH2OConf {
     s"""Sparkling Water configuration:
         |  backend cluster mode : ${backendClusterMode}
         |  workers              : ${numH2OWorkers}
-        |  cloudName            : ${cloudName.get}
+        |  cloudName            : ${cloudName.getOrElse("Not set yet, it will be set automatically before starting H2OContext.")}
         |  flatfile             : ${useFlatFile}
         |  clientBasePort       : ${clientBasePort}
         |  nodeBasePort         : ${nodeBasePort}
