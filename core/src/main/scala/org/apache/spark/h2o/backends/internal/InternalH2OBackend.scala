@@ -17,11 +17,11 @@
 
 package org.apache.spark.h2o.backends.internal
 
-import org.apache.spark.Logging
+import org.apache.spark.{Logging, SparkEnv}
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.listeners.{ExecutorAddNotSupportedListener}
+import org.apache.spark.listeners.ExecutorAddNotSupportedListener
 import water.api.RestAPIManager
 import water.{H2O, H2OStarter}
 
@@ -101,7 +101,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
       logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + executors.length)
       // Get arguments for this launch including flatfile ( Do not use IP if network mask is specified)
       val h2oClientArgs = InternalBackendUtils.toH2OArgs(InternalBackendUtils.getH2OClientArgs(hc.getConf), hc.getConf, executors)
-      logDebug(s"Arguments used for launching h2o client node: ${h2oClientArgs.mkString(" ")}")
+      logInfo(s"Starting H2O client on the Spark Driver (${getHostname(SparkEnv.get)}): ${h2oClientArgs.mkString(" ")}")
       // Launch H2O
       H2OStarter.start(h2oClientArgs, false)
     }
