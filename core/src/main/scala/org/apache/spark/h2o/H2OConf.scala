@@ -86,7 +86,3 @@ class H2OConf(@transient val sc: SparkContext) extends Logging with InternalBack
 
   override def toString: String = internalConfString
 }
-
-object H2OConf {
-  def apply(sc: SparkContext) = new H2OConf(sc)
-}

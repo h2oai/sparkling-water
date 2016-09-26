@@ -31,7 +31,7 @@ private[h2o] object ProductRDDConverter extends Logging with ConverterUtils{
 
   /** Transform H2OFrame to Product RDD */
   def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = {
-    new H2ORDD[A, T](fr)(hc.sparkContext)
+    new H2ORDD[A, T](fr)(hc)
   }
 
   /** Transform RDD to H2OFrame. This method expects RDD of type Product without TypeTag */
