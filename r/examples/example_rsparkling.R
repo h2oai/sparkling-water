@@ -10,7 +10,7 @@
 # install.packages("h2o")
 #
 # But this is the specific version of h2o that works with rsparkling today (Sept. 2016):
-# install.packages("h2o", type="source", repos=(c("http://h2o-release.s3.amazonaws.com/h2o/rel-turing/6/R")))
+# install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-turing/6/R")
 #
 # devtools::install_github("h2oai/sparkling-water", subdir = "/r/rsparkling")
 # devtools::install_github("rstudio/sparklyr")

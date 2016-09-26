@@ -26,12 +26,35 @@ This package implements basic functionality (creating an H2OContext, showing the
 
 The **rsparkling** R package requires the **h2o** and **sparklyr** R packages to run.
 
+### Install h2o
+
 Today (Sept. 2016, the initial github release of rsparkling) you must use H2O R package version [3.10.0.6](http://h2o-release.s3.amazonaws.com/h2o/rel-turing/6/index.html#R) (H2O "Turing" release, build 6), since that version of H2O is embedded in rsparkling.  This will be more flexible in the future.
+
+```r
+# The following two commands remove any previously installed H2O packages for R.
+if ("package:h2o" %in% search()) { detach("package:h2o", unload=TRUE) }
+if ("h2o" %in% rownames(installed.packages())) { remove.packages("h2o") }
+
+# Next, we download packages that H2O depends on.
+pkgs <- c("methods","statmod","stats","graphics","RCurl","jsonlite","tools","utils")
+for (pkg in pkgs) {
+    if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
+}
+
+# Now we download, install and initialize the H2O package for R.
+install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-turing/6/R")
+```
+
+### Install sparklyr
 
 We recommend the latest stable version of [sparklyr](http://spark.rstudio.com/index.html).
 
+```r
+install.packages("sparklyr")
+```
 
-### Install RSparkling
+
+### Install rsparkling
 The latest stable version of rsparkling can be installed as follows:
 
 ```r
@@ -64,7 +87,7 @@ The call to `library(rsparkling)` will make the H2O functions available on the R
 library(rsparkling)  # H2O Sparkling Water Machine Learning
 ```
 
-We must create a Spark connection as follows:
+We can create a Spark connection as follows:
 
 ``` r
 sc <- spark_connect(master = "local")
@@ -278,6 +301,9 @@ Database: spark connection master=local[8] app=sparklyr local=TRUE
 6 15.24433
 ```
 
+### H2O Machine Leanring Tutorials
+
+If you are new to H2O for machine learning, we recommend you start with the [Intro to H2O Tutorial](https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.R), followed by the [H2O Grid Search & Model Selection Tutorial](https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/grid-search-model-selection.R).  There are a number of other H2O R [tutorials](https://github.com/h2oai/h2o-tutorials) and [demos](https://github.com/h2oai/h2o-3/tree/master/h2o-r/demos) available, as well as the [H2O World 2015 Training Gitbook](http://learn.h2o.ai/content/), and the [Machine Learning with R and H2O Booklet (pdf)](http://docs.h2o.ai/h2o/latest-stable/h2o-docs/booklets/RBooklet.pdf). 
 
 
 ## Logs & Disconnect
