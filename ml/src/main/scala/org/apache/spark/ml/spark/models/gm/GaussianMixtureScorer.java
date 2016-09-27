@@ -69,7 +69,7 @@ public class GaussianMixtureScorer {
      */
     static double pdf(MultivariateGaussian gaussian, double[] data) {
         Tuple2<Double[][], Double> dm =
-                ClusteringUtils.calculateCovarianceConstants(gaussian.sigma(), gaussian.mu());
+                ClusteringUtils.calculateCovarianceConstants(gaussian.mu(), gaussian.sigma());
         double[] delta = delta(data, gaussian.mu().toArray());
         double[] v = multiplyMV(dm._1, delta);
         return Math.exp((dm._2 + multiplyV(v, v) * -0.5));

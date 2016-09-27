@@ -19,7 +19,7 @@ package org.apache.spark.ml.spark.models.gm
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedSparkTestContext
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.{DataTypes, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -34,7 +34,6 @@ class GaussianMixtureTest extends FunSuite with SharedSparkTestContext {
     = defaultSparkConf)
 
   test("Should predict the same cluster as the spark method.") {
-    val sqlContext = sqlc
     val h2oContext = hc
     import h2oContext.implicits._
 
@@ -43,7 +42,7 @@ class GaussianMixtureTest extends FunSuite with SharedSparkTestContext {
       val features: Array[Double] = Array.fill(5) {0}.map(x => Random.nextDouble())
       Row(features: _*)
     }).cache()
-    val trainDF = sqlc.createDataFrame(
+    val trainDF: DataFrame = sqlContext.createDataFrame(
       trainRDD,
       StructType(Array(
         StructField("c0", DataTypes.DoubleType),

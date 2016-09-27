@@ -5,6 +5,7 @@ import hex.ModelCategory;
 import hex.ModelMetrics;
 import org.apache.spark.SparkContext;
 import org.apache.spark.h2o.H2OContext;
+import org.apache.spark.ml.spark.ProgressListener;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.rdd.RDD;
@@ -12,16 +13,20 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
+import org.apache.spark.storage.RDDInfo;
 import water.DKV;
 import water.fvec.Frame;
 import water.fvec.H2OFrame;
 import water.fvec.Vec;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.spark.api.java.function.Function;
 import water.util.Log;
+
+import static scala.collection.JavaConversions.iterableAsScalaIterable;
 
 public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel, GaussianMixtureParameters, GaussianMixtureModel.GaussianMixtureOutput> {
 
@@ -44,7 +49,6 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
 
         if (_train == null) return;
 
-        // TODO the below should be refactored into a separate class/util when SVM and this branch get merged
         for (int i = 0; i < _train.numCols(); i++) {
             Vec vec = _train.vec(i);
             String vecName = _train.name(i);
@@ -100,8 +104,18 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
             RDD<Vector> trainingData = getTrainingData(_train, model._output.nfeatures());
             trainingData.cache();
 
+            ProgressListener progressBar = new ProgressListener(sc,
+                    _job,
+                    RDDInfo.fromRdd(trainingData),
+                    iterableAsScalaIterable(Collections.singletonList("aggregate")));
+
+            sc.addSparkListener(progressBar);
+
             org.apache.spark.mllib.clustering.GaussianMixtureModel sparkGMModel = sparkGM.run(trainingData);
             trainingData.unpersist(false);
+
+            sc.listenerBus().removeListener(progressBar);
+
 
             model._output._iterations_$eq(_parms._max_iterations);
             model._output._weights_$eq(sparkGMModel.weights());
@@ -163,7 +177,7 @@ class RowToLabeledPoint implements Function<Row, Vector> {
         return Vectors.dense(features);
     }
 
-    // TODO off to util class when merged with SVM
+    // TODO off to util class when merged with SVM NA handler
     private double toDouble(Object value, StructField fieldStruct, String[] domain) {
         if (fieldStruct.dataType().sameType(DataTypes.ByteType)) {
             return ((Byte) value).doubleValue();

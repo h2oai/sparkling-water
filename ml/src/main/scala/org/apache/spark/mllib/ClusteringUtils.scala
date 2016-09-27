@@ -16,7 +16,7 @@
  */
 package org.apache.spark.mllib
 
-import breeze.linalg.{diag, eigSym, max, DenseMatrix => DBM, DenseVector => DBV}
+import breeze.linalg.{diag, eigSym, max, DenseVector => DBV}
 import org.apache.spark.ml.spark.models.gm.GaussianMixtureModel
 import org.apache.spark.mllib.linalg._
 import org.apache.spark.mllib.stat.distribution.MultivariateGaussian
@@ -65,14 +65,19 @@ object ClusteringUtils {
   }
 
   // Copy paste of a private Spark MultivariateGaussian#calculateCovarianceConstants method
-  def calculateCovarianceConstants(sigma: Matrix, mu: Vector): (Array[Array[java.lang.Double]], java.lang.Double) = {
-    val eigSym.EigSym(d, u) = eigSym(sigma.toBreeze.toDenseMatrix)
+  def calculateCovarianceConstants(mu: Vector, sigma: Matrix): (Array[Array[java.lang.Double]], java.lang.Double) = {
+    val eigSym.EigSym(d, u) = eigSym(sigma.asBreeze.toDenseMatrix) // sigma = u * diag(d) * u.t
 
+    // For numerical stability, values are considered to be non-zero only if they exceed tol.
+    // This prevents any inverted value from exceeding (eps * n * max(d))^-1
     val tol = MLUtils.EPSILON * max(d) * d.length
 
     try {
+      // log(pseudo-determinant) is sum of the logs of all non-zero singular values
       val logPseudoDetSigma = d.activeValuesIterator.filter(_ > tol).map(math.log).sum
 
+      // calculate the root-pseudo-inverse of the diagonal matrix of singular values
+      // by inverting the square root of all non-zero values
       val pinvS = diag(new DBV(d.map(v => if (v > tol) math.sqrt(1.0 / v) else 0.0).toArray))
 
       val covScala = pinvS * u.t
