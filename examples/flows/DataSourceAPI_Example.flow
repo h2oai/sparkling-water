@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "cells": [
+    {
+      "type": "cs",
+      "input": "assist"
+    },
+    {
+      "type": "cs",
+      "input": "getCloud"
+    },
+    {
+      "type": "sca",
+      "input": "sc"
+    },
+    {
+      "type": "sca",
+      "input": "h2oContext"
+    },
+    {
+      "type": "sca",
+      "input": "// Create simple dataframe holding integers\nval df = sc.parallelize(1 to 1000).map( v => IntHolder(Some(v))).toDF"
+    },
+    {
+      "type": "sca",
+      "input": "// Store this dataframe as h2o frame using Spark's data source api \ndf.write.h2o(\"test_frame\")"
+    },
+    {
+      "type": "cs",
+      "input": "getFrames"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"test_frame\""
+    },
+    {
+      "type": "sca",
+      "input": "val readDF = sqlContext.read.h2o(\"test_frame\")\nreadDF.count()"
+    },
+    {
+      "type": "sca",
+      "input": "// Override the previous dataframe\nval dfNew = sc.parallelize(1 to 100).map(_.toString).toDF\nimport org.apache.spark.sql._\ndfNew.write.format(\"h2o\").mode(SaveMode.Overwrite).save(\"test_frame\")"
+    },
+    {
+      "type": "cs",
+      "input": "getFrames"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"test_frame\""
+    }
+  ]
+}
