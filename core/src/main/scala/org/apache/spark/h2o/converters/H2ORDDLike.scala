@@ -20,12 +20,14 @@ package org.apache.spark.h2o.converters
 import org.apache.spark.Partition
 import water.fvec.{Frame, FrameUtils}
 
+import scala.annotation.meta.{field, getter}
+
 /**
  * Contains functions that are shared between all H2ORDD types (i.e., Scala, Java)
  */
 private[converters] trait H2ORDDLike[T <: Frame] {
   /** Underlying DataFrame */
-  @transient val frame: T
+  @(transient @field @getter) val frame: T
 
   /** Cache frame key to get H2OFrame from the K/V store */
   val frameKeyName: String = frame._key.toString

@@ -17,8 +17,9 @@
 
 package org.apache.spark.h2o.converters
 
-import org.apache.spark.{TaskContext, SparkContext}
+import org.apache.spark.{SparkContext, TaskContext}
 import org.apache.spark.h2o._
+import org.apache.spark.h2o.utils.CrossScalaUtils
 import org.apache.spark.sql.SQLContext
 import water.Key
 import water.parser.BufferedString
@@ -41,7 +42,7 @@ object SupportedDataset {
     val typeTag = ttag
     override def toH2OFrame(sc: SQLContext, frameKeyName: Option[String]): H2OFrame = {
       val tpe = ttag.tpe
-      val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR) // To be compatible with Scala 2.10
+      val constructorSymbol = CrossScalaUtils.getConstructorSymbol(tpe)
       val defaultConstructor =
         if (constructorSymbol.isMethod) constructorSymbol.asMethod
         else {
@@ -49,7 +50,7 @@ object SupportedDataset {
           ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
         }
 
-      val params: List[(String, Type)] = defaultConstructor.paramss.flatten map { // To be compatible with Scala 2.10
+      val params: List[(String, Type)] = CrossScalaUtils.getParams(defaultConstructor).flatten map {
         sym => sym.name.toString -> tpe.member(sym.name).asMethod.returnType
       }
 

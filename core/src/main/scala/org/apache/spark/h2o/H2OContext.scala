@@ -25,9 +25,10 @@ import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.utils.{H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import water._
 
+import scala.annotation.meta.{field, param}
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
@@ -57,10 +58,11 @@ import scala.util.control.NoStackTrace
   * @param sparkContext Spark Context
   * @param conf H2O configuration
   */
-class H2OContext private (@transient val sparkContext: SparkContext, @transient conf: H2OConf) extends Logging
+class H2OContext private (@(transient @param @field) val sparkContext: SparkContext,@(transient @param @field) conf: H2OConf) extends Logging
   with Serializable with SparkDataFrameConverter with SupportedRDDConverter with H2OContextUtils { self =>
 
-  @transient val sqlc: SQLContext = SQLContext.getOrCreate(sparkContext)
+
+  @transient val sqlc: SQLContext = SparkSession.builder().getOrCreate().sqlContext
 
   /** IP of H2O client */
   private var localClientIp: String = _

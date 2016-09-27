@@ -27,6 +27,8 @@ import org.apache.spark.{Partition, SparkContext, TaskContext}
 import water.fvec.Frame
 
 import scala.collection.immutable.IndexedSeq
+import scala.annotation.meta.{field, getter, param}
+import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
@@ -42,7 +44,7 @@ import scala.reflect.runtime.universe._
 private[spark]
 class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val frame: T,
                                                                   val colNamesInResult: Array[String])
-                                                                 (@transient sc: SparkContext)
+                                                                 (@(transient @param @field) sc: SparkContext)
   extends {
     override val isExternalBackend = H2OConf(sc).runsInExternalClusterMode
   } with RDD[A](sc, Nil) with H2ORDDLike[T] {
@@ -262,6 +264,6 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     }
   }
 
-  private lazy val builders = constructors map Builder
+  @(transient @field @getter)private lazy val builders = constructors map Builder
 
 }
