@@ -28,7 +28,7 @@ The **rsparkling** R package requires the **h2o** and **sparklyr** R packages to
 
 ### Install h2o
 
-Today (Sept. 2016, the initial github release of rsparkling) you must use H2O R package version [3.10.0.6](http://h2o-release.s3.amazonaws.com/h2o/rel-turing/6/index.html#R) (H2O "Turing" release, build 6), since that version of H2O is embedded in rsparkling.  This will be more flexible in the future.
+Today (Sept. 2016, the initial github release of rsparkling) you must use H2O R package version [3.10.0.7](http://h2o-release.s3.amazonaws.com/h2o/rel-turing/7/index.html#R) (H2O "Turing" release, build 6), since that version of H2O is embedded in rsparkling.  This will be more flexible in the future.
 
 ```r
 # The following two commands remove any previously installed H2O packages for R.
@@ -77,7 +77,7 @@ If Spark needs to be installed, that can be done using the following sparklyr co
 
 ``` r
 library(sparklyr)
-spark_install(version = "1.6.2")
+spark_install(version = "2.0.0")
 ```
 
 

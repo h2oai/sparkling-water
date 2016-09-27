@@ -10,7 +10,7 @@
 # install.packages("h2o")
 #
 # But this is the specific version of h2o that works with rsparkling today (Sept. 2016):
-# install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-turing/6/R")
+# install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-turing/7/R")
 #
 # devtools::install_github("h2oai/sparkling-water", subdir = "/r/rsparkling")
 # devtools::install_github("rstudio/sparklyr")
@@ -18,7 +18,7 @@
 library(rsparkling) 
 
 # If you don't already have it installed, Spark can be installed via the sparklyr command:
-spark_install(version = "1.6.2")
+spark_install(version = "2.0.0")
 
 # Create a spark connection
 sc <- spark_connect(master = "local")
