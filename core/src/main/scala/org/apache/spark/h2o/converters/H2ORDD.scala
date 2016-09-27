@@ -26,7 +26,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, TaskContext}
 import water.fvec.Frame
 
-import scala.annotation.meta.{field, getter}
+import scala.annotation.meta.{field, getter, param}
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -41,9 +41,9 @@ import scala.reflect.runtime.universe._
   * @tparam T  specific type of H2O frame
   */
 private[spark]
-class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val frame: T,
+class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @param @field) val frame: T,
                                                                   val productType: ProductType)
-                                                                 (@transient hc: H2OContext)
+                                                                 (@(transient @param @field) hc: H2OContext)
   extends {
     override val isExternalBackend = hc.getConf.runsInExternalClusterMode
   } with RDD[A](hc.sparkContext, Nil) with H2ORDDLike[T] {
@@ -94,20 +94,18 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
   val columnMapping: Array[Int] = if (productType.isSingleton) Array(0) else multicolumnMapping
 
   def multicolumnMapping: Array[Int] = {
-    try {
-      val mappings: Array[Int] = productType.members map (colNamesInFrame indexOf _.name)
+    val mappings: Array[Int] = productType.members map (colNamesInFrame indexOf _.name)
 
-      val bads = mappings.zipWithIndex collect {
-        case (j, at) if j < 0 =>
-          if (at < productType.arity) productType.members(at).toString else s"[[$at]] (unknown type)"
-      }
-
-      if (bads.nonEmpty) {
-        throw new scala.IllegalArgumentException(s"Missing columns: ${bads mkString ","}")
-      }
-
-      mappings
+    val bads = mappings.zipWithIndex collect {
+      case (j, at) if j < 0 =>
+        if (at < productType.arity) productType.members(at).toString else s"[[$at]] (unknown type)"
     }
+
+    if (bads.nonEmpty) {
+      throw new scala.IllegalArgumentException(s"Missing columns: ${bads mkString ","}")
+    }
+
+    mappings
   }
 
   class H2ORDDIterator(val keyName: String, val partIndex: Int) extends H2OChunkIterator[A] {
