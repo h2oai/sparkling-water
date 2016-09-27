@@ -85,10 +85,11 @@ class H2OContext(object):
         self._ss = SparkSession.builder.getOrCreate()
         self._sql_context = SQLContext(spark_context, self._ss)
         self._jsql_context = self._ss._jwrapped
-
         self._jsc = self._sc._jsc
         self._jvm = self._sc._jvm
         self._gw = self._sc._gateway
+
+        self.is_initialized = False
 
     @staticmethod
     def getOrCreate(spark_context, conf = None):
@@ -118,7 +119,7 @@ class H2OContext(object):
         h2o_context._client_port = jhc.h2oLocalClientPort()
         # Create H2O REST API client
         h2o.init(ip=h2o_context._client_ip, port=h2o_context._client_port, start_h2o=False, strict_version_check=False)
-        h2o.is_initialized = True
+        h2o_context.is_initialized = True
         return h2o_context
 
     def stop(self):
@@ -126,10 +127,10 @@ class H2OContext(object):
         #self._jhc.stop(False)
 
     def __str__(self):
-        if hasattr(self, 'is_initialized'):
+        if self.is_initialized:
           return "H2OContext: ip={}, port={} (open UI at http://{}:{} )".format(self._client_ip, self._client_port, self._client_ip, self._client_port)
         else:
-          return "H2OContext: --not initialized (call getOrCreate())"
+          return "H2OContext: not initialized, call H2OContext.getOrCreate(sc) or H2OContext.getOrCreate(sc, conf)"
 
     def __repr__(self):
         self.show()
