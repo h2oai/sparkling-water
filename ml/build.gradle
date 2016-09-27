@@ -30,7 +30,7 @@ sourceSets {
   }
   test {
     scala {
-      srcDirs += ["src/test/scala_$scalaBaseVersion", "src/main/java"]
+      srcDirs += ["src/test/scala_$scalaBaseVersion", "src/test/java"]
     }
     java {
       srcDirs = []

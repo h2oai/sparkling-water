@@ -47,7 +47,7 @@ test {
 sourceSets {
     main {
         scala {
-            srcDirs += ["src/main/scala_$scalaBaseVersion", "src/main/java"]
+            srcDirs ["src/main/scala_$scalaBaseVersion", "src/main/java"]
         }
         java {
             srcDirs = []
@@ -55,7 +55,7 @@ sourceSets {
     }
     test {
         scala {
-            srcDirs += ["src/test/scala_$scalaBaseVersion", "src/main/java"]
+            srcDirs += ["src/test/scala_$scalaBaseVersion", "src/test/java"]
         }
         java {
             srcDirs = []
