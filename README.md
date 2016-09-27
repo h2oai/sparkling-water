@@ -28,7 +28,7 @@ The Sparkling Water is developed in multiple parallel branches.
 Each branch corresponds to a Spark major release (e.g., branch **rel-1.5** provides implementation of Sparkling Water for Spark **1.5**).
 
 Please, switch to the right branch:
- - For Spark 1.6 use branch [rel-2.0](https://github.com/h2oai/sparkling-water/tree/rel-2.0)
+ - For Spark 2.0 use branch [rel-2.0](https://github.com/h2oai/sparkling-water/tree/rel-2.0)
  - For Spark 1.6 use branch [rel-1.6](https://github.com/h2oai/sparkling-water/tree/rel-1.6)
  - For Spark 1.5 use branch [rel-1.5](https://github.com/h2oai/sparkling-water/tree/rel-1.5)
  - For Spark 1.4 use branch [rel-1.4](https://github.com/h2oai/sparkling-water/tree/rel-1.4)
@@ -75,12 +75,14 @@ pip install future
 > To avoid running tests, use the `-x test -x integTest` or `-x check` option. 
 
 > To build only a specific module, use, for example, `./gradlew :sparkling-water-examples:build`.
-> To build test a specific module, use, for example,  `./gradlew :sparkling-water-examples:check`.
+> To build and test a specific module, use, for example,  `./gradlew :sparkling-water-examples:check`.
+
 ---
 <a name="Binary"></a>
 ### Download Binaries
 For each Sparkling Water you can download binaries here:
    * [Sparkling Water - Latest version](http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html)
+   * [Sparkling Water - Latest 2.0 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/latest.html)
    * [Sparkling Water - Latest 1.6 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.6/latest.html)
    * [Sparkling Water - Latest 1.5 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.5/latest.html)
    * [Sparkling Water - Latest 1.4 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.4/latest.html)
