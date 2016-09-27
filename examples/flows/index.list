@@ -2,6 +2,9 @@
 Amazon_Fine_Food_Sentiment_Analysis.flow
 Lending_Club.flow
 Strata_SJ_2016.flow
+Spark_SVM_Model.flow
+DataSourceAPI_Example.flow
+Ham_Or_Spam_Pipeline.flow
 GBM_Example.flow
 DeepLearning_MNIST.flow
 GLM_Example.flow
