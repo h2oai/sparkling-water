@@ -253,7 +253,7 @@ class H2OContext (@transient val sparkContext: SparkContext) extends {
     H2O.exit(0)
   }
 
-  private def createSpreadRDD() = new SpreadRDDBuilder(sparkContext,
+  private def createSpreadRDD() = new SpreadRDDBuilder(this,
                                                        H2OContextUtils.guessTotalExecutorSize(sparkContext)).build()
 
 
