@@ -20,12 +20,14 @@ package org.apache.spark.h2o.converters
 import org.apache.spark.Partition
 import water.fvec.{Frame, FrameUtils}
 
+import scala.annotation.meta.{field, getter}
+
 /**
  * Contains functions that are shared between all H2ORDD types (i.e., Scala, Java)
  */
 private[converters] trait H2ORDDLike[T <: Frame] {
   /** Underlying DataFrame */
-  @transient val frame: T
+  @(transient @field @getter) val frame: T
 
   /** Is the external backend in use */
   val isExternalBackend: Boolean
