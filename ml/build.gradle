@@ -17,3 +17,23 @@ dependencies {
   testCompile project(':sparkling-water-core').sourceSets.test.output
 
 }
+
+// add additional source set for desired scala version
+sourceSets {
+  main {
+    scala {
+      srcDirs += ["src/main/scala_$scalaBaseVersion", "src/main/java"]
+    }
+    java {
+      srcDirs = []
+    }
+  }
+  test {
+    scala {
+      srcDirs += ["src/test/scala_$scalaBaseVersion", "src/main/java"]
+    }
+    java {
+      srcDirs = []
+    }
+  }
+}
