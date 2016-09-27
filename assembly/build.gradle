@@ -20,6 +20,8 @@ jar {
   enabled = false // we do not need to generate jar file in this case
   baseName = "${jar.baseName}_${scalaBaseVersion}"
 }
+// Remove the jar artifacts to satisfy release plugin
+configurations.archives.artifacts.removeAll { it.archiveTask.is(jar) }
 
 // Shadow jar settings
 shadowJar {
@@ -62,6 +64,4 @@ shadowJar {
   }
 }
 
-artifacts {
-  archives shadowJar
-}
+build.dependsOn shadowJar
