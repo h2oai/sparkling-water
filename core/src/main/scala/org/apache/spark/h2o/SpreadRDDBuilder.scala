@@ -28,9 +28,10 @@ import scala.annotation.tailrec
   * An H2O specific builder for InvokeOnNodesRDD.
   */
 private[spark]
-class SpreadRDDBuilder(sc: SparkContext,
+class SpreadRDDBuilder(hc: H2OContext,
                        numExecutorHint: Option[Int] = None) extends {
-    val sparkConf = sc.getConf
+    val sparkConf = hc.sparkConf
+    val sc = hc.sparkContext
   } with H2OConf with org.apache.spark.Logging {
 
   val numExecutors = numH2OWorkers
