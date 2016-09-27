@@ -10,7 +10,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Get the version from the relevant file
-with open(path.join(here, 'version.txt'), encoding='utf-8') as f:
+with open(path.join(here, 'build', 'version.txt'), encoding='utf-8') as f:
     version = f.read()
 
 

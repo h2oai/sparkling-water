@@ -18,7 +18,10 @@ dependencies {
 // Create a file with version for Python dist task
 //
 task createVersionFile << {
-    File version_file = new File(getProjectDir(), "version.txt")
+    if(!getBuildDir().exists()){
+        getBuildDir().mkdir()
+    }
+    File version_file = new File(getBuildDir(), "version.txt")
     def version_txt = version.replace("-SNAPSHOT","")
     version_file.write(version_txt)
 }
@@ -77,14 +80,14 @@ or
 def copyH2OFromH2OHome(String H2O_HOME){
         copy {
             from "${H2O_HOME}/h2o-py/h2o"
-            into 'h2o'
+            into getBuildDir().absolutePath + File.separator + "h2o"
         }
 }
 
 def copyH2OFromH2OWheel(String H2O_PYTHON_WHEEL){
         copy {
             from zipTree(H2O_PYTHON_WHEEL)
-            into '.'
+            into getBuildDir().absolutePath
             include 'h2o/**'
         }
 }
@@ -107,14 +110,15 @@ task distPython(type: Exec, dependsOn: checkPythonEnv) {
             copyH2OFromH2OWheel(H2O_PYTHON_WHEEL)
         }
 
+
         copy {
             from "${configurations.compile.join(',')}"
-            into 'sparkling_water'
+            into  getBuildDir().absolutePath + File.separator + 'sparkling_water'
             rename ".*", "sparkling_water_assembly.jar"
         }
-        (new File('py/sparkling_water/__init__.py')).write("#Sparkling-water JAR holder for pySparkling module.")
+        (new File(getBuildDir(), "sparkling_water" + File.separator + "__init__.py")).write("#Sparkling-water JAR holder for pySparkling module.")
     }
-    commandLine getOsSpecificCommandLine(["python", "setup.py", "bdist_egg"])
+    commandLine getOsSpecificCommandLine(["python", "setup.py", "egg_info", "--egg-base=${getBuildDir().absolutePath}", "bdist_egg",  "--dist-dir=${getBuildDir().absolutePath+File.separator}dist", ])
 }
 
 configurations{
@@ -186,12 +190,7 @@ check.dependsOn integTestPython
 // Cleanup
 //
 task cleanPython(type: Delete) {
-    delete file("dist/"),
-            file("h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}.egg-info/"),
-            fileTree(dir: projectDir, include: '**/*.pyc'),
-            file("version.txt"),
-            file("h2o/"),
-            file("sparkling_water/")
+    delete getBuildDir()
 }
 
 //
