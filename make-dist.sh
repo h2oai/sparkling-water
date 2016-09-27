@@ -22,7 +22,7 @@ DIST_BUILD_DIR="${DIST_DIR}build/"
 cat > "$TOPDIR/demofiles.list" <<EOF
 bin/
 $(find bin -type f)
-assembly/build/libs/sparkling-water-assembly-$VERSION-all.jar
+assembly/build/libs/sparkling-water-assembly_$SCALA_VERSION-$VERSION-all.jar
 examples/README.md
 examples/scripts/chicagoCrimeSmall.script.scala
 examples/scripts/chicagoCrimeSmallShell.script.scala
