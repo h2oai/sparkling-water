@@ -49,6 +49,8 @@ trait SharedH2OConf {
   def loginConf     = sparkConf.getOption(PROP_LOGIN_CONF._1)
   def userName      = sparkConf.getOption(PROP_USER_NAME._1)
 
+  def md5skip       = sparkConf.getBoolean(PROP_MD5SKIP._1, PROP_MD5SKIP._2)
+
   def isFailOnUnsupportedSparkParamEnabled = sparkConf.getBoolean(PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._1, PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._2)
   def scalaIntDefaultNum = sparkConf.getInt(PROP_SCALA_INT_DEFAULT_NUM._1, PROP_SCALA_INT_DEFAULT_NUM._2)
   def isH2OReplEnabled = sparkConf.getBoolean(PROP_REPL_ENABLED._1, PROP_REPL_ENABLED._2)
@@ -170,6 +172,9 @@ object SharedH2OConf {
 
   /** Enable/Disable exit on unsupported Spark parameters. */
   val PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM = ("spark.ext.h2o.fail.on.unsupported.spark.param", true)
+
+  /** Skip md5 jar hash check. */
+  val PROP_MD5SKIP = ("spark.ext.h2o.md5skip", false)
 
   private[spark] def defaultLogDir: String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs"

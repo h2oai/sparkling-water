@@ -84,7 +84,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       ("-nthreads", if (conf.nthreads > 0) conf.nthreads else null))
       .filter(x => x._2 != null)
       .flatMap(x => Seq(x._1, x._2.toString)) ++ // Append single boolean options
-      Seq(("-ga_opt_out", conf.disableGA))
+      Seq(("-ga_opt_out", conf.disableGA), ("-md5skip", conf.md5skip))
         .filter(_._2).map(x => x._1)
 
 

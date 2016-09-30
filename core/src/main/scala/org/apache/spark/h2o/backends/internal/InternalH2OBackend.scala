@@ -19,12 +19,13 @@ package org.apache.spark.h2o.backends.internal
 
 import org.apache.spark.SparkEnv
 import org.apache.spark.internal.Logging
-
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.listeners.ExecutorAddNotSupportedListener
 import water.api.RestAPIManager
+import water.messaging.ExternalMessageChannel
+import water.messaging.driver.SWDriverServiceImpl
 import water.{H2O, H2OStarter}
 
 import scala.util.Random
@@ -34,6 +35,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
   override def stop(stopSparkContext: Boolean): Unit = {
     if (stopSparkContext) hc.sparkContext.stop()
+
     H2O.orderlyShutdown(1000)
     H2O.exit(0)
   }
@@ -61,6 +63,8 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
     conf
   }
+
+  private var driverService = Option.empty[SWDriverServiceImpl]
 
   /** Initialize Sparkling H2O and start H2O cloud. */
   override def init(): Array[NodeDesc] = {
@@ -113,7 +117,25 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     // Register web API for client
     RestAPIManager(hc).registerAll()
     H2O.finalizeRegistration()
+
+    // Start external messaging channel if configured
+    val messaging: String = System.getProperty("messaging.addrs")
+    if(null != messaging) {
+      driverService = Option(new SWDriverServiceImpl(hc, 0))
+      new Thread(new ExternalMessageChannel(
+        messaging,
+        driverService.get,
+        System.getProperty("messaging.topic")
+      )).start()
+    }
+
     executors
+  }
+
+  override def awaitStop(): Unit = {
+    if(driverService.nonEmpty) {
+      driverService.get.awaitStop()
+    }
   }
 
 }
