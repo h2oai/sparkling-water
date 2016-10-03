@@ -41,8 +41,6 @@ fi
 
 if [ "$EXAMPLE_MASTER" == "yarn-client" ] || [ "$EXAMPLE_MASTER" == "yarn-cluster" ]; then
 #EXAMPLE_DEPLOY_MODE does not have to be set when executing on yarn
-(
- cd $TOPDIR
  spark-submit \
  --class $EXAMPLE \
  --master $EXAMPLE_MASTER \
@@ -55,8 +53,6 @@ if [ "$EXAMPLE_MASTER" == "yarn-client" ] || [ "$EXAMPLE_MASTER" == "yarn-cluste
 )
 else
 VERBOSE=
-(
- cd $TOPDIR
  spark-submit \
  --class $EXAMPLE \
  --master $EXAMPLE_MASTER \
@@ -67,5 +63,4 @@ VERBOSE=
  $VERBOSE \
  $FAT_JAR_FILE \
  "$@"
-)
 fi

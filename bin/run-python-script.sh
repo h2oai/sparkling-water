@@ -35,8 +35,6 @@ VERBOSE=--verbose
 if [ "$EXAMPLE_MASTER" == "yarn-client" ] || [ "$EXAMPLE_MASTER" == "yarn-cluster" ]; then
 #EXAMPLE_DEPLOY_MODE does not have to be set when executing on yarn
 VERBOSE=
-(
- cd $TOPDIR
  spark-submit \
  --master $SCRIPT_MASTER \
  --driver-memory $SCRIPT_DRIVER_MEMORY \
@@ -49,8 +47,6 @@ VERBOSE=
 )
 else
 VERBOSE=
-(
- cd $TOPDIR
  spark-submit \
  --master $SCRIPT_MASTER \
  --driver-memory $SCRIPT_DRIVER_MEMORY \
@@ -61,5 +57,4 @@ VERBOSE=
  $VERBOSE \
  $SCRIPT \
  "$@"
-)
 fi
