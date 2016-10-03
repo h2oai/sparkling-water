@@ -37,7 +37,7 @@ if [ "$EXAMPLE_MASTER" == "yarn-client" ] || [ "$EXAMPLE_MASTER" == "yarn-cluste
 VERBOSE=
 (
  cd $TOPDIR
- $SPARK_HOME/bin/spark-submit \
+ spark-submit \
  --master $SCRIPT_MASTER \
  --driver-memory $SCRIPT_DRIVER_MEMORY \
  --driver-java-options "$SCRIPT_H2O_SYS_OPS" \
@@ -51,7 +51,7 @@ else
 VERBOSE=
 (
  cd $TOPDIR
- $SPARK_HOME/bin/spark-submit \
+ spark-submit \
  --master $SCRIPT_MASTER \
  --driver-memory $SCRIPT_DRIVER_MEMORY \
  --driver-java-options "$SCRIPT_H2O_SYS_OPS" \

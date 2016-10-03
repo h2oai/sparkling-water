@@ -16,12 +16,14 @@ DRIVER_MEMORY=${DRIVER_MEMORY:-2G}
 USER_MASTER=${MASTER:-$(getMasterArg "$@")}
 USER_MASTER=${USER_MASTER:-"$DEFAULT_MASTER"}
 export MASTER="$USER_MASTER"
-EXTRA_DRIVER_PROPS=$(grep "^spark.driver.extraJavaOptions" $SPARK_HOME/conf/spark-defaults.conf 2>/dev/null | sed -e 's/spark.driver.extraJavaOptions//' )
+if [ -f "$SPARK_HOME/conf/spark-defaults.conf" ]; then
+    EXTRA_DRIVER_PROPS=$(grep "^spark.driver.extraJavaOptions" $SPARK_HOME/conf/spark-defaults.conf 2>/dev/null | sed -e 's/spark.driver.extraJavaOptions//' )
+fi
 
 banner
 
 (
  cd $TOPDIR
  # If extra java properties are defined use them and append our property
- $SPARK_HOME/bin/spark-shell --jars $TOPDIR/assembly/build/libs/$FAT_JAR --driver-memory $DRIVER_MEMORY --conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS -XX:MaxPermSize=384m" "$@"
+ spark-shell --jars $FAT_JAR_FILE --driver-memory $DRIVER_MEMORY --conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS -XX:MaxPermSize=384m" "$@"
 )
