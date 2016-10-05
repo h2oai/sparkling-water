@@ -126,7 +126,7 @@ configurations{
 }
 
 artifacts {
-    eggs new File("py/dist/h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}-${version.replace("-SNAPSHOT","")}-py2.7.egg").getAbsoluteFile()
+    eggs new File(getBuildDir().absolutePath + File.separator + "dist/h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}-${version.replace("-SNAPSHOT","")}-py2.7.egg").getAbsoluteFile()
 }
 //
 // Test python against Spark cloud
