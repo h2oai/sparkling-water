@@ -43,7 +43,9 @@ dependencies {
   compile "org.scala-lang:scala-library:${scalaVersion}"
 
   // Steam RPC
-  compile "com.github.briandilley.jsonrpc4j:jsonrpc4j:1.4.6"
+  compile("com.github.briandilley.jsonrpc4j:jsonrpc4j:1.4.6") {
+      exclude(group: "com.fasterxml.jackson.core")
+  }
   compile "javax.portlet:portlet-api:2.0"
 
   // And use scalatest for Scala testing
