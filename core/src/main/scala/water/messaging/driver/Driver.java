@@ -52,7 +52,6 @@ public class Driver {
                 .setConf("spark.yarn.submit.waitAppCompletion", "false")
                 // Necessary as we'll be packaging this in a driver jar
                 .setConf("spark.ext.h2o.md5skip", "true")
-                .setConf("spark.ext.h2o.client.ip", "localhost")
                 .setConf(SparkLauncher.DRIVER_EXTRA_JAVA_OPTIONS, extraJava.toString());
 
         for(int i = 0; i < params.size(); i += 2) {
