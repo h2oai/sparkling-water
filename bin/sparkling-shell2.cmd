@@ -29,7 +29,7 @@ rem end of main script
 
 rem define functions
 :checkSparkVersion
-for /f "delims=" %%i in ( 'CMD /C %SPARK_HOME%/bin/spark-submit.cmd --version 2^>^&1 1^>NUL ^| find "version" ') do set linewithversion=%%i
+for /f "delims=" %%i in ( 'CMD /C %SPARK_HOME%/bin/spark-submit.cmd --version 2^>^&1 1^>NUL ^| findstr "version" ') do set linewithversion=%%i
 set INSTALLED_SPARK_VERSION=%linewithversion:~-5%
 
 if NOT "%INSTALLED_SPARK_VERSION%"=="%SPARK_VERSION%" (

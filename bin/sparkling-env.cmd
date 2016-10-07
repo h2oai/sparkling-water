@@ -5,13 +5,13 @@ if not defined TOPDIR (
     exit /b -1
 )
 
-rem Version of this distribution                             
-for /f "tokens=2 delims==" %%i in ('findstr /r "^version=.*$" %TOPDIR%\gradle.properties') do (@set VERSION=%%i)
-for /f "tokens=2 delims==" %%i in ('findstr /r "^h2oMajorVersion=.*$" %TOPDIR%\gradle.properties') do (@set H2O_VERSION=%%i)
-for /f "tokens=2 delims==" %%i in ('findstr /r "^h2oBuild=.*$" %TOPDIR%\gradle.properties') do (@set H2O_BUILD=%%i)
-for /f "tokens=2 delims==" %%i in ('findstr /r "^h2oMajorName=.*$" %TOPDIR%\gradle.properties') do (@set H2O_NAME=%%i)
-for /f "tokens=2 delims==" %%i in ('findstr /r "^sparkVersion=.*$" %TOPDIR%\gradle.properties') do (@set SPARK_VERSION=%%i)
-for /f "tokens=2 delims==" %%i in ('findstr /r "^sparkVersion=.*$" %TOPDIR%\gradle.properties') do (@set SCALA_PARSED_VERSION=%%i)
+rem Version of this distribution
+for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /r "^version="') do (@set VERSION=%%i)
+for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /r "^h2oMajorVersion="') do (@set H2O_VERSION=%%i)
+for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /r "^h2oBuild="') do (@set H2O_BUILD=%%i)
+for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /r "^h2oMajorName="') do (@set H2O_NAME=%%i)
+for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /r "^sparkVersion="') do (@set SPARK_VERSION=%%i)
+for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /r "^scalaBaseVersion="') do (@set SCALA_PARSED_VERSION=%%i)
 
 rem Ensure that scala version contains only major version
 for /f "tokens=1,2 delims=." %%j in ("%SCALA_PARSED_VERSION%") do (@set SCALA_VERSION=%%j.%%k)
