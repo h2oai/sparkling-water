@@ -60,9 +60,9 @@ String getSystemSparkVersion()  {
    def command
    if(isWindowsBased()){
        // In case of Windows we can't set environment variable in execute command so we set it them as part of the command
-       command = getOsSpecificCommandLine(["SET SPARK_HOME=${getSparkHome()} &", getSparkSubmitScriptPath(sparkHome), "--version DUMMY_TEXT_FOR_SPARK20"]).join(" ")
+       command = getOsSpecificCommandLine(["SET SPARK_HOME=${getSparkHome()} &", getSparkSubmitScriptPath(sparkHome), "--version"]).join(" ")
    }else{
-       command = getOsSpecificCommandLine([getSparkSubmitScriptPath(sparkHome), "--version DUMMY_TEXT_FOR_SPARK20"]).join(" ")
+       command = getOsSpecificCommandLine([getSparkSubmitScriptPath(sparkHome), "--version"]).join(" ")
    }
    def commandOutput = command.execute(commandEnvVars,null).err.text
    def response = commandOutput.readLines()
