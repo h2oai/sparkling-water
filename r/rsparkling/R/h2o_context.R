@@ -37,9 +37,9 @@ h2o_flow <- function(sc) {
 #'
 #' @param sc Object of type \code{spark_connection}.
 #' @param x A \code{spark_dataframe}.
-#'
+#' @param name The name of the H2OFrame
 #' @export
-as_h2o_frame <- function(sc, x) {
+as_h2o_frame <- function(sc, x, name=NULL) {
   # sc is not actually required since the sc is monkey-patched into the Spark DataFrame
   # it is kept as an argument for API consistency
   
@@ -47,7 +47,12 @@ as_h2o_frame <- function(sc, x) {
   x <- sparklyr::spark_dataframe(x)
 
   # Convert the Spark DataFrame to an H2OFrame
-  jhf <- sparklyr::invoke(h2o_context(x), "asH2OFrame", x)
+  if(is.null(name)){
+    jhf <- sparklyr::invoke(h2o_context(x), "asH2OFrame", x)
+  }else{
+    jhf <- sparklyr::invoke(h2o_context(x), "asH2OFrame", x, name)
+  }
+  
   key <- sparklyr::invoke(sparklyr::invoke(jhf, "key"), "toString")
   h2o::h2o.getFrame(key)
 }
