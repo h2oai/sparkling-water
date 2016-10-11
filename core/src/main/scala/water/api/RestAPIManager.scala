@@ -21,6 +21,7 @@ import java.util.ServiceLoader
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
+import org.apache.spark.repl.SparkIMain
 import water.api.DataFrames.DataFramesHandler
 import water.api.H2OFrames.H2OFramesHandler
 import water.api.RDDs.RDDsHandler
@@ -54,9 +55,20 @@ object RestAPIManager {
 private object CoreRestApi extends RestApi {
 
   def register(h2oContext: H2OContext): Unit = {
-    if(h2oContext.getConf.isH2OReplEnabled){
+
+    // Workaround for [SW-132]
+    val doEnableRepl = h2oContext.getConf.isH2OReplEnabled && {
+      try {
+        classOf[SparkIMain].getDeclaredField("classServer")
+        true
+      } catch {
+        case e: NoSuchFieldException => false
+      }
+    }
+    if(doEnableRepl){
       registerScalaIntEndp(h2oContext.sparkContext, h2oContext)
     }
+    
     registerDataFramesEndp(h2oContext.sparkContext, h2oContext)
     registerH2OFramesEndp(h2oContext.sparkContext, h2oContext)
     registerRDDsEndp(h2oContext.sparkContext, h2oContext)
