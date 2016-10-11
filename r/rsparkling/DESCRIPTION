@@ -5,6 +5,8 @@ Authors@R: c(
   person("JJ", "Allaire", role = c("aut"), email = "jj@rstudio.com"),
   person("Erin", "LeDell", role = c("aut", "cre"), email = "erin@h2o.ai"),
   person("Michal", "Malohlava", role = c("aut"), email = "michal@h2o.ai"),
+  person("Navdeep", "Gill", role = c("aut"), email = "navdeep@h2o.ai"),
+  person("Jakub", "Hava", role = c("aut"), email = "jakub@h2o.ai"),
   person("RStudio", role = c("cph")),
   person("H2O.ai", role = c("cph")))
 Depends:
