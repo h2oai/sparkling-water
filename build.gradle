@@ -55,6 +55,10 @@ ext {
     pythonProjects = [
       project(':sparkling-water-py')
     ]
+    // R projects
+    rProjects = [
+            project(':sparkling-water-r')
+    ]
 
     defaultScalaBaseVersion = '2.11'
     supportedScalaBaseVersions = ['2.10' : '2.10.6',
@@ -118,6 +122,10 @@ configure(subprojects) { project ->
     }
     if (project in pythonProjects) {
       apply from: "$rootDir/gradle/python.gradle"
+    }
+
+    if (project in rProjects) {
+        apply from: "$rootDir/gradle/r.gradle"
     }
 
     // All subprojects needs Spark support
