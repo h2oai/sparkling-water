@@ -44,9 +44,9 @@ setup(
     keywords='machine learning, data mining, statistical analysis, modeling, big data, distributed, parallel',
 
 
-    package_dir={ 'pysparkling' : 'pysparkling', 'h2o' : 'h2o', 'sparkling_water':'sparkling_water'},
+    package_dir={ 'pysparkling' : 'pysparkling', 'h2o' : 'build/h2o', 'sparkling_water':'build/sparkling_water'},
     # find python packages starting in the current directory
-    packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
+    packages=find_packages(exclude=['tests*'])+find_packages(where="build"),
 
     # run-time dependencies
     install_requires=['six','future', 'requests', 'tabulate'],
