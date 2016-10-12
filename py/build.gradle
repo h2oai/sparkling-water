@@ -36,9 +36,11 @@ def h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h
 //
 def preparePythonEnv(environment) {
     def SPARK_HOME = ext.sparkHome
+
+    def py4jDir = SPARK_HOME + File.separator + "python" + File.separator + "lib"
+    def py4jfile = new FileNameByRegexFinder().getFileNames(py4jDir, "py4j-.*-src.zip").get(0)
     if (SPARK_HOME != null) {
-        environment['PYTHONPATH'] = SPARK_HOME + File.separator + "python" + File.pathSeparator +
-                                    SPARK_HOME + File.separator + "python" + File.separator + "lib" + File.separator + "py4j-0.10.1-src.zip" +
+        environment['PYTHONPATH'] = SPARK_HOME + File.separator + "python" + File.pathSeparator + py4jfile
                                     File.pathSeparator + environment['PYTHONPATH']
     }
 }
