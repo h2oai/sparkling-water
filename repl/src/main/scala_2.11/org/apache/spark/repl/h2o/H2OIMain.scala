@@ -47,10 +47,10 @@ object H2OIMain {
   private def initialize(sc: SparkContext): Unit = {
 
     if (Main.interp != null) {
-      //application has been started using SparkSubmit script, reuse the classloader
+      //application has been started using SparkShell script, reuse the classloader
       interpreterClassloader = new InterpreterClassLoader(Main.interp.intp.classLoader)
     } else {
-      //application hasn't been started using SparkSubmit
+      //application hasn't been started using SparkShell
       interpreterClassloader = new InterpreterClassLoader()
     }
     setClassLoaderToSerializers(interpreterClassloader)
