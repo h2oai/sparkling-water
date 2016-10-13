@@ -30,7 +30,7 @@ class InterpreterClassLoader(val mainClassLoader: Option[ClassLoader]) extends C
   override def loadClass(name: String): Class[_] = {
     if (name.startsWith("intp_id")) {
       val intp_id = new Scanner(name).useDelimiter("\\D+").nextInt()
-      H2OIMain.existingInterpreters.get(intp_id).get.classLoader.loadClass(name)
+      H2OIMain.existingInterpreters(intp_id).classLoader.loadClass(name)
     } else if (mainClassLoader.isDefined) {
       mainClassLoader.get.loadClass(name)
     } else {
