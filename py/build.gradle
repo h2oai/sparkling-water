@@ -36,7 +36,6 @@ def h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h
 //
 def preparePythonEnv(environment) {
     def SPARK_HOME = ext.sparkHome
-
     def py4jDir = SPARK_HOME + File.separator + "python" + File.separator + "lib"
     def py4jfile = new FileNameByRegexFinder().getFileNames(py4jDir, "py4j-.*-src.zip").get(0)
     if (SPARK_HOME != null) {
@@ -97,8 +96,8 @@ def copyH2OFromH2OWheel(String H2O_PYTHON_WHEEL){
 // Make PySparkling distribution egg package
 //
 task distPython(type: Exec, dependsOn: checkPythonEnv) {
-    preparePythonEnv(environment)
     doFirst {
+        preparePythonEnv(environment)
         def H2O_HOME = System.getenv("H2O_HOME")
         def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
 
@@ -133,7 +132,9 @@ artifacts {
 // Test python against Spark cloud
 //
 task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
-    preparePythonEnv(environment)
+    doFirst{
+        preparePythonEnv(environment)
+    }
     // add PySparkling egg on PYTHONPATH so unittests can see all the modules within this egg file
     environment['PYTHONPATH'] = configurations.eggs.artifacts.file.join(File.separator) +  File.pathSeparator + environment['PYTHONPATH']
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
@@ -145,7 +146,9 @@ task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
 // Run python integration tests
 //
 task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
-    preparePythonEnv(environment)
+    doFirst{
+        preparePythonEnv(environment)
+    }
     def testEnv = detectEnvironment()
 
     // Pass references to libraries to test launcher
