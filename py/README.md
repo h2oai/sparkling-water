@@ -1,19 +1,23 @@
-PySparkling and Spark Version
-=============================
-There exist multiple PySparkling packages, each is intended to be used with different Spark version.
+# Installation
 
- - h2o_pysparkling_1.6 - for Spark 1.6.x
- - h2o_pysparkling_1.5 - for Spark 1.5.x
- - h2o_pysparkling_1.4 - for Spark 1.4.x
+PySparkling is a Python library for Sparkling Water. Users can start H2O services on a Spark cluster using the Python API.
 
-So for example, to install PySparkling for Spark 1.6, the command would look like:
+## PySparkling and Spark Version
 
-.. code-block:: bash
+Multiple PySparkling packages are available, one for each major Spark release.
 
-    pip install h2o_pysparkling_1.6
+ - [h2o_pysparkling_2.0](https://pypi.python.org/pypi/h2o_pysparkling_2.0) - for Spark 2.0.x
+ - [h2o_pysparkling_1.6](https://pypi.python.org/pypi/h2o_pysparkling_1.6) - for Spark 1.6.x
+ - [h2o_pysparkling_1.5](https://pypi.python.org/pypi/h2o_pysparkling_1.5) - for Spark 1.5.x
+ - [h2o_pysparkling_1.4](https://pypi.python.org/pypi/h2o_pysparkling_1.4) - for Spark 1.4.x
 
-Setup and Installation
-======================
+To install PySparkling for Spark 2.0, the command would look like:
+
+```bash
+    pip install h2o_pysparkling_2.0
+```
+
+## Setup and Installation
 
 Prerequisites:
     
@@ -24,13 +28,13 @@ For windows users, please grab a .whl from http://www.lfd.uci.edu/~gohlke/python
 
 In order to use PySparkling, it requires the following runtime python dependencies to be available on the system: *requests*, *tabulate*, *six* and *future* modules, all of which are available on PyPI:
 
-.. code-block:: bash
+```bash
+  pip install requests
+  pip install tabulate
+  pip install six
+  pip install future
+```
 
-  $ pip install requests
-  $ pip install tabulate
-  $ pip install six
-  $ pip install future
-  
 The required packages are installed automatically in case when PySparkling is installed from PyPI.
 
 
@@ -42,33 +46,30 @@ Prepare the environment
 -----------------------
 1. Either clone and build Sparkling Water project
 
-.. code-block:: bash
-
+```bash
     git clone http://github.com/h2oai/sparkling-water
     cd sparkling-water
     ./gradlew build -x check
+```
 
+or download and unpack the sparkling water release from the [download section](
+<http://www.h2o.ai/download/sparkling-water/choose>).
 
-or download and unpack sparkling water release from  `here
-<http://www.h2o.ai/download/sparkling-water/choose>`_.
+2. Configure the location of the Spark distribution and cluster:
 
-2. Configure the location of Spark distribution and cluster:
-
-.. code-block:: bash
-
+```bash
     export SPARK_HOME="/path/to/spark/installation"
     export MASTER='local[*]'
-
+```
 
 Run PySparkling interactive shell
 ---------------------------------
 
 1. Ensure you are in the Sparkling Water project directory and run PySparkling shell:
 
-.. code-block:: bash
-
+```bash
     bin/pysparkling
-
+```
 
 The *pysparkling* shell accepts common *pyspark* arguments.
 
@@ -79,34 +80,30 @@ For running on YARN and other supported platforms please see `Running Sparkling 
 
 2. Initialize H2OContext
 
-.. code:: python
-
+```python
       from pysparkling import *
       import h2o
       hc = H2OContext.getOrCreate(sc)
+```
 
+## Run IPython Notebook with PySparkling
 
-Run IPython Notebook with PySparkling
--------------------------------------
-.. code-block:: bash
-
+```bash
     PYSPARK_DRIVER_PYTHON="ipython" PYSPARK_DRIVER_PYTHON_OPTS="notebook" bin/pysparkling
-
+```
 
 Run IPython with PySparkling
 ----------------------------
-.. code-block:: bash
-
+```bash
     PYSPARK_DRIVER_PYTHON="ipython" bin/pysparkling
-
+```
 
 Use PySparkling as Spark Package
 --------------------------------
-.. code-block:: bash
-
+```bash
     export SPARKLING_EGG=$(ls -t py/dist/h2o_pysparkling*.egg | head -1)
 	$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.11:2.0.0 --py-files $SPARKLING_EGG ./py/examples/scripts/ChicagoCrimeDemo.py
-
+```
 
 Use PySparkling in Databricks Cloud
 -----------------------------------
