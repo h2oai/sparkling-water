@@ -8,6 +8,12 @@ idea {
     }
 }
 
+ext {
+    FS = File.separator
+    FPS = File.pathSeparator
+}
+
+
 description = "PySparkling - Sparkling-Water Python Package"
 
 dependencies {
@@ -36,11 +42,10 @@ def h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h
 //
 def preparePythonEnv(environment) {
     def SPARK_HOME = ext.sparkHome
-    def py4jDir = SPARK_HOME + File.separator + "python" + File.separator + "lib"
-    def py4jfile = new FileNameByRegexFinder().getFileNames(py4jDir, "py4j-.*-src.zip").get(0)
+    def py4jDir = "${SPARK_HOME}${FS}python${FS}lib"
+    def py4jfile = fileTree(dir: py4jDir, include: 'py4j-*-src.zip').singleFile
     if (SPARK_HOME != null) {
-        environment['PYTHONPATH'] = SPARK_HOME + File.separator + "python" + File.pathSeparator + py4jfile
-                                    File.pathSeparator + environment['PYTHONPATH']
+        environment['PYTHONPATH'] = "${SPARK_HOME}${FS}python${FPS}${py4jfile}${FPS}${environment['PYTHONPATH']}"
     }
 }
 
@@ -80,14 +85,14 @@ or
 def copyH2OFromH2OHome(String H2O_HOME){
         copy {
             from "${H2O_HOME}/h2o-py/h2o"
-            into getBuildDir().absolutePath + File.separator + "h2o"
+            into file("${project.buildDir}/h2o")
         }
 }
 
 def copyH2OFromH2OWheel(String H2O_PYTHON_WHEEL){
         copy {
             from zipTree(H2O_PYTHON_WHEEL)
-            into getBuildDir().absolutePath
+            into project.buildDir
             include 'h2o/**'
         }
 }
@@ -101,24 +106,24 @@ task distPython(type: Exec, dependsOn: checkPythonEnv) {
         def H2O_HOME = System.getenv("H2O_HOME")
         def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
 
-        if(H2O_HOME !=null && H2O_PYTHON_WHEEL !=null){
+        if (H2O_HOME !=null && H2O_PYTHON_WHEEL !=null) {
             // if both properties are set, give precedence to H2O_HOME
             copyH2OFromH2OHome(H2O_HOME)
-        }else if(H2O_HOME!=null){
+        } else if (H2O_HOME!=null) {
             copyH2OFromH2OHome(H2O_HOME)
-        }else if(H2O_PYTHON_WHEEL!=null){
+        } else if (H2O_PYTHON_WHEEL!=null) {
             copyH2OFromH2OWheel(H2O_PYTHON_WHEEL)
         }
 
-
         copy {
             from "${configurations.compile.join(',')}"
-            into  getBuildDir().absolutePath + File.separator + 'sparkling_water'
+            into  file("${project.buildDir}/sparkling_water")
             rename ".*", "sparkling_water_assembly.jar"
         }
-        (new File(getBuildDir(), "sparkling_water" + File.separator + "__init__.py")).write("#Sparkling-water JAR holder for pySparkling module.")
+        // Save comment into module file
+        file("${project.buildDir}${FS}sparkling_water${FS}__init__.py").write("#Sparkling-water JAR holder for pySparkling module.")
     }
-    commandLine getOsSpecificCommandLine(["python", "setup.py", "egg_info", "--egg-base=${getBuildDir().absolutePath}", "bdist_egg",  "--dist-dir=${getBuildDir().absolutePath+File.separator}dist", ])
+    commandLine getOsSpecificCommandLine(["python", "setup.py", "egg_info", "--egg-base=${buildDir.absolutePath}", "bdist_egg",  "--dist-dir=${buildDir.absolutePath}${FS}dist", ])
 }
 
 configurations{
@@ -126,17 +131,18 @@ configurations{
 }
 
 artifacts {
-    eggs new File(getBuildDir().absolutePath + File.separator + "dist/h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}-${version.replace("-SNAPSHOT","")}-py2.7.egg").getAbsoluteFile()
+    eggs file("${project.buildDir}/dist/h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}-${version.replace("-SNAPSHOT","")}-py2.7.egg").getAbsoluteFile()
 }
+
 //
 // Test python against Spark cloud
 //
 task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
-    doFirst{
+    doFirst {
         preparePythonEnv(environment)
     }
     // add PySparkling egg on PYTHONPATH so unittests can see all the modules within this egg file
-    environment['PYTHONPATH'] = configurations.eggs.artifacts.file.join(File.separator) +  File.pathSeparator + environment['PYTHONPATH']
+    environment['PYTHONPATH'] = configurations.eggs.artifacts.file.join(File.pathSeparator) +  File.pathSeparator + environment['PYTHONPATH']
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
     environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
     commandLine getOsSpecificCommandLine(["python", "tests/tests_unit.py"])
@@ -152,7 +158,7 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
     def testEnv = detectEnvironment()
 
     // Pass references to libraries to test launcher
-    environment["sparkling.pysparkling.egg"] = configurations.eggs.artifacts.file.join(File.separator)
+    environment["sparkling.pysparkling.egg"] = configurations.eggs.artifacts.file.join(File.pathSeparator)
     environment["spark.testing"] = "true"
     environment["spark.test.home"] = "${sparkHome}"
     environment["sparkling.test.hdp.version"] = "${hdpVersion}"
