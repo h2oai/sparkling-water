@@ -42,7 +42,7 @@ h2o_flow <- function(sc) {
 as_h2o_frame <- function(sc, x) {
   # sc is not actually required since the sc is monkey-patched into the Spark DataFrame
   # it is kept as an argument for API consistency
-  
+
   # Ensure we are dealing with a Spark DataFrame (might be e.g. a tbl)
   x <- sparklyr::spark_dataframe(x)
 
@@ -56,11 +56,12 @@ as_h2o_frame <- function(sc, x) {
 #'
 #' @param sc Object of type \code{spark_connection}.
 #' @param x An \code{H2OFrame}.
+#' @param name The name to assign the data frame in Spark.
 #'
 #' @export
-as_spark_dataframe <- function(sc, x) {
+as_spark_dataframe <- function(sc, x, name = deparse(substitute(x))) {
   # TO DO: ensure we are dealing with a H2OFrame
-  
+
   # Get SQLContext
   sqlContext <- sparklyr::invoke_static(sc, "org.apache.spark.sql.SQLContext", "getOrCreate", sparklyr::spark_context(sc))
   # Get H2OContext
@@ -68,5 +69,5 @@ as_spark_dataframe <- function(sc, x) {
   # Invoke H2OContext#asDataFrame method on the backend
   spark_df <- sparklyr::invoke(hc, "asDataFrame", h2o::h2o.getId(x), TRUE, sqlContext)
   # Register returned spark_jobj as a table for dplyr
-  sparklyr::sdf_register(spark_df)
+  sparklyr::sdf_register(spark_df, name = name)
 }
