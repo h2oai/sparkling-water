@@ -9,10 +9,11 @@ Authors@R: c(
   person("Jakub", "Hava", role = c("aut"), email = "jakub@h2o.ai"),
   person("RStudio", role = c("cph")),
   person("H2O.ai", role = c("cph")))
-Depends:
+Imports:
     utils,
     sparklyr (>= 0.3),
     h2o (>= 3.8.2.9)
+Suggests: dplyr, testthat
 Description: An extension package for sparklyr that provides an R interface to
     H2O Sparkling Water machine learning library.
 License: file LICENSE
