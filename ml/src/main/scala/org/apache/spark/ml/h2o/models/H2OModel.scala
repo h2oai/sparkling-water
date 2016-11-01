@@ -18,13 +18,13 @@ package org.apache.spark.ml.h2o.models
 
 import java.io.File
 
-import hex.Model
+import hex.{Model, ModelCategory}
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
-import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
+import org.apache.spark.sql.types.{DataTypes, DoubleType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
 import water.support.ModelSerializationSupport
 
@@ -41,9 +41,20 @@ abstract class H2OModel[S <: H2OModel[S, M],
   override def copy(extra: ParamMap): S = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val frame: H2OFrame = h2oContext.asH2OFrame(dataset.toDF())
+    val inpDF: DataFrame = dataset.toDF()
+    val frame: H2OFrame = h2oContext.asH2OFrame(inpDF)
+    score(frame)
+  }
+
+  def score(frame: H2OFrame): DataFrame = {
     val prediction = model.score(frame)
-    h2oContext.asDataFrame(prediction)(sqlContext)
+    prediction.add(frame.names(), frame.vecs())
+    val predDF = h2oContext.asDataFrame(prediction)(sqlContext)
+    model._output.getModelCategory match {
+      case ModelCategory.Multinomial | ModelCategory.Binomial | ModelCategory.Regression =>
+        predDF.withColumn("predict", predDF.col("predict").cast(DataTypes.DoubleType))
+      case _ => predDF
+    }
   }
 
   @DeveloperApi
