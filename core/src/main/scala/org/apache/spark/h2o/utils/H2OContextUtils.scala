@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.utils
 
+import org.apache.spark.h2o.WrongSparkVersion
 import org.apache.spark.internal.Logging
 import org.apache.spark.SparkContext
 import language.postfixOps
@@ -68,10 +69,10 @@ private[spark] trait H2OContextUtils extends Logging{
     val stream = getClass.getResourceAsStream(VERSION_FILE)
     
     stream match {
-      case null => s"Unknown spark version: $VERSION_FILE missing"
-      case s =>
+      case null => throw new WrongSparkVersion(s"Unknown spark version: $VERSION_FILE missing")
+      case s => try {
         val version = scala.io.Source.fromInputStream(s).mkString
-        
+
         if (version.count('.'==) <= 1) {
           // e.g., 1.6 or "new"
           version
@@ -79,6 +80,9 @@ private[spark] trait H2OContextUtils extends Logging{
           // 1.4
           version.substring(0, version.lastIndexOf('.'))
         }
+      } catch {
+        case x: Exception => throw new WrongSparkVersion(s"Failed to read spark version from  $VERSION_FILE: ${x.getMessage}")
+      }
     }
     
   }
