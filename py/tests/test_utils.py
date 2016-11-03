@@ -62,7 +62,7 @@ def run_tests(cases, file_name=None):
 
         # Print output to console without running the tests again
         with open(reports_file, 'r') as fin:
-            print fin.read()
+            print(fin.read())
     else:
         # Run tests and print to console
         result = unittest.TextTestRunner(verbosity=2).run(testsuite)
@@ -75,5 +75,5 @@ def get_env_org_fail(prop_name, fail_msg):
     try:
         return os.environ[prop_name]
     except KeyError:
-        print fail_msg
+        print(fail_msg)
         sys.exit(1)

@@ -151,7 +151,7 @@ class H2OContext(object):
         return ""
 
     def show(self):
-        print self
+        print(self)
 
     def get_conf(self):
         return self._conf
