@@ -1,0 +1,23 @@
+// Setup test environment for Spark
+test {
+    // Test environment
+    systemProperty "spark.testing", "true"
+    systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-test/nodes")
+    systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-test/client")
+
+    // Run with assertions ON
+    enableAssertions = true
+
+    // For a new JVM for each test class
+    forkEvery = 1
+
+    // Increase heap size
+    maxHeapSize = "4g"
+
+    // Increase PermGen
+    jvmArgs '-XX:MaxPermSize=384m'
+
+    // Working dir will be root project
+    workingDir = rootDir
+//    testLogging.showStandardStreams = true
+}
