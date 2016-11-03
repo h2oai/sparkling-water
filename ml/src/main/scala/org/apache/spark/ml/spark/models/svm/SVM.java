@@ -172,62 +172,67 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
 
             // The model to be built
             SVMModel model = new SVMModel(dest(), _parms, new SVMModel.SVMOutput(SVM.this));
-            model.delete_and_lock(_job);
+            try {
+                model.delete_and_lock(_job);
 
-            RDD<LabeledPoint> training = getTrainingData(
-                    _train,
-                    _parms._response_column,
-                    model._output.nfeatures()
-            );
-            training.cache();
+                RDD<LabeledPoint> training = getTrainingData(
+                        _train,
+                        _parms._response_column,
+                        model._output.nfeatures()
+                );
+                training.cache();
 
-            SVMWithSGD svm = new SVMWithSGD();
-            svm.setIntercept(_parms._add_intercept);
+                SVMWithSGD svm = new SVMWithSGD();
+                svm.setIntercept(_parms._add_intercept);
 
-            svm.optimizer().setNumIterations(_parms._max_iterations);
+                svm.optimizer().setNumIterations(_parms._max_iterations);
 
-            svm.optimizer().setStepSize(_parms._step_size);
-            svm.optimizer().setRegParam(_parms._reg_param);
-            svm.optimizer().setMiniBatchFraction(_parms._mini_batch_fraction);
-            svm.optimizer().setConvergenceTol(_parms._convergence_tol);
-            svm.optimizer().setGradient(_parms._gradient.get());
-            svm.optimizer().setUpdater(_parms._updater.get());
+                svm.optimizer().setStepSize(_parms._step_size);
+                svm.optimizer().setRegParam(_parms._reg_param);
+                svm.optimizer().setMiniBatchFraction(_parms._mini_batch_fraction);
+                svm.optimizer().setConvergenceTol(_parms._convergence_tol);
+                svm.optimizer().setGradient(_parms._gradient.get());
+                svm.optimizer().setUpdater(_parms._updater.get());
 
-            ProgressListener progressBar = new ProgressListener(sc,
-                                                                _job,
-                                                                RDDInfo.fromRdd(training),
-                                                                iterableAsScalaIterable(Arrays.asList("treeAggregate")));
-            
-            sc.addSparkListener(progressBar);
+                ProgressListener progressBar = new ProgressListener(sc,
+                        _job,
+                        RDDInfo.fromRdd(training),
+                        iterableAsScalaIterable(Arrays.asList("treeAggregate")));
 
-            final org.apache.spark.mllib.classification.SVMModel trainedModel =
-                    (null == _parms._initial_weights) ?
-                            svm.run(training) :
-                            svm.run(training, vec2vec(_parms.initialWeights().vecs()));
-            training.unpersist(false);
+                sc.addSparkListener(progressBar);
+
+                final org.apache.spark.mllib.classification.SVMModel trainedModel =
+                        (null == _parms._initial_weights) ?
+                                svm.run(training) :
+                                svm.run(training, vec2vec(_parms.initialWeights().vecs()));
+                training.unpersist(false);
 
 
-            sc.listenerBus().listeners().remove(progressBar);
+                sc.listenerBus().listeners().remove(progressBar);
 
-            model._output.weights_$eq(trainedModel.weights().toArray());
-            model._output.iterations_$eq(_parms._max_iterations);
-            model._output.interceptor_$eq(trainedModel.intercept());
+                model._output.weights_$eq(trainedModel.weights().toArray());
+                model._output.iterations_$eq(_parms._max_iterations);
+                model._output.interceptor_$eq(trainedModel.intercept());
 
-            Frame train = DKV.<Frame>getGet(_parms._train);
-            model.score(train).delete();
-            model._output._training_metrics = ModelMetrics.getFromDKV(model, train);
+                Frame train = DKV.<Frame>getGet(_parms._train);
+                model.score(train).delete();
+                model._output._training_metrics = ModelMetrics.getFromDKV(model, train);
 
-            model.update(_job);
-
-            if (_valid != null) {
-                model.score(_parms.valid()).delete();
-                model._output._validation_metrics = ModelMetrics.getFromDKV(model, _parms.valid());
                 model.update(_job);
+
+                if (_valid != null) {
+                    model.score(_parms.valid()).delete();
+                    model._output._validation_metrics =
+                            ModelMetrics.getFromDKV(model, _parms.valid());
+                    model.update(_job);
+                }
+
+                model._output.interceptor_$eq(trainedModel.intercept());
+
+                Log.info(model._output._model_summary);
+            } finally {
+                model.unlock(_job);
             }
-
-            model._output.interceptor_$eq(trainedModel.intercept());
-
-            Log.info(model._output._model_summary);
 
         }
 
