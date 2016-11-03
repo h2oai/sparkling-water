@@ -33,8 +33,8 @@ object SVMModel {
 }
 
 class SVMModel private[svm](val selfKey: Key[SVMModel],
-                              val parms: SVMParameters,
-                              val output: SVMModel.SVMOutput)
+                            val parms: SVMParameters,
+                            val output: SVMModel.SVMOutput)
   extends Model[SVMModel, SVMParameters, SVMModel.SVMOutput](selfKey, parms, output) {
 
   override def makeMetricBuilder(domain: Array[String]): MetricBuilderSupervised[Nothing] =

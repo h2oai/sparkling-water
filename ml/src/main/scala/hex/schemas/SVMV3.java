@@ -72,7 +72,6 @@ public class SVMV3 extends ModelBuilderSchema<SVM, SVMV3, SVMV3.SVMParametersV3>
         @API(help="Set mini batch fraction", direction=API.Direction.INPUT, gridable = true, level = API.Level.expert)
         public double mini_batch_fraction = 1.0;
 
-        // TODO what exactly does INOUT do?? Should this be only INPUT?
         @API(help="Set threshold that separates positive predictions from negative ones. NaN for raw prediction.", direction=API.Direction.INOUT, gridable = true, level = API.Level.expert)
         public double threshold = 0.0;
 
