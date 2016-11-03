@@ -219,4 +219,4 @@ class H2OConf(object):
         return ""
 
     def show(self):
-        print self
+        print(self)
