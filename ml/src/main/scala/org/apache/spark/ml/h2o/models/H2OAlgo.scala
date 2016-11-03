@@ -52,7 +52,8 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
     val key = if(isSet(trainKey)){
       $(trainKey)
     } else {
-      h2oContext.toH2OFrameKey(dataset.toDF())
+      // TODO this will have to be split, not all algos will need labels
+      h2oContext.toH2OFrameKey(dataset.select($(labelCol), $(featuresCol)))
     }
     setTrainKey(key)
     allStringVecToCategorical(key.get())
@@ -79,6 +80,10 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
   def setTrainKey(value: String) = set(trainKey,Key.make[Frame](value)){getParams._train = Key.make[Frame](value)}
   /** @group setParam */
   def setTrainKey(value: Key[Frame]) = set(trainKey,value){getParams._train = value}
+  /** @group setParam */
+  def setFeaturesCol(value: String) = set(featuresCol, value){}
+  /** @group setParam */
+  def setLabelCol(value: String) = set(labelCol, value){getParams._response_column = value}
 
   def allStringVecToCategorical(hf: H2OFrame): H2OFrame = {
     hf.vecs().indices

@@ -28,8 +28,10 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class H2ODeepLearningTest extends FunSuite with SharedSparkTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf
-    = defaultSparkConf)
+  override def createSparkContext: SparkContext = new SparkContext(
+    "local[*]", "test-local",
+    conf = defaultSparkConf
+  )
 
   test("Basic DL test") {
     val h2oContext = H2OContext.getOrCreate(sc)
@@ -46,14 +48,12 @@ class H2ODeepLearningTest extends FunSuite with SharedSparkTestContext {
 
     val airlinesData = h2oContext.asH2OFrame(inp)
 
-    println(airlinesData._names)
-
     airlinesData.replace(airlinesData.numCols() - 1, airlinesData.lastVec().toCategoricalVec)
     airlinesData.update()
 
     val slModel: H2ODeepLearningModel = new H2ODeepLearning()(hc, sqlContext)
       .setTrainKey(airlinesData.key)
-      .setResponseColumn("value16")
+      .setLabelCol("value16")
       .setEpochs(10)
       .fit(null)
 
