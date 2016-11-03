@@ -15,7 +15,9 @@
 # devtools::install_github("h2oai/sparkling-water", subdir = "/r/rsparkling")
 # devtools::install_github("rstudio/sparklyr")
 
-library(rsparkling) 
+library(sparklyr)
+library(h2o)
+library(rsparkling)
 
 # If you don't already have it installed, Spark can be installed via the sparklyr command:
 spark_install(version = "2.0.0")
@@ -52,10 +54,10 @@ nrow(splits[[2]])  # nrows in test
 # And perform 3-fold cross-validation via `nfolds`
 y <- "mpg"
 x <- setdiff(names(mtcars_hf), y)
-fit <- h2o.gbm(x = x, 
-               y = y, 
-               training_frame = splits[[1]], 
-               nfolds = 3, 
+fit <- h2o.gbm(x = x,
+               y = y,
+               training_frame = splits[[1]],
+               nfolds = 3,
                min_rows = 1,
                seed = 1)
 
@@ -65,8 +67,8 @@ h2o.performance(fit, xval = TRUE)
 # As a comparison, we can evaluate performance on a test set
 h2o.performance(fit, newdata = splits[[2]])
 
-# Note: Since this is a very small data problem, 
-# we see a reasonable difference between CV and 
+# Note: Since this is a very small data problem,
+# we see a reasonable difference between CV and
 # test set metrics
 
 
@@ -85,6 +87,6 @@ pred_sdf
 spark_log(sc, n = 20)
 
 
-# Now we disconnect from Spark, this will result in the H2OContext being stopped as 
+# Now we disconnect from Spark, this will result in the H2OContext being stopped as
 # well since it's owned by the spark shell process used by our Spark connection:
 spark_disconnect(sc)
