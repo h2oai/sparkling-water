@@ -1,8 +1,10 @@
 # Test of transformations from dataframe to h2o frame and from h2o frame back to dataframe
 
 library(testthat)
-library(rsparkling)
 library(dplyr)
+library(sparklyr)
+library(h2o)
+library(rsparkling)
 
 # Testing passing name to a dataframe
 test_h2o_name = function(){
