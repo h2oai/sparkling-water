@@ -46,7 +46,7 @@ class SVMModelTest extends FunSuite with SharedSparkTestContext {
     }).cache()
     val trainDF = trainRDD.toDF("Label", "Vector")
 
-    val trainFrame = hc.asH2OFrame(trainDF, "bubbles")
+    val trainFrame = h2oContext.asH2OFrame(trainDF, "bubbles")
     trainFrame.replace(0, trainFrame.vec(0).toCategoricalVec).remove()
 
     val initialWeights = Vectors.dense(1, 1, 1, 1, 1)

@@ -1,6 +1,7 @@
 package org.apache.spark.ml.spark.models.svm;
 
 import hex.Model;
+import org.apache.spark.ml.spark.models.MissingValuesHandling;
 import water.Key;
 import water.fvec.Frame;
 
@@ -35,6 +36,7 @@ public class SVMParameters extends Model.Parameters {
     public Updater _updater = Updater.L2;
     public Gradient _gradient = Gradient.Hinge;
     public Key<Frame> _initial_weights = null;
+    public MissingValuesHandling _missing_values_handling = MissingValuesHandling.MeanImputation;
 
     public void validate(SVM svm) {
         if (_max_iterations < 0 || _max_iterations > 1e6) {
