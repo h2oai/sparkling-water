@@ -1,0 +1,30 @@
+apply plugin: 'base'
+
+configurations {
+    compile {
+    }
+
+    runtime {
+        extendsFrom compile
+    }
+
+    test {
+        extendsFrom compile
+    }
+
+    testRuntime {
+        extendsFrom test
+    }
+}
+
+task compile(group: "Build", description: "Compile this project")
+
+task test(group: "Verification", description: "Test this project")
+
+task uploadArchives(group: "Release", description: "Upload all archives")
+
+build.dependsOn compile
+build.dependsOn check
+
+check.dependsOn test
+

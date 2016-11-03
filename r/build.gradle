@@ -1,0 +1,15 @@
+apply from: "$rootDir/gradle/utils.gradle"
+
+description = "RSparkling - Sparkling-Water R Package"
+
+//
+// Test R against Spark cloud
+//
+task testR(type: Exec) {
+    workingDir 'rsparkling/tests/'
+
+    commandLine 'python', 'run.py'
+
+}
+
+test.dependsOn testR

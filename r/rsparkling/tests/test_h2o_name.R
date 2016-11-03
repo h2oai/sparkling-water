@@ -1,5 +1,4 @@
 # Test of transformations from dataframe to h2o frame and from h2o frame back to dataframe
-
 library(testthat)
 library(rsparkling)
 library(dplyr)
@@ -18,5 +17,5 @@ test_h2o_name = function(){
 #Create a spark connection
 sc <- spark_connect(master = "local")
 
-#Run tests
+#Run test
 test_h2o_name()

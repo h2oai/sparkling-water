@@ -26,7 +26,7 @@ cache:
         - $HOME/.gradle/wrapper/
         - $SPARK_HOME
 
-script: ./gradlew clean build -x integTest -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME -PscalaBaseVersion=$SCALA_BASE_VERSION
+script: ./gradlew clean build -x integTest -x :sparkling-water-py:build -x :sparkling-water-r:build  -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME -PscalaBaseVersion=$SCALA_BASE_VERSION
 
 # To solve BufferOverflow on OpenJDK7 we setup short hostname (<64characters)
 # See:
