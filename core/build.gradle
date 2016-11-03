@@ -1,6 +1,7 @@
 description = "Sparkling Water Core"
 
 apply from: "$rootDir/gradle/utils.gradle"
+apply from: "$rootDir/gradle/sparkTest.gradle"
 
 dependencies {
   // Required for h2o-app (we need UI)
@@ -52,30 +53,6 @@ dependencies {
 
   // Put Spark Assembly on runtime path
   integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar' )
-}
-
-// Setup test environment for Spark
-test {
-    // Test environment
-    systemProperty "spark.testing", "true"
-    systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-test/nodes")
-    systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-test/client")
-
-    // Run with assertions ON
-    enableAssertions = true
-
-    // For a new JVM for each test class
-    forkEvery = 1
-
-    // Increase heap size
-    maxHeapSize = "4g"
-
-    // Increase PermGen
-    jvmArgs '-XX:MaxPermSize=384m'
-
-    // Working dir will be root project
-    workingDir = rootDir
-//    testLogging.showStandardStreams = true
 }
 
 task createSparkVersionFile << {

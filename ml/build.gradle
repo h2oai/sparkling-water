@@ -1,3 +1,5 @@
+apply from: "$rootDir/gradle/sparkTest.gradle"
+
 description = "Sparkling Water ML Pipelines"
 
 dependencies {
@@ -37,3 +39,4 @@ sourceSets {
     }
   }
 }
+

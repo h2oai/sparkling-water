@@ -22,7 +22,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OConf, H2OContext, Holder}
 import org.apache.spark.sql.SQLContext
 import org.scalatest.Suite
-import water.fvec.{Chunk, FrameUtils, NewChunk, Vec}
+import water.fvec._
+import water.{DKV, Key}
 import water.parser.BufferedString
 
 import scala.reflect.ClassTag
@@ -31,9 +32,10 @@ import scala.reflect.ClassTag
   * Helper trait to simplify initialization and termination of Spark/H2O contexts.
   *
   */
-trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
+trait SharedSparkTestContext extends SparkTestContext {
+  self: Suite =>
 
-  def createSparkContext:SparkContext
+  def createSparkContext: SparkContext
 
   def createH2OContext(sc: SparkContext, conf: H2OConf): H2OContext = {
     H2OContext.getOrCreate(sc, conf)
@@ -51,26 +53,51 @@ trait SharedSparkTestContext extends SparkTestContext { self: Suite =>
     super.afterAll()
   }
 
-  def buildChunks[T: ClassTag](fname: String, data: Array[T], cidx: Integer, h2oType: Array[Byte]): Chunk = {
+  def makeH2OFrame[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
+                                data: Array[Array[T]], h2oType: Byte, colDomains: Array[Array[String]] = null): H2OFrame = {
+    makeH2OFrame2(fname, colNames, chunkLayout, data.map(_.map(value => Array(value))), Array(h2oType), colDomains)
+  }
+
+  def makeH2OFrame2[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
+                                 data: Array[Array[Array[T]]], h2oTypes: Array[Byte], colDomains: Array[Array[String]] = null): H2OFrame = {
+    var f: Frame = new Frame(Key.make(fname))
+    FrameUtils.preparePartialFrame(f, colNames)
+    f.update()
+
+    for (i <- chunkLayout.indices) {
+      buildChunks(fname, data(i), i, h2oTypes)
+    }
+
+    f = DKV.get(fname).get()
+
+    FrameUtils.finalizePartialFrame(f, chunkLayout, colDomains, h2oTypes)
+
+    new H2OFrame(f)
+  }
+
+  def buildChunks[T: ClassTag](fname: String, data: Array[Array[T]], cidx: Integer, h2oType: Array[Byte]): Array[_ <: Chunk] = {
     val nchunks: Array[NewChunk] = FrameUtils.createNewChunks(fname, h2oType, cidx)
 
-    val chunk: NewChunk = nchunks(0)
-    data.foreach {
-      case u: UUID               => chunk.addUUID(
-        u.getLeastSignificantBits,
-        u.getMostSignificantBits)
-      case s: String             => chunk.addStr(new BufferedString(s))
-      case b: Byte               => chunk.addNum(b)
-      case s: Short              => chunk.addNum(s)
-      case c: Integer if h2oType(0) == Vec.T_CAT => chunk.addCategorical(c)
-      case i: Integer if h2oType(0) != Vec.T_CAT => chunk.addNum(i.toDouble)
-      case l: Long               => chunk.addNum(l)
-      case d: Double             => chunk.addNum(d)
-      case x                     =>
-        throw new IllegalArgumentException(s"Failed to figure out what is it: $x")
+    data.foreach { values =>
+      values.indices.foreach { idx =>
+        val chunk: NewChunk = nchunks(idx)
+        values(idx) match {
+          case null                                  => chunk.addNA()
+          case u: UUID                               => chunk.addUUID(u.getLeastSignificantBits, u.getMostSignificantBits)
+          case s: String                             => chunk.addStr(new BufferedString(s))
+          case b: Byte                               => chunk.addNum(b)
+          case s: Short                              => chunk.addNum(s)
+          case c: Integer if h2oType(0) == Vec.T_CAT => chunk.addCategorical(c)
+          case i: Integer if h2oType(0) != Vec.T_CAT => chunk.addNum(i.toDouble)
+          case l: Long                               => chunk.addNum(l)
+          case d: Double                             => chunk.addNum(d)
+          case x =>
+            throw new IllegalArgumentException(s"Failed to figure out what is it: $x")
+        }
+      }
     }
     FrameUtils.closeNewChunks(nchunks)
-    chunk
+    nchunks
   }
 }
 
