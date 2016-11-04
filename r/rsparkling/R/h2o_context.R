@@ -61,9 +61,10 @@ as_h2o_frame <- function(sc, x, name=NULL) {
 #'
 #' @param sc Object of type \code{spark_connection}.
 #' @param x An \code{H2OFrame}.
+#' @param name The name to assign the data frame in Spark.
 #'
 #' @export
-as_spark_dataframe <- function(sc, x) {
+as_spark_dataframe <- function(sc, x, name = deparse(substitute(x))) {
   # TO DO: ensure we are dealing with a H2OFrame
 
   # Get SQLContext
@@ -73,5 +74,5 @@ as_spark_dataframe <- function(sc, x) {
   # Invoke H2OContext#asDataFrame method on the backend
   spark_df <- invoke(hc, "asDataFrame", h2o.getId(x), TRUE, sqlContext)
   # Register returned spark_jobj as a table for dplyr
-  sdf_register(spark_df)
+  sdf_register(spark_df, name = name)
 }
