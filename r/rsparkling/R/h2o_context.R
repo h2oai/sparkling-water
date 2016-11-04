@@ -12,7 +12,7 @@ h2o_context.spark_connection <- function(x, strict_version_check = TRUE) {
   hc <- invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x))
   ip <- invoke(hc, "h2oLocalClientIp")
   port <- invoke(hc, "h2oLocalClientPort")
-  invisible(capture.output(h2o.init(ip = ip, port = port, strict_version_check = TRUE)))
+  invisible(capture.output(h2o.init(ip = ip, port = port, strict_version_check = strict_version_check)))
   hc
 }
 
