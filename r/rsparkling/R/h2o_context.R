@@ -1,14 +1,14 @@
 #' Get the H2OContext. Will create the context if it has not been previously created.
 #'
 #' @param x Object of type \code{spark_connection} or \code{spark_jobj}.
-#'
+#' @param strict_version_check (Optional) Setting this to FALSE does not cross check version of H2O and attempts to connect.
 #' @export
-h2o_context <- function(x) {
+h2o_context <- function(x, strict_version_check = TRUE) {
   UseMethod("h2o_context")
 }
 
 #' @export
-h2o_context.spark_connection <- function(x) {
+h2o_context.spark_connection <- function(x, strict_version_check = TRUE) {
   hc <- invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x))
   ip <- invoke(hc, "h2oLocalClientIp")
   port <- invoke(hc, "h2oLocalClientPort")
