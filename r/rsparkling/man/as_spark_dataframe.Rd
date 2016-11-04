@@ -4,12 +4,14 @@
 \alias{as_spark_dataframe}
 \title{Convert an H2O Frame to a Spark DataFrame}
 \usage{
-as_spark_dataframe(sc, x)
+as_spark_dataframe(sc, x, name = deparse(substitute(x)))
 }
 \arguments{
 \item{sc}{Object of type \code{spark_connection}.}
 
 \item{x}{An \code{H2OFrame}.}
+
+\item{name}{The name to assign the data frame in Spark.}
 }
 \description{
 Convert an H2O Frame to a Spark DataFrame
