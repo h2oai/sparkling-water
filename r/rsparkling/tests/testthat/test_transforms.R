@@ -2,7 +2,7 @@ library(rsparkling)
 context("Test transformations of H2O frames and Spark frames in rsparkling")
 
 test_that("Test transformation from h2o frame to data frame", {
-  sc <- spark_connect(master = "local")
+  sc <- spark_connect(master = "local[*]")
   df = copy_to(sc,as.data.frame(t(c(1,2,3,4,"A"))))
   df_hex = as_h2o_frame(sc,df)
   df_tbl = as_spark_dataframe(sc,df_hex)
@@ -15,7 +15,7 @@ test_that("Test transformation from h2o frame to data frame", {
 })
 
 test_that("Test transformation of a spark data_frame of bools to an h2o frame of bools", {
-  sc <- spark_connect(master = "local")
+  sc <- spark_connect(master = "local[*]")
   df = copy_to(sc,as.data.frame(t(c(TRUE,FALSE,TRUE,FALSE))),overwrite = TRUE)
   df_hex = as_h2o_frame(sc,df)
 
@@ -28,7 +28,7 @@ test_that("Test transformation of a spark data_frame of bools to an h2o frame of
 })
 
 test_that("Test transformation of a spark data_frame of complex types to an h2o frame of complex types", {
-  sc <- spark_connect(master = "local")
+  sc <- spark_connect(master = "local[*]")
   n = c(2)
   s = c("aa")
   b = c(TRUE)
@@ -44,7 +44,7 @@ test_that("Test transformation of a spark data_frame of complex types to an h2o 
 })
 
 test_that("Test transformation of a spark data_frame of float types to an h2o frame of floats", {
-  sc <- spark_connect(master = "local")
+  sc <- spark_connect(master = "local[*]")
   df = copy_to(sc,as.data.frame(t(c(1.5,1.3333333333,178.5555))),overwrite = TRUE)
   df_hex = as_h2o_frame(sc,df)
 
@@ -56,7 +56,7 @@ test_that("Test transformation of a spark data_frame of float types to an h2o fr
 })
 
 test_that("Test transformation of a spark data_frame of int types to an h2o frame of ints", {
-  sc <- spark_connect(master = "local")
+  sc <- spark_connect(master = "local[*]")
   df = copy_to(sc,as.data.frame(t(c(1,125,1778))),overwrite = TRUE)
   df_hex = as_h2o_frame(sc,df)
 
@@ -67,7 +67,7 @@ test_that("Test transformation of a spark data_frame of int types to an h2o fram
 })
 
 test_that("Test transformation of a spark data_frame of str types to an h2o frame of str", {
-  sc <- spark_connect(master = "local")
+  sc <- spark_connect(master = "local[*]")
   df = copy_to(sc,as.data.frame(t(c("A","B","C"))),overwrite = TRUE)
   df_hex = as_h2o_frame(sc,df)
 
@@ -78,7 +78,7 @@ test_that("Test transformation of a spark data_frame of str types to an h2o fram
 })
 
 test_that("Test transformation from dataframe to h2o frame", {
-  sc <- spark_connect(master = "local")
+  sc <- spark_connect(master = "local[*]")
    mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
    mtcars_hf <- as_h2o_frame(sc, mtcars_tbl)
 
@@ -90,7 +90,7 @@ test_that("Test transformation from dataframe to h2o frame", {
 
 
 test_that("Test transformation from dataframe to h2o frame", {
-   sc <- spark_connect(master = "local")
+   sc <- spark_connect(master = "local[*]")
    mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
    mtcars_hf_name <- as_h2o_frame(sc, mtcars_tbl, name = "frame1")
 
