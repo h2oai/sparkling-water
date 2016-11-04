@@ -7,8 +7,10 @@ NULL
 
 # define required spark packages
 spark_dependencies <- function(spark_version, scala_version, ...) {
-  sw_version = getOption("rsparkling.sparklingwater.version", default = "1.6.7")
-
+  sw_version = getOption("rsparkling.sparklingwater.version", default = NULL)
+  if(is.null(sw_version)){
+    stop("Sparkling Water version is not set. Please choose a correct version")
+  }
   if(as.package_version(spark_version)$major != as.package_version(sw_version)$major){
     stop(cat(paste0("Major version of Sparkling Water does not correspond to major Spark version.
     \nMajor Sparkling Water Version = ",as.package_version(sw_version)$major,
