@@ -1,4 +1,4 @@
-library(rsparkling)
+
 context("Test transformations of H2O frames and Spark frames in rsparkling")
 
 test_that("Test transformation from h2o frame to data frame", {
