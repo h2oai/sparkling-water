@@ -24,7 +24,8 @@ public class GaussianMixtureV3 extends
                 "k",
                 "convergence_tolerance",
                 "standardize",
-                "seed"
+                "seed",
+                "missing_values_handling"
         };
 
         @API(help = "Convergence tolerance", level = API.Level.secondary, gridable = true)

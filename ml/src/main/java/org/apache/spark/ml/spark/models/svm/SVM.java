@@ -192,7 +192,6 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
                     throw new H2OIllegalArgumentException("No rows left in the dataset after filtering out rows with missing values. Ignore columns with many NAs or set missing_values_handling to 'MeanImputation'.");
                 }
 
-
                 SVMWithSGD svm = new SVMWithSGD();
                 svm.setIntercept(_parms._add_intercept);
                 svm.optimizer().setNumIterations(_parms._max_iterations);

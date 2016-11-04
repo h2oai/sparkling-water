@@ -18,12 +18,14 @@ package org.apache.spark.ml
 
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.spark.models.MissingValuesHandling
-import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.types.{DataTypes, StructField}
 import water.fvec.{Frame, H2OFrame}
+
+import scala.reflect.ClassTag
 
 object FrameMLUtils {
   /** 
@@ -32,7 +34,7 @@ object FrameMLUtils {
     * numerical values. 
     * 
     * @param frame Input frame to be converted 
-    * @param reponseColumn Column which contains the labels 
+    * @param responseColumn Column which contains the labels 
     * @param nfeatures Number of features we want to use 
     * @param missingHandler Missing values strategy 
     * @param h2oContext Current H2OContext 
@@ -40,13 +42,40 @@ object FrameMLUtils {
     * @return Returns an equivalent RDD[LabeledPoint] and means for each column 
     */
   def toLabeledPoints(frame: Frame,
-                      reponseColumn: String,
+                      responseColumn: String,
                       nfeatures: Int,
                       missingHandler: MissingValuesHandling,
                       h2oContext: H2OContext,
-                      sqlContext: SQLContext): (RDD[LabeledPoint], Array[Double]) = {
+                      sqlContext: SQLContext): (RDD[LabeledPoint], Array[Double]) =
+  toResult(frame, responseColumn,
+    nfeatures, missingHandler,
+    h2oContext, sqlContext,
+    (row,features, fields, domains) => new LabeledPoint(
+      toDouble(row.getAs[String](responseColumn), fields(fields.length - 1), domains(domains.length - 1)),
+      Vectors.dense(features)
+    ))
+
+  def toFeatureVector(frame: Frame,
+                      responseColumn: String,
+                      nfeatures: Int,
+                      missingHandler: MissingValuesHandling,
+                      h2oContext: H2OContext,
+                      sqlContext: SQLContext): (RDD[Vector], Array[Double]) =
+    toResult(frame, responseColumn,
+      nfeatures, missingHandler,
+      h2oContext, sqlContext,
+      (r,features, fields, domains) => Vectors.dense(features))
+
+  def toResult[T:ClassTag](frame: Frame,
+                  reponseColumn: String,
+                  nfeatures: Int,
+                  missingHandler: MissingValuesHandling,
+                  h2oContext: H2OContext,
+                  sqlContext: SQLContext,
+                  f: (Row, Array[Double], Array[StructField], Array[Array[String]]) => T):
+  (RDD[T], Array[Double]) = {
     var means: Array[Double] = new Array[Double](nfeatures)
-    val domains = frame.domains()
+    val domains: Array[Array[String]] = frame.domains()
 
     val trainingDF = h2oContext.asDataFrame(new H2OFrame(frame))(sqlContext)
     val fields: Array[StructField] = trainingDF.schema.fields
@@ -65,10 +94,7 @@ object FrameMLUtils {
         else toDouble(row.get(i), fields(i), domains(i))
       }.toArray[Double]
 
-      new LabeledPoint(
-        toDouble(row.getAs[String](reponseColumn), fields(fields.length - 1), domains(domains.length - 1)),
-        Vectors.dense(features)
-      )
+      f(row, features, fields, domains)
     }), means)
   }
 

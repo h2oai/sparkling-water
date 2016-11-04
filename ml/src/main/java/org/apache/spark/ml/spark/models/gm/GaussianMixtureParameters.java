@@ -17,6 +17,7 @@
 package org.apache.spark.ml.spark.models.gm;
 
 import hex.ClusteringModel;
+import org.apache.spark.ml.spark.models.MissingValuesHandling;
 import org.apache.spark.util.Utils;
 
 public class GaussianMixtureParameters extends ClusteringModel.ClusteringParameters {
@@ -42,6 +43,7 @@ public class GaussianMixtureParameters extends ClusteringModel.ClusteringParamet
     public double _convergence_tolerance = 0.01;
     public long _seed = Utils.random().nextLong();
     public boolean _standardize = true;
+    public MissingValuesHandling _missing_values_handling = MissingValuesHandling.MeanImputation;
 
     public void validate(GaussianMixture gm) {
         if (_max_iterations < 0 || _max_iterations > 1e6) {
