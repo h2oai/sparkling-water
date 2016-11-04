@@ -1,3 +1,7 @@
+#' @importFrom utils capture.output browseURL
+#' @importFrom sparklyr spark_dependency register_extension invoke_static invoke spark_connection spark_dataframe sdf_register spark_context
+#' @importFrom h2o h2o.getFrame h2o.getId h2o.init
+
 # define required spark packages
 spark_dependencies <- function(spark_version, scala_version, ...) {
   spark_dependency(packages = c(
