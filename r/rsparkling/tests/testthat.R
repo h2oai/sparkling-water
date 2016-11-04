@@ -1,7 +1,8 @@
-if(requireNamespace("testthat", quietly = TRUE)){
-    library(testthat)
-    library(rsparkling)
-    library(dplyr)
-    library(sparklyr)
-    test_check("rsparkling")
-}
+library(testthat)
+library(dplyr)
+library(sparklyr)
+library(h2o)
+library(rsparkling)
+
+test_check("rsparkling")
+

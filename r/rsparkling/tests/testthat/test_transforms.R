@@ -94,7 +94,7 @@ test_that("Test transformation from dataframe to h2o frame", {
    mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
    mtcars_hf_name <- as_h2o_frame(sc, mtcars_tbl, name = "frame1")
 
-   expect_equal(h2o::h2o.getId(mtcars_hf_name), "frame1")
+   expect_equal(h2o.getId(mtcars_hf_name), "frame1")
 
 })
 
