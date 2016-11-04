@@ -17,7 +17,10 @@
 
 package org.apache.spark.h2o.utils
 
-import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.Logging
+import org.apache.spark.h2o.WrongSparkVersion
+import org.apache.spark.SparkContext
+import language.postfixOps
 
 /**
   * Support methods for H2OContext.
@@ -62,14 +65,25 @@ private[spark] trait H2OContextUtils extends Logging{
     * For example, for 1.6.1 returns 1.6
     */
   def buildSparkMajorVersion = {
-    val stream = getClass.getResourceAsStream("/spark.version")
-    val version = scala.io.Source.fromInputStream(stream).mkString
-    if (version.count(_ == '.') == 1) {
-      // e.g., 1.6
-      version
-    } else {
-      // 1.4
-      version.substring(0, version.lastIndexOf('.'))
+    val VERSION_FILE: String = "/spark.version"
+    val stream = getClass.getResourceAsStream(VERSION_FILE)
+    
+    stream match {
+      case null => throw new WrongSparkVersion(s"Unknown spark version: $VERSION_FILE missing")
+      case s => try {
+        val version = scala.io.Source.fromInputStream(s).mkString
+
+        if (version.count('.'==) <= 1) {
+          // e.g., 1.6 or "new"
+          version
+        } else {
+          // 1.4
+          version.substring(0, version.lastIndexOf('.'))
+        }
+      } catch {
+        case x: Exception => throw new WrongSparkVersion(s"Failed to read spark version from  $VERSION_FILE: ${x.getMessage}")
+      }
     }
+    
   }
 }
