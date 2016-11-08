@@ -17,13 +17,18 @@
 
 library(sparklyr)
 library(h2o)
+
+#Set version of spark. 
+#Note: At the time of spark_connect sparklyr will call the spark_dependencies function in the rsparkling package.
+options(rsparkling.sparklingwater.version = "1.6.7")
+
 library(rsparkling)
 
 # If you don't already have it installed, Spark can be installed via the sparklyr command:
 spark_install(version = "2.0.0")
 
 # Create a spark connection
-sc <- spark_connect(master = "local")
+sc <- spark_connect(master = "local",version = "1.6.2")
 
 # Inspect the H2OContext for our Spark connection
 # This will also start an H2O cluster
