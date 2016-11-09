@@ -19,9 +19,14 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
      \nMinor Sparkling Water Version = ",as.package_version(sw_version)$minor,
      "\nMinor Spark Version = ",as.package_version(spark_version)$minor)))
   }
+  spark_dependency(packages = c(
+     sprintf("ai.h2o:sparkling-water-core_%s:%s", scala_version, sw_version),
+     sprintf("ai.h2o:sparkling-water-ml_%s:%s", scala_version, sw_version),
+     sprintf("ai.h2o:sparkling-water-repl_%s:%s", scala_version, sw_version)
+  ))
 }
 
 .onLoad <- function(libname, pkgname) {
-  register_extension(pkgname)
+    register_extension(pkgname)
 }
 
