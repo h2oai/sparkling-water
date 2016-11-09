@@ -217,11 +217,11 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
 
                 sc.listenerBus().listeners().remove(progressBar);
 
-                model._output.weights_$eq(trainedModel.weights().toArray());
-                model._output.iterations_$eq(_parms._max_iterations);
-                model._output.interceptor_$eq(trainedModel.intercept());
+                model._output._weights_$eq(trainedModel.weights().toArray());
+                model._output._iterations_$eq(_parms._max_iterations);
+                model._output._interceptor_$eq(trainedModel.intercept());
 
-                model._output.numMeans_$eq(points._2());
+                model._output._num_means_$eq(points._2());
 
                 Frame train = DKV.<Frame>getGet(_parms._train);
                 model.score(train).delete();
@@ -236,7 +236,7 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
                     model.update(_job);
                 }
 
-                model._output.interceptor_$eq(trainedModel.intercept());
+                model._output._interceptor_$eq(trainedModel.intercept());
 
                 Log.info(model._output._model_summary);
             } finally {

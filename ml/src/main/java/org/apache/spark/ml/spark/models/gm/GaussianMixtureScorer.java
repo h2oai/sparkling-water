@@ -9,7 +9,7 @@ import water.util.SBPrintStream;
 /**
  * Class written in Java as it's a template for the POJO code we will generate for Gaussian
  * Mixture models.
-  */
+ */
 public class GaussianMixtureScorer {
 
 
@@ -19,8 +19,40 @@ public class GaussianMixtureScorer {
                                 boolean verboseCode,
                                 double[] weights,
                                 MultivariateGaussian[] gaussians,
-                                double[] data) {
-        // TODO implement
+                                double epsilon,
+                                boolean meanImputation) {
+        if (meanImputation) {
+            bodySb.i().p("double[] filledData = new double[data.length];").nl();
+            bodySb.i().p("for (int i = 0; i < filledData.length; i++) {").nl();
+            bodySb.i(1).p("double value = data[i];").nl();
+            bodySb.i(1).p("if (Double.isNaN(value)) {").nl();
+            bodySb.i(2).p("filledData[i] = means[i];").nl();
+            bodySb.i(1).p("} else {").nl();
+            bodySb.i(2).p("filledData[i] = value;").nl();
+            bodySb.i(1).p("}").nl();
+        }
+
+        int idx = 0;
+        double max = Double.MIN_VALUE;
+        double[] p = new double[weights.length];
+        for (int i = 0; i < p.length; i++) {
+            p[i] = epsilon + weights[i] * pdf(gaussians[i], data);
+        }
+
+        double pSum = 0;
+        for (double aP : p) {
+            pSum += aP;
+        }
+
+        for (int i = 0; i < p.length; i++) {
+            p[i] /= pSum;
+            if (p[i] >= max) {
+                idx = i;
+                max = p[i];
+            }
+        }
+        return idx;
+
     }
 
     /**
@@ -28,16 +60,31 @@ public class GaussianMixtureScorer {
      * This computes the loglikelihood (multiplied by a given weight) at a given data point for each
      * of the passed multivariate Gaussian distributions and chooses the index of the highest one.
      *
-     * @param weights Weight for each of the Gaussian distributions
-     * @param gaussians Gaussians to be checked, each gaussian describes one cluster
+     * @param weights        Weight for each of the Gaussian distributions
+     * @param gaussians      Gaussians to be checked, each gaussian describes one cluster
      * @param epsilon
-     * @param data Data to be assigned to a cluster
+     * @param data           Data to be assigned to a cluster
+     * @param meanImputation
+     * @param means
      * @return ID of the cluster in range [0, k-1]
      */
     public static int score(double[] weights,
                             MultivariateGaussian[] gaussians,
                             double epsilon,
-                            double[] data) {
+                            double[] data,
+                            boolean meanImputation,
+                            double[] means) {
+        double[] filledData = new double[data.length];
+
+        for (int i = 0; i < filledData.length; i++) {
+            double value = data[i];
+            if (meanImputation && Double.isNaN(value)) {
+                filledData[i] = means[i];
+            } else {
+                filledData[i] = value;
+            }
+        }
+
         int idx = 0;
         double max = Double.MIN_VALUE;
         double[] p = new double[weights.length];
@@ -79,9 +126,9 @@ public class GaussianMixtureScorer {
      * Multiply a matrix with a (non transposed) vector
      * <p>
      * Example
-     *           [1]
-     *           [2]
-     *           [3]
+     * [1]
+     * [2]
+     * [3]
      * [1 2 3]  [14]
      * [4 5 6]  [32]
      * [7 8 9]  [50]

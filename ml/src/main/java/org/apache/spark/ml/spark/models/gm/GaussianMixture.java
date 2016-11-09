@@ -8,18 +8,12 @@ import org.apache.spark.h2o.H2OContext;
 import org.apache.spark.ml.FrameMLUtils;
 import org.apache.spark.ml.spark.ProgressListener;
 import org.apache.spark.mllib.linalg.Vector;
-import org.apache.spark.mllib.linalg.Vectors;
-import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.rdd.RDD;
-import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructField;
 import org.apache.spark.storage.RDDInfo;
 import scala.Tuple2;
 import water.DKV;
 import water.fvec.Frame;
-import water.fvec.H2OFrame;
 import water.fvec.Vec;
 
 import java.util.Arrays;
@@ -27,7 +21,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.spark.api.java.function.Function;
 import water.util.Log;
 
 import static scala.collection.JavaConversions.iterableAsScalaIterable;
@@ -103,6 +96,9 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
                     _parms,
                     new GaussianMixtureModel.GaussianMixtureOutput(GaussianMixture.this)
             );
+
+            ProgressListener progressBar = null;
+
             try {
 
                 model.delete_and_lock(_job);
@@ -126,7 +122,7 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
                 RDD<Vector> training = points._1();
                 training.cache();
 
-                ProgressListener progressBar = new ProgressListener(sc,
+                progressBar = new ProgressListener(sc,
                         _job,
                         RDDInfo.fromRdd(training),
                         iterableAsScalaIterable(Collections.singletonList("aggregate")));
@@ -136,8 +132,6 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
                 org.apache.spark.mllib.clustering.GaussianMixtureModel sparkGMModel =
                         sparkGM.run(training);
                 training.unpersist(false);
-
-                sc.listenerBus().listeners().remove(progressBar);
 
                 // TODO add means to the model to handle them when predicting
                 model._output._iterations_$eq(_parms._max_iterations);
@@ -157,6 +151,8 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
                 model.score(train).delete();
                 model._output._training_metrics = ModelMetrics.getFromDKV(model, train);
 
+                model._output._num_means_$eq(points._2());
+
                 model.update(_job);
 
                 _job.update(model._parms._max_iterations);
@@ -171,6 +167,9 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
                 Log.info(model._output._model_summary);
             } finally {
                 model.unlock(_job);
+                if(null != progressBar) {
+                    sc.listenerBus().listeners().remove(progressBar);
+                }
             }
         }
     }

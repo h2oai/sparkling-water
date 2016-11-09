@@ -66,8 +66,8 @@ class SVMModelTest extends FunSuite with SharedSparkTestContext {
     val h2oSVMModel: SVMModel = svm.trainModel.get
 
     val sparkSVMModel = new classification.SVMModel(
-      Vectors.dense(h2oSVMModel.output.weights),
-      h2oSVMModel.output.interceptor
+      Vectors.dense(h2oSVMModel.output._weights),
+      h2oSVMModel.output._interceptor
     )
 
     // Make sure both scoring methods return the same results

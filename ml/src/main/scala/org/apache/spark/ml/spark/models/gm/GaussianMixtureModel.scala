@@ -18,6 +18,7 @@ package org.apache.spark.ml.spark.models.gm
 
 import hex.ClusteringModel.ClusteringOutput
 import hex._
+import org.apache.spark.ml.spark.models.{H2OOutput, MissingValuesHandling}
 import org.apache.spark.ml.spark.models.gm.GaussianMixtureModel.GaussianMixtureOutput
 import org.apache.spark.ml.spark.models.gm.ModelMetricsGaussianMixture.MetricBuilderGaussianMixture
 import org.apache.spark.mllib.{ClusteringUtils, clustering}
@@ -29,7 +30,7 @@ import water.{Key, Keyed}
 
 object GaussianMixtureModel {
 
-  class GaussianMixtureOutput(val b: GaussianMixture) extends ClusteringOutput(b) {
+  class GaussianMixtureOutput(val b: GaussianMixture) extends ClusteringOutput(b) with H2OOutput {
 
     var _iterations: Int = 0
     var _training_time_ms: Array[Long] = Array[Long](System.currentTimeMillis)
@@ -52,6 +53,9 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
   private var mg: Array[distribution.MultivariateGaussian]  = null
   var sparkModel: clustering.GaussianMixtureModel = null
 
+  private val meanImputation =
+    MissingValuesHandling.MeanImputation.equals(_parms._missing_values_handling)
+
   def init() = {
     weights = _output._weights
     mg = _output
@@ -72,7 +76,10 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
   }
 
   override def score0(data: Array[Double], preds: Array[Double]): Array[Double] = {
-    preds(0) = GaussianMixtureScorer.score(weights, sparkModel.gaussians, epsilon, data)
+    preds(0) =
+      GaussianMixtureScorer.score(
+        weights, sparkModel.gaussians, epsilon, data, meanImputation, _output._num_means
+      )
     preds
   }
 
@@ -86,7 +93,9 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
                                            classCtx: CodeGeneratorPipeline,
                                            fileCtx: CodeGeneratorPipeline,
                                            verboseCode: Boolean) {
-    // TODO implement
+    GaussianMixtureScorer.generate(
+      bodySb, classCtx, fileCtx, verboseCode, weights, mg, epsilon, meanImputation
+    )
   }
 
 }
