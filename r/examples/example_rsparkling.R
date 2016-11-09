@@ -28,7 +28,7 @@ library(rsparkling)
 spark_install(version = "1.6.2")
 
 # Create a spark connection
-sc <- spark_connect(master = "local",version = "1.6.2")
+sc <- spark_connect(master = "local", version = "1.6.2")
 
 # Inspect the H2OContext for our Spark connection
 # This will also start an H2O cluster

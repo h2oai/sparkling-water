@@ -5,9 +5,9 @@ NULL
 
 # define required spark packages
 spark_dependencies <- function(spark_version, scala_version, ...) {
-  sw_version = getOption("rsparkling.sparklingwater.version", default = NULL)
+  sw_version <- getOption("rsparkling.sparklingwater.version", default = NULL)
   if(is.null(sw_version)){
-    stop("Sparkling Water version is not set. Please choose a correct version")
+    stop("Sparkling Water version is not set. Please choose a correct version using options, for example: options(rsparkling.sparklingwater.version = '1.6.7')")
   }
   if(as.package_version(spark_version)$major != as.package_version(sw_version)$major){
     stop(cat(paste0("Major version of Sparkling Water does not correspond to major Spark version.
@@ -20,13 +20,13 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
      "\nMinor Spark Version = ",as.package_version(spark_version)$minor)))
   }
   spark_dependency(packages = c(
-     sprintf("ai.h2o:sparkling-water-core_%s:%s", scala_version, sw_version),
-     sprintf("ai.h2o:sparkling-water-ml_%s:%s", scala_version, sw_version),
-     sprintf("ai.h2o:sparkling-water-repl_%s:%s", scala_version, sw_version)
+    sprintf("ai.h2o:sparkling-water-core_%s:%s", scala_version, sw_version),
+    sprintf("ai.h2o:sparkling-water-ml_%s:%s", scala_version, sw_version),
+    sprintf("ai.h2o:sparkling-water-repl_%s:%s", scala_version, sw_version)
   ))
 }
 
 .onLoad <- function(libname, pkgname) {
-    register_extension(pkgname)
+  register_extension(pkgname)
 }
 
