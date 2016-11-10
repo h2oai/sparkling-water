@@ -17,10 +17,9 @@ h2o_context.spark_connection <- function(x, strict_version_check = TRUE) {
 }
 
 #' @export
-h2o_context.spark_jobj <- function(x) {
-  h2o_context(spark_connection(x))
+h2o_context.spark_jobj <- function(x, strict_version_check = TRUE) {
+  h2o_context.spark_connection(spark_connection(x), strict_version_check=strict_version_check)
 }
-
 
 #' Open the H2O Flow UI in a browser
 #'
@@ -37,20 +36,22 @@ h2o_flow <- function(sc) {
 #'
 #' @param sc Object of type \code{spark_connection}.
 #' @param x A \code{spark_dataframe}.
-#' @param name The name of the H2OFrame
+#' @param name The name of the H2OFrame.
+#' @param strict_version_check (Optional) Setting this to FALSE does not cross check version of H2O and attempts to connect.
 #' @export
-as_h2o_frame <- function(sc, x, name=NULL) {
+as_h2o_frame <- function(sc, x, name=NULL, strict_version_check=TRUE) {
   # sc is not actually required since the sc is monkey-patched into the Spark DataFrame
   # it is kept as an argument for API consistency
 
   # Ensure we are dealing with a Spark DataFrame (might be e.g. a tbl)
   x <- spark_dataframe(x)
-
+  
   # Convert the Spark DataFrame to an H2OFrame
-  if(is.null(name)){
-    jhf <- invoke(h2o_context(x), "asH2OFrame", x)
-  }else{
-    jhf <- invoke(h2o_context(x), "asH2OFrame", x, name)
+  hc <- h2o_context(x, strict_version_check=strict_version_check)
+  jhf <- if(is.null(name)) {
+    invoke(hc, "asH2OFrame", x)
+  } else {
+    invoke(hc, "asH2OFrame", x, name)
   }
 
   key <- invoke(invoke(jhf, "key"), "toString")
@@ -62,15 +63,15 @@ as_h2o_frame <- function(sc, x, name=NULL) {
 #' @param sc Object of type \code{spark_connection}.
 #' @param x An \code{H2OFrame}.
 #' @param name The name to assign the data frame in Spark.
-#'
+#' @param strict_version_check (Optional) Setting this to FALSE does not cross check version of H2O and attempts to connect.
 #' @export
-as_spark_dataframe <- function(sc, x, name = deparse(substitute(x))) {
+as_spark_dataframe <- function(sc, x, name = paste(deparse(substitute(x)), collapse=""), strict_version_check=TRUE) {
   # TO DO: ensure we are dealing with a H2OFrame
 
   # Get SQLContext
   sqlContext <- invoke_static(sc, "org.apache.spark.sql.SQLContext", "getOrCreate", spark_context(sc))
   # Get H2OContext
-  hc <- h2o_context(sc)
+  hc <- h2o_context(sc, strict_version_check=strict_version_check)
   # Invoke H2OContext#asDataFrame method on the backend
   spark_df <- invoke(hc, "asDataFrame", h2o.getId(x), TRUE, sqlContext)
   # Register returned spark_jobj as a table for dplyr
