@@ -86,7 +86,7 @@ class SupportAPISuite extends FunSuite with SharedSparkTestContext {
 object TestUtils {
 
   def frame(name: String, vec: Vec): Frame = {
-    val f: Frame = new Frame(water.Key.make())
+    val f: Frame = new Frame(water.Key.make[Frame]())
     f.add(name, vec)
     water.DKV.put(f)
     return f

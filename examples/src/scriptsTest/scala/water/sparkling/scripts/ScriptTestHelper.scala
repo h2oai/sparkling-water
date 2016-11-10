@@ -39,6 +39,7 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll {
       .set("spark.scheduler.minRegisteredResourcesRatio", "1")
       .set("spark.task.maxFailures", "1") // Any task failures are suspicious
       .set("spark.rpc.numRetries", "1") // Any RPC failures are suspicious
+      .set("spark.deploy.maxExecutorRetries", "1") // Do not restart executors
     .setJars(Array(assemblyJar))
 
     conf

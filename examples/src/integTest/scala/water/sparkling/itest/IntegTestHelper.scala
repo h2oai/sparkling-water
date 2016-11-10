@@ -38,6 +38,7 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
       Seq("--conf", s"spark.driver.extraClassPath=${env.assemblyJar}") ++
       Seq("--conf",  "spark.task.maxFailures=1") ++ // Any task failures are suspicious
       Seq("--conf",  "spark.rpc.numRetries=1") ++ // Any RPC failures are suspicious
+      Seq("--conf",  "spark.deploy.maxExecutorRetries=1") ++ // Fail directly, do not try to restart executors
       // Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
       // See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
       Seq("--conf",  "spark.hadoop.yarn.timeline-service.enabled=false") ++
