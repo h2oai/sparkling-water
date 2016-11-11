@@ -59,7 +59,7 @@ trait SharedSparkTestContext extends SparkTestContext {
 
   def makeH2OFrame2[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
                                  data: Array[Array[Array[T]]], h2oTypes: Array[Byte], colDomains: Array[Array[String]] = null): H2OFrame = {
-    var f: Frame = new Frame(Key.make(fname))
+    var f: Frame = new Frame(Key.make[Frame](fname))
     FrameUtils.preparePartialFrame(f, colNames)
     f.update()
 
