@@ -36,8 +36,11 @@ trait ScriptsTestHelper extends FunSuite with org.apache.spark.Logging with Befo
       .set("spark.driver.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.executor.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.driver.extraClassPath", assemblyJar)
-      .set("spark.scheduler.minRegisteredResourcesRatio","1")
-      .setJars(Array(assemblyJar))
+      .set("spark.scheduler.minRegisteredResourcesRatio", "1")
+      .set("spark.task.maxFailures", "1") // Any task failures are suspicious
+      .set("spark.rpc.numRetries", "1") // Any RPC failures are suspicious
+      .set("spark.deploy.maxExecutorRetries", "1") // Do not restart executors
+    .setJars(Array(assemblyJar))
 
     conf
   }

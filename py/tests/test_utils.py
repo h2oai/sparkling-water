@@ -37,7 +37,8 @@ def get_default_spark_conf():
         set("spark.ext.h2o.client.log.level", "DEBUG"). \
         set("spark.ext.h2o.repl.enabled", "false"). \
         set("spark.task.maxFailures", "1"). \
-        set("spark.rpc.numRetries", "1")
+        set("spark.rpc.numRetries", "1"). \
+        set("spark.deploy.maxExecutorRetries", "1")
 
 def set_up_class(cls):
    pass

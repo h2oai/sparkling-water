@@ -32,7 +32,7 @@ private[converters] trait ConverterUtils {
 
 
   def initFrame[T](keyName: String, names: Array[String]):Unit = {
-    val fr = new water.fvec.Frame(Key.make(keyName))
+    val fr = new water.fvec.Frame(Key.make[Frame](keyName))
     water.fvec.FrameUtils.preparePartialFrame(fr, names)
     // Save it directly to DKV
     fr.update()
