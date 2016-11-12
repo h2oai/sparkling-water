@@ -4,10 +4,12 @@
 \alias{h2o_flow}
 \title{Open the H2O Flow UI in a browser}
 \usage{
-h2o_flow(sc)
+h2o_flow(sc, strict_version_check = TRUE)
 }
 \arguments{
 \item{sc}{Object of type \code{spark_connection}.}
+
+\item{strict_version_check}{(Optional) Setting this to FALSE does not cross check version of H2O and attempts to connect.}
 }
 \description{
 Open the H2O Flow UI in a browser
