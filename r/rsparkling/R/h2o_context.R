@@ -26,9 +26,10 @@ h2o_context.spark_jobj <- function(x, strict_version_check = TRUE) {
 #' @inheritParams h2o_context
 #'
 #' @param sc Object of type \code{spark_connection}.
+#' @param strict_version_check (Optional) Setting this to FALSE does not cross check version of H2O and attempts to connect.
 #' @export
-h2o_flow <- function(sc) {
-  flow <- invoke(h2o_context(sc), "h2oLocalClient")
+h2o_flow <- function(sc, strict_version_check = TRUE) {
+  flow <- invoke(h2o_context(sc, strict_version_check = strict_version_check), "h2oLocalClient")
   browseURL(paste0("http://", flow))
 }
 
