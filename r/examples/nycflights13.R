@@ -90,6 +90,12 @@ model_tbl <- flights_tbl %>%
 #Convert munged spark data frame to an h2o frame
 df_hex <- as_h2o_frame(sc,model_tbl,name="model_hex",FALSE)
 
+#Set up some character variables as factors, which can be used in model building
+df_hex$origin = as.factor(df_hex$origin)
+df_hex$dest = as.factor(df_hex$dest)
+df_hex$carrier = as.factor(df_hex$carrier)
+df_hex$airline = as.factor(df_hex$airline)
+
 #Take a look at dimensions, head, tail, and summary of h2o frame
 dim(df_hex)
 head(df_hex)
@@ -190,7 +196,7 @@ ui <- fluidPage(theme = shinytheme("yeti"),
       tabsetPanel(type = "tabs", 
                   tabPanel("Plot", plotOutput("plot")),
                   tabPanel("Variable Importance", plotOutput("plotvarimp")),
-                  tabPanel("Data", dataTableOutput("datatable")),
+                  tabPanel("Data", DT::dataTableOutput("datatable")),
                   tabPanel("Map", leafletOutput("map"))
       )
     )
@@ -245,14 +251,15 @@ server <- function(input, output) {
   })  
   
   #Print table of observed and predicted gains by airline
-  output$datatable <- renderDataTable(
-    datatable(plot_data()) %>%
+  output$datatable <- DT::renderDataTable(
+    datatable(plot_data()) %>% 
       formatRound(c("flights", "distance"), 0) %>%
       formatRound(c("avg_gain", "pred_gain"), 1)
   )
   
   output$plotvarimp <- renderPlot({
-    h2o.varimp_plot(glm)
+    #Plot top 20 variable importances
+    h2o.varimp_plot(glm,20)
   })
   
 }
