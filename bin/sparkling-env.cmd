@@ -26,3 +26,6 @@ set tmpdir=%TMP%
 set SPARK_LOG_DIR=%tmpdir%\spark\logs
 set SPARK_WORKER_DIR=%tmpdir%\spark\work
 set SPARK_LOCAL_DIRS=%tmpdir%\spark\work
+set DEFAULT_MASTER=local[*]
+set DEFAULT_DRIVER_MEMORY=2G
+

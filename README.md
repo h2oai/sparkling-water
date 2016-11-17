@@ -157,10 +157,10 @@ The Sparkling Shell supports creation of an H<sub>2</sub>O cloud and execution o
 2. Configure the location of Spark cluster:
   ```
   export SPARK_HOME="/path/to/spark/installation"
-  export MASTER="local-cluster[3,2,2048]"
+  export MASTER="local[*]"
   ```
 
-  > In this case, `local-cluster[3,2,2048]` points to embedded cluster of 3 worker nodes, each with 2 cores and 2G of memory.
+  > In this case, `local[*]` points to an embedded single node cluster.
 
 3. Run Sparkling Shell:
   ```
@@ -189,12 +189,12 @@ You can run them in the following way:
   ./gradlew assemble
   ```
 
-2. Set the configuration of the demo Spark cluster (for example, `local-cluster[3,2,1024]`)
+2. Set the configuration of the demo Spark cluster (for example, `local[*]` or `local-cluster[3,2,1024]`)
   ```
   export SPARK_HOME="/path/to/spark/installation"
-  export MASTER="local-cluster[3,2,1024]"
+  export MASTER="local[*]"
   ```
-  > In this example, the description `local-cluster[3,2,1024]` causes creation of a local cluster consisting of 3 workers.
+  > In this example, the description `local[*]` causes creation of a single node local cluster.
 
 3. And run the example:
   ```
