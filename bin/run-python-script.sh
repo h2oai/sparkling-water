@@ -16,10 +16,10 @@ else
   echo "Path to script must be set"
   exit 0
 fi
-SCRIPT_MASTER=${MASTER:-"local-cluster[3,2,1024]"}
+SCRIPT_MASTER=${MASTER:-"$DEFAULT_MASTER"}
 SCRIPT_DEPLOY_MODE="cluster"
 SCRIPT_DEPLOY_MODE=${DEPLOY_MODE:-"client"} 
-SCRIPT_DRIVER_MEMORY=${DRIVER_MEMORY:-1G}
+SCRIPT_DRIVER_MEMORY=${DRIVER_MEMORY:-$DEFAULT_DRIVER_MEMORY}
 SCRIPT_H2O_SYS_OPS=${H2O_SYS_OPS:-""}
 
 echo "---------"
@@ -44,7 +44,6 @@ VERBOSE=
  $VERBOSE \
  $SCRIPT \
   "$@"
-)
 else
 VERBOSE=
  spark-submit \
@@ -58,3 +57,4 @@ VERBOSE=
  $SCRIPT \
  "$@"
 fi
+
