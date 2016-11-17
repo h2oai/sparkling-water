@@ -51,6 +51,7 @@ PY_EGG_FILE="$TOPDIR/py/build/dist/$PY_EGG"
 
 # Default master
 DEFAULT_MASTER="local[*]"
+DEFAULT_DRIVER_MEMORY=2G
 
 # Setup loging and outputs
 tmpdir="${TMPDIR:-"/tmp/"}/$USER/"
