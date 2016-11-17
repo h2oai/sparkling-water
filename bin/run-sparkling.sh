@@ -10,8 +10,8 @@ checkSparkVersion
 
 DRIVER_CLASS=water.SparklingWaterDriver
 
-DRIVER_MEMORY=${DRIVER_MEMORY:-1G}
-MASTER=${MASTER:-"local-cluster[3,2,1024]"}
+DRIVER_MEMORY=${DRIVER_MEMORY:-$DEFAULT_DRIVER_MEMORY}
+MASTER=${MASTER:-"$DEFAULT_MASTER"}
 VERBOSE=--verbose
 VERBOSE=
 if [ -f $SPARK_HOME/conf/spark-defaults.conf ]; then

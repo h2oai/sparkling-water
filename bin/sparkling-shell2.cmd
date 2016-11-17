@@ -11,11 +11,11 @@ rem end of checking Sparkling environment
 rem Default memory for shell
 set DRIVER_MEMORY=3G
 if not defined DRIVER_MEMORY (
-SET DRIVER_MEMORY=2G
+SET DRIVER_MEMORY=%DEFAULT_DRIVER_MEMORY%
 )
 rem Default MASTER
 if not defined MASTER (
-SET MASTER=local-cluster[3,2,2048]
+SET MASTER=%DEFAULT_MASTER%
 )
 
 call :banner
