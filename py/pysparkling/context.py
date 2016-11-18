@@ -82,7 +82,7 @@ class H2OContext(object):
         self._sc = spark_context
         # do not instantiate SQL Context when already one exists
         self._jsql_context = self._sc._jvm.SQLContext.getOrCreate(self._sc._jsc.sc())
-        self._sql_context = SQLContext(spark_context, self._jsql_context)
+        self._sql_context = SQLContext.getOrCreate(spark_context)
         self._jsc = self._sc._jsc
         self._jvm = self._sc._jvm
         self._gw = self._sc._gateway
