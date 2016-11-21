@@ -12,7 +12,7 @@ Authors@R: c(
 Imports:
     utils,
     sparklyr (>= 0.3),
-    h2o (>= 3.8.2.9)
+    h2o (>= 3.8.3.3)
 Suggests: dplyr, testthat
 Description: An extension package for sparklyr that provides an R interface to
     H2O Sparkling Water machine learning library.
