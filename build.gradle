@@ -151,7 +151,7 @@ task buildSparklingWaterDist(type: Exec) {
 task dist(dependsOn: buildSparklingWaterDist)
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '2.14'
+  gradleVersion = '3.2'
 }
 
 task clean(group: "Build tasks", description: "Clean up the project", type: Delete) {
