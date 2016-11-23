@@ -57,8 +57,8 @@ class ProgressListener(val sc: SparkContext,
   }
 
   override def onJobEnd(jobEnd: SparkListenerJobEnd): Unit = {
-    if(currentJobs.contains(jobEnd.jobId)) {
-      job.update(currentJobs.get(jobEnd.jobId).get, s"Finished Spark job with ID [${jobEnd.jobId}]")
+    if (currentJobs.contains(jobEnd.jobId)) {
+      job.update(currentJobs(jobEnd.jobId), s"Finished Spark job with ID [${jobEnd.jobId}]")
       currentJobs.remove(jobEnd.jobId)
     }
   }
@@ -66,26 +66,26 @@ class ProgressListener(val sc: SparkContext,
   var currentStages: scala.collection.mutable.Map[Int, String] = mutable.HashMap()
 
   override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted): Unit = {
-    if(matchingRDD(stageSubmitted.stageInfo)) {
+    if (matchingRDD(stageSubmitted.stageInfo)) {
       updateTaskStatus(stageSubmitted.stageInfo.stageId, 0)
     }
   }
 
   override def onStageCompleted(stageCompleted: SparkListenerStageCompleted): Unit = {
-    if(currentStages.contains(stageCompleted.stageInfo.stageId)) {
+    if (currentStages.contains(stageCompleted.stageInfo.stageId)) {
       currentStages.remove(stageCompleted.stageInfo.stageId)
       job.update(0, printStagesStatus())
     }
   }
 
   override def onTaskStart(taskStart: SparkListenerTaskStart): Unit = {
-    if(currentStages.contains(taskStart.stageId)) {
+    if (currentStages.contains(taskStart.stageId)) {
       updateTaskStatus(taskStart.stageId, taskStart.taskInfo.index + 1)
     }
   }
 
   private def updateTaskStatus(stageId: Int, taskIdx: Int): Unit = {
-    val status = s"Stage [$stageId] status [$taskIdx/${sc.jobProgressListener.stageIdToInfo.get(stageId).get.numTasks}]."
+    val status = s"Stage [$stageId] status [$taskIdx/${sc.jobProgressListener.stageIdToInfo(stageId).numTasks}]."
     currentStages.put(stageId, status)
     job.update(0, printStagesStatus())
   }

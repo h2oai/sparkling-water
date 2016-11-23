@@ -38,7 +38,7 @@ object ReflectionUtils {
 
   def fieldNamesOf[T: TypeTag] : Array[String] = fieldNamesOf(typeOf[T])
 
-  def vecTypesOf[T:TypeTag]: Array[VecType] = memberTypesOf[T] map (_.vecType)
+  def vecTypesOf[T: TypeTag]: Array[VecType] = memberTypesOf[T] map (_.vecType)
 
   def memberTypesOf[T](implicit ttag: TypeTag[T]): Array[SupportedType] =  {
     val types: Seq[Type] = listMemberTypes(typeOf[T])
@@ -64,7 +64,7 @@ object ReflectionUtils {
     attr
   }
 
-  def productMembers[T:TypeTag]: Array[ProductMember] = {
+  def productMembers[T: TypeTag]: Array[ProductMember] = {
     val st = typeOf[T]
     val formalTypeArgs = st.typeSymbol.asClass.typeParams
     val TypeRef(_, _, actualTypeArgs) = st

@@ -46,7 +46,7 @@ object PipelineDemo extends SparkContextSupport {
     val events = lines.map(_.split(",")).map(
       e=> RandomEvent(e(0), e(1).toDouble, e(2).toDouble)
     )
-    var hf:H2OFrame = null
+    var hf: H2OFrame = null
     events.window(Seconds(300), Seconds(10)).foreachRDD(rdd =>
       {
         if (!rdd.isEmpty ) {

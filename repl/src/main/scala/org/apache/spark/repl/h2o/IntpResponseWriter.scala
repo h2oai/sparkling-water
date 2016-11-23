@@ -32,7 +32,7 @@ class IntpResponseWriter() extends JPrintWriter(new StringWriter()){
 
   override def write(s: String): Unit = {
     // when running tests, store whole interpreter response
-    if(!sys.props.contains("spark.testing")){
+    if (!sys.props.contains("spark.testing")){
       reset()
     }
     super.write(s)

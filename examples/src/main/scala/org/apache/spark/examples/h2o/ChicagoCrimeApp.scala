@@ -77,7 +77,7 @@ class ChicagoCrimeApp( weatherFile: String,
         |ON a.Community_Area = c.Community_Area_Number""".stripMargin)
 
     //crimeWeather.printSchema()
-    val crimeWeatherDF:H2OFrame = crimeWeather
+    val crimeWeatherDF: H2OFrame = crimeWeather
     // Transform all string columns into categorical
     allStringVecToCategorical(crimeWeatherDF)
 
@@ -118,7 +118,7 @@ class ChicagoCrimeApp( weatherFile: String,
   }
 
   def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
-               ntrees:Int = 10, depth:Int = 6, family: DistributionFamily = DistributionFamily.bernoulli)
+               ntrees: Int = 10, depth: Int = 6, family: DistributionFamily = DistributionFamily.bernoulli)
               (implicit h2oContext: H2OContext) : GBMModel = {
     import h2oContext.implicits._
     import hex.tree.gbm.GBM
@@ -139,7 +139,7 @@ class ChicagoCrimeApp( weatherFile: String,
 
   def DLModel(train: H2OFrame, test: H2OFrame, response: String,
                epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
-               activation: Activation = Activation.RectifierWithDropout, hidden:Array[Int] = Array(200,200))
+               activation: Activation = Activation.RectifierWithDropout, hidden: Array[Int] = Array(200, 200))
              (implicit h2oContext: H2OContext) : DeepLearningModel = {
     import h2oContext.implicits._
     import hex.deeplearning.DeepLearning
@@ -160,9 +160,9 @@ class ChicagoCrimeApp( weatherFile: String,
     model
   }
 
-  def binomialMetrics[M <: Model[M,P,O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-                (model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
-    (modelMetrics(model,train), modelMetrics(model, test))
+  def binomialMetrics[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
+                (model: Model[M , P, O], train: H2OFrame, test: H2OFrame): (ModelMetricsBinomial, ModelMetricsBinomial) = {
+    (modelMetrics(model, train), modelMetrics(model, test))
   }
 
 
@@ -204,7 +204,7 @@ class ChicagoCrimeApp( weatherFile: String,
   def createCensusTable(datafile: String): H2OFrame = {
     val table = loadData(datafile)
     // Rename columns: replace ' ' by '_'
-    val colNames = table.names().map( n => n.trim.replace(' ', '_').replace('+','_'))
+    val colNames = table.names().map( n => n.trim.replace(' ', '_').replace('+', '_'))
     table._names = colNames
     table.update()
     table
@@ -242,7 +242,7 @@ class ChicagoCrimeApp( weatherFile: String,
    * @param h2oContext
    * @return
    */
-  def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: DataFrame)
+  def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame)
                 (implicit sqlContext: SQLContext, h2oContext: H2OContext): Float = {
     import h2oContext.implicits._
     import sqlContext.implicits._
@@ -276,13 +276,13 @@ object ChicagoCrimeApp extends SparkContextSupport {
                 censusFile =  "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCensus.csv",
                 crimesFile =  "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCrimes.csv")(sc, sqlContext, h2oContext)
     // Load data
-    val (weatherTable,censusTable,crimesTable) = app.loadAll()
+    val (weatherTable, censusTable, crimesTable) = app.loadAll()
     // Train model
     val (gbmModel, dlModel) = app.train(weatherTable, censusTable, crimesTable)
 
     val crimeExamples = Seq(
-      Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET",false, 422, 4, 7, 46, 18),
-      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE",false, 923, 9, 14, 63, 11))
+      Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", false, 422, 4, 7, 46, 18),
+      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", false, 923, 9, 14, 63, 11))
 
     for (crime <- crimeExamples) {
       val arrestProbGBM = 100*app.scoreEvent(crime,
@@ -314,7 +314,7 @@ object ChicagoCrimeApp extends SparkContextSupport {
 }
 // scalastyle:off rddtype
 case class Crime(Year: Short, Month: Byte, Day: Byte, WeekNum: Byte, HourOfDay: Byte,
-                 Weekend:Byte, Season: String, WeekDay: Byte,
+                 Weekend: Byte, Season: String, WeekDay: Byte,
                  IUCR: Short,
                  Primary_Type: String,
                  Location_Description: String,
@@ -329,7 +329,7 @@ case class Crime(Year: Short, Month: Byte, Day: Byte, WeekNum: Byte, HourOfDay: 
                  meanTemp: Option[Byte])
 
 object Crime {
-  def apply(date:String,
+  def apply(date: String,
             iucr: Short,
             primaryType: String,
             locationDescr: String,
@@ -343,7 +343,7 @@ object Crime {
             maxTemp: Option[Byte] = None,
             meanTemp: Option[Byte] = None,
             datePattern: String = "MM/dd/yyyy hh:mm:ss a",
-            dateTimeZone: String = "Etc/UTC"):Crime = {
+            dateTimeZone: String = "Etc/UTC"): Crime = {
     val dtFmt = DateTimeFormat.forPattern(datePattern).withZone(DateTimeZone.forID(dateTimeZone))
     val mDateTime = new MutableDateTime()
     dtFmt.parseInto(mDateTime, date, 0)

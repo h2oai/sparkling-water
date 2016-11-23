@@ -49,7 +49,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
   override def fit(dataset: Dataset[_]): M = {
     import h2oContext.implicits._
     // check if trainKey is explicitly set
-    val key = if(isSet(trainKey)){
+    val key = if (isSet(trainKey)){
       $(trainKey)
     } else {
       h2oContext.toH2OFrameKey(dataset.toDF())
@@ -72,13 +72,13 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
   override def write: MLWriter = new H2OAlgorithmWriter(this)
 
   /** @group setParam */
-  def setValidKey(value: String) = set(validKey,Key.make[Frame](value)){getParams._valid = Key.make[Frame](value)}
+  def setValidKey(value: String) = set(validKey, Key.make[Frame](value)){getParams._valid = Key.make[Frame](value)}
   /** @group setParam */
-  def setValidKey(value: Key[Frame]) = set(validKey,value){getParams._valid = value}
+  def setValidKey(value: Key[Frame]) = set(validKey, value){getParams._valid = value}
   /** @group setParam */
-  def setTrainKey(value: String) = set(trainKey,Key.make[Frame](value)){getParams._train = Key.make[Frame](value)}
+  def setTrainKey(value: String) = set(trainKey, Key.make[Frame](value)){getParams._train = Key.make[Frame](value)}
   /** @group setParam */
-  def setTrainKey(value: Key[Frame]) = set(trainKey,value){getParams._train = value}
+  def setTrainKey(value: Key[Frame]) = set(trainKey, value){getParams._train = value}
 
   def allStringVecToCategorical(hf: H2OFrame): H2OFrame = {
     hf.vecs().indices
@@ -93,7 +93,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
   /**
     * Set the param and execute custom piece of code
     */
-  protected final def set[T](param: Param[T], value: T)(f:  => Unit): SELF = {
+  protected final def set[T](param: Param[T], value: T)(f: => Unit): SELF = {
     f
     super.set(param, value).asInstanceOf[SELF]
   }

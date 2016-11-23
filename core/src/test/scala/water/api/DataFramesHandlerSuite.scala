@@ -45,7 +45,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     val df = rdd.toDF("nums")
 
     df.createOrReplaceTempView(rid)
-    val dataFramesHandler = new DataFramesHandler(sc,hc)
+    val dataFramesHandler = new DataFramesHandler(sc, hc)
 
     val req = new DataFramesV3
     val result = dataFramesHandler.list(3, req)
@@ -73,7 +73,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     val name= "prostate"
     df.createOrReplaceTempView(name)
     val percentiles = df.schema.fields(0).metadata.getDoubleArray("percentiles")
-    val dataFramesHandler = new DataFramesHandler(sc,hc)
+    val dataFramesHandler = new DataFramesHandler(sc, hc)
 
     val req = new DataFrameV3
     req.dataframe_id = name
@@ -100,7 +100,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
     df.createOrReplaceTempView(name)
-    val dataFramesHandler = new DataFramesHandler(sc,hc)
+    val dataFramesHandler = new DataFramesHandler(sc, hc)
 
     val req = new H2OFrameIDV3
     req.dataframe_id = name
@@ -114,13 +114,13 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
 
     assert (h2oFrame.key.toString == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
     assert (h2oFrame.numCols()==df.columns.length, "Number of columns should match")
-    assert (h2oFrame.names().sameElements(df.columns),"Column names should match")
+    assert (h2oFrame.names().sameElements(df.columns), "Column names should match")
     assert (h2oFrame.numRows() == df.count(), "Number of rows should match")
   }
 
 
   test("DataFramesHandler.getDataFrame() method, querying non existing data frame"){
-    val dataFramesHandler = new DataFramesHandler(sc,hc)
+    val dataFramesHandler = new DataFramesHandler(sc, hc)
     val req = new DataFrameV3
     req.dataframe_id = "does_not_exist"
     intercept[H2ONotFoundArgumentException] {
@@ -129,7 +129,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFramesHandler.toH2OFrame() method, trying to convert dataframe which does not exist"){
-    val dataFramesHandler = new DataFramesHandler(sc,hc)
+    val dataFramesHandler = new DataFramesHandler(sc, hc)
     val req = new H2OFrameIDV3
     req.dataframe_id = "does_not_exist"
 
@@ -149,7 +149,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
       val nullable = field.get("nullable").getAsBoolean
       val dataType = DataType.fromJson(field.get("type").toString)
       val metadata = Metadata.fromJson(field.get("metadata").toString)
-      structFields(i) = new StructField(name,dataType,nullable,metadata)
+      structFields(i) = StructField(name, dataType, nullable, metadata)
     }
     new StructType(structFields)
   }

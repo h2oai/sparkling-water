@@ -54,7 +54,7 @@ object RestAPIManager {
 private object CoreRestApi extends RestApi {
 
   def register(h2oContext: H2OContext): Unit = {
-    if(h2oContext.getConf.isH2OReplEnabled){
+    if (h2oContext.getConf.isH2OReplEnabled){
       registerScalaIntEndp(h2oContext.sparkContext, h2oContext)
     }
     registerDataFramesEndp(h2oContext.sparkContext, h2oContext)
@@ -119,7 +119,7 @@ private object CoreRestApi extends RestApi {
     def scalaCodeFactory = new HandlerFactory {
       override def create(aClass: Class[_ <: Handler]): Handler = scalaCodeHandler
     }
-    RequestServer.registerEndpoint("interpretScalaCode", "POST" ,"/3/scalaint/{session_id}",
+    RequestServer.registerEndpoint("interpretScalaCode", "POST" , "/3/scalaint/{session_id}",
                                    classOf[ScalaCodeHandler], "interpret", "Interpret the code and return the result",
                                    scalaCodeFactory)
 
@@ -127,7 +127,7 @@ private object CoreRestApi extends RestApi {
                                    classOf[ScalaCodeHandler], "initSession", "Return session id for communication with scala interpreter",
                                    scalaCodeFactory)
 
-    RequestServer.registerEndpoint("getScalaSessions", "GET" ,"/3/scalaint",
+    RequestServer.registerEndpoint("getScalaSessions", "GET" , "/3/scalaint",
                                    classOf[ScalaCodeHandler], "getSessions", "Return all active session IDs", scalaCodeFactory)
 
     RequestServer.registerEndpoint("destroyScalaSession", "DELETE", "/3/scalaint/{session_id}",

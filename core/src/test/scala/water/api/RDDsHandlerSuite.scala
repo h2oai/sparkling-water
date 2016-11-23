@@ -50,13 +50,13 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     //Create and persist RDD
     val rname = "Test"
     val rpart = 21
-    val rdd = sc.parallelize(1 to 100,rpart).setName(rname).cache()
+    val rdd = sc.parallelize(1 to 100, rpart).setName(rname).cache()
 
     val rddsHandler = new RDDsHandler(sc, hc)
     val rddReq = new RDDV3
     rddReq.rdd_id =  rdd.id
 
-    val result = rddsHandler.getRDD(3,rddReq)
+    val result = rddsHandler.getRDD(3, rddReq)
     assert (result.rdd_id == rdd.id, "Original ID and obtained ID should match")
     assert (result.name.equals(rname), "Name matches")
     assert (result.partitions == rpart, "Number of partitions matches")
@@ -67,18 +67,18 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     val rname = "Test"
     val rpart = 21
 
-    val rdd = sc.parallelize(1 to 100,rpart).setName(rname).cache()
+    val rdd = sc.parallelize(1 to 100, rpart).setName(rname).cache()
 
     val rddsHandler = new RDDsHandler(sc, hc)
     val rddReq = new RDD2H2OFrameIDV3
     rddReq.rdd_id =  rdd.id
     rddReq.h2oframe_id = "requested_name"
 
-    val result = rddsHandler.toH2OFrame(3,rddReq)
+    val result = rddsHandler.toH2OFrame(3, rddReq)
     val h2oframe = hc.asH2OFrame(result.h2oframe_id)
     assert (h2oframe.key.toString == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
     assert (h2oframe.numCols() == 1, "Number of columns should match")
-    assert (h2oframe.names().sameElements(Seq("values")),"Column names should match")
+    assert (h2oframe.names().sameElements(Seq("values")), "Column names should match")
     assert (h2oframe.numRows() == rdd.count(), "Number of rows should match")
   }
 
@@ -87,7 +87,7 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     val rname = "Test"
     val rpart = 21
 
-    val rdd = sc.parallelize(Seq(A(1,"A"),A(2,"B"),A(3,"C")), rpart).setName(rname).cache()
+    val rdd = sc.parallelize(Seq(A(1, "A"), A(2, "B"), A(3, "C")), rpart).setName(rname).cache()
 
     val rddsHandler = new RDDsHandler(sc, hc)
     val rddReq = new RDD2H2OFrameIDV3
@@ -98,19 +98,19 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     val h2oframe = hc.asH2OFrame(result.h2oframe_id)
     assert (h2oframe.key.toString == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
     assert (h2oframe.numCols() == 2, "Number of columns should match")
-    assert (h2oframe.names().sorted.sameElements(Seq("f0","f1")),"Column names should match")
+    assert (h2oframe.names().sorted.sameElements(Seq("f0", "f1")), "Column names should match")
     assert (h2oframe.numRows() == rdd.count(), "Number of rows should match")
   }
 
 
   test("RDDsHandler.getRDD() method, querying non-existing RDD"){
-    val rddsHandler = new RDDsHandler(sc,hc)
+    val rddsHandler = new RDDsHandler(sc, hc)
 
     val rddReq = new RDDV3
     rddReq.rdd_id =  0
 
     intercept[H2ONotFoundArgumentException] {
-      rddsHandler.getRDD(3,rddReq)
+      rddsHandler.getRDD(3, rddReq)
     }
   }
 }

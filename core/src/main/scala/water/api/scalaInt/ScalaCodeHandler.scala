@@ -76,7 +76,7 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
   }
 
   def destroySession(version: Int, s: ScalaSessionIdV3): ScalaSessionIdV3 = {
-    if(!mapIntr.contains(s.session_id)){
+    if (!mapIntr.contains(s.session_id)){
       throw new H2ONotFoundArgumentException("Session does not exists. Create session using the address /3/scalaint!")
     }
     mapIntr(s.session_id).closeInterpreter()

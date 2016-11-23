@@ -20,6 +20,7 @@ package org.apache.spark.examples.h2o
 import org.apache.spark.sql.Row
 import org.joda.time.{DateTimeZone, MutableDateTime}
 
+// scalastyle:off ensure.single.space.after.token
 /** Prostate schema definition. */
 case class Prostate(ID      :Option[Long]  ,
                     CAPSULE :Option[Int]  ,
@@ -32,6 +33,7 @@ case class Prostate(ID      :Option[Long]  ,
                     GLEASON :Option[Int]  ) {
   def isWrongRow():Boolean = (0 until productArity).map( idx => productElement(idx)).forall(e => e==None)
 }
+// scalastyle:on ensure.single.space.after.token
 
 /** A dummy csv parser for prostate dataset. */
 object ProstateParse extends Serializable {
@@ -43,6 +45,7 @@ object ProstateParse extends Serializable {
   }
 }
 
+// scalastyle:off ensure.single.space.after.token
 /** Airlines schema definition. */
 class Airlines (val Year              :Option[Int],
                 val Month             :Option[Int],
@@ -75,13 +78,14 @@ class Airlines (val Year              :Option[Int],
                 val LateAircraftDelay :Option[Int],
                 val IsArrDelayed      :Option[Boolean],
                 val IsDepDelayed      :Option[Boolean]) extends Product with Serializable {
+// scalastyle:on ensure.single.space.after.token
 
   /*
   def this() = this(None,None,None,None,None,None,None,None,None,
     None,None,None,None,None,None,None,None,None,
     None,None,None,None,None,None,None,None,None,
     None,None,None,None) */
-  override def canEqual(that: Any):Boolean = that.isInstanceOf[Airlines]
+  override def canEqual(that: Any): Boolean = that.isInstanceOf[Airlines]
   override def productArity: Int = 31
   override def productElement(n: Int) = n match {
     case  0 => Year
@@ -124,7 +128,7 @@ class Airlines (val Year              :Option[Int],
     sb.toString
   }
 
-  def isWrongRow():Boolean = (0 until productArity).map( idx => productElement(idx)).forall(e => e==None)
+  def isWrongRow(): Boolean = (0 until productArity).map( idx => productElement(idx)).forall(e => e == None)
 }
 
 /** A dummy csv parser for airlines dataset. */
@@ -170,20 +174,22 @@ object AirlinesParse extends Serializable {
   }
 }
 
-case class Weather( val Year   : Option[Int],
-                    val Month  : Option[Int],
-                    val Day    : Option[Int],
-                    val TmaxF  : Option[Int],   // Max temperatur in F
-                    val TminF  : Option[Int],   // Min temperatur in F
-                    val TmeanF : Option[Float], // Mean temperatur in F
-                    val PrcpIn : Option[Float], // Precipitation (inches)
-                    val SnowIn : Option[Float], // Snow (inches)
-                    val CDD    : Option[Float], // Cooling Degree Day
-                    val HDD    : Option[Float], // Heating Degree Day
-                    val GDD    : Option[Float]) // Growing Degree Day
+// scalastyle:off ensure.single.space.after.token
+case class Weather(Year   : Option[Int],
+                   Month  : Option[Int],
+                   Day    : Option[Int],
+                   TmaxF  : Option[Int],   // Max temperatur in F
+                   TminF  : Option[Int],   // Min temperatur in F
+                   TmeanF : Option[Float], // Mean temperatur in F
+                   PrcpIn : Option[Float], // Precipitation (inches)
+                   SnowIn : Option[Float], // Snow (inches)
+                   CDD    : Option[Float], // Cooling Degree Day
+                   HDD    : Option[Float], // Heating Degree Day
+                   GDD    : Option[Float]) // Growing Degree Day
 {
   def isWrongRow():Boolean = (0 until productArity).map( idx => productElement(idx)).forall(e => e==None)
 }
+// scalastyle:on ensure.single.space.after.token
 
 object WeatherParse extends Serializable {
   import water.support.ParseSupport._
@@ -209,32 +215,32 @@ object WeatherParse extends Serializable {
 
   private def parseDate(s: String): Option[DATE] =
     s match {
-      case datePattern1(y,m,d) => Some( (int(y),int(m),int(d)) )
-      case datePattern2(m,d,y) => Some( (int(y),int(m),int(d)) )
+      case datePattern1(y, m, d) => Some( (int(y), int(m), int(d)) )
+      case datePattern2(m, d, y) => Some( (int(y), int(m), int(d)) )
       case _ => None
     }
 }
 
-case class NYWeather(val Days: Option[Long],
-                     val HourLocal   : Option[Int],
-                     val DewPoint    : Option[Float],
-                     val HumidityFraction  : Option[Float],
-                     val Prcp1Hour   : Option[Float],
-                     val Temperature : Option[Float],
-                     val WeatherCode1: Option[String])
+case class NYWeather(Days: Option[Long],
+                     HourLocal: Option[Int],
+                     DewPoint: Option[Float],
+                     HumidityFraction: Option[Float],
+                     Prcp1Hour: Option[Float],
+                     Temperature: Option[Float],
+                     WeatherCode1: Option[String])
 {
-  def isWrongRow():Boolean = (0 until productArity).map( idx => productElement(idx)).forall(e => e==None)
+  def isWrongRow(): Boolean = (0 until productArity).map( idx => productElement(idx)).forall(e => e==None)
 }
 
 object NYWeatherParse extends Serializable {
   import water.support.ParseSupport._
 
   def apply(row: Array[String]): NYWeather = {
-    val yearLocal =  float(row(0))
+    val yearLocal = float(row(0))
     val monthLocal = float(row(1))
-    val dayLocal =   float(row(2))
-    val hourLocal =  float(row(3))
-    val msec:Option[Long] = if (yearLocal.isDefined && monthLocal.isDefined && dayLocal.isDefined && hourLocal.isDefined) {
+    val dayLocal = float(row(2))
+    val hourLocal = float(row(3))
+    val msec: Option[Long] = if (yearLocal.isDefined && monthLocal.isDefined && dayLocal.isDefined && hourLocal.isDefined) {
       Some(new MutableDateTime(yearLocal.get.toInt,
         monthLocal.get.toInt, dayLocal.get.toInt, hourLocal.get.toInt, 0, 0, 0, DateTimeZone.UTC).getMillis)
       } else {

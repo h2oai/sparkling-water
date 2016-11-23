@@ -117,7 +117,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     def almostDefined(i: Long) = Some(i.toInt) filter (_ % 31 != 0)
 
     val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(almostDefined(v)))
-    val h2oFrame:H2OFrame = hc.asH2OFrame(rdd)
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
 
     assertInvariantsWithNulls(rdd, h2oFrame, (rowIdx, vec) => {
       val nextRowIdx = rowIdx + 1
@@ -241,13 +241,13 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     def almostDefined(i: Long) = Some(i.toInt) filter (_ % 31 != 0)
 
     val rdd = sc.parallelize(1 to 1000000, 10).map(i => OptionAndNot(Some(i), almostDefined(i)))
-    val h2oFrame:H2OFrame = rdd
+    val h2oFrame: H2OFrame = rdd
     val back2rdd = hc.asRDD[OptionAndNot](h2oFrame)
     assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
     assert(back2rdd.count == h2oFrame.numRows(), "Number of rows should match")
 
     back2rdd.foreach {
-      case OptionAndNot(x, xOpt) => if(xOpt != x.flatMap(i => almostDefined(i))) throw new IllegalStateException(s"Failed at $x/$xOpt")
+      case OptionAndNot(x, xOpt) => if (xOpt != x.flatMap(i => almostDefined(i))) throw new IllegalStateException(s"Failed at $x/$xOpt")
     }
   }
 

@@ -70,9 +70,9 @@ class InternalReadConverterContext(override val keyName: String, override val ch
     Vec.T_CAT -> categoricalString,
     Vec.T_UUID -> uuidString,
     Vec.T_STR -> plainString
-  ) withDefault((t:Byte) => {
+  ) withDefault((t: Byte) => {
     assert(assertion = false, s"Should never be here, type is $t")
-    (_:Chunk) => null
+    (_: Chunk) => null
   }
     )
 

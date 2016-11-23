@@ -37,7 +37,7 @@ private[converters] object LabeledPointConverter extends Logging with ConverterU
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
 
     // first convert vector to dense vector
-    val rddDense = rdd.map(labeledPoint => new LabeledPoint(labeledPoint.label,labeledPoint.features.toDense))
+    val rddDense = rdd.map(labeledPoint => new LabeledPoint(labeledPoint.label, labeledPoint.features.toDense))
     val numFeatures = rddDense.map(labeledPoint => labeledPoint.features.size)
     val maxNumFeatures = numFeatures.max()
     val minNumFeatures = numFeatures.min()

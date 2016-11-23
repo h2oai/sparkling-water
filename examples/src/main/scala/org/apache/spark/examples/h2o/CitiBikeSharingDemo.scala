@@ -69,7 +69,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
       "2014-01.csv", "2014-02.csv", "2014-03.csv", "2014-04.csv",
       "2014-05.csv", "2014-06.csv", "2014-07.csv", "2014-08.csv").map(f => new File(DIR_PREFIX, f).toURI)
     // Load and parse data
-    val dataf = new H2OFrame(dataFiles:_*)
+    val dataf = new H2OFrame(dataFiles: _*)
     // Rename columns and remove all spaces in header
     val colNames = dataf.names().map( n => n.replace(' ', '_'))
     dataf._names = colNames
@@ -110,7 +110,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
 
     gTimer.start()
     // Convert RDD to H2OFrame
-    val bphf:H2OFrame = bph
+    val bphf: H2OFrame = bph
     gTimer.stop("Spark: do SQL query").start()
     //
     // Perform time transformation
@@ -208,7 +208,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
     gbmModel
   }
 
-  def basicStats(brdd: DataFrame)(implicit sqlContext:SQLContext): Unit = {
+  def basicStats(brdd: DataFrame)(implicit sqlContext: SQLContext): Unit = {
     import sqlContext.implicits._
 
     // check Sri's first case
@@ -231,7 +231,7 @@ object CitiBikeSharingDemo extends SparkContextSupport {
     val maxDurationBikeId = tGBduration.rdd.min()(Ordering.by[Row, Long](r => -r.getLong(1)))
   }
 
-  def withTimer(timer:GTimer, round: String)(b : => Unit): Unit = {
+  def withTimer(timer: GTimer, round: String)(b : => Unit): Unit = {
     timer.start()
     try {
       b
@@ -242,10 +242,10 @@ object CitiBikeSharingDemo extends SparkContextSupport {
 }
 
 class TimeSplit extends MRTask[TimeSplit] {
-  def doIt(time: H2OFrame):H2OFrame =
+  def doIt(time: H2OFrame): H2OFrame =
       new H2OFrame(doAll(Array(Vec.T_NUM), time).outputFrame(Array[String]("Days"), null))
 
-  override def map(msec: Chunk, day: NewChunk):Unit = {
+  override def map(msec: Chunk, day: NewChunk): Unit = {
     for (i <- 0 until msec.len) {
       day.addNum(msec.at8(i) / (1000 * 60 * 60 * 24)); // Days since the Epoch
     }
@@ -253,10 +253,10 @@ class TimeSplit extends MRTask[TimeSplit] {
 }
 
 class TimeTransform extends MRTask[TimeSplit] {
-  def doIt(days: H2OFrame):H2OFrame =
+  def doIt(days: H2OFrame): H2OFrame =
     new H2OFrame(doAll(Array(Vec.T_NUM, Vec.T_NUM), days).outputFrame(Array[String]("Month", "DayOfWeek"), null))
 
-  override def map(in: Array[Chunk], out: Array[NewChunk]):Unit = {
+  override def map(in: Array[Chunk], out: Array[NewChunk]): Unit = {
     val days = in(0)
     val month = out(0)
     val dayOfWeek = out(1)
@@ -273,13 +273,13 @@ class TimeTransform extends MRTask[TimeSplit] {
 class GTimer {
   type T = (String, String)
   val timeList = new mutable.Queue[T]()
-  var t:Timer = _
+  var t: Timer = _
 
-  def start():GTimer = {
+  def start(): GTimer = {
     t = new Timer
     this
   }
-  def stop(roundName: String):GTimer = {
+  def stop(roundName: String): GTimer = {
     val item = roundName -> t.toString
     timeList += item
     t = null
@@ -287,7 +287,7 @@ class GTimer {
   }
 
   override def toString: String = {
-    timeList.map(p=> s"   * ${p._1} : takes ${p._2}").mkString("------\nTiming\n------\n","\n", "\n------")
+    timeList.map(p=> s"   * ${p._1} : takes ${p._2}").mkString("------\nTiming\n------\n", "\n", "\n------")
   }
 }
 

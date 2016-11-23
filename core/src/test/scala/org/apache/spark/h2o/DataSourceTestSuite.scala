@@ -41,7 +41,7 @@ class DataSourceTestSuite extends FunSuite with SharedSparkTestContext {
     val df = sqlContext.read.h2o(h2oFrame.key)
 
     assert (df.columns.length == h2oFrame.numCols(), "Number of columns should match")
-    assert (df.columns.sameElements(h2oFrame.names()),"Column names should match")
+    assert (df.columns.sameElements(h2oFrame.names()), "Column names should match")
     assert (df.count() == h2oFrame.numRows(), "Number of rows should match")
   }
 
@@ -51,7 +51,7 @@ class DataSourceTestSuite extends FunSuite with SharedSparkTestContext {
     val df = sqlContext.read.format("h2o").option("key", h2oFrame.key.toString).load()
 
     assert (df.columns.length == h2oFrame.numCols(), "Number of columns should match")
-    assert (df.columns.sameElements(h2oFrame.names()),"Column names should match")
+    assert (df.columns.sameElements(h2oFrame.names()), "Column names should match")
     assert (df.count() == h2oFrame.numRows(), "Number of rows should match")
   }
 
@@ -61,7 +61,7 @@ class DataSourceTestSuite extends FunSuite with SharedSparkTestContext {
     val df = sqlContext.read.format("h2o").load(h2oFrame.key.toString)
 
     assert (df.columns.length == h2oFrame.numCols(), "Number of columns should match")
-    assert (df.columns.sameElements(h2oFrame.names()),"Column names should match")
+    assert (df.columns.sameElements(h2oFrame.names()), "Column names should match")
     assert (df.count() == h2oFrame.numRows(), "Number of rows should match")
   }
 
@@ -72,7 +72,7 @@ class DataSourceTestSuite extends FunSuite with SharedSparkTestContext {
 
     val h2oFrame = DKV.getGet[Frame]("new_key")
     assert (df.columns.length == h2oFrame.numCols(), "Number of columns should match")
-    assert (df.columns.sameElements(h2oFrame.names()),"Column names should match")
+    assert (df.columns.sameElements(h2oFrame.names()), "Column names should match")
     assert (df.count() == h2oFrame.numRows(), "Number of rows should match")
     h2oFrame.remove()
   }
@@ -108,7 +108,7 @@ class DataSourceTestSuite extends FunSuite with SharedSparkTestContext {
     val h2oFrame = DKV.getGet[Frame]("new_key")
 
     assert (dfNew.columns.length == h2oFrame.numCols(), "Number of columns should match")
-    assert (dfNew.columns.sameElements(h2oFrame.names()),"Column names should match")
+    assert (dfNew.columns.sameElements(h2oFrame.names()), "Column names should match")
     assert (dfNew.count() == h2oFrame.numRows(), "Number of rows should match")
     h2oFrame.remove()
   }
@@ -126,7 +126,7 @@ class DataSourceTestSuite extends FunSuite with SharedSparkTestContext {
     val h2oFrame = DKV.getGet[Frame]("new_key")
 
     assert (df.columns.length == h2oFrame.numCols(), "Number of columns should match")
-    assert (df.columns.sameElements(h2oFrame.names()),"Column names should match")
+    assert (df.columns.sameElements(h2oFrame.names()), "Column names should match")
     assert (df.count() == h2oFrame.numRows(), "Number of rows should match")
     h2oFrame.remove()
   }

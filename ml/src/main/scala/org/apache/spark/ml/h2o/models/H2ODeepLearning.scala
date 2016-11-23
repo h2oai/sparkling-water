@@ -47,7 +47,7 @@ object H2ODeepLearningModel extends MLReadable[H2ODeepLearningModel] {
   @Since("1.6.0")
   override def read: MLReader[H2ODeepLearningModel] = new H2OModelReader[H2ODeepLearningModel, DeepLearningModel](defaultFileName) {
     override protected def make(model: DeepLearningModel, uid: String)
-                               (implicit h2oContext: H2OContext,sqLContext: SQLContext): H2ODeepLearningModel =
+                               (implicit h2oContext: H2OContext, sqLContext: SQLContext): H2ODeepLearningModel =
       new H2ODeepLearningModel(model, uid)(h2oContext, sqlContext)
   }
 
@@ -69,8 +69,8 @@ class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val u
   type SELF = H2ODeepLearning
 
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("dl"))
-  def this(parameters: DeepLearningParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters),Identifiable.randomUID("dl"))
-  def this(parameters: DeepLearningParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters),uid)
+  def this(parameters: DeepLearningParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("dl"))
+  def this(parameters: DeepLearningParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
 
   override def defaultFileName: String = H2ODeepLearning.defaultFileName
 
@@ -92,7 +92,7 @@ class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val u
   def setHidden(value: Array[Int]) = set(hidden, value){getParams._hidden = value}
 
   /** @group setParam */
-  def setResponseColumn(value: String) = set(responseColumn,value){getParams._response_column = value}
+  def setResponseColumn(value: String) = set(responseColumn, value){getParams._response_column = value}
 }
 
 object H2ODeepLearning extends MLReadable[H2ODeepLearning] {
