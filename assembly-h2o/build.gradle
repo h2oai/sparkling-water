@@ -1,0 +1,172 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'base'
+
+description = """
+h2o and h2o Driver Assembly. This assembly extends provided jar by sparkling-water specific classes needed in external
+backend mode.
+
+User can specify location to either h2o or h2odriver jar via H2O_ORIGINAL_JAR env variable.
+No works is done if H2O_ORIGINAL_JAR is not set.
+
+User can also use gradle command line argument -PdownloadAndExtend which will download correct h2o version for current
+sparkling water from our repository if it hasn't been already downloaded.
+If this is run without any argument, then basic h2o jar is downloaded,
+but this command takes also argument specifying hadoop version, such as cdh5.4. In case the argument is specified, instead
+of downloading h2o jar this command will download h2o driver jar for specified hadoop version.
+
+Gradle property has higher priority if both H2O_ORIGINAL_JAR and -PdownloadAndExtend are set
+
+Few examples:
+
+1)
+export H2O_ORIGINAL_JAR = ...
+./gradlew build -x check
+
+In this case the jar to be extended is located using the provided environment variable
+
+2)
+./gradlew build -x check -PdownloadAndExtend
+
+In this case the jar to be extended is h2o jar and is downloaded from our repository first
+
+3)
+./gradlew build -x check -PdownloadAndExtend=cdh5.4
+
+In this case the jar to be extended is h2o driver jar for provided hadoop version and is downloaded from our repository first
+
+4)
+./gradlew build -x check -PdownloadAndExtend=abc
+
+This case will throw an exception since such hadoop version is not supported
+
+5)
+export H2O_ORIGINAL_JAR = ...
+./gradlew build -x check -PdownloadAndExtend
+
+This version will ignore environment variable and jar to be extended will be downloaded from our repository. The same
+holds for version with argument.
+"""
+
+configurations {
+    artifactsToMerge
+}
+
+def originalJar = getOrDownloadOriginalJar()
+
+dependencies {
+    artifactsToMerge("ai.h2o:h2o-scala_${scalaBaseVersion}:${h2oVersion}") { transitive = false }
+    artifactsToMerge("org.scala-lang:scala-library:${scalaVersion}")
+    originalJar = getOrDownloadOriginalJar()
+    if (originalJar != null) {
+        artifactsToMerge files(originalJar)
+    }
+}
+
+task extendJar(type: ShadowJar) {
+    configurations = [project.configurations.artifactsToMerge]
+    if (originalJar != null) {
+        def h2oJarFile = new File(originalJar).getName().toLowerCase()
+        if(h2oJarFile.contains("h2odriver")){
+            baseName = "h2odriver_extended"
+        }else{
+            baseName = "h2o_extended"
+        }
+    } else {
+        baseName = null
+    }
+    classifier = null
+    version = null
+}
+
+if (originalJar != null) {
+    build.dependsOn extendJar
+}
+
+/**
+ * Method determining whether the h2o or h2o driver jar is available.
+ * Location to the jar is returned if it's available, oterwise null is returned
+ *
+ * If the user specified Gradle argument downloadAndExtend then the method will try do download the jar and  return path to it
+ */
+def String getOrDownloadOriginalJar() {
+    if (project.hasProperty("downloadAndExtend")) {
+        def arg = project.downloadAndExtend
+        if (arg == null || arg.isEmpty()) {
+            def url = "http://h2o-release.s3.amazonaws.com/h2o/${h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"}/${h2oBuild}/h2o-${h2oMajorVersion}.${h2oBuild}.zip"
+            logger.info("Downloading h2o jar from: $url")
+            return downloadAndUnpackH2OJar(url, "h2o-${h2oMajorVersion}.${h2oBuild}", "h2o")
+        } else {
+            def url = "http://h2o-release.s3.amazonaws.com/h2o/${h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"}/${h2oBuild}/h2o-${h2oMajorVersion}.${h2oBuild}-${arg}.zip"
+            logger.info("Downloading h2o driver for hadoop version: $arg from: $url")
+            try {
+                return downloadAndUnpackH2OJar(url, "h2o-${h2oMajorVersion}.${h2oBuild}-${arg}", "h2odriver")
+            }catch (ignored){
+                throw new IOException("""
+Problem during downloading h2o driver from url: $url
+The hadoop version you have specified is $arg. The most probably couse of the problem may be invalid hadoop version, please
+consult h2o documentation for available hadoop versions.
+""")
+            }
+        }
+    } else {
+        def originalJar = System.getenv("H2O_ORIGINAL_JAR")
+        if (originalJar != null && !originalJar.isEmpty()) {
+            logger.info("\"H2O_ORIGINAL_JAR\" property set to $originalJar")
+            originalJar
+        } else {
+            return null
+        }
+    }
+}
+
+def String downloadAndUnpackH2OJar(String urlStr, String versionDesc, String fileName) {
+    def saveDir = file("$buildDir/private")
+    saveDir.mkdirs()
+    def versionedName = "${versionDesc}-${fileName}"
+    def matchPattern = "${versionDesc}/${fileName}.jar"
+    def h2oJarFile = new File(saveDir, "${versionedName}.jar")
+    def zipFile = new File(saveDir, "${versionedName}.zip")
+    if (!h2oJarFile.exists()) {
+        downloadFile(zipFile, new URL(urlStr))
+        unzipJust(zipFile, h2oJarFile, matchPattern)
+        zipFile.delete()
+    }
+    return h2oJarFile.absolutePath
+}
+
+def static downloadFile(File to, URL from) {
+    from.withInputStream { is ->
+        to.withOutputStream { os ->
+            def bs = new BufferedOutputStream(os)
+            bs << is
+        }
+    }
+}
+
+/**
+ * Extract only file which has exactly the same name as fileToMatch argument
+ */
+def static unzipJust(File from, File to, String fileToMatch) {
+    ZipInputStream zis = new ZipInputStream(new FileInputStream(from))
+    ZipEntry ze = zis.getNextEntry()
+    byte[] buffer = new byte[1024]
+    while (ze != null) {
+        if (ze.getName() == fileToMatch) {
+            FileOutputStream fos = new FileOutputStream(to)
+            int len
+            while ((len = zis.read(buffer)) != -1) {
+                fos.write(buffer, 0, len)
+            }
+            fos.close()
+            break
+        }
+        ze = zis.getNextEntry()
+    }
+    zis.closeEntry()
+    zis.close()
+}
