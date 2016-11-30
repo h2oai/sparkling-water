@@ -1,0 +1,188 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'base'
+
+description = """
+h2o and h2o Driver Assembly. This assembly extends provided jar by sparkling-water specific classes needed in external
+backend mode.
+
+User can specify location to either h2o or h2odriver jar via H2O_ORIGINAL_JAR env variable.
+No works is done if H2O_ORIGINAL_JAR is not set.
+
+User can also use gradle command line argument -PdownloadAndExtend which will download correct h2o version for current
+sparkling water from our repository if it hasn't been already downloaded.
+If this is run without any argument, then basic h2o jar is downloaded,
+but this command takes also argument specifying hadoop version, such as cdh5.4. In case the argument is specified, instead
+of downloading h2o jar this command will download h2o driver jar for specified hadoop version.
+
+Gradle property has higher priority if both H2O_ORIGINAL_JAR and -PdownloadAndExtend are set
+
+Few examples:
+
+1)
+export H2O_ORIGINAL_JAR = ...
+./gradlew build -x check
+
+In this case the jar to be extended is located using the provided environment variable
+
+2)
+./gradlew build -x check -PdownloadAndExtend
+
+In this case the jar to be extended is h2o jar and is downloaded from our repository first
+
+3)
+./gradlew build -x check -PdownloadAndExtend=cdh5.4
+
+In this case the jar to be extended is h2o driver jar for provided hadoop version and is downloaded from our repository first
+
+4)
+./gradlew build -x check -PdownloadAndExtend=abc
+
+This case will throw an exception since such hadoop version is not supported
+
+5)
+export H2O_ORIGINAL_JAR = ...
+./gradlew build -x check -PdownloadAndExtend
+
+This version will ignore environment variable and jar to be extended will be downloaded from our repository. The same
+holds for version with argument.
+"""
+
+configurations {
+    artifactsToMerge
+}
+
+def originalJar = getOrDownloadOriginalJar()
+
+dependencies {
+    artifactsToMerge("ai.h2o:h2o-scala_${scalaBaseVersion}:${h2oVersion}") { transitive = false }
+    artifactsToMerge("org.scala-lang:scala-library:${scalaVersion}")
+    originalJar = getOrDownloadOriginalJar()
+    if (originalJar != null) {
+        artifactsToMerge files(originalJar)
+    }
+}
+
+task extendJar(type: ShadowJar) {
+    configurations = [project.configurations.artifactsToMerge]
+    if (originalJar != null) {
+        def h2oJarFile = new File(originalJar).getName().toLowerCase()
+        if (h2oJarFile.contains("h2odriver")) {
+            baseName = "h2odriver_extended"
+        } else {
+            baseName = "h2o_extended"
+        }
+    } else {
+        baseName = null
+    }
+    classifier = null
+    version = null
+}
+
+if (originalJar != null) {
+    build.dependsOn extendJar
+}
+
+/**
+ * Method determining whether the h2o or h2o driver jar is available.
+ * Location to the jar is returned if it's available, otherwise null is returned
+ *
+ * If the user specified Gradle argument downloadAndExtend then the method will try do download the jar and  return path to it
+ */
+def String getOrDownloadOriginalJar() {
+    if (project.hasProperty("downloadAndExtend")) {
+        def hadoopVersion = project.downloadAndExtend
+        def saveDir = file("$buildDir/private")
+        saveDir.mkdirs()
+        def relName = h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"
+
+        if (hadoopVersion == null || hadoopVersion.isEmpty()) {
+            def url = "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/Rjar/h2o.jar".toURL()
+            logger.info("Downloading h2o jar from: $url")
+            def h2oJarFile = new File(saveDir, "h2o-${h2oMajorVersion}.${h2oBuild}.jar")
+            if (!h2oJarFile.exists()) {
+                downloadFile(url, h2oJarFile)
+            }
+            return h2oJarFile.absolutePath
+        } else {
+            def url = "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/h2o-${h2oMajorVersion}.${h2oBuild}-${hadoopVersion}.zip".toURL()
+            logger.info("Downloading h2o driver for hadoop version: $hadoopVersion from: $url")
+            def h2oJarFile = new File(saveDir, "h2odriver-${h2oMajorVersion}.${h2oBuild}-${hadoopVersion}.jar")
+            if (!h2oJarFile.exists()) {
+                def zipEntryName = "h2o-${h2oMajorVersion}.${h2oBuild}-${hadoopVersion}/h2odriver.jar"
+                try {
+                    downloadFileFromZip(url, h2oJarFile, zipEntryName)
+                } catch (e) {
+                    throw new IOException("""
+Problem during downloading h2o driver from url: $url
+The hadoop version you have specified is $hadoopVersion. The most probably couse of the problem may be invalid hadoop version, please
+consult h2o documentation for available hadoop versions.
+""", e)
+                }
+            }
+            return h2oJarFile.absolutePath
+        }
+    } else {
+        def originalJar = System.getenv("H2O_ORIGINAL_JAR")
+        if (originalJar != null && !originalJar.isEmpty()) {
+            logger.info("\"H2O_ORIGINAL_JAR\" property set to $originalJar")
+            return originalJar
+        } else {
+            return null
+        }
+    }
+}
+
+/**
+ * This method expects URL pointing to a zip file and it will save on disk only a file from that zip
+ * with the specified name
+ * @param fromZip url pointing to a zip file
+ * @param to file to which we store the data
+ * @param fullFileName file name in zip file we want to download
+ * @return path to the downloaded file
+ */
+def static downloadFileFromZip(URL fromZip, File to, String fullFileName) {
+    fromZip.withInputStream { is ->
+        ZipInputStream zin = new ZipInputStream(is)
+        ZipEntry ze = zin.getNextEntry();
+        // read the files before we hit the one we are interested in
+        while (ze.getName() != fullFileName) {
+            zin.closeEntry()
+            ze = zin.getNextEntry()
+        }
+        saveFile(zin, to)
+        zin.closeEntry()
+    }
+    return to.absolutePath
+}
+
+/**
+ * Download a file from the provided URL into target file and return path to the downloaded file
+ * @param from url from which download the data
+ * @param to target file
+ * @return path to the downloaded file
+ */
+def static downloadFile(URL from, File to) {
+    from.withInputStream { is ->
+        saveFile(is, to)
+    }
+    return to.absolutePath
+}
+
+/**
+ * Save data in provided input stream to the specified file
+ * @param is input stream with data
+ * @param to file to which store the data
+ * @return path to the file
+ */
+def static saveFile(InputStream is, File to) {
+    to.withOutputStream { os ->
+        def bs = new BufferedOutputStream(os)
+        bs << is
+    }
+    return to.absolutePath
+}
