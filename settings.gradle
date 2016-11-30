@@ -5,6 +5,7 @@ include 'examples'
 // Disable for now
 include 'ml'
 include 'assembly'
+include 'assembly-h2o'
 include 'py'
 include 'repl'
 include 'docker'
