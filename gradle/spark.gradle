@@ -90,20 +90,26 @@ void checkSparkVersion() {
 }
 
 // Useful task to setup idea test configuration
-task printTestEnv << {
-    println("-Dspark.testing=true\n")
+task printTestEnv {
+    doLast {
+        println("-Dspark.testing=true\n")
+    }
 }
-task printIntegTestEnv << {
-    println("-Dspark.testing=true\n" +
-            "-Dsparkling.assembly.jar=${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}\n" +
-            "-Dsparkling.itest.jar=${integTestJar.archivePath}\n"+
-            "-Dsparkling.pysparkling.egg=${project(":sparkling-water-py").configurations.eggs.artifacts.file.join(',')}\n"+
-            "-Dsparkling.test.hdp.version=current\n"+
-            "-DSPARK_HOME=${sparkHome}")
+task printIntegTestEnv {
+    doLast {
+        println("-Dspark.testing=true\n" +
+                "-Dsparkling.assembly.jar=${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}\n" +
+                "-Dsparkling.itest.jar=${integTestJar.archivePath}\n" +
+                "-Dsparkling.pysparkling.egg=${project(":sparkling-water-py").configurations.eggs.artifacts.file.join(',')}\n" +
+                "-Dsparkling.test.hdp.version=current\n" +
+                "-DSPARK_HOME=${sparkHome}")
+    }
 }
 
-task printScriptsTestEnv << {
-    println("-Dsparkling.assembly.jar=${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}\n")
+task printScriptsTestEnv {
+    doLast {
+        println("-Dsparkling.assembly.jar=${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}\n")
+    }
 }
 
 ext.sparkHome = getSparkHome()
@@ -114,8 +120,10 @@ ext.checkSparkVersion = this.&checkSparkVersion
 // Run the check but not at configuration time!
 // It needs to run at execution time of build file.
 
-task checkSparkVersionTask << {
-    checkSparkVersion()
+task checkSparkVersionTask {
+    doLast {
+        checkSparkVersion()
+    }
 }
 
 afterEvaluate { project ->

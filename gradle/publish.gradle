@@ -1,11 +1,13 @@
 // Nexus plugin for releasing https://github.com/bmuschko/gradle-nexus-plugin
 apply plugin: 'com.bmuschko.nexus'
 
-task mappings << {
-        println conf2ScopeMappings.mappings
-        poms.each { pom -> 
-           pom.writeTo("/tmp/x"+project.name)
-        }
+task mappings {
+  doLast {
+    println conf2ScopeMappings.mappings
+    poms.each { pom ->
+      pom.writeTo("/tmp/x" + project.name)
+    }
+  }
 }
 
 modifyPom {

@@ -1,13 +1,5 @@
 apply from: "$rootDir/gradle/utils.gradle"
 
-idea {
-    module {
-        inheritOutputDirs = false
-        outputDir = file('py/build/main')
-        testOutputDir = file('py/build/test')
-    }
-}
-
 ext {
     FS = File.separator
     FPS = File.pathSeparator
@@ -23,13 +15,15 @@ dependencies {
 //
 // Create a file with version for Python dist task
 //
-task createVersionFile << {
-    if(!getBuildDir().exists()){
-        getBuildDir().mkdir()
+task createVersionFile {
+    doLast {
+        if(!getBuildDir().exists()){
+            getBuildDir().mkdir()
+        }
+        File version_file = new File(getBuildDir(), "version.txt")
+        def version_txt = version.replace("-SNAPSHOT","")
+        version_file.write(version_txt)
     }
-    File version_file = new File(getBuildDir(), "version.txt")
-    def version_txt = version.replace("-SNAPSHOT","")
-    version_file.write(version_txt)
 }
 
 //
@@ -53,33 +47,34 @@ def preparePythonEnv(environment) {
 // Initial task checking setup of all properties required
 // by Python build
 //
-task checkPythonEnv << {
-    def SPARK_HOME = sparkHome
-    def H2O_HOME = System.getenv("H2O_HOME")
-    def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
+task checkPythonEnv {
+    doLast {
+        def SPARK_HOME = sparkHome
+        def H2O_HOME = System.getenv("H2O_HOME")
+        def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
 
-    if (SPARK_HOME == null) throw new InvalidUserDataException("SPARK_HOME needs to be defined!")
+        if (SPARK_HOME == null) throw new InvalidUserDataException("SPARK_HOME needs to be defined!")
 
-    if (H2O_HOME == null && H2O_PYTHON_WHEEL == null) {
-        throw new InvalidUserDataException("""
-Both properties H2O_HOME and H2O_PYTHON_WHEEL were not found!
+        if (H2O_HOME == null && H2O_PYTHON_WHEEL == null) {
+            throw new InvalidUserDataException("""
+    Both properties H2O_HOME and H2O_PYTHON_WHEEL were not found!
 
-Please specify:
- - H2O_HOME to point to H2O Git repo version ${h2oMajorVersion}.${h2oBuild}
-or
- - H2O_PYTHON_WHEEL to point to downloaded H2O Python Wheel package version ${h2oMajorVersion}.${h2oBuild}
-   For example:
+    Please specify:
+     - H2O_HOME to point to H2O Git repo version ${h2oMajorVersion}.${h2oBuild}
+    or
+     - H2O_PYTHON_WHEEL to point to downloaded H2O Python Wheel package version ${h2oMajorVersion}.${h2oBuild}
+       For example:
 
-    mkdir -p \$(pwd)/private/
-    curl -s ${h2oPythonWheelPackageLocation} > \$(pwd)/private/h2o.whl
-    export H2O_PYTHON_WHEEL=\$(pwd)/private/h2o.whl
-""")
+        mkdir -p \$(pwd)/private/
+        curl -s ${h2oPythonWheelPackageLocation} > \$(pwd)/private/h2o.whl
+        export H2O_PYTHON_WHEEL=\$(pwd)/private/h2o.whl
+    """)
+        }
+
+        if(H2O_HOME != null && H2O_PYTHON_WHEEL !=null){
+            logger.info("Both \"H2O_HOME\" and \"H2O_PYTHON_WHEEL\" properties are set. Using \"H2O_HOME\"!")
+        }
     }
-
-    if(H2O_HOME != null && H2O_PYTHON_WHEEL !=null){
-        logger.info("Both \"H2O_HOME\" and \"H2O_PYTHON_WHEEL\" properties are set. Using \"H2O_HOME\"!")
-    }
-
 }
 
 def copyH2OFromH2OHome(String H2O_HOME){
@@ -194,7 +189,9 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
 }
 
 // Run integration tests as part of build
-check.dependsOn integTestPython
+task integTest
+integTest.dependsOn integTestPython
+check.dependsOn integTest
 
 //
 // Cleanup
@@ -206,9 +203,11 @@ task cleanPython(type: Delete) {
 //
 // Just print location of H2O Python Wheel package with respect to a configured version of H2O dependency
 //
-task printH2OWheelPackage << {
-    description = "Print location of H2O Python Wheel package for download"
-    println(h2oPythonWheelPackageLocation)
+task printH2OWheelPackage {
+    doLast {
+        description = "Print location of H2O Python Wheel package for download"
+        println(h2oPythonWheelPackageLocation)
+    }
 }
 
 //
