@@ -1,6 +1,13 @@
 apply plugin: 'scala'
 apply from: "$rootDir/gradle/utils.gradle"
 
+// Monkey patch the scala compile options to make Idea happy
+// See: https://discuss.gradle.org/t/idea-integration-with-scala-plugin-broken-since-gradle-3-0-no-such-property-daemonserver/19159/2
+ScalaCompileOptions.metaClass.daemonServer = true
+ScalaCompileOptions.metaClass.fork = true
+ScalaCompileOptions.metaClass.useAnt = false
+ScalaCompileOptions.metaClass.useCompileDaemon = false
+
 // Activate Zinc compiler and configure scalac
 tasks.withType(ScalaCompile) {
     scalaCompileOptions.additionalParameters = ['-target:jvm-1.6']
