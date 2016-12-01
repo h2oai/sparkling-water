@@ -15,22 +15,32 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends
+package water.messaging.driver;
 
-import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.utils.NodeDesc
+import com.googlecode.jsonrpc4j.JsonRpcMethod;
 
-trait SparklingBackend {
-  def init(): Array[NodeDesc]
+import java.util.Map;
 
-  def awaitStop(): Unit = {}
+public class DriverServiceImpl implements DriverService {
 
-  /**
-    * Check Spark and H2O environment on particular backend, update it if necessary and and warn about possible problems
-    *
-    * @param conf H2O Configuration
-    */
-  def checkAndUpdateConf(conf: H2OConf): H2OConf
+    private DriverService driver;
 
-  def stop(stopSparkContext: Boolean)
+    public DriverServiceImpl(DriverService driver) {
+        this.driver = driver;
+    }
+
+    @Override
+    @JsonRpcMethod("Driver.Get")
+    public Map<String, Object> get(String[] name) {
+        return driver.get(name);
+    }
+
+    @Override
+    @JsonRpcMethod("Driver.Stop")
+    public void stop() {
+        driver.stop();
+    }
+
+    @Override
+    public void setPort(int port) {}
 }

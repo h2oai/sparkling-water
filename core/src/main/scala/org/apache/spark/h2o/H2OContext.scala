@@ -62,7 +62,6 @@ class H2OContext private (@(transient @param @field) val sparkContext: SparkCont
   with Serializable with SparkDataFrameConverter with SupportedRDDConverter with DatasetConverter
   with H2OContextUtils { self =>
 
-
   @transient val sqlc: SQLContext = SparkSession.builder().getOrCreate().sqlContext
 
   /** IP of H2O client */
@@ -108,6 +107,10 @@ class H2OContext private (@(transient @param @field) val sparkContext: SparkCont
     // Store this instance so it can be obtained using getOrCreate method
     H2OContext.setInstantiatedContext(this)
     this
+  }
+
+  def awaitStop(): Unit = {
+    backend.awaitStop()
   }
 
   /**
