@@ -80,8 +80,9 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable{
   // Options in form key=value
     Seq(
       ("-name", conf.cloudName.get),
-      ("-nthreads", if (conf.nthreads > 0) conf.nthreads else null))
-      .filter(x => x._2 != null)
+      ("-nthreads", if (conf.nthreads > 0) conf.nthreads else null),
+      ("-internal_security_conf", conf.sslConf.orNull)
+    ).filter(x => x._2 != null)
       .flatMap(x => Seq(x._1, x._2.toString)) ++ // Append single boolean options
       Seq(("-ga_opt_out", conf.disableGA))
         .filter(_._2).map(x => x._1)
