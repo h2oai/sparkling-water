@@ -70,7 +70,8 @@ configure(allprojects) { project ->
     apply plugin: 'eclipse'
     apply from: "$rootDir/gradle/artifacts.gradle"
     apply plugin: 'nebula.lint'
-    gradleLint.rules = ['all-dependency'] // add as many rules here as you'd like
+    gradleLint.rules = ['all-dependency']
+    gradleLint.alwaysRun = false // Run linter manually
 
     // Version of main components
     ext {
