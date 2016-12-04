@@ -24,6 +24,8 @@ jar {
 // Shadow jar settings
 shadowJar {
   relocate 'javassist', 'ai.h2o.javassist'
+  // Relocate Eclipse Jetty to avoid collisions with Spark Jetty (newer version)
+  relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
   dependencies {
     // This has to be specific list of dependencies
     // Do not forget that Sparkling Water is intended 
