@@ -1,6 +1,35 @@
 ChangeLog
 =========
 
+##2.0.1 (2016-12-04)
+  - Bug
+    - [SW-196](https://0xdata.atlassian.net/browse/SW-196) - Fix wrong output of __str__ on H2OContext
+    - [SW-212](https://0xdata.atlassian.net/browse/SW-212) - Fix depreciation warning regarding the compiler in scala.gradle
+    - [SW-221](https://0xdata.atlassian.net/browse/SW-221) - SVM: the model is not unlocked after building
+    - [SW-226](https://0xdata.atlassian.net/browse/SW-226) - SVM: binomial model - AUC curves are missing
+    - [SW-227](https://0xdata.atlassian.net/browse/SW-227) - java.lang.ClassCastException: com.sun.proxy.$Proxy19 cannot be cast to water.api.API
+    - [SW-242](https://0xdata.atlassian.net/browse/SW-242) - Fix Python build process
+    - [SW-248](https://0xdata.atlassian.net/browse/SW-248) - Fix TensorFlow notebook to support Python 3
+    - [SW-264](https://0xdata.atlassian.net/browse/SW-264) - PySparkling is not using existing SQLContext
+    - [SW-268](https://0xdata.atlassian.net/browse/SW-268) - Databricks cloud: Jetty class loading problem.
+
+  - New Feature
+    - [SW-267](https://0xdata.atlassian.net/browse/SW-267) - Add assembly-h2o module which will extend h2o/h2odriver jar by additional classes
+
+  - Improvement
+    - [SW-129](https://0xdata.atlassian.net/browse/SW-129) - Add support for transformation from H2OFrame -> RDD in PySparkling
+    - [SW-169](https://0xdata.atlassian.net/browse/SW-169) - Remove deprecated calls
+    - [SW-193](https://0xdata.atlassian.net/browse/SW-193) - Append scala version to pysparkling package name
+    - [SW-200](https://0xdata.atlassian.net/browse/SW-200) - Add flows from presentation in Budapest and Paris to flows dir
+    - [SW-208](https://0xdata.atlassian.net/browse/SW-208) - Generate all PySparkling artefacts into build directory
+    - [SW-209](https://0xdata.atlassian.net/browse/SW-209) - RSparkling: improve handling of Sparkling Water package dependencies
+    - [SW-215](https://0xdata.atlassian.net/browse/SW-215) - Improve internal type handling 
+    - [SW-219](https://0xdata.atlassian.net/browse/SW-219) - RSparkling: as_h2o_frame should properly name the frame
+    - [SW-230](https://0xdata.atlassian.net/browse/SW-230) - Fix sparkling-shell windows script
+    - [SW-235](https://0xdata.atlassian.net/browse/SW-235) - Discover py4j package version automatically from SPARK_HOME
+    - [SW-243](https://0xdata.atlassian.net/browse/SW-243) - Remove all references to local-cluster[...] in our doc
+    - [SW-245](https://0xdata.atlassian.net/browse/SW-245) - Upgrade of H2O dependency to the latest turing release (3.10.0.10)
+
 ##2.0.0 (2016-09-26)
   - Bugs
     - [SW-57](https://0xdata.atlassian.net/browse/SW-57) - Produce artifacts for Scala 2.11
