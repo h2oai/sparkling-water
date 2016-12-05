@@ -2,11 +2,16 @@ apply plugin: 'net.researchgate.release'
 apply plugin: 'nexus-workflow'
 
 release {
-  tagPrefix = "RELEASE"
+  tagTemplate = 'RELEASE-$version'
   // Safe point - do releases only from release branch - can be deleted in future
-  //requireBranch = "release"
   failOnUnversionedFiles = false
   preCommitText = ":tada: "
+  git {
+    // Note: the releases are only allowed from master branch
+    // requireBranch = '<<FILL ME>>'
+    // DEBUG: disable dry run in production/CI
+    // pushOptions = ["--dry-run"]
+  }
 }
 
 // Helper task uploading all artifacts
@@ -25,5 +30,5 @@ if (project.hasProperty("doPromotion")) {
 }
 
 // Upload artifacts after release
-createReleaseTag.dependsOn stageAll
+afterReleaseBuild.dependsOn stageAll
 
