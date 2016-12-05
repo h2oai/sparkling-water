@@ -13,10 +13,10 @@ ChangeLog
     - [SW-264](https://0xdata.atlassian.net/browse/SW-264) - PySparkling is not using existing SQLContext
     - [SW-268](https://0xdata.atlassian.net/browse/SW-268) - Databricks cloud: Jetty class loading problem.
 
- - New Feature
+  - New Feature
     - [SW-267](https://0xdata.atlassian.net/browse/SW-267) - Add assembly-h2o module which will extend h2o/h2odriver jar by additional classes
 
- - Improvement
+  - Improvement
     - [SW-129](https://0xdata.atlassian.net/browse/SW-129) - Add support for transformation from H2OFrame -> RDD in PySparkling
     - [SW-169](https://0xdata.atlassian.net/browse/SW-169) - Remove deprecated calls
     - [SW-193](https://0xdata.atlassian.net/browse/SW-193) - Append scala version to pysparkling package name
