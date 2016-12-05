@@ -2,6 +2,7 @@
 // Sparkling Water build file.
 // This is a multi-module build file.
 //
+apply plugin: 'base'
 
 // For multiproject setup we have to apply release plugin here (we share same release number cross all modules)
 if (project.hasProperty("doRelease")) {
@@ -21,7 +22,7 @@ buildscript {
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
         classpath 'org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.10:0.8.2'
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
-        classpath 'net.researchgate:gradle-release:2.0.2'
+        classpath 'net.researchgate:gradle-release:2.4.1'
         classpath 'com.adaptc.gradle:nexus-workflow:0.6'
         classpath 'com.bmuschko:gradle-docker-plugin:2.6.5'
         classpath 'com.netflix.nebula:gradle-lint-plugin:latest.release'
@@ -159,8 +160,9 @@ task wrapper(type: Wrapper) {
   gradleVersion = '3.2'
 }
 
-task clean(group: "Build tasks", description: "Clean up the project", type: Delete) {
-    delete file("build/")
-    delete file("h2ologs/")
-    delete file("null/")
+clean.doFirst {
+  delete file("build/")
+  delete file("h2ologs/")
+  delete file("null/")
 }
+
