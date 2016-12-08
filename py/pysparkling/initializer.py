@@ -24,9 +24,9 @@ class Initializer(object):
         jvm = sc._jvm
         # Add Sparkling water assembly JAR to driver
         sw_jar_file = Initializer.__get_sw_jar()
-        url = sc._jvm.java.net.URL("file://{}".format(sw_jar_file))
+        url = jvm.java.net.URL("file://{}".format(sw_jar_file))
         # Assuming that context class loader is always instance of URLClassLoader ( which should be always true)
-        cl = sc._jvm.Thread.currentThread().getContextClassLoader()
+        cl = jvm.Thread.currentThread().getContextClassLoader()
 
         # explicitly check if we run on databricks cloud since there we must add the jar to the parent of context class loader
         if cl.getClass().getName()=='com.databricks.backend.daemon.driver.DriverLocal$DriverLocalClassLoader':
@@ -34,10 +34,10 @@ class Initializer(object):
         else:
             cl.addURL(url)
 
-        # Add Sparkling water assembly JAR to executors
+        # Add Sparkling Water Assembly JAR to Spark's file server so executors can fetch it when they need to use the dependency.
         jsc.addJar(sw_jar_file)
 
-        # SW-272: For yarn and cluster deployments we need to modify location the jar file to a driver cache location
+        # SW-272: For yarn and cluster deployments we need to modify location of the jar file to a driver cache location
         #
         # WARNING: This is low-level code accessing internal Spark API to enable SW2.0 on Azure/CDH clusters.
         #          It needs to be properly tested and verified on different platforms!
