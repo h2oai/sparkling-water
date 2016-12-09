@@ -52,6 +52,7 @@ task checkPythonEnv {
         def SPARK_HOME = sparkHome
         def H2O_HOME = System.getenv("H2O_HOME")
         def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
+        def H2O_EXTENDED_JAR = System.getenv("H2O_EXTENDED_JAR")
 
         if (SPARK_HOME == null) throw new InvalidUserDataException("SPARK_HOME needs to be defined!")
 
@@ -71,7 +72,19 @@ task checkPythonEnv {
     """)
         }
 
-        if(H2O_HOME != null && H2O_PYTHON_WHEEL !=null){
+        // if the spark.ext.h2o.backend.cluster.mode is set to external, then
+        // we need to have also H2O_EXTENDED_JAR property set in order to be able to perform tests
+        if (detectBackendClusterMode() == "external" && H2O_EXTENDED_JAR == null) {
+            throw new InvalidUserDataException("""When running tests on external H2O cluster, H2O_EXTENDED_JAR property is required.
+
+Please set it, for example as:
+
+export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
+                                  """)
+        }
+
+
+        if (H2O_HOME != null && H2O_PYTHON_WHEEL != null) {
             logger.info("Both \"H2O_HOME\" and \"H2O_PYTHON_WHEEL\" properties are set. Using \"H2O_HOME\"!")
         }
     }
@@ -137,7 +150,16 @@ task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
         preparePythonEnv(environment)
     }
     // add PySparkling egg on PYTHONPATH so unittests can see all the modules within this egg file
-    environment['PYTHONPATH'] = configurations.eggs.artifacts.file.join(File.pathSeparator) +  File.pathSeparator + environment['PYTHONPATH']
+    environment['PYTHONPATH'] = configurations.eggs.artifacts.files.singleFile.absolutePath +  File.pathSeparator + environment['PYTHONPATH']
+    environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
+    // sparkling assembly jar is here because of external h2o tests
+    environment["sparkling.assembly.jar"] = configurations.compile.join(',')
+
+    // if this property is set up h2o cluster will be started on yarn instead on local machine
+    if(project.hasProperty("startH2OClusterOnYarn")){
+        environment["spark.ext.h2o.external.start.mode"] = "auto"
+    }
+    
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
     environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
     commandLine getOsSpecificCommandLine(["python", "tests/tests_unit.py"])
@@ -153,10 +175,20 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
     def testEnv = detectEnvironment()
 
     // Pass references to libraries to test launcher
-    environment["sparkling.pysparkling.egg"] = configurations.eggs.artifacts.file.join(File.pathSeparator)
+    environment["sparkling.pysparkling.egg"] = configurations.eggs.artifacts.files.singleFile.absolutePath
+    environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
+    // sparkling assembly jar is here because of external h2o tests
+    environment["sparkling.assembly.jar"] = configurations.compile.join(',')
     environment["spark.testing"] = "true"
     environment["spark.test.home"] = "${sparkHome}"
     environment["sparkling.test.hdp.version"] = "${hdpVersion}"
+
+
+    // if this property is set up h2o cluster will be started on yarn instead on local machine
+    if(project.hasProperty("startH2OClusterOnYarn")){
+        environment["spark.ext.h2o.external.start.mode"] = "auto"
+    }
+
     if (sparkMaster != null)
         environment["spark.master"] = "${sparkMaster}"
 

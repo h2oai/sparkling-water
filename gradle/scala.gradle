@@ -70,6 +70,30 @@ sourceSets {
     }
 }
 
+
+//
+// Initial task checking setup of all properties required
+// by scala tests
+//
+task checkScalaTestEnv {
+    doLast {
+
+        // if the spark.ext.h2o.backend.cluster.mode is set to external, then
+        // we need to have also H2O_EXTENDED_JAR property set in order to be able to perform tests
+        if (detectBackendClusterMode() == "external" && System.getenv("H2O_EXTENDED_JAR") == null) {
+
+            throw new InvalidUserDataException("""When running tests on external H2O cluster, H2O_EXTENDED_JAR property is required.
+
+Please set it, for example as:
+export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
+                                  """)
+        }
+    }
+}
+
+
+check.dependsOn(checkScalaTestEnv)
+
 // Enable scalastyle
 apply from: "$rootDir/gradle/scalastyle.gradle"
 
