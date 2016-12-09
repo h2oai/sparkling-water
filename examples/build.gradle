@@ -58,9 +58,15 @@ dependencies {
 }
 
 integTest {
+  systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
   systemProperty "spark.testing",   "true"
   systemProperty "spark.test.home", "${sparkHome}"
   systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
+
+  // if this property is set up h2o cluster will be started on yarn instead on local machine
+  if(project.hasProperty("startH2OClusterOnYarn")){
+    systemProperty "spark.ext.h2o.external.start.mode", "auto"
+  }
 
   // Pass list of jars required for testing
   systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
@@ -72,11 +78,17 @@ integTest {
 
 // Setup test environment for scripts test
 scriptsTest {
+  systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
   systemProperty "spark.testing",   "true"
   systemProperty "spark.test.home", "${sparkHome}"
   systemProperty "sparkling.test.log.dir", new File(project.getBuildDir(), "h2ologs-test")
   systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-stest/nodes")
   systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-stest/client")
+
+  // if this property is set up h2o cluster will be started on yarn instead on local machine
+  if(project.hasProperty("startH2OClusterOnYarn")){
+    systemProperty "spark.ext.h2o.external.start.mode", "auto"
+  }
 
   // Set sparkling water assembly jar location
   systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"

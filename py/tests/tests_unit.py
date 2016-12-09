@@ -34,7 +34,7 @@ class FrameTransformationsTest(unittest.TestCase):
     def setUpClass(cls):
         cls._sc = SparkContext(conf = test_utils.get_default_spark_conf())
         test_utils.set_up_class(cls)
-        cls._hc = H2OContext.getOrCreate(cls._sc, H2OConf(cls._sc))
+        cls._hc = H2OContext.getOrCreate(cls._sc, H2OConf(cls._sc).set_num_of_external_h2o_nodes(2))
 
     @classmethod
     def tearDownClass(cls):
@@ -131,7 +131,7 @@ class H2OConfTest(unittest.TestCase):
     def setUpClass(cls):
         cls._sc = SparkContext(conf = test_utils.get_default_spark_conf().set("spark.ext.h2o.cloud.name", "test-cloud"))
         test_utils.set_up_class(cls)
-        h2o_conf = H2OConf(cls._sc)
+        h2o_conf = H2OConf(cls._sc).set_num_of_external_h2o_nodes(2)
         cls._hc = H2OContext.getOrCreate(cls._sc, h2o_conf)
 
     @classmethod

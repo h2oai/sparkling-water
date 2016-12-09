@@ -166,6 +166,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
 
+
     if(conf.isAutoClusterStartUsed) {
       lazy val driverPath = sys.env.get("H2O_EXTENDED_JAR")
       if(conf.h2oDriverPath.isEmpty && driverPath.isEmpty){
