@@ -24,7 +24,7 @@ import org.apache.spark.{SparkConf, SparkSessionUtils}
   * A simple wrapper to allow launching H2O itself on the
   * top of Spark.
   */
-object SparklingWaterDriver {
+object SparklingWaterWithHiveDriver {
 
   /** Entry point */
   def main(args: Array[String]) {
@@ -35,7 +35,8 @@ object SparklingWaterDriver {
         .setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
         .set("spark.ext.h2o.repl.enabled","true"))
 
-    val spark = SparkSessionUtils.createSparkSession(conf)
+    // Create SparkContext to execute application on Spark cluster
+    val spark = SparkSessionUtils.createSparkSession(conf, forceHive = true)
     // Start H2O cluster only
     val hc = H2OContext.getOrCreate(spark.sparkContext)
 
