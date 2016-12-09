@@ -19,8 +19,7 @@ package org.apache.spark.h2o.utils
 import java.util.UUID
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OConf, H2OContext, Holder}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.h2o.{BackendIndependentTestHelper, H2OConf, H2OContext, Holder}
 import org.scalatest.Suite
 import water.fvec._
 import water.{DKV, Key}
@@ -32,7 +31,7 @@ import scala.reflect.ClassTag
   * Helper trait to simplify initialization and termination of Spark/H2O contexts.
   *
   */
-trait SharedSparkTestContext extends SparkTestContext {
+trait SharedSparkTestContext extends SparkTestContext with BackendIndependentTestHelper {
   self: Suite =>
 
   def createSparkContext: SparkContext
@@ -44,11 +43,12 @@ trait SharedSparkTestContext extends SparkTestContext {
   override def beforeAll(): Unit = {
     super.beforeAll()
     sc = createSparkContext
-    sqlc = SQLContext.getOrCreate(sc)
-    hc = createH2OContext(sc, new H2OConf(sc))
+    hc = createH2OContext(sc, 2)
   }
 
+
   override def afterAll(): Unit = {
+    stopCloudIfExternal(sc)
     resetContext()
     super.afterAll()
   }
