@@ -33,9 +33,10 @@ function checkSparkVersion() {
     exit -1
   fi
 }
-
+# Disable grep options for this environment
+GREP_OPTIONS=
 # Version of this distribution
-VERSION=$( cat $TOPDIR/gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//" )
+VERSION=$(cat $TOPDIR/gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//" )
 H2O_VERSION=$(cat $TOPDIR/gradle.properties | grep h2oMajorVersion | sed -e "s/.*=//")
 H2O_BUILD=$(cat $TOPDIR/gradle.properties | grep h2oBuild | sed -e "s/.*=//")
 H2O_NAME=$(cat $TOPDIR/gradle.properties | grep h2oMajorName | sed -e "s/.*=//")
