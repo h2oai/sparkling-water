@@ -1,6 +1,12 @@
 ChangeLog
 =========
 
+##2.0.2 (2016-12-09)
+  - Bug
+    - [SW-271](https://0xdata.atlassian.net/browse/SW-271) - SparklingWater Driver is not using SparkSession
+    - [SW-272](https://0xdata.atlassian.net/browse/SW-272) - Microsoft Azure: deployment of pysparkling is failing
+    - [SW-274](https://0xdata.atlassian.net/browse/SW-274) - When grep options are configured, Spark version detection does not work
+
 ##2.0.1 (2016-12-04)
   - Bug
     - [SW-196](https://0xdata.atlassian.net/browse/SW-196) - Fix wrong output of __str__ on H2OContext
