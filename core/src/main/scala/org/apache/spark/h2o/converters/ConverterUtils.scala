@@ -28,7 +28,7 @@ import scala.collection.mutable.ListBuffer
 import scala.reflect.runtime.universe._
 
 
-private[converters] trait ConverterUtils {
+private[converters] trait ConverterUtils extends Serializable {
 
 
   def initFrame[T](keyName: String, names: Array[String]):Unit = {
@@ -90,7 +90,7 @@ private[converters] trait ConverterUtils {
     }
 
     val operation: SparkJob[T] = func(keyName, vecTypes, uploadPlan)
-
+    
     val rows = hc.sparkContext.runJob(preparedRDD, operation) // eager, not lazy, evaluation
     val res = new Array[Long](preparedRDD.partitions.length)
     rows.foreach { case (cidx,  nrows) => res(cidx) = nrows }
