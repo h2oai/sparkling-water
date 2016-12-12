@@ -67,4 +67,8 @@ shadowJar {
   }
 }
 
+artifacts {
+  compile shadowJar
+}
+
 build.dependsOn shadowJar

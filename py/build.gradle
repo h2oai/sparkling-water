@@ -11,9 +11,8 @@ ext {
 description = "PySparkling - Sparkling-Water Python Package"
 
 dependencies {
-  compile project(path: ':sparkling-water-assembly', configuration: 'shadow')
+    compile project(path: ':sparkling-water-assembly')
 }
-
 //
 // Create a file with version for Python dist task
 //
@@ -144,8 +143,11 @@ task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.compile] )
         // Copy basic python setup
         copyPySetup()
         // Copy sparkling water fatjar
+        def fatJarName = "sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar"
+        def fatJar = configurations.compile.filter{
+            it.absoluteFile.getName() == fatJarName}.singleFile
         copy {
-            from "${configurations.compile.join(',')}"
+            from fatJar
             into  file("${project.pkgDir}/sparkling_water")
             rename ".*", "sparkling_water_assembly.jar"
         }
@@ -171,7 +173,7 @@ artifacts {
 //
 // Test python against Spark cloud
 //
-task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
+task testPython(type: Exec, dependsOn: distPython) {
     doFirst {
         preparePythonEnv(environment)
     }
@@ -195,8 +197,8 @@ task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
 //
 // Run python integration tests
 //
-task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
-    doFirst{
+task integTestPython(type: Exec, dependsOn: distPython) {
+    doFirst {
         preparePythonEnv(environment)
     }
     def testEnv = detectEnvironment()
