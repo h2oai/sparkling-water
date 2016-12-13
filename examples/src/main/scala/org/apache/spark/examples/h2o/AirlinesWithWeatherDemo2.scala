@@ -30,7 +30,7 @@ import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.{SparkConf, SparkFiles}
 import water.Key
 import water.fvec.Frame
-import water.support.{SparkContextSupport, SparkSessionSupport}
+import water.support.{H2OFrameSupport, SparkContextSupport, SparkSessionSupport}
 
 /** Demo for meetup presented at 12/17/2014 */
 object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSupport {
@@ -121,7 +121,11 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSup
     // Instead of using RDD API we will directly split H2O Frame
     val joinedH2OFrame:H2OFrame = joinedTable // Invoke implicit transformation
     // Transform date related columns to enums
-    for( i <- 0 to 2) joinedH2OFrame.replace(i, joinedH2OFrame.vec(i).toCategoricalVec)
+    H2OFrameSupport.withLockAndUpdate(joinedH2OFrame){ fr =>
+      for( i <- 0 to 2){
+        fr.replace(i, fr.vec(i).toCategoricalVec)
+      }
+    }
 
     //
     // Use low-level task to split the frame

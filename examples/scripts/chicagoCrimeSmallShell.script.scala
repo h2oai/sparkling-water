@@ -22,6 +22,7 @@ import org.apache.spark.sql.types._
 import water.fvec.{H2OFrame, Vec}
 import water.parser.ParseSetup
 import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
+import water.support.H2OFrameSupport._
 
 // Create SQL support
 implicit val sqlContext = spark.sqlContext
@@ -46,10 +47,10 @@ def loadData(datafile: String, modifyParserSetup: ParseSetup => ParseSetup = ide
 //
 def createWeatherTable(datafile: String): H2OFrame = {
   val table = loadData(datafile)
-  // Remove first column since we do not need it
-  table.remove(0).remove()
-  table.update()
-  table
+  withLockAndUpdate(table){
+    // Remove first column since we do not need it
+    _.remove(0).remove()
+  }
 }
 
 //
@@ -59,9 +60,7 @@ def createCensusTable(datafile: String): H2OFrame = {
   val table = loadData(datafile)
   // Rename columns: replace ' ' by '_'
   val colNames = table.names().map( n => n.trim.replace(' ', '_').replace('+','_'))
-  table._names = colNames
-  table.update()
-  table
+  withLockAndUpdate(table){_._names = colNames}
 }
 
 //
@@ -76,17 +75,17 @@ def createCrimeTable(datafile: String, datePattern:String, dateTimeZone:String):
     }
     parseSetup
   })
-  // Refine date into multiple columns
-  val dateCol = table.vec(2)
-  table.add(new RefineDateColumn(datePattern, dateTimeZone).doIt(dateCol))
-  // Update names, replace all ' ' by '_'
-  val colNames = table.names().map( n => n.trim.replace(' ', '_'))
-  table._names = colNames
-  // Remove Date column
-  table.remove(2).remove()
-  // Update in DKV
-  table.update()
-  table
+
+  withLockAndUpdate(table){ fr =>
+    // Refine date into multiple columns
+    val dateCol = table.vec(2)
+    fr.add(new RefineDateColumn(datePattern, dateTimeZone).doIt(dateCol))
+    // Update names, replace all ' ' by '_'
+    val colNames = fr.names().map( n => n.trim.replace(' ', '_'))
+    fr._names = colNames
+    // Remove Date column
+    fr.remove(2).remove()
+  }
 }
 
 //
@@ -130,7 +129,8 @@ val crimeWeather = sqlContext.sql(
 crimeWeather.printSchema()
 val crimeWeatherDF:H2OFrame = crimeWeather
 // Transform all string columns into categorical
-H2OFrameSupport.allStringVecToCategorical(crimeWeatherDF)
+withLockAndUpdate(crimeWeatherDF){ allStringVecToCategorical(_) }
+
 
 //
 // Split final data table
@@ -225,7 +225,8 @@ def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: DataFrame)
   val srdd:DataFrame = sqlContext.sparkContext.parallelize(Seq(crime)).toDF()
   // Join table with census data
   val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
-  H2OFrameSupport.allStringVecToCategorical(row)
+
+  withLockAndUpdate(row){ allStringVecToCategorical(_) }
   val predictTable = model.score(row)
   val probOfArrest = predictTable.vec("true").at(0)
 
