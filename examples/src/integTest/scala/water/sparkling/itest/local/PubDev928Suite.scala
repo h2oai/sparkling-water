@@ -11,8 +11,8 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.fvec.H2OFrame
-import water.support.SparkContextSupport
-import water.sparkling.itest.{IntegTestStopper, LocalTest, IntegTestHelper}
+import water.sparkling.itest.{IntegTestHelper, IntegTestStopper, LocalTest}
+import water.support.{H2OFrameSupport, SparkContextSupport}
 
 
 /**
@@ -63,8 +63,9 @@ object PubDev928Test extends SparkContextSupport with IntegTestStopper {
     val train: H2OFrame = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
       'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
       'Distance, 'IsDepDelayed)
-    train.replace(train.numCols() - 1, train.lastVec().toCategoricalVec)
-    train.update()
+    H2OFrameSupport.withLockAndUpdate(train){ fr =>
+      fr.replace(fr.numCols() - 1, fr.lastVec().toCategoricalVec)
+    }
     println(s"Any vec chunk cnt: ${train.anyVec().nChunks()}")
     // Configure Deep Learning algorithm
     val dlParams = new DeepLearningParameters()
