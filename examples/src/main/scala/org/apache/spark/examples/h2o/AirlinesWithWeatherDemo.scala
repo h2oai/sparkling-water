@@ -62,7 +62,6 @@ object AirlinesWithWeatherDemo extends SparkContextSupport with SparkSessionSupp
 
     flightsToORD.toDF.createOrReplaceTempView("FlightsToORD")
     weatherTable.toDF.createOrReplaceTempView("WeatherORD")
-
     //
     // -- Join both tables and select interesting columns
     //

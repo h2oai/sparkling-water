@@ -141,8 +141,10 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     import h2oContext.implicits._
     import sqlContext.implicits._
     val h2oFrame: H2OFrame = finalRdd.toDF
-    h2oFrame.replace(h2oFrame.find("category"), h2oFrame.vec("category").toCategoricalVec).remove()
+    withLockAndUpdate(h2oFrame){ fr =>
+      fr.replace(fr.find("category"), fr.vec("category").toCategoricalVec).remove()
 
+    }
     (h2oFrame, w2vModel)
   }
 
