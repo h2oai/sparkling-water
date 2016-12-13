@@ -22,11 +22,10 @@ import java.io.File
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
-import water.support.SparkContextSupport
-
+import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkFiles}
+import water.support.{H2OFrameSupport, SparkContextSupport}
 
 object DeepLearningDemoWithoutExtension extends SparkContextSupport {
 
@@ -76,8 +75,9 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport {
     val train = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
       'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
       'Distance, 'IsDepDelayed )
-    train.replace(train.numCols()-1, train.lastVec().toCategoricalVec)
-    train.update()
+    H2OFrameSupport.withLockAndUpdate(train){ fr =>
+      fr.replace(fr.numCols()-1, fr.lastVec().toCategoricalVec)
+    }
 
     // Configure Deep Learning algorithm
     val dlParams = new DeepLearningParameters()

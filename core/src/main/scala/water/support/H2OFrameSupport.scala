@@ -37,13 +37,24 @@ trait H2OFrameSupport extends JoinSupport {
     splitter.getResult
   }
 
+  def withLockAndUpdate[T <: Frame](fr: T)(f: T => Any): T = {
+    fr.write_lock()
+    f(fr)
+    // Update frame in DKV
+    fr.update()
+    fr.unlock()
+    fr
+  }
+
+
+  /**
+    * This method updates the frame locally. Call fr.update() after it if you already have a lock or
+    * consider calling it inside withLockAndUpdate method which obtains the lock, updates the frame and releases the lock
+    */
   def allStringVecToCategorical[T <: Frame](fr: T): T = {
     fr.vecs().indices
       .filter(idx => fr.vec(idx).isString)
       .foreach(idx => fr.replace(idx, fr.vec(idx).toCategoricalVec).remove())
-    // Update frame in DKV
-    water.DKV.put(fr)
-    // Return it
     fr
   }
 }

@@ -68,9 +68,10 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H
     val resultRDD: DataFrame = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2)).toDF
 
     val table:H2OFrame = resultRDD
-    // Transform target column into
-    table.replace(table.find("target"), table.vec("target").toCategoricalVec).remove()
-
+    // Transform target column into categorical
+    H2OFrameSupport.withLockAndUpdate(table){ fr =>
+      fr.replace(fr.find("target"), fr.vec("target").toCategoricalVec).remove()
+    }
     // Split table
     val keys = Array[String]("train.hex", "valid.hex")
     val ratios = Array[Double](0.8)
