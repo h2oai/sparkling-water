@@ -1,5 +1,8 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
@@ -13,43 +16,46 @@ backend mode.
 User can specify location to either h2o or h2odriver jar via H2O_ORIGINAL_JAR env variable.
 No works is done if H2O_ORIGINAL_JAR is not set.
 
-User can also use gradle command line argument -PdownloadAndExtend which will download correct h2o version for current
+User can also use gradle command line argument -PdownloadH2O which will download correct h2o version for current
 sparkling water from our repository if it hasn't been already downloaded.
 If this is run without any argument, then basic h2o jar is downloaded,
 but this command takes also argument specifying hadoop version, such as cdh5.4. In case the argument is specified, instead
 of downloading h2o jar this command will download h2o driver jar for specified hadoop version.
 
-Gradle property has higher priority if both H2O_ORIGINAL_JAR and -PdownloadAndExtend are set
+Gradle property has higher priority if both H2O_ORIGINAL_JAR and -PdownloadH2O are set
 
 Few examples:
 
 1)
 export H2O_ORIGINAL_JAR = ...
-./gradlew build -x check
+./gradlew extendJar
 
 In this case the jar to be extended is located using the provided environment variable
 
 2)
-./gradlew build -x check -PdownloadAndExtend
+./gradlew extendJar -PdownloadH2O
 
 In this case the jar to be extended is h2o jar and is downloaded from our repository first
 
 3)
-./gradlew build -x check -PdownloadAndExtend=cdh5.4
+./gradlew extendJar -PdownloadH2O=cdh5.4
 
 In this case the jar to be extended is h2o driver jar for provided hadoop version and is downloaded from our repository first
 
 4)
-./gradlew build -x check -PdownloadAndExtend=abc
+./gradlew extendJar -PdownloadH2O=abc
 
 This case will throw an exception since such hadoop version is not supported
 
 5)
 export H2O_ORIGINAL_JAR = ...
-./gradlew build -x check -PdownloadAndExtend
+./gradlew extendJar -PdownloadH2O
 
 This version will ignore environment variable and jar to be extended will be downloaded from our repository. The same
 holds for version with argument.
+
+the extendJar tasks olso print the path to the extend jar. It can be saved to environmental variable as
+export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
 """
 
 configurations {
@@ -59,44 +65,86 @@ configurations {
 def originalJar = getOrDownloadOriginalJar()
 
 dependencies {
-    artifactsToMerge("ai.h2o:h2o-scala_${scalaBaseVersion}:${h2oVersion}") { transitive = false }
+    artifactsToMerge("ai.h2o:h2o-scala_${scalaBaseVersion}:${h2oVersion}") {
+        transitive = false
+    }
     artifactsToMerge("org.scala-lang:scala-library:${scalaVersion}")
+    artifactsToMerge(project(":sparkling-water-ml")){
+        transitive = false
+    }
+    artifactsToMerge(project(":sparkling-water-core")){
+        exclude group: "org.joda", module: "joda-convert:1.7"
+        transitive = false
+    }
+    artifactsToMerge("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"){
+        exclude group: "org.apache.spark", module: "spark-core_${scalaBaseVersion}"
+        exclude group: "org.apache.spark", module: "spark-streaming_${scalaBaseVersion}"
+        exclude group: "org.apache.spark", module: "spark-sql_${scalaBaseVersion}"
+        exclude group: "org.apache.spark", module: "spark-graphx_${scalaBaseVersion}"
+        exclude group: "org.jpmml", module: "pmml-model"
+        exclude group: "org.apache.commons", module: "commons-math3"
+        exclude group: "org.apache.spark", module: " spark-mllib-local_${scalaBaseVersion}"
+        exclude group: "org.apache.spark", module: "spark-tags_${scalaBaseVersion}"
+        exclude group: "org.spire-math", module: "spire_${scalaBaseVersion}"
+    }
+
     originalJar = getOrDownloadOriginalJar()
     if (originalJar != null) {
         artifactsToMerge files(originalJar)
     }
 }
 
-task extendJar(type: ShadowJar) {
-    configurations = [project.configurations.artifactsToMerge]
-    if (originalJar != null) {
-        def h2oJarFile = new File(originalJar).getName().toLowerCase()
-        if (h2oJarFile.contains("h2odriver")) {
-            baseName = "h2odriver_extended"
-        } else {
-            baseName = "h2o_extended"
+task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparkling-water-core:jar"]) {
+    destinationDir = file("private")
+    mergeServiceFiles()
+    if(h2oJarFileName(originalJar) != null){
+        manifest {
+            attributes 'Main-Class': getJarMainClass(originalJar)
         }
-    } else {
-        baseName = null
     }
+    configurations = [project.configurations.artifactsToMerge]
+    baseName = h2oJarFileName(originalJar)
     classifier = null
     version = null
+    doLast{
+        println(new File(projectDir, "private${File.separator}${h2oJarFileName(originalJar)}.jar"))
+    }
 }
 
-if (originalJar != null) {
-    build.dependsOn extendJar
+def static String h2oJarFileName(String pathToH2OJar){
+    if(pathToH2OJar != null) {
+        return isJarH2ODriver(pathToH2OJar) ? "h2odriver_extended" : "h2o_extended"
+    }else{
+        return null
+    }
+}
+
+def static String getJarMainClass(String pathToH2OJar){
+    return isJarH2ODriver(pathToH2OJar) ? 'water.hadoop.h2odriver' : 'water.H2OApp'
+}
+
+/**
+ * Check if the jar on the path is regular h2o jar or h2o driver jar
+ * @param pathToH2OJar path to the jar to be checked
+ * @return true if it is h2o driver jar, false otherwise
+ */
+def static boolean isJarH2ODriver(String pathToH2OJar){
+    def jarFile = Paths.get(pathToH2OJar)
+    def fs = FileSystems.newFileSystem(jarFile, null)
+    def driverClass = fs.getPath("water/hadoop/h2odriver.class")
+    return Files.exists(driverClass)
 }
 
 /**
  * Method determining whether the h2o or h2o driver jar is available.
  * Location to the jar is returned if it's available, otherwise null is returned
  *
- * If the user specified Gradle argument downloadAndExtend then the method will try do download the jar and  return path to it
+ * If the user specified Gradle argument downloadH2O then the method will try do download the jar and return path to it
  */
 def String getOrDownloadOriginalJar() {
-    if (project.hasProperty("downloadAndExtend")) {
-        def hadoopVersion = project.downloadAndExtend
-        def saveDir = file("$buildDir/private")
+    if (project.hasProperty("downloadH2O")) {
+        def hadoopVersion = project.downloadH2O
+        def saveDir = file("private/downloaded")
         saveDir.mkdirs()
         def relName = h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"
 
@@ -148,7 +196,7 @@ consult h2o documentation for available hadoop versions.
 def static downloadFileFromZip(URL fromZip, File to, String fullFileName) {
     fromZip.withInputStream { is ->
         ZipInputStream zin = new ZipInputStream(is)
-        ZipEntry ze = zin.getNextEntry();
+        ZipEntry ze = zin.getNextEntry()
         // read the files before we hit the one we are interested in
         while (ze.getName() != fullFileName) {
             zin.closeEntry()
