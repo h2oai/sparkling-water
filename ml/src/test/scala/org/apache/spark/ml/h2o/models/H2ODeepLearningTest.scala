@@ -48,7 +48,10 @@ class H2ODeepLearningTest extends FunSuite with SharedSparkTestContext {
 
     val airlinesData = h2oContext.asH2OFrame(inp)
 
+    airlinesData.write_lock()
     airlinesData.replace(airlinesData.numCols() - 1, airlinesData.lastVec().toCategoricalVec)
+    airlinesData.update()
+    airlinesData.unlock()
 
     val slModel: H2ODeepLearningModel = new H2ODeepLearning()(hc, sqlContext)
       .setTrainKey(airlinesData.key)
@@ -66,6 +69,7 @@ class H2ODeepLearningTest extends FunSuite with SharedSparkTestContext {
       .setLabelCol("value16")
       .setRawPredictionCol("predict")
       .evaluate(slPrediction)
+    // Not the best assert but the predictions aren't very deterministic
     assert(slAUC <= 1.0 && slAUC >= 0.5)
   }
 

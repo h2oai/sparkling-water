@@ -167,7 +167,8 @@ class PipelineTest extends FunSuite with SharedSparkTestContext {
       "Someonone you know is trying to contact you via our dating service! To find out who it could be call from your mobile or landline " +
       "09064015307BOX334SK38ch",
       "Ok c � then.",
-      "URGENT! We are trying to contact U. Todays draw shows that you have won a �800 prize GUARANTEED. Call 09050003091 from land line. Claim C52. Valid12hrs only"
+      "URGENT! We are trying to contact U. Todays draw shows that you have won a �800 prize GUARANTEED. Call 09050003091 from land line. " +
+        "Claim C52. Valid12hrs only"
     )
 
     val rowRDD = sc.parallelize(inp).map(p => Row(p))
