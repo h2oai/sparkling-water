@@ -162,7 +162,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
 
   // Load data via Spark API
   private def loadData(filename: String): RDD[Array[String]] = {
-    val data = sc.textFile(filename)
+    val data = sc.textFile(enforceLocalSparkFile(filename))
       .filter(line => !line.contains("category")).map(_.split(','))
     data
   }
