@@ -90,6 +90,7 @@ class IntegTestSuite(unittest.TestCase):
         cmd_line.extend(["--conf", 'spark.scheduler.minRegisteredResourcesRatio=1'])
         cmd_line.extend(["--conf", 'spark.ext.h2o.repl.enabled=false']) #  disable repl in tests
         cmd_line.extend(["--conf", "spark.ext.h2o.external.start.mode=" + os.getenv("spark.ext.h2o.external.start.mode", "manual")])
+        cmd_line.extend(["--conf", "spark.sql.warehouse.dir=file:" + os.path.join(os.getcwd(), "spark-warehouse")])
         cmd_line.extend(["--py-files", self.test_env.egg])
         for k, v in self.test_env.spark_conf.items():
             cmd_line.extend(["--conf", k+'='+str(v)])

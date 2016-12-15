@@ -43,7 +43,8 @@ def get_default_spark_conf():
         set("spark.deploy.maxExecutorRetries", "1"). \
         set("spark.ext.h2o.backend.cluster.mode", ExternalClusterTestHelper.cluster_mode()). \
         set("spark.ext.h2o.cloud.name", ExternalClusterTestHelper.unique_cloud_name("test")). \
-        set("spark.ext.h2o.external.start.mode", os.getenv("spark.ext.h2o.external.start.mode", "manual"))
+        set("spark.ext.h2o.external.start.mode", os.getenv("spark.ext.h2o.external.start.mode", "manual")) .\
+        set("spark.sql.warehouse.dir", "file:" + os.path.join(os.getcwd(), "spark-warehouse"))
 
 
     if ExternalClusterTestHelper.tests_in_external_mode():
