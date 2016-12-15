@@ -51,7 +51,7 @@ abstract class H2OModel[S <: H2OModel[S, M],
     prediction.add(frame.names(), frame.vecs())
     val predDF = h2oContext.asDataFrame(prediction)(sqlContext)
     model._output.getModelCategory match {
-      case ModelCategory.Multinomial | ModelCategory.Binomial | ModelCategory.Regression =>
+      case ModelCategory.Regression =>
         predDF.withColumn("predict", predDF.col("predict").cast(DataTypes.DoubleType))
       case _ => predDF
     }

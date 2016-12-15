@@ -109,7 +109,7 @@ class PipelineTest extends FunSuite with SharedSparkTestContext {
     )
   }
 
-  test("Basic pipeline test 2") {
+  test("More complex pipeline test") {
     val smsDataFileName = "smsData.txt"
     val smsDataFilePath = "examples/smalldata/" + smsDataFileName
 
@@ -150,11 +150,7 @@ class PipelineTest extends FunSuite with SharedSparkTestContext {
       setInputCol(hashingTF.getOutputCol).
       setOutputCol("tf_idf")
 
-    val dl = new H2ODeepLearning().
-      setEpochs(10).
-      setL1(0.001).
-      setL2(0.0).
-      setHidden(Array[Int](200, 200)).
+    val dl = new H2OGBM().
       setFeaturesCol("tf_idf").
       setLabelCol("label")
 
@@ -164,7 +160,24 @@ class PipelineTest extends FunSuite with SharedSparkTestContext {
     val data = load("smsData.txt")
     val model = pipeline.fit(data)
 
-    val modelOfLoadedPipeline = pipeline.fit(data)
+    val smsSchema = StructType(Array(StructField("text", StringType, nullable = false)))
+
+    val inp = Array(
+      "I dunno until when... Lets go learn pilates...",
+      "Someonone you know is trying to contact you via our dating service! To find out who it could be call from your mobile or landline " +
+      "09064015307BOX334SK38ch",
+      "Ok c � then.",
+      "URGENT! We are trying to contact U. Todays draw shows that you have won a �800 prize GUARANTEED. Call 09050003091 from land line. Claim C52. Valid12hrs only"
+    )
+
+    val rowRDD = sc.parallelize(inp).map(p => Row(p))
+    val test = sqlContext.createDataFrame(rowRDD, smsSchema)
+
+    val result = model.transform(test).collect().map(row => Array(row.getAs[String]("predict"), row.getAs[String]("text")).mkString(" ") ).array
+
+    val labeledInp = Array("ham", "spam", "ham", "spam").zip(inp).map{ case (v1, v2) => v1 + " " + v2 }
+
+    assert( result.sorted sameElements labeledInp.sorted )
 
     def isSpam(smsText: String,
                model: PipelineModel,
