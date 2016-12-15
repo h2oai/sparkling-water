@@ -24,7 +24,7 @@ import org.apache.spark.h2o.utils.ReflectionUtils._
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
-import water.ExternalFrameUtils
+import water.{ExternalFrameUtils, Key}
 import water.fvec.{Frame, H2OFrame}
 
 private[h2o] object SparkDataFrameConverter extends Logging {
@@ -51,7 +51,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     import H2OSchemaUtils._
     // Cache DataFrame RDD's
     val dfRdd = dataFrame.rdd
-    val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id)
+    val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
 
     // Flattens and expands RDD's schema
     val flatRddSchema = expandedSchema(hc.sparkContext, dataFrame)
