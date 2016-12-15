@@ -19,7 +19,6 @@ package org.apache.spark.ml.h2o.features
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.h2o.OneTimeTransformer
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.{DataFrame, Dataset}
@@ -28,7 +27,7 @@ import org.apache.spark.sql.types.{StructField, StructType}
 /**
   * This one time transformer removes specified columns in the input dataset
   */
-class ColRemover(override val uid: String) extends OneTimeTransformer with ColRemoverParams with DefaultParamsWritable {
+class ColRemover(override val uid: String) extends Transformer with ColRemoverParams with DefaultParamsWritable {
 
   def this() = this(Identifiable.randomUID("h2oColRemover"))
 

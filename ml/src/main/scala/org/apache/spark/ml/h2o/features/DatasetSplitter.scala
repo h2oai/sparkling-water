@@ -21,11 +21,10 @@ import hex.FrameSplitter
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.h2o.OneTimeTransformer
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Dataset, SQLContext, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
 import water.fvec.{Frame, H2OFrame}
 import water.{DKV, Key}
 
@@ -38,9 +37,10 @@ import water.{DKV, Key}
   *        is passed on the output
   *     3) Otherwise the first frame specified in the list of keys is passed on the output
 */
+// TODO do something about this, this returns not a single column with all features but a dataframe with multiple columns
 class DatasetSplitter(override val uid: String)
                      (implicit val h2oContext: H2OContext, sqlContext: SQLContext)
-  extends OneTimeTransformer with DatasetSplitterParams with DefaultParamsWritable{
+  extends Transformer with DatasetSplitterParams with DefaultParamsWritable{
 
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Identifiable.randomUID("h2oFrameSplitter"))
 
