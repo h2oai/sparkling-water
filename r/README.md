@@ -1,7 +1,7 @@
 # RSparkling
 
 
-**Note**: The RSparkling README has been moved to the [RSparkling repository](https://github.com/h2oai/rsparkling). 
+**Note**: The RSparkling README has been moved to the [RSparkling repository](https://github.com/h2oai/rsparkling/blob/master/README.md). 
 
 
 ## Additional Resources
