@@ -91,6 +91,9 @@ class IntegTestSuite(unittest.TestCase):
         cmd_line.extend(["--conf", 'spark.ext.h2o.repl.enabled=false']) #  disable repl in tests
         cmd_line.extend(["--conf", "spark.ext.h2o.external.start.mode=" + os.getenv("spark.ext.h2o.external.start.mode", "manual")])
         cmd_line.extend(["--conf", "spark.sql.warehouse.dir=file:" + os.path.join(os.getcwd(), "spark-warehouse")])
+        # Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
+        # See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
+        cmd_line.extend(["--conf", 'spark.hadoop.yarn.timeline-service.enabled=false'])
         cmd_line.extend(["--py-files", self.test_env.egg])
         for k, v in self.test_env.spark_conf.items():
             cmd_line.extend(["--conf", k+'='+str(v)])
