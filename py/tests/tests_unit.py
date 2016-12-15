@@ -85,6 +85,15 @@ class FrameTransformationsTest(unittest.TestCase):
         self.assertEquals(h2o_frame[1,0],1.3333333333,"Value should match")
         test_utils.asert_h2o_frame(self,h2o_frame,rdd)
 
+    # test transformation from RDD consisting of python doubles to h2o frame
+    def test_rdd_double_h2o_frame(self):
+        hc = self._hc
+        rdd = self._sc.parallelize([0.5,1.3333333333,178])
+        h2o_frame = hc.as_h2o_frame(rdd)
+        self.assertEquals(h2o_frame[0,0],0.5,"Value should match")
+        self.assertEquals(h2o_frame[1,0],1.3333333333,"Value should match")
+        test_utils.asert_h2o_frame(self, h2o_frame, rdd)
+
     # test transformation from RDD consisting of python complex types to h2o frame
     def test_rdd_complex_h2o_frame_1(self):
         hc = self._hc
