@@ -17,6 +17,8 @@
 
 package org.apache.spark.h2o.utils
 
+import java.io.File
+
 import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
 import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.h2o.{H2OConf, H2OContext}
@@ -64,6 +66,8 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
       .set("spark.ext.h2o.backend.cluster.mode", sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
       .set("spark.ext.h2o.client.ip", sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress))
       .set("spark.ext.h2o.external.start.mode", sys.props.getOrElse("spark.ext.h2o.external.start.mode", "manual"))
+      // set spark-warehouse manually because of https://issues.apache.org/jira/browse/SPARK-17810, fixed in 2.0.2
+      .set("spark.sql.warehouse.dir", s"file:${new File("spark-warehouse").getAbsolutePath}")
     conf
   })
 }
