@@ -74,7 +74,7 @@ class DatasetConverterTest extends FunSuite with SharedSparkTestContext with Bef
 
   lazy val testSourceDatasetWithPartialData = sqlContext.createDataset(samplePartialPeople)
 
-  def testH2oFrametWithPartialData: H2OFrame = {
+  lazy val testH2oFrametWithPartialData: H2OFrame = {
     hc.asH2OFrame(testSourceDatasetWithPartialData)
   }
 
@@ -82,7 +82,9 @@ class DatasetConverterTest extends FunSuite with SharedSparkTestContext with Bef
 
   override def afterAll(): Unit = {
     testH2oFrame.delete()
+    testH2oFrametWithPartialData.delete()
     testSourceDataset.unpersist()
+    super.afterAll()
   }
 
   test("Dataset[SamplePerson] to H2OFrame and back") {
@@ -225,7 +227,7 @@ class DatasetConverterTest extends FunSuite with SharedSparkTestContext with Bef
     sqlContext.createDataset(samplePeople)
   }
 
-  def testH2oFrame: H2OFrame = hc.asH2OFrame(testSourceDataset)
+  lazy val testH2oFrame: H2OFrame = hc.asH2OFrame(testSourceDataset)
 
   def readWholeFrame[T <: Product : TypeTag : ClassTag](frame: H2OFrame) = {
 
