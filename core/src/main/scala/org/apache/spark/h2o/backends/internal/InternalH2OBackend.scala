@@ -55,7 +55,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
     // Setup properties for H2O configuration
     if (conf.cloudName.isEmpty) {
-      conf.setCloudName("sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + Random.nextInt())
+      conf.setCloudName("sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + Math.abs(Random.nextInt()))
     }
 
     checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
