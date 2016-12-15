@@ -49,7 +49,6 @@ class H2ODeepLearningTest extends FunSuite with SharedSparkTestContext {
     val airlinesData = h2oContext.asH2OFrame(inp)
 
     airlinesData.replace(airlinesData.numCols() - 1, airlinesData.lastVec().toCategoricalVec)
-    airlinesData.update()
 
     val slModel: H2ODeepLearningModel = new H2ODeepLearning()(hc, sqlContext)
       .setTrainKey(airlinesData.key)
