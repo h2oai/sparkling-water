@@ -47,13 +47,13 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
 
   test("ScalaCodeHandler.initSession() method"){
     val req = new ScalaSessionIdV3
-    val result = scalaCodeHandler.initSession(3,req)
+    val result = scalaCodeHandler.initSession(3, req)
 
-    assert(result.session_id == 1,"First id should be equal to 1")
+    assert(result.session_id == 1, "First id should be equal to 1")
     // new interpreter is automatically created, so the last ID used should be equal to 2
     assert(scalaCodeHandler.mapIntr.size == 1, "Number of currently used interpreters should be equal to 1")
     assert(scalaCodeHandler.mapIntr.get(1).nonEmpty, "The value in the interpreters hash map with the key 1 should not be empty")
-    assert(scalaCodeHandler.mapIntr.get(1).get.sessionId == 1, "ID attached to the interpreter should be equal to 1")
+    assert(scalaCodeHandler.mapIntr(1).sessionId == 1, "ID attached to the interpreter should be equal to 1")
   }
 
   test("ScalaCodeHandler.destroySession() method, destroy existing session"){
@@ -91,7 +91,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
     val result = scalaCodeHandler.getSessions(3, req)
 
     val actualSessionIds = result.sessions.sorted
-    assert(actualSessionIds.sameElements(Array(1,2)), s"Array of active sessions should contain 1 and 2, but it is [${actualSessionIds.mkString(",")}]")
+    assert(actualSessionIds.sameElements(Array(1, 2)), s"Array of active sessions should contain 1 and 2, but it is [${actualSessionIds.mkString(",")}]")
     assert(scalaCodeHandler.mapIntr.size == 2, "Number of currently used interpreters should be equal to 2")
   }
 
@@ -122,8 +122,8 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
     req.code = "foo"
     val result = scalaCodeHandler.interpret(3, req)
 
-    assert(result.output.equals(""),"Printed output should be empty")
-    assert(result.status.equals("Error"),"Status should be Error")
+    assert(result.output.equals(""), "Printed output should be empty")
+    assert(result.status.equals("Error"), "Status should be Error")
     assert(result.response.contains(" error: not found: value foo"), s"Response was: ${result.response}")
   }
 

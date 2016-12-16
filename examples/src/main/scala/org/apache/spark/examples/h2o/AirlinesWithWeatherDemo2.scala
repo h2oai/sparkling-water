@@ -35,7 +35,7 @@ import water.support.{SparkContextSupport, SparkSessionSupport}
 /** Demo for meetup presented at 12/17/2014 */
 object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSupport {
 
-  def residualPlotRCode(prediction:Frame, predCol: String, actual:Frame, actCol:String, h2oContext: H2OContext = null):String = {
+  def residualPlotRCode(prediction: Frame, predCol: String, actual: Frame, actCol: String, h2oContext: H2OContext = null): String = {
     val (ip, port) = if (h2oContext != null) {
       val s = h2oContext.h2oLocalClient.split(":")
       (s(0), s(1))
@@ -81,7 +81,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSup
       absPath("examples/smalldata/year2005.csv.gz"))
 
     //val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
-    val wrawdata = sc.textFile(enforceLocalSparkFile("Chicago_Ohare_International_Airport.csv"),3).cache()
+    val wrawdata = sc.textFile(enforceLocalSparkFile("Chicago_Ohare_International_Airport.csv"), 3).cache()
     val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
 
     //
@@ -91,7 +91,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSup
 
     val airlinesTable = h2oContext.asDataFrame(airlinesData)(sqlContext).map(row => AirlinesParse(row))
     // Select flights only to ORD
-    val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
+    val flightsToORD = airlinesTable.filter(f => f.Dest == Some("ORD"))
 
     flightsToORD.count
     println(s"\nFlights to ORD: ${flightsToORD.count}\n")
@@ -119,13 +119,13 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSup
     // Split data into 3 tables - train/validation/test
     //
     // Instead of using RDD API we will directly split H2O Frame
-    val joinedH2OFrame:H2OFrame = joinedTable // Invoke implicit transformation
+    val joinedH2OFrame: H2OFrame = joinedTable // Invoke implicit transformation
     // Transform date related columns to enums
     for( i <- 0 to 2) joinedH2OFrame.replace(i, joinedH2OFrame.vec(i).toCategoricalVec)
 
     //
     // Use low-level task to split the frame
-    val sf = new FrameSplitter(joinedH2OFrame, Array(.7, .2), Array("train", "valid","test").map(Key.make[Frame](_)), null)
+    val sf = new FrameSplitter(joinedH2OFrame, Array(.7, .2), Array("train", "valid", "test").map(Key.make[Frame](_)), null)
     water.H2O.submitTask(sf)
     val splits = sf.getResult
 

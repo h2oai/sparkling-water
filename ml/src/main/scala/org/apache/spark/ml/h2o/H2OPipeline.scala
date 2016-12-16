@@ -34,7 +34,7 @@ class H2OPipeline(override val uid: String) extends Pipeline {
   override def fit(dataset: Dataset[_]): PipelineModel = {
     val model = super.fit(dataset)
     val newStages = model.stages.filter(p=> !p.isInstanceOf[OneTimeTransformer])
-    new PipelineModel(model.uid,newStages).setParent(model.parent)
+    new PipelineModel(model.uid, newStages).setParent(model.parent)
   }
 }
 

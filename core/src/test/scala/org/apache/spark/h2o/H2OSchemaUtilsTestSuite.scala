@@ -74,7 +74,7 @@ class H2OSchemaUtilsTestSuite extends FunSuite {
     val stringIndices = H2OSchemaUtils.collectStringTypesIndx(expSchema.fields)
     val arrayIndices = H2OSchemaUtils.collectArrayLikeTypes(expSchema.fields)
 
-    assert (stringIndices === List ( List(0,1), List(1,0), List(1,1), List(2)))
+    assert (stringIndices === List ( List(0, 1), List(1, 0), List(1, 1), List(2)))
     assert (arrayIndices === Nil)
   }
 

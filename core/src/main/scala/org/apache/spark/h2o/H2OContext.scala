@@ -100,7 +100,7 @@ class H2OContext private (@(transient @param @field) val sparkContext: SparkCont
     val nodes = backend.init()
 
     // Fill information about H2O client and H2O nodes in the cluster
-    h2oNodes.append(nodes:_*)
+    h2oNodes.append(nodes: _*)
     localClientIp = H2O.SELF_ADDRESS.getHostAddress
     localClientPort = H2O.API_PORT
     logInfo("Sparkling Water started, status of context: " + this)
@@ -138,7 +138,7 @@ class H2OContext private (@(transient @param @field) val sparkContext: SparkCont
 
   /** Transforms Dataset[Supported type] to H2OFrame */
   def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T]): H2OFrame = asH2OFrame(ds, None)
-  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): H2OFrame = toH2OFrame(this, ds,frameName)
+  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): H2OFrame = toH2OFrame(this, ds, frameName)
   def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
 
   /** Transforms Dataset[Supported type] to H2OFrame key */

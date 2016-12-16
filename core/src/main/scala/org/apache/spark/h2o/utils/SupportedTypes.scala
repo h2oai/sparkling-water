@@ -74,6 +74,7 @@ object SupportedTypes extends Enumeration {
   }
   private def onNAreturn[T](value: T)(what: String) = value
 
+  // scalastyle:off  ensure.single.space.after.token
   val Boolean   = SimpleType[scala.Boolean] (Vec.T_NUM,  BooleanType,   classOf[jl.Boolean  ], onNAreturn(false), typeOf[Boolean])
   val Byte      = SimpleType[scala.Byte   ] (Vec.T_NUM,  ByteType,      classOf[jl.Byte     ], onNAthrow, typeOf[Byte])
   val Short     = SimpleType[scala.Short  ] (Vec.T_NUM,  ShortType,     classOf[jl.Short    ], onNAthrow, typeOf[Short])
@@ -85,6 +86,7 @@ object SupportedTypes extends Enumeration {
   val String    = SimpleType[String       ] (Vec.T_STR,  StringType,    classOf[String],       onNAreturn(null), typeOf[String])
   // TODO(vlad): figure it out, why
   val UTF8      = SimpleType[UTF8String   ] (Vec.T_STR,  StringType,    classOf[String],       onNAreturn(null), typeOf[UTF8String])
+  // scalastyle:on  ensure.single.space.after.token
 
   private implicit def val2type(v: Value): SimpleType[_] = v.asInstanceOf[SimpleType[_]]
 
@@ -98,12 +100,14 @@ object SupportedTypes extends Enumeration {
     def by(f: T => F): Map[F, T] = what map (t => f(t) -> t) toMap
   }
 
+  // scalastyle:off  ensure.single.space.after.token
   val byClass:      Map[Class[_],      SimpleType[_]]   = index (allSimple)   by (_.javaClass)
   val byVecType:    Map[VecType,       SimpleType[_]]   = index (allSimple)   by (_.vecType)
   val bySparkType:  Map[DataType,      SimpleType[_]]   = index (allSimple)   by (_.sparkType)
   val simpleByName: Map[NameOfType,    SimpleType[_]]   = index (allSimple)   by (_.name)
   val byName:       Map[NameOfType,    SupportedType]   = index (all)         by (_.name)
   val byBaseType:   Map[SimpleType[_], OptionalType[_]] = index (allOptional) by (_.contentType)
+  // scalastyle:on  ensure.single.space.after.token
 
   def byType(tpe: Type) : SupportedType = {
     SupportedTypes.all find (_.matches(tpe)) getOrElse {

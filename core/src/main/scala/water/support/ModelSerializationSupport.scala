@@ -25,7 +25,7 @@ import water.{AutoBuffer, H2O, Keyed, Key}
 
 trait ModelSerializationSupport {
 
-  def exportH2OModel(model : Model[_,_,_], destination: URI): URI = {
+  def exportH2OModel(model : Model[_, _, _], destination: URI): URI = {
     val modelKey = model._key.asInstanceOf[Key[_ <: Keyed[_ <: Keyed[_ <: AnyRef]]]]
     val p: Persist = H2O.getPM.getPersistForURI(destination)
     val os: OutputStream = p.create(destination.toString, true)
@@ -40,7 +40,7 @@ trait ModelSerializationSupport {
     Keyed.readAll(new AutoBuffer(is)).asInstanceOf[M]
   }
 
-  def exportPOJOModel(model : Model[_, _,_], destination: URI): URI = {
+  def exportPOJOModel(model : Model[_, _, _], destination: URI): URI = {
     val destFile = new File(destination)
     val fos = new FileOutputStream(destFile)
     val writer = new model.JavaModelStreamWriter(false)

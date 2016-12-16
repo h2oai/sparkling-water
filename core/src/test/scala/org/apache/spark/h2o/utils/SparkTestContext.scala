@@ -18,11 +18,9 @@
 package org.apache.spark.h2o.utils
 
 import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
 /**
@@ -55,7 +53,7 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
       .set("spark.executor.memory", "2G")
       .set("spark.app.id", self.getClass.getSimpleName)
       .set("spark.ext.h2o.client.log.level", "DEBUG")
-      .set("spark.ext.h2o.repl.enabled","false") // disable repl in tests
+      .set("spark.ext.h2o.repl.enabled", "false") // disable repl in tests
       .set("spark.scheduler.minRegisteredResourcesRatio", "1")
       .set("spark.ext.h2o.backend.cluster.mode", sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
     sys.props.get("spark.ext.h2o.client.ip").map(value => sc.set("spark.ext.h2o.client.ip", value))

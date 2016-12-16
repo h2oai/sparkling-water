@@ -60,23 +60,23 @@ class SVMModel private[svm](val selfKey: Key[SVMModel],
 
     val pred =
       data.zip(_output.weights).foldRight(_output.interceptor){ case ((d, w), acc) =>
-        if(meanImputation && lang.Double.isNaN(d)) {
+        if (meanImputation && lang.Double.isNaN(d)) {
           _output.numMeans(0) * w + acc
         } else {
           d * w + acc
         }
       }
 
-    if(_parms._threshold.isNaN) { // Regression
+    if (_parms._threshold.isNaN) { // Regression
       preds(0) = pred
     } else { // Binomial
       val dt = defaultThreshold()
       if(pred > _parms._threshold) {
-        preds(2) = if(pred < dt) dt else pred
+        preds(2) = if (pred < dt) dt else pred
         preds(1) = preds(2) - 1
         preds(0) = 1
       } else {
-        preds(2) = if(pred >= dt) dt - 1 else pred
+        preds(2) = if (pred >= dt) dt - 1 else pred
         preds(1) = preds(2) + 1
         preds(0) = 0
       }
@@ -106,7 +106,7 @@ class SVMModel private[svm](val selfKey: Key[SVMModel],
       bodySb.i(2).p("pred += (MEANS[i] * WEIGHTS[i]);").nl
       bodySb.i(1).p("} else {").nl
     }
-    bodySb.i(if(meanImputation) 2 else 1).p("pred += (data[i] * WEIGHTS[i]);").nl
+    bodySb.i(if (meanImputation) 2 else 1).p("pred += (data[i] * WEIGHTS[i]);").nl
     if(meanImputation) {
       bodySb.i(1).p("}").nl
     }

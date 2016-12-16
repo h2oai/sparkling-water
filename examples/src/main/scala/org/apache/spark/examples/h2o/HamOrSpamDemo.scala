@@ -67,7 +67,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H
     // Merge response with extracted vectors
     val resultRDD: DataFrame = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2)).toDF
 
-    val table:H2OFrame = resultRDD
+    val table: H2OFrame = resultRDD
     // Transform target column into
     table.replace(table.find("target"), table.vec("target").toCategoricalVec).remove()
 
@@ -94,7 +94,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H
     TEST_MSGS.foreach(msg => {
       println(
         s"""
-           |"$msg" is ${if (isSpam(msg,sc, dlModel, hashingTF, idfModel)) "SPAM" else "HAM"}
+           |"$msg" is ${if (isSpam(msg, sc, dlModel, hashingTF, idfModel)) "SPAM" else "HAM"}
        """.stripMargin)
     })
 
@@ -116,7 +116,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H
     */
   def tokenize(data: RDD[String]): RDD[Seq[String]] = {
     val ignoredWords = Seq("the", "a", "", "in", "on", "at", "as", "not", "for")
-    val ignoredChars = Seq(',', ':', ';', '/', '<', '>', '"', '.', '(', ')', '?', '-', '\'','!','0', '1')
+    val ignoredChars = Seq(',', ':', ';', '/', '<', '>', '"', '.', '(', ')', '?', '-', '\'', '!', '0', '1')
 
     val texts = data.map( r=> {
       var smsText = r.toLowerCase
@@ -133,8 +133,8 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H
 
   /** Buil tf-idf model representing a text message. */
   def buildIDFModel(tokens: RDD[Seq[String]],
-                    minDocFreq:Int = 4,
-                    hashSpaceSize:Int = 1 << 10): (HashingTF, IDFModel, RDD[mllib.linalg.Vector]) = {
+                    minDocFreq: Int = 4,
+                    hashSpaceSize: Int = 1 << 10): (HashingTF, IDFModel, RDD[mllib.linalg.Vector]) = {
     // Hash strings into the given space
     val hashingTF = new HashingTF(hashSpaceSize)
     val tf = hashingTF.transform(tokens)
@@ -171,7 +171,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H
              hashingTF: HashingTF,
              idfModel: IDFModel,
              hamThreshold: Double = 0.5)
-            (implicit sqlContext: SQLContext, h2oContext: H2OContext):Boolean = {
+            (implicit sqlContext: SQLContext, h2oContext: H2OContext): Boolean = {
     import h2oContext.implicits._
     import sqlContext.implicits._
     val msgRdd = sc.parallelize(Seq(msg))

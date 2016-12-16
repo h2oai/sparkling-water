@@ -51,7 +51,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     println(show(predict("Financial accountant CPA preferred", gbmModel, w2vModel), classNames))
   }
 
-  def buildModels(datafile: String = jobsFile, modelName: String): (Model[_,_,_], Word2VecModel) = {
+  def buildModels(datafile: String = jobsFile, modelName: String): (Model[_, _, _], Word2VecModel) = {
     // Get training frame and word to vec model for data
     val (allDataFrame, w2vModel) = createH2OFrame(datafile)
     val frs = splitFrame(allDataFrame, Array("train.hex", "valid.hex"), Array(0.8, 0.2))
@@ -69,7 +69,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     predict(jobTitle, model = water.DKV.getGet(modelId), w2vModel)
   }
 
-  def predict(jobTitle: String, model: Model[_,_,_], w2vModel: Word2VecModel): (String, Array[Double]) = {
+  def predict(jobTitle: String, model: Model[_, _, _], w2vModel: Word2VecModel): (String, Array[Double]) = {
     val tokens = tokenize(jobTitle, STOP_WORDS)
     val vec = wordsToVector(tokens, w2vModel)
 
@@ -93,7 +93,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
 
   }
 
-  def classify(jobTitle: String, model: Model[_,_,_], w2vModel: Word2VecModel): (String, Array[Double]) = {
+  def classify(jobTitle: String, model: Model[_, _, _], w2vModel: Word2VecModel): (String, Array[Double]) = {
     val tokens = tokenize(jobTitle, STOP_WORDS)
     if (tokens.length == 0) {
       EMPTY_PREDICTION
@@ -148,7 +148,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
 
   def computeRareWords(dataRdd : RDD[Array[String]]): Set[String] = {
     // Compute frequencies of words
-    val wordCounts = dataRdd.flatMap(s => s).map(w => (w,1)).reduceByKey(_ + _)
+    val wordCounts = dataRdd.flatMap(s => s).map(w => (w, 1)).reduceByKey(_ + _)
 
     // Collect rare words
     val rareWords = wordCounts.filter { case (k, v) => v < 2 }
@@ -178,10 +178,10 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
 
   val EMPTY_PREDICTION = ("NA", Array[Double]())
 
-  val STOP_WORDS = Set("ax","i","you","edu","s","t","m","subject","can","lines","re","what"
-    ,"there","all","we","one","the","a","an","of","or","in","for","by","on"
-    ,"but", "is", "in","a","not","with", "as", "was", "if","they", "are", "this", "and", "it", "have"
-    , "from", "at", "my","be","by","not", "that", "to","from","com","org","like","likes","so")
+  val STOP_WORDS = Set("ax", "i", "you", "edu", "s", "t", "m", "subject", "can", "lines", "re", "what"
+    , "there", "all", "we", "one", "the", "a", "an", "of", "or", "in", "for", "by", "on"
+    , "but", "is", "in", "a", "not", "with", "as", "was", "if", "they", "are", "this", "and", "it", "have"
+    , "from", "at", "my", "be", "by", "not", "that", "to", "from", "com", "org", "like", "likes", "so")
 
 
   def main(args: Array[String]): Unit = {

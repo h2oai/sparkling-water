@@ -49,7 +49,7 @@ class Register extends RestApi {
       )
       H2O.register(
         "POST /99/Grid/" + lbase,
-        classOf[GridSearchHandler[_,_,_,_]],
+        classOf[GridSearchHandler[_, _, _, _]],
         "train",
         "grid_search_" + lbase,
         "Run grid search for " + base + " model."

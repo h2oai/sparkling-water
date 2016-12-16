@@ -40,18 +40,18 @@ class ColRemover(override val uid: String) extends OneTimeTransformer with ColRe
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    val columnsToLeft = if($(keep)){
+    val columnsToLeft = if ($(keep)){
       schema.fieldNames.filter($(columns).contains(_))
     }else{
       schema.fieldNames.filter(!$(columns).contains(_))
     }
     StructType(columnsToLeft.map{
-     col => StructField(col,schema(col).dataType,schema(col).nullable,schema(col).metadata)
+     col => StructField(col, schema(col).dataType, schema(col).nullable, schema(col).metadata)
     })
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val columnsToRemove = if($(keep)){
+    val columnsToRemove = if ($(keep)){
       dataset.columns.filter(!$(columns).contains(_))
     }else{
       dataset.columns.filter($(columns).contains(_))

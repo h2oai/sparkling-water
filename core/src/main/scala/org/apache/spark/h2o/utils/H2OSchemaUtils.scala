@@ -114,7 +114,7 @@ object H2OSchemaUtils {
       val path = tap._1
       val field = tap._2
       field.dataType match {
-        case ArrayType(aryType,nullable) =>
+        case ArrayType(aryType, nullable) =>
           val result = (0 until fmaxLens(arrayCnt)).map(i =>
             (path, StructField(field.name + i.toString, aryType, nullable), ARRAY_TYPE)
           )
@@ -158,7 +158,7 @@ object H2OSchemaUtils {
   def collectArrayLikeTypes(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
     fields.indices.flatMap(i => fields(i).dataType match {
       case StructType(fs) => collectArrayLikeTypes(fs, path++Seq(i))
-      case ArrayType(_,_)  => Seq(path++Seq(i))
+      case ArrayType(_, _)  => Seq(path++Seq(i))
       case _ => Nil
     })
   }
@@ -206,7 +206,7 @@ object H2OSchemaUtils {
         }
       }
       acc
-    }).reduce((a,b) => a.indices.map(i => if (a(i) > b(i)) a(i) else b(i)).toArray)
+    }).reduce((a, b) => a.indices.map(i => if (a(i) > b(i)) a(i) else b(i)).toArray)
     // Result
     maxvec
   }

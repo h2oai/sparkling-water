@@ -42,7 +42,7 @@ class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extend
   }
 
   def getDataFrame(version: Int, s: DataFrameV3): DataFrameV3 = {
-    if(!sqlContext.tableNames().toList.contains(s.dataframe_id)){
+    if (!sqlContext.tableNames().toList.contains(s.dataframe_id)){
       throw new H2ONotFoundArgumentException(s"DataFrame with id '${s.dataframe_id}' does not exist!")
     }
     val dataFrame = sqlContext.table(s.dataframe_id)
@@ -53,11 +53,11 @@ class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extend
 
   // TODO(vlad): see the same code in RDDsHandler
   def toH2OFrame(version: Int, s: H2OFrameIDV3): H2OFrameIDV3 = {
-    if(!sqlContext.tableNames().toList.contains(s.dataframe_id)){
+    if (!sqlContext.tableNames().toList.contains(s.dataframe_id)){
       throw new H2ONotFoundArgumentException(s"DataFrame with id '${s.dataframe_id}' does not exist, can not proceed with the transformation!")
     }
     val dataFrame: DataFrame = sqlContext.table(s.dataframe_id)
-    val h2oFrame = if( s.h2oframe_id == null ) h2oContext.asH2OFrame(dataFrame) else h2oContext.asH2OFrame(dataFrame,s.h2oframe_id.toLowerCase())
+    val h2oFrame = if ( s.h2oframe_id == null ) h2oContext.asH2OFrame(dataFrame) else h2oContext.asH2OFrame(dataFrame, s.h2oframe_id.toLowerCase())
     s.h2oframe_id = h2oFrame._key.toString
     s
   }

@@ -53,7 +53,7 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
   private[RDDsHandler] def convertToH2OFrame(rdd: RDD[_], name: Option[String]): H2OFrame = {
     if (rdd.isEmpty()) {
       // transform empty Seq in order to create empty H2OFrame
-      h2oContext.asH2OFrame(sc.parallelize(Seq.empty[Int]),name)
+      h2oContext.asH2OFrame(sc.parallelize(Seq.empty[Int]), name)
     } else {
       rdd.first() match {
         case t if t.isInstanceOf[Double] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Double]], name)

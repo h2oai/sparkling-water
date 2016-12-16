@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
   *
   */
 trait SharedSparkTestContext extends SparkTestContext {
-  self: Suite =>
+   self: Suite =>
 
   def createSparkContext: SparkContext
 

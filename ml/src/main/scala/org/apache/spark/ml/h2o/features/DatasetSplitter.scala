@@ -73,11 +73,11 @@ class DatasetSplitter(override val uid: String)
     require($(keys).nonEmpty, "Keys can not be empty")
 
     import h2oContext.implicits._
-    split(dataset.toDF(),$(keys),$(ratios))
+    split(dataset.toDF(), $(keys), $(ratios))
 
-    val returnKey = if($(keys).contains($(trainKey))){
+    val returnKey = if ($(keys).contains($(trainKey))){
       $(trainKey)
-    }else{
+    } else {
       $(keys)(0) // first key
     }
 

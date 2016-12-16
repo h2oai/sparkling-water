@@ -26,7 +26,7 @@ import water.Key
 import scala.collection.immutable
 import scala.reflect.runtime.universe._
 
-case class MetaInfo(names:Array[String], types: Array[SupportedType]) {
+case class MetaInfo(names: Array[String], types: Array[SupportedType]) {
   require(names.length > 0, "Empty meta info does not make sense")
   require(names.length == types.length, s"Different lengths: ${names.length} names, ${types.length} types")
   lazy val vecTypes: Array[Byte] = types map (_.vecType)
@@ -41,7 +41,7 @@ case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], fram
   }
 
   def withFieldNames(fieldNames: Int => String): H2OFrame = {
-    if(rdd.isEmpty()){
+    if (rdd.isEmpty()){
       // transform empty Seq in order to create empty H2OFrame
       hc.asH2OFrame(hc.sparkContext.parallelize(Seq.empty[Int]), frameKeyName)
     }else {
@@ -51,7 +51,7 @@ case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], fram
   }
 
   def withFields(fields: List[(String, Type)]): H2OFrame = {
-    if(rdd.isEmpty()){
+    if (rdd.isEmpty()){
       // transform empty Seq in order to create empty H2OFrame
       hc.asH2OFrame(hc.sparkContext.parallelize(Seq.empty[Int]), frameKeyName)
     }else{
@@ -103,7 +103,7 @@ object H2OFrameFromRDDProductBuilder{
                                                            (context: TaskContext, it: Iterator[T]): (Int, Long) = {
     // An array of H2O NewChunks; A place to record all the data in this partition
     val con = ConverterUtils.getWriteConverterContext(uploadPlan, context.partitionId())
-    con.createChunks(keyName,vecTypes,context.partitionId())
+    con.createChunks(keyName, vecTypes, context.partitionId())
 
     it.foreach(prod => { // For all rows which are subtype of Product
       for( i <- 0 until prod.productArity ) { // For all fields...

@@ -31,7 +31,7 @@ import scala.reflect.runtime.universe._
 private[converters] trait ConverterUtils {
 
 
-  def initFrame[T](keyName: String, names: Array[String]):Unit = {
+  def initFrame[T](keyName: String, names: Array[String]): Unit = {
     val fr = new water.fvec.Frame(Key.make[Frame](keyName))
     water.fvec.FrameUtils.preparePartialFrame(fr, names)
     // Save it directly to DKV
@@ -42,8 +42,8 @@ private[converters] trait ConverterUtils {
   def finalizeFrame[T](keyName: String,
                        res: Array[Long],
                        colTypes: Array[Byte],
-                       colDomains: Array[Array[String]] = null):Frame = {
-    val fr:Frame = DKV.get(keyName).get.asInstanceOf[Frame]
+                       colDomains: Array[Array[String]] = null): Frame = {
+    val fr: Frame = DKV.get(keyName).get.asInstanceOf[Frame]
     water.fvec.FrameUtils.finalizePartialFrame(fr, res, colDomains, colTypes)
     fr
   }
@@ -83,7 +83,7 @@ private[converters] trait ConverterUtils {
     initFrame(keyName, colNames)
 
     // prepare rdd and required metadata based on the used backend
-    val (preparedRDD, uploadPlan) = if(hc.getConf.runsInExternalClusterMode){
+    val (preparedRDD, uploadPlan) = if (hc.getConf.runsInExternalClusterMode){
       throw new NotImplementedError("Not implemented at the moment")
     }else{
       (rdd, None)
@@ -93,7 +93,7 @@ private[converters] trait ConverterUtils {
 
     val rows = hc.sparkContext.runJob(preparedRDD, operation) // eager, not lazy, evaluation
     val res = new Array[Long](preparedRDD.partitions.length)
-    rows.foreach { case (cidx,  nrows) => res(cidx) = nrows }
+    rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
     // Add Vec headers per-Chunk, and finalize the H2O Frame
     new H2OFrame(finalizeFrame(keyName, res, vecTypes))
   }
@@ -150,7 +150,7 @@ object ConverterUtils extends ConverterUtils {
   }
 
   def prepareExpectedTypes[T: TypeTag](isExternalBackend: Boolean, types: Array[T]): Option[Array[Byte]] =
-    if(!isExternalBackend){
+    if (!isExternalBackend){
       None
     }else {
       throw new NotImplementedError("Not implemented at the moment")
@@ -168,7 +168,7 @@ object ExternalBackendInfo{
             expectedTypes: Option[Array[Byte]],
             selectedColumnIndices: Array[Int]): Option[ExternalBackendInfo] = {
 
-    if(chksLocation.isDefined){
+    if (chksLocation.isDefined){
       Some(new ExternalBackendInfo(chksLocation.get, expectedTypes.get, selectedColumnIndices))
     }else{
       None

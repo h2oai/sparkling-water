@@ -40,7 +40,7 @@ class DefaultSource extends RelationProvider
     // sqlContext.read.format("h2o").load(key)  - this is using path option, but it's nicer to use it like this
 
     // if both are set, the 'key' option is chosen
-    parameters.getOrElse("key",parameters.getOrElse("path", sys.error("'key' must be specified for H2O Frame.")))
+    parameters.getOrElse("key", parameters.getOrElse("path", sys.error("'key' must be specified for H2O Frame.")))
   }
 
   /**
@@ -70,7 +70,7 @@ class DefaultSource extends RelationProvider
                                data: DataFrame): BaseRelation = {
     val key = checkKey(parameters)
     val originalFrame = DKV.getGet[Frame](key)
-    implicit val h2oContext:H2OContext =
+    implicit val h2oContext: H2OContext =
       H2OContext.ensure("H2OContext has to be started in order to save/load data using H2O Data source.")
 
     if(originalFrame!=null){
