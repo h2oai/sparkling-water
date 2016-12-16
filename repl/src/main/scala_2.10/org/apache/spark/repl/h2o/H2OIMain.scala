@@ -68,13 +68,16 @@ object H2OIMain {
   }
 
   private def initialize(sc: SparkContext): Unit = {
-
     if (Main.interp != null) {
-      //application has been started using SparkShell script, reuse the classloader
+      // Application has been started using SparkShell script.
+      // Set the original interpreter classloader as the fallback class loader for all
+      // class not defined in our custom REPL.
       interpreterClassloader = new InterpreterClassLoader(Main.interp.intp.classLoader)
     } else {
-      //application hasn't been started using SparkShell
-      interpreterClassloader = new InterpreterClassLoader()
+      // Application hasn't been started using SparkShell.
+      // Set the context classloader as the fallback class loader for all
+      // class not defined in our custom REPL
+      interpreterClassloader = new InterpreterClassLoader(Thread.currentThread.getContextClassLoader)
     }
     setClassLoaderToSerializers(interpreterClassloader)
   }
