@@ -17,19 +17,17 @@
 
 package org.apache.spark.h2o.converters
 
-import org.apache.spark.h2o._
-import org.apache.spark.h2o.utils.NodeDesc
-import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.TaskContext
+import org.apache.spark.h2o._
+import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.internal.Logging
-import water.Key
+import org.apache.spark.mllib.regression.LabeledPoint
 import water.fvec.{H2OFrame, Vec}
+import water.{ExternalFrameUtils, Key}
 
-import scala.collection.immutable
-import scala.language.implicitConversions
-import language.postfixOps
+import scala.language.{implicitConversions, postfixOps}
 
-private[converters] object LabeledPointConverter extends Logging with ConverterUtils {
+private[converters] object LabeledPointConverter extends Logging {
 
   /** Transform RDD[LabeledPoint] to appropriate H2OFrame */
   def toH2OFrame(hc: H2OContext, rdd: RDD[LabeledPoint], frameKeyName: Option[String]): H2OFrame = {
@@ -46,9 +44,13 @@ private[converters] object LabeledPointConverter extends Logging with ConverterU
       logWarning("WARNING: Converting RDD[LabeledPoint] to H2OFrame where features vectors have different size, filling missing with n/a")
     }
     val fnames = ("label" :: 0.until(maxNumFeatures).map("feature" +).toList).toArray[String]
-    val vecTypes = Array.fill(maxNumFeatures + 1)(Vec.T_NUM)
 
-    convert[LabeledPoint](hc, rdd, keyName, fnames, vecTypes, perLabeledPointRDDPartition(maxNumFeatures))
+    // in case of internal backend, store regular vector types
+    // otherwise for external backend store expected types
+    val typeToUse = if(hc.getConf.runsInInternalClusterMode) Vec.T_NUM else ExternalFrameUtils.EXPECTED_DOUBLE
+    val expectedTypes = Array.fill(maxNumFeatures + 1)(typeToUse)
+
+    WriteConverterCtxUtils.convert[LabeledPoint](hc, rdd, keyName, fnames, expectedTypes, perLabeledPointRDDPartition(maxNumFeatures))
   }
 
   /**
@@ -63,14 +65,14 @@ private[converters] object LabeledPointConverter extends Logging with ConverterU
     */
   private[this]
   def perLabeledPointRDDPartition(maxNumFeatures: Int)
-                                 (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[immutable.Map[Int, NodeDesc]])
+                                 (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[UploadPlan])
                                  (context: TaskContext, it: Iterator[LabeledPoint]): (Int, Long) = {
-    val con = ConverterUtils.getWriteConverterContext(uploadPlan, context.partitionId())
-
+    val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
+    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize)
     // Creates array of H2O NewChunks; A place to record all the data in this partition
     con.createChunks(keyName, vecTypes, context.partitionId())
 
-    it.foreach(labeledPoint => {
+    iterator.foreach(labeledPoint => {
       // For all LabeledPoints in RDD
       var nextChunkId = 0
 
@@ -89,14 +91,12 @@ private[converters] object LabeledPointConverter extends Logging with ConverterU
         con.putNA(nextChunkId)
         nextChunkId = nextChunkId + 1
       }
-
-      con.increaseRowCounter()
     })
 
     //Compress & write data in partitions to H2O Chunks
     con.closeChunks()
 
     // Return Partition number and number of rows in this partition
-    (context.partitionId, con.numOfRows)
+    (context.partitionId, con.numOfRows())
   }
 }

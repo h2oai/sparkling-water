@@ -17,7 +17,7 @@
 package water.api.RDDs
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.converters.{DatasetConverter, H2OFrameFromRDDProductBuilder}
+import org.apache.spark.h2o.converters.H2OFrameFromRDDProductBuilder
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
@@ -28,7 +28,7 @@ import water.exceptions.H2ONotFoundArgumentException
 /**
   * Handler for all RDD related queries
   */
-class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler with DatasetConverter {
+class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler{
 
   def list(version: Int, s: RDDsV3): RDDsV3 = {
     val r = s.createAndFillImpl()

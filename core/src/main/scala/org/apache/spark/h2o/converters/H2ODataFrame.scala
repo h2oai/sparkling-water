@@ -25,6 +25,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.{Partition, TaskContext}
+import water.ExternalFrameUtils
 
 import scala.language.postfixOps
 
@@ -46,10 +47,26 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
   def this(@transient frame: T)
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
-
-  val types: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
-  override val expectedTypes: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
   val colNames = frame.names()
+  val types: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
+
+  // TODO(vlad): take care of the cases when names are missing in colNames - an exception?
+  override val selectedColumnIndices = (if (requiredColumns == null) {
+    colNames.indices
+  } else {
+    requiredColumns.toSeq.map(colName => colNames.indexOf(colName))
+  }) toArray
+
+  override val expectedTypes: Option[Array[Byte]] = {
+    // there is no need to prepare expected types in internal backend
+    if (isExternalBackend) {
+      // prepare expected type selected columns in the same order as are selected columns
+      val javaClasses = selectedColumnIndices.map{ idx => ReflectionUtils.supportedType(frame.vec(idx)).javaClass }
+      Option(ExternalFrameUtils.prepareExpectedTypes(javaClasses))
+    } else {
+      None
+    }
+  }
 
   @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
@@ -62,13 +79,6 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
       /** Processed partition index */
       override val partIndex = split.index
 
-      // TODO(vlad): take care of the cases when names are missing in colNames - an exception?
-      override val selectedColumnIndices = (if (requiredColumns == null) {
-        colNames.indices
-      } else {
-        requiredColumns.toSeq.map(colName => colNames.indexOf(colName))
-      }) toArray
-      
       private val columnIndicesWithTypes: Array[(Int, SimpleType[_])] = selectedColumnIndices map (i => (i, bySparkType(types(i))))
 
       /*a sequence of value providers, per column*/
@@ -89,8 +99,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
       }
     }
 
-    // TODO(vlad): get rid of booleanness
-    // Wrap the iterator to backend specific wrapper
-    ConverterUtils.getIterator[InternalRow](isExternalBackend, iterator)
+    // Wrap the iterator as a backend specific wrapper
+    ReadConverterCtxUtils.backendSpecificIterator[InternalRow](isExternalBackend, iterator)
   }
 }

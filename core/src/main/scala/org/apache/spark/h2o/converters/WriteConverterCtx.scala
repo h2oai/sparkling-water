@@ -18,21 +18,53 @@
 package org.apache.spark.h2o.converters
 
 /**
-  * Methods which each WriteConverterContext has to implement.
+  * Methods which each WriteConverterCtx has to implement.
   *
   * Write Converter Context is a class which holds the state of connection/chunks and allows us to write/upload to those chunks
   * via unified API
   */
-trait WriteConverterContext {
+trait WriteConverterCtx {
   def createChunks(keyName: String, vecTypes: Array[Byte], chunkId: Int)
+
   def closeChunks()
-  def put(columnNum: Int, n: Number)
 
-  def put(columnNum: Int, n: Boolean)
-  def put(columnNum: Int, n: java.sql.Timestamp)
-  def put(columnNum: Int, n: String)
-  def putNA(columnNum: Int)
+  def put(colIdx: Int, data: Boolean)
 
-  def numOfRows: Long
-  def increaseRowCounter()
+  def put(colIdx: Int, data: Byte)
+
+  def put(colIdx: Int, data: Char)
+
+  def put(colIdx: Int, data: Short)
+
+  def put(colIdx: Int, data: Int)
+
+  def put(colIdx: Int, data: Long)
+
+  def put(colIdx: Int, data: Float)
+
+  def put(colIdx: Int, data: Double)
+
+  def put(colIdx: Int, data: java.sql.Timestamp)
+
+  def put(colIdx: Int, data: String)
+
+  def putNA(colIdx: Int)
+
+  def putAnySupportedType[T](colIdx: Int, data: T): Unit = {
+    data match {
+      case n: Boolean => put(colIdx, n)
+      case n: Byte => put(colIdx, n)
+      case n: Char => put(colIdx, n)
+      case n: Short => put(colIdx, n)
+      case n: Int => put(colIdx, n)
+      case n: Long => put(colIdx, n)
+      case n: Float => put(colIdx, n)
+      case n: Double => put(colIdx, n)
+      case n: String => put(colIdx, n)
+      case n: java.sql.Timestamp => put(colIdx, n)
+      case _ => putNA(colIdx)
+    }
+  }
+
+  def numOfRows(): Int
 }
