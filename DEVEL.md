@@ -219,6 +219,7 @@ The following configuration properties can be passed to Spark to configure Spark
 | Property name | Default value | Description |
 |---------------|---------------|-------------|
 | **Generic parameters** |||
+|`spark.ext.h2o.backend.cluster.mode`|`internal`|This option can be set either to "internal" or "external". When set to "external" H2O Context is created by connecting to existing H2O cluster, otherwise it creates H2O cluster living in Spark - that means that each Spark executor will have one h2o instance running in it. The internal is not recommended for big clusters and clusters where Spark executors are not stable.|
 |`spark.ext.h2o.cloud.name`| `sparkling-water-` | Name of H2O cloud.|
 |`spark.ext.h2o.nthreads`|`-1`|Limit for number of threads used by H2O, default `-1` means unlimited.|
 |`spark.ext.h2o.disable.ga`|`false`|Disable Google Analytics tracking for embedded H2O.|
@@ -245,6 +246,7 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.client.network.mask`|--|Subnet selector for H2O client, this disables using IP reported by Spark but tries to find IP based on the specifed mask.|
 ---
 
+
 ####Internal backend configuration properties
 | Property name | Default value | Description |
 |---------------|---------------|-------------|
@@ -262,6 +264,13 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.node.network.mask`|--|Subnet selector for H2O running inside Spark executors, this disables using IP reported by Spark but tries to find IP based on the specified mask.|
 |`spark.ext.h2o.node.log.level`| `INFO`| H2O internal log level used for launched H2O nodes.|
 |`spark.ext.h2o.node.log.dir`| ` System.getProperty("user.dir") + File.separator + "h2ologs"` or YARN container dir| Location of h2o logs on executor machine.|
+---
+
+####External backend configuration properties
+| Property name | Default value | Description |
+|---------------|---------------|-------------|
+|`spark.ext.h2o.cloud.representative`| `null`| ip:port of arbitrary h2o node to identify external h2o cluster|
+|`spark.ext.h2o.external.cluster.num.h2o.nodes`| `null`| Number of nodes to wait for when connecting to external H2O cluster. |
 ---
 
 

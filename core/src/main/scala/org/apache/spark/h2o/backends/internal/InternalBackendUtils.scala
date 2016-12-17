@@ -19,7 +19,7 @@ package org.apache.spark.h2o.backends.internal
 
 import java.net.InetAddress
 
-import org.apache.spark.h2o.backends.{SharedBackendUtils, SharedH2OConf}
+import org.apache.spark.h2o.backends.{SharedBackendConf, SharedBackendUtils}
 import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.h2o.{H2OConf, RDD}
 import org.apache.spark.internal.Logging
@@ -40,7 +40,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
       if (conf.isFailOnUnsupportedSparkParamEnabled) {
         logWarning(
           s"""
-             |The application is going down, since the parameter ${SharedH2OConf.PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM} is true!
+             |The application is going down, since the parameter ${SharedBackendConf.PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM} is true!
              |If you would like to skip the fail call, please, specify the value of the parameter to false.
         """.stripMargin)
         throw new IllegalArgumentException(s"Unsupported argument: ${opt}")
@@ -112,7 +112,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
           sparkEnv.conf.get(InternalBackendConf.PROP_NODE_LOG_DIR._1)
         } else {
           // Needs to be executed at remote node!
-          SharedH2OConf.defaultLogDir
+          SharedBackendConf.defaultLogDir
         }
       }
       val executorId = sparkEnv.executorId

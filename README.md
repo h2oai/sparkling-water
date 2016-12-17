@@ -116,14 +116,26 @@ There are several ways of using Sparkling Water:
 
 ---
 
-H2O cloud is created automatically during the call of `H2OContext.getOrCreate`. Since it's not
+## Sparkling Water cluster backends
+
+Sparkling water supports two backend/deployment modes. We call them internal and external back-ends.
+Sparkling Water applications are independent on selected backend, the before `H2OContext` is created
+we need to tell it which backend used.
+
+### Internal backend
+In internal backend, H2O cloud is created automatically during the call of `H2OContext.getOrCreate`. Since it's not
 technically possible to get number of executors in Spark, we try to discover all executors at the initiation of `H2OContext`
 and we start H2O instance inside of each discovered executor. This solution is easiest to deploy; however when Spark
 or YARN kills the executor - which is not an unusual case - the whole H2O cluster goes down since h2o doesn't support high 
 availability. 
 
 
-Here we show a few examples how H2OContext can be started.
+Internal backend is default for behaviour for Sparkling Water. It can be changed via spark configuration property
+`spark.ext.h2o.backend.cluster.mode` to `external` or `internal`. Another way how to change type of backend is by calling
+ `setExternalClusterMode()` or `setInternalClusterMode()` method on `H2OConf` class. `H2OConf` is simple wrapper 
+around `SparkConf` and inherits all properties in spark configuration.
+
+Here we show a few examples how H2OContext can be started with internal backend.
 
 Explicitly specify internal backend on `H2OConf`
 ```
@@ -144,6 +156,40 @@ val conf = new H2OConf(sc)
 val h2oContext = H2OContext.getOrCreate(sc, conf)
 ```
 
+
+ 
+### External backend
+In external cluster mode we expected that H2O cluster is already running and we connect to it from Spark driver (actually
+H2O node in special client mode running in spark driver). 
+
+Few examples how to Sparkling Water in external backend mode.
+
+This piece of code tries to connect to existing h2o cloud with name "h2o-cloud". The H2O cloud is located using multicast
+and is assumed that all h2o nodes were started without `-flatfile` option and with `-md5skip` option.
+For example like:
+```
+java -jar h2o.jar -name h2o-cloud -md5skip
+```
+
+The following code will not work since specifying flatfile on h2o nodes and not in the H2O configuration ends up with spark not being 
+able to connect to the rest of the cloud.
+```
+java -jar h2o.jar -name h2o-cloud -md5skip -flatfile path_to_flat_file
+```
+
+
+Since multicast communication is often limited in the network, this code connects to H2O cluster "h2o-cluster" using 
+direct communication with arbitrary h2o node. Method `setH2OCluster` automatically sets external backend mode. It is internally 
+using [H2O's flatfile configuration property](https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/howto/H2O-DevCmdLine.md#flatfile).
+
+This is also why all H2O nodes has to be started with `-flatfile` option and at least one node has to have ip and port of h2o
+client in it's flatfile. We can also specify the IP address of h2o client using method `setClientIP` and then use the provided
+ip address in the flatfile mentioned earlier.
+
+```
+val conf = new H2OConf(sc).setH2OCluster(host, port).setClientIp(ip).setCloudName("h2o-cloud")
+val h2oContext = H2OContext.getOrCreate(sc, conf)
+```
 
 
 <a name="SparkShell"></a>
