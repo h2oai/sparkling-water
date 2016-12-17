@@ -26,19 +26,21 @@ import org.apache.spark.{Logging, SparkContext}
   * Configuration holder which is representing
   * properties passed from user to Sparkling Water.
   */
-class H2OConf(@transient val sc: SparkContext) extends Logging with InternalBackendConf with ExternalBackendConf{
+class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf with ExternalBackendConf {
 
   /** Support for creating H2OConf in Java environments */
-  def this(jsc: JavaSparkContext) = this(jsc.sc)
-  val sparkConf = sc.getConf
+  def this(jsc: JavaSparkContext) = this(jsc.sc.getConf)
+
+  def this(sc: SparkContext) = this(sc.getConf)
+
   // Precondition
   require(sparkConf != null, "Spark conf was null")
 
   /** Copy this object */
   override def clone: H2OConf = {
-    new H2OConf(sc).setAll(getAll)
+    new H2OConf(sparkConf).setAll(getAll)
   }
-
+  
   /** Set a configuration variable. */
   def set(key: String, value: String): H2OConf = {
     sparkConf.set(key, value)
