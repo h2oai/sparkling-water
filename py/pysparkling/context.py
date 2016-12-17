@@ -184,8 +184,11 @@ class H2OContext(object):
                     return fc._as_h2o_frame_from_RDD_String(self, dataframe, framename)
                 elif isinstance(first, bool):
                     return fc._as_h2o_frame_from_RDD_Bool(self, dataframe, framename)
-                elif isinstance(dataframe.max(), int):
-                    return fc._as_h2o_frame_from_RDD_Long(self, dataframe, framename)
+                elif isinstance(dataframe.min(), int) and isinstance(dataframe.max(), int):
+                    if dataframe.min() >= self._jvm.Integer.MIN_VALUE and dataframe.max() <= self._jvm.Integer.MAX_VALUE:
+                        return fc._as_h2o_frame_from_RDD_Int(self, dataframe, framename)
+                    else:
+                        return fc._as_h2o_frame_from_RDD_Long(self, dataframe, framename)
                 elif isinstance(first, float):
                     return fc._as_h2o_frame_from_RDD_Float(self, dataframe, framename)
                 elif isinstance(dataframe.max(), long):
