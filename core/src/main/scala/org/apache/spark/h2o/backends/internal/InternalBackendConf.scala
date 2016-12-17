@@ -18,12 +18,12 @@
 package org.apache.spark.h2o.backends.internal
 
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.backends.SharedH2OConf
+import org.apache.spark.h2o.backends.SharedBackendConf
 
 /**
   * Internal backend configuration
   */
-trait InternalBackendConf extends SharedH2OConf {
+trait InternalBackendConf extends SharedBackendConf {
   self: H2OConf =>
 
   import InternalBackendConf._

@@ -18,10 +18,11 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.TaskContext
+import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.utils.SupportedTypes.SupportedType
 import org.apache.spark.h2o.{H2OContext, _}
-import water.Key
+import water.{ExternalFrameUtils, Key}
 
 import scala.collection.immutable
 import scala.reflect.runtime.universe._
@@ -32,7 +33,7 @@ case class MetaInfo(names:Array[String], types: Array[SupportedType]) {
   lazy val vecTypes: Array[Byte] = types map (_.vecType)
 }
 
-case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], frameKeyName: Option[String]) extends ConverterUtils {
+case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], frameKeyName: Option[String]) {
 
   private[this] val defaultFieldNames = (i: Int) => "f" + i
   
@@ -64,7 +65,17 @@ case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], fram
 
   private[this] def withMeta(meta: MetaInfo): H2OFrame = {
     val kn: String = keyName(rdd, frameKeyName)
-    convert[Product](hc, rdd, kn, meta.names, meta.vecTypes, H2OFrameFromRDDProductBuilder.perTypedDataPartition())
+
+    // in case of internal backend, store regular vector types
+    // otherwise for external backend store expected types
+    val expectedTypes = if(hc.getConf.runsInInternalClusterMode){
+      meta.vecTypes
+    }else{
+      val javaClasses = meta.types.map(_.javaClass)
+      ExternalFrameUtils.prepareExpectedTypes(javaClasses)
+    }
+
+    WriteConverterCtxUtils.convert[Product](hc, rdd, kn, meta.names, expectedTypes, H2OFrameFromRDDProductBuilder.perTypedDataPartition())
   }
 
 
@@ -99,32 +110,27 @@ object H2OFrameFromRDDProductBuilder{
     * @return pair (partition ID, number of rows in this partition)
     */
   private[converters] def perTypedDataPartition[T<:Product]()
-                                                           (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[immutable.Map[Int, NodeDesc]])
+                                                           (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[UploadPlan])
                                                            (context: TaskContext, it: Iterator[T]): (Int, Long) = {
+    val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     // An array of H2O NewChunks; A place to record all the data in this partition
-    val con = ConverterUtils.getWriteConverterContext(uploadPlan, context.partitionId())
-    con.createChunks(keyName,vecTypes,context.partitionId())
+    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize)
 
-    it.foreach(prod => { // For all rows which are subtype of Product
+    con.createChunks(keyName, vecTypes, context.partitionId())
+    iterator.foreach(prod => { // For all rows which are subtype of Product
       for( i <- 0 until prod.productArity ) { // For all fields...
       val fld = prod.productElement(i)
         val x = fld match {
           case Some(n) => n
           case _ => fld
         }
-        x match {
-          case n: Number  => con.put(i, n.doubleValue())
-          case n: Boolean => con.put(i, if (n) 1 else 0)
-          case n: String  => con.put(i, n)
-          case n : java.sql.Timestamp => con.put(i, n)
-          case _ => con.putNA(i)
-        }
+        con.putAnySupportedType(i, x)
       }
     })
     //Compress & write data in partitions to H2O Chunks
     con.closeChunks()
 
     // Return Partition number and number of rows in this partition
-    (context.partitionId, con.numOfRows)
+    (context.partitionId, con.numOfRows())
   }
 }
