@@ -21,9 +21,11 @@ package org.apache.spark.h2o.converters
 import java.lang.reflect.Constructor
 
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.utils.{ProductType, ReflectionUtils}
+import org.apache.spark.h2o.backends.external.ExternalReadConverterCtx
+import org.apache.spark.h2o.utils.ProductType
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, TaskContext}
+import water.ExternalFrameUtils
 import water.fvec.Frame
 
 import scala.annotation.meta.{field, getter}
@@ -34,16 +36,16 @@ import scala.reflect.runtime.universe._
 /**
   * Convert H2OFrame into an RDD (lazily).
   *
-  * @param frame  an instance of H2O frame
+  * @param frame       an instance of H2O frame
   * @param productType pre-calculated deconstructed type of result
-  * @param hc  an instance of H2O context
-  * @tparam A  type for resulting RDD
-  * @tparam T  specific type of H2O frame
+  * @param hc          an instance of H2O context
+  * @tparam A type for resulting RDD
+  * @tparam T specific type of H2O frame
   */
 private[spark]
-class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val frame: T,
-                                                                  val productType: ProductType)
-                                                                 (@transient hc: H2OContext)
+class H2ORDD[A <: Product : TypeTag : ClassTag, T <: Frame] private(@transient val frame: T,
+                                                                    val productType: ProductType)
+                                                                   (@transient hc: H2OContext)
   extends {
     override val isExternalBackend = hc.getConf.runsInExternalClusterMode
   } with RDD[A](hc.sparkContext, Nil) with H2ORDDLike[T] {
@@ -54,7 +56,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
 
   def mkString(seq: Seq[_], sep: Any) = if (seq == null) "(null)" else seq.mkString(sep.toString)
 
-  val colNamesInFrame = frame.names()
+  val colNames = frame.names()
 
   // Check that H2OFrame & given Scala type are compatible
   if (!productType.isSingleton) {
@@ -62,13 +64,9 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
 
     if (problems.nonEmpty) {
       throw new IllegalArgumentException(s"The following fields are missing in frame: $problems; " +
-        "we have " + colNamesInFrame.mkString(","))
+        "we have " + colNames.mkString(","))
     }
   }
-
-
-  val types = ReflectionUtils.types(typeOf[A])
-  override val expectedTypes: Option[Array[Byte]] = ConverterUtils.prepareExpectedTypes(isExternalBackend, types)
 
   /**
     * :: DeveloperApi ::
@@ -76,12 +74,12 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
     */
   override def compute(split: Partition, context: TaskContext): Iterator[A] = {
     val iterator = new H2ORDDIterator(frameKeyName, split.index)
-    ConverterUtils.getIterator[A](isExternalBackend, iterator)
+    ReadConverterCtxUtils.backendSpecificIterator[A](isExternalBackend, iterator)
   }
 
   private val jc = implicitly[ClassTag[A]].runtimeClass
 
-  private def columnReaders(rcc: ReadConverterContext) = productType.memberTypeNames map rcc.readerMapByName
+  private def columnReaders(rcc: ReadConverterCtx) = productType.memberTypeNames map rcc.readerMapByName
 
   private def opt[X](op: => Any): Option[X] = try {
     Option(op.asInstanceOf[X])
@@ -95,18 +93,29 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
   val columnMapping: Array[Int] = if (productType.isSingleton) Array(0) else multicolumnMapping
 
   def multicolumnMapping: Array[Int] = {
-      val mappings: Array[Int] = productType.members map (colNamesInFrame indexOf _.name)
+    val mappings: Array[Int] = productType.members map (colNames indexOf _.name)
+    val bads = mappings.zipWithIndex collect {
+      case (j, at) if j < 0 =>
+        if (at < productType.arity) productType.members(at).toString else s"[[$at]] (unknown type)"
+    }
 
-      val bads = mappings.zipWithIndex collect {
-        case (j, at) if j < 0 =>
-          if (at < productType.arity) productType.members(at).toString else s"[[$at]] (unknown type)"
-      }
+    if (bads.nonEmpty) {
+      throw new scala.IllegalArgumentException(s"Missing columns: ${bads mkString ","}")
+    }
 
-      if (bads.nonEmpty) {
-        throw new scala.IllegalArgumentException(s"Missing columns: ${bads mkString ","}")
-      }
+    mappings
+  }
 
-      mappings
+  override val selectedColumnIndices: Array[Int] = columnMapping
+
+  override val expectedTypes: Option[Array[Byte]] = {
+    // there is no need to prepare expected types in internal backend
+    if (isExternalBackend) {
+      // prepare expected types for selected columns in the same order ar are selected columns(
+      Option(ExternalFrameUtils.prepareExpectedTypes(productType.memberClasses))
+    } else {
+      None
+    }
   }
 
   class H2ORDDIterator(val keyName: String, val partIndex: Int) extends H2OChunkIterator[A] {
@@ -118,9 +127,6 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       (columnMapping zip readers) map { case (j, r) => () =>
         r.apply(j).asInstanceOf[AnyRef] // this last trick converts primitives to java.lang wrappers
       }
-
-    override val selectedColumnIndices: Array[Int] = colNamesInFrame.indices.toArray
-
 
     def extractRow: Array[AnyRef] = {
       val rowOpt = convertPerColumn map (_ ())
@@ -136,7 +142,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
       * Note that reading does not always lead to a success,
       * so there are the following options:
       * - the previous read succeeded, and we have a cached value stored
-      *   then we are fine and no further actions are required
+      * then we are fine and no further actions are required
       * - there is no cached value, and the underlying iterator says it has more data.
       * In this case we try to read the row. This may succeed or not
       * - if it succeeds, we are good
@@ -212,7 +218,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@transient val
   @transient private case class InstanceBuilder(c: Constructor[_]) {
     def apply(data: Array[AnyRef]): Option[A] = opt(c.newInstance(data: _*).asInstanceOf[A])
   }
-  
-  @(transient @field @getter) private lazy val instanceBuilders = constructors map InstanceBuilder
+
+  @(transient@field @getter) private lazy val instanceBuilders = constructors map InstanceBuilder
 
 }

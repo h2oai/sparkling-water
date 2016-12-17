@@ -21,13 +21,22 @@ package org.apache.spark.h2o.converters
 import org.apache.spark.Logging
 import org.apache.spark.h2o._
 import org.apache.spark.h2o.utils.ReflectionUtils
+<<<<<<< HEAD
 import water.Key
+=======
+import org.apache.spark.internal.Logging
+import water.{ExternalFrameUtils, Key}
+>>>>>>> e0d5b1e... [SW-178] Implement external sparkling water beckend
 
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
+<<<<<<< HEAD
 private[h2o] object ProductRDDConverter extends Logging with ConverterUtils{
+=======
+private[h2o] object ProductRDDConverter extends Logging {
+>>>>>>> e0d5b1e... [SW-178] Implement external sparkling water beckend
 
   /** Transform H2OFrame to Product RDD */
   def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = {
@@ -49,8 +58,15 @@ private[h2o] object ProductRDDConverter extends Logging with ConverterUtils{
     // Collect H2O vector types for all input types
     val vecTypes = ftypes.map(ReflectionUtils.vecTypeFor)
 
-    convert[T](hc, rdd, keyName, fnames, vecTypes, H2OFrameFromRDDProductBuilder.perTypedDataPartition())
+    // in case of internal backend, store regular vector types
+    // otherwise for external backend store expected types
+    val expectedTypes = if(hc.getConf.runsInInternalClusterMode){
+      vecTypes
+    }else{
+      ExternalFrameUtils.prepareExpectedTypes(ftypes)
+    }
 
+    WriteConverterCtxUtils.convert[T](hc, rdd, keyName, fnames, expectedTypes, H2OFrameFromRDDProductBuilder.perTypedDataPartition())
   }
 }
 
