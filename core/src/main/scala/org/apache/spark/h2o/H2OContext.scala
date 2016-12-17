@@ -59,10 +59,10 @@ import scala.util.control.NoStackTrace
   * @param sparkContext Spark Context
   * @param conf H2O configuration
   */
-class H2OContext private (@transient val sparkContext: SparkContext, @transient conf: H2OConf) extends Logging
-  with Serializable with H2OContextUtils { self =>
+class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends Logging with H2OContextUtils {
+  self =>
 
-  @transient val sqlc: SQLContext = SQLContext.getOrCreate(sparkContext)
+  val sqlc: SQLContext = SQLContext.getOrCreate(sparkContext)
 
   /** IP of H2O client */
   private var localClientIp: String = _
@@ -73,7 +73,7 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
 
 
   /** Used backend */
-  @transient private val backend: SparklingBackend = if(conf.runsInExternalClusterMode){
+  private val backend: SparklingBackend = if(conf.runsInExternalClusterMode){
     new ExternalH2OBackend(this)
   }else{
     new InternalH2OBackend(this)
@@ -84,7 +84,7 @@ class H2OContext private (@transient val sparkContext: SparkContext, @transient 
   // also with regards to used backend and store the fix the state of prepared configuration
   // so it can't be changed anymore
   /** H2O and Spark configuration */
-  @transient val _conf = backend.checkAndUpdateConf(conf).clone()
+  val _conf = backend.checkAndUpdateConf(conf).clone()
 
   /**
     * This method connects to external H2O cluster if spark.ext.h2o.externalClusterMode is set to true,
@@ -239,7 +239,7 @@ object H2OContext extends Logging {
     }
   }
 
-  @transient private val instantiatedContext = new AtomicReference[H2OContext]()
+  private val instantiatedContext = new AtomicReference[H2OContext]()
 
   /**
     * Tries to get existing H2O Context. If it is not there, ok.
