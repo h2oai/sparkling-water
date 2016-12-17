@@ -29,7 +29,6 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import water._
 
-import scala.annotation.meta.{field, param}
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
@@ -59,10 +58,10 @@ import scala.util.control.NoStackTrace
   * @param sparkContext Spark Context
   * @param conf H2O configuration
   */
-class H2OContext private (@(transient @param @field) val sparkContext: SparkContext, @(transient @param @field) conf: H2OConf)
-  extends Logging with Serializable with H2OContextUtils { self =>
-  
-  @transient val sqlc: SQLContext = SparkSession.builder().getOrCreate().sqlContext
+class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends Logging with H2OContextUtils {
+  self =>
+
+  val sqlc: SQLContext = SparkSession.builder().getOrCreate().sqlContext
 
   /** IP of H2O client */
   private var localClientIp: String = _
@@ -73,7 +72,7 @@ class H2OContext private (@(transient @param @field) val sparkContext: SparkCont
 
 
   /** Used backend */
-  @transient private val backend: SparklingBackend = if(conf.runsInExternalClusterMode){
+  private val backend: SparklingBackend = if(conf.runsInExternalClusterMode){
     new ExternalH2OBackend(this)
   }else{
     new InternalH2OBackend(this)
@@ -84,7 +83,7 @@ class H2OContext private (@(transient @param @field) val sparkContext: SparkCont
   // also with regards to used backend and store the fix the state of prepared configuration
   // so it can't be changed anymore
   /** H2O and Spark configuration */
-  @transient val _conf = backend.checkAndUpdateConf(conf).clone()
+  val _conf = backend.checkAndUpdateConf(conf).clone()
 
   /**
     * This method connects to external H2O cluster if spark.ext.h2o.externalClusterMode is set to true,
@@ -249,7 +248,7 @@ object H2OContext extends Logging {
     }
   }
 
-  @transient private val instantiatedContext = new AtomicReference[H2OContext]()
+  private val instantiatedContext = new AtomicReference[H2OContext]()
 
   /**
     * Tries to get existing H2O Context. If it is not there, ok.
