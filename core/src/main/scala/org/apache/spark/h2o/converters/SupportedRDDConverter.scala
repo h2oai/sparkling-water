@@ -29,15 +29,13 @@ import scala.reflect.runtime.universe._
   * This converter just wraps the existing RDD converters and hides the internal RDD converters
   */
 
-trait SupportedRDDConverter{
+object SupportedRDDConverter {
   /** Transform supported type for conversion to H2OFrame*/
   def toH2OFrame(hc: H2OContext, rdd: SupportedRDD, frameKeyName: Option[String]): H2OFrame = rdd.toH2OFrame(hc, frameKeyName)
 
   /** Transform H2OFrame to RDD */
   def toRDD[A <: Product: TypeTag: ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = ProductRDDConverter.toRDD[A, T](hc, fr)
 }
-
-object SupportedRDDConverter extends SupportedRDDConverter
 
 /**
   * Magnet pattern (Type Class pattern) for conversion from various primitive types to their appropriate H2OFrame using

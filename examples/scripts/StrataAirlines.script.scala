@@ -18,6 +18,7 @@ import water.Key
 import java.io.File
 
 import water.support.SparkContextSupport.addFiles
+import water.support.H2OFrameSupport._
 
 // Create SQL support
 implicit val sqlContext = spark.sqlContext
@@ -63,8 +64,7 @@ val bigTable = sqlContext.sql(
 
 
 val trainFrame:H2OFrame = bigTable
-trainFrame.replace(19, trainFrame.vec("IsDepDelayed").toCategoricalVec)
-trainFrame.update()
+withLockAndUpdate(trainFrame){ fr => fr.replace(19, fr.vec("IsDepDelayed").toCategoricalVec)}
 
 // Run deep learning to produce model estimating arrival delay
 import _root_.hex.deeplearning.DeepLearning
@@ -87,13 +87,13 @@ import _root_.hex.glm.GLMModel.GLMParameters.Family
 import _root_.hex.glm.GLM
 import _root_.hex.glm.GLMModel.GLMParameters
 val glmParams = new GLMParameters(Family.binomial)
-glmParams._train = bigTable
+glmParams._train = trainFrame
 glmParams._response_column = 'IsDepDelayed
 glmParams._alpha = Array[Double](0.5)
 val glm = new GLM(glmParams, Key.make("glmModel.hex"))
 val glmModel = glm.trainModel().get()
 
 // Use model to estimate delay on training data
-val predGLMH2OFrame = glmModel.score(bigTable)('predict)
+val predGLMH2OFrame = glmModel.score(trainFrame)('predict)
 val predGLMFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 

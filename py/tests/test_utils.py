@@ -18,6 +18,8 @@
 import unittest
 import os
 from pyspark import SparkContext, SparkConf
+from external_cluster_test_utils import ExternalClusterTestHelper
+import sys
 
 
 
@@ -28,7 +30,7 @@ def asert_h2o_frame(test_suite, h2o_frame, rdd):
 
 
 def get_default_spark_conf():
-    return SparkConf(). \
+    conf = SparkConf(). \
         setAppName("pyunit-test"). \
         setMaster("local-cluster[3,1,2048]"). \
         set("spark.ext.h2o.disable.ga","true"). \
@@ -38,13 +40,30 @@ def get_default_spark_conf():
         set("spark.ext.h2o.repl.enabled", "false"). \
         set("spark.task.maxFailures", "1"). \
         set("spark.rpc.numRetries", "1"). \
-        set("spark.deploy.maxExecutorRetries", "1")
+        set("spark.deploy.maxExecutorRetries", "1"). \
+        set("spark.ext.h2o.backend.cluster.mode", ExternalClusterTestHelper.cluster_mode()). \
+        set("spark.ext.h2o.cloud.name", ExternalClusterTestHelper.unique_cloud_name("test")). \
+        set("spark.ext.h2o.external.start.mode", os.getenv("spark.ext.h2o.external.start.mode", "manual")) .\
+        set("spark.sql.warehouse.dir", "file:" + os.path.join(os.getcwd(), "spark-warehouse"))
+
+
+    if ExternalClusterTestHelper.tests_in_external_mode():
+        conf.set("spark.ext.h2o.client.ip", ExternalClusterTestHelper.local_ip())
+        conf.set("spark.ext.h2o.external.cluster.num.h2o.nodes", "2")
+
+    return conf
 
 def set_up_class(cls):
-   pass
+    if ExternalClusterTestHelper.tests_in_external_mode(cls._sc._conf):
+        cls.external_cluster_test_helper = ExternalClusterTestHelper()
+        cloud_name = cls._sc._conf.get("spark.ext.h2o.cloud.name")
+        cloud_ip = cls._sc._conf.get("spark.ext.h2o.client.ip")
+        cls.external_cluster_test_helper.start_cloud(2, cloud_name, cloud_ip)
 
 
 def tear_down_class(cls):
+    if ExternalClusterTestHelper.tests_in_external_mode(cls._sc._conf):
+        cls.external_cluster_test_helper.stop_cloud()
     cls._sc.stop()
 
 # Runs python tests and by default reports to console.

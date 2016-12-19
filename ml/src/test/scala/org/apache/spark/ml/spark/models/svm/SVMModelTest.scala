@@ -23,6 +23,7 @@ import org.apache.spark.mllib.linalg.Vectors
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.support.H2OFrameSupport
 
 import scala.util.Random
 
@@ -46,8 +47,9 @@ class SVMModelTest extends FunSuite with SharedSparkTestContext {
     val trainDF = trainRDD.toDF("Label", "Vector")
 
     val trainFrame = h2oContext.asH2OFrame(trainDF, "bubbles")
-    trainFrame.replace(0, trainFrame.vec(0).toCategoricalVec).remove()
-
+    H2OFrameSupport.withLockAndUpdate(trainFrame){ fr =>
+      fr.replace(0, fr.vec(0).toCategoricalVec).remove()
+    }
     val initialWeights = Vectors.dense(1, 1, 1, 1, 1)
     val weightsDF = sc.parallelize(Array(Tuple1(initialWeights))).toDF("Vector")
     val weightsFrame = hc.asH2OFrame(weightsDF, "weights")

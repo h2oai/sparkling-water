@@ -34,7 +34,7 @@ class FrameTransformationsTest(unittest.TestCase):
     def setUpClass(cls):
         cls._sc = SparkContext(conf = test_utils.get_default_spark_conf())
         test_utils.set_up_class(cls)
-        cls._hc = H2OContext.getOrCreate(cls._sc, H2OConf(cls._sc))
+        cls._hc = H2OContext.getOrCreate(cls._sc, H2OConf(cls._sc).set_num_of_external_h2o_nodes(2))
 
     @classmethod
     def tearDownClass(cls):
@@ -85,6 +85,15 @@ class FrameTransformationsTest(unittest.TestCase):
         self.assertEquals(h2o_frame[1,0],1.3333333333,"Value should match")
         test_utils.asert_h2o_frame(self,h2o_frame,rdd)
 
+    # test transformation from RDD consisting of python doubles to h2o frame
+    def test_rdd_double_h2o_frame(self):
+        hc = self._hc
+        rdd = self._sc.parallelize([0.5,1.3333333333,178])
+        h2o_frame = hc.as_h2o_frame(rdd)
+        self.assertEquals(h2o_frame[0,0],0.5,"Value should match")
+        self.assertEquals(h2o_frame[1,0],1.3333333333,"Value should match")
+        test_utils.asert_h2o_frame(self, h2o_frame, rdd)
+
     # test transformation from RDD consisting of python complex types to h2o frame
     def test_rdd_complex_h2o_frame_1(self):
         hc = self._hc
@@ -131,7 +140,7 @@ class H2OConfTest(unittest.TestCase):
     def setUpClass(cls):
         cls._sc = SparkContext(conf = test_utils.get_default_spark_conf().set("spark.ext.h2o.cloud.name", "test-cloud"))
         test_utils.set_up_class(cls)
-        h2o_conf = H2OConf(cls._sc)
+        h2o_conf = H2OConf(cls._sc).set_num_of_external_h2o_nodes(2)
         cls._hc = H2OContext.getOrCreate(cls._sc, h2o_conf)
 
     @classmethod

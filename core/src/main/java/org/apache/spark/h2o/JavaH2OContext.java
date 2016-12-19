@@ -53,8 +53,8 @@ remains the same as in H2OContext, but we need to write a few pass-through funct
 
 If we write this class in scala the Java users would have to call getOrCreate method on generated class ending with $
 which is not nice.
- */
-    private H2OContext hc;
+*/
+    transient private H2OContext hc;
 
     public H2OContext h2oContext(){
         return hc;
@@ -239,7 +239,6 @@ which is not nice.
 
     /** Conversion from RDD[Integer] to H2O's DataFrame */
     public H2OFrame asH2OFrameFromRDDInt(JavaRDD<Integer> rdd, String frameName){
-
         return hc.asH2OFrame(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaInt(rdd.rdd()), Option.apply(frameName));
     }
 
@@ -266,9 +265,30 @@ which is not nice.
         return hc.asH2OFrame(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaDouble(rdd.rdd()), Option.apply(frameName));
     }
 
+    /** Conversion from RDD[Double] to H2O's DataFrame
+     * This method is used by the python client since even though the rdd is of type double,
+     * some of the elements are actually integers. We need to convert all types to double in order to not break the
+     * backend
+     * */
+    public H2OFrame asH2OFrameFromPythonRDDDouble(JavaRDD<Number> rdd, String frameName){
+        JavaRDD<Double> casted = rdd.map(new RDDDoubleConversionFunc());
+        return asH2OFrameFromRDDDouble(casted, frameName);
+    }
+
+
     /** Conversion from RDD[Long] to H2O's DataFrame */
     public H2OFrame asH2OFrameFromRDDLong(JavaRDD<Long> rdd, String frameName){
         return hc.asH2OFrame(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaLong(rdd.rdd()), Option.apply(frameName));
+    }
+
+    /** Conversion from RDD[Long] to H2O's DataFrame
+     * This method is used by the python client since even though the rdd is of type long,
+     * some of the elements are actually integers. We need to convert all types to long in order to not break the
+     * backend
+     * */
+    public H2OFrame asH2OFrameFromPythonRDDLong(JavaRDD<Number> rdd, String frameName){
+        JavaRDD<Long> casted = rdd.map(new RDDLongConversionFunc());
+        return asH2OFrameFromRDDLong(casted, frameName);
     }
 
     /** Conversion from RDD[LabeledPoint] to H2O's DataFrame */

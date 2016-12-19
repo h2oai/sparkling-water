@@ -36,6 +36,9 @@ class H2OConf(object):
         self._jconf.setCloudName(cloud_name)
         return self
 
+    def set_num_of_external_h2o_nodes(self, num_of_external_h2o_nodes):
+        self._jconf.setNumOfExternalH2ONodes(num_of_external_h2o_nodes)
+        return self
 
     def set_internal_cluster_mode(self):
         self._jconf.setInternalClusterMode()
@@ -57,9 +60,72 @@ class H2OConf(object):
         self._jconf.setFlatFilePath(flatfile_path)
         return self
 
-    # getters
+    def set_h2o_cluster(self, ip, port):
+        self._jconf.setH2OCluster(ip, port)
+        return self
+
+    def set_yarn_queue(self, queue_name):
+        self._jconf.setYARNQueue(queue_name)
+        return self
+
+    def set_h2o_driver_path(self, driver_path):
+        self._jconf.setH2ODriverPath(driver_path)
+        return self
+
+    def set_hdfs_output_dir(self, hdfs_output_dir):
+        self._jconf.setHDFSOutputDir(hdfs_output_dir)
+        return self
+
+    def set_mapper_xmx(self, mem):
+        self._jconf.setMapperXmx(mem)
+        return self
+
+    def set_cluster_config_file(self, path):
+        self._jconf.setClusterConfigFile(path)
+        return self
+
+    def use_auto_cluster_start(self):
+        self._jconf.useAutoClusterStart()
+        return self
+
+    def use_manual_cluster_start(self):
+        self._jconf.useManualClusterStart()
+        return self
+
+# getters
+
+    def h2o_cluster(self):
+        return self._get_option(self._jconf.h2oCluster)
+
+    def yarn_queue(self):
+        return self._get_option(self._jconf.YARNQueue)
+
+    def h2o_driver_path(self):
+        return self._get_option(self._jconf.h2oDriverPath)
+
+    def hdfs_output_dir(self):
+        return self._get_option(self._jconf.HDFSOutputDir)
+
+    def mapper_xmx(self):
+        return self._get_option(self._jconf.mapperXmx)
+
+    def cluster_config_file(self):
+        return self._get_option(self._jconf.clusterConfigFile)
+
+    def cluster_start_mode(self):
+        return self._jconf.clusterStartMode()
+
+    def is_auto_cluster_start_used(self):
+        return self._jconf.isAutoClusterStartUsed()
+
+    def is_manual_cluster_start_used(self):
+        return self._jconf.isManualClusterStartUsed()
+
     def cloud_name(self):
         return self._get_option(self._jconf.cloudName())
+
+    def num_of_external_h2o_nodes(self):
+        return self._get_option(self._jconf.numOfExternalH2ONodes())
 
     def flatfile_path(self):
         return self._get_option(self._jconf.flatFilePath())
@@ -97,7 +163,6 @@ class H2OConf(object):
     def subseq_tries(self):
         return self._jconf.subseqTries()
 
-
     def backend_cluster_mode(self):
         return self._jconf.backendClusterMode()
 
@@ -130,7 +195,7 @@ class H2OConf(object):
 
     def client_iced_dir(self):
         return self._get_option(self._jconf.clientIcedDir())
-    
+
     def jks(self):
         return self._get_option(self._jconf.jks())
 
@@ -148,7 +213,7 @@ class H2OConf(object):
 
     def user_name(self):
         return self._get_option(self._jconf.userName())
-    
+
     def scala_int_default_num(self):
         return self._jconf.scalaIntDefaultNum()
 

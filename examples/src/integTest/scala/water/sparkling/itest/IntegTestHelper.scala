@@ -1,14 +1,19 @@
 package water.sparkling.itest
 
+import java.io.File
+
+import org.apache.spark.h2o.BackendIndependentTestHelper
+import org.apache.spark.h2o.backends.SharedBackendConf
+import org.apache.spark.h2o.backends.external.ExternalBackendConf
 import org.scalatest.{BeforeAndAfterEach, Suite, Tag}
+import water.init.NetworkInit
 
 import scala.collection.mutable
-import scala.util.Random
 
 /**
  * Integration test support to be run on top of Spark.
  */
-trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
+trait IntegTestHelper extends BeforeAndAfterEach with BackendIndependentTestHelper { self: Suite =>
 
   private var testEnv: IntegTestEnv = _
 
@@ -28,7 +33,6 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
       env.sparkConf.get("spark.driver.memory").map(m => Seq("--driver-memory", m)).getOrElse(Nil) ++
       // Disable GA collection by default
       Seq("--conf", "spark.ext.h2o.disable.ga=true") ++
-      Seq("--conf", s"spark.ext.h2o.cloud.name=sparkling-water-${className.replace('.','-')}-${Random.nextInt()}") ++
       Seq("--conf", s"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", s"spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", s"spark.executor.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
@@ -42,6 +46,9 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
       // Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
       // See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
       Seq("--conf",  "spark.hadoop.yarn.timeline-service.enabled=false") ++
+      Seq("--conf", s"spark.ext.h2o.external.start.mode=${sys.props.getOrElse("spark.ext.h2o.external.start.mode", "manual")}") ++
+      // set spark-warehouse manually because of https://issues.apache.org/jira/browse/SPARK-17810, fixed in 2.0.2
+      Seq("--conf", s"spark.sql.warehouse.dir=file:${new File("spark-warehouse").getAbsolutePath}") ++
       env.sparkConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++
       Seq[String](env.itestJar)
 
@@ -61,10 +68,27 @@ trait IntegTestHelper extends BeforeAndAfterEach { self: Suite =>
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     testEnv = new TestEnvironment
+    val cloudName = uniqueCloudName("integ-tests")
+    testEnv.sparkConf += SharedBackendConf.PROP_CLOUD_NAME._1 -> cloudName
+
+    testEnv.sparkConf += SharedBackendConf.PROP_CLIENT_IP._1 ->
+      sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress)
+
+    val cloudSize = 2
+    testEnv.sparkConf += ExternalBackendConf.PROP_EXTERNAL_H2O_NODES._1 -> cloudSize.toString
+    if(testsInExternalMode()){
+      testEnv.sparkConf += SharedBackendConf.PROP_BACKEND_CLUSTER_MODE._1 -> "external"
+      startCloud(cloudSize, cloudName, testEnv.sparkConf("spark.ext.h2o.client.ip"), testEnv.assemblyJar)
+    }else{
+      testEnv.sparkConf += SharedBackendConf.PROP_BACKEND_CLUSTER_MODE._1 -> "internal"
+    }
   }
 
   override protected def afterEach(): Unit = {
     testEnv = null
+    if(testsInExternalMode()){
+      stopCloud()
+    }
     super.afterEach()
   }
 

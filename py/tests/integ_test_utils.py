@@ -23,6 +23,7 @@ from pyspark import SparkContext, SparkConf
 import subprocess
 from random import randrange
 import test_utils
+from external_cluster_test_utils import ExternalClusterTestHelper
 
 
 class IntegTestEnv:
@@ -47,10 +48,24 @@ class IntegTestSuite(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_env = IntegTestEnv()
+        if ExternalClusterTestHelper.tests_in_external_mode():
+            cloud_name = ExternalClusterTestHelper.unique_cloud_name("integ-test")
+            cloud_ip = ExternalClusterTestHelper.local_ip()
+            cls.external_cluster_test_helper = ExternalClusterTestHelper()
+            cls.conf("spark.ext.h2o.cloud.name", cloud_name)
+            cls.conf("spark.ext.h2o.client.ip", cloud_ip)
+            cls.conf("spark.ext.h2o.backend.cluster.mode", "external")
+            cls.conf("spark.ext.h2o.external.cluster.num.h2o.nodes", "2")
+            cls.external_cluster_test_helper.start_cloud(2, cloud_name, cloud_ip)
+        else:
+            cls.conf("spark.ext.h2o.backend.cluster.mode", "internal")
+
 
 
     @classmethod
     def tearDownClass(cls):
+        if ExternalClusterTestHelper.tests_in_external_mode():
+            cls.external_cluster_test_helper.stop_cloud()
         cls.test_env = None
 
     @staticmethod
@@ -74,6 +89,11 @@ class IntegTestSuite(unittest.TestCase):
         cmd_line.extend(["--conf", 'spark.test.home='+self.test_env.spark_home])
         cmd_line.extend(["--conf", 'spark.scheduler.minRegisteredResourcesRatio=1'])
         cmd_line.extend(["--conf", 'spark.ext.h2o.repl.enabled=false']) #  disable repl in tests
+        cmd_line.extend(["--conf", "spark.ext.h2o.external.start.mode=" + os.getenv("spark.ext.h2o.external.start.mode", "manual")])
+        cmd_line.extend(["--conf", "spark.sql.warehouse.dir=file:" + os.path.join(os.getcwd(), "spark-warehouse")])
+        # Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
+        # See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
+        cmd_line.extend(["--conf", 'spark.hadoop.yarn.timeline-service.enabled=false'])
         cmd_line.extend(["--py-files", self.test_env.egg])
         for k, v in self.test_env.spark_conf.items():
             cmd_line.extend(["--conf", k+'='+str(v)])

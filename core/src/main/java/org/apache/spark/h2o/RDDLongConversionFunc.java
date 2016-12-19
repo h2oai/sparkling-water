@@ -15,24 +15,14 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package org.apache.spark.h2o;
 
-/**
-  * Methods which each WriteConverterContext has to implement.
-  *
-  * Write Converter Context is a class which holds the state of connection/chunks and allows us to write/upload to those chunks
-  * via unified API
-  */
-trait WriteConverterContext {
-  def createChunks(keyName: String, vecTypes: Array[Byte], chunkId: Int)
-  def closeChunks()
-  def put(columnNum: Int, n: Number)
+import org.apache.spark.api.java.function.Function;
 
-  def put(columnNum: Int, n: Boolean)
-  def put(columnNum: Int, n: java.sql.Timestamp)
-  def put(columnNum: Int, n: String)
-  def putNA(columnNum: Int)
 
-  def numOfRows: Long
-  def increaseRowCounter()
+public class RDDLongConversionFunc implements Function<Number, Long> {
+    @Override
+    public Long call(Number n) throws Exception {
+        return n.longValue();
+    }
 }

@@ -22,10 +22,10 @@ import org.apache.spark.h2o.H2OConf
 /**
   * Shared configuration independent on used backend
   */
-trait SharedH2OConf {
+trait SharedBackendConf {
   self: H2OConf =>
 
-  import SharedH2OConf._
+  import SharedBackendConf._
 
   def backendClusterMode = sparkConf.get(PROP_BACKEND_CLUSTER_MODE._1, PROP_BACKEND_CLUSTER_MODE._2)
 
@@ -59,7 +59,7 @@ trait SharedH2OConf {
   def isSparkVersionCheckEnabled = sparkConf.getBoolean(PROP_SPARK_VERSION_CHECK_ENABLED._1, PROP_SPARK_VERSION_CHECK_ENABLED._2)
 
   def runsInExternalClusterMode: Boolean = backendClusterMode.toLowerCase() == "external"
-  def runsInInternalClusterMode: Boolean = !runsInInternalClusterMode
+  def runsInInternalClusterMode: Boolean = !runsInExternalClusterMode
 
   def setCloudName(cloudName: String): H2OConf = {
     sparkConf.set(PROP_CLOUD_NAME._1, cloudName)
@@ -95,7 +95,7 @@ trait SharedH2OConf {
   }
 }
 
-object SharedH2OConf {
+object SharedBackendConf {
   /**
     * This option can be set either to "internal" or "external"
     * When set to "external" H2O Context is created by connecting to existing H2O cluster, otherwise it creates
