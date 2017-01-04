@@ -65,7 +65,13 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
         s"""'spark.ext.h2o.backend.cluster.mode' property is set to ${conf.backendClusterMode}.
           Valid options are "internal" or "external". Running in internal cluster mode now!
       """)
+    }
 
+    if (conf.getInt("spark.sql.autoBroadcastJoinThreshold", 0) != -1) {
+      logWarning("Due to non-deterministic behavior of Spark broadcast-based joins\n" +
+                 "We recommend to disable them by\n" +
+                 "configuring `spark.sql.autoBroadcastJoinThreshold` variable to value `-1`:\n" +
+                 "sqlContext.sql(\"SET spark.sql.autoBroadcastJoinThreshold=-1\")")
     }
 
     conf
