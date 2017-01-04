@@ -1,6 +1,30 @@
 ChangeLog
 =========
 
+## 2.0.3 (2017-01-04)
+  - Bug
+    - [SW-152](https://0xdata.atlassian.net/browse/SW-152) - ClassNotFound with spark-submit
+    - [SW-266](https://0xdata.atlassian.net/browse/SW-266) - H2OContext shouldn't be Serializable
+    - [SW-276](https://0xdata.atlassian.net/browse/SW-276) - ClassLoading issue when running code using SparkSubmit
+    - [SW-281](https://0xdata.atlassian.net/browse/SW-281) - Update sparkling water tests so they use correct frame locking
+    - [SW-283](https://0xdata.atlassian.net/browse/SW-283) - Set spark.sql.warehouse.dir explicitly in tests because of SPARK-17810
+    - [SW-284](https://0xdata.atlassian.net/browse/SW-284) - Fix CraigsListJobTitlesApp to use local file instead of trying to get one from hdfs
+    - [SW-285](https://0xdata.atlassian.net/browse/SW-285) - Disable timeline service also in python integration tests
+    - [SW-286](https://0xdata.atlassian.net/browse/SW-286) - Add missing test in pysparkling for conversion RDD[Double] -> H2OFrame
+    - [SW-287](https://0xdata.atlassian.net/browse/SW-287) - Fix bug in SparkDataFrame converter where key wasn't random if not specified
+    - [SW-288](https://0xdata.atlassian.net/browse/SW-288) - Improve performance of Dataset tests and call super.afterAll
+    - [SW-289](https://0xdata.atlassian.net/browse/SW-289) - Fix PySparkling numeric handling during conversions
+    - [SW-290](https://0xdata.atlassian.net/browse/SW-290) - Fixes and improvements of task used to extended h2o jars by sparkling-water classes
+    - [SW-292](https://0xdata.atlassian.net/browse/SW-292) - Fix ScalaCodeHandlerTestSuite
+
+  - New Feature
+    - [SW-178](https://0xdata.atlassian.net/browse/SW-178) - Allow external h2o cluster to act as h2o backend in Sparkling Water
+
+  - Improvement
+    - [SW-282](https://0xdata.atlassian.net/browse/SW-282) - Integrate SW with H2O 3.10.1.2 ( Support for external cluster )
+    - [SW-291](https://0xdata.atlassian.net/browse/SW-291) - Use absolute value for random number in sparkling-water in internal backend
+    - [SW-295](https://0xdata.atlassian.net/browse/SW-295) - H2OConf should be parameterized by SparkConf and not by SparkContext
+
 ##2.0.2 (2016-12-09)
   - Bug
     - [SW-271](https://0xdata.atlassian.net/browse/SW-271) - SparklingWater Driver is not using SparkSession
