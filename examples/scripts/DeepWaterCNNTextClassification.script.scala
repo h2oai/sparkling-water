@@ -3,7 +3,7 @@
   *
   * Launch following commands:
   *   export MASTER="local-cluster[3,2,4096]"
-  *   bin/sparkling-shell -i examples/scripts/DeepWaterCNNTextClassifcation.script.scala
+  *   bin/sparkling-shell -i examples/scripts/DeepWaterCNNTextClassification.script.scala
   *
   * When running using spark shell or using scala rest API:
   *    SQLContext is available as sqlContext
@@ -14,29 +14,32 @@
 import _root_.hex.deepwater.{DeepWater, DeepWaterParameters}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.mllib.feature.HashingTF
+import water.support.SparkContextSupport
 
+import scala.io.Source
 import scala.io.Source
 
 def cleanString(string: String): String =
-  string.replaceAll("[^A-Za-z0-9(),!?\\'\\`]", " ")
-    .replaceAll("\\'s", " \'s")
-    .replaceAll("\'ve", " \'ve")
-    .replaceAll("n\'t", " n\'t")
-    .replaceAll("\'re", " \'re")
-    .replaceAll("\'d", " \'d")
-    .replaceAll("\'ll", " \'ll")
-    .replaceAll(",", " , ")
-    .replaceAll("!", " ! ")
-    .replaceAll("\\(", " \\( ")
-    .replaceAll("\\)", " \\) ")
-    .replaceAll("\\?", " \\? ")
-    .replaceAll("\\s{2,}", " ").trim.toLowerCase
+  string.replaceAll("[^A-Za-z0-9(),!?\\'\\`]", " ").
+    replaceAll("\\'s", " \'s").
+    replaceAll("\'ve", " \'ve").
+    replaceAll("n\'t", " n\'t").
+    replaceAll("\'re", " \'re").
+    replaceAll("\'d", " \'d").
+    replaceAll("\'ll", " \'ll").
+    replaceAll(",", " , ").
+    replaceAll("!", " ! ").
+    replaceAll("\\(", " \\( ").
+    replaceAll("\\)", " \\) ").
+    replaceAll("\\?", " \\? ").
+    replaceAll("\\s{2,}", " ").
+    trim.toLowerCase
 
 def loadData(): RDD[(Int, Array[String])] = {
-  val pos_file = Source.fromURL("https://raw.githubusercontent.com/yoonkim/CNN_sentence/master/rt-polarity.pos")
-  val neg_file = Source.fromURL("https://raw.githubusercontent.com/yoonkim/CNN_sentence/master/rt-polarity.neg")
+  val pos_file = Source.fromURL("https://raw.githubusercontent.com/yoonkim/CNN_sentence/master/rt-polarity.pos", "latin1")
+  val neg_file = Source.fromURL("https://raw.githubusercontent.com/yoonkim/CNN_sentence/master/rt-polarity.neg", "latin1")
 
   val positive_examples = sc.parallelize(pos_file.getLines().toSeq).map(s => (1, cleanString(s.trim).split(" ")) )
   val negative_examples = sc.parallelize(neg_file.getLines().toSeq).map(s => (0, cleanString(s.trim).split(" ")) )
@@ -57,28 +60,26 @@ val vocabSize = 65536
 val labeledSentences = loadData()
 val paddedSenteces = padSentences(labeledSentences)
 
-val vectorizedSentences = vectorize(paddedSenteces, vocabSize)
-
 val hc = H2OContext.getOrCreate(sc)
 import hc.implicits._
-import hex.deepwater.{DeepWater, DeepWaterParameters}
-import org.apache.spark.h2o.H2OContext
-import org.apache.spark.mllib.feature.HashingTF
-import org.apache.spark.rdd.RDD
+import spark.sqlContext.implicits._
 
-import scala.io.Source
-val frame = asH2OFrameFromRDDProduct(vectorizedSentences)
+val vectorizedSentences = vectorize(paddedSenteces, vocabSize).toDF
+
+val frame : H2OFrame = vectorizedSentences
 
 val p = new DeepWaterParameters
 p._backend = DeepWaterParameters.Backend.tensorflow
 p._train = frame._key
-p._response_column = "C1"
-p._network = DeepWaterParameters.Network.user
+p._response_column = "_1"
 p._learning_rate = 1e-4
 p._mini_batch_size = 8
 p._train_samples_per_iteration = 8
 p._epochs = 1e-3
-p._network_definition_file = "networks/cnn_text_tensorflow.meta"
+//p._network = DeepWaterParameters.Network.user
+p._network_definition_file = "examples/networks/cnn_text_tensorflow.meta"
+p._image_shape = Array(16247, 1)
+p._channels = 1
 val model = new DeepWater(p).trainModel.get
 
 // TODO add predictions
