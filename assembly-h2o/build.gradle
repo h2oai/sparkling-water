@@ -95,6 +95,7 @@ dependencies {
 }
 
 task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparkling-water-core:jar"]) {
+    zip64 = true
     destinationDir = file("private")
     mergeServiceFiles()
     if(h2oJarFileName(originalJar) != null){
