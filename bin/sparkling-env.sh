@@ -21,6 +21,12 @@ function getMasterArg() {
     done
 }
 
+function checkPyEggFile() {
+  if [ ! -f $PY_EGG_FILE ]; then
+    echo "WARN	Running pysparkling using Python $1 requires ${PY_EGG_FILE} egg file which does not exist. This might be because your project was built using a different Python version. Build the project using appropriate Python version or change your version."
+  fi
+}
+
 if [ -z $TOPDIR ]; then
   echo "Caller has to setup TOPDIR variable!"
   exit -1
@@ -48,9 +54,11 @@ FAT_JAR_FILE="$TOPDIR/assembly/build/libs/$FAT_JAR"
 major_version=`echo $VERSION | cut -d . -f 1,2`
 version_without_snapshot=`echo $VERSION | cut -d - -f 1`
 
-PYTHON_VERSION=`python -c 'import sys; print(".".join(str(x) for x in sys.version_info[0:2]))'`
-PY_EGG="h2o_pysparkling_${major_version}-${version_without_snapshot}-py$PYTHON_VERSION.egg"
+python_version=`python -c 'import sys; print(".".join(str(x) for x in sys.version_info[0:2]))'`
+PY_EGG="h2o_pysparkling_${major_version}-${version_without_snapshot}-py${python_version}.egg"
 PY_EGG_FILE="$TOPDIR/py/build/dist/$PY_EGG"
+
+checkPyEggFile ${python_version}
 
 # Default master
 DEFAULT_MASTER="local[*]"
