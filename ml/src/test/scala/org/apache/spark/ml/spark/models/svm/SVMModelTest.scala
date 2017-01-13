@@ -40,8 +40,7 @@ class SVMModelTest extends FunSuite with SharedSparkTestContext {
     // Generate random training data
     val trainRDD = sc.parallelize(1 to 50, 1).map(v => {
       val values = Array.fill(5){0}.map(x => Random.nextDouble())
-      //val label = Math.round(Random.nextDouble())
-      val label = if (Math.round(Random.nextDouble()) > 0.5) "1" else "0"
+      val label = Math.round(Random.nextDouble())
       (label, Vectors.dense(values))
     }).cache()
     val trainDF = trainRDD.toDF("Label", "Vector")

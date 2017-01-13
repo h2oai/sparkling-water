@@ -50,10 +50,13 @@ object FrameMLUtils {
   toResult(frame, responseColumn,
     nfeatures, missingHandler,
     h2oContext, sqlContext,
-    (row,features, fields, domains) => new LabeledPoint(
-      toDouble(row.getAs[String](responseColumn), fields(fields.length - 1), domains(domains.length - 1)),
-      Vectors.dense(features)
-    ))
+    (row,features, fields, domains) => {
+      val respCol = fields.map(_.name).indexOf(responseColumn)
+      new LabeledPoint(
+        toDouble(row.get(respCol), fields(respCol), domains(respCol)),
+        Vectors.dense(features)
+      )}
+  )
 
   def toFeatureVector(frame: Frame,
                       responseColumn: String,

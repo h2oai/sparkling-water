@@ -177,7 +177,7 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
                 model.delete_and_lock(_job);
 
                 Tuple2<RDD<LabeledPoint>, double[]> points = FrameMLUtils.toLabeledPoints(
-                        _train,
+                        _parms.train(),
                         _parms._response_column,
                         model._output.nfeatures(),
                         _parms._missing_values_handling,
