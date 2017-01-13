@@ -7,6 +7,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.h2o.H2OContext;
 import org.apache.spark.ml.FrameMLUtils;
 import org.apache.spark.ml.spark.ProgressListener;
+import org.apache.spark.ml.spark.models.MissingValuesHandling;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.SQLContext;
@@ -48,13 +49,13 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
 
         if (_train == null) return;
 
-        for (int i = 0; i < _train.numCols(); i++) {
-            Vec vec = _train.vec(i);
-            String vecName = _train.name(i);
-            if (vec.naCnt() > 0 && (null == _parms._ignored_columns || Arrays.binarySearch(_parms
-                    ._ignored_columns, vecName) < 0)) {
-                error("_train", "Training frame cannot contain any missing values [" + vecName +
-                        "].");
+        if(MissingValuesHandling.NotAllowed == _parms._missing_values_handling) {
+            for (int i = 0; i < _train.numCols(); i++) {
+                Vec vec = _train.vec(i);
+                String vecName = _train.name(i);
+                if (vec.naCnt() > 0 && (null == _parms._ignored_columns || Arrays.binarySearch(_parms._ignored_columns, vecName) < 0)) {
+                    error("_train", "Training frame cannot contain any missing values [" + vecName + "].");
+                }
             }
         }
 
@@ -112,7 +113,7 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
                 sparkGM.setSeed(_parms._seed);
 
                 Tuple2<RDD<Vector>, double[]> points = FrameMLUtils.toFeatureVector(
-                        _train,
+                        _parms.train(),
                         _parms._response_column,
                         model._output.nfeatures(),
                         _parms._missing_values_handling,
@@ -133,7 +134,7 @@ public class GaussianMixture extends ClusteringModelBuilder<GaussianMixtureModel
                         sparkGM.run(training);
                 training.unpersist(false);
 
-                // TODO add means to the model to handle them when predicting
+                model._output._num_means_$eq(points._2());
                 model._output._iterations_$eq(_parms._max_iterations);
                 model._output._weights_$eq(sparkGMModel.weights());
                 model._output._mu_$eq(new double[sparkGMModel.gaussians().length][]);

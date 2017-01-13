@@ -25,7 +25,7 @@ import org.apache.spark.mllib.{ClusteringUtils, clustering}
 import org.apache.spark.mllib.linalg.{Matrices, Vectors}
 import org.apache.spark.mllib.stat.distribution
 import water.codegen.CodeGeneratorPipeline
-import water.util.SBPrintStream
+import water.util.{JCodeGen, SBPrintStream}
 import water.{Key, Keyed}
 
 object GaussianMixtureModel {
@@ -76,16 +76,20 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
   }
 
   override def score0(data: Array[Double], preds: Array[Double]): Array[Double] = {
-    preds(0) =
-      GaussianMixtureScorer.score(
-        weights, sparkModel.gaussians, epsilon, data, meanImputation, _output._num_means
-      )
+    val filledData = data.zipWithIndex.map{ case (v, i) =>
+      if (meanImputation && v.isNaN) _output._num_means(i)
+      else v
+    }
+    preds(0) = sparkModel.predict(Vectors.dense(filledData))
     preds
   }
 
   override protected def toJavaInit(sb: SBPrintStream, fileCtx: CodeGeneratorPipeline): SBPrintStream = {
     val sbInitialized = super.toJavaInit(sb, fileCtx)
-    // TODO implement
+    JCodeGen.toStaticVar(sbInitialized, "WEIGHTS", _output._weights, "Weights.")
+    if (meanImputation) {
+      JCodeGen.toStaticVar(sbInitialized, "MEANS", _output._num_means, "Means.")
+    }
     sbInitialized
   }
 
@@ -94,8 +98,10 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
                                            fileCtx: CodeGeneratorPipeline,
                                            verboseCode: Boolean) {
     GaussianMixtureScorer.generate(
-      bodySb, classCtx, fileCtx, verboseCode, weights, mg, epsilon, meanImputation
+      bodySb, classCtx, fileCtx, weights, mg, epsilon, meanImputation
     )
   }
+
+  override def havePojo: Boolean = false
 
 }

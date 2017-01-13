@@ -16,43 +16,11 @@ public class GaussianMixtureScorer {
     public static void generate(SBPrintStream bodySb,
                                 CodeGeneratorPipeline classCtx,
                                 CodeGeneratorPipeline fileCtx,
-                                boolean verboseCode,
                                 double[] weights,
                                 MultivariateGaussian[] gaussians,
                                 double epsilon,
                                 boolean meanImputation) {
-        if (meanImputation) {
-            bodySb.i().p("double[] filledData = new double[data.length];").nl();
-            bodySb.i().p("for (int i = 0; i < filledData.length; i++) {").nl();
-            bodySb.i(1).p("double value = data[i];").nl();
-            bodySb.i(1).p("if (Double.isNaN(value)) {").nl();
-            bodySb.i(2).p("filledData[i] = means[i];").nl();
-            bodySb.i(1).p("} else {").nl();
-            bodySb.i(2).p("filledData[i] = value;").nl();
-            bodySb.i(1).p("}").nl();
-        }
-
-        int idx = 0;
-        double max = Double.MIN_VALUE;
-        double[] p = new double[weights.length];
-        for (int i = 0; i < p.length; i++) {
-            p[i] = epsilon + weights[i] * pdf(gaussians[i], data);
-        }
-
-        double pSum = 0;
-        for (double aP : p) {
-            pSum += aP;
-        }
-
-        for (int i = 0; i < p.length; i++) {
-            p[i] /= pSum;
-            if (p[i] >= max) {
-                idx = i;
-                max = p[i];
-            }
-        }
-        return idx;
-
+        // TODO implement
     }
 
     /**
@@ -61,11 +29,7 @@ public class GaussianMixtureScorer {
      * of the passed multivariate Gaussian distributions and chooses the index of the highest one.
      *
      * @param weights        Weight for each of the Gaussian distributions
-     * @param gaussians      Gaussians to be checked, each gaussian describes one cluster
-     * @param epsilon
      * @param data           Data to be assigned to a cluster
-     * @param meanImputation
-     * @param means
      * @return ID of the cluster in range [0, k-1]
      */
     public static int score(double[] weights,
@@ -89,7 +53,30 @@ public class GaussianMixtureScorer {
         double max = Double.MIN_VALUE;
         double[] p = new double[weights.length];
         for (int i = 0; i < p.length; i++) {
-            p[i] = epsilon + weights[i] * pdf(gaussians[i], data);
+            // PDF
+            Tuple2<Double[][], Double> dm = ClusteringUtils.calculateCovarianceConstants(gaussians[i].mu(), gaussians[i].sigma());
+
+            double[] delta = new double[filledData.length];
+            for (int j = 0; j < filledData.length; j++) {
+                delta[j] = filledData[j] - gaussians[i].mu().apply(j);
+            }
+
+            int resSize = dm._1.length;
+            double[] v = new double[resSize];
+            for (int j = 0; j < resSize; j++) {
+                v[j] = 0;
+                for (int k = 0; k < dm._1[j].length; k++) {
+                    v[i] += (dm._1[j][k] * delta[k]);
+                }
+            }
+
+            double vv = 0;
+            for (int j = 0; j < v.length; j++) {
+                vv += (v[j] * v[j]);
+            }
+
+            double pdf = Math.exp((dm._2 + vv * -0.5));
+            p[i] = epsilon + weights[i] * pdf;
         }
 
         double pSum = 0;
@@ -105,82 +92,6 @@ public class GaussianMixtureScorer {
             }
         }
         return idx;
-    }
-
-    /**
-     * Probability density function value for a given multivariate Guassian at a given point
-     *
-     * @param gaussian Multivariate Gaussian distribution
-     * @param data     Data point for which the pdf should be calculated
-     * @return The loglikelihood for given Gaussian and point
-     */
-    static double pdf(MultivariateGaussian gaussian, double[] data) {
-        Tuple2<Double[][], Double> dm =
-                ClusteringUtils.calculateCovarianceConstants(gaussian.mu(), gaussian.sigma());
-        double[] delta = delta(data, gaussian.mu().toArray());
-        double[] v = multiplyMV(dm._1, delta);
-        return Math.exp((dm._2 + multiplyV(v, v) * -0.5));
-    }
-
-    /**
-     * Multiply a matrix with a (non transposed) vector
-     * <p>
-     * Example
-     * [1]
-     * [2]
-     * [3]
-     * [1 2 3]  [14]
-     * [4 5 6]  [32]
-     * [7 8 9]  [50]
-     *
-     * @param matrix
-     * @param vec
-     * @return
-     */
-    static double[] multiplyMV(Double[][] matrix, double[] vec) {
-        assert matrix.length != 0;
-        int resSize = matrix.length;
-        double[] res = new double[resSize];
-        for (int i = 0; i < resSize; i++) {
-            res[i] = 0;
-            for (int j = 0; j < matrix[i].length; j++) {
-                res[i] += (matrix[i][j] * vec[j]);
-            }
-        }
-        return res;
-    }
-
-    /**
-     * Multiply two vectors element by element and sum to produce a scalar
-     *
-     * @param vec1 First vector
-     * @param vec2 Second vector
-     * @return Scala value
-     */
-    static double multiplyV(double[] vec1, double[] vec2) {
-        assert vec1.length == vec2.length;
-        double res = 0;
-        for (int i = 0; i < vec1.length; i++) {
-            res += (vec1[i] * vec2[i]);
-        }
-        return res;
-    }
-
-    /**
-     * Calculates the difference (delta) between each element in the array and its respective
-     * mean value
-     *
-     * @param data Input data
-     * @param mu   Means
-     * @return Array of deltas
-     */
-    static double[] delta(double[] data, double[] mu) {
-        assert data.length == mu.length;
-        double[] delta = new double[data.length];
-        for (int i = 0; i < data.length; i++) {
-            delta[i] = data[i] - mu[i];
-        }
-        return delta;
     }
 
 }

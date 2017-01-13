@@ -76,7 +76,7 @@ class GaussianMixtureTest extends FunSuite with SharedSparkTestContext {
         .map(row => {
           Vectors.dense(row.toSeq.map(_.asInstanceOf[Double]).toArray)
         })
-    ).collect()
+    ).collect().map(_.toDouble)
 
     assert(h2oPreds.sameElements(sparkPreds))
 

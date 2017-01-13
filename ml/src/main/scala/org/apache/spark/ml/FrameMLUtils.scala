@@ -77,7 +77,7 @@ object FrameMLUtils {
     var means: Array[Double] = new Array[Double](nfeatures)
     val domains: Array[Array[String]] = frame.domains()
 
-    val trainingDF = h2oContext.asDataFrame(new H2OFrame(frame))(sqlContext)
+    val trainingDF = h2oContext.asDataFrame(frame)(sqlContext)
     val fields: Array[StructField] = trainingDF.schema.fields
     var trainingRDD = trainingDF.rdd
 

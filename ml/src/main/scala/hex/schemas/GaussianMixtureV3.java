@@ -1,5 +1,6 @@
 package hex.schemas;
 
+import org.apache.spark.ml.spark.models.MissingValuesHandling;
 import org.apache.spark.ml.spark.models.gm.GaussianMixture;
 import org.apache.spark.ml.spark.models.gm.GaussianMixtureParameters;
 import org.apache.spark.util.Utils;
@@ -23,7 +24,6 @@ public class GaussianMixtureV3 extends
                 "ignored_columns",
                 "k",
                 "convergence_tolerance",
-                "standardize",
                 "seed",
                 "missing_values_handling"
         };
@@ -31,12 +31,13 @@ public class GaussianMixtureV3 extends
         @API(help = "Convergence tolerance", level = API.Level.secondary, gridable = true)
         public double convergence_tolerance = 0.01;
 
-        @API(help = "Standardize columns", level = API.Level.secondary, gridable = true)
-        public boolean standardize = true;
-
         @API(help = "RNG Seed", level = API.Level.expert, gridable = true)
         public long seed = Utils.random().nextLong();
 
+        @API(level = API.Level.expert, direction = API.Direction.INOUT, gridable = true,
+                values = {"NotAllowed", "Skip", "MeanImputation"},
+                help = "Handling of missing values. Either NotAllowed, Skip or MeanImputation.")
+        public MissingValuesHandling missing_values_handling;
     }
 
 

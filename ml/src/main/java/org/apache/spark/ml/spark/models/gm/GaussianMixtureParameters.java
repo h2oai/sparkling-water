@@ -42,7 +42,6 @@ public class GaussianMixtureParameters extends ClusteringModel.ClusteringParamet
     public int _max_iterations = 100;
     public double _convergence_tolerance = 0.01;
     public long _seed = Utils.random().nextLong();
-    public boolean _standardize = true;
     public MissingValuesHandling _missing_values_handling = MissingValuesHandling.MeanImputation;
 
     public void validate(GaussianMixture gm) {
