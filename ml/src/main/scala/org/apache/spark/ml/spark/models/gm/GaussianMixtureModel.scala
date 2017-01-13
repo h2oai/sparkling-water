@@ -102,6 +102,4 @@ class GaussianMixtureModel private[gm](val selfKey: Key[_ <: Keyed[_ <: Keyed[_ 
     )
   }
 
-  override def havePojo: Boolean = false
-
 }
