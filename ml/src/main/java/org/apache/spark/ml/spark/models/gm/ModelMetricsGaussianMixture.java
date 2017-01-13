@@ -34,7 +34,7 @@ public class ModelMetricsGaussianMixture extends ModelMetricsUnsupervised {
         this._loglikelihood = loglikelihood;
     }
 
-    public static class MetricBuilderGaussianMixture extends ModelMetricsUnsupervised.MetricBuilderUnsupervised {
+    public static class MetricBuilderGaussianMixture extends ModelMetricsUnsupervised.MetricBuilderUnsupervised<MetricBuilderGaussianMixture> {
 
         private double _loglikelihood;
 
