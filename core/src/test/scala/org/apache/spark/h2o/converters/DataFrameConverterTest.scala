@@ -543,6 +543,15 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     h2oFrameEnum.delete()
   }
 
+  test("SW-303 Decimal column conversion failure") {
+    import sqlContext.implicits._
+    val df = sc.parallelize(Array("ok", "bad", "ok", "bad", "bad")).toDF("status")
+    df.createOrReplaceTempView("responses")
+    val dfDouble = spark.sqlContext.sql("SELECT IF(r.status = 'ok', 0.0, 1.0) AS cancelled FROM responses AS r")
+    val frame = hc.asH2OFrame(dfDouble)
+    assertVectorDoubleValues(frame.vec(0), Seq(0.0, 1.0, 0.0, 1.0, 1.0))
+  }
+
   def fp(it:Iterator[Row]):Unit = {
     println(it.size)
   }
