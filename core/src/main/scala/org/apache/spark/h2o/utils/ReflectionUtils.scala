@@ -125,7 +125,11 @@ object ReflectionUtils {
   def vecTypeOf[T](implicit ttag: TypeTag[T]) = vecTypeFor(typeOf[T])
 
   /** Method translating SQL types into Sparkling Water types */
-  def vecTypeFor(dt : DataType) : Byte = bySparkType(dt).vecType
+  def vecTypeFor(dt : DataType) : Byte =
+    dt match {
+      case _: DecimalType => Vec.T_NUM
+      case _ => bySparkType(dt).vecType
+    }
 
   import SupportedTypes._
 
