@@ -32,11 +32,9 @@ import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.Key
 import water.fvec._
 import water.parser.BufferedString
-import water.{DKV, Key}
-
-import scala.reflect.ClassTag
 
 /**
  * Testing Conversions between H2OFrame and Spark DataFrame
