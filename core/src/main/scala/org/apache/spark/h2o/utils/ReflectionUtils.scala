@@ -127,7 +127,7 @@ object ReflectionUtils {
   /** Method translating SQL types into Sparkling Water types */
   def vecTypeFor(dt : DataType) : Byte =
     dt match {
-      case d: DecimalType => Vec.T_NUM
+      case _: DecimalType => Vec.T_NUM
       case _ => bySparkType(dt).vecType
     }
 
