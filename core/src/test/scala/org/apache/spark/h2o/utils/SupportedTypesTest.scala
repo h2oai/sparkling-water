@@ -66,6 +66,7 @@ class SupportedTypesTest extends FunSuite {
     mustBe(Double, -6.3)
     mustBe(Double, math.Pi)
     mustBe(Timestamp, new java.sql.Timestamp(1472777182999L))
+    mustBe(Date, java.sql.Date.valueOf("2016-12-24"))
     mustBe(String, "")
     mustBe(String, "Hello H2O")
   }
@@ -113,6 +114,7 @@ class SupportedTypesTest extends FunSuite {
     mustBe(Double, typeOf[scala.Double])
     mustBe(Double, typeOf[java.lang.Double])
     mustBe(Timestamp,typeOf[java.sql.Timestamp])
+    mustBe(Date, typeOf[java.sql.Date])
     mustBe(String, typeOf[String])
     mustBe(UTF8, typeOf[UTF8String])
   }
@@ -129,6 +131,7 @@ class SupportedTypesTest extends FunSuite {
     mustBe(OptionalType(Float), typeOf[Option[scala.Float]])
     mustBe(OptionalType(Double), typeOf[Option[scala.Double]])
     mustBe(OptionalType(Timestamp),typeOf[Option[java.sql.Timestamp]])
+    mustBe(OptionalType(Date),typeOf[Option[java.sql.Date]])
     mustBe(OptionalType(String), typeOf[Option[String]])
     mustBe(OptionalType(UTF8), typeOf[Option[UTF8String]])
   }
@@ -143,7 +146,8 @@ class SupportedTypesTest extends FunSuite {
     mustBe(Long, "Long")
     mustBe(Float, "Float")
     mustBe(Double, "Double")
-    mustBe(Timestamp,"Timestamp")
+    mustBe(Timestamp, "Timestamp")
+    mustBe(Date, "Date")
     mustBe(String, "String")
     mustBe(UTF8, "UTF8")
   }

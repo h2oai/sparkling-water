@@ -552,6 +552,16 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     assertVectorDoubleValues(frame.vec(0), Seq(0.0, 1.0, 0.0, 1.0, 1.0))
   }
 
+  test("SW-304 DateType column conversion failure") {
+    import java.sql.Date
+    import sqlContext.implicits._
+    val df = sc.parallelize(Seq(DateField(Date.valueOf("2016-12-24")))).toDF("created_date")
+    df.show()
+    df.printSchema()
+    val hf = hc.asH2OFrame(df)
+    println(hf.toString(0,10))
+  }
+
   def fp(it:Iterator[Row]):Unit = {
     println(it.size)
   }

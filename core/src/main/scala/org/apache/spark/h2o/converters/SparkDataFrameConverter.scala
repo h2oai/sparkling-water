@@ -158,6 +158,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
               con.put(idx, sv)
 
             case TimestampType => con.put(idx, subRow.getAs[java.sql.Timestamp](aidx))
+            case DateType      => con.put(idx, subRow.getAs[java.sql.Date](aidx))
             case _ => con.putNA(idx)
           }
         }
