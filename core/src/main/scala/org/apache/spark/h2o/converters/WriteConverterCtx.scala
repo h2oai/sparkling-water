@@ -46,6 +46,8 @@ trait WriteConverterCtx {
 
   def put(colIdx: Int, data: java.sql.Timestamp)
 
+  def put(colIdx: Int, data: java.sql.Date)
+
   def put(colIdx: Int, data: String)
 
   def putNA(colIdx: Int)
