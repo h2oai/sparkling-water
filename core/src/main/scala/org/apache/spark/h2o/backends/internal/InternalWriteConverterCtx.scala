@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.backends.internal
 
-import java.sql.Timestamp
+import java.sql.{Date, Timestamp}
 
 import org.apache.spark.h2o.converters.WriteConverterCtx
 import water.fvec.{FrameUtils, NewChunk}
@@ -42,6 +42,7 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
   override def put(columnNum: Int, data: Float): Unit = chunks(columnNum).addNum(data)
   override def put(columnNum: Int, data: Double): Unit = chunks(columnNum).addNum(data)
   override def put(columnNum: Int, data: Timestamp): Unit = chunks(columnNum).addNum(data.getTime)
+  override def put(columnNum: Int, data: Date): Unit = chunks(columnNum).addNum(data.getTime)
   override def put(columnNum: Int, data: String): Unit = chunks(columnNum).addStr(data)
   override def putNA(columnNum: Int): Unit = chunks(columnNum).addNA()
 

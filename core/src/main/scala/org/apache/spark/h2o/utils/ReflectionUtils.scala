@@ -107,6 +107,7 @@ object ReflectionUtils {
       case n: Boolean => Boolean
       case n: String => String
       case n: java.sql.Timestamp => Timestamp
+      case n: java.sql.Date => Date
       case n: DataType => bySparkType(n)
       case q => throw new IllegalArgumentException(s"Do not understand type $q")
     }
@@ -114,9 +115,9 @@ object ReflectionUtils {
 
   def javaClassOf[T](implicit ttag: TypeTag[T]) = supportedTypeFor(typeOf[T]).javaClass
 
-  def supportedTypeFor(tpe: Type) : SupportedType = SupportedTypes.byType(tpe)
+  def supportedTypeFor(tpe: Type): SupportedType = SupportedTypes.byType(tpe)
 
-  def classFor(tpe: Type) : Class[_] = supportedTypeFor(tpe).javaClass
+  def classFor(tpe: Type): Class[_] = supportedTypeFor(tpe).javaClass
 
   def vecTypeFor(t: Class[_]): Byte = byClass(t).vecType
 
@@ -125,7 +126,7 @@ object ReflectionUtils {
   def vecTypeOf[T](implicit ttag: TypeTag[T]) = vecTypeFor(typeOf[T])
 
   /** Method translating SQL types into Sparkling Water types */
-  def vecTypeFor(dt : DataType) : Byte =
+  def vecTypeFor(dt : DataType): Byte =
     dt match {
       case _: DecimalType => Vec.T_NUM
       case _ => bySparkType(dt).vecType
