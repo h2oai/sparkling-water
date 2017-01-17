@@ -55,7 +55,9 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int) extends
   override def put(colIdx: Int, data: Float) = externalFrameWriter.sendFloat(data)
   override def put(colIdx: Int, data: Double) = externalFrameWriter.sendDouble(data)
   override def put(colIdx: Int, data: java.sql.Timestamp) = externalFrameWriter.sendTimestamp(data)
-  override def put(colIdx: Int, data: java.sql.Date) = externalFrameWriter.sendTimestamp(new java.sql.Timestamp(data.getTime))
+  // Here we should call externalFrameWriter.sendDate - however such method does not exist
+  // Hence going through the same path as sending Timestamp long value.
+  override def put(colIdx: Int, data: java.sql.Date) = externalFrameWriter.sendLong(data.getTime)
   override def put(colIdx: Int, data: String) = externalFrameWriter.sendString(data)
   override def putNA(columnNum: Int) = externalFrameWriter.sendNA()
 
