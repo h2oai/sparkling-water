@@ -556,11 +556,24 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     import java.sql.Date
     import sqlContext.implicits._
     val df = sc.parallelize(Seq(DateField(Date.valueOf("2016-12-24")))).toDF("created_date")
-    df.show()
-    df.printSchema()
     val hf = hc.asH2OFrame(df)
-    println(hf.toString(0,10))
+    assert(hf.numRows() == 1)
+    assert(hf.numCols() == 1)
+    assert(hf.vec(0).at8(0) == Date.valueOf("2016-12-24").getTime)
   }
+
+  test("SW-310 Decimal(2,1) not compatible in h2o frame") {
+    import sqlContext.implicits._
+    val dfInput = sc.parallelize(1 to 6).map(v => (v, v*v)).toDF("single", "double")
+    dfInput.createOrReplaceTempView("dfInput")
+    val df = spark.sqlContext.sql("SELECT *, IF(double < 5, 1.0, 0.0) AS label FROM dfInput")
+    val hf = hc.asH2OFrame(df)
+    assert(hf.numRows() == 6)
+    assert(hf.numCols() == 3)
+    assertVectorIntValues(hf.vec("single"), Seq(1, 2, 3, 4, 5, 6))
+    assertVectorIntValues(hf.vec("double"), Seq(1, 4, 9, 16, 25, 36))
+    assertVectorDoubleValues(hf.vec("label"), Seq(1.0, 1.0, 0.0, 0.0, 0.0, 0.0))
+   }
 
   def fp(it:Iterator[Row]):Unit = {
     println(it.size)
