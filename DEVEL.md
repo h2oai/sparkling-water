@@ -22,6 +22,7 @@
 - [Running Sparkling Water](#RunSW)
   - [Starting H2O Services](#StartH2O)
   - [Memory Allocation](#MemorySetup)
+  - [Security](#Security)
   - [Converting H2OFrame into RDD](#ConvertDF)
     - [Example](#Example)
   - [Converting H2OFrame into DataFrame](#ConvertSchema)
@@ -235,7 +236,8 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.kerberos.login`|`false`|Enable Kerberos login.|
 |`spark.ext.h2o.login.conf`|`null`|Login configuration file.|
 |`spark.ext.h2o.user.name`|`null`|Override user name for cluster.|
-| **H2O client parameters** ||| 
+|`spark.ext.h2o.internal_security_conf`|`null`|Path to a file containing H2O/SW internal security configuration.|
+| **H2O client parameters** |||
 |`spark.ext.h2o.client.ip`|`null`|IP of H2O client node |
 |`spark.ext.h2o.client.iced.dir`|`null`|Location of iced directory for the driver instance.|
 |`spark.ext.h2o.client.log.level`| `INFO`| H2O internal log level used for H2O client running inside Spark driver.|
@@ -304,6 +306,37 @@ H2O resides in the same executor JVM as Spark. The memory provided for H2O is co
 
 * For JVMs that require a large amount of memory, we strongly recommend configuring the maximum amount of memory available for individual mappers. For information on how to do this using Yarn, refer to http://docs.h2o.ai/deployment/hadoop_yarn.html
 
+---
+<a name="Security"></a>
+### Security
+
+Both Spark and H2O support basic node authentication and data encryption. In H2O's case we encrypt all the data sent between server nodes and between client
+and server nodes. This feature does not support H2O's UDP feature, only data sent via TCP is encrypted.
+
+Currently only encryption based on Java's key pair is supported (more in-depth explanation can be found in H2O's documentation linked below).
+
+To enable security for Spark methods please check [their documentation](http://spark.apache.org/docs/latest/security.html).
+
+Security for data exchanged between H2O instances can be enabled manually by generating all necessary files and distributing them to all worker nodes as
+described in [H2O's documentation](https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/security.rst) and passing the "spark.ext.h2o
+.internal_security_conf" to spark submit:
+
+```scala
+bin/sparkling-shell /
+--conf "spark.ext.h2o.internal_security_conf=ssl.properties"
+```
+
+We also provide a utility method which will automatically generate all necessary files and enable security on all H2O nodes:
+
+```
+import org.apache.spark.network.Security
+import org.apache.spark.h2o._
+Security.enableSSL(sc) // generate properties file, key pairs and set appropriate H2O parameters
+val hc = H2OContext.getOrCreate(sc) // start the H2O cloud
+```
+
+This method will generate all files and distribute them via YARN or Spark methods to all worker nodes. This communication will be secure if you configured
+YARN/Spark security.
 
 ---
 <a name="ConvertDF"></a>
