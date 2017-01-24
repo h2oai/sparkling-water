@@ -20,13 +20,14 @@ package org.apache.spark.h2o
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
 import org.apache.spark.h2o.backends.internal.InternalBackendConf
-import org.apache.spark.{Logging, SparkConf, SparkContext}
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
 
 /**
   * Configuration holder which is representing
   * properties passed from user to Sparkling Water.
   */
-class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf with ExternalBackendConf {
+class H2OConf(val sparkConf: SparkConf) extends H2OLogging with InternalBackendConf with ExternalBackendConf {
 
   /** Support for creating H2OConf in Java environments */
   def this(jsc: JavaSparkContext) = this(jsc.sc.getConf)

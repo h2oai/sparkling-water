@@ -18,16 +18,16 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.Logging
-import org.apache.spark.TaskContext
 import org.apache.spark.h2o._
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.TaskContext
 import water.fvec.{H2OFrame, Vec}
 import water.{ExternalFrameUtils, Key}
 
 import scala.language.{implicitConversions, postfixOps}
 
-private[converters] object LabeledPointConverter extends Logging {
+private[converters] object LabeledPointConverter extends H2OLogging {
 
   /** Transform RDD[LabeledPoint] to appropriate H2OFrame */
   def toH2OFrame(hc: H2OContext, rdd: RDD[LabeledPoint], frameKeyName: Option[String]): H2OFrame = {

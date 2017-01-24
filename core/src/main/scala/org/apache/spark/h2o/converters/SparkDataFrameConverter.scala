@@ -18,8 +18,8 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark._
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
+import org.apache.spark.h2o.{H2OContext, H2OLogging}
 import org.apache.spark.h2o.utils.ReflectionUtils._
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.sql.types._
@@ -27,7 +27,7 @@ import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
 import water.{ExternalFrameUtils, Key}
 import water.fvec.{Frame, H2OFrame}
 
-private[h2o] object SparkDataFrameConverter extends Logging {
+private[h2o] object SparkDataFrameConverter extends H2OLogging {
 
   /**
     * Create a Spark DataFrame from given H2O frame.
