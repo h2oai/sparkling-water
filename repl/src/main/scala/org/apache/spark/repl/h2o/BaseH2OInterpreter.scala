@@ -24,7 +24,9 @@ package org.apache.spark.repl.h2o
 
 
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{Logging, SparkConf, SparkContext}
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+import org.apache.spark.h2o.H2OLogging
 
 import scala.annotation.tailrec
 import scala.language.{existentials, implicitConversions, postfixOps}
@@ -38,7 +40,7 @@ import scala.tools.nsc.interpreter.{Results => IR, _}
   * @param sparkContext spark context
   * @param sessionId session ID for interpreter
   */
-private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends Logging {
+private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends H2OLogging {
 
   private val ContinueString = "     | "
   private val consoleStream = new IntpConsoleStream()

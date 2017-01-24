@@ -17,8 +17,6 @@
 
 package org.apache.spark.h2o.converters
 
-
-import org.apache.spark.Logging
 import org.apache.spark.h2o._
 import org.apache.spark.h2o.utils.ReflectionUtils
 import water.{ExternalFrameUtils, Key}
@@ -27,7 +25,7 @@ import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
-private[h2o] object ProductRDDConverter extends Logging {
+private[h2o] object ProductRDDConverter extends H2OLogging {
 
   /** Transform H2OFrame to Product RDD */
   def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = {
