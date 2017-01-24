@@ -318,7 +318,7 @@ Currently only encryption based on Java's key pair is supported (more in-depth e
 To enable security for Spark methods please check [their documentation](http://spark.apache.org/docs/latest/security.html).
 
 Security for data exchanged between H2O instances can be enabled manually by generating all necessary files and distributing them to all worker nodes as
-described in [H2O's documentation](https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/security.rst) and passing the "spark.ext.h2o
+described in [H2O's documentation](https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/security.rst#ssl-internode-security) and passing the "spark.ext.h2o
 .internal_security_conf" to spark submit:
 
 ```scala
