@@ -17,15 +17,15 @@
 
 package org.apache.spark.h2o.utils
 
-import org.apache.spark.Logging
 import org.apache.spark.h2o.WrongSparkVersion
-import org.apache.spark.SparkContext
 import language.postfixOps
+import org.apache.spark.h2o.H2OLogging
+import org.apache.spark.SparkContext
 
 /**
   * Support methods for H2OContext.
   */
-private[spark] trait H2OContextUtils extends Logging{
+private[spark] trait H2OContextUtils extends H2OLogging{
 
   /**
     * Open browser for given address.
