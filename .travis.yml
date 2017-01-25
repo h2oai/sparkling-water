@@ -7,7 +7,7 @@ jdk:
   - openjdk7
 
 install:
-  - ( test -d "$SPARK_HOME" && test "$(ls -A "$SPARK_HOME")" ) || ( wget -O spark.tgz "http://mirrors.ocf.berkeley.edu/apache/spark/spark-1.6.1/spark-1.6.1-bin-cdh4.tgz" && mkdir -p "$SPARK_HOME" && tar xvf "spark.tgz" -C "$SPARK_HOME" --strip-components 1 )
+  - ( test -d "$SPARK_HOME" && test "$(ls -A "$SPARK_HOME")" ) || ( wget -O spark.tgz "http://mirrors.ocf.berkeley.edu/apache/spark/spark-1.6.3/spark-1.6.3-bin-cdh4.tgz" && mkdir -p "$SPARK_HOME" && tar xvf "spark.tgz" -C "$SPARK_HOME" --strip-components 1 )
 
 env:
   global:
