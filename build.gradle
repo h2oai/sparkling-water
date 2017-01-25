@@ -58,7 +58,7 @@ ext {
       project(':sparkling-water-py')
     ]
 
-    defaultScalaBaseVersion = '2.11'
+    defaultScalaBaseVersion = '2.10'
     supportedScalaBaseVersions = ['2.10' : '2.10.6',
                                   '2.11' : '2.11.8']
 }

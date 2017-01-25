@@ -1,0 +1,35 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+package org.apache.spark.h2o.utils
+
+import scala.language.{implicitConversions, postfixOps}
+import scala.reflect.runtime.universe._
+
+/**
+  * Utils object which is in both scala 2.10 and scala 2.11 and contains same methods but with implementation tailored
+  * to specific scala version
+  */
+object CrossScalaUtils extends CrossScalaShared {
+  override def getConstructorSymbol(tpe: _root_.scala.reflect.runtime.universe.Type): _root_.scala.reflect.runtime.universe.Symbol = {
+    tpe.decl(termNames.CONSTRUCTOR)
+  }
+
+  override def getParams(methodSymbol: _root_.scala.reflect.runtime.universe.MethodSymbol): List[List[_root_.scala.reflect.runtime.universe.Symbol]] = {
+    methodSymbol.paramLists
+  }
+}
