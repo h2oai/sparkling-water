@@ -18,7 +18,8 @@
 package org.apache.spark.h2o.backends.external
 
 
-import java.io.File
+import java.io.{File, FileInputStream}
+import java.util.Properties
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.h2o.backends.SparklingBackend
@@ -50,6 +51,16 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-output", conf.HDFSOutputDir.get,
       "-disown"
     )
+
+    conf.sslConf match {
+      case Some(ssl) => {
+        cmdToLaunch ++ Array("-internal_security_config", ssl)
+        val sslConfig = new Properties()
+        sslConfig.load(new FileInputStream(ssl))
+        cmdToLaunch ++ Array("-files", sslConfig.get("h2o_ssl_jks_internal") + "," + sslConfig.get("h2o_ssl_jts"))
+      }
+      case _ =>
+    }
 
     // start external h2o cluster and log the output
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString)
