@@ -17,29 +17,17 @@
 
 package org.apache.spark.h2o.converters
 
-<<<<<<< HEAD
-import org.apache.spark.h2o._
-import org.apache.spark.h2o.utils.NodeDesc
-import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.{Logging, TaskContext}
-import water.Key
-=======
+import org.apache.spark.Logging
 import org.apache.spark.TaskContext
 import org.apache.spark.h2o._
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
-import org.apache.spark.internal.Logging
 import org.apache.spark.mllib.regression.LabeledPoint
->>>>>>> e0d5b1e... [SW-178] Implement external sparkling water beckend
 import water.fvec.{H2OFrame, Vec}
 import water.{ExternalFrameUtils, Key}
 
 import scala.language.{implicitConversions, postfixOps}
 
-<<<<<<< HEAD
-private[converters] object LabeledPointConverter extends Logging with ConverterUtils{
-=======
 private[converters] object LabeledPointConverter extends Logging {
->>>>>>> e0d5b1e... [SW-178] Implement external sparkling water beckend
 
   /** Transform RDD[LabeledPoint] to appropriate H2OFrame */
   def toH2OFrame(hc: H2OContext, rdd: RDD[LabeledPoint], frameKeyName: Option[String]): H2OFrame = {
