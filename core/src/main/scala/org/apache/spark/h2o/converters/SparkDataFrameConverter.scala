@@ -108,7 +108,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
         var i = 0
         var subRow = row
         while (i < path.length - 1 && !subRow.isNullAt(path(i))) {
-          subRow = subRow.getAs[Row](path(i));
+          subRow = subRow.getAs[Row](path(i))
           i += 1
         }
         val aidx = path(i) // actual index into row provided by path
@@ -118,9 +118,9 @@ private[h2o] object SparkDataFrameConverter extends Logging {
           val ary = if (isAry) subRow.getAs[Seq[_]](aidx) else null
           val aryLen = if (isAry) ary.length else -1
           val aryIdx = idx - startOfSeq // shared index to position in array/vector
-          val vec = if (isVec) subRow.getAs[mllib.linalg.Vector](aidx) else null
+          val vecLen = if (isVec) getVecLen(subRow, aidx) else -1
           if (isAry && aryIdx >= aryLen) con.putNA(idx)
-          else if (isVec && aryIdx >= vec.size) con.put(idx, 0.0) // Add zeros for vectors
+          else if (isVec && aryIdx >= vecLen) con.put(idx, 0.0) // Add zeros for double vectors
           else dataType match {
             case BooleanType => con.put(idx, if (isAry)
               if (ary(aryIdx).asInstanceOf[Boolean]) 1 else 0
@@ -144,7 +144,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
               ary(aryIdx).asInstanceOf[Double]
             } else {
               if (isVec) {
-                subRow.getAs[mllib.linalg.Vector](aidx)(idx - startOfSeq)
+                getVecVal(subRow, aidx, idx - startOfSeq)
               } else {
                 subRow.getDouble(aidx)
               }
@@ -170,4 +170,23 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     (context.partitionId, con.numOfRows())
   }
 
+  private def getVecLen(r: Row, idx: Int): Int = {
+    val value = r.get(idx)
+    value match {
+      case vector: mllib.linalg.Vector =>
+        vector.size
+      case _ =>
+        -1
+    }
+  }
+
+  private def getVecVal(r: Row, ridx: Int, vidx: Int): Double = {
+    val value = r.get(ridx)
+    value match {
+      case vector: mllib.linalg.Vector =>
+        vector(vidx)
+      case _ =>
+        throw new ArrayIndexOutOfBoundsException(s"Row: ${r}, row index: ${ridx}, vector index: ${vidx}")
+    }
+  }
 }

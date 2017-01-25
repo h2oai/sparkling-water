@@ -21,10 +21,10 @@ package org.apache.spark.h2o.backends.external
 import java.io.File
 
 import org.apache.hadoop.fs.Path
+import org.apache.spark.Logging
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
 import water.{H2O, H2OStarter}
 
