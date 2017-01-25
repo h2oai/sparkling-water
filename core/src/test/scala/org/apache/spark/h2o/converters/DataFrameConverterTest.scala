@@ -564,15 +564,17 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("SW-303 Decimal column conversion failure") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
     val df = sc.parallelize(Array("ok", "bad", "ok", "bad", "bad")).toDF("status")
-    df.createOrReplaceTempView("responses")
-    val dfDouble = spark.sqlContext.sql("SELECT IF(r.status = 'ok', 0.0, 1.0) AS cancelled FROM responses AS r")
+    df.registerTempTable("responses")
+    val dfDouble = sqlContext.sql("SELECT IF(r.status = 'ok', 0.0, 1.0) AS cancelled FROM responses AS r")
     val frame = hc.asH2OFrame(dfDouble)
     assertVectorDoubleValues(frame.vec(0), Seq(0.0, 1.0, 0.0, 1.0, 1.0))
   }
 
   test("SW-304 DateType column conversion failure") {
+    val sqlContext = sqlc
     import java.sql.Date
     import sqlContext.implicits._
     val df = sc.parallelize(Seq(DateField(Date.valueOf("2016-12-24")))).toDF("created_date")
@@ -583,10 +585,11 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("SW-310 Decimal(2,1) not compatible in h2o frame") {
+    val sqlContext = sqlc
     import sqlContext.implicits._
     val dfInput = sc.parallelize(1 to 6).map(v => (v, v*v)).toDF("single", "double")
-    dfInput.createOrReplaceTempView("dfInput")
-    val df = spark.sqlContext.sql("SELECT *, IF(double < 5, 1.0, 0.0) AS label FROM dfInput")
+    dfInput.registerTempTable("dfInput")
+    val df = sqlContext.sql("SELECT *, IF(double < 5, 1.0, 0.0) AS label FROM dfInput")
     val hf = hc.asH2OFrame(df)
     assert(hf.numRows() == 6)
     assert(hf.numCols() == 3)

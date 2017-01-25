@@ -18,19 +18,19 @@
 package org.apache.spark.h2o.converters
 
 
-import org.apache.spark.Logging
 import org.apache.spark.h2o._
+import org.apache.spark.h2o.utils.CrossScalaUtils
 
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.runtime.universe._
 
 
-private[h2o] object DatasetConverter extends Logging {
+private[h2o] object DatasetConverter extends H2OLogging {
 
   /** Transform Spark's Dataset into H2O Frame */
   def toH2OFrame[T <: Product](hc: H2OContext, ds: Dataset[T], frameKeyName: Option[String])(implicit ttag:TypeTag[T]) = {
     val tpe = ttag.tpe
-    val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
+    val constructorSymbol = CrossScalaUtils.getConstructorSymbol(tpe)
     val defaultConstructor =
       if (constructorSymbol.isMethod) constructorSymbol.asMethod
       else {
@@ -38,7 +38,7 @@ private[h2o] object DatasetConverter extends Logging {
         ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
       }
 
-    val params: List[(String, Type)] = defaultConstructor.paramss.flatten map {
+    val params: List[(String, Type)] = CrossScalaUtils.getParams(defaultConstructor).flatten map {
       sym => sym.name.toString -> tpe.member(sym.name).asMethod.returnType
     }
 

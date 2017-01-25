@@ -20,13 +20,15 @@ package org.apache.spark.h2o
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
 import org.apache.spark.h2o.backends.internal.InternalBackendConf
-import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+import org.apache.spark.repl.h2o.{BaseH2OInterpreter, H2OInterpreter}
 
 /**
   * Configuration holder which is representing
   * properties passed from user to Sparkling Water.
   */
-class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf with ExternalBackendConf {
+class H2OConf(val sparkConf: SparkConf) extends H2OLogging with InternalBackendConf with ExternalBackendConf {
 
   /** Support for creating H2OConf in Java environments */
   def this(jsc: JavaSparkContext) = this(jsc.sc.getConf)
@@ -94,5 +96,21 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
     }else{
       internalConfString
     }
+  }
+}
+
+object H2OConf {
+  private var _sparkConfChecked = false
+
+  def sparkConfChecked = _sparkConfChecked
+
+  def checkSparkConf(sparkConf: SparkConf): SparkConf = {
+    _sparkConfChecked = true
+    if(BaseH2OInterpreter.classServerFieldAvailable) {
+      sparkConf.set("spark.repl.class.uri", H2OInterpreter.classServerUri)
+    }else{
+      sparkConf.set("spark.repl.class.outputDir", H2OInterpreter.classOutputDirectory.getAbsolutePath)
+    }
+    sparkConf
   }
 }

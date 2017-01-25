@@ -15,6 +15,9 @@
 * limitations under the License.
 */
 
+/**
+  * Interpreter classloader which allows multiple interpreters to coexist
+  */
 package org.apache.spark.repl.h2o
 
 import java.util.Scanner
@@ -22,21 +25,15 @@ import java.util.Scanner
 /**
   * Interpreter classloader which allows multiple interpreters to coexist
   */
-class InterpreterClassLoader(val mainClassLoader: Option[ClassLoader]) extends ClassLoader {
-  def this(mainClassLoader: ClassLoader) = this(Some(mainClassLoader))
-
-  def this() = this(None)
+class InterpreterClassLoader(val fallbackClassloader: ClassLoader) extends ClassLoader {
 
   override def loadClass(name: String): Class[_] = {
     if (name.startsWith("intp_id")) {
       val intp_id = new Scanner(name).useDelimiter("\\D+").nextInt()
-      H2OIMain.existingInterpreters.get(intp_id).get.classLoader.loadClass(name)
-    } else if(mainClassLoader.isDefined) {
-      mainClassLoader.get.loadClass(name)
+      H2OIMain.existingInterpreters(intp_id).classLoader.loadClass(name)
     } else {
-      super.loadClass(name)
+      fallbackClassloader.loadClass(name)
     }
   }
-
 }
 

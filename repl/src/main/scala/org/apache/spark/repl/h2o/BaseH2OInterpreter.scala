@@ -22,37 +22,53 @@
 
 package org.apache.spark.repl.h2o
 
-import java.net.URI
 
-import org.apache.spark.repl.SparkILoop
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.util.Utils
-import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+import org.apache.spark.h2o.H2OLogging
 
-import scala.Predef.{println => _, _}
 import scala.annotation.tailrec
 import scala.language.{existentials, implicitConversions, postfixOps}
-import scala.reflect._
 import scala.tools.nsc._
 import scala.tools.nsc.interpreter.{Results => IR, _}
-import scala.tools.nsc.util._
 
 /**
-  * H2O Interpreter which is use to interpret scala code
+  * H2O Interpreter which is use to interpret scala code. This class is base class for H2O Interpreter in scala
+  * 2.10 and 2.11
   *
   * @param sparkContext spark context
   * @param sessionId session ID for interpreter
   */
-class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends Logging {
+private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends H2OLogging {
 
   private val ContinueString = "     | "
   private val consoleStream = new IntpConsoleStream()
-  private val responseWriter = new IntpResponseWriter()
+  protected val responseWriter = new IntpResponseWriter()
   private var replExecutionStatus = CodeResults.Success
-  private var settings: Settings = _
-  private var intp: H2OIMain = _
+  protected var settings: Settings = _
+  protected var intp: H2OIMain = _
   private var in: InteractiveReader = _
   private[repl] var pendingThunks: List[() => Unit] = Nil
+  val sparkConf = sparkContext.getConf
+  val sqlContext = SQLContext.getOrCreate(sparkContext)
+
+  def getUserJars(conf: SparkConf, isShell: Boolean = false): Seq[String] = {
+    val sparkJars = conf.getOption("spark.jars")
+    if (conf.get("spark.master") == "yarn" && isShell) {
+      val yarnJars = conf.getOption("spark.yarn.dist.jars")
+      unionFileLists(sparkJars, yarnJars).toSeq
+    } else {
+      sparkJars.map(_.split(",")).map(_.filter(_.nonEmpty)).toSeq.flatten
+    }
+  }
+
+  def unionFileLists(leftList: Option[String], rightList: Option[String]): Set[String] = {
+    var allFiles = Set[String]()
+    leftList.foreach { value => allFiles ++= value.split(",") }
+    rightList.foreach { value => allFiles ++= value.split(",") }
+    allFiles.filter { _.nonEmpty }
+  }
 
   def closeInterpreter() {
     if (intp ne null) {
@@ -60,13 +76,12 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
     }
   }
 
-  def valueOfTerm(term: String): Option[AnyRef] = {
+  def valueOfTerm(term: String): Option[Any] = {
     intp.valueOfTerm(term)
   }
 
   /**
     * Get response of interpreter
-    *
     * @return
     */
   def interpreterResponse: String = {
@@ -75,7 +90,6 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
 
   /**
     * Redirected printed output coming from commands written in the interpreter
-    *
     * @return
     */
   def consoleOutput: String = {
@@ -84,11 +98,10 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
 
   /**
     * Run scala code in a string
-    *
     * @param code Code to be compiled end executed
     * @return
     */
-  def runCode(code: String): CodeResults.Value = {
+  def runCode(code: String): CodeResults.Value = BaseH2OInterpreter.savingContextClassloader {
     initBeforeRunningCode(code)
     // Redirect output from console to our own stream
     scala.Console.withOut(consoleStream) {
@@ -104,13 +117,12 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
   }
 
   private def initializeInterpreter(): Unit = {
-    if (sparkContext.master == "yarn-client") System.setProperty("SPARK_YARN_MODE", "true")
     settings = createSettings()
     intp = createInterpreter()
     addThunk(
       intp.beQuietDuring{
-        intp.bind("sc","org.apache.spark.SparkContext", sparkContext, List("@transient"))
-        intp.bind("sqlContext","org.apache.spark.sql.SQLContext", SQLContext.getOrCreate(sparkContext), List("@transient","implicit"))
+        intp.bind("sc", "org.apache.spark.SparkContext", sparkContext, List("@transient"))
+        intp.bind("sqlContext", "org.apache.spark.sql.SQLContext", sqlContext, List("@transient", "implicit"))
 
         command(
           """
@@ -121,15 +133,15 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
             }
           """)
 
-        intp.addImports(
-          "org.apache.spark.SparkContext._",
-          "org.apache.spark.sql.{DataFrame, Row, SQLContext}",
-          "sqlContext.implicits._",
-          "sqlContext.sql",
-          "org.apache.spark.sql._",
-          "org.apache.spark.sql.functions._",
-          "org.apache.spark.h2o._",
-          "org.apache.spark._")
+        command("import org.apache.spark.SparkContext._")
+        command("import org.apache.spark.sql.{DataFrame, Row, SQLContext}")
+        command("import sqlContext.implicits._")
+        command("import sqlContext.sql")
+        command("import org.apache.spark.sql._")
+        command("import org.apache.spark.sql.functions._")
+        command("import org.apache.spark.h2o._")
+        command("import org.apache.spark._")
+
       })
 
     if (intp.reporter.hasErrors){
@@ -140,50 +152,17 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
     postInitialization()
   }
 
-  private def createInterpreter(): H2OIMain = {
-    val addedJars =
-      if (Utils.isWindows) {
-        // Strip any URI scheme prefix so we can add the correct path to the classpath
-        // e.g. file:/C:/my/path.jar -> C:/my/path.jar
-        SparkILoop.getAddedJars.map { jar => new URI(jar).getPath.stripPrefix("/") }
-      } else {
-        // We need new URI(jar).getPath here for the case that `jar` includes encoded white space (%20).
-        SparkILoop.getAddedJars.map { jar => new URI(jar).getPath }
-      }
-    // work around for Scala bug
-    val totalClassPath = addedJars.foldLeft(
-      settings.classpath.value)((l, r) => ClassPath.join(l, r))
-    this.settings.classpath.value = totalClassPath
-    H2OIMain.createInterpreter(sparkContext, settings, responseWriter,sessionId)
-  }
+  protected def createInterpreter(): H2OIMain
 
   /**
     * Initialize the compiler settings
     */
-  private def createSettings(): Settings = {
-    val settings = new Settings()
-    // prevent each repl line from being run in a new thread
-    settings.Yreplsync.value = true
-
-    // Check if app.class.path resource on given classloader is set. In case it exists, set it as classpath
-    // instead of using java class path right away; otherwise use java class path
-    // This solves problem explained here: https://gist.github.com/harrah/404272
-    settings.usejavacp.value = true
-    val loader = classTag[H2OInterpreter].runtimeClass.getClassLoader
-    val method = settings.getClass.getSuperclass.getDeclaredMethod("getClasspath",classOf[String],classOf[ClassLoader])
-    method.setAccessible(true)
-    if(method.invoke(settings, "app",loader).asInstanceOf[Option[String]].isDefined){
-      settings.usejavacp.value = false
-      settings.embeddedDefaults(loader)
-    }
-
-    settings
-  }
+  protected def createSettings(): Settings
 
   /**
     * Run all thunks after the interpreter has been initialized and throw exception if anything went wrong
     */
-  private[repl] def postInitialization() {
+  private[repl] def postInitialization() : Unit = BaseH2OInterpreter.savingContextClassloader {
     try {
       runThunks()
     } catch {
@@ -208,7 +187,7 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
   }
 
   private def exceptionOccurred(): Boolean = {
-    intp.valueOfTerm("lastException").isDefined && intp.valueOfTerm("lastException").get != null
+    valueOfTerm("lastException").isDefined && valueOfTerm("lastException").get != null
   }
 
   private def setSuccess() = {
@@ -329,34 +308,15 @@ class H2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends
   initializeInterpreter()
 }
 
-object H2OInterpreter{
-  /**
-    * Return class server output directory of REPL Class server.
- *
-    * @return
-    */
-  def classOutputDir = {
-    if (org.apache.spark.repl.Main.interp != null) {
-      // Application was started using SparkSubmit
-      org.apache.spark.repl.Main.interp.intp.getClassOutputDirectory
-    } else {
-      REPLClassServer.getClassOutputDirectory
+object BaseH2OInterpreter {
+
+  def savingContextClassloader[T](body: => T): T = {
+    val classloader = Thread.currentThread().getContextClassLoader
+    try {
+      body
     }
+    finally Thread.currentThread().setContextClassLoader(classloader)
   }
 
-
-  /**
-    * Return class server uri for REPL Class server.
-    * In local mode the class server is not actually used, all we need is just output directory
- *
-    * @return
-    */
-  def classServerUri = {
-    if (org.apache.spark.repl.Main.interp != null) {
-      // Application was started using SparkSubmit
-      org.apache.spark.repl.Main.interp.intp.classServerUri
-    } else {
-      REPLClassServer.classServerUri
-    }
-  }
+  def classServerFieldAvailable = classOf[H2OIMain].getSuperclass.getDeclaredFields.map(_.getName).contains("classServer")
 }

@@ -19,13 +19,13 @@ package org.apache.spark.h2o.backends
 
 import java.io.File
 
-import org.apache.spark.{Logging, SparkEnv}
-import org.apache.spark.h2o.H2OConf
+import org.apache.spark.SparkEnv
+import org.apache.spark.h2o.{H2OConf, H2OLogging}
 
 /**
   * Shared functions which can be used by both backends
   */
-private[backends] trait SharedBackendUtils extends Logging with Serializable{
+private[backends] trait SharedBackendUtils extends H2OLogging with Serializable{
 
   /**
     * Return hostname of this node based on SparkEnv

@@ -14,29 +14,22 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.support
 
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o._
-import org.apache.spark.sql.SQLContext
+package org.apache.spark.h2o.utils
 
-import scala.annotation.meta.getter
+import scala.language.{implicitConversions, postfixOps}
+import scala.reflect.runtime.universe._
 
 /**
- * A simple application trait to define Sparkling Water applications.
- */
-trait SparklingWaterApp {
+  * Utils object which is in both scala 2.10 and scala 2.11 and contains same methods but with implementation tailored
+  * to specific scala version
+  */
+object CrossScalaUtils extends CrossScalaShared {
+  override def getConstructorSymbol(tpe: _root_.scala.reflect.runtime.universe.Type): _root_.scala.reflect.runtime.universe.Symbol = {
+    tpe.declaration(nme.CONSTRUCTOR)
+  }
 
-  @(transient @getter) val sc: SparkContext
-  @(transient @getter) val sqlContext: SQLContext
-  @(transient @getter) val h2oContext: H2OContext
-
-  def loadH2OFrame(datafile: String) = new H2OFrame(new java.net.URI(datafile))
-
-  def shutdown(): Unit = {
-    // Shutdown Spark
-    sc.stop()
-    // Shutdown H2O explicitly (at least the driver)
-    h2oContext.stop()
+  override def getParams(methodSymbol: _root_.scala.reflect.runtime.universe.MethodSymbol): List[List[_root_.scala.reflect.runtime.universe.Symbol]] = {
+    methodSymbol.paramss
   }
 }

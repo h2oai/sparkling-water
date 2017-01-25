@@ -17,7 +17,7 @@
 package water.sparkling.itest.local
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.BackendIndependentTestHelper
+import org.apache.spark.h2o.{BackendIndependentTestHelper, H2OContext}
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

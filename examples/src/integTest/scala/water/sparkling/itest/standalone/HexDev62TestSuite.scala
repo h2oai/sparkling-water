@@ -33,7 +33,7 @@ class HexDev62TestSuite extends FunSuite with IntegTestHelper {
 object HexDev62Test extends IntegTestStopper{
 
   def main(args: Array[String]): Unit = exitOnException{
-    val conf = new SparkConf().setAppName("HexDev62Test")
+    val conf = H2OConf.checkSparkConf(new SparkConf().setAppName("HexDev62Test"))
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext.implicits._

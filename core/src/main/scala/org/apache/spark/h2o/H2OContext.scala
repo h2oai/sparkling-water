@@ -59,7 +59,7 @@ import scala.util.control.NoStackTrace
   * @param sparkContext Spark Context
   * @param conf H2O configuration
   */
-class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends Logging with H2OContextUtils {
+class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends H2OLogging with H2OContextUtils {
   self =>
 
   val sqlc: SQLContext = SQLContext.getOrCreate(sparkContext)
@@ -176,8 +176,10 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
   }
 
   /** Convert given H2O frame into DataFrame type */
-  def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true)(implicit sqlContext: SQLContext): DataFrame = SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
-  def asDataFrame(s: String, copyMetadata: Boolean)(implicit sqlContext: SQLContext): DataFrame = SparkDataFrameConverter.toDataFrame(this, new H2OFrame(s), copyMetadata)
+  def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true)(implicit sqlContext: SQLContext): DataFrame =
+    SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
+  def asDataFrame(s: String, copyMetadata: Boolean)(implicit sqlContext: SQLContext): DataFrame =
+    SparkDataFrameConverter.toDataFrame(this, new H2OFrame(s), copyMetadata)
 
   def h2oLocalClient = this.localClientIp + ":" + this.localClientPort
 
@@ -228,7 +230,7 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
   // scalastyle:on
 }
 
-object H2OContext extends Logging {
+object H2OContext extends H2OLogging {
 
   private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {
     synchronized {

@@ -36,10 +36,11 @@ def h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h
 //
 def preparePythonEnv(environment) {
     def SPARK_HOME = ext.sparkHome
-    def py4jDir = "${SPARK_HOME}${FS}python${FS}lib"
-    def py4jfile = fileTree(dir: py4jDir, include: 'py4j-*-src.zip').singleFile
+
     if (SPARK_HOME != null) {
-        environment['PYTHONPATH'] = "${SPARK_HOME}${FS}python${FPS}${py4jfile}${FPS}${environment['PYTHONPATH']}"
+        environment['PYTHONPATH'] = SPARK_HOME + File.separator + "python" + File.pathSeparator +
+                SPARK_HOME + File.separator + "python" + File.separator + "lib" + File.separator + "py4j-0.9-src.zip" +
+                File.pathSeparator + environment['PYTHONPATH']
     }
 }
 

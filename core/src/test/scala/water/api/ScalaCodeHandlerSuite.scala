@@ -124,7 +124,11 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
 
     assert(result.output.equals(""), "Printed output should be empty")
     assert(result.status.equals("Error"), "Status should be Error")
-    assert(result.response.contains(" error: not found: value foo\n              foo\n              ^\n"), "Response should not be empty")
+    assert(
+      result.response.contains("error: not found: value foo\n       foo\n       ^\n") |
+      result.response.contains("error: not found: value foo\n              foo\n              ^\n"),
+      "Response should not be empty"
+    )
   }
 
   test("ScalaCodeHandler.interpret() method, using previously defined class"){
@@ -160,7 +164,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
     req1.code = "val rdd = sc.parallelize(1 to 100, 8).map(v=>v+10);rdd.cache"
     val result1 = scalaCodeHandler.interpret(3, req1)
     assert(result1.output.equals(""), "Printed output should be empty")
-    assert(result1.status.equals("Success"), "Status should be Success ")
+    assert(result1.status.equals("Success"), s"Status should be Success, got ${result1.status}, response: ${result1.response}")
     assert(result1.response.contains("rdd: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD"), "Response should not be empty")
 
     val req2 = new ScalaCodeV3
@@ -168,7 +172,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
     req2.code = "val h2oFrame = h2oContext.asH2OFrame(rdd)"
     val result2 = scalaCodeHandler.interpret(3, req2)
     assert(result2.output.equals(""), "Printed output should be empty")
-    assert(result2.status.equals("Success"), s"Status should be Success, got ${result2.status}, reason: ${result2.response} ")
+    assert(result2.status.equals("Success"), s"Status should be Success, got ${result2.status}, response: ${result2.response}")
     assert(!result2.response.equals(""), "Response should not be empty")
 
     val req3 = new ScalaCodeV3
@@ -177,7 +181,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
     req3.code = "val dataframe = h2oContext.asDataFrame(h2oFrame)"
     val result3 = scalaCodeHandler.interpret(3, req3)
     assert(result3.output.equals(""), "Printed output should be empty")
-    assert(result3.status.equals("Success"), "Status should be Success 3")
+    assert(result3.status.equals("Success"), s"Status should be Success, got ${result3.status}, response: ${result3.response}")
     assert(!result3.response.equals(""), "Response should not be empty")
   }
 

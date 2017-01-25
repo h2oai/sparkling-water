@@ -6,7 +6,7 @@ import java.net.InetAddress
 import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.h2o.backends.SharedBackendConf._
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
-import org.apache.spark.h2o.{BackendIndependentTestHelper, FunSuiteWithLogging}
+import org.apache.spark.h2o.{BackendIndependentTestHelper, FunSuiteWithLogging, H2OConf}
 import org.apache.spark.repl.h2o.{CodeResults, H2OInterpreter}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, Suite}
@@ -38,7 +38,7 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll with 
     if(testsInExternalMode(sparkConf)){
       startCloud(cloudSize, cloudName, sparkConf.get("spark.ext.h2o.client.ip"), assemblyJar)
     }
-    sc = new SparkContext(sparkConf)
+    sc = new SparkContext(H2OConf.checkSparkConf(sparkConf))
     super.beforeAll()
   }
 
@@ -52,7 +52,6 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll with 
 
   def defaultConf: SparkConf = {
     val conf = new SparkConf().setAppName("Script testing")
-      .set("spark.repl.class.uri", H2OInterpreter.classServerUri)
       .set("spark.ext.h2o.repl.enabled","false") // disable repl in tests
       .set("spark.driver.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.executor.extraJavaOptions", "-XX:MaxPermSize=384m")
