@@ -49,7 +49,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   private var in: InteractiveReader = _
   private[repl] var pendingThunks: List[() => Unit] = Nil
   val sparkConf = sparkContext.getConf
-  val sqlContext = new SQLContext(sparkContext)
+  val sqlContext = SQLContext.getOrCreate(sparkContext)
 
   def getUserJars(conf: SparkConf, isShell: Boolean = false): Seq[String] = {
     val sparkJars = conf.getOption("spark.jars")
