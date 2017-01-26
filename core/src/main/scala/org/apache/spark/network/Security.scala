@@ -16,6 +16,8 @@
 */
 package org.apache.spark.network
 
+import java.io.File
+
 import org.apache.spark.SparkContext
 import org.apache.spark.deploy.SparkHadoopUtil
 import water.network.SecurityUtils
@@ -28,7 +30,7 @@ object Security {
     if(SparkHadoopUtil.get.isYarnMode) {
       sc.conf.set("spark.yarn.dist.files", s"${sslPair.jks.path},$config")
     } else {
-      sc.addFile(sslPair.jks.path)
+      sc.addFile(if (sslPair.jks.path.isEmpty) sslPair.jks.name else sslPair.jks.path + File.separator + sslPair.jks.name)
       sc.addFile(config)
     }
     sc.conf.set("spark.ext.h2o.internal_security_conf", config)

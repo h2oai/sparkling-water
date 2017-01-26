@@ -37,9 +37,21 @@ import scala.util.control.NoStackTrace
 class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ExternalBackendUtils with Logging {
 
   private var yarnAppId: String = _
+
   def launchH2OOnYarn(conf: H2OConf): String = {
-    val cmdToLaunch = Seq[String](
-      "hadoop",
+
+    var cmdToLaunch = Seq[String]("hadoop")
+
+    conf.sslConf match {
+      case Some(ssl) =>
+        cmdToLaunch ++ Array("-internal_security_config", ssl)
+        val sslConfig = new Properties()
+        sslConfig.load(new FileInputStream(ssl))
+        cmdToLaunch = cmdToLaunch ++ Array("-files", sslConfig.get("h2o_ssl_jks_internal") + "," + sslConfig.get("h2o_ssl_jts"))
+      case _ =>
+    }
+
+    cmdToLaunch = cmdToLaunch ++ Seq[String](
       "jar",
       conf.h2oDriverPath.get,
       conf.YARNQueue.map("-Dmapreduce.job.queuename=" + _ ).getOrElse(""),
@@ -51,16 +63,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-output", conf.HDFSOutputDir.get,
       "-disown"
     )
-
-    conf.sslConf match {
-      case Some(ssl) => {
-        cmdToLaunch ++ Array("-internal_security_config", ssl)
-        val sslConfig = new Properties()
-        sslConfig.load(new FileInputStream(ssl))
-        cmdToLaunch ++ Array("-files", sslConfig.get("h2o_ssl_jks_internal") + "," + sslConfig.get("h2o_ssl_jts"))
-      }
-      case _ =>
-    }
 
     // start external h2o cluster and log the output
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString)
