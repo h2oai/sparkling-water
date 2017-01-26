@@ -28,7 +28,7 @@ import org.apache.spark.{Partition, TaskContext}
 import water.ExternalFrameUtils
 import water.fvec.Frame
 
-import scala.annotation.meta.{field, getter}
+import scala.annotation.meta.{field, getter, param}
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -43,9 +43,9 @@ import scala.reflect.runtime.universe._
   * @tparam T specific type of H2O frame
   */
 private[spark]
-class H2ORDD[A <: Product : TypeTag : ClassTag, T <: Frame] private(@transient val frame: T,
+class H2ORDD[A <: Product : TypeTag : ClassTag, T <: Frame] private(@(transient @param @field) val frame: T,
                                                                     val productType: ProductType)
-                                                                   (@transient hc: H2OContext)
+                                                                   (@(transient @param @field) hc: H2OContext)
   extends {
     override val isExternalBackend = hc.getConf.runsInExternalClusterMode
   } with RDD[A](hc.sparkContext, Nil) with H2ORDDLike[T] {

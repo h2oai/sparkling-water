@@ -20,14 +20,16 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SQLContext
 
+import scala.annotation.meta.getter
+
 /**
  * A simple application trait to define Sparkling Water applications.
  */
 trait SparklingWaterApp {
 
-  @transient val sc: SparkContext
-  @transient val sqlContext: SQLContext
-  @transient val h2oContext: H2OContext
+  @(transient @getter) val sc: SparkContext
+  @(transient @getter) val sqlContext: SQLContext
+  @(transient @getter) val h2oContext: H2OContext
 
   def loadH2OFrame(datafile: String) = new H2OFrame(new java.net.URI(datafile))
 
