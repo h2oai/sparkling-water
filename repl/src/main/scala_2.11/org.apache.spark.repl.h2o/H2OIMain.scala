@@ -18,7 +18,7 @@
 package org.apache.spark.repl.h2o
 
 import org.apache.spark.repl.Main
-import org.apache.spark.util.Utils
+import org.apache.spark.util.{MutableURLClassLoader, Utils}
 import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
 
 import scala.collection.mutable
@@ -61,17 +61,33 @@ object H2OIMain {
     SparkEnv.get.closureSerializer.setDefaultClassLoader(classLoader)
   }
 
+  private def prepareLocalClassLoader() = {
+    val f = SparkEnv.get.serializer.getClass.getSuperclass.getDeclaredField("defaultClassLoader")
+    f.setAccessible(true)
+    val value = f.get(SparkEnv.get.serializer)
+    value match {
+      case v: Option[_] => {
+        v.get match {
+          case cl: MutableURLClassLoader => cl.addURL(H2OInterpreter.classOutputDirectory.toURI.toURL)
+          case _ =>
+        }
+      }
+      case _ =>
+    }
+  }
+
   private def initialize(sc: SparkContext): Unit = {
-    if (Main.interp != null) {
-      // Application has been started using SparkShell script.
-      // Set the original interpreter classloader as the fallback class loader for all
-      // class not defined in our custom REPL.
-      interpreterClassloader = new InterpreterClassLoader(Main.interp.intp.classLoader)
-    } else {
-      // Application hasn't been started using SparkShell.
-      // Set the context classloader as the fallback class loader for all
-      // class not defined in our custom REPL
+    if (sc.isLocal) {
+      // master set to local or local[*]
+      prepareLocalClassLoader()
       interpreterClassloader = new InterpreterClassLoader(Thread.currentThread.getContextClassLoader)
+    } else {
+      if (Main.interp != null) {
+        interpreterClassloader = new InterpreterClassLoader(Main.interp.intp.classLoader)
+      } else {
+        // non local mode, application not started using SparkSubmit
+        interpreterClassloader = new InterpreterClassLoader(Thread.currentThread.getContextClassLoader)
+      }
     }
     setClassLoaderToSerializers(interpreterClassloader)
   }
@@ -105,3 +121,4 @@ object H2OIMain {
 
   def classOutputDirectory = _classOutputDirectory
 }
+
