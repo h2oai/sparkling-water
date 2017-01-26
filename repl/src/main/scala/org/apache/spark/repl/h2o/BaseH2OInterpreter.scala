@@ -24,7 +24,7 @@ package org.apache.spark.repl.h2o
 
 
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.{Logging, SparkConf, SparkContext}
 
 import scala.annotation.tailrec
 import scala.language.{existentials, implicitConversions, postfixOps}
@@ -50,6 +50,23 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   private[repl] var pendingThunks: List[() => Unit] = Nil
   val sparkConf = sparkContext.getConf
   val sqlContext = new SQLContext(sparkContext)
+
+  def getUserJars(conf: SparkConf, isShell: Boolean = false): Seq[String] = {
+    val sparkJars = conf.getOption("spark.jars")
+    if (conf.get("spark.master") == "yarn" && isShell) {
+      val yarnJars = conf.getOption("spark.yarn.dist.jars")
+      unionFileLists(sparkJars, yarnJars).toSeq
+    } else {
+      sparkJars.map(_.split(",")).map(_.filter(_.nonEmpty)).toSeq.flatten
+    }
+  }
+
+  def unionFileLists(leftList: Option[String], rightList: Option[String]): Set[String] = {
+    var allFiles = Set[String]()
+    leftList.foreach { value => allFiles ++= value.split(",") }
+    rightList.foreach { value => allFiles ++= value.split(",") }
+    allFiles.filter { _.nonEmpty }
+  }
 
   def closeInterpreter() {
     if (intp ne null) {

@@ -25,7 +25,7 @@ package org.apache.spark.repl.h2o
 
 import java.io.File
 
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext
 
 import scala.language.{existentials, implicitConversions, postfixOps}
 import scala.reflect._
@@ -76,23 +76,6 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 
   override def valueOfTerm(term: String): Option[Any] = {
     try Some(intp.eval(term))  catch { case _ : Exception => None }
-  }
-
-  def getUserJars(conf: SparkConf, isShell: Boolean = false): Seq[String] = {
-    val sparkJars = conf.getOption("spark.jars")
-    if (conf.get("spark.master") == "yarn" && isShell) {
-      val yarnJars = conf.getOption("spark.yarn.dist.jars")
-      unionFileLists(sparkJars, yarnJars).toSeq
-    } else {
-      sparkJars.map(_.split(",")).map(_.filter(_.nonEmpty)).toSeq.flatten
-    }
-  }
-
-  def unionFileLists(leftList: Option[String], rightList: Option[String]): Set[String] = {
-    var allFiles = Set[String]()
-    leftList.foreach { value => allFiles ++= value.split(",") }
-    rightList.foreach { value => allFiles ++= value.split(",") }
-    allFiles.filter { _.nonEmpty }
   }
 }
 
