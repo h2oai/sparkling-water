@@ -29,7 +29,6 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
-import scala.Predef.{println => _, _}
 import scala.annotation.tailrec
 import scala.language.{existentials, implicitConversions, postfixOps}
 import scala.reflect._
