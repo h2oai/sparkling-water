@@ -20,6 +20,7 @@ import java.util.UUID
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{BackendIndependentTestHelper, H2OConf, H2OContext, Holder}
+import org.apache.spark.sql.SQLContext
 import org.scalatest.Suite
 import water.fvec._
 import water.{DKV, Key}
@@ -43,6 +44,7 @@ trait SharedSparkTestContext extends SparkTestContext with BackendIndependentTes
   override def beforeAll(): Unit = {
     super.beforeAll()
     sc = createSparkContext
+    sqlc = SQLContext.getOrCreate(sc)
     hc = createH2OContext(sc, 2)
   }
 
