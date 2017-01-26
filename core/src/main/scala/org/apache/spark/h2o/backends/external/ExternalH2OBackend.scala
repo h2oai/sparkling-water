@@ -44,7 +44,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     conf.sslConf match {
       case Some(ssl) =>
-        cmdToLaunch ++ Array("-internal_security_config", ssl)
+        cmdToLaunch ++ Array("-internal_security", ssl)
         val sslConfig = new Properties()
         sslConfig.load(new FileInputStream(ssl))
         cmdToLaunch = cmdToLaunch ++ Array("-files", sslConfig.get("h2o_ssl_jks_internal") + "," + sslConfig.get("h2o_ssl_jts"))
