@@ -17,9 +17,6 @@
 
 package org.apache.spark.repl.h2o
 
-
-import java.io.File
-
 import org.apache.spark.util.Utils
 import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
 import org.apache.spark.repl.{Main, SparkIMain}
@@ -34,9 +31,8 @@ import scala.tools.nsc.Settings
 private[repl] class H2OIMain private(initialSettings: Settings,
                                      interpreterWriter: IntpResponseWriter,
                                      val sessionID: Int,
-                                     propagateExceptions: Boolean = false) extends{
-  override private[repl] val outputDir: File = H2OIMain.classOutputDirectory
-} with SparkIMain(initialSettings, interpreterWriter, propagateExceptions) {
+                                     propagateExceptions: Boolean = false)
+  extends SparkIMain(initialSettings, interpreterWriter, propagateExceptions) {
 
   setupClassNames()
 
