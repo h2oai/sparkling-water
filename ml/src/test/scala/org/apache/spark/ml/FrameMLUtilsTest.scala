@@ -76,7 +76,7 @@ class FrameMLUtilsTest extends FunSuite with SharedSparkTestContext {
       3,
       MissingValuesHandling.Skip,
       hc,
-      sqlContext
+      sqlc
     )._1.collect()
 
     assertResult(17)(labelPoints.length)
@@ -95,7 +95,7 @@ class FrameMLUtilsTest extends FunSuite with SharedSparkTestContext {
       3,
       MissingValuesHandling.MeanImputation,
       hc,
-      sqlContext
+      sqlc
     )._1.collect()
 
     assertResult(50)(labelPoints.length)
