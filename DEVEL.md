@@ -326,13 +326,23 @@ bin/sparkling-shell /
 --conf "spark.ext.h2o.internal_security_conf=ssl.properties"
 ```
 
-We also provide a utility method which will automatically generate all necessary files and enable security on all H2O nodes:
+We also provide utility methods which will automatically generate all necessary files and enable security on all H2O nodes:
 
 ```
 import org.apache.spark.network.Security
 import org.apache.spark.h2o._
 Security.enableSSL(sc) // generate properties file, key pairs and set appropriate H2O parameters
 val hc = H2OContext.getOrCreate(sc) // start the H2O cloud
+```
+
+Or if you plan on passing your own H2OConf then please use:
+
+```
+import org.apache.spark.network.Security
+import org.apache.spark.h2o._
+val conf: H2OConf = // generate H2OConf file
+Security.enableSSL(sc, conf) // generate properties file, key pairs and set appropriate H2O parameters
+val hc = H2OContext.getOrCreate(sc, conf) // start the H2O cloud
 ```
 
 This method will generate all files and distribute them via YARN or Spark methods to all worker nodes. This communication will be secure if you configured
