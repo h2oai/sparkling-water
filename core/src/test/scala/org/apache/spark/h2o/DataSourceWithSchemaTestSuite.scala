@@ -55,6 +55,25 @@ class DataSourceWithSchemaTestSuite extends FunSuite with SharedSparkTestContext
   }
 
 
+  test("Writing DataFrame and then reading ") {
+
+    val schema = StructType(Seq(StructField("Column 1", IntegerType, nullable=true)))
+
+    val rdd: RDD[Row] = sc.parallelize(1 to 1000).map( v => Row(v))
+
+    val javaRDD: JavaRDD[Row] = rdd.toJavaRDD()
+
+    val df = sqlContext.createDataFrame(javaRDD, schema)
+    df.write.h2o("new_key")
+
+    
+    val h2oFrame = DKV.getGet[Frame]("new_key")
+    assert (df.columns.length == h2oFrame.numCols(), "Number of columns should match")
+    assert (df.columns.sameElements("Column 1"::Nil),"Column names should match")
+    assert (df.count() == h2oFrame.numRows(), "Number of rows should match")
+    h2oFrame.remove()
+  }
+
   test("Writing DataFrame to existing H2O Frame ") {
     val schema = StructType(Seq(StructField("Column 2", IntegerType, nullable=true)))
 
