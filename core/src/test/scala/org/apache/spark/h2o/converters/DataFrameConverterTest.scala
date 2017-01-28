@@ -28,8 +28,6 @@ import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedSparkTestContext}
 import org.apache.spark.h2o.{Frame => _, H2OFrame => _}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
