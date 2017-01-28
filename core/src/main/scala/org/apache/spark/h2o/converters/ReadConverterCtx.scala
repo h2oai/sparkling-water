@@ -110,7 +110,8 @@ trait ReadConverterCtx {
     Double     -> doubleAt _,
     String     -> string _,
     UTF8       -> utfString _,
-    Timestamp  -> timestamp _
+    Timestamp  -> timestamp _,
+    Date       -> timestamp _
   )
 
   private lazy val OptionReadersMap: Map[OptionalType[_], OptionReader] =

@@ -132,6 +132,15 @@ private[h2o] object SparkDataFrameConverter extends Logging {
             case IntegerType => con.put(idx, if (isAry) ary(aryIdx).asInstanceOf[Int] else subRow.getInt(aidx))
             case LongType => con.put(idx, if (isAry) ary(aryIdx).asInstanceOf[Long] else subRow.getLong(aidx))
             case FloatType => con.put(idx, if (isAry) ary(aryIdx).asInstanceOf[Float] else subRow.getFloat(aidx))
+            case _: DecimalType => con.put(idx, if (isAry) {
+              ary(aryIdx).asInstanceOf[BigDecimal].doubleValue()
+            } else {
+              if (isVec) {
+                getVecVal(subRow, aidx, idx - startOfSeq)
+              } else {
+                subRow.getDecimal(aidx).doubleValue()
+              }
+            })
             case DoubleType => con.put(idx, if (isAry) {
               ary(aryIdx).asInstanceOf[Double]
             } else {
@@ -147,6 +156,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
               con.put(idx, sv)
 
             case TimestampType => con.put(idx, subRow.getAs[java.sql.Timestamp](aidx))
+            case DateType      => con.put(idx, subRow.getAs[java.sql.Date](aidx))
             case _ => con.putNA(idx)
           }
         }
