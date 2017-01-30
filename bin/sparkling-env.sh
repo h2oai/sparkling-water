@@ -54,11 +54,12 @@ FAT_JAR_FILE="$TOPDIR/assembly/build/libs/$FAT_JAR"
 major_version=`echo $VERSION | cut -d . -f 1,2`
 version_without_snapshot=`echo $VERSION | cut -d - -f 1`
 
-python_version=`python -c 'import sys; print(".".join(str(x) for x in sys.version_info[0:2]))'`
-PY_EGG="h2o_pysparkling_${major_version}-${version_without_snapshot}-py${python_version}.egg"
-PY_EGG_FILE="$TOPDIR/py/build/dist/$PY_EGG"
-
-checkPyEggFile ${python_version}
+python_version=`../py/pythonVersion.sh`
+if [ ! -z $python_version ]; then
+    PY_EGG="h2o_pysparkling_${major_version}-${version_without_snapshot}-py${python_version}.egg"
+    PY_EGG_FILE="$TOPDIR/py/build/dist/$PY_EGG"
+    checkPyEggFile ${python_version}
+fi
 
 # Default master
 DEFAULT_MASTER="local[*]"

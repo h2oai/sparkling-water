@@ -4,12 +4,7 @@ ext {
     FS = File.separator
     FPS = File.pathSeparator
 
-    def command = ["python", "py/pythonVersion.py"]
-    def sout = new StringBuffer(), serr = new StringBuffer()
-    def proc = command.execute()
-    proc.waitForProcessOutput(sout, serr)
-
-    PYTHON_VERSION = sout.toString().trim()
+    PYTHON_VERSION = "py/pythonVersion.sh".execute().text.trim()
 }
 
 
