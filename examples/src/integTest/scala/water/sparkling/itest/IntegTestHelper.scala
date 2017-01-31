@@ -32,7 +32,7 @@ trait IntegTestHelper extends BeforeAndAfterEach with BackendIndependentTestHelp
       "--master", env.sparkMaster) ++
       env.sparkConf.get("spark.driver.memory").map(m => Seq("--driver-memory", m)).getOrElse(Nil) ++
       // Disable GA collection by default
-      Seq("--conf", "spark.ext.h2o.disable.ga=true") ++
+      Seq("--conf",  "spark.ext.h2o.disable.ga=true") ++
       Seq("--conf", s"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", s"spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", s"spark.executor.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
@@ -43,6 +43,8 @@ trait IntegTestHelper extends BeforeAndAfterEach with BackendIndependentTestHelp
       Seq("--conf",  "spark.task.maxFailures=1") ++ // Any task failures are suspicious
       Seq("--conf",  "spark.rpc.numRetries=1") ++ // Any RPC failures are suspicious
       Seq("--conf",  "spark.deploy.maxExecutorRetries=1") ++ // Fail directly, do not try to restart executors
+      Seq("--conf",  "spark.network.timeout=360s") ++ // Increase network timeout if jenkins machines are busy
+      Seq("--conf",  "spark.worker.timeout=360") ++ // Increase worker timeout if jenkins machines are busy
       // Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
       // See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
       Seq("--conf",  "spark.hadoop.yarn.timeline-service.enabled=false") ++
@@ -153,6 +155,7 @@ trait IntegTestStopper {
     } catch {
       case t: Throwable => {
         //logError("Test throws exception!", t)
+        println("!!!! TEST THROWS EXCEPTION !!!!")
         t.printStackTrace()
         water.H2O.exit(-1)
       }

@@ -34,7 +34,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
   override def stop(stopSparkContext: Boolean): Unit = {
     if (stopSparkContext) hc.sparkContext.stop()
-    H2O.orderlyShutdown(1000)
+    H2O.orderlyShutdown(5000)
     H2O.exit(0)
   }
 
