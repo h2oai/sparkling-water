@@ -63,6 +63,8 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
 
   val sqlc: SQLContext = SparkSession.builder().getOrCreate().sqlContext
 
+  val announcementService = AnnouncementServiceFactory.create(conf)
+
   /** IP of H2O client */
   private var localClientIp: String = _
   /** REST port of H2O client */
@@ -106,6 +108,8 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
     localClientIp = H2O.SELF_ADDRESS.getHostAddress
     localClientPort = H2O.API_PORT
     logInfo("Sparkling Water started, status of context: " + this)
+    // Announce Flow UI location
+    announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, "http", localClientIp, localClientPort))
     this
   }
 
@@ -206,6 +210,7 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
     * @param stopSparkContext  stop also spark context
     */
   def stop(stopSparkContext: Boolean = false): Unit = {
+    announcementService.shutdown
     backend.stop(stopSparkContext)
     H2OContext.stop(this)
   }
@@ -230,7 +235,7 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
       |  Open H2O Flow in browser: http://$h2oLocalClient (CMD + click in Mac OSX)
     """.stripMargin
   }
-
+  
   // scalastyle:off
   // Disable style checker so "implicits" object can start with lowercase i
   /** Define implicits available via h2oContext.implicits._*/
