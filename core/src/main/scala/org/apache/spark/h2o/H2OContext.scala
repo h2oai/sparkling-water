@@ -205,7 +205,10 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
     *
     * @param stopSparkContext  stop also spark context
     */
-  def stop(stopSparkContext: Boolean = false): Unit = backend.stop(stopSparkContext)
+  def stop(stopSparkContext: Boolean = false): Unit = {
+    backend.stop(stopSparkContext)
+    H2OContext.stop(this)
+  }
 
   /** Open H2O Flow running in this client. */
   def openFlow(): Unit = openURI(sparkContext, s"http://$h2oLocalClient")
@@ -299,6 +302,11 @@ object H2OContext extends Logging {
     */
   def getOrCreate(sc: SparkContext): H2OContext = {
     getOrCreate(sc, new H2OConf(sc))
+  }
+
+  /** Global cleanup on H2OContext.stop call */
+  private def stop(context: H2OContext): Unit = {
+    instantiatedContext.set(null)
   }
 
 }
