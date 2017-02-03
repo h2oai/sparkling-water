@@ -1,6 +1,19 @@
 ChangeLog
 =========
 
+## 2.0.4 (2017-01-02)
+  - Bug
+    - [SW-303](https://0xdata.atlassian.net/browse/SW-303) - Failure on DecimalType conversion
+    - [SW-305](https://0xdata.atlassian.net/browse/SW-305) - Failure on DateType
+    - [SW-309](https://0xdata.atlassian.net/browse/SW-309) - Handling for Spark DateType in SW
+    - [SW-310](https://0xdata.atlassian.net/browse/SW-310) - Decimal(2,1) not compatible in h2o frame
+    - [SW-322](https://0xdata.atlassian.net/browse/SW-322) - Python README.md says it does not support Spark 2.0
+
+  - Improvement
+    - [SW-313](https://0xdata.atlassian.net/browse/SW-313) - Document and test SSL support
+    - [SW-314](https://0xdata.atlassian.net/browse/SW-314) - Document SSL security for sparkling water
+    - [SW-317](https://0xdata.atlassian.net/browse/SW-317) - Upgrade to H2O version 3.10.3.2
+
 ## 2.0.3 (2017-01-04)
   - Bug
     - [SW-152](https://0xdata.atlassian.net/browse/SW-152) - ClassNotFound with spark-submit
