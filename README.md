@@ -138,20 +138,20 @@ around `SparkConf` and inherits all properties in spark configuration.
 Here we show a few examples how H2OContext can be started with internal backend.
 
 Explicitly specify internal backend on `H2OConf`
-```
+```scala
 val conf = new H2OConf(sc).setInternalClusterMode()
 val h2oContext = H2OContext.getOrCreate(sc, conf)
 ```
 
 If `spark.ext.h2o.backend.cluster.mode` property was set to `internal` either on command line or on the `SparkConf` class
  we can call:
-```
+```scala
 val h2oContext = H2OContext.getOrCreate(sc) 
 ```
 
 or
 
-```
+```scala
 val conf = new H2OConf(sc)
 val h2oContext = H2OContext.getOrCreate(sc, conf)
 ```
