@@ -21,6 +21,9 @@ jar {
   baseName = "${jar.baseName}_${scalaBaseVersion}"
 }
 
+// Remove the jar artifacts to satisfy release plugin
+configurations.archives.artifacts.removeAll { it.archiveTask.is(jar) }
+
 // Shadow jar settings
 shadowJar {
   relocate 'javassist', 'ai.h2o.javassist'
@@ -64,6 +67,5 @@ shadowJar {
   }
 }
 
-artifacts {
-  archives shadowJar
-}
+build.dependsOn shadowJar
+
