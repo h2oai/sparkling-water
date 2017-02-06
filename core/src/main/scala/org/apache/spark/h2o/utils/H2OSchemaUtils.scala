@@ -96,15 +96,16 @@ object H2OSchemaUtils {
     * @return list of types with their positions
     */
   def expandedSchema(sc: SparkContext, srdd: DataFrame): Seq[(Seq[Int], StructField, Byte)] = {
+    val schema: StructType = srdd.schema
     // Collect max size in array and vector columns to expand them
-    val arrayColIdxs  = collectArrayLikeTypes(srdd.schema.fields)
-    val vecColIdxs    = collectVectorLikeTypes(srdd.schema.fields)
+    val arrayColIdxs  = collectArrayLikeTypes(schema.fields)
+    val vecColIdxs    = collectVectorLikeTypes(schema.fields)
     val numOfArrayCols = arrayColIdxs.length
     // Collect max arrays for this RDD, it is distributed operation
     val fmaxLens = collectMaxArrays(sc, srdd.rdd, arrayColIdxs, vecColIdxs)
     // Flattens RDD's schema
-    val flatRddSchema = flatSchema(srdd.schema)
-    val typeIndx = collectTypeIndx(srdd.schema.fields)
+    val flatRddSchema = flatSchema(schema)
+    val typeIndx = collectTypeIndx(schema.fields)
     val typesAndPath = typeIndx
                 .zip(flatRddSchema) // Seq[(Seq[Int], StructField)]
     var arrayCnt = 0; var vecCnt = 0
