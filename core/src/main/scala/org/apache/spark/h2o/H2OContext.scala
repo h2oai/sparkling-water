@@ -24,6 +24,7 @@ import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.converters._
+import org.apache.spark.h2o.ui.SparklingWaterUITab
 import org.apache.spark.h2o.utils.{H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
@@ -72,6 +73,14 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
   /** Runtime list of active H2O nodes */
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
 
+  /** Sparkling Water UI extension for Spark UI */
+  private val sparklingWaterTab: Option[SparklingWaterUITab] = {
+    if (conf.getBoolean("spark.ui.enabled", true)) {
+      Some(new SparklingWaterUITab(this))
+    } else {
+      None
+    }
+  }
 
   /** Used backend */
   private val backend: SparklingBackend = if(conf.runsInExternalClusterMode){
@@ -107,6 +116,8 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
     h2oNodes.append(nodes:_*)
     localClientIp = H2O.SELF_ADDRESS.getHostAddress
     localClientPort = H2O.API_PORT
+    // Register UI
+    sparklingWaterTab.foreach(_.attach())
     logInfo("Sparkling Water started, status of context: " + this)
     // Announce Flow UI location
     announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, "http", localClientIp, localClientPort))
