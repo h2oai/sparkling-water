@@ -24,6 +24,8 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
 
     val swInfoTable = UIUtils.listingTable(
       propertyHeader, h2oRow, swInfo(), fixedWidth = true)
+    val swPropertiesTable = UIUtils.listingTable(
+      propertyHeader, h2oRow, swProperties(), fixedWidth = true)
     val h2oInfoTable = UIUtils.listingTable(
       propertyHeader, h2oRow, h2oInfo, fixedWidth = true)
 
@@ -49,6 +51,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
       </div>
       <span>
         <h4>Sparkling Water</h4> {swInfoTable}
+        <h4>Sparkling Water Properties</h4> {swPropertiesTable}
         <h4>H2O Build Information</h4> {h2oInfoTable}
       </span>
 
@@ -62,6 +65,9 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
     ("Flow UI", s"http://${hc.h2oLocalClient}"),
     ("Nodes", H2O.CLOUD.members().map(node => node.getIpPortString).mkString(","))
   )
+
+  private def swProperties(): Seq[(String, String)] =
+    hc._conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
 
   private def h2oInfo(): Seq[(String, String)] = Seq(
     ("H2O Build Version", H2O.ABV.projectVersion()),
