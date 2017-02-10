@@ -4,6 +4,7 @@
 [![][travis img]][travis]
 [![][maven img]][maven]
 [![][license img]][license]
+[![Powered by H2O.ai](https://img.shields.io/badge/powered%20by-h2oai-yellow.svg)](https://github.com/h2oai/)
 
 [travis]:https://travis-ci.org/h2oai/sparkling-water
 [travis img]:https://travis-ci.org/h2oai/sparkling-water.svg?branch=master
