@@ -1,6 +1,14 @@
 ChangeLog
 =========
 
+## 2.0.5 (2017-12-10)
+
+  - Improvement
+    - [SW-325](https://0xdata.atlassian.net/browse/SW-325) - Implement a generic announcement mechanism
+    - [SW-327](https://0xdata.atlassian.net/browse/SW-327) - Enrich Spark UI with Sparkling Water specific tab
+    - [SW-328](https://0xdata.atlassian.net/browse/SW-328) - Put link to h2oai github into README.md
+
+
 ## 2.0.4 (2017-01-02)
   - Bug
     - [SW-303](https://0xdata.atlassian.net/browse/SW-303) - Failure on DecimalType conversion
