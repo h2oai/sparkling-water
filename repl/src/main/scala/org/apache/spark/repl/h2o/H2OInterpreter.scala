@@ -29,7 +29,6 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
-import scala.Predef.{println => _, _}
 import scala.annotation.tailrec
 import scala.language.{existentials, implicitConversions, postfixOps}
 import scala.reflect._
@@ -352,9 +351,11 @@ object H2OInterpreter{
     * @return
     */
   def classServerUri = {
-    if (org.apache.spark.repl.Main.interp != null) {
+    if (org.apache.spark.repl.Main.interp != null &&
+      org.apache.spark.repl.Main.interp.intp.getClass.getDeclaredFields.map(_.getName).contains("classServerUri")) {
       // Application was started using SparkSubmit
-      org.apache.spark.repl.Main.interp.intp.classServerUri
+      val interpreter = org.apache.spark.repl.Main.interp.intp
+      interpreter.getClass.getField("classServerUri").get(interpreter).asInstanceOf[String]
     } else {
       REPLClassServer.classServerUri
     }

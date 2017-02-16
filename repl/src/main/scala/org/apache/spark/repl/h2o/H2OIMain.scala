@@ -43,10 +43,12 @@ private[repl] class H2OIMain private(initialSettings: Settings,
     * running
     */
   private def stopClassServer() = {
-    val fieldClassServer = this.getClass.getSuperclass.getDeclaredField("classServer")
-    fieldClassServer.setAccessible(true)
-    val classServer = fieldClassServer.get(this).asInstanceOf[HttpServer]
-    classServer.stop()
+    if(this.getClass.getSuperclass.getDeclaredFields.map(_.getName).contains("classServer")) {
+      val fieldClassServer = this.getClass.getSuperclass.getDeclaredField("classServer")
+      fieldClassServer.setAccessible(true)
+      val classServer = fieldClassServer.get(this).asInstanceOf[HttpServer]
+      classServer.stop()
+    }
   }
 
   /**
