@@ -123,9 +123,10 @@ You can configure Sparkling Water using the following variables:
 
 8. Use Spark SQL to join the flight data with the weather data:
   ```scala
+  implicit val sqlContext = spark.sqlContext
   import sqlContext.implicits._
-  flightsToORD.toDF.registerTempTable("FlightsToORD")
-  weatherTable.toDF.registerTempTable("WeatherORD")
+  flightsToORD.toDF.createOrReplaceTempView("FlightsToORD")
+  weatherTable.toDF.createOrReplaceTempView("WeatherORD")
   ```
 
 9. Perform SQL JOIN on both tables:
@@ -175,7 +176,7 @@ You can configure Sparkling Water using the following variables:
 
 13. Generate an R-code producing residual plot:
   ```scala
-  import org.apache.spark.examples.h2o.DemoUtils.residualPlotRCode
+  import org.apache.spark.examples.h2o.AirlinesWithWeatherDemo2.residualPlotRCode
   residualPlotRCode(predictionH2OFrame, 'predict, bigTable, 'ArrDelay)  
   ```
   
