@@ -16,22 +16,31 @@
 */
 package org.apache.spark.network
 
-import org.apache.spark.SparkContext
+import java.io.File
+
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.deploy.SparkHadoopUtil
+import org.apache.spark.h2o.H2OConf
+import org.apache.spark.internal.Logging
 import water.network.SecurityUtils
 
-object Security {
+object Security extends Logging {
 
-  def enableSSL(sc: SparkContext) = {
+  def enableSSL(sc: SparkContext, conf: SparkConf): Unit = {
     val sslPair = SecurityUtils.generateSSLPair()
     val config = SecurityUtils.generateSSLConfig(sslPair)
     if(SparkHadoopUtil.get.isYarnMode) {
-      sc.conf.set("spark.yarn.dist.files", s"${sslPair.jks.path},$config")
+      conf.set("spark.yarn.dist.files", s"${sslPair.jks.path},$config")
     } else {
-      sc.addFile(sslPair.jks.path)
+      sc.addFile(if (sslPair.jks.path.isEmpty) sslPair.jks.name else sslPair.jks.path + File.separator + sslPair.jks.name)
       sc.addFile(config)
     }
-    sc.conf.set("spark.ext.h2o.internal_security_conf", config)
+    conf.set("spark.ext.h2o.internal_security_conf", config)
+    logInfo(s"Added spark.ext.h2o.internal_security_conf configuration set to $config")
   }
+
+  def enableSSL(sc: SparkContext): Unit = enableSSL(sc, sc.conf)
+
+  def enableSSL(sc: SparkContext, conf: H2OConf): Unit = enableSSL(sc, conf.sparkConf)
 
 }
