@@ -37,8 +37,8 @@ class IntegTestEnv:
         self.hdp_version = test_utils.get_env_org_fail("sparkling.test.hdp.version",
                                                          "The variable 'sparkling.test.hdp.version' is not set! It should contain version of hdp used")
 
-        self.egg = test_utils.get_env_org_fail("sparkling.pysparkling.egg",
-                                                              "The variable 'sparkling.pysparkling.egg' is not set! It should point to PySparkling egg file")
+        self.sdist = test_utils.get_env_org_fail("sparkling.pysparkling.sdist",
+                                                              "The variable 'sparkling.pysparkling.sdist' is not set! It should point to PySparkling sdist file")
         self.spark_conf = {}
         self.verbose = True
 
@@ -90,7 +90,7 @@ class IntegTestSuite(unittest.TestCase):
         cmd_line.extend(["--conf", 'spark.scheduler.minRegisteredResourcesRatio=1'])
         cmd_line.extend(["--conf", 'spark.ext.h2o.repl.enabled=false']) #  disable repl in tests
         cmd_line.extend(["--conf", "spark.ext.h2o.external.start.mode=" + os.getenv("spark.ext.h2o.external.start.mode", "manual")])
-        cmd_line.extend(["--py-files", self.test_env.egg])
+        cmd_line.extend(["--py-files", self.test_env.sdist])
         for k, v in self.test_env.spark_conf.items():
             cmd_line.extend(["--conf", k+'='+str(v)])
         # Add python script

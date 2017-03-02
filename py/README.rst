@@ -1,6 +1,6 @@
 PySparkling and Spark Version
 =============================
-There exist multiple PySparkling packages, each is intended to be used with different Spark version.
+There are multiple PySparkling packages, each is intended to be used with different Spark version.
  
  - h2o_pysparkling_2.1 - for Spark 2.1.x
  - h2o_pysparkling_2.0 - for Spark 2.0.x
@@ -22,7 +22,7 @@ Setup and Installation
 
 Prerequisites:
     
-  - Python 2.7
+  - Python 2.7 or 3+
   - Numpy 1.9.2
 
 For windows users, please grab a .whl from http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
@@ -95,35 +95,28 @@ Run IPython Notebook with PySparkling
 -------------------------------------
 .. code-block:: bash
 
-    IPYTHON_OPTS="notebook" bin/pysparkling
+    PYSPARK_DRIVER_PYTHON="ipython" PYSPARK_DRIVER_PYTHON_OPTS="notebook" bin/pysparkling
 
-For running on Windows, the syntax would be: 
+For running on Windows, the syntax would be:
 
 .. code-block:: bash
 
-    SET PYSPARK_DRIVER_PYTHON=ipython 
-    SET PYSPARK_DRIVER_PYTHON_OPTS=notebook 
+    SET PYSPARK_DRIVER_PYTHON=ipython
+    SET PYSPARK_DRIVER_PYTHON_OPTS=notebook
     bin/pysparkling
-
 
 Run IPython with PySparkling
 ----------------------------
 .. code-block:: bash
 
-    PYSPARK_PYTHON="ipython" bin/pysparkling
-
-
-Use PySparkling as Spark Package
---------------------------------
-.. code-block:: bash
-    export SPARKLING_EGG=$(ls -t py/dist/h2o_pysparkling*.egg | head -1)
-	$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.6.1 --py-files $SPARKLING_EGG ./py/examples/scripts/ChicagoCrimeDemo.py
+    PYSPARK_DRIVER_PYTHON="ipython" bin/pysparkling
 
 
 Use PySparkling in Databricks Cloud
 -----------------------------------
-In order to use PySparkling in Databricks cloud, PySparkling module has to be added as a library to current cluster.  PySparkling can be added as library in two ways. You can either upload the PySparkling egg file or add the PySparkling module from PyPI. If you choose to upload PySparkling egg file, don't forget to add libraries for following python modules:
-request, tabulate and future. The PySparkling egg file is available in *py/dist* directory in both built Sparkling Water project and downloaded Sparkling Water release.
+In order to use PySparkling in Databricks cloud, PySparkling module has to be added as a library to current cluster.  PySparkling can be added as library in two ways. You can either upload the PySparkling source zip file or add the PySparkling module from PyPI.
+If you choose to upload PySparkling zip file, don't forget to add libraries for following python modules:
+request, tabulate and future. The PySparkling zip file is available in *py/dist* directory in both built Sparkling Water project and downloaded Sparkling Water release.
 
 	
 An Introduction to PySparkling

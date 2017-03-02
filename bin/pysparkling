@@ -9,6 +9,6 @@ checkSparkHome
 checkSparkVersion
 
 
-PYTHONPATH=$PY_EGG_FILE:$PYTHONPATH \
-pyspark --py-files $PY_EGG_FILE "$@"
+PYTHONPATH=$PY_ZIP_FILE:$PYTHONPATH \
+pyspark --py-files $PY_ZIP_FILE "$@"
 

@@ -100,7 +100,7 @@ task printIntegTestEnv {
         println("-Dspark.testing=true\n" +
                 "-Dsparkling.assembly.jar=${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}\n" +
                 "-Dsparkling.itest.jar=${integTestJar.archivePath}\n" +
-                "-Dsparkling.pysparkling.egg=${project(":sparkling-water-py").configurations.eggs.artifacts.file.join(',')}\n" +
+                "-Dsparkling.pysparkling.sdist=${project(":sparkling-water-py").configurations.sdist.artifacts.file.join(',')}\n" +
                 "-Dsparkling.test.hdp.version=current\n" +
                 "-DSPARK_HOME=${sparkHome}")
     }
