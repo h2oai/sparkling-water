@@ -4,8 +4,9 @@ ext {
     FS = File.separator
     FPS = File.pathSeparator
     pythonexec = findProperty("pythonExec") ?: "python"
+    pkgDir = file("$buildDir/pkg")
+    distDir = file("$buildDir/dist")
 }
-
 
 description = "PySparkling - Sparkling-Water Python Package"
 
@@ -18,10 +19,10 @@ dependencies {
 //
 task createVersionFile {
     doLast {
-        if(!getBuildDir().exists()){
-            getBuildDir().mkdir()
+        if (!pkgDir.exists()) {
+            pkgDir.mkdirs()
         }
-        File version_file = new File(getBuildDir(), "version.txt")
+        File version_file = new File(pkgDir, "version.txt")
         def version_txt = version.replace("-SNAPSHOT","")
         version_file.write(version_txt)
     }
@@ -38,9 +39,9 @@ def h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h
 def preparePythonEnv(environment) {
     def SPARK_HOME = ext.sparkHome
     def py4jDir = "${SPARK_HOME}${FS}python${FS}lib"
-    def py4jfile = fileTree(dir: py4jDir, include: 'py4j-*-src.zip').singleFile
+    def py4jFile = fileTree(dir: py4jDir, include: 'py4j-*-src.zip').singleFile
     if (SPARK_HOME != null) {
-        environment['PYTHONPATH'] = "${SPARK_HOME}${FS}python${FPS}${py4jfile}${FPS}${environment['PYTHONPATH']}"
+        environment['PYTHONPATH'] = "${SPARK_HOME}${FS}python${FPS}${py4jFile}${FPS}${environment['PYTHONPATH']}"
     }
 }
 
@@ -91,57 +92,80 @@ export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
     }
 }
 
-def copyH2OFromH2OHome(String H2O_HOME){
+def copyPySetup() {
+    copy {
+        from("$projectDir") {
+            include 'README.rst'
+            include 'MANIFEST.in'
+            include 'setup.cfg'
+            include 'setup.py'
+            include 'pysparkling/*'
+            exclude '**/*.pyc'
+        }
+        into pkgDir
+    }
+}
+
+def copyH2OFromH2OHome(String h2oHome) {
         copy {
-            from "${H2O_HOME}/h2o-py/h2o"
-            into file("${project.buildDir}/h2o")
+            from "${h2oHome}/h2o-py/h2o"
+            into file("${project.pkgDir}/h2o")
+            exclude '**/*.pyc'
+            exclude '**/h2o.jar'
         }
 }
 
-def copyH2OFromH2OWheel(String H2O_PYTHON_WHEEL){
+def copyH2OFromH2OWheel(String h2oPythonWheel) {
         copy {
-            from zipTree(H2O_PYTHON_WHEEL)
-            into project.buildDir
+            from zipTree(h2oPythonWheel)
+            into file("${project.pkgDir}")
             include 'h2o/**'
+            exclude '**/*.pyc'
+            exclude '**/h2o.jar'
         }
 }
 
 //
-// Make PySparkling distribution egg package
+// Make PySparkling distribution zip package
 //
-task distPython(type: Exec, dependsOn: checkPythonEnv) {
+task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.compile] ) {
     doFirst {
-        preparePythonEnv(environment)
         def H2O_HOME = System.getenv("H2O_HOME")
         def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
 
+        // if both properties are set, give precedence to H2O_HOME
         if (H2O_HOME !=null && H2O_PYTHON_WHEEL !=null) {
-            // if both properties are set, give precedence to H2O_HOME
             copyH2OFromH2OHome(H2O_HOME)
-        } else if (H2O_HOME!=null) {
+        } else if (H2O_HOME != null) {
             copyH2OFromH2OHome(H2O_HOME)
-        } else if (H2O_PYTHON_WHEEL!=null) {
+        } else if (H2O_PYTHON_WHEEL != null) {
             copyH2OFromH2OWheel(H2O_PYTHON_WHEEL)
         }
-
+        // Copy basic python setup
+        copyPySetup()
+        // Copy sparkling water fatjar
         copy {
             from "${configurations.compile.join(',')}"
-            into  file("${project.buildDir}/sparkling_water")
+            into  file("${project.pkgDir}/sparkling_water")
             rename ".*", "sparkling_water_assembly.jar"
         }
         // Save comment into module file
-        file("${project.buildDir}${FS}sparkling_water${FS}__init__.py").write("#Sparkling-water JAR holder for pySparkling module.")
+        file("${project.pkgDir}/sparkling_water/").mkdir()
+        file("${project.pkgDir}/sparkling_water/__init__.py").write("# Sparkling-water JAR holder for pySparkling module.")
     }
+    // Configure proper name
+    baseName = "h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}"
 
-    commandLine getOsSpecificCommandLine([pythonexec, "setup.py", "egg_info", "--egg-base=${buildDir.absolutePath}", "bdist_egg",  "--dist-dir=${buildDir.absolutePath}${FS}dist"])
+    from pkgDir
+    destinationDir distDir
 }
 
 configurations{
-    eggs
+    sdist
 }
 
 artifacts {
-    eggs file("${project.buildDir}/dist/h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}-${version.replace("-SNAPSHOT","")}-py2.7.egg").getAbsoluteFile()
+    sdist distPython
 }
 
 //
@@ -151,8 +175,8 @@ task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
     doFirst {
         preparePythonEnv(environment)
     }
-    // add PySparkling egg on PYTHONPATH so unittests can see all the modules within this egg file
-    environment['PYTHONPATH'] = configurations.eggs.artifacts.files.singleFile.absolutePath +  File.pathSeparator + environment['PYTHONPATH']
+    // Add PySparkling zip on PYTHONPATH so unittests can access all the PySparkling packages
+    environment['PYTHONPATH'] = "${distPython.archivePath}${FPS}${environment['PYTHONPATH']}"
     environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
     // sparkling assembly jar is here because of external h2o tests
     environment["sparkling.assembly.jar"] = configurations.compile.join(',')
@@ -178,7 +202,7 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
     def testEnv = detectEnvironment()
 
     // Pass references to libraries to test launcher
-    environment["sparkling.pysparkling.egg"] = configurations.eggs.artifacts.files.singleFile.absolutePath
+    environment["sparkling.pysparkling.sdist"] = configurations.sdist.artifacts.files.singleFile.absolutePath
     environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
     // sparkling assembly jar is here because of external h2o tests
     environment["sparkling.assembly.jar"] = configurations.compile.join(',')
@@ -251,7 +275,7 @@ task printH2OWheelPackage {
 clean.dependsOn cleanPython
 createVersionFile.dependsOn cleanPython
 distPython.dependsOn createVersionFile
-
+ 
 // Build tasks
 task buildPython(dependsOn: distPython)
 build.dependsOn buildPython
