@@ -59,7 +59,7 @@ import scala.util.control.NoStackTrace
   * @param sparkContext Spark Context
   * @param conf H2O configuration
   */
-class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends Logging with H2OContextUtils {
+class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends H2OContextUtils {
   self =>
 
   val sqlc: SQLContext = SparkSession.builder().getOrCreate().sqlContext

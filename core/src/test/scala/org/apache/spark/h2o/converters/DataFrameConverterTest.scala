@@ -27,16 +27,15 @@ import org.apache.spark.h2o.utils.H2OSchemaUtils.flatSchema
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedSparkTestContext}
 import org.apache.spark.h2o.{Frame => _, H2OFrame => _}
 import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.Key
 import water.fvec._
 import water.parser.BufferedString
-import water.{DKV, Key}
-
-import scala.reflect.ClassTag
 
 /**
  * Testing Conversions between H2OFrame and Spark DataFrame
@@ -447,7 +446,8 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     import spark.implicits._
     val num = 5
     val values = (1 to num).map(x => PrimitiveB(1 to x))
-    val df = sc.parallelize(values).toDF
+    val rdd: RDD[PrimitiveB] = sc.parallelize(values)
+    val df = rdd.toDF
     val expandedSchema = H2OSchemaUtils.expandedSchema(sc, df)
     val metadatas = expandedSchema.map(f =>f._2.metadata)
 
@@ -554,6 +554,7 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
 
   test("SW-304 DateType column conversion failure") {
     import java.sql.Date
+
     import sqlContext.implicits._
     val df = sc.parallelize(Seq(DateField(Date.valueOf("2016-12-24")))).toDF("created_date")
     val hf = hc.asH2OFrame(df)

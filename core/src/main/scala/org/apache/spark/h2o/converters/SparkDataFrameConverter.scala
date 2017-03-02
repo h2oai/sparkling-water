@@ -20,15 +20,13 @@ package org.apache.spark.h2o.converters
 import org.apache.spark._
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
+import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.h2o.utils.ReflectionUtils._
-import org.apache.spark.h2o.utils.{H2OSchemaUtils, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
-import water.{ExternalFrameUtils, Key}
 import water.fvec.{Frame, H2OFrame}
-
-import scala.collection.immutable
+import water.{ExternalFrameUtils, Key}
 
 private[h2o] object SparkDataFrameConverter extends Logging {
 
@@ -45,7 +43,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
 
   def toDataFrame[T <: Frame](hc: H2OContext, fr: T, copyMetadata: Boolean)(implicit sqlContext: SQLContext): DataFrame = {
     // Relation referencing H2OFrame
-    val relation = H2OFrameRelation(fr, copyMetadata)(sqlContext)
+    val relation: H2OFrameRelation[T] = H2OFrameRelation(fr, copyMetadata)(sqlContext)
     sqlContext.baseRelationToDataFrame(relation)
   }
 
@@ -193,7 +191,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       case vector: ml.linalg.Vector =>
         vector(vidx)
       case _ =>
-        throw new ArrayIndexOutOfBoundsException(s"Row: ${r}, row index: ${ridx}, vector index: ${vidx}")
+        throw new ArrayIndexOutOfBoundsException(s"Row: $r, row index: $ridx, vector index: $vidx")
     }
   }
 }
