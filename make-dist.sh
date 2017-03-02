@@ -40,7 +40,7 @@ examples/smalldata/chicagoCrimes10k.csv
 examples/smalldata/craigslistJobTitles.csv
 $(find examples/flows/ -type f)
 $(find docker/ -type f | grep -v iml$)
-$(find py/build/dist/ -type f -name '*.egg')
+$(find py/build/dist/ -type f -name '*.zip')
 $(find py/examples/ -type f | grep -v h2ologs | grep -v metastore_db)
 $(find py/pysparkling -type f -name '*.py')
 LICENSE
