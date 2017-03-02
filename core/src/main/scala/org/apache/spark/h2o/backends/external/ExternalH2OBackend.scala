@@ -36,7 +36,8 @@ import scala.util.control.NoStackTrace
 
 class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ExternalBackendUtils with Logging {
 
-  private var yarnAppId: String = _
+  private var yarnAppId: Option[String] = None
+  private var externalIP: Option[String] = None
 
   def launchH2OOnYarn(conf: H2OConf): String = {
 
@@ -87,7 +88,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     // get ip port
     val clusterInfo = Source.fromFile(hc.getConf.clusterInfoFile.get).getLines
     val ipPort = clusterInfo.next()
-    yarnAppId = clusterInfo.next().replace("job", "application")
+    yarnAppId = Some(clusterInfo.next().replace("job", "application"))
+    externalIP = Some(ipPort)
 
     logInfo(s"Yarn ID obtained from cluster file: $yarnAppId")
     logInfo(s"Cluster ip and port obtained from cluster file: $ipPort")
@@ -111,7 +113,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
     import scala.sys.process._
     // kill the job
-    s"yarn application -kill $yarnAppId".!
+    s"yarn application -kill ${yarnAppId.get}".!
   }
 
   override def init(): Array[NodeDesc] = {
@@ -159,6 +161,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
 
     cloudMembers
+  }
+
+  override def backenUIInfo: Seq[(String,String)] = {
+    Seq(
+      ("External backend YARN AppID", yarnAppId),
+      ("External IP", externalIP)
+    ).filter(_._2.nonEmpty).map{ case (k,v) => (k, v.get)}
   }
 
   override def stop(stopSparkContext: Boolean): Unit = {

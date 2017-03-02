@@ -83,7 +83,7 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
   }
 
   /** Used backend */
-  private val backend: SparklingBackend = if(conf.runsInExternalClusterMode){
+  val backend: SparklingBackend = if(conf.runsInExternalClusterMode){
     new ExternalH2OBackend(this)
   }else{
     new InternalH2OBackend(this)
