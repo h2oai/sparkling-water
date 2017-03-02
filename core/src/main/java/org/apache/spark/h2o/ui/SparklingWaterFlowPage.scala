@@ -64,7 +64,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
   private def swInfo(): Seq[(String, String)] = Seq(
     ("Flow UI", s"http://${hc.h2oLocalClient}"),
     ("Nodes", H2O.CLOUD.members().map(node => node.getIpPortString).mkString(","))
-  )
+  ) ++ parent.hc.backend.backenUIInfo
 
   private def swProperties(): Seq[(String, String)] =
     hc._conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
@@ -77,4 +77,5 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
     ("H2O Build By", H2O.ABV.compiledBy()),
     ("H2O Build On", H2O.ABV.compiledOn())
   )
+
 }
