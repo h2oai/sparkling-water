@@ -109,16 +109,15 @@ trait H2OGBMParams extends H2OTreeParams[GBMParameters] {
 trait H2OTreeParams[P <: SharedTreeParameters] extends H2OParams[P] {
   final val ntrees = intParam("ntrees")
   final val maxDepth = intParam("maxDepth")
-  final val minRows = doubleParam("maxRows")
+  final val minRows = doubleParam("minRows")
   final val nbins = intParam("nbins")
-  final val nbinsCat = intParam("nbinsCat")
+  final val nbinsCat = intParam("nbinsCats")
   final val minSplitImprovement = doubleParam("minSplitImprovement")
   final val r2Stopping = doubleParam("r2Stopping")
   final val seed = longParam("seed")
   final val nbinsTopLevel = intParam("nbinsTopLevel")
   final val buildTreeOneNode = booleanParam("buildTreeOneNode")
   final val scoreTreeInterval = intParam("scoreTreeInterval")
-  final val initialScoreInterval = intParam("initialScoreInterval")
   final val sampleRate = doubleParam("sampleRate")
 
   setDefault(
@@ -133,7 +132,6 @@ trait H2OTreeParams[P <: SharedTreeParameters] extends H2OParams[P] {
     nbinsTopLevel -> parameters._nbins_top_level,
     buildTreeOneNode -> parameters._build_tree_one_node,
     scoreTreeInterval -> parameters._score_tree_interval,
-    initialScoreInterval -> parameters._initial_score_interval,
     sampleRate -> parameters._sample_rate)
 
 }
