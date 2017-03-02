@@ -54,7 +54,7 @@ export H2O_ORIGINAL_JAR = ...
 This version will ignore environment variable and jar to be extended will be downloaded from our repository. The same
 holds for version with argument.
 
-the extendJar tasks olso print the path to the extend jar. It can be saved to environmental variable as
+The extendJar tasks also print the path to the extend jar. It can be saved to environmental variable as
 export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
 """
 
