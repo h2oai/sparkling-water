@@ -1,6 +1,15 @@
 ChangeLog
 =========
 
+##v2.1.0 (2017-03-02)
+  - Bug
+    - [SW-331](https://0xdata.atlassian.net/browse/SW-331) - Security.enableSSL does not work
+  - Improvement
+    - [SW-302](https://0xdata.atlassian.net/browse/SW-302) - Support Spark 2.1.0
+    - [SW-325](https://0xdata.atlassian.net/browse/SW-325) - Implement a generic announcement mechanism 
+    - [SW-326](https://0xdata.atlassian.net/browse/SW-326) - Add support to Spark 2.1 in Sparkling Water
+    - [SW-327](https://0xdata.atlassian.net/browse/SW-327) - Enrich Spark UI with Sparkling Water specific tab
+
 ##v2.0.0 (2016-09-26)
   Sparkling Water 2.0 brings support of Spark 2.0. For detailed changelog, please, read [rel2.0/CHANGELOG.md](https://github.com/h2oai/sparkling-water/blob/rel-2.0/CHANGELOG.md#200-2016-09-26)
 
