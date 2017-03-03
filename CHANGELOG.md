@@ -1,6 +1,9 @@
 ChangeLog
 =========
 
+##v2.1.0 (2017-03-02)
+  Sparkling Water 2.1 brings support of Spark 2.1
+
 ##v2.0.0 (2016-09-26)
   Sparkling Water 2.0 brings support of Spark 2.0. For detailed changelog, please, read [rel2.0/CHANGELOG.md](https://github.com/h2oai/sparkling-water/blob/rel-2.0/CHANGELOG.md#200-2016-09-26)
 
