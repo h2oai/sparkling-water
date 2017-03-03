@@ -1,6 +1,6 @@
 PySparkling and Spark Version
 =============================
-There exist multiple PySparkling packages, each is intended to be used with different Spark version.
+There are multiple PySparkling packages, each is intended to be used with different Spark version.
 
  - h2o_pysparkling_2.1 - for Spark 2.1.x
  - h2o_pysparkling_2.0 - for Spark 2.0.x
@@ -8,11 +8,11 @@ There exist multiple PySparkling packages, each is intended to be used with diff
  - h2o_pysparkling_1.5 - for Spark 1.5.x
  - h2o_pysparkling_1.4 - for Spark 1.4.x
 
-So for example, to install PySparkling for Spark 1.6, the command would look like:
+So for example, to install PySparkling for Spark 2.0, the command would look like:
 
 .. code-block:: bash
 
-    pip install h2o_pysparkling_1.6
+    pip install h2o_pysparkling_2.0
 
 For h2o_pysparkling_2.0+, installation from PyPi is currently not supported: see `SW-335 
 <https://0xdata.atlassian.net/browse/SW-335>`_.
@@ -22,7 +22,7 @@ Setup and Installation
 
 Prerequisites:
     
-  - Python 2.7
+  - Python 2.7 or 3+
   - Numpy 1.9.2
 
 For windows users, please grab a .whl from http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
@@ -111,15 +111,6 @@ Run IPython with PySparkling
 .. code-block:: bash
 
     PYSPARK_DRIVER_PYTHON="ipython" bin/pysparkling
-
-
-Use PySparkling as Spark Package
---------------------------------
-.. code-block:: bash
-
-    export SPARKLING_SDIST=$(ls -t py/dist/h2o_pysparkling*.zip | head -1)
-	$SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.11:2.0.0 --py-files $SPARKLING_SDIST ./py/examples/scripts/ChicagoCrimeDemo.py
-
 
 Use PySparkling in Databricks Cloud
 -----------------------------------
