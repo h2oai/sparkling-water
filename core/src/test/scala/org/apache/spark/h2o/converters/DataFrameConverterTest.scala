@@ -27,23 +27,22 @@ import org.apache.spark.h2o.utils.H2OSchemaUtils.flatSchema
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedSparkTestContext}
 import org.apache.spark.h2o.{Frame => _, H2OFrame => _}
 import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{Assertions, FunSuite}
+import water.Key
 import water.fvec._
 import water.parser.BufferedString
-import water.{DKV, Key}
-
-import scala.reflect.ClassTag
 
 /**
  * Testing Conversions between H2OFrame and Spark DataFrame
  */
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
-
+  
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
   test("Creation of H2ODataFrame") {
@@ -425,13 +424,24 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     import spark.implicits._
     val num = 2
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 1.0))
-    val df = sc.parallelize(values).toDF
+    val rdd: RDD[ComposedA] = sc.parallelize(values)
+    val df = rdd.toDF
+    
+    val expectObjectsNullableByDefault = true
 
     val expandedSchema = H2OSchemaUtils.expandedSchema(sc, df)
-    assert(expandedSchema === Vector(
+    val expected: Vector[(List[Int], StructField, Int)] = Vector(
       (List(0, 0), StructField("a.n", IntegerType), 0),
       (List(0, 1), StructField("a.name", StringType), 0),
-      (List(1), StructField("weight", DoubleType, nullable=false), 0)))
+      (List(1), StructField("weight", DoubleType, nullable = expectObjectsNullableByDefault), 0))
+    Assertions.assertResult(expected.length)(expandedSchema.length)
+
+    assertResult(expectObjectsNullableByDefault, "Nullability in component#2")(expandedSchema(2)._2.nullable)
+    for {i <- expected.indices} {
+      assertResult(expected(i), s"@$i")(expandedSchema(i))
+    }
+    
+    assert(expandedSchema === expected)
 
     // Verify transformation into dataframe
     val h2oFrame = hc.asH2OFrame(df)
@@ -554,6 +564,7 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
 
   test("SW-304 DateType column conversion failure") {
     import java.sql.Date
+
     import sqlContext.implicits._
     val df = sc.parallelize(Seq(DateField(Date.valueOf("2016-12-24")))).toDF("created_date")
     val hf = hc.asH2OFrame(df)

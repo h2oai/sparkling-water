@@ -18,7 +18,7 @@ package org.apache.spark
 
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.internal.config.CATALOG_IMPLEMENTATION
+import org.apache.spark.sql.internal.StaticSQLConf.CATALOG_IMPLEMENTATION
 
 /**
   * Spark session utils which can access Spark private API.

@@ -29,13 +29,16 @@ The Sparkling Water is developed in multiple parallel branches.
 Each branch corresponds to a Spark major release (e.g., branch **rel-1.5** provides implementation of Sparkling Water for Spark **1.5**).
 
 Please, switch to the right branch:
+ - For Spark 2.1 use branch [rel-2.1](https://github.com/h2oai/sparkling-water/tree/rel-2.1)
  - For Spark 2.0 use branch [rel-2.0](https://github.com/h2oai/sparkling-water/tree/rel-2.0)
  - For Spark 1.6 use branch [rel-1.6](https://github.com/h2oai/sparkling-water/tree/rel-1.6)
- - For Spark 1.5 use branch [rel-1.5](https://github.com/h2oai/sparkling-water/tree/rel-1.5)
- - For Spark 1.4 use branch [rel-1.4](https://github.com/h2oai/sparkling-water/tree/rel-1.4)
- - For Spark 1.3 use branch [rel-1.3](https://github.com/h2oai/sparkling-water/tree/rel-1.3)
 
-> Note: The [master](https://github.com/h2oai/sparkling-water/tree/master) branch includes the latest changes
+> **Note** Older releases are available here:
+>  - For Spark 1.5 use branch [rel-1.5](https://github.com/h2oai/sparkling-water/tree/rel-1.5)
+>  - For Spark 1.4 use branch [rel-1.4](https://github.com/h2oai/sparkling-water/tree/rel-1.4)
+>  - For Spark 1.3 use branch [rel-1.3](https://github.com/h2oai/sparkling-water/tree/rel-1.3)
+
+> **Note** The [master](https://github.com/h2oai/sparkling-water/tree/master) branch includes the latest changes
 for the latest Spark version. They are back-ported into older Sparkling Water versions.
 
 <a name="Req"></a>
@@ -43,7 +46,7 @@ for the latest Spark version. They are back-ported into older Sparkling Water ve
 
   * Linux/OS X/Windows
   * Java 7+
-  * [Spark 1.3+](https://spark.apache.org/downloads.html)
+  * [Spark 1.6+](https://spark.apache.org/downloads.html)
     * `SPARK_HOME` shell variable must point to your local Spark installation
 
 ---
@@ -83,6 +86,7 @@ pip install future
 ### Download Binaries
 For each Sparkling Water you can download binaries here:
    * [Sparkling Water - Latest version](http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html)
+   * [Sparkling Water - Latest 2.1 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/latest.html)
    * [Sparkling Water - Latest 2.0 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/latest.html)
    * [Sparkling Water - Latest 1.6 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.6/latest.html)
    * [Sparkling Water - Latest 1.5 version](http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.5/latest.html)
