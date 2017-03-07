@@ -33,5 +33,5 @@ trait SparklingBackend {
 
   def stop(stopSparkContext: Boolean)
 
-  def backenUIInfo: Seq[(String, String)]
+  def backendUIInfo: Seq[(String, String)]
 }

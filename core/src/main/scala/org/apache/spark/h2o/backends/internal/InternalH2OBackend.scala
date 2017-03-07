@@ -32,7 +32,7 @@ import scala.util.Random
 
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with InternalBackendUtils with Logging {
 
-  override def backenUIInfo: Seq[(String, String)] = Seq()
+  override def backendUIInfo: Seq[(String, String)] = Seq()
 
   override def stop(stopSparkContext: Boolean): Unit = {
     if (stopSparkContext) hc.sparkContext.stop()
