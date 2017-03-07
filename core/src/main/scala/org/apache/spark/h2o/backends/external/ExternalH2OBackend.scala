@@ -81,8 +81,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
           println(errMsg)
       }))
 
-    logDebug(processOut.toString)
-    logDebug(processErr.toString)
+    logInfo(processOut.toString)
+    logError(processErr.toString)
 
 
     // get ip port
@@ -163,7 +163,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     cloudMembers
   }
 
-  override def backenUIInfo: Seq[(String,String)] = {
+  override def backendUIInfo: Seq[(String,String)] = {
     Seq(
       ("External backend YARN AppID", yarnAppId),
       ("External IP", externalIP)
