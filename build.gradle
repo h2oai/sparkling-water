@@ -156,7 +156,7 @@ task buildSparklingWaterDist(type: Exec) {
 task dist(dependsOn: buildSparklingWaterDist)
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '3.2'
+  gradleVersion = '3.4.1'
 }
 
 clean.doFirst {
