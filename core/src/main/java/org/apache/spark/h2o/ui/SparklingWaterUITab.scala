@@ -17,7 +17,7 @@ private[h2o] class SparklingWaterUITab(val hc: H2OContext)
   val parent = getSparkUI(hc)
 
   attachPage(new SparklingWaterInfoPage(this))
-
+  
   def attach() {
     getSparkUI(hc).attachTab(this)
   }
