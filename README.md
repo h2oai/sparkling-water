@@ -334,4 +334,11 @@ Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
     ```
     import _root_.hex.tree.gbm.GBM
     ```
+* Trying to run Sparkling Water on HDP Yarn cluster, but getting error:  
+  ```
+  java.lang.NoClassDefFoundError: com/sun/jersey/api/client/config/ClientConfig
+  ```
   
+  > The Yarn time service is not compatible with libraries provided by Spark. Please disable time service via setting `spark.hadoop.yarn.timeline-service.enabled=false`.
+  For more details, please visit https://issues.apache.org/jira/browse/SPARK-15343
+
