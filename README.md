@@ -113,14 +113,6 @@ There are several ways of using Sparkling Water:
 
 ---
 
-## Sparkling Water cluster backends
-
-Sparkling water supports two backend/deployment modes. We call them internal and external back-ends.
-Sparkling Water applications are independent on selected backend, the before `H2OContext` is created
-we need to tell it which backend used.
-
-For more details regarding the internal or external backend, please see [doc/backends.md](doc/backends.md). 
-
 <a name="SparkShell"></a>
 ### Run Sparkling shell
 
@@ -225,6 +217,55 @@ $SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-core_2.10:1.5.2,a
 ### Docker Support
 
 See [docker/README.md](docker/README.md) to learn about Docker support.
+
+---
+
+### Use Sparkling Water in Windows environments
+The Windows environments require several additional steps to make Spark and later Sparkling Water working.
+Great summary of configuration steps is [here](https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-tips-and-tricks-running-spark-windows.html).
+
+On Windows it is required:
+  1. Download Spark distribution 
+  
+  2. Setup variable `SPARK_HOME`:
+  ```
+  SET SPARK_HOME=<location of your downloaded Spark distribution>
+  ```
+  
+  3. From https://github.com/steveloughran/winutils, download `winutils.exe` for Hadoop version which is referenced by your Spark distribution (for example, for `spark-2.1.0-bin-hadoop2.6.tgz` you need `wintutils.exe` for [hadoop2.6](https://github.com/steveloughran/winutils/blob/master/hadoop-2.6.4/bin/winutils.exe?raw=true)).
+  
+  4. Put `winutils.exe` into a new directory `%SPARK_HOME%\hadoop\bin` and set:
+  ```
+  SET HADOOP_HOME=%SPARK_HOME%\hadoop
+  ```
+  
+  5. Create a new file `%SPARK_HOME%\hadoop\conf\hive-site.xml` which setup default Hive scratch dir. The best location is a writable temporary directory, for example `%TEMP%\hive`:
+  ```
+  <configuration>
+    <property>
+      <name>hive.exec.scratchdir</name>
+      <value>PUT HERE LOCATION OF TEMP FOLDER</value>
+      <description>Scratch space for Hive jobs</description>
+    </property>
+  </configuration>
+  ```
+  > Note: you can also use Hive default scratch directory which is `/tmp/hive`. In this case, you need to create directory manually and call `winutils.exe chmod 777 \tmp\hive` to setup right permissions.
+  
+  6. Set `HADOOP_CONF_DIR` property
+  ```
+  SET HADOOP_CONF_DIR=%SPARK_HOME%\conf
+  ```
+  
+  7. Run Sparkling Water as described above.
+
+---
+## Sparkling Water cluster backends
+
+Sparkling water supports two backend/deployment modes. We call them internal and external back-ends.
+Sparkling Water applications are independent on selected backend, the before `H2OContext` is created
+we need to tell it which backend used.
+
+For more details regarding the internal or external backend, please see [doc/backends.md](doc/backends.md). 
 
 ---
 
