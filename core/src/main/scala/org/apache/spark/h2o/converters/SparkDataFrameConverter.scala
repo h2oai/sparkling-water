@@ -20,15 +20,13 @@ package org.apache.spark.h2o.converters
 import org.apache.spark._
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
+import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.h2o.utils.ReflectionUtils._
-import org.apache.spark.h2o.utils.{H2OSchemaUtils, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
-import water.{ExternalFrameUtils, Key}
 import water.fvec.{Frame, H2OFrame}
-
-import scala.collection.immutable
+import water.{ExternalFrameUtils, Key}
 
 private[h2o] object SparkDataFrameConverter extends Logging {
 
@@ -52,7 +50,8 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
     import H2OSchemaUtils._
-    // Cache DataFrame RDD's
+    // Cache DataFrame because otherwise Spark mess data integrity when we work on it later
+    dataFrame.cache()
     val dfRdd = dataFrame.rdd
     val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
 
