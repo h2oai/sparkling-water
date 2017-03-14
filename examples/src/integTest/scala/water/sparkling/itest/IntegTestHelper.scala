@@ -1,6 +1,6 @@
 package water.sparkling.itest
 
-import org.apache.spark.h2o.BackendIndependentTestHelper
+import org.apache.spark.h2o.{BackendIndependentTestHelper, H2OLogging}
 import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
 import org.scalatest.{BeforeAndAfterEach, Suite, Tag}
@@ -141,7 +141,7 @@ object LocalTest extends Tag("water.sparkling.itest.LocalTest")
 object StandaloneTest extends Tag("water.sparkling.itest.StandaloneTest")
 
 
-trait IntegTestStopper extends org.apache.spark.Logging {
+trait IntegTestStopper extends H2OLogging {
 
   def exitOnException(f: => Unit): Unit ={
     try {

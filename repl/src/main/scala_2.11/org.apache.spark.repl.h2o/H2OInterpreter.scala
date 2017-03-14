@@ -81,4 +81,6 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 
 object H2OInterpreter {
   def classOutputDirectory = H2OIMain.classOutputDirectory
+
+  def classServerURI = throw new RuntimeException("classServerUri field is not defined when running in repl from spark 2.0")
 }

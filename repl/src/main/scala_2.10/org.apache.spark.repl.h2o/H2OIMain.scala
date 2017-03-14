@@ -35,21 +35,25 @@ private[repl] class H2OIMain private(initialSettings: Settings,
                                      propagateExceptions: Boolean = false)
   extends SparkIMain(initialSettings, interpreterWriter, propagateExceptions) {
 
-  setupCompiler()
-  stopClassServer()
+
+  // we need to setup the compiler and stop the class server only when spark version detected at runtime doesn't actually
+  // use dedicated repl server, se we handle the output directory in the same way as on Spark 2.0
+  if(BaseH2OInterpreter.classServerFieldAvailable) {
+    setupCompiler()
+    stopClassServer()
+  }
   setupClassNames()
+
 
   /**
     * Stop class server started in SparkIMain constructor because we have to use our class server which is already
     * running
     */
   private def stopClassServer() = {
-    if(this.getClass.getSuperclass.getDeclaredFields.map(_.getName).contains("classServer")) {
       val fieldClassServer = this.getClass.getSuperclass.getDeclaredField("classServer")
       fieldClassServer.setAccessible(true)
       val classServer = fieldClassServer.get(this).asInstanceOf[HttpServer]
       classServer.stop()
-    }
   }
 
   /**
@@ -59,18 +63,18 @@ private[repl] class H2OIMain private(initialSettings: Settings,
     // set virtualDirectory to our shared directory for all repl instances
     val fieldVirtualDirectory = this.getClass.getSuperclass.getDeclaredField("org$apache$spark$repl$SparkIMain$$virtualDirectory")
     fieldVirtualDirectory.setAccessible(true)
-    fieldVirtualDirectory.set(this,new PlainFile(H2OInterpreter.classOutputDirectory))
+    fieldVirtualDirectory.set(this, new PlainFile(H2OIMain.classOutputDirectory))
 
     // initialize the compiler again with new virtualDirectory set
     val fieldCompiler = this.getClass.getSuperclass.getDeclaredField("_compiler")
     fieldCompiler.setAccessible(true)
-    fieldCompiler.set(this,newCompiler(settings,reporter))
+    fieldCompiler.set(this, newCompiler(settings, reporter))
   }
 
   /**
     * Ensure that each class defined in repl is in a package containing number of repl session
     */
-  def setupClassNames() = {
+  private def setupClassNames() = {
     import naming._
     // sessionNames is lazy val and needs to be accessed first in order to be then set again to our desired value
     naming.sessionNames.line
@@ -105,7 +109,7 @@ object H2OIMain {
     value match {
       case v: Option[_] => {
         v.get match {
-          case cl: MutableURLClassLoader => cl.addURL(H2OInterpreter.classOutputDirectory.toURI.toURL)
+          case cl: MutableURLClassLoader => cl.addURL(H2OIMain.classOutputDirectory.toURI.toURL)
           case _ =>
         }
       }
@@ -116,7 +120,11 @@ object H2OIMain {
   private def initialize(sc: SparkContext): Unit = {
     if (sc.isLocal) {
       // master set to local or local[*]
-      prepareLocalClassLoader()
+      // we need to prepare local cluster only when class server field is available because only in that case spark repl
+      // is using dedicated server for repl which is not running in local mode
+      if(BaseH2OInterpreter.classServerFieldAvailable) {
+        prepareLocalClassLoader()
+      }
       interpreterClassloader = new InterpreterClassLoader(Thread.currentThread.getContextClassLoader)
     } else {
       if (Main.interp != null) {
@@ -126,7 +134,6 @@ object H2OIMain {
         interpreterClassloader = new InterpreterClassLoader(Thread.currentThread.getContextClassLoader)
       }
     }
-    setClassLoaderToSerializers(interpreterClassloader)
     setClassLoaderToSerializers(interpreterClassloader)
   }
 
@@ -143,18 +150,25 @@ object H2OIMain {
     existingInterpreters(sessionId)
   }
 
+  // this is used only in case the spark version detected at runtime doesn't actually use dedicated repl server,
+  // se we handle the output directory in the same way as on Spark 2.0
   private lazy val _classOutputDirectory = {
     if (Main.interp != null) {
       // Application was started using shell, we can reuse this directory
       Main.interp.intp.getClassOutputDirectory
+    } else if(BaseH2OInterpreter.classServerFieldAvailable){
+        // in case the class server field is available we need to return class output directory of the class server
+        REPLClassServer.getClassOutputDirectory
     } else {
+      // otherwise the field is not available, which means that this spark version is no longer using dedicated
+      // repl server and we handle this as in Spark 2.0
       // REPL hasn't been started yet, create a new directory
       val conf = new SparkConf()
-      val tmp = System.getProperty("java.io.tmpdir")
-      val rootDir = conf.get("spark.repl.classdir",  tmp)
-      Utils.createTempDir(rootDir)
+      val rootDir = conf.getOption("spark.repl.classdir").getOrElse(Utils.getLocalDir(conf))
+      val outputDir = Utils.createTempDir(root = rootDir, namePrefix = "repl")
+      outputDir
     }
   }
 
-  def classOutputDirectory = _classOutputDirectory
+  def classOutputDirectory =  _classOutputDirectory
 }
