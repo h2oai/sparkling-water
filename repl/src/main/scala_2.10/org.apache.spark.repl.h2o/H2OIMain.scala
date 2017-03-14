@@ -120,11 +120,8 @@ object H2OIMain {
   private def initialize(sc: SparkContext): Unit = {
     if (sc.isLocal) {
       // master set to local or local[*]
-      // we need to prepare local cluster only when class server field is available because only in that case spark repl
-      // is using dedicated server for repl which is not running in local mode
-      if(BaseH2OInterpreter.classServerFieldAvailable) {
-        prepareLocalClassLoader()
-      }
+
+      prepareLocalClassLoader()
       interpreterClassloader = new InterpreterClassLoader(Thread.currentThread.getContextClassLoader)
     } else {
       if (Main.interp != null) {
