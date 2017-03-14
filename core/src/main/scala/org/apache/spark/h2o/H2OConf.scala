@@ -107,7 +107,7 @@ object H2OConf {
   def checkSparkConf(sparkConf: SparkConf): SparkConf = {
     _sparkConfChecked = true
     if(BaseH2OInterpreter.classServerFieldAvailable) {
-      sparkConf.set("spark.repl.class.uri", H2OInterpreter.classServerURI)
+      sparkConf.set("spark.repl.class.uri", H2OInterpreter.classServerUri)
     }else{
       sparkConf.set("spark.repl.class.outputDir", H2OInterpreter.classOutputDirectory.getAbsolutePath)
     }
