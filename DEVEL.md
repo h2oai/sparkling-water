@@ -235,7 +235,7 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.scala.int.default.num`|`1`|Number of executors started at the start of h2o services.|
 |`spark.ext.h2o.topology.change.listener.enabled`|`true`|Decides whether listener which kills h2o cloud on the change of underlying cluster's topology is enabled or not.|
 |`spark.ext.h2o.spark.version.check.enabled`|`true`|Enables check if runtime Spark version matches build time Spark version.|
-|`spark.ext.h2o.exit.on.unsupported.spark.param`|`true`|If unsupported Spark parameters is detected, then application is forced to shutdown.|
+|`spark.ext.h2o.fail.on.unsupported.spark.param`|`true`|If unsupported Spark parameters is detected, then application is forced to shutdown.|
 |`spark.ext.h2o.jks`|`null`|Path to Java KeyStore file.|
 |`spark.ext.h2o.jks.pass`|`null`|Password for Java KeyStore file.|
 |`spark.ext.h2o.hash.login`|`false`|Enable hash login.|
