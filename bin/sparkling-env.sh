@@ -41,7 +41,7 @@ H2O_VERSION=$(cat $TOPDIR/gradle.properties | grep h2oMajorVersion | sed -e "s/.
 H2O_BUILD=$(cat $TOPDIR/gradle.properties | grep h2oBuild | sed -e "s/.*=//")
 H2O_NAME=$(cat $TOPDIR/gradle.properties | grep h2oMajorName | sed -e "s/.*=//")
 SPARK_VERSION=$(cat $TOPDIR/gradle.properties | grep sparkVersion | sed -e "s/.*=//")
-SCALA_VERSION=$(cat $TOPDIR/gradle.properties | grep scalaVersion | sed -e "s/.*=//" | cut -d . -f 1,2)
+SCALA_VERSION=$(cat $TOPDIR/gradle.properties | grep scalaBaseVersion | sed -e "s/.*=//" | cut -d . -f 1,2)
 # Fat jar for this distribution
 FAT_JAR="sparkling-water-assembly_$SCALA_VERSION-$VERSION-all.jar"
 FAT_JAR_FILE="$TOPDIR/assembly/build/libs/$FAT_JAR"
