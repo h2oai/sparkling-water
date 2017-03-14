@@ -19,7 +19,7 @@ package org.apache.spark.h2o.utils
 
 import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
 import org.apache.spark.h2o.backends.SharedBackendConf
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
@@ -49,8 +49,8 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
     hc = null
   }
 
-  def defaultSparkConf =  {
-    val sc = new SparkConf()
+  def defaultSparkConf = H2OConf.checkSparkConf{
+    new SparkConf()
       .set("spark.ext.h2o.disable.ga", "true")
       .set(SharedBackendConf.PROP_CLOUD_NAME._1,
           "sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + Math.abs(Random.nextInt()))
@@ -63,7 +63,6 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
       .set("spark.ext.h2o.backend.cluster.mode", sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
       .set("spark.ext.h2o.client.ip", sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress))
       .set("spark.ext.h2o.external.start.mode", sys.props.getOrElse("spark.ext.h2o.external.start.mode", "manual"))
-    sc
   }
 }
 

@@ -98,4 +98,17 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 
 object H2OInterpreter {
   def classOutputDirectory = H2OIMain.classOutputDirectory
+
+  /**
+    * Return class server uri for REPL Class server.
+    * In local mode the class server is not actually used, all we need is just output directory
+    */
+  def classServerUri = {
+    if (org.apache.spark.repl.Main.interp != null) {
+      // Application was started using SparkSubmit
+      org.apache.spark.repl.Main.interp.intp.classServerUri
+    } else {
+      REPLClassServer.classServerUri
+    }
+  }
 }

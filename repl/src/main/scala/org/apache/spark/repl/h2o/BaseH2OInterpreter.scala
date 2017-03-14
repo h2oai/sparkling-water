@@ -121,8 +121,8 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
     intp = createInterpreter()
     addThunk(
       intp.beQuietDuring{
-        intp.bind("sc", "org.apache.spark.SparkContext", sparkContext)
-        intp.bind("sqlContext", "org.apache.spark.sql.SQLContext", sqlContext, List("implicit"))
+        intp.bind("sc", "org.apache.spark.SparkContext", sparkContext, List("@transient"))
+        intp.bind("sqlContext", "org.apache.spark.sql.SQLContext", sqlContext, List("@transient", "implicit"))
 
         command(
           """
@@ -317,4 +317,6 @@ object BaseH2OInterpreter {
     }
     finally Thread.currentThread().setContextClassLoader(classloader)
   }
+
+  def classServerFieldAvailable = classOf[H2OIMain].getSuperclass.getDeclaredFields.map(_.getName).contains("classServer")
 }
