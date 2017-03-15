@@ -3,6 +3,8 @@ apply from: "$rootDir/gradle/utils.gradle"
 ext {
     FS = File.separator
     FPS = File.pathSeparator
+
+    PYTHON_VERSION = "py/pythonVersion.sh".execute().text.trim()
 }
 
 
@@ -139,7 +141,7 @@ configurations{
 }
 
 artifacts {
-    eggs file("${project.buildDir}/dist/h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}-${version.replace("-SNAPSHOT","")}-py2.7.egg").getAbsoluteFile()
+    eggs file("${project.buildDir}/dist/h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}-${version.replace("-SNAPSHOT","")}-py${PYTHON_VERSION}.egg").getAbsoluteFile()
 }
 
 //

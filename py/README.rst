@@ -19,7 +19,7 @@ Setup and Installation
 
 Prerequisites:
     
-  - Python 2.7
+  - Python 2.7+ or 3.5+
   - Numpy 1.9.2
 
 For windows users, please grab a .whl from http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
