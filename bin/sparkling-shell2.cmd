@@ -20,8 +20,10 @@ SET MASTER=%DEFAULT_MASTER%
 
 call %LIBSW% :banner
 
+SET SW_FAT_JAR_FILE=!TOPDIR!/assembly/build/libs/!FAT_JAR!
 SET SPARK_OPTS=--driver-memory !DRIVER_MEMORY! --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m"
-SET SPARK_OPT_JARS=--jars !TOPDIR!/assembly/build/libs/!FAT_JAR!
+rem Because of SPARK-18648 we need to put assembly also on driver/executor class paths
+SET SPARK_OPT_JARS=--jars !SW_FAT_JAR_FILE! --conf spark.driver.extraClassPath=!SW_FAT_JAR_FILE! --conf spark.executor.extraClassPath=!SW_FAT_JAR_FILE!
 cd %TOPDIR%
 call !SPARK_HOME!/bin/spark-shell2.cmd !SPARK_OPT_JARS! !SPARK_OPTS! %*
 
