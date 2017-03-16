@@ -45,7 +45,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
 
   def toDataFrame[T <: Frame](hc: H2OContext, fr: T, copyMetadata: Boolean)(implicit sqlContext: SQLContext): DataFrame = {
     // Relation referencing H2OFrame
-    val relation = H2OFrameRelation(fr, copyMetadata)(sqlContext)
+    val relation: H2OFrameRelation[T] = H2OFrameRelation(fr, copyMetadata)(sqlContext)
     sqlContext.baseRelationToDataFrame(relation)
   }
 
@@ -193,7 +193,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       case vector: ml.linalg.Vector =>
         vector(vidx)
       case _ =>
-        throw new ArrayIndexOutOfBoundsException(s"Row: ${r}, row index: ${ridx}, vector index: ${vidx}")
+        throw new ArrayIndexOutOfBoundsException(s"Row: $r, row index: $ridx, vector index: $vidx")
     }
   }
 }
