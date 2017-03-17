@@ -335,3 +335,14 @@ Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
   > The Yarn time service is not compatible with libraries provided by Spark. Please disable time service via setting `spark.hadoop.yarn.timeline-service.enabled=false`.
   For more details, please visit https://issues.apache.org/jira/browse/SPARK-15343
 
+
+* Getting non-deterministic H2O Frames after the Spark Data Frame to H2O Frame conversion.
+
+  > This is caused by what we think is a bug in Apache Spark. On specific kinds of data combined with higher number of
+    partitions we can see non-determinism in BroadCastHashJoins. This leads to to jumbled rows and columns in the output H2O frame.
+    We recommend to disable broadcast based joins which seem to be non-deterministic as:
+    ```
+    sqlContext.sql(\"SET spark.sql.autoBroadcastJoinThreshold=-1\")
+    ```
+  > The issue can be tracked as [PUBDEV-3808](https://0xdata.atlassian.net/browse/PUBDEV-3808).
+    On the Spark side, the following issues are related to the problem: [Spark-17806](https://issues.apache.org/jira/browse/SPARK-17806)
