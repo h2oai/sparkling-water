@@ -132,7 +132,8 @@ class H2OContext(object):
         h2o_context._conf = selected_conf
         h2o_context._client_ip = jhc.h2oLocalClientIp()
         h2o_context._client_port = jhc.h2oLocalClientPort()
-        h2o.init(ip=h2o_context._client_ip, port=h2o_context._client_port, start_h2o=False, strict_version_check=False)
+        # Create H2O REST API client
+        h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port)
         h2o_context.is_initialized = True
         return h2o_context
 
