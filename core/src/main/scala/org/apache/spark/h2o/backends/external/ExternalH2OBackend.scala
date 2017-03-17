@@ -39,7 +39,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   private var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
 
-  def launchH2OOnYarn(conf: H2OConf): String = {
+  def launchH2OOnYarn(sparkAppId: String, conf: H2OConf): String = {
+    import ExternalH2OBackend._
 
     var cmdToLaunch = Seq[String]("hadoop",
       "jar", conf.h2oDriverPath.get)
@@ -53,13 +54,16 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         logInfo(s"Running external cluster in encrypted mode with config $ssl")
       case _ =>
     }
-
+    // Application tags shown in Yarn Resource Manager UI
+    val yarnAppTags = s"${TAG_EXTERNAL_H2O},${TAG_SPARK_APP.format(sparkAppId)}"
+    
     cmdToLaunch = cmdToLaunch ++ Seq[String](
       conf.YARNQueue.map("-Dmapreduce.job.queuename=" + _ ).getOrElse(""),
+      s"-Dmapreduce.job.tags=${yarnAppTags}",
       "-nodes", conf.numOfExternalH2ONodes.get,
       "-notify", conf.clusterInfoFile.get,
       "-J", "-md5skip",
-      "-jobname", conf.cloudName.get,
+      "-jobname", H2O_JOB_NAME.format(sparkAppId),
       "-mapperXmx", conf.mapperXmx,
       "-output", conf.HDFSOutputDir.get,
       "-disown"
@@ -67,6 +71,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     // start external h2o cluster and log the output
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
+
     import scala.sys.process._
     val processOut = new StringBuffer()
     val processErr = new StringBuffer()
@@ -121,7 +126,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (hc.getConf.isAutoClusterStartUsed) {
       // start h2o instances on yarn
       logInfo("Starting H2O cluster on YARN")
-      val ipPort = launchH2OOnYarn(hc.getConf)
+      val ipPort = launchH2OOnYarn(hc.sparkContext.applicationId, hc.getConf)
       hc._conf.setH2OCluster(ipPort)
     }
     // Start H2O in client mode and connect to existing H2O Cluster
@@ -227,6 +232,15 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
     conf
   }
+}
+
+object ExternalH2OBackend {
+  // This string tags instances of H2O launched from Sparkling Water
+  val TAG_EXTERNAL_H2O = "H2O/Sparkling-Water"
+  // Another tag which identifies launcher - aka Spark application
+  val TAG_SPARK_APP = "Sparkling-Water/Spark/%s"
+  // Job name for H2O Yarn job
+  val H2O_JOB_NAME = "H2O_via_SparklingWater_%s"
 }
 
 class H2OClusterNotRunning(msg: String) extends Exception(msg) with NoStackTrace
