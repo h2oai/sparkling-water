@@ -7,6 +7,7 @@ test {
     systemProperty "spark.testing", "true"
     systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-test/nodes")
     systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-test/client")
+    systemProperty "spark.test.home", "${sparkHome}"
 
     // if this property is set up h2o cluster will be started on yarn instead on local machine
     if(project.hasProperty("startH2OClusterOnYarn")){
