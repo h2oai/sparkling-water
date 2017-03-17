@@ -133,7 +133,17 @@ class FrameTransformationsTest(unittest.TestCase):
         df = hc.as_spark_frame(h2o_frame)
         self.assertEquals(df.count(), h2o_frame.nrow, "Number of rows should match")
         self.assertEquals(len(df.columns), h2o_frame.ncol, "Number of columns should match")
-        self.assertEquals(df.columns,h2o_frame.names, "Column names should match")
+        self.assertEquals(df.columns, h2o_frame.names, "Column names should match")
+
+    # test for SW-321
+    def test_inner_cbind_transform(self):
+        hc = self._hc
+        import h2o
+        h2o_df1 = h2o.H2OFrame({'A': [1, 2, 3]})
+        h2o_df2 = h2o.H2OFrame({'B': [4, 5, 6]})
+        spark_frame = hc.as_spark_frame(h2o_df1.cbind(h2o_df2))
+        count = spark_frame.count()
+        self.assertEquals(count, 3, "Number of rows is 3")
 
 class H2OConfTest(unittest.TestCase):
 
