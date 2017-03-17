@@ -32,7 +32,8 @@ class Initializer(object):
         if cl.getClass().getName()=='com.databricks.backend.daemon.driver.DriverLocal$DriverLocalClassLoader':
             cl.getParent().getParent().addURL(url)
         else:
-            cl.addURL(url)
+            spark_cl = Initializer.__find_spark_cl(cl, 'org.apache.spark.util.MutableURLClassLoader')
+            spark_cl.addURL(url)
 
         # Add Sparkling Water Assembly JAR to Spark's file server so executors can fetch it when they need to use the dependency.
         jsc.addJar(sw_jar_file)
@@ -53,3 +54,12 @@ class Initializer(object):
     def __get_sw_jar():
         return os.path.abspath(resource_filename("sparkling_water", 'sparkling_water_assembly.jar'))
 
+    @staticmethod
+    def __find_spark_cl(start_cl, cl_name):
+        cl = start_cl
+        while cl:
+            name = cl.getClass().getName()
+            if (name == cl_name):
+                return cl
+            cl = cl.getParent()
+        return None
