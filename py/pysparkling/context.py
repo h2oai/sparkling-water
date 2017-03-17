@@ -142,7 +142,8 @@ class H2OContext(object):
     def get_conf(self):
         return self._conf
 
-    def as_spark_frame(self, h2o_frame, copy_metadata = True):
+    def as_spark_frame(self, h2o_frame, copy_metadata=True):
+        fr = h2o_frame # create artificial reference so python doesn't delete the frame on the input. Solves SW-321
         """
         Transforms given H2OFrame to Spark DataFrame
 
@@ -155,12 +156,12 @@ class H2OContext(object):
         -------
           Spark DataFrame
         """
-        if isinstance(h2o_frame, H2OFrame):
-            j_h2o_frame = h2o_frame.get_java_h2o_frame()
+        if isinstance(fr, H2OFrame):
+            j_h2o_frame = fr.get_java_h2o_frame()
             jdf = self._jhc.asDataFrame(j_h2o_frame, copy_metadata, self._jsql_context)
             return DataFrame(jdf, self._sql_context)
 
-    def as_h2o_frame(self, dataframe, framename = None):
+    def as_h2o_frame(self, dataframe, framename=None):
         """
         Transforms given Spark RDD or DataFrame to H2OFrame.
 
