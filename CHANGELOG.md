@@ -1,6 +1,22 @@
 ChangeLog
 =========
 
+##v2.1.1 (2017-03-18)
+  - Bug
+    - [SW-308](https://0xdata.atlassian.net/browse/SW-308) - Intermittent failure in creating H2O cloud
+    - [SW-321](https://0xdata.atlassian.net/browse/SW-321) - composite function fail when inner cbind()
+    - [SW-342](https://0xdata.atlassian.net/browse/SW-342) - Environment detection does not work with Spark2.1
+    - [SW-347](https://0xdata.atlassian.net/browse/SW-347) - Cannot start Sparkling Water at HDP Yarn cluster
+    - [SW-349](https://0xdata.atlassian.net/browse/SW-349) - Sparkling Shell scripts for Windows do not work
+    - [SW-350](https://0xdata.atlassian.net/browse/SW-350) - Fix command line environment for Windows
+    - [SW-357](https://0xdata.atlassian.net/browse/SW-357) - PySparkling in Zeppelin environment using wrong class loader
+  - Improvement
+    - [SW-333](https://0xdata.atlassian.net/browse/SW-333) - ApplicationMaster info in Yarn for external cluster
+    - [SW-337](https://0xdata.atlassian.net/browse/SW-337) - Use `h2o.connect` in PySpark to connect to H2O cluster
+    - [SW-345](https://0xdata.atlassian.net/browse/SW-345) - Create configuration manual for External cluster
+    - [SW-356](https://0xdata.atlassian.net/browse/SW-356) - Improve documentation for spark.ext.h2o.fail.on.unsupported.spark.param
+    - [SW-360](https://0xdata.atlassian.net/browse/SW-360) - Upgrade H2O dependency to 3.10.4.2
+
 ##v2.1.0 (2017-03-02)
   - Bug
     - [SW-331](https://0xdata.atlassian.net/browse/SW-331) - Security.enableSSL does not work
