@@ -46,13 +46,13 @@ ChangeLog
     - [SW-291](https://0xdata.atlassian.net/browse/SW-291) - Use absolute value for random number in sparkling-water in internal backend
     - [SW-295](https://0xdata.atlassian.net/browse/SW-295) - H2OConf should be parameterized by SparkConf and not by SparkContext
 
-##2.0.2 (2016-12-09)
+## 2.0.2 (2016-12-09)
   - Bug
     - [SW-271](https://0xdata.atlassian.net/browse/SW-271) - SparklingWater Driver is not using SparkSession
     - [SW-272](https://0xdata.atlassian.net/browse/SW-272) - Microsoft Azure: deployment of pysparkling is failing
     - [SW-274](https://0xdata.atlassian.net/browse/SW-274) - When grep options are configured, Spark version detection does not work
 
-##2.0.1 (2016-12-04)
+## 2.0.1 (2016-12-04)
   - Bug
     - [SW-196](https://0xdata.atlassian.net/browse/SW-196) - Fix wrong output of __str__ on H2OContext
     - [SW-212](https://0xdata.atlassian.net/browse/SW-212) - Fix depreciation warning regarding the compiler in scala.gradle
@@ -81,7 +81,7 @@ ChangeLog
     - [SW-243](https://0xdata.atlassian.net/browse/SW-243) - Remove all references to local-cluster[...] in our doc
     - [SW-245](https://0xdata.atlassian.net/browse/SW-245) - Upgrade of H2O dependency to the latest turing release (3.10.0.10)
 
-##2.0.0 (2016-09-26)
+## 2.0.0 (2016-09-26)
   - Bugs
     - [SW-57](https://0xdata.atlassian.net/browse/SW-57) - Produce artifacts for Scala 2.11
     - [SW-71](https://0xdata.atlassian.net/browse/SW-71) - Expose method `H2OContext#setLogLevel` to setup log level of H2O
@@ -118,7 +118,7 @@ ChangeLog
     - The enum `hex.Distribution.Family` is now `hex.genmodel.utils.DistributionFamily`
     - The deprecated methods (e.g., `H2OContext#asSchemaRDD`) were removed
 
-##v1.6.1 (2016-03-15)
+## v1.6.1 (2016-03-15)
   - Bug fixes
     - Fix idea setup script
     - Fix cloud name - make it unique
@@ -167,7 +167,7 @@ ChangeLog
     - [SW-93](https://0xdata.atlassian.net/browse/SW-78) - Upgrade H2O dependency to Turan release (3.8.1.1)
 
 
-##v1.4.0 (2015-07-06)
+## v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame
   - Support of Spark 1.4
   - New applications
@@ -177,7 +177,7 @@ ChangeLog
   - API improvements
   - follow Spark way to provide implicit conversions
 
-##v1.3.0 (2015-05-25)
+## v1.3.0 (2015-05-25)
   - Major release of Sparkling Water
   - Depends on:
     - Spark 1.3.1
@@ -192,7 +192,7 @@ ChangeLog
     - Spark 1.2.0
     - H2O 3.0 Shannon release
 
-##v0.2.14 (2015-05-14)
+## v0.2.14 (2015-05-14)
   - Upgrade h2o dependency to build 1205 including fixes in algos, infrastructure,
     and improvements in UI
   - Examples changed to support modified h2o API
@@ -202,13 +202,13 @@ ChangeLog
     - list of meetups with links to code and instructions
   - Fix a limit on number of columns in SchemaRDD (thanks @nfergu)
 
-##v0.2.13 (2015-05-01)
+## v0.2.13 (2015-05-01)
   - Upgrade h2o dependency to build 1165
   - Introduce type alias DataFrame pointing to `water.fvec.H2OFrame`
   - Change naming of implicit operations `toDataFrame` to `toH2OFrame`
   - Chicago crime shell script 
 
-##v0.2.12 (2015-04-21)
+## v0.2.12 (2015-04-21)
   - Upgraded H2O dev to 1109 build.
   - Applications 
     - Chicago crime application 
