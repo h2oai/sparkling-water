@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-##v1.6.8 (2016-09-26)
+## v1.6.8 (2016-09-26)
   - Bug
     - [SW-197](https://0xdata.atlassian.net/browse/SW-197) - Fix all mentions of H2OContext(sc) to H2OContext.getOrCreate(sc) in pysparkling
     - [SW-201](https://0xdata.atlassian.net/browse/SW-201) - Methods in water.support classes should use  [T <: Frame] instead of H2OFrame
@@ -16,7 +16,7 @@ ChangeLog
   - Breaking API changes
     - The enum `hex.Distribution.Family` is now `hex.genmodel.utils.DistributionFamily`
 
-##v1.6.7 (2016-09-01)
+## v1.6.7 (2016-09-01)
   - Bug
     - [SW-71](https://0xdata.atlassian.net/browse/SW-71) - Expose the method `H2OContext#setLogLevel` to setup log level of H2O
     - [SW-128](https://0xdata.atlassian.net/browse/SW-128) - Publish flows pack in GitHub repo and embed them in distribution JAR
@@ -38,7 +38,7 @@ ChangeLog
     - [SW-174](https://0xdata.atlassian.net/browse/SW-174) - Remove unused fields from H2ORDD
     - [SW-177](https://0xdata.atlassian.net/browse/SW-177) - Refactor & Simplify REPL
 
-##v1.6.6 (2016-08-03)
+## v1.6.6 (2016-08-03)
   - Bug
     - [SW-154](https://0xdata.atlassian.net/browse/SW-154) - Network mask is used in the wrong way on executors
     - [SW-156](https://0xdata.atlassian.net/browse/SW-156) - Option to control console verbosity mode
@@ -48,11 +48,11 @@ ChangeLog
     - [SW-163](https://0xdata.atlassian.net/browse/SW-163) - Upgrade H2O dependency to 3.10.0.4
     - Streaming example
 
-##v1.6.5 (2016-06-06)
+## v1.6.5 (2016-06-06)
   - Hotfix
     - Fix of REPL initialization
 
-##v1.6.4 (2016-06-02)
+## v1.6.4 (2016-06-02)
   - Bug fixes
     - [SW-125](https://0xdata.atlassian.net/browse/SW-125) - PySparkling changes in order to upload the package to PyPI
     - [SW-130](https://0xdata.atlassian.net/browse/SW-130) - Launch spark cloud script is obsolete 
@@ -75,11 +75,11 @@ ChangeLog
     - [SW-148](https://0xdata.atlassian.net/browse/SW-148) - Documentation for pySparkling on top of Databricks Cloud
     - [SW-150](https://0xdata.atlassian.net/browse/SW-150) - Introduce Scala API for Frame join operations
 
-##v1.6.3 (2016-04-27)
+## v1.6.3 (2016-04-27)
   - Bug fixes
     - [SW-124](https://0xdata.atlassian.net/browse/SW-124)  - Hotfix to avoid NPE in MetadataHandler caused by PUBDEV-2879
 
-##v1.6.2 (2016-04-25)
+## v1.6.2 (2016-04-25)
   - Bug fixes
     - [SW-12](https://0xdata.atlassian.net/browse/SW-12) - Provides an inner class encapsulating implicit conversion like SQLContext does
     - [SW-50](https://0xdata.atlassian.net/browse/SW-50) - Reject attempts to run Sparkling Water/pySparkling with wrong version of Spark
@@ -100,7 +100,7 @@ ChangeLog
     - [SW-115](https://0xdata.atlassian.net/browse/SW-115) - Increase H2O dependency to rel-turchin
     - [SW-120](https://0xdata.atlassian.net/browse/SW-120) - Remove deprecated VecUtils
 
-##v1.6.1 (2016-03-15)
+## v1.6.1 (2016-03-15)
   - Bug fixes
     - Fix idea setup script
     - Fix cloud name - make it unique
@@ -149,7 +149,7 @@ ChangeLog
     - [SW-93](https://0xdata.atlassian.net/browse/SW-78) - Upgrade H2O dependency to Turan release (3.8.1.1)
 
 
-##v1.4.0 (2015-07-06)
+## v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame
   - Support of Spark 1.4
   - New applications
@@ -159,7 +159,7 @@ ChangeLog
   - API improvements
   - follow Spark way to provide implicit conversions
 
-##v1.3.0 (2015-05-25)
+## v1.3.0 (2015-05-25)
   - Major release of Sparkling Water
   - Depends on:
     - Spark 1.3.1
@@ -168,13 +168,13 @@ ChangeLog
     - H2O's DataFrame was renamed to H2OFrame
     - Spark's SchemaRDD was renamed to DataFrame
 
-##v1.2.0 (2015-05-18)
+## v1.2.0 (2015-05-18)
   - Major release of Sparkling Water
   - Depends on:
     - Spark 1.2.0
     - H2O 3.0 Shannon release
 
-##v0.2.14 (2015-05-14)
+## v0.2.14 (2015-05-14)
   - Upgrade h2o dependency to build 1205 including fixes in algos, infrastructure,
     and improvements in UI
   - Examples changed to support modified h2o API
@@ -184,13 +184,13 @@ ChangeLog
     - list of meetups with links to code and instructions
   - Fix a limit on number of columns in SchemaRDD (thanks @nfergu)
 
-##v0.2.13 (2015-05-01)
+## v0.2.13 (2015-05-01)
   - Upgrade h2o dependency to build 1165
   - Introduce type alias DataFrame pointing to `water.fvec.H2OFrame`
   - Change naming of implicit operations `toDataFrame` to `toH2OFrame`
   - Chicago crime shell script 
 
-##v0.2.12 (2015-04-21)
+## v0.2.12 (2015-04-21)
   - Upgraded H2O dev to 1109 build.
   - Applications 
     - Chicago crime application 
