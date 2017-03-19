@@ -1,13 +1,13 @@
 ChangeLog
 =========
 
-##v2.1.0 (2017-03-02)
+## v2.1.0 (2017-03-02)
   Sparkling Water 2.1 brings support of Spark 2.1
 
-##v2.0.0 (2016-09-26)
+## v2.0.0 (2016-09-26)
   Sparkling Water 2.0 brings support of Spark 2.0. For detailed changelog, please, read [rel2.0/CHANGELOG.md](https://github.com/h2oai/sparkling-water/blob/rel-2.0/CHANGELOG.md#200-2016-09-26)
 
-##v1.6.1 (2016-03-15)
+## v1.6.1 (2016-03-15)
   - Bug fixes
     - Fix idea setup script
     - Fix cloud name - make it unique
@@ -56,7 +56,7 @@ ChangeLog
     - [SW-93](https://0xdata.atlassian.net/browse/SW-78) - Upgrade H2O dependency to Turan release (3.8.1.1)
 
 
-##v1.4.0 (2015-07-06)
+## v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame
   - Support of Spark 1.4
   - New applications
@@ -66,7 +66,7 @@ ChangeLog
   - API improvements
   - follow Spark way to provide implicit conversions
 
-##v1.3.0 (2015-05-25)
+## v1.3.0 (2015-05-25)
   - Major release of Sparkling Water
   - Depends on:
     - Spark 1.3.1
@@ -75,13 +75,13 @@ ChangeLog
     - H2O's DataFrame was renamed to H2OFrame
     - Spark's SchemaRDD was renamed to DataFrame
 
-##v1.2.0 (2015-05-18)
+## v1.2.0 (2015-05-18)
   - Major release of Sparkling Water
   - Depends on:
     - Spark 1.2.0
     - H2O 3.0 Shannon release
 
-##v0.2.14 (2015-05-14)
+## v0.2.14 (2015-05-14)
   - Upgrade h2o dependency to build 1205 including fixes in algos, infrastructure,
     and improvements in UI
   - Examples changed to support modified h2o API
@@ -91,13 +91,13 @@ ChangeLog
     - list of meetups with links to code and instructions
   - Fix a limit on number of columns in SchemaRDD (thanks @nfergu)
 
-##v0.2.13 (2015-05-01)
+## v0.2.13 (2015-05-01)
   - Upgrade h2o dependency to build 1165
   - Introduce type alias DataFrame pointing to `water.fvec.H2OFrame`
   - Change naming of implicit operations `toDataFrame` to `toH2OFrame`
   - Chicago crime shell script 
 
-##v0.2.12 (2015-04-21)
+## v0.2.12 (2015-04-21)
   - Upgraded H2O dev to 1109 build.
   - Applications 
     - Chicago crime application 
