@@ -10,6 +10,7 @@ import h2o
 from pysparkling.conversions import FrameConversions as fc
 import warnings
 
+
 def _monkey_patch_H2OFrame(hc):
     @staticmethod
     def determine_java_vec_type(vec):
@@ -26,7 +27,6 @@ def _monkey_patch_H2OFrame(hc):
                 return "int"
         else:
             return "real"
-
 
     def get_java_h2o_frame(self):
         if hasattr(self, '_java_frame'):
@@ -54,12 +54,12 @@ def _is_of_simple_type(rdd):
     else:
         return False
 
+
 def _get_first(rdd):
     if rdd.isEmpty():
         raise ValueError('rdd is empty')
 
     return rdd.first()
-
 
 
 class H2OContext(object):
@@ -77,7 +77,6 @@ class H2OContext(object):
 
         except:
             raise
-
 
     def __do_init(self, spark_context):
         self._sc = spark_context
@@ -104,8 +103,8 @@ class H2OContext(object):
         """
         h2o_context = H2OContext(spark_context)
 
-        jvm = h2o_context._jvm # JVM
-        jsc = h2o_context._jsc # JavaSparkContext
+        jvm = h2o_context._jvm  # JVM
+        jsc = h2o_context._jsc  # JavaSparkContext
 
         if conf is not None:
             selected_conf = conf
@@ -128,9 +127,9 @@ class H2OContext(object):
 
     def __str__(self):
         if self.is_initialized:
-          return "H2OContext: ip={}, port={} (open UI at http://{}:{} )".format(self._client_ip, self._client_port, self._client_ip, self._client_port)
+            return "H2OContext: ip={}, port={} (open UI at http://{}:{} )".format(self._client_ip, self._client_port, self._client_ip, self._client_port)
         else:
-          return "H2OContext: not initialized, call H2OContext.getOrCreate(sc) or H2OContext.getOrCreate(sc, conf)"
+            return "H2OContext: not initialized, call H2OContext.getOrCreate(sc) or H2OContext.getOrCreate(sc, conf)"
 
     def __repr__(self):
         self.show()

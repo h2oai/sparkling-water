@@ -27,7 +27,7 @@ import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.ui.SparklingWaterUITab
 import org.apache.spark.h2o.utils.{H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
-import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import water._
 
 import scala.collection.mutable
@@ -61,9 +61,6 @@ import scala.util.control.NoStackTrace
   */
 class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends Logging with H2OContextUtils {
   self =>
-
-  val sqlc: SQLContext = SparkSession.builder().getOrCreate().sqlContext
-
   val announcementService = AnnouncementServiceFactory.create(conf)
 
   /** IP of H2O client */
@@ -94,7 +91,7 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
   // also with regards to used backend and store the fix the state of prepared configuration
   // so it can't be changed anymore
   /** H2O and Spark configuration */
-  val _conf = backend.checkAndUpdateConf(conf).clone()
+  val _conf: H2OConf = backend.checkAndUpdateConf(conf).clone()
 
   /**
     * This method connects to external H2O cluster if spark.ext.h2o.externalClusterMode is set to true,
