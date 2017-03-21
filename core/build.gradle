@@ -4,24 +4,41 @@ apply from: "$rootDir/gradle/utils.gradle"
 apply from: "$rootDir/gradle/sparkTest.gradle"
 
 dependencies {
-  // Required for h2o-app (we need UI)
-  compile("ai.h2o:h2o-app:${h2oVersion}") {
+  // Generic model support
+  compile("ai.h2o:h2o-genmodel:${h2oVersion}")
+  // H2O core
+  compile("ai.h2o:h2o-core:${h2oVersion}") {
       //
       // Exclude all dependencies provided by Spark environment already
       // The motivation is to catch error at compile time
       exclude(group: "net.java.dev.jets3t", module: "jets3t")
       exclude(group: "commons-collections", module: "commons-collections")
   }
-
+  // H2O algorithms
+  compile "ai.h2o:h2o-algos:${h2oVersion}"
+  // H2O web
+  compile "ai.h2o:h2o-web:${h2oVersion}"
+  // H2O Avro parser support 
+  compile("ai.h2o:h2o-avro-parser:${h2oVersion}") {
+      transitive = false
+  }
+  // H2O Parquet parser support
+  compile("ai.h2o:h2o-parquet-parser:${h2oVersion}") {
+      transitive = false
+  }
+  // H2O Orc  parser support
+  compile("ai.h2o:h2o-orc-parser:${h2oVersion}") {
+      transitive = false
+  }
   // H2O Scala API
   compile "ai.h2o:h2o-scala_${scalaBaseVersion}:${h2oVersion}"
-  // H2O Persistent layer
+  // H2O HDFS Persistent layer
   compile("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
       // Cannot use here: transitive = false since Gradle is producing wrong POM file
       // Hence the exlusions are listed manually
       exclude(group: "org.apache.hadoop", module: "hadoop-client")
   }
-
+  // H2O S3 persistance support
   compile("ai.h2o:h2o-persist-s3:${h2oVersion}") {
       exclude(group: "com.fasterxml.jackson.core")
   }
