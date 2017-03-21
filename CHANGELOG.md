@@ -1,6 +1,14 @@
 ChangeLog
 =========
 
+## v2.1.2 (2017-03-20)
+
+  - Bug
+    - [SW-361](https://0xdata.atlassian.net/browse/SW-361) - Flow is not available in Sparkling Water
+    - [SW-362](https://0xdata.atlassian.net/browse/SW-362) - PySparkling does not work
+  - Improvement
+    - [SW-344](https://0xdata.atlassian.net/browse/SW-344) - Use Spark public DNS if available to report Flow UI 
+
 ## v2.1.1 (2017-03-18)
 
   - Bug
