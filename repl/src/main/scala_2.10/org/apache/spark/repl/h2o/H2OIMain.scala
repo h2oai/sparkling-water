@@ -26,7 +26,7 @@ import org.apache.spark.repl.{Main, SparkIMain}
 
 import scala.collection.mutable
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.IMain.naming
+import scala.tools.nsc.interpreter.IMain
 
 /**
   * SparkIMain allowing multiple interpreters to coexist in parallel. Each line in repl is wrapped in a package which
@@ -34,13 +34,12 @@ import scala.tools.nsc.interpreter.IMain.naming
   */
 private[repl] class H2OIMain private(initialSettings: Settings,
                                      interpreterWriter: IntpResponseWriter,
-                                     val sessionID: Int,
+                                     sessionId: Int,
                                      propagateExceptions: Boolean = false) extends {
   override private[repl] val outputDir: File = H2OIMain.classOutputDirectory
 } with SparkIMain(initialSettings, interpreterWriter, propagateExceptions) with H2OIMainHelper {
 
   setupClassNames(naming, sessionId)
-
 }
 
 
