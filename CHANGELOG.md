@@ -1,7 +1,31 @@
 ChangeLog
 =========
 
-## 2.0.5 (2017-12-10)
+## 2.0.6 (2017-03-21)
+
+  - Bug
+    - [SW-306](https://0xdata.atlassian.net/browse/SW-) - KubasCluster: Notify file fails on failure
+    - [SW-308](https://0xdata.atlassian.net/browse/SW-) - Intermittent failure in creating H2O cloud
+    - [SW-321](https://0xdata.atlassian.net/browse/SW-) - composite function fail when inner cbind()
+    - [SW-331](https://0xdata.atlassian.net/browse/SW-) - Security.enableSSL does not work
+    - [SW-347](https://0xdata.atlassian.net/browse/SW-) - Cannot start Sparkling Water at HDP Yarn cluster
+    - [SW-349](https://0xdata.atlassian.net/browse/SW-) - Sparkling Shell scripts for Windows do not work
+    - [SW-350](https://0xdata.atlassian.net/browse/SW-) - Fix command line environment for Windows
+    - [SW-357](https://0xdata.atlassian.net/browse/SW-) - PySparkling in Zeppelin environment using wrong class loader
+    - [SW-361](https://0xdata.atlassian.net/browse/SW-) - Flow is not available in Sparkling Water
+    - [SW-362](https://0xdata.atlassian.net/browse/SW-) - PySparkling does not work
+  - Improvement
+    - [SW-333](https://0xdata.atlassian.net/browse/SW-) - ApplicationMaster info in Yarn for external cluster
+    - [SW-337](https://0xdata.atlassian.net/browse/SW-) - Use `h2o.connect` in PySpark to connect to H2O cluster
+    - [SW-338](https://0xdata.atlassian.net/browse/SW-) - h2o.init in PySpark prints internal IP. We should remove it or replace it with actual IP of driver node (based on spark_DNS settings)
+    - [SW-344](https://0xdata.atlassian.net/browse/SW-) - Use Spark public DNS if available to report Flow UI 
+    - [SW-345](https://0xdata.atlassian.net/browse/SW-) - Create configuration manual for External cluster
+    - [SW-356](https://0xdata.atlassian.net/browse/SW-) - Fix documentation for spark.ext.h2o.fail.on.unsupported.spark.param
+    - [SW-359](https://0xdata.atlassian.net/browse/SW-) - Upgrade H2O dependency to 3.10.4.1
+    - [SW-360](https://0xdata.atlassian.net/browse/SW-) - Upgrade H2O dependency to 3.10.4.2
+    - [SW-363](https://0xdata.atlassian.net/browse/SW-) - Use Spark public DNS if available to report Flow UI
+
+## 2.0.5 (2017-02-10)
 
   - Improvement
     - [SW-325](https://0xdata.atlassian.net/browse/SW-325) - Implement a generic announcement mechanism
