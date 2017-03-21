@@ -18,6 +18,8 @@ private[repl] class H2OIMain private(initialSettings: Settings,
                                      val sessionID: Int)
   extends IMain(initialSettings, interpreterWriter) {
 
+  setupClassNames()
+  
   /**
     * Ensure that each class defined in repl is in a package containing number of repl session
     */
