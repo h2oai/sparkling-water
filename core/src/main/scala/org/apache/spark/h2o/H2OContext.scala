@@ -114,7 +114,7 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
 
     // Fill information about H2O client and H2O nodes in the cluster
     h2oNodes.append(nodes:_*)
-    localClientIp = H2O.SELF_ADDRESS.getHostAddress
+    localClientIp = sys.env.getOrElse("SPARK_PUBLIC_DNS", sparkContext.env.rpcEnv.address.host)
     localClientPort = H2O.API_PORT
     // Register UI
     sparklingWaterTab.foreach(_.attach())
