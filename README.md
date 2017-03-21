@@ -261,7 +261,7 @@ On Windows it is required:
   
   6. Set `HADOOP_CONF_DIR` property
   ```
-  SET HADOOP_CONF_DIR=%SPARK_HOME%\conf
+  SET HADOOP_CONF_DIR=%SPARK_HOME%\hadoop\conf
   ```
   
   7. Run Sparkling Water as described above.
