@@ -50,7 +50,7 @@ private[repl] class H2OIMain private(initialSettings: Settings,
     val fieldSessionNames = naming.getClass.getDeclaredField("sessionNames")
     fieldSessionNames.setAccessible(true)
     fieldSessionNames.set(naming, new SessionNames {
-      override def line  = "intp_id_" + sessionID + "." + propOr("line")
+      override def line  = "intp_id_" + sessionID + propOr("line")
     })
   }
 }
