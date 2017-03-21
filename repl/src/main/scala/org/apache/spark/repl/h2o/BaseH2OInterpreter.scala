@@ -50,7 +50,6 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   protected var intp: H2OIMain = _
   private var in: InteractiveReader = _
   private[repl] var pendingThunks: List[() => Unit] = Nil
-  val sparkConf = sparkContext.getConf
 
   def closeInterpreter() {
     if (intp ne null) {
@@ -101,7 +100,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   private def initializeInterpreter(): Unit = {
     settings = createSettings()
     intp = createInterpreter()
-    val spark = SparkSession.builder().config(sparkConf).getOrCreate()
+    val spark = SparkSession.builder().getOrCreate()
     addThunk(
       intp.beQuietDuring{
         intp.bind("sc", "org.apache.spark.SparkContext", sparkContext, List("@transient"))
