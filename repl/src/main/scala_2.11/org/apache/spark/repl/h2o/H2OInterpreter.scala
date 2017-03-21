@@ -75,6 +75,7 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
     settings
   }
 
+
   override def valueOfTerm(term: String): Option[Any] = {
     try Some(intp.eval(term))  catch { case _ : Exception => None }
   }
