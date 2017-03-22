@@ -35,7 +35,7 @@ trait InternalBackendConf extends SharedBackendConf {
   def numRddRetries = sparkConf.getInt(PROP_SPREADRDD_RETRIES._1, PROP_SPREADRDD_RETRIES._2)
   def defaultCloudSize  = sparkConf.getInt(PROP_DEFAULT_CLUSTER_SIZE._1, PROP_DEFAULT_CLUSTER_SIZE._2)
   def h2oNodeLogLevel   = sparkConf.get(PROP_NODE_LOG_LEVEL._1, PROP_NODE_LOG_LEVEL._2)
-  def h2oNodeLogDir   = sparkConf.get(PROP_NODE_LOG_DIR._1, PROP_NODE_LOG_DIR._2)
+  def h2oNodeLogDir   = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
   def nodeNetworkMask   = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
   def nodeIcedDir   = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
   def subseqTries  = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
@@ -90,13 +90,13 @@ object InternalBackendConf {
   val PROP_NODE_LOG_LEVEL = ("spark.ext.h2o.node.log.level", "INFO")
 
   /** Location of log directory for remote nodes. */
-  val PROP_NODE_LOG_DIR = ("spark.ext.h2o.node.log.dir", null.asInstanceOf[String])
+  val PROP_NODE_LOG_DIR = ("spark.ext.h2o.node.log.dir", None)
 
   /** Subnet selector for H2O nodes running inside executors - if the mask is specified then Spark network setup is not discussed. */
-  val PROP_NODE_NETWORK_MASK = ("spark.ext.h2o.node.network.mask", null.asInstanceOf[String])
+  val PROP_NODE_NETWORK_MASK = ("spark.ext.h2o.node.network.mask", None)
 
   /** Location of iced directory for Spark nodes */
-  val PROP_NODE_ICED_DIR = ("spark.ext.h2o.node.iced.dir", null.asInstanceOf[String])
+  val PROP_NODE_ICED_DIR = ("spark.ext.h2o.node.iced.dir", None)
 
   /** Subsequent successful tries to figure out size of Spark cluster which are producing same number of nodes. */
   val PROP_SUBSEQ_TRIES = ("spark.ext.h2o.subseq.tries", 5)
