@@ -32,9 +32,6 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
     val content =
       <div>
         <ul class="unstyled">
-          <li><strong>User:</strong>
-            {parent.getSparkUser}
-          </li>
           <li><strong>Uptime:</strong>
             {UIUtils.formatDuration(System.currentTimeMillis() - H2O.START_TIME_MILLIS.get())}
           </li>

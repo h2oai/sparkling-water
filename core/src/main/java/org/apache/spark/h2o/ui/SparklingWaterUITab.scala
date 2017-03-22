@@ -26,7 +26,6 @@ private[h2o] class SparklingWaterUITab(val hc: H2OContext)
     getSparkUI(hc).detachTab(this)
   }
 
-  def getSparkUser: String = parent.getSparkUser
 }
 
 private object SparklingWaterUITab {
