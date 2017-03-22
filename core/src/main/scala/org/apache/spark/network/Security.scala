@@ -20,11 +20,10 @@ import java.io.File
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.deploy.SparkHadoopUtil
-import org.apache.spark.h2o.H2OConf
-import org.apache.spark.internal.Logging
+import org.apache.spark.h2o.{H2OConf, H2OLogging}
 import water.network.SecurityUtils
 
-object Security extends Logging {
+object Security extends H2OLogging {
 
   def enableSSL(sc: SparkContext, conf: SparkConf): Unit = {
     val sslPair = SecurityUtils.generateSSLPair()

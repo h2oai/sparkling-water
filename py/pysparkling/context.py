@@ -100,15 +100,9 @@ class H2OContext(object):
          returns H2O Context
         """
         h2o_context = H2OContext(spark_context)
-
-<<<<<<< HEAD
-        jvm = h2o_context._jvm # JVM
-        gw = h2o_context._gw # Py4J Gateway
-        jsc = h2o_context._jsc # JavaSparkContext
-=======
         jvm = h2o_context._jvm  # JVM
+        gw = h2o_context._gw # Py4J Gateway
         jsc = h2o_context._jsc  # JavaSparkContext
->>>>>>> bee016c5... [SW-362] Fix Pysparkling by fixing initialization of spark session inside repl (#216)
 
         # Imports Sparkling Water into current JVM view
         # We cannot use directly Py4j to import Sparkling Water packages

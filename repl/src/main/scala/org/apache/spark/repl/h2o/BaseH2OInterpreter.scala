@@ -50,8 +50,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   protected var intp: H2OIMain = _
   private var in: InteractiveReader = _
   private[repl] var pendingThunks: List[() => Unit] = Nil
-<<<<<<< HEAD
-  val sparkConf = sparkContext.getConf
+
   val sqlContext = SQLContext.getOrCreate(sparkContext)
 
   def getUserJars(conf: SparkConf, isShell: Boolean = false): Seq[String] = {
@@ -70,8 +69,6 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
     rightList.foreach { value => allFiles ++= value.split(",") }
     allFiles.filter { _.nonEmpty }
   }
-=======
->>>>>>> bee016c5... [SW-362] Fix Pysparkling by fixing initialization of spark session inside repl (#216)
 
   def closeInterpreter() {
     if (intp ne null) {
@@ -122,10 +119,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   private def initializeInterpreter(): Unit = {
     settings = createSettings()
     intp = createInterpreter()
-<<<<<<< HEAD
-=======
-    val spark = SparkSession.builder().getOrCreate()
->>>>>>> bee016c5... [SW-362] Fix Pysparkling by fixing initialization of spark session inside repl (#216)
+
     addThunk(
       intp.beQuietDuring{
         intp.bind("sc", "org.apache.spark.SparkContext", sparkContext, List("@transient"))
