@@ -24,7 +24,6 @@ import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.message.BasicNameValuePair
-import org.apache.spark.internal.Logging
 
 /**
   * A top-level announcement service.
@@ -80,7 +79,7 @@ object AnnouncementServiceFactory {
 }
 
 /** Target announcement service implemented for different technologies - REST/Redis */
-trait AnnouncementProvider extends AnnouncementService with Logging {
+trait AnnouncementProvider extends AnnouncementService with H2OLogging {
   val CONF_PREFIX = "spark.ext.h2o.announce"
 
   def name: String
