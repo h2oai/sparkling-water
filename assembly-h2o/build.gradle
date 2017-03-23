@@ -99,10 +99,8 @@ task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparklin
     zip64 = true
     destinationDir = file("private")
     mergeServiceFiles()
-    def fileName = Paths.get(originalJar).last().toString()
-    def fileNameNoExtension = fileName.substring(0, fileName.length() -4)
-    def newFileName = fileNameNoExtension + "-extended"
-    if(h2oJarFileName(originalJar) != null){
+    def fileName = h2oJarFileName(originalJar)
+    if(fileName != null){
         manifest {
             attributes 'Main-Class': getJarMainClass(originalJar)
         }
@@ -124,7 +122,9 @@ task printHadoopDistributions(){
 
 def static String h2oJarFileName(String pathToH2OJar){
     if(pathToH2OJar != null) {
-        return isJarH2ODriver(pathToH2OJar) ? "h2odriver_extended" : "h2o_extended"
+        def fileName = Paths.get(pathToH2OJar).last().toString()
+        def fileNameNoExtension = fileName.substring(0, fileName.length() -4)
+        return fileNameNoExtension + "-extended"
     }else{
         return null
     }
