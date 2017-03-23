@@ -106,11 +106,11 @@ task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparklin
         }
     }
     configurations = [project.configurations.artifactsToMerge]
-    baseName = newFileName
+    baseName = fileName
     classifier = null
     version = null
     doLast{
-        println(new File(projectDir, "private${File.separator}${newFileName}.jar"))
+        println(new File(projectDir, "private${File.separator}${fileName}.jar"))
     }
 }
 
