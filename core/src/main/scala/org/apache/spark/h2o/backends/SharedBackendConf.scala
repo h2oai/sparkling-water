@@ -105,7 +105,7 @@ object SharedBackendConf {
   val PROP_BACKEND_CLUSTER_MODE = ("spark.ext.h2o.backend.cluster.mode", "internal")
 
   /** IP of H2O client node */
-  val PROP_CLIENT_IP = ("spark.ext.h2o.client.ip", null.asInstanceOf[String])
+  val PROP_CLIENT_IP = ("spark.ext.h2o.client.ip", None)
 
   /** Print detailed messages to client stdout */
   val PROP_CLIENT_VERBOSE = ("spark.ext.h2o.client.verbose", false)
@@ -114,7 +114,7 @@ object SharedBackendConf {
   val PROP_CLIENT_PORT_BASE = ( "spark.ext.h2o.client.port.base", 54321 )
 
   /** Configuration property - name of H2O cloud */
-  val PROP_CLOUD_NAME = ("spark.ext.h2o.cloud.name", null.asInstanceOf[String])
+  val PROP_CLOUD_NAME = ("spark.ext.h2o.cloud.name", None)
 
   /** H2O log level for client running in Spark driver */
   val PROP_CLIENT_LOG_LEVEL = ("spark.ext.h2o.client.log.level", "WARN")
@@ -123,7 +123,7 @@ object SharedBackendConf {
   val PROP_CLIENT_LOG_DIR = ("spark.ext.h2o.client.log.dir", defaultLogDir)
 
   /** Subnet selector for H2O client - if the mask is specified then Spark network setup is not discussed. */
-  val PROP_CLIENT_NETWORK_MASK = ("spark.ext.h2o.client.network.mask", null.asInstanceOf[String])
+  val PROP_CLIENT_NETWORK_MASK = ("spark.ext.h2o.client.network.mask", None)
 
   /** Limit for number of threads used by H2O, default -1 means unlimited */
   val PROP_NTHREADS = ("spark.ext.h2o.nthreads", -1)
@@ -136,13 +136,13 @@ object SharedBackendConf {
   val PROP_CLIENT_WEB_PORT = ("spark.ext.h2o.client.web.port", -1)
 
   /** Location of iced directory for the driver instance. */
-  val PROP_CLIENT_ICED_DIR = ("spark.ext.h2o.client.iced.dir", null.asInstanceOf[String])
+  val PROP_CLIENT_ICED_DIR = ("spark.ext.h2o.client.iced.dir", None)
 
   /** Path to Java KeyStore file. */
-  val PROP_JKS = ("spark.ext.h2o.jks", null.asInstanceOf[String])
+  val PROP_JKS = ("spark.ext.h2o.jks", None)
 
   /** Password for Java KeyStore file. */
-  val PROP_JKS_PASS = ("spark.ext.h2o.jks.pass", null.asInstanceOf[String])
+  val PROP_JKS_PASS = ("spark.ext.h2o.jks.pass", None)
 
   /** Enable hash login. */
   val PROP_HASH_LOGIN = ("spark.ext.h2o.hash.login", false)
@@ -154,10 +154,10 @@ object SharedBackendConf {
   val PROP_KERBEROS_LOGIN = ("spark.ext.h2o.kerberos.login", false)
 
   /** Login configuration file. */
-  val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", null.asInstanceOf[String])
+  val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", None)
 
   /** Override user name for cluster. */
-  val PROP_USER_NAME = ("spark.ext.h2o.user.name", null.asInstanceOf[String])
+  val PROP_USER_NAME = ("spark.ext.h2o.user.name", None)
 
   /** Number of executors started at the start of h2o services, by default 1 */
   val PROP_SCALA_INT_DEFAULT_NUM = ("spark.ext.scala.int.default.num", 1)
@@ -175,7 +175,7 @@ object SharedBackendConf {
   val PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM = ("spark.ext.h2o.fail.on.unsupported.spark.param", true)
 
   /** Path to Java KeyStore file. */
-  val PROP_SSL_CONF = ("spark.ext.h2o.internal_security_conf", null.asInstanceOf[String])
+  val PROP_SSL_CONF = ("spark.ext.h2o.internal_security_conf", None)
 
   private[spark] def defaultLogDir: String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs"
