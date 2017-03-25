@@ -116,7 +116,7 @@ object SharedBackendConf {
   /** Configuration property - name of H2O cloud */
   val PROP_CLOUD_NAME = ("spark.ext.h2o.cloud.name", null.asInstanceOf[String])
 
-  /** H2O log leve for client running in Spark driver */
+  /** H2O log level for client running in Spark driver */
   val PROP_CLIENT_LOG_LEVEL = ("spark.ext.h2o.client.log.level", "WARN")
 
   /** Location of log directory for the driver instance. */
