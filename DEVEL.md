@@ -1,6 +1,6 @@
 # Sparkling Water Development Documentation
 
-##Table of Contents
+## Table of Contents
 - [Typical Use Case](#UseCase)
 - [Requirements](#Req)
 - [Design](#Design)
@@ -223,7 +223,8 @@ The environment must contain the property `SPARK_HOME` that points to the Spark 
 
 The following configuration properties can be passed to Spark to configure Sparking Water
 
-####Configuration properties independent on selected backend
+#### Configuration properties independent on selected backend
+
 | Property name | Default value | Description |
 |---------------|---------------|-------------|
 | **Generic parameters** |||
@@ -256,7 +257,7 @@ The following configuration properties can be passed to Spark to configure Spark
 ---
 
 
-####Internal backend configuration properties
+#### Internal backend configuration properties
 | Property name | Default value | Description |
 |---------------|---------------|-------------|
 | **Generic parameters** |||
@@ -275,7 +276,7 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.node.log.dir`| ` System.getProperty("user.dir") + File.separator + "h2ologs"` or YARN container dir| Location of h2o logs on executor machine.|
 ---
 
-####External backend configuration properties
+#### External backend configuration properties
 | Property name | Default value | Description |
 |---------------|---------------|-------------|
 |`spark.ext.h2o.cloud.representative`| `null`| ip:port of arbitrary h2o node to identify external h2o cluster|
