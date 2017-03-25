@@ -31,9 +31,9 @@ import scala.tools.nsc.Settings
   */
 private[repl] class H2OIMain private(initialSettings: Settings,
                                      interpreterWriter: IntpResponseWriter,
-                                     val sessionID: Int,
+                                     sessionId: Int,
                                      propagateExceptions: Boolean = false)
-  extends SparkIMain(initialSettings, interpreterWriter, propagateExceptions) {
+  extends SparkIMain(initialSettings, interpreterWriter, propagateExceptions) with H2OIMainHelper {
 
 
   // we need to setup the compiler and stop the class server only when spark version detected at runtime doesn't actually
@@ -42,7 +42,7 @@ private[repl] class H2OIMain private(initialSettings: Settings,
     setupCompiler()
     stopClassServer()
   }
-  setupClassNames()
+  setupClassNames(naming, sessionId)
 
 
   /**
@@ -70,79 +70,16 @@ private[repl] class H2OIMain private(initialSettings: Settings,
     fieldCompiler.setAccessible(true)
     fieldCompiler.set(this, newCompiler(settings, reporter))
   }
-
-  /**
-    * Ensure that each class defined in repl is in a package containing number of repl session
-    */
-  private def setupClassNames() = {
-    import naming._
-    // sessionNames is lazy val and needs to be accessed first in order to be then set again to our desired value
-    naming.sessionNames.line
-    val fieldSessionNames = naming.getClass.getDeclaredField("sessionNames")
-    fieldSessionNames.setAccessible(true)
-    fieldSessionNames.set(naming, new SessionNames {
-      override def line  = "intp_id_" + sessionID + "." + propOr("line")
-    })
-  }
 }
 
 
-object H2OIMain {
+object H2OIMain extends H2OIMainHelper{
 
   val existingInterpreters = mutable.HashMap.empty[Int, H2OIMain]
-  private var interpreterClassloader: InterpreterClassLoader = _
-  private var _initialized = false
 
-  private def setClassLoaderToSerializers(classLoader: ClassLoader): Unit = {
-    SparkEnv.get.serializer.setDefaultClassLoader(classLoader)
-    SparkEnv.get.closureSerializer.setDefaultClassLoader(classLoader)
-  }
-
-  /**
-    * Add directory with classes defined in repl to the classloader
-    * which is used in the local mode. This classloader is obtained using reflections.
-    */
-  private def prepareLocalClassLoader() = {
-    val f = SparkEnv.get.serializer.getClass.getSuperclass.getDeclaredField("defaultClassLoader")
-    f.setAccessible(true)
-    val value = f.get(SparkEnv.get.serializer)
-    value match {
-      case v: Option[_] => {
-        v.get match {
-          case cl: MutableURLClassLoader => cl.addURL(H2OIMain.classOutputDirectory.toURI.toURL)
-          case _ =>
-        }
-      }
-      case _ =>
-    }
-  }
-
-  private def initialize(sc: SparkContext): Unit = {
-    if (sc.isLocal) {
-      // master set to local or local[*]
-
-      prepareLocalClassLoader()
-      interpreterClassloader = new InterpreterClassLoader(Thread.currentThread.getContextClassLoader)
-    } else {
-      if (Main.interp != null) {
-        interpreterClassloader = new InterpreterClassLoader(Main.interp.intp.classLoader)
-      } else {
-        // non local mode, application not started using SparkSubmit
-        interpreterClassloader = new InterpreterClassLoader(Thread.currentThread.getContextClassLoader)
-      }
-    }
-    setClassLoaderToSerializers(interpreterClassloader)
-  }
-
-  def getInterpreterClassloader: InterpreterClassLoader = {
-    interpreterClassloader
-  }
 
   def createInterpreter(sc: SparkContext, settings: Settings, interpreterWriter: IntpResponseWriter, sessionId: Int): H2OIMain = synchronized {
-    if(!_initialized){
-      initialize(sc)
-      _initialized = true
-    }
+    initializeClassLoader(sc)
     existingInterpreters += (sessionId -> new H2OIMain(settings, interpreterWriter, sessionId, false))
     existingInterpreters(sessionId)
   }
@@ -160,10 +97,7 @@ object H2OIMain {
       // otherwise the field is not available, which means that this spark version is no longer using dedicated
       // repl server and we handle this as in Spark 2.0
       // REPL hasn't been started yet, create a new directory
-      val conf = new SparkConf()
-      val rootDir = conf.getOption("spark.repl.classdir").getOrElse(Utils.getLocalDir(conf))
-      val outputDir = Utils.createTempDir(root = rootDir, namePrefix = "repl")
-      outputDir
+      newREPLDirectory()
     }
   }
 
