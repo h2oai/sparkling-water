@@ -5,7 +5,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
-
+import groovy.json.JsonSlurper
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'base'
 
@@ -99,23 +99,32 @@ task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparklin
     zip64 = true
     destinationDir = file("private")
     mergeServiceFiles()
-    if(h2oJarFileName(originalJar) != null){
+    def fileName = h2oJarFileName(originalJar)
+    if(fileName != null){
         manifest {
             attributes 'Main-Class': getJarMainClass(originalJar)
         }
     }
     configurations = [project.configurations.artifactsToMerge]
-    baseName = h2oJarFileName(originalJar)
+    baseName = fileName
     classifier = null
     version = null
     doLast{
-        println(new File(projectDir, "private${File.separator}${h2oJarFileName(originalJar)}.jar"))
+        println(new File(projectDir, "private${File.separator}${fileName}.jar"))
+    }
+}
+
+task printHadoopDistributions(){
+    doLast {
+        println(getSupportedHadoopDistributions())
     }
 }
 
 def static String h2oJarFileName(String pathToH2OJar){
     if(pathToH2OJar != null) {
-        return isJarH2ODriver(pathToH2OJar) ? "h2odriver_extended" : "h2o_extended"
+        def fileName = Paths.get(pathToH2OJar).last().toString()
+        def fileNameNoExtension = fileName.substring(0, fileName.length() -4)
+        return fileNameNoExtension + "-extended"
     }else{
         return null
     }
@@ -137,6 +146,19 @@ def static boolean isJarH2ODriver(String pathToH2OJar){
     return Files.exists(driverClass)
 }
 
+def getSupportedHadoopDistributions(){
+    def relName = h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"
+
+    def buildInfo = "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/buildinfo.json".toURL().text
+    def jsonResp = new JsonSlurper().parseText(buildInfo)
+    // we need to ensure that the distribution names does not contain minor versions
+    def distributions = jsonResp.hadoop_distributions.collect{ it.distribution }
+    def parsed = distributions.collect{ distro ->
+        def splits = distro.split("\\.")
+        "${splits[0]}.${splits[1]}"
+    }
+    return parsed.join(" ")
+}
 /**
  * Method determining whether the h2o or h2o driver jar is available.
  * Location to the jar is returned if it's available, otherwise null is returned
@@ -161,18 +183,19 @@ def String getOrDownloadOriginalJar() {
         } else {
             def url = "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/h2o-${h2oMajorVersion}.${h2oBuild}-${hadoopVersion}.zip".toURL()
             logger.info("Downloading h2o driver for hadoop version: $hadoopVersion from: $url")
+
             def h2oJarFile = new File(saveDir, "h2odriver-${h2oMajorVersion}.${h2oBuild}-${hadoopVersion}.jar")
             if (!h2oJarFile.exists()) {
                 def zipEntryName = "h2o-${h2oMajorVersion}.${h2oBuild}-${hadoopVersion}/h2odriver.jar"
-                try {
-                    downloadFileFromZip(url, h2oJarFile, zipEntryName)
-                } catch (e) {
+
+                def distributions = getSupportedHadoopDistributions()
+                if(!distributions.contains(hadoopVersion)){
                     throw new IOException("""
-Problem during downloading h2o driver from url: $url
-The hadoop version you have specified is $hadoopVersion. The most probably couse of the problem may be invalid hadoop version, please
-consult h2o documentation for available hadoop versions.
-""", e)
+The hadoop version you have specified is $hadoopVersion, however supported hadoop versions are $distributions
+""")
                 }
+                downloadFileFromZip(url, h2oJarFile, zipEntryName)
+
             }
             return h2oJarFile.absolutePath
         }
