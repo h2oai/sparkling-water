@@ -128,11 +128,11 @@ trait ExternalBackendConf extends SharedBackendConf {
 
 object ExternalBackendConf {
 
-  val PROP_EXTERNAL_CLUSTER_INFO_FILE = ("spark.ext.h2o.cluster.info.name", null.asInstanceOf[String])
+  val PROP_EXTERNAL_CLUSTER_INFO_FILE = ("spark.ext.h2o.cluster.info.name", None)
 
   val PROP_EXTERNAL_H2O_MEMORY = ("spark.ext.h2o.hadoop.memory", "6g")
 
-  val PROP_EXTERNAL_CLUSTER_HDFS_DIR = ("spark.ext.h2o.external.hdfs.dir", null.asInstanceOf[String])
+  val PROP_EXTERNAL_CLUSTER_HDFS_DIR = ("spark.ext.h2o.external.hdfs.dir", None)
 
   /**
     * If this option is set to "auto" then h2o external cluster will be automatically started using the provided
@@ -143,15 +143,15 @@ object ExternalBackendConf {
   /**
     * Path to h2o driver
     */
-  val PROP_EXTERNAL_CLUSTER_DRIVER_PATH = ("spark.ext.h2o.external.h2o.driver", null.asInstanceOf[String])
+  val PROP_EXTERNAL_CLUSTER_DRIVER_PATH = ("spark.ext.h2o.external.h2o.driver", None)
 
   /** Yarn queue on which external cluster should be started */
-  val PROP_EXTERNAL_CLUSTER_YARN_QUEUE = ("spark.ext.h2o.external.yarn.queue", null.asInstanceOf[String])
+  val PROP_EXTERNAL_CLUSTER_YARN_QUEUE = ("spark.ext.h2o.external.yarn.queue", None)
 
   /** ip:port of arbitrary h2o node to identify external h2o cluster */
-  val PROP_EXTERNAL_CLUSTER_REPRESENTATIVE = ("spark.ext.h2o.cloud.representative", null.asInstanceOf[String])
+  val PROP_EXTERNAL_CLUSTER_REPRESENTATIVE = ("spark.ext.h2o.cloud.representative", None)
 
   /** Number of nodes to wait for when connecting to external H2O cluster */
-  val PROP_EXTERNAL_H2O_NODES = ("spark.ext.h2o.external.cluster.num.h2o.nodes", null.asInstanceOf[String])
+  val PROP_EXTERNAL_H2O_NODES = ("spark.ext.h2o.external.cluster.num.h2o.nodes", None)
 
 }
