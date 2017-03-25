@@ -77,23 +77,33 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     conf
   }
 
+
+  private def addIfNotNull(arg: String, value: String) = if(value != null) Seq(arg, value.toString) else Nil
+
+
   /**
     * Get H2O arguments which are passed to every node - regular node, client node
     *
     * @param conf H2O Configuration
     * @return sequence of arguments
     */
-  def getH2OCommonArgs(conf: H2OConf): Seq[String] =
+  def getH2OCommonArgs(conf: H2OConf): Seq[String] = (
   // Options in form key=value
-    Seq(
-      ("-name", conf.cloudName.get),
-      ("-nthreads", if (conf.nthreads > 0) conf.nthreads else null),
-      ("-internal_security_conf", conf.sslConf.orNull)
-    ).filter(x => x._2 != null)
-      .flatMap(x => Seq(x._1, x._2.toString)) ++ // Append single boolean options
-      Seq(("-ga_opt_out", conf.disableGA))
+    Seq("-name", conf.cloudName.get)
+    ++ addIfNotNull("-nthreads", Some(conf.nthreads).filter( _ > 0).map(_.toString).orNull)
+    ++ addIfNotNull("-internal_security_conf", conf.sslConf.orNull)
+  // Append single boolean options
+    ++ Seq(("-ga_opt_out", conf.disableGA))
         .filter(_._2).map(x => x._1)
+    )
 
+  def getLoginArgs(conf: H2OConf): Seq[String] = (
+    (if (conf.hashLogin) Seq("-hash_login") else Nil)
+      ++ (if (conf.ldapLogin) Seq("-ldap_login") else Nil)
+      ++ (if (conf.kerberosLogin) Seq("-kerberos_login") else Nil)
+      ++ addIfNotNull("-user_name", conf.userName.orNull)
+      ++ addIfNotNull("-login_conf", conf.loginConf.orNull)
+    )
 
   /**
     * Get common arguments for H2O client.
@@ -101,24 +111,17 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     * @return array of H2O client arguments.
     */
   def getH2OClientArgs(conf: H2OConf): Array[String] = (
-    getH2OCommonArgs(conf)
+    getH2OCommonArgs(conf) ++ getLoginArgs(conf)
       ++ (if (!conf.clientVerboseOutput) Seq("-quiet") else Nil)
-      ++ (if (conf.hashLogin) Seq("-hash_login") else Nil)
-      ++ (if (conf.ldapLogin) Seq("-ldap_login") else Nil)
-      ++ (if (conf.kerberosLogin) Seq("-kerberos_login") else Nil)
       ++ Seq("-log_level", if (conf.clientVerboseOutput) incLogLevel(conf.h2oClientLogLevel, "INFO") else conf.h2oClientLogLevel)
       ++ Seq("-log_dir", conf.h2oClientLogDir)
       ++ Seq("-baseport", conf.clientBasePort.toString)
       ++ Seq("-client")
-      ++ Seq(
-      ("-ice_root", conf.clientIcedDir.orNull),
-      ("-port", if (conf.clientWebPort > 0) conf.clientWebPort else null),
-      ("-jks", conf.jks.orNull),
-      ("-jks_pass", conf.jksPass.orNull),
-      ("-login_conf", conf.loginConf.orNull),
-      ("-user_name", conf.userName.orNull),
-      conf.clientNetworkMask.map(mask => ("-network", mask)).getOrElse(("-ip", conf.clientIp.get))
-    ).filter(_._2 != null).flatMap(x => Seq(x._1, x._2.toString))
+      ++ addIfNotNull("-ice_root", conf.clientIcedDir.orNull)
+      ++ addIfNotNull("-port", Some(conf.clientWebPort).filter(_ > 0).map(_.toString).orNull)
+      ++ addIfNotNull("-jks", conf.jks.orNull)
+      ++ addIfNotNull("-jks_pass", conf.jksPass.orNull)
+      ++ conf.clientNetworkMask.map(mask => Seq("-network", mask)).getOrElse(Seq("-ip", conf.clientIp.get))
     ).toArray
 
   val TEMP_DIR_ATTEMPTS = 1000
