@@ -24,6 +24,7 @@ import scala.collection.mutable
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.IMain
 
+
 /**
   * Slightly altered scala's IMain allowing multiple interpreters to coexist in parallel. Each line in repl
   * is wrapped in a package which name contains current session id
@@ -34,15 +35,16 @@ private[repl] class H2OIMain private(initialSettings: Settings,
   extends IMain(initialSettings, interpreterWriter) with H2OIMainHelper {
 
   setupClassNames(naming, sessionId)
+
 }
 
-object H2OIMain extends H2OIMainHelper{
-
+object H2OIMain extends H2OIMainHelper {
+  
   val existingInterpreters = mutable.HashMap.empty[Int, H2OIMain]
 
   def createInterpreter(sc: SparkContext, settings: Settings, interpreterWriter: IntpResponseWriter, sessionId: Int): H2OIMain = synchronized {
     initializeClassLoader(sc)
-    existingInterpreters += (sessionId -> new H2OIMain(settings, interpreterWriter, sessionId, false))
+    existingInterpreters += (sessionId -> new H2OIMain(settings, interpreterWriter, sessionId))
     existingInterpreters(sessionId)
   }
 
@@ -58,4 +60,3 @@ object H2OIMain extends H2OIMainHelper{
 
   def classOutputDirectory = _classOutputDirectory
 }
-
