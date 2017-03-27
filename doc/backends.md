@@ -211,7 +211,7 @@ When H2O cluster is start on YARN, it is started as map reduce job and it always
 up.
 
 For this case to work, we need to extend H2O driver for the desired hadoop version as mentioned above. Let's assume the path to this extended H2O driver is stored in
-`H2O_EXTENDED_DRIVER` environmental property.
+`H2O_EXTENDED_JAR` environmental property.
 
 To start H2O cluster and connect to it from Spark application in Scala:
 
@@ -235,7 +235,7 @@ In both cases we can see various configuration methods. We explain only the Scal
 * `setMapperXmx` method specifies how much memory each H2O node should have available.
 * `setYarnQueue` method specifies YARN queue on which H2O cluster will be started. We highly recommend that this queue should have YARN preemption off in order to have stable H2O cluster.
 
-When using `useAutoClusterStart` we do not need to call `setH2ODriverPath` explicitly in case when `H2O_EXTENDED_DRIVER` environmental property is set and pointing to that file.
+When using `useAutoClusterStart` we do not need to call `setH2ODriverPath` explicitly in case when `H2O_EXTENDED_JAR` environmental property is set and pointing to that file.
 In this case Sparkling Water will fetch the path from this variable automatically. Also when `setCloudName` is not called, the name is set automatically and H2O cluster with that name is started.
 
 It can also happen that we might need to use `setClientIp/set_client_ip` method as mentioned in the chapter above for the same reasons. The usage of this method in automatic mode is exactly the
