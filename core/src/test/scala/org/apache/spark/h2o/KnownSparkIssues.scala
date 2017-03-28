@@ -27,7 +27,7 @@ import org.scalatest.junit.JUnitRunner
   */
 @RunWith(classOf[JUnitRunner])
 class KnownSparkIssues extends FunSuite
-with Matchers with BeforeAndAfter with SparkTestContext {
+  with Matchers with BeforeAndAfter with SparkTestContext {
 
   override def beforeAll(){
     super.beforeAll()
@@ -43,11 +43,13 @@ with Matchers with BeforeAndAfter with SparkTestContext {
     val sampleA = df.sample(withReplacement = false, 0.1, seed = 0)
     val sampleB = df.sample(withReplacement = false, 0.1, seed = 0)
 
-    val counts = (0 until 5).map( _ => sampleA.except(sampleB).count )
-    // The elements shouldn't ne the same in this case
-    counts.foreach(print(_))
-    val first = counts.head
-    val mismatch = counts.exists(c => c != first)
+    // give it 10 attempts to observe the buggy behaviour
+    val mismatch = (0 until 10).exists { _ =>
+      val counts = (0 until 5).map(_ => sampleA.except(sampleB).count)
+      // The elements shouldn't be the same in this case
+      val first = counts.head
+      counts.exists(c => c != first)
+    }
     assert(mismatch, "The non-deterministic behaviour should be observable when BroadcastHashJoins are allowed")
   }
 
