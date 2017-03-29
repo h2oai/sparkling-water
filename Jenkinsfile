@@ -18,18 +18,11 @@ pipeline{
             choices: '2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0\n1.5.2\n1.4.2',
             description: 'Version of Spark used for testing.',
             name: 'sparkVersion')
-        choice(
-            choices: 'yarn',
-            description: 'Sparkling water test profile (default yarn)',
-            name: 'sparklingTestEnv')
-        choice(
-            choices: 'internal\nexternal',
-            description: '',
-            name: 'backendMode')
-        choice(
-            choices: 'hdp2.2\ncdh5.4',
-            description: 'Hadoop version for which h2o driver will be obtained',
-            name: 'driverHadoopVersion')
+
+        string(name: 'sparklingTestEnv', defaultValue: 'yarn', description: 'Sparkling water test profile (default yarn)')
+        string(name: 'backendMode', defaultValue: 'internal', description: '')
+        string(name: 'driverHadoopVersion', defaultValue: 'hdp2.2', description: 'Hadoop version for which h2o driver will be obtained')
+
     }
 
     environment{
@@ -37,9 +30,8 @@ pipeline{
         HADOOP_CONF_DIR="/etc/hadoop/conf"
         MASTER="yarn-client"
         R_LIBS_USER="${env.WORKSPACE}/Rlibrary"
-        HDP_VERSION="${hdpVersion}"
-        driverHadoopVersion="${driverHadoopVersion}"
-        startH2OClusterOnYarn="${startH2OClusterOnYarn}"
+        HDP_VERSION=params.hdpVersion
+        startH2OClusterOnYarn=params.startH2OClusterOnYarn
         H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
         H2O_EXTENDED_JAR="${env.WORKSPACE}/assembly-h2o/private/"
     }
@@ -47,7 +39,7 @@ pipeline{
     stages{
 
         /*  stage('init'){
-                  def SPARK="spark-${sparkVersion}-bin-hadoop2.6"
+                  def SPARK="spark-${params.sparkVersion}-bin-hadoop2.6"
           }
          */
         stage('Git Checkout and Preparation'){
@@ -96,7 +88,7 @@ pipeline{
                     # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
                     mkdir -p ${env.WORKSPACE}/private/
                     curl `./gradlew -q printH2OWheelPackage ` > ${env.WORKSPACE}/private/h2o.whl
-                    ./gradlew -q extendJar -PdownloadH2O=${env.driverHadoopVersion}
+                    ./gradlew -q extendJar -PdownloadH2O=${params.driverHadoopVersion}
 
 
                  """
@@ -108,30 +100,34 @@ pipeline{
 
         stage('QA:Unit tests'){
 
-            steps{
-                sh """
-                    # Build, run regular tests
-                    if [ "$runBuildTests" = true ]; then
-                            echo 'runBuildTests = True'
-                           ${env.WORKSPACE}/gradlew clean build -PbackendMode=${backendMode}
-                    else
-                            echo 'runBuildTests = False'
-                            ${env.WORKSPACE}/gradlew clean build -x check -PbackendMode=${backendMode}
+        // Run build tests
+        when {
+            expression { params.runBuildTests == 'true' }
+        }
+        steps {
+            echo 'runBuildTests = True'
+            sh '${env.WORKSPACE}/gradlew clean build -PbackendMode=${params.backendMode}'
+        }
 
-                    fi
+        //Run
+        when {
+            expression { params.runBuildTests == 'false' }
+        }
+        steps {
+            echo 'runBuildTests = false'
+            sh '${env.WORKSPACE}/gradlew clean build -x check -PbackendMode=${params.backendMode}'
+        }
 
-                    if [ "$runScriptTests" = true ]; then
-                            echo 'runScriptTests = true'
-                            ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${backendMode}
+        // Run script tests
+        when {
+            expression { params.runScriptTests == 'true' }
+        }
+        steps {
+            echo 'runScriptTests = true'
+            sh '${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}'
+        }
 
-                    fi
-
-                    # running integration just after unit test
-                    ${env.WORKSPACE}/gradlew integTest -PbackendMode=${backendMode} -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
-
-                 """
-               //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-            }
+        //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
         }
 
         stage('Stashing'){
@@ -169,36 +165,40 @@ pipeline{
 
                     """
 
-                sh """
-                     if [ "$runIntegTests" = true -a "$startH2OClusterOnYarn" = true ]; then
-                             ${env.WORKSPACE}/gradlew integTest -PbackendMode=${backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
-                     fi
+                when {
+                    expression { params.runIntegTests == 'true' &&  params.startH2OClusterOnYarn == 'true' }
+                }
+                steps {
+                    sh '${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest'
+                }
 
-                     if [ "$runIntegTests" = true -a "$startH2OClusterOnYarn" = false ]; then
-                            ${env.WORKSPACE}/gradlew integTest -PbackendMode=${backendMode} -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
-                     fi
 
-                    """
+                when {
+                    expression { params.runIntegTests == 'true' &&  params.startH2OClusterOnYarn == 'false' }
+                }
+                steps {
+                    sh '${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${param.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest'
+                }
 
                  //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
             }
         }
 
-        stage('QA:Integration test- pySparkling'){
+  /*      stage('QA:Integration test- pySparkling'){
 
             steps{
                 sh"""
 
                      # Run pySparkling integration tests on top of YARN
                      #
-                     if [ "$runPySparklingIntegTests" = true -a "$startH2OClusterOnYarn" = true ]; then
-                             ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                     if [ "params.runPySparklingIntegTests" = true -a "param.startH2OClusterOnYarn" = true ]; then
+                             ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
                              # manually create empty test-result/empty.xml file so Publish JUnit test result report does not fail when only pySparkling integration tests parameter has been selected
                              mkdir -p py/build/test-result
                              touch py/build/test-result/empty.xml
                      fi
-                     if [ "$runPySparklingIntegTests" = true -a "$startH2OClusterOnYarn" = false ]; then
-                             ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${backendMode} -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                     if [ "params.runPySparklingIntegTests" = true -a "params.startH2OClusterOnYarn" = false ]; then
+                             ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
                              # manually create empty test-result/empty.xml file so Publish JUnit test result report does not fail when only pySparkling integration tests parameter has been selected
                              mkdir -p py/build/test-result
                              touch py/build/test-result/empty.xml
@@ -209,8 +209,9 @@ pipeline{
 
                  """
 
-                //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-            }
-        }
+             */   //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+        //    }
+       // }
+
     }
 }
