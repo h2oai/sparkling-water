@@ -210,7 +210,7 @@ pipeline{
                  """
 
              */   //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-        //    }
+    //    //    }
        // }
 
     }
