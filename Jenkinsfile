@@ -30,8 +30,8 @@ pipeline{
         HADOOP_CONF_DIR="/etc/hadoop/conf"
         MASTER="yarn-client"
         R_LIBS_USER="${env.WORKSPACE}/Rlibrary"
-        HDP_VERSION=params.hdpVersion
-        startH2OClusterOnYarn=params.startH2OClusterOnYarn
+        //HDP_VERSION=params.hdpVersion
+        //startH2OClusterOnYarn=params.startH2OClusterOnYarn
         H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
         H2O_EXTENDED_JAR="${env.WORKSPACE}/assembly-h2o/private/"
     }
@@ -69,11 +69,11 @@ pipeline{
             steps{
                 sh"""
                     mkdir -p ${env.WORKSPACE}/Rlibrary
-                    echo "spark.driver.extraJavaOptions -Dhdp.version="${env.HDP_VERSION}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
-                    echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${env.HDP_VERSION}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
-                    echo "spark.executor.extraJavaOptions -Dhdp.version="${env.HDP_VERSION}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
+                    echo "spark.driver.extraJavaOptions -Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
+                    echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
+                    echo "spark.executor.extraJavaOptions -Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
 
-                    echo "-Dhdp.version="${env.HDP_VERSION}"" >> ${env.SPARK_HOME}/conf/java-opts
+                    echo "-Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/java-opts
 
                     mkdir -p ${env.WORKSPACE}/examples/bigdata/laptop/citibike-nyc/
                     cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv ${env.WORKSPACE}/examples/bigdata/laptop/citibike-nyc/2013-07.csv
@@ -100,32 +100,22 @@ pipeline{
 
         stage('QA:Unit tests'){
 
-        // Run build tests
-        when {
-            expression { params.runBuildTests == 'true' }
-        }
-        steps {
-            echo 'runBuildTests = True'
-            sh '${env.WORKSPACE}/gradlew clean build -PbackendMode=${params.backendMode}'
-        }
-
-        //Run
-        when {
-            expression { params.runBuildTests == 'false' }
-        }
-        steps {
-            echo 'runBuildTests = false'
-            sh '${env.WORKSPACE}/gradlew clean build -x check -PbackendMode=${params.backendMode}'
-        }
-
-        // Run script tests
-        when {
-            expression { params.runScriptTests == 'true' }
-        }
-        steps {
-            echo 'runScriptTests = true'
-            sh '${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}'
-        }
+        sh """
+            # Build, run regular tests
+            if [ "${params.runBuildTests}" = true ]; then
+                    echo 'runBuildTests = True'
+                   ${env.WORKSPACE}/gradlew clean build -PbackendMode=${params.backendMode}
+            else
+                    echo 'runBuildTests = False'
+                    ${env.WORKSPACE}/gradlew clean build -x check -PbackendMode=${params.backendMode}
+            fi
+            if [ "${params.runScriptTests}" = true ]; then
+                    echo 'runScriptTests = true'
+                    ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}
+            fi
+            # running integration just after unit test
+            ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                """
 
         //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
         }
@@ -165,20 +155,17 @@ pipeline{
 
                     """
 
-                when {
-                    expression { params.runIntegTests == 'true' &&  params.startH2OClusterOnYarn == 'true' }
-                }
-                steps {
-                    sh '${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest'
-                }
 
+                sh """
+                     if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = true ]; then
+                             ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                     fi
+                     if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = false ]; then
+                            ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                     fi
+                     #  echo 'Archiving artifacts after Integration test'
 
-                when {
-                    expression { params.runIntegTests == 'true' &&  params.startH2OClusterOnYarn == 'false' }
-                }
-                steps {
-                    sh '${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${param.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest'
-                }
+                 """
 
                  //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
             }
