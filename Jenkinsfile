@@ -8,11 +8,11 @@ pipeline{
         string(name: 'branchName', defaultValue: 'master', description: 'Test given branch on top of YARN.')
         string(name: 'hdpVersion', defaultValue: 'current', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current will not do since it is not automatically expanded -> so please set 2.2.6.3-1')
 
-        booleanParam(name: 'runBuildTests', defaultValue: 'true', description: 'Run build tests - junit and local integration tests')
-        booleanParam(name: 'runScriptTests', defaultValue: 'true', description: 'Run script tests')
-        booleanParam(name: 'runIntegTests', defaultValue: 'true', description: 'Run integration tests')
-        booleanParam(name: 'startH2OClusterOnYarn', defaultValue: 'false')
-        booleanParam(name: 'runPySparklingIntegTests', defaultValue: 'false', description: 'Run pySparkling integration tests')
+        booleanParam(name: 'runBuildTests', defaultValue: true, description: 'Run build tests - junit and local integration tests')
+        booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests')
+        booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run integration tests')
+        booleanParam(name: 'startH2OClusterOnYarn', defaultValue: false)
+        booleanParam(name: 'runPySparklingIntegTests', defaultValue: false, description: 'Run pySparkling integration tests')
 
         choice(
             choices: '2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0\n1.5.2\n1.4.2',
