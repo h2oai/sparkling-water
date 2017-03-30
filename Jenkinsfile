@@ -64,6 +64,19 @@ pipeline{
 
         }
 
+        post {
+
+            success {
+              success("Stage Git Checkout and Preparation ran successfully for '${env.JOB_NAME}' ")
+            }
+
+            failure {
+              failure("Stage Git Checkout and Preparation failed for '${env.JOB_NAME}' ")
+            }
+
+
+        }
+
         stage('QA: build & lint'){
 
             steps{
@@ -97,6 +110,19 @@ pipeline{
             }
         }
 
+        post {
+
+            success {
+              success("Stage Git QA: build & lint ran successfully for '${env.JOB_NAME}' ")
+            }
+
+            failure {
+              failure("Stage QA: build & lint failed for '${env.JOB_NAME}' ")
+            }
+
+
+        }
+
 
         stage('QA:Unit tests'){
 
@@ -122,6 +148,19 @@ pipeline{
             }
         }
 
+        post {
+
+            success {
+              success("Stage QA:Unit tests ran successfully for '${env.JOB_NAME}' ")
+            }
+
+            failure {
+              failure("Stage QA:Unit tests failed for '${env.JOB_NAME}' ")
+            }
+
+
+        }
+
         stage('Stashing'){
 
             steps{
@@ -137,6 +176,19 @@ pipeline{
                 sh "rm -r ${env.WORKSPACE}/*"
                 echo "Workspace Directory deleted"
             }
+        }
+
+        post {
+
+            success {
+              success("Stashing ran successfully for '${env.JOB_NAME}' ")
+            }
+
+            failure {
+              failure("Stashing failed for '${env.JOB_NAME}' ")
+            }
+
+
         }
 
 
@@ -173,6 +225,20 @@ pipeline{
             }
         }
 
+
+        post {
+
+            success {
+              success("Stage QA:Integration tests ran successfully for '${env.JOB_NAME}' ")
+            }
+
+            failure {
+              failure("Stage QA:Integration tests failed for '${env.JOB_NAME}' ")
+            }
+
+
+        }
+
   /*      stage('QA:Integration test- pySparkling'){
 
             steps{
@@ -204,3 +270,35 @@ pipeline{
 
     }
 }
+
+
+// Def sections
+
+def success(message) {
+
+    sh 'echo "Test ran successful"'
+
+    step([$class: 'GitHubCommitStatusSetter',
+        contextSource: [$class: 'ManuallyEnteredCommitContextSource',
+        context: 'h2o-ops'],
+        statusResultSource: [$class: 'ConditionalStatusResultSource',
+        results: [[$class: 'AnyBuildResult',
+        state: 'SUCCESS',
+        message: message ]]]])
+
+}
+
+def failure(message) {
+
+        sh 'echo "Test failed "'
+        step([$class: 'GitHubCommitStatusSetter',
+            contextSource: [$class: 'ManuallyEnteredCommitContextSource',
+            context: 'h2o-ops'],
+            statusResultSource: [$class: 'ConditionalStatusResultSource',
+            results: [[$class: 'AnyBuildResult',
+            message: message,
+            state: 'FAILURE']]]])
+}
+
+
+
