@@ -100,24 +100,26 @@ pipeline{
 
         stage('QA:Unit tests'){
 
-        sh """
-            # Build, run regular tests
-            if [ "${params.runBuildTests}" = true ]; then
-                    echo 'runBuildTests = True'
-                   ${env.WORKSPACE}/gradlew clean build -PbackendMode=${params.backendMode}
-            else
-                    echo 'runBuildTests = False'
-                    ${env.WORKSPACE}/gradlew clean build -x check -PbackendMode=${params.backendMode}
-            fi
-            if [ "${params.runScriptTests}" = true ]; then
-                    echo 'runScriptTests = true'
-                    ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}
-            fi
-            # running integration just after unit test
-            ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
-                """
+             steps{
+                    sh """
+                    # Build, run regular tests
+                    if [ "${params.runBuildTests}" = true ]; then
+                            echo 'runBuildTests = True'
+                           ${env.WORKSPACE}/gradlew clean build -PbackendMode=${params.backendMode}
+                    else
+                            echo 'runBuildTests = False'
+                            ${env.WORKSPACE}/gradlew clean build -x check -PbackendMode=${params.backendMode}
+                    fi
+                    if [ "${params.runScriptTests}" = true ]; then
+                            echo 'runScriptTests = true'
+                            ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}
+                    fi
+                    # running integration just after unit test
+                    ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                        """
 
-        //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+            }
         }
 
         stage('Stashing'){
