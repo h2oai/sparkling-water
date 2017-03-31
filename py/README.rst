@@ -14,6 +14,9 @@ So for example, to install PySparkling for Spark 1.6, the command would look lik
 
     pip install h2o_pysparkling_1.6
 
+For h2o_pysparkling_2.0+, installation from PyPi is currently not supported: see `SW-335 
+<https://0xdata.atlassian.net/browse/SW-335>`_.
+
 Setup and Installation
 ======================
 
@@ -93,6 +96,14 @@ Run IPython Notebook with PySparkling
 .. code-block:: bash
 
     PYSPARK_DRIVER_PYTHON="ipython" PYSPARK_DRIVER_PYTHON_OPTS="notebook" bin/pysparkling
+
+For running on Windows, the syntax would be: 
+
+.. code-block:: bash
+
+    SET PYSPARK_DRIVER_PYTHON=ipython 
+    SET PYSPARK_DRIVER_PYTHON_OPTS=notebook 
+    bin/pysparkling
 
 
 Run IPython with PySparkling
