@@ -177,7 +177,7 @@ You can configure Sparkling Water using the following variables:
 13. Generate an R-code producing residual plot:
   ```scala
   import org.apache.spark.examples.h2o.AirlinesWithWeatherDemo2.residualPlotRCode
-  residualPlotRCode(predictionH2OFrame, 'predict, bigTable, 'ArrDelay)  
+  residualPlotRCode(predictionH2OFrame, 'predict, bigTable, 'ArrDelay, h2oContext)  
   ```
   
 14. Execute generated R-code in RStudio:
