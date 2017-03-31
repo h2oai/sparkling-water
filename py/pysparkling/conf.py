@@ -1,6 +1,7 @@
 
 from pysparkling.initializer import Initializer
 
+
 class H2OConf(object):
     def __init__(self, spark_context):
         try:
@@ -8,7 +9,6 @@ class H2OConf(object):
             self._do_init(spark_context)
         except:
             raise
-
 
     def _do_init(self, spark_context):
         self._sc = spark_context
@@ -23,7 +23,6 @@ class H2OConf(object):
         else:
             return None
 
-
     def runs_in_external_cluster_mode(self):
         return self._jconf.runsInExternalClusterMode()
 
@@ -31,7 +30,7 @@ class H2OConf(object):
         return self._jconf.runsInInternalClusterMode()
 
     # setters for most common properties
-    #TODO: Create setters and getters for all properties
+    # TODO: Create setters and getters for all properties
     def set_cloud_name(self, cloud_name):
         self._jconf.setCloudName(cloud_name)
         return self
@@ -240,7 +239,6 @@ class H2OConf(object):
     def is_spark_version_check_enabled(self):
         return self._jconf.isSparkVersionCheckEnabled()
 
-
     def set(self, key, value):
         self._jconf.set(key, value)
         return self
@@ -252,21 +250,15 @@ class H2OConf(object):
     def contains(self, key):
         return self._jconf.contains(key)
 
-
-    def get(self, key):
+    def get(self, key, default_value=None):
         """
-        Get a parameter; throws a NoSuchElementException if it's not set
+        Get a parameter, throws a NoSuchElementException if the value
+        is not available and default_value not set
         """
-        return self._jconf.get(key)
-
-
-    def get(self, key, defaultValue):
-        """
-        Get a parameter, falling back to a default if not set
-        """
-        return self._jconf.get(key, defaultValue)
-
-
+        if default_value is None:
+            return self._jconf.get(key)
+        else:
+            return self._jconf.get(key, default_value)
 
     def get_all(self):
         """
@@ -278,7 +270,6 @@ class H2OConf(object):
         for conf in all:
             python_conf.append((conf._1(),conf._2()))
         return python_conf
-
 
     def set_all(self, list_of_configurations):
         """

@@ -18,16 +18,16 @@
 package org.apache.spark.h2o.backends.external
 
 
-import java.io.{File, FileInputStream}
+import java.io.{File, FileInputStream, IOException}
 import java.util.Properties
 
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
-import water.{H2O, H2OStarter}
+import water.{H2O, H2OStarter, UDPClientEvent}
 
 import scala.io.Source
 import scala.util.Random
@@ -113,28 +113,39 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     sys.ShutdownHookThread {
       if(hc.getConf.isAutoClusterStartUsed){
-        shutdownCleanUp()
+        stopExternalCluster()
+        deleteYarnFiles()
       }
     }
     assert(proc == 0, s"Starting external H2O cluster failed with return value $proc.")
     ipPort
   }
 
-  private def shutdownCleanUp(): Unit ={
+  private def deleteYarnFiles(): Unit = {
     try {
       val hdfs = org.apache.hadoop.fs.FileSystem.get(hc.sparkContext.hadoopConfiguration)
       hdfs.delete(new Path(hc.getConf.HDFSOutputDir.get), true)
-      new File(hc.getConf.clusterInfoFile.get).delete()
     }catch {
-      case e: Exception => log.error(e.getMessage)
+      case e: Exception =>
+        logError(s"Error when deleting HDFS output dir at ${hc.getConf.HDFSOutputDir.get}" +
+          s", original message: ${e.getMessage}")
     }
-    import scala.sys.process._
-    // kill the job
-    s"yarn application -kill ${yarnAppId.get}".!
+    try {
+      new File(hc.getConf.clusterInfoFile.get).delete()
+    } catch {
+      case e: Exception =>
+        logError(s"Error when deleting cluster info file at ${hc.getConf.clusterInfoFile.get}" +
+          s", original message: ${e.getMessage}")
+    }
+  }
+
+  private def stopExternalCluster(): Unit = {
+    // Send disconnect command from the watchdog client in case of orderly shutdown
+    UDPClientEvent.ClientEvent.Type.DISCONNECT.broadcast(H2O.SELF)
+    log.info("Stopping external H2O cluster!")
   }
 
   override def init(): Array[NodeDesc] = {
-
     if (hc.getConf.isAutoClusterStartUsed) {
       // start h2o instances on yarn
       logInfo("Starting H2O cluster on YARN")
@@ -143,7 +154,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
     // Start H2O in client mode and connect to existing H2O Cluster
     logTrace("Starting H2O on client mode and connecting it to existing h2o cluster")
-    val h2oClientArgs = getH2OClientArgs(hc.getConf)
+
+    val h2oClientArgs = if(hc.getConf.isAutoClusterStartUsed){
+      getH2OClientArgs(hc.getConf) ++ Array("-watchdog_client")
+    }else{
+      getH2OClientArgs(hc.getConf)
+    }
     logDebug(s"Arguments used for launching h2o client node: ${h2oClientArgs.mkString(" ")}")
     H2OStarter.start(h2oClientArgs, false)
 
@@ -188,13 +204,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   }
 
   override def stop(stopSparkContext: Boolean): Unit = {
-    // stop only when we have external h2o cluster running on yarn
+    // stop only external h2o cluster running on yarn
     // otherwise stopping is not supported
-    if(hc.getConf.HDFSOutputDir.isDefined){
-      shutdownCleanUp()
-
-    }else{
-      if (stopSparkContext){
+    if(hc.getConf.isAutoClusterStartUsed){
+      deleteYarnFiles()
+      stopExternalCluster()
+    }else {
+      if (stopSparkContext) {
         hc.sparkContext.stop()
       }
       H2O.orderlyShutdown(1000)
