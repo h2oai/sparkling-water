@@ -121,6 +121,7 @@ trait ExternalBackendConf extends SharedBackendConf {
     self
   }
 
+
   def externalConfString: String =
     s"""Sparkling Water configuration:
         |  backend cluster mode : ${backendClusterMode}
@@ -162,5 +163,4 @@ object ExternalBackendConf {
 
   /** Number of nodes to wait for when connecting to external H2O cluster */
   val PROP_EXTERNAL_H2O_NODES = ("spark.ext.h2o.external.cluster.num.h2o.nodes", None)
-
 }
