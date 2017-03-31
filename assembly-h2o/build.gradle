@@ -123,7 +123,7 @@ task printHadoopDistributions(){
 def static String h2oJarFileName(String pathToH2OJar){
     if(pathToH2OJar != null) {
         def fileName = Paths.get(pathToH2OJar).last().toString()
-        def fileNameNoExtension = fileName.substring(0, fileName.length() -4)
+        def fileNameNoExtension = fileName.substring(0, fileName.length() - 4)
         return fileNameNoExtension + "-extended"
     }else{
         return null
