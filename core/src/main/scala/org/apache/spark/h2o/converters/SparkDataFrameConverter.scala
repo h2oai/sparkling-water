@@ -18,14 +18,16 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark._
+import org.apache.spark.h2o.backends.external.ExternalWriteConverterCtx
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
+import org.apache.spark.h2o.utils.{H2OSchemaUtils, ReflectionUtils}
 import org.apache.spark.h2o.{H2OContext, H2OLogging}
-import org.apache.spark.h2o.utils.ReflectionUtils._
-import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
-import water.{ExternalFrameUtils, Key}
 import water.fvec.{Frame, H2OFrame}
+import water.{ExternalFrameUtils, Key}
+
+
 
 private[h2o] object SparkDataFrameConverter extends H2OLogging {
 
@@ -62,10 +64,12 @@ private[h2o] object SparkDataFrameConverter extends H2OLogging {
     // otherwise for external backend store expected types
     val expectedTypes = if(hc.getConf.runsInInternalClusterMode){
       // Transform datatype into h2o types
-      flatRddSchema.map(f => vecTypeFor(f._2.dataType)).toArray
+      flatRddSchema.map(f => ReflectionUtils.vecTypeFor(f._2.dataType)).toArray
     }else{
-      val javaClasses = flatRddSchema.map(f => supportedTypeOf(f._2.dataType).javaClass).toArray
-      ExternalFrameUtils.prepareExpectedTypes(javaClasses)
+      val internalJavaClasses = flatRddSchema.map{f =>
+        ExternalWriteConverterCtx.internalJavaClassOf(f._2.dataType)
+      }.toArray
+      ExternalFrameUtils.prepareExpectedTypes(internalJavaClasses)
     }
     WriteConverterCtxUtils.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, perSQLPartition(flatRddSchema))
   }

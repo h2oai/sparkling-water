@@ -98,22 +98,30 @@ object ReflectionUtils {
 
   def supportedTypeOf(value : Any): SupportedType = {
     value match {
-      case n: Byte => Byte
-      case n: Short => Short
-      case n: Int => Integer
-      case n: Long => Long
-      case n: Float => Float
-      case n: Double => Double
-      case n: Boolean => Boolean
-      case n: String => String
-      case n: java.sql.Timestamp => Timestamp
-      case n: java.sql.Date => Date
+      case _: Byte => Byte
+      case _: Short => Short
+      case _: Int => Integer
+      case _: Long => Long
+      case _: Float => Float
+      case _: Double => Double
+      case _: Boolean => Boolean
+      case _: String => String
+      case _: java.sql.Timestamp => Timestamp
+      case _: java.sql.Date => Date
       case n: DataType => bySparkType(n)
       case q => throw new IllegalArgumentException(s"Do not understand type $q")
     }
   }
 
   def javaClassOf[T](implicit ttag: TypeTag[T]) = supportedTypeFor(typeOf[T]).javaClass
+
+
+  def javaClassOf(dt: DataType) : Class[_] = {
+    dt match {
+      case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] => Double.javaClass
+      case _  => bySparkType(dt).javaClass
+    }
+  }
 
   def supportedTypeFor(tpe: Type): SupportedType = SupportedTypes.byType(tpe)
 
