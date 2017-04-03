@@ -46,6 +46,7 @@ trait ReadConverterCtx {
   var rowIdx: Int = 0
 
   def numRows: Int
+
   def increaseRowIdx() = rowIdx += 1
 
   def hasNext = rowIdx < numRows
