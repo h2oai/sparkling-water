@@ -64,6 +64,7 @@ trait WriteConverterCtx {
       case n: Double => put(colIdx, n)
       case n: String => put(colIdx, n)
       case n: java.sql.Timestamp => put(colIdx, n)
+      case n: java.sql.Date => put(colIdx, n)
       case _ => putNA(colIdx)
     }
   }

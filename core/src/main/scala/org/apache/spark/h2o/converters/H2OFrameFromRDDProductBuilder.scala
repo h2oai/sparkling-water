@@ -18,6 +18,7 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.TaskContext
+import org.apache.spark.h2o.backends.external.ExternalWriteConverterCtx
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.utils.SupportedTypes.SupportedType
@@ -71,7 +72,7 @@ case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], fram
     val expectedTypes = if(hc.getConf.runsInInternalClusterMode){
       meta.vecTypes
     }else{
-      val javaClasses = meta.types.map(_.javaClass)
+      val javaClasses = meta.types.map(ExternalWriteConverterCtx.internalJavaClassOf(_))
       ExternalFrameUtils.prepareExpectedTypes(javaClasses)
     }
 
