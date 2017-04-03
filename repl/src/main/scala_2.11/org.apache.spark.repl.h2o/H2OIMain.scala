@@ -42,7 +42,7 @@ object H2OIMain extends H2OIMainHelper{
 
   def createInterpreter(sc: SparkContext, settings: Settings, interpreterWriter: IntpResponseWriter, sessionId: Int): H2OIMain = synchronized {
     initializeClassLoader(sc)
-    existingInterpreters += (sessionId -> new H2OIMain(settings, interpreterWriter, sessionId, false))
+    existingInterpreters += (sessionId -> new H2OIMain(settings, interpreterWriter, sessionId))
     existingInterpreters(sessionId)
   }
 
