@@ -1,6 +1,63 @@
 ChangeLog
 =========
 
+## v1.6.9 (2017-04-04)
+  - Bug
+    - [SW-152](https://0xdata.atlassian.net/browse/SW-152) - ClassNotFound with spark-submit
+    - [SW-196](https://0xdata.atlassian.net/browse/SW-196) - Fix wrong output of __str__ on H2OContext
+    - [SW-198](https://0xdata.atlassian.net/browse/SW-198) - SW - API exception with calling H2OContext.getOrCreate(sc)
+    - [SW-212](https://0xdata.atlassian.net/browse/SW-212) - Fix depreciation warning regarding the compiler in scala.gradle
+    - [SW-221](https://0xdata.atlassian.net/browse/SW-221) - SVM: the model is not unlocked after building
+    - [SW-226](https://0xdata.atlassian.net/browse/SW-226) - SVM: binomial model - AUC curves are missing
+    - [SW-227](https://0xdata.atlassian.net/browse/SW-227) - java.lang.ClassCastException: com.sun.proxy.$Proxy19 cannot be cast to water.api.API
+    - [SW-242](https://0xdata.atlassian.net/browse/SW-242) - Fix Python build process
+    - [SW-248](https://0xdata.atlassian.net/browse/SW-248) - Fix TensorFlow notebook to support Python 3
+    - [SW-264](https://0xdata.atlassian.net/browse/SW-264) - PySparkling is not using existing SQLContext
+    - [SW-274](https://0xdata.atlassian.net/browse/SW-274) - When grep options are configured, Spark version detection does not work
+    - [SW-276](https://0xdata.atlassian.net/browse/SW-276) - ClassLoading issue when running code using SparkSubmit
+    - [SW-299](https://0xdata.atlassian.net/browse/SW-299) - Calling H2OConf(sc).setInternalClusterMode() returns java.util.NoSuchElementException 
+    - [SW-308](https://0xdata.atlassian.net/browse/SW-308) - Intermittent failure in creating H2O cloud
+    - [SW-321](https://0xdata.atlassian.net/browse/SW-321) - composite function fail when inner cbind()
+    - [SW-322](https://0xdata.atlassian.net/browse/SW-322) - Python README.md says it does not support Spark 2.0
+    - [SW-331](https://0xdata.atlassian.net/browse/SW-331) - Security.enableSSL does not work
+    - [SW-334](https://0xdata.atlassian.net/browse/SW-334) - as_factor() 'corrupts' dataframe if it fails
+    - [SW-347](https://0xdata.atlassian.net/browse/SW-347) - Cannot start Sparkling Water at HDP Yarn cluster
+    - [SW-349](https://0xdata.atlassian.net/browse/SW-349) - Sparkling Shell scripts for Windows do not work
+    - [SW-350](https://0xdata.atlassian.net/browse/SW-350) - Fix command line environment for Windows
+    - [SW-353](https://0xdata.atlassian.net/browse/SW-353) - Kerberos for SW not loading JAAS module
+    - [SW-357](https://0xdata.atlassian.net/browse/SW-357) - PySparkling in Zeppelin environment using wrong class loader
+    - [SW-364](https://0xdata.atlassian.net/browse/SW-364) - Repl session not set on scala 2.11
+    - [SW-368](https://0xdata.atlassian.net/browse/SW-368) - bin/pysparkling.cmd is missing
+    - [SW-371](https://0xdata.atlassian.net/browse/SW-371) - Fix MarkDown syntax
+    - [SW-372](https://0xdata.atlassian.net/browse/SW-372) - Run negative test for PUBDEV-3808 multiple times to observe failure
+    - [SW-375](https://0xdata.atlassian.net/browse/SW-375) - Documentation fix in external cluster manual
+    - [SW-376](https://0xdata.atlassian.net/browse/SW-376) - Tests for DecimalType and DataType fail on external backend
+    - [SW-377](https://0xdata.atlassian.net/browse/SW-377) - Implement stopping of external H2O cluster in external backend mode
+    - [SW-383](https://0xdata.atlassian.net/browse/SW-383) - Update PySparkling README with info about SW-335 and using SW from Pypi
+    - [SW-385](https://0xdata.atlassian.net/browse/SW-385) - Fix residual plot R code generator
+  - New Feature
+    - [SW-267](https://0xdata.atlassian.net/browse/SW-267) - Add assembly-h2o module which will extend h2o/h2odriver jar by additional classes
+  - Improvement
+    - [SW-200](https://0xdata.atlassian.net/browse/SW-200) - Add flows from presentation in Budapest and Paris to flows dir
+    - [SW-208](https://0xdata.atlassian.net/browse/SW-208) - Generate all PySparkling artefacts into build directory
+    - [SW-215](https://0xdata.atlassian.net/browse/SW-215) - Improve internal type handling 
+    - [SW-229](https://0xdata.atlassian.net/browse/SW-229) - Backport checkSparkConf method to spark 1.6 
+    - [SW-230](https://0xdata.atlassian.net/browse/SW-230) - Fix sparkling-shell windows script
+    - [SW-243](https://0xdata.atlassian.net/browse/SW-243) - Remove all references to local-cluster[...] in our doc
+    - [SW-325](https://0xdata.atlassian.net/browse/SW-325) - Implement a generic announcement mechanism 
+    - [SW-327](https://0xdata.atlassian.net/browse/SW-327) - Enrich Spark UI with Sparkling Water specific tab
+    - [SW-328](https://0xdata.atlassian.net/browse/SW-328) - Put link to h2oai github into README.md
+    - [SW-337](https://0xdata.atlassian.net/browse/SW-337) - Use `h2o.connect` in PySpark to connect to H2O cluster
+    - [SW-338](https://0xdata.atlassian.net/browse/SW-338) - h2o.init in PySpark prints internal IP. We should remove it or replace it with actual IP of driver node (based on spark_DNS settings)
+    - [SW-344](https://0xdata.atlassian.net/browse/SW-344) - Use Spark public DNS if available to report Flow UI 
+    - [SW-345](https://0xdata.atlassian.net/browse/SW-345) - Create configuration manual for External cluster
+    - [SW-356](https://0xdata.atlassian.net/browse/SW-356) - Fix documentation for spark.ext.h2o.fail.on.unsupported.spark.param
+    - [SW-359](https://0xdata.atlassian.net/browse/SW-359) - Upgrade H2O dependency to 3.10.4.1
+    - [SW-360](https://0xdata.atlassian.net/browse/SW-360) - Upgrade H2O dependency to 3.10.4.2
+    - [SW-363](https://0xdata.atlassian.net/browse/SW-363) - Use Spark public DNS if available to report Flow UI
+    - [SW-367](https://0xdata.atlassian.net/browse/SW-367) - Add task to Gradle build which prints all available Hadoop distributions for the corresponding h2o 
+    - [SW-382](https://0xdata.atlassian.net/browse/SW-382) - Upgrade of H2O dependency to 3.10.4.3
+
 ## v1.6.8 (2016-09-26)
   - Bug
     - [SW-197](https://0xdata.atlassian.net/browse/SW-197) - Fix all mentions of H2OContext(sc) to H2OContext.getOrCreate(sc) in pysparkling
