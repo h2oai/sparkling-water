@@ -14,29 +14,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.support
+package water.util
 
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o._
-import org.apache.spark.sql.SQLContext
+object LogBridge {
 
-import scala.annotation.meta.{getter, field}
-
-/**
- * A simple application trait to define Sparkling Water applications.
- */
-trait SparklingWaterApp {
-
-  @(transient @field @getter) val sc: SparkContext
-  @(transient @field @getter) val sqlContext: SQLContext
-  @(transient @field @getter) val h2oContext: H2OContext
-
-  def loadH2OFrame(datafile: String) = new H2OFrame(new java.net.URI(datafile))
-
-  def shutdown(): Unit = {
-    // Shutdown Spark
-    sc.stop()
-    // Shutdown H2O explicitly (at least the driver)
-    h2oContext.stop()
+  /**
+    * Setup log level for H2O log sub system.
+    * @param levelIdx
+    */
+  def setH2OLogLevel(levelIdx: Int): Unit = {
+    water.util.Log._level = levelIdx
   }
 }

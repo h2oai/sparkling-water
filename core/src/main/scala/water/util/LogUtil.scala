@@ -45,7 +45,7 @@ object LogUtil extends org.apache.spark.Logging {
       logWarn()
     } else {
       LogManager.getLogger("water.default").setLevel(Level.toLevel(level))
-      Log._level = levelIdx
+      LogBridge.setH2OLogLevel(levelIdx)
       logChanged()
     }
   }

@@ -1,7 +1,8 @@
 PySparkling and Spark Version
 =============================
 There exist multiple PySparkling packages, each is intended to be used with different Spark version.
-
+ 
+ - h2o_pysparkling_2.1 - for Spark 2.1.x
  - h2o_pysparkling_2.0 - for Spark 2.0.x
  - h2o_pysparkling_1.6 - for Spark 1.6.x
  - h2o_pysparkling_1.5 - for Spark 1.5.x
