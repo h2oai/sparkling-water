@@ -54,7 +54,7 @@ String getSystemSparkVersion()  {
     // In case of Windows we can't set environment variables in execute command as it breaks the build
     commandEnvVars = null
    }else{
-    commandEnvVars = ["SPARK_HOME="+getSparkHome()]
+    commandEnvVars = ["SPARK_HOME="+getSparkHome(), "JAVA_HOME=${System.env.JAVA_HOME}"]
    }
 
    def command
