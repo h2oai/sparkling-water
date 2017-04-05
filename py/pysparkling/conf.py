@@ -56,7 +56,7 @@ class H2OConf(object):
         return self
 
     def set_client_ip(self, ip):
-        self._jconf.setClientIP(ip)
+        self._jconf.setClientIp(ip)
         return self
 
     def set_client_network_mask(self, mask):
