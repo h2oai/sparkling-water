@@ -10,6 +10,7 @@ import h2o
 from pysparkling.conversions import FrameConversions as fc
 import warnings
 import atexit
+import sys
 
 def _monkey_patch_H2OFrame(hc):
     @staticmethod
@@ -120,11 +121,15 @@ class H2OContext(object):
         h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port)
         h2o_context.is_initialized = True
         # Stop h2o when running standalone pysparkling scripts and the user does not explicitly close h2o
-        atexit.register(lambda: h2o_context.stop())
+        atexit.register(lambda: h2o_context.stop_with_jvm())
         return h2o_context
 
+    def stop_with_jvm(self):
+        h2o.cluster().shutdown()
+        self.stop()
+
     def stop(self):
-        warnings.warn("H2OContext stopping is not yet fully supported...")
+        warnings.warn("Stopping H2OContext. (Restarting H2O is not yet fully supported...) ")
         self._jhc.stop(False)
 
     def __del__(self):

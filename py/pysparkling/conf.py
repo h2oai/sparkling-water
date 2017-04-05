@@ -102,7 +102,21 @@ class H2OConf(object):
         self._jconf.setH2OClientLogLevel(level)
         return self
 
+    def set_client_connection_timeout(self, timeout):
+        self._jconf.setClientConnectionTimeout(timeout)
+        return self
+
+    def set_client_check_retry_timeout(self, timeout):
+        self._jconf.setClientCheckRetryTimeout(timeout)
+        return self
+
 # getters
+
+    def client_connection_timeout(self):
+        return self._jconf.clientConnectionTimeout()
+
+    def client_check_retry_timeout(self):
+        return self._jconf.clientCheckRetryTimeout()
 
     def cluster_start_timeout(self):
         return self._jconf.clusterStartTimeout()
