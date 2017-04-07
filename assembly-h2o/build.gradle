@@ -101,6 +101,10 @@ task printExtendedJarLocation(){
     }
 }
 
+task cleanH2OJars(type: Delete){
+    delete(file("private/downloaded"))
+}
+
 clean.doFirst{
    delete file("private/extended")
 }
