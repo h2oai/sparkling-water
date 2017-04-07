@@ -217,7 +217,7 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
     *
     * @param stopSparkContext  stop also spark context
     */
-  def stop(stopSparkContext: Boolean = false): Unit = {
+  def stop(stopSparkContext: Boolean = false): Unit = synchronized {
     if(!stopped) {
       announcementService.shutdown
       backend.stop(stopSparkContext)
