@@ -35,7 +35,6 @@ private[repl] class H2OIMain private(initialSettings: Settings,
   extends IMain(initialSettings, interpreterWriter) with H2OIMainHelper {
 
   setupClassNames(naming, sessionId)
-
 }
 
 object H2OIMain extends H2OIMainHelper {
