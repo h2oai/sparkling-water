@@ -6,13 +6,13 @@ pipeline{
 
     parameters {
         string(name: 'branchName', defaultValue: 'master', description: 'Test given branch on top of YARN.')
-        string(name: 'hdpVersion', defaultValue: 'current', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current won't do since it's not automatically expanded -> so please set 2.2.6.3-1')
+        string(name: 'hdpVersion', defaultValue: 'current', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current will not do since it is not automatically expanded -> so please set 2.2.6.3-1')
 
-        booleanParam(name: 'runBuildTests', defaultValue: 'true', description: 'Run build tests - junit and local integration tests')
-        booleanParam(name: 'runScriptTests', defaultValue: 'true', description: 'Run script tests')
-        booleanParam(name: 'runIntegTests', defaultValue: 'true', description: 'Run integration tests')
-        booleanParam(name: 'startH2OClusterOnYarn', defaultValue: 'false')
-        booleanParam(name: 'runPySparklingIntegTests', defaultValue: 'false', description: 'Run pySparkling integration tests')
+        booleanParam(name: 'runBuildTests', defaultValue: true, description: 'Run build tests - junit and local integration tests')
+        booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests')
+        booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run integration tests')
+        booleanParam(name: 'startH2OClusterOnYarn', defaultValue: false)
+        booleanParam(name: 'runPySparklingIntegTests', defaultValue: false, description: 'Run pySparkling integration tests')
 
         choice(
             choices: '2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0\n1.5.2\n1.4.2',
@@ -30,18 +30,15 @@ pipeline{
         HADOOP_CONF_DIR="/etc/hadoop/conf"
         MASTER="yarn-client"
         R_LIBS_USER="${env.WORKSPACE}/Rlibrary"
-        HDP_VERSION=params.hdpVersion
-        startH2OClusterOnYarn=params.startH2OClusterOnYarn
+        //HDP_VERSION=params.hdpVersion
+        //startH2OClusterOnYarn=params.startH2OClusterOnYarn
         H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
         H2O_EXTENDED_JAR="${env.WORKSPACE}/assembly-h2o/private/"
+        SPARK="spark-${sparkVersion}-bin-hadoop2.6"
     }
 
     stages{
 
-        /*  stage('init'){
-                  def SPARK="spark-${params.sparkVersion}-bin-hadoop2.6"
-          }
-         */
         stage('Git Checkout and Preparation'){
             steps{
 
@@ -53,27 +50,42 @@ pipeline{
                 #def SPARK="spark-${sparkVersion}-bin-hadoop2.6"
 
                 if [ ! -d "spark-2.1.0-bin-hadoop2.6" ]; then
-                        wget "http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.6.tgz"
+                        wget "http://d3kbcqa49mib13.cloudfront.net/{SPARK}.tgz"
                         echo "Extracting spark JAR"
-                        tar zxvf spark-2.1.0-bin-hadoop2.6.tgz
+                        tar zxvf ${SPARK}.tgz
                 fi
 
                 echo 'Checkout and Preparation completed'
                 sh"""
             }
 
+            post {
+
+                success {
+                  success("Stage Git Checkout and Preparation ran successfully for '${env.JOB_NAME}' ")
+                }
+
+                failure {
+                  failure("Stage Git Checkout and Preparation failed for '${env.JOB_NAME}' ")
+                }
+
+
+            }
+
         }
+
+
 
         stage('QA: build & lint'){
 
             steps{
                 sh"""
                     mkdir -p ${env.WORKSPACE}/Rlibrary
-                    echo "spark.driver.extraJavaOptions -Dhdp.version="${env.HDP_VERSION}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
-                    echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${env.HDP_VERSION}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
-                    echo "spark.executor.extraJavaOptions -Dhdp.version="${env.HDP_VERSION}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
+                    echo "spark.driver.extraJavaOptions -Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
+                    echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
+                    echo "spark.executor.extraJavaOptions -Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
 
-                    echo "-Dhdp.version="${env.HDP_VERSION}"" >> ${env.SPARK_HOME}/conf/java-opts
+                    echo "-Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/java-opts
 
                     mkdir -p ${env.WORKSPACE}/examples/bigdata/laptop/citibike-nyc/
                     cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv ${env.WORKSPACE}/examples/bigdata/laptop/citibike-nyc/2013-07.csv
@@ -92,43 +104,65 @@ pipeline{
 
 
                  """
-                //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+
+            }
+
+            post {
+
+                success {
+                  success("Stage Git QA: build & lint ran successfully for '${env.JOB_NAME}' ")
+                }
+
+                failure {
+                  failure("Stage QA: build & lint failed for '${env.JOB_NAME}' ")
+                }
+
 
             }
         }
 
 
+
+
         stage('QA:Unit tests'){
 
-        // Run build tests
-        when {
-            expression { params.runBuildTests == 'true' }
-        }
-        steps {
-            echo 'runBuildTests = True'
-            sh '${env.WORKSPACE}/gradlew clean build -PbackendMode=${params.backendMode}'
+             steps{
+                    sh """
+                    # Build, run regular tests
+                    if [ "${params.runBuildTests}" = true ]; then
+                            echo 'runBuildTests = True'
+                           ${env.WORKSPACE}/gradlew clean build -PbackendMode=${params.backendMode}
+                    else
+                            echo 'runBuildTests = False'
+                            ${env.WORKSPACE}/gradlew clean build -x check -PbackendMode=${params.backendMode}
+                    fi
+                    if [ "${params.runScriptTests}" = true ]; then
+                            echo 'runScriptTests = true'
+                            ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}
+                    fi
+                    # running integration just after unit test
+                    ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                        """
+
+                archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+            }
+
+            post {
+
+                success {
+                  success("Stage QA:Unit tests ran successfully for '${env.JOB_NAME}' ")
+                }
+
+                failure {
+                  failure("Stage QA:Unit tests failed for '${env.JOB_NAME}' ")
+                }
+
+
+            }
         }
 
-        //Run
-        when {
-            expression { params.runBuildTests == 'false' }
-        }
-        steps {
-            echo 'runBuildTests = false'
-            sh '${env.WORKSPACE}/gradlew clean build -x check -PbackendMode=${params.backendMode}'
-        }
 
-        // Run script tests
-        when {
-            expression { params.runScriptTests == 'true' }
-        }
-        steps {
-            echo 'runScriptTests = true'
-            sh '${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}'
-        }
-
-        //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-        }
 
         stage('Stashing'){
 
@@ -145,7 +179,22 @@ pipeline{
                 sh "rm -r ${env.WORKSPACE}/*"
                 echo "Workspace Directory deleted"
             }
+
+            post {
+
+                success {
+                  success("Stashing ran successfully for '${env.JOB_NAME}' ")
+                }
+
+                failure {
+                  failure("Stashing failed for '${env.JOB_NAME}' ")
+                }
+
+
+            }
         }
+
+
 
 
         stage('QA:Integration tests'){
@@ -165,24 +214,37 @@ pipeline{
 
                     """
 
-                when {
-                    expression { params.runIntegTests == 'true' &&  params.startH2OClusterOnYarn == 'true' }
+
+                sh """
+                     if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = true ]; then
+                             ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                     fi
+                     if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = false ]; then
+                            ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                     fi
+                     #  echo 'Archiving artifacts after Integration test'
+
+                 """
+
+                 archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+            }
+
+            post {
+
+                success {
+                  success("Stage QA:Integration tests ran successfully for '${env.JOB_NAME}' ")
                 }
-                steps {
-                    sh '${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest'
+
+                failure {
+                  failure("Stage QA:Integration tests failed for '${env.JOB_NAME}' ")
                 }
 
 
-                when {
-                    expression { params.runIntegTests == 'true' &&  params.startH2OClusterOnYarn == 'false' }
-                }
-                steps {
-                    sh '${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${param.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest'
-                }
-
-                 //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
             }
         }
+
+
+
 
   /*      stage('QA:Integration test- pySparkling'){
 
@@ -210,8 +272,40 @@ pipeline{
                  """
 
              */   //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-        //    }
+    //    //    }
        // }
 
     }
 }
+
+
+// Def sections
+
+def success(message) {
+
+    sh 'echo "Test ran successful"'
+
+    step([$class: 'GitHubCommitStatusSetter',
+        contextSource: [$class: 'ManuallyEnteredCommitContextSource',
+        context: 'h2o-ops'],
+        statusResultSource: [$class: 'ConditionalStatusResultSource',
+        results: [[$class: 'AnyBuildResult',
+        state: 'SUCCESS',
+        message: message ]]]])
+
+}
+
+def failure(message) {
+
+        sh 'echo "Test failed "'
+        step([$class: 'GitHubCommitStatusSetter',
+            contextSource: [$class: 'ManuallyEnteredCommitContextSource',
+            context: 'h2o-ops'],
+            statusResultSource: [$class: 'ConditionalStatusResultSource',
+            results: [[$class: 'AnyBuildResult',
+            message: message,
+            state: 'FAILURE']]]])
+}
+
+
+
