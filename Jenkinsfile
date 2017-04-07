@@ -34,14 +34,11 @@ pipeline{
         //startH2OClusterOnYarn=params.startH2OClusterOnYarn
         H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
         H2O_EXTENDED_JAR="${env.WORKSPACE}/assembly-h2o/private/"
+        SPARK="spark-${sparkVersion}-bin-hadoop2.6"
     }
 
     stages{
 
-        /*  stage('init'){
-                  def SPARK="spark-${params.sparkVersion}-bin-hadoop2.6"
-          }
-         */
         stage('Git Checkout and Preparation'){
             steps{
 
@@ -53,9 +50,9 @@ pipeline{
                 #def SPARK="spark-${sparkVersion}-bin-hadoop2.6"
 
                 if [ ! -d "spark-2.1.0-bin-hadoop2.6" ]; then
-                        wget "http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.6.tgz"
+                        wget "http://d3kbcqa49mib13.cloudfront.net/{SPARK}.tgz"
                         echo "Extracting spark JAR"
-                        tar zxvf spark-2.1.0-bin-hadoop2.6.tgz
+                        tar zxvf ${SPARK}.tgz
                 fi
 
                 echo 'Checkout and Preparation completed'
