@@ -94,10 +94,25 @@ dependencies {
     }
 }
 
-task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparkling-water-core:jar"]) {
+task printExtendedJarLocation(){
+    doLast {
+        def fileName = h2oJarFileName(originalJar)
+        println(file("private/extended/${fileName}.jar"))
+    }
+}
+
+task cleanH2OJars(type: Delete){
+    delete(file("private/downloaded"))
+}
+
+clean.doFirst{
+   delete file("private/extended")
+}
+
+task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparkling-water-core:jar", "clean"]) {
     exclude("META-INF/LICENSE")
     zip64 = true
-    destinationDir = file("private")
+    destinationDir = file("private/extended")
     mergeServiceFiles()
     def fileName = h2oJarFileName(originalJar)
     if(fileName != null){
@@ -109,9 +124,8 @@ task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparklin
     baseName = fileName
     classifier = null
     version = null
-    doLast{
-        println(new File(projectDir, "private${File.separator}${fileName}.jar"))
-    }
+    new File(projectDir, "private/extended/${fileName}.jar")
+    finalizedBy "printExtendedJarLocation"
 }
 
 task printHadoopDistributions(){
@@ -153,11 +167,7 @@ def getSupportedHadoopDistributions(){
     def jsonResp = new JsonSlurper().parseText(buildInfo)
     // we need to ensure that the distribution names does not contain minor versions
     def distributions = jsonResp.hadoop_distributions.collect{ it.distribution }
-    def parsed = distributions.collect{ distro ->
-        def splits = distro.split("\\.")
-        "${splits[0]}.${splits[1]}"
-    }
-    return parsed.join(" ")
+    return distributions.join(" ")
 }
 /**
  * Method determining whether the h2o or h2o driver jar is available.
