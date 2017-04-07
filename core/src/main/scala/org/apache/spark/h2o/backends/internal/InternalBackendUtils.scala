@@ -108,8 +108,8 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
         if (s != null) {
           return s + java.io.File.separator
         }
-        if (sparkEnv.conf.contains(InternalBackendConf.PROP_NODE_LOG_DIR._1)) {
-          sparkEnv.conf.get(InternalBackendConf.PROP_NODE_LOG_DIR._1)
+        if (sparkEnv.conf.contains(SharedBackendConf.PROP_NODE_LOG_DIR._1)) {
+          sparkEnv.conf.get(SharedBackendConf.PROP_NODE_LOG_DIR._1)
         } else {
           // Needs to be executed at remote node!
           SharedBackendConf.defaultLogDir
