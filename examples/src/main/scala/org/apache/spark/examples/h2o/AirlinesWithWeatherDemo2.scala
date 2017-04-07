@@ -47,8 +47,8 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSup
         |library(h2o)
         |h = h2o.init(ip="${ip}", port=${port})
         |
-        |pred = h2o.getFrame(h, "${prediction._key}")
-        |act = h2o.getFrame (h, "${actual._key}")
+        |pred = h2o.getFrame("${prediction._key}")
+        |act = h2o.getFrame ("${actual._key}")
         |
         |predDelay = pred$$${predCol}
         |actDelay = act$$${actCol}

@@ -17,10 +17,11 @@
 
 package org.apache.spark.h2o.backends.external
 
-import org.apache.spark.h2o._
 import org.apache.spark.h2o.converters.WriteConverterCtx
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
-import org.apache.spark.h2o.utils.NodeDesc
+import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
+import org.apache.spark.h2o.utils.SupportedTypes._
+import org.apache.spark.sql.types._
 import water.{ExternalFrameUtils, ExternalFrameWriterClient}
 
 class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int) extends WriteConverterCtx {
@@ -67,9 +68,31 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int) extends
 
 object ExternalWriteConverterCtx extends ExternalBackendUtils {
 
+  import scala.language.postfixOps
+  import scala.reflect.runtime.universe._
+
   def scheduleUpload(numPartitions: Int): UploadPlan = {
     val nodes = cloudMembers
     val uploadPlan = (0 until numPartitions).zip(Stream.continually(nodes).flatten).toMap
     uploadPlan
+  }
+
+  // In external cluster we need to use just the basic types allowed for the conversion. Supported types has
+  // associated java classes but that's actually not the type as which the data are transferred. The following methods
+  // overrides this behaviour so the correct internal type for transfer is returned
+  def internalJavaClassOf[T](implicit ttag: TypeTag[T]) = ReflectionUtils.javaClassOf[T]
+
+  def internalJavaClassOf(supportedType: SupportedType) = {
+    supportedType match {
+      case Date => Long.javaClass
+      case _ => supportedType.javaClass
+    }
+  }
+  def internalJavaClassOf(dt: DataType) : Class[_] = {
+    dt match {
+      case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] => Double.javaClass
+      case _ : DateType => Long.javaClass
+      case _ : DataType => ReflectionUtils.supportedTypeOf(dt).javaClass
+    }
   }
 }
