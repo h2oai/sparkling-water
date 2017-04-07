@@ -9,7 +9,7 @@ from pysparkling.conf import H2OConf
 import h2o
 from pysparkling.conversions import FrameConversions as fc
 import warnings
-
+import atexit
 
 def _monkey_patch_H2OFrame(hc):
     @staticmethod
@@ -119,11 +119,16 @@ class H2OContext(object):
         # Create H2O REST API client
         h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port)
         h2o_context.is_initialized = True
+        # Stop h2o when running standalone pysparkling scripts and the user does not explicitly close h2o
+        atexit.register(lambda: h2o_context.stop())
         return h2o_context
 
     def stop(self):
         warnings.warn("H2OContext stopping is not yet fully supported...")
         self._jhc.stop(False)
+
+    def __del__(self):
+        self.stop()
 
     def __str__(self):
         if self.is_initialized:
