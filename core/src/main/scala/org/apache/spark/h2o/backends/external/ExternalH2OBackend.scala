@@ -90,6 +90,16 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     logError(processErr.toString)
 
 
+    if(!new File(hc.getConf.clusterInfoFile.get).exists()){
+      throw new RuntimeException(
+            "Cluster notification file wasn't created. The possible causes are: \n" +
+            "   1) The timeout for clouding up is too small and H2O didn't cloud up. \n" +
+                "In that case please try to increase the timeout for starting the external as: \n" +
+                "Python: H2OConf(sc).set_cluster_start_timeout(timeout).... \n" +
+                "Scala:  new H2OConf(sc).setClusterStartTimeout(timeout).... \n" +
+            "   2) The file couldn't be created because of missing write rights."
+      )
+    }
     // get ip port
     val clusterInfo = Source.fromFile(hc.getConf.clusterInfoFile.get).getLines
     val ipPort = clusterInfo.next()
