@@ -3,6 +3,7 @@ apply from: "$rootDir/gradle/utils.gradle"
 ext {
     FS = File.separator
     FPS = File.pathSeparator
+    pythonexec = findProperty("pythonExec") ?: "python"
 }
 
 
@@ -131,7 +132,8 @@ task distPython(type: Exec, dependsOn: checkPythonEnv) {
         // Save comment into module file
         file("${project.buildDir}${FS}sparkling_water${FS}__init__.py").write("#Sparkling-water JAR holder for pySparkling module.")
     }
-    commandLine getOsSpecificCommandLine(["python", "setup.py", "egg_info", "--egg-base=${buildDir.absolutePath}", "bdist_egg",  "--dist-dir=${buildDir.absolutePath}${FS}dist", ])
+
+    commandLine getOsSpecificCommandLine([pythonexec, "setup.py", "egg_info", "--egg-base=${buildDir.absolutePath}", "bdist_egg",  "--dist-dir=${buildDir.absolutePath}${FS}dist"])
 }
 
 configurations{
@@ -162,7 +164,8 @@ task testPython(type: Exec, dependsOn: [configurations.compile, distPython] ) {
     
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
     environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
-    commandLine getOsSpecificCommandLine(["python", "tests/tests_unit.py"])
+
+    commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_unit.py"])
 }
 
 //
@@ -199,7 +202,7 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
             environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}/nodes"
             environment["spark.ext.h2o.client.log.dir"] =  "h2ologs-itest-${testEnv}/client"
 
-            commandLine getOsSpecificCommandLine(["python", "tests/tests_integ_yarn.py"])
+            commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_integ_yarn.py"])
             break
 
         case "standalone":
@@ -207,7 +210,7 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
             environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}/nodes"
             environment["spark.ext.h2o.client.log.dir"] = "h2ologs-itest-${testEnv}/client"
 
-            commandLine getOsSpecificCommandLine(["python", "tests/tests_integ_standalone.py"])
+            commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_integ_standalone.py"])
             break
 
         case "local":
@@ -215,7 +218,7 @@ task integTestPython(type: Exec, dependsOn: [configurations.compile, distPython]
             environment["spark.ext.h2o.node.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/nodes").getAbsolutePath()
             environment["spark.ext.h2o.client.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client").getAbsolutePath()
 
-            commandLine getOsSpecificCommandLine(["python", "tests/tests_integ_local.py"])
+            commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_integ_local.py"])
             break
     }
 }

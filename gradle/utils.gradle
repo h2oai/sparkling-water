@@ -2,7 +2,7 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
 def getOsSpecificCommandLine(args) {
-    return isWindowsBased() ? ['cmd', '/c'] + args : args
+    return isWindowsBased() ? ['cmd', '/c'] + args : ['/usr/bin/env'] + args
 }
 
 def isWindowsBased(){
