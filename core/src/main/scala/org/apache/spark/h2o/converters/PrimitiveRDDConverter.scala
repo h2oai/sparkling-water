@@ -19,6 +19,7 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark.TaskContext
 import org.apache.spark.h2o._
+import org.apache.spark.h2o.backends.external.ExternalWriteConverterCtx
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.internal.Logging
@@ -43,7 +44,7 @@ private[converters] object PrimitiveRDDConverter extends Logging{
     val expectedTypes = if(hc.getConf.runsInInternalClusterMode){
       Array[Byte](vecTypeOf[T])
     }else{
-      val clazz = ReflectionUtils.javaClassOf[T]
+      val clazz = ExternalWriteConverterCtx.internalJavaClassOf[T]
       ExternalFrameUtils.prepareExpectedTypes(Array[Class[_]](clazz))
     }
 

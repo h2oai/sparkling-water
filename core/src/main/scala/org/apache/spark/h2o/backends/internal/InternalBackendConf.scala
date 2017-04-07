@@ -34,8 +34,6 @@ trait InternalBackendConf extends SharedBackendConf {
   def drddMulFactor = sparkConf.getInt(PROP_DUMMY_RDD_MUL_FACTOR._1, PROP_DUMMY_RDD_MUL_FACTOR._2)
   def numRddRetries = sparkConf.getInt(PROP_SPREADRDD_RETRIES._1, PROP_SPREADRDD_RETRIES._2)
   def defaultCloudSize  = sparkConf.getInt(PROP_DEFAULT_CLUSTER_SIZE._1, PROP_DEFAULT_CLUSTER_SIZE._2)
-  def h2oNodeLogLevel   = sparkConf.get(PROP_NODE_LOG_LEVEL._1, PROP_NODE_LOG_LEVEL._2)
-  def h2oNodeLogDir   = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
   def nodeNetworkMask   = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
   def nodeIcedDir   = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
   def subseqTries  = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
@@ -54,11 +52,6 @@ trait InternalBackendConf extends SharedBackendConf {
         |  nthreads             : ${nthreads}
         |  drddMulFactor        : $drddMulFactor""".stripMargin
 
-
-  def setH2ONodeLogLevel(level: String): H2OConf = {
-    sparkConf.set(PROP_NODE_LOG_LEVEL._1, level)
-    self
-  }
 }
 
 object InternalBackendConf {
@@ -85,12 +78,6 @@ object InternalBackendConf {
 
   /** Starting size of cluster in case that size is not explicitly passed */
   val PROP_DEFAULT_CLUSTER_SIZE = ("spark.ext.h2o.default.cluster.size", 20)
-
-  /** H2O internal log level for launched remote nodes. */
-  val PROP_NODE_LOG_LEVEL = ("spark.ext.h2o.node.log.level", "INFO")
-
-  /** Location of log directory for remote nodes. */
-  val PROP_NODE_LOG_DIR = ("spark.ext.h2o.node.log.dir", None)
 
   /** Subnet selector for H2O nodes running inside executors - if the mask is specified then Spark network setup is not discussed. */
   val PROP_NODE_NETWORK_MASK = ("spark.ext.h2o.node.network.mask", None)

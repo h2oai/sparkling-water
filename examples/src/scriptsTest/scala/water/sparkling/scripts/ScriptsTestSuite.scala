@@ -50,7 +50,6 @@ class BasicInterpreterTests extends ScriptsTestHelper {
   }
 
   test("Test Spark API call via interpreter") {
-
     val inspections = new ScriptInspections()
     inspections.addTermToCheck("num1")
     inspections.addTermToCheck("num2")
@@ -64,6 +63,20 @@ class BasicInterpreterTests extends ScriptsTestHelper {
     assert(result.codeExecutionStatus==CodeResults.Success, "Problem during interpreting the script!")
     assert(result.realTermValues.get("num1").get == "2", "Value of term \"num\" should be 2")
     assert(result.realTermValues.get("num2").get == "2", "Value of term \"num\" should be 3")
+  }
+
+  test("[SW-386] Test Spark API exposed implicit conversions (https://issues.scala-lang.org/browse/SI-9734 and https://issues.apache.org/jira/browse/SPARK-13456)") {
+    val inspections = new ScriptInspections()
+    inspections.addTermToCheck("count")
+    val result = launchCode(
+      """
+        |import spark.implicits._
+        |case class Person(id: Long)
+        |val ds = Seq(Person(0), Person(1)).toDS
+        |val count = ds.count
+      """.stripMargin, inspections)
+    assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
+    assert(result.realTermValues.get("count").get == "2", "Value of term \"count\" should be 2")
   }
 }
 
