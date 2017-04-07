@@ -61,6 +61,14 @@ trait SharedBackendConf {
   def runsInExternalClusterMode: Boolean = backendClusterMode.toLowerCase() == "external"
   def runsInInternalClusterMode: Boolean = !runsInExternalClusterMode
 
+  def h2oNodeLogLevel   = sparkConf.get(PROP_NODE_LOG_LEVEL._1, PROP_NODE_LOG_LEVEL._2)
+  def h2oNodeLogDir   = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
+
+  def setH2ONodeLogLevel(level: String): H2OConf = {
+    sparkConf.set(PROP_NODE_LOG_LEVEL._1, level)
+    self
+  }
+
   def setCloudName(cloudName: String): H2OConf = {
     sparkConf.set(PROP_CLOUD_NAME._1, cloudName)
     self
@@ -96,6 +104,14 @@ trait SharedBackendConf {
 }
 
 object SharedBackendConf {
+
+  /** H2O internal log level for launched remote nodes. */
+  val PROP_NODE_LOG_LEVEL = ("spark.ext.h2o.node.log.level", "INFO")
+
+  /** Location of log directory for remote nodes. */
+  val PROP_NODE_LOG_DIR = ("spark.ext.h2o.node.log.dir", None)
+
+
   /**
     * This option can be set either to "internal" or "external"
     * When set to "external" H2O Context is created by connecting to existing H2O cluster, otherwise it creates
