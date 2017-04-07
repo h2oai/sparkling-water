@@ -97,18 +97,18 @@ dependencies {
 task printExtendedJarLocation(){
     doLast {
         def fileName = h2oJarFileName(originalJar)
-        println(new File(projectDir, "private${File.separator}extended${File.separator}${fileName}.jar"))
+        println(file("private/extended/${fileName}.jar"))
     }
 }
 
 clean.doFirst{
-   delete "${projectDir}${File.separator}private${File.separator}extended"
+   delete file("private/extended")
 }
 
 task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparkling-water-core:jar", "clean"]) {
     exclude("META-INF/LICENSE")
     zip64 = true
-    destinationDir = file("private${File.separator}extended")
+    destinationDir = file("private/extended")
     mergeServiceFiles()
     def fileName = h2oJarFileName(originalJar)
     if(fileName != null){
@@ -120,7 +120,7 @@ task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparklin
     baseName = fileName
     classifier = null
     version = null
-    new File(projectDir, "private${File.separator}extended${File.separator}${fileName}.jar")
+    new File(projectDir, "private/extended/${fileName}.jar")
     finalizedBy "printExtendedJarLocation"
 }
 
