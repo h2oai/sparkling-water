@@ -92,6 +92,10 @@ class H2OConf(object):
         self._jconf.useManualClusterStart()
         return self
 
+    def set_h2o_node_log_level(self, level):
+        self._jconf.setH2ONodeLogLevel(level)
+        return self
+
 # getters
 
     def h2o_cluster(self):

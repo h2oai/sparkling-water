@@ -66,6 +66,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-jobname", H2O_JOB_NAME.format(sparkAppId),
       "-mapperXmx", conf.mapperXmx,
       "-output", conf.HDFSOutputDir.get,
+      "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
       "-disown"
     )
 
