@@ -38,6 +38,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def clusterStartMode = sparkConf.get(PROP_EXTERNAL_CLUSTER_START_MODE._1, PROP_EXTERNAL_CLUSTER_START_MODE._2)
   def isAutoClusterStartUsed = clusterStartMode == "auto"
   def isManualClusterStartUsed = !isAutoClusterStartUsed
+  def clusterStartTimeout = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, PROP_EXTERNAL_CLUSTER_START_TIMEOUT._2)
 
   /**
     * Sets node and port representing H2O Cluster to which should H2O connect when started in external mode.
@@ -50,6 +51,11 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setH2OCluster(host: String, port: Int): H2OConf = {
     setExternalClusterMode()
     sparkConf.set(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, host + ":" + port)
+    self
+  }
+
+  def setClusterStartTimeout(clusterStartTimeout: Int): H2OConf = {
+    sparkConf.set(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, clusterStartTimeout.toString)
     self
   }
 
@@ -127,6 +133,9 @@ trait ExternalBackendConf extends SharedBackendConf {
 }
 
 object ExternalBackendConf {
+
+  /** Timeout in seconds for starting h2o external cluster */
+  val PROP_EXTERNAL_CLUSTER_START_TIMEOUT = ("spark.ext.h2o.cluster.start.timeout", 120)
 
   val PROP_EXTERNAL_CLUSTER_INFO_FILE = ("spark.ext.h2o.cluster.info.name", None)
 
