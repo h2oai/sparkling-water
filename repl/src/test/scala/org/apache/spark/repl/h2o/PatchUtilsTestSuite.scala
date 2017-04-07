@@ -46,12 +46,12 @@ class PatchUtilsTestSuite extends FunSuite with BeforeAndAfterAll {
     assertMatch(regex, "$line1.$read$$iw$$iw", "$line1.$read")
   }
 
-  test("Test patched OuterScopes") {
+  test("[SW-386] Test patched OuterScopes") {
     val regexBeforePatch = getRegexp()
     // Default regexp fails for our class names with intp_id prefix
     assertMatch(regexBeforePatch, EXAMPLE_CLASS_NAME, FAILED_MATCH)
 
-    PatchUtils.patchOuterScopes(Thread.currentThread().getContextClassLoader)
+    PatchUtils.PatchManager.patch("SW-386", Thread.currentThread().getContextClassLoader)
 
     val regexAfterPatch = getRegexp()
     assertMatch(regexAfterPatch, EXAMPLE_CLASS_NAME, EXAMPLE_RESULT_AFTER_PATCH)
