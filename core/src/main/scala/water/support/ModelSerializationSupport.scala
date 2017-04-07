@@ -16,12 +16,14 @@
 */
 package water.support
 
-import java.io.{FileOutputStream, File, InputStream, OutputStream}
-import java.net.URI
+import java.io.{File, FileOutputStream, InputStream, OutputStream}
+import java.net.{URI, URL}
 
+import sys.process._
 import hex.Model
+import hex.genmodel.MojoModel
 import water.persist.Persist
-import water.{AutoBuffer, H2O, Keyed, Key}
+import water.{AutoBuffer, H2O, Key, Keyed}
 
 trait ModelSerializationSupport {
 
@@ -51,6 +53,17 @@ trait ModelSerializationSupport {
     }
     destination
   }
+
+  def exportMOJOModel(mojoUrl: URL, destination: URI): URI = {
+    mojoUrl #> new File(destination) !
+
+    destination
+  }
+
+  def loadMOJOModel(source: URI): MojoModel = {
+    MojoModel.load(new File(source).getAbsolutePath)
+  }
+
 }
 
 object ModelSerializationSupport extends ModelSerializationSupport

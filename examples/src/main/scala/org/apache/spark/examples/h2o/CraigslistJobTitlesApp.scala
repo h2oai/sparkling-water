@@ -19,6 +19,7 @@ package org.apache.spark.examples.h2o
 
 import hex.Model
 import hex.Model.Output
+import hex.genmodel.GenModel
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.feature.{Word2Vec, Word2VecModel}
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
@@ -26,6 +27,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.{SparkContext, mllib}
 import water.support._
+import water.util.ArrayUtils
 
 /**
  * This application use word2vec to build a model
@@ -52,8 +54,9 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
   }
 
   def buildModels(datafile: String = jobsFile, modelName: String): (Model[_,_,_], Word2VecModel) = {
+    sc.addFile(datafile)
     // Get training frame and word to vec model for data
-    val (allDataFrame, w2vModel) = createH2OFrame(datafile)
+    val (allDataFrame, w2vModel) = createH2OFrame(new java.io.File(datafile).getName)
     val frs = splitFrame(allDataFrame, Array("train.hex", "valid.hex"), Array(0.8, 0.2))
     val (trainFrame, validFrame) = (h2oContext.asH2OFrame(frs(0)), h2oContext.asH2OFrame(frs(1)))
 
@@ -64,12 +67,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     (gbmModel, w2vModel)
   }
 
-
-  def predict(jobTitle: String, modelId: String, w2vModel: Word2VecModel): (String, Array[Double]) = {
-    predict(jobTitle, model = water.DKV.getGet(modelId), w2vModel)
-  }
-
-  def predict(jobTitle: String, model: Model[_,_,_], w2vModel: Word2VecModel): (String, Array[Double]) = {
+  def predict(jobTitle: String, model: Model[_, _, _], w2vModel: Word2VecModel): (String, Array[Double]) = {
     val tokens = tokenize(jobTitle, STOP_WORDS)
     val vec = wordsToVector(tokens, w2vModel)
 
@@ -88,19 +86,19 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     (predictedCategory, probs.toArray)
   }
 
-  def classify(jobTitle: String, modelId: String, w2vModel: Word2VecModel): (String, Array[Double]) = {
-    classify(jobTitle, model = water.DKV.getGet(modelId), w2vModel)
-
-  }
-
-  def classify(jobTitle: String, model: Model[_,_,_], w2vModel: Word2VecModel): (String, Array[Double]) = {
+  def classify(jobTitle: String, gbmModel: GenModel, w2vModel: Word2VecModel): (String, Array[Double]) = {
     val tokens = tokenize(jobTitle, STOP_WORDS)
     if (tokens.length == 0) {
       EMPTY_PREDICTION
     } else {
       val vec = wordsToVector(tokens, w2vModel)
 
-      hex.ModelUtils.classify(vec.toArray, model)
+      val nclasses = gbmModel.nclasses
+      val classNames = gbmModel.getDomainValues(gbmModel.getDomainValues.length - 1)
+      val pred = gbmModel.score0(vec.toArray, new Array[Double](nclasses + 1))
+      val predProb = pred slice (1, pred.length)
+      val maxProbIdx = ArrayUtils.maxIndex(predProb)
+      (classNames(maxProbIdx), predProb)
     }
   }
 

@@ -53,19 +53,23 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport with ModelSer
     val staticApp = new CraigslistJobTitlesApp()(sc, sqlContext, h2oContext)
     try {
       val (svModel, w2vModel) = staticApp.buildModels("examples/smalldata/craigslistJobTitles.csv", "initialModel")
-      val modelId = svModel._key.toString
       val classNames = svModel._output.asInstanceOf[Output].classNames()
+
+      val mojoUrl = new java.net.URL("http://" + h2oContext.h2oLocalClient + "/3/Models/" + svModel._key.toString + "/mojo")
 
       // Lets save models
       exportSparkModel(w2vModel, URI.create("file:///tmp/sparkmodel"))
-      exportH2OModel(svModel, URI.create("file:///tmp/h2omodel/"))
+      val exportedMojoUri = exportMOJOModel(mojoUrl, URI.create("file:///tmp/h2omodel"))
+
+      // Load MOJO representation of the GBM model
+      val gbmModel = loadMOJOModel(exportedMojoUri)
 
       // Start streaming context
       val jobTitlesStream = ssc.socketTextStream("localhost", 9999)
 
       // Classify incoming messages
       jobTitlesStream.filter(!_.isEmpty)
-        .map(jobTitle => (jobTitle, staticApp.classify(jobTitle, modelId, w2vModel)))
+        .map(jobTitle => (jobTitle, staticApp.classify(jobTitle, gbmModel, w2vModel)))
         .map(pred => "\"" + pred._1 + "\" = " + show(pred._2, classNames))
         .print()
 

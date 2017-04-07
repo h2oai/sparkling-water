@@ -44,9 +44,8 @@ object CraigslistJobTitlesStreamingOnlyApp extends SparkContextSupport with Mode
     val staticApp = new CraigslistJobTitlesApp()(sc, sqlContext, h2oContext)
 
     try {
-      val h2oModel: Model[_, _, _] = loadH2OModel(URI.create("file:///tmp/h2omodel"))
-      val modelId = h2oModel._key.toString
-      val classNames = h2oModel._output.asInstanceOf[Output].classNames()
+      val mojoModel = loadMOJOModel(URI.create("file:///tmp/h2omodel"))
+      val classNames = mojoModel.getDomainValues(mojoModel.getDomainValues.length)
       val sparkModel = loadSparkModel[Word2VecModel](URI.create("file:///tmp/sparkmodel"))
 
       // Start streaming context
@@ -54,7 +53,7 @@ object CraigslistJobTitlesStreamingOnlyApp extends SparkContextSupport with Mode
 
       // Classify incoming messages
       jobTitlesStream.filter(!_.isEmpty)
-        .map(jobTitle => (jobTitle, staticApp.classify(jobTitle, modelId, sparkModel)))
+        .map(jobTitle => (jobTitle, staticApp.classify(jobTitle, mojoModel, sparkModel)))
         .map(pred => "\"" + pred._1 + "\" = " + show(pred._2, classNames))
         .print()
 
