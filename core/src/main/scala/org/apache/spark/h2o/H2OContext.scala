@@ -71,7 +71,7 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
   private var localClientPort: Int = _
   /** Runtime list of active H2O nodes */
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
-
+  private var stopped = false;
   /** Sparkling Water UI extension for Spark UI */
   private val sparklingWaterTab: Option[SparklingWaterUITab] = {
     if (conf.getBoolean("spark.ui.enabled", true)) {
@@ -211,10 +211,15 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
     *
     * @param stopSparkContext  stop also spark context
     */
-  def stop(stopSparkContext: Boolean = false): Unit = {
-    announcementService.shutdown
-    backend.stop(stopSparkContext)
-    H2OContext.stop(this)
+  def stop(stopSparkContext: Boolean = false): Unit = synchronized {
+    if(!stopped) {
+      announcementService.shutdown
+      backend.stop(stopSparkContext)
+      H2OContext.stop(this)
+      stopped = true
+    }else{
+      logWarning("H2OContext is already stopped, this call has no effect anymore")
+    }
   }
 
   /** Open H2O Flow running in this client. */
