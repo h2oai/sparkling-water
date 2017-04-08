@@ -1,6 +1,34 @@
 ChangeLog
 =========
 
+## v2.1.3 (2017-04-7)
+
+  - Bug
+    - [SW-334](https://0xdata.atlassian.net/browse/SW-334) - as_factor() 'corrupts' dataframe if it fails
+    - [SW-353](https://0xdata.atlassian.net/browse/SW-353) - Kerberos for SW not loading JAAS module
+    - [SW-364](https://0xdata.atlassian.net/browse/SW-364) - Repl session not set on scala 2.11
+    - [SW-368](https://0xdata.atlassian.net/browse/SW-368) - bin/pysparkling.cmd is missing
+    - [SW-371](https://0xdata.atlassian.net/browse/SW-371) - Fix MarkDown syntax
+    - [SW-372](https://0xdata.atlassian.net/browse/SW-372) - Run negative test for PUBDEV-3808 multiple times to observe failure
+    - [SW-375](https://0xdata.atlassian.net/browse/SW-375) - Documentation fix in external cluster manual
+    - [SW-376](https://0xdata.atlassian.net/browse/SW-376) - Tests for DecimalType and DataType fail on external backend
+    - [SW-377](https://0xdata.atlassian.net/browse/SW-377) - Implement stopping of external H2O cluster in external backend mode
+    - [SW-383](https://0xdata.atlassian.net/browse/SW-383) - Update PySparkling README with info about SW-335 and using SW from Pypi
+    - [SW-385](https://0xdata.atlassian.net/browse/SW-385) - Fix residual plot R code generator
+    - [SW-386](https://0xdata.atlassian.net/browse/SW-386) - SW REPL cannot be used in combination with Spark Dataset
+    - [SW-387](https://0xdata.atlassian.net/browse/SW-387) - Fix typo in setClientIp method
+    - [SW-388](https://0xdata.atlassian.net/browse/SW-388) - Stop h2o when running inside standalone pysparkling job
+    - [SW-389](https://0xdata.atlassian.net/browse/SW-389) - Extending h2o jar from SW doesn't work when the jar is already downloaded
+    - [SW-392](https://0xdata.atlassian.net/browse/SW-392) - Python in gradle is using wrong python - it doesn't respect the PATH variable
+    - [SW-393](https://0xdata.atlassian.net/browse/SW-393) - Allow to specify timeout for h2o cloud up in external backend mode
+    - [SW-394](https://0xdata.atlassian.net/browse/SW-394) - Allow to specify log level to external h2o cluster
+    - [SW-396](https://0xdata.atlassian.net/browse/SW-396) - Create setter in pysparkling conf for h2o client log level
+    - [SW-397](https://0xdata.atlassian.net/browse/SW-397) - Better error message covering the most often case when cluster info file doesn't exist
+  - Improvement
+    - [SW-296](https://0xdata.atlassian.net/browse/SW-296) - H2OConf remove nulls and make it more Scala-like
+    - [SW-367](https://0xdata.atlassian.net/browse/SW-367) - Add task to Gradle build which prints all available Hadoop distributions for the corresponding h2o 
+    - [SW-382](https://0xdata.atlassian.net/browse/SW-382) - Upgrade of H2O dependency to 3.10.4.3
+
 ## v2.1.2 (2017-03-20)
 
   - Bug
