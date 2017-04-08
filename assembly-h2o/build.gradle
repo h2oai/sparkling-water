@@ -124,7 +124,6 @@ task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparklin
     baseName = fileName
     classifier = null
     version = null
-    new File(projectDir, "private/extended/${fileName}.jar")
     finalizedBy "printExtendedJarLocation"
 }
 
