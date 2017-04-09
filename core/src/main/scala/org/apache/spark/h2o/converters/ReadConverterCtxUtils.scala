@@ -26,9 +26,10 @@ object ReadConverterCtxUtils{
   def create(keyName: String, chunkIdx: Int,
              chksLocation: Option[Array[NodeDesc]],
              expectedTypes : Option[Array[Byte]],
-             selectedColumnIndices: Array[Int]): ReadConverterCtx = {
+             selectedColumnIndices: Array[Int],
+             readTimeout: Int): ReadConverterCtx = {
 
-    chksLocation.map(loc => new ExternalReadConverterCtx(keyName, chunkIdx, loc(chunkIdx), expectedTypes.get, selectedColumnIndices))
+    chksLocation.map(loc => new ExternalReadConverterCtx(keyName, chunkIdx, loc(chunkIdx), expectedTypes.get, selectedColumnIndices, readTimeout))
       .getOrElse(new InternalReadConverterCtx(keyName, chunkIdx))
 
   }
