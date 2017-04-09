@@ -31,13 +31,13 @@ import scala.collection.immutable
 object WriteConverterCtxUtils {
 
   type SparkJob[T] = (TaskContext, Iterator[T]) => (Int, Long)
-  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan]) => SparkJob[T]
+  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int) => SparkJob[T]
   type UploadPlan = immutable.Map[Int, NodeDesc]
 
   def create(uploadPlan: Option[UploadPlan],
-             partitionId: Int, totalNumOfRows: Option[Int]): WriteConverterCtx = {
+             partitionId: Int, totalNumOfRows: Option[Int], writeTimeout: Int): WriteConverterCtx = {
     uploadPlan
-      .map{plan => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), totalNumOfRows.get)}
+      .map{plan => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), totalNumOfRows.get, writeTimeout)}
       .getOrElse( new InternalWriteConverterCtx())
   }
 
@@ -79,7 +79,7 @@ object WriteConverterCtxUtils {
       None
     }
 
-    val operation: SparkJob[T] = func(keyName, vecTypes, uploadPlan)
+    val operation: SparkJob[T] = func(keyName, vecTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout)
       val rows = hc.sparkContext.runJob(rdd, operation) // eager, not lazy, evaluation
       val res = new Array[Long](rdd.partitions.length)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
