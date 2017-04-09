@@ -65,11 +65,11 @@ private[converters] object PrimitiveRDDConverter extends Logging{
     */
   private[this]
   def perPrimitiveRDDPartition[T]() // extra arguments for this transformation
-                                 (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[UploadPlan]) // general arguments
+                                 (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int) // general arguments
                                  (context: TaskContext, it: Iterator[T]): (Int, Long) = { // arguments and return types needed for spark's runJob input
 
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
-    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize)
+    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
     con.createChunks(keyName, vecTypes, context.partitionId())
     iterator.foreach {con.putAnySupportedType(0, _)}
     //Compress & write data in partitions to H2O Chunks

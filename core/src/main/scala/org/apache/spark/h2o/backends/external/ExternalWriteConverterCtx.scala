@@ -19,23 +19,26 @@ package org.apache.spark.h2o.backends.external
 
 import org.apache.spark.h2o.converters.WriteConverterCtx
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
-import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.h2o.utils.SupportedTypes._
+import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.sql.types._
-import water.{ExternalFrameUtils, ExternalFrameWriterClient}
+import water.{ExternalFrameConfirmationException, ExternalFrameUtils, ExternalFrameWriterClient}
 
-class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int) extends WriteConverterCtx {
+class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTimeout: Int) extends WriteConverterCtx {
 
   val socketChannel = ExternalFrameUtils.getConnection(nodeDesc.hostname, nodeDesc.port)
   val externalFrameWriter = new ExternalFrameWriterClient(socketChannel)
 
   /**
     * This method closes the communication after the chunks have been closed
+    * @throws ExternalFrameConfirmationException in case of confirmation failure.
+    *         This has also effect of Spark stopping the current job and
+    *         rescheduling it
     */
   override def closeChunks(): Unit = {
     try{
-      externalFrameWriter.waitUntilAllWritten()
-    }finally {
+      externalFrameWriter.waitUntilAllWritten(writeTimeout)
+    } finally {
       socketChannel.close()
     }
   }

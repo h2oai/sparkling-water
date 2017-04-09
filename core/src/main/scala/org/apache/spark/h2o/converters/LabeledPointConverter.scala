@@ -65,10 +65,10 @@ private[converters] object LabeledPointConverter extends Logging {
     */
   private[this]
   def perLabeledPointRDDPartition(maxNumFeatures: Int)
-                                 (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[UploadPlan])
+                                 (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int)
                                  (context: TaskContext, it: Iterator[LabeledPoint]): (Int, Long) = {
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
-    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize)
+    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
     // Creates array of H2O NewChunks; A place to record all the data in this partition
     con.createChunks(keyName, vecTypes, context.partitionId())
 

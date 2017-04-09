@@ -131,6 +131,14 @@ class H2OConf(object):
         self._jconf.setClientCheckRetryTimeout(timeout)
         return self
 
+    def set_external_read_confirmation_timeout(self, timeout):
+        self._jconf.setExternalReadConfirmationTimeout(timeout)
+        return self
+
+    def set_external_write_confirmation_timeout(self, timeout):
+        self._jconf.setExternalWriteConfirmationTimeout(timeout)
+        return self
+
 # getters
 
     def client_connection_timeout(self):
@@ -138,6 +146,12 @@ class H2OConf(object):
 
     def client_check_retry_timeout(self):
         return self._jconf.clientCheckRetryTimeout()
+
+    def external_read_confirmation_timeout(self):
+        return self._jconf.externalReadConfirmationTimeout()
+
+    def external_write_confirmation_timeout(self):
+        return self._jconf.externalWriteConfirmationTimeout()
 
     def cluster_start_timeout(self):
         return self._jconf.clusterStartTimeout()
