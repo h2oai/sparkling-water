@@ -48,6 +48,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
                                                                  (@(transient @param @field) hc: H2OContext)
   extends {
     override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+    override val readTimeout = hc.getConf.externalReadConfirmationTimeout
   } with RDD[A](hc.sparkContext, Nil) with H2ORDDLike[T] {
 
   // Get product type before building an RDD
