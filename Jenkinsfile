@@ -90,7 +90,7 @@ pipeline{
             }
         }
 
-        stage('QA:Unit tests') {
+        stage('QA:Unit Tests') {
 
              steps {
                     sh """
@@ -124,7 +124,7 @@ pipeline{
 			}
         }
 
-        stage('QA:Integration tests') {
+        stage('QA:Local Integration Tests') {
 
              steps {
                     sh """
