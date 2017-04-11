@@ -32,7 +32,7 @@ pipeline{
         MASTER          = "yarn-client"
         H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
         H2O_EXTENDED_JAR="${env.WORKSPACE}/assembly-h2o/private/"
-        SPARK="spark-${sparkVersion}-bin-hadoop${HADOOP_VERSION}"
+        SPARK="spark-${params.sparkVersion}-bin-hadoop${HADOOP_VERSION}"
     }
 
     stages {
