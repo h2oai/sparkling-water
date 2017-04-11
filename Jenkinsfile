@@ -42,10 +42,10 @@ pipeline{
                 //checkout scm
                 git url: 'https://github.com/h2oai/sparkling-water.git', branch: 'master'
                 sh"""
-                if [ ! -d "${SPARK}" ]; then
-                        wget "http://d3kbcqa49mib13.cloudfront.net/{SPARK}.tgz"
+                if [ ! -d "${env.SPARK}" ]; then
+                        wget "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
                         echo "Extracting spark JAR"
-                        tar zxvf ${SPARK}.tgz
+                        tar zxvf ${env.SPARK}.tgz
                 fi
 
                 echo 'Checkout and Preparation completed'
