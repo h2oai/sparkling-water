@@ -62,7 +62,7 @@ pipeline{
             }
         }
 
-        stage('QA: build & lint') {
+        stage('QA: Prepare Environment and Data') {
             steps {
                 sh """
                     # Setup 
@@ -71,7 +71,9 @@ pipeline{
                     echo "spark.executor.extraJavaOptions -Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
 
                     echo "-Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/java-opts
+                   """
 
+                sh """
                     mkdir -p ${env.WORKSPACE}/examples/bigdata/laptop/citibike-nyc/
                     cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv ${env.WORKSPACE}/examples/bigdata/laptop/citibike-nyc/2013-07.csv
                     cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-08.csv ${env.WORKSPACE}/examples/bigdata/laptop/citibike-nyc/2013-08.csv
@@ -80,17 +82,19 @@ pipeline{
                     cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-11.csv ${env.WORKSPACE}/examples/bigdata/laptop/citibike-nyc/2013-11.csv
                     cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-12.csv ${env.WORKSPACE}/examples/bigdata/laptop/citibike-nyc/2013-12.csv
                     cp /home/0xdiag/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv ${env.WORKSPACE}/examples/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv
+                   """
 
+                sh """
                     # Download h2o-python client, save it in private directory
                     # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
                     mkdir -p ${env.WORKSPACE}/private/
                     curl -s `./gradlew -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
                     ./gradlew -q extendJar -PdownloadH2O=${params.driverHadoopVersion}
-                 """
+                   """
             }
         }
 
-        stage('QA:Unit Tests') {
+        stage('QA: Lint and Unit Tests') {
 
              steps {
                     sh """
@@ -109,7 +113,7 @@ pipeline{
 					  	keepAll: true,
 					  	reportDir: 'core/build/reports/tests/test',
 					  	reportFiles: 'index.html',
-					  	reportName: 'Core: Integration tests'
+					  	reportName: 'Core: Unit tests'
 					]
 					publishHTML target: [
 						allowMissing: true,
@@ -117,7 +121,7 @@ pipeline{
 					  	keepAll: true,
 					  	reportDir: 'examples/build/reports/tests/test',
 					  	reportFiles: 'index.html',
-					  	reportName: 'Examples: Integration tests'
+					  	reportName: 'Examples: Unit tests'
 					]
 
 				}
@@ -156,6 +160,31 @@ pipeline{
 				}
 			}
         }
+
+        stage('QA: Script Tests') {
+
+             steps {
+                    sh """
+                    # Build, run regular tests
+                    ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}
+                    """
+
+                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+		    }
+			post {
+				always {
+					publishHTML target: [
+						allowMissing: true,
+					  	alwaysLinkToLastBuild: false,
+					  	keepAll: true,
+					  	reportDir: 'examples/build/reports/tests/scriptsTest',
+					  	reportFiles: 'index.html',
+					  	reportName: 'Examples: Script tests'
+					]
+				}
+			}
+        }
+
 
         stage('Stashing') {
 
