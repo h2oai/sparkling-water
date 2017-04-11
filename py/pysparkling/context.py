@@ -120,7 +120,7 @@ class H2OContext(object):
         h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port)
         h2o_context.is_initialized = True
         # Stop h2o when running standalone pysparkling scripts and the user does not explicitly close h2o
-        atexit.register(lambda: h2o_context.stop())
+        atexit.register(lambda: h2o_context.__force_stop())
         return h2o_context
 
     def stop(self):
@@ -128,6 +128,10 @@ class H2OContext(object):
         self._jhc.stop(False)
 
     def __del__(self):
+        self.stop()
+
+    def __force_stop(self):
+        h2o.cluster().shutdown()
         self.stop()
 
     def __str__(self):
