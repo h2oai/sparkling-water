@@ -41,15 +41,15 @@ pipeline{
             steps{
                 //checkout scm
                 git url: 'https://github.com/h2oai/sparkling-water.git', branch: 'master'
-                sh"""
+                sh """
                 if [ ! -d "${env.SPARK}" ]; then
-                        wget "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
+                        wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
                         echo "Extracting spark JAR"
                         tar zxvf ${env.SPARK}.tgz
                 fi
 
                 echo 'Checkout and Preparation completed'
-                sh"""
+                """
             }
 
             post {
@@ -62,9 +62,9 @@ pipeline{
             }
         }
 
-        stage('QA: build & lint'){
-            steps{
-                sh"""
+        stage('QA: build & lint') {
+            steps {
+                sh """
                     # Setup 
                     echo "spark.driver.extraJavaOptions -Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                     echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
@@ -84,41 +84,82 @@ pipeline{
                     # Download h2o-python client, save it in private directory
                     # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
                     mkdir -p ${env.WORKSPACE}/private/
-                    curl `./gradlew -q printH2OWheelPackage ` > ${env.WORKSPACE}/private/h2o.whl
+                    curl -s `./gradlew -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
                     ./gradlew -q extendJar -PdownloadH2O=${params.driverHadoopVersion}
-
                  """
-                archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-            }
-
-            post {
-                success {
-                  success("Stage Git QA: build & lint ran successfully for '${env.JOB_NAME}' ")
-                }
-                failure {
-                  failure("Stage QA: build & lint failed for '${env.JOB_NAME}' ")
-                }
             }
         }
 
-        stage('QA:Unit tests'){
+        stage('QA:Unit tests') {
 
-             steps{
+             steps {
                     sh """
                     # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew clean build -PbackendMode=${params.backendMode} -PsparklingTestEnv=
-                    ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}
-                    # running integration just after unit test
+                    ${env.WORKSPACE}/gradlew clean build -PbackendMode=${params.backendMode}
+                    #####${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}
+                    """
+
+                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+		    }
+			post {
+				always {
+					publishHTML target: [
+						allowMissing: true,
+					  	alwaysLinkToLastBuild: false,
+					  	keepAll: true,
+					  	reportDir: 'core/build/reports/tests/test',
+					  	reportFiles: 'index.html',
+					  	reportName: 'Core: Integration tests'
+					]
+					publishHTML target: [
+						allowMissing: true,
+					  	alwaysLinkToLastBuild: false,
+					  	keepAll: true,
+					  	reportDir: 'examples/build/reports/tests/test',
+					  	reportFiles: 'index.html',
+					  	reportName: 'Examples: Integration tests'
+					]
+
+				}
+			}
+        }
+
+        stage('QA:Integration tests') {
+
+             steps {
+                    sh """
+                    # Build, run regular tests
                     ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
                         """
 
                     archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-            }
+		    }
+			post {
+				always {
+					publishHTML target: [
+						allowMissing: true,
+					  	alwaysLinkToLastBuild: false,
+					  	keepAll: true,
+					  	reportDir: 'core/build/reports/tests/integTest',
+					  	reportFiles: 'index.html',
+					  	reportName: 'Core: Integration tests'
+					]
+					publishHTML target: [
+						allowMissing: true,
+					  	alwaysLinkToLastBuild: false,
+					  	keepAll: true,
+					  	reportDir: 'examples/build/reports/tests/integTest',
+					  	reportFiles: 'index.html',
+					  	reportName: 'Examples: Integration tests'
+					]
+
+				}
+			}
         }
 
-        stage('Stashing'){
+        stage('Stashing') {
 
-            steps{
+            steps {
                 // Make a tar of the directory and stash it -> --ignore-failed-read
                 sh "tar  -zcvf ../stash_archive.tar.gz ."
                 sh "mv ../stash_archive.tar.gz ."
@@ -134,9 +175,9 @@ pipeline{
         }
 
 
-        stage('QA:Integration tests'){
+        stage('QA:Integration tests') {
 
-            steps{
+            steps {
                 echo "Unstash the unit test"
                 unstash "unit-test-stash"
 
@@ -148,9 +189,7 @@ pipeline{
                     # Move the unstashed directory outside the stashed one for the environment variables to pick up properly
                     #mv ${env.WORKSPACE}/unit-test-stash/* ${env.WORKSPACE}
                     #rm -r ${env.WORKSPACE}/unit-test-stash
-
                     """
-
 
                 sh """
                      if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = true ]; then
