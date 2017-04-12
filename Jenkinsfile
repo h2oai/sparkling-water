@@ -97,7 +97,7 @@ pipeline{
 		    }
 			post {
 				always {
-                    junit: 'core/build/test-results/test/*.xml'
+                    junit 'core/build/test-results/test/*.xml'
 					publishHTML target: [
 						allowMissing: false,
 					  	alwaysLinkToLastBuild: true,
@@ -131,7 +131,7 @@ pipeline{
 		    }
 			post {
 				always {
-                    junit: 'examples/build/test-results/integTest/*.xml'
+                    junit 'examples/build/test-results/integTest/*.xml'
 					publishHTML target: [
 						allowMissing: false,
 					  	alwaysLinkToLastBuild: true,
@@ -165,7 +165,7 @@ pipeline{
 		    }
 			post {
 				always {
-                    junit: 'examples/build/test-results/scriptsTest/*.xml'
+                    junit 'examples/build/test-results/scriptsTest/*.xml'
 					publishHTML target: [
 						allowMissing: false,
 					  	alwaysLinkToLastBuild: true,
