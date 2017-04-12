@@ -51,15 +51,6 @@ pipeline{
                 echo 'Checkout and Preparation completed'
                 """
             }
-
-            post {
-                success {
-                  success("Stage Git Checkout and Preparation ran successfully for '${env.JOB_NAME}' ")
-                }
-                failure {
-                  failure("Stage Git Checkout and Preparation failed for '${env.JOB_NAME}' ")
-                }
-            }
         }
 
         stage('QA: Prepare Environment and Data') {
@@ -100,7 +91,6 @@ pipeline{
                     sh """
                     # Build, run regular tests
                     ${env.WORKSPACE}/gradlew clean build -PbackendMode=${params.backendMode}
-                    #####${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}
                     """
 
                     archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -108,7 +98,7 @@ pipeline{
 			post {
 				always {
 					publishHTML target: [
-						allowMissing: true,
+						allowMissing: false,
 					  	alwaysLinkToLastBuild: false,
 					  	keepAll: true,
 					  	reportDir: 'core/build/reports/tests/test',
@@ -116,7 +106,7 @@ pipeline{
 					  	reportName: 'Core: Unit tests'
 					]
 					publishHTML target: [
-						allowMissing: true,
+						allowMissing: false,
 					  	alwaysLinkToLastBuild: false,
 					  	keepAll: true,
 					  	reportDir: 'examples/build/reports/tests/test',
@@ -141,7 +131,7 @@ pipeline{
 			post {
 				always {
 					publishHTML target: [
-						allowMissing: true,
+						allowMissing: false,
 					  	alwaysLinkToLastBuild: false,
 					  	keepAll: true,
 					  	reportDir: 'core/build/reports/tests/integTest',
@@ -149,7 +139,7 @@ pipeline{
 					  	reportName: 'Core: Integration tests'
 					]
 					publishHTML target: [
-						allowMissing: true,
+						allowMissing: false,
 					  	alwaysLinkToLastBuild: false,
 					  	keepAll: true,
 					  	reportDir: 'examples/build/reports/tests/integTest',
@@ -174,7 +164,7 @@ pipeline{
 			post {
 				always {
 					publishHTML target: [
-						allowMissing: true,
+						allowMissing: false,
 					  	alwaysLinkToLastBuild: false,
 					  	keepAll: true,
 					  	reportDir: 'examples/build/reports/tests/scriptsTest',
