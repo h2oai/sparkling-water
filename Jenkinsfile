@@ -104,7 +104,7 @@ pipeline{
 					  	keepAll: true,
 					  	reportDir: 'core/build/reports/tests/test',
 					  	reportFiles: 'index.html',
-					  	reportName: 'Core: Unit tests'
+					  	reportName: 'Core Unit tests'
 					]
 					publishHTML target: [
 						allowMissing: false,
@@ -112,7 +112,7 @@ pipeline{
 					  	keepAll: true,
 					  	reportDir: 'examples/build/reports/tests/test',
 					  	reportFiles: 'index.html',
-					  	reportName: 'Examples: Unit tests'
+					  	reportName: 'Examples Unit tests'
 					]
 
 				}
@@ -146,7 +146,7 @@ pipeline{
 					  	keepAll: true,
 					  	reportDir: 'examples/build/reports/tests/integTest',
 					  	reportFiles: 'index.html',
-					  	reportName: 'Examples: Integration tests'
+					  	reportName: 'Examples Integration tests'
 					]
 
 				}
@@ -172,7 +172,7 @@ pipeline{
 					  	keepAll: true,
 					  	reportDir: 'examples/build/reports/tests/scriptsTest',
 					  	reportFiles: 'index.html',
-					  	reportName: 'Examples: Script tests'
+					  	reportName: 'Examples Script Tests'
 					]
 				}
 			}
