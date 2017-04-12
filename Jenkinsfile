@@ -97,9 +97,10 @@ pipeline{
 		    }
 			post {
 				always {
+                    junit: 'core/build/test-results/test/*.xml'
 					publishHTML target: [
 						allowMissing: false,
-					  	alwaysLinkToLastBuild: false,
+					  	alwaysLinkToLastBuild: true,
 					  	keepAll: true,
 					  	reportDir: 'core/build/reports/tests/test',
 					  	reportFiles: 'index.html',
@@ -107,7 +108,7 @@ pipeline{
 					]
 					publishHTML target: [
 						allowMissing: false,
-					  	alwaysLinkToLastBuild: false,
+					  	alwaysLinkToLastBuild: true,
 					  	keepAll: true,
 					  	reportDir: 'examples/build/reports/tests/test',
 					  	reportFiles: 'index.html',
@@ -130,9 +131,10 @@ pipeline{
 		    }
 			post {
 				always {
+                    junit: 'examples/build/test-results/integTest/*.xml'
 					publishHTML target: [
 						allowMissing: false,
-					  	alwaysLinkToLastBuild: false,
+					  	alwaysLinkToLastBuild: true,
 					  	keepAll: true,
 					  	reportDir: 'core/build/reports/tests/integTest',
 					  	reportFiles: 'index.html',
@@ -140,7 +142,7 @@ pipeline{
 					]
 					publishHTML target: [
 						allowMissing: false,
-					  	alwaysLinkToLastBuild: false,
+					  	alwaysLinkToLastBuild: true,
 					  	keepAll: true,
 					  	reportDir: 'examples/build/reports/tests/integTest',
 					  	reportFiles: 'index.html',
@@ -163,9 +165,10 @@ pipeline{
 		    }
 			post {
 				always {
+                    junit: 'examples/build/test-results/scriptsTest/*.xml'
 					publishHTML target: [
 						allowMissing: false,
-					  	alwaysLinkToLastBuild: false,
+					  	alwaysLinkToLastBuild: true,
 					  	keepAll: true,
 					  	reportDir: 'examples/build/reports/tests/scriptsTest',
 					  	reportFiles: 'index.html',
