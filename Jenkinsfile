@@ -90,7 +90,7 @@ pipeline{
              steps {
                     sh """
                     # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew clean build -PbackendMode=${params.backendMode}
+                    ${env.WORKSPACE}/gradlew clean build
                     """
 
                     archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -124,8 +124,8 @@ pipeline{
              steps {
                     sh """
                     # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
-                        """
+                    ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} 
+                    """
 
                     archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
 		    }
@@ -158,7 +158,7 @@ pipeline{
              steps {
                     sh """
                     # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode}
+                    ${env.WORKSPACE}/gradlew scriptTest
                     """
 
                     archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
