@@ -140,7 +140,7 @@ val hc = H2OContext.getOrCreate(sc, conf)
 To connect to existing H2O cluster from Python, start PySparkling shell as `./bin/pysparkling` and do:
 ```python
 from pysparkling import *
-conf = H2OConf(sc).set_external_cluster_mode().use_manual_cluster_start().set_cloud_name("test”)
+conf = H2OConf(sc).set_external_cluster_mode().use_manual_cluster_start().set_cloud_name("test")
 hc = H2OContext.getOrCreate(sc, conf)
 ```
 
