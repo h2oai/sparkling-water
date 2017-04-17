@@ -94,7 +94,15 @@ class H2OConf(object):
     def set_h2o_node_log_level(self, level):
         self._jconf.setH2ONodeLogLevel(level)
         return self
+
     def set_cluster_start_timeout(self, timeout):
+        """Set timeout for start of external cluster. If the cluster is not able to cloud within the timeout the
+        the exception is thrown.
+
+        Arguments:
+        timeout -- timeout in seconds
+        
+        """
         self._jconf.setClusterStartTimeout(timeout)
         return self
 
@@ -102,7 +110,34 @@ class H2OConf(object):
         self._jconf.setH2OClientLogLevel(level)
         return self
 
+    def set_client_connection_timeout(self, timeout):
+        """Set timeout for watchdog client connection in external cluster mode. If the client is not connected to the
+         cluster within the specified time, the cluster kill itself.
+
+        Arguments:
+        timeout -- timeout in milliseconds
+        
+        """
+        self._jconf.setClientConnectionTimeout(timeout)
+        return self
+
+    def set_client_check_retry_timeout(self, timeout):
+        """Set retry interval how often nodes in the external cluster mode check for the presence of the h2o client.
+        
+        Arguments:
+        timeout -- timeout in milliseconds
+        
+        """
+        self._jconf.setClientCheckRetryTimeout(timeout)
+        return self
+
 # getters
+
+    def client_connection_timeout(self):
+        return self._jconf.clientConnectionTimeout()
+
+    def client_check_retry_timeout(self):
+        return self._jconf.clientCheckRetryTimeout()
 
     def cluster_start_timeout(self):
         return self._jconf.clusterStartTimeout()
