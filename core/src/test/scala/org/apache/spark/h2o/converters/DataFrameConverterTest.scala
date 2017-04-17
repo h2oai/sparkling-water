@@ -457,7 +457,8 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     import spark.implicits._
     val num = 5
     val values = (1 to num).map(x => PrimitiveB(1 to x))
-    val df = sc.parallelize(values).toDF
+    val rdd: RDD[PrimitiveB] = sc.parallelize(values)
+    val df = rdd.toDF
     val expandedSchema = H2OSchemaUtils.expandedSchema(sc, df)
     val metadatas = expandedSchema.map(f =>f._2.metadata)
 
