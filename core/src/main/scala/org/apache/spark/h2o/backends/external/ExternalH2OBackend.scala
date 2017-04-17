@@ -67,7 +67,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-output", conf.HDFSOutputDir.get,
       "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
       "-timeout", conf.clusterStartTimeout.toString,
-      "-disown"
+      "-disown",
+      "-J", "-watchdog_stop_without_client",
+      "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
+      "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
     )
 
     // start external h2o cluster and log the output
@@ -110,12 +113,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     logInfo(s"Yarn ID obtained from cluster file: $yarnAppId")
     logInfo(s"Cluster ip and port obtained from cluster file: $ipPort")
 
-    sys.ShutdownHookThread {
-      if(hc.getConf.isAutoClusterStartUsed){
-        stopExternalCluster()
-        deleteYarnFiles()
-      }
-    }
     assert(proc == 0, s"Starting external H2O cluster failed with return value $proc.")
     ipPort
   }
@@ -136,12 +133,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         logError(s"Error when deleting cluster info file at ${hc.getConf.clusterInfoFile.get}" +
           s", original message: ${e.getMessage}")
     }
-  }
-
-  private def stopExternalCluster(): Unit = {
-    // Send disconnect command from the watchdog client in case of orderly shutdown
-    UDPClientEvent.ClientEvent.Type.DISCONNECT.broadcast(H2O.SELF)
-    log.info("Stopping external H2O cluster!")
   }
 
   override def init(): Array[NodeDesc] = {
@@ -207,14 +198,11 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     // otherwise stopping is not supported
     if(hc.getConf.isAutoClusterStartUsed){
       deleteYarnFiles()
-      stopExternalCluster()
-    }else {
-      if (stopSparkContext) {
-        hc.sparkContext.stop()
-      }
-      H2O.orderlyShutdown(1000)
-      H2O.exit(0)
     }
+    if (stopSparkContext) {
+      hc.sparkContext.stop()
+    }
+    H2O.orderlyShutdown(1000)
   }
 
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
