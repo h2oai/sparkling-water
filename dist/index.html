@@ -36,7 +36,7 @@
       }
       a:hover {
         text-decoration: underline;
-      } 
+      }
       h2 {
         font-style: normal;
         font-variant: normal;
@@ -45,7 +45,7 @@
         margin: 20px 0 10px 0;
       }
       #container {
-        width: 768px;
+        width: 1024px;
         background: #fff;
         margin: 0px auto;
         -webkit-box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.25);
@@ -53,7 +53,7 @@
         box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.25);
       }
       #title {
-        height: 200px;
+        height: 220px;
         background: #fbe93a;
       }
       #title h1 {
@@ -67,6 +67,7 @@
       }
       #title .version {
         text-align: center;
+        padding: 10px;
       }
       #title .links {
         text-align: right;
@@ -133,6 +134,7 @@
         padding: 15px;
         font-family: monospace;
         line-height: 15px;
+        text-align: left;
       }
       #content p.terminal em {
         color: green;
@@ -184,7 +186,23 @@
       #documentation {
         border-top: 1px solid #ddd;
       }
-
+      div.integration-info {
+        text-align: center;
+      }
+      div.integration-info h2 {
+        font-weight: 400;
+      }
+      div.integration-info h2, div.integration-info ul {
+        font-size: 16px;
+      }
+      #quickstart-zip h2#getting-started {
+        font-weight: 800;
+      }
+      @media(max-width: 768px) {
+        #container {
+          width: 768px;
+        }
+      }
     </style>
     <script>
       //
@@ -217,6 +235,8 @@
         var mavenPanel = document.getElementById('maven');
         var addonsTab = document.getElementById('addons-tab')
         var addonsPanel = document.getElementById('addons')
+        var klusterTab = document.getElementById('kluster-tab')
+        var klusterPanel = document.getElementById('kluster')
         var showZipTab = function() {
           zipPanel.style.display = 'block';
           zipTab.className = 'active';
@@ -228,6 +248,8 @@
           mavenTab.className = '';
           addonsPanel.style.display = 'none';
           addonsTab.className = '';
+          klusterPanel.style.display = 'none';
+          klusterTab.className = '';
         };
         var showStandaloneTab = function() {
           standalonePanel.style.display = 'block';
@@ -240,6 +262,8 @@
           mavenTab.className = '';
           addonsPanel.style.display = 'none';
           addonsTab.className = '';
+          klusterPanel.style.display = 'none';
+          klusterTab.className = '';
         };
         var showHadoopTab = function(){
           hadoopPanel.style.display = 'block';
@@ -252,6 +276,8 @@
           mavenTab.className = '';
           addonsPanel.style.display = 'none';
           addonsTab.className = '';
+          klusterPanel.style.display = 'none';
+          klusterTab.className = '';
         };
         var showMavenTab = function(){
           hadoopPanel.style.display = 'none';
@@ -264,6 +290,8 @@
           mavenTab.className = 'active';
           addonsPanel.style.display = 'none';
           addonsTab.className = '';
+          klusterPanel.style.display = 'none';
+          klusterTab.className = '';
         };
         var showAddonsTab = function(){
           hadoopPanel.style.display = 'none';
@@ -276,6 +304,22 @@
           mavenTab.className = '';
           addonsPanel.style.display = 'block';
           addonsTab.className = 'active';
+          klusterPanel.style.display = 'none';
+          klusterTab.className = '';
+        };
+        var showKlusterTab = function(){
+          hadoopPanel.style.display = 'none';
+          hadoopTab.className = '';
+          standalonePanel.style.display = 'none';
+          standaloneTab.className = '';
+          zipPanel.style.display = 'none';
+          zipTab.className = '';
+          mavenPanel.style.display = 'none';
+          mavenTab.className = '';
+          addonsPanel.style.display = 'none';
+          addonsTab.className = '';
+          klusterPanel.style.display = 'block';
+          klusterTab.className = 'active';
         };
 
         zipTab.onclick = showZipTab
@@ -283,6 +327,7 @@
         hadoopTab.onclick = showHadoopTab
         mavenTab.onclick = showMavenTab
         addonsTab.onclick = showAddonsTab
+        klusterTab.onclick = showKlusterTab
 
         var hash = window.location.hash;
         if(hash && hash.indexOf('#h') == 0) {
@@ -320,6 +365,7 @@
           &nbsp; <span id="quickstart-zip-tab" class="active">Download</span>
           <span id="quickstart-hadoop-tab">Run on Hadoop</span>
           <span id="standalone-tab">Run on Standalone Cluster</span>
+          <span id="kluster-tab">Kluster</span>
           <span id="maven-tab">Use from Maven</span>
           <span id="addons-tab">R/Python/Spark</span>
         </div>
@@ -327,8 +373,17 @@
           <div id="quickstart-zip">
             <div id="downloads">
               <a id="dzip" class="download-button" href="sparkling-water-SUBST_PROJECT_VERSION.zip">Download Sparkling Water</a>
+              <div class="integration-info">
+                <h2>Integration info</h2>
+                <div>
+                  <ul>
+                    <li>H2O version: <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html">SUBST_H2O_VERSION.SUBST_H2O_BUILD SUBST_H2O_NAME</a> (<a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/docs-website/h2o-docs/index.html">documentation</a>)</li>
+                    <li>Spark version: <a href="https://spark.apache.org/downloads.html">SUBST_SPARK_VERSION</a> (<a href="https://spark.apache.org/docs/SUBST_SPARK_VERSION/">documentation</a>)</li>
+                  </ul>
+                </div>
+              </div>
             </div>
-            <h2>Get started with Sparkling Water in a few easy steps</h2>
+            <h2 id="getting-started">Get started with Sparkling Water in a few easy steps</h2>
             <p>1. Download Spark (if not already installed) from the <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a> </p>
             <p class="options">
               Choose Spark release : 2.1.0</br>
@@ -358,6 +413,15 @@
           <div id="quickstart-hadoop">
             <div id="downloads">
               <a id="dzip" class="download-button" href="sparkling-water-SUBST_PROJECT_VERSION.zip">Download Sparkling Water</a>
+              <div class="integration-info">
+                <h2>Integration info</h2>
+                <div>
+                  <ul>
+                    <li>H2O version: <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html">SUBST_H2O_VERSION.SUBST_H2O_BUILD SUBST_H2O_NAME</a> (<a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/docs-website/h2o-docs/index.html">documentation</a>)</li>
+                    <li>Spark version: <a href="https://spark.apache.org/downloads.html">SUBST_SPARK_VERSION</a> (<a href="https://spark.apache.org/docs/SUBST_SPARK_VERSION/">documentation</a>)</li>
+                  </ul>
+                </div>
+              </div>
             </div>
             <h2>Launch Sparkling Water on Hadoop using Yarn.</h2>
             <p>1. Download Spark (if not already installed) from the <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a>.</p>
@@ -391,6 +455,15 @@
           <div id="standalone">
             <div id="downloads">
               <a id="dzip" class="download-button" href="sparkling-water-SUBST_PROJECT_VERSION.zip">Download Sparkling Water</a>
+              <div class="integration-info">
+                <h2>Integration info</h2>
+                <div>
+                  <ul>
+                    <li>H2O version: <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html">SUBST_H2O_VERSION.SUBST_H2O_BUILD SUBST_H2O_NAME</a> (<a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/docs-website/h2o-docs/index.html">documentation</a>)</li>
+                    <li>Spark version: <a href="https://spark.apache.org/downloads.html">SUBST_SPARK_VERSION</a> (<a href="https://spark.apache.org/docs/SUBST_SPARK_VERSION/">documentation</a>)</li>
+                  </ul>
+                </div>
+              </div>
             </div>
             <h2>Launch H2O on a Standalone Spark Cluster</h2>
             <p>1. Download Spark (if not already installed) from the <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a>.</p>
@@ -418,7 +491,51 @@
               import h2oContext._ <br />
             </p>
           </div>
+          <div id="kluster" style="display:none">
+            <div class="integration-info">
+              <h2>Integration info</h2>
+              <div>
+                <ul>
+                  <li>H2O version: <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html">SUBST_H2O_VERSION.SUBST_H2O_BUILD SUBST_H2O_NAME</a> (<a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/docs-website/h2o-docs/index.html">documentation</a>)</li>
+                  <li>Spark version: <a href="https://spark.apache.org/downloads.html">SUBST_SPARK_VERSION</a> (<a href="https://spark.apache.org/docs/SUBST_SPARK_VERSION/">documentation</a>)</li>
+                </ul>
+              </div>
+            </div>
+            <h2>Kluster</h2>
+            <p>Kluster mode of Sparkling Water supports connection to external H2O clusters (standalone/hadoop).
+              The extended H2O cluster needs to be started with a corresponding H2O build which can be downloaded below.</p>
+
+            <p>1. Download and unpack Sparkling Water distribution</p>
+
+            <p>2. Download corresponding h2odriver for your Hadoop distribution (e.g., hdp2.2, cdh5.4) or standalone one:</p>
+            <p class="terminal">
+              bin/get-extended-h2o.sh standalone
+            </p>
+            <p>3. Start H2O cluster, for example, in standalone mode:</p>
+            <p class="terminal">
+              java -cp h2odriver-extended.jar water.H2OApp -md5skip -name test
+            </p>
+
+            <p>4. In your Sparkling Water application, create H2OContext:</p>
+            <p class="terminal">
+              import org.apache.spark.h2o._<br/>
+              val conf = new H2OConf(sc).setExternalClusterMode().useManualClusterStart().setCloudName("test")<br/>
+              val hc = H2OContext.getOrCreate(sc, conf)<br/>
+            </p>
+
+            <p>For more info, please follow <a href="https://github.com/h2oai/sparkling-water/blob/SUBST_PROJECT_GITHASH/doc/backends.md">Kluster documentation</a>.</p>
+
+          </div>
           <div id="maven" style="display:none">
+              <div class="integration-info">
+                <h2>Integration info</h2>
+                <div>
+                  <ul>
+                    <li>H2O version: <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html">SUBST_H2O_VERSION.SUBST_H2O_BUILD SUBST_H2O_NAME</a> (<a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/docs-website/h2o-docs/index.html">documentation</a>)</li>
+                    <li>Spark version: <a href="https://spark.apache.org/downloads.html">SUBST_SPARK_VERSION</a> (<a href="https://spark.apache.org/docs/SUBST_SPARK_VERSION/">documentation</a>)</li>
+                  </ul>
+                </div>
+              </div>
               <h2>Gradle-style specification for Maven artifacts</h2>
 
               <p>See the <a href="https://github.com/h2oai/h2o-droplets">h2o-droplets github repository</a> for a working example.</p>
@@ -434,6 +551,15 @@
               <p>See Maven Central for <a href="http://search.maven.org/#artifactdetails|ai.h2o|sparkling-water-core_2.11|SUBST_PROJECT_VERSION|jar">artifact details</a>.
           </div>
           <div id="addons" style="display:none">
+              <div class="integration-info">
+                <h2>Integration info</h2>
+                <div>
+                  <ul>
+                    <li>H2O version: <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html">SUBST_H2O_VERSION.SUBST_H2O_BUILD SUBST_H2O_NAME</a> (<a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/docs-website/h2o-docs/index.html">documentation</a>)</li>
+                    <li>Spark version: <a href="https://spark.apache.org/downloads.html">SUBST_SPARK_VERSION</a> (<a href="https://spark.apache.org/docs/SUBST_SPARK_VERSION/">documentation</a>)</li>
+                  </ul>
+                </div>
+              </div>
               <h2>R client</h2>
               <p>Please, follow installation instructions on <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html#R">H2O-R page</a>.</p>
 
@@ -451,13 +577,6 @@
             <li><a id="ddocscaladoc" href="scaladoc/index.html"> Scala Developer Documentation (Scaladoc)</a></li>
             <li><a href="https://github.com/h2oai/h2o-droplets/tree/master/sparkling-water-droplet">Sparkling Water Application Template</a></li>
           </ul>
-        </div>
-        <div id="integration-info">
-            <h2>Integration info</h2>
-            <ul>
-                <li>H2O version: <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html">SUBST_H2O_VERSION.SUBST_H2O_BUILD SUBST_H2O_NAME</a> (<a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/docs-website/h2o-docs/index.html">documentation</a>)</li>
-                <li>Spark version: <a href="https://spark.apache.org/downloads.html">SUBST_SPARK_VERSION</a> (<a href="https://spark.apache.org/docs/SUBST_SPARK_VERSION/">documentation</a>)</li>
-            </ul>
         </div>
       </div>
     </div>

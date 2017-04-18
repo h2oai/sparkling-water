@@ -45,7 +45,8 @@ SCALA_VERSION=$(cat $TOPDIR/gradle.properties | grep scalaBaseVersion | sed -e "
 # Fat jar for this distribution
 FAT_JAR="sparkling-water-assembly_$SCALA_VERSION-$VERSION-all.jar"
 FAT_JAR_FILE="$TOPDIR/assembly/build/libs/$FAT_JAR"
-major_version=`echo $VERSION | cut -d . -f 1,2`
+major_version=$(echo $VERSION | cut -d . -f 1,2)
+patch_version=$(echo $VERSION | cut -d . -f 3)
 version_without_snapshot=`echo $VERSION | cut -d - -f 1`
 PY_EGG="h2o_pysparkling_${major_version}-${version_without_snapshot}-py2.7.egg"
 PY_EGG_FILE="$TOPDIR/py/build/dist/$PY_EGG"
@@ -59,6 +60,8 @@ tmpdir="${TMPDIR:-"/tmp/"}/$USER/"
 export SPARK_LOG_DIR="${tmpdir}spark/logs"
 export SPARK_WORKER_DIR="${tmpdir}spark/work"
 export SPARK_LOCAL_DIRS="${tmpdir}spark/work"
+
+S3_RELEASE_BUCKET="http://h2o-release.s3.amazonaws.com/sparkling-water"
 
 function banner() {
 cat <<EOF

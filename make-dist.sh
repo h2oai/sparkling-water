@@ -73,7 +73,8 @@ rsync -rtvW --files-from "$TOPDIR/demofiles.list" "$TOPDIR/" "$DEST_DIR/"
 # Copy scaladoc
 rsync -rtvW "$SCALADOC_SRC_DIR" "$SCALADOC_DST_DIR"
 
-GITHASH=`git rev-parse --verify HEAD`
+GITHASH=$(git rev-parse --verify HEAD)
+GITBRANCH=$(git rev-parse --verify --abbrev-ref HEAD)
 
 if [ "${H2O_NAME}" == "master" ]; then
   H2O_BRANCH_NAME="master"
@@ -87,7 +88,9 @@ H2O_BUILD_NUMBER=${H2O_BUILD}
 # Copy dist dir files
 cat "$DIST_DIR/index.html" \
   | sed -e "s/SUBST_PROJECT_VERSION/$VERSION/g"\
+  | sed -e "s/SUBST_PROJECT_PATCH_VERSION/$patch_version/g"\
   | sed -e "s/SUBST_PROJECT_GITHASH/${GITHASH}/g"\
+  | sed -e "s~SUBST_PROJECT_GITBRANCH~${GITBRANCH}~g"\
   | sed -e "s/SUBST_H2O_VERSION/${H2O_VERSION}/g"\
   | sed -e "s/SUBST_H2O_BUILD/${H2O_BUILD}/g"\
   | sed -e "s/SUBST_H2O_NAME/${H2O_NAME}/g"\
@@ -103,6 +106,7 @@ cat "$DIST_DIR/buildinfo.json" \
   \
   | sed -e "s/SUBST_PROJECT_VERSION/${VERSION}/g" \
   | sed -e "s/SUBST_LAST_COMMIT_HASH/${GITHASH}/g" \
+  | sed -e "s~SUBST_PROJECT_GITBRANCH~${GITBRANCH}~g" \
   \
   | sed -e "s/SUBST_H2O_NAME/${H2O_NAME}/g"\
   | sed -e "s/SUBST_H2O_VERSION/${H2O_VERSION}/g"\
