@@ -16,18 +16,13 @@ pipeline{
         booleanParam(name: 'startH2OClusterOnYarn', defaultValue: false)
         booleanParam(name: 'runPySparklingIntegTests', defaultValue: false, description: 'Run pySparkling integration tests')
 
-        choice(
-            choices: '2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0\n1.5.2\n1.4.2',
-            description: 'Version of Spark used for testing.',
-            name: 'sparkVersion')
-
+        string(name: 'sparkVersion', defaultValue: '2.1.0', description: 'Version of Spark used for testing')
         string(name: 'sparklingTestEnv', defaultValue: 'yarn', description: 'Sparkling water test profile (default yarn)')
         string(name: 'backendMode', defaultValue: 'internal', description: '')
         string(name: 'driverHadoopVersion', defaultValue: 'hdp2.2', description: 'Hadoop version for which h2o driver will be obtained')
 
         string(name: 'artifactDirectory', defaultValue: '.', description: 'artifact directory')
-        string(name: 'branchName', description: 'Branch name')
-        string(name: 'buildNumber', description: 'Build number')
+        string(name: 'buildNumber', defaultValue: '99',description: 'Build number')
         booleanParam(name: 'nightlyBuild', defaultValue: false, description: 'Upload the artifacts if the build is nighlty')
     }
 
@@ -90,110 +85,17 @@ pipeline{
                    """
             }
         }
-
-        stage('QA: Lint and Unit Tests') {
-
-             steps {
-                    sh """
-                    # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew clean build
-                    """
-
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-		    }
-			post {
-				always {
-                    junit 'core/build/test-results/test/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'core/build/reports/tests/test',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Core Unit tests'
-					]
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/test',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Unit tests'
-					]
-
-				}
-			}
-        }
-
-        stage('QA:Local Integration Tests') {
-
-             steps {
-                    sh """
-                    # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME}
-                    """
-
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-		    }
-			post {
-				always {
-                    junit 'examples/build/test-results/integTest/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'core/build/reports/tests/localIntegTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Core: Integration tests'
-					]
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/integTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Integration tests'
-					]
-
-				}
-			}
-        }
-
-        stage('QA: Script Tests') {
-
-             steps {
-                    sh """
-                    # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew scriptTest
-                    """
-
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-		    }
-			post {
-				always {
-                    junit 'examples/build/test-results/scriptsTest/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/scriptsTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Script Tests'
-					]
-				}
-			}
-        }
-
         stage('QA: Distributed Integration tests') {
 
             steps {
 
                 parallel(
                         sparklinginteg:{
-                        sh "echo Running the internal backend mode"
+
                         sh "${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest"
-                        archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                },
+           
+                        },
+
                         pysparklingyarn:{
                         sh """
                             ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
@@ -225,20 +127,22 @@ pipeline{
 					  	reportFiles: 'index.html',
 					  	reportName: 'Examples Integration Tests'
 					]
+					archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
 				}
 			}
 
         }
 
-        stage('Publish artifacts to S3'){
-            steps{
-            sh """
-                if [ ${params.nightlyBuild} = true ]; then
+ /*       stage('Publish artifacts to S3') {
+            steps {
+                sh """
+                if [ ${params.nightlyBuild} == true ]; then
                     s3publish_artifacts(${params.artifactDirectory}, ${params.branchName}, ${params.buildNumber})
                 fi
             """
+            }
         }
-
+*/
 
   /*      stage('QA:Integration test- pySparkling'){
 
@@ -300,6 +204,3 @@ def failure(message) {
             message: message,
             state: 'FAILURE']]]])
 }
-
-
-
