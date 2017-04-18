@@ -65,6 +65,7 @@ def set_up_class(cls):
 def tear_down_class(cls):
     if ExternalClusterTestHelper.tests_in_external_mode(cls._sc._conf):
         cls.external_cluster_test_helper.stop_cloud()
+    cls._sc.stop()
 
 # Runs python tests and by default reports to console.
 # If filename is specified it additionally reports output to file with that name into py/build directory
