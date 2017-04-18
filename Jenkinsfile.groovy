@@ -91,7 +91,7 @@ pipeline{
             }
         }
 
- 
+
         stage('QA: Distributed Integration tests') {
 
             steps {
@@ -128,13 +128,14 @@ pipeline{
 
         }
 
-        stage('Publish artifacts to S3'){
-            steps{
-            sh """
+        stage('Publish artifacts to S3') {
+            steps {
+                sh """
                 if [ ${params.nightlyBuild} = true ]; then
                     s3publish_artifacts(${params.artifactDirectory}, ${params.branchName}, ${params.buildNumber})
                 fi
             """
+            }
         }
 
 
