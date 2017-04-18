@@ -128,17 +128,17 @@ pipeline{
 
         }
 
- /*       stage('Publish artifacts to S3') {
+        stage('Publish artifacts to S3') {
             steps {
                 sh """
-                if [ ${params.nightlyBuild} = true ]; then
+                if [ ${params.nightlyBuild} == true ]; then
                     s3publish_artifacts(${params.artifactDirectory}, ${params.branchName}, ${params.buildNumber})
                 fi
             """
             }
         }
 
-*/
+
   /*      stage('QA:Integration test- pySparkling'){
 
             steps{
