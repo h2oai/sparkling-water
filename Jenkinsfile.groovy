@@ -179,50 +179,58 @@ pipeline{
         }
 
 
-        stage('Stashing') {
-
-            steps {
-                // Make a tar of the directory and stash it -> --ignore-failed-read
-                sh "tar  -zcvf ../stash_archive.tar.gz ."
-                sh "mv ../stash_archive.tar.gz ."
-
-                stash name: 'unit-test-stash', includes: 'stash_archive.tar.gz'
-                echo 'Stash successful'
-
-                sh "ls -ltrh ${env.WORKSPACE}"
-                echo "Deleting the original workspace after stashing the directory"
-                sh "rm -r ${env.WORKSPACE}/*"
-                echo "Workspace Directory deleted"
-            }
-        }
+//        stage('Stashing') {
+//
+//            steps {
+//                // Make a tar of the directory and stash it -> --ignore-failed-read
+//                sh "tar  -zcvf ../stash_archive.tar.gz ."
+//                sh "mv ../stash_archive.tar.gz ."
+//
+//                stash name: 'unit-test-stash', includes: 'stash_archive.tar.gz'
+//                echo 'Stash successful'
+//
+//                sh "ls -ltrh ${env.WORKSPACE}"
+//                echo "Deleting the original workspace after stashing the directory"
+//                sh "rm -r ${env.WORKSPACE}/*"
+//                echo "Workspace Directory deleted"
+//            }
+//        }
 
 
         stage('QA:Integration tests') {
 
             steps {
-                echo "Unstash the unit test"
-                unstash "unit-test-stash"
+//                echo "Unstash the unit test"
+//                unstash "unit-test-stash"
+//
+//                //Untar the archieve
+//                sh "tar -zxvf stash_archive.tar.gz"
+//                sh "ls -ltrh ${env.WORKSPACE}"
 
-                //Untar the archieve
-                sh "tar -zxvf stash_archive.tar.gz"
-                sh "ls -ltrh ${env.WORKSPACE}"
-                
-                sh """
-                    # Move the unstashed directory outside the stashed one for the environment variables to pick up properly
-                    #mv ${env.WORKSPACE}/unit-test-stash/* ${env.WORKSPACE}
-                    #rm -r ${env.WORKSPACE}/unit-test-stash
-                    """
+                echo "Run the parallel integration tests"
+                parallel(
+                        "mr-0xd2":{
+                        echo "Running the internal backend mode"
+                        sh "${env.WORKSPACE}/gradlew integTest -PbackendMode=internal -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest"
+                },
+                        "mr-0xd3":{
+                        echo "Running the external backend mode"
+                        sh "${env.WORKSPACE}/gradlew integTest -PbackendMode=external -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest"
+                },
+                        failFast: false
 
-                sh """
-                     if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = true ]; then
-                             ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
-                     fi
-                     if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = false ]; then
-                            ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
-                     fi
-                     #  echo 'Archiving artifacts after Integration test'
+                )
 
-                 """
+//                sh """
+//                     if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = true ]; then
+//                             ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+//                     fi
+//                     if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = false ]; then
+//                            ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+//                     fi
+//                     #  echo 'Archiving artifacts after Integration test'
+//
+//                 """
 
                  archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
             }
