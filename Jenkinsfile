@@ -93,7 +93,7 @@ pipeline{
                         sparklinginteg:{
 
                         sh "${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest"
-           
+
                         },
 
                         pysparklingyarn:{
@@ -111,7 +111,7 @@ pipeline{
                         """
                         },
                         failFast: false
-                        archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                       
                 )
 
             }
