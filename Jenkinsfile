@@ -4,7 +4,7 @@
 
 pipeline{
 
-    agent { label 'mr-0xd3' }
+    agent any
 
     options {
         timeout(time: 120, unit: 'MINUTES')
@@ -25,7 +25,7 @@ pipeline{
         string(name: 'backendMode', defaultValue: 'internal', description: '')
         string(name: 'driverHadoopVersion', defaultValue: 'hdp2.2', description: 'Hadoop version for which h2o driver will be obtained')
 
-        string(name: 'artifactDirectory', defaultValue: '.', description: 'artifact directory')
+        string(name: 'artifactDirectory', defaultValue: 'artifacts', description: 'artifact directory')
         string(name: 'buildNumber', defaultValue: '99',description: 'Build number')
         booleanParam(name: 'nightlyBuild', defaultValue: false, description: 'Upload the artifacts if the build is nighlty')
     }
@@ -89,6 +89,100 @@ pipeline{
                    """
             }
         }
+
+        stage('QA: Lint and Unit Tests') {
+
+             steps {
+                    sh """
+                    # Build, run regular tests
+                    ${env.WORKSPACE}/gradlew clean build
+                    """
+
+                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+		    }
+			post {
+				always {
+                    junit 'core/build/test-results/test/*.xml'
+					publishHTML target: [
+						allowMissing: false,
+					  	alwaysLinkToLastBuild: true,
+					  	keepAll: true,
+					  	reportDir: 'core/build/reports/tests/test',
+					  	reportFiles: 'index.html',
+					  	reportName: 'Core Unit tests'
+					]
+					publishHTML target: [
+						allowMissing: false,
+					  	alwaysLinkToLastBuild: true,
+					  	keepAll: true,
+					  	reportDir: 'examples/build/reports/tests/test',
+					  	reportFiles: 'index.html',
+					  	reportName: 'Examples Unit tests'
+					]
+
+				}
+			}
+        }
+
+        stage('QA:Local Integration Tests') {
+
+             steps {
+                    sh """
+                    # Build, run regular tests
+                    ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME}
+                    """
+
+                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+		    }
+			post {
+				always {
+                    junit 'examples/build/test-results/integTest/*.xml'
+					publishHTML target: [
+						allowMissing: false,
+					  	alwaysLinkToLastBuild: true,
+					  	keepAll: true,
+					  	reportDir: 'core/build/reports/tests/integTest',
+					  	reportFiles: 'index.html',
+					  	reportName: 'Core: Integration tests'
+					]
+					publishHTML target: [
+						allowMissing: false,
+					  	alwaysLinkToLastBuild: true,
+					  	keepAll: true,
+					  	reportDir: 'examples/build/reports/tests/integTest',
+					  	reportFiles: 'index.html',
+					  	reportName: 'Examples Integration tests'
+					]
+
+				}
+			}
+        }
+
+        stage('QA: Script Tests') {
+
+             steps {
+                    sh """
+                    # Build, run regular tests
+                    ${env.WORKSPACE}/gradlew scriptTest
+                    """
+
+                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+		    }
+			post {
+				always {
+                    junit 'examples/build/test-results/scriptsTest/*.xml'
+					publishHTML target: [
+						allowMissing: false,
+					  	alwaysLinkToLastBuild: true,
+					  	keepAll: true,
+					  	reportDir: 'examples/build/reports/tests/scriptsTest',
+					  	reportFiles: 'index.html',
+					  	reportName: 'Examples Script Tests'
+					]
+				}
+			}
+        }
+
         stage('QA: Distributed Integration tests') {
 
             steps {
