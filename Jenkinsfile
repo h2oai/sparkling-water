@@ -1,5 +1,7 @@
 #!/usr/bin/groovy
 
+@Library('test-shared-library') _
+
 pipeline{
 
     agent { label 'mr-0xd3' }
@@ -23,6 +25,7 @@ pipeline{
         string(name: 'backendMode', defaultValue: 'internal', description: '')
         string(name: 'driverHadoopVersion', defaultValue: 'hdp2.2', description: 'Hadoop version for which h2o driver will be obtained')
 
+        booleanParam(name: 'nightlyBuild', defaultValue: false, description: 'Upload the artifacts if the build is nighlty')
     }
 
     environment {
@@ -124,7 +127,7 @@ pipeline{
              steps {
                     sh """
                     # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} 
+                    ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME}
                     """
 
                     archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -136,7 +139,7 @@ pipeline{
 						allowMissing: false,
 					  	alwaysLinkToLastBuild: true,
 					  	keepAll: true,
-					  	reportDir: 'core/build/reports/tests/integTest',
+					  	reportDir: 'core/build/reports/tests/localIntegTest',
 					  	reportFiles: 'index.html',
 					  	reportName: 'Core: Integration tests'
 					]
@@ -198,10 +201,31 @@ pipeline{
                 )
 
             }
+			post {
+				always {
+                    junit 'examples/build/test-results/integrationTest/*.xml'
+					publishHTML target: [
+						allowMissing: false,
+					  	alwaysLinkToLastBuild: true,
+					  	keepAll: true,
+					  	reportDir: 'examples/build/reports/tests/distributedIntegTest',
+					  	reportFiles: 'index.html',
+					  	reportName: 'Examples Integration Tests'
+					]
+				}
+			}
+
         }
 
-
-
+ /*       stage('Publish artifacts to S3'){
+            steps{
+            sh """
+                if[ nightlyBuild = true ];then
+                    s3publish_data_table ("Sparkling-Water",)
+                fi
+            """
+        }
+*/
 
   /*      stage('QA:Integration test- pySparkling'){
 
