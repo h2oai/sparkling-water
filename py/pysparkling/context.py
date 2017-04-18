@@ -90,7 +90,7 @@ class H2OContext(object):
         self.is_initialized = False
 
     @staticmethod
-    def getOrCreate(spark, conf=None):
+    def getOrCreate(spark, conf=None, **kwargs):
         """
          Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
          configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
@@ -123,7 +123,7 @@ class H2OContext(object):
         h2o_context._client_ip = jhc.h2oLocalClientIp()
         h2o_context._client_port = jhc.h2oLocalClientPort()
         # Create H2O REST API client
-        h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port)
+        h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port, **kwargs)
         h2o_context.is_initialized = True
         # Stop h2o when running standalone pysparkling scripts and the user does not explicitly close h2o
         atexit.register(lambda: h2o_context.stop_with_jvm())
