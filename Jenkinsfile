@@ -189,16 +189,25 @@ pipeline{
             steps {
 
                 parallel(
-                        internal:{
+                        sparklinginteg:{
                         sh "echo Running the internal backend mode"
-                        sh "${env.WORKSPACE}/gradlew integTest -PbackendMode=internal -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest"
+                        sh "${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest"
                         archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                 },
-                        external:{
-                        sh "echo Running the external backend mode"
-                        sh "${env.WORKSPACE}/gradlew integTest -PbackendMode=external -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest"
-                        archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                },
+                        pysparklingyarn:{
+                        sh """
+                            ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                            mkdir -p py/build/test-result
+                            touch py/build/test-result/empty.xml
+                        """
+                        },
+                        pysparkling:{
+                        sh """
+                            ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                            mkdir -p py/build/test-result
+                            touch py/build/test-result/empty.xml
+                        """
+                        },
                         failFast: false
 
                 )
