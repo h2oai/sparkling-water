@@ -16,11 +16,7 @@ pipeline{
         booleanParam(name: 'startH2OClusterOnYarn', defaultValue: false)
         booleanParam(name: 'runPySparklingIntegTests', defaultValue: false, description: 'Run pySparkling integration tests')
 
-        choice(
-            choices: '2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0\n1.5.2\n1.4.2',
-            description: 'Version of Spark used for testing.',
-            name: 'sparkVersion')
-
+        string(name: 'sparkVersion', defaultValue: '2.1.0', description: 'Version of Spark used for testing')
         string(name: 'sparklingTestEnv', defaultValue: 'yarn', description: 'Sparkling water test profile (default yarn)')
         string(name: 'backendMode', defaultValue: 'internal', description: '')
         string(name: 'driverHadoopVersion', defaultValue: 'hdp2.2', description: 'Hadoop version for which h2o driver will be obtained')
@@ -90,7 +86,6 @@ pipeline{
                    """
             }
         }
-
         stage('QA: Distributed Integration tests') {
 
             steps {
@@ -127,13 +122,14 @@ pipeline{
 
         }
 
-        stage('Publish artifacts to S3'){
-            steps{
-            sh """
-                if [ ${params.nightlyBuild} = true ]; then
+        stage('Publish artifacts to S3') {
+            steps {
+                sh """
+                if [ ${params.nightlyBuild} == true ]; then
                     s3publish_artifacts(${params.artifactDirectory}, ${params.branchName}, ${params.buildNumber})
                 fi
             """
+            }
         }
 
 
@@ -197,6 +193,3 @@ def failure(message) {
             message: message,
             state: 'FAILURE']]]])
 }
-
-
-
