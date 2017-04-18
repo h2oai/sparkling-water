@@ -25,6 +25,9 @@ pipeline{
         string(name: 'backendMode', defaultValue: 'internal', description: '')
         string(name: 'driverHadoopVersion', defaultValue: 'hdp2.2', description: 'Hadoop version for which h2o driver will be obtained')
 
+        string(name: 'artifactDirectory', defaultValue: '.', description: 'artifact directory')
+        string(name: 'branchName', description: 'Branch name')
+        string(name: 'buildNumber', description: 'Build number')
         booleanParam(name: 'nightlyBuild', defaultValue: false, description: 'Upload the artifacts if the build is nighlty')
     }
 
@@ -217,15 +220,15 @@ pipeline{
 
         }
 
- /*       stage('Publish artifacts to S3'){
+        stage('Publish artifacts to S3'){
             steps{
             sh """
-                if[ nightlyBuild = true ];then
-                    s3publish_data_table ("Sparkling-Water",)
+                if [ ${params.nightlyBuild} = true ]; then
+                    s3publish_artifacts(${params.artifactDirectory}, ${params.branchName}, ${params.buildNumber})
                 fi
             """
         }
-*/
+
 
   /*      stage('QA:Integration test- pySparkling'){
 
