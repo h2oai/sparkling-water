@@ -16,21 +16,21 @@ Here we show a few examples how H2OContext can be started with internal backend.
 
 Explicitly specify internal backend on `H2OConf`
 ```scala
-val conf = new H2OConf(sc).setInternalClusterMode()
-val h2oContext = H2OContext.getOrCreate(sc, conf)
+val conf = new H2OConf(sparkSession).setInternalClusterMode()
+val h2oContext = H2OContext.getOrCreate(sparkSession, conf)
 ```
 
 If `spark.ext.h2o.backend.cluster.mode` property was set to `internal` either on command line or on the `SparkConf` class
  we can call:
 ```scala
-val h2oContext = H2OContext.getOrCreate(sc) 
+val h2oContext = H2OContext.getOrCreate(sparkSession) 
 ```
 
 or
 
 ```scala
-val conf = new H2OConf(sc)
-val h2oContext = H2OContext.getOrCreate(sc, conf)
+val conf = new H2OConf(sparkSession)
+val h2oContext = H2OContext.getOrCreate(sparkSession, conf)
 ```
 
 
@@ -133,15 +133,15 @@ After this step, we should have H2O cluster of 3 nodes running and the nodes sho
 Now, let's start Sparkling shell first as `./bin/sparkling-shell` and connect to the cluster:
 ```scala
 import org.apache.spark.h2o._
-val conf = new H2OConf(sc).setExternalClusterMode().useManualClusterStart().setCloudName("test”)
-val hc = H2OContext.getOrCreate(sc, conf)
+val conf = new H2OConf(sparkSession).setExternalClusterMode().useManualClusterStart().setCloudName("test”)
+val hc = H2OContext.getOrCreate(sparkSession, conf)
 ```
 
 To connect to existing H2O cluster from Python, start PySparkling shell as `./bin/pysparkling` and do:
 ```python
 from pysparkling import *
-conf = H2OConf(sc).set_external_cluster_mode().use_manual_cluster_start().set_cloud_name("test")
-hc = H2OContext.getOrCreate(sc, conf)
+conf = H2OConf(sparkSession).set_external_cluster_mode().use_manual_cluster_start().set_cloud_name("test")
+hc = H2OContext.getOrCreate(sparkSession, conf)
 ```
 
 To start external H2O cluster where the nodes are discovered using the flatfile, you can run
@@ -156,15 +156,15 @@ To connect to this external cluster, run the following commands in the correspon
 Scala:
 ```scala
 import org.apache.spark.h2o._
-val conf = new H2OConf(sc).setExternalClusterMode().useManualClusterStart().setH2OCluster("representant_ip", representant_port).setCloudName("test”)
-val hc = H2OContext.getOrCreate(sc, conf)
+val conf = new H2OConf(sparkSession).setExternalClusterMode().useManualClusterStart().setH2OCluster("representant_ip", representant_port).setCloudName("test”)
+val hc = H2OContext.getOrCreate(sparkSession, conf)
 ```
 
 Python:
 ```python
 from pysparkling import *
-conf = H2OConf(sc).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_cloud_name("test”)
-hc = H2OContext.getOrCreate(sc, conf)
+conf = H2OConf(sparkSession).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_cloud_name("test”)
+hc = H2OContext.getOrCreate(sparkSession, conf)
 ```
 We can see that in this case we are using extra call `setH2OCluster` in Scala and `set_h2o_cluster` in Python. When the external cluster is started via the flatfile approach, we need to give Sparkling Water ip address
 and port of arbitrary node inside the H2O cloud in order to connect to the cluster. The ip and port of this node are passed as arguments to `setH2OCluster/set_h2o_cluster` method.
@@ -188,15 +188,15 @@ We can force the client to use the correct address using the following configura
 Scala:
 ```scala
 import org.apache.spark.h2o._
-val conf = new H2OConf(sc).setExternalClusterMode().useManualClusterStart().setH2OCluster("representant_ip", representant_port).setClientIp("192.168.0.3").setCloudName("test”)
-val hc = H2OContext.getOrCreate(sc, conf)
+val conf = new H2OConf(sparkSession).setExternalClusterMode().useManualClusterStart().setH2OCluster("representant_ip", representant_port).setClientIp("192.168.0.3").setCloudName("test”)
+val hc = H2OContext.getOrCreate(sparkSession, conf)
 ```
 
 Python:
 ```python
 from pysparkling import *
-conf = H2OConf(sc).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_client_ip("192.168.0.3").set_cloud_name("test”)
-hc = H2OContext.getOrCreate(sc, conf)
+conf = H2OConf(sparkSession).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_client_ip("192.168.0.3").set_cloud_name("test”)
+hc = H2OContext.getOrCreate(sparkSession, conf)
 ```
 
 There is also less strict configuration `setClientNetworkMask` in Scala and `set_client_network_mask` in Python. Instead of it's IP address equivalent, using this
@@ -217,15 +217,15 @@ To start H2O cluster and connect to it from Spark application in Scala:
 
 ```scala
 import org.apache.spark.h2o._
-val conf = new H2OConf(sc).setExternalClusterMode().useAutoClusterStart().setH2ODriverPath("path_to_extended_driver").setNumOfExternalH2ONodes(1).setMapperXmx("2G").setYARNQueue("abc")
-val hc = H2OContext.getOrCreate(sc, conf)
+val conf = new H2OConf(sparkSession).setExternalClusterMode().useAutoClusterStart().setH2ODriverPath("path_to_extended_driver").setNumOfExternalH2ONodes(1).setMapperXmx("2G").setYARNQueue("abc")
+val hc = H2OContext.getOrCreate(sparkSession, conf)
 ```
 
 and in Python:
 ```python
 from pysparkling import *
-conf = H2OConf(sc).set_external_cluster_mode().use_auto_cluster_start().set_h2o_driver_path("path_to_extended_driver").set_num_of_external_h2o_nodes(1).set_mapper_xmx("2G”).set_yarn_queue(“abc”)`
-hc = H2OContext.getOrCreate(sc, conf)
+conf = H2OConf(sparkSession).set_external_cluster_mode().use_auto_cluster_start().set_h2o_driver_path("path_to_extended_driver").set_num_of_external_h2o_nodes(1).set_mapper_xmx("2G”).set_yarn_queue(“abc”)`
+hc = H2OContext.getOrCreate(sparkSession, conf)
 ```
 
 In both cases we can see various configuration methods. We explain only the Scala ones since the python equivalents are doing exactly the same.

@@ -23,6 +23,7 @@ import org.apache.spark.h2o.backends.internal.InternalBackendConf
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.repl.h2o.H2OInterpreter
+import org.apache.spark.sql.SparkSession
 
 /**
   * Configuration holder which is representing
@@ -34,6 +35,7 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
   def this(jsc: JavaSparkContext) = this(jsc.sc.getConf)
 
   def this(sc: SparkContext) = this(sc.getConf)
+  def this(sparkSession: SparkSession) = this(sparkSession.sparkContext.getConf)
 
   // Precondition
   require(sparkConf != null, "Spark conf was null")
