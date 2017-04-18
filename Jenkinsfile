@@ -6,6 +6,10 @@ pipeline{
 
     agent { label 'mr-0xd3' }
 
+    options {
+        timeout(time: 120, unit: 'MINUTES')
+    }
+
     parameters {
         string(name: 'branchName', defaultValue: 'master', description: 'Test given branch on top of YARN.')
         string(name: 'hdpVersion', defaultValue: 'current', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current will not do since it is not automatically expanded -> so please set 2.2.6.3-1')
@@ -139,7 +143,7 @@ pipeline{
 
         }
 
- /*       stage('Publish artifacts to S3') {
+        stage('Publish artifacts to S3') {
             steps {
                 sh """
                 if [ ${params.nightlyBuild} == true ]; then
@@ -148,7 +152,7 @@ pipeline{
             """
             }
         }
-*/
+
 
     }
 }
