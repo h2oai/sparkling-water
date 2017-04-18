@@ -27,7 +27,7 @@ import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.ui.SparklingWaterUITab
 import org.apache.spark.h2o.utils.{H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import water._
 
 import scala.collection.mutable
@@ -56,12 +56,13 @@ import scala.util.control.NoStackTrace
 /**
   * Create new H2OContext based on provided H2O configuration
   *
-  * @param sparkContext Spark Context
+  * @param sparkSession Spark Session
   * @param conf H2O configuration
   */
-class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends Logging with H2OContextUtils {
+class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends Logging with H2OContextUtils {
   self =>
   val announcementService = AnnouncementServiceFactory.create(conf)
+  val sparkContext = sparkSession.sparkContext
 
   /** IP of H2O client */
   private var localClientIp: String = _
@@ -286,28 +287,33 @@ object H2OContext extends Logging {
       throw new RuntimeException(onError)
     }
 
-
   /**
     * Get existing or create new H2OContext based on provided H2O configuration
     *
-    * @param sc Spark Context
+    * @param sparkSession Spark Session
     * @param conf H2O configuration
     * @return H2O Context
     */
-  def getOrCreate(sc: SparkContext, conf: H2OConf): H2OContext = synchronized {
+  def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = synchronized {
     if (instantiatedContext.get() == null) {
       if (H2O.API_PORT == 0) { // api port different than 0 means that client is already running
-        instantiatedContext.set(new H2OContext(sc, conf).init())
+        instantiatedContext.set(new H2OContext(sparkSession, conf).init())
       } else {
         throw new IllegalArgumentException(
-        """
-          |H2O context hasn't been started successfully in the previous attempt and H2O client with previous configuration is already running.
-          |Because of the current H2O limitation that it can't be restarted within a running JVM,
-          |please restart your job or spark session and create new H2O context with new configuration.")
-        """.stripMargin)
+          """
+            |H2O context hasn't been started successfully in the previous attempt and H2O client with previous configuration is already running.
+            |Because of the current H2O limitation that it can't be restarted within a running JVM,
+            |please restart your job or spark session and create new H2O context with new configuration.")
+          """.stripMargin)
       }
     }
     instantiatedContext.get()
+  }
+
+  def getOrCreate(sc: SparkContext, conf: H2OConf): H2OContext = {
+    logWarning("Method H2OContext.getOrCreate with argument of type SparkContext is deprecated and " +
+      "parameter of type SparkSession is preferred")
+    getOrCreate(SparkSession.builder().getOrCreate(), conf)
   }
 
   /**
@@ -315,11 +321,18 @@ object H2OContext extends Logging {
     * properties passed to Sparkling Water and based on them starts H2O Context. If the values are not found, the default
     * values are used in most of the cases. The default cluster mode is internal, ie. spark.ext.h2o.external.cluster.mode=false
     *
-    * @param sc Spark Context
+    * @param sparkSession Spark Session
     * @return H2O Context
     */
+  def getOrCreate(sparkSession: SparkSession): H2OContext = {
+    getOrCreate(sparkSession, new H2OConf(sparkSession))
+  }
+
   def getOrCreate(sc: SparkContext): H2OContext = {
-    getOrCreate(sc, new H2OConf(sc))
+    logWarning("Method H2OContext.getOrCreate with argument of type SparkContext is deprecated and " +
+      "parameter of type SparkSession is preferred.")
+    val spark = SparkSession.builder().getOrCreate()
+    getOrCreate(spark, new H2OConf(spark))
   }
 
   /** Global cleanup on H2OContext.stop call */

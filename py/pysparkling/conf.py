@@ -1,17 +1,27 @@
-
+from pyspark.context import SparkContext
+from pyspark.sql import SparkSession
 from pysparkling.initializer import Initializer
+import warnings
 
 
 class H2OConf(object):
-    def __init__(self, spark_context):
+    def __init__(self, spark):
         try:
-            Initializer.load_sparkling_jar(spark_context)
-            self._do_init(spark_context)
+            spark_session = spark
+            if isinstance(spark, SparkContext):
+                warnings.warn("Method H2OContext.getOrCreate with argument of type SparkContext is deprecated and " +
+                              "parameter of type SparkSession is preferred.")
+                spark_session = SparkSession.builder.getOrCreate()
+
+            Initializer.load_sparkling_jar(spark_session._sc)
+            self._do_init(spark_session)
         except:
             raise
 
-    def _do_init(self, spark_context):
-        self._sc = spark_context
+
+    def _do_init(self, spark_session):
+        self._ss = spark_session
+        self._sc = self._ss._sc
         jvm = self._sc._jvm
         jsc = self._sc._jsc
         # Create instance of H2OConf class
