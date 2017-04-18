@@ -91,99 +91,6 @@ pipeline{
             }
         }
 
-        stage('QA: Lint and Unit Tests') {
-
-             steps {
-                    sh """
-                    # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew clean build
-                    """
-
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-		    }
-			post {
-				always {
-                    junit 'core/build/test-results/test/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'core/build/reports/tests/test',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Core Unit tests'
-					]
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/test',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Unit tests'
-					]
-
-				}
-			}
-        }
-
-        stage('QA:Local Integration Tests') {
-
-             steps {
-                    sh """
-                    # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME}
-                    """
-
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-		    }
-			post {
-				always {
-                    junit 'examples/build/test-results/integTest/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'core/build/reports/tests/localIntegTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Core: Integration tests'
-					]
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/integTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Integration tests'
-					]
-
-				}
-			}
-        }
-
-        stage('QA: Script Tests') {
-
-             steps {
-                    sh """
-                    # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew scriptTest
-                    """
-
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-		    }
-			post {
-				always {
-                    junit 'examples/build/test-results/scriptsTest/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/scriptsTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Script Tests'
-					]
-				}
-			}
-        }
-
         stage('QA: Distributed Integration tests') {
 
             steps {
@@ -192,12 +99,11 @@ pipeline{
                         internal:{
                         sh "echo Running the internal backend mode"
                         sh "${env.WORKSPACE}/gradlew integTest -PbackendMode=internal -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest"
-                        archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+
                 },
                         external:{
                         sh "echo Running the external backend mode"
                         sh "${env.WORKSPACE}/gradlew integTest -PbackendMode=external -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest"
-                        archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                 },
                         failFast: false
 
@@ -215,6 +121,7 @@ pipeline{
 					  	reportFiles: 'index.html',
 					  	reportName: 'Examples Integration Tests'
 					]
+					archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
 				}
 			}
 
