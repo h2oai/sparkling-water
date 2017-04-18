@@ -122,7 +122,7 @@ pipeline{
 
         }
 
-        stage('Publish artifacts to S3') {
+ /*       stage('Publish artifacts to S3') {
             steps {
                 sh """
                 if [ ${params.nightlyBuild} == true ]; then
@@ -131,7 +131,7 @@ pipeline{
             """
             }
         }
-
+*/
 
   /*      stage('QA:Integration test- pySparkling'){
 
