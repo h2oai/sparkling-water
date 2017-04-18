@@ -38,7 +38,9 @@ class FrameTransformationsTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        h2o.cluster().shutdown()
         test_utils.tear_down_class(cls)
+
 
     # test transformation from dataframe to h2o frame
     def test_df_to_h2o_frame(self):
