@@ -90,9 +90,15 @@ pipeline{
             steps {
 
                 parallel(
-                        sparklinginteg:{
+                        sparklingintegyarn:{
 
                         sh "${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest"
+
+                        },
+
+                        sparklinginteg:{
+
+                        sh "${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest"
 
                         },
 
@@ -111,7 +117,7 @@ pipeline{
                         """
                         },
                         failFast: false
-                       
+
                 )
 
             }
@@ -143,35 +149,6 @@ pipeline{
             }
         }
 */
-
-  /*      stage('QA:Integration test- pySparkling'){
-
-            steps{
-                sh"""
-
-                     # Run pySparkling integration tests on top of YARN
-                     #
-                     if [ "params.runPySparklingIntegTests" = true -a "param.startH2OClusterOnYarn" = true ]; then
-                             ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
-                             # manually create empty test-result/empty.xml file so Publish JUnit test result report does not fail when only pySparkling integration tests parameter has been selected
-                             mkdir -p py/build/test-result
-                             touch py/build/test-result/empty.xml
-                     fi
-                     if [ "params.runPySparklingIntegTests" = true -a "params.startH2OClusterOnYarn" = false ]; then
-                             ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
-                             # manually create empty test-result/empty.xml file so Publish JUnit test result report does not fail when only pySparkling integration tests parameter has been selected
-                             mkdir -p py/build/test-result
-                             touch py/build/test-result/empty.xml
-                     fi
-
-                    #echo 'Archiving artifacts after Integration test- pySparkling'
-                    echo 'Finished integration test'
-
-                 """
-
-             */   //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-    //    //    }
-       // }
 
     }
 }
