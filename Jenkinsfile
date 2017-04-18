@@ -22,8 +22,8 @@ pipeline{
         string(name: 'driverHadoopVersion', defaultValue: 'hdp2.2', description: 'Hadoop version for which h2o driver will be obtained')
 
         string(name: 'artifactDirectory', defaultValue: '.', description: 'artifact directory')
-        string(name: 'branchName', description: 'Branch name')
-        string(name: 'buildNumber', description: 'Build number')
+        string(name: 'branchName', defaultValue: 'SW', description: 'Branch name')
+        string(name: 'buildNumber', defaultValue: '99',description: 'Build number')
         booleanParam(name: 'nightlyBuild', defaultValue: false, description: 'Upload the artifacts if the build is nighlty')
     }
 
