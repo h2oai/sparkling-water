@@ -66,6 +66,10 @@ ZIP_FILE="$DIST_BUILD_DIR/$ZIP_NAME"
 
 # Make distribution package and put it into dist directory
 rsync -rtvW --files-from "$TOPDIR/demofiles.list" "$TOPDIR/" "$DEST_DIR/"
+# Print available H2O Hadoop distributions to config file
+H2O_DRIVERS_LIST="standalone $(./gradlew -q :sparkling-water-assembly-h2o:printHadoopDistributions)"
+echo "$H2O_DRIVERS_LIST" > "$DEST_DIR/h2o_drivers.txt"
+
 ( 
  cd private
  zip -r "$ZIP_FILE" "$DEST_DIRNAME"
@@ -94,6 +98,7 @@ cat "$DIST_DIR/index.html" \
   | sed -e "s/SUBST_H2O_VERSION/${H2O_VERSION}/g"\
   | sed -e "s/SUBST_H2O_BUILD/${H2O_BUILD}/g"\
   | sed -e "s/SUBST_H2O_NAME/${H2O_NAME}/g"\
+  | sed -e "s/SUBST_H2O_DRIVERS_LIST/${H2O_DRIVERS_LIST}/g"\
   | sed -e "s/SUBST_SPARK_VERSION/${SPARK_VERSION}/g"\
   | sed -e "s/SUBST_H2O_BRANCH_NAME/${H2O_BRANCH_NAME}/g"\
   > "$DIST_BUILD_DIR/index.html"
@@ -110,6 +115,7 @@ cat "$DIST_DIR/buildinfo.json" \
   \
   | sed -e "s/SUBST_H2O_NAME/${H2O_NAME}/g"\
   | sed -e "s/SUBST_H2O_VERSION/${H2O_VERSION}/g"\
+  | sed -e "s/SUBST_H2O_DRIVERS_LIST/${H2O_DRIVERS_LIST}/g"\
   \
   | sed -e "s/SUBST_H2O_PROJECT_VERSION/${H2O_PROJECT_VERSION}/g"\
   | sed -e "s/SUBST_H2O_BRANCH_NAME/${H2O_BRANCH_NAME}/g"\

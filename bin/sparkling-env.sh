@@ -50,6 +50,7 @@ patch_version=$(echo $VERSION | cut -d . -f 3)
 version_without_snapshot=`echo $VERSION | cut -d - -f 1`
 PY_EGG="h2o_pysparkling_${major_version}-${version_without_snapshot}-py2.7.egg"
 PY_EGG_FILE="$TOPDIR/py/build/dist/$PY_EGG"
+AVAILABLE_H2O_DRIVERS=$( [ -f "$TOPDIR/h2o_drivers.txt" ] && cat "$TOPDIR/h2o_drivers.txt" || echo "N/A" )
 
 # Default master
 DEFAULT_MASTER="local[*]"

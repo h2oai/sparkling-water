@@ -11,7 +11,10 @@ Download extended H2O driver for Kluster mode.
  $0 <HADOOP_VERSION>
   
  Parameters:
-    HADOOP_VERSION  - Hadoop version (e.g., hdp2.1) or "standalone"
+    HADOOP_VERSION - Hadoop version (e.g., hdp2.1) or "standalone" - see list below
+    
+ Hadoop distributions supported by H2O:
+    ${AVAILABLE_H2O_DRIVERS}
 
 EOF
 exit
