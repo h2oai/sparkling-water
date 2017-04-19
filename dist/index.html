@@ -237,6 +237,8 @@
         var rsparklingPanel = document.getElementById('rsparkling')
         var klusterTab = document.getElementById('kluster-tab')
         var klusterPanel = document.getElementById('kluster')
+        var pysparklingTab = document.getElementById('pysparkling-tab')
+        var pysparklingPanel = document.getElementById('pysparkling')
         var showZipTab = function() {
           zipPanel.style.display = 'block';
           zipTab.className = 'active';
@@ -250,6 +252,8 @@
           rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
         };
         var showStandaloneTab = function() {
           standalonePanel.style.display = 'block';
@@ -264,6 +268,8 @@
           rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
         };
         var showHadoopTab = function(){
           hadoopPanel.style.display = 'block';
@@ -278,6 +284,8 @@
           rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
         };
         var showMavenTab = function(){
           hadoopPanel.style.display = 'none';
@@ -292,6 +300,8 @@
           rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
         };
         var showRSparklingTab = function(){
           hadoopPanel.style.display = 'none';
@@ -306,6 +316,8 @@
           rsparklingTab.className = 'active';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
         };
         var showKlusterTab = function(){
           hadoopPanel.style.display = 'none';
@@ -320,6 +332,25 @@
           rsparklingTab.className = '';
           klusterPanel.style.display = 'block';
           klusterTab.className = 'active';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
+        };
+        var showPySparklingTab = function(){
+          hadoopPanel.style.display = 'none';
+          hadoopTab.className = '';
+          standalonePanel.style.display = 'none';
+          standaloneTab.className = '';
+          zipPanel.style.display = 'none';
+          zipTab.className = '';
+          mavenPanel.style.display = 'none';
+          mavenTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
+          klusterPanel.style.display = 'none';
+          klusterTab.className = '';
+          pysparklingPanel.style.display = 'block';
+          pysparklingTab.className = 'active';
+
         };
 
         zipTab.onclick = showZipTab
@@ -328,7 +359,7 @@
         mavenTab.onclick = showMavenTab
         rsparklingTab.onclick = showRSparklingTab
         klusterTab.onclick = showKlusterTab
-
+        pysparklingTab.onclick = showPySparklingTab
         var hash = window.location.hash;
         if(hash && hash.indexOf('#h') == 0) {
           showHadoopTab();
@@ -368,6 +399,7 @@
           <span id="kluster-tab">Kluster</span>
           <span id="maven-tab">Use from Maven</span>
           <span id="rsparkling-tab">RSparkling</span>
+          <span id="pysparkling-tab">PySparkling</span>
         </div>
         <div id="panels">
           <div id="quickstart-zip">
