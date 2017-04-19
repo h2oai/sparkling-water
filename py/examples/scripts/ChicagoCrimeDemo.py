@@ -95,9 +95,9 @@ chicagoCrimes10k = "chicagoCrimes10k.csv"
 
 
 # h2o.import_file expects cluster-relative path
-f_weather = h2o.import_file(_locate(chicagoAllWeather))
-f_census = h2o.import_file(_locate(chicagoCensus))
-f_crimes = h2o.import_file(_locate(chicagoCrimes10k), col_types = {"Date": "string"})
+f_weather = h2o.upload_file(_locate(chicagoAllWeather))
+f_census = h2o.upload_file(_locate(chicagoCensus))
+f_crimes = h2o.upload_file(_locate(chicagoCrimes10k), col_types = {"Date": "string"})
 
 
 # Transform weather table
