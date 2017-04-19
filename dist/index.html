@@ -233,10 +233,12 @@
         var standalonePanel = document.getElementById('standalone');
         var mavenTab = document.getElementById('maven-tab');
         var mavenPanel = document.getElementById('maven');
-        var addonsTab = document.getElementById('addons-tab')
-        var addonsPanel = document.getElementById('addons')
+        var rsparklingTab = document.getElementById('rsparkling-tab')
+        var rsparklingPanel = document.getElementById('rsparkling')
         var klusterTab = document.getElementById('kluster-tab')
         var klusterPanel = document.getElementById('kluster')
+        var pysparklingTab = document.getElementById('pysparkling-tab')
+        var pysparklingPanel = document.getElementById('pysparkling')
         var showZipTab = function() {
           zipPanel.style.display = 'block';
           zipTab.className = 'active';
@@ -246,10 +248,12 @@
           hadoopTab.className = '';
           mavenPanel.style.display = 'none';
           mavenTab.className = '';
-          addonsPanel.style.display = 'none';
-          addonsTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
         };
         var showStandaloneTab = function() {
           standalonePanel.style.display = 'block';
@@ -260,10 +264,12 @@
           hadoopTab.className = '';
           mavenPanel.style.display = 'none';
           mavenTab.className = '';
-          addonsPanel.style.display = 'none';
-          addonsTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
         };
         var showHadoopTab = function(){
           hadoopPanel.style.display = 'block';
@@ -274,10 +280,12 @@
           zipTab.className = '';
           mavenPanel.style.display = 'none';
           mavenTab.className = '';
-          addonsPanel.style.display = 'none';
-          addonsTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
         };
         var showMavenTab = function(){
           hadoopPanel.style.display = 'none';
@@ -288,12 +296,14 @@
           zipTab.className = '';
           mavenPanel.style.display = 'block';
           mavenTab.className = 'active';
-          addonsPanel.style.display = 'none';
-          addonsTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
         };
-        var showAddonsTab = function(){
+        var showRSparklingTab = function(){
           hadoopPanel.style.display = 'none';
           hadoopTab.className = '';
           standalonePanel.style.display = 'none';
@@ -302,10 +312,12 @@
           zipTab.className = '';
           mavenPanel.style.display = 'none';
           mavenTab.className = '';
-          addonsPanel.style.display = 'block';
-          addonsTab.className = 'active';
+          rsparklingPanel.style.display = 'block';
+          rsparklingTab.className = 'active';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
         };
         var showKlusterTab = function(){
           hadoopPanel.style.display = 'none';
@@ -316,19 +328,38 @@
           zipTab.className = '';
           mavenPanel.style.display = 'none';
           mavenTab.className = '';
-          addonsPanel.style.display = 'none';
-          addonsTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
           klusterPanel.style.display = 'block';
           klusterTab.className = 'active';
+          pysparklingPanel.style.display = 'none';
+          pysparklingTab.className = '';
+        };
+        var showPySparklingTab = function(){
+          hadoopPanel.style.display = 'none';
+          hadoopTab.className = '';
+          standalonePanel.style.display = 'none';
+          standaloneTab.className = '';
+          zipPanel.style.display = 'none';
+          zipTab.className = '';
+          mavenPanel.style.display = 'none';
+          mavenTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
+          klusterPanel.style.display = 'none';
+          klusterTab.className = '';
+          pysparklingPanel.style.display = 'block';
+          pysparklingTab.className = 'active';
+
         };
 
         zipTab.onclick = showZipTab
         standaloneTab.onclick = showStandaloneTab
         hadoopTab.onclick = showHadoopTab
         mavenTab.onclick = showMavenTab
-        addonsTab.onclick = showAddonsTab
+        rsparklingTab.onclick = showRSparklingTab
         klusterTab.onclick = showKlusterTab
-
+        pysparklingTab.onclick = showPySparklingTab
         var hash = window.location.hash;
         if(hash && hash.indexOf('#h') == 0) {
           showHadoopTab();
@@ -367,7 +398,8 @@
           <span id="standalone-tab">Run on Standalone Cluster</span>
           <span id="kluster-tab">Kluster</span>
           <span id="maven-tab">Use from Maven</span>
-          <span id="addons-tab">R/Python/Spark</span>
+          <span id="rsparkling-tab">RSparkling</span>
+          <span id="pysparkling-tab">PySparkling</span>
         </div>
         <div id="panels">
           <div id="quickstart-zip">
@@ -516,12 +548,21 @@
               java -cp h2odriver-extended.jar water.H2OApp -md5skip -name test
             </p>
 
-            <p>4. In your Sparkling Water application, create H2OContext:</p>
+            <p>4 In your Sparkling Water application, create H2OContext:</p>
+            <p>Scala</p>
             <p class="terminal">
               import org.apache.spark.h2o._<br/>
-              val conf = new H2OConf(sc).setExternalClusterMode().useManualClusterStart().setCloudName("test")<br/>
-              val hc = H2OContext.getOrCreate(sc, conf)<br/>
+              val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")<br/>
+              val hc = H2OContext.getOrCreate(spark, conf)<br/>
             </p>
+
+            <p>Python</p>
+            <p class="terminal">
+              from pysparkling import *<br/>
+              conf = H2OConf(spark).set_external_cluster_mode().use_manual_cluster_start().set_cloud_name("test")<br/>
+              hc = H2OContext.getOrCreate(spark, conf)<br/>
+            </p>
+
 
             <p>List of supported Hadoop distributions: SUBST_H2O_DRIVERS_LIST</p>
 
@@ -552,7 +593,7 @@
               </p>
               <p>See Maven Central for <a href="http://search.maven.org/#artifactdetails|ai.h2o|sparkling-water-core_2.11|SUBST_PROJECT_VERSION|jar">artifact details</a>.
           </div>
-          <div id="addons" style="display:none">
+          <div id="rsparkling" style="display:none">
               <div class="integration-info">
                 <h2>Integration info</h2>
                 <div>
@@ -562,16 +603,66 @@
                   </ul>
                 </div>
               </div>
-              <h2>R client</h2>
-              <p>Please, follow installation instructions on <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html#R">H2O-R page</a>.</p>
+              <h2>RSparkling</h2>
+              <p>Please follow the installation and usage instructions on <a href="https://github.com/h2oai/rsparkling">RSparkling page</a></p>
 
-              <h2>Python client</h2>
-              <p>Please, follow installation instructions on <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html#Python">H2O-Python page</a>.</p>
-              <p></p>
-          </div>
-
+              <h2>H2O R Client</h2>
+              <p>Once you have H2OContext available in RSParkling, any commands available in the R client can be used. For more information, please visit <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html#R">H2O-R page</a>.</p>
 
         </div>
+
+          <div id="pysparkling" style="display:none">
+            <div class="integration-info">
+              <h2>Integration info</h2>
+              <div>
+                <ul>
+                  <li>H2O version: <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html">SUBST_H2O_VERSION.SUBST_H2O_BUILD SUBST_H2O_NAME</a> (<a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/docs-website/h2o-docs/index.html">documentation</a>)</li>
+                  <li>Spark version: <a href="https://spark.apache.org/downloads.html">SUBST_SPARK_VERSION</a> (<a href="https://spark.apache.org/docs/SUBST_SPARK_VERSION/">documentation</a>)</li>
+                </ul>
+              </div>
+            </div>
+            <h2>PySparkling</h2>
+
+            <p>PySparkling is a Python client for the Sparkling Water applications. To use it: </p>
+
+            <p>1. Ensure that Spark is installed and MASTER, SPARK_HOME environmental variables are properly set.</p>
+            <p>2. Download and unpack Sparkling Water distribution.</p>
+
+            <p>3. Run PySparkling shell.</p>
+            <p class="terminal">
+              ./bin/pysparkling
+            </p>
+
+            <p>4. In your PySparkling application, create H2OContext.</p>
+            <p class="terminal">
+              from pysparkling import *<br/>
+              hc = H2OContext.getOrCreate(spark)<br/>
+            </p>
+
+            <h2>PySparkling installed from PyPi repository</h2>
+
+            <p>1. Install PySparkling using pip</p>
+            <p class="terminal">
+              pip install pysparkling_SUBST_SPARK_MAJOR_VERSION
+            </p>
+
+
+            <p>2. In Your Python, first create SparkSession. For this step, you need to have PySpark
+            package installed.</p>
+            <p class="terminal">
+              from pyspark.sql import SparkSession<br/>
+              spark = SparkSession.builder.appName("SparklingWaterApp").getOrCreate()
+            </p>
+
+            <p>3. Start H2OContext.</p>
+            <p class="terminal">
+              from pysparkling import *<br/>
+              hc = H2OContext.getOrCreate(spark)<br/>
+            </p>
+            <h2>H2O Python Client</h2>
+            <p>Once you have H2OContext available, any API calls available in the H2O Python client can be used. For more information about the Python client, please visit <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html#Python">H2O-Python page</a>.</p>
+            <p></p>
+          </div>
         <div id="documentation">
           <h2>Documentation</h2>
           <ul>
@@ -581,6 +672,7 @@
           </ul>
         </div>
       </div>
+    </div>
     </div>
   </body>
 </html>
