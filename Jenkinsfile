@@ -238,13 +238,14 @@ pipeline{
         }
 
         stage('Publish artifacts to S3') {
-            steps {
 
-            if (params.nightlyBuild){
+            when {
+                expression { params.nightlyBuild == true }
+            }
+            steps{
                 s3publish_artifacts(params.artifactDirectory, params.branchName, params.buildNumber)
             }
 
-          }
         }
     }
 }
