@@ -101,6 +101,7 @@ cat "$DIST_DIR/index.html" \
   | sed -e "s/SUBST_H2O_NAME/${H2O_NAME}/g"\
   | sed -e "s/SUBST_H2O_DRIVERS_LIST/${H2O_DRIVERS_LIST}/g"\
   | sed -e "s/SUBST_SPARK_VERSION/${SPARK_VERSION}/g"\
+  | sed -e "s/SUBST_SPARK_MAJOR_VERSION/${SPARK_MAJOR_VERSION}/g"\
   | sed -e "s/SUBST_H2O_BRANCH_NAME/${H2O_BRANCH_NAME}/g"\
   > "$DIST_BUILD_DIR/index.html"
 
