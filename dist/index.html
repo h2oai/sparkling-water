@@ -516,12 +516,20 @@
               java -cp h2odriver-extended.jar water.H2OApp -md5skip -name test
             </p>
 
-            <p>4. In your Sparkling Water application, create H2OContext:</p>
+            <p>4 (Scala). In your Sparkling Water application, create H2OContext:</p>
             <p class="terminal">
               import org.apache.spark.h2o._<br/>
               val conf = new H2OConf(sc).setExternalClusterMode().useManualClusterStart().setCloudName("test")<br/>
               val hc = H2OContext.getOrCreate(sc, conf)<br/>
             </p>
+
+            <p> 4 (Python). In you PySparkling application, create H2OContext: </p>
+            <p class="terminal">
+              from pysparkling import *<br/>
+              conf = H2OConf(sc).set_external_cluster_mode().use_manual_cluster_start().set_cloud_name("test")<br/>
+              hc = H2OContext.getOrCreate(sc, conf)<br/>
+            </p>
+
 
             <p>List of supported Hadoop distributions: SUBST_H2O_DRIVERS_LIST</p>
 
