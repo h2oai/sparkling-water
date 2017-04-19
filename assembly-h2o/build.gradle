@@ -188,7 +188,7 @@ def String getOrDownloadOriginalJar() {
         if (hadoopVersion == null || hadoopVersion.isEmpty()) {
             def url = "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/Rjar/h2o.jar".toURL()
             logger.info("Downloading h2o jar from: $url")
-            def h2oJarFile = new File(saveDir, "h2o-${h2oMajorVersion}.${h2oBuild}.jar")
+            def h2oJarFile = new File(saveDir, "h2odriver-${h2oMajorVersion}.${h2oBuild}.jar")
             if (!h2oJarFile.exists()) {
                 downloadFile(url, h2oJarFile)
             }
