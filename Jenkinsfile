@@ -241,7 +241,7 @@ pipeline{
             steps {
 
             if (params.nightlyBuild){
-                s3publish_artifacts(params.artifactDirectory, params.branchName}, params.buildNumber)
+                s3publish_artifacts(params.artifactDirectory, params.branchName, params.buildNumber)
             }
 
           }
