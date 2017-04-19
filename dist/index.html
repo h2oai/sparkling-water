@@ -555,7 +555,7 @@
               val hc = H2OContext.getOrCreate(sc, conf)<br/>
             </p>
 
-            <p> 4 (Python). In you PySparkling application, create H2OContext: </p>
+            <p> 4 (Python). In your PySparkling application, create H2OContext: </p>
             <p class="terminal">
               from pysparkling import *<br/>
               conf = H2OConf(sc).set_external_cluster_mode().use_manual_cluster_start().set_cloud_name("test")<br/>
@@ -608,6 +608,59 @@
               <p>For more information about regular H2O R client, follow installation instructions on <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html#R">H2O-R page</a>.</p>
 
         </div>
+
+          <div id="pysparkling" style="display:none">
+            <div class="integration-info">
+              <h2>Integration info</h2>
+              <div>
+                <ul>
+                  <li>H2O version: <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html">SUBST_H2O_VERSION.SUBST_H2O_BUILD SUBST_H2O_NAME</a> (<a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/docs-website/h2o-docs/index.html">documentation</a>)</li>
+                  <li>Spark version: <a href="https://spark.apache.org/downloads.html">SUBST_SPARK_VERSION</a> (<a href="https://spark.apache.org/docs/SUBST_SPARK_VERSION/">documentation</a>)</li>
+                </ul>
+              </div>
+            </div>
+            <h2>PySparkling - Python Client</h2>
+
+            <p>PySparkling is a python client for the sparkling water application. To use it: </p>
+
+            <p>0. Ensure that Spark is installed and MASTER environmental variable property set</p>
+            <p>1. Download and unpack Sparkling Water distribution</p>
+
+            <p>2. Run PySparkling shell</p>
+            <p class="terminal">
+              ./bin/pysparkling
+            </p>
+
+            <p> 3. In your PySparkling application, create H2OContext: </p>
+            <p class="terminal">
+              from pysparkling import *<br/>
+              hc = H2OContext.getOrCreate(sc)<br/>
+            </p>
+
+            <h2>PySparkling can be also fetched from PyPi repository.</h2>
+
+            <p>1. Install PySparkling using pip</p>
+            <p class="terminal">
+              pip install pysparkling_SUBST_SPARK_MAJOR_VERSION
+            </p>
+
+
+            <p>2. In Your Python, first create SparkSession. For this step, you need to have PySpark
+            package installed</p>
+            <p class="terminal">
+              from pyspark.sql import SparkSession<br/>
+              spark = SparkSession.builder.appName("SparklingWaterApp").getOrCreate()
+            </p>
+
+            <p>3. Start H2OContext</p>
+            <p class="terminal">
+              from pysparkling import *<br/>
+              hc = H2OContext.getOrCreate(sc)<br/>
+            </p>
+
+            <p>If you are interested in regular H2O Python client, follow installation instructions on <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html#Python">H2O-Python page</a>.</p>
+            <p></p>
+          </div>
         <div id="documentation">
           <h2>Documentation</h2>
           <ul>
@@ -617,6 +670,7 @@
           </ul>
         </div>
       </div>
+    </div>
     </div>
   </body>
 </html>

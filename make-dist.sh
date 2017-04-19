@@ -89,6 +89,7 @@ fi
 H2O_PROJECT_VERSION=${H2O_VERSION}.${H2O_BUILD}
 H2O_BUILD_NUMBER=${H2O_BUILD}
 
+SPARK_MAJOR_VERSION=$(echo $SPARK_VERSION | cut -f 1,2 -d .)
 # Copy dist dir files
 cat "$DIST_DIR/index.html" \
   | sed -e "s/SUBST_PROJECT_VERSION/$VERSION/g"\
@@ -122,6 +123,7 @@ cat "$DIST_DIR/buildinfo.json" \
   | sed -e "s/SUBST_H2O_BUILD_NUMBER/${H2O_BUILD_NUMBER}/g"\
   \
   | sed -e "s/SUBST_SPARK_VERSION/${SPARK_VERSION}/g"\
+  | sed -e "s/SUBST_SPARK_MAJOR_VERSION/${SPARK_MAJOR_VERSION}/g"\
   \
   > "$DIST_BUILD_DIR/buildinfo.json"
 
