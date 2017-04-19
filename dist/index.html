@@ -233,8 +233,8 @@
         var standalonePanel = document.getElementById('standalone');
         var mavenTab = document.getElementById('maven-tab');
         var mavenPanel = document.getElementById('maven');
-        var addonsTab = document.getElementById('addons-tab')
-        var addonsPanel = document.getElementById('addons')
+        var rsparklingTab = document.getElementById('rsparkling-tab')
+        var rsparklingPanel = document.getElementById('rsparkling')
         var klusterTab = document.getElementById('kluster-tab')
         var klusterPanel = document.getElementById('kluster')
         var showZipTab = function() {
@@ -246,8 +246,8 @@
           hadoopTab.className = '';
           mavenPanel.style.display = 'none';
           mavenTab.className = '';
-          addonsPanel.style.display = 'none';
-          addonsTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
         };
@@ -260,8 +260,8 @@
           hadoopTab.className = '';
           mavenPanel.style.display = 'none';
           mavenTab.className = '';
-          addonsPanel.style.display = 'none';
-          addonsTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
         };
@@ -274,8 +274,8 @@
           zipTab.className = '';
           mavenPanel.style.display = 'none';
           mavenTab.className = '';
-          addonsPanel.style.display = 'none';
-          addonsTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
         };
@@ -288,12 +288,12 @@
           zipTab.className = '';
           mavenPanel.style.display = 'block';
           mavenTab.className = 'active';
-          addonsPanel.style.display = 'none';
-          addonsTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
         };
-        var showAddonsTab = function(){
+        var showRSparklingTab = function(){
           hadoopPanel.style.display = 'none';
           hadoopTab.className = '';
           standalonePanel.style.display = 'none';
@@ -302,8 +302,8 @@
           zipTab.className = '';
           mavenPanel.style.display = 'none';
           mavenTab.className = '';
-          addonsPanel.style.display = 'block';
-          addonsTab.className = 'active';
+          rsparklingPanel.style.display = 'block';
+          rsparklingTab.className = 'active';
           klusterPanel.style.display = 'none';
           klusterTab.className = '';
         };
@@ -316,8 +316,8 @@
           zipTab.className = '';
           mavenPanel.style.display = 'none';
           mavenTab.className = '';
-          addonsPanel.style.display = 'none';
-          addonsTab.className = '';
+          rsparklingPanel.style.display = 'none';
+          rsparklingTab.className = '';
           klusterPanel.style.display = 'block';
           klusterTab.className = 'active';
         };
@@ -326,7 +326,7 @@
         standaloneTab.onclick = showStandaloneTab
         hadoopTab.onclick = showHadoopTab
         mavenTab.onclick = showMavenTab
-        addonsTab.onclick = showAddonsTab
+        rsparklingTab.onclick = showRSparklingTab
         klusterTab.onclick = showKlusterTab
 
         var hash = window.location.hash;
@@ -367,7 +367,7 @@
           <span id="standalone-tab">Run on Standalone Cluster</span>
           <span id="kluster-tab">Kluster</span>
           <span id="maven-tab">Use from Maven</span>
-          <span id="addons-tab">R</span>
+          <span id="rsparkling-tab">RSparkling</span>
         </div>
         <div id="panels">
           <div id="quickstart-zip">
@@ -560,7 +560,7 @@
               </p>
               <p>See Maven Central for <a href="http://search.maven.org/#artifactdetails|ai.h2o|sparkling-water-core_2.11|SUBST_PROJECT_VERSION|jar">artifact details</a>.
           </div>
-          <div id="addons" style="display:none">
+          <div id="rsparkling" style="display:none">
               <div class="integration-info">
                 <h2>Integration info</h2>
                 <div>
