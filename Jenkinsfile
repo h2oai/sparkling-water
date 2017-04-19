@@ -4,7 +4,7 @@
 
 pipeline{
 
-    agent any
+    agent { label 'mr-0xd1 || mr-0xd2 || mr-0xd3 || mr-0xd4 || mr-0xd5 || mr-0xd7 || mr-0xd8 || mr-0xd9 || mr-0xd10' }
 
     options {
         timeout(time: 120, unit: 'MINUTES')
@@ -239,15 +239,13 @@ pipeline{
 
         stage('Publish artifacts to S3') {
             steps {
-                sh """
-                if [ ${params.nightlyBuild} == true ]; then
-                    s3publish_artifacts(${params.artifactDirectory}, ${params.branchName}, ${params.buildNumber})
-                fi
-            """
+
+            if (params.nightlyBuild){
+                s3publish_artifacts(params.artifactDirectory, params.branchName}, params.buildNumber)
             }
+
+          }
         }
-
-
     }
 }
 
