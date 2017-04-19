@@ -17,7 +17,8 @@
 
 import unittest
 import os
-from pyspark import SparkContext, SparkConf
+from pyspark.sql import SparkSession
+from pyspark import SparkConf
 from external_cluster_test_utils import ExternalClusterTestHelper
 import sys
 
@@ -56,17 +57,17 @@ def get_default_spark_conf():
     return conf
 
 def set_up_class(cls):
-    if ExternalClusterTestHelper.tests_in_external_mode(cls._sc._conf):
+    if ExternalClusterTestHelper.tests_in_external_mode(cls._spark.conf):
         cls.external_cluster_test_helper = ExternalClusterTestHelper()
-        cloud_name = cls._sc._conf.get("spark.ext.h2o.cloud.name")
-        cloud_ip = cls._sc._conf.get("spark.ext.h2o.client.ip")
+        cloud_name = cls._spark.conf.get("spark.ext.h2o.cloud.name")
+        cloud_ip = cls._spark.conf.get("spark.ext.h2o.client.ip")
         cls.external_cluster_test_helper.start_cloud(2, cloud_name, cloud_ip)
 
 
 def tear_down_class(cls):
-    if ExternalClusterTestHelper.tests_in_external_mode(cls._sc._conf):
+    if ExternalClusterTestHelper.tests_in_external_mode(cls._spark.conf):
         cls.external_cluster_test_helper.stop_cloud()
-    cls._sc.stop()
+    cls._spark.stop()
 
 # Runs python tests and by default reports to console.
 # If filename is specified it additionally reports output to file with that name into py/build directory
