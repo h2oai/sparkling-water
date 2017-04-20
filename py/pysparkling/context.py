@@ -1,7 +1,6 @@
 from pyspark.context import SparkContext
 from pyspark.sql.dataframe import DataFrame
 from pyspark.rdd import RDD
-from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
 from h2o.frame import H2OFrame
 from pysparkling.initializer import Initializer
@@ -10,7 +9,6 @@ import h2o
 from pysparkling.conversions import FrameConversions as fc
 import warnings
 import atexit
-import sys
 
 def _monkey_patch_H2OFrame(hc):
     @staticmethod

@@ -1,16 +1,13 @@
 from pysparkling import *
-from pyspark import SparkContext
-from pyspark.sql import SQLContext
+from pyspark.sql import SparkSession
 import h2o
-# initiate SparkContext
-sc = SparkContext("local", "App Name", pyFiles=[])
 
-# initiate SQLContext
-sqlContext = SQLContext(sc)
+# Initiate SparkSession
+spark = SparkSession.builder.appName("App name").getOrCreate()
 
-# initiate H2OContext
-hc = H2OContext.getOrCreate(sc)
+# Initiate H2OContext
+hc = H2OContext.getOrCreate(spark)
 
-# stop H2O and Spark services
+# Stop H2O and Spark services
 h2o.shutdown(prompt=False)
-sc.stop()
+spark.stop()
