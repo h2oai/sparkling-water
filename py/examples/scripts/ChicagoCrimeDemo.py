@@ -1,8 +1,8 @@
 import h2o
 from datetime import datetime
 from pytz import timezone
-from pyspark import SparkContext, SparkConf, SparkFiles
-from pyspark.sql import SQLContext, Row
+from pyspark import SparkConf, SparkFiles
+from pyspark.sql import Row, SparkSession
 import os
 from pysparkling import *
 
@@ -84,29 +84,20 @@ def crime(date,
 def _locate(example_name):
     return "../examples/smalldata/" + example_name
 
-conf = SparkConf().setAppName("ChicagoCrimeTest").setIfMissing("spark.master", os.getenv("spark.master", "local[*]"))
-sc = SparkContext(conf=conf)
-# SQL support
-sqlContext = SQLContext.getOrCreate(sc)
+conf = SparkConf().setIfMissing("spark.master", os.getenv("spark.master", "local[*]"))
+spark = SparkSession.builder.appName("ChicagoCrimeTest").config(conf = conf).getOrCreate()
 # Start H2O services
-h2oContext = H2OContext.getOrCreate(sc)
+h2oContext = H2OContext.getOrCreate(spark)
 # Define file names
 chicagoAllWeather = "chicagoAllWeather.csv"
 chicagoCensus = "chicagoCensus.csv"
 chicagoCrimes10k = "chicagoCrimes10k.csv"
 
-# Add files to Spark Cluster
-sc.addFile(_locate(chicagoAllWeather))
-sc.addFile(_locate(chicagoCensus))
-sc.addFile(_locate(chicagoCrimes10k))
 
-# Since we have already loaded files into spark, we have to use h2o.upload_file instead of h2o.import_file since
-# h2o.import_file expects cluster-relative path (ie. the file on this path can be accessed from all the machines on the cluster)
-# but SparkFiles.get(..) already give us relative path to the file on a current node which h2o.upload_file can handle ( it uploads file
-# located on current node and distributes it to the H2O cluster)
-f_weather = h2o.upload_file(SparkFiles.get(chicagoAllWeather))
-f_census = h2o.upload_file(SparkFiles.get(chicagoCensus))
-f_crimes = h2o.upload_file(SparkFiles.get(chicagoCrimes10k), col_types = {"Date": "string"})
+# h2o.import_file expects cluster-relative path
+f_weather = h2o.upload_file(_locate(chicagoAllWeather))
+f_census = h2o.upload_file(_locate(chicagoCensus))
+f_crimes = h2o.upload_file(_locate(chicagoCrimes10k), col_types = {"Date": "string"})
 
 
 # Transform weather table
@@ -127,7 +118,7 @@ f_census.names = col_names
 f_crimes = f_crimes[2:]
 
 # Set time zone to UTC for date manipulation
-h2o.set_timezone("Etc/UTC")
+h2o.cluster().timezone = "Etc/UTC"
 
 # Replace ' ' by '_' in column names
 col_names = map(lambda s: s.replace(' ', '_'), f_crimes.col_names)
@@ -141,15 +132,12 @@ df_weather = h2oContext.as_spark_frame(f_weather)
 df_census = h2oContext.as_spark_frame(f_census)
 df_crimes = h2oContext.as_spark_frame(f_crimes)
 
-# Use Spark SQL to join datasets
+# Register DataFrames as tables
+df_weather.createOrReplaceTempView("chicagoWeather")
+df_census.createOrReplaceTempView("chicagoCensus")
+df_crimes.createOrReplaceTempView("chicagoCrime")
 
-# Register DataFrames as tables in SQL context
-sqlContext.registerDataFrameAsTable(df_weather, "chicagoWeather")
-sqlContext.registerDataFrameAsTable(df_census, "chicagoCensus")
-sqlContext.registerDataFrameAsTable(df_crimes, "chicagoCrime")
-
-
-crimeWithWeather = sqlContext.sql("""SELECT
+crimeWithWeather = spark.sql("""SELECT
 a.Year, a.Month, a.Day, a.WeekNum, a.HourOfDay, a.Weekend, a.Season, a.WeekDay,
 a.IUCR, a.Primary_Type, a.Location_Description, a.Community_Area, a.District,
 a.Arrest, a.Domestic, a.Beat, a.Ward, a.FBI_Code,
@@ -220,7 +208,7 @@ crime_examples = [
 
 # For given crime and model returns probability of crime.
 def score_event(crime, model, censusTable):
-    srdd = sqlContext.createDataFrame([crime])
+    srdd = spark.createDataFrame([crime])
     # Join table with census data
     df_row = censusTable.join(srdd).where("Community_Area = Community_Area_Number")
     row = h2oContext.as_h2o_frame(df_row)
@@ -246,5 +234,5 @@ for crime in crime_examples:
 
 # stop H2O and Spark services
 h2o.shutdown(prompt=False)
-sc.stop()
+spark.stop()
 
