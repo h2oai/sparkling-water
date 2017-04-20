@@ -98,23 +98,8 @@ pipeline{
 			post {
 				always {
                     junit 'core/build/test-results/test/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'core/build/reports/tests/test',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Core Unit tests'
-					]
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/test',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Unit tests'
-					]
-
+                    testReport 'core/build/reports/tests/test', 'Core Unit tests'
+					testReport 'examples/build/reports/tests/test', 'Examples Unit tests'
 				}
 			}
         }
@@ -132,23 +117,8 @@ pipeline{
 			post {
 				always {
                     junit 'examples/build/test-results/integTest/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'core/build/reports/tests/integTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Core: Integration tests'
-					]
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/integTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Integration tests'
-					]
-
+                    testReport 'core/build/reports/tests/integTest', 'Core Integration tests'
+					testReport 'examples/build/reports/tests/integTest', 'Examples Integration tests'
 				}
 			}
         }
@@ -166,14 +136,7 @@ pipeline{
 			post {
 				always {
                     junit 'examples/build/test-results/scriptsTest/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/scriptsTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Script Tests'
-					]
+                    testReport 'examples/build/reports/tests/scriptsTest', 'Examples Script Tests'
 				}
 			}
         }
@@ -292,5 +255,15 @@ def failure(message) {
             state: 'FAILURE']]]])
 }
 
+def testReport(reportDirectory, title) {
+    publishHTML target: [
+        allowMissing: false,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: reportDirectory,
+        reportFiles: 'index.html',
+        reportName: title
+    ]
+}
 
 
