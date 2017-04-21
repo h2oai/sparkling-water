@@ -81,6 +81,15 @@ pip install future
 > To build only a specific module, use, for example, `./gradlew :sparkling-water-examples:build`.
 > To build and test a specific module, use, for example,  `./gradlew :sparkling-water-examples:check`.
 
+Developers who want to build sparkling water and also h2o manually need to ensure ensure they are using
+correct versions of both dependencies. 
+
+Here we provide links to tags of sparkling water latest official release and corresponding h2o official release.
+
+- For Spark 2.0: [sparkling-water-tag](https://github.com/h2oai/sparkling-water/releases/tag/RELEASE-2.0.0)  [H2O-tag](https://github.com/h2oai/h2o-3/releases/tag/jenkins-rel-turing-7)
+- For Spark 1.6: [sparkling-water-tag](https://github.com/h2oai/sparkling-water/releases/tag/RELEASE-1.6.8)  [H2O-tag](https://github.com/h2oai/h2o-3/releases/tag/jenkins-rel-turing-7)
+ 
+
 ---
 <a name="Binary"></a>
 ### Download Binaries
