@@ -42,7 +42,7 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
 
   override def beforeAll() {
     System.setProperty("spark.testing", "true")
-    InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE)
+    InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory())
     super.beforeAll()
   }
 
