@@ -1,6 +1,25 @@
 ChangeLog
 =========
 
+## v2.1.4 (2017-04-20)
+
+  - Bug
+	- [SW-65](https://0xdata.atlassian.net/browse/SW-65) - Add pysparkling instruction to download page
+	- [SW-365](https://0xdata.atlassian.net/browse/SW-365) - Proper exit status handling of external cluster
+	- [SW-398](https://0xdata.atlassian.net/browse/SW-398) - Use timeout for read/write confirmation in external cluster mode
+	- [SW-400](https://0xdata.atlassian.net/browse/SW-400) - Fix stopping of H2OContext in case of running standalone application
+	- [SW-401](https://0xdata.atlassian.net/browse/SW-401) - Add configuration property to external backend allowing to specify the maximal timeout the cloud will wait for watchdog client to connect
+	- [SW-405](https://0xdata.atlassian.net/browse/SW-405) - Use correct quote in backend documentation
+	- [SW-408](https://0xdata.atlassian.net/browse/SW-408) - Use kwargs for h2o.connect in pysparkling
+	- [SW-409](https://0xdata.atlassian.net/browse/SW-409) - Fix stopping of python tests
+	- [SW-410](https://0xdata.atlassian.net/browse/SW-410) - Honor --core Spark settings in H2O executors
+  - Improvement
+	- [SW-231](https://0xdata.atlassian.net/browse/SW-231) - Sparkling Water download page is missing PySParkling/RSparkling info
+	- [SW-404](https://0xdata.atlassian.net/browse/SW-404) - Upgrade H2O dependency to 3.10.4.4
+	- [SW-406](https://0xdata.atlassian.net/browse/SW-406) - Download page should list available jars for external cluster.
+	- [SW-411](https://0xdata.atlassian.net/browse/SW-411) - Migrate Pysparkling tests and examples to SparkSession
+	- [SW-412](https://0xdata.atlassian.net/browse/SW-412) - Upgrade H2O dependency to 3.10.4.5
+
 ## v2.1.3 (2017-04-7)
 
   - Bug
