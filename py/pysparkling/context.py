@@ -90,7 +90,7 @@ class H2OContext(object):
         self.is_initialized = False
 
     @staticmethod
-    def getOrCreate(spark, conf=None, **kwargs):
+    def getOrCreate(spark_context, conf=None, **kwargs):
         """
          Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
          configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
