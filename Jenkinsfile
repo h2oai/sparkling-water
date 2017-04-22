@@ -91,16 +91,16 @@ pipeline{
              steps {
                     sh """
                     # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew clean build
+                    ${env.WORKSPACE}/gradlew clean build -x integTest
                     """
 
                     archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
 		    }
 			post {
 				always {
-                    junit 'core/build/test-results/test/*.xml'
+                    junit 'core/build/test-results/test/*.xml', 'examples/build/test-results/integTest/*.xml'
                     testReport 'core/build/reports/tests/test', 'Core Unit tests'
-					testReport 'examples/build/reports/tests/test', 'Examples Unit tests'
+					testReport 'examples/build/reports/tests/integTest', 'Examples Unit tests'
 				}
 			}
         }
