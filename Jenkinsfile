@@ -28,7 +28,7 @@ pipeline{
     environment {
         HADOOP_VERSION  = "2.6" 
         SPARK           = "spark-${params.sparkVersion}-bin-hadoop${HADOOP_VERSION}"
-        SPARK_HOME      = "${SPARK}"
+        SPARK_HOME      = "${env.WORKSPACE}/spark"
         HADOOP_CONF_DIR = "/etc/hadoop/conf"
         MASTER          = "yarn-client"
         H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
@@ -44,12 +44,9 @@ pipeline{
                 sh """
                 if [ ! -d "${env.SPARK_HOME}" ]; then
                         wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
-                        echo "Extracting spark JAR"
-                        tar zxvf ${env.SPARK}.tgz
+                        tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
                         rm -rf ${env.SPARK}.tgz
                 fi
-
-                echo 'Checkout and Preparation completed'
                 """
             }
         }
