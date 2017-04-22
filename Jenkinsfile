@@ -98,7 +98,7 @@ pipeline{
 		    }
 			post {
 				always {
-                    junit 'core/build/test-results/test/*.xml', 'examples/build/test-results/integTest/*.xml'
+                    junit 'core/build/test-results/test/*.xml,examples/build/test-results/integTest/*.xml'
                     testReport 'core/build/reports/tests/test', 'Core Unit tests'
 					testReport 'examples/build/reports/tests/integTest', 'Examples Unit tests'
 				}
