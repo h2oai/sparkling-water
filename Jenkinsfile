@@ -28,7 +28,7 @@ pipeline{
     environment {
         HADOOP_VERSION  = "2.6" 
         SPARK           = "spark-${params.sparkVersion}-bin-hadoop${HADOOP_VERSION}"
-        SPARK_HOME      = "${WORKSPACE}/${SPARK}"
+        SPARK_HOME      = "${SPARK}"
         HADOOP_CONF_DIR = "/etc/hadoop/conf"
         MASTER          = "yarn-client"
         H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
