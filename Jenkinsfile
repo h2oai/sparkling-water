@@ -27,12 +27,12 @@ pipeline{
 
     environment {
         HADOOP_VERSION  = "2.6" 
-        SPARK_HOME      = "${env.WORKSPACE}/spark-${params.sparkVersion}-bin-hadoop${HADOOP_VERSION}"
+        SPARK           = "spark-${params.sparkVersion}-bin-hadoop${HADOOP_VERSION}"
+        SPARK_HOME      = "${env.WORKSPACE}/${env.SPARK}"
         HADOOP_CONF_DIR = "/etc/hadoop/conf"
         MASTER          = "yarn-client"
         H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
         H2O_EXTENDED_JAR="${env.WORKSPACE}/assembly-h2o/private/"
-        SPARK="spark-${params.sparkVersion}-bin-hadoop${HADOOP_VERSION}"
     }
 
     stages {
@@ -42,10 +42,11 @@ pipeline{
                 //checkout scm
                 git url: 'https://github.com/h2oai/sparkling-water.git', branch: 'master'
                 sh """
-                if [ ! -d "${env.SPARK}" ]; then
+                if [ ! -d "${env.SPARK_HOME}" ]; then
                         wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
                         echo "Extracting spark JAR"
                         tar zxvf ${env.SPARK}.tgz
+                        rm -rf ${env.SPARK}.tgz
                 fi
 
                 echo 'Checkout and Preparation completed'
