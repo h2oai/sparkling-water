@@ -92,10 +92,10 @@ pipeline{
                     ${env.WORKSPACE}/gradlew clean build -x integTest
                     """
 
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
 		    }
 			post {
 				always {
+                    artifacts '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'core/build/test-results/test/*.xml,examples/build/test-results/integTest/*.xml'
                     testReport 'core/build/reports/tests/test', 'Core Unit tests'
 					testReport 'examples/build/reports/tests/integTest', 'Examples Unit tests'
@@ -111,10 +111,10 @@ pipeline{
                     ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} 
                     """
 
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
 		    }
 			post {
 				always {
+                    artifacts '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'examples/build/test-results/integTest/*.xml'
                     testReport 'core/build/reports/tests/integTest', 'Core Integration tests'
 					testReport 'examples/build/reports/tests/integTest', 'Examples Integration tests'
@@ -129,11 +129,10 @@ pipeline{
                     # Build, run regular tests
                     ${env.WORKSPACE}/gradlew scriptTest
                     """
-
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
 		    }
 			post {
 				always {
+                    artifacts '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'examples/build/test-results/scriptsTest/*.xml'
                     testReport 'examples/build/reports/tests/scriptsTest', 'Examples Script Tests'
 				}
@@ -186,42 +185,17 @@ pipeline{
 
                  """
 
-                 archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
             }
+            post {
+				always {
+                    artifacts '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    junit 'examples/build/test-results/integTest/*.xml'
+                    testReport 'core/build/reports/tests/integTest', 'Core Integration tests'
+					testReport 'examples/build/reports/tests/integTest', 'Examples Integration tests'
+
+				}
+			}
         }
-
-
-
-
-  /*      stage('QA:Integration test- pySparkling'){
-
-            steps{
-                sh"""
-
-                     # Run pySparkling integration tests on top of YARN
-                     #
-                     if [ "params.runPySparklingIntegTests" = true -a "param.startH2OClusterOnYarn" = true ]; then
-                             ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
-                             # manually create empty test-result/empty.xml file so Publish JUnit test result report does not fail when only pySparkling integration tests parameter has been selected
-                             mkdir -p py/build/test-result
-                             touch py/build/test-result/empty.xml
-                     fi
-                     if [ "params.runPySparklingIntegTests" = true -a "params.startH2OClusterOnYarn" = false ]; then
-                             ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
-                             # manually create empty test-result/empty.xml file so Publish JUnit test result report does not fail when only pySparkling integration tests parameter has been selected
-                             mkdir -p py/build/test-result
-                             touch py/build/test-result/empty.xml
-                     fi
-
-                    #echo 'Archiving artifacts after Integration test- pySparkling'
-                    echo 'Finished integration test'
-
-                 """
-
-             */   //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-    //    //    }
-       // }
-
     }
 }
 
@@ -263,6 +237,10 @@ def testReport(reportDirectory, title) {
         reportFiles: 'index.html',
         reportName: title
     ]
+}
+
+def artifacts(list) {
+    archiveArtifacts artifacts: list
 }
 
 
