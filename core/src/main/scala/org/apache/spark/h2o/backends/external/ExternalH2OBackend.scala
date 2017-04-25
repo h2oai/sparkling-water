@@ -197,9 +197,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   override def stop(stopSparkContext: Boolean): Unit = {
     // stop only external h2o cluster running on yarn
     // otherwise stopping is not supported
-    if(hc.getConf.isAutoClusterStartUsed){
-      deleteYarnFiles()
-    }
     if (stopSparkContext) {
       hc.sparkContext.stop()
     }
