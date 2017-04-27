@@ -1,6 +1,13 @@
 ChangeLog
 =========
 
+## v2.1.5 (2017-05-27)
+
+ - Bug
+	- [SW-421](https://0xdata.atlassian.net/browse/SW-421) - External cluster: Job is reporting exit status as FAILED even all mappers return 0
+ - Improvement
+	- [SW-422](https://0xdata.atlassian.net/browse/SW-422) - Upgrade H2O dependency to 3.10.4.6
+
 ## v2.1.4 (2017-04-20)
 
   - Bug
