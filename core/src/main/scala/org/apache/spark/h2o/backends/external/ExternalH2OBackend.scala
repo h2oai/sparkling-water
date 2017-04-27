@@ -18,16 +18,15 @@
 package org.apache.spark.h2o.backends.external
 
 
-import java.io.{File, FileInputStream, IOException}
+import java.io.{File, FileInputStream}
 import java.util.Properties
 
-import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
-import water.{H2O, H2OStarter, UDPClientEvent}
+import water.{H2O, H2OStarter}
 
 import scala.io.Source
 import scala.util.Random
@@ -116,24 +115,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     assert(proc == 0, s"Starting external H2O cluster failed with return value $proc.")
     ipPort
-  }
-
-  private def deleteYarnFiles(): Unit = {
-    try {
-      val hdfs = org.apache.hadoop.fs.FileSystem.get(hc.sparkContext.hadoopConfiguration)
-      hdfs.delete(new Path(hc.getConf.HDFSOutputDir.get), true)
-    }catch {
-      case e: Exception =>
-        logError(s"Error when deleting HDFS output dir at ${hc.getConf.HDFSOutputDir.get}" +
-          s", original message: ${e.getMessage}")
-    }
-    try {
-      new File(hc.getConf.clusterInfoFile.get).delete()
-    } catch {
-      case e: Exception =>
-        logError(s"Error when deleting cluster info file at ${hc.getConf.clusterInfoFile.get}" +
-          s", original message: ${e.getMessage}")
-    }
   }
 
   override def init(): Array[NodeDesc] = {
