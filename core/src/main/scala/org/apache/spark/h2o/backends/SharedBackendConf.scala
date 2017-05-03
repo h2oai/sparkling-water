@@ -64,6 +64,13 @@ trait SharedBackendConf {
   def h2oNodeLogLevel   = sparkConf.get(PROP_NODE_LOG_LEVEL._1, PROP_NODE_LOG_LEVEL._2)
   def h2oNodeLogDir   = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
 
+  def uiUpdateInterval = sparkConf.getInt(PROP_UI_UPDATE_INTERVAL._1, PROP_UI_UPDATE_INTERVAL._2)
+
+  def setUiUpdateInterval(interval: Int): H2OConf = {
+    sparkConf.set(PROP_UI_UPDATE_INTERVAL._1, interval.toString)
+    self
+  }
+
   def setH2ONodeLogLevel(level: String): H2OConf = {
     sparkConf.set(PROP_NODE_LOG_LEVEL._1, level)
     self
@@ -105,6 +112,8 @@ trait SharedBackendConf {
 
 object SharedBackendConf {
 
+  /** Interval for updates of Spark UI in milliseconds */
+  val PROP_UI_UPDATE_INTERVAL = ("spark.ext.h2o.ui.update.interval", 10000)
   /** H2O internal log level for launched remote nodes. */
   val PROP_NODE_LOG_LEVEL = ("spark.ext.h2o.node.log.level", "INFO")
 
