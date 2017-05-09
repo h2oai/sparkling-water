@@ -149,7 +149,14 @@ class H2OConf(object):
         self._jconf.setExternalWriteConfirmationTimeout(timeout)
         return self
 
+    def set_ui_update_interval(self, interval):
+        self._jconf.setUiUpdateInterval(interval)
+        return self
+
 # getters
+
+    def ui_update_interval(self):
+        return self._jconf.uiUpdateInterval()
 
     def client_connection_timeout(self):
         return self._jconf.clientConnectionTimeout()
