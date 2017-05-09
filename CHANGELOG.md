@@ -3,9 +3,9 @@ ChangeLog
 
 ## v2.1.6 (2017-05-09)
 
-Improvement
-    - [SW-424](https://0xdata.atlassian.net/browse/SW-424) - Add SW tab in Spark History Server
-    - [SW-427](https://0xdata.atlassian.net/browse/SW-427) - Upgrade H2O dependency to 3.10.4.7
+ - Improvement
+   - [SW-424](https://0xdata.atlassian.net/browse/SW-424) - Add SW tab in Spark History Server
+   - [SW-427](https://0xdata.atlassian.net/browse/SW-427) - Upgrade H2O dependency to 3.10.4.7
 
 ## v2.1.5 (2017-04-27)
 
