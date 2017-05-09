@@ -330,6 +330,11 @@ Follow our [H2O Stream](https://groups.google.com/forum/#!forum/h2ostream).
  > **YARN mode**: The executors logs are available via `yarn logs -applicationId <appId>` command. Driver logs are by default printed to console, however, H2O also writes logs into `current_dir/h2ologs`.
  
  > The location of H2O driver logs can be controlled via Spark property `spark.ext.h2o.client.log.dir` (pass via `--conf`) option.
+
+* How to display Sparkling Water information in the Spark History Server?
+ > Sparkling Water reports the information already, you just need to add the sparkling-water classes on the classpath of the Spark history server.
+ > To see how to configure the spark application for logging into the History Server, please see [Spark Monitoring Configuration](http://spark.apache.org/docs/latest/monitoring.html) 
+ 
  
 * Spark is very slow during initialization or H2O does not form a cluster. What should I do?
   

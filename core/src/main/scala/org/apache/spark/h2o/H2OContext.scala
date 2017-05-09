@@ -24,7 +24,7 @@ import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.converters._
-import org.apache.spark.h2o.ui.SparklingWaterUITab
+import org.apache.spark.h2o.ui._
 import org.apache.spark.h2o.utils.{H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
@@ -63,22 +63,15 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
   self =>
   val announcementService = AnnouncementServiceFactory.create(conf)
   val sparkContext = sparkSession.sparkContext
-
+  val sparklingWaterListener = new SparklingWaterListener(sparkContext.conf)
+  val uiUpdateThread = new H2ORuntimeInfoUIThread(sparkContext, conf)
   /** IP of H2O client */
   private var localClientIp: String = _
   /** REST port of H2O client */
   private var localClientPort: Int = _
   /** Runtime list of active H2O nodes */
   private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
-  private var stopped = false;
-  /** Sparkling Water UI extension for Spark UI */
-  private val sparklingWaterTab: Option[SparklingWaterUITab] = {
-    if (conf.getBoolean("spark.ui.enabled", true)) {
-      Some(new SparklingWaterUITab(this))
-    } else {
-      None
-    }
-  }
+  private var stopped = false
 
   /** Used backend */
   val backend: SparklingBackend = if(conf.runsInExternalClusterMode){
@@ -105,7 +98,7 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
         s" points to Spark of version ${sparkContext.version}. Please ensure correct Spark is provided and" +
         s" re-run Sparkling Water.")
     }
-
+    sparkContext.addSparkListener(sparklingWaterListener)
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
     val nodes = backend.init()
@@ -115,13 +108,42 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
     localClientIp = sys.env.getOrElse("SPARK_PUBLIC_DNS", sparkContext.env.rpcEnv.address.host)
     localClientPort = H2O.API_PORT
     // Register UI
-    sparklingWaterTab.foreach(_.attach())
+    if (conf.getBoolean("spark.ui.enabled", true)) {
+      new SparklingWaterUITab(sparklingWaterListener, sparkContext.ui.get)
+    }
     logInfo("Sparkling Water started, status of context: " + this)
     // Announce Flow UI location
     announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, "http", localClientIp, localClientPort))
+    updateUIAfterStart() // updates the spark UI
+    uiUpdateThread.start() // start periodical updates of the UI
     this
   }
 
+  private[this] def updateUIAfterStart(): Unit ={
+    val h2oBuildInfo = H2OBuildInfo(
+      H2O.ABV.projectVersion(),
+      H2O.ABV.branchName(),
+      H2O.ABV.lastCommitHash(),
+      H2O.ABV.describe(),
+      H2O.ABV.compiledBy(),
+      H2O.ABV.compiledOn()
+    )
+    val h2oCloudInfo = H2OCloudInfo(
+      h2oLocalClient,
+      H2O.CLOUD.healthy(),
+      H2O.CLOUD.members().map(node => node.getIpPortString),
+      backend.backendUIInfo,
+      H2O.START_TIME_MILLIS.get()
+      )
+
+    val swPropertiesInfo = _conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
+
+    sparkSession.sparkContext.listenerBus.post(SparkListenerH2OStart(
+      h2oCloudInfo,
+      h2oBuildInfo,
+      swPropertiesInfo
+    ))
+  }
   /**
     * Return a copy of this H2OContext's configuration. The configuration ''cannot'' be changed at runtime.
     */
@@ -221,6 +243,7 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
   def stop(stopSparkContext: Boolean = false): Unit = synchronized {
     if(!stopped) {
       announcementService.shutdown
+      uiUpdateThread.interrupt()
       backend.stop(stopSparkContext)
       H2OContext.stop(this)
       stopped = true
@@ -249,7 +272,7 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
       |  Open H2O Flow in browser: http://$h2oLocalClient (CMD + click in Mac OSX)
     """.stripMargin
   }
-  
+
   // scalastyle:off
   // Disable style checker so "implicits" object can start with lowercase i
   /** Define implicits available via h2oContext.implicits._*/
