@@ -21,7 +21,7 @@ package org.apache.spark.h2o.backends.external
 import java.io.{File, FileInputStream}
 import java.util.Properties
 
-
+import org.apache.spark.h2o.backends.external.ExternalH2OBackend.H2O_JOB_NAME
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext, H2OLogging}
@@ -29,7 +29,6 @@ import water.api.RestAPIManager
 import water.{H2O, H2OStarter}
 
 import scala.io.Source
-import scala.util.Random
 import scala.util.control.NoStackTrace
 
 
@@ -38,7 +37,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   private var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
 
-  def launchH2OOnYarn(sparkAppId: String, conf: H2OConf): String = {
+  def launchH2OOnYarn(conf: H2OConf): String = {
     import ExternalH2OBackend._
 
     var cmdToLaunch = Seq[String]("hadoop", "jar", conf.h2oDriverPath.get)
@@ -53,7 +52,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       case _ =>
     }
     // Application tags shown in Yarn Resource Manager UI
-    val yarnAppTags = s"${TAG_EXTERNAL_H2O},${TAG_SPARK_APP.format(sparkAppId)}"
+    val yarnAppTags = s"${TAG_EXTERNAL_H2O},${TAG_SPARK_APP.format(hc.sparkContext.applicationId)}"
 
     cmdToLaunch = cmdToLaunch ++ Seq[String](
       conf.YARNQueue.map("-Dmapreduce.job.queuename=" + _).getOrElse(""),
@@ -61,7 +60,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-nodes", conf.numOfExternalH2ONodes.get,
       "-notify", conf.clusterInfoFile.get,
       "-J", "-md5skip",
-      "-jobname", H2O_JOB_NAME.format(sparkAppId),
+      "-jobname", conf.cloudName.get,
       "-mapperXmx", conf.mapperXmx,
       "-output", conf.HDFSOutputDir.get,
       "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
@@ -123,7 +122,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (hc.getConf.isAutoClusterStartUsed) {
       // start h2o instances on yarn
       logInfo("Starting the external H2O cluster on YARN.")
-      val ipPort = launchH2OOnYarn(hc.sparkContext.applicationId, hc.getConf)
+      val ipPort = launchH2OOnYarn(hc.getConf)
       hc._conf.setH2OCluster(ipPort)
     }
     logTrace("Starting H2O client node and connecting to external H2O cluster.")
@@ -202,7 +201,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       }
 
       if (conf.cloudName.isEmpty) {
-        conf.setCloudName("sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + Math.abs(Random.nextInt()))
+        conf.setCloudName(H2O_JOB_NAME.format(hc.sparkContext.applicationId))
       }
 
       if (conf.numOfExternalH2ONodes.isEmpty) {
