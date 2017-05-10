@@ -1,10 +1,11 @@
 ChangeLog
 =========
 
-## v2.1.7 (2017-08-10)
+## v2.1.7 (2017-05-10)
 
 - Bug
    - [SW-429](https://0xdata.atlassian.net/browse/SW-429) - Different cluster name between client and h2o nodes in case of external cluster
+
 ## v2.1.6 (2017-05-09)
 
  - Improvement
