@@ -91,7 +91,6 @@ pipeline{
                     # Build, run regular tests
                     ${env.WORKSPACE}/gradlew clean build -x integTest
                     """
-
 		    }
 			post {
 				always {
@@ -209,7 +208,6 @@ def testReport(reportDirectory, title) {
 }
 
 def artifacts(list) {
-    archiveArtifacts artifacts: list, allowEmptyArchive: true
+    //archiveArtifacts artifacts: list, allowEmptyArchive: true
 }
-
 
