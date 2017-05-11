@@ -64,6 +64,8 @@ shadowJar {
     include(dependency("org.eclipse.jetty.aggregate:jetty-servlet"))
     include(dependency("org.eclipse.jetty:jetty-server"))
     include(dependency("org.eclipse.jetty:jetty-plus:8.1.17.v20150415"))
+
+    exclude(dependency("com.google.protobuf:protobuf-java:2.5.0"))
     baseName = "${baseName}_${scalaBaseVersion}"
   }
 }
