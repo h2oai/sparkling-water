@@ -139,40 +139,9 @@ pipeline{
 			}
         }
 
-
-        stage('Stashing') {
-
-            steps {
-                // Make a tar of the directory and stash it -> --ignore-failed-read
-                sh "tar  -zcvf ../stash_archive.tar.gz ."
-                sh "mv ../stash_archive.tar.gz ."
-
-                stash name: 'unit-test-stash', includes: 'stash_archive.tar.gz'
-                echo 'Stash successful'
-
-                sh "ls -ltrh ${env.WORKSPACE}"
-                echo "Deleting the original workspace after stashing the directory"
-                sh "rm -r ${env.WORKSPACE}/*"
-                echo "Workspace Directory deleted"
-            }
-        }
-
-
         stage('QA:Integration tests') {
 
             steps {
-                echo "Unstash the unit test"
-                unstash "unit-test-stash"
-
-                //Untar the archieve
-                sh "tar -zxvf stash_archive.tar.gz"
-                sh "ls -ltrh ${env.WORKSPACE}"
-                
-                sh """
-                    # Move the unstashed directory outside the stashed one for the environment variables to pick up properly
-                    #mv ${env.WORKSPACE}/unit-test-stash/* ${env.WORKSPACE}
-                    #rm -r ${env.WORKSPACE}/unit-test-stash
-                    """
 
                 sh """
                      if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = true ]; then
