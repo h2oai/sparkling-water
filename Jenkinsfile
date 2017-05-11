@@ -27,12 +27,12 @@ pipeline{
 
     environment {
         HADOOP_VERSION  = "2.6" 
-        SPARK_HOME      = "${env.WORKSPACE}/spark-${params.sparkVersion}-bin-hadoop${HADOOP_VERSION}"
+        SPARK           = "spark-${params.sparkVersion}-bin-hadoop${HADOOP_VERSION}"
+        SPARK_HOME      = "${env.WORKSPACE}/spark"
         HADOOP_CONF_DIR = "/etc/hadoop/conf"
         MASTER          = "yarn-client"
         H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
         H2O_EXTENDED_JAR="${env.WORKSPACE}/assembly-h2o/private/"
-        SPARK="spark-${params.sparkVersion}-bin-hadoop${HADOOP_VERSION}"
     }
 
     stages {
@@ -42,13 +42,12 @@ pipeline{
                 //checkout scm
                 git url: 'https://github.com/h2oai/sparkling-water.git', branch: 'master'
                 sh """
-                if [ ! -d "${env.SPARK}" ]; then
+                if [ ! -d "${env.SPARK_HOME}" ]; then
                         wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
-                        echo "Extracting spark JAR"
-                        tar zxvf ${env.SPARK}.tgz
+                        mkdir -p "${env.SPARK_HOME}"
+                        tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
+                        rm -rf ${env.SPARK}.tgz
                 fi
-
-                echo 'Checkout and Preparation completed'
                 """
             }
         }
@@ -90,31 +89,14 @@ pipeline{
              steps {
                     sh """
                     # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew clean build
+                    ${env.WORKSPACE}/gradlew clean build -x integTest
                     """
-
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
 		    }
 			post {
 				always {
-                    junit 'core/build/test-results/test/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'core/build/reports/tests/test',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Core Unit tests'
-					]
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/test',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Unit tests'
-					]
-
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    junit 'core/build/test-results/test/*.xml' 
+                    testReport 'core/build/reports/tests/test', 'Core Unit tests'
 				}
 			}
         }
@@ -127,28 +109,13 @@ pipeline{
                     ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} 
                     """
 
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
 		    }
 			post {
 				always {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'examples/build/test-results/integTest/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'core/build/reports/tests/integTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Core: Integration tests'
-					]
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/integTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Integration tests'
-					]
-
+                    testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
+					testReport 'examples/build/reports/tests/integTest', 'Local Examples Integration tests'
 				}
 			}
         }
@@ -160,62 +127,23 @@ pipeline{
                     # Build, run regular tests
                     ${env.WORKSPACE}/gradlew scriptTest
                     """
-
-                    archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
 		    }
 			post {
 				always {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'examples/build/test-results/scriptsTest/*.xml'
-					publishHTML target: [
-						allowMissing: false,
-					  	alwaysLinkToLastBuild: true,
-					  	keepAll: true,
-					  	reportDir: 'examples/build/reports/tests/scriptsTest',
-					  	reportFiles: 'index.html',
-					  	reportName: 'Examples Script Tests'
-					]
+                    testReport 'examples/build/reports/tests/scriptsTest', 'Examples Script Tests'
 				}
 			}
         }
 
-
-        stage('Stashing') {
-
-            steps {
-                // Make a tar of the directory and stash it -> --ignore-failed-read
-                sh "tar  -zcvf ../stash_archive.tar.gz ."
-                sh "mv ../stash_archive.tar.gz ."
-
-                stash name: 'unit-test-stash', includes: 'stash_archive.tar.gz'
-                echo 'Stash successful'
-
-                sh "ls -ltrh ${env.WORKSPACE}"
-                echo "Deleting the original workspace after stashing the directory"
-                sh "rm -r ${env.WORKSPACE}/*"
-                echo "Workspace Directory deleted"
-            }
-        }
-
-
         stage('QA:Integration tests') {
 
             steps {
-                echo "Unstash the unit test"
-                unstash "unit-test-stash"
-
-                //Untar the archieve
-                sh "tar -zxvf stash_archive.tar.gz"
-                sh "ls -ltrh ${env.WORKSPACE}"
-                
-                sh """
-                    # Move the unstashed directory outside the stashed one for the environment variables to pick up properly
-                    #mv ${env.WORKSPACE}/unit-test-stash/* ${env.WORKSPACE}
-                    #rm -r ${env.WORKSPACE}/unit-test-stash
-                    """
 
                 sh """
                      if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = true ]; then
-                             ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=$sparklingTestEnv -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                             ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
                      fi
                      if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = false ]; then
                             ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
@@ -224,42 +152,17 @@ pipeline{
 
                  """
 
-                 archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
             }
+            post {
+				always {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    junit 'examples/build/test-results/integTest/*.xml'
+                    //testReport 'core/build/reports/tests/integTest', "${params.backendMode} Core Integration tests"
+					testReport 'examples/build/reports/tests/integTest', "${params.backendMode} Examples Integration tests"
+
+				}
+			}
         }
-
-
-
-
-  /*      stage('QA:Integration test- pySparkling'){
-
-            steps{
-                sh"""
-
-                     # Run pySparkling integration tests on top of YARN
-                     #
-                     if [ "params.runPySparklingIntegTests" = true -a "param.startH2OClusterOnYarn" = true ]; then
-                             ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
-                             # manually create empty test-result/empty.xml file so Publish JUnit test result report does not fail when only pySparkling integration tests parameter has been selected
-                             mkdir -p py/build/test-result
-                             touch py/build/test-result/empty.xml
-                     fi
-                     if [ "params.runPySparklingIntegTests" = true -a "params.startH2OClusterOnYarn" = false ]; then
-                             ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
-                             # manually create empty test-result/empty.xml file so Publish JUnit test result report does not fail when only pySparkling integration tests parameter has been selected
-                             mkdir -p py/build/test-result
-                             touch py/build/test-result/empty.xml
-                     fi
-
-                    #echo 'Archiving artifacts after Integration test- pySparkling'
-                    echo 'Finished integration test'
-
-                 """
-
-             */   //archiveArtifacts artifacts:'**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-    //    //    }
-       // }
-
     }
 }
 
@@ -292,5 +195,18 @@ def failure(message) {
             state: 'FAILURE']]]])
 }
 
+def testReport(reportDirectory, title) {
+    publishHTML target: [
+        allowMissing: false,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: reportDirectory,
+        reportFiles: 'index.html',
+        reportName: title
+    ]
+}
 
+def arch(list) {
+    archiveArtifacts artifacts: list, allowEmptyArchive: true
+}
 
