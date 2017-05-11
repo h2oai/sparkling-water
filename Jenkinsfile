@@ -159,7 +159,7 @@ pipeline{
 				always {
                     artifacts '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'examples/build/test-results/integTest/*.xml'
-                    testReport 'core/build/reports/tests/integTest', "${params.backendMode} Core Integration tests"
+                    //testReport 'core/build/reports/tests/integTest', "${params.backendMode} Core Integration tests"
 					testReport 'examples/build/reports/tests/integTest', "${params.backendMode} Examples Integration tests"
 
 				}
