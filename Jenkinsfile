@@ -209,7 +209,7 @@ def testReport(reportDirectory, title) {
 }
 
 def artifacts(list) {
-    archiveArtifacts artifacts: list
+    archiveArtifacts artifacts: list, allowEmptyArchive: true
 }
 
 
