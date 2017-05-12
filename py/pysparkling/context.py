@@ -30,13 +30,12 @@ def _monkey_patch_H2OFrame(hc):
     def get_java_h2o_frame(self):
         # Can we use cached H2O frame?
         # Only if we cached it before and cache was not invalidated by rapids expression
-        if hasattr(self, '_java_frame') and self._java_frame is not None \
-           and self._ex._cache._id is not None and not self._ex._cache.is_empty() \
-           and self._ex._cache._id == self._java_frame_sid:
-            return self._java_frame
-        else:
+        if not hasattr(self, '_java_frame') or self._java_frame is None \
+           or self._ex._cache._id is None or self._ex._cache.is_empty() \
+           or not self._ex._cache._id == self._java_frame_sid:
             # Note: self.frame_id will trigger frame evaluation
-            return hc._jhc.asH2OFrame(self.frame_id)
+            self._java_frame = hc._jhc.asH2OFrame(self.frame_id)
+        return self._java_frame
 
     @staticmethod
     def from_java_h2o_frame(h2o_frame, h2o_frame_id):
