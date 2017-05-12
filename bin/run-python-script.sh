@@ -8,14 +8,6 @@ checkSparkHome
 # Verify if correct Spark version is used
 checkSparkVersion
 
-
-if [ $1 ] && [[ ${1} != "--"* ]]; then
-  SCRIPT=$1
-  shift
-else
-  echo "Path to script must be set"
-  exit 0
-fi
 SCRIPT_MASTER=${MASTER:-"$DEFAULT_MASTER"}
 SCRIPT_DEPLOY_MODE="cluster"
 SCRIPT_DEPLOY_MODE=${DEPLOY_MODE:-"client"} 
@@ -23,7 +15,6 @@ SCRIPT_DRIVER_MEMORY=${DRIVER_MEMORY:-$DEFAULT_DRIVER_MEMORY}
 SCRIPT_H2O_SYS_OPS=${H2O_SYS_OPS:-""}
 
 echo "---------"
-echo "  Using script    (SCRIPT)       : $SCRIPT"
 echo "  Using master    (MASTER)       : $SCRIPT_MASTER"
 echo "  Deploy mode     (DEPLOY_MODE)  : $SCRIPT_DEPLOY_MODE"
 echo "  Driver memory   (DRIVER_MEMORY): $SCRIPT_DRIVER_MEMORY"
@@ -54,7 +45,6 @@ VERBOSE=
  --py-files $PY_ZIP_FILE \
  --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" \
  $VERBOSE \
- $SCRIPT \
  "$@"
 fi
 
