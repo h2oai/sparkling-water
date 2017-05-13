@@ -147,6 +147,21 @@ class FrameTransformationsTest(unittest.TestCase):
         count = spark_frame.count()
         self.assertEquals(count, 3, "Number of rows is 3")
 
+    # test for SW-430
+    def test_lazy_frames(self):
+        from pyspark.sql import Row
+        hc = self._hc
+        data = [{'c1' : 1, 'c2' : "first"}, {'c1' : 2, 'c2' : "second"}]
+        df = self._spark.createDataFrame(data)
+        hf = hc.as_h2o_frame(df)
+        # Modify H2O frame - this should invalidate internal cache
+        hf['c3'] = 3
+        # Now try to convert modified H2O frame back to Spark data frame
+        dfe = hc.as_spark_frame(hf)
+        self.assertEquals(dfe.count(), len(data), "Number of rows should match")
+        self.assertEquals(len(dfe.columns), 3, "Number of columns should match")
+        self.assertEquals(dfe.collect(), [Row(c1=1, c2='first', c3=3), Row(c1=2, c2='second', c3=3)])
+
 class H2OConfTest(unittest.TestCase):
 
     @classmethod
