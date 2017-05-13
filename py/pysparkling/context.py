@@ -29,21 +29,27 @@ def _monkey_patch_H2OFrame(hc):
             return "real"
 
     def get_java_h2o_frame(self):
-        if hasattr(self, '_java_frame'):
-            return self._java_frame
-        else:
-            return hc._jhc.asH2OFrame(self.frame_id)
+        # Can we use cached H2O frame?
+        # Only if we cached it before and cache was not invalidated by rapids expression
+        if not hasattr(self, '_java_frame') or self._java_frame is None \
+           or self._ex._cache._id is None or self._ex._cache.is_empty() \
+           or not self._ex._cache._id == self._java_frame_sid:
+            # Note: self.frame_id will trigger frame evaluation
+            self._java_frame = hc._jhc.asH2OFrame(self.frame_id)
+        return self._java_frame
 
     @staticmethod
     def from_java_h2o_frame(h2o_frame, h2o_frame_id):
-        fr = H2OFrame.get_frame(h2o_frame_id.toString())
+        # Cache Java reference to the backend frame
+        sid = h2o_frame_id.toString()
+        fr = H2OFrame.get_frame(sid)
         fr._java_frame = h2o_frame
+        fr._java_frame_sid = sid
         fr._backed_by_java_obj = True
         return fr
     H2OFrame.determine_java_vec_type = determine_java_vec_type
     H2OFrame.from_java_h2o_frame = from_java_h2o_frame
     H2OFrame.get_java_h2o_frame = get_java_h2o_frame
-
 
 def _is_of_simple_type(rdd):
     if not isinstance(rdd, RDD):
