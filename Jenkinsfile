@@ -112,9 +112,8 @@ pipeline {
 			}
         }
 
-        def parallelStages = [:]
 
-        parallelStages['local-integration-tests'] = {
+        parallel {
             stage('QA:Local Integration Tests') {
                  steps {
                         sh """
@@ -132,9 +131,7 @@ pipeline {
                     }
                 }
             }
-        }
 
-        parallelStages['script-tests'] = {
             stage('QA: Script Tests') {
                  steps {
                         sh """
@@ -150,9 +147,7 @@ pipeline {
                     }
                 }
             }
-        }
 
-        parallelStages['integration-tests'] = {
             stage('QA:Integration tests') {
 
                 steps {
@@ -180,11 +175,6 @@ pipeline {
                 }
             }
         }
-
-        //
-        // Invoke stages in parallel
-        //
-        parallel parallelStages
     }
 }
 
