@@ -61,16 +61,19 @@ class Initializer(object):
         import sparkling_water
         sw_pkg_file = sparkling_water.__file__
         # Extract jar file from zip
-        from pkg_resources import get_cache_path
-        zip_file = sw_pkg_file[:-len('/sparkling_water/__init__.py')]
-        zip_filename = os.path.basename(zip_file)
-        jar_path = get_cache_path(zip_filename)
-        sw_jar = os.path.abspath("{}/sparkling_water/sparkling_water_assembly.jar".format(jar_path))
-        import zipfile
-        with zipfile.ZipFile(zip_file) as fzip:
-            fzip.extract('sparkling_water/sparkling_water_assembly.jar', path = jar_path)
-        return sw_jar
-
+        if '.zip' in sw_pkg_file:
+            from pkg_resources import get_cache_path
+            zip_file = sw_pkg_file[:-len('/sparkling_water/__init__.py')]
+            zip_filename = os.path.basename(zip_file)
+            jar_path = get_cache_path(zip_filename)
+            sw_jar = os.path.abspath("{}/sparkling_water/sparkling_water_assembly.jar".format(jar_path))
+            import zipfile
+            with zipfile.ZipFile(zip_file) as fzip:
+                fzip.extract('sparkling_water/sparkling_water_assembly.jar', path = jar_path)
+            return sw_jar
+        else:
+            from pkg_resources import resource_filename
+            return os.path.abspath(resource_filename("sparkling_water", 'sparkling_water_assembly.jar'))
     @staticmethod
     def __find_spark_cl(start_cl, cl_name):
         cl = start_cl
