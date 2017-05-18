@@ -19,7 +19,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.0'
         classpath 'org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.10:0.8.2'
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
         classpath 'net.researchgate:gradle-release:2.4.1'
