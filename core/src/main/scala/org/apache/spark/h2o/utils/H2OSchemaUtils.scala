@@ -18,9 +18,11 @@
 package org.apache.spark.h2o.utils
 
 import org.apache.spark.h2o._
+import org.apache.spark.ml.attribute.AttributeGroup
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.{SparkContext, ml, mllib}
+import scala.annotation.tailrec
 
 /**
  * Utilities for working with Spark SQL component.
@@ -102,7 +104,7 @@ object H2OSchemaUtils {
     val vecColIdxs    = collectVectorLikeTypes(schema.fields)
     val numOfArrayCols = arrayColIdxs.length
     // Collect max arrays for this RDD, it is distributed operation
-    val fmaxLens = collectMaxArrays(sc, srdd.rdd, arrayColIdxs, vecColIdxs)
+    val fmaxLens = collectMaxArrays(sc, srdd, arrayColIdxs, vecColIdxs)
     // Flattens RDD's schema
     val flatRddSchema = flatSchema(schema)
     val typeIndx = collectTypeIndx(schema.fields)
@@ -176,12 +178,29 @@ object H2OSchemaUtils {
     * @return list of max sizes for array types, followed by max sizes for vector types. */
   private[h2o]
   def collectMaxArrays(sc: SparkContext,
-                       rdd: RDD[Row],
+                       dataframe: DataFrame,
                        arrayTypesIndx: Seq[Seq[Int]],
                        vectorTypesIndx: Seq[Seq[Int]]): Array[Int] = {
     val allTypesIndx = arrayTypesIndx ++ vectorTypesIndx
+    val attributesNum = (field: StructField) => {
+      if (!field.dataType.isInstanceOf[ml.linalg.VectorUDT]) { None }
+      else { AttributeGroup.fromStructField(field).numAttributes }
+    }
+
+    @tailrec
+    def getBasicType (columns: StructType, indexes: Seq[Int]): StructField = {
+      val structField = columns.fields(indexes.head)
+      if (indexes.tail.isEmpty) { structField }
+      else { getBasicType(structField.dataType.asInstanceOf[StructType], indexes.tail) }
+    }
+
+    val sizeFromMetadata = allTypesIndx.map(idxs => attributesNum(getBasicType(dataframe.schema, idxs)))
+    if (sizeFromMetadata.forall(_.isDefined)){
+      return sizeFromMetadata.map(_.get).toArray
+    }
+
     val numOfArrayTypes = arrayTypesIndx.length
-    val maxvec = rdd.map(row => {
+    val maxvec = dataframe.rdd.map(row => {
       val acc = new Array[Int](allTypesIndx.length)
       allTypesIndx.indices.foreach { k =>
         val indx = allTypesIndx(k)
