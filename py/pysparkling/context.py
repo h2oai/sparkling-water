@@ -140,8 +140,12 @@ class H2OContext(object):
         # Create H2O REST API client
         h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port, **kwargs)
         h2o_context.is_initialized = True
-        # Stop h2o when running standalone pysparkling scripts and the user does not explicitly close h2o
-        atexit.register(lambda: h2o_context.stop_with_jvm())
+        # Stop h2o when running standalone pysparkling scripts, only in client deploy mode
+        #, so the user does not explicitly close h2o.
+        # In driver mode the application would call exit which is handled by Spark AM as failure
+        deploy_mode = spark_session.sparkContext._conf.get("spark.submit.deployMode")
+        if deploy_mode != "cluster":
+            atexit.register(lambda: h2o_context.stop_with_jvm())
         return h2o_context
 
     def stop_with_jvm(self):
