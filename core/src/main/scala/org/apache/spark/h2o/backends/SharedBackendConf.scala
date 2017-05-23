@@ -34,7 +34,7 @@ trait SharedBackendConf {
   def clientBasePort = sparkConf.getInt(PROP_CLIENT_PORT_BASE._1, PROP_CLIENT_PORT_BASE._2)
   def cloudName     = sparkConf.getOption(PROP_CLOUD_NAME._1)
   def h2oClientLogLevel = sparkConf.get(PROP_CLIENT_LOG_LEVEL._1, PROP_CLIENT_LOG_LEVEL._2)
-  def h2oClientLogDir = sparkConf.get(PROP_CLIENT_LOG_DIR._1, PROP_CLIENT_LOG_DIR._2)
+  def h2oClientLogDir = sparkConf.getOption(PROP_CLIENT_LOG_DIR._1)
   def clientNetworkMask = sparkConf.getOption(PROP_CLIENT_NETWORK_MASK._1)
   def nthreads      = sparkConf.getInt(PROP_NTHREADS._1, PROP_NTHREADS._2)
   def disableGA     = sparkConf.getBoolean(PROP_DISABLE_GA._1, PROP_DISABLE_GA._2)
@@ -108,6 +108,11 @@ trait SharedBackendConf {
     sparkConf.set(PROP_CLIENT_LOG_LEVEL._1, level)
     self
   }
+
+  def setH2OClientLogDir(dir: String): H2OConf = {
+    sparkConf.set(PROP_CLIENT_LOG_DIR._1, dir)
+    self
+  }
 }
 
 object SharedBackendConf {
@@ -119,7 +124,6 @@ object SharedBackendConf {
 
   /** Location of log directory for remote nodes. */
   val PROP_NODE_LOG_DIR = ("spark.ext.h2o.node.log.dir", None)
-
 
   /**
     * This option can be set either to "internal" or "external"
@@ -145,7 +149,7 @@ object SharedBackendConf {
   val PROP_CLIENT_LOG_LEVEL = ("spark.ext.h2o.client.log.level", "WARN")
 
   /** Location of log directory for the driver instance. */
-  val PROP_CLIENT_LOG_DIR = ("spark.ext.h2o.client.log.dir", defaultLogDir)
+  val PROP_CLIENT_LOG_DIR = ("spark.ext.h2o.client.log.dir", None)
 
   /** Subnet selector for H2O client - if the mask is specified then Spark network setup is not discussed. */
   val PROP_CLIENT_NETWORK_MASK = ("spark.ext.h2o.client.network.mask", None)
@@ -201,8 +205,4 @@ object SharedBackendConf {
 
   /** Path to Java KeyStore file. */
   val PROP_SSL_CONF = ("spark.ext.h2o.internal_security_conf", None)
-
-  private[spark] def defaultLogDir: String = {
-    System.getProperty("user.dir") + java.io.File.separator + "h2ologs"
-  }
 }
