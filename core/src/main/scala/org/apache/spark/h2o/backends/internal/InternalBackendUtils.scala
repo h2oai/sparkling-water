@@ -112,7 +112,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
           sparkEnv.conf.get(SharedBackendConf.PROP_NODE_LOG_DIR._1)
         } else {
           // Needs to be executed at remote node!
-          SharedBackendConf.defaultLogDir
+          SharedBackendUtils.defaultLogDir(sparkEnv.conf.getAppId)
         }
       }
       val executorId = sparkEnv.executorId
