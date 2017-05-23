@@ -55,6 +55,10 @@ private[backends] trait SharedBackendUtils extends H2OLogging with Serializable{
       conf.set("spark.locality.wait", "30000")
     }
 
+    if(conf.h2oClientLogDir.isEmpty){
+      conf.setH2OClientLogDir(defaultLogDir(conf.sparkConf.getAppId))
+    }
+
     if(conf.clientIp.isEmpty){
       conf.setClientIp(getHostname(SparkEnv.get))
     }
@@ -76,6 +80,9 @@ private[backends] trait SharedBackendUtils extends H2OLogging with Serializable{
     conf
   }
 
+  def defaultLogDir(appId: String): String = {
+    System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
+  }
 
   private def addIfNotNull(arg: String, value: String) = if(value != null) Seq(arg, value.toString) else Nil
 
@@ -113,7 +120,7 @@ private[backends] trait SharedBackendUtils extends H2OLogging with Serializable{
     getH2OCommonArgs(conf) ++ getLoginArgs(conf)
       ++ (if (!conf.clientVerboseOutput) Seq("-quiet") else Nil)
       ++ Seq("-log_level", if (conf.clientVerboseOutput) incLogLevel(conf.h2oClientLogLevel, "INFO") else conf.h2oClientLogLevel)
-      ++ Seq("-log_dir", conf.h2oClientLogDir)
+      ++ Seq("-log_dir", conf.h2oClientLogDir.get)
       ++ Seq("-baseport", conf.clientBasePort.toString)
       ++ Seq("-client")
       ++ addIfNotNull("-ice_root", conf.clientIcedDir.orNull)

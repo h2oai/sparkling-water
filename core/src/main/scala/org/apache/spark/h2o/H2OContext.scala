@@ -122,7 +122,7 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
     announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, "http", localClientIp, localClientPort))
     this
   }
-
+  
   /**
     * Return a copy of this H2OContext's configuration. The configuration ''cannot'' be changed at runtime.
     */
