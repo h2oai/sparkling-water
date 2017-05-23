@@ -18,16 +18,13 @@
 package org.apache.spark.h2o.backends.internal
 
 import org.apache.spark.SparkEnv
-import org.apache.spark.internal.Logging
-
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.internal.Logging
 import org.apache.spark.listeners.ExecutorAddNotSupportedListener
 import water.api.RestAPIManager
 import water.{H2O, H2OStarter}
-
-import scala.util.Random
 
 
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with InternalBackendUtils with Logging {
@@ -57,7 +54,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
     // Setup properties for H2O configuration
     if (conf.cloudName.isEmpty) {
-      conf.setCloudName("sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + Math.abs(Random.nextInt()))
+      conf.setCloudName("sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + conf.sparkConf.getAppId)
     }
 
     checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
