@@ -119,7 +119,7 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
     this
   }
 
-  private[this] def updateUIAfterStart(): Unit ={
+  private[this] def updateUIAfterStart(): Unit = {
     val h2oBuildInfo = H2OBuildInfo(
       H2O.ABV.projectVersion(),
       H2O.ABV.branchName(),
