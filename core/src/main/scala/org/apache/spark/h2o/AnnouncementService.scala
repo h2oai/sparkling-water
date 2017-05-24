@@ -22,7 +22,7 @@ import java.util.ServiceLoader
 import org.apache.http.NameValuePair
 import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpPost
-import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.message.BasicNameValuePair
 
 /**
@@ -116,7 +116,7 @@ class RestAnnouncementProvider extends AnnouncementProvider {
 
   var url: Option[String] = None
 
-  val httpClient = new DefaultHttpClient()
+  val httpClient = HttpClientBuilder.create().build()
 
   def name = "REST Announcement Provider"
 
