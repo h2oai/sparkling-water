@@ -120,6 +120,10 @@ class H2OConf(object):
         self._jconf.setH2OClientLogLevel(level)
         return self
 
+    def set_h2o_client_log_dir(self, log_dir):
+        self._jconf.setH2OClientLogDir(log_dir)
+        return self
+
     def set_client_connection_timeout(self, timeout):
         """Set timeout for watchdog client connection in external cluster mode. If the client is not connected to the
          cluster within the specified time, the cluster kill itself.
