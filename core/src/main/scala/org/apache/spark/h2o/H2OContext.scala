@@ -37,7 +37,7 @@ import scala.reflect.runtime.universe._
 import scala.util.control.NoStackTrace
 
 /**
-  * Main entry point for Sparkling Water functionality. H2O Context represents connection to H2O cluster and allows as
+  * Main entry point for Sparkling Water functionality. H2O Context represents connection to H2O cluster and allows us
   * to operate with it.
   *
   * H2O Context provides conversion methods from RDD/DataFrame to H2OFrame and back and also provides implicits
