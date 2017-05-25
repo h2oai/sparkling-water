@@ -1,6 +1,32 @@
 ChangeLog
 =========
 
+## v2.0.9 (2017-05-25)
+
+- Bug
+	- [SW-263](https://0xdata.atlassian.net/browse/SW-263) - Cannot run build in parallel because of Python module
+	- [SW-336](https://0xdata.atlassian.net/browse/SW-336) - Wrong documentation of PyPi h2o_pysparkling_2.0 package
+	- [SW-421](https://0xdata.atlassian.net/browse/SW-421) - External cluster: Job is reporting exit status as FAILED even all mappers return 0
+	- [SW-429](https://0xdata.atlassian.net/browse/SW-429) - Different cluster name between client and h2o nodes in case of external cluster
+	- [SW-430](https://0xdata.atlassian.net/browse/SW-430) - pysparkling: adding a column to a data frame does not work when parse the original frame in spark
+	- [SW-431](https://0xdata.atlassian.net/browse/SW-431) - Allow to pass additional arguments to run-python-script.sh
+	- [SW-436](https://0xdata.atlassian.net/browse/SW-436) - Fix getting of sparkling water jar in pysparkling
+	- [SW-437](https://0xdata.atlassian.net/browse/SW-437) - Don't call atexit in case of pysparkling in cluster deploy mode
+	- [SW-438](https://0xdata.atlassian.net/browse/SW-438) - store h2o logs int unique directories
+	- [SW-439](https://0xdata.atlassian.net/browse/SW-439) - handle interrupted exception in H2ORuntimeInfoUIThread
+- Improvement
+	- [SW-341](https://0xdata.atlassian.net/browse/SW-341) - Support Python 3 distribution
+	- [SW-380](https://0xdata.atlassian.net/browse/SW-380) - Define Jenkins pipeline via Jenkinsfile
+	- [SW-422](https://0xdata.atlassian.net/browse/SW-422) - Upgrade H2O dependency to 3.10.4.6
+	- [SW-424](https://0xdata.atlassian.net/browse/SW-424) - Add SW tab in Spark History Server
+	- [SW-427](https://0xdata.atlassian.net/browse/SW-427) - Upgrade H2O dependency to 3.10.4.7
+	- [SW-433](https://0xdata.atlassian.net/browse/SW-433) - Add change logs link to the sw download page
+	- [SW-435](https://0xdata.atlassian.net/browse/SW-435) - Upgrade shadow jar plugin to 2.0.0
+	- [SW-440](https://0xdata.atlassian.net/browse/SW-440) - Sparkling Water cluster name should contain spark app id instead of random number
+	- [SW-441](https://0xdata.atlassian.net/browse/SW-441) - Replace deprecated DefaultHTTPClient in AnnouncementService
+	- [SW-442](https://0xdata.atlassian.net/browse/SW-442) - Get array size from metadata in case of ml.lilang.VectorUDT
+	- [SW-443](https://0xdata.atlassian.net/browse/SW-443) - Upgrade H2O version to 3.10.4.8
+
 ## v2.0.8 (2017-04-07)
 
   - Bug
