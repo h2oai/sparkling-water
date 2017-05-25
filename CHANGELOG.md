@@ -13,7 +13,8 @@ ChangeLog
 	- [SW-438](https://0xdata.atlassian.net/browse/SW-438) - store h2o logs int unique directories
 	- [SW-439](https://0xdata.atlassian.net/browse/SW-439) - handle interrupted exception in H2ORuntimeInfoUIThread
 - Improvement
-	- [SW-341](https://0xdata.atlassian.net/browse/SW-341) - Support Python 3 distribution
+    - [SW-445](https://0xdata.atlassian.net/browse/SW-445) - Remove information from README.pst that pip cannot be used
+    - [SW-341](https://0xdata.atlassian.net/browse/SW-341) - Support Python 3 distribution
 	- [SW-380](https://0xdata.atlassian.net/browse/SW-380) - Define Jenkins pipeline via Jenkinsfile
 	- [SW-433](https://0xdata.atlassian.net/browse/SW-433) - Add change logs link to the sw download page
 	- [SW-435](https://0xdata.atlassian.net/browse/SW-435) - Upgrade shadow jar plugin to 2.0.0
