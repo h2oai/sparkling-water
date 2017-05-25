@@ -14,9 +14,6 @@ So for example, to install PySparkling for Spark 2.0, the command would look lik
 
     pip install h2o_pysparkling_2.0
 
-For h2o_pysparkling_2.0+, installation from PyPi is currently not supported: see `SW-335 
-<https://0xdata.atlassian.net/browse/SW-335>`_.
-
 Setup and Installation
 ======================
 
