@@ -152,7 +152,7 @@ class FrameTransformationsTest(unittest.TestCase):
         from pyspark.sql import Row
         hc = self._hc
         data = [{'c1' : 1, 'c2' : "first"}, {'c1' : 2, 'c2' : "second"}]
-        df = self._spark.createDataFrame(data)
+        df = self._hc._sql_context.createDataFrame(data)
         hf = hc.as_h2o_frame(df)
         # Modify H2O frame - this should invalidate internal cache
         hf['c3'] = 3
