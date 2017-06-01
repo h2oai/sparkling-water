@@ -26,17 +26,12 @@ Sparkling Water integrates H<sub>2</sub>O's fast scalable machine learning engin
 
 ### Select right version
 The Sparkling Water is developed in multiple parallel branches.
-Each branch corresponds to a Spark major release (e.g., branch **rel-1.5** provides implementation of Sparkling Water for Spark **1.5**).
+Each branch corresponds to a Spark major release (e.g., branch **rel-2.1** provides implementation of Sparkling Water for Spark **2.1**).
 
 Please, switch to the right branch:
  - For Spark 2.1 use branch [rel-2.1](https://github.com/h2oai/sparkling-water/tree/rel-2.1)
  - For Spark 2.0 use branch [rel-2.0](https://github.com/h2oai/sparkling-water/tree/rel-2.0)
- - For Spark 1.6 use branch [rel-1.6](https://github.com/h2oai/sparkling-water/tree/rel-1.6)
-
-> **Note** Older releases are available here:
->  - For Spark 1.5 use branch [rel-1.5](https://github.com/h2oai/sparkling-water/tree/rel-1.5)
->  - For Spark 1.4 use branch [rel-1.4](https://github.com/h2oai/sparkling-water/tree/rel-1.4)
->  - For Spark 1.3 use branch [rel-1.3](https://github.com/h2oai/sparkling-water/tree/rel-1.3)
+ - For Spark 1.6 use branch [rel-1.6](https://github.com/h2oai/sparkling-water/tree/rel-1.6) (Only critical fixes)
 
 > **Note** The [master](https://github.com/h2oai/sparkling-water/tree/master) branch includes the latest changes
 for the latest Spark version. They are back-ported into older Sparkling Water versions.

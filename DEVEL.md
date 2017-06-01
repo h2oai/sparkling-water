@@ -59,7 +59,7 @@ Sparkling Water excels in leveraging existing Spark-based workflows that need to
 ## Requirements
  - Linux or Mac OSX platform
  - Java 1.7+
- - [Spark 1.3.0+](http://spark.apache.org/downloads.html)
+ - [Spark 1.6.0+](http://spark.apache.org/downloads.html)
 
 ---
 
@@ -586,7 +586,7 @@ The following code reflects the use cases listed above. The code is executed in 
  * local
  * standalone cluster
  * YARN
-Spark 1.4.0 or later is required.
+Spark 1.6.0+ is required.
 
 1. Initialize H2O:
 
