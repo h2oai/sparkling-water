@@ -61,6 +61,9 @@ shadowJar {
     include(dependency("com.amazonaws:aws-java-sdk-kms"))
     include(dependency("com.amazonaws:aws-java-sdk-core"))
 
+    //deepwater jar
+    include(dependency("ai.h2o:deepwater-backend-api"))
+
     include(dependency("org.eclipse.jetty.aggregate:jetty-servlet"))
     include(dependency("org.eclipse.jetty:jetty-server"))
     include(dependency("org.eclipse.jetty:jetty-plus:8.1.17.v20150415"))
