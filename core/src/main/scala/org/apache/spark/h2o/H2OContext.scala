@@ -29,6 +29,7 @@ import org.apache.spark.h2o.utils.{H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import water._
+import water.util.Log
 
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
@@ -102,7 +103,6 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
     val nodes = backend.init()
-
     // Fill information about H2O client and H2O nodes in the cluster
     h2oNodes.append(nodes:_*)
     localClientIp = sys.env.getOrElse("SPARK_PUBLIC_DNS", sparkContext.env.rpcEnv.address.host)
@@ -116,6 +116,15 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
     announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, "http", localClientIp, localClientPort))
     updateUIAfterStart() // updates the spark UI
     uiUpdateThread.start() // start periodical updates of the UI
+
+    // initializes the H2O logging ( so we don't see "H2O Logging not ready yet" message in
+    // flow until anyone logs anything using H2O's Log.
+
+    // Better solution would be to finish log initialization by calling it explicitly during H2O
+    // initialization. Currently, the logs are initialized by first log message after
+    // H2O figured its IP address.
+    Log.warn("Backend ready!")
+
     this
   }
 

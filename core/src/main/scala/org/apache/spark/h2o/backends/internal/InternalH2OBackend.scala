@@ -112,10 +112,9 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     }
     // And wait for right cluster size
     H2O.waitForCloudSize(executors.length, hc.getConf.cloudTimeout)
-
     // Register web API for client
     RestAPIManager(hc).registerAll()
-    H2O.finalizeRegistration()
+    H2O.startServingRestApi()
     executors
   }
 

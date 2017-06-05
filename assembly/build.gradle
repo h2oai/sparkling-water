@@ -26,6 +26,7 @@ configurations.archives.artifacts.removeAll { it.archiveTask.is(jar) }
 
 // Shadow jar settings
 shadowJar {
+  mergeServiceFiles()
   relocate 'javassist', 'ai.h2o.javassist'
   // Relocate Eclipse Jetty to avoid collisions with Spark Jetty (newer version)
   relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
@@ -62,7 +63,7 @@ shadowJar {
     include(dependency("com.amazonaws:aws-java-sdk-s3"))
     include(dependency("com.amazonaws:aws-java-sdk-kms"))
     include(dependency("com.amazonaws:aws-java-sdk-core"))
-
+    include(dependency("no.priv.garshol.duke:duke"))
     include(dependency("org.eclipse.jetty.aggregate:jetty-servlet"))
     include(dependency("org.eclipse.jetty:jetty-server"))
     include(dependency("org.eclipse.jetty:jetty-plus:8.1.17.v20150415"))
