@@ -920,6 +920,7 @@ Furthermore, we recommend to configure the following Spark properties to speedup
 | `spark...extraJavaOptions` | all| `-XX:MaxPermSize=384m` | Increase PermGen size if you are running on Java7. Make sure to configure it on driver/executor/Yarn application manager. |
 | `spark.yarn.....memoryOverhead` | yarn | increase | Increase memoryOverhead if it is necessary. |
 | `spark.yarn.max.executor.failures` | yarn | `1` | Do not try restart executors after failure and directly fail computation. |
+| `spark.executor.heartbeatInterval` | all | `10s` | Interval between each executor's heartbeats to the driver. This property should be significantly less than spark.network.timeout. |
 
 <a name='SparklingWaterZeppelin'></a>
 ## Sparkling Water and Zeppelin
