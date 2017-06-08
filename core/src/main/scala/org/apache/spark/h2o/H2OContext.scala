@@ -29,6 +29,7 @@ import org.apache.spark.h2o.utils.{H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import water._
+import water.util.{Log, LogBridge}
 
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
@@ -110,6 +111,14 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
     if (conf.getBoolean("spark.ui.enabled", true)) {
       new SparklingWaterUITab(sparklingWaterListener, sparkContext.ui.get)
     }
+
+    // Force initialization of H2O logs so flow and other dependant tools have logs available from the start
+    val level = LogBridge.getH2OLogLevel()
+    LogBridge.setH2OLogLevel(Log.TRACE) // just temporarily, set Trace Level so we can
+    // be sure the Log.trace will initialize the logging and creates the log files
+    Log.trace("H2OContext initialized") // force creation of log files
+    LogBridge.setH2OLogLevel(level) // set the level back on the level user want's to use
+
     logInfo("Sparkling Water started, status of context: " + this)
     // Announce Flow UI location
     announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, "http", localClientIp, localClientPort))
