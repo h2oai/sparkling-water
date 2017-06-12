@@ -21,6 +21,7 @@ import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.sql.DataFrame
 import water.Key
 import org.apache.spark._
+import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
@@ -30,7 +31,7 @@ abstract class H2OContextImplicits {
 
   protected def _h2oContext: H2OContext
   /** Implicit conversion from RDD[Supported type] to H2OFrame */
-  implicit def asH2OFrameFromRDDProduct[A <: Product : TypeTag](rdd : RDD[A]): H2OFrame = _h2oContext.asH2OFrame(rdd, None)
+  implicit def asH2OFrameFromRDDProduct[A <: Product : ClassTag : TypeTag](rdd : RDD[A]): H2OFrame = _h2oContext.asH2OFrame(rdd, None)
   implicit def asH2OFrameFromRDDString(rdd: RDD[String]): H2OFrame = _h2oContext.asH2OFrame(rdd, None)
   implicit def asH2OFrameFromRDDBool(rdd: RDD[Boolean]): H2OFrame = _h2oContext.asH2OFrame(rdd, None)
   implicit def asH2OFrameFromRDDDouble(rdd: RDD[Double]): H2OFrame = _h2oContext.asH2OFrame(rdd, None)
@@ -44,7 +45,7 @@ abstract class H2OContextImplicits {
 
 
   /** Implicit conversion from RDD[Supported type] to H2OFrame key */
-  implicit def toH2OFrameKeyFromRDDProduct[A <: Product : TypeTag](rdd : RDD[A]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
+  implicit def toH2OFrameKeyFromRDDProduct[A <: Product : ClassTag : TypeTag](rdd : RDD[A]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
   implicit def toH2OFrameKeyFromRDDString(rdd: RDD[String]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
   implicit def toH2OFrameKeyFromRDDBool(rdd: RDD[Boolean]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
   implicit def toH2OFrameKeyFromRDDDouble(rdd: RDD[Double]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
@@ -55,6 +56,7 @@ abstract class H2OContextImplicits {
   implicit def toH2OFrameKeyFromRDDLabeledPoint(rdd: RDD[LabeledPoint]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
   implicit def toH2OFrameKeyFromRDDMLlibVector(rdd: RDD[mllib.linalg.Vector]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
   implicit def toH2OFrameKeyfromRDDMlVector(rdd: RDD[ml.linalg.Vector]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
+
 
 
   /** Implicit conversion from Spark DataFrame to H2OFrame */

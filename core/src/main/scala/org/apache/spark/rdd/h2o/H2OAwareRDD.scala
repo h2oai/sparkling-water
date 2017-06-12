@@ -14,20 +14,21 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.listeners
+package org.apache.spark.rdd.h2o
 
-import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
-import water.H2O
-import water.util.Log
+import org.apache.spark.rdd.RDD
+import org.apache.spark.{Partition, TaskContext}
 
-trait H2OSparkListener extends SparkListener {
-}
+import scala.reflect.ClassTag
 
-class ExecutorAddNotSupportedListener extends H2OSparkListener {
 
-  override def onExecutorAdded(executorAdded: SparkListenerExecutorAdded): Unit = {
-    Log.err(s"Executor ${executorAdded.executorId} without H2O instance discovered, killing the cloud!")
-    H2O.shutdown(-1)
+class H2OAwareRDD[U: ClassTag](nodes: Seq[String], prev: RDD[U]) extends RDD[U](prev: RDD[U]) {
+
+  override def getPreferredLocations(split: Partition): Seq[String] = nodes
+
+  override def compute(split: Partition, context: TaskContext): Iterator[U] = prev.compute(split, context)
+
+  override protected def getPartitions: Array[Partition] = {
+    prev.partitions
   }
-
 }
