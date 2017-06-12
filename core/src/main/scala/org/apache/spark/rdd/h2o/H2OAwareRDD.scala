@@ -14,9 +14,21 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.listeners
+package org.apache.spark.rdd.h2o
 
-import org.apache.spark.scheduler.SparkListener
+import org.apache.spark.rdd.RDD
+import org.apache.spark.{Partition, TaskContext}
 
-trait H2OSparkListener extends SparkListener{
+import scala.reflect.ClassTag
+
+
+class H2OAwareRDD[U: ClassTag](nodes: Seq[String], prev: RDD[U]) extends RDD[U](prev: RDD[U]) {
+
+  override def getPreferredLocations(split: Partition): Seq[String] = nodes
+
+  override def compute(split: Partition, context: TaskContext): Iterator[U] = prev.compute(split, context)
+
+  override protected def getPartitions: Array[Partition] = {
+    prev.partitions
+  }
 }
