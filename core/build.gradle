@@ -22,6 +22,11 @@ dependencies {
   compile("ai.h2o:h2o-avro-parser:${h2oVersion}") {
       transitive = false
   }
+
+  // H2O XGBoost
+  compile "ai.h2o:h2o-ext-xgboost:${h2oVersion}"
+  compile "ai.h2o:h2o-genmodel-ext-xgboost:${h2oVersion}"
+
   // H2O Parquet parser support
   compile("ai.h2o:h2o-parquet-parser:${h2oVersion}") {
       transitive = false

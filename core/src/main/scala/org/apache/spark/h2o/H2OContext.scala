@@ -102,7 +102,6 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
     val nodes = backend.init()
-
     // Fill information about H2O client and H2O nodes in the cluster
     h2oNodes.append(nodes:_*)
     localClientIp = sys.env.getOrElse("SPARK_PUBLIC_DNS", sparkContext.env.rpcEnv.address.host)
@@ -116,6 +115,7 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
     announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, "http", localClientIp, localClientPort))
     updateUIAfterStart() // updates the spark UI
     uiUpdateThread.start() // start periodical updates of the UI
+
     this
   }
 
