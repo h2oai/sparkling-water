@@ -26,6 +26,7 @@ configurations.archives.artifacts.removeAll { it.archiveTask.is(jar) }
 
 // Shadow jar settings
 shadowJar {
+  mergeServiceFiles()
   relocate 'javassist', 'ai.h2o.javassist'
   // Relocate Eclipse Jetty to avoid collisions with Spark Jetty (newer version)
   relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
@@ -49,6 +50,13 @@ shadowJar {
     include(dependency("ai.h2o:h2o-avro-parser"))
     include(dependency("ai.h2o:h2o-orc-parser"))
     include(dependency("ai.h2o:h2o-parquet-parser"))
+
+    include(dependency("ai.h2o:reflections"))
+    include(dependency("ai.h2o:google-analytics-java"))
+    include(dependency("ai.h2o:deepwater-backend-api"))
+    include(dependency("ai.h2o:h2o-ext-xgboost"))
+    include(dependency("ai.h2o:h2o-genmodel-ext-xgboost"))
+
     include(dependency("joda-time:joda-time"))
     include(dependency("org.joda:joda-convert"))
     include(dependency("org.javassist:javassist"))
@@ -61,7 +69,7 @@ shadowJar {
     include(dependency("com.amazonaws:aws-java-sdk-s3"))
     include(dependency("com.amazonaws:aws-java-sdk-kms"))
     include(dependency("com.amazonaws:aws-java-sdk-core"))
-
+    include(dependency("no.priv.garshol.duke:duke"))
     include(dependency("org.eclipse.jetty.aggregate:jetty-servlet"))
     include(dependency("org.eclipse.jetty:jetty-server"))
     include(dependency("org.eclipse.jetty:jetty-plus:8.1.17.v20150415"))

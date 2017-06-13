@@ -28,6 +28,10 @@ import water.api.scalaInt.ScalaCodeHandler
 
 trait RestApi {
   def register(h2oContext: H2OContext): Unit
+
+  def name: String
+
+  override def toString: String = name
 }
 
 private[api] class RestAPIManager(hc: H2OContext) {
@@ -52,6 +56,9 @@ object RestAPIManager {
 }
 
 private object CoreRestApi extends RestApi {
+
+
+  override def name = "Core Sparkling Water Rest API"
 
   def register(h2oContext: H2OContext): Unit = {
     if(h2oContext.getConf.isH2OReplEnabled){

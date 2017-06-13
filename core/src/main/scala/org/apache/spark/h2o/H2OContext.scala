@@ -110,7 +110,6 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
     val nodes = backend.init()
-
     // Fill information about H2O client and H2O nodes in the cluster
     h2oNodes.append(nodes:_*)
     localClientIp = sys.env.getOrElse("SPARK_PUBLIC_DNS", sparkContext.env.rpcEnv.address.host)
