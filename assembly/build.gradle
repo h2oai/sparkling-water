@@ -55,7 +55,7 @@ shadowJar {
     include(dependency("ai.h2o:deepwater-backend-api"))
     include(dependency("ai.h2o:h2o-ext-xgboost"))
     include(dependency("ai.h2o:h2o-genmodel-ext-xgboost"))
-      
+
     include(dependency("joda-time:joda-time"))
     include(dependency("org.joda:joda-convert"))
     include(dependency("org.javassist:javassist"))
