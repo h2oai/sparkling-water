@@ -22,7 +22,8 @@ import org.apache.spark.ml.spark.models.svm.SVM
 import water.H2O
 import water.api.{GridSearchHandler, ModelBuilderHandler, RestApi}
 
-class Register extends RestApi {
+class SVMModelRestAPI extends RestApi {
+  override def name: String = "SVM Model REST API"
 
   override def register(hc: H2OContext) = {
 
@@ -33,6 +34,7 @@ class Register extends RestApi {
       val lbase: String = base.toLowerCase
       val bh_clz = classOf[ModelBuilderHandler[_, _, _]]
       val version: Int = 3
+
       H2O.register(
         "POST /" + version + "/ModelBuilders/" + lbase,
         bh_clz,
@@ -40,6 +42,7 @@ class Register extends RestApi {
         "train_" + lbase,
         "Train a " + base + " model."
       )
+
       H2O.register(
         "POST /" + version + "/ModelBuilders/" + lbase + "/parameters",
         bh_clz,
@@ -47,6 +50,7 @@ class Register extends RestApi {
         "validate_" + lbase,
         "Validate a set of " + base + " model builder parameters."
       )
+
       H2O.register(
         "POST /99/Grid/" + lbase,
         classOf[GridSearchHandler[_,_,_,_]],
