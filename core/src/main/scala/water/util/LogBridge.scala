@@ -25,6 +25,4 @@ object LogBridge {
   def setH2OLogLevel(levelIdx: Int): Unit = {
     water.util.Log._level = levelIdx
   }
-
-  def getH2OLogLevel() = water.util.Log._level
 }
