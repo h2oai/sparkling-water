@@ -184,7 +184,8 @@ object H2OSchemaUtils {
     val allTypesIndx = arrayTypesIndx ++ vectorTypesIndx
     val attributesNum = (field: StructField) => {
       if (!field.dataType.isInstanceOf[ml.linalg.VectorUDT]) { None }
-      else { AttributeGroup.fromStructField(field).numAttributes }
+      else if (AttributeGroup.fromStructField(field).size != -1) { Some(AttributeGroup.fromStructField(field).size) }
+      else { None }
     }
 
     @tailrec
