@@ -177,7 +177,7 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
                 model.delete_and_lock(_job);
 
                 Tuple2<RDD<LabeledPoint>, double[]> points = FrameMLUtils.toLabeledPoints(
-                        _train,
+                        _parms.train(),
                         _parms._response_column,
                         model._output.nfeatures(),
                         _parms._missing_values_handling,
@@ -191,7 +191,6 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
                         MissingValuesHandling.Skip == _parms._missing_values_handling) {
                     throw new H2OIllegalArgumentException("No rows left in the dataset after filtering out rows with missing values. Ignore columns with many NAs or set missing_values_handling to 'MeanImputation'.");
                 }
-
 
                 SVMWithSGD svm = new SVMWithSGD();
                 svm.setIntercept(_parms._add_intercept);
@@ -218,11 +217,11 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
 
                 sc.listenerBus().listeners().remove(progressBar);
 
-                model._output.weights_$eq(trainedModel.weights().toArray());
-                model._output.iterations_$eq(_parms._max_iterations);
-                model._output.interceptor_$eq(trainedModel.intercept());
+                model._output._weights_$eq(trainedModel.weights().toArray());
+                model._output._iterations_$eq(_parms._max_iterations);
+                model._output._interceptor_$eq(trainedModel.intercept());
 
-                model._output.numMeans_$eq(points._2());
+                model._output._num_means_$eq(points._2());
 
                 Frame train = DKV.<Frame>getGet(_parms._train);
                 model.score(train).delete();
@@ -237,7 +236,7 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
                     model.update(_job);
                 }
 
-                model._output.interceptor_$eq(trainedModel.intercept());
+                model._output._interceptor_$eq(trainedModel.intercept());
 
                 Log.info(model._output._model_summary);
             } finally {

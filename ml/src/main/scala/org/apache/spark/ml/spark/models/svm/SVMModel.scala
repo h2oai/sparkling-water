@@ -20,28 +20,27 @@ import java.lang
 
 import hex.ModelMetricsSupervised.MetricBuilderSupervised
 import hex._
-import org.apache.spark.ml.spark.models.MissingValuesHandling
+import org.apache.spark.ml.spark.models.{H2OOutput, MissingValuesHandling}
 import water.codegen.CodeGeneratorPipeline
 import water.util.{JCodeGen, SBPrintStream}
 import water.{H2O, Key, Keyed}
 
 object SVMModel {
 
-  class SVMOutput(val b: SVM) extends Model.Output(b) {
-    var interceptor: Double = .0
-    var iterations: Int = 0
-    var weights: Array[Double] = null
-    var numMeans: Array[Double] = null
+  class SVMOutput(val b: SVM) extends Model.Output(b) with H2OOutput {
+    var _interceptor: Double = .0
+    var _iterations: Int = 0
+    var _weights: Array[Double] = null
   }
 
 }
 
 class SVMModel private[svm](val selfKey: Key[SVMModel],
-                              val parms: SVMParameters,
-                              val output: SVMModel.SVMOutput)
+                            val parms: SVMParameters,
+                            val output: SVMModel.SVMOutput)
   extends Model[SVMModel, SVMParameters, SVMModel.SVMOutput](selfKey, parms, output) {
 
-  override protected def toJavaCheckTooBig: Boolean = output.weights.length > 10000
+  override protected def toJavaCheckTooBig: Boolean = output._weights.length > 10000
 
   override def makeMetricBuilder(domain: Array[String]): MetricBuilderSupervised[Nothing] =
     _output.getModelCategory match {
@@ -53,30 +52,35 @@ class SVMModel private[svm](val selfKey: Key[SVMModel],
         throw H2O.unimpl
     }
 
-  private val meanImputation: Boolean = MissingValuesHandling.MeanImputation.equals(_parms._missing_values_handling)
+  private val meanImputation: Boolean = MissingValuesHandling.MeanImputation.equals(_parms
+    ._missing_values_handling)
 
   protected def score0(data: Array[Double], preds: Array[Double]): Array[Double] = {
     java.util.Arrays.fill(preds, 0)
 
     val pred =
-      data.zip(_output.weights).foldRight(_output.interceptor){ case ((d, w), acc) =>
-        if(meanImputation && lang.Double.isNaN(d)) {
-          _output.numMeans(0) * w + acc
-        } else {
-          d * w + acc
-        }
+      data.zip(_output._weights).zipWithIndex.foldRight(_output._interceptor) {
+        case (((d, w), i), acc) =>
+          if (meanImputation && lang.Double.isNaN(d)) {
+            // TODO add unit test
+            _output._num_means(i) * w + acc
+          } else {
+            d * w + acc
+          }
       }
 
-    if(_parms._threshold.isNaN) { // Regression
+    if (_parms._threshold.isNaN) {
+      // Regression
       preds(0) = pred
-    } else { // Binomial
+    } else {
+      // Binomial
       val dt = defaultThreshold()
-      if(pred > _parms._threshold) {
-        preds(2) = if(pred < dt) dt else pred
+      if (pred > _parms._threshold) {
+        preds(2) = if (pred < dt) dt else pred
         preds(1) = preds(2) - 1
         preds(0) = 1
       } else {
-        preds(2) = if(pred >= dt) dt - 1 else pred
+        preds(2) = if (pred >= dt) dt - 1 else pred
         preds(1) = preds(2) + 1
         preds(0) = 0
       }
@@ -84,12 +88,13 @@ class SVMModel private[svm](val selfKey: Key[SVMModel],
     preds
   }
 
-  override protected def toJavaInit(sb: SBPrintStream, fileCtx: CodeGeneratorPipeline): SBPrintStream = {
+  override protected def toJavaInit(sb: SBPrintStream, fileCtx: CodeGeneratorPipeline):
+  SBPrintStream = {
     val sbInitialized = super.toJavaInit(sb, fileCtx)
     sbInitialized.ip("public boolean isSupervised() { return " + isSupervised + "; }").nl
-    JCodeGen.toStaticVar(sbInitialized, "WEIGHTS", _output.weights, "Weights.")
-    if(meanImputation) {
-      JCodeGen.toStaticVar(sbInitialized, "MEANS", _output.numMeans, "Means.")
+    JCodeGen.toStaticVar(sbInitialized, "WEIGHTS", _output._weights, "Weights.")
+    if (meanImputation) {
+      JCodeGen.toStaticVar(sbInitialized, "MEANS", _output._num_means, "Means.")
     }
     sbInitialized
   }
@@ -99,15 +104,15 @@ class SVMModel private[svm](val selfKey: Key[SVMModel],
                                            fileCtx: CodeGeneratorPipeline,
                                            verboseCode: Boolean) {
     bodySb.i.p("java.util.Arrays.fill(preds,0);").nl
-    bodySb.i.p(s"double pred = ${_output.interceptor};").nl
+    bodySb.i.p(s"double pred = ${_output._interceptor};").nl
     bodySb.i.p("for(int i = 0; i < data.length; i++) {").nl
-    if(meanImputation) {
+    if (meanImputation) {
       bodySb.i(1).p("if(Double.isNaN(data[i])) {").nl
       bodySb.i(2).p("pred += (MEANS[i] * WEIGHTS[i]);").nl
       bodySb.i(1).p("} else {").nl
     }
-    bodySb.i(if(meanImputation) 2 else 1).p("pred += (data[i] * WEIGHTS[i]);").nl
-    if(meanImputation) {
+    bodySb.i(if (meanImputation) 2 else 1).p("pred += (data[i] * WEIGHTS[i]);").nl
+    if (meanImputation) {
       bodySb.i(1).p("}").nl
     }
     bodySb.i.p("}").nl

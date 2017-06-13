@@ -14,66 +14,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.ml.spark.models.svm
+package org.apache.spark.ml.spark.models.gm
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedSparkTestContext
-import org.apache.spark.mllib.classification
 import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.types.{DataTypes, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.support.H2OFrameSupport
 
 import scala.util.Random
 
 @RunWith(classOf[JUnitRunner])
-class SVMModelTest extends FunSuite with SharedSparkTestContext {
+class GaussianMixtureTest extends FunSuite with SharedSparkTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf
+    = defaultSparkConf)
 
-  ignore("Should score the same regression value.") {
-    import sqlContext.implicits._
+  test("Should predict the same cluster as the spark method.") {
     val h2oContext = hc
     import h2oContext.implicits._
 
     // Generate random training data
     val trainRDD = sc.parallelize(1 to 50, 1).map(v => {
-      val values = Array.fill(5){0}.map(x => Random.nextDouble())
-      val label = Math.round(Random.nextDouble())
-      (label, Vectors.dense(values))
+      val features: Array[Double] = Array.fill(5) {0}.map(x => Random.nextDouble())
+      Row(features: _*)
     }).cache()
-    val trainDF = trainRDD.toDF("Label", "Vector")
-
-    val trainFrame = h2oContext.asH2OFrame(trainDF, "bubbles")
-    H2OFrameSupport.withLockAndUpdate(trainFrame){ fr =>
-      fr.replace(0, fr.vec(0).toCategoricalVec).remove()
-    }
-    val initialWeights = Vectors.dense(1, 1, 1, 1, 1)
-    val weightsDF = sc.parallelize(Array(Tuple1(initialWeights))).toDF("Vector")
-    val weightsFrame = hc.asH2OFrame(weightsDF, "weights")
-
-    // Learning parameters
-    val parms = new SVMParameters
-    parms._train = trainFrame
-    parms._response_column = 'Label
-    parms._initial_weights = weightsFrame
-
-    val svm = new SVM(parms, h2oContext)
-
-    // Train model
-    val h2oSVMModel: SVMModel = svm.trainModel.get
-
-    val sparkSVMModel = new classification.SVMModel(
-      Vectors.dense(h2oSVMModel.output._weights),
-      h2oSVMModel.output._interceptor
+    val trainDF: DataFrame = sqlContext.createDataFrame(
+      trainRDD,
+      StructType(Array(
+        StructField("c0", DataTypes.DoubleType),
+        StructField("c1", DataTypes.DoubleType),
+        StructField("c2", DataTypes.DoubleType),
+        StructField("c3", DataTypes.DoubleType),
+        StructField("c4", DataTypes.DoubleType)
+      ))
     )
 
-    // Make sure both scoring methods return the same results
-    val h2oPredsVec = h2oSVMModel.score(trainFrame).vec(0)
-    val h2oPreds = (0 until 50).map(h2oPredsVec.at(_)).toArray
-    val sparkPreds = sparkSVMModel.predict(trainRDD.map(_._2)).collect()
+    val trainFrame = hc.asH2OFrame(trainDF, "bubbles")
 
-    assert( h2oPreds.sameElements(sparkPreds) )
+    // Learning parameters
+    val parms = new GaussianMixtureParameters
+    parms._train = trainFrame
+    parms._response_column = 'Label
+    parms._k = 3
+
+    val gm = new GaussianMixture(parms, h2oContext)
+
+    // Train model
+    val h2oGMModel = gm.trainModel.get
+
+    val sparkGMModel = h2oGMModel.sparkModel
+
+    // Make sure both scoring methods return the same results
+    val h2oPredsVec = h2oGMModel.score(trainFrame).vec(0)
+    val h2oPreds = (0 until 50).map(h2oPredsVec.at(_)).toArray
+    val sparkPreds = sparkGMModel.predict(
+      trainRDD
+        .map(row => {
+          Vectors.dense(row.toSeq.map(_.asInstanceOf[Double]).toArray)
+        })
+    ).collect().map(_.toDouble)
+
+    assert(h2oPreds.sameElements(sparkPreds))
+
   }
 }

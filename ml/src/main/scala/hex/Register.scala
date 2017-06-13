@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package hex
 
 import org.apache.spark.h2o.H2OContext
+import org.apache.spark.ml.spark.models.gm.GaussianMixture
 import org.apache.spark.ml.spark.models.svm.SVM
 import water.H2O
 import water.api.{GridSearchHandler, ModelBuilderHandler, RestApi}
@@ -26,7 +26,7 @@ class Register extends RestApi {
 
   override def register(hc: H2OContext) = {
 
-    val models = Seq(new SVM(true, hc))
+    val models = Seq(new SVM(true, hc), new GaussianMixture(true, hc))
 
     for (algo <- models) {
       val base: String = algo.getClass.getSimpleName
