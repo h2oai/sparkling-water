@@ -34,6 +34,35 @@ In order to use PySparkling, it requires the following runtime python dependenci
 The required packages are installed automatically in case when PySparkling is installed from PyPI.
 
 
+Building PySparkling with Non-Default Spark Version
+===================================================
+
+PySparkling is built for Spark built with default Scala version for that Spark. If you would like to use PySparkling
+with Spark built with non-default Scala version, you have to build PySparkling manually.
+
+The default Scala versions for supported Spark versions are:
+
+- Spark 2.1.x - Scala 2.11
+- Spark 2.0.1 - Scala 2.11
+- Spark 1.6.x - Scala 2.10
+
+To build PySparkling for Spark with specific Scala version:
+
+1. Clone Sparkling Water Repo
+
+.. code-block:: bash
+
+    git clone http://github.com/h2oai/sparkling-water
+    cd sparkling-water
+
+2. Point ``$SPARK_HOME`` environmental variable to Spark you want to build PySparkling for.
+3. Build PySparkling with the Scala version your Spark is built with. The supported Scala versions are 2.11 and 2.10. To build it, for example, with Scala 2.11, use:
+
+.. code-block:: bash
+
+    ./gradlew build -x check -PscalaBaseVersion=2.11
+
+4. The final PySparkling zip file is located in the ``py/build/dist`` directory of the Sparkling Water project.
 
 The Sparkling-Water Python Module
 =================================
