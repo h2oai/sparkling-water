@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-# Top-level directory for this product
-TOPDIR=$(cd `dirname $0`/..; pwd)
-source $TOPDIR/bin/sparkling-env.sh
+# Current dir
+if cd "$(dirname "$0")/.."; then TOPDIR=$(pwd); else exit; fi
+source "$TOPDIR/bin/sparkling-env.sh"
 # Verify there is Spark installation
 checkSparkHome
 # Verify if correct Spark version is used
@@ -17,10 +17,10 @@ USER_MASTER=${MASTER:-$(getMasterArg "$@")}
 USER_MASTER=${USER_MASTER:-"$DEFAULT_MASTER"}
 export MASTER="$USER_MASTER"
 if [ -f "$SPARK_HOME/conf/spark-defaults.conf" ]; then
-    EXTRA_DRIVER_PROPS=$(grep "^spark.driver.extraJavaOptions" $SPARK_HOME/conf/spark-defaults.conf 2>/dev/null | sed -e 's/spark.driver.extraJavaOptions//' )
+    EXTRA_DRIVER_PROPS=$(grep "^spark.driver.extraJavaOptions" "$SPARK_HOME"/conf/spark-defaults.conf 2>/dev/null | sed -e 's/spark.driver.extraJavaOptions//' )
 fi
 
 banner
 
 # If extra java properties are defined use them and append our property
-spark-shell --jars $FAT_JAR_FILE --driver-memory $DRIVER_MEMORY --conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS -XX:MaxPermSize=384m" "$@"
+spark-shell --jars "$FAT_JAR_FILE" --driver-memory "$DRIVER_MEMORY" --conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS -XX:MaxPermSize=384m" "$@"

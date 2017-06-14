@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 # Current dir
-TOPDIR=$(cd `dirname $0`/.. &&  pwd)
-source $TOPDIR/bin/sparkling-env.sh
+if cd "$(dirname "$0")/.."; then TOPDIR=$(pwd); else exit; fi
+
+source "$TOPDIR/bin/sparkling-env.sh"
 # Verify there is Spark installation
 checkSparkHome
 # Verify if correct Spark version is used
@@ -10,5 +11,5 @@ checkSparkVersion
 
 
 PYTHONPATH=$PY_ZIP_FILE:$PYTHONPATH \
-pyspark --py-files $PY_ZIP_FILE "$@"
+pyspark --py-files "$PY_ZIP_FILE" "$@"
 

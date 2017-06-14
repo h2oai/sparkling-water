@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-# Top-level directory for this product
-TOPDIR=$(cd "$(dirname "$0")/.."; pwd)
+# Current dir
+if cd "$(dirname "$0")/.."; then TOPDIR=$(pwd); else exit; fi
+
 source "$TOPDIR/bin/sparkling-env.sh"
 
 if [ ! $# -eq 1 ]; then
@@ -27,7 +28,7 @@ else
 fi
 
 h2odriver_file="h2odriver-$H2O_VERSION.$H2O_BUILD-${hadoop_version}extended.jar"
-h2odriver_url="${S3_RELEASE_BUCKET}/rel-${major_version}/${patch_version}/extended/${h2odriver_file}"
+h2odriver_url="${S3_RELEASE_BUCKET}/rel-${MAJOR_VERSION}/${PATCH_VERSION}/extended/${h2odriver_file}"
 output_file="h2odriver-${hadoop_version}extended.jar"
 
 echo "Getting h2odriver from ${output_file}..."
