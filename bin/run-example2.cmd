@@ -57,30 +57,7 @@ echo ---------
 
 set SPARK_PRINT_LAUNCH_COMMAND=1
 set VERBOSE=--verbose
-if "%EXAMPLE_MASTER%" == "yarn-client" (
-   goto :withoutdeploymode
-) else (
-if "%EXAMPLE_MASTER%" == "yarn-cluster" (
-   goto :withoutdeploymode
-) else (
-   goto :withdeploymode
-)
-)
-:withoutdeploymode
-cd %TOPDIR%
-call %SPARK_HOME%/bin/spark-submit2.cmd ^
- --class %EXAMPLE% ^
- --master %EXAMPLE_MASTER% ^
- --driver-memory %EXAMPLE_DRIVER_MEMORY% ^
- --driver-java-options "%EXAMPLE_H2O_SYS_OPS%" ^
- --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" ^
- %VERBOSE% ^
- %TOPDIR%/assembly/build/libs/%FAT_JAR% ^
- %*
-exit /b %ERRORLEVEL%
 
-:withdeploymode
-cd %TOPDIR%
 call %SPARK_HOME%/bin/spark-submit2.cmd ^
  --class %EXAMPLE% ^
  --master %EXAMPLE_MASTER% ^
@@ -89,9 +66,8 @@ call %SPARK_HOME%/bin/spark-submit2.cmd ^
  --deploy-mode %EXAMPLE_DEPLOY_MODE% ^
  --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" ^
  %VERBOSE% ^
- %TOPDIR%/assembly/build/libs/%FAT_JAR% ^
+ %FAT_JAR_FILE% ^
  %*
 exit /b %ERRORLEVEL%
-
 rem end of main script
 
