@@ -124,6 +124,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       ++ Seq("-log_dir", conf.h2oClientLogDir.get)
       ++ Seq("-baseport", conf.clientBasePort.toString)
       ++ Seq("-client")
+      ++ addIfNotNull("-flow_dir", conf.flowDir.orNull)
       ++ addIfNotNull("-ice_root", conf.clientIcedDir.orNull)
       ++ addIfNotNull("-port", Some(conf.clientWebPort).filter(_ > 0).map(_.toString).orNull)
       ++ addIfNotNull("-jks", conf.jks.orNull)

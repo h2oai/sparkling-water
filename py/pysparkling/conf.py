@@ -157,7 +157,14 @@ class H2OConf(object):
         self._jconf.setUiUpdateInterval(interval)
         return self
 
+    def set_flow_dir(self, dir):
+        self._jconf.setFlowDir(dir)
+        return self
+
     # getters
+
+    def flow_dir(self):
+        return self._get_option(self._jconf.flowDir())
 
     def ui_update_interval(self):
         return self._jconf.uiUpdateInterval()
