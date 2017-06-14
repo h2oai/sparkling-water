@@ -21,8 +21,8 @@ for /f "tokens=1 delims=-" %%i in ("%VERSION%") do (@set VERSION_WITHOUT_SNAPSHO
 rem Fat jar for this distribution
 set FAT_JAR=sparkling-water-assembly_%SCALA_VERSION%-%VERSION%-all.jar
 set FAT_JAR_FILE=%TOPDIR%\assembly\build\libs\%FAT_JAR%
-set PY_EGG=h2o_pysparkling_%SPARK_MAJOR_VERSION%-%VERSION_WITHOUT_SNAPSHOT%-py2.7.egg
-set PY_EGG_FILE=%TOPDIR%\py\build\dist\%PY_EGG%
+set PY_ZIP=h2o_pysparkling_%SPARK_MAJOR_VERSION%-%VERSION%.zip
+set PY_ZIP_FILE=%TOPDIR%\py\build\dist\%PY_ZIP%
 
 rem Setup loging and output
 
