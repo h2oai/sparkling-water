@@ -157,7 +157,7 @@ class H2OConf(object):
         self._jconf.setUiUpdateInterval(interval)
         return self
 
-# getters
+    # getters
 
     def ui_update_interval(self):
         return self._jconf.uiUpdateInterval()
@@ -178,22 +178,22 @@ class H2OConf(object):
         return self._jconf.clusterStartTimeout()
 
     def h2o_cluster(self):
-        return self._get_option(self._jconf.h2oCluster)
+        return self._get_option(self._jconf.h2oCluster())
 
     def yarn_queue(self):
-        return self._get_option(self._jconf.YARNQueue)
+        return self._get_option(self._jconf.YARNQueue())
 
     def h2o_driver_path(self):
-        return self._get_option(self._jconf.h2oDriverPath)
+        return self._get_option(self._jconf.h2oDriverPath())
 
     def hdfs_output_dir(self):
-        return self._get_option(self._jconf.HDFSOutputDir)
+        return self._get_option(self._jconf.HDFSOutputDir())
 
     def mapper_xmx(self):
-        return self._get_option(self._jconf.mapperXmx)
+        return self._jconf.mapperXmx()
 
     def cluster_config_file(self):
-        return self._get_option(self._jconf.clusterConfigFile)
+        return self._get_option(self._jconf.clusterInfoFile())
 
     def cluster_start_mode(self):
         return self._jconf.clusterStartMode()
@@ -213,7 +213,7 @@ class H2OConf(object):
     def flatfile_path(self):
         return self._get_option(self._jconf.flatFilePath())
 
-    def num_h2o_Workers(self):
+    def num_h2o_workers(self):
         return self._get_option(self._jconf.numH2OWorkers())
 
     def use_flatfile(self):
@@ -259,7 +259,7 @@ class H2OConf(object):
         return self._jconf.h2oClientLogLevel()
 
     def h2o_client_log_dir(self):
-        return self._jconf.h2oClientLogDir()
+        return self._get_option(self._jconf.h2oClientLogDir())
 
     def client_network_mask(self):
         return self._get_option(self._jconf.clientNetworkMask())
