@@ -247,6 +247,7 @@ The following configuration properties can be passed to Spark to configure Spark
 |`spark.ext.h2o.client.web.port`|`-1`|Exact client port to access web UI. The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`.|
 |`spark.ext.h2o.client.verbose`|`false`|The client outputs verbosed log output directly into console. Enabling the flag increases the client log level to INFO.|
 |`spark.ext.h2o.client.network.mask`|--|Subnet selector for H2O client, this disables using IP reported by Spark but tries to find IP based on the specifed mask.|
+|`spark.ext.h2o.client.flow.dir`|`null`|Path to location where H2O Flow saves flows.|
 ---
 
 

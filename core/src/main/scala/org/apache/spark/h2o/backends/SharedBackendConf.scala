@@ -65,6 +65,7 @@ trait SharedBackendConf {
   def h2oNodeLogDir   = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
 
   def uiUpdateInterval = sparkConf.getInt(PROP_UI_UPDATE_INTERVAL._1, PROP_UI_UPDATE_INTERVAL._2)
+  def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
 
   def setUiUpdateInterval(interval: Int): H2OConf = {
     sparkConf.set(PROP_UI_UPDATE_INTERVAL._1, interval.toString)
@@ -111,6 +112,11 @@ trait SharedBackendConf {
 
   def setH2OClientLogDir(dir: String): H2OConf = {
     sparkConf.set(PROP_CLIENT_LOG_DIR._1, dir)
+    self
+  }
+
+  def setFlowDir(dir: String): H2OConf = {
+    sparkConf.set(PROP_FLOW_DIR._1, dir)
     self
   }
 }
@@ -205,4 +211,7 @@ object SharedBackendConf {
 
   /** Path to Java KeyStore file. */
   val PROP_SSL_CONF = ("spark.ext.h2o.internal_security_conf", None)
+
+  /** Path to flow dir. */
+  val PROP_FLOW_DIR=("spark.ext.h2o.client.flow.dir", None)
 }
