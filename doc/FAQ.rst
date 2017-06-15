@@ -121,7 +121,7 @@ Frequently Asked Questions
 
         <property>
           <name>javax.jdo.option.ConnectionURL</name>
-          <value>jdbc:mysql://{mysql_host}:${mysql-port}/{metastore_db}?createDatabaseIfNotExist=true</value>
+          <value>jdbc:mysql://{mysql_host}:${mysql_port}/{metastore_db}?createDatabaseIfNotExist=true</value>
           <description>JDBC connect string for a JDBC metastore</description>
         </property>
 
