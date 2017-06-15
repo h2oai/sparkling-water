@@ -39,8 +39,8 @@ On Windows it is required:
         </property>
       </configuration>
 
-   Note: you can also use Hive default scratch directory which is ``/tmp/hive``. In this case, you need to create
-   directory manually and call ``winutils.exe chmod 777 \tmp\hive`` to setup right permissions.
+   Note: you can also use Hive default scratch directory which is ``c:\tmp\hive``. In this case, you need to create
+   directory manually and call ``winutils.exe chmod -R 777 c:\tmp\hive`` to setup right permissions.
 
 6. Set ``HADOOP_CONF_DIR`` property:
 
