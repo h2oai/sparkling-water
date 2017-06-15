@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Current dir
-if cd "$(dirname "$0")/.."; then TOPDIR=$(pwd); else exit; fi
+TOPDIR=$(cd "$(dirname "$0")/.."; pwd)
 
 source "$TOPDIR/bin/sparkling-env.sh"
 
