@@ -1,6 +1,34 @@
 ChangeLog
 =========
 
+## v2.0.10 (2017-06-15)
+
+- Technical task
+	 - [SW-211](https://0xdata.atlassian.net/browse/SW-211) - In PySparkling for spark 2.0 document how to build the package
+- Bug
+	 - [SW-448](https://0xdata.atlassian.net/browse/SW-448) - Add missing jar into the assembly
+	 - [SW-450](https://0xdata.atlassian.net/browse/SW-450) - Fix instructions on the download site
+	 - [SW-453](https://0xdata.atlassian.net/browse/SW-453) - Use size method to get attr num
+	 - [SW-454](https://0xdata.atlassian.net/browse/SW-454) - Replace sparkSession with spark in backends documentation
+	 - [SW-456](https://0xdata.atlassian.net/browse/SW-456) - Make shell scripts safe
+	 - [SW-459](https://0xdata.atlassian.net/browse/SW-459) - Update PySparkling run-time dependencies
+	 - [SW-461](https://0xdata.atlassian.net/browse/SW-461) - Fix wrong getters and setters in pysparkling
+- New Feature
+	 - [SW-455](https://0xdata.atlassian.net/browse/SW-455) - Replace the remaining references to egg files
+- Improvement
+	 - [SW-24](https://0xdata.atlassian.net/browse/SW-24) - Append tab on Sparkling Water download page - how to use Sparkling Water package
+	 - [SW-111](https://0xdata.atlassian.net/browse/SW-111) - Update FAQ with information about hive metastore location
+	 - [SW-112](https://0xdata.atlassian.net/browse/SW-112) - Sparkling Water Tunning doc: add heartbeat dcoumentation
+	 - [SW-311](https://0xdata.atlassian.net/browse/SW-311) - Please report Application Type to Yarn Resource Manager
+	 - [SW-340](https://0xdata.atlassian.net/browse/SW-340) - Improve structure of SW README
+	 - [SW-426](https://0xdata.atlassian.net/browse/SW-426) - Allow to download sparkling water logs from the spark UI
+	 - [SW-444](https://0xdata.atlassian.net/browse/SW-444) - Remove references to Spark 1.5, 1.4 ( as it's old ) in README.rst and other docs
+	 - [SW-447](https://0xdata.atlassian.net/browse/SW-447) - Upgrade H2O to 3.10.5.1
+	 - [SW-452](https://0xdata.atlassian.net/browse/SW-452) - Add missing spaces after "," in H2OContextImplicits
+	 - [SW-460](https://0xdata.atlassian.net/browse/SW-460) - Allow to configure flow dir location in SW
+	 - [SW-463](https://0xdata.atlassian.net/browse/SW-463) - Extract sparkling water configuration to extra doc in rst format
+	 - [SW-465](https://0xdata.atlassian.net/browse/SW-465) - Mark tensorflow demo as experimental
+
 ## v2.0.9 (2017-05-25)
 
 - Bug
