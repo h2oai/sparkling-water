@@ -12,17 +12,11 @@ if [ ! -d "$SPARK_HOME" ]; then
   exit -1
 fi
 
-# Spark dir
-TDIR=$(cd `dirname $0` &&  pwd)
 # Configure tmp dir
 tmpdir=${TMPDIR:-"/tmp/"}
 export SPARK_LOG_DIR="${tmpdir}spark/logs"
 export SPARK_WORKER_DIR="${tmpdir}spark/work"
 export SPARK_LOCAL_DIRS="${tmpdir}spark/work"
-
-# Cleanup
-rm -rf $TDIR/work/* 2>/dev/null
-rm -rf $TDIR/logs/* 2>/dev/null
 
 cat <<EOF
 Starting Spark cluster ... 1 master + $SPARK_WORKER_INSTANCES workers
@@ -31,12 +25,8 @@ Starting Spark cluster ... 1 master + $SPARK_WORKER_INSTANCES workers
 EOF
 
 echo "Starting master..."
-$SPARK_HOME/sbin/start-master.sh 
+"$SPARK_HOME"/sbin/start-master.sh
 
 echo "Starting $SPARK_WORKER_INSTANCES workers..."
-$SPARK_HOME/sbin/start-slave.sh $MASTER
-
-
-# launch spark shell
-#../bin/spark-shell
+"$SPARK_HOME"/sbin/start-slave.sh $MASTER
 

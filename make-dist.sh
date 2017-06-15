@@ -93,7 +93,7 @@ SPARK_MAJOR_VERSION=$(echo $SPARK_VERSION | cut -f 1,2 -d .)
 # Copy dist dir files
 cat "$DIST_DIR/index.html" \
   | sed -e "s/SUBST_PROJECT_VERSION/$VERSION/g"\
-  | sed -e "s/SUBST_PROJECT_PATCH_VERSION/$patch_version/g"\
+  | sed -e "s/SUBST_PROJECT_PATCH_VERSION/$PATCH_VERSION/g"\
   | sed -e "s/SUBST_PROJECT_GITHASH/${GITHASH}/g"\
   | sed -e "s~SUBST_PROJECT_GITBRANCH~${GITBRANCH}~g"\
   | sed -e "s/SUBST_H2O_VERSION/${H2O_VERSION}/g"\

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 # Current dir
-TOPDIR=$(cd `dirname $0`/.. &&  pwd)
-source $TOPDIR/bin/sparkling-env.sh
+TOPDIR=$(cd "$(dirname "$0")/.."; pwd)
+
+source "$TOPDIR/bin/sparkling-env.sh"
 # Verify there is Spark installation
 checkSparkHome
 # Verify if correct Spark version is used
@@ -23,28 +24,14 @@ echo "---------"
 export SPARK_PRINT_LAUNCH_COMMAND=1
 VERBOSE=--verbose
 
-if [ "$EXAMPLE_MASTER" == "yarn-client" ] || [ "$EXAMPLE_MASTER" == "yarn-cluster" ]; then
-#EXAMPLE_DEPLOY_MODE does not have to be set when executing on yarn
 VERBOSE=
- spark-submit \
- --master $SCRIPT_MASTER \
- --driver-memory $SCRIPT_DRIVER_MEMORY \
- --driver-java-options "$SCRIPT_H2O_SYS_OPS" \
- --py-files $PY_ZIP_FILE \
- --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" \
- $VERBOSE \
- $SCRIPT \
-  "$@"
-else
-VERBOSE=
- spark-submit \
- --master $SCRIPT_MASTER \
- --driver-memory $SCRIPT_DRIVER_MEMORY \
- --driver-java-options "$SCRIPT_H2O_SYS_OPS" \
- --deploy-mode $SCRIPT_DEPLOY_MODE \
- --py-files $PY_ZIP_FILE \
- --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" \
- $VERBOSE \
- "$@"
-fi
+spark-submit \
+--master "$SCRIPT_MASTER" \
+--driver-memory "$SCRIPT_DRIVER_MEMORY" \
+--driver-java-options "$SCRIPT_H2O_SYS_OPS" \
+--deploy-mode "$SCRIPT_DEPLOY_MODE" \
+--py-files "$PY_ZIP_FILE" \
+--conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" \
+$VERBOSE \
+"$@"
 
