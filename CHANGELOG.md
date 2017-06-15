@@ -13,6 +13,7 @@ ChangeLog
 	 - [SW-456](https://0xdata.atlassian.net/browse/SW-456) - Make shell scripts safe
 	 - [SW-459](https://0xdata.atlassian.net/browse/SW-459) - Update PySparkling run-time dependencies
 	 - [SW-461](https://0xdata.atlassian.net/browse/SW-461) - Fix wrong getters and setters in pysparkling
+     - [SW-467](https://0xdata.atlassian.net/browse/SW-467) - Fix typo in the FAQ documentation
 - New Feature
 	 - [SW-455](https://0xdata.atlassian.net/browse/SW-455) - Replace the remaining references to egg files
 - Improvement
