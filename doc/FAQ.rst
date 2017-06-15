@@ -108,3 +108,62 @@ Frequently Asked Questions
     `PUBDEV-3808 <https://0xdata.atlassian.net/browse/PUBDEV-3808>`__.
     On the Spark side, the following issues are related to the problem:
     `Spark-17806 <https://issues.apache.org/jira/browse/SPARK-17806>`__
+
+- How to configure Hive metastore location ?
+
+    Spark SQL context (in fact Hive) requires the use of metastore which stores metadata about Hive tables.
+    In order to ensure this works correctly, the ``${SPARK_HOME}/conf/hive-site.xml`` needs to contain the following
+    configuration. We provide two examples, how to use MySQL and Derby as the metastore.
+
+    For MySQL, the following configuration needs to be located in the ``${SPARK_HOME}/conf/hive-site.xml`` configuration file:
+
+    .. code:: xml
+
+        <property>
+          <name>javax.jdo.option.ConnectionURL</name>
+          <value>jdbc:mysql://{mysql_host}:${mysql-port}/{metastore_db}?createDatabaseIfNotExist=true</value>
+          <description>JDBC connect string for a JDBC metastore</description>
+        </property>
+
+        <property>
+          <name>javax.jdo.option.ConnectionDriverName</name>
+          <value>com.mysql.jdbc.Driver</value>
+          <description>Driver class name for a JDBC metastore</description>
+        </property>
+
+        <property>
+          <name>javax.jdo.option.ConnectionUserName</name>
+          <value>{username}</value>
+          <description>username to use against metastore database</description>
+        </property>
+
+        <property>
+          <name>javax.jdo.option.ConnectionPassword</name>
+          <value>{password}</value>
+          <description>password to use against metastore database</description>
+        </property>
+
+
+    where:
+        - ``{mysql_host}`` and ``{mysql_port}`` are the host and port of the MySQL database.
+        - ``{metastore_db}`` is the name of the MySQL database holding all the metastore tables.
+        - ``{username}`` and ``{password}`` are the username and password to MySQL database with read and write access to the ``{metastore_db}`` database.
+
+    For Derby, the following configuration needs to be location in the the ``${SPARK_HOME}/conf/hive-site.xml`` configuration file:
+
+    .. code:: xml
+
+        <property>
+          <name>javax.jdo.option.ConnectionURL</name>
+          <value>jdbc:derby://{file_location}/metastore_db;create=true</value>
+          <description>JDBC connect string for a JDBC metastore</description>
+        </property>
+
+        <property>
+          <name>javax.jdo.option.ConnectionDriverName</name>
+          <value>org.apache.derby.jdbc.ClientDriver</value>
+          <description>Driver class name for a JDBC metastore</description>
+        </property>
+
+    where:
+        - ``{file_location}`` is the location to the metastore_db database file.
