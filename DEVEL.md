@@ -32,7 +32,7 @@
   - [Converting DataFrame into H2OFrame](#ConvertSchematoDF)
     - [Example](#Example4)
   - [Creating H2OFrame from an existing key](#CreateDF)
-  - [Calling H2O Algorithms](#CallAlgos)
+  - [Calling H2O Algorithms](doc/calling_h2o_algos.rst)
 - Testing
     - [Running Unit Tests](doc/unit_tests.rst)
     - [Integration Tests](doc/integ_tests.rst)
@@ -430,32 +430,3 @@ As type T we support following types:
 |org.apache.spark.mllib.regression.LabeledPoint|
 
 As is specified in the table, Sparkling Water provides support for transforming arbitrary scala class extending `Product`, which are for example all case classes.
-
-
-
----
-
-
-<a name="CallAlgos"></a>
-### Calling H2O Algorithms
-
- 1. Create the parameters object that holds references to input data and parameters specific for the algorithm:
- ```scala
- val train: RDD = ...
- val valid: H2OFrame = ...
- 
- val gbmParams = new GBMParameters()
- gbmParams._train = train
- gbmParams._valid = valid
- gbmParams._response_column = 'bikes
- gbmParams._ntrees = 500
- gbmParams._max_depth = 6
- ```
- 2. Create a model builder:
- ```scala
- val gbm = new GBM(gbmParams)
- ```
- 3. Invoke the model build job and block until the end of computation (`trainModel` is an asynchronous call by default):
- ```scala
- val gbmModel = gbm.trainModel.get
- ```
