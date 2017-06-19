@@ -38,7 +38,7 @@
   - [Testing Environment](#TestEnv)
   - [Testing Scenarios](#TestCases)
   - [Integration Tests Example](#IntegExample)
-- [Troubleshooting and Log Locations](#Logging)
+- [Sparkling Water Log Locations](doc/log_location.rst)
 - [Change Sparkling Shell Logging Level](doc/change_log_level.rst)
 - [H2O Frame as Spark's Data Source](doc/datasource.rst)
 - [Sparkling Water Tuning](doc/internal_backend_tuning.rst)
@@ -640,34 +640,4 @@ Spark 1.6.0+ is required.
   val train = prostateRDD.map( v => Vectors.dense(v.CAPSULE.get*1.0, v.AGE.get*1.0, v.DPROS.get*1.0,v.DCAPS.get*1.0, v.GLEASON.get*1.0))
   val clusters = KMeans.train(train, 5, 20)
   ```
-  
----
-
-<a name="Logging"></a>
-## Troubleshooting and Log Locations
-In the event you hit a bug or find that Sparkling Water is not reacting the way it is suppose to, help us improve the product by sending the 
-[H2O.ai team](support@h2o.ai) the logs. Depending on how you launched H2O there are a couple of ways to obtain the logs.
-
-<a name="Standalone-Logs"></a>
-### Logs for Standalone Sparkling Water
-By default Spark sets SPARK_LOG_DIR is set to $SPARK_HOME/work/ and if logging needs to be enabled. So when launching Sparkling Shell run:
-
-  ```
-  bin/sparkling-shell.sh --conf spark.logConf=true
-  ```
-
-Zip up the log files in $SPARK_HOME/work/<application id> and the directory should contain the assembly jar file and stdout and stderr for 
-each node in the cluster.
-
-
-<a name="YARN-Logs"></a>
-### Logs for Sparkling Water on YARN
-When launching Sparkling Water on YARN, you can find the application id for the Yarn job on the resource manager where you can also find 
-the application master which is also the Spark master. Then run to get the yarn logs:
-
-  ```
-  yarn logs -applicationId <application id>
-  ```
-
----
-  
+ 
