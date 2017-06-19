@@ -18,13 +18,13 @@ package org.apache.spark.ml.h2o.models
 
 import java.io.File
 
-import hex.Model
+import hex.{Model, ModelCategory}
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
-import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
+import org.apache.spark.sql.types.{DataTypes, DoubleType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
 import water.support.ModelSerializationSupport
 
@@ -34,16 +34,47 @@ import scala.reflect.ClassTag
   * Shared implementation for H2O model pipelines
   */
 abstract class H2OModel[S <: H2OModel[S, M],
-                        M <: Model[_, _, _ <: Model.Output]]
-                        (val model: M, h2oContext: H2OContext, sqlContext: SQLContext)
+M <: Model[_, _, _ <: Model.Output]]
+(val model: M, h2oContext: H2OContext, sqlContext: SQLContext)
   extends SparkModel[S] with MLWritable {
 
   override def copy(extra: ParamMap): S = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val frame: H2OFrame = h2oContext.asH2OFrame(dataset.toDF())
+    val inpDF: DataFrame = dataset.toDF()
+    val frame: H2OFrame = h2oContext.asH2OFrame(inpDF)
+    score(frame)
+  }
+
+  def onlyNumericDomains(domains: Array[Array[String]]): Boolean = {
+    domains.toSet.forall { (arr: Array[String]) =>
+      arr match {
+        case d: Array[String] => d.forall { value =>
+          try {
+            value.toDouble
+          } catch {
+            case e: java.lang.NumberFormatException => return false
+          }
+          return true
+        }
+        case null => true
+      }
+    }
+  }
+
+  def score(frame: H2OFrame): DataFrame = {
     val prediction = model.score(frame)
-    h2oContext.asDataFrame(prediction)(sqlContext)
+    prediction.add(frame.names(), frame.vecs())
+    val predDF = h2oContext.asDataFrame(prediction)(sqlContext)
+    model._output.getModelCategory match {
+      case ModelCategory.Regression | ModelCategory.Binomial | ModelCategory.Multinomial =>
+        if (onlyNumericDomains(model._output._domains)) {
+          predDF.withColumn("predict", predDF.col("predict").cast(DataTypes.DoubleType))
+        } else {
+          predDF
+        }
+      case _ => predDF
+    }
   }
 
   @DeveloperApi
@@ -55,7 +86,7 @@ abstract class H2OModel[S <: H2OModel[S, M],
   }
 
   @Since("1.6.0")
-  override def write: MLWriter =  new H2OModelWriter[S](this.asInstanceOf[S])
+  override def write: MLWriter = new H2OModelWriter[S](this.asInstanceOf[S])
 
   def defaultFileName: String
 }
@@ -71,7 +102,7 @@ private[models] class H2OModelWriter[T <: H2OModel[T, _ <: Model[_, _, _ <: Mode
 }
 
 private[models] abstract class H2OModelReader[T <: H2OModel[T, M] : ClassTag, M <: Model[_, _, _ <: Model.Output]]
-                                              (val defaultFileName: String) extends MLReader[T] {
+(val defaultFileName: String) extends MLReader[T] {
 
   private val className = implicitly[ClassTag[T]].runtimeClass.getName
 

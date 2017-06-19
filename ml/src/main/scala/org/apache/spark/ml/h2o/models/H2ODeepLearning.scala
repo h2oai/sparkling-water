@@ -23,6 +23,7 @@ import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.param._
+import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasLabelCol}
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.SQLContext
 
@@ -91,8 +92,6 @@ class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val u
   /** @group setParam */
   def setHidden(value: Array[Int]) = set(hidden, value){getParams._hidden = value}
 
-  /** @group setParam */
-  def setResponseColumn(value: String) = set(responseColumn,value){getParams._response_column = value}
 }
 
 object H2ODeepLearning extends MLReadable[H2ODeepLearning] {
@@ -122,14 +121,12 @@ trait H2ODeepLearningParams extends H2OParams[DeepLearningParameters] {
   final val l1 = doubleParam("l1")
   final val l2 = doubleParam("l2")
   final val hidden = new IntArrayParam(this, "hidden", doc("hidden"))
-  final val responseColumn = param[String]("responseColumn")
 
   setDefault(
     epochs -> parameters._epochs,
     l1 -> parameters._l1,
     l2 -> parameters._l2,
-    hidden -> parameters._hidden,
-    responseColumn -> parameters._response_column)
+    hidden -> parameters._hidden)
 
   /** @group getParam */
   def getEpochs: Double = $(epochs)
@@ -139,8 +136,5 @@ trait H2ODeepLearningParams extends H2OParams[DeepLearningParameters] {
   def getL2: Double = $(l2)
   /** @group getParam */
   def getHidden: Array[Int] = $(hidden)
-  /** @group getParam */
-  def getResponseColumn: String = $(responseColumn)
-
 }
 

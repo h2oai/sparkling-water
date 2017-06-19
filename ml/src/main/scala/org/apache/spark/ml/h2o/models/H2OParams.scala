@@ -21,6 +21,7 @@ import hex.Model.Parameters
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.param.h2o.H2OKeyParam
 import org.apache.spark.h2o.utils.ReflectionUtils._
+import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasLabelCol}
 import water.fvec.Frame
 
 import scala.reflect.ClassTag
@@ -28,7 +29,9 @@ import scala.reflect.ClassTag
 /**
   * A trait extracting a shared parameters among all models.
   */
-trait H2OParams[P <: Parameters] extends Params {
+// TODO the HasLabelCol probably will have to go, we'll need to separate this into supervised/
+// unsupervised params
+trait H2OParams[P <: Parameters] extends HasFeaturesCol with HasLabelCol {
   // Target schema type
   type H2O_SCHEMA
   // Class tag for parameters to get runtime class

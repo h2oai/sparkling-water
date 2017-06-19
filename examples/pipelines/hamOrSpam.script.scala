@@ -11,9 +11,8 @@
   */
 
 import org.apache.spark.SparkFiles
-import org.apache.spark.ml.PipelineModel
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.feature._
-import org.apache.spark.ml.h2o.H2OPipeline
 import org.apache.spark.ml.h2o.features.{ColRemover, DatasetSplitter}
 import org.apache.spark.ml.h2o.models.H2ODeepLearning
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -102,7 +101,7 @@ val dl = new H2ODeepLearning().
   setResponseColumn("label")
 
 // Create the pipeline by defining all the stages
-val pipeline = new H2OPipeline().
+val pipeline = new Pipeline().
   setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, colRemover, splitter, dl))
 
 // Train the pipeline model
@@ -117,7 +116,7 @@ val loadedModel = PipelineModel.load("/tmp/hamOrSpamPipeline")
 // we can also save this unfit pipeline to disk
 pipeline.write.overwrite().save("/tmp/unfit-hamOrSpamPipeline")
 // load unfitted pipeline
-val loadedPipeline = H2OPipeline.load("/tmp/unfit-hamOrSpamPipeline")
+val loadedPipeline = PipelineModel.load("/tmp/unfit-hamOrSpamPipeline")
 // Train the pipeline model
 val modelOfLoadedPipeline = pipeline.fit(data)
 
