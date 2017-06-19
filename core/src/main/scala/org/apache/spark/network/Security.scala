@@ -18,29 +18,50 @@ package org.apache.spark.network
 
 import java.io.File
 
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.internal.Logging
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.{SparkConf, SparkContext}
 import water.network.SecurityUtils
 
 object Security extends Logging {
 
-  def enableSSL(sc: SparkContext, conf: SparkConf): Unit = {
+  def enableSSL(spark: SparkSession, conf: SparkConf): Unit = {
     val sslPair = SecurityUtils.generateSSLPair()
     val config = SecurityUtils.generateSSLConfig(sslPair)
     if(SparkHadoopUtil.get.isYarnMode) {
       conf.set("spark.yarn.dist.files", s"${sslPair.jks.path},$config")
     } else {
-      sc.addFile(if (sslPair.jks.path.isEmpty) sslPair.jks.name else sslPair.jks.path + File.separator + sslPair.jks.name)
-      sc.addFile(config)
+      spark.sparkContext.addFile(if (sslPair.jks.path.isEmpty) sslPair.jks.name else sslPair.jks.path + File.separator + sslPair.jks.name)
+      spark.sparkContext.addFile(config)
     }
     conf.set("spark.ext.h2o.internal_security_conf", config)
     logInfo(s"Added spark.ext.h2o.internal_security_conf configuration set to $config")
   }
 
-  def enableSSL(sc: SparkContext): Unit = enableSSL(sc, sc.conf)
+  def enableSSL(spark: SparkSession, conf: H2OConf): Unit = enableSSL(spark, conf.sparkConf)
 
-  def enableSSL(sc: SparkContext, conf: H2OConf): Unit = enableSSL(sc, conf.sparkConf)
+  def enableSSL(spark: SparkSession): Unit = enableSSL(spark, spark.sparkContext.conf)
+
+
+  def enableSSL(sc: SparkContext, conf: SparkConf): Unit = {
+    logWarning("Method Security.enableSSL with an argument of type SparkContext is deprecated and " +
+      "parameter of type SparkSession is preferred.")
+      enableSSL(SparkSession.builder().sparkContext(sc).getOrCreate(), conf)
+  }
+
+  def enableSSL(sc: SparkContext): Unit = {
+    logWarning("Method Security.enableSSL with an argument of type SparkContext is deprecated and " +
+      "parameter of type SparkSession is preferred.")
+    enableSSL(SparkSession.builder().sparkContext(sc).getOrCreate(), sc.conf)
+  }
+
+  def enableSSL(sc: SparkContext, conf: H2OConf): Unit = {
+    logWarning("Method Security.enableSSL with an argument of type SparkContext is deprecated and " +
+      "parameter of type SparkSession is preferred.")
+    enableSSL(SparkSession.builder().sparkContext(sc).getOrCreate(), conf.sparkConf)
+  }
+
 
 }

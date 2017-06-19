@@ -343,9 +343,9 @@ object H2OContext extends Logging {
   }
 
   def getOrCreate(sc: SparkContext, conf: H2OConf): H2OContext = {
-    logWarning("Method H2OContext.getOrCreate with argument of type SparkContext is deprecated and " +
-      "parameter of type SparkSession is preferred")
-    getOrCreate(SparkSession.builder().getOrCreate(), conf)
+    logWarning("Method H2OContext.getOrCreate with an argument of type SparkContext is deprecated and " +
+      "parameter of type SparkSession is preferred.")
+    getOrCreate(SparkSession.builder().sparkContext(sc).getOrCreate(), conf)
   }
 
   /**
@@ -361,9 +361,9 @@ object H2OContext extends Logging {
   }
 
   def getOrCreate(sc: SparkContext): H2OContext = {
-    logWarning("Method H2OContext.getOrCreate with argument of type SparkContext is deprecated and " +
+    logWarning("Method H2OContext.getOrCreate with an argument of type SparkContext is deprecated and " +
       "parameter of type SparkSession is preferred.")
-    val spark = SparkSession.builder().getOrCreate()
+    val spark = SparkSession.builder().sparkContext(sc).getOrCreate()
     getOrCreate(spark, new H2OConf(spark))
   }
 
