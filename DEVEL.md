@@ -39,7 +39,7 @@
   - [Testing Scenarios](#TestCases)
   - [Integration Tests Example](#IntegExample)
 - [Troubleshooting and Log Locations](#Logging)
-- [Sparkling Shell Console Output](#log4j)
+- [Change Sparkling Shell Logging Level](doc/change_log_level.rst)
 - [H2O Frame as Spark's Data Source](doc/datasource.rst)
 - [Sparkling Water Tuning](doc/internal_backend_tuning.rst)
 - [Sparkling Water and Zeppelin](doc/zeppelin.rst)
@@ -670,31 +670,4 @@ the application master which is also the Spark master. Then run to get the yarn 
   ```
 
 ---
-
-<a name="log4j"></a>
-## Sparkling Shell Console Output
-The console output for Sparkling Shell by default will show a verbose Spark output as well as H2O logs. If you would like to switch the output to 
-only warnings from Spark, you will need to change it in the log4j properities file in Spark's configuration directory. To do this:
-
-  ```
-  cd $SPARK_HOME/conf
-  cp log4j.properties.template log4j.properties
-  ```
-
-Then either in a text editor or vim to change the contents of the log4j.properties file from:
-
-  ```
-  #Set everything to be logged to the console
-  log4j.rootCategory=INFO, console
-  ...
-  ```
-
-to:
-
-  ```
-  #Set everything to be logged to the console
-  log4j.rootCategory=WARN, console
-  ...
-  ```
   
----
