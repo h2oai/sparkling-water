@@ -31,7 +31,7 @@
     - [Example](#Example3)
   - [Converting DataFrame into H2OFrame](#ConvertSchematoDF)
     - [Example](#Example4)
-  - [Creating H2OFrame from an existing key](#CreateDF)
+  - [Creating H2OFrame from an existing key](doc/h2o_frame_from_key.rst)
   - [Calling H2O Algorithms](doc/calling_h2o_algos.rst)
   - [Spark Frame - H2O Frame Mapping](doc/spark_h2o_mapping.rst)
 - Testing
@@ -339,14 +339,4 @@ import h2oContext._
 val hf: H2OFrame = df 
 // Explicit call of H2Context API with name for resulting H2O frame
 val hfNamed: H2OFrame = h2oContext.asH2OFrame(df, Some("h2oframe"))
-```
----
-
-<a name="CreateDF"></a>
-### Creating H2OFrame from an existing Key
-
-If the H2O cluster already contains a loaded `H2OFrame` referenced by the key `train.hex`, it is possible
-to reference it from Sparkling Water by creating a proxy `H2OFrame` instance using the key as the input:
-```scala
-val trainHF = new H2OFrame("train.hex")
 ```
