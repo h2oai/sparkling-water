@@ -22,7 +22,7 @@
 - [Running Sparkling Water](#RunSW)
   - [Starting H2O Services](#StartH2O)
   - [Memory Allocation](#MemorySetup)
-  - [Security](#Security)
+  - [Security](doc/security.rst)
   - [Converting H2OFrame into RDD](#ConvertDF)
     - [Example](#Example)
   - [Converting H2OFrame into DataFrame](#ConvertSchema)
@@ -237,48 +237,7 @@ H2O resides in the same executor JVM as Spark. The memory provided for H2O is co
 * For JVMs that require a large amount of memory, we strongly recommend configuring the maximum amount of memory available for individual mappers. For information on how to do this using Yarn, refer to http://docs.h2o.ai/deployment/hadoop_yarn.html
 
 ---
-<a name="Security"></a>
-### Security
 
-Both Spark and H2O support basic node authentication and data encryption. In H2O's case we encrypt all the data sent between server nodes and between client
-and server nodes. This feature does not support H2O's UDP feature, only data sent via TCP is encrypted.
-
-Currently only encryption based on Java's key pair is supported (more in-depth explanation can be found in H2O's documentation linked below).
-
-To enable security for Spark methods please check [their documentation](http://spark.apache.org/docs/latest/security.html).
-
-Security for data exchanged between H2O instances can be enabled manually by generating all necessary files and distributing them to all worker nodes as
-described in [H2O's documentation](https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/security.rst#ssl-internode-security) and passing the "spark.ext.h2o
-.internal_security_conf" to spark submit:
-
-```scala
-bin/sparkling-shell /
---conf "spark.ext.h2o.internal_security_conf=ssl.properties"
-```
-
-We also provide utility methods which will automatically generate all necessary files and enable security on all H2O nodes:
-
-```
-import org.apache.spark.network.Security
-import org.apache.spark.h2o._
-Security.enableSSL(sc) // generate properties file, key pairs and set appropriate H2O parameters
-val hc = H2OContext.getOrCreate(sc) // start the H2O cloud
-```
-
-Or if you plan on passing your own H2OConf then please use:
-
-```
-import org.apache.spark.network.Security
-import org.apache.spark.h2o._
-val conf: H2OConf = // generate H2OConf file
-Security.enableSSL(sc, conf) // generate properties file, key pairs and set appropriate H2O parameters
-val hc = H2OContext.getOrCreate(sc, conf) // start the H2O cloud
-```
-
-This method will generate all files and distribute them via YARN or Spark methods to all worker nodes. This communication will be secure if you configured
-YARN/Spark security.
-
----
 <a name="ConvertDF"></a>
 ### Converting H2OFrame into RDD[T]
 The `H2OContext` class provides the explicit conversion, `asRDD`, which creates an RDD-like wrapper around the provided H2O's H2OFrame:
