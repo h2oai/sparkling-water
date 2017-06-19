@@ -33,8 +33,9 @@
     - [Example](#Example4)
   - [Creating H2OFrame from an existing key](#CreateDF)
   - [Calling H2O Algorithms](#CallAlgos)
-  - [Running Unit Tests](#UnitTest)
-- [Integration Tests](doc/integ_tests.rst)
+- Testing
+    - [Running Unit Tests](doc/unit_tests.rst)
+    - [Integration Tests](doc/integ_tests.rst)
 - [Sparkling Water Log Locations](doc/log_location.rst)
 - [Change Sparkling Shell Logging Level](doc/change_log_level.rst)
 - [H2O Frame as Spark's Data Source](doc/datasource.rst)
@@ -458,18 +459,3 @@ As is specified in the table, Sparkling Water provides support for transforming 
  ```scala
  val gbmModel = gbm.trainModel.get
  ```
---- 
-<a name="UnitTest"></a>
-## Running Unit Tests
-To invoke tests, the following JVM options are required:
-  - `-Dspark.testing=true`
-  - `-Dspark.test.home=/Users/michal/Tmp/spark/spark-1.5.1-bin-cdh4/`
-
-
-## Application Development
-You can find Sparkling Water self-contained application skeleton in [Droplet repository](https://github.com/h2oai/h2o-droplets/tree/master/sparkling-water-droplet).
-
-## Sparkling Water configuration
-
- - TODO: used datasources, how data is moved to spark
- - TODO: platform testing - mesos, SIMR
