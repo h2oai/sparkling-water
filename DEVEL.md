@@ -33,6 +33,7 @@
     - [Example](#Example4)
   - [Creating H2OFrame from an existing key](#CreateDF)
   - [Calling H2O Algorithms](doc/calling_h2o_algos.rst)
+  - [Spark Frame - H2O Frame Mapping](doc/spark_h2o_mapping.rst)
 - Testing
     - [Running Unit Tests](doc/unit_tests.rst)
     - [Integration Tests](doc/integ_tests.rst)
@@ -349,43 +350,3 @@ to reference it from Sparkling Water by creating a proxy `H2OFrame` instance usi
 ```scala
 val trainHF = new H2OFrame("train.hex")
 ```
-
-### Type mapping between H2O H2OFrame types and Spark DataFrame types
-
-For all primitive Scala types or Spark SQL (see `org.apache.spark.sql.types`) types which can be part of Spark RDD/DataFrame we provide mapping into H2O vector types (numeric, categorical, string, time, UUID - see `water.fvec.Vec`):
-
-| Scala type | SQL type   | H2O type |
-|------------|------------| ---------|
-| _NA_       | BinaryType | Numeric  |
-| Byte       | ByteType   | Numeric  | 
-| Short      | ShortType  | Numeric  | 
-|Integer     | IntegerType| Numeric  |
-|Long        | LongType   | Numeric  |
-|Float       | FloatType  | Numeric  |
-|Double      | DoubleType | Numeric  |
-|String      | StringType | String   |
-|Boolean     | BooleanType| Numeric  |
-|java.sql.Timestamp| TimestampType | Time|
-
----
-
-### Type mapping between H2O H2OFrame types and RDD\[T\] types
-
-As type T we support following types:
-
-| T          |
-|------------|
-| _NA_       |
-| Byte       |
-| Short      |
-|Integer     |
-|Long        |
-|Float       |
-|Double      | 
-|String      |
-|Boolean     |
-|java.sql.Timestamp |
-|Any scala class extending scala `Product` |
-|org.apache.spark.mllib.regression.LabeledPoint|
-
-As is specified in the table, Sparkling Water provides support for transforming arbitrary scala class extending `Product`, which are for example all case classes.
