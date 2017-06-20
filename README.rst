@@ -31,7 +31,16 @@ Please, switch to the right branch:
    branch includes the latest changes for the latest Spark version.
    They are back-ported into older Sparkling Water versions.
 
-.. include:: doc/requirements.txt
+.. The Requirements section is copied from doc/requirements.rst as github does not support include directive of
+.. reStructuredText
+
+Requirements
+~~~~~~~~~~~~
+
+-  Linux/OS X/Windows
+-  Java 7+
+-  Python 2.6+ For Python version of Sparkling Water (PySparkling)
+-  `Spark 1.6+ <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
 
 
 Download Binaries
