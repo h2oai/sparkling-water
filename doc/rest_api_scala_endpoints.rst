@@ -64,9 +64,11 @@ Interpret the code, result is success
 Interpret the code with the spark context, use semicolon to separate commands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-curl --data-urlencode code='val data = Array(1, 2, 3, 4, 5); val
-distData = sc.parallelize(data); val result = distData.map(s => s+10)'
-http://192.168.0.10:54321/3/scalaint/c3e5ea38-0b7e-4136-9ba3-21615ea2d298
+.. code:: bash
+
+    curl --data-urlencode code='val data = Array(1, 2, 3, 4, 5); val
+    distData = sc.parallelize(data); val result = distData.map(s => s+10)'
+    http://192.168.0.10:54321/3/scalaint/c3e5ea38-0b7e-4136-9ba3-21615ea2d298
 
 Interpret the code with the spark context, use new lines to separate commands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
