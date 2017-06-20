@@ -1,5 +1,5 @@
-Sparkling Water Log Location
-----------------------------
+Obtain Sparkling Water Logs
+---------------------------
 
 Depending on how you launched H2O there are a couple of ways to obtain
 the logs.
