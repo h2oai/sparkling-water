@@ -7,6 +7,10 @@ property ``SPARK_HOME`` that points to the Spark distribution.
 H2O on Spark can be started in the Spark Shell or in the Spark
 application as:
 
+.. code:: bash
+
+    ./bin/sparkling-shell
+
 .. code:: scala
 
     val hc = H2OContext.getOrCreate(spark)
@@ -27,3 +31,6 @@ In external backend mode, the call will:
 1. Start H2O in client mode on the Spark driver
 2. Start separated H2O cluster on the configured YARN queue
 3. Connects to the external cluster from the H2O client
+
+
+To see how to run Sparkling Water on Windows, please visit `Run on Windows <run_on_windows/rst>`__.
