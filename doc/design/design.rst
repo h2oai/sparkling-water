@@ -24,7 +24,7 @@ including distributed KV store and memory manager, and orchestrates them
 into a cloud. The topology of the created cloud matches the topology of
 the underlying Spark cluster exactly.
 
-.. figure:: doc/images/internal_backend.png
+.. figure:: ../images/internal_backend.png
    :alt: Internal Sparkling Water Cluster Topology
 
    Internal Sparkling Water Cluster Topology
@@ -32,7 +32,7 @@ the underlying Spark cluster exactly.
 In external backend, the H2O cluster is started separately and we
 connect to it from the Spark driver.
 
-.. figure:: doc/images/external_backend.png
+.. figure:: ../images/external_backend.png
    :alt: External Sparkling Water Cluster Topology
 
    External Sparkling Water Cluster Topology
