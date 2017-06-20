@@ -29,6 +29,6 @@ classes used by Spark components:
 +-------------------+--------------------------------------+--------------------------------------+
 | H2O Algorithms    | package ``hex``                      | Represents the H2O machine learning  |
 |                   |                                      | algorithms library, including, for   |
-|                   |                                      | example, DeepLearning, GBM or
+|                   |                                      | example, DeepLearning, GBM or        |
 |                   |                                      | RandomForest.                        |
 +-------------------+--------------------------------------+--------------------------------------+

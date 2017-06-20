@@ -1,8 +1,8 @@
-Spark Frame - H2O Frame Mapping
--------------------------------
+Spark - H2O Frame Mapping
+-------------------------
 
 Type mapping between H2O H2OFrame types and Spark DataFrame types
------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For all primitive Scala types or Spark SQL (see
 ``org.apache.spark.sql.types``) types which can be part of Spark
