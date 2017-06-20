@@ -10,6 +10,7 @@ This documentation acts only as the table of content and provides links to the a
   - [Supported Data Formats](#DataFormat)
   - [Data Sharing](#DataShare)
   - [Provided Primitives](#ProvPrim)
+- [Supported Platforms](doc/supported_platforms.rst)  
 - [Running Sparkling Water](doc/run.rst)
 - [Sparkling Water Configuration Properties](doc/configuration_properties.rst)
 - [Running Sparkling Water](#RunSW)
