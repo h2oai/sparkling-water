@@ -51,4 +51,4 @@ actual documentation documents.
 
 -  `Sparkling Water REST API <rest_api/rest_api.rst>`__
 
-   -  `Scala Interpreter REST API <rest_api/est_api_scala_endpoints.md>`__
+   -  `Scala Interpreter REST API <rest_api/scala_interpreter_endpoints.md>`__
