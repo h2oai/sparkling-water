@@ -13,7 +13,7 @@ classes used by Spark components:
 |                   |                                      | H2OFrame and vice versa. It follows  |
 |                   |                                      | design principles of Spark           |
 |                   |                                      | primitives such as ``SparkSession``, |
-|                   |                                      | ``SparkContext`` and ``SQLContext``  |
+|                   |                                      | ``SparkContext`` and ``SQLContext``. |
 +-------------------+--------------------------------------+--------------------------------------+
 | H2O entry point   | ``water.H2O``                        | Represents the entry point for       |
 |                   |                                      | for accessing H2O services. It holds |

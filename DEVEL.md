@@ -15,13 +15,13 @@ This page acts only as the table of content and provides links to the actual doc
     - [Sparkling Water Configuration Properties](doc/configuration/configuration_properties.rst)
     - [Memory Allocation](doc/configuration/memory_setup.rst)
     - [Sparkling Water Internal Backend Tuning](doc/configuration/internal_backend_tuning.rst)
-- **Tutorials**
+- [Tutorials](doc/tutorials/tutorials.rst)
     - [Running Sparkling Water](doc/tutorials/run_sparkling_water.rst)
     - [Sparkling Water Backends Run & Configuration](doc/tutorials/backends.rst)
     - [Enabling Security](doc/tutorials/security.rst)
     - [Calling H2O Algorithms](doc/tutorials/calling_h2o_algos.rst)
     - Frames Conversions & Creation
-        - [Spark Frame - H2O Frame Conversions](doc/tutorials/spark_h2o_conversions.rst)
+        - [Spark - H2O Frame Conversions](doc/tutorials/spark_h2o_conversions.rst)
         - [H2O Frame as Spark's Data Source](doc/tutorials/h2oframe_as_data_source.rst)
         - [Create H2OFrame From an Existing Key](doc/tutorials/h2o_frame_from_key.rst)
     - Logging
@@ -29,9 +29,13 @@ This page acts only as the table of content and provides links to the actual doc
         - [Obtain Sparkling Water Logs](doc/tutorials/obtaining_logs.rst)
     - [Sparkling Water and Zeppelin](doc/tutorials/use_on_zeppelin.rst)
     - [Use Sparkling Water as Spark Package](doc/tutorials/use_as_spark_package.rst)
-- **Testing**
+- [Development](doc/devel/devel.rst)
+    - [Building](doc/devel/build.rst)
+    - [Running Sparkling Water Examples](doc/devel/running_examples.rst)
     - [Running Unit Tests](doc/devel/unit_tests.rst)
     - [Integration Tests](doc/devel/integ_tests.rst)
-- **Sparkling Water Rest API**
-    - [Scala Interpreter REST API Overview](doc/rest_api_scala_endpoints.md)
+- [Sparkling Water Rest API](doc/rest_api/rest_api.rst)
+    - [Scala Interpreter REST API](doc/rest_api_scala_endpoints.md)
+
+   
     
