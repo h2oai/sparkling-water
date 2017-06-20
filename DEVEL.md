@@ -13,23 +13,23 @@ This documentation acts only as the table of content and provides links to the a
   - [Data Sharing](#DataShare)
   - [Provided Primitives](#ProvPrim)
 - [Running Sparkling Water](doc/run.rst)
-- Sparkling Water Configuration
+- **Sparkling Water Configuration**
     - [Sparkling Water Configuration Properties](doc/configuration_properties.rst)
     - [Memory Allocation](doc/memory_setup.rst)
-- Tutorials    
+    - [Sparkling Water Internal Backend Tuning](doc/internal_backend_tuning.rst)
+- **Tutorials**    
     - [Enabling Security](doc/security.rst)
     - [Calling H2O Algorithms](doc/calling_h2o_algos.rst)
-    - Frames Conversions & Creation
+    - **Frames Conversions & Creation**
         - [Spark Frame - H2O Frame Conversions](doc/spark_h2o_conversions.rst)
         - [H2O Frame as Spark's Data Source](doc/datasource.rst)
         - [Create H2OFrame From an Existing Key](doc/h2o_frame_from_key.rst)
-    - Logging
+    - **Logging**
         - [Change Sparkling Shell Logging Level](doc/change_log_level.rst)
         - [Obtain Sparkling Water Logs](doc/log_location.rst)
-- Testing
+- **Testing**
     - [Running Unit Tests](doc/unit_tests.rst)
     - [Integration Tests](doc/integ_tests.rst)
-- [Sparkling Water Internal Backend Tuning](doc/internal_backend_tuning.rst)
 - [Sparkling Water and Zeppelin](doc/zeppelin.rst)
 
 --- 
