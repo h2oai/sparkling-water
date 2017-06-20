@@ -30,6 +30,8 @@ This documentation acts only as the table of content and provides links to the a
 - **Testing**
     - [Running Unit Tests](doc/unit_tests.rst)
     - [Integration Tests](doc/integ_tests.rst)
+- **Sparkling Water Rest API**
+    - [Scala Interpreter REST API Overview](doc/rest_api_scala_endpoints.md)
 - [Sparkling Water and Zeppelin](doc/zeppelin.rst)
 
 --- 
