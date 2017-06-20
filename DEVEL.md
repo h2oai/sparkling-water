@@ -1,6 +1,7 @@
 # Sparkling Water Development Documentation
 
-## Table of Contents
+This documentation acts only as the table of content and provides links to the actual documentation documents.
+
 - [Typical Use Case](#UseCase)
 - [Requirements](#Req)
 - [Design](#Design)
@@ -9,16 +10,8 @@
   - [Supported Data Formats](#DataFormat)
   - [Data Sharing](#DataShare)
   - [Provided Primitives](#ProvPrim)
-- [Running on Select Target Platforms](#TargetPlatforms)
-  - [Local](#Local)
-  - [Standalone](#Standalone)
-  - [YARN](#YARN)
-  - [Mesos](#Mesos)
-- [H2O Initialization Sequence](#H2OInit)
-  - [Configuration](#Config)
-    - [Build Environment](#BuildEnv)
-    - [Run Environment](#RunEnv)
-    - [Sparkling Water Configuration Properties](doc/configuration_properties.rst)
+- [Running Sparkling Water](doc/run.rst)
+- [Sparkling Water Configuration Properties](doc/configuration_properties.rst)
 - [Running Sparkling Water](#RunSW)
   - [Starting H2O Services](#StartH2O)
   - [Memory Allocation](doc/memory_setup.rst)
@@ -38,20 +31,6 @@
 
 --- 
  
- <a name="UseCase"></a>
-## Typical Use-Case
-Sparkling Water excels in leveraging existing Spark-based workflows that need to call advanced machine learning algorithms. A typical example involves data munging with help of Spark API, where a prepared table is passed to the H2O DeepLearning algorithm. The constructed DeepLearning model estimates different metrics based on the testing data, which can be used in the rest of the Spark workflow.
-
----
-
-<a name="Req"></a>
-## Requirements
- - Linux or Mac OSX platform
- - Java 1.7+
- - [Spark 1.6.0+](http://spark.apache.org/downloads.html)
-
----
-
 <a name="Design"></a>
 ## Design
 
@@ -125,89 +104,3 @@ The Sparkling Water provides following primitives, which are the basic classes u
 | H2O H2OFrame  | `water.fvec.H2OFrame`            | H2OFrame is the H2O data structure that represents a table of values. The table is column-based and provides column and row accessors. |
 | H2O Algorithms | package `hex`                     | Represents the H2O machine learning algorithms library, including DeepLearning, GBM, RandomForest. |
  
-
----
-
-<a name="TargetPlatforms"></a>
-# Running on Select Target Platforms
-
-Sparkling Water can run on top of Spark in the various ways described in the following sections.
-
-<a name="Local"></a>
-## Local
-In this case Sparkling Water runs as a local cluster (Spark master variable points to one of values `local`, `local[*]`, or `local-cluster[...]`
-
-<a name="Standalone"></a>
-## Standalone
-[Spark documentation - running Standalone cluster](http://spark.apache.org/docs/latest/spark-standalone.html)
-
-<a name="YARN"></a>
-## YARN
-[Spark documentation - running Spark Application on YARN](http://spark.apache.org/docs/latest/running-on-yarn.html)
-
-When submitting Sparkling Water application to CHD or Apache Hadoop cluster, the command to submit may look like:
-```
-./spark-submit --master=yarn-client --class water.SparklingWaterDriver --conf "spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=current"
---driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-XX:MaxPermSize=384m -Dhdp.version=current"
-sparkling-water-assembly-1.5.11-all.jar
-```
-
-When submitting sparkling water application to HDP Cluster, the command to submit may look like:
-```
-./spark-submit --master=yarn-client --class water.SparklingWaterDriver --conf "spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=current"
---driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-XX:MaxPermSize=384m -Dhdp.version=current"
-sparkling-water-assembly-1.5.11-all.jar
-```
-Apart from the typical spark configuration it is necessary to add `-XX:MaxPermSize=384m` (or higher, but 384m is minimum) to both `spark.executor.extraClassPath` and `spark.yarn.am.extraJavaOptions` (or for client mode, `spark.driver.extraJavaOptions` for cluster mode) configuration properties in order to run Sparkling Water correctly.
-
-The only difference between HDP cluster and both CDH and Apache hadoop clusters is that we need to add `-Dhdp.version=current` to both `spark.executor.extraClassPath` and `spark.yarn.am.extraJavaOptions` (resp., `spark.driver.extraJavaOptions`) configuration properties in the HDP case.
-
-<a name="Mesos"></a>
-## Mesos
-[Spark documentation - running Spark Application on Mesos](http://spark.apache.org/docs/latest/running-on-mesos.html)
-
-
----
-<a name="H2OInit"></a>
-# H2O Initialization Sequence
-If `SparkContext` is available, initialize and start H2O context: 
-```scala
-val sc:SparkContext = ...
-val hc = H2OContext.getOrCreate(sc)
-```
-
-The call will:
- 1. Collect the number and host names of the executors (worker nodes) in the Spark cluster
- 2. Launch H2O services on each detected executor
- 3. Create a cloud for H2O services based on the list of executors
- 4. Verify the H2O cloud status
-
-The former variant is preferred, because it initiates and starts H2O Context in one call and also can be used to obtain already existing H2OContext, but it does semantically the same as the latter variant.
-
----
-<a name="Config"></a>
-## Configuration
-
-<a name="BuildEnv"></a>
-### Build Environment
-The environment must contain the property `SPARK_HOME` that points to the Spark distribution.
-
----
-
-<a name="RunEnv"></a>
-### Run Environment
-The environment must contain the property `SPARK_HOME` that points to the Spark distribution.
-
----
-
-<a name="RunSW"></a>
-# Running Sparkling Water
-
----
-
-<a name="StartH2O"></a>
-### Starting H2O Services
-```scala
-val sc:SparkContext = ...
-val hc = H2OContext.getOrCreate(sc)
-```
