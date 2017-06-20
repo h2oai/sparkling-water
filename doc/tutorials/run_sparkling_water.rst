@@ -11,6 +11,8 @@ application as:
 
     ./bin/sparkling-shell
 
+Sparkling Water ( H2O on Spark) can be initiated using the following call:
+
 .. code:: scala
 
     val hc = H2OContext.getOrCreate(spark)
