@@ -21,7 +21,7 @@
     - [Sparkling Water Configuration Properties](doc/configuration_properties.rst)
 - [Running Sparkling Water](#RunSW)
   - [Starting H2O Services](#StartH2O)
-  - [Memory Allocation](#MemorySetup)
+  - [Memory Allocation](doc/memory_setup.rst)
   - [Security](doc/security.rst)
   - [Spark Frame - H2O Frame Conversions](doc/spark_h2o_conversions.rst)
   - [Create H2OFrame From an Existing Key](doc/h2o_frame_from_key.rst)
@@ -211,22 +211,3 @@ The environment must contain the property `SPARK_HOME` that points to the Spark 
 val sc:SparkContext = ...
 val hc = H2OContext.getOrCreate(sc)
 ```
-
----
-<a name="MemorySetup"></a>
-### Memory Allocation 
-
-H2O resides in the same executor JVM as Spark. The memory provided for H2O is configured via Spark; refer to [Spark configuration](http://spark.apache.org/docs/1.4.0/configuration.html) for more details.
-
-#### Generic configuration
- * Configure the Executor memory (i.e., memory available for H2O) via the Spark configuration property `spark.executor.memory` .
-     > For example, `bin/sparkling-shell --conf spark.executor.memory=5g` or configure the property in `$SPARK_HOME/conf/spark-defaults.conf`
-     
- * Configure the Driver memory (i.e., memory available for H2O client running inside Spark driver) via the Spark configuration property `spark.driver.memory`
-     > For example, `bin/sparkling-shell --conf spark.driver.memory=4g` or configure the property in `$SPARK_HOME/conf/spark-defaults.conf`
-      
-#### Yarn specific configuration
-* Refer to the [Spark documentation](http://spark.apache.org/docs/1.4.0/running-on-yarn.html)
-
-* For JVMs that require a large amount of memory, we strongly recommend configuring the maximum amount of memory available for individual mappers. For information on how to do this using Yarn, refer to http://docs.h2o.ai/deployment/hadoop_yarn.html
-
