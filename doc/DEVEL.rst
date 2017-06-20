@@ -49,6 +49,6 @@ actual documentation documents.
    -  `Running Unit Tests <devel/unit_tests.rst>`__
    -  `Integration Tests <devel/integ_tests.rst>`__
 
--  `Sparkling Water Rest API <rest_api/rest_api.rst>`__
+-  `Sparkling Water REST API <rest_api/rest_api.rst>`__
 
-   -  `Scala Interpreter REST API <rest_api_scala_endpoints.md>`__
+   -  `Scala Interpreter REST API <rest_api/est_api_scala_endpoints.md>`__
