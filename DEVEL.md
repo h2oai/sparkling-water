@@ -5,13 +5,13 @@ This documentation acts only as the table of content and provides links to the a
 - [Typical Use Case](#UseCase)
 - [Requirements](#Req)
 - [Design](#Design)
+    - [Basic Primitives](doc/basic_primitives.rst)
     - [Supported Platforms](doc/supported_platforms.rst)  
     - [Spark Frame - H2O Frame Mapping](doc/spark_h2o_mapping.rst)
 - [Features](#Features)
   - [Supported Data Sources](#DataSource)
   - [Supported Data Formats](#DataFormat)
   - [Data Sharing](#DataShare)
-  - [Provided Primitives](#ProvPrim)
 - [Running Sparkling Water](doc/run.rst)
 - **Sparkling Water Configuration**
     - [Sparkling Water Configuration Properties](doc/configuration_properties.rst)
@@ -92,18 +92,3 @@ Sparkling Water enables transformation between different types of Spark `RDD` an
 When converting from `H2OFrame` to `RDD`, a wrapper is created around the `H2OFrame` to provide an RDD-like API. In this case, no data is duplicated; instead, the data is served directly from then underlying `H2OFrame`.
 
 Converting in the opposite direction (i.e, from Spark `RDD`/`DataFrame` to `H2OFrame`) needs evaluation of data stored in Spark `RDD` and transfer them from RDD storage into `H2OFrame`. However, data stored in `H2OFrame` is heavily compressed. 
-
-<!--TODO: estimation of overhead -->
-----
-<a name="ProvPrim"></a>
-### Provided Primitives
-The Sparkling Water provides following primitives, which are the basic classes used by Spark components:
-
-
-| Concept        | Implementation class              | Description |
-|----------------|-----------------------------------|-------------|
-| H2O context    | `org.apache.spark.h2o.H2OContext` | H2O context that holds H2O state and provides primitives to transfer RDD into H2OFrame and vice versa. It follows design principles of Spark primitives such as `SparkContext` or `SQLContext` |
-| H2O entry point| `water.H2O`                       | Represents the entry point for accessing H2O services. It holds information about the actual H2O cluster, including a list of nodes and the status of distributed K/V datastore. |
-| H2O H2OFrame  | `water.fvec.H2OFrame`            | H2OFrame is the H2O data structure that represents a table of values. The table is column-based and provides column and row accessors. |
-| H2O Algorithms | package `hex`                     | Represents the H2O machine learning algorithms library, including DeepLearning, GBM, RandomForest. |
- 
