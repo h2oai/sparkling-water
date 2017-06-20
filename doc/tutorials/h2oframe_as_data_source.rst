@@ -5,6 +5,7 @@ The way how H2O Frame can be used as Spark's Data Source differs a
 little bit in Python and Scala.
 
 Quick links:
+
   - `Usage in Python - PySparkling`_
   - `Usage in Scala`_
   - `Specifying Saving Mode`_
