@@ -38,7 +38,7 @@ Sparkling Water cluster.
 
 
 To read more about the backends, please visit `Sparkling Water
-Backends <doc/tutorials/backends.rst>`__.
+Backends <../tutorials/backends.rst>`__.
 
 When H2O services are running, it is possible to create H2O data
 structures, call H2O algorithms, and transfer values from/to RDD.

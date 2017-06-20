@@ -29,5 +29,5 @@ JVM as is depicted on the following figure. |Data Sharing|
 In the External Sparkling Water Backend, Spark and H2O are separated
 clusters and data has to be send between these cluster over the network.
 
-.. |Data Sharing| image:: doc/images/internal_backend_data_sharing.png
+.. |Data Sharing| image:: ../images/internal_backend_data_sharing.png
 
