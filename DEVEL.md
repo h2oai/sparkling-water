@@ -20,11 +20,11 @@ This documentation acts only as the table of content and provides links to the a
 - **Tutorials**    
     - [Enabling Security](doc/security.rst)
     - [Calling H2O Algorithms](doc/calling_h2o_algos.rst)
-    - **Frames Conversions & Creation**
+    - Frames Conversions & Creation
         - [Spark Frame - H2O Frame Conversions](doc/spark_h2o_conversions.rst)
         - [H2O Frame as Spark's Data Source](doc/datasource.rst)
         - [Create H2OFrame From an Existing Key](doc/h2o_frame_from_key.rst)
-    - **Logging**
+    - Logging
         - [Change Sparkling Shell Logging Level](doc/change_log_level.rst)
         - [Obtain Sparkling Water Logs](doc/log_location.rst)
 - **Testing**
