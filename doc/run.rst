@@ -19,6 +19,7 @@ backend. For more information about the backends, please see `Sparkling
 Water Backends <backends.rst>`__.
 
 In internal backend mode, the call will:
+
 1. Collect the number and host
 names of the executors (worker nodes) in the Spark cluster
 2. Launch H2O
@@ -28,6 +29,7 @@ based on the list of executors
 4. Verify the H2O cloud status
 
 In external backend mode, the call will:
+
 1. Start H2O in client mode on
 the Spark driver
 2. Start separated H2O cluster on the configured YARN
