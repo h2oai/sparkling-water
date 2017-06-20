@@ -24,7 +24,7 @@
   - [Memory Allocation](#MemorySetup)
   - [Security](doc/security.rst)
   - [Spark Frame - H2O Frame Conversions](doc/spark_h2o_conversions.rst)
-  - [Creating H2OFrame from an existing key](doc/h2o_frame_from_key.rst)
+  - [Create H2OFrame From an Existing Key](doc/h2o_frame_from_key.rst)
   - [Calling H2O Algorithms](doc/calling_h2o_algos.rst)
   - [Spark Frame - H2O Frame Mapping](doc/spark_h2o_mapping.rst)
 - Testing
