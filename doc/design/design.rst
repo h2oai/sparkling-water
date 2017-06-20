@@ -22,23 +22,23 @@ Sparkling Water is launched inside a Spark executor, which is created
 after application submission. At this point, H2O starts services,
 including distributed KV store and memory manager, and orchestrates them
 into a cloud. The topology of the created cloud matches the topology of
-the underlying Spark cluster exactly.
+the underlying Spark cluster exactly. The following figure represents the Internal
+Sparkling Water cluster.
 
 .. figure:: ../images/internal_backend.png
    :alt: Internal Sparkling Water Cluster Topology
 
-   Internal Sparkling Water Cluster Topology
-
 In external backend, the H2O cluster is started separately and we
-connect to it from the Spark driver.
+connect to it from the Spark driver. The following figure represents the External
+Sparkling Water cluster.
+
 
 .. figure:: ../images/external_backend.png
    :alt: External Sparkling Water Cluster Topology
 
-   External Sparkling Water Cluster Topology
 
 To read more about the backends, please visit `Sparkling Water
-Backends <doc/tutorials/backends.rst>`__
+Backends <doc/tutorials/backends.rst>`__.
 
 When H2O services are running, it is possible to create H2O data
 structures, call H2O algorithms, and transfer values from/to RDD.
@@ -49,9 +49,9 @@ More materials
 To read more about Sparkling Water design, you can visit on of the links
 bellow:
 
--  `Basic Primitives <doc/design/basic_primitives.rst>`__
--  `Supported Platforms <doc/design/supported_platforms.rst>`__
--  `Spark Frame - H2O Frame Mapping <doc/design/spark_h2o_mapping.rst>`__
--  `Data Sharing Between H2O and Spark <doc/design/data_sharing.rst>`__
--  `Supported Data Sources <doc/design/supported_data_sources.rst>`__
--  `Supported Data Formats <doc/design/supported_data_formats.rst>`__
+-  `Basic Primitives <basic_primitives.rst>`__
+-  `Supported Platforms <supported_platforms.rst>`__
+-  `Spark Frame - H2O Frame Mapping <spark_h2o_mapping.rst>`__
+-  `Data Sharing Between H2O and Spark <data_sharing.rst>`__
+-  `Supported Data Sources <supported_data_sources.rst>`__
+-  `Supported Data Formats <supported_data_formats.rst>`__
