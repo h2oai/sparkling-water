@@ -35,4 +35,4 @@ In external backend mode, the call will:
 3. Connects to the external cluster from the H2O client
 
 
-To see how to run Sparkling Water on Windows, please visit `Run on Windows <run_on_windows/rst>`__.
+To see how to run Sparkling Water on Windows, please visit `Run on Windows <run_on_windows.rst>`__.
