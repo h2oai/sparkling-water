@@ -6,9 +6,9 @@ little bit in Python and Scala.
 
 Quick links:
 
-  - `Usage in Python - PySparkling`_
-  - `Usage in Scala`_
-  - `Specifying Saving Mode`_
+- `Usage in Python - PySparkling`_
+- `Usage in Scala`_
+- `Specifying Saving Mode`_
 
 Usage in Python - PySparkling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
