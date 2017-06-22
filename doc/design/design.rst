@@ -1,7 +1,7 @@
 Design
 ------
 
-Basic introduction
+Basic Introduction
 ~~~~~~~~~~~~~~~~~~
 
 Sparkling Water is designed to be executed as a regular Spark
