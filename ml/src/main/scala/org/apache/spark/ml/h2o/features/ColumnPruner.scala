@@ -19,7 +19,6 @@ package org.apache.spark.ml.h2o.features
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.h2o.OneTimeTransformer
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.{DataFrame, Dataset}
@@ -28,7 +27,7 @@ import org.apache.spark.sql.types.{StructField, StructType}
 /**
   * This one time transformer removes specified columns in the input dataset
   */
-class ColRemover(override val uid: String) extends OneTimeTransformer with ColRemoverParams with DefaultParamsWritable {
+class ColumnPruner(override val uid: String) extends Transformer with ColumnPrunerParams with DefaultParamsWritable {
 
   def this() = this(Identifiable.randomUID("h2oColRemover"))
 
@@ -45,6 +44,7 @@ class ColRemover(override val uid: String) extends OneTimeTransformer with ColRe
     } else {
       schema.fieldNames.filter(!$(columns).contains(_))
     }
+
     StructType(columnsToLeft.map {
       col => StructField(col, schema(col).dataType, schema(col).nullable, schema(col).metadata)
     })
@@ -66,9 +66,9 @@ class ColRemover(override val uid: String) extends OneTimeTransformer with ColRe
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
 }
 
-object ColRemover extends DefaultParamsReadable[ColRemover]
+object ColumnPruner extends DefaultParamsReadable[ColumnPruner]
 
-trait ColRemoverParams extends Params {
+trait ColumnPrunerParams extends Params {
   /**
     * By default it is set to false which means removing specified columns
     */

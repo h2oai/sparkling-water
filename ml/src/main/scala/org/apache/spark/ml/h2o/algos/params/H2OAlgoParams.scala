@@ -14,13 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.models
+package org.apache.spark.ml.h2o.algos.params
 
 import com.google.common.base.CaseFormat
 import hex.Model.Parameters
+import org.apache.spark.h2o.utils.ReflectionUtils._
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.param.h2o.H2OKeyParam
-import org.apache.spark.h2o.utils.ReflectionUtils._
 import water.fvec.Frame
 
 import scala.reflect.ClassTag
@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 /**
   * A trait extracting a shared parameters among all models.
   */
-trait H2OParams[P <: Parameters] extends Params {
+trait H2OAlgoParams[P <: Parameters] extends Params {
   // Target schema type
   type H2O_SCHEMA
   // Class tag for parameters to get runtime class

@@ -20,7 +20,7 @@ import java.io.File
 
 import hex.Model
 import org.apache.spark.annotation.{DeveloperApi, Since}
-import org.apache.spark.h2o._
+import org.apache.spark.h2o.{H2OFrame, _}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
@@ -44,6 +44,7 @@ abstract class H2OModel[S <: H2OModel[S, M],
     val frame: H2OFrame = h2oContext.asH2OFrame(dataset.toDF())
     val prediction = model.score(frame)
     h2oContext.asDataFrame(prediction)(sqlContext)
+
   }
 
   @DeveloperApi
@@ -66,6 +67,7 @@ private[models] class H2OModelWriter[T <: H2OModel[T, _ <: Model[_, _, _ <: Mode
   override protected def saveImpl(path: String): Unit = {
     DefaultParamsWriter.saveMetadata(instance, path, sc)
     val file = new java.io.File(path, instance.defaultFileName)
+
     ModelSerializationSupport.exportH2OModel(instance.model, file.toURI)
   }
 }
