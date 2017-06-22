@@ -1,14 +1,26 @@
 #!/usr/bin/groovy
 
-pipeline{
+@Library('test-shared-library') _
 
-    agent { label 'mr-0xd3' }
+pipeline {
+    // Use given machines to run pipeline
+    agent { label 'linux' }
 
+    // Setup job options
+    options {
+        ansiColor('xterm')
+        timestamps()
+        timeout(time: 120, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    //
+    // Job parameters
+    //
     parameters {
         string(name: 'branchName', defaultValue: 'master', description: 'Test given branch on top of YARN.')
         string(name: 'hdpVersion', defaultValue: 'current', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current will not do since it is not automatically expanded -> so please set 2.2.6.3-1')
 
-        booleanParam(name: 'runBuildTests', defaultValue: true, description: 'Run build tests - junit and local integration tests')
         booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests')
         booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run integration tests')
         booleanParam(name: 'startH2OClusterOnYarn', defaultValue: false)
@@ -22,7 +34,7 @@ pipeline{
         string(name: 'sparklingTestEnv', defaultValue: 'yarn', description: 'Sparkling water test profile (default yarn)')
         string(name: 'backendMode', defaultValue: 'internal', description: '')
         string(name: 'driverHadoopVersion', defaultValue: 'hdp2.2', description: 'Hadoop version for which h2o driver will be obtained')
-
+        booleanParam(name: 'nightlyBuild', defaultValue: false, description: 'Upload the artifacts if the build is nighlty')
     }
 
     environment {
@@ -38,9 +50,8 @@ pipeline{
     stages {
 
         stage('Git Checkout and Preparation'){
-            steps{
-                //checkout scm
-                git url: 'https://github.com/h2oai/sparkling-water.git', branch: 'master'
+            steps {
+                checkout scm
                 sh """
                 if [ ! -d "${env.SPARK_HOME}" ]; then
                         wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
@@ -49,6 +60,10 @@ pipeline{
                         rm -rf ${env.SPARK}.tgz
                 fi
                 """
+                // Cleanup
+                dir("${env.SPARK_HOME}/work") {
+                    deleteDir()
+                }
             }
         }
 
@@ -84,9 +99,10 @@ pipeline{
             }
         }
 
-        stage('QA: Lint and Unit Tests') {
+        stage('QA: Build, Lint and Unit Tests') {
 
              steps {
+                    dumpInfo 'Build Info'
                     sh """
                     # Build, run regular tests
                     ${env.WORKSPACE}/gradlew clean build -x integTest
@@ -102,111 +118,78 @@ pipeline{
         }
 
         stage('QA:Local Integration Tests') {
+            when {
+                expression {
+                    params.runIntegTests
+                }
+            }
 
              steps {
                     sh """
                     # Build, run regular tests
                     ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} 
                     """
+            }
 
-		    }
-			post {
-				always {
+            post {
+                always {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'examples/build/test-results/integTest/*.xml'
                     testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
-					testReport 'examples/build/reports/tests/integTest', 'Local Examples Integration tests'
-				}
-			}
+                    testReport 'examples/build/reports/tests/integTest', 'Local Examples Integration tests'
+                }
+            }
         }
 
         stage('QA: Script Tests') {
+            when {
+                expression {
+                    return params.runScriptTests
+                }
+            }
 
-             steps {
+            steps {
                     sh """
                     # Build, run regular tests
                     ${env.WORKSPACE}/gradlew scriptTest
                     """
-		    }
-			post {
-				always {
+            }
+
+            post {
+                always {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'examples/build/test-results/scriptsTest/*.xml'
                     testReport 'examples/build/reports/tests/scriptsTest', 'Examples Script Tests'
-				}
-			}
+                }
+            }
         }
 
         stage('QA:Integration tests') {
+            when {
+                expression {
+                    return params.runIntegTests
+                }
+            }
 
             steps {
 
                 sh """
-                     if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = true ]; then
-                             ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
-                     fi
-                     if [ "${params.runIntegTests}" = true -a "${params.startH2OClusterOnYarn}" = false ]; then
+                     ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                     if [ "${params.startH2OClusterOnYarn}" = false ]; then
                             ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
                      fi
-                     #  echo 'Archiving artifacts after Integration test'
-
                  """
-
             }
+
             post {
-				always {
+                always {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'examples/build/test-results/integTest/*.xml'
                     //testReport 'core/build/reports/tests/integTest', "${params.backendMode} Core Integration tests"
-					testReport 'examples/build/reports/tests/integTest', "${params.backendMode} Examples Integration tests"
-
-				}
-			}
+                    testReport 'examples/build/reports/tests/integTest', "${params.backendMode} Examples Integration tests"
+                }
+            }
         }
     }
-}
-
-
-// Def sections
-
-def success(message) {
-
-    sh 'echo "Test ran successful"'
-
-    step([$class: 'GitHubCommitStatusSetter',
-        contextSource: [$class: 'ManuallyEnteredCommitContextSource',
-        context: 'h2o-ops'],
-        statusResultSource: [$class: 'ConditionalStatusResultSource',
-        results: [[$class: 'AnyBuildResult',
-        state: 'SUCCESS',
-        message: message ]]]])
-
-}
-
-def failure(message) {
-
-        sh 'echo "Test failed "'
-        step([$class: 'GitHubCommitStatusSetter',
-            contextSource: [$class: 'ManuallyEnteredCommitContextSource',
-            context: 'h2o-ops'],
-            statusResultSource: [$class: 'ConditionalStatusResultSource',
-            results: [[$class: 'AnyBuildResult',
-            message: message,
-            state: 'FAILURE']]]])
-}
-
-def testReport(reportDirectory, title) {
-    publishHTML target: [
-        allowMissing: false,
-        alwaysLinkToLastBuild: true,
-        keepAll: true,
-        reportDir: reportDirectory,
-        reportFiles: 'index.html',
-        reportName: title
-    ]
-}
-
-def arch(list) {
-    archiveArtifacts artifacts: list, allowEmptyArchive: true
 }
 
