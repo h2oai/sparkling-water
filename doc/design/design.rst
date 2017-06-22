@@ -43,7 +43,7 @@ Backends <../tutorials/backends.rst>`__.
 When H2O services are running, it is possible to create H2O data
 structures, call H2O algorithms, and transfer values from/to RDD.
 
-More materials
+More Materials
 ~~~~~~~~~~~~~~
 
 To read more about Sparkling Water design, you can visit on of the links
