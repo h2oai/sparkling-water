@@ -10,7 +10,15 @@ ScalaCompileOptions.metaClass.useCompileDaemon = false
 
 // Activate Zinc compiler and configure scalac
 tasks.withType(ScalaCompile) {
-    scalaCompileOptions.additionalParameters = ['-target:jvm-1.6']
+    scalaCompileOptions.additionalParameters = [
+            "-target:jvm-1.6",
+            "-feature",
+            // enable several optional scala features so Scala knows we use them on purpose
+            "-language:reflectiveCalls",
+            "-language:postfixOps",
+            "-language:existentials",
+            "-language:implicitConversions",
+            ]
 }
 
 project.archivesBaseName = "${project.name}_${scalaBaseVersion}"
@@ -91,6 +99,11 @@ export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
     }
 }
 
+// Override ScalaDoc classpath to look only for classes in the scala output dir preventing several warnings for
+// missing elements since we don't use java source dirs
+scaladoc {
+    classpath = files(project.sourceSets.main.compileClasspath, sourceSets.main.scala.outputDir.absolutePath)
+}
 
 check.dependsOn(checkScalaTestEnv)
 

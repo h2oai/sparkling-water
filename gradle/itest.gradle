@@ -30,7 +30,7 @@ configurations {
 task integTest(type: Test) {
     group = 'Verification'
     description = 'Runs all integration tests'
-    testClassesDir = sourceSets.integTest.output.classesDir
+    testClassesDirs = sourceSets.integTest.output.classesDirs
     classpath = sourceSets.integTest.runtimeClasspath
 
     //
