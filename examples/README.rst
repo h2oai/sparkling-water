@@ -1,101 +1,62 @@
-Sparkling Water Table of Contents
-=================================
-
--  `Compiling examples <#CompileExample>`__
--  `Running examples <#RunExample>`__
--  `Running on a local cluster <#LocalCluster>`__
--  `Running on a Spark cluster <#SparkCluster>`__
--  `Configuring variables <#ConfigVar>`__
--  `Step-by-step weather example <#WeatherExample>`__
--  `Running Sparkling Water on Hadoop <#Hadoop>`__
--  `Importing data from HDFS <#ImportData>`__
-
 Sparkling Water Examples
 ========================
 
 Available Demos And Applications
 --------------------------------
 
--  ```CraigslistJobTitlesStreamingApp`` <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala>`__
-   - **stream** application - it predicts job category based on incoming
-   job description
--  ```CraigslistJobTitlesApp`` <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesApp.scala>`__
+-  `CraigslistJobTitlesStreamingApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala>`__
+   - **stream** application - it predicts job category based on incoming job description
+-  `CraigslistJobTitlesApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesApp.scala>`__
    - predict job category based on posted job description
--  ```ChicagoCrimeAppSmall`` <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeAppSmall.scala>`__
-   - builds a model predicting a probability of arrest for given crime
-   in Chicago using data in ```smalldata`` directory <smalldata/>`__
--  ```ChicagoCrimeApp`` <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala>`__
-   - implementation of Chicago Crime demo with setup for data stored on
-   HDFS
--  ```CitiBikeSharingDemo`` <src/main/scala/org/apache/spark/examples/h2o/CitiBikeSharingDemo.scala>`__
+-  `ChicagoCrimeAppSmall <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeAppSmall.scala>`__
+   - builds a model predicting a probability of arrest for given crime in Chicago using data in `smalldata directory <smalldata/>`__
+-  `ChicagoCrimeApp <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala>`__
+   - implementation of Chicago Crime demo with setup for data stored on HDFS
+-  `CitiBikeSharingDemo <src/main/scala/org/apache/spark/examples/h2o/CitiBikeSharingDemo.scala>`__
    - predicts occupancy of Citi bike stations in NYC
--  ```HamOrSpamDemo`` <src/main/scala/org/apache/spark/examples/h2o/HamOrSpamDemo.scala>`__
+-  `HamOrSpamDemo <src/main/scala/org/apache/spark/examples/h2o/HamOrSpamDemo.scala>`__
    - shows Spam detector with Spark and H2O's DeepLearning
--  ```ProstateDemo`` <src/main/scala/org/apache/spark/examples/h2o/ProstateDemo.scala>`__
+-  `ProstateDemo <src/main/scala/org/apache/spark/examples/h2o/ProstateDemo.scala>`__
    - running K-means on prostate dataset (see *smalldata/prostate.csv*)
--  ```DeepLearningDemo`` <src/main/scala/org/apache/spark/examples/h2o/DeepLearningDemo.scala>`__
-   - running DeepLearning on a subset of airlines dataset (see
-   *smalldata/allyears2k\_headers.csv.gz*)
--  ```AirlinesWithWeatherDemo`` <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo.scala>`__
+-  `DeepLearningDemo <src/main/scala/org/apache/spark/examples/h2o/DeepLearningDemo.scala>`__
+   - running DeepLearning on a subset of `airlines dataset <smalldata/allyears2k_headers.csv.gz>`__
+-  `AirlinesWithWeatherDemo <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo.scala>`__
    - joining flights data with weather data and running Deep Learning
--  ```AirlinesWithWeatherDemo2`` <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo2.scala>`__
+-  `AirlinesWithWeatherDemo2 <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo2.scala>`__
    - new iteration of ``AirlinesWithWeatherDemo``
 
-    Run examples by typing ``bin/run-example.sh <name of demo>`` or
-    follow text below.
+    Run examples by typing ``bin/run-example.sh <name of demo>`` or follow text below.
 
 Available Demos for Sparkling Shell
 -----------------------------------
 
--  ```chicagoCrimeSmallShell.script.scala`` <scripts/chicagoCrimeSmallShell.script.scala>`__
-   - demo showing full source code of predicting arrest probability for
-   a given crime. It covers whole machine learning process from loading
-   and transforming data, building models, scoring incoming events.
--  ```chicagoCrimeSmall.script.scala`` <scripts/chicagoCrimeSmall.script.scala>`__
-   - example of using
-   `ChicagoCrimeApp <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala>`__
-   - creating application and using it for scoring individual crime
-   events.
--  ```mlconf_2015_hamSpam.script.scala`` <scripts/mlconf_2015_hamSpam.script.scala>`__
-   - HamOrSpam application which detectes Spam messages. Presented at
-   MLConf 2015 NYC.
--  ```strata2015_demo.scala`` <scripts/strata2015_demo.scala>`__ - NYC
-   CitiBike demo presented at Strata 2015 in San Jose.
--  ```StrataAirlines.scala`` <scripts/StrataAirlines.scala>`__ - example
-   of using flights and weather data to predict delay of a flight
+-  `chicagoCrimeSmallShell.script.scala <scripts/chicagoCrimeSmallShell.script.scala>`__
+   - demo showing full source code of predicting arrest probability for a given crime. It covers whole machine learning process from loading and transforming data, building models, scoring incoming events.
+-  `chicagoCrimeSmall.script.scala <scripts/chicagoCrimeSmall.script.scala>`__
+   - example of using `ChicagoCrimeApp <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala>`__
+   - creating application and using it for scoring individual crime events.
+-  `mlconf_2015_hamSpam.script.scala <scripts/mlconf_2015_hamSpam.script.scala>`__
+   - HamOrSpam application which detects Spam messages. Presented at MLConf 2015 NYC.
+-  `strata2015_demo.scala <scripts/strata2015_demo.scala>`__
+    - NYC CitiBike demo presented at Strata 2015 in San Jose.
+-  `StrataAirlines.scala <scripts/StrataAirlines.scala>`__
+    - example of using flights and weather data to predict delay of a flight
 
-    Run examples by typing
-    ``bin/sparkling-shell -i <path to file with demo script>``
+    Run examples by typing ``bin/sparkling-shell -i <path to file with demo script>``
 
 --------------
 
-Compiling Examples
-------------------
+Building and Running Examples
+-----------------------------
 
-To compile, use top-level ``gradlew``:
-
-::
-
-    ./gradlew build -x check
-
-On a Spark Cluster
-~~~~~~~~~~~~~~~~~~
-
--  Run the Spark cluster, for example via ``bin/launch-spark-cloud.sh``
-
-   -  Verify that Spark is running: The Spark UI on
-      ``http://localhost:8080/`` should show 3 worker nodes
-
--  Export ``MASTER`` address of Spark master using
-   ``export MASTER="spark://localhost:7077"``
--  Run ``bin/run-example.sh <name of demo>``
--  Observe status of the application via Spark UI on
-   ``http://localhost:8080/``
+Please see `Running Sparkling Water Examples <../doc/devel/running_examples.rst>`__ for more information how to build
+and run examples.
 
 Configuring Sparkling Water Variables
 -------------------------------------
 
-Please see `Available Sparkling Water Configuration Properties <../doc/configuration/configuration_properties>`__.
+Please see `Available Sparkling Water Configuration Properties <../doc/configuration/configuration_properties>`__ for
+more information about possible Sparkling Water configurations.
 
 Step-by-Step Weather Data Example
 ---------------------------------
