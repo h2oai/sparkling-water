@@ -7,7 +7,7 @@ Available Demos And Applications
 +---------------------------------------------------------------------+----------------------------------------+
 | Example                                                             | Description                            |
 +=====================================================================+========================================+
-| `CraigslistJobTitlesStreamingApp`_
+| `CraigslistJobTitlesStreamingApp`_                                  |                                        |
 +---------------------------------------------------------------------+----------------------------------------+
 
 -  `CraigslistJobTitlesStreamingApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala>`__
