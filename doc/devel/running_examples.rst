@@ -59,7 +59,7 @@ can build and run them in the following way:
 
 
 For more details about examples, please see the
-`README <../../examples/README.md>`__ file in the `examples directory <../../examples/>`__.
+`README <../../examples/README.rst>`__ file in the `examples directory <../../examples/>`__.
 
 Additional Examples
 ~~~~~~~~~~~~~~~~~~~
