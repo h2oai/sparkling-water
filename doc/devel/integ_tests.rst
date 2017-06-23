@@ -8,6 +8,7 @@ The tests are perform for both Sparkling Water backend types. Please see `Sparkl
 for more information about the backends.
 
 Quick links:
+
   - `Testing Environments`_
   - `Testing Scenarios`_
   - `Integration Tests Example`_
@@ -52,6 +53,7 @@ Integration Tests Example
 
 The following code reflects the use cases listed above. The code is
 executed in all testing environments (if applicable). Spark 2.0+ required:
+
 - local
 - standalone cluster
 - YARN
