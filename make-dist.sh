@@ -23,7 +23,7 @@ cat > "$TOPDIR/demofiles.list" <<EOF
 bin/
 $(find bin -type f)
 assembly/build/libs/sparkling-water-assembly_$SCALA_VERSION-$VERSION-all.jar
-examples/README.md
+examples/README.rst
 examples/scripts/chicagoCrimeSmall.script.scala
 examples/scripts/chicagoCrimeSmallShell.script.scala
 examples/scripts/hamOrSpam.script.scala
@@ -46,7 +46,6 @@ $(find py/pysparkling -type f -name '*.py')
 LICENSE
 README.rst
 $(find doc -type f)
-DEVEL.md
 CHANGELOG.md
 gradle.properties
 EOF
