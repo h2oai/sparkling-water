@@ -20,6 +20,7 @@ actual documentation documents.
    -  `Sparkling Water Configuration Properties <configuration/configuration_properties.rst>`__
    -  `Memory Allocation <configuration/memory_setup.rst>`__
    -  `Sparkling Water Internal Backend Tuning <configuration/internal_backend_tuning.rst>`__
+   -  `Sparkling Water Backends Configuration <tutorials/backends.rst>`__
 
 -  `Tutorials <tutorials/tutorials.rst>`__
 
