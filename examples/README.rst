@@ -7,7 +7,7 @@ Available Demos And Applications
 +---------------------------------------------------------------------+----------------------------------------+
 | Example                                                             | Description                            |
 +=====================================================================+========================================+
-| `CraigslistJobTitlesStreamingApp`_                                  |                                        |
+| |CraigslistJobTitlesStreamingApp|                                   |                                        |
 +---------------------------------------------------------------------+----------------------------------------+
 
 -  `CraigslistJobTitlesStreamingApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala>`__
@@ -209,5 +209,4 @@ Step-by-Step Weather Data Example
     nrow(compare)
     plot( compare[,1:2] )
 
-
-:: _CraigslistJobTitlesStreamingApp: src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala
+.. |CraigslistJobTitlesStreamingApp| replace:: `CraigslistJobTitlesStreamingApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala>`__
