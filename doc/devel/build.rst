@@ -7,9 +7,10 @@ Download Spark installation and point environment variable
 Then use the provided ``gradlew`` to build project:
 
 In order to build the whole project including PySparkling, one of the
-following properties needs to be set: \* ``H2O_HOME`` - should point to
-location of the local H2O project directory \* ``H2O_PYTHON_WHEEL`` -
-should point to H2O Python Wheel.
+following properties needs to be set:
+
+- ``H2O_HOME`` - should point to location of the local H2O project directory.
+- ``H2O_PYTHON_WHEEL`` - should point to H2O Python Wheel.
 
 If you are not sure which property to set, just run
 

@@ -31,6 +31,9 @@ Please, switch to the right branch:
    branch includes the latest changes for the latest Spark version.
    They are back-ported into older Sparkling Water versions.
 
+.. The Requirements section is copied from doc/requirements.rst as github does not support include directive of
+.. reStructuredText
+
 Requirements
 ~~~~~~~~~~~~
 
@@ -167,6 +170,8 @@ List of all Frequently Asked Questions is available at `FAQ <doc/FAQ.rst>`__.
 
 Development
 -----------
+
+Complete development documentation is available at `Development Documentation <doc/DEVEL.rst>`__.
 
 Build Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~
