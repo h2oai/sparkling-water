@@ -2,12 +2,14 @@ Sparkling Water Tuning
 ----------------------
 
 For running Sparkling Water general recommendation are:
+
   - Increase available memory in driver and executors (options ``spark.driver.memory`` resp., ``spark.yarn.am.memory`` and ``spark.executor.memory``).
   - Make cluster homogeneous - use the same value for driver and executor memory.
   - Increase PermGen size if you are running on top of Java7 (options ``spark.driver.extraJavaOptions`` resp., ``spark.yarn.am.extraJavaOptions`` and ``spark.executor.extraJavaOptions``).
   - In rare cases, it helps to increase ``spark.yarn.driver.memoryOverhead``, ``spark.yarn.am.memoryOverhead``, or ``spark.yarn.executor.memoryOverhead``.
 
 For running Sparkling Water on top of Yarn:
+
   - Make sure that Yarn provides stable containers, do not use preemptive Yarn scheduler.
   - Make sure that Spark application manager has enough memory and increase PermGen size.
   - In case of a container failure, Yarn should not restart container and application should gracefully terminate.

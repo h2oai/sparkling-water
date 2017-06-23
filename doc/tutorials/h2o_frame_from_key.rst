@@ -1,4 +1,4 @@
-Creating H2OFrame from an existing Key
+Creating H2OFrame from an Existing Key
 --------------------------------------
 
 If the H2O cluster already contains a loaded ``H2OFrame`` referenced by
