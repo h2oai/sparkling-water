@@ -1,8 +1,8 @@
-Running Sparkling Water examples
+Running Sparkling Water Examples
 --------------------------------
 
 The Sparkling Water distribution includes also a set of examples. You
-can find their implementation in `examples directory <example/>`__. You
+can find their implementation in `examples directory <../../examples/>`__. You
 can run them in the following way:
 
 1. Build a package that can be submitted to Spark cluster:
@@ -29,8 +29,8 @@ can run them in the following way:
 
 
 For more details about examples, please see the
-`README <examples/README.md>`__ file in the `examples directory <examples/>`__.
+`README <../../examples/README.md>`__ file in the `examples directory <../../examples/>`__.
 
 Additional Examples
 ~~~~~~~~~~~~~~~~~~~
-Additional examples are available at `examples folder <examples/>`__.
+Additional examples are available at `examples folder <../../examples/>`__.

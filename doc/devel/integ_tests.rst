@@ -9,9 +9,9 @@ for more information about the backends.
 
 Quick links:
 
-  - `Testing Environments`_
-  - `Testing Scenarios`_
-  - `Integration Tests Example`_
+- `Testing Environments`_
+- `Testing Scenarios`_
+- `Integration Tests Example`_
 
 Testing Environments
 --------------------
