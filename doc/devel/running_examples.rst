@@ -25,14 +25,14 @@ can build and run them in the following way:
 
 - On Local Cluster
 
-    The cluster is defined by MASTER address local-cluster[3,2,3072] which means that cluster
-    contains 3 worker nodes, each having 2 CPU cores and 3GB of memory:
+The cluster is defined by ``MASTER`` address ``local-cluster[3,2,3072]`` which means that cluster
+contains 3 worker nodes, each having 2 CPU cores and 3GB of memory:
 
-   .. code:: bash
+.. code:: bash
 
-        bin/run-example.sh <name of example>
+    bin/run-example.sh <name of example>
 
-- On a Spark Cluster:
+- On a Spark Standalone Cluster:
 
     - Run the Spark cluster, for example via:
 

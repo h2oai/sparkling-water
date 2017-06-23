@@ -1,4 +1,5 @@
-#Sparkling Water Table of Contents
+# Sparkling Water Table of Contents
+
 - [Compiling examples](#CompileExample)
 - [Running examples](#RunExample)
   - [Running on a local cluster](#LocalCluster)
@@ -40,24 +41,20 @@
   
 -----
 
-<a name="CompileExample"></a>
 ## Compiling Examples
 To compile, use top-level `gradlew`:
 ```
-./gradlew assemble
+./gradlew build -x check
 ```
 ---
-<a name="RunExample"></a>
 ## Running Examples
 
-<a name="LocalCluster"></a>
 ### On a Simple Local Cluster
  
  Run a given example on local cluster. The cluster is defined by `MASTER` address `local-cluster[3,2,3072]` which means that cluster contains 3 worker nodes, each having 2CPUs and 3GB of memory:
  * Run `bin/run-example.sh <name of demo>`
  
 ---
-<a name="SparkCluster"></a>
 ### On a Spark Cluster
    * Run the Spark cluster, for example via `bin/launch-spark-cloud.sh`
      * Verify that Spark is running: The Spark UI on `http://localhost:8080/` should show 3 worker nodes 
@@ -66,7 +63,6 @@ To compile, use top-level `gradlew`:
    * Observe status of the application via Spark UI on `http://localhost:8080/`
 
 ---
-<a name="ConfigVar"></a>
 ## Configuring Sparkling Water Variables
 
 You can configure Sparkling Water using the following variables:
@@ -75,7 +71,6 @@ You can configure Sparkling Water using the following variables:
   * `spark.h2o.preserve.executors` - do not kill executors via calling `sc.stop()` call
 
 ---
-<a name="WeatherExample"></a>
 ## Step-by-Step Weather Data Example
 
 1. Run Sparkling shell with an embedded cluster:
@@ -90,7 +85,7 @@ You can configure Sparkling Water using the following variables:
 3. Initialize H2O services on top of Spark cluster:
   ```scala
   import org.apache.spark.h2o._
-  val h2oContext = H2OContext.getOrCreate(sc)
+  val h2oContext = H2OContext.getOrCreate(spark)
   import h2oContext._
   import h2oContext.implicits._
   ```
@@ -99,7 +94,7 @@ You can configure Sparkling Water using the following variables:
   ```scala
   import org.apache.spark.examples.h2o._
   val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
-  val wrawdata = sc.textFile(weatherDataFile,3).cache()
+  val wrawdata = spark.sparkContext.textFile(weatherDataFile,3).cache()
   val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
   ```
 
