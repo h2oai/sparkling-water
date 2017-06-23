@@ -5,6 +5,7 @@ This demo shows you how to take streaming data and create a "live"
 dataframe over some rolling time window. The potential use cases could
 be using H2O data munging capabilities on a real time distributed
 dataframe or mini batch training for online ML using H2O.
+
 Requirements
 ------------
 
@@ -41,10 +42,10 @@ Directions
 
 .. code:: bash
 
-    python socket_send_spark.py``
+    python socket_send_spark.py
 
 4. Then you should be able to login in to Flow/R/Python and see the live
-   ``H2OFrame``
+   ``H2OFrame``.
 
 Caveats
 -------
@@ -61,7 +62,9 @@ the steps for your use case are done in the events.window loop:
             if (!rdd.isEmpty ) {
               try {
                 hf.delete()
-              } catch { case e: Exception => println("Initialized frame") }
+              } catch {
+               case e: Exception => println("Initialized frame")
+              }
               hf = hc.asH2OFrame(rdd.toDF(), "demoFrame10s") //the name of the frame
               // perform your munging, score your events with a pretrained model or
               // mini-batch training on checkpointed models, etc
