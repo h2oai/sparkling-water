@@ -182,7 +182,7 @@ To leverage H2O's algorithms, data in Spark cluster, stored as an RDD, needs to 
 
 
 What is PySparkling?
---------------------------
+--------------------
 
 PySparkling is an integration of Python with Sparkling Water. It allows user to start H2O services on a Spark cluster from Python API.
 	
