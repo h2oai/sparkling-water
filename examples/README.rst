@@ -4,26 +4,32 @@ Sparkling Water Examples
 Available Demos And Applications
 --------------------------------
 
++---------------------------------------------------------------------+----------------------------------------+
+| Example                                                             | Description                            |
++=====================================================================+========================================+
+| `CraigslistJobTitlesStreamingApp`_
++---------------------------------------------------------------------+----------------------------------------+
+
 -  `CraigslistJobTitlesStreamingApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala>`__
-   - **stream** application - it predicts job category based on incoming job description
+   - **stream** application - it predicts job category based on incoming job description.
 -  `CraigslistJobTitlesApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesApp.scala>`__
-   - predict job category based on posted job description
+   - predict job category based on posted job description.
 -  `ChicagoCrimeAppSmall <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeAppSmall.scala>`__
-   - builds a model predicting a probability of arrest for given crime in Chicago using data in `smalldata directory <smalldata/>`__
+   - builds a model predicting a probability of arrest for given crime in Chicago using data in `smalldata directory <smalldata/>`__.
 -  `ChicagoCrimeApp <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala>`__
-   - implementation of Chicago Crime demo with setup for data stored on HDFS
+   - implementation of Chicago Crime demo with setup for data stored on HDFS.
 -  `CitiBikeSharingDemo <src/main/scala/org/apache/spark/examples/h2o/CitiBikeSharingDemo.scala>`__
-   - predicts occupancy of Citi bike stations in NYC
+   - predicts occupancy of Citi bike stations in NYC.
 -  `HamOrSpamDemo <src/main/scala/org/apache/spark/examples/h2o/HamOrSpamDemo.scala>`__
-   - shows Spam detector with Spark and H2O's DeepLearning
+   - shows Spam detector with Spark and H2O's DeepLearning.
 -  `ProstateDemo <src/main/scala/org/apache/spark/examples/h2o/ProstateDemo.scala>`__
-   - running K-means on prostate dataset (see *smalldata/prostate.csv*)
+   - running K-means on `prostate dataset <smalldata/prostate.csv>`__.
 -  `DeepLearningDemo <src/main/scala/org/apache/spark/examples/h2o/DeepLearningDemo.scala>`__
-   - running DeepLearning on a subset of `airlines dataset <smalldata/allyears2k_headers.csv.gz>`__
+   - running DeepLearning on a subset of `airlines dataset <smalldata/allyears2k_headers.csv.gz>`__.
 -  `AirlinesWithWeatherDemo <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo.scala>`__
-   - joining flights data with weather data and running Deep Learning
+   - joining flights data with weather data and running Deep Learning.
 -  `AirlinesWithWeatherDemo2 <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo2.scala>`__
-   - new iteration of ``AirlinesWithWeatherDemo``
+   - new iteration of ``AirlinesWithWeatherDemo``.
 
     Run examples by typing ``bin/run-example.sh <name of demo>`` or follow text below.
 
@@ -202,3 +208,6 @@ Step-by-Step Weather Data Example
     compare = cbind (as.data.frame(actDelay$ArrDelay), as.data.frame(residuals$predict))
     nrow(compare)
     plot( compare[,1:2] )
+
+
+:: _CraigslistJobTitlesStreamingApp: src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala
