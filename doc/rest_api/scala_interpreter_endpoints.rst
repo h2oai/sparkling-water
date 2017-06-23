@@ -7,13 +7,13 @@ Basic design
 There is a simple pool of interpreters created at the start. Once an
 scala interpreter is associated with the session, new interpreter is
 added to the pool. Each interpreter is deleted when it's not used for
-some fixed time
+some fixed time.
 
 Example usage of scala interpreter using REST API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here, you can find some basic calls to access scala interpreter behind
-REST API using curl
+REST API using curl.
 
 Init interpreter and obtain session ID
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
