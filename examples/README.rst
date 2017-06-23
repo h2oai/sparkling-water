@@ -231,5 +231,5 @@ Step-by-Step Weather Data Example
 .. |chicagoCrimeSmallShellScript| replace:: `chicagoCrimeSmallShell.script.scala <scripts/chicagoCrimeSmallShell.script.scala>`__
 .. |chicagoCrimeSmallScript| replace:: `chicagoCrimeSmall.script.scala <scripts/chicagoCrimeSmall.script.scala>`__
 .. |hamOrSpamScript| replace:: `hamOrSpam.script.scala <scripts/hamOrSpam.script.scala>`__
-.. |strata2015Script| replace:: `strata2015_demo.script.scala <scripts/strata2015.script.scala>`__
+.. |strata2015Script| replace:: `strata2015.script.scala <scripts/strata2015.script.scala>`__
 .. |StrataAirlinesScript| replace:: `StrataAirlines.script.scala <scripts/StrataAirlines.script.scala>`__
