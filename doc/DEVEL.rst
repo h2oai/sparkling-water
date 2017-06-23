@@ -11,8 +11,7 @@ actual documentation documents.
    -  `Basic Primitives <design/basic_primitives.rst>`__
    -  `Supported Platforms <design/supported_platforms.rst>`__
    -  `Spark Frame - H2O Frame Mapping <design/spark_h2o_mapping.rst>`__
-   -  `Data Sharing Between H2O and
-      Spark <design/data_sharing.rst>`__
+   -  `Data Sharing Between H2O and Spark <design/data_sharing.rst>`__
    -  `Supported Data Sources <design/supported_data_sources.rst>`__
    -  `Supported Data Formats <design/supported_data_formats.rst>`__
 
@@ -25,6 +24,8 @@ actual documentation documents.
 -  `Tutorials <tutorials/tutorials.rst>`__
 
    -  `Running Sparkling Water <tutorials/run_sparkling_water.rst>`__
+   -  `Running Sparkling Water on Windows <tutorials/run_on_windows.rst>`__
+
    -  `Sparkling Water Backends Run & Configuration <tutorials/backends.rst>`__
    -  `Enabling Security <tutorials/security.rst>`__
    -  `Calling H2O Algorithms <tutorials/calling_h2o_algos.rst>`__

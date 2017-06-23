@@ -2,6 +2,7 @@ Tutorials
 ---------
 
 -  `Running Sparkling Water <run_sparkling_water.rst>`__
+-  `Running Sparkling Water on Windows <run_on_windows.rst>`__
 -  `Sparkling Water Backends Run & Configuration <backends.rst>`__
 -  `Enabling Security <security.rst>`__
 -  `Calling H2O Algorithms <calling_h2o_algos.rst>`__

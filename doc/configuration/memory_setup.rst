@@ -31,4 +31,4 @@ Yarn specific configuration
 -  For JVMs that require a large amount of memory, we strongly recommend
    configuring the maximum amount of memory available for individual
    mappers. For information on how to do this using Yarn, refer to
-   http://docs.h2o.ai/deployment/hadoop\_yarn.html
+   http://docs.h2o.ai/h2o/latest-stable/h2o-docs/faq/hadoop.html

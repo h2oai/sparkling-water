@@ -1,4 +1,4 @@
-Use Sparkling Water in Windows environments
+Use Sparkling Water in Windows Environments
 -------------------------------------------
 
 The Windows environments require several additional steps to make Spark
