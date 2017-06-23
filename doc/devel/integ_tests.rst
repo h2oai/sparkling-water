@@ -4,7 +4,7 @@ Integration Tests
 This documentation paper describes what is tested in terms of
 integration tests as part of the Sparkling Water project.
 
-The tests are perform for both Sparkling Water backend types. Please see `Sparkling Water Backends <doc/backends.rst>`__
+The tests are perform for both Sparkling Water backend types. Please see `Sparkling Water Backends <../tutorials/backends.rst>`__
 for more information about the backends.
 
 Quick links:
