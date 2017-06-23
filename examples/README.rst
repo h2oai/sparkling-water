@@ -67,7 +67,7 @@ and run examples.
 Configuring Sparkling Water Variables
 -------------------------------------
 
-Please see `Available Sparkling Water Configuration Properties <../doc/configuration/configuration_properties>`__ for
+Please see `Available Sparkling Water Configuration Properties <../doc/configuration/configuration_properties.rst>`__ for
 more information about possible Sparkling Water configurations.
 
 Step-by-Step Weather Data Example
