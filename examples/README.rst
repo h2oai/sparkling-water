@@ -36,23 +36,23 @@ Available Demos And Applications
 Available Demos for Sparkling Shell
 -----------------------------------
 
-+---------------------------------------+--------------------------------------------------------------------------+
-| Example                               | Description                                                              |
-+=======================================+==========================================================================+
-| |chicagoCrimeSmallShellScriptScala|   | Demo showing full source code of predicting arrest probability for a     |
-|                                       | given crime. It covers whole machine learning process from loading and   |
-|                                       | transforming data, building models, scoring incoming events.             |
-+---------------------------------------+--------------------------------------------------------------------------+
-| |chicagoCrimeSmallScriptScala|        | Example of using |ChicagoCrimeApp|. Creating application and using it    |
-|                                       | for scoring individual crime events.                                     |
-+---------------------------------------+--------------------------------------------------------------------------+
-| |mlconf2015HamSpamScriptScala|        | HamOrSpam application which detects Spam messages. Presented at          |
-|                                       | MLConf 2015 NYC.                                                         |
-+---------------------------------------+--------------------------------------------------------------------------+
-| |strata2015DemoScala|                 | NYC CitiBike demo presented at Strata 2015 in San Jose.                  |
-+---------------------------------------+--------------------------------------------------------------------------+
-| |StrataAirlinesScala|                 | Example of using flights and weather data to predict delay of a flight.  |
-+---------------------------------------+--------------------------------------------------------------------------+
++-----------------------------------+--------------------------------------------------------------------------+
+| Example                           | Description                                                              |
++===================================+==========================================================================+
+| |chicagoCrimeSmallShellScript|    | Demo showing full source code of predicting arrest probability for a     |
+|                                   | given crime. It covers whole machine learning process from loading and   |
+|                                   | transforming data, building models, scoring incoming events.             |
++-----------------------------------+--------------------------------------------------------------------------+
+| |chicagoCrimeSmallScript|         | Example of using |ChicagoCrimeApp|. Creating application and using it    |
+|                                   | for scoring individual crime events.                                     |
++-----------------------------------+--------------------------------------------------------------------------+
+| |hamOrSpamScript|                 | HamOrSpam application which detects Spam messages. Presented at          |
+|                                   | MLConf 2015 NYC.                                                         |
++-----------------------------------+--------------------------------------------------------------------------+
+| |strata2015Script|                | NYC CitiBike demo presented at Strata 2015 in San Jose.                  |
++-----------------------------------+--------------------------------------------------------------------------+
+| |StrataAirlinesScript|            | Example of using flights and weather data to predict delay of a flight.  |
++-----------------------------------+--------------------------------------------------------------------------+
 
     Run examples by typing ``bin/sparkling-shell -i <path to file with demo script>``
 
@@ -228,8 +228,8 @@ Step-by-Step Weather Data Example
 .. |DeepLearningDemo| replace:: `DeepLearningDemo <src/main/scala/org/apache/spark/examples/h2o/DeepLearningDemo.scala>`__
 .. |AirlinesWithWeatherDemo| replace:: `AirlinesWithWeatherDemo <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo.scala>`__
 .. |AirlinesWithWeatherDemo2| replace:: `AirlinesWithWeatherDemo2 <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo2.scala>`__
-.. |chicagoCrimeSmallShellScriptScala| replace:: `chicagoCrimeSmallShell.script.scala <scripts/chicagoCrimeSmallShell.script.scala>`__
-.. |chicagoCrimeSmallScriptScala| replace:: `chicagoCrimeSmall.script.scala <scripts/chicagoCrimeSmall.script.scala>`__
-.. |mlconf2015HamSpamScriptScala| replace:: `mlconf_2015_hamSpam.script.scala <scripts/mlconf_2015_hamSpam.script.scala>`__
-.. |strata2015DemoScala| replace:: `strata2015_demo.scala <scripts/strata2015_demo.scala>`__
-.. |StrataAirlinesScala| replace:: `StrataAirlines.scala <scripts/StrataAirlines.scala>`__
+.. |chicagoCrimeSmallShellScript| replace:: `chicagoCrimeSmallShell.script.scala <scripts/chicagoCrimeSmallShell.script.scala>`__
+.. |chicagoCrimeSmallScript| replace:: `chicagoCrimeSmall.script.scala <scripts/chicagoCrimeSmall.script.scala>`__
+.. |hamOrSpamScript| replace:: `hamOrSpam.script.scala <scripts/hamOrSpam.script.scala>`__
+.. |strata2015Script| replace:: `strata2015_demo.script.scala <scripts/strata2015.script.scala>`__
+.. |StrataAirlinesScript| replace:: `StrataAirlines.script.scala <scripts/StrataAirlines.script.scala>`__
