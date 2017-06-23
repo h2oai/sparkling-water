@@ -4,49 +4,55 @@ Sparkling Water Examples
 Available Demos And Applications
 --------------------------------
 
-+---------------------------------------------------------------------+----------------------------------------+
-| Example                                                             | Description                            |
-+=====================================================================+========================================+
-| |CraigslistJobTitlesStreamingApp|                                   |                                        |
-+---------------------------------------------------------------------+----------------------------------------+
-
--  `CraigslistJobTitlesStreamingApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala>`__
-   - **stream** application - it predicts job category based on incoming job description.
--  `CraigslistJobTitlesApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesApp.scala>`__
-   - predict job category based on posted job description.
--  `ChicagoCrimeAppSmall <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeAppSmall.scala>`__
-   - builds a model predicting a probability of arrest for given crime in Chicago using data in `smalldata directory <smalldata/>`__.
--  `ChicagoCrimeApp <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala>`__
-   - implementation of Chicago Crime demo with setup for data stored on HDFS.
--  `CitiBikeSharingDemo <src/main/scala/org/apache/spark/examples/h2o/CitiBikeSharingDemo.scala>`__
-   - predicts occupancy of Citi bike stations in NYC.
--  `HamOrSpamDemo <src/main/scala/org/apache/spark/examples/h2o/HamOrSpamDemo.scala>`__
-   - shows Spam detector with Spark and H2O's DeepLearning.
--  `ProstateDemo <src/main/scala/org/apache/spark/examples/h2o/ProstateDemo.scala>`__
-   - running K-means on `prostate dataset <smalldata/prostate.csv>`__.
--  `DeepLearningDemo <src/main/scala/org/apache/spark/examples/h2o/DeepLearningDemo.scala>`__
-   - running DeepLearning on a subset of `airlines dataset <smalldata/allyears2k_headers.csv.gz>`__.
--  `AirlinesWithWeatherDemo <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo.scala>`__
-   - joining flights data with weather data and running Deep Learning.
--  `AirlinesWithWeatherDemo2 <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo2.scala>`__
-   - new iteration of ``AirlinesWithWeatherDemo``.
++-----------------------------------+--------------------------------------------------------------------------+
+| Example                           | Description                                                              |
++===================================+==========================================================================+
+| |CraigslistJobTitlesStreamingApp| | **Stream** application - it predicts job category based on incoming job  |
+|                                   | description.                                                             |
++-----------------------------------+--------------------------------------------------------------------------+
+| |CraigslistJobTitlesApp|          | Predict job category based on posted job description.                    |
++-----------------------------------+--------------------------------------------------------------------------+
+| |ChicagoCrimeAppSmall|            | Builds a model predicting a probability of arrest for given crime in     |
+|                                   | Chicago using data in `smalldata directory <smalldata/>`__.              |
++-----------------------------------+--------------------------------------------------------------------------+
+| |ChicagoCrimeApp|                 | Implementation of Chicago Crime demo with setup for data stored on HDFS. |
++-----------------------------------+--------------------------------------------------------------------------+
+| |CitiBikeSharingDemo|             | Predicts occupancy of Citi bike stations in NYC.                         |
++-----------------------------------+--------------------------------------------------------------------------+
+| |HamOrSpamDemo|                   | Shows Spam detector with Spark and H2O's DeepLearning.                   |
++-----------------------------------+--------------------------------------------------------------------------+
+| |ProstateDemo|                    | Running K-means on `prostate dataset <smalldata/prostate.csv>`__.        |
++-----------------------------------+--------------------------------------------------------------------------+
+| |DeepLearningDemo|                | Running DeepLearning on a subset of                                      |
+|                                   | `airlines dataset <smalldata/allyears2k_headers.csv.gz>`__.              |
++-----------------------------------+--------------------------------------------------------------------------+
+| |AirlinesWithWeatherDemo|         | Joining flights data with weather data and running Deep Learning.        |
++-----------------------------------+--------------------------------------------------------------------------+
+| |AirlinesWithWeatherDemo2|        | New iteration of ``AirlinesWithWeatherDemo``.                            |
++-----------------------------------+--------------------------------------------------------------------------+
 
     Run examples by typing ``bin/run-example.sh <name of demo>`` or follow text below.
 
 Available Demos for Sparkling Shell
 -----------------------------------
 
--  `chicagoCrimeSmallShell.script.scala <scripts/chicagoCrimeSmallShell.script.scala>`__
-   - demo showing full source code of predicting arrest probability for a given crime. It covers whole machine learning process from loading and transforming data, building models, scoring incoming events.
--  `chicagoCrimeSmall.script.scala <scripts/chicagoCrimeSmall.script.scala>`__
-   - example of using `ChicagoCrimeApp <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala>`__
-   - creating application and using it for scoring individual crime events.
--  `mlconf_2015_hamSpam.script.scala <scripts/mlconf_2015_hamSpam.script.scala>`__
-   - HamOrSpam application which detects Spam messages. Presented at MLConf 2015 NYC.
--  `strata2015_demo.scala <scripts/strata2015_demo.scala>`__
-    - NYC CitiBike demo presented at Strata 2015 in San Jose.
--  `StrataAirlines.scala <scripts/StrataAirlines.scala>`__
-    - example of using flights and weather data to predict delay of a flight
++---------------------------------------+--------------------------------------------------------------------------+
+| Example                               | Description                                                              |
++=======================================+==========================================================================+
+| |chicagoCrimeSmallShellScriptScala|   | Demo showing full source code of predicting arrest probability for a     |
+|                                       | given crime. It covers whole machine learning process from loading and   |
+|                                       | transforming data, building models, scoring incoming events.             |
++---------------------------------------+--------------------------------------------------------------------------+
+| |chicagoCrimeSmallScriptScala|        | Example of using |ChicagoCrimeApp|. Creating application and using it    |
+|                                       | for scoring individual crime events.                                     |
++---------------------------------------+--------------------------------------------------------------------------+
+| |mlconf2015HamSpamScriptScala|        | HamOrSpam application which detects Spam messages. Presented at          |
+|                                       | MLConf 2015 NYC.                                                         |
++---------------------------------------+--------------------------------------------------------------------------+
+| |strata2015DemoScala|                 | NYC CitiBike demo presented at Strata 2015 in San Jose.                  |
++---------------------------------------+--------------------------------------------------------------------------+
+| |StrataAirlinesScala|                 | Example of using flights and weather data to predict delay of a flight.  |
++---------------------------------------+--------------------------------------------------------------------------+
 
     Run examples by typing ``bin/sparkling-shell -i <path to file with demo script>``
 
@@ -209,4 +215,21 @@ Step-by-Step Weather Data Example
     nrow(compare)
     plot( compare[,1:2] )
 
+
+.. Links to the examples
+
 .. |CraigslistJobTitlesStreamingApp| replace:: `CraigslistJobTitlesStreamingApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala>`__
+.. |CraigslistJobTitlesApp| replace:: `CraigslistJobTitlesApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesApp.scala>`__
+.. |ChicagoCrimeAppSmall| replace:: `ChicagoCrimeAppSmall <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeAppSmall.scala>`__
+.. |ChicagoCrimeApp| replace:: `ChicagoCrimeApp <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala>`__
+.. |CitiBikeSharingDemo| replace:: `CitiBikeSharingDemo <src/main/scala/org/apache/spark/examples/h2o/CitiBikeSharingDemo.scala>`__
+.. |HamOrSpamDemo| replace:: `HamOrSpamDemo <src/main/scala/org/apache/spark/examples/h2o/HamOrSpamDemo.scala>`__
+.. |ProstateDemo| replace:: `ProstateDemo <src/main/scala/org/apache/spark/examples/h2o/ProstateDemo.scala>`__
+.. |DeepLearningDemo| replace:: `DeepLearningDemo <src/main/scala/org/apache/spark/examples/h2o/DeepLearningDemo.scala>`__
+.. |AirlinesWithWeatherDemo| replace:: `AirlinesWithWeatherDemo <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo.scala>`__
+.. |AirlinesWithWeatherDemo2| replace:: `AirlinesWithWeatherDemo2 <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo2.scala>`__
+.. |chicagoCrimeSmallShellScriptScala| replace:: `chicagoCrimeSmallShell.script.scala <scripts/chicagoCrimeSmallShell.script.scala>`__
+.. |chicagoCrimeSmallScriptScala| replace:: `chicagoCrimeSmall.script.scala <scripts/chicagoCrimeSmall.script.scala>`__
+.. |mlconf2015HamSpamScriptScala| replace:: `mlconf_2015_hamSpam.script.scala <scripts/mlconf_2015_hamSpam.script.scala>`__
+.. |strata2015DemoScala| replace:: `strata2015_demo.scala <scripts/strata2015_demo.scala>`__
+.. |StrataAirlinesScala| replace:: `StrataAirlines.scala <scripts/StrataAirlines.scala>`__
