@@ -35,22 +35,25 @@ can build and run them in the following way:
 
     - Run the Spark cluster, for example via:
 
-    .. code:: bash
+        .. code:: bash
 
-        bin/launch-spark-cloud.sh
+            bin/launch-spark-cloud.sh
+
 
     - Verify that Spark is running: The Spark UI on http://localhost:8080/ should show 3 worker nodes
     - Export ``MASTER`` address of Spark master using:
 
-    .. code:: bash
+        .. code:: bash
 
-        export MASTER="spark://localhost:7077"
+            export MASTER="spark://localhost:7077"
+
 
     - Run example:
 
-    .. code:: bash
+        .. code:: bash
 
-        bin/run-example.sh <name of example>
+            bin/run-example.sh <name of example>
+
 
     - Observe status of the application via Spark UI on http://localhost:8080/
 
