@@ -17,6 +17,9 @@
 
 package org.apache.spark.h2o.converters
 
+import org.apache.spark._
+import org.apache.spark.mllib.linalg.SparseVector
+
 /**
   * Methods which each WriteConverterCtx has to implement.
   *
@@ -24,7 +27,7 @@ package org.apache.spark.h2o.converters
   * via unified API
   */
 trait WriteConverterCtx {
-  def createChunks(keyName: String, vecTypes: Array[Byte], chunkId: Int)
+  def createChunks(keyName: String, vecTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int])
 
   def closeChunks()
 
@@ -52,6 +55,10 @@ trait WriteConverterCtx {
 
   def putNA(colIdx: Int)
 
+  def putSparseVector(startIdx: Int, vector: mllib.linalg.SparseVector, maxVecSize: Int)
+
+  def putDenseVector(startIdx: Int, vector: mllib.linalg.DenseVector, maxVecSize: Int)
+
   def putAnySupportedType[T](colIdx: Int, data: T): Unit = {
     data match {
       case n: Boolean => put(colIdx, n)
@@ -66,6 +73,16 @@ trait WriteConverterCtx {
       case n: java.sql.Timestamp => put(colIdx, n)
       case n: java.sql.Date => put(colIdx, n)
       case _ => putNA(colIdx)
+    }
+  }
+
+  def putVector(startIdx: Int, vec: mllib.linalg.Vector, maxVecSize: Int): Unit = {
+    if (vec.isInstanceOf[SparseVector]) {
+      val sparseVec = vec.toSparse
+      putSparseVector(startIdx, sparseVec, maxVecSize)
+    } else {
+      val denseVector = vec.toDense
+      putDenseVector(startIdx, denseVector, maxVecSize)
     }
   }
 

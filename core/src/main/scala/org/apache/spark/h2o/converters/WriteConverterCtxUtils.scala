@@ -37,8 +37,8 @@ object WriteConverterCtxUtils {
   def create(uploadPlan: Option[UploadPlan],
              partitionId: Int, totalNumOfRows: Option[Int], writeTimeout: Int): WriteConverterCtx = {
     uploadPlan
-      .map{plan => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), totalNumOfRows.get, writeTimeout)}
-      .getOrElse( new InternalWriteConverterCtx())
+      .map { _ => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), totalNumOfRows.get, writeTimeout) }
+      .getOrElse(new InternalWriteConverterCtx())
   }
 
   /**
@@ -67,8 +67,8 @@ object WriteConverterCtxUtils {
     * @tparam T type of RDD to convert
     * @return H2O Frame
     */
-  def convert[T](hc: H2OContext, rdd : RDD[T], keyName: String, colNames: Array[String], vecTypes: Array[Byte],
-                 func: ConversionFunction[T]) = {
+  def convert[T](hc: H2OContext, rdd: RDD[T], keyName: String, colNames: Array[String], vecTypes: Array[Byte],
+                 maxVecSizes: Array[Int], func: ConversionFunction[T]) = {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, colNames)
 
@@ -80,18 +80,19 @@ object WriteConverterCtxUtils {
     }
 
     val operation: SparkJob[T] = func(keyName, vecTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout)
-      val rows = hc.sparkContext.runJob(rdd, operation) // eager, not lazy, evaluation
-      val res = new Array[Long](rdd.partitions.length)
-      rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
-      // Add Vec headers per-Chunk, and finalize the H2O Frame
 
-      // get the vector types from expected types in case of external h2o cluster
-      val types = if (hc.getConf.runsInExternalClusterMode) {
-        ExternalFrameUtils.vecTypesFromExpectedTypes(vecTypes)
-      } else {
-        vecTypes
-      }
-      new H2OFrame(finalizeFrame(keyName, res, types))
+    val rows = hc.sparkContext.runJob(rdd, operation) // eager, not lazy, evaluation
+    val res = new Array[Long](rdd.partitions.length)
+    rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
+    // Add Vec headers per-Chunk, and finalize the H2O Frame
+
+    // get the vector types from expected types in case of external h2o cluster
+    val types = if (hc.getConf.runsInExternalClusterMode) {
+      ExternalFrameUtils.vecTypesFromExpectedTypes(vecTypes, maxVecSizes)
+    } else {
+      vecTypes
+    }
+    new H2OFrame(finalizeFrame(keyName, res, types))
   }
 
   private def initFrame(keyName: String, names: Array[String]): Unit = {

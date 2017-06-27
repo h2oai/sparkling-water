@@ -34,8 +34,8 @@ class H2OSchemaUtilsTestSuite extends FunSuite {
         StructField("b", IntegerType, false)
         :: Nil
     )
-    val flatSchema = H2OSchemaUtils.flatSchema(expSchema)
-    assert (flatSchema === Seq(StructField("a", IntegerType, true), StructField("b", IntegerType, false)))
+    val flatSchema = H2OSchemaUtils.flattenSchema(expSchema)
+    assert (flatSchema.fields === Seq(StructField("a", IntegerType, true), StructField("b", IntegerType, false)))
   }
 
   test("Test flatSchema on composed schema") {
@@ -50,8 +50,8 @@ class H2OSchemaUtilsTestSuite extends FunSuite {
         ), false)
         :: Nil
     )
-    val flatSchema = H2OSchemaUtils.flatSchema(expSchema)
-    assert (flatSchema === Seq(StructField("a.a1", DoubleType, true),
+    val flatSchema = H2OSchemaUtils.flattenSchema(expSchema)
+    assert (flatSchema.fields === Seq(StructField("a.a1", DoubleType, true),
                                 StructField("a.a2", StringType, true),
                                 StructField("b.b1", DoubleType, false),
                                 StructField("b.b2", StringType, true)))
@@ -71,10 +71,11 @@ class H2OSchemaUtilsTestSuite extends FunSuite {
         :: Nil
     )
 
-    val stringIndices = H2OSchemaUtils.collectStringTypesIndx(expSchema.fields)
-    val arrayIndices = H2OSchemaUtils.collectArrayLikeTypes(expSchema.fields)
+    val flattenSchema = H2OSchemaUtils.flattenSchema(expSchema)
+    val stringIndices = H2OSchemaUtils.collectStringIndices(flattenSchema)
+    val arrayIndices = H2OSchemaUtils.collectArrayLikeTypes(flattenSchema)
 
-    assert (stringIndices === List ( List(0,1), List(1,0), List(1,1), List(2)))
+    assert (stringIndices === List (1, 2, 3, 4))
     assert (arrayIndices === Nil)
   }
 
