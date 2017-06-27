@@ -19,14 +19,13 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark.TaskContext
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.backends.external.ExternalWriteConverterCtx
+import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalWriteConverterCtx}
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
-import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
+import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.internal.Logging
+import water.Key
 import water.fvec.H2OFrame
-import water.{ExternalFrameUtils, Key}
 
-import scala.collection.immutable
 import scala.language.implicitConversions
 import scala.reflect.runtime.universe._
 
@@ -45,10 +44,10 @@ private[converters] object PrimitiveRDDConverter extends Logging {
       Array[Byte](vecTypeOf[T])
     } else {
       val clazz = ExternalWriteConverterCtx.internalJavaClassOf[T]
-      ExternalFrameUtils.prepareExpectedTypes(Array[Class[_]](clazz))
+      ExternalBackendUtils.prepareExpectedTypes(Array[Class[_]](clazz))
     }
 
-    WriteConverterCtxUtils.convert[T](hc, rdd, keyName, fnames, expectedTypes, perPrimitiveRDDPartition())
+    WriteConverterCtxUtils.convert[T](hc, rdd, keyName, fnames, expectedTypes, Array.empty[Int], perPrimitiveRDDPartition())
   }
 
 
@@ -70,7 +69,8 @@ private[converters] object PrimitiveRDDConverter extends Logging {
 
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
-    con.createChunks(keyName, vecTypes, context.partitionId())
+
+    con.createChunks(keyName, vecTypes, context.partitionId(), Array.empty[Int])
     iterator.foreach {
       con.putAnySupportedType(0, _)
     }

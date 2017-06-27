@@ -18,6 +18,7 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.h2o._
+import org.apache.spark._
 import org.apache.spark.mllib.regression.LabeledPoint
 
 import scala.language.implicitConversions
@@ -125,5 +126,13 @@ private[this] object SupportedRDD {
   }
   implicit def toH2OFrameFromRDDProduct[A <: Product : TypeTag](rdd : RDD[A]): SupportedRDD = new SupportedRDD {
     override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = ProductRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
+  }
+
+  implicit def toH2OFrameFromRDDMLlibVector(rdd: RDD[mllib.linalg.Vector]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = MLLibVectorConverter.toH2OFrame(hc, rdd, frameKeyName)
+  }
+
+  implicit def toH2OFrameFromRDDmlVector(rdd: RDD[ml.linalg.Vector]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = MLVectorConverter.toH2OFrame(hc, rdd, frameKeyName)
   }
 }

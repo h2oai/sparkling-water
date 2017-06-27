@@ -21,6 +21,8 @@ import org.apache.spark.h2o.converters.WriteConverterCtx
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
+import org.apache.spark.mllib
+import org.apache.spark.mllib.linalg.{DenseVector, SparseVector}
 import org.apache.spark.sql.types._
 import water.{ExternalFrameConfirmationException, ExternalFrameUtils, ExternalFrameWriterClient}
 
@@ -46,8 +48,8 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTi
   /**
     * Initialize the communication before the chunks are created
     */
-  override def createChunks(keystr: String, expectedTypes: Array[Byte], chunkId: Int): Unit = {
-    externalFrameWriter.createChunks(keystr, expectedTypes, chunkId, totalNumOfRows)
+  override def createChunks(keystr: String, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int]): Unit = {
+    externalFrameWriter.createChunks(keystr, expectedTypes, chunkId, totalNumOfRows, maxVecSizes)
   }
 
   override def put(colIdx: Int, data: Boolean) = externalFrameWriter.sendBoolean(data)
@@ -66,6 +68,14 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTi
   override def putNA(columnNum: Int) = externalFrameWriter.sendNA()
 
   override def numOfRows(): Int = totalNumOfRows
+
+  override def putSparseVector(startIdx: Int, vector: SparseVector, maxVecSize: Int): Unit = {
+    externalFrameWriter.sendSparseVector(vector.indices, vector.values)
+  }
+
+  override def putDenseVector(startIdx: Int, vector: DenseVector, maxVecSize: Int): Unit = {
+    externalFrameWriter.sendDenseVector(vector.values)
+  }
 }
 
 
@@ -95,6 +105,7 @@ object ExternalWriteConverterCtx extends ExternalBackendUtils {
     dt match {
       case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] => Double.javaClass
       case _ : DateType => Long.javaClass
+      case _ : UserDefinedType[_/*mllib.linalg.Vector */] => classOf[mllib.linalg.Vector]
       case _ : DataType => ReflectionUtils.supportedTypeOf(dt).javaClass
     }
   }

@@ -20,12 +20,12 @@ package org.apache.spark.h2o.backends.external
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendUtils
 import org.apache.spark.h2o.utils.NodeDesc
-import water.H2O
+import water.{ExternalFrameUtils, H2O}
 
 /**
   * Various helper methods used in the external backend
   */
-private[external] trait ExternalBackendUtils extends SharedBackendUtils{
+private[external] trait ExternalBackendUtils extends SharedBackendUtils {
 
   /**
     * Get arguments for H2O client
@@ -42,4 +42,37 @@ private[external] trait ExternalBackendUtils extends SharedBackendUtils{
     conf.h2oCluster.map(clusterStr => Array("-flatfile", saveAsFile(clusterStr).getAbsolutePath)).getOrElse(Array())
   }
 }
-private[external] object ExternalBackendUtils extends ExternalBackendUtils
+
+object ExternalBackendUtils extends ExternalBackendUtils {
+
+  def prepareExpectedTypes(classes: Array[Class[_]]): Array[Byte] = {
+    classes.map { clazz =>
+      if (clazz == classOf[java.lang.Boolean]) {
+        ExternalFrameUtils.EXPECTED_BOOL
+      } else if (clazz == classOf[java.lang.Byte]) {
+        ExternalFrameUtils.EXPECTED_BYTE
+      } else if (clazz == classOf[java.lang.Short]) {
+        ExternalFrameUtils.EXPECTED_SHORT
+      } else if (clazz == classOf[java.lang.Character]) {
+        ExternalFrameUtils.EXPECTED_CHAR
+      } else if (clazz == classOf[java.lang.Integer]) {
+        ExternalFrameUtils.EXPECTED_INT
+      } else if (clazz == classOf[java.lang.Long]) {
+        ExternalFrameUtils.EXPECTED_LONG
+      } else if (clazz == classOf[java.lang.Float]) {
+        ExternalFrameUtils.EXPECTED_FLOAT
+      } else if (clazz == classOf[java.lang.Double]) {
+        ExternalFrameUtils.EXPECTED_DOUBLE
+      } else if (clazz == classOf[java.lang.String]) {
+        ExternalFrameUtils.EXPECTED_STRING
+      } else if (clazz == classOf[java.sql.Timestamp]) {
+        ExternalFrameUtils.EXPECTED_TIMESTAMP
+      } else if (clazz == classOf[org.apache.spark.mllib.linalg.Vector]) {
+        ExternalFrameUtils.EXPECTED_VECTOR
+      } else {
+        throw new RuntimeException("Unsupported class: " + clazz)
+      }
+    }
+  }
+
+}
