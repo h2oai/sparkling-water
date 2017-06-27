@@ -18,14 +18,12 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.TaskContext
-import org.apache.spark.h2o.backends.external.ExternalWriteConverterCtx
+import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalWriteConverterCtx}
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
-import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.utils.SupportedTypes.SupportedType
 import org.apache.spark.h2o.{H2OContext, _}
-import water.{ExternalFrameUtils, Key}
+import water.Key
 
-import scala.collection.immutable
 import scala.reflect.runtime.universe._
 
 case class MetaInfo(names: Array[String], types: Array[SupportedType]) {
@@ -73,10 +71,10 @@ case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], fram
       meta.vecTypes
     } else {
       val javaClasses = meta.types.map(ExternalWriteConverterCtx.internalJavaClassOf(_))
-      ExternalFrameUtils.prepareExpectedTypes(javaClasses)
+      ExternalBackendUtils.prepareExpectedTypes(javaClasses)
     }
 
-    WriteConverterCtxUtils.convert[Product](hc, rdd, kn, meta.names, expectedTypes, H2OFrameFromRDDProductBuilder.perTypedDataPartition())
+    WriteConverterCtxUtils.convert[Product](hc, rdd, kn, meta.names, expectedTypes, Array.empty[Int], H2OFrameFromRDDProductBuilder.perTypedDataPartition())
   }
 
 
@@ -117,7 +115,7 @@ object H2OFrameFromRDDProductBuilder{
     // An array of H2O NewChunks; A place to record all the data in this partition
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
 
-    con.createChunks(keyName, vecTypes, context.partitionId())
+    con.createChunks(keyName, vecTypes, context.partitionId(), Array.empty[Int])
     iterator.foreach(prod => { // For all rows which are subtype of Product
       for ( i <- 0 until prod.productArity ) { // For all fields...
       val fld = prod.productElement(i)

@@ -21,7 +21,7 @@ package org.apache.spark.h2o.converters
 import java.lang.reflect.Constructor
 
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.backends.external.ExternalReadConverterCtx
+import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalReadConverterCtx, ExternalWriteConverterCtx}
 import org.apache.spark.h2o.utils.ProductType
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, TaskContext}
@@ -113,7 +113,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
     // there is no need to prepare expected types in internal backend
     if (isExternalBackend) {
       // prepare expected types for selected columns in the same order ar are selected columns(
-      Option(ExternalFrameUtils.prepareExpectedTypes(productType.memberClasses))
+      Option(ExternalBackendUtils.prepareExpectedTypes(productType.memberClasses))
     } else {
       None
     }
