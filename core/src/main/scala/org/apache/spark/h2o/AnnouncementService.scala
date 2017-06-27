@@ -22,7 +22,7 @@ import java.util.ServiceLoader
 import org.apache.http.NameValuePair
 import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpPost
-import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.message.BasicNameValuePair
 import org.apache.spark.internal.Logging
 
@@ -117,7 +117,7 @@ class RestAnnouncementProvider extends AnnouncementProvider {
 
   var url: Option[String] = None
 
-  val httpClient = HttpClientBuilder.create().build()
+  val httpClient = new DefaultHttpClient()
 
   def name = "REST Announcement Provider"
 
