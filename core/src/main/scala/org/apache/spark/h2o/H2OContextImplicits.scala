@@ -20,6 +20,7 @@ package org.apache.spark.h2o
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.sql.DataFrame
 import water.Key
+import org.apache.spark._
 import scala.reflect.runtime.universe._
 
 /**
@@ -38,6 +39,9 @@ abstract class H2OContextImplicits {
   implicit def asH2OFrameFromRDDShort(rdd: RDD[Short]): H2OFrame = _h2oContext.asH2OFrame(rdd, None)
   implicit def asH2OFrameFromRDDTimeStamp(rdd: RDD[java.sql.Timestamp]): H2OFrame = _h2oContext.asH2OFrame(rdd, None)
   implicit def asH2OFrameFromRDDLabeledPoint(rdd: RDD[LabeledPoint]): H2OFrame = _h2oContext.asH2OFrame(rdd, None)
+  implicit def asH2OFrameFromRDDMLlibVector(rdd: RDD[mllib.linalg.Vector]): H2OFrame = _h2oContext.asH2OFrame(rdd, None)
+  implicit def asH2OFrameFromRDDMlVector(rdd: RDD[ml.linalg.Vector]): H2OFrame = _h2oContext.asH2OFrame(rdd, None)
+
 
   /** Implicit conversion from RDD[Supported type] to H2OFrame key */
   implicit def toH2OFrameKeyFromRDDProduct[A <: Product : TypeTag](rdd : RDD[A]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
@@ -49,6 +53,9 @@ abstract class H2OContextImplicits {
   implicit def toH2OFrameKeyFromRDDShort(rdd: RDD[Short]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
   implicit def toH2OFrameKeyFromRDDTimeStamp(rdd: RDD[java.sql.Timestamp]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
   implicit def toH2OFrameKeyFromRDDLabeledPoint(rdd: RDD[LabeledPoint]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
+  implicit def toH2OFrameKeyFromRDDMLlibVector(rdd: RDD[mllib.linalg.Vector]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
+  implicit def toH2OFrameKeyfromRDDMlVector(rdd: RDD[ml.linalg.Vector]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
+
 
   /** Implicit conversion from Spark DataFrame to H2OFrame */
   implicit def asH2OFrameFromDataFrame(df : DataFrame) : H2OFrame = _h2oContext.asH2OFrame(df, None)

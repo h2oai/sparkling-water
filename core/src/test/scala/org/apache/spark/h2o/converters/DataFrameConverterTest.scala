@@ -23,7 +23,6 @@ import java.util.UUID
 import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata._
-import org.apache.spark.h2o.utils.H2OSchemaUtils.flatSchema
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedSparkTestContext}
 import org.apache.spark.h2o.{Frame => _, H2OFrame => _}
 import org.apache.spark.mllib.linalg.Vectors
@@ -425,14 +424,16 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
 
     val expectObjectsNullableByDefault = false
 
-    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, df)
-    val expected: Vector[(List[Int], StructField, Int)] = Vector(
-      (List(0, 0), StructField("a.n", IntegerType), 0),
-      (List(0, 1), StructField("a.name", StringType), 0),
-      (List(1), StructField("weight", DoubleType, nullable = expectObjectsNullableByDefault), 0))
+    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
+    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
+    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
+    val expected: Vector[StructField] = Vector(
+      StructField("a.n", IntegerType),
+      StructField("a.name", StringType),
+      StructField("weight", DoubleType, nullable = expectObjectsNullableByDefault))
     Assertions.assertResult(expected.length)(expandedSchema.length)
 
-    assertResult(expectObjectsNullableByDefault, "Nullability in component#2")(expandedSchema(2)._2.nullable)
+    assertResult(expectObjectsNullableByDefault, "Nullability in component#2")(expandedSchema(2).nullable)
     for {i <- expected.indices} {
       assertResult(expected(i), s"@$i")(expandedSchema(i))
     }
@@ -454,15 +455,19 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     val num = 5
     val values = (1 to num).map(x => PrimitiveB(1 to x))
     val df = sc.parallelize(values).toDF
-    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, df)
-    val metadatas = expandedSchema.map(f => f._2.metadata)
+
+    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
+    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
+    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
+
+    val metadatas = expandedSchema.map(f => f.metadata)
 
     assert(expandedSchema === Vector(
-      (List(0), StructField("f0", IntegerType, nullable = false, metadatas.head), 1),
-      (List(0), StructField("f1", IntegerType, nullable = false, metadatas(1)), 1),
-      (List(0), StructField("f2", IntegerType, nullable = false, metadatas(2)), 1),
-      (List(0), StructField("f3", IntegerType, nullable = false, metadatas(3)), 1),
-      (List(0), StructField("f4", IntegerType, nullable = false, metadatas(4)), 1)))
+      (StructField("f0", IntegerType, nullable = false, metadatas.head)),
+      (StructField("f1", IntegerType, nullable = false, metadatas(1))),
+      (StructField("f2", IntegerType, nullable = false, metadatas(2))),
+      (StructField("f3", IntegerType, nullable = false, metadatas(3))),
+      (StructField("f4", IntegerType, nullable = false, metadatas(4)))))
 
     // Verify transformation into dataframe
     val h2oFrame = hc.asH2OFrame(df)
@@ -484,11 +489,14 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     val num = 2
     val values = (1 to num).map(x => PrimitiveC(Vectors.dense((1 to x).map(1.0 * _).toArray)))
     val df = sc.parallelize(values).toDF
-    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, df)
+
+    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
+    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
+    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
 
     assert(expandedSchema === Vector(
-      (List(0), StructField("f0", DoubleType), 2),
-      (List(0), StructField("f1", DoubleType), 2)))
+      StructField("f0", DoubleType),
+      StructField("f1", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -507,15 +515,18 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     val num = 3
     val values = (0 until num).map(x =>
       PrimitiveC(
-        Vectors.sparse(num, (0 until num).map(i => if (i == x) (i, 1.0) else (i, 0.0)))
+        Vectors.sparse(num, Seq((x, 1.0)))
       ))
     val df = sc.parallelize(values).toDF()
-    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, df)
+
+    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
+    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
+    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
 
     assert(expandedSchema === Vector(
-      (List(0), StructField("f0", DoubleType), 2),
-      (List(0), StructField("f1", DoubleType), 2),
-      (List(0), StructField("f2", DoubleType), 2)))
+      StructField("f0", DoubleType),
+      StructField("f1", DoubleType),
+      StructField("f2", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -588,7 +599,7 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
 
   def assertH2OFrameInvariants(inputDF: DataFrame, df: H2OFrame): Unit = {
     assert(inputDF.count == df.numRows(), "Number of rows has to match")
-    assert(df.numCols() == flatSchema(inputDF.schema).length, "Number columns should match")
+    assert(df.numCols() == H2OSchemaUtils.flattenSchema(inputDF.schema).length, "Number columns should match")
   }
 
   def assertVectorIntValues(vec: water.fvec.Vec, values: Seq[Int]): Unit = {

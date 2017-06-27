@@ -22,7 +22,6 @@ import org.apache.spark.ml.attribute.AttributeGroup
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.{SparkContext, ml, mllib}
-import scala.annotation.tailrec
 
 /**
   * Utilities for working with Spark SQL component.
@@ -30,10 +29,6 @@ import scala.annotation.tailrec
 object H2OSchemaUtils {
 
   import ReflectionUtils._
-
-  val NORMAL_TYPE: Byte = 0
-  val ARRAY_TYPE: Byte = 1
-  val VEC_TYPE: Byte = 2
 
   def createSchema[T <: Frame](f: T, copyMetadata: Boolean): StructType = {
     val types = new Array[StructField](f.numCols())
@@ -73,117 +68,111 @@ object H2OSchemaUtils {
     StructType(types)
   }
 
-  /** Return flattenized type - recursively transforms StrucType into Seq of encapsulated types. */
-  def flatSchema(s: StructType, typeName: Option[String] = None, nullable: Boolean = false): Seq[StructField] = {
-    s.fields.flatMap(f =>
+  def flattenSchemaToCol(schema: StructType, prefix: String = null): Array[Column] = {
+    import org.apache.spark.sql.functions.col
+
+    schema.fields.flatMap { f =>
+      val colName = if (prefix == null) f.name else prefix + "." + f.name
+
       f.dataType match {
-        case struct: StructType =>
-          flatSchema(struct,
-            typeName.map(s => s"$s${f.name}.").orElse(Option(s"${f.name}.")),
-            nullable || f.nullable)
-        case simple: DataType =>
-          Seq(StructField(
-            typeName.map(n => s"$n${f.name}").getOrElse(f.name),
-            simple,
-            f.nullable || nullable))
-      })
+        case st: StructType => flattenSchemaToCol(st, colName)
+        case _ => Array[Column](col(colName))
+      }
+    }
+  }
+
+  def flattenSchema(schema: StructType, prefix: String = null, nullable: Boolean = false): StructType = {
+
+    val flattened = schema.fields.flatMap { f =>
+      val colName = if (prefix == null) f.name else prefix + "." + f.name
+
+      f.dataType match {
+        case st: StructType => flattenSchema(st, colName, nullable || f.nullable)
+        case _ => Array[StructField](StructField(colName, f.dataType, nullable || f.nullable))
+      }
+    }
+    StructType(flattened)
+  }
+
+
+  def flattenDataFrame(df: DataFrame): DataFrame = {
+    import org.apache.spark.sql.functions.col
+    val flattenSchema = flattenSchemaToCol(df.schema)
+    // this is needed so the flattened data frame has hiearchical names
+    val renamedCols = flattenSchema.map(name => col(name.toString()).as(name.toString()))
+    df.select(renamedCols: _*)
   }
 
   /** Returns expanded schema
-    *  - schema is represented as list of types and its position inside row
+    *  - schema is represented as list of types
     *  - all arrays are expanded into columns based on the longest one
-    *  - all vectors are expanded into columns
+    *  - all vectors are expanded into columns based on the longest one
     *
-    * @param sc   actual Spark context
-    * @param srdd schema-based RDD
+    * @param sc         Spark context
+    * @param flatSchema flat schema of spark data frame
     * @return list of types with their positions
     */
-  def expandedSchema(sc: SparkContext, srdd: DataFrame): Seq[(Seq[Int], StructField, Byte)] = {
-    val schema: StructType = srdd.schema
-    // Collect max size in array and vector columns to expand them
-    val arrayColIdxs = collectArrayLikeTypes(schema.fields)
-    val vecColIdxs = collectVectorLikeTypes(schema.fields)
-    val numOfArrayCols = arrayColIdxs.length
-    // Collect max arrays for this RDD, it is distributed operation
-    val fmaxLens = collectMaxArrays(sc, srdd, arrayColIdxs, vecColIdxs)
-    // Flattens RDD's schema
-    val flatRddSchema = flatSchema(schema)
-    val typeIndx = collectTypeIndx(schema.fields)
-    val typesAndPath = typeIndx
-      .zip(flatRddSchema) // Seq[(Seq[Int], StructField)]
-    var arrayCnt = 0;
-    var vecCnt = 0
-    // Generate expanded schema
-    val expSchema = typesAndPath.indices.flatMap { idx =>
-      val tap = typesAndPath(idx)
-      val path = tap._1
-      val field = tap._2
-      field.dataType match {
-        case ArrayType(aryType, nullable) =>
-          val result = (0 until fmaxLens(arrayCnt)).map(i =>
-            (path, StructField(field.name + i.toString, aryType, nullable), ARRAY_TYPE)
-          )
-          arrayCnt += 1
-          result
+  def expandedSchema(sc: SparkContext, flatSchema: StructType, elemMaxSizes: Array[Int]): Seq[StructField] = {
 
+    val expandedSchema = flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
+      field.dataType match {
+        case ArrayType(arrType, nullable) =>
+          (0 until elemMaxSizes(idx)).map { arrIdx =>
+            StructField(field.name + arrIdx.toString, arrType, nullable)
+          }
         case t if t.isInstanceOf[UserDefinedType[_]] =>
           // t.isInstanceOf[UserDefinedType[mllib.linalg.Vector]]
-          val result = (0 until fmaxLens(numOfArrayCols + vecCnt)).map(i =>
-            (path, StructField(field.name + i.toString, DoubleType, nullable = true), VEC_TYPE)
-          )
-          vecCnt += 1
-          result
-
-        case _ => Seq((path, field, NORMAL_TYPE))
+          (0 until elemMaxSizes(idx)).map { arrIdx =>
+            StructField(field.name + arrIdx.toString, DoubleType, nullable = true)
+          }
+        case _ => Seq(field)
       }
     }
-    assert(arrayCnt == numOfArrayCols)
-    assert(vecCnt == vecColIdxs.length)
-    // Return result
-    expSchema
+    expandedSchema
   }
 
-  def collectTypeIndx(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
-    fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectTypeIndx(fs, path ++ Seq(i))
-      case _ => Seq(path ++ Seq(i))
-    })
+  def expandWithoutVectors(sc: SparkContext, flatSchema: StructType, elemMaxSizes: Array[Int]): Seq[StructField] = {
+    val expandedSchema = flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
+      field.dataType match {
+        case ArrayType(arrType, nullable) =>
+          (0 until elemMaxSizes(idx)).map { arrIdx =>
+            StructField(field.name + arrIdx.toString, arrType, nullable)
+          }
+        case _ => Seq(field)
+      }
+    }
+    expandedSchema
   }
 
-  /** Collect all StringType indexes in give list representing schema
+  /**
+    * Mapping from row in Spark frame to position where to start filling in H2OFrame
     */
-  def collectStringTypesIndx(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
-    fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectStringTypesIndx(fs, path ++ Seq(i))
-      case StringType => Seq(path ++ Seq(i))
-      case _ => Nil
-    })
+
+  def collectElemStartPositions(maxElemSizes: Array[Int]): Array[Int] = {
+    // empty array filled with zeros
+    val startPositions = Array.ofDim[Int](maxElemSizes.length)
+    startPositions(0) = 0
+
+    (1 until maxElemSizes.length).foreach { idx =>
+      startPositions(idx) = startPositions(idx - 1) + maxElemSizes(idx - 1)
+    }
+    startPositions
   }
 
-  def collectArrayLikeTypes(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
-    fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectArrayLikeTypes(fs, path ++ Seq(i))
-      case ArrayType(_, _) => Seq(path ++ Seq(i))
-      case _ => Nil
-    })
-  }
-
-  def collectVectorLikeTypes(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
-    fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectVectorLikeTypes(fs, path ++ Seq(i))
-      case t => if (t.isInstanceOf[UserDefinedType[_ /*mllib.linalg.Vector*/ ]]) Seq(path ++ Seq(i)) else Nil
-    })
-  }
-
-  /** Collect max size of stored arrays and MLLib vectors.
+  /**
+    * Collect max size of each element in DataFrame.
+    * For array -> max array size
+    * For vectors -> max vector size
+    * For simple types -> 1
     *
-    * @return list of max sizes for array types, followed by max sizes for vector types. */
-  private[h2o]
-  def collectMaxArrays(sc: SparkContext,
-                       dataframe: DataFrame,
-                       arrayTypesIndx: Seq[Seq[Int]],
-                       vectorTypesIndx: Seq[Seq[Int]]): Array[Int] = {
-    val allTypesIndx = arrayTypesIndx ++ vectorTypesIndx
+    * @return array containing size of each element
+    */
+  def collectMaxElementSizes(sc: SparkContext, flatDataFrame: DataFrame): Array[Int] = {
+    val arrayIndices = collectArrayLikeTypes(flatDataFrame.schema)
+    val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
+    val simpleIndices = collectSimpleLikeTypes(flatDataFrame.schema)
+    val collectionIndices = arrayIndices ++ vectorIndices
+
     val attributesNum = (field: StructField) => {
       if (!field.dataType.isInstanceOf[ml.linalg.VectorUDT]) {
         None
@@ -196,53 +185,99 @@ object H2OSchemaUtils {
       }
     }
 
-    @tailrec
-    def getBasicType(columns: StructType, indexes: Seq[Int]): StructField = {
-      val structField = columns.fields(indexes.head)
-      if (indexes.tail.isEmpty) {
-        structField
-      }
-      else {
-        getBasicType(structField.dataType.asInstanceOf[StructType], indexes.tail)
-      }
+
+    val sizeFromMetadata = collectionIndices.map(idx => attributesNum(flatDataFrame.schema.fields(idx)))
+    val maxCollectionSizes = if (sizeFromMetadata.forall(_.isDefined)) {
+      sizeFromMetadata.map(_.get).toArray
+    } else {
+      flatDataFrame.rdd.map { row =>
+        collectionIndices.map { idx => getCollectionSize(row, idx) }
+      }.reduce((a, b) => a.indices.map(i => if (a(i) > b(i)) a(i) else b(i))).toArray
     }
 
-    val sizeFromMetadata = allTypesIndx.map(idxs => attributesNum(getBasicType(dataframe.schema, idxs)))
-    if (sizeFromMetadata.forall(_.isDefined)) {
-      return sizeFromMetadata.map(_.get).toArray
-    }
+    val collectionIdxToSize = collectionIndices.zip(maxCollectionSizes).toMap
+    val simpleTypeIdxToSize = simpleIndices.zip(Array.fill(simpleIndices.length)(1)).toMap
+    val elemTypeIdxToSize = collectionIdxToSize ++ simpleTypeIdxToSize
+    val elemSizeArray = elemTypeIdxToSize.toSeq.sortBy(_._1).map(_._2)
 
-    val numOfArrayTypes = arrayTypesIndx.length
-    val maxvec = dataframe.rdd.map(row => {
-      val acc = new Array[Int](allTypesIndx.length)
-      allTypesIndx.indices.foreach { k =>
-        val indx = allTypesIndx(k)
-        var i = 0
-        var subRow = row
-        while (i < indx.length - 1 && !subRow.isNullAt(indx(i))) {
-          subRow = subRow.getAs[Row](indx(i)); i += 1
-        }
-        if (!subRow.isNullAt(indx(i))) {
-          val olen = if (k < numOfArrayTypes) { // it is array
-            subRow.getAs[Seq[_]](indx(i)).length
-          } else { // it is user defined type - we support vectors now only
-            val value = subRow.get(indx(i))
-            value match {
-              case _: mllib.linalg.Vector =>
-                subRow.getAs[mllib.linalg.Vector](indx(i)).size
-              case _: ml.linalg.Vector =>
-                subRow.getAs[ml.linalg.Vector](indx(i)).size
-              case _ =>
-                throw new UnsupportedOperationException(s"User defined type is not supported: ${value.getClass}")
-            }
-          }
-          // Set max
-          if (olen > acc(k)) acc(k) = olen
-        }
-      }
-      acc
-    }).reduce((a, b) => a.indices.map(i => if (a(i) > b(i)) a(i) else b(i)).toArray)
-    // Result
-    maxvec
+    elemSizeArray.toArray
   }
+
+
+  def collectStringIndices(flatSchema: StructType): Seq[Int] = {
+    flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
+      field.dataType match {
+        case StringType => Option(idx)
+        case _ => None
+      }
+    }
+  }
+
+  def collectArrayLikeTypes(flatSchema: StructType): Seq[Int] = {
+    flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
+      field.dataType match {
+        case ArrayType(_, _) => Option(idx)
+        case _ => None
+      }
+    }
+  }
+
+  def collectVectorLikeTypes(flatSchema: StructType): Seq[Int] = {
+    flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
+      field.dataType match {
+        case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] => Option(idx)
+        case _ => None
+      }
+    }
+  }
+
+  private def collectSimpleLikeTypes(flatSchema: StructType): Seq[Int] = {
+    flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
+      field.dataType match {
+        case BooleanType => Option(idx)
+        case BinaryType => Option(idx)
+        case ByteType => Option(idx)
+        case ShortType => Option(idx)
+        case IntegerType => Option(idx)
+        case LongType => Option(idx)
+        case FloatType => Option(idx)
+        case _: DecimalType => Option(idx)
+        case DoubleType => Option(idx)
+        case StringType => Option(idx)
+        case TimestampType => Option(idx)
+        case DateType => Option(idx)
+        case _ => None
+      }
+    }
+  }
+
+
+  /**
+    * Get size of Array or Vector type. Already expects flat DataFrame
+    *
+    * @param row current row
+    * @param idx index of the element
+    */
+  private def getCollectionSize(row: Row, idx: Int): Int = {
+    if (row.isNullAt(idx)) {
+      return 0
+    }
+
+    val elemType = row.schema.fields(idx)
+    elemType.dataType match {
+      case ArrayType(_, _) => row.getAs[Seq[_]](idx).length
+      // it is user defined type - currently, only vectors are supported
+      case _ =>
+        val value = row.get(idx)
+        value match {
+          case _: mllib.linalg.Vector =>
+            row.getAs[mllib.linalg.Vector](idx).size
+          case _: ml.linalg.Vector =>
+            row.getAs[ml.linalg.Vector](idx).size
+          case _ =>
+            throw new UnsupportedOperationException(s"User defined type is not supported: ${value.getClass}")
+        }
+    }
+  }
+
 }

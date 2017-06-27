@@ -20,12 +20,14 @@ package org.apache.spark.h2o.backends.internal
 import java.sql.{Date, Timestamp}
 
 import org.apache.spark.h2o.converters.WriteConverterCtx
+import org.apache.spark.mllib
+import org.apache.spark.mllib.linalg.{DenseVector, SparseVector}
 import water.fvec.{FrameUtils, NewChunk}
 
 class InternalWriteConverterCtx extends WriteConverterCtx {
 
   private var chunks: Array[NewChunk] = _
-  override def createChunks(keyName: String, vecTypes: Array[Byte], chunkId: Int): Unit = {
+  override def createChunks(keyName: String, vecTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int]): Unit = {
    chunks = FrameUtils.createNewChunks(keyName, vecTypes, chunkId)
   }
 
@@ -47,4 +49,19 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
   override def putNA(columnNum: Int): Unit = chunks(columnNum).addNA()
 
   override def numOfRows(): Int = chunks(0).len()
+
+
+  override def putSparseVector(startIdx: Int, vector: SparseVector, maxVecSize: Int): Unit = {
+    putAnyVector(startIdx, vector, maxVecSize)
+  }
+
+  override def putDenseVector(startIdx: Int, vector: DenseVector, maxVecSize: Int): Unit = {
+    putAnyVector(startIdx, vector, maxVecSize)
+  }
+
+  private def putAnyVector(startIdx: Int, vector: mllib.linalg.Vector, maxVecSize: Int): Unit ={
+    (0 until vector.size).foreach{ idx => put(startIdx + idx, vector(idx))}
+
+    (vector.size until maxVecSize).foreach( idx => put(startIdx + idx, 0.0))
+  }
 }
