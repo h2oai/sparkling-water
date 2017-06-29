@@ -99,6 +99,17 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
         s" points to Spark of version ${sparkContext.version}. Please ensure correct Spark is provided and" +
         s" re-run Sparkling Water.")
     }
+
+    // Check that we have Duke library available. It is available when using the assembly JAR at all cases, however,
+    // when Sparkling Water is used via --packages, it is not correctly resolved and needs to be set manually.
+    try {
+      Class.forName("no.priv.garshol.duke.Comparator")
+    } catch {
+      case _: ClassNotFoundException => throw new RuntimeException(s"When using the Sparkling Water as Spark package " +
+        s"via --packages option, the 'no.priv.garshol.duke:duke:1.2' dependency has to be specified explicitly due to" +
+        s" a bug in Spark dependency resolution.")
+    }
+
     sparkContext.addSparkListener(sparklingWaterListener)
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
@@ -375,4 +386,3 @@ object H2OContext extends Logging {
 }
 
 class WrongSparkVersion(msg: String) extends Exception(msg) with NoStackTrace
-
