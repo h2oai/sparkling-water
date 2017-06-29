@@ -207,6 +207,8 @@ Change Logs
 
 Change logs are available at `Change Logs <doc/CHANGELOG.rst>`__.
 
+---------------
+
 .. |Join the chat at https://gitter.im/h2oai/sparkling-water| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/h2oai/sparkling-water?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. |image1| image:: https://travis-ci.org/h2oai/sparkling-water.svg?branch=master
