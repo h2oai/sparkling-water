@@ -1,13 +1,13 @@
 ChangeLog
 =========
 
-##v1.3.10 (2015-09-28)
+## v1.3.10 (2015-09-28)
   - Fix assembly error
 
-##v1.3.9 (2015-09-28)
+## v1.3.9 (2015-09-28)
   - H2O version 3.2.0.5 (Slater)
 
-##v1.3.8 (2015-09-23)
+## v1.3.8 (2015-09-23)
   - Attach metadata derived from H2OFrame to Spark DataFrame
   - Improved logging subsystem
   - H2O version 3.2.0.3 (Slater release)
@@ -15,22 +15,22 @@ ChangeLog
   - minor fixes in API
   - minor fixes in documentation 
 
-##v1.3.7 (2015-07-06)
+## v1.3.7 (2015-07-06)
   - fresh new version of H2O 3.0.0.26 
 
-##v1.3.6 (2015-06-26)
+## v1.3.6 (2015-06-26)
   - fresh new version of H2O 3.0.0.25 supporting weights
 
-##v1.3.5 (2015-06-15)
+## v1.3.5 (2015-06-15)
   - H2O version 3.0.0.22
   - minor improvements in API consistency
 
-##v1.3.4 (2015-06-11)
+## v1.3.4 (2015-06-11)
   - H2O 3.0.0.19 version
   - Craigslist self-contained application
   - Craigslist self-contained streaming application
 
-##v1.3.0 (2015-05-25)
+## v1.3.0 (2015-05-25)
   - Major release of Sparkling Water
   - Depends on:
     - Spark 1.3.1
@@ -39,13 +39,13 @@ ChangeLog
     - H2O's DataFrame was renamed to H2OFrame
     - Spark's SchemaRDD was renamed to DataFrame
 
-##v1.2.0 (2015-05-18)
+## v1.2.0 (2015-05-18)
   - Major release of Sparkling Water
   - Depends on:
     - Spark 1.2.0
     - H2O 3.0 Shannon release
 
-##v0.2.14 (2015-05-14)
+## v0.2.14 (2015-05-14)
   - Upgrade h2o dependency to build 1205 including fixes in algos, infrastructure,
     and improvements in UI
   - Examples changed to support modified h2o API
@@ -55,13 +55,13 @@ ChangeLog
     - list of meetups with links to code and instructions
   - Fix a limit on number of columns in SchemaRDD (thanks @nfergu)
 
-##v0.2.13 (2015-05-01)
+## v0.2.13 (2015-05-01)
   - Upgrade h2o dependency to build 1165
   - Introduce type alias DataFrame pointing to `water.fvec.H2OFrame`
   - Change naming of implicit operations `toDataFrame` to `toH2OFrame`
   - Chicago crime shell script 
 
-##v0.2.12 (2015-04-21)
+## v0.2.12 (2015-04-21)
   - Upgraded H2O dev to 1109 build.
   - Applications 
     - Chicago crime application 
