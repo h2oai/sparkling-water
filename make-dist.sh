@@ -46,7 +46,6 @@ $(find py/pysparkling -type f -name '*.py')
 LICENSE
 README.rst
 $(find doc -type f)
-CHANGELOG.md
 gradle.properties
 EOF
 
