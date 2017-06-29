@@ -104,7 +104,7 @@ class H2OContext private (val sparkSession: SparkSession, conf: H2OConf) extends
     // when Sparkling Water is used via --packages, it is not correctly resolved and needs to be set manually.
     try {
       Class.forName("no.priv.garshol.duke.Comparator")
-    }catch{
+    } catch {
       case _: ClassNotFoundException => throw new RuntimeException(s"When using the Sparkling Water as Spark package " +
         s"via --packages option, the 'no.priv.garshol.duke:duke:1.2' dependency has to be specified explicitly due to" +
         s" a bug in Spark dependency resolution.")
