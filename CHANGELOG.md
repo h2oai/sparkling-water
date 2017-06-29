@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-##v1.4.16 (2016-08-09)
+## v1.4.16 (2016-08-09)
   - Bug
     - [SW-154](https://0xdata.atlassian.net/browse/SW-154) - Network mask is used in the wrong way on executors
 
@@ -9,7 +9,7 @@ ChangeLog
     - [SW-163](https://0xdata.atlassian.net/browse/SW-163) - Upgrade H2O dependency to 3.10.0.3
     - Streaming example 
 
-##v1.4.15 (2016-07-05)
+## v1.4.15 (2016-07-05)
   - Bug fixes
     - [SW-125](https://0xdata.atlassian.net/browse/SW-125) - PySparkling changes in order to upload the package to PyPI
     - [SW-130](https://0xdata.atlassian.net/browse/SW-130) - Launch spark cloud script is obsolete
@@ -32,11 +32,11 @@ ChangeLog
     - [SW-156](https://0xdata.atlassian.net/browse/SW-156) - Option to control console verbosity of H2O
     - [SW-157](https://0xdata.atlassian.net/browse/SW-157) - Include H2O S3 persist layer in the final Sparkling Water assembly
 
-#v1.4.14 (2016-04-27)
+## v1.4.14 (2016-04-27)
   - Bug fixes
     - [SW-124](https://0xdata.atlassian.net/browse/SW-124)  - Hotfix to avoid NPE in MetadataHandler caused by PUBDEV-2879
 
-#v1.4.13 (2016-04-25)
+## v1.4.13 (2016-04-25)
   - Bug fixes
     - [SW-12](https://0xdata.atlassian.net/browse/SW-12) - Provides an inner class encapsulating implicit conversion like SQLContext does
     - [SW-50](https://0xdata.atlassian.net/browse/SW-50) - Reject attempts to run Sparkling Water/pySparkling with wrong version of Spark
@@ -57,11 +57,11 @@ ChangeLog
     - [SW-115](https://0xdata.atlassian.net/browse/SW-115) - Increase H2O dependency to rel-turchin
     - [SW-120](https://0xdata.atlassian.net/browse/SW-120) - Remove deprecated VecUtils
 
-#v1.4.12 (2016-03-18)
+## v1.4.12 (2016-03-18)
   - Improvements
     - [SW-98](https://0xdata.atlassian.net/browse/SW-98) - Upgrade H2O dependency to version including security support
 
-#v1.4.11 (2016-03-17)
+## v1.4.11 (2016-03-17)
   - Bug fixes
     - [SW-4](https://0xdata.atlassian.net/browse/SW-4) - InvokeOnNodesRDD task locality fixed
     - [SW-16](https://0xdata.atlassian.net/browse/SW-16) - Update docker file based on current version
@@ -89,16 +89,16 @@ ChangeLog
     - [SW-92](https://0xdata.atlassian.net/browse/SW-92) - Update development doc with information how to submit app on yarn
     - [SW-93](https://0xdata.atlassian.net/browse/SW-93) - Upgrade H2O dependency to Turan release (3.8.1.1)
 
-#v1.4.10 (2016-01-13)
+## v1.4.10 (2016-01-13)
   - [SW-51](https://0xdata.atlassian.net/browse/SW-51) Bundle pySparkling with release and enable its testing on test machines
   - [SW-60](https://0xdata.atlassian.net/browse/SW-60) Move ModelUtils to sparkling-water-core module
 
-#v1.4.9 (2015-12-18)
+## v1.4.9 (2015-12-18)
   - Upgrade of H2O dependency to 3.6.0.8
   - Fixes of typos in code
   - Fix a bug in launch script overriding default value of spark.driver.extraJavaOptions
 
-#v1.4.8 (2015-11-24)
+## v1.4.8 (2015-11-24)
   - Attach metadata derived from H2OFrame to Spark DataFrame
   - Improved logging subsystem
   - Expose new REST end-points
@@ -120,18 +120,18 @@ ChangeLog
     - [SW-41](https://0xdata.atlassian.net/browse/SW-41) H2OContext#asH2OFrame now
       accepts name for resulting H2OFrame.
  
-##v1.4.7 (2015-10-20)
+## v1.4.7 (2015-10-20)
   - [SW-25] - remove handling of categorical on Spark side during asH2OFrame
     transformation
   - usa Gradle 2.7
 
-##v1.4.6 (2015-09-28)
+## v1.4.6 (2015-09-28)
   - Fix assembly error
 
-##v1.4.5 (2015-09-28)
+## v1.4.5 (2015-09-28)
    - H2O version 3.2.0.5 (slater)
 
-##v1.4.4 (2015-09-23)
+## v1.4.4 (2015-09-23)
    - Attach metadata derived from H2OFrame to Spark DataFrame
    - Improved logging subsystem
    - "Ask Craig" streaming example
@@ -140,7 +140,7 @@ ChangeLog
    - use H2O version 3.2.0.3 (slater)
 
 
-##v1.4.0 (2015-07-06)
+## v1.4.0 (2015-07-06)
   - Support of primitives type in transformation from RDD to H2OFrame
   - Support of Spark 1.4
   - New applications
@@ -150,7 +150,7 @@ ChangeLog
   - API improvements
   - follow Spark way to provide implicit conversions
 
-##v1.3.0 (2015-05-25)
+## v1.3.0 (2015-05-25)
   - Major release of Sparkling Water
   - Depends on:
     - Spark 1.3.1
@@ -159,13 +159,13 @@ ChangeLog
     - H2O's DataFrame was renamed to H2OFrame
     - Spark's SchemaRDD was renamed to DataFrame
 
-##v1.2.0 (2015-05-18)
+## v1.2.0 (2015-05-18)
   - Major release of Sparkling Water
   - Depends on:
     - Spark 1.2.0
     - H2O 3.0 Shannon release
 
-##v0.2.14 (2015-05-14)
+## v0.2.14 (2015-05-14)
   - Upgrade h2o dependency to build 1205 including fixes in algos, infrastructure,
     and improvements in UI
   - Examples changed to support modified h2o API
@@ -175,13 +175,13 @@ ChangeLog
     - list of meetups with links to code and instructions
   - Fix a limit on number of columns in SchemaRDD (thanks @nfergu)
 
-##v0.2.13 (2015-05-01)
+## v0.2.13 (2015-05-01)
   - Upgrade h2o dependency to build 1165
   - Introduce type alias DataFrame pointing to `water.fvec.H2OFrame`
   - Change naming of implicit operations `toDataFrame` to `toH2OFrame`
   - Chicago crime shell script 
 
-##v0.2.12 (2015-04-21)
+## v0.2.12 (2015-04-21)
   - Upgraded H2O dev to 1109 build.
   - Applications 
     - Chicago crime application 
