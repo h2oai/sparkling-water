@@ -13,12 +13,11 @@ index-servers =
   pypitest
 
 [pypi]
-repository=https://pypi.python.org/pypi
 username=your_username_to_pypi
 password=your_password_to_pypi
 
 [pypitest]
-repository=https://testpypi.python.org/pypi
+repository=https://test.pypi.org/legacy/
 username=your_username_to_testpypi
 password=your_password_to_testpypi
 
@@ -26,15 +25,15 @@ password=your_password_to_testpypi
 In the file are actually two servers - pypi and pypitest. Pypi is live server where the package needs to be uploaded
 and pypitest is just for testing that our package uploads well on the server and has correct format.
 
-3 - Test that the package successfully registers and uploads to pypi test by running in ./py directory
-python setup.py register -r pypitest
+3 - Go to py/build/pkg
+
+4 - Test that the package successfully registers and uploads to pypi test by running in ./py directory
 python setup.py sdist upload -r pypitest
 
-4 - If everything goes well, register and upload the package on pypi live
-python setup.py register -r pypi
+5 - If everything goes well, register and upload the package on pypi live
 python setup.py sdist upload -r pypi
 
 
-5 - Don't forget to do this for each pySparkling release ( for Spark 1.5, Spark 1.6 ... )
+6 - Don't forget to do this for each pySparkling release ( for Spark 2.0, Spark 2.1 ... )
 
-6 - That's it!
+7 - That's it!
