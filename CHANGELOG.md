@@ -1,6 +1,12 @@
 ChangeLog
 =========
 
+## v1.6.12 (2017-06-29)
+
+- Improvement
+	 - [SW-447](https://0xdata.atlassian.net/browse/SW-447) - Upgrade H2O to 3.10.5.1
+	 - [SW-477](https://0xdata.atlassian.net/browse/SW-477) - Upgrade H2O to 3.10.5.2
+
 ## v1.6.11 (2017-05-25)
 
 - Bug
