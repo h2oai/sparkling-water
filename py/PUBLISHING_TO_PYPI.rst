@@ -4,8 +4,8 @@ This is tutorial how to publish PySparkling on PyPi
 1 - Build Sparkling Water. This is necessary step as the build process prepares additional packages which needs to be
 in the python package
 
-    - sparkling_water package containing sparkling-water jar
-    - h2o package containing h2o python files
+- sparkling_water package containing sparkling-water jar
+- h2o package containing h2o python files
 
 .. code:: bash
 
@@ -30,7 +30,7 @@ in the python package
     password=your_password_to_testpypi
 
 
-In the file are actually two servers - pypi and pypitest. Pypi is live server where the package needs to be uploaded
+There are actually two servers - pypi and pypitest. Pypi is live server where the package needs to be uploaded
 and pypitest is just for testing that our package uploads well on the server and has correct format.
 
 3 - Go to ``py/build/pkg``
