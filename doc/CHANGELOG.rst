@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+v2.1.11 (2017-07-12)
+--------------------
+
+-  Bug
+  
+   -  `SW-407 <https://0xdata.atlassian.net/browse/SW-407>`__ - Make scala H2OConf consistent and allow to set and get all propertties
+
+-  Improvement
+   
+   -  `SW-485 <https://0xdata.atlassian.net/browse/SW-485>`__ - Update instructions for a new PYPI.org
+   -  `SW-489 <https://0xdata.atlassian.net/browse/SW-489>`__ - Upgrade H2O to 3.10.5.3
+
 v2.1.10 (2017-06-29)
 --------------------
 
