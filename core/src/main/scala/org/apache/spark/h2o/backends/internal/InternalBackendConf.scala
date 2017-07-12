@@ -27,16 +27,34 @@ trait InternalBackendConf extends SharedBackendConf {
   self: H2OConf =>
 
   import InternalBackendConf._
+
+  /** Getters */
+
+  def useFlatFile = sparkConf.getBoolean(PROP_USE_FLATFILE._1, PROP_USE_FLATFILE._2)
   def numH2OWorkers = sparkConf.getOption(PROP_CLUSTER_SIZE._1).map(_.toInt)
-  def useFlatFile   = sparkConf.getBoolean(PROP_USE_FLATFILE._1, PROP_USE_FLATFILE._2)
-  def nodeBasePort  = sparkConf.getInt(PROP_NODE_PORT_BASE._1, PROP_NODE_PORT_BASE._2)
-  def cloudTimeout  = sparkConf.getInt(PROP_CLOUD_TIMEOUT._1, PROP_CLOUD_TIMEOUT._2)
   def drddMulFactor = sparkConf.getInt(PROP_DUMMY_RDD_MUL_FACTOR._1, PROP_DUMMY_RDD_MUL_FACTOR._2)
   def numRddRetries = sparkConf.getInt(PROP_SPREADRDD_RETRIES._1, PROP_SPREADRDD_RETRIES._2)
   def defaultCloudSize  = sparkConf.getInt(PROP_DEFAULT_CLUSTER_SIZE._1, PROP_DEFAULT_CLUSTER_SIZE._2)
-  def nodeNetworkMask   = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
-  def nodeIcedDir   = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
   def subseqTries  = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
+
+  def nodeBasePort  = sparkConf.getInt(PROP_NODE_PORT_BASE._1, PROP_NODE_PORT_BASE._2)
+  def nodeIcedDir   = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
+  def nodeNetworkMask   = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
+
+  /** Setters */
+
+  def setFlatFileEnabled() = set(PROP_USE_FLATFILE._1, true.toString)
+  def setFlatFileDisabled() = set(PROP_USE_FLATFILE._1, false.toString)
+
+  def setNumH2OWorkers(numWorkers: Int) = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
+  def setDrddMulFactor(factor: Int) = set(PROP_DUMMY_RDD_MUL_FACTOR._1,factor.toString)
+  def setNumRddRetries(retries: Int) = set(PROP_SPREADRDD_RETRIES._1, retries.toString)
+  def setDefaultCloudSize(defaultClusterSize: Int) = set(PROP_DEFAULT_CLUSTER_SIZE._1, defaultClusterSize.toString)
+  def setSubseqTries(subseqTriesNum: Int) = set(PROP_SUBSEQ_TRIES._1, subseqTriesNum.toString)
+
+  def setNodeBasePort(port: Int) = set(PROP_NODE_PORT_BASE._1, port.toString)
+  def setNodeIcedDir(dir: String) = set(PROP_NODE_ICED_DIR._1, dir)
+  def setNodeNetworkMask(mask: String) = set(PROP_NODE_NETWORK_MASK._1, mask)
 
   def internalConfString: String =
     s"""Sparkling Water configuration:
@@ -55,19 +73,14 @@ trait InternalBackendConf extends SharedBackendConf {
 }
 
 object InternalBackendConf {
-  /** Configuration property - expected number of workers of H2O cloud.
-    * Value None means automatic detection of cluster size.
-    */
-  val PROP_CLUSTER_SIZE = ("spark.ext.h2o.cluster.size", None)
 
   /** Configuration property - use flatfile for H2O cloud formation. */
   val PROP_USE_FLATFILE = ("spark.ext.h2o.flatfile", true)
 
-  /** Configuration property - base port used for individual H2O nodes configuration. */
-  val PROP_NODE_PORT_BASE = ( "spark.ext.h2o.node.port.base", 54321)
-
-  /** Configuration property - timeout for cloud up. */
-  val PROP_CLOUD_TIMEOUT = ("spark.ext.h2o.cloud.timeout", 60*1000)
+  /** Configuration property - expected number of workers of H2O cloud.
+    * Value None means automatic detection of cluster size.
+    */
+  val PROP_CLUSTER_SIZE = ("spark.ext.h2o.cluster.size", None)
 
   /** Configuration property - multiplication factor for dummy RDD generation.
     * Size of dummy RDD is PROP_CLUSTER_SIZE*PROP_DUMMY_RDD_MUL_FACTOR */
@@ -79,12 +92,16 @@ object InternalBackendConf {
   /** Starting size of cluster in case that size is not explicitly passed */
   val PROP_DEFAULT_CLUSTER_SIZE = ("spark.ext.h2o.default.cluster.size", 20)
 
-  /** Subnet selector for H2O nodes running inside executors - if the mask is specified then Spark network setup is not discussed. */
-  val PROP_NODE_NETWORK_MASK = ("spark.ext.h2o.node.network.mask", None)
+  /** Subsequent successful tries to figure out size of Spark cluster which are producing same number of nodes. */
+  val PROP_SUBSEQ_TRIES = ("spark.ext.h2o.subseq.tries", 5)
+
+  /** Configuration property - base port used for individual H2O nodes configuration. */
+  val PROP_NODE_PORT_BASE = ( "spark.ext.h2o.node.port.base", 54321)
 
   /** Location of iced directory for Spark nodes */
   val PROP_NODE_ICED_DIR = ("spark.ext.h2o.node.iced.dir", None)
 
-  /** Subsequent successful tries to figure out size of Spark cluster which are producing same number of nodes. */
-  val PROP_SUBSEQ_TRIES = ("spark.ext.h2o.subseq.tries", 5)
+  /** Subnet selector for H2O nodes running inside executors - if the mask is specified then Spark network setup is not discussed. */
+  val PROP_NODE_NETWORK_MASK = ("spark.ext.h2o.node.network.mask", None)
+
 }
