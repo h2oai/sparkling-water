@@ -74,14 +74,17 @@ Configuration properties independent on selected backend
 | ``spark.ext.h2o.node.log.level``                   | ``INFO``       | H2O internal log level used for H2O    |
 |                                                    |                | nodes except the client.               |
 +----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.ui.update.interval``               | ``10000ms``    | Interval for updates of the Spark UI   |
-|                                                    |                | and History server in milliseconds     |
-+----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.node.log.dir``                     | ``{user.dir}/h | Location of H2O logs on H2O nodes      |
 |                                                    | 2ologs/{SparkA | except on the client.                  |
 |                                                    | ppId}``        |                                        |
 |                                                    | or YARN        |                                        |
 |                                                    | container dir  |                                        |
++----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.ui.update.interval``               | ``10000ms``    | Interval for updates of the Spark UI   |
+|                                                    |                | and History server in milliseconds     |
++----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.cloud.timeout``                    | ``60*1000``    | Timeout (in msec) for cluster          |
+|                                                    |                | formation.                             |
 +----------------------------------------------------+----------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
@@ -138,9 +141,6 @@ Internal backend configuration properties
 |                                                    |                | detection of cluster size. This number |
 |                                                    |                | must be equal to number of Spark       |
 |                                                    |                | executors.                             |
-+----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.cloud.timeout``                    | ``60*1000``    | Timeout (in msec) for cluster          |
-|                                                    |                | formation.                             |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.dummy.rdd.mul.factor``             | ``10``         | Multiplication factor for dummy RDD    |
 |                                                    |                | generation. Size of dummy RDD is       |

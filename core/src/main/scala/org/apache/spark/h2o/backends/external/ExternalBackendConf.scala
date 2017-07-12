@@ -28,41 +28,30 @@ trait ExternalBackendConf extends SharedBackendConf {
 
   import ExternalBackendConf._
 
+  /** Getters */
+
   def h2oCluster = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1)
-  def YARNQueue = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1)
-  def h2oDriverPath = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_DRIVER_PATH._1)
+  def h2oClusterHost = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(0))
+  def h2oClusterPort = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(1).toInt)
+
   def numOfExternalH2ONodes = sparkConf.getOption(PROP_EXTERNAL_H2O_NODES._1)
-  def HDFSOutputDir = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_HDFS_DIR._1)
-  def mapperXmx = sparkConf.get(PROP_EXTERNAL_H2O_MEMORY._1, PROP_EXTERNAL_H2O_MEMORY._2)
-  def clusterInfoFile = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_INFO_FILE._1)
-  def clusterStartMode = sparkConf.get(PROP_EXTERNAL_CLUSTER_START_MODE._1, PROP_EXTERNAL_CLUSTER_START_MODE._2)
-  def isAutoClusterStartUsed = clusterStartMode == "auto"
-  def isManualClusterStartUsed = !isAutoClusterStartUsed
-  def clusterStartTimeout = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, PROP_EXTERNAL_CLUSTER_START_TIMEOUT._2)
-  def clientConnectionTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._2)
   def clientCheckRetryTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
+  def clientConnectionTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._2)
   def externalReadConfirmationTimeout = sparkConf.getInt(PROP_EXTERNAL_READ_TIMEOUT._1, PROP_EXTERNAL_READ_TIMEOUT._2)
   def externalWriteConfirmationTimeout = sparkConf.getInt(PROP_EXTERNAL_WRITE_TIMEOUT._1, PROP_EXTERNAL_WRITE_TIMEOUT._2)
+  def clusterStartTimeout = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, PROP_EXTERNAL_CLUSTER_START_TIMEOUT._2)
+  def clusterInfoFile = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_INFO_FILE._1)
+  def mapperXmx = sparkConf.get(PROP_EXTERNAL_H2O_MEMORY._1, PROP_EXTERNAL_H2O_MEMORY._2)
+  def HDFSOutputDir = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_HDFS_DIR._1)
 
-  def setClientConnectionTimeout(timeout: Int): H2OConf = {
-    sparkConf.set(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, timeout.toString)
-    self
-  }
+  def isAutoClusterStartUsed = clusterStartMode == "auto"
+  def isManualClusterStartUsed = !isAutoClusterStartUsed
 
-  def setClientCheckRetryTimeout(timeout: Int): H2OConf = {
-    sparkConf.set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
-    self
-  }
+  def clusterStartMode = sparkConf.get(PROP_EXTERNAL_CLUSTER_START_MODE._1, PROP_EXTERNAL_CLUSTER_START_MODE._2)
+  def h2oDriverPath = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_DRIVER_PATH._1)
+  def YARNQueue = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1)
 
-  def setExternalReadConfirmationTimeout(timeout: Int): H2OConf = {
-    sparkConf.set(PROP_EXTERNAL_READ_TIMEOUT._1, timeout.toString)
-    self
-  }
-
-  def setExternalWriteConfirmationTimeout(timeout: Int): H2OConf = {
-    sparkConf.set(PROP_EXTERNAL_WRITE_TIMEOUT._1, timeout.toString)
-    self
-  }
+  /** Setters */
 
   /**
     * Sets node and port representing H2O Cluster to which should H2O connect when started in external mode.
@@ -72,78 +61,42 @@ trait ExternalBackendConf extends SharedBackendConf {
     * @param port port representing the cluster
     * @return H2O Configuration
     */
-  def setH2OCluster(host: String, port: Int): H2OConf = {
+  def setH2OCluster(host: String, port: Int) = {
     setExternalClusterMode()
-    sparkConf.set(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, host + ":" + port)
-    self
+    set(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, host + ":" + port)
   }
 
-  def setClusterStartTimeout(clusterStartTimeout: Int): H2OConf = {
-    sparkConf.set(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, clusterStartTimeout.toString)
-    self
-  }
-
-  def setH2OCluster(hostPort: String): H2OConf = {
+  def setH2OCluster(hostPort: String) = {
     setExternalClusterMode()
-    sparkConf.set(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, hostPort)
-    self
+    set(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, hostPort)
   }
 
-  def h2oClusterHost = {
-    sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(0))
-  }
+  def setNumOfExternalH2ONodes(numOfExternalH2ONodes: Int) = set(PROP_EXTERNAL_H2O_NODES._1, numOfExternalH2ONodes.toString)
+  def setClientCheckRetryTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
+  def setClientConnectionTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, timeout.toString)
+  def setExternalReadConfirmationTimeout(timeout: Int) = set(PROP_EXTERNAL_READ_TIMEOUT._1, timeout.toString)
+  def setExternalWriteConfirmationTimeout(timeout: Int) = set(PROP_EXTERNAL_WRITE_TIMEOUT._1, timeout.toString)
+  def setClusterStartTimeout(clusterStartTimeout: Int) = set(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, clusterStartTimeout.toString)
+  def setClusterConfigFile(path: String) = set(PROP_EXTERNAL_CLUSTER_INFO_FILE._1, path)
+  def setMapperXmx(mem: String) = set(PROP_EXTERNAL_H2O_MEMORY._1, mem)
+  def setHDFSOutputDir(dir: String) = set(PROP_EXTERNAL_CLUSTER_HDFS_DIR._1, dir)
 
-  def h2oClusterPort = {
-    sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(1))
-  }
-
-
-  def setYARNQueue(queueName: String) : H2OConf = {
-    sparkConf.set(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1, queueName)
-    self
-  }
-
-  def setH2ODriverPath(path: String): H2OConf = {
+  def useAutoClusterStart() = {
     setExternalClusterMode()
-    logWarning("Using external cluster mode!")
-    sparkConf.set(PROP_EXTERNAL_CLUSTER_DRIVER_PATH._1, path)
-    self
+    set(PROP_EXTERNAL_CLUSTER_START_MODE._1, "auto")
   }
 
-  def setNumOfExternalH2ONodes(numOfExternalH2ONodes: Int): H2OConf = {
-    sparkConf.set(PROP_EXTERNAL_H2O_NODES._1, numOfExternalH2ONodes.toString)
-    self
-  }
-
-  def setHDFSOutputDir(dir: String): H2OConf = {
-    sparkConf.set(PROP_EXTERNAL_CLUSTER_HDFS_DIR._1, dir)
-    self
-  }
-
-
-  def setMapperXmx(mem: String): H2OConf = {
-    sparkConf.set(PROP_EXTERNAL_H2O_MEMORY._1, mem)
-    self
-  }
-
-  def setClusterConfigFile(path: String) : H2OConf = {
-    sparkConf.set(PROP_EXTERNAL_CLUSTER_INFO_FILE._1, path)
-    self
-  }
-
-  def useAutoClusterStart() : H2OConf = {
+  def useManualClusterStart()  = {
     setExternalClusterMode()
-    logWarning("Using external cluster mode!")
-    sparkConf.set(PROP_EXTERNAL_CLUSTER_START_MODE._1, "auto")
-    self
+    set(PROP_EXTERNAL_CLUSTER_START_MODE._1, "manual")
   }
 
-  def useManualClusterStart() : H2OConf = {
+  def setH2ODriverPath(path: String) = {
     setExternalClusterMode()
-    logWarning("Using external cluster mode!")
-    sparkConf.set(PROP_EXTERNAL_CLUSTER_START_MODE._1, "manual")
-    self
+    set(PROP_EXTERNAL_CLUSTER_DRIVER_PATH._1, path)
   }
+
+  def setYARNQueue(queueName: String) = set(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1, queueName)
 
 
   def externalConfString: String =
@@ -159,8 +112,19 @@ trait ExternalBackendConf extends SharedBackendConf {
 
 object ExternalBackendConf {
 
+  /** ip:port of arbitrary h2o node to identify external h2o cluster */
+  val PROP_EXTERNAL_CLUSTER_REPRESENTATIVE = ("spark.ext.h2o.cloud.representative", None)
+
+  /** Number of nodes to wait for when connecting to external H2O cluster in manual mode. In auto mode, number
+    * of nodes to be started. */
+  val PROP_EXTERNAL_H2O_NODES = ("spark.ext.h2o.external.cluster.num.h2o.nodes", None)
+
   /** Timeout in milliseconds specifying how often the check for connected watchdog client is done */
   val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT = ("spark.ext.h2o.cluster.client.retry.timeout", 10000)
+
+  /** Timeout in milliseconds for watchdog client connection. If client is not connected
+    * to the external cluster in the given time, the cluster is killed */
+  val PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT = ("spark.ext.h2o.cluster.client.connect.timeout", 120000 + 10000)
 
   /** Timeout for confirmation of read operation ( h2o frame => spark frame) on external cluster. */
   val PROP_EXTERNAL_READ_TIMEOUT = ("spark.ext.h2o.external.read.confirmation.timeout", 20)
@@ -171,14 +135,13 @@ object ExternalBackendConf {
   /** Timeout in seconds for starting h2o external cluster */
   val PROP_EXTERNAL_CLUSTER_START_TIMEOUT = ("spark.ext.h2o.cluster.start.timeout", 120)
 
-  /** Timeout in milliseconds for watchdog client connection. If client is not connected
-    * to the external cluster in the given time, the cluster is killed */
-  val PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT = ("spark.ext.h2o.cluster.client.connect.timeout", 120000 + 10000)
-
+  /** Path to a file used as cluster notification file */
   val PROP_EXTERNAL_CLUSTER_INFO_FILE = ("spark.ext.h2o.cluster.info.name", None)
 
+  /** Number of memory assigned to each external h2o node when starting in auto mode */
   val PROP_EXTERNAL_H2O_MEMORY = ("spark.ext.h2o.hadoop.memory", "6g")
 
+  /** HDFS dir for external h2o nodes when starting in auto mode */
   val PROP_EXTERNAL_CLUSTER_HDFS_DIR = ("spark.ext.h2o.external.hdfs.dir", None)
 
   /**
@@ -187,17 +150,13 @@ object ExternalBackendConf {
     */
   val PROP_EXTERNAL_CLUSTER_START_MODE = ("spark.ext.h2o.external.start.mode", "manual")
 
-  /**
-    * Path to h2o driver
-    */
+  /** Path to h2o driver */
   val PROP_EXTERNAL_CLUSTER_DRIVER_PATH = ("spark.ext.h2o.external.h2o.driver", None)
 
   /** Yarn queue on which external cluster should be started */
   val PROP_EXTERNAL_CLUSTER_YARN_QUEUE = ("spark.ext.h2o.external.yarn.queue", None)
 
-  /** ip:port of arbitrary h2o node to identify external h2o cluster */
-  val PROP_EXTERNAL_CLUSTER_REPRESENTATIVE = ("spark.ext.h2o.cloud.representative", None)
 
-  /** Number of nodes to wait for when connecting to external H2O cluster */
-  val PROP_EXTERNAL_H2O_NODES = ("spark.ext.h2o.external.cluster.num.h2o.nodes", None)
+
+
 }
