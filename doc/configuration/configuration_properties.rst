@@ -201,11 +201,11 @@ External backend configuration properties
 |                                                       |                | external cluster in the given time  |
 |                                                       |                | ,the cluster is killed.             |
 +-------------------------------------------------------+----------------+-------------------------------------+
-| ``spark.ext.h2o.external.read.confirmation.timeout``  | ``20s``        | Timeout for confirmation of read    |
+| ``spark.ext.h2o.external.read.confirmation.timeout``  | ``60s``        | Timeout for confirmation of read    |
 |                                                       |                | operation (H2O frame => Spark       |
 |                                                       |                | frame) on external cluster.         |
 +-------------------------------------------------------+----------------+-------------------------------------+
-| ``spark.ext.h2o.external.write.confirmation.timeout`` | ``20s``        | Timeout for confirmation of write   |
+| ``spark.ext.h2o.external.write.confirmation.timeout`` | ``60s``        | Timeout for confirmation of write   |
 |                                                       |                | operation (Spark frame => H2O       |
 |                                                       |                | frame) on external cluster.         |
 +-------------------------------------------------------+----------------+-------------------------------------+
