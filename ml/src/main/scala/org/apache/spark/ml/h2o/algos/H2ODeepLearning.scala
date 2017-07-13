@@ -30,9 +30,9 @@ import org.apache.spark.sql.SQLContext
 
 
 /**
-  *  Creates H2ODeepLearning model
-  *  If the key specified the training set is specified using setTrainKey, then frame with this key is used as the
-  *  training frame, otherwise it uses the frame from the previous stage as the training frame
+  * Creates H2ODeepLearning model
+  * If the key specified the training set is specified using setTrainKey, then frame with this key is used as the
+  * training frame, otherwise it uses the frame from the previous stage as the training frame
   */
 class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val uid: String)
                      (implicit h2oContext: H2OContext, sqlContext: SQLContext)
@@ -42,8 +42,10 @@ class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val u
   type SELF = H2ODeepLearning
 
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("dl"))
-  def this(parameters: DeepLearningParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters),Identifiable.randomUID("dl"))
-  def this(parameters: DeepLearningParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters),uid)
+
+  def this(parameters: DeepLearningParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("dl"))
+
+  def this(parameters: DeepLearningParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
 
   override def defaultFileName: String = H2ODeepLearning.defaultFileName
 
@@ -64,6 +66,7 @@ object H2ODeepLearning extends MLReadable[H2ODeepLearning] {
   @Since("1.6.0")
   override def load(path: String): H2ODeepLearning = super.load(path)
 }
+
 /**
   * Parameters here can be set as normal and are duplicated to DeepLearningParameters H2O object
   */
@@ -73,22 +76,33 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
   type H2O_SCHEMA = DeepLearningParametersV3
 
   protected def paramTag = reflect.classTag[DeepLearningParameters]
+
   protected def schemaTag = reflect.classTag[H2O_SCHEMA]
 
   /** @group setParam */
-  def setEpochs(value: Double) = set(epochs, value){getParams._epochs = value}
+  def setEpochs(value: Double) = set(epochs, value) {
+    getParams._epochs = value
+  }
 
   /** @group setParam */
-  def setL1(value: Double) = set(l1, value){getParams._l1 = value}
+  def setL1(value: Double) = set(l1, value) {
+    getParams._l1 = value
+  }
 
   /** @group setParam */
-  def setL2(value: Double) = set(l2, value){getParams._l2 = value}
+  def setL2(value: Double) = set(l2, value) {
+    getParams._l2 = value
+  }
 
   /** @group setParam */
-  def setHidden(value: Array[Int]) = set(hidden, value){getParams._hidden = value}
+  def setHidden(value: Array[Int]) = set(hidden, value) {
+    getParams._hidden = value
+  }
 
   /** @group setParam */
-  def setResponseColumn(value: String) = set(responseColumn,value){getParams._response_column = value}
+  def setResponseColumn(value: String) = set(responseColumn, value) {
+    getParams._response_column = value
+  }
 
   /**
     * All parameters should be set here along with their documentation and explained default values
@@ -108,12 +122,16 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
 
   /** @group getParam */
   def getEpochs: Double = $(epochs)
+
   /** @group getParam */
   def getL1: Double = $(l1)
+
   /** @group getParam */
   def getL2: Double = $(l2)
+
   /** @group getParam */
   def getHidden: Array[Int] = $(hidden)
+
   /** @group getParam */
   def getResponseColumn: String = $(responseColumn)
 

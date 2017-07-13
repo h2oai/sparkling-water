@@ -36,8 +36,7 @@ import scala.reflect.ClassTag
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
-abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
-                            M <: SparkModel[M] : ClassTag]
+abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M] : ClassTag]
                             (parameters: Option[P])
                             (implicit hc: H2OContext, sqlContext: SQLContext)
   extends Estimator[M] with MLWritable with H2OAlgoParams[P] {
@@ -61,7 +60,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
 
     // check if we need to do any splitting
 
-    if ($(ratio)<1.0){
+    if ($(ratio) < 1.0) {
       // need to do splitting
       split(dataset, hc)
     }
@@ -88,7 +87,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
   @Since("1.6.0")
   override def write: MLWriter = new H2OAlgorithmWriter(this)
 
-  private  def split(dataset: Dataset[_], hc: H2OContext): DataFrame = {
+  private def split(dataset: Dataset[_], hc: H2OContext): DataFrame = {
     val fr = hc.asH2OFrame(dataset.toDF())
     val keys = Array($(trainKey), $(validKey))
     val ratios = Array[Double]($(ratio))
@@ -107,15 +106,15 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
     */
   final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
 
-  setDefault(ratio->1.0)
-  setDefault(trainKey->Key.make("train.hex"))
-  setDefault(validKey->Key.make("valid.hex"))
+  setDefault(ratio -> 1.0)
+  setDefault(trainKey -> Key.make("train.hex"))
+  setDefault(validKey -> Key.make("valid.hex"))
 
   /** @group getParam */
   def getTrainRatio: Double = $(ratio)
 
   /** @group setParam */
-  def setTrainRatio(value: Double) = set(ratio, value){}
+  def setTrainRatio(value: Double) = set(ratio, value) {}
 
   /** @group setParam */
   def setValidKey(value: String) = set(validKey, Key.make[Frame](value)) {
@@ -178,8 +177,8 @@ private[algos] class H2OAlgorithmWriter[T <: H2OAlgorithm[_, _]](instance: T) ex
   }
 }
 
-private[models] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <: Model.Parameters : ClassTag]
-                                        (val defaultFileName: String) extends MLReader[A] {
+private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <: Model.Parameters : ClassTag]
+(val defaultFileName: String) extends MLReader[A] {
 
   private val className = implicitly[ClassTag[A]].runtimeClass.getName
 
@@ -202,5 +201,4 @@ private[models] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <
     ctor.newInstance(p, uid, h2oContext, sqlContext).asInstanceOf[CT]
   }
 }
-
 

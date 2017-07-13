@@ -39,7 +39,7 @@ object H2ODeepLearningModel extends MLReadable[H2ODeepLearningModel] {
   @Since("1.6.0")
   override def read: MLReader[H2ODeepLearningModel] = new H2OModelReader[H2ODeepLearningModel, DeepLearningModel](defaultFileName) {
     override protected def make(model: DeepLearningModel, uid: String)
-                               (implicit h2oContext: H2OContext,sqLContext: SQLContext): H2ODeepLearningModel =
+                               (implicit h2oContext: H2OContext, sqLContext: SQLContext): H2ODeepLearningModel =
       new H2ODeepLearningModel(model, uid)(h2oContext, sqlContext)
   }
 

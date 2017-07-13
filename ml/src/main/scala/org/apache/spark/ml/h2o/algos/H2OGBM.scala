@@ -16,9 +16,6 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
-
-import hex.genmodel.{ModelMojoReader, MojoReaderBackendFactory}
 import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
@@ -42,36 +39,42 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
   type SELF = H2OGBM
 
   /** @group setParam */
-  def setResponseColumn(value: String) = set(responseColumn,value){getParams._response_column = value}
+  def setResponseColumn(value: String) = set(responseColumn, value) {
+    getParams._response_column = value
+  }
 
   /**
     * Param for features column name.
+    *
     * @group param
     */
   final val featuresCol: Param[String] = new Param[String](this, "featuresCol", "features column name")
 
   setDefault(featuresCol, "features")
 
-  def setFeaturesCol(value: String) = set(featuresCol, value){}
+  def setFeaturesCol(value: String) = set(featuresCol, value) {}
 
   /** @group getParam */
   final def getFeaturesCol: String = $(featuresCol)
 
   /**
     * Param for features column name.
+    *
     * @group param
     */
   final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "prediction column name")
 
   setDefault(predictionCol, "prediction")
 
-  def setPredictionsCol(value: String) = set(predictionCol, value){}
+  def setPredictionsCol(value: String) = set(predictionCol, value) {}
 
   override def defaultFileName: String = H2OGBM.defaultFileName
 
 
   override def trainModel(params: GBMParameters): H2OGBMModel = {
-    set(responseColumn, $(predictionCol)){getParams._response_column =  $(predictionCol)}
+    set(responseColumn, $(predictionCol)) {
+      getParams._response_column = $(predictionCol)
+    }
     val model = new GBM(params).trainModel().get()
     val mojoModel = ModelSerializationSupport.getMojoModel(model)
     val mojoData = ModelSerializationSupport.getMojoData(model)
@@ -84,8 +87,10 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
   }
 
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("dl"))
-  def this(parameters: GBMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters),Identifiable.randomUID("dl"))
-  def this(parameters: GBMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters),uid)
+
+  def this(parameters: GBMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("dl"))
+
+  def this(parameters: GBMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
 }
 
 object H2OGBM extends MLReadable[H2OGBM] {
@@ -108,6 +113,7 @@ trait H2OGBMParams extends H2OSharedTreeParams[GBMParameters] {
   type H2O_SCHEMA = GBMParametersV3
 
   protected def paramTag = reflect.classTag[GBMParameters]
+
   protected def schemaTag = reflect.classTag[H2O_SCHEMA]
 
   /**
@@ -124,6 +130,4 @@ trait H2OGBMParams extends H2OSharedTreeParams[GBMParameters] {
   setDefault(colSampleRate -> parameters._col_sample_rate)
   setDefault(maxAbsLeafnodePred -> parameters._max_abs_leafnode_pred)
   setDefault(responseColumn -> parameters._response_column)
-
-
 }
