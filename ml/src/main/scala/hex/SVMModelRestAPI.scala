@@ -53,7 +53,7 @@ class SVMModelRestAPI extends RestApi {
       RequestServer.registerEndpoint(
         "grid_search_" + lbase,
         "POST /99/Grid/" + lbase,
-        classOf[GridSearchHandler[_,_,_,_]],
+        classOf[GridSearchHandler[_, _, _, _]],
         "train",
         "Run grid search for " + base + " model."
       )

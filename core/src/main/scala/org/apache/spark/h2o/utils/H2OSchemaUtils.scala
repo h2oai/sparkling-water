@@ -25,14 +25,15 @@ import org.apache.spark.{SparkContext, ml, mllib}
 import scala.annotation.tailrec
 
 /**
- * Utilities for working with Spark SQL component.
- */
+  * Utilities for working with Spark SQL component.
+  */
 object H2OSchemaUtils {
+
   import ReflectionUtils._
 
-  val NORMAL_TYPE : Byte = 0
-  val ARRAY_TYPE : Byte  = 1
-  val VEC_TYPE : Byte = 2
+  val NORMAL_TYPE: Byte = 0
+  val ARRAY_TYPE: Byte = 1
+  val VEC_TYPE: Byte = 2
 
   def createSchema[T <: Frame](f: T, copyMetadata: Boolean): StructType = {
     val types = new Array[StructField](f.numCols())
@@ -93,15 +94,15 @@ object H2OSchemaUtils {
     *  - all arrays are expanded into columns based on the longest one
     *  - all vectors are expanded into columns
     *
-    * @param sc  actual Spark context
-    * @param srdd  schema-based RDD
+    * @param sc   actual Spark context
+    * @param srdd schema-based RDD
     * @return list of types with their positions
     */
   def expandedSchema(sc: SparkContext, srdd: DataFrame): Seq[(Seq[Int], StructField, Byte)] = {
     val schema: StructType = srdd.schema
     // Collect max size in array and vector columns to expand them
-    val arrayColIdxs  = collectArrayLikeTypes(schema.fields)
-    val vecColIdxs    = collectVectorLikeTypes(schema.fields)
+    val arrayColIdxs = collectArrayLikeTypes(schema.fields)
+    val vecColIdxs = collectVectorLikeTypes(schema.fields)
     val numOfArrayCols = arrayColIdxs.length
     // Collect max arrays for this RDD, it is distributed operation
     val fmaxLens = collectMaxArrays(sc, srdd, arrayColIdxs, vecColIdxs)
@@ -109,15 +110,16 @@ object H2OSchemaUtils {
     val flatRddSchema = flatSchema(schema)
     val typeIndx = collectTypeIndx(schema.fields)
     val typesAndPath = typeIndx
-                .zip(flatRddSchema) // Seq[(Seq[Int], StructField)]
-    var arrayCnt = 0; var vecCnt = 0
+      .zip(flatRddSchema) // Seq[(Seq[Int], StructField)]
+    var arrayCnt = 0;
+    var vecCnt = 0
     // Generate expanded schema
-    val expSchema = typesAndPath.indices.flatMap {idx =>
+    val expSchema = typesAndPath.indices.flatMap { idx =>
       val tap = typesAndPath(idx)
       val path = tap._1
       val field = tap._2
       field.dataType match {
-        case ArrayType(aryType,nullable) =>
+        case ArrayType(aryType, nullable) =>
           val result = (0 until fmaxLens(arrayCnt)).map(i =>
             (path, StructField(field.name + i.toString, aryType, nullable), ARRAY_TYPE)
           )
@@ -143,8 +145,8 @@ object H2OSchemaUtils {
 
   def collectTypeIndx(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
     fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectTypeIndx(fs, path++Seq(i))
-      case _  => Seq(path++Seq(i))
+      case StructType(fs) => collectTypeIndx(fs, path ++ Seq(i))
+      case _ => Seq(path ++ Seq(i))
     })
   }
 
@@ -152,29 +154,29 @@ object H2OSchemaUtils {
     */
   def collectStringTypesIndx(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
     fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectStringTypesIndx(fs, path++Seq(i))
-      case StringType  => Seq(path++Seq(i))
+      case StructType(fs) => collectStringTypesIndx(fs, path ++ Seq(i))
+      case StringType => Seq(path ++ Seq(i))
       case _ => Nil
     })
   }
 
   def collectArrayLikeTypes(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
     fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectArrayLikeTypes(fs, path++Seq(i))
-      case ArrayType(_,_)  => Seq(path++Seq(i))
+      case StructType(fs) => collectArrayLikeTypes(fs, path ++ Seq(i))
+      case ArrayType(_, _) => Seq(path ++ Seq(i))
       case _ => Nil
     })
   }
 
   def collectVectorLikeTypes(fields: Seq[StructField], path: Seq[Int] = Seq()): Seq[Seq[Int]] = {
     fields.indices.flatMap(i => fields(i).dataType match {
-      case StructType(fs) => collectVectorLikeTypes(fs, path++Seq(i))
-      case t => if (t.isInstanceOf[UserDefinedType[_/*mllib.linalg.Vector*/]]) Seq(path++Seq(i)) else Nil
+      case StructType(fs) => collectVectorLikeTypes(fs, path ++ Seq(i))
+      case t => if (t.isInstanceOf[UserDefinedType[_ /*mllib.linalg.Vector*/ ]]) Seq(path ++ Seq(i)) else Nil
     })
   }
 
   /** Collect max size of stored arrays and MLLib vectors.
- *
+    *
     * @return list of max sizes for array types, followed by max sizes for vector types. */
   private[h2o]
   def collectMaxArrays(sc: SparkContext,
@@ -183,20 +185,30 @@ object H2OSchemaUtils {
                        vectorTypesIndx: Seq[Seq[Int]]): Array[Int] = {
     val allTypesIndx = arrayTypesIndx ++ vectorTypesIndx
     val attributesNum = (field: StructField) => {
-      if (!field.dataType.isInstanceOf[ml.linalg.VectorUDT]) { None }
-      else if (AttributeGroup.fromStructField(field).size != -1) { Some(AttributeGroup.fromStructField(field).size) }
-      else { None }
+      if (!field.dataType.isInstanceOf[ml.linalg.VectorUDT]) {
+        None
+      }
+      else if (AttributeGroup.fromStructField(field).size != -1) {
+        Some(AttributeGroup.fromStructField(field).size)
+      }
+      else {
+        None
+      }
     }
 
     @tailrec
-    def getBasicType (columns: StructType, indexes: Seq[Int]): StructField = {
+    def getBasicType(columns: StructType, indexes: Seq[Int]): StructField = {
       val structField = columns.fields(indexes.head)
-      if (indexes.tail.isEmpty) { structField }
-      else { getBasicType(structField.dataType.asInstanceOf[StructType], indexes.tail) }
+      if (indexes.tail.isEmpty) {
+        structField
+      }
+      else {
+        getBasicType(structField.dataType.asInstanceOf[StructType], indexes.tail)
+      }
     }
 
     val sizeFromMetadata = allTypesIndx.map(idxs => attributesNum(getBasicType(dataframe.schema, idxs)))
-    if (sizeFromMetadata.forall(_.isDefined)){
+    if (sizeFromMetadata.forall(_.isDefined)) {
       return sizeFromMetadata.map(_.get).toArray
     }
 
@@ -207,7 +219,9 @@ object H2OSchemaUtils {
         val indx = allTypesIndx(k)
         var i = 0
         var subRow = row
-        while (i < indx.length-1 && !subRow.isNullAt(indx(i))) { subRow = subRow.getAs[Row](indx(i)); i += 1 }
+        while (i < indx.length - 1 && !subRow.isNullAt(indx(i))) {
+          subRow = subRow.getAs[Row](indx(i)); i += 1
+        }
         if (!subRow.isNullAt(indx(i))) {
           val olen = if (k < numOfArrayTypes) { // it is array
             subRow.getAs[Seq[_]](indx(i)).length
@@ -227,7 +241,7 @@ object H2OSchemaUtils {
         }
       }
       acc
-    }).reduce((a,b) => a.indices.map(i => if (a(i) > b(i)) a(i) else b(i)).toArray)
+    }).reduce((a, b) => a.indices.map(i => if (a(i) > b(i)) a(i) else b(i)).toArray)
     // Result
     maxvec
   }

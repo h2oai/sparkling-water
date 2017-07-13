@@ -28,7 +28,7 @@ import water.{ExternalFrameUtils, Key}
 import scala.collection.immutable
 import scala.reflect.runtime.universe._
 
-case class MetaInfo(names:Array[String], types: Array[SupportedType]) {
+case class MetaInfo(names: Array[String], types: Array[SupportedType]) {
   require(names.length > 0, "Empty meta info does not make sense")
   require(names.length == types.length, s"Different lengths: ${names.length} names, ${types.length} types")
   lazy val vecTypes: Array[Byte] = types map (_.vecType)
@@ -37,26 +37,26 @@ case class MetaInfo(names:Array[String], types: Array[SupportedType]) {
 case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], frameKeyName: Option[String]) {
 
   private[this] val defaultFieldNames = (i: Int) => "f" + i
-  
+
   def withDefaultFieldNames() = {
     withFieldNames(defaultFieldNames)
   }
 
   def withFieldNames(fieldNames: Int => String): H2OFrame = {
-    if(rdd.isEmpty()){
+    if (rdd.isEmpty()) {
       // transform empty Seq in order to create empty H2OFrame
       hc.asH2OFrame(hc.sparkContext.parallelize(Seq.empty[Int]), frameKeyName)
-    }else {
+    } else {
       val meta = metaInfo(fieldNames)
       withMeta(meta)
     }
   }
 
   def withFields(fields: List[(String, Type)]): H2OFrame = {
-    if(rdd.isEmpty()){
+    if (rdd.isEmpty()) {
       // transform empty Seq in order to create empty H2OFrame
       hc.asH2OFrame(hc.sparkContext.parallelize(Seq.empty[Int]), frameKeyName)
-    }else{
+    } else {
       val meta = metaInfo(fields)
       withMeta(meta)
     }
@@ -69,9 +69,9 @@ case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], fram
 
     // in case of internal backend, store regular vector types
     // otherwise for external backend store expected types
-    val expectedTypes = if(hc.getConf.runsInInternalClusterMode){
+    val expectedTypes = if (hc.getConf.runsInInternalClusterMode) {
       meta.vecTypes
-    }else{
+    } else {
       val javaClasses = meta.types.map(ExternalWriteConverterCtx.internalJavaClassOf(_))
       ExternalFrameUtils.prepareExpectedTypes(javaClasses)
     }
@@ -119,7 +119,7 @@ object H2OFrameFromRDDProductBuilder{
 
     con.createChunks(keyName, vecTypes, context.partitionId())
     iterator.foreach(prod => { // For all rows which are subtype of Product
-      for( i <- 0 until prod.productArity ) { // For all fields...
+      for ( i <- 0 until prod.productArity ) { // For all fields...
       val fld = prod.productElement(i)
         val x = fld match {
           case Some(n) => n

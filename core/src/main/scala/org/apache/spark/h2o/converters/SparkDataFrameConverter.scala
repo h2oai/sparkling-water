@@ -34,12 +34,12 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   /**
     * Create a Spark DataFrame from given H2O frame.
     *
-    * @param hc an instance of H2O context
-    * @param fr  an instance of H2O frame
-    * @param copyMetadata  copy H2O metadata into Spark DataFrame
-    * @param sqlContext  running sqlContext
-    * @tparam T  type of H2O frame
-    * @return  a new DataFrame definition using given H2OFrame as data source
+    * @param hc           an instance of H2O context
+    * @param fr           an instance of H2O frame
+    * @param copyMetadata copy H2O metadata into Spark DataFrame
+    * @param sqlContext   running sqlContext
+    * @tparam T type of H2O frame
+    * @return a new DataFrame definition using given H2OFrame as data source
     */
 
   def toDataFrame[T <: Frame](hc: H2OContext, fr: T, copyMetadata: Boolean)(implicit sqlContext: SQLContext): DataFrame = {
@@ -62,11 +62,11 @@ private[h2o] object SparkDataFrameConverter extends Logging {
 
     // in case of internal backend, store regular vector types
     // otherwise for external backend store expected types
-    val expectedTypes = if(hc.getConf.runsInInternalClusterMode){
+    val expectedTypes = if (hc.getConf.runsInInternalClusterMode) {
       // Transform datatype into h2o types
       flatRddSchema.map(f => ReflectionUtils.vecTypeFor(f._2.dataType)).toArray
-    }else{
-      val internalJavaClasses = flatRddSchema.map{f =>
+    } else {
+      val internalJavaClasses = flatRddSchema.map { f =>
         ExternalWriteConverterCtx.internalJavaClassOf(f._2.dataType)
       }.toArray
       ExternalFrameUtils.prepareExpectedTypes(internalJavaClasses)
@@ -159,7 +159,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
               con.put(idx, sv)
 
             case TimestampType => con.put(idx, subRow.getAs[java.sql.Timestamp](aidx))
-            case DateType      => con.put(idx, subRow.getAs[java.sql.Date](aidx))
+            case DateType => con.put(idx, subRow.getAs[java.sql.Date](aidx))
             case _ => con.putNA(idx)
           }
         }
