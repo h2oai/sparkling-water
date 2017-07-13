@@ -33,7 +33,7 @@ object SparklingWaterDriver {
       new SparkConf()
         .setAppName("Sparkling Water Driver")
         .setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
-        .set("spark.ext.h2o.repl.enabled","true"))
+        .set("spark.ext.h2o.repl.enabled", "true"))
 
     val spark = SparkSessionUtils.createSparkSession(conf)
     // Start H2O cluster only

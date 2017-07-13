@@ -85,7 +85,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
   }
 
-  private def addIfNotNull(arg: String, value: String) = if(value != null) Seq(arg, value.toString) else Nil
+  private def addIfNotNull(arg: String, value: String) = if (value != null) Seq(arg, value.toString) else Nil
 
 
   /**

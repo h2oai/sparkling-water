@@ -27,7 +27,7 @@ import org.json4s.jackson.JsonMethods._
   *
   * It represents H2O key.
   */
-class H2OKeyParam[T<:Keyed[T]](parent: Params, name: String, doc: String, isValid: Key[T] => Boolean)
+class H2OKeyParam[T <: Keyed[T]](parent: Params, name: String, doc: String, isValid: Key[T] => Boolean)
   extends Param[Key[T]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
@@ -45,19 +45,19 @@ class H2OKeyParam[T<:Keyed[T]](parent: Params, name: String, doc: String, isVali
   }
 }
 
-private object H2OKeyParam{
+private object H2OKeyParam {
 
   /** Encodes a param value into JValue. */
-  def jValueEncode[T<:Keyed[T]](value: Key[T]): JValue = {
-    if (value == null){
+  def jValueEncode[T <: Keyed[T]](value: Key[T]): JValue = {
+    if (value == null) {
       JNull
-    }else{
+    } else {
       JString(value.toString)
     }
   }
 
   /** Decodes a param value from JValue. */
-  def jValueDecode[T<:Keyed[T]](jValue: JValue): Key[T]= {
+  def jValueDecode[T <: Keyed[T]](jValue: JValue): Key[T] = {
     jValue match {
       case JString(x) =>
         Key.make[T](x)

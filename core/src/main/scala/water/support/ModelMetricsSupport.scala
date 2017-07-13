@@ -28,7 +28,7 @@ trait ModelMetricsSupport {
   /* Helper class to have nice API */
   class ModelMetricsExtractor[T <: ModelMetrics] {
     def apply[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
-    (model: Model[M,P,O], fr: Frame): T = {
+    (model: Model[M, P, O], fr: Frame): T = {
       // Fetch model metrics and rescore if it is necessary
       if (ModelMetrics.getFromDKV(model, fr).asInstanceOf[T] == null) {
         model.score(fr).delete()

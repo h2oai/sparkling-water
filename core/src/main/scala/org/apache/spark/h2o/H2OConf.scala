@@ -35,6 +35,7 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
   def this(jsc: JavaSparkContext) = this(jsc.sc.getConf)
 
   def this(sc: SparkContext) = this(sc.getConf)
+
   def this(sparkSession: SparkSession) = this(sparkSession.sparkContext.getConf)
 
   // Precondition
@@ -44,7 +45,7 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
   override def clone: H2OConf = {
     new H2OConf(sparkConf).setAll(getAll)
   }
-  
+
   /** Set a configuration variable. */
   def set(key: String, value: String): H2OConf = {
     sparkConf.set(key, value)
@@ -93,9 +94,9 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
 
 
   override def toString: String = {
-    if(runsInExternalClusterMode){
+    if (runsInExternalClusterMode) {
       externalConfString
-    }else{
+    } else {
       internalConfString
     }
   }
