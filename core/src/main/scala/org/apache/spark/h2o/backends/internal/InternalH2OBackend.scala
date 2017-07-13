@@ -68,7 +68,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     // Create dummy RDD distributed over executors
     val (spreadRDD, spreadRDDNodes) = new SpreadRDDBuilder(hc, InternalBackendUtils.guessTotalExecutorSize(hc.sparkContext)).build()
 
-    if(hc.getConf.isClusterTopologyListenerEnabled){
+    if (hc.getConf.isClusterTopologyListenerEnabled) {
       // Attach listener which kills H2O cluster when new Spark executor has been launched ( which means
       // that this executors hasn't been discovered during the spreadRDD phase)
       hc.sparkContext.addSparkListener(new ExecutorAddNotSupportedListener())
@@ -83,7 +83,8 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
       s"Unexpected number of executors ${spreadRDDNodes.length}!=${executorIds.length}")
     // H2O is executed only on the subset of Spark cluster - fail
     if (executorIds.length < allExecutorIds.length) {
-      throw new IllegalArgumentException(s"""Spark cluster contains ${allExecutorIds.length},
+      throw new IllegalArgumentException(
+        s"""Spark cluster contains ${allExecutorIds.length},
                but H2O is running only on ${executorIds.length} nodes!""")
     }
     // Execute H2O on given nodes
@@ -91,9 +92,9 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
     var h2oNodeArgs = InternalBackendUtils.getH2ONodeArgs(hc.getConf)
     // Disable web on h2o nodes in non-local mode
-    if(!hc.sparkContext.isLocal){
+    if (!hc.sparkContext.isLocal) {
       h2oNodeArgs = h2oNodeArgs ++ Array("-disable_web")
-    }else{
+    } else {
       // In local mode we don't start h2o client and use standalone h2o mode right away. We need to set login configuration
       // in this case explicitly
       h2oNodeArgs = h2oNodeArgs ++ getLoginArgs(hc.getConf)
@@ -120,8 +121,8 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
 }
 
-object InternalH2OBackend{
-  val UNSUPPORTED_SPARK_OPTIONS =  Seq(
+object InternalH2OBackend {
+  val UNSUPPORTED_SPARK_OPTIONS = Seq(
     ("spark.dynamicAllocation.enabled", "true"),
     ("spark.speculation", "true"))
 }

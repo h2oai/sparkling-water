@@ -27,20 +27,20 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
- * Work with reflection only inside this helper.
- */
+  * Work with reflection only inside this helper.
+  */
 object ReflectionUtils {
   type NameOfType = String
 
-  def fieldNamesOf(t: Type) : Array[String] = {
+  def fieldNamesOf(t: Type): Array[String] = {
     t.members.sorted.collect { case m if !m.isMethod => m.name.toString.trim }.toArray
   }
 
-  def fieldNamesOf[T: TypeTag] : Array[String] = fieldNamesOf(typeOf[T])
+  def fieldNamesOf[T: TypeTag]: Array[String] = fieldNamesOf(typeOf[T])
 
-  def vecTypesOf[T:TypeTag]: Array[VecType] = memberTypesOf[T] map (_.vecType)
+  def vecTypesOf[T: TypeTag]: Array[VecType] = memberTypesOf[T] map (_.vecType)
 
-  def memberTypesOf[T](implicit ttag: TypeTag[T]): Array[SupportedType] =  {
+  def memberTypesOf[T](implicit ttag: TypeTag[T]): Array[SupportedType] = {
     val types: Seq[Type] = listMemberTypes(typeOf[T])
     types map supportedTypeFor toArray
   }
@@ -57,20 +57,20 @@ object ReflectionUtils {
     val TypeRef(_, _, actualTypeArgs) = st
     val attr = st.members.sorted
       .filter(!_.isMethod)
-      .filter( s => names.contains(s.name.toString.trim))
-      .map( s =>
+      .filter(s => names.contains(s.name.toString.trim))
+      .map(s =>
         s.typeSignature.substituteTypes(formalTypeArgs, actualTypeArgs)
       )
     attr
   }
 
-  def productMembers[T:TypeTag]: Array[ProductMember] = {
+  def productMembers[T: TypeTag]: Array[ProductMember] = {
     val st = typeOf[T]
     val formalTypeArgs = st.typeSymbol.asClass.typeParams
     val TypeRef(_, _, actualTypeArgs) = st
     val attr = st.members.sorted
       .filter(!_.isMethod)
-        .map(s => (s.name.toString.trim, s))
+      .map(s => (s.name.toString.trim, s))
       .map { p =>
         val supportedType = supportedTypeFor(p._2.typeSignature.substituteTypes(formalTypeArgs, actualTypeArgs))
         ProductMember(p._1, supportedType.toString, supportedType.javaClass)
@@ -80,14 +80,15 @@ object ReflectionUtils {
 
   def reflector(ref: AnyRef) = new {
     def getV[T](name: String): T = ref.getClass.getMethods.find(_.getName == name).get.invoke(ref).asInstanceOf[T]
+
     def setV(name: String, value: Any): Unit = ref.getClass.getMethods.find(_.getName == name + "_$eq").get.invoke(ref, value.asInstanceOf[AnyRef])
   }
 
   /** Return API annotation assigned with the given field
     * or null.
     *
-    * @param klazz  class to query
-    * @param fieldName  field name to query
+    * @param klazz     class to query
+    * @param fieldName field name to query
     * @return instance of API annotation assigned with the field or null
     */
   def api(klazz: Class[_], fieldName: String): API = {
@@ -96,7 +97,7 @@ object ReflectionUtils {
 
   import scala.reflect.runtime.universe._
 
-  def supportedTypeOf(value : Any): SupportedType = {
+  def supportedTypeOf(value: Any): SupportedType = {
     value match {
       case _: Byte => Byte
       case _: Short => Short
@@ -116,10 +117,10 @@ object ReflectionUtils {
   def javaClassOf[T](implicit ttag: TypeTag[T]) = supportedTypeFor(typeOf[T]).javaClass
 
 
-  def javaClassOf(dt: DataType) : Class[_] = {
+  def javaClassOf(dt: DataType): Class[_] = {
     dt match {
       case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] => Double.javaClass
-      case _  => bySparkType(dt).javaClass
+      case _ => bySparkType(dt).javaClass
     }
   }
 
@@ -134,7 +135,7 @@ object ReflectionUtils {
   def vecTypeOf[T](implicit ttag: TypeTag[T]) = vecTypeFor(typeOf[T])
 
   /** Method translating SQL types into Sparkling Water types */
-  def vecTypeFor(dt : DataType): Byte =
+  def vecTypeFor(dt: DataType): Byte =
     dt match {
       case _: DecimalType => Vec.T_NUM
       case _ => bySparkType(dt).vecType
@@ -157,11 +158,11 @@ object ReflectionUtils {
 
   def supportedType(v: Vec): SupportedType = {
     v.get_type() match {
-      case Vec.T_BAD  => Byte // vector is full of NAs, use any type
-      case Vec.T_NUM  => detectSupportedNumericType(v)
-      case Vec.T_CAT  => String
+      case Vec.T_BAD => Byte // vector is full of NAs, use any type
+      case Vec.T_NUM => detectSupportedNumericType(v)
+      case Vec.T_CAT => String
       case Vec.T_UUID => String
-      case Vec.T_STR  => String
+      case Vec.T_STR => String
       case Vec.T_TIME => Timestamp
       case typ => throw new IllegalArgumentException("Unknown vector type " + typ)
     }
@@ -204,7 +205,7 @@ case class ProductType(members: Array[ProductMember]) {
 }
 
 object ProductType {
-  def create[A <: Product: TypeTag: ClassTag]: ProductType = {
+  def create[A <: Product : TypeTag : ClassTag]: ProductType = {
     val members = productMembers[A]
     new ProductType(members)
   }

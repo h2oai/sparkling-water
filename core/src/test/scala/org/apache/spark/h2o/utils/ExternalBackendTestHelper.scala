@@ -34,7 +34,7 @@ trait ExternalBackendTestHelper {
 
   lazy val swJar = sys.props.getOrElse("sparkling.assembly.jar", sys.env.getOrElse("sparkling.assembly.jar",
     fail("sparkling.assembly.jar environment variable is not set! It should point to the location of sparkling-water" +
-    " assembly JAR")))
+      " assembly JAR")))
 
   lazy val h2oExtendedJar = sys.props.getOrElse("H2O_EXTENDED_JAR", sys.env.getOrElse("H2O_EXTENDED_JAR",
     fail("H2O_EXTENDED_JAR environment variable is not set! It should point to the location of H2O assembly jar file")))
@@ -47,16 +47,16 @@ trait ExternalBackendTestHelper {
     // Since some tests requires additional classes to be present at H2O classpath we add them here
     // instead of extending h2o jar by another classes
     // The best solution would be to implement distributed classloading for H2O
-    val jarList =  List(h2oExtendedJar) ++ additionalCp.toList
+    val jarList = List(h2oExtendedJar) ++ additionalCp.toList
     val cmdToLaunch = Seq[String]("java", "-cp", jarList.mkString(":"), "water.H2OApp", "-md5skip", "-name", cloudName, "-ip", ip)
     Process(cmdToLaunch).run()
   }
 
   def runH2OClusterOnYARN() = sys.props.get("spark.ext.h2o.external.start.mode").exists(_ == "auto")
-  
+
   def startCloud(cloudSize: Int, cloudName: String, ip: String, additionalCp: String*): Unit = {
     // do not start h2o nodes if this property is set, they will be started on yarn automatically
-    if(!runH2OClusterOnYARN()) {
+    if (!runH2OClusterOnYARN()) {
       nodeProcesses = (1 to cloudSize).map { _ => launchSingle(cloudName, ip, additionalCp: _*) }
       // Wait to ensure that h2o nodes are created earlier than h2o client
       Thread.sleep(clusterStartTimeout)
@@ -68,7 +68,7 @@ trait ExternalBackendTestHelper {
   }
 
   def stopCloud(): Unit = {
-    if(!runH2OClusterOnYARN()) {
+    if (!runH2OClusterOnYARN()) {
       if (nodeProcesses != null) {
         nodeProcesses.foreach(_.destroy())
         nodeProcesses = null

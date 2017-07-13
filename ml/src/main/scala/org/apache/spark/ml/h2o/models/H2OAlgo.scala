@@ -31,6 +31,7 @@ import water.Key
 import water.fvec.Frame
 
 import scala.reflect.ClassTag
+
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
@@ -42,14 +43,14 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
 
   type SELF
 
-  if(parameters.isDefined){
+  if (parameters.isDefined) {
     setParams(parameters.get)
   }
 
   override def fit(dataset: Dataset[_]): M = {
     import h2oContext.implicits._
     // check if trainKey is explicitly set
-    val key = if(isSet(trainKey)){
+    val key = if (isSet(trainKey)) {
       $(trainKey)
     } else {
       h2oContext.toH2OFrameKey(dataset.toDF())
@@ -72,13 +73,24 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
   override def write: MLWriter = new H2OAlgorithmWriter(this)
 
   /** @group setParam */
-  def setValidKey(value: String) = set(validKey,Key.make[Frame](value)){getParams._valid = Key.make[Frame](value)}
+  def setValidKey(value: String) = set(validKey, Key.make[Frame](value)) {
+    getParams._valid = Key.make[Frame](value)
+  }
+
   /** @group setParam */
-  def setValidKey(value: Key[Frame]) = set(validKey,value){getParams._valid = value}
+  def setValidKey(value: Key[Frame]) = set(validKey, value) {
+    getParams._valid = value
+  }
+
   /** @group setParam */
-  def setTrainKey(value: String) = set(trainKey,Key.make[Frame](value)){getParams._train = Key.make[Frame](value)}
+  def setTrainKey(value: String) = set(trainKey, Key.make[Frame](value)) {
+    getParams._train = Key.make[Frame](value)
+  }
+
   /** @group setParam */
-  def setTrainKey(value: Key[Frame]) = set(trainKey,value){getParams._train = value}
+  def setTrainKey(value: Key[Frame]) = set(trainKey, value) {
+    getParams._train = value
+  }
 
   def allStringVecToCategorical(hf: H2OFrame): H2OFrame = {
     hf.vecs().indices
@@ -93,7 +105,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag,
   /**
     * Set the param and execute custom piece of code
     */
-  protected final def set[T](param: Param[T], value: T)(f:  => Unit): SELF = {
+  protected final def set[T](param: Param[T], value: T)(f: => Unit): SELF = {
     f
     super.set(param, value).asInstanceOf[SELF]
   }
@@ -122,7 +134,7 @@ private[models] class H2OAlgorithmWriter[T <: H2OAlgorithm[_, _]](instance: T) e
 }
 
 private[models] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <: Model.Parameters : ClassTag]
-                                (val defaultFileName: String) extends MLReader[A] {
+(val defaultFileName: String) extends MLReader[A] {
 
   private val className = implicitly[ClassTag[A]].runtimeClass.getName
 
@@ -137,8 +149,8 @@ private[models] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <
     h2oAlgo
   }
 
-  private def make[CT : ClassTag, X <: Object : ClassTag]
-                  (p: X, uid: String, h2oContext: H2OContext, sqlContext: SQLContext): CT = {
+  private def make[CT: ClassTag, X <: Object : ClassTag]
+  (p: X, uid: String, h2oContext: H2OContext, sqlContext: SQLContext): CT = {
     val pClass = implicitly[ClassTag[X]].runtimeClass
     val aClass = implicitly[ClassTag[CT]].runtimeClass
     val ctor = aClass.getConstructor(pClass, classOf[String], classOf[H2OContext], classOf[SQLContext])

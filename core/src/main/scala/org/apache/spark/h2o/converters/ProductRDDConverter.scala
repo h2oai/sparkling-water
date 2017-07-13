@@ -51,9 +51,9 @@ private[h2o] object ProductRDDConverter extends Logging {
 
     // in case of internal backend, store regular vector types
     // otherwise for external backend store expected types
-    val expectedTypes = if(hc.getConf.runsInInternalClusterMode){
+    val expectedTypes = if (hc.getConf.runsInInternalClusterMode) {
       vecTypes
-    }else{
+    } else {
       ExternalFrameUtils.prepareExpectedTypes(ftypes)
     }
 

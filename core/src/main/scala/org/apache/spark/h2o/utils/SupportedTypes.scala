@@ -33,7 +33,9 @@ object SupportedTypes extends Enumeration {
 
   trait SupportedType {
     def vecType: VecType
+
     def sparkType: DataType
+
     def javaClass: Class[_]
 
     val matches: Type => Boolean
@@ -42,26 +44,31 @@ object SupportedTypes extends Enumeration {
   }
 
   implicit val mirror = runtimeMirror(getClass.getClassLoader)
+
   def typeForClass[T](clazz: Class[T])(implicit runtimeMirror: Mirror) = runtimeMirror.classSymbol(clazz).toType
-  
+
   final case class SimpleType[T: TypeTag](
-                                           vecType  : VecType,
+                                           vecType: VecType,
                                            sparkType: DataType,
                                            javaClass: Class[_], // note, not always T, since T is scala class
                                            ifMissing: String => T,
-                                           private val extraTypes : Type*
-      ) extends Val with SupportedType {
-    val matches = (tpe : Type) => (extraTypes.toSet + typeForClass(javaClass)).exists(_ =:= tpe)
+                                           private val extraTypes: Type*
+                                         ) extends Val with SupportedType {
+    val matches = (tpe: Type) => (extraTypes.toSet + typeForClass(javaClass)).exists(_ =:= tpe)
   }
 
   final case class OptionalType[T: TypeTag](contentType: SimpleType[T]) extends SupportedType {
     override def vecType: VecType = contentType.vecType
+
     override def sparkType: DataType = contentType.sparkType
+
     override def javaClass: Class[_] = contentType.javaClass
+
     override val matches: Type => Boolean = {
       case TypeRef(_, _, Seq(innerType)) => contentType matches innerType
       case _ => false
     }
+
     override def toString = s"Option[$contentType]"
   }
 
@@ -72,8 +79,10 @@ object SupportedTypes extends Enumeration {
   private def onNAthrow(what: String) = {
     throw new IllegalArgumentException(s"$what value missing")
   }
+
   private def onNAreturn[T](value: T)(what: String) = value
 
+  // scalastyle:off
   val Boolean   = SimpleType[scala.Boolean] (Vec.T_NUM,  BooleanType,   classOf[jl.Boolean  ], onNAreturn(false), typeOf[Boolean])
   val Byte      = SimpleType[scala.Byte   ] (Vec.T_NUM,  ByteType,      classOf[jl.Byte     ], onNAthrow, typeOf[Byte])
   val Short     = SimpleType[scala.Short  ] (Vec.T_NUM,  ShortType,     classOf[jl.Short    ], onNAthrow, typeOf[Short])
@@ -86,7 +95,8 @@ object SupportedTypes extends Enumeration {
   val String    = SimpleType[String       ] (Vec.T_STR,  StringType,    classOf[String],       onNAreturn(null), typeOf[String])
   // TODO(vlad): figure it out, why
   val UTF8      = SimpleType[UTF8String   ] (Vec.T_STR,  StringType,    classOf[String],       onNAreturn(null), typeOf[UTF8String])
-
+  // scalastyle:on
+  
   private implicit def val2type(v: Value): SimpleType[_] = v.asInstanceOf[SimpleType[_]]
 
   val allSimple: List[SimpleType[_]] = values.toList map val2type
@@ -95,18 +105,18 @@ object SupportedTypes extends Enumeration {
 
   val all: List[SupportedType] = allSimple ++ allOptional
 
-  private def index[F, T <: SupportedType](what: List[T]) =  new {
+  private def index[F, T <: SupportedType](what: List[T]) = new {
     def by(f: T => F): Map[F, T] = what map (t => f(t) -> t) toMap
   }
 
-  val byClass:      Map[Class[_],      SimpleType[_]]   = index (allSimple)   by (_.javaClass)
-  val byVecType:    Map[VecType,       SimpleType[_]]   = index (allSimple)   by (_.vecType)
-  val bySparkType:  Map[DataType,      SimpleType[_]]   = index (allSimple)   by (_.sparkType)
-  val simpleByName: Map[NameOfType,    SimpleType[_]]   = index (allSimple)   by (_.name)
-  val byName:       Map[NameOfType,    SupportedType]   = index (all)         by (_.name)
-  val byBaseType:   Map[SimpleType[_], OptionalType[_]] = index (allOptional) by (_.contentType)
+  val byClass: Map[Class[_], SimpleType[_]] = index(allSimple) by (_.javaClass)
+  val byVecType: Map[VecType, SimpleType[_]] = index(allSimple) by (_.vecType)
+  val bySparkType: Map[DataType, SimpleType[_]] = index(allSimple) by (_.sparkType)
+  val simpleByName: Map[NameOfType, SimpleType[_]] = index(allSimple) by (_.name)
+  val byName: Map[NameOfType, SupportedType] = index(all) by (_.name)
+  val byBaseType: Map[SimpleType[_], OptionalType[_]] = index(allOptional) by (_.contentType)
 
-  def byType(tpe: Type) : SupportedType = {
+  def byType(tpe: Type): SupportedType = {
     SupportedTypes.all find (_.matches(tpe)) getOrElse {
       throw new IllegalArgumentException(s"Type $tpe is not supported!")
     }

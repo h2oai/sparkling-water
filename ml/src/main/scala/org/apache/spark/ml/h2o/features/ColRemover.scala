@@ -40,24 +40,24 @@ class ColRemover(override val uid: String) extends OneTimeTransformer with ColRe
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    val columnsToLeft = if($(keep)){
+    val columnsToLeft = if ($(keep)) {
       schema.fieldNames.filter($(columns).contains(_))
-    }else{
+    } else {
       schema.fieldNames.filter(!$(columns).contains(_))
     }
-    StructType(columnsToLeft.map{
-     col => StructField(col,schema(col).dataType,schema(col).nullable,schema(col).metadata)
+    StructType(columnsToLeft.map {
+      col => StructField(col, schema(col).dataType, schema(col).nullable, schema(col).metadata)
     })
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val columnsToRemove = if($(keep)){
+    val columnsToRemove = if ($(keep)) {
       dataset.columns.filter(!$(columns).contains(_))
-    }else{
+    } else {
       dataset.columns.filter($(columns).contains(_))
     }
     var resultDataset = dataset
-    columnsToRemove.foreach{
+    columnsToRemove.foreach {
       col => resultDataset = resultDataset.drop(col)
     }
     resultDataset.toDF()
@@ -74,7 +74,7 @@ trait ColRemoverParams extends Params {
     */
   final val keep = new BooleanParam(this, "keep", "Determines if the column specified in the 'columns' parameter should be kept or removed")
 
-  setDefault(keep->false)
+  setDefault(keep -> false)
 
   /** @group getParam */
   def getKeep: Boolean = $(keep)
@@ -84,7 +84,7 @@ trait ColRemoverParams extends Params {
     */
   final val columns = new StringArrayParam(this, "columns", "List of columns to be kept or removed")
 
-  setDefault(columns->Array[String]())
+  setDefault(columns -> Array[String]())
 
   /** @group getParam */
   def getColumns: Array[String] = $(columns)

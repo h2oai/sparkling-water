@@ -24,7 +24,7 @@ import org.apache.spark.{Partition, SparkContext, TaskContext}
 
 /** Special kind of RDD which is used to invoke code on all executors detected in cluster. */
 private[h2o]
-class InvokeOnNodesRDD(nodes:Seq[NodeDesc], sc: SparkContext) extends RDD[NodeDesc](sc, Nil) {
+class InvokeOnNodesRDD(nodes: Seq[NodeDesc], sc: SparkContext) extends RDD[NodeDesc](sc, Nil) {
 
   @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[NodeDesc] = {

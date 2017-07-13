@@ -28,7 +28,7 @@ import water.exceptions.H2ONotFoundArgumentException
 /**
   * Handler for all RDD related queries
   */
-class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler{
+class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
 
   def list(version: Int, s: RDDsV3): RDDsV3 = {
     val r = s.createAndFillImpl()
@@ -53,7 +53,7 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
   private[RDDsHandler] def convertToH2OFrame(rdd: RDD[_], name: Option[String]): H2OFrame = {
     if (rdd.isEmpty()) {
       // transform empty Seq in order to create empty H2OFrame
-      h2oContext.asH2OFrame(sc.parallelize(Seq.empty[Int]),name)
+      h2oContext.asH2OFrame(sc.parallelize(Seq.empty[Int]), name)
     } else {
       rdd.first() match {
         case t if t.isInstanceOf[Double] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Double]], name)
@@ -99,7 +99,7 @@ private[api] object IcedRDDInfo {
 
 /** Simple implementation pojo holding list of RDDs */
 private[api] class RDDs extends Iced[RDDs] {
-  var rdds: Array[IcedRDDInfo]  = _
+  var rdds: Array[IcedRDDInfo] = _
 }
 
 

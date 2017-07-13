@@ -71,14 +71,14 @@ trait SharedBackendConf {
 
   /** Generic parameters */
   def setInternalClusterMode() = {
-    if(runsInExternalClusterMode){
+    if (runsInExternalClusterMode){
       logWarning("Using internal cluster mode!")
     }
     setBackendClusterMode("internal")
   }
 
   def setExternalClusterMode() = {
-    if(runsInInternalClusterMode){
+    if (runsInInternalClusterMode){
       logWarning("Using external cluster mode!")
     }
     setBackendClusterMode("external")
