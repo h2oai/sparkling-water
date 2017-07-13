@@ -17,7 +17,6 @@
 package water.api
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.h2o.utils.SharedSparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -33,8 +32,6 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with Be
 
   var scalaCodeHandler: ScalaCodeHandler = _
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf.set("spark.ext.h2o.repl.enabled", "true"))
-
-  override def createH2OContext(sc: SparkContext, conf: H2OConf): H2OContext = H2OContext.getOrCreate(sc, conf)
 
   override protected def beforeEach(): Unit = {
     scalaCodeHandler = new ScalaCodeHandler(sc, hc)

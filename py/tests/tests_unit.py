@@ -24,6 +24,7 @@ from pysparkling.context import H2OContext
 from pysparkling.conf import H2OConf
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
+from pyspark.sql import Row
 
 import h2o
 import test_utils
@@ -151,7 +152,7 @@ class FrameTransformationsTest(unittest.TestCase):
     def test_lazy_frames(self):
         from pyspark.sql import Row
         hc = self._hc
-        data = [{'c1' : 1, 'c2' : "first"}, {'c1' : 2, 'c2' : "second"}]
+        data = [Row(c1=1, c2="first"), Row(c1=2, c2="second")]
         df = self._spark.createDataFrame(data)
         hf = hc.as_h2o_frame(df)
         # Modify H2O frame - this should invalidate internal cache
