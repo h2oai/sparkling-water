@@ -20,11 +20,11 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{BackendIndependentTestHelper, H2OConf, H2OContext, Holder}
+import org.apache.spark.h2o.{BackendIndependentTestHelper, Holder}
 import org.scalatest.Suite
 import water.fvec._
-import water.{DKV, Key}
 import water.parser.BufferedString
+import water.{DKV, Key}
 
 import scala.reflect.ClassTag
 
@@ -37,16 +37,11 @@ trait SharedSparkTestContext extends SparkTestContext with BackendIndependentTes
 
   def createSparkContext: SparkContext
 
-  def createH2OContext(sc: SparkContext, conf: H2OConf): H2OContext = {
-    H2OContext.getOrCreate(sc, conf)
-  }
-
   override def beforeAll(): Unit = {
     super.beforeAll()
     sc = createSparkContext
     hc = createH2OContext(sc, 2)
   }
-
 
   override def afterAll(): Unit = {
     stopCloudIfExternal(sc)
