@@ -32,7 +32,7 @@ class PatchUtilsTestSuite extends FunSuite with BeforeAndAfterAll {
   val EXAMPLE_RESULT_AFTER_PATCH = "intp_id_12$line1.$read"
   val FAILED_MATCH = "FAIL"
 
-  def assertMatch(regex: Regex, input: String, exp: String):Unit = {
+  def assertMatch(regex: Regex, input: String, exp: String): Unit = {
     val result = input match {
       case regex(b) => b
       case _ => FAILED_MATCH

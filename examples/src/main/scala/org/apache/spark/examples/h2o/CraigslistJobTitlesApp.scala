@@ -28,14 +28,14 @@ import org.apache.spark.{SparkContext, mllib}
 import water.support._
 
 /**
- * This application use word2vec to build a model
- * classifying job offers at Craigslist.
- */
+  * This application use word2vec to build a model
+  * classifying job offers at Craigslist.
+  */
 class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJobTitles.csv")
                             (@transient override val sc: SparkContext,
-                              @transient override val sqlContext: SQLContext,
-                              @transient override val h2oContext: H2OContext) extends SparklingWaterApp
-                            with SparkContextSupport with GBMSupport with ModelMetricsSupport with H2OFrameSupport with Serializable {
+                             @transient override val sqlContext: SQLContext,
+                             @transient override val h2oContext: H2OContext) extends SparklingWaterApp
+  with SparkContextSupport with GBMSupport with ModelMetricsSupport with H2OFrameSupport with Serializable {
 
   // Import companion object methods
   import CraigslistJobTitlesApp._
@@ -51,7 +51,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     println(show(predict("Financial accountant CPA preferred", gbmModel, w2vModel), classNames))
   }
 
-  def buildModels(datafile: String = jobsFile, modelName: String): (Model[_,_,_], Word2VecModel) = {
+  def buildModels(datafile: String = jobsFile, modelName: String): (Model[_, _, _], Word2VecModel) = {
     // Get training frame and word to vec model for data
     val (allDataFrame, w2vModel) = createH2OFrame(datafile)
     val frs = splitFrame(allDataFrame, Array("train.hex", "valid.hex"), Array(0.8, 0.2))
@@ -69,7 +69,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     predict(jobTitle, model = water.DKV.getGet(modelId), w2vModel)
   }
 
-  def predict(jobTitle: String, model: Model[_,_,_], w2vModel: Word2VecModel): (String, Array[Double]) = {
+  def predict(jobTitle: String, model: Model[_, _, _], w2vModel: Word2VecModel): (String, Array[Double]) = {
     val tokens = tokenize(jobTitle, STOP_WORDS)
     val vec = wordsToVector(tokens, w2vModel)
 
@@ -93,7 +93,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
 
   }
 
-  def classify(jobTitle: String, model: Model[_,_,_], w2vModel: Word2VecModel): (String, Array[Double]) = {
+  def classify(jobTitle: String, model: Model[_, _, _], w2vModel: Word2VecModel): (String, Array[Double]) = {
     val tokens = tokenize(jobTitle, STOP_WORDS)
     if (tokens.length == 0) {
       EMPTY_PREDICTION
@@ -110,7 +110,7 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
 
     // Compute rare words
     val tokenizedRdd = dataRdd.map(d => (d(0), tokenize(d(1), STOP_WORDS)))
-                        .filter(s => s._2.length > 0)
+      .filter(s => s._2.length > 0)
     // Compute rare words
     val rareWords = computeRareWords(tokenizedRdd.map(r => r._2))
     // Filter all rare words
@@ -141,20 +141,20 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     import h2oContext.implicits._
     import sqlContext.implicits._
     val h2oFrame: H2OFrame = finalRdd.toDF
-    withLockAndUpdate(h2oFrame){ fr =>
+    withLockAndUpdate(h2oFrame) { fr =>
       fr.replace(fr.find("category"), fr.vec("category").toCategoricalVec).remove()
 
     }
     (h2oFrame, w2vModel)
   }
 
-  def computeRareWords(dataRdd : RDD[Array[String]]): Set[String] = {
+  def computeRareWords(dataRdd: RDD[Array[String]]): Set[String] = {
     // Compute frequencies of words
-    val wordCounts = dataRdd.flatMap(s => s).map(w => (w,1)).reduceByKey(_ + _)
+    val wordCounts = dataRdd.flatMap(s => s).map(w => (w, 1)).reduceByKey(_ + _)
 
     // Collect rare words
     val rareWords = wordCounts.filter { case (k, v) => v < 2 }
-      .map {case (k, v) => k }
+      .map { case (k, v) => k }
       .collect
       .toSet
     rareWords
@@ -169,21 +169,21 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
 }
 
 /**
- * Representation of single job offer with its classification.
- *
- * @param category  job category (education, labor, ...)
- * @param fv  feature vector describing job title
- */
+  * Representation of single job offer with its classification.
+  *
+  * @param category job category (education, labor, ...)
+  * @param fv       feature vector describing job title
+  */
 case class JobOffer(category: String, fv: mllib.linalg.Vector)
 
 object CraigslistJobTitlesApp extends SparkContextSupport {
 
   val EMPTY_PREDICTION = ("NA", Array[Double]())
 
-  val STOP_WORDS = Set("ax","i","you","edu","s","t","m","subject","can","lines","re","what"
-    ,"there","all","we","one","the","a","an","of","or","in","for","by","on"
-    ,"but", "is", "in","a","not","with", "as", "was", "if","they", "are", "this", "and", "it", "have"
-    , "from", "at", "my","be","by","not", "that", "to","from","com","org","like","likes","so")
+  val STOP_WORDS = Set("ax", "i", "you", "edu", "s", "t", "m", "subject", "can", "lines", "re", "what"
+    , "there", "all", "we", "one", "the", "a", "an", "of", "or", "in", "for", "by", "on"
+    , "but", "is", "in", "a", "not", "with", "as", "was", "if", "they", "are", "this", "and", "it", "have"
+    , "from", "at", "my", "be", "by", "not", "that", "to", "from", "com", "org", "like", "likes", "so")
 
 
   def main(args: Array[String]): Unit = {
@@ -212,7 +212,7 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
       .map(_.toLowerCase)
 
       //remove mix of words+numbers
-      .filter(word => ! (word exists Character.isDigit) )
+      .filter(word => !(word exists Character.isDigit))
 
       //remove stopwords defined above (you can add to this list if you want)
       .filterNot(word => stopWords.contains(word))
@@ -223,13 +223,17 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
   }
 
   // Make some helper functions
-  private def sumArray (m: Array[Double], n: Array[Double]): Array[Double] = {
-    for (i <- 0 until m.length) {m(i) += n(i)}
+  private def sumArray(m: Array[Double], n: Array[Double]): Array[Double] = {
+    for (i <- 0 until m.length) {
+      m(i) += n(i)
+    }
     return m
   }
 
-  private def divArray (m: Array[Double], divisor: Double) : Array[Double] = {
-    for (i <- 0 until m.length) {m(i) /= divisor}
+  private def divArray(m: Array[Double], divisor: Double): Array[Double] = {
+    for (i <- 0 until m.length) {
+      m(i) /= divisor
+    }
     return m
   }
 
@@ -240,6 +244,7 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
         words.length))
     vec
   }
+
   private def wordToVector(word: String, model: Word2VecModel): Vector = {
     try {
       return model.transform(word)

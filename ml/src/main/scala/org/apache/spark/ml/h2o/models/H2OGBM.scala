@@ -29,7 +29,7 @@ import org.apache.spark.sql.SQLContext
   * H2O GBM Algo exposed via Spark ML pipelines.
   */
 class H2OGBMModel(model: GBMModel, override val uid: String)(h2oContext: H2OContext, sqlContext: SQLContext)
-  extends H2OModel[H2OGBMModel,GBMModel](model, h2oContext, sqlContext) with MLWritable {
+  extends H2OModel[H2OGBMModel, GBMModel](model, h2oContext, sqlContext) with MLWritable {
 
   def this(model: GBMModel)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(model, Identifiable.randomUID("gbmModel"))(h2oContext, sqlContext)
 
@@ -42,7 +42,7 @@ object H2OGBMModel extends MLReadable[H2OGBMModel] {
   @Since("1.6.0")
   override def read: MLReader[H2OGBMModel] = new H2OModelReader[H2OGBMModel, GBMModel](defaultFileName) {
     override protected def make(model: GBMModel, uid: String)
-                               (implicit h2oContext: H2OContext,sqLContext: SQLContext): H2OGBMModel = new H2OGBMModel(model, uid)(h2oContext, sqlContext)
+                               (implicit h2oContext: H2OContext, sqLContext: SQLContext): H2OGBMModel = new H2OGBMModel(model, uid)(h2oContext, sqlContext)
   }
 
   @Since("1.6.0")
@@ -50,9 +50,9 @@ object H2OGBMModel extends MLReadable[H2OGBMModel] {
 }
 
 class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
-                     (implicit h2oContext: H2OContext, sqlContext: SQLContext)
+            (implicit h2oContext: H2OContext, sqlContext: SQLContext)
   extends H2OAlgorithm[GBMParameters, H2OGBMModel](parameters)
-          with H2OGBMParams {
+    with H2OGBMParams {
 
   type SELF = H2OGBM
 
@@ -64,8 +64,10 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
   }
 
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("dl"))
-  def this(parameters: GBMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters),Identifiable.randomUID("dl"))
-  def this(parameters: GBMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters),uid)
+
+  def this(parameters: GBMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("dl"))
+
+  def this(parameters: GBMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
 }
 
 object H2OGBM extends MLReadable[H2OGBM] {
@@ -88,6 +90,7 @@ trait H2OGBMParams extends H2OTreeParams[GBMParameters] {
   type H2O_SCHEMA = GBMParametersV3
 
   protected def paramTag = reflect.classTag[GBMParameters]
+
   protected def schemaTag = reflect.classTag[H2O_SCHEMA]
 
   /**

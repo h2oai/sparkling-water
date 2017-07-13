@@ -71,7 +71,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
     Seq("-log_level", conf.h2oNodeLogLevel, "-baseport", conf.nodeBasePort.toString)).toArray
 
 
-  def toFlatFileString(executors: Array[NodeDesc]):String = {
+  def toFlatFileString(executors: Array[NodeDesc]): String = {
     executors.map(en => s"${en.hostname}:${en.port}").mkString("\n")
   }
 
@@ -89,7 +89,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
                 spreadRDD: RDD[NodeDesc],
                 numOfExecutors: Int,
                 h2oArgs: Array[String],
-                networkMask: Option[String]):Array[NodeDesc] = {
+                networkMask: Option[String]): Array[NodeDesc] = {
 
     // Create global accumulator for list of nodes IP:PORT
     val bc = sc.collectionAccumulator[NodeDesc]
@@ -227,7 +227,7 @@ private class SparklingWaterConfig(val flatfileBVariable: CollectionAccumulator[
   extends AbstractEmbeddedH2OConfig with Logging {
 
     /** String containing a flatfile string filled asynchronously by different thread. */
-    @volatile var flatFile:Option[String] = None
+    @volatile var flatFile: Option[String] = None
 
   override def notifyAboutEmbeddedWebServerIpPort(ip: InetAddress, port: Int): Unit = {
     val env = SparkEnv.get

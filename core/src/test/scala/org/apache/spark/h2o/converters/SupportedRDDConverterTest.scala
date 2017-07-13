@@ -47,6 +47,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     def dupChecker(iter: Iterator[IntHolder]): Unit = {
       iter foreach intIteratorTestMemory.put
     }
+
     try {
       sc.runJob(rdd, dupChecker _)
     } catch {
@@ -84,16 +85,17 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
   // H2OFrame to RDD[T] JUnits
   test("H2OFrame[T_NUM] to RDD[Prostate]") {
     val h2oFrame: H2OFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
-    assert (h2oFrame.vec(0).isNumeric & h2oFrame.vec(1).isNumeric & h2oFrame.vec(2).isNumeric &
+    assert(h2oFrame.vec(0).isNumeric & h2oFrame.vec(1).isNumeric & h2oFrame.vec(2).isNumeric &
       h2oFrame.vec(3).isNumeric & h2oFrame.vec(4).isNumeric & h2oFrame.vec(5).isNumeric & h2oFrame.vec(6).isNumeric
       & h2oFrame.vec(7).isNumeric & h2oFrame.vec(8).isNumeric)
     val rdd = hc.asRDD[Prostate](h2oFrame)
+
     def @@(i: Int) = rdd.take(i + 1)(i)
 
-    assert (rdd.count == h2oFrame.numRows())
-    assert (@@(4).productArity == 9)
+    assert(rdd.count == h2oFrame.numRows())
+    assert(@@(4).productArity == 9)
     val sample7 = @@(7)
-    assert (sample7.AGE.get == 61)
+    assert(sample7.AGE.get == 61)
 
     h2oFrame.delete()
   }
@@ -106,7 +108,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
       val nextRowIdx = rowIdx + 1
       val value = vec.at8(rowIdx) // value stored at rowIdx-th
-      assert (nextRowIdx == value, "The H2OFrame values should match row numbers+1")
+      assert(nextRowIdx == value, "The H2OFrame values should match row numbers+1")
     })
     // Clean up
     h2oFrame.delete()
@@ -117,15 +119,15 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
 
     def almostDefined(i: Long) = Some(i.toInt) filter (_ % 31 != 0)
 
-    val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(almostDefined(v)))
-    val h2oFrame:H2OFrame = hc.asH2OFrame(rdd)
+    val rdd = sc.parallelize(1 to 1000, 100).map(v => IntHolder(almostDefined(v)))
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
 
     assertInvariantsWithNulls(rdd, h2oFrame, (rowIdx, vec) => {
       val nextRowIdx = rowIdx + 1
       almostDefined(nextRowIdx) match {
         case Some(r) =>
           val value = vec.at8(rowIdx) // value stored at rowIdx-th
-          assert (r == value, s"The H2OFrame values should match row numbers+1 = $r")
+          assert(r == value, s"The H2OFrame values should match row numbers+1 = $r")
         case None =>
           assert(vec.isNA(rowIdx), s"Row at $rowIdx must be NA")
       }
@@ -144,7 +146,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
       val nextRowIdx = rowIdx + 1
       val value = vec.at(rowIdx) // value stored at rowIdx-th
       // Using == since int should be mapped strictly to doubles
-      assert (nextRowIdx == value, "The H2OFrame values should match row numbers+1")
+      assert(nextRowIdx == value, "The H2OFrame values should match row numbers+1")
     })
     // Clean up
     h2oFrame.delete()
@@ -199,7 +201,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
       val dom = vec.domain()
       val value = dom(vec.at8(rowIdx).asInstanceOf[Int]) // value stored at rowIdx-th
       // Using == since int should be mapped strictly to doubles
-      assert (rowIdx + 1 == value.toInt, "The H2OFrame values should match row numbers")
+      assert(rowIdx + 1 == value.toInt, "The H2OFrame values should match row numbers")
     })
     // Clean up
     h2oFrame.delete()
@@ -218,7 +220,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
       val nextRowIdx = (rowIdx + 1).toString
       val value = vec.atStr(valueString, rowIdx) // value stored at rowIdx-th
       // Using == since int should be mapped strictly to doubles
-      assert (nextRowIdx.equals(value.toString), "The H2OFrame values should match row numbers+1")
+      assert(nextRowIdx.equals(value.toString), "The H2OFrame values should match row numbers+1")
     })
     // Clean up
     h2oFrame.delete()
@@ -242,13 +244,13 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     def almostDefined(i: Long) = Some(i.toInt) filter (_ % 31 != 0)
 
     val rdd = sc.parallelize(1 to 1000000, 10).map(i => OptionAndNot(Some(i), almostDefined(i)))
-    val h2oFrame:H2OFrame = rdd
+    val h2oFrame: H2OFrame = rdd
     val back2rdd = hc.asRDD[OptionAndNot](h2oFrame)
     assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
     assert(back2rdd.count == h2oFrame.numRows(), "Number of rows should match")
 
     back2rdd.foreach {
-      case OptionAndNot(x, xOpt) => if(xOpt != x.flatMap(i => almostDefined(i))) throw new IllegalStateException(s"Failed at $x/$xOpt")
+      case OptionAndNot(x, xOpt) => if (xOpt != x.flatMap(i => almostDefined(i))) throw new IllegalStateException(s"Failed at $x/$xOpt")
     }
   }
 
@@ -258,7 +260,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
+    assert(h2oFrame.vec(0).isNumeric)
   }
 
   test("RDD[ShortField] to H2OFrame[Numeric]") {
@@ -266,7 +268,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
+    assert(h2oFrame.vec(0).isNumeric)
   }
 
   test("RDD[IntField] to H2OFrame[Numeric]") {
@@ -275,7 +277,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
+    assert(h2oFrame.vec(0).isNumeric)
   }
 
   test("RDD[LongField] to H2OFrame[Numeric]") {
@@ -284,7 +286,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
+    assert(h2oFrame.vec(0).isNumeric)
   }
 
   test("RDD[FloatField] to H2OFrame[Numeric]") {
@@ -293,7 +295,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
+    assert(h2oFrame.vec(0).isNumeric)
   }
 
   test("RDD[DoubleField] to H2OFrame[Numeric]") {
@@ -302,7 +304,7 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     val h2oFrame = hc.asH2OFrame(rdd)
 
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
-    assert (h2oFrame.vec(0).isNumeric)
+    assert(h2oFrame.vec(0).isNumeric)
   }
 
   // PUBDEV-1173
@@ -402,9 +404,11 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     assert(rdd.count() == h2oFrame.numRows(), "Number of rows should match")
   }
 
-  test("H2OFrame with categorical column into RDD"){
+  test("H2OFrame with categorical column into RDD") {
     val hf = hc.asH2OFrame(sc.parallelize(1 to 100).map(_.toString))
-    H2OFrameSupport.withLockAndUpdate(hf){_.replace(0, hf.vec(0).toCategoricalVec).remove()}
+    H2OFrameSupport.withLockAndUpdate(hf) {
+      _.replace(0, hf.vec(0).toCategoricalVec).remove()
+    }
     val rdd = hc.asRDD[StringHolder](hf)
     assert(rdd.count() == hf.numRows(), "Number of row should match")
   }
@@ -416,14 +420,14 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     // Check numbering
     val vec = df.vec(0)
     var rowIdx = 0
-    while(rowIdx < df.numRows()) {
-      assert (!vec.isNA(rowIdx), "The H2OFrame should not contain any NA values")
-      rowAssert (rowIdx, vec)
+    while (rowIdx < df.numRows()) {
+      assert(!vec.isNA(rowIdx), "The H2OFrame should not contain any NA values")
+      rowAssert(rowIdx, vec)
       rowIdx += 1
     }
   }
 
-  private def assertInvariantsWithNulls[T<:Product](rdd: RDD[T], df: H2OFrame, rowAssert: RowValueAssert): Unit = {
+  private def assertInvariantsWithNulls[T <: Product](rdd: RDD[T], df: H2OFrame, rowAssert: RowValueAssert): Unit = {
     assertHolderProperties(df)
     assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
     // Check numbering
@@ -444,20 +448,20 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
   }
 
   def assertRDDH2OFrameInvariants[T](inputRDD: RDD[T], df: H2OFrame): Unit = {
-    assert( inputRDD.count == df.numRows(), "Number of rows has to match")
+    assert(inputRDD.count == df.numRows(), "Number of rows has to match")
     inputRDD match {
       case x if x.take(1)(0).isInstanceOf[ByteField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[ByteField].productArity, "Number columns should match")
+        assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[ByteField].productArity, "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[ShortField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[ShortField].productArity, "Number columns should match")
+        assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[ShortField].productArity, "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[LongField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[LongField].productArity, "Number columns should match")
+        assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[LongField].productArity, "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[IntField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[IntField].productArity, "Number columns should match")
+        assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[IntField].productArity, "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[FloatField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[FloatField].productArity, "Number columns should match")
+        assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[FloatField].productArity, "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[DoubleField] =>
-        assert( df.numCols() == inputRDD.take(1)(0).asInstanceOf[DoubleField].productArity, "Number columns should match")
+        assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[DoubleField].productArity, "Number columns should match")
       case x => fail(s"Bad data $x")
     }
   }

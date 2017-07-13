@@ -35,12 +35,12 @@ class SupportedTypesTest extends FunSuite {
     val oldKeys = OldH2OTypeUtils.dataTypeToVecType.keySet
     val newKeys = byClass.keySet
     assert(oldKeys.diff(newKeys).isEmpty)
-    assert(OldH2OTypeUtils.dataTypeToVecType ==byClass.filterKeys(oldKeys.contains).mapValues(_.vecType))
+    assert(OldH2OTypeUtils.dataTypeToVecType == byClass.filterKeys(oldKeys.contains).mapValues(_.vecType))
   }
 
-  test ("Compare with oldVersion of dataTypeTOVecType") {
+  test("Compare with oldVersion of dataTypeTOVecType") {
     import org.apache.spark.sql.types._
-    val samples = ByteType::ShortType::IntegerType::LongType::FloatType::DoubleType::StringType::TimestampType::Nil
+    val samples = ByteType :: ShortType :: IntegerType :: LongType :: FloatType :: DoubleType :: StringType :: TimestampType :: Nil
     val oldStuff = samples map OldReflectionUtils.dataTypeToVecType
     val newStuff = samples map bySparkType map (_.vecType)
     assert(oldStuff == newStuff)
@@ -75,7 +75,7 @@ class SupportedTypesTest extends FunSuite {
     def mustFail[T](msg: String, value: T) = try {
       val t = supportedTypeOf(value); fail(s"Not acceptable: $msg: got $t")
     } catch {
-      case iae: IllegalArgumentException => ;//success
+      case iae: IllegalArgumentException => ; //success
     }
 
     mustFail("Null", null)
@@ -85,7 +85,7 @@ class SupportedTypesTest extends FunSuite {
   }
 
   test("Infer type from simple scala type") {
-  import scala.reflect.runtime.universe.definitions._
+    import scala.reflect.runtime.universe.definitions._
 
     val stringCheck = SupportedTypes.String matches typeOf[String]
     assert(stringCheck, "Problems with String type")
@@ -113,7 +113,7 @@ class SupportedTypesTest extends FunSuite {
     mustBe(Double, DoubleTpe)
     mustBe(Double, typeOf[scala.Double])
     mustBe(Double, typeOf[java.lang.Double])
-    mustBe(Timestamp,typeOf[java.sql.Timestamp])
+    mustBe(Timestamp, typeOf[java.sql.Timestamp])
     mustBe(Date, typeOf[java.sql.Date])
     mustBe(String, typeOf[String])
     mustBe(UTF8, typeOf[UTF8String])
@@ -130,8 +130,8 @@ class SupportedTypesTest extends FunSuite {
     mustBe(OptionalType(Long), typeOf[Option[scala.Long]])
     mustBe(OptionalType(Float), typeOf[Option[scala.Float]])
     mustBe(OptionalType(Double), typeOf[Option[scala.Double]])
-    mustBe(OptionalType(Timestamp),typeOf[Option[java.sql.Timestamp]])
-    mustBe(OptionalType(Date),typeOf[Option[java.sql.Date]])
+    mustBe(OptionalType(Timestamp), typeOf[Option[java.sql.Timestamp]])
+    mustBe(OptionalType(Date), typeOf[Option[java.sql.Date]])
     mustBe(OptionalType(String), typeOf[Option[String]])
     mustBe(OptionalType(UTF8), typeOf[Option[UTF8String]])
   }

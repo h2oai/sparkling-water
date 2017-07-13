@@ -30,17 +30,17 @@ import water.fvec.{Frame, H2OFrame}
 import water.{DKV, Key}
 
 /**
-  *  Split the dataset and store the splits with the specified keys into DKV
-  *  It determines the frame which is passed on the output in the following order:
-  *     1) If the train key is specified using setTrainKey method and the key is also specified in the list of keys,
-  *        then frame with this key is passed on the output
-  *     2) Otherwise, if the default key - "train.hex" is specified in the list of keys, then frame with this key
-  *        is passed on the output
-  *     3) Otherwise the first frame specified in the list of keys is passed on the output
-*/
+  * Split the dataset and store the splits with the specified keys into DKV
+  * It determines the frame which is passed on the output in the following order:
+  * 1) If the train key is specified using setTrainKey method and the key is also specified in the list of keys,
+  * then frame with this key is passed on the output
+  * 2) Otherwise, if the default key - "train.hex" is specified in the list of keys, then frame with this key
+  * is passed on the output
+  * 3) Otherwise the first frame specified in the list of keys is passed on the output
+  */
 class DatasetSplitter(override val uid: String)
                      (implicit val h2oContext: H2OContext, sqlContext: SQLContext)
-  extends OneTimeTransformer with DatasetSplitterParams with DefaultParamsWritable{
+  extends OneTimeTransformer with DatasetSplitterParams with DefaultParamsWritable {
 
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Identifiable.randomUID("h2oFrameSplitter"))
 
@@ -60,8 +60,8 @@ class DatasetSplitter(override val uid: String)
 
   /** @group setParam
     *
-    * When specified trainKey is not in the list of keys, the splitter passes the first split as train dataset
-    * */
+    *        When specified trainKey is not in the list of keys, the splitter passes the first split as train dataset
+    **/
   def setTrainKey(value: String) = set(trainKey, value)
 
   @DeveloperApi
@@ -73,11 +73,11 @@ class DatasetSplitter(override val uid: String)
     require($(keys).nonEmpty, "Keys can not be empty")
 
     import h2oContext.implicits._
-    split(dataset.toDF(),$(keys),$(ratios))
+    split(dataset.toDF(), $(keys), $(ratios))
 
-    val returnKey = if($(keys).contains($(trainKey))){
+    val returnKey = if ($(keys).contains($(trainKey))) {
       $(trainKey)
-    }else{
+    } else {
       $(keys)(0) // first key
     }
 
@@ -87,7 +87,7 @@ class DatasetSplitter(override val uid: String)
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
 }
 
-object DatasetSplitter extends MLReadable[DatasetSplitter]{
+object DatasetSplitter extends MLReadable[DatasetSplitter] {
 
   private class DatasetSplitterReader extends MLReader[DatasetSplitter] {
 
@@ -117,7 +117,7 @@ trait DatasetSplitterParams extends Params {
     */
   final val ratios = new DoubleArrayParam(this, "ratios", "Determines in which ratios split the dataset")
 
-  setDefault(ratios->Array[Double](1.0))
+  setDefault(ratios -> Array[Double](1.0))
 
   /** @group getParam */
   def getRatios: Array[Double] = $(ratios)
@@ -127,7 +127,7 @@ trait DatasetSplitterParams extends Params {
     */
   final val keys = new StringArrayParam(this, "keys", "Sets the keys for split frames")
 
-  setDefault(keys->Array[String]("train.hex"))
+  setDefault(keys -> Array[String]("train.hex"))
 
   /** @group getParam */
   def getKeys: Array[String] = $(keys)
@@ -137,7 +137,7 @@ trait DatasetSplitterParams extends Params {
     */
   final val trainKey = new Param[String](this, "trainKey", "Specify which key from keys specify the training dataset")
 
-  setDefault(trainKey->"train.hex")
+  setDefault(trainKey -> "train.hex")
 
   /** @group getParam */
   def getTrainKey: String = $(trainKey)

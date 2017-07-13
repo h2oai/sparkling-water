@@ -101,9 +101,9 @@ class FrameMLUtilsTest extends FunSuite with SharedSparkTestContext {
     assertResult(50)(labelPoints.length)
     labelPoints.foreach(entry => {
       assertResult(3)(entry.features.numActives)
-      if(entry.label % 3 == 0) {
+      if (entry.label % 3 == 0) {
         assertResult(25.5)(entry.features(0))
-      } else if(entry.label % 3 == 1) {
+      } else if (entry.label % 3 == 1) {
         assertResult(25.757575757575758)(entry.features(1))
         assertResult(0.48484848484848486)(entry.features(2))
       } else {

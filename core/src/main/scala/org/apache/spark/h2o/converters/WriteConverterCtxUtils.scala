@@ -37,8 +37,8 @@ object WriteConverterCtxUtils {
   def create(uploadPlan: Option[UploadPlan],
              partitionId: Int, totalNumOfRows: Option[Int], writeTimeout: Int): WriteConverterCtx = {
     uploadPlan
-      .map{plan => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), totalNumOfRows.get, writeTimeout)}
-      .getOrElse( new InternalWriteConverterCtx())
+      .map { plan => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), totalNumOfRows.get, writeTimeout) }
+      .getOrElse(new InternalWriteConverterCtx())
   }
 
   /**
@@ -48,7 +48,7 @@ object WriteConverterCtxUtils {
     * In case of external backend it returns new iterator with the same data and the length of the data
     */
   def bufferedIteratorWithSize[T](uploadPlan: Option[UploadPlan], original: Iterator[T]): (Iterator[T], Option[Int]) = {
-    uploadPlan.map{ _ =>
+    uploadPlan.map { _ =>
       val buffered = original.toList
       (buffered.iterator, Some(buffered.size))
     }.getOrElse(original, None)
@@ -57,41 +57,41 @@ object WriteConverterCtxUtils {
   /**
     * Converts the RDD to H2O Frame using specified conversion function
     *
-    * @param hc H2O context
-    * @param rdd rdd to convert
-    * @param keyName key of the resulting frame
+    * @param hc       H2O context
+    * @param rdd      rdd to convert
+    * @param keyName  key of the resulting frame
     * @param colNames names of the columns in the H2O Frame
     * @param vecTypes types of the vectors in the H2O Frame
-    * @param func conversion function - the function takes parameters needed extra by specific transformations
-    *             and returns function which does the general transformation
+    * @param func     conversion function - the function takes parameters needed extra by specific transformations
+    *                 and returns function which does the general transformation
     * @tparam T type of RDD to convert
     * @return H2O Frame
     */
-  def convert[T](hc: H2OContext, rdd : RDD[T], keyName: String, colNames: Array[String], vecTypes: Array[Byte],
+  def convert[T](hc: H2OContext, rdd: RDD[T], keyName: String, colNames: Array[String], vecTypes: Array[Byte],
                  func: ConversionFunction[T]) = {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, colNames)
 
     // prepare required metadata based on the used backend
-    val uploadPlan = if(hc.getConf.runsInExternalClusterMode){
+    val uploadPlan = if (hc.getConf.runsInExternalClusterMode) {
       Some(ExternalWriteConverterCtx.scheduleUpload(rdd.getNumPartitions))
-    }else{
+    } else {
       None
     }
 
     val operation: SparkJob[T] = func(keyName, vecTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout)
-      val rows = hc.sparkContext.runJob(rdd, operation) // eager, not lazy, evaluation
-      val res = new Array[Long](rdd.partitions.length)
-      rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
-      // Add Vec headers per-Chunk, and finalize the H2O Frame
+    val rows = hc.sparkContext.runJob(rdd, operation) // eager, not lazy, evaluation
+    val res = new Array[Long](rdd.partitions.length)
+    rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
+    // Add Vec headers per-Chunk, and finalize the H2O Frame
 
-      // get the vector types from expected types in case of external h2o cluster
-      val types = if (hc.getConf.runsInExternalClusterMode) {
-        ExternalFrameUtils.vecTypesFromExpectedTypes(vecTypes)
-      } else {
-        vecTypes
-      }
-      new H2OFrame(finalizeFrame(keyName, res, types))
+    // get the vector types from expected types in case of external h2o cluster
+    val types = if (hc.getConf.runsInExternalClusterMode) {
+      ExternalFrameUtils.vecTypesFromExpectedTypes(vecTypes)
+    } else {
+      vecTypes
+    }
+    new H2OFrame(finalizeFrame(keyName, res, types))
   }
 
   private def initFrame(keyName: String, names: Array[String]): Unit = {
@@ -102,9 +102,9 @@ object WriteConverterCtxUtils {
   }
 
   private def finalizeFrame(keyName: String,
-                               res: Array[Long],
-                               colTypes: Array[Byte],
-                               colDomains: Array[Array[String]] = null): Frame = {
+                            res: Array[Long],
+                            colTypes: Array[Byte],
+                            colDomains: Array[Array[String]] = null): Frame = {
 
     val fr = DKV.getGet[Frame](keyName)
     water.fvec.FrameUtils.finalizePartialFrame(fr, res, colDomains, colTypes)
