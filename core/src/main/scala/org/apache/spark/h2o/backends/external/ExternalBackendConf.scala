@@ -126,11 +126,11 @@ object ExternalBackendConf {
     * to the external cluster in the given time, the cluster is killed */
   val PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT = ("spark.ext.h2o.cluster.client.connect.timeout", 120000 + 10000)
 
-  /** Timeout for confirmation of read operation ( h2o frame => spark frame) on external cluster. */
-  val PROP_EXTERNAL_READ_TIMEOUT = ("spark.ext.h2o.external.read.confirmation.timeout", 20)
+  /** Timeout in seconds for confirmation of read operation ( h2o frame => spark frame) on external cluster. */
+  val PROP_EXTERNAL_READ_TIMEOUT = ("spark.ext.h2o.external.read.confirmation.timeout", 60)
 
-  /** Timeout for confirmation of write operation ( spark frame => h2o frame) on external cluster. */
-  val PROP_EXTERNAL_WRITE_TIMEOUT = ("spark.ext.h2o.external.write.confirmation.timeout", 20)
+  /** Timeout in seconds for confirmation of write operation ( spark frame => h2o frame) on external cluster. */
+  val PROP_EXTERNAL_WRITE_TIMEOUT = ("spark.ext.h2o.external.write.confirmation.timeout", 60)
 
   /** Timeout in seconds for starting h2o external cluster */
   val PROP_EXTERNAL_CLUSTER_START_TIMEOUT = ("spark.ext.h2o.cluster.start.timeout", 120)
@@ -155,8 +155,4 @@ object ExternalBackendConf {
 
   /** Yarn queue on which external cluster should be started */
   val PROP_EXTERNAL_CLUSTER_YARN_QUEUE = ("spark.ext.h2o.external.yarn.queue", None)
-
-
-
-
 }
