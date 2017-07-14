@@ -20,7 +20,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.repl.h2o.H2OInterpreter
 import water.Iced
-import water.api.Handler
+import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 import scala.collection.concurrent.TrieMap
@@ -126,3 +126,29 @@ private[api] class IcedSessionId(val rdd_id: Integer) extends Iced[IcedSessionId
   //RequestServer, as it calls constructor without any arguments
 }
 
+object ScalaCodeHandler {
+
+  private[api] def registerEndpoints(context: RestApiContext, sc: SparkContext, h2oContext: H2OContext) = {
+    val scalaCodeHandler = new ScalaCodeHandler(sc, h2oContext)
+
+    def scalaCodeFactory = new HandlerFactory {
+      override def create(aClass: Class[_ <: Handler]): Handler = scalaCodeHandler
+    }
+
+    context.registerEndpoint("interpretScalaCode", "POST", "/3/scalaint/{session_id}",
+      classOf[ScalaCodeHandler], "interpret", "Interpret the code and return the result",
+      scalaCodeFactory)
+
+    context.registerEndpoint("initScalaSession", "POST", "/3/scalaint",
+      classOf[ScalaCodeHandler], "initSession", "Return session id for communication with scala interpreter",
+      scalaCodeFactory)
+
+    context.registerEndpoint("getScalaSessions", "GET", "/3/scalaint",
+      classOf[ScalaCodeHandler], "getSessions", "Return all active session IDs", scalaCodeFactory)
+
+    context.registerEndpoint("destroyScalaSession", "DELETE", "/3/scalaint/{session_id}",
+      classOf[ScalaCodeHandler], "destroySession", "Return session id for communication with scala interpreter",
+      scalaCodeFactory)
+  }
+
+}

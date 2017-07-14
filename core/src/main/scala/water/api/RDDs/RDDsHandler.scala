@@ -22,7 +22,7 @@ import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import water.Iced
-import water.api.Handler
+import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
@@ -109,3 +109,24 @@ private[api] class IcedRDD2H2OFrameID(val rdd_id: Integer, val h2oframe_id: Stri
   //RequestServer, as it calls constructor without any arguments
 }
 
+object RDDsHandler {
+  private[api] def registerEndpoints(context: RestApiContext, sc: SparkContext, h2oContext: H2OContext) = {
+
+    val rddsHandler = new RDDsHandler(sc, h2oContext)
+
+    def rddsFactory = new HandlerFactory {
+      override def create(aClass: Class[_ <: Handler]): Handler = rddsHandler
+    }
+
+    context.registerEndpoint("listRDDs", "GET", "/3/RDDs", classOf[RDDsHandler], "list",
+      "Return all RDDs within Spark cloud", rddsFactory)
+
+    context.registerEndpoint("getRDD", "POST", "/3/RDDs/{rdd_id}", classOf[RDDsHandler],
+      "getRDD", "Get RDD with the given ID from Spark cloud", rddsFactory)
+
+    context.registerEndpoint("rddToH2OFrame", "POST", "/3/RDDs/{rdd_id}/h2oframe",
+      classOf[RDDsHandler], "toH2OFrame", "Transform RDD with the given ID to H2OFrame", rddsFactory)
+
+  }
+
+}
