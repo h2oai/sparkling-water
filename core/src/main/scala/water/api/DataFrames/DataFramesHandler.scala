@@ -20,7 +20,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water.Iced
-import water.api.Handler
+import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
@@ -78,4 +78,27 @@ private[api] class IcedH2OFrameID(val dataframe_id: String, val h2oframe_id: Str
 
   def this() = this(null, null) // initialize with empty values, this is used by the createImpl method in the
   //RequestServer, as it calls constructor without any arguments
+}
+
+object DataFramesHandler {
+  private[api] def registerEndpoints(context: RestApiContext, sc: SparkContext, h2oContext: H2OContext) = {
+
+    val dataFramesHandler = new DataFramesHandler(sc, h2oContext)
+
+    def dataFramesfactory = new HandlerFactory {
+      override def create(aClass: Class[_ <: Handler]): Handler = dataFramesHandler
+    }
+
+    context.registerEndpoint("listDataFrames", "GET", "/3/dataframes",
+      classOf[DataFramesHandler], "list", "Return all Spark's DataFrames", dataFramesfactory)
+
+    context.registerEndpoint("getDataFrame", "POST", "/3/dataframes/{dataframe_id}",
+      classOf[DataFramesHandler], "getDataFrame", "Get Spark's DataFrame with the given ID", dataFramesfactory)
+
+    context.registerEndpoint("dataFrametoH2OFrame", "POST",
+      "/3/dataframes/{dataframe_id}/h2oframe", classOf[DataFramesHandler], "toH2OFrame",
+      "Transform Spark's DataFrame with the given ID to H2OFrame", dataFramesfactory)
+
+  }
+
 }

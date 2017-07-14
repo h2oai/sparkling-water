@@ -14,32 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package water.api
 
-import java.util.ServiceLoader
-
 import org.apache.spark.h2o.H2OContext
-import water.api.RequestServer.DummyRestApiContext
 
-private[api] class RestAPIManager(hc: H2OContext) {
-  private val loader: ServiceLoader[RestApi] = ServiceLoader.load(classOf[RestApi])
+trait RestApi {
+  def registerEndpoints(hc: H2OContext, context: RestApiContext): Unit
 
-  def registerAll(): Unit = {
-    val dummyRestApiContext = new DummyRestApiContext
-    // Register first the core
-    register(CoreRestAPI, dummyRestApiContext)
-    // Then additional APIs
-    import scala.collection.JavaConversions._
-    loader.reload()
-    loader.foreach(api => register(api, dummyRestApiContext))
-  }
+  def name: String
 
-  def register(api: RestApi, context: RestApiContext): Unit = {
-    api.registerEndpoints(hc, context)
-  }
-}
-
-object RestAPIManager {
-  def apply(hc: H2OContext) = new RestAPIManager(hc)
+  override def toString: String = name
 }

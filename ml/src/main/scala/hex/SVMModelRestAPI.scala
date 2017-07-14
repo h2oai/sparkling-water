@@ -19,29 +19,29 @@ package hex
 
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.spark.models.svm.SVM
-import water.api.{GridSearchHandler, ModelBuilderHandler, RequestServer, RestApi}
+import water.api._
 
 class SVMModelRestAPI extends RestApi {
+
   override def name: String = "SVM Model REST API"
 
-  override def register(hc: H2OContext) = {
-
+  override def registerEndpoints(hc: H2OContext, context: RestApiContext): Unit = {
     val models = Seq(new SVM(true, hc))
 
     for (algo <- models) {
       val base: String = algo.getClass.getSimpleName
       val lbase: String = base.toLowerCase
       val bh_clz = classOf[ModelBuilderHandler[_, _, _]]
-      val version: Int = 3
+      val version: Int = SchemaServer.getStableVersion
 
-      RequestServer.registerEndpoint(
+      context.registerEndpoint(
         "train_" + lbase,
         "POST /" + version + "/ModelBuilders/" + lbase,
         bh_clz,
         "train",
         "Train a " + base + " model.")
 
-      RequestServer.registerEndpoint(
+      context.registerEndpoint(
         "validate_" + lbase,
         "POST /" + version + "/ModelBuilders/" + lbase + "/parameters",
         bh_clz,
@@ -50,7 +50,7 @@ class SVMModelRestAPI extends RestApi {
 
       )
 
-      RequestServer.registerEndpoint(
+      context.registerEndpoint(
         "grid_search_" + lbase,
         "POST /99/Grid/" + lbase,
         classOf[GridSearchHandler[_, _, _, _]],
