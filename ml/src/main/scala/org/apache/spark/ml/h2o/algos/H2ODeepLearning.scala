@@ -36,8 +36,8 @@ import org.apache.spark.sql.SQLContext
   */
 class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val uid: String)
                      (implicit h2oContext: H2OContext, sqlContext: SQLContext)
-  extends H2OAlgorithm[DeepLearningParameters, H2ODeepLearningModel](parameters)
-    with H2ODeepLearningParams {
+                      extends H2OAlgorithm[DeepLearningParameters, H2ODeepLearningModel](parameters)
+                      with H2ODeepLearningParams {
 
   type SELF = H2ODeepLearning
 

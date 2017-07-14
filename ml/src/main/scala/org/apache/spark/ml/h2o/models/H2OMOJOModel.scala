@@ -32,8 +32,8 @@ import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
 import scala.reflect.ClassTag
 
 abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
-(val model: MojoModel, val mojoData: Array[Byte], val sqlContext: SQLContext)
-  extends SparkModel[S] with MLWritable {
+                            (val model: MojoModel, val mojoData: Array[Byte], val sqlContext: SQLContext)
+                            extends SparkModel[S] with MLWritable {
 
   var predictionCol: String = _
   var featuresCol: String = _

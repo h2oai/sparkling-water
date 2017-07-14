@@ -30,6 +30,7 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
 import water.{DKV, Key}
 import water.fvec.{Frame, H2OFrame}
+import water.support.H2OFrameSupport
 
 import scala.reflect.ClassTag
 
@@ -71,7 +72,8 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
       hc.toH2OFrameKey(dataset.toDF())
     }
     setTrainKey(key)
-    allStringVecToCategorical(key.get())
+    val fr = H2OFrameSupport.allStringVecToCategorical(key.get())
+    water.DKV.put(fr)
     // Train
     val model: M = trainModel(getParams)
     model
@@ -134,16 +136,6 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   /** @group setParam */
   def setTrainKey(value: Key[Frame]) = set(trainKey, value) {
     getParams._train = value
-  }
-
-  def allStringVecToCategorical(hf: H2OFrame): H2OFrame = {
-    hf.vecs().indices
-      .filter(idx => hf.vec(idx).isString)
-      .foreach(idx => hf.replace(idx, hf.vec(idx).toCategoricalVec).remove())
-    // Update frame in DKV
-    water.DKV.put(hf)
-    // Return it
-    hf
   }
 
   /**
