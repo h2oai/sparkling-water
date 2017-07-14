@@ -25,7 +25,7 @@ import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.types.{StructField, StructType}
 
 /**
-  * This one time transformer removes specified columns in the input dataset
+  * Column pruner removes specified columns in the input dataset
   */
 class ColumnPruner(override val uid: String) extends Transformer with ColumnPrunerParams with DefaultParamsWritable {
 
