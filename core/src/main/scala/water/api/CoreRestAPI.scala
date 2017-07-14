@@ -14,32 +14,27 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package water.api
 
-import java.util.ServiceLoader
-
 import org.apache.spark.h2o.H2OContext
-import water.api.RequestServer.DummyRestApiContext
+import water.api.DataFrames.DataFramesHandler
+import water.api.H2OFrames.H2OFramesHandler
+import water.api.RDDs.RDDsHandler
+import water.api.scalaInt.ScalaCodeHandler
 
-private[api] class RestAPIManager(hc: H2OContext) {
-  private val loader: ServiceLoader[RestApi] = ServiceLoader.load(classOf[RestApi])
+/**
+  * Sparkling Water Core REST API
+  */
+object CoreRestAPI extends RestApi {
 
-  def registerAll(): Unit = {
-    val dummyRestApiContext = new DummyRestApiContext
-    // Register first the core
-    register(CoreRestAPI, dummyRestApiContext)
-    // Then additional APIs
-    import scala.collection.JavaConversions._
-    loader.reload()
-    loader.foreach(api => register(api, dummyRestApiContext))
+  override def registerEndpoints(hc: H2OContext, context: RestApiContext): Unit = {
+    if (hc.getConf.isH2OReplEnabled) {
+      ScalaCodeHandler.registerEndpoints(context, hc.sparkContext, hc)
+    }
+    DataFramesHandler.registerEndpoints(context, hc.sparkContext, hc)
+    H2OFramesHandler.registerEndpoints(context, hc.sparkContext, hc)
+    RDDsHandler.registerEndpoints(context, hc.sparkContext, hc)
   }
 
-  def register(api: RestApi, context: RestApiContext): Unit = {
-    api.registerEndpoints(hc, context)
-  }
-}
-
-object RestAPIManager {
-  def apply(hc: H2OContext) = new RestAPIManager(hc)
+  override def name: String = "Core Sparkling Water Rest API"
 }
