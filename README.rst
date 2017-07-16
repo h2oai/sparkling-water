@@ -23,6 +23,7 @@ provides implementation of Sparkling Water for Spark **2.1**).
 
 Please, switch to the right branch:
 
+- For Spark 2.2 use branch `rel-2.2 <https://github.com/h2oai/sparkling-water/tree/rel-2.2>`__
 - For Spark 2.1 use branch `rel-2.1 <https://github.com/h2oai/sparkling-water/tree/rel-2.1>`__
 - For Spark 2.0 use branch `rel-2.0 <https://github.com/h2oai/sparkling-water/tree/rel-2.0>`__
 - For Spark 1.6 use branch `rel-1.6 <https://github.com/h2oai/sparkling-water/tree/rel-1.6>`__ (Only critical fixes)
@@ -38,9 +39,9 @@ Requirements
 ~~~~~~~~~~~~
 
 -  Linux/OS X/Windows
--  Java 7+
--  Python 2.6+ For Python version of Sparkling Water (PySparkling)
--  `Spark 1.6+ <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
+-  Java 8+
+-  Python 2.7+ For Python version of Sparkling Water (PySparkling)
+-  `Spark 2.2 <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
 
 
 Download Binaries

@@ -422,19 +422,21 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 1.0))
     val rdd: RDD[ComposedA] = sc.parallelize(values)
     val df = rdd.toDF
-
-    val expectObjectsNullableByDefault = true
-
+    
     val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
     val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
     val expandedSchema = H2OSchemaUtils.expandedSchema(sc, H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
     val expected: Vector[StructField] = Vector(
       StructField("a.n", IntegerType),
       StructField("a.name", StringType),
-      StructField("weight", DoubleType, nullable = expectObjectsNullableByDefault))
+      StructField("weight", DoubleType, nullable = false))
     Assertions.assertResult(expected.length)(expandedSchema.length)
 
-    assertResult(expectObjectsNullableByDefault, "Nullability in component#2")(expandedSchema(2).nullable)
+    // When we create StructField manually, the nullability fiels it set to true by default.
+    // However when creating dataframe the nullability is inferred based on the data automatically.
+    // This is caused by this Spark fix https://issues.apache.org/jira/browse/SPARK-14584
+    assertResult(false, "Nullability in component#2")(expandedSchema(2).nullable)
+
     for {i <- expected.indices} {
       assertResult(expected(i), s"@$i")(expandedSchema(i))
     }

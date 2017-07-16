@@ -65,7 +65,6 @@ call %SPARK_HOME%/bin/spark-submit2.cmd ^
  --driver-memory %EXAMPLE_DRIVER_MEMORY% ^
  --driver-java-options "%EXAMPLE_H2O_SYS_OPS%" ^
  --deploy-mode %EXAMPLE_DEPLOY_MODE% ^
- --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" ^
  %VERBOSE% ^
  %FAT_JAR_FILE% ^
  %*
