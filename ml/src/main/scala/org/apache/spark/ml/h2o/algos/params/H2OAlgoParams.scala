@@ -31,28 +31,21 @@ import scala.reflect.ClassTag
 trait H2OAlgoParams[P <: Parameters] extends Params {
   // Target schema type
   type H2O_SCHEMA
+
   // Class tag for parameters to get runtime class
   protected def paramTag: ClassTag[P]
+
   // The same for schema
   protected def schemaTag: ClassTag[H2O_SCHEMA]
 
   protected var parameters = paramTag.runtimeClass.newInstance().asInstanceOf[P]
 
   def getParams: P = parameters
+
   def setParams(params: P) = this.parameters = params
 
   protected def doc(fieldName: String) = api(schemaTag.runtimeClass, fieldName).help()
 
-  final val trainKey = new H2OKeyParam[Frame](this, "train", doc("training_frame"))
-  final val validKey = new H2OKeyParam[Frame](this, "valid", doc("validation_frame"))
-
-  setDefault(validKey -> parameters._valid)
-  setDefault(trainKey -> parameters._train)
-
-  /** @group getParam */
-  def getValidKey: String = $(validKey).toString
-  /** @group getParam */
-  def getTrainKey: String = $(trainKey).toString
 
   def booleanParam(name: String): BooleanParam = {
     val underscoredName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)

@@ -38,8 +38,8 @@ import scala.reflect.ClassTag
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
 abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M] : ClassTag]
-                            (parameters: Option[P])
-                            (implicit hc: H2OContext, sqlContext: SQLContext)
+(parameters: Option[P])
+(implicit hc: H2OContext, sqlContext: SQLContext)
   extends Estimator[M] with MLWritable with H2OAlgoParams[P] {
 
   type SELF
@@ -49,31 +49,33 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   }
 
 
-  def split(df: H2OFrame, keys: Array[Key[Frame]], ratios: Array[Double]): Array[Frame] = {
-    val splitter = new FrameSplitter(df, ratios, keys, null)
-    water.H2O.submitTask(splitter)
-    // return results
-    splitter.getResult
-  }
 
   override def fit(dataset: Dataset[_]): M = {
-    import hc.implicits._
+    import org.apache.spark.sql.functions.col
+    val cols = getFeaturesCols.map(col)
+
+    val input = if(getFeaturesCols.isEmpty){
+      hc.asH2OFrame(dataset.toDF())
+    } else {
+      hc.asH2OFrame(dataset.select(cols:_*).toDF())
+    }
 
     // check if we need to do any splitting
 
     if ($(ratio) < 1.0) {
       // need to do splitting
-      split(dataset, hc)
-    }
-    // check if trainKey is explicitly set
-    val key = if (isSet(trainKey)) {
-      $(trainKey)
+      val keys = split(input, hc)
+      getParams._train = keys(0)
+      if (keys.length > 1) {
+        getParams._valid = keys(1)
+      }
     } else {
-      hc.toH2OFrameKey(dataset.toDF())
+      getParams._train = hc.toH2OFrameKey(dataset.toDF())
     }
-    setTrainKey(key)
-    val fr = H2OFrameSupport.allStringVecToCategorical(key.get())
-    water.DKV.put(fr)
+
+    val trainFrame = H2OFrameSupport.allStringVecToCategorical(getParams._train.get())
+    water.DKV.put(trainFrame)
+
     // Train
     val model: M = trainModel(getParams)
     model
@@ -89,9 +91,10 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   @Since("1.6.0")
   override def write: MLWriter = new H2OAlgorithmWriter(this)
 
-  private def split(dataset: Dataset[_], hc: H2OContext): DataFrame = {
-    val fr = hc.asH2OFrame(dataset.toDF())
-    val keys = Array($(trainKey), $(validKey))
+  private def split(fr: H2OFrame, hc: H2OContext): Array[Key[Frame]] = {
+    val trainKey = Key.make[Frame]("train")
+    val validKey = Key.make[Frame]("valid")
+    val keys = Array(trainKey, validKey)
     val ratios = Array[Double]($(ratio))
 
     val splitter = new FrameSplitter(fr, ratios, keys, null)
@@ -99,7 +102,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     // return results
     splitter.getResult
 
-    hc.asDataFrame(DKV.getGet[Frame]($(trainKey)))
+    keys
   }
 
 
@@ -107,10 +110,11 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     * By default it is set to 1.0 which use whole frame for training
     */
   final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
-
+  final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
+  final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
   setDefault(ratio -> 1.0)
-  setDefault(trainKey -> Key.make("train.hex"))
-  setDefault(validKey -> Key.make("valid.hex"))
+  setDefault(predictionCol -> "prediction")
+  setDefault(featuresCols -> Array.empty[String])
 
   /** @group getParam */
   def getTrainRatio: Double = $(ratio)
@@ -118,26 +122,21 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   /** @group setParam */
   def setTrainRatio(value: Double) = set(ratio, value) {}
 
-  /** @group setParam */
-  def setValidKey(value: String) = set(validKey, Key.make[Frame](value)) {
-    getParams._valid = Key.make[Frame](value)
-  }
+  /** @group getParam */
+  def getPredictionsCol: String = $(predictionCol)
 
   /** @group setParam */
-  def setValidKey(value: Key[Frame]) = set(validKey, value) {
-    getParams._valid = value
+  def setPredictionsCol(value: String) = set(predictionCol, value) {
+    getParams._response_column = value
   }
+
+  /** @group getParam */
+  final def getFeaturesCols: Array[String] = $(featuresCols)
 
   /** @group setParam */
-  def setTrainKey(value: String) = set(trainKey, Key.make[Frame](value)) {
-    getParams._train = Key.make[Frame](value)
-  }
+  def setFeaturesCols(first: String, others: String*) = set(featuresCols, Array(first) ++ others) {}
 
-  /** @group setParam */
-  def setTrainKey(value: Key[Frame]) = set(trainKey, value) {
-    getParams._train = value
-  }
-
+  def setFeaturesCol(first: String) = setFeaturesCols(first)
   /**
     * Set the param and execute custom piece of code
     */

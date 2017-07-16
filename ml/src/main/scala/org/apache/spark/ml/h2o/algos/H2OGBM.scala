@@ -38,36 +38,6 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
 
   type SELF = H2OGBM
 
-  /** @group setParam */
-  def setResponseColumn(value: String) = set(responseColumn, value) {
-    getParams._response_column = value
-  }
-
-  /**
-    * Param for features column name.
-    *
-    * @group param
-    */
-  final val featuresCol: Param[String] = new Param[String](this, "featuresCol", "features column name")
-
-  setDefault(featuresCol, "features")
-
-  def setFeaturesCol(value: String) = set(featuresCol, value) {}
-
-  /** @group getParam */
-  final def getFeaturesCol: String = $(featuresCol)
-
-  /**
-    * Param for features column name.
-    *
-    * @group param
-    */
-  final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "prediction column name")
-
-  setDefault(predictionCol, "prediction")
-
-  def setPredictionsCol(value: String) = set(predictionCol, value) {}
-
   override def defaultFileName: String = H2OGBM.defaultFileName
 
 
@@ -81,14 +51,14 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
     val m = new H2OGBMModel(mojoModel, mojoData)(sqlContext)
 
     // pass some parameters set on algo to model
-    m.featuresCol = $(featuresCol)
+    m.featuresCols = $(featuresCols)
     m.predictionCol = $(predictionCol)
     m
   }
 
-  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("dl"))
+  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gbm"))
 
-  def this(parameters: GBMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("dl"))
+  def this(parameters: GBMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("gbm"))
 
   def this(parameters: GBMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
 }

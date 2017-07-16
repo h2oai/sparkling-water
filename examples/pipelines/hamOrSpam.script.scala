@@ -19,6 +19,7 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import water.support.SparkContextSupport
 import water.fvec.H2OFrame
+import org.apache.spark.ml.Pipeline
 
 
 val smsDataFileName = "smsData.txt"
@@ -79,20 +80,20 @@ val colPruner = new ColumnPruner().
 // Create H2ODeepLearning model
 // If the key specified the training set is specified using setTrainKey, then frame with this key is used as the training
 // frame, otherwise it uses the frame from the previous stage as the training frame
-//val dl = new H2OGBM().
-//  setTrainRatio(0.8).
-//  setFeaturesCol("tf_idf").
+val dl = new H2OGBM().
+  //setTrainRatio(0.8).
+  setFeaturesCols("tf_idf").
+  setPredictionsCol("label")
+
+import org.apache.spark.ml.h2o.algos._
+//val dl = new H2ODeepLearning().
+//  setEpochs(10).
+//  setL1(0.001).
+//  setL2(0.0).
+//  setHidden(Array[Int](200, 200)).
 //  setPredictionsCol("label")
 
-import org.apache.spark.ml.h2o.algos.H2ODeepLearning
-val dl = new H2ODeepLearning().
-  setEpochs(10).
-  setL1(0.001).
-  setL2(0.0).
-  setHidden(Array[Int](200, 200)).
-  setResponseColumn("label")
 
-import org.apache.spark.ml.Pipeline
 // Create the pipeline by defining all the stages
 val pipeline = new Pipeline().
   setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, colPruner, dl))
