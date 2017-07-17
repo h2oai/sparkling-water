@@ -22,15 +22,14 @@ import java.io._
 import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
+import org.apache.spark._
 import org.apache.spark.annotation.{DeveloperApi, Since}
-import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
-import org.apache.spark.sql.functions.{col, udf}
-import org.apache.spark.sql.types._
 import org.apache.spark.sql._
-import org.apache.spark._
+import org.apache.spark.sql.types._
+
 import scala.reflect.ClassTag
 
 abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
@@ -39,7 +38,7 @@ abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
 
   var predictionCol: String = _
   var featuresCols: Array[String] = _
-
+  var colNames: Array[String] = _
   /** @group getParam */
   final def getPredictionCol: String = predictionCol
 
@@ -48,18 +47,16 @@ abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     val spark = SparkSession.builder().getOrCreate()
-    import spark.implicits._
     // expect flat dataframe which can contains arrays and vectors as well
     // for now expect only simply types
-    val originalColNames = dataset.columns
-    val targetColNames = originalColNames ++ Array("prediction")
     val df = dataset.toDF()
+
 
     val predictedRows = df.rdd.map { row =>
       // create RowData on which we do the predictions
       val dt = new RowData
       row.schema.fields.zipWithIndex.foreach { case (entry, idxRow) =>
-        if (featuresCols.contains(entry.name)) {
+        if (!featuresCols.contains(entry.name)) {
           // ignore this column
         } else {
           if (row.isNullAt(idxRow)) {
@@ -79,19 +76,19 @@ abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
               case TimestampType => dt.put(entry.name, row.getAs[java.sql.Timestamp](idxRow).getTime.toString)
               case DateType => dt.put(entry.name, row.getAs[java.sql.Date](idxRow).getTime.toString)
               case ArrayType(elemType, _) => // for now assume that all arrays and vecs have the same size - we can store max size as part of the model
-              row.getAs[Seq[_]](idxRow).zipWithIndex.foreach{ case (v, idx) =>
-                dt.put(entry.name + "_" + idx, v.toString)
-              }
+                row.getAs[Seq[_]](idxRow).zipWithIndex.foreach{ case (v, idx) =>
+                  dt.put(entry.name + idx, v.toString)
+                }
               case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] =>
                 val value = row.get(idxRow)
                 value match {
                   case vector: mllib.linalg.Vector =>
                     (0 until vector.size).foreach { idx =>
-                      dt.put(entry.name + "_" + idx, vector(idx).toString)
+                      dt.put(entry.name + idx, vector(idx).toString)
                     }
                   case vector: ml.linalg.Vector =>
                     (0 until vector.size).foreach { idx =>
-                      dt.put(entry.name + "_" + idx, vector(idx).toString)
+                      dt.put(entry.name + idx, vector(idx).toString)
                     }
                 }
               case _ => dt.put(entry.name, 0.toString)
@@ -99,24 +96,38 @@ abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
           }
         }
       }
-      Row.merge(row, predict(dt))
-
+      //import scala.collection.JavaConversions._
+      //Row.merge(Row.fromSeq(dt.values().toSeq), predict(dt))
+      predict(dt)
     }
-    val fields = df.schema.fields ++ Seq(StructField("prediction", DoubleType))
 
-    spark.createDataFrame(predictedRows, StructType(fields))
+   spark.createDataFrame(predictedRows, getPredictionFrameSchema())
+  }
+
+  def getPredictionFrameSchema(): StructType = {
+    val wr = new EasyPredictModelWrapper(model)
+    model.getModelCategory match {
+      case ModelCategory.Binomial => StructType(wr.getResponseDomainValues.map(StructField(_, DoubleType)))
+      case ModelCategory.Multinomial => StructType(wr.getResponseDomainValues.map(StructField(_, DoubleType)))
+      case ModelCategory.Regression => StructType(Seq(StructField("value", DoubleType)))
+      case ModelCategory.Clustering =>  StructType(Seq(StructField("cluster", DoubleType)))
+      case ModelCategory.AutoEncoder => throw new RuntimeException("UnImplemented")
+      case ModelCategory.DimReduction => throw new RuntimeException("UnImplemented")//Row(wr.predictDimReduction(data).dimensions)
+      case ModelCategory.WordEmbedding =>  throw new RuntimeException("UnImplemented")//Row(wr.predictWord2Vec(data).wordEmbeddings)
+      case ModelCategory.Unknown => throw new RuntimeException("Unknown")
+    }
   }
 
   def predict(data: RowData): Row = {
     val wr = new EasyPredictModelWrapper(model)
     model.getModelCategory match {
-       case ModelCategory.Binomial => Row(wr.predictBinomial(data).classProbabilities)
-       case ModelCategory.Multinomial => Row(wr.predictMultinomial(data).classProbabilities)
-       case ModelCategory.Regression => Row(wr.predictRegression(data).value)
-       case ModelCategory.Clustering => Row(wr.predictClustering(data).cluster)
+       case ModelCategory.Binomial => Row(wr.predictBinomial(data).classProbabilities:_*)
+       case ModelCategory.Multinomial => Row(wr.predictMultinomial(data).classProbabilities:_*)
+       case ModelCategory.Regression =>  Row(wr.predictRegression(data).value)
+       case ModelCategory.Clustering =>  Row(wr.predictClustering(data).cluster)
        case ModelCategory.AutoEncoder => throw new RuntimeException("UnImplemented")
-       case ModelCategory.DimReduction => Row(wr.predictDimReduction(data).dimensions)
-       case ModelCategory.WordEmbedding => Row(wr.predictWord2Vec(data).wordEmbeddings)
+       case ModelCategory.DimReduction => throw new RuntimeException("UnImplemented") //Row(wr.predictDimReduction(data).dimensions)
+       case ModelCategory.WordEmbedding =>  throw new RuntimeException("UnImplemented")//Row(wr.predictWord2Vec(data).wordEmbeddings)
        case ModelCategory.Unknown => throw new RuntimeException("Unknown")
     }
   }

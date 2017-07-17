@@ -48,17 +48,16 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     setParams(parameters.get)
   }
 
-
-
   override def fit(dataset: Dataset[_]): M = {
     import org.apache.spark.sql.functions.col
-    val cols = getFeaturesCols.map(col)
 
-    val input = if(getFeaturesCols.isEmpty){
-      hc.asH2OFrame(dataset.toDF())
-    } else {
-      hc.asH2OFrame(dataset.select(cols:_*).toDF())
+    // if this is left empty select all
+    if(getFeaturesCols.isEmpty){
+      setFeaturesCols(dataset.columns)
     }
+
+    val cols = getFeaturesCols.map(col)
+    val input = hc.asH2OFrame(dataset.select(cols:_*).toDF())
 
     // check if we need to do any splitting
 
@@ -136,6 +135,14 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   /** @group setParam */
   def setFeaturesCols(first: String, others: String*) = set(featuresCols, Array(first) ++ others) {}
 
+  /** @group setParam */
+  def setFeaturesCols(cols: Array[String]) = {
+    if(cols.length == 0){
+      throw new IllegalArgumentException("Array with feature columns must contain at least one column")
+    }
+    set(featuresCols, cols) {}
+  }
+
   def setFeaturesCol(first: String) = setFeaturesCols(first)
   /**
     * Set the param and execute custom piece of code
@@ -151,8 +158,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 // FIXME: H2O Params are iced objects!
 private[algos] class H2OAlgorithmWriter[T <: H2OAlgorithm[_, _]](instance: T) extends MLWriter {
 
-  @Since("1.6.0") override protected
-  def saveImpl(path: String): Unit = {
+  @Since("1.6.0") override protected def saveImpl(path: String): Unit = {
     val hadoopConf = sc.hadoopConfiguration
     DefaultParamsWriter.saveMetadata(instance, path, sc)
     val outputPath = if (path.startsWith("file://")) {
