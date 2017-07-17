@@ -381,11 +381,7 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     assert(h2oFrame.vec(1).isString)
     assert(h2oFrame.vec(2).isTime)
   }
-
-  ignore("H2OFrame[Time] to DataFrame[TimeStamp]") {
-
-  }
-
+  
   test("H2OFrame[Simple StructType] to DataFrame[flattened StructType]") {
     import spark.implicits._
     val num = 20
