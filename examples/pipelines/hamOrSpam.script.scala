@@ -72,22 +72,23 @@ val idf = new IDF().
   setInputCol(hashingTF.getOutputCol).
   setOutputCol("tf_idf")
 
-// Remove specified columns
-val colPruner = new ColumnPruner().
-  setKeep(true).
-  setColumns(Array[String]("label", "tf_idf"))
-
 // Create H2ODeepLearning model
 val dl = new H2ODeepLearning().
   setEpochs(10).
   setL1(0.001).
   setL2(0.0).
   setHidden(Array[Int](200, 200)).
+  setFeaturesCols(idf.getOutputCol).
   setPredictionsCol("label")
+
+// Output only important columns
+val colPruner = new ColumnPruner().
+  setKeep(true).
+  setColumns(Array[String]("text"))
 
 // Create the pipeline by defining all the stages
 val pipeline = new Pipeline().
-  setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, colPruner, dl))
+  setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, dl, colPruner))
 
 // Train the pipeline model
 val data = load("smsData.txt")
@@ -102,7 +103,7 @@ def isSpam(smsText: String,
            h2oContext: H2OContext,
            hamThreshold: Double = 0.5) = {
   val smsTextSchema = StructType(Array(StructField("text", StringType, nullable = false)))
-  val smsTextRowRDD = sc.parallelize(Seq(smsText)).map(Row(_))
+  val smsTextRowRDD = sc.parallelize(Seq("Michal, h2oworld party tonight in MV?")).map(Row(_))
   val smsTextDF = sqlContext.createDataFrame(smsTextRowRDD, smsTextSchema)
   val prediction = model.transform(smsTextDF)
   prediction.select("spam").first.getDouble(0) > hamThreshold

@@ -38,12 +38,18 @@ abstract class H2OModel[S <: H2OModel[S, M],
                         (val model: M, h2oContext: H2OContext, sqlContext: SQLContext)
   extends SparkModel[S] with MLWritable {
 
+
   override def copy(extra: ParamMap): S = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
+    val featuresCols = $(getParam("featuresCols")).toString
+    val predictionCol = $(getParam("predictionCol")).toString
+
     val frame: H2OFrame = h2oContext.asH2OFrame(dataset.toDF())
     val prediction = model.score(frame)
-    h2oContext.asDataFrame(prediction)(sqlContext)
+
+    val origWithPredictions = frame.add(prediction)
+    h2oContext.asDataFrame(origWithPredictions)(sqlContext)
   }
 
   @DeveloperApi

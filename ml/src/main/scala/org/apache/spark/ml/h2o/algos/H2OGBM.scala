@@ -49,10 +49,6 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
     val mojoModel = ModelSerializationSupport.getMojoModel(model)
     val mojoData = ModelSerializationSupport.getMojoData(model)
     val m = new H2OGBMModel(mojoModel, mojoData)(sqlContext)
-
-    // pass some parameters set on algo to model
-    m.featuresCols = $(featuresCols)
-    m.predictionCol = $(predictionCol)
     m
   }
 

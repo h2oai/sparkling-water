@@ -52,12 +52,12 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     import org.apache.spark.sql.functions.col
 
     // if this is left empty select all
-    if(getFeaturesCols.isEmpty){
+    if (getFeaturesCols.isEmpty) {
       setFeaturesCols(dataset.columns)
     }
 
-    val cols = getFeaturesCols.map(col)
-    val input = hc.asH2OFrame(dataset.select(cols:_*).toDF())
+    val cols = getFeaturesCols.map(col) ++ Array(col(getPredictionsCol))
+    val input = hc.asH2OFrame(dataset.select(cols: _*).toDF())
 
     // check if we need to do any splitting
 
@@ -69,7 +69,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
         getParams._valid = keys(1)
       }
     } else {
-      getParams._train = hc.toH2OFrameKey(dataset.toDF())
+      getParams._train = input._key
     }
 
     val trainFrame = H2OFrameSupport.allStringVecToCategorical(getParams._train.get())
@@ -77,6 +77,9 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 
     // Train
     val model: M = trainModel(getParams)
+    model.set("featuresCols", $(featuresCols))
+    model.set("predictionCol", $(featuresCols))
+    // pass some parameters set on algo to model
     model
   }
 
@@ -137,13 +140,14 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 
   /** @group setParam */
   def setFeaturesCols(cols: Array[String]) = {
-    if(cols.length == 0){
+    if (cols.length == 0) {
       throw new IllegalArgumentException("Array with feature columns must contain at least one column")
     }
     set(featuresCols, cols) {}
   }
 
   def setFeaturesCol(first: String) = setFeaturesCols(first)
+
   /**
     * Set the param and execute custom piece of code
     */
