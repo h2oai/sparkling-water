@@ -44,14 +44,31 @@ abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
 
   override def copy(extra: ParamMap): S = defaultCopy(extra)
 
+  private def flattenSchemaToCol(schema: StructType, prefix: String = null): Array[Column] = {
+    import org.apache.spark.sql.functions.col
+
+    schema.fields.flatMap { f =>
+      val colName = if (prefix == null) f.name else prefix + "." + f.name
+
+      f.dataType match {
+        case st: StructType => flattenSchemaToCol(st, colName)
+        case _ => Array[Column](col(colName))
+      }
+    }
+  }
+
+  private def flattenDataFrame(df: DataFrame): DataFrame = {
+    import org.apache.spark.sql.functions.col
+    val flattenSchema = flattenSchemaToCol(df.schema)
+    // this is needed so the flattened data frame has hiearchical names
+    val renamedCols = flattenSchema.map(name => col(name.toString()).as(name.toString()))
+    df.select(renamedCols: _*)
+  }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     val spark = SparkSession.builder().getOrCreate()
-    // expect flat dataframe which can contains arrays and vectors as well
-    // for now expect only simply types
-    val df = dataset.toDF()
-
-
+    val df = flattenDataFrame(dataset.toDF())
+    
     val predictedRows = df.rdd.map { row =>
       // create RowData on which we do the predictions
       val dt = new RowData
@@ -75,7 +92,7 @@ abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
               case StringType => dt.put(entry.name, row.getString(idxRow))
               case TimestampType => dt.put(entry.name, row.getAs[java.sql.Timestamp](idxRow).getTime.toString)
               case DateType => dt.put(entry.name, row.getAs[java.sql.Date](idxRow).getTime.toString)
-              case ArrayType(elemType, _) => // for now assume that all arrays and vecs have the same size - we can store max size as part of the model
+              case ArrayType(_, _) => // for now assume that all arrays and vecs have the same size - we can store max size as part of the model
                 row.getAs[Seq[_]](idxRow).zipWithIndex.foreach{ case (v, idx) =>
                   dt.put(entry.name + idx, v.toString)
                 }
