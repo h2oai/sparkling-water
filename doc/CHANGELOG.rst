@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+v2.0.13 (2017-07-17)
+--------------------
+
+-  Improvement
+
+   -  `SW-490 <https://0xdata.atlassian.net/browse/SW-490>`__ - Upgrade Gradle to 4.0.1
+   -  `SW-491 <https://0xdata.atlassian.net/browse/SW-491>`__ - Increase default value for Write and Read confirmation timeout
+   -  `SW-492 <https://0xdata.atlassian.net/browse/SW-492>`__ - Remove dead code and deprecation warning in tests
+   -  `SW-493 <https://0xdata.atlassian.net/browse/SW-493>`__ - Enforce Scala Style rules
+   -  `SW-494 <https://0xdata.atlassian.net/browse/SW-494>`__ - Remove hard dependency on RequestServer by using RestApiContext
+   -  `SW-496 <https://0xdata.atlassian.net/browse/SW-496>`__ - Remove ignored empty "H2OFrame[Time] to DataFrame[TimeStamp]" test
+   -  `SW-498 <https://0xdata.atlassian.net/browse/SW-498>`__ - Upgrade H2O to 3.10.5.4
+
+
 v2.0.12 (2017-07-12)
 --------------------
 
