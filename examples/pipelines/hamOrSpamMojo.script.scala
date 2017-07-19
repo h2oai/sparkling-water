@@ -72,20 +72,19 @@ val idf = new IDF().
   setInputCol(hashingTF.getOutputCol).
   setOutputCol("tf_idf")
 
-// Remove specified columns
-val colPruner = new ColumnPruner().
-  setKeep(true).
-  setColumns(Array[String]("label", "tf_idf"))
-
 // Create H2ODeepLearning model
-val dl = new H2OGBM().
+val gbm = new H2OGBM().
 setTrainRatio(0.8).
   setFeaturesCols("tf_idf").
   setPredictionsCol("label")
 
+// Remove all intermediate columns
+val colPruner = new ColumnPruner().
+  setColumns(Array[String](idf.getOutputCol, hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))
+
 // Create the pipeline by defining all the stages
 val pipeline = new Pipeline().
-  setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, colPruner, dl))
+  setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, gbm, colPruner))
 
 // Train the pipeline model
 val data = load("smsData.txt")

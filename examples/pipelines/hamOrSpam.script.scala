@@ -81,10 +81,9 @@ val dl = new H2ODeepLearning().
   setFeaturesCols(idf.getOutputCol).
   setPredictionsCol("label")
 
-// Output only important columns
+// Remove all intermediate columns
 val colPruner = new ColumnPruner().
-  setKeep(true).
-  setColumns(Array[String]("text"))
+  setColumns(Array[String](idf.getOutputCol, hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))
 
 // Create the pipeline by defining all the stages
 val pipeline = new Pipeline().
