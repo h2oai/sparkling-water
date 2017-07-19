@@ -129,7 +129,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
             case BooleanType => con.put(idx, if (isAry)
               if (ary(aryIdx).asInstanceOf[Boolean]) 1 else 0
             else if (subRow.getBoolean(aidx)) 1 else 0)
-            case BinaryType =>
+            case BinaryType => con.put(idx, if (isAry) ary(aryIdx).asInstanceOf[Byte] else subRow.getByte(aidx))
             case ByteType => con.put(idx, if (isAry) ary(aryIdx).asInstanceOf[Byte] else subRow.getByte(aidx))
             case ShortType => con.put(idx, if (isAry) ary(aryIdx).asInstanceOf[Short] else subRow.getShort(aidx))
             case IntegerType => con.put(idx, if (isAry) ary(aryIdx).asInstanceOf[Int] else subRow.getInt(aidx))
