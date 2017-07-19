@@ -24,7 +24,7 @@ import org.apache.spark.sql.SQLContext
 
 class H2ODeepLearningModel(model: DeepLearningModel,
                            override val uid: String)(h2oContext: H2OContext, sqlContext: SQLContext)
-  extends H2OModel[H2ODeepLearningModel, DeepLearningModel](model, h2oContext, sqlContext) with MLWritable {
+  extends H2OModel[H2ODeepLearningModel, DeepLearningModel](model, h2oContext, sqlContext) {
 
   def this(model: DeepLearningModel)
           (implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(model, Identifiable.randomUID("dlModel"))(h2oContext, sqlContext)

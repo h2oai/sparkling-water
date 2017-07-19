@@ -34,18 +34,18 @@ import scala.reflect.ClassTag
   * Shared implementation for H2O model pipelines
   */
 abstract class H2OModel[S <: H2OModel[S, M],
-                        M <: Model[_, _, _ <: Model.Output]]
-                        (val model: M, h2oContext: H2OContext, sqlContext: SQLContext)
-  extends SparkModel[S] with MLWritable {
+M <: Model[_, _, _ <: Model.Output]]
+(val model: M, h2oContext: H2OContext, sqlContext: SQLContext)
+  extends SparkModel[S] with H2OModelParams with MLWritable {
 
 
   override def copy(extra: ParamMap): S = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val featuresCols = $(getParam("featuresCols")).toString
-    val predictionCol = $(getParam("predictionCol")).toString
+    import org.apache.spark.sql.functions.col
+    val cols = $(featuresCols).map(col)
 
-    val frame: H2OFrame = h2oContext.asH2OFrame(dataset.toDF())
+    val frame: H2OFrame = h2oContext.asH2OFrame(dataset.select(cols: _*).toDF())
     val prediction = model.score(frame)
 
     val origWithPredictions = frame.add(prediction)
@@ -61,7 +61,7 @@ abstract class H2OModel[S <: H2OModel[S, M],
   }
 
   @Since("1.6.0")
-  override def write: MLWriter =  new H2OModelWriter[S](this.asInstanceOf[S])
+  override def write: MLWriter = new H2OModelWriter[S](this.asInstanceOf[S])
 
   def defaultFileName: String
 }
@@ -78,7 +78,7 @@ private[models] class H2OModelWriter[T <: H2OModel[T, _ <: Model[_, _, _ <: Mode
 }
 
 private[models] abstract class H2OModelReader[T <: H2OModel[T, M] : ClassTag, M <: Model[_, _, _ <: Model.Output]]
-                                              (val defaultFileName: String) extends MLReader[T] {
+(val defaultFileName: String) extends MLReader[T] {
 
   private val className = implicitly[ClassTag[T]].runtimeClass.getName
 

@@ -19,6 +19,7 @@ package org.apache.spark.ml.h2o.algos.params
 import hex.tree.SharedTreeModel.SharedTreeParameters
 
 trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
+
   final val ntrees = intParam("ntrees")
   final val maxDepth = intParam("maxDepth")
   final val minRows = doubleParam("minRows")

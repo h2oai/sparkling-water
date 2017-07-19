@@ -23,7 +23,6 @@ import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.h2o.algos.params.H2OSharedTreeParams
 import org.apache.spark.ml.h2o.models._
-import org.apache.spark.ml.param.Param
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 import org.apache.spark.sql.SQLContext
 import water.support.ModelSerializationSupport
@@ -33,7 +32,7 @@ import water.support.ModelSerializationSupport
   */
 class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
             (implicit h2oContext: H2OContext, sqlContext: SQLContext)
-  extends H2OAlgorithm[GBMParameters, H2OGBMModel](parameters)
+  extends H2OAlgorithm[GBMParameters, H2OMOJOModel](parameters)
     with H2OGBMParams {
 
   type SELF = H2OGBM
@@ -41,15 +40,14 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
   override def defaultFileName: String = H2OGBM.defaultFileName
 
 
-  override def trainModel(params: GBMParameters): H2OGBMModel = {
+  override def trainModel(params: GBMParameters): H2OMOJOModel = {
     set(responseColumn, $(predictionCol)) {
       getParams._response_column = $(predictionCol)
     }
     val model = new GBM(params).trainModel().get()
     val mojoModel = ModelSerializationSupport.getMojoModel(model)
     val mojoData = ModelSerializationSupport.getMojoData(model)
-    val m = new H2OGBMModel(mojoModel, mojoData)(sqlContext)
-    m
+    new H2OMOJOModel(mojoModel, mojoData)(sqlContext)
   }
 
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gbm"))

@@ -32,11 +32,12 @@ import org.apache.spark.sql.types._
 
 import scala.reflect.ClassTag
 
-abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
-(val model: MojoModel, val mojoData: Array[Byte], val sqlContext: SQLContext)
-  extends SparkModel[S] with MLWritable {
+class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val uid: String)(sqlContext: SQLContext)
+  extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable {
 
-  override def copy(extra: ParamMap): S = defaultCopy(extra)
+  def this(model: MojoModel, mojoData: Array[Byte])(sqlContext: SQLContext) = this(model, mojoData, Identifiable.randomUID("mojoModel"))(sqlContext)
+
+  override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
   private def flattenSchemaToCol(schema: StructType, prefix: String = null): Array[Column] = {
     import org.apache.spark.sql.functions.col
@@ -51,6 +52,7 @@ abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
     }
   }
 
+  def defaultFileName: String = H2OMOJOModel.defaultFileName
   private def flattenDataFrame(df: DataFrame): DataFrame = {
     import org.apache.spark.sql.functions.col
     val flattenSchema = flattenSchemaToCol(df.schema)
@@ -59,9 +61,9 @@ abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
     df.select(renamedCols: _*)
   }
 
+
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val featuresCols = $(getParam("featuresCols")).asInstanceOf[Array[String]]
-    val predictionCol = $(getParam("predictionCol")).toString
+
 
     val spark = SparkSession.builder().getOrCreate()
     val df = flattenDataFrame(dataset.toDF())
@@ -70,7 +72,7 @@ abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
       // create RowData on which we do the predictions
       val dt = new RowData
       row.schema.fields.zipWithIndex.foreach { case (entry, idxRow) =>
-        if (!featuresCols.contains(entry.name)) {
+        if (!$(featuresCols).contains(entry.name)) {
           // ignore this column
         } else {
           if (row.isNullAt(idxRow)) {
@@ -155,12 +157,11 @@ abstract class H2OMOJOModel[S <: H2OMOJOModel[S]]
   }
 
   @Since("1.6.0")
-  override def write: MLWriter = new H2OMOJOModelWriter[S](this.asInstanceOf[S])
+  override def write: MLWriter = new H2OMOJOModelWriter(this)
 
-  def defaultFileName: String
 }
 
-private[models] class H2OMOJOModelWriter[S <: H2OMOJOModel[S]](instance: S) extends MLWriter {
+private[models] class H2OMOJOModelWriter(instance: H2OMOJOModel) extends MLWriter {
 
   @org.apache.spark.annotation.Since("1.6.0")
   override protected def saveImpl(path: String): Unit = {
@@ -171,13 +172,13 @@ private[models] class H2OMOJOModelWriter[S <: H2OMOJOModel[S]](instance: S) exte
   }
 }
 
-private[models] abstract class H2OMOJOModelReader[S <: H2OMOJOModel[S] : ClassTag]
-(val defaultFileName: String) extends MLReader[S] {
+private[models] class H2OMOJOModelReader
+(val defaultFileName: String) extends MLReader[H2OMOJOModel] {
 
-  private val className = implicitly[ClassTag[S]].runtimeClass.getName
+  private val className = implicitly[ClassTag[H2OMOJOModel]].runtimeClass.getName
 
   @org.apache.spark.annotation.Since("1.6.0")
-  override def load(path: String): S = {
+  override def load(path: String): H2OMOJOModel = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
     val file = new File(path, defaultFileName)
     val is = new FileInputStream(file)
@@ -189,5 +190,16 @@ private[models] abstract class H2OMOJOModelReader[S <: H2OMOJOModel[S] : ClassTa
     h2oModel
   }
 
-  protected def make(model: MojoModel, mojoData: Array[Byte], uid: String)(sqLContext: SQLContext): S
+  def make(model: MojoModel, mojoData: Array[Byte], uid: String)(sqLContext: SQLContext): H2OMOJOModel = {
+    new H2OMOJOModel(model, mojoData, uid)(sqlContext)
+  }
+}
+
+object H2OMOJOModel extends MLReadable[H2OMOJOModel]{
+  val defaultFileName = "mojo_model"
+
+    @Since("1.6.0")
+    override def read: MLReader[H2OMOJOModel] = new H2OMOJOModelReader(defaultFileName)
+    @Since("1.6.0")
+    override def load(path: String): H2OMOJOModel = super.load(path)
 }

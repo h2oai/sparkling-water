@@ -19,6 +19,7 @@ package org.apache.spark.ml.h2o.algos.params
 import com.google.common.base.CaseFormat
 import hex.Model.Parameters
 import org.apache.spark.h2o.utils.ReflectionUtils._
+import org.apache.spark.ml.h2o.algos.H2OAlgorithm
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.param.h2o.H2OKeyParam
 import water.fvec.Frame
@@ -32,6 +33,7 @@ trait H2OAlgoParams[P <: Parameters] extends Params {
   // Target schema type
   type H2O_SCHEMA
 
+  type SELF
   // Class tag for parameters to get runtime class
   protected def paramTag: ClassTag[P]
 
@@ -70,5 +72,54 @@ trait H2OAlgoParams[P <: Parameters] extends Params {
   def param[T](name: String): Param[T] = {
     val underscoredName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
     new Param[T](this, name, doc(underscoredName))
+  }
+
+  /**
+    * By default it is set to 1.0 which use whole frame for training
+    */
+  final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
+  final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
+  final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
+  setDefault(ratio -> 1.0)
+  setDefault(predictionCol -> "prediction")
+  setDefault(featuresCols -> Array.empty[String])
+
+  /** @group getParam */
+  def getTrainRatio: Double = $(ratio)
+
+  /** @group setParam */
+  def setTrainRatio(value: Double) = set(ratio, value) {}
+
+  /** @group getParam */
+  def getPredictionsCol: String = $(predictionCol)
+
+  /** @group setParam */
+  def setPredictionsCol(value: String) = set(predictionCol, value) {
+    getParams._response_column = value
+  }
+
+  /** @group getParam */
+  final def getFeaturesCols: Array[String] = $(featuresCols)
+
+  /** @group setParam */
+  def setFeaturesCols(first: String, others: String*) = set(featuresCols, Array(first) ++ others) {}
+
+  /** @group setParam */
+  def setFeaturesCols(cols: Array[String]) = {
+    if (cols.length == 0) {
+      throw new IllegalArgumentException("Array with feature columns must contain at least one column")
+    }
+    set(featuresCols, cols) {}
+  }
+
+
+  def setFeaturesCol(first: String) = setFeaturesCols(first)
+
+  /**
+    * Set the param and execute custom piece of code
+    */
+  protected final def set[T](param: Param[T], value: T)(f: => Unit): SELF = {
+    f
+    super.set(param, value).asInstanceOf[SELF]
   }
 }

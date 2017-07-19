@@ -23,12 +23,13 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.h2o.algos.params.H2OAlgoParams
+import org.apache.spark.ml.h2o.models.H2OModelParams
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Estimator, Model => SparkModel}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
-import water.{DKV, Key}
+import org.apache.spark.sql.{Dataset, SQLContext}
+import water.Key
 import water.fvec.{Frame, H2OFrame}
 import water.support.H2OFrameSupport
 
@@ -41,8 +42,6 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 (parameters: Option[P])
 (implicit hc: H2OContext, sqlContext: SQLContext)
   extends Estimator[M] with MLWritable with H2OAlgoParams[P] {
-
-  type SELF
 
   if (parameters.isDefined) {
     setParams(parameters.get)
@@ -76,14 +75,15 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     water.DKV.put(trainFrame)
 
     // Train
-    val model: M = trainModel(getParams)
-    model.set("featuresCols", $(featuresCols))
-    model.set("predictionCol", $(featuresCols))
+    val model: M with H2OModelParams = trainModel(getParams)
+
     // pass some parameters set on algo to model
+    model.setFeaturesCols($(featuresCols))
+    model.setPredictionsCol($(predictionCol))
     model
   }
 
-  def trainModel(params: P): M
+  def trainModel(params: P): M with H2OModelParams
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = schema
@@ -105,55 +105,6 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     splitter.getResult
 
     keys
-  }
-
-
-  /**
-    * By default it is set to 1.0 which use whole frame for training
-    */
-  final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
-  final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
-  final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
-  setDefault(ratio -> 1.0)
-  setDefault(predictionCol -> "prediction")
-  setDefault(featuresCols -> Array.empty[String])
-
-  /** @group getParam */
-  def getTrainRatio: Double = $(ratio)
-
-  /** @group setParam */
-  def setTrainRatio(value: Double) = set(ratio, value) {}
-
-  /** @group getParam */
-  def getPredictionsCol: String = $(predictionCol)
-
-  /** @group setParam */
-  def setPredictionsCol(value: String) = set(predictionCol, value) {
-    getParams._response_column = value
-  }
-
-  /** @group getParam */
-  final def getFeaturesCols: Array[String] = $(featuresCols)
-
-  /** @group setParam */
-  def setFeaturesCols(first: String, others: String*) = set(featuresCols, Array(first) ++ others) {}
-
-  /** @group setParam */
-  def setFeaturesCols(cols: Array[String]) = {
-    if (cols.length == 0) {
-      throw new IllegalArgumentException("Array with feature columns must contain at least one column")
-    }
-    set(featuresCols, cols) {}
-  }
-
-  def setFeaturesCol(first: String) = setFeaturesCols(first)
-
-  /**
-    * Set the param and execute custom piece of code
-    */
-  protected final def set[T](param: Param[T], value: T)(f: => Unit): SELF = {
-    f
-    super.set(param, value).asInstanceOf[SELF]
   }
 
   def defaultFileName: String
