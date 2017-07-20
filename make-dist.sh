@@ -65,6 +65,11 @@ ZIP_FILE="$DIST_BUILD_DIR/$ZIP_NAME"
 
 # Make distribution package and put it into dist directory
 rsync -rtvW --files-from "$TOPDIR/demofiles.list" "$TOPDIR/" "$DEST_DIR/"
+
+# Get Latest RSparkling Version
+RSPARKLING_DOWNLOAD_LINK=$(./gradlew -q :sparkling-water-assembly:printRSparklingCranLink)
+wget -O "$DEST_DIR/rsparkling.tar.gz" "$RSPARKLING_DOWNLOAD_LINK"
+
 # Print available H2O Hadoop distributions to config file
 H2O_DRIVERS_LIST="standalone $(./gradlew -q :sparkling-water-assembly-h2o:printHadoopDistributions)"
 echo "$H2O_DRIVERS_LIST" > "$DEST_DIR/h2o_drivers.txt"
@@ -127,22 +132,3 @@ cat "$DIST_DIR/buildinfo.json" \
   | sed -e "s/SUBST_SPARK_MAJOR_VERSION/${SPARK_MAJOR_VERSION}/g"\
   \
   > "$DIST_BUILD_DIR/buildinfo.json"
-
-exit 0
-
-# Cleanup
-rm $TOPDIR/demofiles.list
-rm -rf $DEST_DIR
-
-# Prepare a zip file with Spark distribution
-ZIPNAME_WITH_SPARK=$(echo $ZIPNAME | sed "s/water/water-with-spark/")
-cp $ZIPNAME $ZIPNAME_WITH_SPARK
-
-SPARK_DIST="spark-1.1.0-bin-cdh4"
-SPARK_EXT="tgz"
-(
- cd private
- tar -zxvf "${SPARK_DIST}.${SPARK_EXT}"
- zip -r -u ../$ZIPNAME_WITH_SPARK $SPARK_DIST
-)
-
