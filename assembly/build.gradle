@@ -73,6 +73,18 @@ shadowJar {
   }
 }
 
+task printRSparklingCranLink(){
+  doLast {
+    def link = "https://CRAN.R-project.org/package=rsparkling"
+    def lines = link.toURL().readLines()
+    def versionIdx = lines.findIndexOf {it.equals("<td>Version:</td>")} + 1
+    def version = lines.get(versionIdx).replace("<td>", "").replace("</td>", "")
+
+    def downloadLink = "https://cran.r-project.org/src/contrib/rsparkling_${version}.tar.gz"
+    println(downloadLink)
+  }
+}
+
 artifacts {
   compile shadowJar
 }
