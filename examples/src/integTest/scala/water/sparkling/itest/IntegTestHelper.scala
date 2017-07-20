@@ -49,8 +49,6 @@ trait IntegTestHelper extends BeforeAndAfterEach with BackendIndependentTestHelp
       // See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
       Seq("--conf",  "spark.hadoop.yarn.timeline-service.enabled=false") ++
       Seq("--conf", s"spark.ext.h2o.external.start.mode=${sys.props.getOrElse("spark.ext.h2o.external.start.mode", "manual")}") ++
-      // set spark-warehouse manually because of https://issues.apache.org/jira/browse/SPARK-17810, fixed in 2.0.2
-      Seq("--conf", s"spark.sql.warehouse.dir=file:${new File("spark-warehouse").getAbsolutePath}") ++
       env.sparkConf.flatMap( p => Seq("--conf", s"${p._1}=${p._2}") ) ++
       Seq[String](env.itestJar)
 

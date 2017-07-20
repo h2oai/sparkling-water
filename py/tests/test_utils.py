@@ -46,9 +46,7 @@ def get_default_spark_conf():
         set("spark.worker.timeout", "360"). \
         set("spark.ext.h2o.backend.cluster.mode", ExternalClusterTestHelper.cluster_mode()). \
         set("spark.ext.h2o.cloud.name", ExternalClusterTestHelper.unique_cloud_name("test")). \
-        set("spark.ext.h2o.external.start.mode", os.getenv("spark.ext.h2o.external.start.mode", "manual")) .\
-        set("spark.sql.warehouse.dir", "file:" + os.path.join(os.getcwd(), "spark-warehouse"))
-
+        set("spark.ext.h2o.external.start.mode", os.getenv("spark.ext.h2o.external.start.mode", "manual"))
 
     if ExternalClusterTestHelper.tests_in_external_mode():
         conf.set("spark.ext.h2o.client.ip", ExternalClusterTestHelper.local_ip())

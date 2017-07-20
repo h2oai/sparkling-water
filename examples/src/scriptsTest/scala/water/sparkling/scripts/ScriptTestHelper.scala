@@ -65,8 +65,6 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll with 
       .set("spark.worker.timeout", "360") // Increase worker timeout if jenkins machines are busy
       .set("spark.ext.h2o.backend.cluster.mode", sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
       .set("spark.ext.h2o.external.start.mode", sys.props.getOrElse("spark.ext.h2o.external.start.mode", "manual"))
-      // set spark-warehouse manually because of https://issues.apache.org/jira/browse/SPARK-17810, fixed in 2.0.2
-      .set("spark.sql.warehouse.dir", s"file:${new File("spark-warehouse").getAbsolutePath}")
       .setJars(Array(assemblyJar))
     conf
   }
