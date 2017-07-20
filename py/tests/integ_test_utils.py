@@ -84,7 +84,7 @@ class IntegTestSuite(unittest.TestCase):
         cmd_line.extend(["--conf", 'spark.ext.h2o.disable.ga=true'])
         # remove ".py" from cloud name
         cmd_line.extend(["--conf", 'spark.ext.h2o.cloud.name=sparkling-water-'+str(script_name[:-3])+str(randrange(65536))])
-        cmd_line.extend(["--conf", '"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version='+self.test_env.hdp_version+'"'])
+        cmd_line.extend(["--conf", '"spark.driver.extraJavaOptions=-Dhdp.version='+self.test_env.hdp_version+'"'])
         cmd_line.extend(["--conf", '"spark.yarn.am.extraJavaOptions=-Dhdp.version='+self.test_env.hdp_version+'"'])
         cmd_line.extend(["--conf", 'spark.test.home='+self.test_env.spark_home])
         cmd_line.extend(["--conf", 'spark.scheduler.minRegisteredResourcesRatio=1'])
