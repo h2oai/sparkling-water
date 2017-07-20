@@ -454,7 +454,7 @@
             <h2 id="getting-started">Get started with Sparkling Water in a few easy steps</h2>
             <p>1. Download Spark (if not already installed) from the <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a> </p>
             <p class="options">
-              Choose Spark release : 2.0.0</br>
+              Choose Spark release : SUBST_SPARK_VERSION</br>
               Choose a package type: Pre-built for Hadoop 2.4 and later
             </p>
             <p>2. Point SPARK_HOME to the existing installation of Spark and export variable MASTER. </p>
@@ -495,7 +495,7 @@
             <h2>Launch Sparkling Water on Hadoop using Yarn.</h2>
             <p>1. Download Spark (if not already installed) from the <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a>.</p>
             <p class="options">
-              Choose Spark release : 2.0.0</br>
+              Choose Spark release : SUBST_SPARK_VERSION</br>
               Choose a package type: Pre-built for Hadoop 2.4 and later
             </p>
             <p>2. Point SPARK_HOME to an existing installation of Spark:</p>
@@ -538,7 +538,7 @@
             <h2>Launch H2O on a Standalone Spark Cluster</h2>
             <p>1. Download Spark (if not already installed) from the <a href="https://spark.apache.org/downloads.html">Spark Downloads Page</a>.</p>
             <p class="options">
-              Choose Spark release : 2.0.0</br>
+              Choose Spark release : SUBST_SPARK_VERSION</br>
               Choose a package type: Pre-built for Hadoop 2.4 and later
             </p>
             <p>2. Point SPARK_HOME to an existing installation of Spark:</p>
@@ -645,9 +645,66 @@
                 </div>
               </div>
               <h2>RSparkling</h2>
-              <p>Please follow the installation and usage instructions on <a href="https://github.com/h2oai/rsparkling">RSparkling page</a></p>
+              <p>RSparkling is a R client for the Sparkling Water applications. To use it:</p>
 
-              <h2>H2O R Client</h2>
+            <p>1. Download and unpack Sparkling Water distribution</p>
+            <p class="terminal">
+              cd ~/Downloads<br>
+              unzip sparkling-water-SUBST_PROJECT_VERSION.zip<br>
+              cd sparkling-water-SUBST_PROJECT_VERSION
+            </p>
+
+            <p>Now, continue inside R or RStudio and prepare the environment.</p>
+
+            <p>2. Install RSparkling dependency, SparklyR:</p>
+            <p class="terminal">
+              install.packages("sparklyr")
+            </p>
+
+            <p>3. Install Spark:</p>
+            <p class="terminal">
+              library(sparklyr)<br>
+              spark_install(version = "SUBST_SPARK_MAJOR_VERSION.0")
+            </p>
+
+            <p>4. Install H2O of correct version:</p>
+            <p class="terminal">
+              install.packages("h2o", type = "source", repos = "https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/R")
+            </p>
+
+            <p>5. Finally, install RSparkling</p>
+            <p>Install latest version from CRAN:</p>
+            <p class="terminal">
+              install.packages("rsparkling")
+            </p>
+
+            <p>Install latest version from the downloaded distribution. <br>
+            <p class="terminal">
+              # rsparkling.tar.gz is available at the downloaded distribution. <br>
+              install.packages("rsparkling.tar.gz", repos=NULL, type="source")
+            </p>
+
+            <p>6. Set Sparkling Water version to be used with RSparkling</p>
+            <p class="terminal">
+              options(rsparkling.sparklingwater.version = "SUBST_PROJECT_VERSION")<br>
+              library(rsparkling)
+            </p>
+
+            <p>7. Connect to Spark</p>
+            <p class="terminal">
+              sc <- spark_connect(master = "local", version = "SUBST_SPARK_MAJOR_VERSION.0")
+            </p>
+
+            <p>8. Now, H2OContext is available and we can use any H2O features available in R.</p>
+            <p class="terminal">
+              h2o_context(sc)
+            </p>
+
+
+            <p>For more and detailed information, please follow the installation and usage instructions on <a href="https://github.com/h2oai/rsparkling">RSparkling page</a></p>
+
+
+            <h2>H2O R Client</h2>
               <p>Once you have H2OContext available in RSParkling, any commands available in the R client can be used. For more information, please visit <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html#R">H2O-R page</a>.</p>
 
         </div>
