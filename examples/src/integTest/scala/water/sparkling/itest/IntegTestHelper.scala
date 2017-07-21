@@ -1,7 +1,5 @@
 package water.sparkling.itest
 
-import java.io.File
-
 import org.apache.spark.h2o.BackendIndependentTestHelper
 import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
