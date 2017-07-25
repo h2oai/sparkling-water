@@ -68,6 +68,9 @@ The artifacts coordinates are:
 
 - ``ai.h2o:sparkling-water-core_{{scala_version}}:{{version}}`` - includes core of Sparkling Water.
 - ``ai.h2o:sparkling-water-examples_{{scala_version}}:{{version}}`` - includes example applications.
+- ``ai.h2o:sparkling-water-repl_{{scala_version}}:{{version}}`` - Spark REPL integration into H2O Flow UI
+- ``ai.h2o:sparkling-water-ml_{{scala_version}}:{{version}}`` - Extends Spark ML package by H2O-based transformations
+- ``ai.h2o:sparkling-water-package_{{scala_version}}:{{version}}`` - Uber Sparkling Water package referencing all available Sparkling Water modules. This is designed to use as Spark package via ``--packages`` option
 
    **Note:** The ``{{version}}`` references to a release version of Sparkling Water, the ``{{scala_version}}``
    references to Scala base version (``2.10`` or ``2.11``). For example:

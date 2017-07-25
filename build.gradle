@@ -38,7 +38,8 @@ ext {
       project(':sparkling-water-repl'),
       project(':sparkling-water-core'),
       project(':sparkling-water-examples'),
-      project(':sparkling-water-ml')
+      project(':sparkling-water-ml'),
+      project(':sparkling-water-package')
     ]
     // Project with integration tests
     integTestProjects = [
@@ -51,7 +52,8 @@ ext {
       project(':sparkling-water-core'),
       project(':sparkling-water-examples'),
       project(':sparkling-water-ml'),
-      project(':sparkling-water-app-streaming')
+      project(':sparkling-water-app-streaming'),
+      project(':sparkling-water-package')
     ]
     // Python projects
     pythonProjects = [
@@ -157,5 +159,6 @@ clean.doFirst {
   delete file("build/")
   delete file("h2ologs/")
   delete file("null/")
+  delete file("metastore_db/")
 }
 
