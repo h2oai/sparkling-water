@@ -103,6 +103,7 @@ class SparklingWaterHistoryListener(conf: SparkConf, sparkUI: SparkUI)
 case class H2OCloudInfo(
                           localClientIpPort: String,
                           cloudHealthy: Boolean,
+                          cloudSecured: Boolean,
                           cloudNodes: Array[String],
                           extraBackendInfo: Seq[(String, String)],
                           h2oStartTime: Long)

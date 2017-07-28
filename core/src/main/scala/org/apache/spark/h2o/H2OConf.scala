@@ -52,6 +52,11 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
     this
   }
 
+  def set(key: String, value: Boolean): H2OConf = {
+    sparkConf.set(key, value.toString)
+    this
+  }
+
   /** Remove a parameter from the configuration */
   def remove(key: String): H2OConf = {
     sparkConf.remove(key)
