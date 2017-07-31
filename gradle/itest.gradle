@@ -45,8 +45,6 @@ task integTest(type: Test) {
     workingDir = rootDir
     // Increase test runner memory
     maxHeapSize = "4g"
-    // Increase PermGen for forked JVM
-    jvmArgs '-XX:MaxPermSize=384m'
 
     def testEnv = detectEnvironment()
     // Decide which tests should be launch here based on environment
