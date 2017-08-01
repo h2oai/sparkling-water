@@ -90,133 +90,133 @@ class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val
   }
 
 
-    def setRowData(row: Row, idxRow: Int, dt: RowData, entry: StructField) {
-      if (row.isNullAt(idxRow)) {
-        dt.put(entry.name, 0.toString) // 0 as NA
-      } else {
-        entry.dataType match {
-          case BooleanType =>
-            if (row.getBoolean(idxRow)) dt.put(entry.name, 1.toString) else dt.put(entry.name, 0.toString)
-          case BinaryType =>
-            row.getAs[Array[Byte]](idxRow).zipWithIndex.foreach { case (v, idx) =>
-              dt.put(entry.name + idx, v.toString)
-            }
-          case ByteType => dt.put(entry.name, row.getByte(idxRow).toString)
-          case ShortType => dt.put(entry.name, row.getShort(idxRow).toString)
-          case IntegerType => dt.put(entry.name, row.getInt(idxRow).toString)
-          case LongType => dt.put(entry.name, row.getLong(idxRow).toString)
-          case FloatType => dt.put(entry.name, row.getFloat(idxRow).toString)
-          case _: DecimalType => dt.put(entry.name, row.getDecimal(idxRow).doubleValue().toString)
-          case DoubleType => dt.put(entry.name, row.getDouble(idxRow).toString)
-          case StringType => dt.put(entry.name, row.getString(idxRow))
-          case TimestampType => dt.put(entry.name, row.getAs[java.sql.Timestamp](idxRow).getTime.toString)
-          case DateType => dt.put(entry.name, row.getAs[java.sql.Date](idxRow).getTime.toString) case ArrayType(_, _) => // for now assume that all arrays and vecs have the same size - we can store max size as part of the model
-            row.getAs[Seq[_]](idxRow).zipWithIndex.foreach { case (v, idx) =>
-              dt.put(entry.name + idx, v.toString)
-            }
-          case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] =>
-            val value = row.get(idxRow)
-            value match {
-              case vector: mllib.linalg.Vector =>
-                (0 until vector.size).foreach { idx =>
-                  dt.put(entry.name + idx, vector(idx).toString)
-                }
-              case vector: ml.linalg.Vector =>
-                (0 until vector.size).foreach { idx =>
-                  dt.put(entry.name + idx, vector(idx).toString)
-                }
-            }
-          case _ => dt.put(entry.name, dt.get(idxRow).toString)
-        }
+  def setRowData(row: Row, idxRow: Int, dt: RowData, entry: StructField) {
+    if (row.isNullAt(idxRow)) {
+      dt.put(entry.name, 0.toString) // 0 as NA
+    } else {
+      entry.dataType match {
+        case BooleanType =>
+          if (row.getBoolean(idxRow)) dt.put(entry.name, 1.toString) else dt.put(entry.name, 0.toString)
+        case BinaryType =>
+          row.getAs[Array[Byte]](idxRow).zipWithIndex.foreach { case (v, idx) =>
+            dt.put(entry.name + idx, v.toString)
+          }
+        case ByteType => dt.put(entry.name, row.getByte(idxRow).toString)
+        case ShortType => dt.put(entry.name, row.getShort(idxRow).toString)
+        case IntegerType => dt.put(entry.name, row.getInt(idxRow).toString)
+        case LongType => dt.put(entry.name, row.getLong(idxRow).toString)
+        case FloatType => dt.put(entry.name, row.getFloat(idxRow).toString)
+        case _: DecimalType => dt.put(entry.name, row.getDecimal(idxRow).doubleValue().toString)
+        case DoubleType => dt.put(entry.name, row.getDouble(idxRow).toString)
+        case StringType => dt.put(entry.name, row.getString(idxRow))
+        case TimestampType => dt.put(entry.name, row.getAs[java.sql.Timestamp](idxRow).getTime.toString)
+        case DateType => dt.put(entry.name, row.getAs[java.sql.Date](idxRow).getTime.toString)
+        case ArrayType(_, _) => // for now assume that all arrays and vecs have the same size - we can store max size as part of the model
+          row.getAs[Seq[_]](idxRow).zipWithIndex.foreach { case (v, idx) =>
+            dt.put(entry.name + idx, v.toString)
+          }
+        case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] =>
+          val value = row.get(idxRow)
+          value match {
+            case vector: mllib.linalg.Vector =>
+              (0 until vector.size).foreach { idx =>
+                dt.put(entry.name + idx, vector(idx).toString)
+              }
+            case vector: ml.linalg.Vector =>
+              (0 until vector.size).foreach { idx =>
+                dt.put(entry.name + idx, vector(idx).toString)
+              }
+          }
+        case _ => dt.put(entry.name, dt.get(idxRow).toString)
       }
     }
-
-    def getPredictionFrameSchema(): Seq[StructField] = {
-      val wr = new EasyPredictModelWrapper(model)
-      model.getModelCategory match {
-        case ModelCategory.Binomial => wr.getResponseDomainValues.map(StructField(_, DoubleType))
-        case ModelCategory.Multinomial => wr.getResponseDomainValues.map(StructField(_, DoubleType))
-        case ModelCategory.Regression => Seq(StructField("value", DoubleType))
-        case ModelCategory.Clustering => Seq(StructField("cluster", DoubleType))
-        case ModelCategory.AutoEncoder => throw new RuntimeException("UnImplemented")
-        case ModelCategory.DimReduction => throw new RuntimeException("UnImplemented") //Row(wr.predictDimReduction(data).dimensions)
-        case ModelCategory.WordEmbedding => throw new RuntimeException("UnImplemented") //Row(wr.predictWord2Vec(data).wordEmbeddings)
-        case ModelCategory.Unknown => throw new RuntimeException("Unknown")
-      }
-    }
-
-    def predict(data: RowData): Row = {
-      val wr = new EasyPredictModelWrapper(model)
-      model.getModelCategory match {
-        case ModelCategory.Binomial => Row(wr.predictBinomial(data).classProbabilities: _*)
-        case ModelCategory.Multinomial => Row(wr.predictMultinomial(data).classProbabilities: _*)
-        case ModelCategory.Regression => Row(wr.predictRegression(data).value)
-        case ModelCategory.Clustering => Row(wr.predictClustering(data).cluster)
-        case ModelCategory.AutoEncoder => throw new RuntimeException("UnImplemented")
-        case ModelCategory.DimReduction => throw new RuntimeException("UnImplemented") //Row(wr.predictDimReduction(data).dimensions)
-        case ModelCategory.WordEmbedding => throw new RuntimeException("UnImplemented") //Row(wr.predictWord2Vec(data).wordEmbeddings)
-        case ModelCategory.Unknown => throw new RuntimeException("Unknown")
-      }
-    }
-
-    @DeveloperApi
-    override def transformSchema(schema: StructType): StructType
-
-    =
-    {
-      val ncols: Int = if (model.nclasses() == 1) 1 else model.nclasses() + 1
-      StructType(model.getNames.map {
-        name => StructField(name, DoubleType, nullable = true, metadata = null)
-      })
-    }
-
-    @Since("1.6.0")
-    override def write: MLWriter
-
-    = new H2OMOJOModelWriter(this)
-
   }
 
-  private[models] class H2OMOJOModelWriter(instance: H2OMOJOModel) extends MLWriter {
-
-    @org.apache.spark.annotation.Since("1.6.0")
-    override protected def saveImpl(path: String): Unit = {
-      DefaultParamsWriter.saveMetadata(instance, path, sc)
-      val file = new java.io.File(path, instance.defaultFileName)
-      val fos = new FileOutputStream(file)
-      fos.write(instance.mojoData)
+  def getPredictionFrameSchema(): Seq[StructField] = {
+    val wr = new EasyPredictModelWrapper(model)
+    model.getModelCategory match {
+      case ModelCategory.Binomial => wr.getResponseDomainValues.map(StructField(_, DoubleType))
+      case ModelCategory.Multinomial => wr.getResponseDomainValues.map(StructField(_, DoubleType))
+      case ModelCategory.Regression => Seq(StructField("value", DoubleType))
+      case ModelCategory.Clustering => Seq(StructField("cluster", DoubleType))
+      case ModelCategory.AutoEncoder => throw new RuntimeException("UnImplemented")
+      case ModelCategory.DimReduction => throw new RuntimeException("UnImplemented")
+      case ModelCategory.WordEmbedding => throw new RuntimeException("UnImplemented")
+      case ModelCategory.Unknown => throw new RuntimeException("Unknown")
     }
   }
 
-  private[models] class H2OMOJOModelReader
-  (val defaultFileName: String) extends MLReader[H2OMOJOModel] {
-
-    private val className = implicitly[ClassTag[H2OMOJOModel]].runtimeClass.getName
-
-    @org.apache.spark.annotation.Since("1.6.0")
-    override def load(path: String): H2OMOJOModel = {
-      val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
-      val file = new File(path, defaultFileName)
-      val is = new FileInputStream(file)
-      val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
-      val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
-      val model = ModelMojoReader.readFrom(reader)
-      val h2oModel = make(model, mojoData, metadata.uid)(sqlContext)
-      DefaultParamsReader.getAndSetParams(h2oModel, metadata)
-      h2oModel
-    }
-
-    def make(model: MojoModel, mojoData: Array[Byte], uid: String)(sqLContext: SQLContext): H2OMOJOModel = {
-      new H2OMOJOModel(model, mojoData, uid)(sqlContext)
+  def predict(data: RowData): Row = {
+    val wr = new EasyPredictModelWrapper(model)
+    model.getModelCategory match {
+      case ModelCategory.Binomial => Row(wr.predictBinomial(data).classProbabilities: _*)
+      case ModelCategory.Multinomial => Row(wr.predictMultinomial(data).classProbabilities: _*)
+      case ModelCategory.Regression => Row(wr.predictRegression(data).value)
+      case ModelCategory.Clustering => Row(wr.predictClustering(data).cluster)
+      case ModelCategory.AutoEncoder => throw new RuntimeException("UnImplemented")
+      case ModelCategory.DimReduction => throw new RuntimeException("UnImplemented")
+      case ModelCategory.WordEmbedding => throw new RuntimeException("UnImplemented")
+      case ModelCategory.Unknown => throw new RuntimeException("Unknown")
     }
   }
 
-  object H2OMOJOModel extends MLReadable[H2OMOJOModel] {
-    val defaultFileName = "mojo_model"
+  @DeveloperApi
+  override def transformSchema(schema: StructType): StructType
 
-    @Since("1.6.0")
-    override def read: MLReader[H2OMOJOModel] = new H2OMOJOModelReader(defaultFileName)
-
-    @Since("1.6.0")
-    override def load(path: String): H2OMOJOModel = super.load(path)
+  = {
+    val ncols: Int = if (model.nclasses() == 1) 1 else model.nclasses() + 1
+    StructType(model.getNames.map {
+      name => StructField(name, DoubleType, nullable = true, metadata = null)
+    })
   }
+
+  @Since("1.6.0")
+  override def write: MLWriter
+
+  = new H2OMOJOModelWriter(this)
+
+}
+
+private[models] class H2OMOJOModelWriter(instance: H2OMOJOModel) extends MLWriter {
+
+  @org.apache.spark.annotation.Since("1.6.0")
+  override protected def saveImpl(path: String): Unit = {
+    DefaultParamsWriter.saveMetadata(instance, path, sc)
+    val file = new java.io.File(path, instance.defaultFileName)
+    val fos = new FileOutputStream(file)
+    fos.write(instance.mojoData)
+  }
+}
+
+private[models] class H2OMOJOModelReader
+(val defaultFileName: String) extends MLReader[H2OMOJOModel] {
+
+  private val className = implicitly[ClassTag[H2OMOJOModel]].runtimeClass.getName
+
+  @org.apache.spark.annotation.Since("1.6.0")
+  override def load(path: String): H2OMOJOModel = {
+    val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
+    val file = new File(path, defaultFileName)
+    val is = new FileInputStream(file)
+    val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
+    val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
+    val model = ModelMojoReader.readFrom(reader)
+    val h2oModel = make(model, mojoData, metadata.uid)(sqlContext)
+    DefaultParamsReader.getAndSetParams(h2oModel, metadata)
+    h2oModel
+  }
+
+  def make(model: MojoModel, mojoData: Array[Byte], uid: String)(sqLContext: SQLContext): H2OMOJOModel = {
+    new H2OMOJOModel(model, mojoData, uid)(sqlContext)
+  }
+}
+
+object H2OMOJOModel extends MLReadable[H2OMOJOModel] {
+  val defaultFileName = "mojo_model"
+
+  @Since("1.6.0")
+  override def read: MLReader[H2OMOJOModel] = new H2OMOJOModelReader(defaultFileName)
+
+  @Since("1.6.0")
+  override def load(path: String): H2OMOJOModel = super.load(path)
+}
