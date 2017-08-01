@@ -29,6 +29,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
 import water.support.ModelSerializationSupport
 
 import scala.reflect.ClassTag
+import scala.util.Random
 
 /**
   * Shared implementation for H2O model pipelines
@@ -42,20 +43,40 @@ M <: Model[_, _, _ <: Model.Output]]
   override def copy(extra: ParamMap): S = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
+    // in order to join the predictions with the original data we do a small trick
+    // we attach unique id to each row and then convert to H2O Frame
+    // we do predictions on the frame without ids but and add the ids to the predicted values afterwards
+    // this is save as h2o preserves the order.
+
+    // next we convert back to spark and join the original dataframe with the predicted values
+    val tempId = Random.alphanumeric.take(20).mkString("")
+    import org.apache.spark.sql.functions._
+    val datasetWithId = dataset.withColumn(tempId, monotonically_increasing_id)
+
+
     import org.apache.spark.sql.functions.col
-    val cols = $(featuresCols).map(col)
+    val cols = ($(featuresCols) ++ Array(tempId)).map(col)
 
-    val frame: H2OFrame = h2oContext.asH2OFrame(dataset.select(cols: _*).toDF())
-    val prediction = model.score(frame)
 
-    val origWithPredictions = frame.add(prediction)
-    h2oContext.asDataFrame(origWithPredictions)(sqlContext)
+    val frame: H2OFrame = h2oContext.asH2OFrame(datasetWithId.select(cols: _*).toDF())
+
+    val ids = frame.extractFrame(frame._names.length - 1, frame._names.length)
+
+    // H2O Preserves the Order
+    val frameNoId = frame.extractFrame(0, frame._names.length - 1) // don't take the last column
+    val prediction = model.score(frameNoId)
+    val predictionIds = prediction.add(ids)
+    predictionIds.update()
+    val predictionsSpark = h2oContext.asDataFrame(predictionIds)(sqlContext)
+
+    datasetWithId.join(predictionsSpark, tempId).drop(tempId)
   }
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
     val ncols: Int = if (model._output.nclasses() == 1) 1 else model._output.nclasses() + 1
-    StructType(model._output._names.map {
+
+    StructType(schema.fields ++ model._output._names.map {
       name => StructField(name, DoubleType, nullable = true, metadata = null)
     })
   }

@@ -102,7 +102,7 @@ def isSpam(smsText: String,
            h2oContext: H2OContext,
            hamThreshold: Double = 0.5) = {
   val smsTextSchema = StructType(Array(StructField("text", StringType, nullable = false)))
-  val smsTextRowRDD = sc.parallelize(Seq("Michal, h2oworld party tonight in MV?")).map(Row(_))
+  val smsTextRowRDD = sc.parallelize(Seq(smsText)).map(Row(_))
   val smsTextDF = sqlContext.createDataFrame(smsTextRowRDD, smsTextSchema)
   val prediction = model.transform(smsTextDF)
   prediction.select("spam").first.getDouble(0) > hamThreshold
