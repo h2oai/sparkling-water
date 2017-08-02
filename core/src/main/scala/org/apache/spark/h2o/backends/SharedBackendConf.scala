@@ -87,34 +87,34 @@ trait SharedBackendConf {
   def setCloudName(cloudName: String) = set(PROP_CLOUD_NAME._1, cloudName)
   def setNthreads(numThreads: Int) = set(PROP_NTHREADS._1, nthreads.toString)
 
-  def setGAEnabled() = set(PROP_DISABLE_GA._1, true.toString)
-  def setGADisabled() = set(PROP_DISABLE_GA._1, false.toString)
+  def setGAEnabled() = set(PROP_DISABLE_GA._1, true)
+  def setGADisabled() = set(PROP_DISABLE_GA._1, false)
 
-  def setReplEnabled() = set(PROP_REPL_ENABLED._1, true.toString)
-  def setReplDisabled() = set(PROP_REPL_ENABLED._1, false.toString)
+  def setReplEnabled() = set(PROP_REPL_ENABLED._1, true)
+  def setReplDisabled() = set(PROP_REPL_ENABLED._1, false)
 
   def setDefaultNumReplSessions(numSessions: Int) = set(PROP_SCALA_INT_DEFAULT_NUM._1, numSessions.toString)
 
-  def setClusterTopologyListenerEnabled() = set(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1, true.toString)
-  def setClusterTopologyListenerDisabled() = set(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1, false.toString)
+  def setClusterTopologyListenerEnabled() = set(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1, true)
+  def setClusterTopologyListenerDisabled() = set(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1, false)
 
-  def setSparkVersionCheckEnable() = set(PROP_SPARK_VERSION_CHECK_ENABLED._1, true.toString)
-  def setSparkVersionCheckDisabled() = set(PROP_SPARK_VERSION_CHECK_ENABLED._1, false.toString)
+  def setSparkVersionCheckEnable() = set(PROP_SPARK_VERSION_CHECK_ENABLED._1, true)
+  def setSparkVersionCheckDisabled() = set(PROP_SPARK_VERSION_CHECK_ENABLED._1, false)
 
-  def setFailOnUnsupportedSparkParamEnabled() = set(PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._1, true.toString)
-  def setFailOnUnsupportedSparkParamDisabled() = set(PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._1, false.toString)
+  def setFailOnUnsupportedSparkParamEnabled() = set(PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._1, true)
+  def setFailOnUnsupportedSparkParamDisabled() = set(PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._1, false)
 
   def setJks(path: String) = set(PROP_JKS._1, path)
   def setJksPass(password: String) = set(PROP_JKS_PASS._1, password)
 
-  def setHashLoginEnabled() = set(PROP_HASH_LOGIN._1, true.toString)
-  def setHashLoginDisabled() = set(PROP_HASH_LOGIN._1, false.toString)
+  def setHashLoginEnabled() = set(PROP_HASH_LOGIN._1, true)
+  def setHashLoginDisabled() = set(PROP_HASH_LOGIN._1, false)
 
-  def setLdapLoginEnabled() = set(PROP_LDAP_LOGIN._1, true.toString)
-  def setLdapLoginDisabled() = set(PROP_LDAP_LOGIN._1, false.toString)
+  def setLdapLoginEnabled() = set(PROP_LDAP_LOGIN._1, true)
+  def setLdapLoginDisabled() = set(PROP_LDAP_LOGIN._1, false)
 
-  def setKerberosLoginEnabled() = set(PROP_KERBEROS_LOGIN._1, true.toString)
-  def setKerberosLoginDisabled() = set(PROP_KERBEROS_LOGIN._1, false.toString)
+  def setKerberosLoginEnabled() = set(PROP_KERBEROS_LOGIN._1, true)
+  def setKerberosLoginDisabled() = set(PROP_KERBEROS_LOGIN._1, false)
 
   def setLoginConf(file: String) = set(PROP_LOGIN_CONF._1, file)
   def setUserName(username: String) = set(PROP_USER_NAME._1, username)
@@ -133,8 +133,8 @@ trait SharedBackendConf {
   def setH2OClientLogDir(dir: String) = set(PROP_CLIENT_LOG_DIR._1, dir)
   def setClientPortBase(basePort: Int) = set(PROP_CLIENT_PORT_BASE._1, basePort.toString)
 
-  def setClientVerboseEnabled() = set(PROP_CLIENT_VERBOSE._1, true.toString)
-  def setClientVerboseDisabled() = set(PROP_CLIENT_VERBOSE._1, false.toString)
+  def setClientVerboseEnabled() = set(PROP_CLIENT_VERBOSE._1, true)
+  def setClientVerboseDisabled() = set(PROP_CLIENT_VERBOSE._1, false)
 
   def setClientNetworkMask(mask: String) = set(PROP_CLIENT_NETWORK_MASK._1, mask)
 

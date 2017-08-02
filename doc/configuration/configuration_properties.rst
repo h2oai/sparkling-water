@@ -159,6 +159,16 @@ Internal backend configuration properties
 |                                                    |                | out size of Spark cluster, which are   |
 |                                                    |                | producing the same number of nodes.    |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.internal_secure_connections``      | ``false``      | Enables secure communications among    |
+|                                                    |                | H2O nodes. The security is based on    |
+|                                                    |                | automatically generated keystore       |
+|                                                    |                | and truststore. This is equivalent for |
+|                                                    |                | ``-internal_secure_conections`` option |
+|                                                    |                | in `H2O Hadoop deployments             |
+|                                                    |                | <https://github.com/h2oai/h2o-3/blob/  |
+|                                                    |                | master/h2o-docs/src/product/           |
+|                                                    |                | security.rst#hadoop>`_.                |
++----------------------------------------------------+----------------+----------------------------------------+
 | **H2O nodes parameters**                           |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.node.port.base``                   | ``54321``      | Base port used for individual H2O      |
