@@ -27,6 +27,7 @@ import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.ui._
 import org.apache.spark.h2o.utils.{H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
+import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import water._
 import water.util.{Log, LogBridge}
@@ -110,6 +111,10 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
         s" a bug in Spark dependency resolution.")
     }
 
+    if (conf.isInternalSecureConnectionsEnabled) {
+      Security.enableSSL(sparkSession, conf)
+    }
+
     sparkContext.addSparkListener(sparklingWaterListener)
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
@@ -151,6 +156,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     val h2oCloudInfo = H2OCloudInfo(
       h2oLocalClient,
       H2O.CLOUD.healthy(),
+      H2OSecurityManager.instance.securityEnabled,
       H2O.CLOUD.members().map(node => node.getIpPortString),
       backend.backendUIInfo,
       H2O.START_TIME_MILLIS.get()

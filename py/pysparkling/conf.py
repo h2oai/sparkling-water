@@ -234,6 +234,15 @@ class H2OConf(object):
         self._jconf.setNodeNetworkMask(mask)
         return self
 
+    def set_internal_secure_connections_enabled(self):
+        self._jconf.setInternalSecureConnectionsEnabled()
+        return self
+
+    def set_internal_secure_connections_disabled(self):
+        self._jconf.setInternalSecureConnectionsDisabled()
+        return self
+
+
     # setters for external backend
 
     def set_h2o_cluster(self, ip, port):
@@ -439,6 +448,9 @@ class H2OConf(object):
 
     def node_network_mask(self):
         return self._get_option(self._jconf.nodeNetworkMask())
+
+    def is_internal_secure_connections_enabled(self):
+        return self._jconf.isInternalSecureConnectionsEnabled()
 
     # Getters for external backend
 
