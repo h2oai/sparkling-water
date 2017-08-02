@@ -1,6 +1,23 @@
 Change Log
 ==========
 
+v2.1.13 (2017-08-02)
+--------------------
+
+-  Bug
+   
+   -  `SW-501 <https://0xdata.atlassian.net/browse/SW-501>`__ - Security Bug when using Security.enableSSL(spark)
+   -  `SW-505 <https://0xdata.atlassian.net/browse/SW-505>`__ - Travis build is failing on missing OracleJdk7
+
+-  Improvement
+   
+   -  `SW-355 <https://0xdata.atlassian.net/browse/SW-355>`__ - Include H2O R client distribution in Sparkling Water binary
+   -  `SW-500 <https://0xdata.atlassian.net/browse/SW-500>`__ - Warehouse dir does not have to be set in tests on Spark from 2.1+
+   -  `SW-506 <https://0xdata.atlassian.net/browse/SW-506>`__ - Documentation for the backends should mention get-extended-h2o.sh instead of manual jar extending
+   -  `SW-507 <https://0xdata.atlassian.net/browse/SW-507>`__ - Upgrade to Gradle 4.0.2
+   -  `SW-508 <https://0xdata.atlassian.net/browse/SW-508>`__ - More robust get-extended-h2o.sh
+   -  `SW-509 <https://0xdata.atlassian.net/browse/SW-509>`__ - Add back DEVEL.md and CHANGELOG.md and redirect to new versions
+
 v2.1.12 (2017-07-17)
 --------------------
 
