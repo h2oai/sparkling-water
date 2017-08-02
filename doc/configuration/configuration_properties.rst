@@ -167,7 +167,7 @@ Internal backend configuration properties
 |                                                    |                | in `H2O Hadoop deployments             |
 |                                                    |                | <https://github.com/h2oai/h2o-3/blob/  |
 |                                                    |                | master/h2o-docs/src/product/           |
-|                                                    |                | security.rst#hadoop>`.                 |
+|                                                    |                | security.rst#hadoop>`_.                |
 +----------------------------------------------------+----------------+----------------------------------------+
 | **H2O nodes parameters**                           |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
