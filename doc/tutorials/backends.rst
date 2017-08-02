@@ -56,95 +56,50 @@ as in previous mode to h2o cloud kill as well.
 
 There are 2 deployment strategies of external cluster: manual and
 automatic. In manual mode, we need to start H2O cluster and in automatic
-mode, the cluster isstarted for us automatically based on our
+mode, the cluster is started for us automatically based on our
 configuration. In both modes, we can't use regular H2O/H2O driver jar as
 main artifact for external H2O cluster, but we need to extend it by
 classes required by Sparkling Water. Users are expected to extend the
 H2O/H2O driver jar and build the artifacts on their own using a few
 simple steps mentioned bellow.
 
-Before you start, please build and clone Sparkling Water. Sparkling
-Water can be built using Gradle as ``./gradlew build -x check``.
+Obtaining Extended H2O jar
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Extending H2O jar
-~~~~~~~~~~~~~~~~~
+For the released Sparkling Water versions, the extended H2O jar can be downloaded using our helper script.
+Once you downloaded and unpacked the Sparkling Water distribution package, you can use ``./bin/get-extendend-h2o.sh``
+script to download the extended H2O jar. This script expects a single argument which specifies the Hadoop
+version for which you need to obtain the jar.
 
-In order to extend H2O/H2O driver jar file, Sparkling Water build
-process has Gradle task ``extendJar`` which can be configured in various
-ways.
-
-The recommended way for the user is to call
-``./gradlew extendJar -PdownloadH2O``. The ``downloadH2O`` Gradle
-command line argument tels the task to download correct h2o version for
-current sparkling water from our repository automatically. The
-downloaded jar is cached for future calls. If ``downloadH2O`` is run
-without any argument, then basic H2O jar is downloaded, but
-``downloadH2O`` command takes also argument specifying hadoop version,
-such as cdh5.4 or hdp2.2. In case the argument is specified, for example
-as ``downloadH2O=cdh5.4``, instead of downloading H2O jar, H2O driver
-jar for specified hadoop version will be downloaded.
-
-The location of H2O/H2O driver jar to be extended can also be set
-manually via ``H2O_ORIGINAL_JAR`` environmental variable. No work is
-done if the file is not available on this location or if it's not
-correct H2O or H2O driver jar.
-
-Gradle property has higher priority if both ``H2O_ORIGINAL_JAR`` and
-``-PdownloadH2O`` are set
-
-Here is a few few examples how H2O/H2O driver jar can be extended:
-
-1) In this case the jar to be extended is located using the provided
-   environment variable.
+The following code downloads H2O extended JAR for the cdh5.8:
 
 .. code:: bash
 
-    export H2O_ORIGINAL_JAR = ...
-    ./gradlew extendJar
+    ./bin/get-extended-h2o.sh cdh5.8
 
-2) In this case the jar to be extended is H2O jar and the correct
-   version is downloaded from our repository first.
-
-.. code:: bash
-
-    ./gradlew extendJar -PdownloadH2O
-
-3) In this case the jar to be extended is H2O driver jar for provided
-   hadoop version and is downloaded from our repository first
+If you don't want to run on hadoop but you want to run H2O in standalone mode, you can get the corresponding extended
+H2O standalone jar as:
 
 .. code:: bash
 
-    ./gradlew extendJar -PdownloadH2O=cdh5.4
+    ./bin/get-extended-h2o.sh standalone
 
-4) This case will throw an exception since such hadoop version is not
-   supported.
-
-.. code:: bash
-
-    ./gradlew extendJar -PdownloadH2O=abc
-
-5) This version will ignore environment variable and jar to be extended
-   will be downloaded from our repository. The same holds for version
-   with the argument.
+If you want to see the list of supported Hadoop versions, just run the shell script without any arguments as:
 
 .. code:: bash
 
-    export H2O_ORIGINAL_JAR = ...
-    ./gradlew extendJar -PdownloadH2O
+    ./bin/get-extended-h2o.sh
 
-The ``extendJar`` tasks also prints a path to the extended jar. It can
-be saved to environmental variable as
-
-.. code:: bash
-
-    export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
-
-Now we have the the jar file for either regular H2O or H2O driver ready!
+The script downloads the jar to the current directory and prints the absolute path to the downloaded jar.
 
 The following sections explain how to use external cluster in both
-modes. Let's assume for later sections that the location of extended
+modes. Let's assume for later sections that the path to the extended
 H2O/H2O driver jar file is available in ``H2O_EXTENDED_JAR``
 environmental variable.
+
+    Note: If you want to get extended H2O jar for Sparkling Water and H2O versions which have not yet been released,
+    you need to extend the JAR manually. This is explained in the following tutorial:
+    `Extending H2O jar manually <extending_h2o_jar_manually.rst>`__.
 
 Manual mode of External backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
