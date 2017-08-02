@@ -46,8 +46,8 @@ trait InternalBackendConf extends SharedBackendConf {
 
   /** Setters */
 
-  def setFlatFileEnabled() = set(PROP_USE_FLATFILE._1, true.toString)
-  def setFlatFileDisabled() = set(PROP_USE_FLATFILE._1, false.toString)
+  def setFlatFileEnabled() = set(PROP_USE_FLATFILE._1, true)
+  def setFlatFileDisabled() = set(PROP_USE_FLATFILE._1, false)
 
   def setNumH2OWorkers(numWorkers: Int) = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
   def setDrddMulFactor(factor: Int) = set(PROP_DUMMY_RDD_MUL_FACTOR._1, factor.toString)
@@ -58,7 +58,10 @@ trait InternalBackendConf extends SharedBackendConf {
   def setNodeBasePort(port: Int) = set(PROP_NODE_PORT_BASE._1, port.toString)
   def setNodeIcedDir(dir: String) = set(PROP_NODE_ICED_DIR._1, dir)
   def setNodeNetworkMask(mask: String) = set(PROP_NODE_NETWORK_MASK._1, mask)
-  def setInternalSecureConnectionsEnabled(flag: Boolean) = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, flag)
+
+  def setInternalSecureConnectionsEnabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, true)
+  def setInternalSecureConnectionsDisabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, false)
+
 
   def internalConfString: String =
     s"""Sparkling Water configuration:
