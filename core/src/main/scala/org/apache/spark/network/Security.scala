@@ -30,12 +30,8 @@ object Security extends Logging {
   def enableSSL(spark: SparkSession, conf: SparkConf): Unit = {
     val sslPair = SecurityUtils.generateSSLPair()
     val config = SecurityUtils.generateSSLConfig(sslPair)
-    if(SparkHadoopUtil.get.isYarnMode) {
-      conf.set("spark.yarn.dist.files", s"${sslPair.jks.path},$config")
-    } else {
-      spark.sparkContext.addFile(if (sslPair.jks.path.isEmpty) sslPair.jks.name else sslPair.jks.path + File.separator + sslPair.jks.name)
-      spark.sparkContext.addFile(config)
-    }
+    spark.sparkContext.addFile(if (sslPair.jks.path.isEmpty) sslPair.jks.name else sslPair.jks.path + File.separator + sslPair.jks.name)
+    spark.sparkContext.addFile(config)
     conf.set("spark.ext.h2o.internal_security_conf", config)
     logInfo(s"Added spark.ext.h2o.internal_security_conf configuration set to $config")
   }

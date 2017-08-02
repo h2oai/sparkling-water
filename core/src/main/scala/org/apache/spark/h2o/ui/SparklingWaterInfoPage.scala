@@ -210,6 +210,9 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
             <strong>Health:</strong>{if (listener.cloudHealthy) "\u2714" else "\u2716"}
           </li>
           <li>
+            <strong>Secured communication:</strong>{listener.h2oCloudInfo.map(p => if (p.cloudSecured) "\u2714" else "\u2716").getOrElse("\u2754")}
+          </li>
+          <li>
             <strong>Nodes:</strong>{listener.h2oCloudInfo.get.cloudNodes.length}
           </li>
           <li>
