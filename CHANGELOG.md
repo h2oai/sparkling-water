@@ -1,0 +1,1 @@
+The changelog has been moved to a new location. Please go to [CHANGELOG](doc/CHANGELOG.rst).

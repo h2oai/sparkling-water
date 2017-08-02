@@ -1,0 +1,1 @@
+The development documentation has been moved to a new location. Please go to [Development Documentation](doc/DEVEL.rst).
