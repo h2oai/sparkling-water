@@ -100,7 +100,9 @@ pipeline{
         }
 
         stage('QA: Unit Tests') {
-
+            when {
+                expression { params.runUnitTests == true }
+            }
             steps {
                 sh  """
                     # Build, run regular tests
