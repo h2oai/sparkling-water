@@ -94,7 +94,7 @@ pipeline{
             steps {
                 sh  """
                     # Build
-                    ${env.WORKSPACE}/gradlew clean build -x check scalaCheck
+                    ${env.WORKSPACE}/gradlew clean build -x check scalaStyle
                     """
             }
         }
