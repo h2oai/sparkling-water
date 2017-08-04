@@ -5,7 +5,7 @@ pipeline{
     agent { label 'mr-0xd3' }
 
     parameters {
-        string(name: 'branchName', defaultValue: "${env.BRANCH_NAME}", description: 'Test given branch on top of YARN.')
+        string(name: 'branchName', defaultValue: "${BRANCH_NAME}", description: 'Test given branch on top of YARN.')
         string(name: 'hdpVersion', defaultValue: 'current', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current will not do since it is not automatically expanded -> so please set 2.2.6.3-1')
 
         booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit and pyunit tests')
