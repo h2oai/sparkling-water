@@ -1,9 +1,21 @@
 #!/usr/bin/groovy
 
+@Library('test-shared-library') _
+
 pipeline{
 
-    agent { label 'mr-0xd3' }
+    // Use given machines to run pipeline
+    agent { label 'linux' }
 
+    // Setup job options
+    options {
+        ansiColor('xterm')
+        timestamps()
+        timeout(time: 120, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    // Job parameters
     parameters {
         choice(
                 choices: '2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0',
@@ -21,7 +33,7 @@ pipeline{
                 choices: 'yarn\nstandalone\nlocal',
                 description: 'Sparkling water test profile',
                 name: 'sparklingTestEnv')
-        
+
         choice(
                 choices: 'internal\nexternal',
                 description: 'Sparkling Water backend mode.',
@@ -201,48 +213,3 @@ pipeline{
 
     }
 }
-
-
-// Def sections
-
-def success(message) {
-
-    sh 'echo "Test ran successful"'
-
-    step([$class: 'GitHubCommitStatusSetter',
-        contextSource: [$class: 'ManuallyEnteredCommitContextSource',
-        context: 'h2o-ops'],
-        statusResultSource: [$class: 'ConditionalStatusResultSource',
-        results: [[$class: 'AnyBuildResult',
-        state: 'SUCCESS',
-        message: message ]]]])
-
-}
-
-def failure(message) {
-
-        sh 'echo "Test failed "'
-        step([$class: 'GitHubCommitStatusSetter',
-            contextSource: [$class: 'ManuallyEnteredCommitContextSource',
-            context: 'h2o-ops'],
-            statusResultSource: [$class: 'ConditionalStatusResultSource',
-            results: [[$class: 'AnyBuildResult',
-            message: message,
-            state: 'FAILURE']]]])
-}
-
-def testReport(reportDirectory, title) {
-    publishHTML target: [
-        allowMissing: false,
-        alwaysLinkToLastBuild: true,
-        keepAll: true,
-        reportDir: reportDirectory,
-        reportFiles: 'index.html',
-        reportName: title
-    ]
-}
-
-def arch(list) {
-    archiveArtifacts artifacts: list, allowEmptyArchive: true
-}
-
