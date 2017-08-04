@@ -39,8 +39,7 @@ pipeline{
 
         stage('Git Checkout and Preparation'){
             steps{
-                //checkout scm
-                git url: 'https://github.com/h2oai/sparkling-water.git', branch: 'master'
+                checkout scm
                 sh """
                 if [ ! -d "${env.SPARK_HOME}" ]; then
                         wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
