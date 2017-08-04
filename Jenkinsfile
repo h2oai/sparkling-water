@@ -5,6 +5,10 @@ pipeline{
     agent { label 'mr-0xd3' }
 
     parameters {
+        choice(
+                choices: '2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0',
+                description: 'Version of Spark used for testing.',
+                name: 'sparkVersion')
 
         booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit and pyunit tests')
         booleanParam(name: 'runLocalIntegTests', defaultValue: true, description: 'Run local integration tests')
@@ -12,13 +16,12 @@ pipeline{
         booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run integration tests')
         booleanParam(name: 'runPySparklingIntegTests', defaultValue: true, description: 'Run pySparkling integration tests')
 
+
         choice(
-            choices: '2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0',
-            description: 'Version of Spark used for testing.',
-            name: 'sparkVersion')
-
-        string(name: 'sparklingTestEnv', defaultValue: 'yarn', description: 'Sparkling water test profile (default yarn)')
-
+                choices: 'yarn\nstandalone\nlocal',
+                description: 'Sparkling water test profile',
+                name: 'sparklingTestEnv')
+        
         choice(
                 choices: 'internal\nexternal',
                 description: 'Sparkling Water backend mode.',
