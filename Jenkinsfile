@@ -203,17 +203,13 @@ pipeline{
         }, pysparklingIntegTests: {
             stage('QA: PySparkling Integration Tests') {
                 when {
-                    expression { runPySparklingIntegTests == true }
+                    expression { params.runPySparklingIntegTests == true }
                 }
                 steps {
-                    sh """
-                    ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${
-                        params.backendMode
-                    } -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn} -PsparklingTestEnv=${
-                        params.sparklingTestEnv
-                    } -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
-                     #  echo 'Archiving artifacts after PySparkling Integration test'
-                 """
+                    sh  """
+                        ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                        #  echo 'Archiving artifacts after PySparkling Integration test'
+                        """
                 }
                 post {
                     always {
