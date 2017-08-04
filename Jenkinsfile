@@ -156,57 +156,69 @@ pipeline{
             }
         }
 
-        stage('QA: Script Tests') {
+        parallel script: {
+            stage('QA: Script Tests') {
 
-             steps {
+                steps {
                     sh """
                     # Run scripts tests
-                    ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn}
+                    ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${
+                        params.startH2OClusterOnYarn
+                    }
                     """
-		    }
+                }
 
-			post {
-				always {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                    junit 'examples/build/test-results/scriptsTest/*.xml'
-                    testReport 'examples/build/reports/tests/scriptsTest', 'Examples Script Tests'
-				}
-			}
-        }
-
-        stage('QA: Integration tests') {
-            when {
-                expression { params.runIntegTests == true }
+                post {
+                    always {
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                        junit 'examples/build/test-results/scriptsTest/*.xml'
+                        testReport 'examples/build/reports/tests/scriptsTest', 'Examples Script Tests'
+                    }
+                }
             }
-            steps {
-                sh """
-                    ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+        }, integTests: {
+            stage('QA: Integration tests') {
+                when {
+                    expression { params.runIntegTests == true }
+                }
+                steps {
+                    sh """
+                    ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${
+                        params.startH2OClusterOnYarn
+                    } -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${
+                        env.SPARK_HOME
+                    } -x check -x :sparkling-water-py:integTest
                      #  echo 'Archiving artifacts after Integration test'
                  """
-            }
-            post {
-				always {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                    junit 'examples/build/test-results/integTest/*.xml'
-					testReport 'examples/build/reports/tests/integTest', "${params.backendMode} Examples Integration tests"
+                }
+                post {
+                    always {
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                        junit 'examples/build/test-results/integTest/*.xml'
+                        testReport 'examples/build/reports/tests/integTest', "${params.backendMode} Examples Integration tests"
 
-				}
-			}
-        }
-
-        stage('QA: PySparkling Integration Tests') {
-            when {
-                expression { runPySparklingIntegTests == true }
+                    }
+                }
             }
-            steps {
-                sh """
-                    ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+        }, pysparklingIntegTests: {
+            stage('QA: PySparkling Integration Tests') {
+                when {
+                    expression { runPySparklingIntegTests == true }
+                }
+                steps {
+                    sh """
+                    ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${
+                        params.backendMode
+                    } -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn} -PsparklingTestEnv=${
+                        params.sparklingTestEnv
+                    } -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
                      #  echo 'Archiving artifacts after PySparkling Integration test'
                  """
-            }
-            post {
-                always {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                }
+                post {
+                    always {
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    }
                 }
             }
         }
