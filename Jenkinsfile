@@ -174,7 +174,7 @@ pipeline{
 			}
         }
 
-        stage('QA: Integration tests') {
+        stage('QA: Integration Tests') {
             when {
                 expression { params.runIntegTests == true }
             }
