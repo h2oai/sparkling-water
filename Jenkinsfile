@@ -69,6 +69,11 @@ pipeline{
                         rm -rf ${env.SPARK}.tgz
                 fi
                 """
+
+                // Spark work directory cleanup
+                dir("${env.SPARK_HOME}/work") {
+                    deleteDir()
+                }
             }
         }
 
