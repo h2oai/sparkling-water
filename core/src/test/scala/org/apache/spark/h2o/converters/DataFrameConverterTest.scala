@@ -634,7 +634,7 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
       assert(
         vec.isNA(rIdx) || {
           vec.atStr(valString, rIdx)
-          valString.bytesToString() == values(rIdx)
+          valString.toSanitizedString == values(rIdx)
         }, "Values stored in H2OFrame has to match specified values")
     }
   }
