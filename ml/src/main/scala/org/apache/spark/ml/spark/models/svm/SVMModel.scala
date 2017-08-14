@@ -84,6 +84,8 @@ class SVMModel private[svm](val selfKey: Key[SVMModel],
     preds
   }
 
+  override def getMojo: SVMMojoWriter = new SVMMojoWriter(this)
+
   override protected def toJavaInit(sb: SBPrintStream, fileCtx: CodeGeneratorPipeline): SBPrintStream = {
     val sbInitialized = super.toJavaInit(sb, fileCtx)
     sbInitialized.ip("public boolean isSupervised() { return " + isSupervised + "; }").nl
