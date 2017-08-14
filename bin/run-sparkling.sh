@@ -8,7 +8,8 @@ source "$TOPDIR/bin/sparkling-env.sh"
 checkSparkHome
 # Verify if correct Spark version is used
 checkSparkVersion
-
+# Check sparkling water assembly Jar exists
+checkFatJarExists
 DRIVER_CLASS=water.SparklingWaterDriver
 
 DRIVER_MEMORY=${DRIVER_MEMORY:-$DEFAULT_DRIVER_MEMORY}

@@ -8,6 +8,8 @@ source "$TOPDIR/bin/sparkling-env.sh"
 checkSparkHome
 # Verify if correct Spark version is used
 checkSparkVersion
+# Check sparkling water assembly Jar exists
+checkFatJarExists
 
 # Default memory for shell
 DRIVER_MEMORY=3G

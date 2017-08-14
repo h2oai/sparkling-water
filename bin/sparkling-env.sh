@@ -35,6 +35,8 @@ function checkSparkVersion() {
     exit -1
   fi
 }
+
+
 # Disable grep options for this environment
 export GREP_OPTIONS=
 # Version of this distribution
@@ -69,6 +71,24 @@ export SPARK_WORKER_DIR="${tmpdir}spark/work"
 export SPARK_LOCAL_DIRS="${tmpdir}spark/work"
 
 export S3_RELEASE_BUCKET="http://h2o-release.s3.amazonaws.com/sparkling-water"
+
+function checkFatJarExists() {
+if [ ! -f "$FAT_JAR_FILE" ]; then
+    echo
+    echo "Sparkling Water assembly jar does not exist at: $FAT_JAR_FILE. Can not continue!"
+    echo
+    exit -1
+fi
+}
+
+function checkPyZipExists() {
+if [ ! -f "$PY_ZIP_FILE" ]; then
+    echo
+    echo "PySparkling zip distribution does not exist at: $PY_ZIP_FILE. Can not continue!"
+    echo
+    exit -1
+fi
+}
 
 function banner() {
 cat <<EOF
