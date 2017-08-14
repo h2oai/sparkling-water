@@ -6,6 +6,7 @@ call %TOPDIR%\bin\sparkling-env.cmd
 rem Verify there is Spark installation
 call %LIBSW% checkSparkHome
 call %LIBSW% checkSparkVersion
+call %LIBSW% checkFatJarExists
 
 rem Example prefix
 set PREFIX=org.apache.spark.examples.h2o

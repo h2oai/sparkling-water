@@ -31,6 +31,25 @@ if NOT "%INSTALLED_SPARK_VERSION%"=="%SPARK_VERSION%" (
 	)
 exit /b 0
 
+
+:checkFatJarExists
+if not exist "%FAT_JAR_FILE% (
+        echo
+        echo Sparkling Water assembly jar does not exist at: %FAT_JAR_FILE%. Can not continue!
+        echo
+        call :haltHelper 2> nul
+)
+exit /b 0
+
+:checkPyZipExists
+if not exist "%PY_ZIP_FILE% (
+        echo
+        echo PySparkling zip distribution does not exist at: %PY_ZIP_FILE%. Can not continue!
+        echo
+        call :haltHelper 2> nul
+)
+exit /b 0
+
 :haltHelper
 () 
 exit /b 1
