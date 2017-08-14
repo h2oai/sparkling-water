@@ -8,6 +8,8 @@ source "$TOPDIR/bin/sparkling-env.sh"
 checkSparkHome
 # Verify if correct Spark version is used
 checkSparkVersion
+# Check sparkling water assembly Jar exists
+checkPyZipExists
 
 SCRIPT_MASTER=${MASTER:-"$DEFAULT_MASTER"}
 SCRIPT_DEPLOY_MODE="cluster"
