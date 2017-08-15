@@ -45,8 +45,7 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
       getParams._response_column = $(predictionCol)
     }
     val model = new GBM(params).trainModel().get()
-    val mojoModel = ModelSerializationSupport.getMojoModel(model)
-    val mojoData = ModelSerializationSupport.getMojoData(model)
+    val (mojoModel, mojoData) = ModelSerializationSupport.getMojo(model)
     new H2OMOJOModel(mojoModel, mojoData)(sqlContext)
   }
 

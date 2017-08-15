@@ -37,6 +37,8 @@ class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val
 
   def this(model: MojoModel, mojoData: Array[Byte])(sqlContext: SQLContext) = this(model, mojoData, Identifiable.randomUID("mojoModel"))(sqlContext)
 
+  val easyPredictModelWrapper = new EasyPredictModelWrapper(model)
+
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
   private def flattenSchemaToCol(schema: StructType, prefix: String = null): Array[Column] = {
@@ -119,7 +121,7 @@ class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val
           val value = row.get(idxRow)
           value match {
             case vector: mllib.linalg.Vector =>
-              (0 until vector.size).foreach { idx =>
+              (0 until vector.size).foreach { idx =>     // WRONG this patter needs to share the same code as in the data transformation
                 dt.put(entry.name + idx, vector(idx).toString)
               }
             case vector: ml.linalg.Vector =>
@@ -133,41 +135,37 @@ class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val
   }
 
   def getPredictionFrameSchema(): Seq[StructField] = {
-    val wr = new EasyPredictModelWrapper(model)
-    model.getModelCategory match {
-      case ModelCategory.Binomial => wr.getResponseDomainValues.map(StructField(_, DoubleType))
-      case ModelCategory.Multinomial => wr.getResponseDomainValues.map(StructField(_, DoubleType))
+    easyPredictModelWrapper.getModelCategory match {
+      case ModelCategory.Binomial => easyPredictModelWrapper.getResponseDomainValues.map(StructField(_, DoubleType))
+      case ModelCategory.Multinomial => easyPredictModelWrapper.getResponseDomainValues.map(StructField(_, DoubleType))
       case ModelCategory.Regression => Seq(StructField("value", DoubleType))
       case ModelCategory.Clustering => Seq(StructField("cluster", DoubleType))
-      case ModelCategory.AutoEncoder => throw new RuntimeException("UnImplemented")
-      case ModelCategory.DimReduction => throw new RuntimeException("UnImplemented")
-      case ModelCategory.WordEmbedding => throw new RuntimeException("UnImplemented")
-      case ModelCategory.Unknown => throw new RuntimeException("Unknown")
+      case ModelCategory.AutoEncoder => throw new RuntimeException("Unimplemented model category")
+      case ModelCategory.DimReduction => throw new RuntimeException("Unimplemented model categoy")
+      case ModelCategory.WordEmbedding => throw new RuntimeException("Unimplemented model category")
+      case _ => throw new RuntimeException("Unknown model category")
     }
   }
 
   def predict(data: RowData): Row = {
-    val wr = new EasyPredictModelWrapper(model)
     model.getModelCategory match {
-      case ModelCategory.Binomial => Row(wr.predictBinomial(data).classProbabilities: _*)
-      case ModelCategory.Multinomial => Row(wr.predictMultinomial(data).classProbabilities: _*)
-      case ModelCategory.Regression => Row(wr.predictRegression(data).value)
-      case ModelCategory.Clustering => Row(wr.predictClustering(data).cluster)
-      case ModelCategory.AutoEncoder => throw new RuntimeException("UnImplemented")
-      case ModelCategory.DimReduction => throw new RuntimeException("UnImplemented")
-      case ModelCategory.WordEmbedding => throw new RuntimeException("UnImplemented")
-      case ModelCategory.Unknown => throw new RuntimeException("Unknown")
+      case ModelCategory.Binomial => Row(easyPredictModelWrapper.predictBinomial(data).classProbabilities: _*)
+      case ModelCategory.Multinomial => Row(easyPredictModelWrapper.predictMultinomial(data).classProbabilities: _*)
+      case ModelCategory.Regression => Row(easyPredictModelWrapper.predictRegression(data).value)
+      case ModelCategory.Clustering => Row(easyPredictModelWrapper.predictClustering(data).cluster)
+      case ModelCategory.AutoEncoder => throw new RuntimeException("Unimplemented model category")
+      case ModelCategory.DimReduction => throw new RuntimeException("Unimplemented model category")
+      case ModelCategory.WordEmbedding => throw new RuntimeException("Unimplemented model category")
+      case _ => throw new RuntimeException("Unknown model category")
     }
   }
 
   @DeveloperApi
-  override def transformSchema(schema: StructType): StructType
-
-  = {
-    val ncols: Int = if (model.nclasses() == 1) 1 else model.nclasses() + 1
-    StructType(model.getNames.map {
-      name => StructField(name, DoubleType, nullable = true, metadata = null)
-    })
+  override def transformSchema(schema: StructType): StructType = {
+    // Here we should check validity of input schema however
+    // in theory user can pass invalid schema with missing columns
+    // and model will be able to still provide a prediction
+    StructType(schema.fields ++ getPredictionFrameSchema)
   }
 
   @Since("1.6.0")
@@ -184,7 +182,11 @@ private[models] class H2OMOJOModelWriter(instance: H2OMOJOModel) extends MLWrite
     DefaultParamsWriter.saveMetadata(instance, path, sc)
     val file = new java.io.File(path, instance.defaultFileName)
     val fos = new FileOutputStream(file)
-    fos.write(instance.mojoData)
+    try {
+      fos.write(instance.mojoData)
+    } finally {
+      fos.close()
+    }
   }
 }
 

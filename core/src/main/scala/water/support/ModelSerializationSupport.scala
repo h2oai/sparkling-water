@@ -67,6 +67,7 @@ trait ModelSerializationSupport {
 }
 
 object ModelSerializationSupport extends ModelSerializationSupport {
+  
   def getMojoModel(model: Model[_, _, _]) = {
     val mojoData = getMojoData(model)
     val bais = new ByteArrayInputStream(mojoData)
@@ -78,5 +79,12 @@ object ModelSerializationSupport extends ModelSerializationSupport {
     val baos = new ByteArrayOutputStream()
     model.getMojo.writeTo(baos)
     baos.toByteArray
+  }
+
+  def getMojo(model: Model[_, _, _]): (MojoModel, Array[Byte]) = {
+    val mojoData = getMojoData(model)
+    val bais = new ByteArrayInputStream(mojoData)
+    val reader = MojoReaderBackendFactory.createReaderBackend(bais, MojoReaderBackendFactory.CachingStrategy.MEMORY)
+    (ModelMojoReader.readFrom(reader), mojoData)
   }
 }
