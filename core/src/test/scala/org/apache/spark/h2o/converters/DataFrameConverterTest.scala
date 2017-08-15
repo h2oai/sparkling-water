@@ -18,13 +18,14 @@ package org.apache.spark.h2o.converters
 
 import java.io.File
 import java.sql.Timestamp
+import java.util
 import java.util.UUID
 
 import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata._
+import org.apache.spark.h2o.utils.H2OAsserts._
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedSparkTestContext}
-import org.apache.spark.h2o.{Frame => _, H2OFrame => _}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
@@ -474,9 +475,7 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     val values = (1 to num).map(x => PrimitiveB(1 to x))
     val df = sc.parallelize(values).toDF
 
-    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
-    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
-    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
+    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
 
     val metadatas = expandedSchema.map(f => f.metadata)
 
@@ -492,6 +491,7 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     // Basic invariants
     assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
     assert(5 == h2oFrame.numCols(), "Number columns should match")
+    assert(h2oFrame.names() === expandedSchema.map(_.name))
 
     // Verify data stored in h2oFrame after transformation
     assertVectorIntValues(h2oFrame.vec(0), Seq(1, 1, 1, 1, 1))
@@ -501,48 +501,15 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     assertVectorIntValues(h2oFrame.vec(4), Seq(-1, -1, -1, -1, 5))
   }
 
-  test("Expand schema with dense vectors") {
-    val sqlContext = sqlc
-    import sqlContext.implicits._
-
-    val num = 2
-    val values = (1 to num).map(x => PrimitiveC(Vectors.dense((1 to x).map(1.0*_).toArray)))
-    val df = sc.parallelize(values).toDF
-
-    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
-    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
-    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
-
-    assert(expandedSchema === Vector(
-      StructField("f0", DoubleType),
-      StructField("f1", DoubleType)))
-
-    // Verify transformation into DataFrame
-    val h2oFrame = hc.asH2OFrame(df)
-    // Basic invariants
-    assert( df.count == h2oFrame.numRows(), "Number of rows has to match")
-    assert( 2 == h2oFrame.numCols(), "Number columns should match")
-
-    // Verify data stored in h2oFrame after transformation
-    assertVectorDoubleValues(h2oFrame.vec(0), Seq(1.0,1.0))
-    // For vectors missing values are replaced by zeros
-    assertVectorDoubleValues(h2oFrame.vec(1), Seq(0.0, 2.0))
-  }
-
-  test("Expand schema with sparse vectors") {
+  test("Expand schema with Mllib dense vectors") {
     val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 3
-    val values = (0 until num).map(x =>
-      PrimitiveC(
-        Vectors.sparse(num, Seq((x, 1.0)))
-      ))
-    val df = sc.parallelize(values).toDF()
+    val values = (1 to num).map(x => PrimitiveMllibFixture(Vectors.dense((1 to x).map(1.0 * _).toArray)))
+    val df = sc.parallelize(values).toDF
 
-    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
-    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
-    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
+    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
 
     assert(expandedSchema === Vector(
       StructField("f0", DoubleType),
@@ -552,13 +519,137 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
     // Basic invariants
-    assert( df.count == h2oFrame.numRows(), "Number of rows has to match")
-    assert( 3 == h2oFrame.numCols(), "Number columns should match")
+    assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
+    assert(expandedSchema.length == h2oFrame.numCols(), "Number columns should match")
+    assert(h2oFrame.names() === expandedSchema.map(_.name))
 
     // Verify data stored in h2oFrame after transformation
-    assertVectorDoubleValues(h2oFrame.vec(0), Seq(1.0,0.0,0.0))
-    assertVectorDoubleValues(h2oFrame.vec(1), Seq(0.0,1.0,0.0))
-    assertVectorDoubleValues(h2oFrame.vec(2), Seq(0.0,0.0,1.0))
+    assertDoubleFrameValues(h2oFrame, values.map(pojo => util.Arrays.copyOf(pojo.f.toArray, num)))
+  }
+
+  test("Expand schema with MLLIB sparse vectors") {
+    val sqlContext = sqlc
+    import sqlContext.implicits._
+    val num = 3
+    val values = (0 until num).map(x =>
+      PrimitiveMllibFixture(
+        Vectors.sparse(num, Seq((x, 1.0)))
+      ))
+    val df = sc.parallelize(values).toDF()
+
+    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+
+    assert(expandedSchema === Vector(
+      StructField("f0", DoubleType),
+      StructField("f1", DoubleType),
+      StructField("f2", DoubleType)))
+
+    // Verify transformation into DataFrame
+    val h2oFrame = hc.asH2OFrame(df)
+    // Basic invariants
+    assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
+    assert(expandedSchema.length == h2oFrame.numCols(), "Number columns should match")
+    assert(h2oFrame.names() === expandedSchema.map(_.name))
+
+    // Verify data stored in h2oFrame after transformation
+    assertDoubleFrameValues(h2oFrame, values.map(_.f.toArray))
+  }
+
+  test("Expand schema with MLlib dense vectors") {
+    val sqlContext = sqlc
+    import sqlContext.implicits._
+
+   val num = 2
+   val values = (1 to num).map(x =>
+     PrimitiveMllibFixture(org.apache.spark.mllib.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray))
+   )
+   val df = sc.parallelize(values).toDF
+
+   val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+
+   assert(expandedSchema === Vector(
+     StructField("f0", DoubleType),
+     StructField("f1", DoubleType)))
+
+   // Verify transformation into DataFrame
+   val h2oFrame = hc.asH2OFrame(df)
+   // Basic invariants
+   assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
+   assert(expandedSchema.length == h2oFrame.numCols(), "Number columns should match")
+   assert(h2oFrame.names() === expandedSchema.map(_.name))
+
+   // Verify data stored in h2oFrame after transformation
+   assertVectorDoubleValues(h2oFrame.vec(0), Seq(1.0, 1.0))
+   // For vectors missing values are replaced by zeros
+   assertVectorDoubleValues(h2oFrame.vec(1), Seq(0.0, 2.0))
+ }
+
+
+  test("Expand schema with MLlib sparse vectors") {
+    val sqlContext = sqlc
+    import sqlContext.implicits._
+    val num = 3
+    val values = (0 until num).map(x =>
+     PrimitiveMllibFixture(
+       org.apache.spark.mllib.linalg.Vectors.sparse(num, Seq((x, 1.0)))
+     ))
+    val df = sc.parallelize(values, num).toDF()
+
+    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+
+    assert(expandedSchema === Vector(
+      StructField("f0", DoubleType),
+      StructField("f1", DoubleType),
+      StructField("f2", DoubleType)))
+
+    // Verify transformation into DataFrame
+    val h2oFrame = hc.asH2OFrame(df)
+    // Basic invariants
+
+    assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
+    assert(expandedSchema.length == h2oFrame.numCols(), "Number columns should match")
+    assert(h2oFrame.names() === expandedSchema.map(_.name))
+
+    // Verify data stored in h2oFrame after transformation
+    assertDoubleFrameValues(h2oFrame, values.map(_.f.toArray))
+  }
+  
+  test("Expand complex schema with sparse and dense vectors") {
+    val sqlContext = sqlc
+    import sqlContext.implicits._    val num = 3
+    val values = (0 until num).map(x =>
+     ComplexMllibFixture(
+       org.apache.spark.mllib.linalg.Vectors.sparse(num, Seq((x, 1.0))),
+       x,
+       org.apache.spark.mllib.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray)
+     ))
+    println(values.mkString("\n"))
+    val df = sc.parallelize(values, num).toDF()
+
+    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+
+    assert(expandedSchema === Vector(
+      StructField("f10", DoubleType),
+      StructField("f11", DoubleType),
+      StructField("f12", DoubleType),
+      StructField("idx", IntegerType),
+      StructField("f20", DoubleType),
+      StructField("f21", DoubleType)
+      )
+    )
+
+    // Verify transformation into DataFrame
+    val h2oFrame = hc.asH2OFrame(df)
+    
+    // Basic invariants
+    assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
+    assert(expandedSchema.length == h2oFrame.numCols(), "Number columns should match")
+    assert(h2oFrame.names() === expandedSchema.map(_.name))
+
+    // Verify data stored in h2oFrame after transformation
+    assertDoubleFrameValues(h2oFrame, Seq(Array(1.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+                                          Array(0.0, 1.0, 0.0, 1.0, 1.0, 0.0),
+                                          Array(0.0, 0.0, 1.0, 2.0, 1.0, 2.0)))
   }
 
   test("Add metadata to Dataframe") {
@@ -626,35 +717,10 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     assert(df.numCols() == H2OSchemaUtils.flattenSchema(inputDF.schema).length, "Number columns should match")
   }
 
-  def assertVectorIntValues(vec: water.fvec.Vec, values: Seq[Int]): Unit = {
-    (0 until vec.length().toInt).foreach { rIdx =>
-      assert(if (vec.isNA(rIdx)) -1 == values(rIdx)
-      else vec.at8(rIdx) == values(rIdx), "Values stored in H2OFrame has to match specified values")
-    }
-  }
-
-  def assertVectorDoubleValues(vec: water.fvec.Vec, values: Seq[Double]): Unit = {
-    (0 until vec.length().toInt).foreach { rIdx =>
-      assert(if (vec.isNA(rIdx)) values(rIdx)==Double.NaN // this is Scala i can do NaN comparision
-      else vec.at(rIdx) == values(rIdx), "Values stored in H2OFrame has to match specified values")
-    }
-  }
-
-  def assertVectorEnumValues(vec: water.fvec.Vec, values: Seq[String]): Unit = {
-    val vecDom = vec.domain()
-    (0 until vec.length().toInt).foreach { rIdx =>
-      assert(vecDom(vec.at8(rIdx).asInstanceOf[Int]) == values(rIdx), "Values stored in H2OFrame has to match specified values")
-    }
-  }
-
-  def assertVectorStringValues(vec: water.fvec.Vec, values: Seq[String]): Unit = {
-    val valString = new BufferedString()
-    (0 until vec.length().toInt).foreach { rIdx =>
-      assert(
-        vec.isNA(rIdx) || {
-          vec.atStr(valString, rIdx)
-          valString.toSanitizedString == values(rIdx)
-        }, "Values stored in H2OFrame has to match specified values")
-    }
+  def getSchemaInfo(df: DataFrame): (DataFrame, Array[Int], Seq[StructField]) = {
+    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
+    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
+    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
+    (flattenDF, maxElementSizes, expandedSchema)
   }
 }

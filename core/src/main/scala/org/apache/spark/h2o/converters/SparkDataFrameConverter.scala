@@ -120,30 +120,30 @@ private[h2o] object SparkDataFrameConverter extends H2OLogging {
     * Converts a single Spark Row to H2O Row with expanded vectors and arrays
     */
   def sparkRowToH2ORow(row: Row, con: WriteConverterCtx, startIndices: Array[Int], elemSizes: Array[Int]) {
-    row.schema.fields.zipWithIndex.foreach { case (entry, idxRow) =>
-      val idxH2O = startIndices(idxRow)
-      if (row.isNullAt(idxRow)) {
+    row.schema.fields.zipWithIndex.foreach { case (entry, idxField) =>
+      val idxH2O = startIndices(idxField)
+      if (row.isNullAt(idxField)) {
         con.putNA(idxH2O)
       } else {
         entry.dataType match {
-          case BooleanType => con.put(idxH2O, if (row.getBoolean(idxRow)) 1 else 0)
+          case BooleanType => con.put(idxH2O, if (row.getBoolean(idxField)) 1 else 0)
           case BinaryType =>
-          case ByteType => con.put(idxH2O, row.getByte(idxRow))
-          case ShortType => con.put(idxH2O, row.getShort(idxRow))
-          case IntegerType => con.put(idxH2O, row.getInt(idxRow))
-          case LongType => con.put(idxH2O, row.getLong(idxRow))
-          case FloatType => con.put(idxH2O, row.getFloat(idxRow))
-          case _: DecimalType => con.put(idxH2O, row.getDecimal(idxRow).doubleValue())
-          case DoubleType => con.put(idxH2O, row.getDouble(idxRow))
-          case StringType => con.put(idxH2O, row.getString(idxRow))
-          case TimestampType => con.put(idxH2O, row.getAs[java.sql.Timestamp](idxRow))
-          case DateType => con.put(idxH2O, row.getAs[java.sql.Date](idxRow))
-          case ArrayType(elemType, _) => putArray(row.getAs[Seq[_]](idxRow), elemType, con, idxH2O, elemSizes(idxRow))
+          case ByteType => con.put(idxH2O, row.getByte(idxField))
+          case ShortType => con.put(idxH2O, row.getShort(idxField))
+          case IntegerType => con.put(idxH2O, row.getInt(idxField))
+          case LongType => con.put(idxH2O, row.getLong(idxField))
+          case FloatType => con.put(idxH2O, row.getFloat(idxField))
+          case _: DecimalType => con.put(idxH2O, row.getDecimal(idxField).doubleValue())
+          case DoubleType => con.put(idxH2O, row.getDouble(idxField))
+          case StringType => con.put(idxH2O, row.getString(idxField))
+          case TimestampType => con.put(idxH2O, row.getAs[java.sql.Timestamp](idxField))
+          case DateType => con.put(idxH2O, row.getAs[java.sql.Date](idxField))
+          case ArrayType(elemType, _) => putArray(row.getAs[Seq[_]](idxField), elemType, con, idxH2O, elemSizes(idxField))
           case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] => {
-            val value = row.get(idxRow)
+            val value = row.get(idxField)
             value match {
               case vector: mllib.linalg.Vector =>
-                con.putVector(idxH2O, vector, elemSizes(idxH2O))
+                con.putVector(idxH2O, vector, elemSizes(idxField))
             }
           }
           case _ => con.putNA(idxH2O)

@@ -47,8 +47,8 @@ trait ExternalBackendTestHelper {
     // Since some tests requires additional classes to be present at H2O classpath we add them here
     // instead of extending h2o jar by another classes
     // The best solution would be to implement distributed classloading for H2O
-    val jarList =  List(h2oExtendedJar) ++ additionalCp.toList
-    val cmdToLaunch = Seq[String]("java", "-cp", jarList.mkString(":"), "water.H2OApp", "-md5skip", "-name", cloudName, "-ip", ip)
+    val jarList = List(h2oExtendedJar) ++ additionalCp.toList
+    val cmdToLaunch = Seq[String]("java", "-ea", "-cp", jarList.mkString(":"), "water.H2OApp", "-md5skip", "-name", cloudName, "-ip", ip)
     Process(cmdToLaunch).run()
   }
 
