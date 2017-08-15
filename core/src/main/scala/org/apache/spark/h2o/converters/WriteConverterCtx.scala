@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark._
-import org.apache.spark.mllib.linalg.{SparseVector, Vectors}
+import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vectors}
 
 /**
   * Methods which each WriteConverterCtx has to implement.
@@ -78,11 +78,9 @@ trait WriteConverterCtx {
 
   def putVector(startIdx: Int, vec: mllib.linalg.Vector, maxVecSize: Int): Unit = {
     if (vec.isInstanceOf[SparseVector]) {
-      val sparseVec = vec.toSparse
-      putSparseVector(startIdx, sparseVec, maxVecSize)
+      putSparseVector(startIdx, vec.asInstanceOf[SparseVector], maxVecSize)
     } else {
-      val denseVector = vec.toDense
-      putDenseVector(startIdx, denseVector, maxVecSize)
+      putDenseVector(startIdx, vec.asInstanceOf[DenseVector], maxVecSize)
     }
   }
 
