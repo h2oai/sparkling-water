@@ -47,6 +47,8 @@ dependencies {
   compile("ai.h2o:h2o-persist-s3:${h2oVersion}") {
       exclude(group: "com.fasterxml.jackson.core")
   }
+  // H2O AutoML
+  compile "ai.h2o:h2o-automl:${h2oVersion}"
 
   // Spark components
   // - core

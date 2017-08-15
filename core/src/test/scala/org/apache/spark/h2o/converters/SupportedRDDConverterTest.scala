@@ -31,6 +31,7 @@ import org.scalatest.junit.JUnitRunner
 import water.fvec.{H2OFrame, Vec}
 import water.parser.{BufferedString, Categorical}
 import water.support.H2OFrameSupport
+import H2OAsserts._
 
 /**
   * Testing schema for rdd  to h2o frame transformations.
@@ -404,6 +405,28 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
     assert(rdd.count() == h2oFrame.numRows(), "Number of rows should match")
   }
 
+  test("RDD[ml.linalg.Vector] to H2OFrame") {
+    val dataDef = 1 to 10
+    val data = dataDef.map(v => org.apache.spark.ml.linalg.Vectors.dense(v, 0, 0))
+    val rdd = sc.parallelize(data)
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assertRDDH2OFrameInvariants(rdd, h2oFrame)
+    assertVectorDoubleValues(h2oFrame.vec(0), dataDef.map(_.toDouble))
+    assertVectorDoubleValues(h2oFrame.vec(1), dataDef.map(_ => 0.0))
+    assertVectorDoubleValues(h2oFrame.vec(2), dataDef.map(_ => 0.0))
+  }
+
+  test("RDD[mllib.linalg.Vector] to H2OFrame") {
+    val dataDef = 1 to 10
+    val data = dataDef.map(v => org.apache.spark.mllib.linalg.Vectors.dense(v, 0, 0))
+    val rdd = sc.parallelize(data)
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assertRDDH2OFrameInvariants(rdd, h2oFrame)
+    assertVectorDoubleValues(h2oFrame.vec(0), dataDef.map(_.toDouble))
+    assertVectorDoubleValues(h2oFrame.vec(1), dataDef.map(_ => 0.0))
+    assertVectorDoubleValues(h2oFrame.vec(2), dataDef.map(_ => 0.0))
+  }
+
   test("H2OFrame with categorical column into RDD") {
     val hf = hc.asH2OFrame(sc.parallelize(1 to 100).map(_.toString))
     H2OFrameSupport.withLockAndUpdate(hf) {
@@ -462,6 +485,10 @@ class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
         assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[FloatField].productArity, "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[DoubleField] =>
         assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[DoubleField].productArity, "Number columns should match")
+      case x if x.take(1)(0).isInstanceOf[org.apache.spark.ml.linalg.Vector] =>
+        assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[org.apache.spark.ml.linalg.Vector].size, "Number columns should match")
+      case x if x.take(1)(0).isInstanceOf[org.apache.spark.mllib.linalg.Vector] =>
+        assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[org.apache.spark.mllib.linalg.Vector].size, "Number columns should match")
       case x => fail(s"Bad data $x")
     }
   }
