@@ -18,6 +18,7 @@ package org.apache.spark.ml.h2o.algos
 
 import java.io._
 
+import hex.genmodel.utils.DistributionFamily
 import hex.{FrameSplitter, Model}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
@@ -50,9 +51,9 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   override def fit(dataset: Dataset[_]): M = {
     import org.apache.spark.sql.functions.col
 
-    // if this is left empty select all
+    // if this is left empty select
     if (getFeaturesCols.isEmpty) {
-      setFeaturesCols(dataset.columns)
+      setFeaturesCols(dataset.columns.filter(n => n.compareToIgnoreCase(getPredictionsCol) != 0))
     }
 
     val cols = getFeaturesCols.map(col) ++ Array(col(getPredictionsCol))
@@ -71,7 +72,16 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
       getParams._train = input._key
     }
 
-    val trainFrame = H2OFrameSupport.allStringVecToCategorical(getParams._train.get())
+    val trainFrame = getParams._train.get()
+    if (getAllStringColumnsToCategorical()) {
+      H2OFrameSupport.allStringVecToCategorical(trainFrame)
+    }
+    if ((getParams._distribution == DistributionFamily.bernoulli
+      || getParams._distribution == DistributionFamily.multinomial)
+      && !trainFrame.vec(getPredictionsCol).isCategorical) {
+      trainFrame.replace(trainFrame.find(getPredictionsCol),
+                         trainFrame.vec(getPredictionsCol).toCategoricalVec).remove()
+    }
     water.DKV.put(trainFrame)
 
     // Train
@@ -86,7 +96,13 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   def trainModel(params: P): M with H2OModelParams
 
   @DeveloperApi
-  override def transformSchema(schema: StructType): StructType = schema
+  override def transformSchema(schema: StructType): StructType = {
+    require(schema.fields.exists(f => f.name.compareToIgnoreCase(getPredictionsCol) == 0),
+            s"Specified prediction columns '${getPredictionsCol} was not found in input dataset!")
+    require(!getFeaturesCols.exists(n => n.compareToIgnoreCase(getPredictionsCol) == 0),
+            s"Specified input features cannot contain prediction column!")
+    schema
+  }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 

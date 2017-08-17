@@ -46,6 +46,8 @@ trait H2OAlgoParams[P <: Parameters] extends Params {
 
   def setParams(params: P) = this.parameters = params
 
+  def setParams(body: P => Unit) = body(getParams)
+
   protected def doc(fieldName: String) = api(schemaTag.runtimeClass, fieldName).help()
 
 
@@ -80,9 +82,13 @@ trait H2OAlgoParams[P <: Parameters] extends Params {
   final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
   final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
+  final val allStringColumnsToCategorical: BooleanParam = new BooleanParam(this, "allStringColumnsToCategorical",
+                                                                           "Transform all strings columns " +
+                                                                           "to categorical")
   setDefault(ratio -> 1.0)
   setDefault(predictionCol -> "prediction")
   setDefault(featuresCols -> Array.empty[String])
+  setDefault(allStringColumnsToCategorical -> true)
 
   /** @group getParam */
   def getTrainRatio: Double = $(ratio)
@@ -112,8 +118,15 @@ trait H2OAlgoParams[P <: Parameters] extends Params {
     set(featuresCols, cols) {}
   }
 
-
   def setFeaturesCol(first: String) = setFeaturesCols(first)
+
+  /** @group setParam */
+  def setAllStringColumnsToCategorical(transform: Boolean) = {
+    set(allStringColumnsToCategorical, transform) {}
+  }
+
+  /** @group getParam */
+  def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
 
   /**
     * Set the param and execute custom piece of code

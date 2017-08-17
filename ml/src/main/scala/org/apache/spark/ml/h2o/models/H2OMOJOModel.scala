@@ -200,10 +200,9 @@ private[models] class H2OMOJOModelReader
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
     val file = new File(path, defaultFileName)
     val is = new FileInputStream(file)
-    val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
     val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
     val model = ModelMojoReader.readFrom(reader)
-    val h2oModel = make(model, mojoData, metadata.uid)(sqlContext)
+    val h2oModel = make(model, null, metadata.uid)(sqlContext)
     DefaultParamsReader.getAndSetParams(h2oModel, metadata)
     h2oModel
   }
