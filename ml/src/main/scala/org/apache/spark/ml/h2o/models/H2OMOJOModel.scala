@@ -20,6 +20,7 @@ package org.apache.spark.ml.h2o.models
 import java.io._
 
 import hex.ModelCategory
+import hex.genmodel.MojoReaderBackendFactory.CachingStrategy
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
 import org.apache.spark._
@@ -32,10 +33,10 @@ import org.apache.spark.sql.types._
 
 import scala.reflect.ClassTag
 
-class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val uid: String)(sqlContext: SQLContext)
+class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val uid: String)
   extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable {
 
-  def this(model: MojoModel, mojoData: Array[Byte])(sqlContext: SQLContext) = this(model, mojoData, Identifiable.randomUID("mojoModel"))(sqlContext)
+  def this(model: MojoModel, mojoData: Array[Byte]) = this(model, mojoData, Identifiable.randomUID("mojoModel"))
 
   val easyPredictModelWrapper = new EasyPredictModelWrapper(model)
 
@@ -66,8 +67,6 @@ class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val
 
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-
-
     val spark = SparkSession.builder().getOrCreate()
     val df = flattenDataFrame(dataset.toDF())
 
@@ -208,7 +207,7 @@ private[models] class H2OMOJOModelReader
   }
 
   def make(model: MojoModel, mojoData: Array[Byte], uid: String)(sqLContext: SQLContext): H2OMOJOModel = {
-    new H2OMOJOModel(model, mojoData, uid)(sqlContext)
+    new H2OMOJOModel(model, mojoData, uid)
   }
 }
 
@@ -220,4 +219,10 @@ object H2OMOJOModel extends MLReadable[H2OMOJOModel] {
 
   @Since("1.6.0")
   override def load(path: String): H2OMOJOModel = super.load(path)
+
+  def createFromMojo(is: InputStream, uid: String = Identifiable.randomUID("mojoModel")): H2OMOJOModel = {
+    val reader = MojoReaderBackendFactory.createReaderBackend(is, CachingStrategy.MEMORY)
+    val mojo = ModelMojoReader.readFrom(reader)
+    new H2OMOJOModel(mojo, null, uid)
+  }
 }

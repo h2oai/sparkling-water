@@ -46,7 +46,7 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
     }
     val model = new GBM(params).trainModel().get()
     val (mojoModel, mojoData) = ModelSerializationSupport.getMojo(model)
-    new H2OMOJOModel(mojoModel, mojoData)(sqlContext)
+    new H2OMOJOModel(mojoModel, mojoData)
   }
 
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gbm"))

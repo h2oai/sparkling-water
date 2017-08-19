@@ -35,11 +35,6 @@ class H2OMojoModelTest extends FunSuite with SharedSparkTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", "mojo-test-local", conf = defaultSparkConf)
 
-  // TODO:
-  //
-  //
-  //   -  // WRONG this patter needs to share the same code as in the data transformation (renaming of columns for vectors
-  // needs to be unified
   test("[MOJO] Export and Import - binomial model") {
     val (inputDf, model) = binomialModelFixture
     testModelReload("binomial_model_import_export", inputDf, model)
@@ -55,14 +50,25 @@ class H2OMojoModelTest extends FunSuite with SharedSparkTestContext {
     testModelReload("regression_model_import_export", inputDf, model)
   }
 
+  // @formatter:off
+  test("[MOJO] Load from mojo file") {
+    val (inputDf, mojoModel) = savedBinomialModel()
+    val (_, model) = binomialModelFixture()
+    val predMojo = mojoModel.transform(inputDf)
+    val predModel = model.transform(inputDf)
+    predMojo.show(10)
+    predModel.show(10)
+
+    assertEqual(predMojo, predModel)
+  }
+
   def testModelReload(name: String, df: DataFrame, model: H2OMOJOModel): Unit = {
     val predBeforeSave = model.transform(df)
     val modelFolder = tempFolder(name)
     model.write.overwrite.save(modelFolder)
     val reloadedModel  = H2OMOJOModel.load(modelFolder)
     val predAfterReload = reloadedModel.transform(df)
-    predAfterReload.show(150)
-
+    // Check if predictions are same
     assertEqual(predBeforeSave, predAfterReload)
   }
 
@@ -74,12 +80,12 @@ class H2OMojoModelTest extends FunSuite with SharedSparkTestContext {
     assert(l1.zip(l2).forall { case (row1, row2) =>
         row1.equals(row2)
     }, "DataFrames are not same!")
-
   }
 
   def tempFolder(prefix: String) = {
     val path = java.nio.file.Files.createTempDirectory(prefix)
-    path.toFile.deleteOnExit()
+    //path.toFile.deleteOnExit()
+    System.err.println(path)
     path.toString
   }
 
@@ -122,7 +128,25 @@ class H2OMojoModelTest extends FunSuite with SharedSparkTestContext {
     gbm.setPredictionsCol("capsule")
     (inputDf, gbm.fit(inputDf))
   }
-  
-  // More tests:
-  // - save mojo as raw file and create H2OMojoModel from it directly
+
+  def savedBinomialModel() = {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("binom_model_prostate.mojo"),
+      "binom_model_prostate.mojo")
+    (prostateDataFrame, mojo)
+  }
+
+  def savedRegressionModel() = {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("regre_model_prostate.mojo"),
+      "regre_model_prostate.mojo")
+    (prostateDataFrame, mojo)
+  }
+
+  def savedMultinomialModel() = {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
+      "multi_model_iris.mojo")
+    (irisDataFrame, mojo)
+  }
 }
