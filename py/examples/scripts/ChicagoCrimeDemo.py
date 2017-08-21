@@ -7,17 +7,14 @@ import os
 from pysparkling import *
 
 # Refine date column
-def refine_date_col(data, col, pattern):
-    data[col] = data[col].as_date(pattern)
+def refine_date_col(data, col):
     data["Day"] = data[col].day()
     data["Month"] = data[col].month()
     data["Year"] = data[col].year()
     data["WeekNum"] = data[col].week()
     data["WeekDay"] = data[col].dayOfWeek()
     data["HourOfDay"] = data[col].hour()
-
-    data.describe()  # HACK: Force evaluation before ifelse and cut. See PUBDEV-1425.
-
+    
     # Create weekend and season cols
     # Spring = Mar, Apr, May. Summer = Jun, Jul, Aug. Autumn = Sep, Oct. Winter = Nov, Dec, Jan, Feb.
     # data["Weekend"]   = [1 if x in ("Sun", "Sat") else 0 for x in data["WeekDay"]]
@@ -50,11 +47,11 @@ def crime(date,
           minTemp = 77777,
           maxTemp = 77777,
           meanTemp = 77777,
-          datePattern = "%d/%m/%Y %I:%M:%S %p",
+          datePattern = "%m/%d/%Y %I:%M:%S %p",
           dateTimeZone = "Etc/UTC"):
 
-    dt = datetime.strptime("02/08/2015 11:43:58 PM",'%d/%m/%Y %I:%M:%S %p')
-    dt.replace(tzinfo=timezone("Etc/UTC"))
+    dt = datetime.strptime(date,datePattern)
+    dt.replace(tzinfo=timezone(dateTimeZone))
 
     crime = Row(
             Year = dt.year,
@@ -68,7 +65,7 @@ def crime(date,
             IUCR = iucr,
             Primary_Type = primaryType,
             Location_Description = locationDescr,
-            Domestic = True if domestic else False,
+            Domestic = "true" if domestic else "false",
             Beat = beat,
             District = district,
             Ward = ward,
@@ -84,8 +81,7 @@ def crime(date,
 def _locate(example_name):
     return "../examples/smalldata/" + example_name
 
-conf = SparkConf().setIfMissing("spark.master", os.getenv("spark.master", "local[*]"))
-spark = SparkSession.builder.appName("ChicagoCrimeTest").config(conf = conf).getOrCreate()
+spark = SparkSession.builder.appName("ChicagoCrimeTest").getOrCreate()
 # Start H2O services
 h2oContext = H2OContext.getOrCreate(spark)
 # Define file names
@@ -97,7 +93,7 @@ chicagoCrimes10k = "chicagoCrimes10k.csv"
 # h2o.import_file expects cluster-relative path
 f_weather = h2o.upload_file(_locate(chicagoAllWeather))
 f_census = h2o.upload_file(_locate(chicagoCensus))
-f_crimes = h2o.upload_file(_locate(chicagoCrimes10k), col_types = {"Date": "string"})
+f_crimes = h2o.upload_file(_locate(chicagoCrimes10k))
 
 
 # Transform weather table
@@ -123,7 +119,7 @@ h2o.cluster().timezone = "Etc/UTC"
 # Replace ' ' by '_' in column names
 col_names = map(lambda s: s.replace(' ', '_'), f_crimes.col_names)
 f_crimes.names = col_names
-refine_date_col(f_crimes, "Date", "%m/%d/%Y %I:%M:%S %p")
+refine_date_col(f_crimes, "Date")
 f_crimes = f_crimes.drop("Date")
 
 # Expose H2O frames as Spark DataFrame
@@ -155,13 +151,10 @@ ON a.Community_Area = c.Community_Area_Number""")
 crimeWithWeatherHF = h2oContext.as_h2o_frame(crimeWithWeather, "crimeWithWeatherTable")
 
 # Transform selected String columns to categoricals
-crimeWithWeatherHF["Arrest"] = crimeWithWeatherHF["Arrest"].asfactor()
-crimeWithWeatherHF["Season"] = crimeWithWeatherHF["Season"].asfactor()
-crimeWithWeatherHF["WeekDay"] = crimeWithWeatherHF["WeekDay"].asfactor()
-crimeWithWeatherHF["Primary_Type"] = crimeWithWeatherHF["Primary_Type"].asfactor()
-crimeWithWeatherHF["Location_Description"] = crimeWithWeatherHF["Location_Description"].asfactor()
-crimeWithWeatherHF["Domestic"] = crimeWithWeatherHF["Domestic"].asfactor()
-
+cat_cols = ["Arrest", "Season", "WeekDay", "Primary_Type", "Location_Description", "Domestic"]
+for col in cat_cols :
+    crimeWithWeatherHF[col] = crimeWithWeatherHF[col].asfactor()
+    
 # Split frame into two - we use one as the training frame and the second one as the validation frame
 splits = crimeWithWeatherHF.split_frame(ratios=[0.8])
 train = splits[0]
@@ -182,12 +175,12 @@ gbm_model = H2OGradientBoostingEstimator(  ntrees       = 50,
                                            )
 
 # Train the model
-gbm_model.train(x            = predictor_columns,
+gbm_model.train(x                = predictor_columns,
                 y                = response_column,
                 training_frame   = train,
                 validation_frame = test
                 )
-
+      
 # Create and train deeplearning model
 from h2o.estimators.deeplearning import H2ODeepLearningEstimator
 
@@ -195,7 +188,7 @@ from h2o.estimators.deeplearning import H2ODeepLearningEstimator
 dl_model = H2ODeepLearningEstimator()
 
 # Train the model
-dl_model.train(x            = predictor_columns,
+dl_model.train(x                = predictor_columns,
                y                = response_column,
                training_frame   = train,
                validation_frame = test
@@ -203,8 +196,8 @@ dl_model.train(x            = predictor_columns,
 
 # Create crimes examples
 crime_examples = [
-    crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET",False, 422, 4, 7, 46, 18),
-    crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE",False, 923, 9, 14, 63, 11)]
+    crime(date="02/08/2015 11:43:58 PM", iucr=1811, primaryType="NARCOTICS", locationDescr="STREET", domestic=False, beat=422, district=4, ward=7, communityArea=46, fbiCode=18, minTemp = 19, meanTemp=27, maxTemp=32),
+    crime(date="02/08/2015 11:00:39 PM", iucr=1150, primaryType="DECEPTIVE PRACTICE", locationDescr="RESIDENCE", domestic=False, beat=923, district=9, ward=14, communityArea=63, fbiCode=11, minTemp = 19, meanTemp=27, maxTemp=32)]
 
 # For given crime and model returns probability of crime.
 def score_event(crime, model, censusTable):
@@ -222,12 +215,12 @@ def score_event(crime, model, censusTable):
     probOfArrest = predictTable["true"][0,0]
     return probOfArrest
 
-for crime in crime_examples:
-    arrestProbGBM = 100*score_event(crime, gbm_model, df_census)
-    arrestProbDLM = 100*score_event(crime, dl_model, df_census)
+for i in crime_examples:
+    arrestProbGBM = 100*score_event(i, gbm_model, df_census)
+    arrestProbDLM = 100*score_event(i, dl_model, df_census)
 
     print("""
-       |Crime: """+str(crime)+"""
+       |Crime: """+str(i)+"""
        |  Probability of arrest best on DeepLearning: """+str(arrestProbDLM)+"""
        |  Probability of arrest best on GBM: """+str(arrestProbGBM)+"""
         """)
