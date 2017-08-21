@@ -20,7 +20,7 @@ import java.io.File
 
 import hex.Model
 import org.apache.spark.annotation.{DeveloperApi, Since}
-import org.apache.spark.h2o._
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
@@ -29,33 +29,60 @@ import org.apache.spark.sql.{DataFrame, Dataset, SQLContext}
 import water.support.ModelSerializationSupport
 
 import scala.reflect.ClassTag
+import scala.util.Random
 
 /**
   * Shared implementation for H2O model pipelines
   */
 abstract class H2OModel[S <: H2OModel[S, M],
-                        M <: Model[_, _, _ <: Model.Output]]
-                        (val model: M, h2oContext: H2OContext, sqlContext: SQLContext)
-  extends SparkModel[S] with MLWritable {
+M <: Model[_, _, _ <: Model.Output]]
+(val model: M, h2oContext: H2OContext, sqlContext: SQLContext)
+  extends SparkModel[S] with H2OModelParams with MLWritable {
+
 
   override def copy(extra: ParamMap): S = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val frame: H2OFrame = h2oContext.asH2OFrame(dataset.toDF())
-    val prediction = model.score(frame)
-    h2oContext.asDataFrame(prediction)(sqlContext)
+    // in order to join the predictions with the original data we do a small trick
+    // we attach unique id to each row and then convert to H2O Frame
+    // we do predictions on the frame without ids but and add the ids to the predicted values afterwards
+    // this is save as h2o preserves the order.
+
+    // next we convert back to spark and join the original dataframe with the predicted values
+    val tempId = Random.alphanumeric.take(20).mkString("")
+    import org.apache.spark.sql.functions._
+    val datasetWithId = dataset.withColumn(tempId, monotonically_increasing_id)
+
+
+    import org.apache.spark.sql.functions.col
+    val cols = ($(featuresCols) ++ Array(tempId)).map(col)
+
+
+    val frame: H2OFrame = h2oContext.asH2OFrame(datasetWithId.select(cols: _*).toDF())
+
+    val ids = frame.extractFrame(frame._names.length - 1, frame._names.length)
+
+    // H2O Preserves the Order
+    val frameNoId = frame.extractFrame(0, frame._names.length - 1) // don't take the last column
+    val prediction = model.score(frameNoId)
+    val predictionIds = prediction.add(ids)
+    predictionIds.update()
+    val predictionsSpark = h2oContext.asDataFrame(predictionIds)(sqlContext)
+
+    datasetWithId.join(predictionsSpark, tempId).drop(tempId)
   }
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
     val ncols: Int = if (model._output.nclasses() == 1) 1 else model._output.nclasses() + 1
-    StructType(model._output._names.map {
+
+    StructType(schema.fields ++ model._output._names.map {
       name => StructField(name, DoubleType, nullable = true, metadata = null)
     })
   }
 
   @Since("1.6.0")
-  override def write: MLWriter =  new H2OModelWriter[S](this.asInstanceOf[S])
+  override def write: MLWriter = new H2OModelWriter[S](this.asInstanceOf[S])
 
   def defaultFileName: String
 }
@@ -66,12 +93,13 @@ private[models] class H2OModelWriter[T <: H2OModel[T, _ <: Model[_, _, _ <: Mode
   override protected def saveImpl(path: String): Unit = {
     DefaultParamsWriter.saveMetadata(instance, path, sc)
     val file = new java.io.File(path, instance.defaultFileName)
+
     ModelSerializationSupport.exportH2OModel(instance.model, file.toURI)
   }
 }
 
 private[models] abstract class H2OModelReader[T <: H2OModel[T, M] : ClassTag, M <: Model[_, _, _ <: Model.Output]]
-                                              (val defaultFileName: String) extends MLReader[T] {
+(val defaultFileName: String) extends MLReader[T] {
 
   private val className = implicitly[ClassTag[T]].runtimeClass.getName
 
