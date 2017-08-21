@@ -51,15 +51,22 @@ class H2OMojoModelTest extends FunSuite with SharedSparkTestContext {
   }
 
   // @formatter:off
-  test("[MOJO] Load from mojo file") {
+  test("[MOJO] Load from mojo file - binomial model") {
     val (inputDf, mojoModel) = savedBinomialModel()
     val (_, model) = binomialModelFixture()
-    val predMojo = mojoModel.transform(inputDf)
-    val predModel = model.transform(inputDf)
-    predMojo.show(10)
-    predModel.show(10)
+    assertEqual(mojoModel, model, inputDf)
+  }
 
-    assertEqual(predMojo, predModel)
+  test("[MOJO] Load from mojo file - multinomial model") {
+    val (inputDf, mojoModel) = savedMultinomialModel()
+    val (_, model) = multinomialModelFixture()
+    assertEqual(mojoModel, model, inputDf)
+  }
+
+  test("[MOJO] Load from mojo file - regression model") {
+    val (inputDf, mojoModel) = savedRegressionModel()
+    val (_, model) = regressionModelFixture()
+    assertEqual(mojoModel, model, inputDf)
   }
 
   def testModelReload(name: String, df: DataFrame, model: H2OMOJOModel): Unit = {
@@ -82,10 +89,17 @@ class H2OMojoModelTest extends FunSuite with SharedSparkTestContext {
     }, "DataFrames are not same!")
   }
 
+  def assertEqual(m1: H2OMOJOModel, m2: H2OMOJOModel, df: DataFrame): Unit = {
+    val predMojo = m1.transform(df)
+    val predModel = m2.transform(df)
+
+    assertEqual(predMojo, predModel)
+
+  }
+
   def tempFolder(prefix: String) = {
     val path = java.nio.file.Files.createTempDirectory(prefix)
-    //path.toFile.deleteOnExit()
-    System.err.println(path)
+    path.toFile.deleteOnExit()
     path.toString
   }
 
@@ -103,6 +117,7 @@ class H2OMojoModelTest extends FunSuite with SharedSparkTestContext {
     gbm.setParams(p => {
       p._ntrees = 2
       p._distribution = DistributionFamily.bernoulli
+      p._seed = 42
     })
     gbm.setPredictionsCol("capsule")
     (inputDf, gbm.fit(inputDf))
@@ -112,8 +127,9 @@ class H2OMojoModelTest extends FunSuite with SharedSparkTestContext {
     val inputDf = irisDataFrame
     val gbm = new H2OGBM()(hc, sqlContext)
     gbm.setParams(p => {
-      p._ntrees = 200
+      p._ntrees = 2
       p._distribution = DistributionFamily.multinomial
+      p._seed = 42
     })
     gbm.setPredictionsCol("class")
     (inputDf, gbm.fit(inputDf))
@@ -124,6 +140,7 @@ class H2OMojoModelTest extends FunSuite with SharedSparkTestContext {
     val gbm = new H2OGBM()(hc, sqlContext)
     gbm.setParams(p => {
       p._ntrees = 2
+      p._seed = 42
     })
     gbm.setPredictionsCol("capsule")
     (inputDf, gbm.fit(inputDf))

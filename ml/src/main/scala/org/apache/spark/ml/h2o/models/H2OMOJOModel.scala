@@ -223,6 +223,10 @@ object H2OMOJOModel extends MLReadable[H2OMOJOModel] {
   def createFromMojo(is: InputStream, uid: String = Identifiable.randomUID("mojoModel")): H2OMOJOModel = {
     val reader = MojoReaderBackendFactory.createReaderBackend(is, CachingStrategy.MEMORY)
     val mojo = ModelMojoReader.readFrom(reader)
-    new H2OMOJOModel(mojo, null, uid)
+    val mojoModel = new H2OMOJOModel(mojo, null, uid)
+    // Reconstruct state of Spark H2O MOJO transformer
+    mojoModel.setFeaturesCols(mojo.getNames.filter(_ != mojo.getResponseName))
+    mojoModel.setPredictionsCol(mojo.getResponseName)
+    mojoModel
   }
 }
