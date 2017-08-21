@@ -20,7 +20,7 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import water.support.SparkContextSupport
 import water.fvec.H2OFrame
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.h2o.algos.H2ODeepLearning
+
 
 val smsDataFileName = "smsData.txt"
 val smsDataFilePath = "examples/smalldata/" + smsDataFileName
@@ -73,12 +73,9 @@ val idf = new IDF().
   setOutputCol("tf_idf")
 
 // Create H2ODeepLearning model
-val dl = new H2ODeepLearning().
-  setEpochs(10).
-  setL1(0.001).
-  setL2(0.0).
-  setHidden(Array[Int](200, 200)).
-  setFeaturesCols(idf.getOutputCol).
+val gbm = new H2OGBM().
+setTrainRatio(0.8).
+  setFeaturesCols("tf_idf").
   setPredictionsCol("label")
 
 // Remove all intermediate columns
@@ -87,11 +84,12 @@ val colPruner = new ColumnPruner().
 
 // Create the pipeline by defining all the stages
 val pipeline = new Pipeline().
-  setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, dl, colPruner))
+  setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, gbm, colPruner))
 
 // Train the pipeline model
 val data = load("smsData.txt")
 val model = pipeline.fit(data)
+
 
 /*
  * Make predictions on unlabeled data
