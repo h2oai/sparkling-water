@@ -59,7 +59,7 @@ class ProgressListener(val sc: SparkContext,
 
   override def onJobEnd(jobEnd: SparkListenerJobEnd): Unit = {
     if (currentJobs.contains(jobEnd.jobId)) {
-      job.update(currentJobs.get(jobEnd.jobId).get, s"Finished Spark job with ID [${jobEnd.jobId}]")
+      job.update(currentJobs(jobEnd.jobId), s"Finished Spark job with ID [${jobEnd.jobId}]")
       currentJobs.remove(jobEnd.jobId)
     }
   }
@@ -86,7 +86,7 @@ class ProgressListener(val sc: SparkContext,
   }
 
   private def updateTaskStatus(stageId: Int, taskIdx: Int): Unit = {
-    val status = s"Stage [$stageId] status [$taskIdx/${sc.jobProgressListener.stageIdToInfo.get(stageId).get.numTasks}]."
+    val status = s"Stage [$stageId] status [$taskIdx/${sc.jobProgressListener.stageIdToInfo(stageId).numTasks}]."
     currentStages.put(stageId, status)
     job.update(0, printStagesStatus())
   }

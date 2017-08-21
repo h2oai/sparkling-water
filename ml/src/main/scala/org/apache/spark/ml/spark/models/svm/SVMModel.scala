@@ -23,15 +23,15 @@ import hex._
 import org.apache.spark.ml.spark.models.MissingValuesHandling
 import water.codegen.CodeGeneratorPipeline
 import water.util.{JCodeGen, SBPrintStream}
-import water.{H2O, Key, Keyed}
+import water.{H2O, Key}
 
 object SVMModel {
 
   class SVMOutput(val b: SVM) extends Model.Output(b) {
     var interceptor: Double = .0
     var iterations: Int = 0
-    var weights: Array[Double] = null
-    var numMeans: Array[Double] = null
+    var weights: Array[Double] = _
+    var numMeans: Array[Double] = _
   }
 
 }
