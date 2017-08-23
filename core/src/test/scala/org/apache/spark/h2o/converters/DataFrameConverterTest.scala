@@ -607,13 +607,13 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
 
     val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
 
-    assert(expandedSchema === Vector(
-      StructField("f10", DoubleType),
-      StructField("f11", DoubleType),
-      StructField("f12", DoubleType),
-      StructField("idx", IntegerType),
-      StructField("f20", DoubleType),
-      StructField("f21", DoubleType)
+    assert(expandedSchema === Array(
+      StructField("f10", DoubleType, true),
+      StructField("f11", DoubleType, true),
+      StructField("f12", DoubleType, true),
+      StructField("idx", IntegerType, false),
+      StructField("f20", DoubleType, true),
+      StructField("f21", DoubleType, true)
       )
     )
 
