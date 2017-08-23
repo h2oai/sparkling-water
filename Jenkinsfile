@@ -5,7 +5,7 @@
 pipeline{
 
     // Use given machines to run pipeline
-    agent { label 'mr-0xd3' }
+    agent { label  'mr-0xd2 || mr-0xd3 || mr-0xd4'  }
 
     // Setup job options
     options {
@@ -45,6 +45,7 @@ pipeline{
     }
 
     environment {
+        JAVA_HOME       = "/usr/lib/jvm/java-8-oracle/"
         HADOOP_VERSION  = "2.6" 
         SPARK           = "spark-${params.sparkVersion}-bin-hadoop${HADOOP_VERSION}"
         SPARK_HOME      = "${env.WORKSPACE}/spark"

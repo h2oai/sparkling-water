@@ -4,6 +4,13 @@ Change Log
 This file just acts as a dispatch to the chengelogs for Sparkling Water
 for different Spark versions.
 
+v2.2.x (2017-08-23)
+-------------------
+
+-  Sparkling Water 2.2 brings support of Spark 2.2.
+-  For detailed changelog, please read `rel-2.2/CHANGELOG <https://github.com/h2oai/sparkling-water/blob/rel-2.2/doc/CHANGELOG.rst>`__.
+
+
 v2.1.x (2017-03-02)
 -------------------
 
