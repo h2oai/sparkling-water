@@ -54,8 +54,6 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll with 
   def defaultConf: SparkConf = {
     val conf = new SparkConf().setAppName("Script testing")
       .set("spark.ext.h2o.repl.enabled","false") // disable repl in tests
-      .set("spark.driver.extraJavaOptions", "-XX:MaxPermSize=384m")
-      .set("spark.executor.extraJavaOptions", "-XX:MaxPermSize=384m")
       .set("spark.driver.extraClassPath", assemblyJar)
       .set("spark.scheduler.minRegisteredResourcesRatio", "1")
       .set("spark.task.maxFailures", "1") // Any task failures are suspicious

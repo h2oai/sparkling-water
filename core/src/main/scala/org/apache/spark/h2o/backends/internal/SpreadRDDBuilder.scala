@@ -115,7 +115,7 @@ class SpreadRDDBuilder(hc: H2OContext,
     sb match {
       case b: LocalSchedulerBackend => 1
       case b: CoarseGrainedSchedulerBackend => b.getExecutorIds.length
-      case _ => sc.getExecutorStorageStatus.length - 1
+      case _ => SparkEnv.get.blockManager.master.getStorageStatus.length - 1
     }
   }
 

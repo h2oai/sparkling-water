@@ -96,7 +96,6 @@ scriptsTest {
   enableAssertions = true
   // For a new JVM for each test class
   forkEvery = 1
-  jvmArgs '-XX:MaxPermSize=384m'
   // Increase test runner memory
   maxHeapSize = "4g"
   // Working dir will be root project

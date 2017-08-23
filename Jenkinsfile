@@ -18,7 +18,7 @@ pipeline{
     // Job parameters
     parameters {
         choice(
-                choices: '2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0',
+                choices: '2.2.0\n2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0',
                 description: 'Version of Spark used for testing.',
                 name: 'sparkVersion')
 
@@ -42,7 +42,6 @@ pipeline{
         string(name: 'hdpVersion', defaultValue: 'current', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current will not do since it is not automatically expanded -> so please set 2.2.6.3-1')
         booleanParam(name: 'startH2OClusterOnYarn', defaultValue: false, description: "In case of external backend, determines whether the external H2O cluster is started on yarn or locally")
         string(name: 'driverHadoopVersion', defaultValue: 'hdp2.2', description: 'Hadoop version for which H2O driver will be obtained')
-
     }
 
     environment {

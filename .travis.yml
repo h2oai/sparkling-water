@@ -2,17 +2,18 @@ language: scala
 sudo: true
 dist: precise
 
+dist: trusty
+
 jdk:
-  - oraclejdk7
   - oraclejdk8
-  - openjdk7
+  - openjdk8
 
 install:
-    - ( test -d "$SPARK_HOME" && test "$(ls -A "$SPARK_HOME")" ) || ( wget -O spark.tgz "http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.6.tgz" && mkdir -p "$SPARK_HOME" && tar xvf "spark.tgz" -C "$SPARK_HOME" --strip-components 1 )
+    - ( test -d "$SPARK_HOME" && test "$(ls -A "$SPARK_HOME")" ) || ( wget -O spark.tgz "http://d3kbcqa49mib13.cloudfront.net/spark-2.2.0-bin-hadoop2.6.tgz" && mkdir -p "$SPARK_HOME" && tar xvf "spark.tgz" -C "$SPARK_HOME" --strip-components 1 )
 
 env:
   global:    
-    - SPARK_HOME="$HOME/spark21/"
+    - SPARK_HOME="$HOME/spark22/"
   matrix:
     - SCALA_BASE_VERSION="2.11"
     - SCALA_BASE_VERSION="2.10"
