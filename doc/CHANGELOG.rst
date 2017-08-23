@@ -6,8 +6,8 @@ v2.1.14 (2017-08-23)
 
 -  Bug
 
-    -  `SW-449 <https://0xdata.atlassian.net/browse/SW-449>`__ - Support Sparse Data during spark-h2o conversions
-    -  `SW-510 <https://0xdata.atlassian.net/browse/SW-510>`__ - the link `Demo Example from Git` is broken on the download page
+   -  `SW-449 <https://0xdata.atlassian.net/browse/SW-449>`__ - Support Sparse Data during spark-h2o conversions
+   -  `SW-510 <https://0xdata.atlassian.net/browse/SW-510>`__ - The link `Demo Example from Git` is broken on the download page
 
 -  New Feature
 
