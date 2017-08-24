@@ -17,7 +17,7 @@ and its machine learning algorithms into the Spark platform, enabling:
 - Use of Spark RDDs as input for H2O algorithms.
 - Transparent execution of Sparkling Water applications on top of Spark.
 
-Sparkling Water supports to type of backends. In the internal backend,
+Sparkling Water supports two type of backends. In the internal backend,
 Sparkling Water is launched inside a Spark executor, which is created
 after application submission. At this point, H2O starts services,
 including distributed KV store and memory manager, and orchestrates them
