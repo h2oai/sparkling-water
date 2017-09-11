@@ -5,7 +5,7 @@
 pipeline{
 
     // Use given machines to run pipeline
-    agent { label 'linux && !gpu' }
+    agent { label 'dX-hadoop' }
 
     // Setup job options
     options {
