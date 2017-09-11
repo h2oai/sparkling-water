@@ -3,7 +3,9 @@
 @Library('test-shared-library') _
 
 pipeline{
-
+    env.JAVA_HOME="/usr/lib/jvm/java-8-oracle"
+    env.PATH="${env.JAVA_HOME}/bin:${env.PATH}"
+    
     // Use given machines to run pipeline
     agent { label 'linux' }
 
