@@ -44,8 +44,7 @@ pipeline{
     }
 
     environment {
-        JAVA_HOME       = "/usr/lib/jvm/java-8-oracle/"
-        HADOOP_VERSION  = "2.6" 
+        HADOOP_VERSION  = "2.6"
         SPARK           = "spark-${params.sparkVersion}-bin-hadoop${HADOOP_VERSION}"
         SPARK_HOME      = "${env.WORKSPACE}/spark"
         HADOOP_CONF_DIR = "/etc/hadoop/conf"
