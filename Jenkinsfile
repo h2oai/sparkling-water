@@ -5,7 +5,7 @@
 pipeline{
 
     // Use given machines to run pipeline
-    agent { label 'linux' }
+    agent { label 'linux && !gpu' }
 
     // Setup job options
     options {
