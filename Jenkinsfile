@@ -3,7 +3,6 @@
 @Library('test-shared-library') _
 
 pipeline{
-
     // Use given machines to run pipeline
     agent { label 'linux' }
 
@@ -50,8 +49,10 @@ pipeline{
         SPARK_HOME      = "${env.WORKSPACE}/spark"
         HADOOP_CONF_DIR = "/etc/hadoop/conf"
         MASTER          = "yarn-client"
-        H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
-        H2O_EXTENDED_JAR="${env.WORKSPACE}/assembly-h2o/private/"
+        H2O_PYTHON_WHEEL= "${env.WORKSPACE}/private/h2o.whl"
+        H2O_EXTENDED_JAR= "${env.WORKSPACE}/assembly-h2o/private/"
+        JAVA_HOME       = "${JAVA_HOME_8}"
+        PATH            = "${JAVA_HOME}/bin:${PATH}"
     }
 
     stages {
@@ -61,6 +62,7 @@ pipeline{
             steps{
                 checkout scm
                 sh """
+                echo $PATH
                 if [ ! -d "${env.SPARK_HOME}" ]; then
                         wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
                         mkdir -p "${env.SPARK_HOME}"
