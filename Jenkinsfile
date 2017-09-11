@@ -54,9 +54,12 @@ pipeline{
     }
 
     stages {
-        env.JAVA_HOME="/usr/lib/jvm/java-8-oracle"
-        env.PATH="${env.JAVA_HOME}/bin:${env.PATH}"
-        
+
+        stage('Set Java Version'){
+            env.JAVA_HOME="/usr/lib/jvm/java-8-oracle"
+            env.PATH="${env.JAVA_HOME}/bin:${env.PATH}"
+        }
+
         stage('Git Checkout and Preparation'){
 
             steps{
