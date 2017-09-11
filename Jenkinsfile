@@ -162,14 +162,15 @@ pipeline{
         }
 
         stage('QA: Script Tests') {
-
-             steps {
-                    sh """
-                    # Run scripts tests
-                    ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn}
-                    """
+            when {
+                expression { params.runScriptTests == true }
+            }
+            steps {
+                sh """
+                # Run scripts tests
+                ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn}
+                """
 		    }
-
 			post {
 				always {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
