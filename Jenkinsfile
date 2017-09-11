@@ -5,7 +5,7 @@
 pipeline{
 
     // Use given machines to run pipeline
-    agent { label 'mr-0xd3' }
+    agent { label 'linux' }
 
     // Setup job options
     options {
