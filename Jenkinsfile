@@ -50,10 +50,10 @@ pipeline{
         SPARK_HOME      = "${env.WORKSPACE}/spark"
         HADOOP_CONF_DIR = "/etc/hadoop/conf"
         MASTER          = "yarn-client"
-        H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
-        H2O_EXTENDED_JAR="${env.WORKSPACE}/assembly-h2o/private/"
-        JAVA_HOME="${env.JAVA_HOME_8}"
-        PATH="${env.JAVA_HOME}/bin:${env.PATH}"
+        H2O_PYTHON_WHEEL= "${env.WORKSPACE}/private/h2o.whl"
+        H2O_EXTENDED_JAR= "${env.WORKSPACE}/assembly-h2o/private/"
+        JAVA_HOME       = "/usr/lib/jvm/java-8-oracle"
+        PATH            = "${env.JAVA_HOME}/bin:${env.PATH}"
     }
 
     stages {
