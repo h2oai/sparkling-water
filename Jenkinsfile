@@ -52,8 +52,7 @@ pipeline{
         H2O_PYTHON_WHEEL= "${env.WORKSPACE}/private/h2o.whl"
         H2O_EXTENDED_JAR= "${env.WORKSPACE}/assembly-h2o/private/"
         JAVA_HOME       = "/usr/lib/jvm/java-8-oracle"
-        PATH            = "${JAVA_HOME}/bin:${env.PATH}"
-
+        PATH            = "${JAVA_HOME}/bin:${PATH}"
     }
 
     stages {
@@ -63,6 +62,7 @@ pipeline{
             steps{
                 checkout scm
                 sh """
+                echo $PATH
                 if [ ! -d "${env.SPARK_HOME}" ]; then
                         wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
                         mkdir -p "${env.SPARK_HOME}"
