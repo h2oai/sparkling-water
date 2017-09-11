@@ -51,15 +51,12 @@ pipeline{
         MASTER          = "yarn-client"
         H2O_PYTHON_WHEEL= "${env.WORKSPACE}/private/h2o.whl"
         H2O_EXTENDED_JAR= "${env.WORKSPACE}/assembly-h2o/private/"
+        JAVA_HOME       = "/usr/lib/jvm/java-8-oracle"
+
     }
 
     stages {
-
-        stage('Set Java Version'){
-            env.JAVA_HOME="/usr/lib/jvm/java-8-oracle"
-            env.PATH="${env.JAVA_HOME}/bin:${env.PATH}"
-        }
-
+        
         stage('Git Checkout and Preparation'){
 
             steps{
