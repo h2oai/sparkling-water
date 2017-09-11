@@ -52,6 +52,8 @@ pipeline{
         MASTER          = "yarn-client"
         H2O_PYTHON_WHEEL="${env.WORKSPACE}/private/h2o.whl"
         H2O_EXTENDED_JAR="${env.WORKSPACE}/assembly-h2o/private/"
+        JAVA_HOME="${env.JAVA_HOME_8}"
+        PATH="${env.JAVA_HOME}/bin:${env.PATH}"
     }
 
     stages {
