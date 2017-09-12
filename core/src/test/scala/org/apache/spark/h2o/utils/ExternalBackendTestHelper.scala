@@ -52,8 +52,9 @@ trait ExternalBackendTestHelper {
     Process(cmdToLaunch).run()
   }
 
-  def runH2OClusterOnYARN() = sys.props.get("spark.ext.h2o.external.start.mode").exists(_ == "auto")
-  
+
+  private def runH2OClusterOnYARN() = sys.props.get("spark.ext.h2o.external.start.mode").exists(_ == "auto")
+
   def startCloud(cloudSize: Int, cloudName: String, ip: String, additionalCp: String*): Unit = {
     // do not start h2o nodes if this property is set, they will be started on yarn automatically
     if(!runH2OClusterOnYARN()) {
