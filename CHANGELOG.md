@@ -1,6 +1,28 @@
 ChangeLog
 =========
 
+## v1.6.13 (2017-09-12)
+
+- Bug
+    - [SW-449](https://0xdata.atlassian.net/browse/SW-449) - Support Sparse Data during spark-h2o conversions
+    - [SW-461](https://0xdata.atlassian.net/browse/SW-461) - Fix wrong getters and setters in pysparkling
+    - [SW-474](https://0xdata.atlassian.net/browse/SW-474) - Use deprecated HTTPClient as some CDH versions does not have the new method
+    - [SW-505](https://0xdata.atlassian.net/browse/SW-505) - Travis build is failing on missing OracleJdk7
+    - [SW-525](https://0xdata.atlassian.net/browse/SW-525) - Don't use GPU nodes for sparkling water testing in Jenkins
+    - [SW-526](https://0xdata.atlassian.net/browse/SW-526) - Add missing when clause to scripts test stage in Jenkinsfile
+    - [SW-527](https://0xdata.atlassian.net/browse/SW-527) - Use dX cluster for Jenkins testing
+    - [SW-529](https://0xdata.atlassian.net/browse/SW-529) - Code defect in Scala example
+
+- New Feature
+    - [SW-514](https://0xdata.atlassian.net/browse/SW-514) - Upgrade H2O to 3.14.0.2
+    - [SW-523](https://0xdata.atlassian.net/browse/SW-523) - Use linux label to determine which nodes are used for Jenkins testing
+
+- Improvement
+    - [SW-465](https://0xdata.atlassian.net/browse/SW-465) - Mark tensorflow demo as experimental
+    - [SW-489](https://0xdata.atlassian.net/browse/SW-489) - Upgrade H2O to 3.10.5.3
+    - [SW-498](https://0xdata.atlassian.net/browse/SW-498) - Upgrade H2O to 3.10.5.4
+    - [SW-512](https://0xdata.atlassian.net/browse/SW-512) - Make JenkinsFile up-to-date with sparkling_yarn_branch
+
 ## v1.6.12 (2017-06-29)
 
 - Improvement
