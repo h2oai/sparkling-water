@@ -16,8 +16,9 @@
  */
 package org.apache.spark.h2o.converters
 
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.SQLContext
 
 object SW516StandaloneApp {
   val valuesCnt = 10
@@ -25,40 +26,41 @@ object SW516StandaloneApp {
   val cloudName = "SW516"
 }
 
-case class Data(f1: org.apache.spark.ml.linalg.Vector,
-                f2: org.apache.spark.ml.linalg.Vector)
+case class Data(f1: org.apache.spark.mllib.linalg.Vector,
+                f2: org.apache.spark.mllib.linalg.Vector)
 
 object SWApp {
   import SW516StandaloneApp._
 
   def main(args: Array[String]): Unit = {
-    val spark = SparkSession.builder()
-      .appName("SW516")
-      .master("local[*]")
-      .config("spark.ext.h2o.external.read.confirmation.timeout", 240)
-      .getOrCreate()
-    
-    val h2oConf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName(cloudName)
-    val hc = H2OContext.getOrCreate(spark, h2oConf)
+    val conf = new SparkConf()
+        .setAppName("SW516")
+      .setMaster("local[*]")
+      .set("spark.ext.h2o.external.read.confirmation.timeout", "240")
+    val sc = new SparkContext("local[*]", "test-local", conf)
+    val sqlContext = SQLContext.getOrCreate(sc)
+
+    val h2oConf = new H2OConf(sc).setExternalClusterMode().useManualClusterStart().setCloudName(cloudName)
+    val hc = H2OContext.getOrCreate(sc, h2oConf)
 
     val values = (0 until valuesCnt).map(x =>
      Data(
-       org.apache.spark.ml.linalg.Vectors.sparse(valuesCnt, Seq((x, 1.0))),
-       org.apache.spark.ml.linalg.Vectors.dense(x.toDouble, 0.0, 1.0, 42.0)
+       org.apache.spark.mllib.linalg.Vectors.sparse(valuesCnt, Seq((x, 1.0))),
+       org.apache.spark.mllib.linalg.Vectors.dense(x.toDouble, 0.0, 1.0, 42.0)
      ))
 
-    import spark.implicits._
+    import sqlContext.implicits._
     println(s"Values to transfer: ${values.mkString("\n")}")
     
     // Create data in Spark
-    val df = spark.sparkContext.parallelize(values, partitions).toDF()
+    val df = sc.parallelize(values, partitions).toDF()
     df.printSchema()
 
     // Transfer data to H2O
     val hf = hc.asH2OFrame(df)
     println(hf.toString(0, 100))
 
-    spark.stop()
+    sc.stop()
   }
 }
 

@@ -439,7 +439,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     val num = 2
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 1.0))
     val df = sc.parallelize(values).toDF
-    val expectObjectsNullableByDefault = true
 
     val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
     val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
@@ -447,16 +446,16 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     val expected: Vector[StructField] = Vector(
       StructField("a.n", IntegerType),
       StructField("a.name", StringType),
-      StructField("weight", DoubleType, nullable = expectObjectsNullableByDefault))
+      StructField("weight", DoubleType, nullable = false))
     Assertions.assertResult(expected.length)(expandedSchema.length)
 
-    assertResult(expectObjectsNullableByDefault, "Nullability in component#2")(expandedSchema(2).nullable)
+    assertResult(false, "Nullability in component#2")(expandedSchema(2).nullable)
     for {i <- expected.indices} {
       assertResult(expected(i), s"@$i")(expandedSchema(i))
     }
 
     assert(expandedSchema === expected)
-    
+
     // Verify transformation into dataframe
     val h2oFrame = hc.asH2OFrame(df)
     assertH2OFrameInvariants(df, h2oFrame)
@@ -616,31 +615,32 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   
   test("Expand complex schema with sparse and dense vectors") {
     val sqlContext = sqlc
-    import sqlContext.implicits._    val num = 3
+    import sqlContext.implicits._
+    val num = 3
     val values = (0 until num).map(x =>
-     ComplexMllibFixture(
-       org.apache.spark.mllib.linalg.Vectors.sparse(num, Seq((x, 1.0))),
-       x,
-       org.apache.spark.mllib.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray)
-     ))
+      ComplexMllibFixture(
+        org.apache.spark.mllib.linalg.Vectors.sparse(num, Seq((x, 1.0))),
+        x,
+        org.apache.spark.mllib.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray)
+      ))
     println(values.mkString("\n"))
     val df = sc.parallelize(values, num).toDF()
 
     val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
 
-    assert(expandedSchema === Vector(
-      StructField("f10", DoubleType),
-      StructField("f11", DoubleType),
-      StructField("f12", DoubleType),
-      StructField("idx", IntegerType),
-      StructField("f20", DoubleType),
-      StructField("f21", DoubleType)
-      )
+    assert(expandedSchema === Array(
+      StructField("f10", DoubleType, true),
+      StructField("f11", DoubleType, true),
+      StructField("f12", DoubleType, true),
+      StructField("idx", IntegerType, false),
+      StructField("f20", DoubleType, true),
+      StructField("f21", DoubleType, true)
+    )
     )
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
-    
+
     // Basic invariants
     assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
     assert(expandedSchema.length == h2oFrame.numCols(), "Number columns should match")
@@ -648,9 +648,10 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
 
     // Verify data stored in h2oFrame after transformation
     assertDoubleFrameValues(h2oFrame, Seq(Array(1.0, 0.0, 0.0, 0.0, 0.0, 0.0),
-                                          Array(0.0, 1.0, 0.0, 1.0, 1.0, 0.0),
-                                          Array(0.0, 0.0, 1.0, 2.0, 1.0, 2.0)))
+      Array(0.0, 1.0, 0.0, 1.0, 1.0, 0.0),
+      Array(0.0, 0.0, 1.0, 2.0, 1.0, 2.0)))
   }
+
 
   test("Add metadata to Dataframe") {
     val fname: String = "testMetadata.hex"
