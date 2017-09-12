@@ -95,5 +95,5 @@ val glmModel = glm.trainModel().get()
 
 // Use model to estimate delay on training data
 val predGLMH2OFrame = glmModel.score(trainFrame)('predict)
-val predGLMFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
+val predGLMFromModel = asRDD[DoubleHolder](predGLMH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
