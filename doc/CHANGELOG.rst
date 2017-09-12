@@ -1,9 +1,6 @@
 Change Log
 ==========
 
-This file just acts as a dispatch to the chengelogs for Sparkling Water
-for different Spark versions.
-
 v2.2.0 (2017-08-23)
 -------------------
 
