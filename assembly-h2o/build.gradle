@@ -105,9 +105,6 @@ task cleanH2OJars(type: Delete){
     delete(file("private/downloaded"))
 }
 
-clean.doFirst{
-   delete file("private/extended")
-}
 
 task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparkling-water-core:jar"]) {
     doFirst {
@@ -139,9 +136,7 @@ task printHadoopDistributions(){
 
 def static String h2oJarFileName(String pathToH2OJar){
     if(pathToH2OJar != null) {
-        def fileName = Paths.get(pathToH2OJar).last().toString()
-        def fileNameNoExtension = fileName.substring(0, fileName.length() - 4)
-        return fileNameNoExtension + "-extended"
+        return "h2odriver-extended"
     }else{
         return null
     }
