@@ -38,9 +38,18 @@ pipeline{
                 description: 'Sparkling Water backend mode.',
                 name: 'backendMode')
 
+        choice(
+                choices: 'manual\nauto',
+                description: 'Start mode of H2O cluster in external backend',
+                name: 'externalBackendStartMode')
+
+        choice(
+                choices: 'hdp2.2\nhdp2.3\nhdp2.4\nhdp2.5\nhdp2.6\ncdh5.4\ncdh5.5\ncdh5.6\ncdh5.7\ncdh5.8\ncdh5.10\nmapr4.0\nmapr5.0\nmapr5.1\nmapr5.2\niop4.2',
+                description: 'Hadoop version for which H2O driver is obtained',
+                name: 'driverHadoopVersion')
+
         string(name: 'hdpVersion', defaultValue: 'current', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current will not do since it is not automatically expanded -> so please set 2.2.6.3-1')
-        booleanParam(name: 'startH2OClusterOnYarn', defaultValue: false, description: "In case of external backend, determines whether the external H2O cluster is started on yarn or locally")
-        string(name: 'driverHadoopVersion', defaultValue: 'hdp2.2', description: 'Hadoop version for which H2O driver will be obtained')
+
     }
 
     environment {
@@ -50,7 +59,7 @@ pipeline{
         HADOOP_CONF_DIR = "/etc/hadoop/conf"
         MASTER          = "yarn-client"
         H2O_PYTHON_WHEEL= "${env.WORKSPACE}/private/h2o.whl"
-        H2O_EXTENDED_JAR= "${env.WORKSPACE}/assembly-h2o/private/"
+        H2O_EXTENDED_JAR= "${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar"
         JAVA_HOME       = "${JAVA_HOME_8}"
         PATH            = "${JAVA_HOME}/bin:${PATH}"
     }
@@ -125,7 +134,7 @@ pipeline{
             steps {
                 sh  """
                     # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn}
+                    ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${params.backendMode} -PexternalBackendStartMode=${params.externalBackendStartMode}
                     """
             }
 
@@ -147,7 +156,7 @@ pipeline{
             steps {
                 sh  """
                     # Build, run regular tests
-                    ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn}
+                    ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${params.backendMode} -PexternalBackendStartMode=${params.externalBackendStartMode}
                     """
             }
 
@@ -168,7 +177,7 @@ pipeline{
             steps {
                 sh """
                 # Run scripts tests
-                ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn}
+                ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${params.backendMode} -PexternalBackendStartMode=${params.externalBackendStartMode}
                 """
 		    }
 			post {
@@ -186,7 +195,7 @@ pipeline{
             }
             steps {
                 sh """
-                    ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                    ${env.WORKSPACE}/gradlew integTest -PbackendMode=${params.backendMode} -PexternalBackendStartMode=${params.externalBackendStartMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
                      #  echo 'Archiving artifacts after Integration test'
                  """
             }
@@ -206,7 +215,7 @@ pipeline{
             }
             steps {
                 sh  """
-                    ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PstartH2OClusterOnYarn=${params.startH2OClusterOnYarn} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                    ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${params.backendMode} -PexternalBackendStartMode=${params.externalBackendStartMode} -PsparklingTestEnv=${params.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
                     #  echo 'Archiving artifacts after PySparkling Integration test'
                     """
             }
