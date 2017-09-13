@@ -48,8 +48,11 @@ private[converters] object MLLibVectorConverter extends Logging {
 
     // in case of internal backend, store regular vector types
     // otherwise for external backend store expected types
-    val typeToUse = if (hc.getConf.runsInInternalClusterMode) Vec.T_NUM else ExternalFrameUtils.EXPECTED_DOUBLE
-    val expectedTypes = Array.fill(maxNumFeatures)(typeToUse)
+    val expectedTypes = if (hc.getConf.runsInInternalClusterMode) {
+      Array.fill(maxNumFeatures)(Vec.T_NUM)
+    } else {
+      Array(ExternalFrameUtils.EXPECTED_VECTOR)
+    }
 
     WriteConverterCtxUtils.convert[mllib.linalg.Vector](hc, rdd, keyName, fnames, expectedTypes, Array(maxNumFeatures), perMLlibVectorPartition(maxNumFeatures))
   }
