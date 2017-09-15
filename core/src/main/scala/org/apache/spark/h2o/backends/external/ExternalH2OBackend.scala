@@ -65,7 +65,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-jobname", conf.cloudName.get,
       "-mapperXmx", conf.mapperXmx,
       "-output", conf.HDFSOutputDir.get,
-      "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
+      "-J", "-log_level", "-J", "DEBUG",
       "-timeout", conf.clusterStartTimeout.toString,
       "-disown",
       "-J", "-watchdog_stop_without_client",
@@ -144,6 +144,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     // wait client retry timeout to be sure client is registered on all nodes
     Thread.sleep(hc.getConf.clientCheckRetryTimeout)
+
 
     // Register web API for client
     RestAPIManager(hc).registerAll()
