@@ -103,11 +103,11 @@ class H2OMojoModelTest extends FunSuite with SharedSparkTestContext {
     path.toString
   }
 
-  def irisDataFrame = {
+  lazy val irisDataFrame = {
     hc.asDataFrame(new H2OFrame(URI.create("examples/smalldata/iris.csv")))
   }
 
-  def prostateDataFrame = {
+  lazy val prostateDataFrame = {
     hc.asDataFrame(new H2OFrame(URI.create("examples/smalldata/prostate.csv")))
   }
 
