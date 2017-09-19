@@ -73,6 +73,18 @@ trait H2OFrameSupport extends JoinSupport {
     new H2OFrame(fr)
   }
 
+  def uploadFiles(files: File*): H2OFrame = {
+    val parsedKey = Key.make()
+    val keys = files.map{ file =>
+        val is = new FileInputStream(file.getAbsoluteFile)
+        val stats = new UploadFileVec.ReadPutStats
+        val uploadKey = Key.make[Frame](file.getName)
+        UploadFileVec.readPut(uploadKey, is, stats)
+      }.toArray
+    val fr = ParseDataset.parse(parsedKey, keys:_*)
+    new H2OFrame(fr)
+  }
+
   def uploadFile(file: File): H2OFrame = {
     val is = new FileInputStream(file.getAbsoluteFile)
     val stats = new UploadFileVec.ReadPutStats
