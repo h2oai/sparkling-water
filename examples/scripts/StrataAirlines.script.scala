@@ -17,6 +17,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 import water.Key
 import java.io.File
 
+import water.support.H2OFrameSupport
 import water.support.SparkContextSupport.addFiles
 import water.support.H2OFrameSupport._
 
@@ -35,7 +36,7 @@ addFiles(sc,
   "examples/smalldata/Chicago_Ohare_International_Airport.csv")
 
 // Import all year airlines data into H2O
-val airlinesData = new H2OFrame(new File(SparkFiles.get("year2005.csv.gz")))
+val airlinesData = H2OFrameSupport.uploadFile(new File((SparkFiles.get("year2005.csv.gz"))))
 
 // Import weather data into Spark
 val wrawdata = sc.textFile(SparkFiles.get("Chicago_Ohare_International_Airport.csv"),8).cache()

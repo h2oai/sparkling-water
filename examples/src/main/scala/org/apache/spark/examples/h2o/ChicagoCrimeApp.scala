@@ -17,6 +17,8 @@
 
 package org.apache.spark.examples.h2o
 
+import java.io.File
+
 import hex.deeplearning.DeepLearningModel
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
@@ -30,7 +32,7 @@ import org.joda.time.DateTimeConstants._
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.MRTask
-import water.fvec.{Chunk, NewChunk, Vec}
+import water.fvec._
 import water.parser.{BufferedString, ParseSetup}
 import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
 
@@ -190,9 +192,13 @@ class ChicagoCrimeApp(weatherFile: String,
   }
 
   private def loadData(datafile: String, modifyParserSetup: ParseSetup => ParseSetup = identity[ParseSetup]): H2OFrame = {
-    val uri = java.net.URI.create(datafile)
-    val parseSetup = modifyParserSetup(water.fvec.H2OFrame.parserSetup(uri))
-    new H2OFrame(parseSetup, new java.net.URI(datafile))
+    if (datafile.startsWith("hdfs")) {
+      val uri = java.net.URI.create(datafile)
+      val parseSetup = modifyParserSetup(water.fvec.H2OFrame.parserSetup(uri))
+      new H2OFrame(parseSetup, new java.net.URI(datafile))
+    } else {
+      H2OFrameSupport.uploadFile(new File(datafile), modifyParserSetup)
+    }
   }
 
   def createWeatherTable(datafile: String): H2OFrame = {

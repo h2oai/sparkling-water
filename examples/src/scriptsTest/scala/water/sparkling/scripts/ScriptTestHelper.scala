@@ -53,6 +53,9 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll with 
 
   def defaultConf: SparkConf = {
     val conf = new SparkConf().setAppName("Script testing")
+      .set("spark.ext.h2o.client.log.level", "DEBUG")
+      .set("spark.ext.h2o.client.verbose", "true")
+      .set("spark.ext.h2o.node.log.level", "DEBUG")
       .set("spark.ext.h2o.repl.enabled","false") // disable repl in tests
       .set("spark.driver.extraClassPath", assemblyJar)
       .set("spark.scheduler.minRegisteredResourcesRatio", "1")

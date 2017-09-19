@@ -24,7 +24,7 @@ import org.apache.spark.sql.{DataFrame, Row}
 import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.MRTask
 import water.fvec._
-import water.support.{ModelMetricsSupport, SparkContextSupport, SparkSessionSupport}
+import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport, SparkSessionSupport}
 
 object AmazonFineFood extends SparkContextSupport with SparkSessionSupport with ModelMetricsSupport {
 
@@ -34,7 +34,7 @@ object AmazonFineFood extends SparkContextSupport with SparkSessionSupport with 
 
     @transient val hc = H2OContext.getOrCreate(sc)
 
-    val reviews = new H2OFrame(new java.io.File("/Users/michal/Tmp/amazon-fine-foods/Reviews.csv"))
+    val reviews = H2OFrameSupport.uploadFile(new java.io.File("/Users/michal/Tmp/amazon-fine-foods/Reviews.csv"))
 
     // We do not need redundant data
     reviews.remove("Id").remove

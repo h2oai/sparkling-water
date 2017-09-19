@@ -69,7 +69,7 @@ integTest {
   systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
 
   // Show standard out and standard error of the test JVM(s) on the console
-  // testLogging.showStandardStreams = true
+   testLogging.showStandardStreams = true
 }
 
 // Setup test environment for scripts test
@@ -92,4 +92,6 @@ scriptsTest {
   maxHeapSize = "4g"
   // Working dir will be root project
   workingDir = rootDir
+
+  testLogging.showStandardStreams = true
 }

@@ -43,7 +43,7 @@ object PubDev928Test extends SparkContextSupport with IntegTestStopper {
     implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     import sqlContext.implicits._
 
-    val airlinesData = new H2OFrame(new java.io.File("examples/smalldata/allyears2k_headers.csv.gz"))
+    val airlinesData = H2OFrameSupport.uploadFile(new java.io.File("examples/smalldata/allyears2k_headers.csv.gz"))
 
     // We need to explicitly repartition data to 12 chunks/partitions since H2O parser handling
     // partitioning dynamically based on available number of CPUs

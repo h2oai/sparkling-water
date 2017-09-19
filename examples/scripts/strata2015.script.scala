@@ -39,8 +39,8 @@ val filesPaths = fileNames.map(name => location + name) :+ location+"31081_New_Y
 SparkContextSupport.addFiles(sc, filesPaths:_*)
 
 // Load and parse data into H2O
-val dataFiles = fileNames.map(name => new java.io.File(SparkFiles.get(name)).toURI)
-val bikesDF = new H2OFrame(dataFiles:_*)
+val dataFiles = fileNames.map(name => new java.io.File(SparkFiles.get(name)))
+val bikesDF = H2OFrameSupport.uploadFiles(dataFiles:_*)
 
 withLockAndUpdate(bikesDF){ fr =>
   // Rename columns and remove all spaces in header
