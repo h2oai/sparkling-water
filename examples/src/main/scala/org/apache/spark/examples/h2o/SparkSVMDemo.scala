@@ -22,8 +22,7 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.spark.models.svm.{SVM, SVMParameters}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkContext, SparkFiles}
-import water.fvec.H2OFrame
-import water.support.SparkContextSupport
+import water.support.{H2OFrameSupport, SparkContextSupport}
 
 object SparkSVMDemo extends SparkContextSupport {
 
@@ -39,7 +38,7 @@ object SparkSVMDemo extends SparkContextSupport {
 
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val breastCancerData = new H2OFrame(new File(SparkFiles.get("bcwd.csv")))
+    val breastCancerData = H2OFrameSupport.uploadFile(new File(SparkFiles.get("bcwd.csv")))
 
     // Training data
     breastCancerData.replace(breastCancerData.numCols()-1, breastCancerData.lastVec().toCategoricalVec)

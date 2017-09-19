@@ -24,7 +24,7 @@ import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
 import org.apache.spark.{SparkConf, SparkFiles}
-import water.support.{SparkContextSupport, SparkSessionSupport}
+import water.support.{H2OFrameSupport, SparkContextSupport, SparkSessionSupport}
 
 
 object AirlinesWithWeatherDemo extends SparkContextSupport with SparkSessionSupport {
@@ -51,7 +51,7 @@ object AirlinesWithWeatherDemo extends SparkContextSupport with SparkSessionSupp
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val airlinesData = new H2OFrame(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
+    val airlinesData = H2OFrameSupport.uploadFile(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
 
     val airlinesTable = h2oContext.asDataFrame(airlinesData)(sqlContext).map(row => AirlinesParse(row))
     // Select flights only to ORD

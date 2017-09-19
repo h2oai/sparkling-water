@@ -74,8 +74,8 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
     val vec = wordsToVector(tokens, w2vModel)
 
     // FIXME should use Model#score(double[]) method but it is now wrong and need to be fixed
-    import sqlContext.implicits._
     import h2oContext.implicits._
+    import sqlContext.implicits._
     val frameToPredict: H2OFrame = sc.parallelize(Seq(vec)).map(v => JobOffer(null, v)).toDF
     frameToPredict.remove(0).remove()
     val prediction = model.score(frameToPredict)
@@ -162,7 +162,8 @@ class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJo
 
   // Load data via Spark API
   private def loadData(filename: String): RDD[Array[String]] = {
-    val data = sc.textFile(enforceLocalSparkFile(filename))
+    addFiles(sc, absPath(filename))
+    val data = sc.textFile(enforceLocalSparkFile("craigslistJobTitles.csv"))
       .filter(line => !line.contains("category")).map(_.split(','))
     data
   }

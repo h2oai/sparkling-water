@@ -141,6 +141,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (hc.getConf.numOfExternalH2ONodes.isDefined) {
       H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
     }
+
+    // wait client retry timeout to be sure client is registered on all nodes
+    Thread.sleep(hc.getConf.clientCheckRetryTimeout)
+
     // Register web API for client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
@@ -181,6 +185,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       hc.sparkContext.stop()
     }
     H2O.orderlyShutdown(1000)
+    H2O.exit(0)
   }
 
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
