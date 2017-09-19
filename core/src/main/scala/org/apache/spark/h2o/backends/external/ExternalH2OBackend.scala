@@ -142,6 +142,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
     }
 
+    Thread.sleep(hc.getConf.clientCheckRetryTimeout)
+
     // Register web API for client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
