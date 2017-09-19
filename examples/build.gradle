@@ -92,4 +92,6 @@ scriptsTest {
   maxHeapSize = "4g"
   // Working dir will be root project
   workingDir = rootDir
+
+  testLogging.showStandardStreams = true
 }
