@@ -35,7 +35,7 @@ class H2OContextLocalSuite extends FunSuite
   test("verify H2O cloud building on local JVM") {
     sc = new SparkContext("local[*]", "test-local", defaultSparkConf)
     
-    // start h2o cloud in case of external cluster mode
+    // This call also starts H2O cloud in case of external cluster mode
     hc = createH2OContext(sc, 1)
 
     // Number of nodes should be on
