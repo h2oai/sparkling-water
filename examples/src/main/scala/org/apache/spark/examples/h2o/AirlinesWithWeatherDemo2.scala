@@ -87,7 +87,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSup
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val airlinesData = new H2OFrame(new File(SparkFiles.get("year2005.csv.gz")))
+    val airlinesData = H2OFrameSupport.uploadFile(new File(SparkFiles.get("year2005.csv.gz")))
 
     val airlinesTable = h2oContext.asDataFrame(airlinesData)(sqlContext).map(row => AirlinesParse(row))
     // Select flights only to ORD

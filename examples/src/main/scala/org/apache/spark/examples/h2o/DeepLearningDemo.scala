@@ -43,7 +43,7 @@ object DeepLearningDemo extends SparkContextSupport with SparkSessionSupport {
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val airlinesData = new H2OFrame(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
+    val airlinesData = H2OFrameSupport.uploadFile(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
 
     //
     // Use H2O to RDD transformation

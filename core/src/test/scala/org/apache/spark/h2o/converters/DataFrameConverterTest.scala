@@ -36,6 +36,7 @@ import org.scalatest.{Assertions, FunSuite}
 import water.Key
 import water.fvec._
 import water.parser.BufferedString
+import water.support.H2OFrameSupport
 
 /**
   * Testing Conversions between H2OFrame and Spark DataFrame
@@ -47,7 +48,7 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
 
   test("Creation of H2ODataFrame") {
     // FIXME: create different shapes of frame
-    val h2oFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
+    val h2oFrame = H2OFrameSupport.uploadFile(new File("examples/smalldata/prostate.csv"))
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
