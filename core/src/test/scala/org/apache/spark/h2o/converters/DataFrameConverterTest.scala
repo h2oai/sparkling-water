@@ -381,7 +381,7 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     assert(h2oFrame.vec(1).isString)
     assert(h2oFrame.vec(2).isTime)
   }
-  
+
   test("H2OFrame[Simple StructType] to DataFrame[flattened StructType]") {
     import spark.implicits._
     val num = 20
@@ -536,41 +536,41 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("Expand schema with ML dense vectors") {
-   import spark.implicits._
+    import spark.implicits._
 
-   val num = 2
-   val values = (1 to num).map(x =>
-     PrimitiveMlFixture(org.apache.spark.ml.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray))
-   )
-   val df = sc.parallelize(values).toDF
+    val num = 2
+    val values = (1 to num).map(x =>
+      PrimitiveMlFixture(org.apache.spark.ml.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray))
+    )
+    val df = sc.parallelize(values).toDF
 
-   val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
 
-   assert(expandedSchema === Vector(
-     StructField("f0", DoubleType),
-     StructField("f1", DoubleType)))
+    assert(expandedSchema === Vector(
+      StructField("f0", DoubleType),
+      StructField("f1", DoubleType)))
 
-   // Verify transformation into DataFrame
-   val h2oFrame = hc.asH2OFrame(df)
-   // Basic invariants
-   assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
-   assert(expandedSchema.length == h2oFrame.numCols(), "Number columns should match")
-   assert(h2oFrame.names() === expandedSchema.map(_.name))
+    // Verify transformation into DataFrame
+    val h2oFrame = hc.asH2OFrame(df)
+    // Basic invariants
+    assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
+    assert(expandedSchema.length == h2oFrame.numCols(), "Number columns should match")
+    assert(h2oFrame.names() === expandedSchema.map(_.name))
 
-   // Verify data stored in h2oFrame after transformation
-   assertVectorDoubleValues(h2oFrame.vec(0), Seq(1.0, 1.0))
-   // For vectors missing values are replaced by zeros
-   assertVectorDoubleValues(h2oFrame.vec(1), Seq(0.0, 2.0))
- }
+    // Verify data stored in h2oFrame after transformation
+    assertVectorDoubleValues(h2oFrame.vec(0), Seq(1.0, 1.0))
+    // For vectors missing values are replaced by zeros
+    assertVectorDoubleValues(h2oFrame.vec(1), Seq(0.0, 2.0))
+  }
 
 
   test("Expand schema with ML sparse vectors") {
     import spark.implicits._
     val num = 3
     val values = (0 until num).map(x =>
-     PrimitiveMlFixture(
-       org.apache.spark.ml.linalg.Vectors.sparse(num, Seq((x, 1.0)))
-     ))
+      PrimitiveMlFixture(
+        org.apache.spark.ml.linalg.Vectors.sparse(num, Seq((x, 1.0)))
+      ))
     val df = sc.parallelize(values, num).toDF()
 
     val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
@@ -590,16 +590,16 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
     // Verify data stored in h2oFrame after transformation
     assertDoubleFrameValues(h2oFrame, values.map(_.f.toArray))
   }
-  
+
   test("Expand complex schema with sparse and dense vectors") {
     import spark.implicits._
     val num = 3
     val values = (0 until num).map(x =>
-     ComplexMlFixture(
-       org.apache.spark.ml.linalg.Vectors.sparse(num, Seq((x, 1.0))),
-       x,
-       org.apache.spark.ml.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray)
-     ))
+      ComplexMlFixture(
+        org.apache.spark.ml.linalg.Vectors.sparse(num, Seq((x, 1.0))),
+        x,
+        org.apache.spark.ml.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray)
+      ))
     println(values.mkString("\n"))
     val df = sc.parallelize(values, num).toDF()
 
@@ -617,7 +617,7 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
-    
+
     // Basic invariants
     assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
     assert(expandedSchema.length == h2oFrame.numCols(), "Number columns should match")
@@ -625,8 +625,8 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
 
     // Verify data stored in h2oFrame after transformation
     assertDoubleFrameValues(h2oFrame, Seq(Array(1.0, 0.0, 0.0, 0.0, 0.0, 0.0),
-                                          Array(0.0, 1.0, 0.0, 1.0, 1.0, 0.0),
-                                          Array(0.0, 0.0, 1.0, 2.0, 1.0, 2.0)))
+      Array(0.0, 1.0, 0.0, 1.0, 1.0, 0.0),
+      Array(0.0, 0.0, 1.0, 2.0, 1.0, 2.0)))
   }
 
   test("Add metadata to Dataframe") {

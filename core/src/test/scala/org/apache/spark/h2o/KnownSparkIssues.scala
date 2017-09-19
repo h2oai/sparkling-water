@@ -17,23 +17,20 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{SharedSparkTestContext, SparkTestContext}
+import org.apache.spark.h2o.utils.SharedSparkTestContext
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 /**
   * Tests for known Spark issues and our workaround which doesn't fit to any category in other tests
   */
 @RunWith(classOf[JUnitRunner])
 class KnownSparkIssues extends FunSuite
-  with Matchers with BeforeAndAfter with SparkTestContext {
+  with Matchers with BeforeAndAfter with SharedSparkTestContext {
 
-  override def beforeAll(){
-    super.beforeAll()
-    // we use local-cluster since the non-determinism isn't reproducible in local mode
-    sc = new SparkContext("local-cluster[2,2,2048]", "test-local-cluster", defaultSparkConf)
-  }
+  // we use local-cluster since the non-determinism isn't reproducible in local mode
+  override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,2,2048]", "test-local-cluster", conf = defaultSparkConf)
 
   test("PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Negative test") {
 
@@ -62,7 +59,7 @@ class KnownSparkIssues extends FunSuite
     val sampleA = df.sample(withReplacement = false, 0.1, seed = 0)
     val sampleB = df.sample(withReplacement = false, 0.1, seed = 0)
 
-    val counts = (0 until 5).map( _ => sampleA.except(sampleB).count )
+    val counts = (0 until 5).map(_ => sampleA.except(sampleB).count)
     // check whether all elements are the same
     val first = counts.head
     val mismatch = counts.exists(c => c != first)
