@@ -39,13 +39,7 @@ import h2oContext.implicits._
 // H2O Data loader using H2O API
 //
 def loadData(datafile: String, modifyParserSetup: ParseSetup => ParseSetup = identity[ParseSetup]): H2OFrame = {
-  if (datafile.startsWith("hdfs")) {
-    val uri = java.net.URI.create(datafile)
-    val parseSetup = modifyParserSetup(water.fvec.H2OFrame.parserSetup(uri))
-    new H2OFrame(parseSetup, new java.net.URI(datafile))
-  } else {
     H2OFrameSupport.uploadFile(new File(datafile), modifyParserSetup)
-  }
 }
 
 //
