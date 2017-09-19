@@ -103,4 +103,6 @@ integTest {
     // Pass list of jars required for testing
     systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
     systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
+
+    // testLogging.showStandardStreams = true
 }
