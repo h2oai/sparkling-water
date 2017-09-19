@@ -112,7 +112,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     val ipPort = clusterInfo.next()
     yarnAppId = Some(clusterInfo.next().replace("job", "application"))
     externalIP = Some(ipPort)
-
+    // we no longer need the notification file
+    new File(hc.getConf.clusterInfoFile.get).delete()
     logInfo(s"Yarn ID obtained from cluster file: $yarnAppId")
     logInfo(s"Cluster ip and port obtained from cluster file: $ipPort")
 
