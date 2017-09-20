@@ -46,6 +46,9 @@ pipeline{
 
         string(name: 'hdpVersion', defaultValue: '2.2.6.3-1', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current will not do since it is not automatically expanded -> so please set 2.2.6.3-1')
 
+        booleanParam(name: 'buildAgainstH2OBranch', defaultValue: false, description: 'By default, Sparkling Water is built with the included H2O. This option may be used to force build to use specific H2O branch against which Sparkling Water is built.')
+        string(name: 'h2oBranch', defaultValue: 'master', description: 'H2O branch to build against if buildAgainstH2OBranch is set to true')
+
     }
 
     environment {
@@ -56,6 +59,12 @@ pipeline{
         MASTER          = "yarn-client"
         H2O_PYTHON_WHEEL= "${env.WORKSPACE}/private/h2o.whl"
         H2O_EXTENDED_JAR= "${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar"
+
+        // Properties used in case we are building against specific H2O version
+        H2O_HOME        = "${env.WORKSPACE}/h2o-3"
+        BUILD_HADOOP    = "true"
+        H2O_TARGET      = "${params.driverHadoopVersion}"
+        H2O_ORIGINAL_JAR= "${H2O_HOME}/h2o-hadoop/h2o-${params.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
     }
 
     stages {
@@ -72,16 +81,17 @@ pipeline{
                         rm -rf ${env.SPARK}.tgz
                 fi
                 """
-
-                // Spark work directory cleanup
-                dir("${env.SPARK_HOME}/work") {
-                    deleteDir()
-                }
             }
         }
 
         stage('QA: Prepare Environment and Data') {
             steps {
+
+                // Spark work directory cleanup
+                dir("${env.SPARK_HOME}/work") {
+                    deleteDir()
+                }
+
                 sh """
                     # Setup 
                     echo "spark.driver.extraJavaOptions -Dhdp.version="${params.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
@@ -102,13 +112,34 @@ pipeline{
                     cp /home/0xdiag/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv ${env.WORKSPACE}/examples/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv
                    """
 
+
                 sh """
-                    # Download h2o-python client, save it in private directory
-                    # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
-                    mkdir -p ${env.WORKSPACE}/private/
-                    curl -s `./gradlew -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
+                    # Clean previous H2O Jars
                     ./gradlew cleanH2OJars cleanExtendedH2OJars
-                    cp `./gradlew -q extendJar -PdownloadH2O=${params.driverHadoopVersion}` $H2O_EXTENDED_JAR
+
+                    # Check if we are bulding against specific H2O branch
+                    if [ ${params.buildAgainstH2OBranch} = true ]; then
+                        # Clone H2O
+                        rm -rf h2o-3
+                        git clone https://github.com/h2oai/h2o-3.git
+                        cd h2o-3
+                        git checkout ${params.h2oBranch}
+                        ./gradlew build -x check
+                        cd ..
+                        # In this case, PySparkling build is driven by H2O_HOME property
+                        # When extending from specific jar the jar has already the desired name
+                        ./gradlew -q extendJar
+                    fi
+
+                    # Check if we are building against included H2O 
+                    if [ ${params.buildAgainstH2OBranch} = false ]; then
+                        # Download h2o-python client, save it in private directory
+                        # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
+                        mkdir -p ${env.WORKSPACE}/private/
+                        curl -s `./gradlew -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
+                        cp `./gradlew -q extendJar -PdownloadH2O=${params.driverHadoopVersion}` $H2O_EXTENDED_JAR
+                    fi
+
                    """
             }
         }
@@ -117,7 +148,11 @@ pipeline{
             steps {
                 sh  """
                     # Build
-                    ${env.WORKSPACE}/gradlew clean build -x check scalaStyle
+                    if [ ${params.buildAgainstH2OBranch} = true ]; then
+                        ${env.WORKSPACE}/gradlew clean --include-build $H2O_HOME build -x check scalaStyle
+                    else
+                        ${env.WORKSPACE}/gradlew clean build -x check scalaStyle
+                    fi
                     """
             }
         }
@@ -128,7 +163,7 @@ pipeline{
             }
             steps {
                 sh  """
-                    # Build, run regular tests
+                    # Run unit tests
                     ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${params.backendMode} -PexternalBackendStartMode=auto
                     """
             }
@@ -150,7 +185,7 @@ pipeline{
 
             steps {
                 sh  """
-                    # Build, run regular tests
+                    # Run local integration tests
                     ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${params.backendMode} -PexternalBackendStartMode=auto
                     """
             }
