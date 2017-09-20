@@ -62,10 +62,9 @@ pipeline{
         PATH            = "${JAVA_HOME}/bin:${PATH}"
 
         // Properties used in case we are building against specific H2O version
-        H2O_HOME        = "${env.WORKSPACE}/h2o-3"
         BUILD_HADOOP    = "true"
         H2O_TARGET      = "${params.driverHadoopVersion}"
-        H2O_ORIGINAL_JAR= "${H2O_HOME}/h2o-hadoop/h2o-${params.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
+        H2O_ORIGINAL_JAR= "${env.WORKSPACE}/h2o-3/h2o-hadoop/h2o-${params.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
     }
 
     stages {
@@ -150,7 +149,7 @@ pipeline{
                 sh  """
                     # Build
                     if [ ${params.buildAgainstH2OBranch} = true ]; then
-                        ${env.WORKSPACE}/gradlew clean --include-build $H2O_HOME build -x check scalaStyle
+                        H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew clean --include-build ${env.WORKSPACE}/h2o-3 build -x check scalaStyle
                     else
                         ${env.WORKSPACE}/gradlew clean build -x check scalaStyle
                     fi
