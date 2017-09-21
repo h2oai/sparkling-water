@@ -133,7 +133,7 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_WRITE_TIMEOUT = ("spark.ext.h2o.external.write.confirmation.timeout", 60)
 
   /** Timeout in seconds for starting h2o external cluster */
-  val PROP_EXTERNAL_CLUSTER_START_TIMEOUT = ("spark.ext.h2o.cluster.start.timeout", 120)
+  val PROP_EXTERNAL_CLUSTER_START_TIMEOUT = ("spark.ext.h2o.cluster.start.timeout", 240)
 
   /** Path to a file used as cluster notification file */
   val PROP_EXTERNAL_CLUSTER_INFO_FILE = ("spark.ext.h2o.cluster.info.name", None)
