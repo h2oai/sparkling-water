@@ -139,12 +139,14 @@ class H2OContext(object):
 
 
     def stop_with_jvm(self):
+        Initializer.clean_temp_dir()
         h2o.cluster().shutdown()
         self.stop()
 
 
     def stop(self):
         warnings.warn("Stopping H2OContext. (Restarting H2O is not yet fully supported...) ")
+        Initializer.clean_temp_dir()
         self._jhc.stop(False)
 
     def __del__(self):
