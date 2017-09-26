@@ -11,6 +11,7 @@ class Initializer(object):
     # Flag to inform us whether sparkling jar has been already loaded or not.
     # We don't want to load it more than once.
     __sparkling_jar_loaded = False
+    __extracted_jar_dir = None
 
     @staticmethod
     def load_sparkling_jar(spark_context):
@@ -56,24 +57,40 @@ class Initializer(object):
                 field_jars_value = field_jars.get(file_server)
                 field_jars_value.put('sparkling_water_assembly.jar', jvm.java.io.File(sw_jar_file))
 
+
+    @staticmethod
+    def __extracted_jar_path():
+        import sparkling_water
+        sw_pkg_file = sparkling_water.__file__
+
+        if Initializer.__extracted_jar_dir is None:
+            zip_file = sw_pkg_file[:-len('/sparkling_water/__init__.py')]
+            import tempfile
+            Initializer.__extracted_jar_dir = tempfile.mkdtemp()
+            import zipfile
+            with zipfile.ZipFile(zip_file) as fzip:
+                fzip.extract('sparkling_water/sparkling_water_assembly.jar', path = Initializer.__extracted_jar_dir)
+
+        return os.path.abspath("{}/sparkling_water/sparkling_water_assembly.jar".format(Initializer.__extracted_jar_dir))
+
+    @staticmethod
+    def clean_temp_dir():
+        ## Clean temporary directory containing extracted Sparkling Water Jar
+        if Initializer.__extracted_jar_dir is not None:
+            import shutil
+            shutil.rmtree(Initializer.__extracted_jar_dir)
+
     @staticmethod
     def __get_sw_jar():
         import sparkling_water
         sw_pkg_file = sparkling_water.__file__
         # Extract jar file from zip
         if '.zip' in sw_pkg_file:
-            from pkg_resources import get_cache_path
-            zip_file = sw_pkg_file[:-len('/sparkling_water/__init__.py')]
-            zip_filename = os.path.basename(zip_file)
-            jar_path = get_cache_path(zip_filename)
-            sw_jar = os.path.abspath("{}/sparkling_water/sparkling_water_assembly.jar".format(jar_path))
-            import zipfile
-            with zipfile.ZipFile(zip_file) as fzip:
-                fzip.extract('sparkling_water/sparkling_water_assembly.jar', path = jar_path)
-            return sw_jar
+            return Initializer.__extracted_jar_path()
         else:
             from pkg_resources import resource_filename
             return os.path.abspath(resource_filename("sparkling_water", 'sparkling_water_assembly.jar'))
+        
     @staticmethod
     def __find_spark_cl(start_cl, cl_name):
         cl = start_cl
