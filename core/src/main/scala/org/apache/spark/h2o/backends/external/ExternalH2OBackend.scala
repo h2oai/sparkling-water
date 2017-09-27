@@ -91,11 +91,11 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     logInfo(processOut.toString)
     logError(processErr.toString)
 
-
-    if (!new File(hc.getConf.clusterInfoFile.get).exists()) {
+    val notifFile = new File(hc.getConf.clusterInfoFile.get)
+    if (!notifFile.exists()) {
       throw new RuntimeException(
-        """
-          |Cluster notification file could not be created. The possible causes are:
+        s"""
+          |Cluster notification file ${notifFile.getAbsolutePath} could not be created. The possible causes are:
           |
           |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
           |   to increase the timeout for starting the external cluster as:
