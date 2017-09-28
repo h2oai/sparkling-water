@@ -86,7 +86,6 @@ trait H2OFrameSupport extends JoinSupport {
   }
 
   def uploadFile(file: File): H2OFrame = {
-    Thread.sleep(4000)
     val is = new FileInputStream(file.getAbsoluteFile)
     val stats = new UploadFileVec.ReadPutStats
     val uploadKey = Key.make[Frame](file.getName)

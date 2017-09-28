@@ -16,6 +16,8 @@
 */
 package water.api
 
+import java.io.File
+
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.scalatest.FunSuite
@@ -84,6 +86,15 @@ class SupportAPISuite extends FunSuite with SharedH2OTestContext {
 }
 
 object TestUtils {
+
+  def locate(name: String): File = {
+    val relative = new File("./examples/smalldata/" + name)
+    if (relative.exists()){
+      relative
+    }else{
+      new File("/home/0xdiag/smalldata/" + name)
+    }
+  }
 
   def frame(name: String, vec: Vec): Frame = {
     val f: Frame = new Frame(water.Key.make[Frame]())

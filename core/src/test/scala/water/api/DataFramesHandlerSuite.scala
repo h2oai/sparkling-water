@@ -16,8 +16,6 @@
 */
 package water.api
 
-import java.io.File
-
 import com.google.gson.JsonParser
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
@@ -29,7 +27,6 @@ import water.DKV
 import water.api.DataFrames._
 import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.{Frame, H2OFrame}
-import water.support.H2OFrameSupport
 
 /**
   * Test suite for DataFrames handler
@@ -69,7 +66,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
 
   test("DataFrameHandler.getDataFrame() method where DataFrame has non empty metadata") {
 
-    val h2oframe = H2OFrameSupport.uploadFile(new File("./examples/smalldata/prostate.csv"))
+    val h2oframe = new H2OFrame(TestUtils.locate("prostate/prostate.csv"))
     // we have created dataFrame from already existing h2oFrame, metadata are included
     val df = hc.asDataFrame(h2oframe)
     val name = "prostate"
