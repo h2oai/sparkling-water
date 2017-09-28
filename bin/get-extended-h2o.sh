@@ -41,7 +41,7 @@ fi
 
 h2odriver_file="h2odriver-$H2O_VERSION.$H2O_BUILD-${hadoop_version}extended.jar"
 h2odriver_url="${S3_RELEASE_BUCKET}/rel-${MAJOR_VERSION}/${PATCH_VERSION}/extended/${h2odriver_file}"
-output_file="h2odriver-${hadoop_version}extended.jar"
+output_file="h2odriver-sw${MAJOR_VERSION}.${PATCH_VERSION}-${hadoop_version}extended.jar"
 
 echo
 echo "Getting extended H2O driver from ${h2odriver_url} ..."
