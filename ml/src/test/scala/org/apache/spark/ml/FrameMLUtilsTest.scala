@@ -128,6 +128,7 @@ class FrameMLUtilsTest extends FunSuite with SharedH2OTestContext {
         else arr
       }).toArray
     )
-    TestFrameUtils.makeH2OFrame2(fname, colNames, chunkLayout, data, Array(Vec.T_NUM, Vec.T_NUM, Vec.T_CAT, Vec.T_NUM), Array(null, null, Array("NO", "YES"), null))
+    TestFrameUtils.makeH2OFrame2(fname, colNames, chunkLayout, data, Array(Vec.T_NUM, Vec.T_NUM, Vec.T_CAT, Vec.T_NUM),
+      Array(null, null, Array("NO", "YES"), null))
   }
 }
