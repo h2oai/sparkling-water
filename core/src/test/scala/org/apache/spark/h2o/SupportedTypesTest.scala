@@ -14,10 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.h2o.utils
+package org.apache.spark.h2o
 
 import org.apache.spark.h2o.utils.ReflectionUtils._
 import org.apache.spark.h2o.utils.SupportedTypes._
+import org.apache.spark.h2o.utils.{OldH2OTypeUtils, OldReflectionUtils, SupportedTypes}
 import org.apache.spark.unsafe.types.UTF8String
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite

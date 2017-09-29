@@ -17,7 +17,7 @@
 package org.apache.spark.ml
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.ml.spark.models.MissingValuesHandling
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{DataTypes, StructField}
@@ -27,7 +27,7 @@ import org.scalatest.junit.JUnitRunner
 import water.fvec.Vec
 
 @RunWith(classOf[JUnitRunner])
-class FrameMLUtilsTest extends FunSuite with SharedSparkTestContext {
+class FrameMLUtilsTest extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
@@ -128,6 +128,6 @@ class FrameMLUtilsTest extends FunSuite with SharedSparkTestContext {
         else arr
       }).toArray
     )
-    makeH2OFrame2(fname, colNames, chunkLayout, data, Array(Vec.T_NUM, Vec.T_NUM, Vec.T_CAT, Vec.T_NUM), Array(null, null, Array("NO", "YES"), null))
+    TestFrameUtils.makeH2OFrame2(fname, colNames, chunkLayout, data, Array(Vec.T_NUM, Vec.T_NUM, Vec.T_CAT, Vec.T_NUM), Array(null, null, Array("NO", "YES"), null))
   }
 }
