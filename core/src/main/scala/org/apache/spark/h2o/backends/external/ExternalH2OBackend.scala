@@ -138,7 +138,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
 
     if (hc.getConf.numOfExternalH2ONodes.isDefined) {
-      H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.clusterStartTimeout*1000)
+      H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
     }
 
     H2OStarter.start(h2oClientArgs, false)
