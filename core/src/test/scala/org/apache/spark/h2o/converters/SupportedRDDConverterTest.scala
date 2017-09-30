@@ -16,11 +16,11 @@
  */
 package org.apache.spark.h2o.converters
 
-import java.io.File
 import java.sql.Timestamp
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata._
+import org.apache.spark.h2o.utils.H2OAsserts._
 import org.apache.spark.h2o.utils._
 import org.apache.spark.h2o.{ByteHolder, DoubleHolder, IntHolder, ShortHolder, StringHolder}
 import org.apache.spark.mllib.linalg.Vectors
@@ -28,10 +28,10 @@ import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import water.api.TestUtils
 import water.fvec.{H2OFrame, Vec}
 import water.parser.{BufferedString, Categorical}
 import water.support.H2OFrameSupport
-import H2OAsserts._
 
 /**
   * Testing schema for rdd  to h2o frame transformations.
@@ -85,7 +85,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
 
   // H2OFrame to RDD[T] JUnits
   test("H2OFrame[T_NUM] to RDD[Prostate]") {
-    val h2oFrame: H2OFrame = new H2OFrame(new File("examples/smalldata/prostate.csv"))
+    val h2oFrame: H2OFrame = new H2OFrame(TestUtils.locate("prostate/prostate.csv"))
     assert(h2oFrame.vec(0).isNumeric & h2oFrame.vec(1).isNumeric & h2oFrame.vec(2).isNumeric &
       h2oFrame.vec(3).isNumeric & h2oFrame.vec(4).isNumeric & h2oFrame.vec(5).isNumeric & h2oFrame.vec(6).isNumeric
       & h2oFrame.vec(7).isNumeric & h2oFrame.vec(8).isNumeric)

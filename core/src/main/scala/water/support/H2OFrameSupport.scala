@@ -16,10 +16,14 @@
 */
 package water.support
 
+import java.io.{File, FileInputStream}
+
 import hex.FrameSplitter
 import hex.splitframe.ShuffleSplitFrame
-import water.Key
-import water.fvec.Frame
+import org.apache.spark.h2o.H2OFrame
+import water.{JavaBridge, Key}
+import water.fvec.{Frame, H2OFrame, UploadFileVec}
+import water.parser.{ParseDataset, ParseSetup}
 
 trait H2OFrameSupport extends JoinSupport {
 
@@ -56,6 +60,41 @@ trait H2OFrameSupport extends JoinSupport {
       .filter(idx => fr.vec(idx).isString)
       .foreach(idx => fr.replace(idx, fr.vec(idx).toCategoricalVec).remove())
     fr
+  }
+
+  def uploadFile(file: File, modifyParserSetup: ParseSetup => ParseSetup = identity[ParseSetup]): H2OFrame = {
+    val is = new FileInputStream(file.getAbsoluteFile)
+    val stats = new UploadFileVec.ReadPutStats
+    val uploadKey = Key.make[Frame](file.getName)
+    val parsedKey = Key.make(file.getName + ".hex")
+    val k = UploadFileVec.readPut(uploadKey, is, stats)
+    val setup = modifyParserSetup(ParseSetup.guessSetup(Array(k), H2OFrame.defaultParserSetup()))
+    val fr = JavaBridge.parse(parsedKey, k, setup)
+    new H2OFrame(fr)
+  }
+
+  def uploadFiles(files: File*): H2OFrame = {
+    val parsedKey = Key.make()
+    val keys = files.map { file =>
+      val is = new FileInputStream(file.getAbsoluteFile)
+      val stats = new UploadFileVec.ReadPutStats
+      val uploadKey = Key.make[Frame](file.getName)
+      UploadFileVec.readPut(uploadKey, is, stats)
+    }.toArray
+    val fr = ParseDataset.parse(parsedKey, keys: _*)
+    new H2OFrame(fr)
+  }
+
+  def uploadFile(file: File): H2OFrame = {
+    val is = new FileInputStream(file.getAbsoluteFile)
+    val stats = new UploadFileVec.ReadPutStats
+    val uploadKey = Key.make[Frame](file.getName)
+    val parsedKey = Key.make(file.getName + ".hex")
+    val k = UploadFileVec.readPut(uploadKey, is, stats)
+    println("uploaded")
+    val fr = ParseDataset.parse(parsedKey, k)
+    println("parsed")
+    new H2OFrame(fr)
   }
 }
 

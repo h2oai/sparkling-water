@@ -33,12 +33,16 @@ dependencies {
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"
 
+  // because Test Utils contains Locate method
+  compile project(':sparkling-water-core').sourceSets.test.output
+
   // Add streaming
   compile "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
 
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"
+  testCompile project(':sparkling-water-core').sourceSets.test.output
 
   // to reuse some utils test classes defined in the core
   testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
@@ -46,8 +50,10 @@ dependencies {
   // Integration tests requirements
   integTestCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   integTestCompile "junit:junit:4.11"
+  integTestCompile project(':sparkling-water-core').sourceSets.test.output
 
-  // to reuse some utils test classes defined in the core
+
+    // to reuse some utils test classes defined in the core
   integTestCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
 
   // To enable Idea compiler even for integTestCode which use mllib
@@ -69,7 +75,7 @@ integTest {
   systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
 
   // Show standard out and standard error of the test JVM(s) on the console
-  // testLogging.showStandardStreams = true
+   testLogging.showStandardStreams = true
 }
 
 // Setup test environment for scripts test
@@ -92,4 +98,6 @@ scriptsTest {
   maxHeapSize = "4g"
   // Working dir will be root project
   workingDir = rootDir
+
+  // testLogging.showStandardStreams = true
 }

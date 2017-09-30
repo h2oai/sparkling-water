@@ -17,16 +17,13 @@
 
 package org.apache.spark.examples.h2o
 
-import java.io.File
-
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
-import org.apache.spark.{SparkConf, SparkFiles}
+import org.apache.spark.SparkConf
 import water.support.{SparkContextSupport, SparkSessionSupport}
-
-
+import water.api.TestUtils
 object AirlinesWithWeatherDemo extends SparkContextSupport with SparkSessionSupport {
 
   def main(args: Array[String]): Unit = {
@@ -40,9 +37,7 @@ object AirlinesWithWeatherDemo extends SparkContextSupport with SparkSessionSupp
     import h2oContext._
     import h2oContext.implicits._
     // Setup environment
-    addFiles(sc,
-      absPath("examples/smalldata/Chicago_Ohare_International_Airport.csv"),
-      absPath("examples/smalldata/allyears2k_headers.csv.gz"))
+    addFiles(sc, TestUtils.locate("airlines/Chicago_Ohare_International_Airport.csv").getAbsolutePath)
 
     //val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
     val wrawdata = sc.textFile(enforceLocalSparkFile("Chicago_Ohare_International_Airport.csv"), 3).cache()
@@ -51,7 +46,7 @@ object AirlinesWithWeatherDemo extends SparkContextSupport with SparkSessionSupp
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val airlinesData = new H2OFrame(new File(SparkFiles.get("allyears2k_headers.csv.gz")))
+    val airlinesData = new H2OFrame(TestUtils.locate("airlines/allyears2k_headers.csv.gz"))
 
     val airlinesTable = h2oContext.asDataFrame(airlinesData)(sqlContext).map(row => AirlinesParse(row))
     // Select flights only to ORD

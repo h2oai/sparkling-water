@@ -10,13 +10,15 @@
   *    SparkContext is available as sc
   */
 // Create an environment
+import java.io.File
+
 import _root_.hex.genmodel.utils.DistributionFamily
 import _root_.hex.deeplearning.DeepLearningModel
 import _root_.hex.tree.gbm.GBMModel
 import _root_.hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkFiles
 import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
-import org.apache.spark.h2o._
+import org.apache.spark.h2o.{H2OFrame, _}
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import water.fvec.{H2OFrame, Vec}
@@ -37,9 +39,7 @@ import h2oContext.implicits._
 // H2O Data loader using H2O API
 //
 def loadData(datafile: String, modifyParserSetup: ParseSetup => ParseSetup = identity[ParseSetup]): H2OFrame = {
-  val uri = java.net.URI.create(datafile)
-  val parseSetup = modifyParserSetup(water.fvec.H2OFrame.parserSetup(uri))
-  new H2OFrame(parseSetup, new java.net.URI(datafile))
+    H2OFrameSupport.uploadFile(new File(datafile), modifyParserSetup)
 }
 
 //

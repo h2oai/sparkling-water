@@ -65,9 +65,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-jobname", conf.cloudName.get,
       "-mapperXmx", conf.mapperXmx,
       "-output", conf.HDFSOutputDir.get,
-      "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
+      "-J", "-log_level", "-J", "DEBUG",
       "-timeout", conf.clusterStartTimeout.toString,
-      "-disown",
+      "-disown"
       "-J", "-watchdog_stop_without_client",
       "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
       "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
@@ -136,11 +136,14 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       getH2OClientArgs(hc.getConf)
     }
     logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
+
     H2OStarter.start(h2oClientArgs, false)
 
     if (hc.getConf.numOfExternalH2ONodes.isDefined) {
       H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
     }
+
+
     // Register web API for client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
@@ -181,6 +184,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       hc.sparkContext.stop()
     }
     H2O.orderlyShutdown(1000)
+    H2O.exit(0)
   }
 
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {

@@ -16,8 +16,6 @@
 */
 package water.api
 
-import java.io.File
-
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
@@ -26,17 +24,18 @@ import org.scalatest.junit.JUnitRunner
 import water.api.H2OFrames.{DataFrameIDV3, H2OFramesHandler}
 import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.H2OFrame
+import water.support.H2OFrameSupport
 
 /**
   * Test suite for H2OFrames handler
   */
 @RunWith(classOf[JUnitRunner])
-class H2OFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
+class H2OFramesHandlerSuite extends FunSuite with SharedH2OTestContext with H2OFrameSupport {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
   test("H2OFramesHandler.toDataFrame() method") {
     // create H2OFrame which will be used for the transformation
-    val h2oFrame = new H2OFrame(new File("./examples/smalldata/prostate.csv"))
+    val h2oFrame = new H2OFrame(TestUtils.locate("prostate/prostate.csv"))
     val h2oFramesHandler = new H2OFramesHandler(sc, hc)
 
     val req = new DataFrameIDV3

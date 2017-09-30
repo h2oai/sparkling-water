@@ -17,11 +17,8 @@
 
 package org.apache.spark.ml.spark.models
 
-import java.net.URI
-
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.h2o.algos.H2OGBM
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
@@ -29,6 +26,8 @@ import org.apache.spark.sql.DataFrame
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.api.TestUtils
+import water.fvec.H2OFrame
 
 @RunWith(classOf[JUnitRunner])
 class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
@@ -104,11 +103,11 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
   }
 
   lazy val irisDataFrame = {
-    hc.asDataFrame(new H2OFrame(URI.create("examples/smalldata/iris.csv")))
+    hc.asDataFrame(new H2OFrame(TestUtils.locate("iris/iris.csv")))
   }
 
   lazy val prostateDataFrame = {
-    hc.asDataFrame(new H2OFrame(URI.create("examples/smalldata/prostate.csv")))
+    hc.asDataFrame(new H2OFrame(TestUtils.locate("prostate/prostate.csv")))
   }
 
   def binomialModelFixture() = {

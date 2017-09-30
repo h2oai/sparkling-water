@@ -16,6 +16,8 @@
 */
 package org.apache.spark.examples.h2o
 
+import java.io.File
+
 import org.apache.spark.SparkConf
 import org.apache.spark.h2o._
 import org.apache.spark.ml.feature.StopWordsRemover
@@ -25,7 +27,6 @@ import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.MRTask
 import water.fvec._
 import water.support.{ModelMetricsSupport, SparkContextSupport, SparkSessionSupport}
-
 object AmazonFineFood extends SparkContextSupport with SparkSessionSupport with ModelMetricsSupport {
 
   def main(args: Array[String]): Unit = {
@@ -34,7 +35,7 @@ object AmazonFineFood extends SparkContextSupport with SparkSessionSupport with 
 
     @transient val hc = H2OContext.getOrCreate(sc)
 
-    val reviews = new H2OFrame(new java.io.File("/Users/michal/Tmp/amazon-fine-foods/Reviews.csv"))
+    val reviews = new H2OFrame(new File("Users/michal/Tmp/amazon-fine-foods/Reviews.csv"))
 
     // We do not need redundant data
     reviews.remove("Id").remove
