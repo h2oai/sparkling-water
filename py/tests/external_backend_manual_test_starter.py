@@ -40,7 +40,7 @@ class ExternalBackendManualTestStarter:
         self.node_processes = []
 
     def launch_single(self, cloud_name, ip):
-        cmd_line = ["java", "-cp", ":".join([self.h2o_extended_jar, self.sw_jar]), "water.H2OApp", "-md5skip", "-name",
+        cmd_line = ["java", "-cp", ":".join([self.h2o_extended_jar, self.sw_jar]), "water.H2OApp", "-name",
                     cloud_name, "-ip", ip]
         return subprocess.Popen(cmd_line)
 

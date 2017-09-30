@@ -33,7 +33,7 @@ private[external] trait ExternalBackendUtils extends SharedBackendUtils {
     * @return array of H2O client arguments.
     */
   override def getH2OClientArgs(conf: H2OConf): Array[String] = {
-    Array("-md5skip") ++ getH2OClientConnectionArgs(conf) ++ super.getH2OClientArgs(conf)
+    getH2OClientConnectionArgs(conf) ++ super.getH2OClientArgs(conf)
   }
 
   def cloudMembers = H2O.CLOUD.members().map(NodeDesc(_))
