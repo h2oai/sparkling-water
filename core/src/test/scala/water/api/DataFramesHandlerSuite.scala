@@ -20,7 +20,7 @@ import java.io.File
 
 import com.google.gson.JsonParser
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -34,7 +34,7 @@ import water.fvec.{Frame, H2OFrame}
   * Test suite for DataFrames handler
   */
 @RunWith(classOf[JUnitRunner])
-class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
+class DataFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 

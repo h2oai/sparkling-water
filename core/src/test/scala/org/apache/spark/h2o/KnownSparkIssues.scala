@@ -17,7 +17,7 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -27,7 +27,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
   */
 @RunWith(classOf[JUnitRunner])
 class KnownSparkIssues extends FunSuite
-  with Matchers with BeforeAndAfter with SharedSparkTestContext {
+  with Matchers with BeforeAndAfter with SharedH2OTestContext {
 
   // we use local-cluster since the non-determinism isn't reproducible in local mode
   override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,2,2048]", "test-local-cluster", conf = defaultSparkConf)

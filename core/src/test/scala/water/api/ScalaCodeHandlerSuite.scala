@@ -17,7 +17,7 @@
 package water.api
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
@@ -28,7 +28,7 @@ import water.exceptions.H2ONotFoundArgumentException
   * Test suite for ScalaCode handler
   */
 @RunWith(classOf[JUnitRunner])
-class ScalaCodeHandlerSuite extends FunSuite with SharedSparkTestContext with BeforeAndAfterEach {
+class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterEach {
 
   var scalaCodeHandler: ScalaCodeHandler = _
 
