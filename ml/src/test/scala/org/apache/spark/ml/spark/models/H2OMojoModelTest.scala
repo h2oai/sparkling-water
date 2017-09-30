@@ -22,7 +22,7 @@ import java.net.URI
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OFrame
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.h2o.algos.H2OGBM
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.sql.DataFrame
@@ -31,7 +31,7 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class H2OMojoModelTest extends FunSuite with SharedSparkTestContext {
+class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", "mojo-test-local", conf = defaultSparkConf)
 
