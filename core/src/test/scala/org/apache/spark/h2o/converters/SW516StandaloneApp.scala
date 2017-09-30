@@ -66,7 +66,7 @@ object H2OApp {
   import SW516StandaloneApp._
 
   def main(args: Array[String]): Unit = {
-    water.H2O.main(Array("-name", cloudName, "-md5skip"))
+    water.H2O.main(Array("-name", cloudName))
   }
 
 }
