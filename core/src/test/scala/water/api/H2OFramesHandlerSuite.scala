@@ -19,7 +19,7 @@ package water.api
 import java.io.File
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -31,7 +31,7 @@ import water.fvec.H2OFrame
   * Test suite for H2OFrames handler
   */
 @RunWith(classOf[JUnitRunner])
-class H2OFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
+class H2OFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
   test("H2OFramesHandler.toDataFrame() method") {

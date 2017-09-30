@@ -18,19 +18,18 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.sql.SaveMode
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.DKV
-import testdata._
 
 /**
   * Test using H2O Frame as Spark SQL data source
   */
 @RunWith(classOf[JUnitRunner])
-class DataSourceTestSuite extends FunSuite with SharedSparkTestContext {
+class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-data-sources",
     conf = defaultSparkConf)
