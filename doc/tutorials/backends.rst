@@ -118,10 +118,8 @@ nodes, run the following line 3 times:
 
 .. code:: bash
 
-    java -jar $H2O_EXTENDED_JAR -md5skip -name test
+    java -jar $H2O_EXTENDED_JAR  -name test
 
-Don't forget the ``-md5skip`` argument, it's additional argument
-required for external cluster to work.
 
 After this step, we should have H2O cluster of 3 nodes running and the
 nodes should have discovered each other using the multicast discovery.
@@ -149,7 +147,7 @@ flatfile, you can run
 
 .. code:: bash
 
-    java -jar $H2O_EXTENDED_JAR -md5skip -name test -flatfile path_to_flatfile
+    java -jar $H2O_EXTENDED_JAR -name test -flatfile path_to_flatfile
 
 , where the flatfile should contain lines in format ip:port of nodes
 where H2O is supposed to run. To read more about flatfile and it's
