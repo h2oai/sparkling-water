@@ -17,8 +17,7 @@
 package org.apache.spark.h2o
 
 import org.apache.spark.SparkContext
-
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -28,14 +27,14 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
   */
 @RunWith(classOf[JUnitRunner])
 class KnownSparkIssues extends FunSuite
-  with Matchers with BeforeAndAfter with SharedSparkTestContext {
+  with Matchers with BeforeAndAfter with SharedH2OTestContext {
 
   // we use local-cluster since the non-determinism isn't reproducible in local mode
   override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,2,2048]", "test-local-cluster", conf = defaultSparkConf)
 
   test("PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Negative test") {
     val dataFile = getClass.getResource("/PUBDEV-3808_one_nullable_column.parquet").getFile
-    val df = sqlc.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
+    val df = sqlContext.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
 
     val sampleA = df.sample(withReplacement = false, 0.1, seed = 0)
     val sampleB = df.sample(withReplacement = false, 0.1, seed = 0)
@@ -55,10 +54,10 @@ class KnownSparkIssues extends FunSuite
   // which might be the issue on corresponding spark 2.x branch
   ignore("PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Positive test") {
     val dataFile = getClass.getResource("/PUBDEV-3808_one_nullable_column.parquet").getFile
-    val df = sqlc.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
+    val df = sqlContext.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
 
     // disable BroadcastHashJoins
-    sqlc.sql("SET spark.sql.autoBroadcastJoinThreshold=-1")
+    sqlContext.sql("SET spark.sql.autoBroadcastJoinThreshold=-1")
     val sampleA = df.sample(withReplacement = false, 0.1, seed = 0)
     val sampleB = df.sample(withReplacement = false, 0.1, seed = 0)
 

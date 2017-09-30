@@ -38,7 +38,7 @@ import water.api.TestUtils
   * Testing schema for rdd  to h2o frame transformations.
   */
 @RunWith(classOf[JUnitRunner])
-class SupportedRDDConverterTest extends TestBase with SharedSparkTestContext {
+class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
   test("int iterator does not get stuck") {

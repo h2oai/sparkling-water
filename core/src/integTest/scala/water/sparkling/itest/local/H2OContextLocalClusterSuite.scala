@@ -17,18 +17,17 @@
 package water.sparkling.itest.local
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{BackendIndependentTestHelper, H2OContext}
-import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.h2o.utils.{H2OContextTestHelper, SparkTestContext}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 /**
- * Testing creation of H2O cloud in distributed environment.
- */
+  * Testing creation of H2O cloud in distributed environment.
+  */
 @RunWith(classOf[JUnitRunner])
 class H2OContextLocalClusterSuite extends FunSuite
-  with Matchers with BeforeAndAfter with SparkTestContext with BackendIndependentTestHelper {
+  with Matchers with BeforeAndAfter with SparkTestContext {
 
   val swassembly = sys.props.getOrElse("sparkling.assembly.jar",
     fail("The variable 'sparkling.assembly.jar' is not set! It should point to assembly jar file."))
@@ -38,22 +37,11 @@ class H2OContextLocalClusterSuite extends FunSuite
     val conf = defaultSparkConf.setJars(swassembly :: Nil)
     sc = new SparkContext("local-cluster[3,2,2048]", "test-local-cluster", conf)
 
-    // start h2o cloud in case of external cluster mode
-    hc = createH2OContext(sc, 3)
+    val hc = H2OContextTestHelper.createH2OContext(sc, 3)
     assert(water.H2O.CLOUD.members().length == 3, "H2O cloud should have 3 members")
-    // stop h2o cloud in case of external cluster mode
-    stopCloudIfExternal(sc)
 
+    H2OContextTestHelper.stopH2OContext(sc, hc)
     // Does not reset
-    resetContext()
-  }
-
-  // IGNORED since we are not able to initialize client in the process several times
-  ignore("2nd run to verify that test does not overlap") {
-    val conf = defaultSparkConf.setJars(swassembly :: Nil)
-    sc = new SparkContext("local-cluster[3,2,721]", "test-local-cluster", conf)
-    hc = H2OContext.getOrCreate(sc)
-
-    resetContext()
+    resetSparkContext()
   }
 }

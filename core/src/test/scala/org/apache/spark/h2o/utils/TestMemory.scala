@@ -14,30 +14,20 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package org.apache.spark.h2o.utils
 
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.sql.SQLContext
-import org.scalatest.Suite
+import java.util.concurrent.ConcurrentHashMap
 
-/** This fixture create a Spark context once and share it over whole run of test suite.
-  *
-  * FIXME: this cannot be used yet, since H2OContext cannot be recreated in JVM. */
-trait PerTestSparkTestContext extends SparkTestContext { self: Suite =>
+import org.apache.spark.h2o.Holder
 
-  def createSparkContext:SparkContext
-  def createH2OContext(sc: SparkContext, conf: H2OConf):H2OContext = H2OContext.getOrCreate(sc)
+class TestMemory[T] extends ConcurrentHashMap[T, Unit] {
+  def put(xh: Holder[T]): Unit = xh.result foreach put
 
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
-    sc = createSparkContext
-    sqlc = SQLContext.getOrCreate(sc)
-    hc = createH2OContext(sc, new H2OConf(sc))
-  }
-
-  override protected def afterEach(): Unit = {
-    resetContext()
-    super.afterEach()
+  def put(x: T): Unit = {
+    if (this contains x) {
+      throw new IllegalStateException(s"Duplicate element $x in test memory")
+    }
+    put(x, ())
   }
 }

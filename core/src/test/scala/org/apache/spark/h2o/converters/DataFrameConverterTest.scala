@@ -25,7 +25,8 @@ import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OAsserts._
-import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedSparkTestContext}
+import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedH2OTestContext}
+import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
@@ -41,7 +42,7 @@ import water.parser.BufferedString
   * Testing Conversions between H2OFrame and Spark DataFrame
   */
 @RunWith(classOf[JUnitRunner])
-class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
+class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
@@ -272,7 +273,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFrame[ByteField] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val df = sc.parallelize(-127 to 127).map(v => ByteField(v.asInstanceOf[Byte])).toDF()
@@ -283,7 +283,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFrame[ShortField] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val df = sc.parallelize(-2048 to 4096).map(v => ShortField(v.asInstanceOf[Short])).toDF()
@@ -294,7 +293,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFrame[IntField] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Int.MinValue, Int.MaxValue, 0, -100, 200, -5000, 568901)
@@ -306,7 +304,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFrame[LongField] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Long.MinValue, Long.MaxValue, 0L, -100L, 200L, -5000L, 5689323201L, -432432433335L)
@@ -318,7 +315,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFrame[FloatField] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Float.MinValue, Float.MaxValue, -33.33.toFloat, 200.001.toFloat, -5000.34.toFloat)
@@ -330,7 +326,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFrame[DoubleField] to H2OFrame[Numeric]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = Seq(Double.MinValue, Double.MaxValue, -33.33, 200.001, -5000.34)
@@ -342,7 +337,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFrame[StringField] to H2OFrame[String]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val domSize = 3000
@@ -360,7 +354,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFrame[TimeStampField] to H2OFrame[Time]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 20
@@ -373,7 +366,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFrame[Struct(TimeStampField)] to H2OFrame[Time]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 20
@@ -396,7 +388,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("H2OFrame[Simple StructType] to DataFrame[flattened StructType]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 20
@@ -408,7 +399,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFrame[flattened StructType] to H2OFrame[Composed StructType]") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 20
@@ -420,7 +410,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFrame[IntField] to H2OFrame with empty partitions (error detected in calling ShuffleSplitFrame)") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val values = 1 to 100
@@ -434,7 +423,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("Expand composed schema of DataFrame") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 2
@@ -468,7 +456,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("Expand schema with array") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 5
@@ -502,7 +489,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("Expand schema with Mllib dense vectors") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
     val num = 3
@@ -528,7 +514,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("Expand schema with MLLIB sparse vectors") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 3
     val values = (0 until num).map(x =>
@@ -556,7 +541,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("Expand schema with MLlib dense vectors") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
 
    val num = 2
@@ -586,7 +570,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
 
 
   test("Expand schema with MLlib sparse vectors") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 3
     val values = (0 until num).map(x =>
@@ -615,7 +598,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
   
   test("Expand complex schema with sparse and dense vectors") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val num = 3
     val values = (0 until num).map(x =>
@@ -675,7 +657,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("SW-303 Decimal column conversion failure") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val df = sc.parallelize(Array("ok", "bad", "ok", "bad", "bad")).toDF("status")
     df.registerTempTable("responses")
@@ -685,7 +666,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("SW-304 DateType column conversion failure") {
-    val sqlContext = sqlc
     import java.sql.Date
 
     import sqlContext.implicits._
@@ -697,7 +677,6 @@ class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
   }
 
   test("SW-310 Decimal(2,1) not compatible in h2o frame") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val dfInput = sc.parallelize(1 to 6).map(v => (v, v*v)).toDF("single", "double")
     dfInput.registerTempTable("dfInput")

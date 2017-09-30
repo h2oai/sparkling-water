@@ -18,8 +18,8 @@
 package org.apache.spark.h2o.utils
 
 import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
+import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendConf
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
@@ -28,14 +28,13 @@ import water.init.NetworkInit
 import scala.util.Random
 
 /**
-  * Helper trait to simplify initialization and termination of Spark/H2O contexts.
+  * Helper trait to simplify initialization and termination of Spark contexts.
   *
   */
 trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self: Suite =>
 
   @transient var sc: SparkContext = _
-  @transient var hc: H2OContext = _
-  @transient implicit var sqlc: SQLContext = _
+  @transient lazy implicit val sqlContext: SQLContext = SQLContext.getOrCreate(sc)
 
   override def beforeAll() {
     System.setProperty("spark.testing", "true")
@@ -43,10 +42,9 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll { self:
     super.beforeAll()
   }
 
-  def resetContext() = {
+  def resetSparkContext() {
     SparkTestContext.stop(sc)
     sc = null
-    hc = null
   }
 
   def defaultSparkConf = H2OConf.checkSparkConf{
@@ -74,14 +72,4 @@ object SparkTestContext {
     // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
     System.clearProperty("spark.driver.port")
   }
-
-  /** Runs `f` by passing in `sc` and ensures that `sc` is stopped. */
-  def withSpark[T](sc: SparkContext)(f: SparkContext => T) = {
-    try {
-      f(sc)
-    } finally {
-      stop(sc)
-    }
-  }
-
 }

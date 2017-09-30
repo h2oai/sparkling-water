@@ -1,12 +1,12 @@
 package water.sparkling.scripts
 
 import java.io.File
-import java.net.InetAddress
 
 import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.h2o.backends.SharedBackendConf._
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
-import org.apache.spark.h2o.{BackendIndependentTestHelper, FunSuiteWithLogging, H2OConf}
+import org.apache.spark.h2o.utils.H2OContextTestHelper._
+import org.apache.spark.h2o.{FunSuiteWithLogging, H2OConf}
 import org.apache.spark.repl.h2o.{CodeResults, H2OInterpreter}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, Suite}
@@ -15,7 +15,8 @@ import water.init.NetworkInit
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.ListBuffer
 
-trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll with BackendIndependentTestHelper {
+
+trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll{
 
   self: Suite =>
   var sparkConf: SparkConf = _
@@ -35,15 +36,19 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll with 
 
     val cloudSize = 2
     sparkConf.set(ExternalBackendConf.PROP_EXTERNAL_H2O_NODES._1, cloudSize.toString)
-    if(testsInExternalMode(sparkConf)){
-      startCloud(cloudSize, cloudName, sparkConf.get("spark.ext.h2o.client.ip"), assemblyJar)
+
+    if(isExternalClusterUsed(sparkConf) && isManualClusterStartModeUsed(sparkConf)){
+      startExternalH2OCloud(cloudSize, cloudName, sparkConf.get("spark.ext.h2o.client.ip"), assemblyJar)
     }
     sc = new SparkContext(H2OConf.checkSparkConf(sparkConf))
     super.beforeAll()
   }
 
   override protected def afterAll(): Unit = {
-    stopCloudIfExternal(sc)
+    if(isExternalClusterUsed(sparkConf) && isManualClusterStartModeUsed(sparkConf)) {
+      stopExternalH2OCloud()
+    }
+
     if (sc != null){
       sc.stop()
     }

@@ -20,7 +20,7 @@ import java.io.File
 
 import com.google.gson.JsonParser
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -34,13 +34,12 @@ import water.fvec.{Frame, H2OFrame}
  * Test suite for DataFrames handler
  */
 @RunWith(classOf[JUnitRunner])
-class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
+class DataFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
   test("DataFrameHandler.list() method") {
     val rdd = sc.parallelize(1 to 10)
     val rid = "df_" + rdd.id
-    val sqlContext = sqlc
     import sqlContext.implicits._
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
@@ -95,7 +94,6 @@ class DataFramesHandlerSuite extends FunSuite with SharedSparkTestContext {
   }
 
   test("DataFramesHandler.toH2OFrame() method"){
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val rdd = sc.parallelize(1 to 10)
     val name = "numbers"

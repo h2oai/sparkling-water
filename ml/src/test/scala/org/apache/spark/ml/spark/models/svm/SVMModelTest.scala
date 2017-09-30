@@ -17,7 +17,7 @@
 package org.apache.spark.ml.spark.models.svm
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.mllib.classification
 import org.apache.spark.mllib.linalg.Vectors
 import org.junit.runner.RunWith
@@ -28,13 +28,12 @@ import water.support.H2OFrameSupport
 import scala.util.Random
 
 @RunWith(classOf[JUnitRunner])
-class SVMModelTest extends FunSuite with SharedSparkTestContext {
+class SVMModelTest extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
 
   ignore("Should score the same regression value.") {
-    val sqlContext = sqlc
     import sqlContext.implicits._
     val h2oContext = hc
     import h2oContext.implicits._

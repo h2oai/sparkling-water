@@ -19,7 +19,7 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
@@ -34,7 +34,7 @@ import scala.reflect.runtime.universe._
  * Testing schema for h2o schema spark dataset transformation.
  */
 @RunWith(classOf[JUnitRunner])
-class DatasetConverterTest extends FunSuite with SharedSparkTestContext with BeforeAndAfterAll {
+class DatasetConverterTest extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
 
   import testdata._
 
@@ -70,7 +70,6 @@ class DatasetConverterTest extends FunSuite with SharedSparkTestContext with Bef
     SemiPartialPerson(pp.name orNull, pp.age, pp.email)
   }
 
-  lazy val sqlContext = sqlc
   import sqlContext.implicits._
 
   lazy val testSourceDatasetWithPartialData = sqlContext.createDataset(samplePartialPeople)

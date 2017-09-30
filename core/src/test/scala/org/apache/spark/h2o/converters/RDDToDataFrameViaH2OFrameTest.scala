@@ -19,14 +19,14 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.IntHolder
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import water.fvec.H2OFrame
 
 /**
   * Test conversion from RDD to DataFrame via H2OFrame
   */
-class RDDToDataFrameViaH2OFrameTest extends FunSuite with SharedSparkTestContext with BeforeAndAfterAll  {
+class RDDToDataFrameViaH2OFrameTest extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll  {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
