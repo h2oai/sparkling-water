@@ -19,7 +19,6 @@ package org.apache.spark.h2o.utils
 
 import org.apache.spark.SparkConf
 import org.apache.spark.h2o.backends.SharedBackendConf._
-import org.scalatest.Suite
 
 import scala.sys.process.Process
 import scala.util.Random
@@ -27,23 +26,21 @@ import scala.util.Random
 /**
   * Used to start H2O nodes from scala code
   */
-trait ExternalBackendTestHelper {
-  self: Suite =>
-
+trait ExternalBackendManualTestStarter {
   @transient var nodeProcesses: Seq[Process] = _
 
   lazy val swJar = sys.props.getOrElse("sparkling.assembly.jar", sys.env.getOrElse("sparkling.assembly.jar",
-    fail("sparkling.assembly.jar environment variable is not set! It should point to the location of sparkling-water" +
+    throw new IllegalArgumentException("sparkling.assembly.jar environment variable is not set! It should point to the location of sparkling-water" +
       " assembly JAR")))
 
   lazy val h2oExtendedJar = sys.props.getOrElse("H2O_EXTENDED_JAR", sys.env.getOrElse("H2O_EXTENDED_JAR",
-    fail("H2O_EXTENDED_JAR environment variable is not set! It should point to the location of H2O assembly jar file")))
+    throw new IllegalArgumentException("H2O_EXTENDED_JAR environment variable is not set! It should point to the location of H2O assembly jar file")))
 
   lazy val clusterStartTimeout = sys.props.getOrElse("cluster.start.timeout", sys.env.getOrElse("cluster.start.timeout", "6000")).toInt
 
   def uniqueCloudName(customPart: String) = s"sparkling-water-$customPart-${Random.nextInt()}"
 
-  private def launchSingle(cloudName: String, ip: String, additionalCp: String*): Process = {
+  private def launchSingleExternalH2ONode(cloudName: String, ip: String, additionalCp: String*): Process = {
     // Since some tests requires additional classes to be present at H2O classpath we add them here
     // instead of extending h2o jar by another classes
     // The best solution would be to implement distributed classloading for H2O
@@ -52,27 +49,21 @@ trait ExternalBackendTestHelper {
     Process(cmdToLaunch).run()
   }
 
-  private def runH2OClusterOnYARN() = sys.props.get("spark.ext.h2o.external.start.mode").exists(_ == "auto")
-
-  def startCloud(cloudSize: Int, cloudName: String, ip: String, additionalCp: String*): Unit = {
+  def startExternalH2OCloud(cloudSize: Int, cloudName: String, ip: String, additionalCp: String*): Unit = {
     // do not start h2o nodes if this property is set, they will be started on yarn automatically
-    if (!runH2OClusterOnYARN()) {
-      nodeProcesses = (1 to cloudSize).map { _ => launchSingle(cloudName, ip, additionalCp: _*) }
-      // Wait to ensure that h2o nodes are created earlier than h2o client
-      Thread.sleep(clusterStartTimeout)
-    }
+    nodeProcesses = (1 to cloudSize).map { _ => launchSingleExternalH2ONode(cloudName, ip, additionalCp: _*) }
+    // Wait to ensure that h2o nodes are created earlier than h2o client
+    Thread.sleep(clusterStartTimeout)
   }
 
-  def startCloud(cloudSize: Int, sparkConf: SparkConf, additionalCp: String*): Unit = {
-    startCloud(cloudSize, sparkConf.get(PROP_CLOUD_NAME._1), sparkConf.get(PROP_CLIENT_IP._1), additionalCp: _*)
+  def startExternalH2OCloud(cloudSize: Int, sparkConf: SparkConf, additionalCp: String*): Unit = {
+    startExternalH2OCloud(cloudSize, sparkConf.get(PROP_CLOUD_NAME._1), sparkConf.get(PROP_CLIENT_IP._1), additionalCp: _*)
   }
 
-  def stopCloud(): Unit = {
-    if (!runH2OClusterOnYARN()) {
-      if (nodeProcesses != null) {
-        nodeProcesses.foreach(_.destroy())
-        nodeProcesses = null
-      }
+  def stopExternalH2OCloud(): Unit = {
+    if (nodeProcesses != null) {
+      nodeProcesses.foreach(_.destroy())
+      nodeProcesses = null
     }
   }
 }

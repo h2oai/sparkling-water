@@ -17,7 +17,7 @@
 package water.api
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedSparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.scalatest.FunSuite
 import water.fvec.{AppendableVec, Frame, NewChunk, Vec}
 import water.munging.JoinMethod
@@ -25,7 +25,7 @@ import water.munging.JoinMethod
 import scala.collection.immutable.IndexedSeq
 import scala.reflect.ClassTag
 
-class SupportAPISuite extends FunSuite with SharedSparkTestContext {
+class SupportAPISuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 

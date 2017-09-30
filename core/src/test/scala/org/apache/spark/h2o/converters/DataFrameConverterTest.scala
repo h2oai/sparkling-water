@@ -25,7 +25,8 @@ import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OAsserts._
-import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedSparkTestContext}
+import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedH2OTestContext}
+import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
@@ -41,7 +42,7 @@ import water.parser.BufferedString
   * Testing Conversions between H2OFrame and Spark DataFrame
   */
 @RunWith(classOf[JUnitRunner])
-class DataFrameConverterTest extends FunSuite with SharedSparkTestContext {
+class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
