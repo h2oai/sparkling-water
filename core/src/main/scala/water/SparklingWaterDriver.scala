@@ -38,7 +38,7 @@ object SparklingWaterDriver {
 
     val spark = SparkSessionUtils.createSparkSession(conf)
 
-    val swConf = new H2OConf(spark).useAutoClusterStart().setNumOfExternalH2ONodes(2)
+    val swConf = new H2OConf(spark).useAutoClusterStart().setNumOfExternalH2ONodes(6)
     // Start H2O cluster only
     val hc = H2OContext.getOrCreate(spark, swConf)
 
