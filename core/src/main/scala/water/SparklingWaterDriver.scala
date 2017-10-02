@@ -44,9 +44,7 @@ object SparklingWaterDriver {
 
     println(hc)
     val f = new File("/home/0xdiag/smalldata/prostate/prostate.csv")
-    // Infinite wait
-    this.synchronized(while (true) {
-      wait()
-    })
+
+    hc.stop()
   }
 }
