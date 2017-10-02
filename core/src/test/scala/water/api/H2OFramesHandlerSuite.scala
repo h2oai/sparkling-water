@@ -51,7 +51,6 @@ class H2OFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
     assert(df.count() == h2oFrame.numRows(), "Number of rows should match")
     // Note: We need to be careful here and clean SparkSession properly
     assert(sqlContext.tableNames().length == 1, "Number of stored DataFrames should be 1")
-
   }
 
 }

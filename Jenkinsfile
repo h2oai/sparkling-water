@@ -164,7 +164,7 @@ pipeline{
             steps {
                 sh  """
                     # Run unit tests
-                    ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${params.backendMode} -PexternalBackendStartMode=auto
+                    ${env.WORKSPACE}/gradlew :sparkling-water-core:test -x check -x integTest -PbackendMode=${params.backendMode} -PexternalBackendStartMode=auto
                     """
             }
 
