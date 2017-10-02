@@ -27,7 +27,7 @@ import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
-import water.{H2O, H2OStarter}
+import water.{H2O, H2ONode, H2OStarter}
 
 import scala.io.Source
 import scala.util.control.NoStackTrace
@@ -137,10 +137,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
     logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
 
-    Thread.sleep(10000)
-
     H2OStarter.start(h2oClientArgs, false)
 
+    println("CLOUD HEALTHY:|" +  H2O.CLOUD.healthy())
+    H2O.CLOUD._memary.foreach { n =>
+      n._heartbeat.
+    }
     if (hc.getConf.numOfExternalH2ONodes.isDefined) {
       H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
     }
