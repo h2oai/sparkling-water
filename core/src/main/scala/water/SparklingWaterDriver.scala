@@ -45,7 +45,7 @@ object SparklingWaterDriver {
 
     println(hc)
     println("Before parse")
-    val fr = new H2OFrame(new File("./examples/smalldata/prostate/prostate.csv"))
+    val fr = new H2OFrame(new File("./examples/smalldata/prostate.csv"))
     println("After parse")
     hc.stop()
   }
