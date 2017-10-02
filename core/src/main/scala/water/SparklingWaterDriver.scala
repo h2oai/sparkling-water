@@ -21,6 +21,7 @@ import java.io.File
 
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.{SparkConf, SparkSessionUtils}
+import water.fvec.H2OFrame
 /**
   * A simple wrapper to allow launching H2O itself on the
   * top of Spark.
@@ -38,13 +39,13 @@ object SparklingWaterDriver {
 
     val spark = SparkSessionUtils.createSparkSession(conf)
 
-    val swConf = new H2OConf(spark).useAutoClusterStart().setNumOfExternalH2ONodes(6)
+    val swConf = new H2OConf(spark).useAutoClusterStart().setNumOfExternalH2ONodes(1)
     // Start H2O cluster only
     val hc = H2OContext.getOrCreate(spark, swConf)
 
     println(hc)
     println("Before parse")
-    val f = new File("/home/0xdiag/smalldata/prostate/prostate.csv")
+    val fr = new H2OFrame(new File("/home/0xdiag/smalldata/prostate/prostate.csv"))
     println("After parse")
     hc.stop()
   }
