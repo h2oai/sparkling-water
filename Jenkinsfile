@@ -22,10 +22,10 @@ pipeline{
                 name: 'sparkVersion')
 
         booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit and pyunit tests')
-        booleanParam(name: 'runLocalIntegTests', defaultValue: true, description: 'Run local integration tests')
-        booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests')
-        booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run integration tests')
-        booleanParam(name: 'runPySparklingIntegTests', defaultValue: true, description: 'Run pySparkling integration tests')
+        booleanParam(name: 'runLocalIntegTests', defaultValue: false, description: 'Run local integration tests')
+        booleanParam(name: 'runScriptTests', defaultValue: false, description: 'Run script tests')
+        booleanParam(name: 'runIntegTests', defaultValue: false, description: 'Run integration tests')
+        booleanParam(name: 'runPySparklingIntegTests', defaultValue: false, description: 'Run pySparkling integration tests')
 
 
         choice(
@@ -34,7 +34,7 @@ pipeline{
                 name: 'sparklingTestEnv')
 
         choice(
-                choices: 'internal\nexternal',
+                choices: 'external\ninternal',
                 description: 'Sparkling Water backend mode.',
                 name: 'backendMode')
 
