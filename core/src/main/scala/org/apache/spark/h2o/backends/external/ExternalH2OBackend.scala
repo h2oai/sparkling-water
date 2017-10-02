@@ -137,10 +137,19 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
     logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
 
-    H2OStarter.start(h2oClientArgs, false)
-    
-    if (hc.getConf.numOfExternalH2ONodes.isDefined) {
-      H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
+    if(hc.getConf.isAutoClusterStartUsed){
+      val ipPort = hc._conf.h2oCluster.get
+      val baseUrl = "http://" + ipPort
+      val url = baseUrl + "/3/Cloud"
+      val result = scala.io.Source.fromURL(url).mkString
+      println(result)
+
+    }else {
+      H2OStarter.start(h2oClientArgs, false)
+
+      if (hc.getConf.numOfExternalH2ONodes.isDefined) {
+        H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
+      }
     }
     // Register web API for client
     RestAPIManager(hc).registerAll()
