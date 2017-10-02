@@ -24,7 +24,6 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.api.H2OFrames.{DataFrameIDV3, H2OFramesHandler}
-import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.H2OFrame
 
 /**
@@ -55,12 +54,4 @@ class H2OFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
 
   }
 
-  test("H2OFramesHandler.toDataFrame() method, trying to convert H2OFrame which does not exist") {
-    val h2oFramesHandler = new H2OFramesHandler(sc, hc)
-    val req = new DataFrameIDV3
-    req.h2oframe_id = "does_not_exist"
-    intercept[H2ONotFoundArgumentException] {
-      h2oFramesHandler.toDataFrame(3, req)
-    }
-  }
 }
