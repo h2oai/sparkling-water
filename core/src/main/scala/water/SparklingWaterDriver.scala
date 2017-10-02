@@ -43,8 +43,9 @@ object SparklingWaterDriver {
     val hc = H2OContext.getOrCreate(spark, swConf)
 
     println(hc)
+    println("Before parse")
     val f = new File("/home/0xdiag/smalldata/prostate/prostate.csv")
-
+    println("After parse")
     hc.stop()
   }
 }
