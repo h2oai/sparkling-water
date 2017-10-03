@@ -54,16 +54,16 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll {
       .set("spark.ext.h2o.client.log.level", "DEBUG")
       .set("spark.ext.h2o.client.verbose", "true")
       .set("spark.ext.h2o.node.log.level", "DEBUG")
-      .set("spark.ext.h2o.disable.ga", "true")
+     // .set("spark.ext.h2o.disable.ga", "true")
       .set(SharedBackendConf.PROP_CLOUD_NAME._1,
         "sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + Math.abs(Random.nextInt()))
-      .set("spark.driver.memory", "2G")
-      .set("spark.executor.memory", "2G")
+      //.set("spark.driver.memory", "2G")
+      //.set("spark.executor.memory", "2G")
       .set("spark.app.id", self.getClass.getSimpleName)
-      .set("spark.ext.h2o.repl.enabled", "false") // disable repl in tests
-      .set("spark.scheduler.minRegisteredResourcesRatio", "1")
+      //.set("spark.ext.h2o.repl.enabled", "false") // disable repl in tests
+     // .set("spark.scheduler.minRegisteredResourcesRatio", "1")
       .set("spark.ext.h2o.backend.cluster.mode", sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
-      .set("spark.ext.h2o.client.ip", sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress))
+      //.set("spark.ext.h2o.client.ip", sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress))
       .set("spark.ext.h2o.external.start.mode", sys.props.getOrElse("spark.ext.h2o.external.start.mode", "manual"))
     conf
   })
