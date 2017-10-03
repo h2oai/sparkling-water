@@ -141,8 +141,17 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       val ipPort = hc._conf.h2oCluster.get
       val baseUrl = "http://" + ipPort
       val url = baseUrl + "/3/Cloud"
-      val result = scala.io.Source.fromURL(url).mkString
-      println(result)
+      val str = scala.io.Source.fromURL(url).mkString
+      val t = str.substring(str.indexOf("h2o")+6, str.length)
+      val ip = t.substring(t.indexOf("/")+1,t.indexOf("\""))
+      val ip2 = t.substring(t.indexOf("h2o")+6, t.length).substring(t.indexOf("/")+1,t.indexOf("\""))
+      val urls = Seq(ip, ip2).map(_ => "http://"+ _ + "/3/Cloud")
+
+      urls.foreach { u =>
+        println(u)
+        val content = scala.io.Source.fromURL(url).mkString
+        println(content)
+      }
 
     }else {
       H2OStarter.start(h2oClientArgs, false)
