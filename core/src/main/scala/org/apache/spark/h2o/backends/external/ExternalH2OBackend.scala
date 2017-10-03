@@ -27,7 +27,7 @@ import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
-import water.{H2O, H2ONode, H2OStarter}
+import water.{DKV, H2O, H2ONode, H2OStarter}
 
 import scala.io.Source
 import scala.util.control.NoStackTrace
@@ -136,29 +136,26 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       getH2OClientArgs(hc.getConf)
     }
     logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
+    val ipPort = hc._conf.h2oCluster.get
+    scala.io.Source.fromURL("http:" + ipPort + "/3/Jobs").mkString
+    val baseUrl = "http://" + ipPort
+    val url = baseUrl + "/3/Cloud"
+    val str = scala.io.Source.fromURL(url).mkString
+    val t = str.substring(str.indexOf("h2o") + 6, str.length)
+    val ip = t.substring(t.indexOf("/") + 1, t.indexOf("\""))
+    val ip2 = t.substring(t.indexOf("h2o") + 6, t.length).substring(t.indexOf("/") + 1, t.indexOf("\""))
+    val urls = Seq(ip, ip2).map(l => "http://" + l + "/3/Cloud")
 
-    if (hc.getConf.isAutoClusterStartUsed) {
-      val ipPort = hc._conf.h2oCluster.get
-      val baseUrl = "http://" + ipPort
-      val url = baseUrl + "/3/Cloud"
-      val str = scala.io.Source.fromURL(url).mkString
-      val t = str.substring(str.indexOf("h2o") + 6, str.length)
-      val ip = t.substring(t.indexOf("/") + 1, t.indexOf("\""))
-      val ip2 = t.substring(t.indexOf("h2o") + 6, t.length).substring(t.indexOf("/") + 1, t.indexOf("\""))
-      val urls = Seq(ip, ip2).map(l => "http://" + l + "/3/Cloud")
+    urls.foreach { u =>
+      println(u)
+      val content = scala.io.Source.fromURL(url).mkString
+      println(content)
+    }
 
-      urls.foreach { u =>
-        println(u)
-        val content = scala.io.Source.fromURL(url).mkString
-        println(content)
-      }
+    H2OStarter.start(h2oClientArgs, false)
 
-    } else {
-      H2OStarter.start(h2oClientArgs, false)
-
-      if (hc.getConf.numOfExternalH2ONodes.isDefined) {
-        H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
-      }
+    if (hc.getConf.numOfExternalH2ONodes.isDefined) {
+      H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
     }
     // Register web API for client
     RestAPIManager(hc).registerAll()
