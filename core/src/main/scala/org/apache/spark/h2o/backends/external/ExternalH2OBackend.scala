@@ -145,7 +145,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       val t = str.substring(str.indexOf("h2o")+6, str.length)
       val ip = t.substring(t.indexOf("/")+1,t.indexOf("\""))
       val ip2 = t.substring(t.indexOf("h2o")+6, t.length).substring(t.indexOf("/")+1,t.indexOf("\""))
-      val urls = Seq(ip, ip2).map(_ => "http://"+ _ + "/3/Cloud")
+      val urls = Seq(ip, ip2).map(l => "http://"+ l + "/3/Cloud")
 
       urls.foreach { u =>
         println(u)
