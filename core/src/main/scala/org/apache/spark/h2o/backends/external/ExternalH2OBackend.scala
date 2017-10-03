@@ -121,6 +121,34 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     ipPort
   }
 
+  private def lockCloud(): Unit ={
+    val ipPort = hc._conf.h2oCluster.get
+    scala.io.Source.fromURL("http:" + ipPort + "/3/Jobs").mkString
+  }
+  private def printNodeInfo(): Unit ={
+    val ipPort = hc._conf.h2oCluster.get
+    val baseUrl = "http://" + ipPort
+    val url = baseUrl + "/3/Cloud"
+    val str = scala.io.Source.fromURL(url).mkString
+    val t = str.substring(str.indexOf("h2o") + 6, str.length)
+    val ip = t.substring(t.indexOf("/") + 1, t.indexOf("\""))
+    val ip2 = t.substring(t.indexOf("h2o") + 6, t.length).substring(t.indexOf("/") + 1, t.indexOf("\""))
+    val urls = Seq(ip, ip2).map(l => "http://" + l + "/3/Cloud")
+
+    urls.foreach { u =>
+      println(u)
+      val content = scala.io.Source.fromURL(url).mkString
+      println(content)
+    }
+  }
+
+  private def printClientInfo(): Unit ={
+    val baseClientUrl = "http://" + H2O.SELF.getIpPortString
+    val urlClient = baseClientUrl + "/3/Cloud"
+    println("CLIENT")
+    println(scala.io.Source.fromURL(urlClient).mkString)
+
+  }
   override def init(): Array[NodeDesc] = {
     if (hc.getConf.isAutoClusterStartUsed) {
       // start h2o instances on yarn
@@ -136,23 +164,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       getH2OClientArgs(hc.getConf)
     }
     logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
-    val ipPort = hc._conf.h2oCluster.get
-    scala.io.Source.fromURL("http:" + ipPort + "/3/Jobs").mkString
-    val baseUrl = "http://" + ipPort
-    val url = baseUrl + "/3/Cloud"
-    val str = scala.io.Source.fromURL(url).mkString
-    val t = str.substring(str.indexOf("h2o") + 6, str.length)
-    val ip = t.substring(t.indexOf("/") + 1, t.indexOf("\""))
-    val ip2 = t.substring(t.indexOf("h2o") + 6, t.length).substring(t.indexOf("/") + 1, t.indexOf("\""))
-    val urls = Seq(ip, ip2).map(l => "http://" + l + "/3/Cloud")
 
-    urls.foreach { u =>
-      println(u)
-      val content = scala.io.Source.fromURL(url).mkString
-      println(content)
-    }
-
+    printNodeInfo()
+    lockCloud()
+    printNodeInfo()
     H2OStarter.start(h2oClientArgs, false)
+    printNodeInfo()
+    printClientInfo()
 
     if (hc.getConf.numOfExternalH2ONodes.isDefined) {
       H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
