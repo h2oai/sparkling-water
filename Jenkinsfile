@@ -74,12 +74,13 @@ pipeline{
             steps{
                 checkout scm
                 sh """
-                if [ ! -d "${env.SPARK_HOME}" ]; then
-                        wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
-                        mkdir -p "${env.SPARK_HOME}"
-                        tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
-                        rm -rf ${env.SPARK}.tgz
-                fi
+                 rm -rf spark   
+
+                 wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
+                 mkdir -p "${env.SPARK_HOME}"
+                 tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
+                 rm -rf ${env.SPARK}.tgz
+               
                 """
             }
         }
