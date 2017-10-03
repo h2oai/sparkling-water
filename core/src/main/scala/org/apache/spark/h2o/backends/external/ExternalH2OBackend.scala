@@ -121,11 +121,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     ipPort
   }
 
-  private def lockCloud(): Unit ={
+  private def lockCloud(): Unit = {
     val ipPort = hc._conf.h2oCluster.get
-    scala.io.Source.fromURL("http:" + ipPort + "/3/Jobs").mkString
+    scala.io.Source.fromURL("http://" + ipPort + "/3/Jobs").mkString
   }
-  private def printNodeInfo(): Unit ={
+
+  private def printNodeInfo(): Unit = {
     val ipPort = hc._conf.h2oCluster.get
     val baseUrl = "http://" + ipPort
     val url = baseUrl + "/3/Cloud"
@@ -142,13 +143,14 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
   }
 
-  private def printClientInfo(): Unit ={
+  private def printClientInfo(): Unit = {
     val baseClientUrl = "http://" + H2O.SELF.getIpPortString
     val urlClient = baseClientUrl + "/3/Cloud"
     println("CLIENT")
     println(scala.io.Source.fromURL(urlClient).mkString)
 
   }
+
   override def init(): Array[NodeDesc] = {
     if (hc.getConf.isAutoClusterStartUsed) {
       // start h2o instances on yarn
