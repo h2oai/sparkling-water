@@ -145,7 +145,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
   private def printClientInfo(): Unit = {
     val baseClientUrl = "http://" +
-      sys.env.getOrElse("SPARK_PUBLIC_DNS", hc.sparkContext.env.rpcEnv.address.host) + H2O.API_PORT
+      sys.env.getOrElse("SPARK_PUBLIC_DNS", hc.sparkContext.env.rpcEnv.address.host) + ":" + H2O.API_PORT
     val urlClient = baseClientUrl + "/3/Cloud"
     println("CLIENT " + urlClient)
     println(scala.io.Source.fromURL(urlClient).mkString)
