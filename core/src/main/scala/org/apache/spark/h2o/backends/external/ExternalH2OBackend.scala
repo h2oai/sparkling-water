@@ -97,13 +97,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (!notifFile.exists()) {
       throw new RuntimeException(
         s"""
-          |Cluster notification file ${notifFile.getAbsolutePath} could not be created. The possible causes are:
-          |
+           |Cluster notification file ${notifFile.getAbsolutePath} could not be created. The possible causes are:
+           |
           |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
-          |   to increase the timeout for starting the external cluster as:
-          |   Python: H2OConf(sc).set_cluster_start_timeout(timeout)....
-          |   Scala:  new H2OConf(sc).setClusterStartTimeout(timeout)....
-          |
+           |   to increase the timeout for starting the external cluster as:
+           |   Python: H2OConf(sc).set_cluster_start_timeout(timeout)....
+           |   Scala:  new H2OConf(sc).setClusterStartTimeout(timeout)....
+           |
           |2) The file could not be created because of missing write rights.""".stripMargin
       )
     }
@@ -137,15 +137,15 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
     logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
 
-    if(hc.getConf.isAutoClusterStartUsed){
+    if (hc.getConf.isAutoClusterStartUsed) {
       val ipPort = hc._conf.h2oCluster.get
       val baseUrl = "http://" + ipPort
       val url = baseUrl + "/3/Cloud"
       val str = scala.io.Source.fromURL(url).mkString
-      val t = str.substring(str.indexOf("h2o")+6, str.length)
-      val ip = t.substring(t.indexOf("/")+1,t.indexOf("\""))
-      val ip2 = t.substring(t.indexOf("h2o")+6, t.length).substring(t.indexOf("/")+1,t.indexOf("\""))
-      val urls = Seq(ip, ip2).map(l => "http://"+ l + "/3/Cloud")
+      val t = str.substring(str.indexOf("h2o") + 6, str.length)
+      val ip = t.substring(t.indexOf("/") + 1, t.indexOf("\""))
+      val ip2 = t.substring(t.indexOf("h2o") + 6, t.length).substring(t.indexOf("/") + 1, t.indexOf("\""))
+      val urls = Seq(ip, ip2).map(l => "http://" + l + "/3/Cloud")
 
       urls.foreach { u =>
         println(u)
@@ -153,7 +153,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         println(content)
       }
 
-    }else {
+    } else {
       H2OStarter.start(h2oClientArgs, false)
 
       if (hc.getConf.numOfExternalH2ONodes.isDefined) {
