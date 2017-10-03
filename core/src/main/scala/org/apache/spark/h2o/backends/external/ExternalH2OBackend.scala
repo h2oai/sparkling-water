@@ -183,7 +183,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     println("AFTER STARTING CLIENT")
     println("")
     printNodeInfo()
-    //printClientInfo()
+    printClientInfo()
 
     if (hc.getConf.numOfExternalH2ONodes.isDefined) {
       H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
