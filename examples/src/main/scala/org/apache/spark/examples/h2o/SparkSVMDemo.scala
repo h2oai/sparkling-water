@@ -22,6 +22,7 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.spark.models.svm.{SVM, SVMParameters}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkContext, SparkFiles}
+import water.api.TestUtils
 import water.fvec.H2OFrame
 import water.support.SparkContextSupport
 
@@ -35,7 +36,7 @@ object SparkSVMDemo extends SparkContextSupport {
     implicit val sqLContext = SparkSession.builder().getOrCreate().sqlContext
 
     // Setup environment
-    addFiles(sc, absPath("examples/smalldata/bcwd.csv"))
+    addFiles(sc, TestUtils.locate("smalldata/bcwd.csv").getAbsolutePath)
 
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!

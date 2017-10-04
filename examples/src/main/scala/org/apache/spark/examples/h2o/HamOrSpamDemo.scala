@@ -25,6 +25,7 @@ import org.apache.spark.mllib.feature.{HashingTF, IDF, IDFModel}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext, mllib}
+import water.api.TestUtils
 import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
 
 /**
@@ -45,7 +46,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
     // Register input file as Spark file
-    addFiles(sc, absPath("examples/smalldata/" + DATAFILE))
+    addFiles(sc, TestUtils.locate("smalldata/" + DATAFILE).getAbsolutePath)
     // Initialize H2O context
     implicit val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext.implicits._

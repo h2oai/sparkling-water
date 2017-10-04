@@ -35,6 +35,7 @@ dependencies {
 
   // Add streaming
   compile "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
+  compile project(':sparkling-water-core').sourceSets.test.output
 
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"

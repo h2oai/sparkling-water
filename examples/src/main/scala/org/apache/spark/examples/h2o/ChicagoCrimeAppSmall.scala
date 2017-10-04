@@ -20,6 +20,7 @@ package org.apache.spark.examples.h2o
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkContext, SparkFiles}
+import water.api.TestUtils
 import water.support.SparkContextSupport
 
 /**
@@ -32,9 +33,9 @@ object ChicagoCrimeAppSmall extends SparkContextSupport {
     val sc = new SparkContext(configure("ChicagoCrimeTest"))
     // Add local files into the context
     addFiles(sc,
-      absPath("examples/smalldata/chicagoAllWeather.csv"),
-      absPath("examples/smalldata/chicagoCensus.csv"),
-      absPath("examples/smalldata/chicagoCrimes10k.csv")
+      TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv").getAbsolutePath,
+      TestUtils.locate("smalldata/chicago/chicagoCensus.csv").getAbsolutePath,
+      TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv").getAbsolutePath
     )
     // SQL support
     val sqlContext = SparkSession.builder().getOrCreate().sqlContext

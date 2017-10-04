@@ -18,7 +18,6 @@
 package org.apache.spark.examples.h2o
 
 import java.io.File
-import java.net.URLClassLoader
 
 import hex.FrameSplitter
 import hex.deeplearning.DeepLearning
@@ -29,6 +28,7 @@ import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.{SparkConf, SparkFiles}
 import water.Key
+import water.api.TestUtils
 import water.fvec.Frame
 import water.support.{H2OFrameSupport, SparkContextSupport, SparkSessionSupport}
 
@@ -77,8 +77,8 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSup
     import h2oContext.implicits._
     // Setup environment
     addFiles(sc,
-      absPath("examples/smalldata/Chicago_Ohare_International_Airport.csv"),
-      absPath("examples/smalldata/year2005.csv.gz"))
+      TestUtils.locate("smalldata/chicago/Chicago_Ohare_International_Airport.csv").getAbsolutePath,
+      TestUtils.locate("smalldata/airlines/year2005.csv.gz").getAbsolutePath)
 
     //val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
     val wrawdata = sc.textFile(enforceLocalSparkFile("Chicago_Ohare_International_Airport.csv"), 3).cache()

@@ -25,6 +25,7 @@ import org.apache.spark.examples.h2o.CraigslistJobTitlesApp.show
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming._
+import water.api.TestUtils
 import water.support.{ModelSerializationSupport, SparkContextSupport}
 
 /**
@@ -52,7 +53,7 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport with ModelSer
     // Build an initial model
     val staticApp = new CraigslistJobTitlesApp()(sc, sqlContext, h2oContext)
     try {
-      val (svModel, w2vModel) = staticApp.buildModels("examples/smalldata/craigslistJobTitles.csv", "initialModel")
+      val (svModel, w2vModel) = staticApp.buildModels(TestUtils.locate("smalldata/craigslistJobTitles.csv").getAbsolutePath, "initialModel")
       val modelId = svModel._key.toString
       val classNames = svModel._output.asInstanceOf[Output].classNames()
 

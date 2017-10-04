@@ -23,6 +23,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.sql.SparkSession
 import water._
+import water.api.TestUtils
 import water.support.SparkContextSupport
 
 /* Demonstrates:
@@ -37,7 +38,7 @@ object ProstateDemo extends SparkContextSupport {
     val conf = configure("Sparkling Water: Prostate demo")
     val sc = new SparkContext(conf)
     // Add a file to be available for cluster mode
-    addFiles(sc, absPath("examples/smalldata/prostate.csv"))
+    addFiles(sc, TestUtils.locate("smalldata/prostate/prostate.csv").getAbsolutePath)
 
     // Run H2O cluster inside Spark cluster
     val h2oContext = H2OContext.getOrCreate(sc)
