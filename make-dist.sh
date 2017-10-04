@@ -29,15 +29,18 @@ examples/scripts/chicagoCrimeSmallShell.script.scala
 examples/scripts/hamOrSpam.script.scala
 examples/scripts/StrataAirlines.script.scala
 examples/scripts/craigslistJobTitles.script.scala
-examples/smalldata/allyears2k_headers.csv.gz
-examples/smalldata/Chicago_Ohare_International_Airport.csv
-examples/smalldata/prostate.csv
-examples/smalldata/year2005.csv.gz
+examples/smalldata/airlines/allyears2k_headers.zip
+examples/smalldata/airlines/year2005.csv.gz
+examples/smalldata/chicago/Chicago_Ohare_International_Airport.csv
+examples/smalldata/chicago/chicagoAllWeather.csv
+examples/smalldata/chicago/chicagoCensus.csv
+examples/smalldata/chicago/chicagoCrimes10k.csv
+examples/smalldata/iris/iris_wheader.csv
+examples/smalldata/prostate/prostate.csv
 examples/smalldata/smsData.txt
-examples/smalldata/chicagoAllWeather.csv
-examples/smalldata/chicagoCensus.csv
-examples/smalldata/chicagoCrimes10k.csv
 examples/smalldata/craigslistJobTitles.csv
+examples/smalldata/bcwd.csv
+
 $(find examples/flows/ -type f)
 $(find docker/ -type f | grep -v iml$)
 $(find py/build/dist/ -type f -name '*.zip')

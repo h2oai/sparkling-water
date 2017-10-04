@@ -105,7 +105,7 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
   }
 
   lazy val irisDataFrame = {
-    hc.asDataFrame(new H2OFrame(TestUtils.locate("smalldata/iris/iris.csv")))
+    hc.asDataFrame(new H2OFrame(TestUtils.locate("smalldata/iris/iris_wheader.csv")))
   }
 
   lazy val prostateDataFrame = {
