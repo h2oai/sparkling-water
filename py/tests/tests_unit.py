@@ -121,7 +121,7 @@ class FrameTransformationsTest(unittest.TestCase):
     # on h2o context
     def test_h2o_frame_2_data_frame_new(self):
         hc = self._hc
-        h2o_frame = h2o.upload_file("../examples/smalldata/prostate.csv")
+        h2o_frame = h2o.upload_file("../examples/smalldata/prostate/prostate.csv")
         df = hc.as_spark_frame(h2o_frame)
         self.assertEquals(df.count(), h2o_frame.nrow, "Number of rows should match")
         self.assertEquals(len(df.columns), h2o_frame.ncol, "Number of columns should match")
