@@ -54,7 +54,7 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll {
       .set("spark.ext.h2o.client.log.level", "DEBUG")
       .set("spark.ext.h2o.client.verbose", "true")
       .set("spark.ext.h2o.node.log.level", "DEBUG")
-     // .set("spark.ext.h2o.disable.ga", "true")
+      .set("spark.ext.h2o.disable.ga", "true")
       .set(SharedBackendConf.PROP_CLOUD_NAME._1,
         "sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + Math.abs(Random.nextInt()))
       //.set("spark.driver.memory", "2G")
