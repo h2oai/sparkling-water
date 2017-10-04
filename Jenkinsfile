@@ -22,10 +22,10 @@ pipeline{
                 name: 'sparkVersion')
 
         booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit and pyunit tests')
-        booleanParam(name: 'runLocalIntegTests', defaultValue: true, description: 'Run local integration tests')
-        booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests')
-        booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run integration tests')
-        booleanParam(name: 'runPySparklingIntegTests', defaultValue: true, description: 'Run pySparkling integration tests')
+        booleanParam(name: 'runLocalIntegTests', defaultValue: false, description: 'Run local integration tests')
+        booleanParam(name: 'runScriptTests', defaultValue: false, description: 'Run script tests')
+        booleanParam(name: 'runIntegTests', defaultValue: false, description: 'Run integration tests')
+        booleanParam(name: 'runPySparklingIntegTests', defaultValue: false, description: 'Run pySparkling integration tests')
 
 
         choice(
@@ -34,7 +34,7 @@ pipeline{
                 name: 'sparklingTestEnv')
 
         choice(
-                choices: 'internal\nexternal',
+                choices: 'external\ninternal',
                 description: 'Sparkling Water backend mode.',
                 name: 'backendMode')
 
@@ -46,7 +46,7 @@ pipeline{
         string(name: 'hdpVersion', defaultValue: '2.2.6.3-1', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current will not do since it is not automatically expanded -> so please set 2.2.6.3-1')
 
         booleanParam(name: 'buildAgainstH2OBranch', defaultValue: false, description: 'By default, Sparkling Water is built with the included H2O. This option may be used to force build to use specific H2O branch against which Sparkling Water is built.')
-        string(name: 'h2oBranch', defaultValue: 'master', description: 'H2O branch to build against if buildAgainstH2OBranch is set to true')
+        string(name: 'h2oBranch', defaultValue: 'jh/debug/deadlock', description: 'H2O branch to build against if buildAgainstH2OBranch is set to true')
 
     }
 
@@ -164,7 +164,7 @@ pipeline{
             steps {
                 sh  """
                     # Run unit tests
-                    ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${params.backendMode} -PexternalBackendStartMode=auto
+                    ${env.WORKSPACE}/gradlew :sparkling-water-core:test -x check -x integTest -PbackendMode=${params.backendMode} -PexternalBackendStartMode=auto
                     """
             }
 

@@ -11,6 +11,5 @@ checkSparkVersion
 # Check sparkling water assembly Jar exists
 checkPyZipExists
 
-PYTHONPATH=$PY_ZIP_FILE:$PYTHONPATH \
-pyspark --py-files "$PY_ZIP_FILE" "$@"
+PYTHONPATH=$PY_ZIP_FILE:$PYTHONPATH pyspark --py-files "$PY_ZIP_FILE" "$@"
 

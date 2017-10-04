@@ -21,5 +21,5 @@ test {
 
     // Working dir will be root project
     workingDir = rootDir
-    // testLogging.showStandardStreams = true
+     testLogging.showStandardStreams = true
 }
