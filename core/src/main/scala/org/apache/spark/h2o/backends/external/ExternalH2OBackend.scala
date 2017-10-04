@@ -97,13 +97,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (!notifFile.exists()) {
       throw new RuntimeException(
         s"""
-          |Cluster notification file ${notifFile.getAbsolutePath} could not be created. The possible causes are:
-          |
+           |Cluster notification file ${notifFile.getAbsolutePath} could not be created. The possible causes are:
+           |
           |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
-          |   to increase the timeout for starting the external cluster as:
-          |   Python: H2OConf(sc).set_cluster_start_timeout(timeout)....
-          |   Scala:  new H2OConf(sc).setClusterStartTimeout(timeout)....
-          |
+           |   to increase the timeout for starting the external cluster as:
+           |   Python: H2OConf(sc).set_cluster_start_timeout(timeout)....
+           |   Scala:  new H2OConf(sc).setClusterStartTimeout(timeout)....
+           |
           |2) The file could not be created because of missing write rights.""".stripMargin
       )
     }
@@ -121,12 +121,18 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     ipPort
   }
 
+  private def lockCloud(): Unit = {
+    val ipPort = hc._conf.h2oCluster.get
+    scala.io.Source.fromURL("http://" + ipPort + "/3/Jobs").mkString
+  }
+
   override def init(): Array[NodeDesc] = {
     if (hc.getConf.isAutoClusterStartUsed) {
       // start h2o instances on yarn
       logInfo("Starting the external H2O cluster on YARN.")
       val ipPort = launchH2OOnYarn(hc.getConf)
       hc._conf.setH2OCluster(ipPort)
+      lockCloud()
     }
     logTrace("Starting H2O client node and connecting to external H2O cluster.")
 
