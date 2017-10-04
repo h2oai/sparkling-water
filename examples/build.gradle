@@ -27,8 +27,8 @@ dependencies {
     exclude group: "javax.servlet", module: "servlet-api"
   }
 
- // Sparkling Water ML
- compile( project(":sparkling-water-ml") )
+  // Sparkling Water ML
+  compile( project(":sparkling-water-ml") )
 
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"
@@ -39,6 +39,7 @@ dependencies {
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"
+  testCompile project(':sparkling-water-core').sourceSets.test.output
 
   // to reuse some utils test classes defined in the core
   testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
@@ -46,6 +47,7 @@ dependencies {
   // Integration tests requirements
   integTestCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   integTestCompile "junit:junit:4.11"
+  integTestCompile project(':sparkling-water-core').sourceSets.test.output
 
   // to reuse some utils test classes defined in the core
   integTestCompile project(path: ':sparkling-water-core', configuration: 'testArchives')

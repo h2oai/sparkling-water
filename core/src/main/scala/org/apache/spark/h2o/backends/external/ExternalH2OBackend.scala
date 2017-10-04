@@ -181,6 +181,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       hc.sparkContext.stop()
     }
     H2O.orderlyShutdown(1000)
+    H2O.exit(0)
   }
 
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {

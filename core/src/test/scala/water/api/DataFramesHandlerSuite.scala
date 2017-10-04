@@ -68,7 +68,7 @@ class DataFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
 
   test("DataFrameHandler.getDataFrame() method where DataFrame has non empty metadata") {
 
-    val h2oframe = new H2OFrame(new File("./examples/smalldata/prostate.csv"))
+    val h2oframe = new H2OFrame(TestUtils.locate("smalldata/prostate/prostate.csv"))
     // we have created dataFrame from already existing h2oFrame, metadata are included
     val df = hc.asDataFrame(h2oframe)
     val name = "prostate"

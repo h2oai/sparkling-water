@@ -16,6 +16,8 @@
 */
 package water.api
 
+import java.io.File
+
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.scalatest.FunSuite
@@ -46,20 +48,20 @@ class SupportAPISuite extends FunSuite with SharedH2OTestContext {
     val NA = null.asInstanceOf[Int]
 
     val testSpace: Array[(String, JOIN_TYPE, Array[(JoinMethod, Boolean)], Array[(String, Int, Int)])] =
-      // Join type, join method, enabled, expected result
+    // Join type, join method, enabled, expected result
       Array(("LEFT", leftJoin _,
-              Array((RADIX, true), (HASH, true)),
-              Array(("A", 12, NA), ("B", 13, 20000), ("C", 14, NA), ("D", 15, 40000))),
-            ("RIGHT", rightJoin _,
-              Array((RADIX, false), (HASH, true)),
-              Array(("Y", NA, 10000), ("B", 13, 20000), ("X", NA, 10000), ("D", 15, 40000))),
-            ("INNER", innerJoin _,
-              Array((RADIX, true), (HASH, true)),
-              Array(("B", 13, 20000), ("D", 15, 40000))),
-            ("OUTER", outerJoin _,
-              Array((RADIX, false), (HASH, false)),
-              Array(("A", 12, NA), ("B", 13, 20000), ("C", 14, NA), ("D", 15, 40000), ("X", NA, 10000), ("Y", NA, 10000)))
-            )
+        Array((RADIX, true), (HASH, true)),
+        Array(("A", 12, NA), ("B", 13, 20000), ("C", 14, NA), ("D", 15, 40000))),
+        ("RIGHT", rightJoin _,
+          Array((RADIX, false), (HASH, true)),
+          Array(("Y", NA, 10000), ("B", 13, 20000), ("X", NA, 10000), ("D", 15, 40000))),
+        ("INNER", innerJoin _,
+          Array((RADIX, true), (HASH, true)),
+          Array(("B", 13, 20000), ("D", 15, 40000))),
+        ("OUTER", outerJoin _,
+          Array((RADIX, false), (HASH, false)),
+          Array(("A", 12, NA), ("B", 13, 20000), ("C", 14, NA), ("D", 15, 40000), ("X", NA, 10000), ("Y", NA, 10000)))
+      )
     println(testSpace.mkString("\n"))
 
     try {
@@ -84,6 +86,15 @@ class SupportAPISuite extends FunSuite with SharedH2OTestContext {
 }
 
 object TestUtils {
+
+  def locate(name: String): File = {
+    val relative = new File("./examples/" + name)
+    if (relative.exists()) {
+      relative
+    } else {
+      new File("/home/0xdiag/" + name)
+    }
+  }
 
   def frame(name: String, vec: Vec): Frame = {
     val f: Frame = new Frame(water.Key.make[Frame]())
@@ -132,7 +143,7 @@ object TestUtils {
       val actualData = frameTo[(String, Int, Int)](actual).sortBy(_._1)
       val expectedData = expected.sortBy(_._1)
       expectedData.zip(actualData).foreach { case (exp, act) =>
-          assert(exp == act, s"The rows have to match: ${expectedData.mkString(",")}\n!=\n${actualData.mkString(",")}")
+        assert(exp == act, s"The rows have to match: ${expectedData.mkString(",")}\n!=\n${actualData.mkString(",")}")
       }
     }
   }

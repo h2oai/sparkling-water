@@ -36,7 +36,7 @@ class H2OFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
 
   test("H2OFramesHandler.toDataFrame() method") {
     // create H2OFrame which will be used for the transformation
-    val h2oFrame = new H2OFrame(new File("./examples/smalldata/prostate.csv"))
+    val h2oFrame = new H2OFrame(TestUtils.locate("smalldata/prostate/prostate.csv"))
     val h2oFramesHandler = new H2OFramesHandler(sc, hc)
 
     val req = new DataFrameIDV3
