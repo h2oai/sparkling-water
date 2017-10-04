@@ -109,7 +109,7 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
   }
 
   lazy val prostateDataFrame = {
-    hc.asDataFrame(new H2OFrame(TestUtils.locate("smalldata/prostateprostate.csv")))
+    hc.asDataFrame(new H2OFrame(TestUtils.locate("smalldata/prostate/prostate.csv")))
   }
 
   def binomialModelFixture() = {
