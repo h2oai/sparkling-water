@@ -172,7 +172,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     println("BEFORE ANYTHING")
     println("")
     printNodeInfo()
-    lockCloud()
+    //lockCloud()
     println("")
     println("AFTER LOCKING CLOUD")
     println("")
