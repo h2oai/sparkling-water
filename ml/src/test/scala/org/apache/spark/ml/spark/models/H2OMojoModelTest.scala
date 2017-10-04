@@ -17,8 +17,6 @@
 
 package org.apache.spark.ml.spark.models
 
-import java.net.URI
-
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OFrame

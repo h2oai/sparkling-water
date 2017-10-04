@@ -13,7 +13,7 @@ when Spark or YARN kills the executor - which is not an unusual case -
 the whole H2O cluster goes down since h2o doesn't support high
 availability.
 
-Internal baH2Ockend is default for behaviour for Sparkling Water. It can be
+Internal backend is default for behaviour for Sparkling Water. It can be
 changed via spark configuration property
 ``spark.ext.h2o.backend.cluster.mode`` to ``external`` or ``internal``.
 Another way how to change type of backend is by calling
