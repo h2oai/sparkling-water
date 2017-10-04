@@ -171,18 +171,18 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     println("")
     println("BEFORE ANYTHING")
     println("")
-    printNodeInfo()
+    //printNodeInfo()
     //lockCloud()
     println("")
     println("AFTER LOCKING CLOUD")
     println("")
-    printNodeInfo()
+    //printNodeInfo()
     H2OStarter.start(h2oClientArgs, false)
 
     println("")
     println("AFTER STARTING CLIENT")
     println("")
-    printNodeInfo()
+    //printNodeInfo()
     //printClientInfo()
 
     if (hc.getConf.numOfExternalH2ONodes.isDefined) {
