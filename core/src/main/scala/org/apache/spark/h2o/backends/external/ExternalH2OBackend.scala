@@ -191,7 +191,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     // Register web API for client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
-    Thread.sleep(1000)
 
     if (cloudMembers.length == 0) {
       if (hc.getConf.isManualClusterStartUsed) {
@@ -214,6 +213,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
           "Please check the YARN logs.")
       }
     }
+    Thread.sleep(1000)
+
     cloudMembers
   }
 
