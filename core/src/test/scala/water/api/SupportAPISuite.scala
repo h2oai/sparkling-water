@@ -88,11 +88,11 @@ class SupportAPISuite extends FunSuite with SharedH2OTestContext {
 object TestUtils {
 
   def locate(name: String): File = {
-    val relative = new File("./examples/" + name)
-    if (relative.exists()) {
-      relative
+    val abs = new File("/home/0xdiag/" + name)
+    if (abs.exists()) {
+      abs
     } else {
-      new File("/home/0xdiag/" + name)
+      new File("./examples/" + name)
     }
   }
 
