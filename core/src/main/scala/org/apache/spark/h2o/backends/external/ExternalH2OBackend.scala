@@ -120,7 +120,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     assert(proc == 0, s"Starting external H2O cluster failed with return value $proc.")
     ipPort
   }
-  
+
   override def init(): Array[NodeDesc] = {
     if (hc.getConf.isAutoClusterStartUsed) {
       // start h2o instances on yarn
