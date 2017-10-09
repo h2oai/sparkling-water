@@ -78,8 +78,11 @@ def crime(date,
     return crime
 
 # This is just helper function returning path to data-files
-def _locate(example_name):
-    return "../examples/smalldata/" + example_name
+def _locate(file_name):
+    if os.path.isfile("/home/0xdiag/smalldata/chicago/" + file_name):
+        return "/home/0xdiag/smalldata/chicago/" + file_name
+    else:
+        return "../examples/smalldata/chicago" + file_name
 
 spark = SparkSession.builder.appName("ChicagoCrimeTest").getOrCreate()
 # Start H2O services
