@@ -21,6 +21,7 @@ v2.2.1 (2017-10-10)
    -  `SW-538 <https://0xdata.atlassian.net/browse/SW-538>`__ - Fix problem in Jenkinsfile where H2O_HOME has higher priority then H2O_PYTHON_WHEEL
    -  `SW-539 <https://0xdata.atlassian.net/browse/SW-539>`__ - Fix PySparkling issue when running multiple times on the same node
    -  `SW-541 <https://0xdata.atlassian.net/browse/SW-541>`__ - Model training hangs in SW
+   -  `SW-542 <https://0xdata.atlassian.net/browse/SW-542>`__ - Sparkling Water does not support parquet import
    -  `SW-552 <https://0xdata.atlassian.net/browse/SW-552>`__ - Fix documentation bug
 
 - New Feature
