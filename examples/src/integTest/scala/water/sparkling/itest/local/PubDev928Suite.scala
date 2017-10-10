@@ -1,5 +1,7 @@
 package water.sparkling.itest.local
 
+import java.io.File
+
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.SparkContext
@@ -44,7 +46,7 @@ object PubDev928Test extends SparkContextSupport with IntegTestStopper {
     implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     import sqlContext.implicits._
 
-    val airlinesData = new H2OFrame(TestUtils.locate("smalldata/airlines/allyears2k_headers.zip"))
+    val airlinesData = new H2OFrame(new File(TestUtils.locate("smalldata/airlines/allyears2k_headers.zip")))
 
     // We need to explicitly repartition data to 12 chunks/partitions since H2O parser handling
     // partitioning dynamically based on available number of CPUs
