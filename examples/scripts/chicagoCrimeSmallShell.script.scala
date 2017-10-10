@@ -89,22 +89,17 @@ def createCrimeTable(datafile: String, datePattern:String, dateTimeZone:String):
   }
 }
 
-//
-// Load data
-//
-SparkContextSupport.addFiles(sc,
-  TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv").getAbsolutePath,
-  TestUtils.locate("smalldata/chicago/chicagoCensus.csv").getAbsolutePath,
-  TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip").getAbsolutePath
-)
+val weatherFile = TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv").getAbsolutePath
+val censusFile = TestUtils.locate("smalldata/chicago/chicagoCensus.csv").getAbsolutePath
+val crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip").getAbsolutePath
 
-val weatherTable = asDataFrame(createWeatherTable(SparkFiles.get("chicagoAllWeather.csv")))(sqlContext)
+val weatherTable = asDataFrame(createWeatherTable(weatherFile))(sqlContext)
 weatherTable.createOrReplaceTempView("chicagoWeather")
 // Census data
-val censusTable = asDataFrame(createCensusTable(SparkFiles.get("chicagoCensus.csv")))(sqlContext)
+val censusTable = asDataFrame(createCensusTable(censusFile))(sqlContext)
 censusTable.createOrReplaceTempView("chicagoCensus")
 // Crime data
-val crimeTable  = asDataFrame(createCrimeTable(SparkFiles.get("chicagoCrimes10k.csv.zip"), "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))(sqlContext)
+val crimeTable  = asDataFrame(createCrimeTable(crimesFile, "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))(sqlContext)
 crimeTable.createOrReplaceTempView("chicagoCrime")
 
 //
