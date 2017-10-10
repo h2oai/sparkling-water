@@ -25,18 +25,20 @@ import water.support.H2OFrameSupport._
 // Create SQL support
 implicit val sqlContext = spark.sqlContext
 import sqlContext.implicits._
+import water.api.TestUtils
 
 // Start H2O services
 implicit val h2oContext = H2OContext.getOrCreate(sc)
 import h2oContext._
 import h2oContext.implicits._
 
-val location = "examples/bigdata/laptop/citibike-nyc/"
+val location = "bigdata/laptop/citibike-nyc/"
 val fileNames = Seq[String]("2013-07.csv","2013-08.csv","2013-09.csv","2013-10.csv","2013-11.csv","2013-12.csv")
 val filesPaths = fileNames.map(name => location + name) :+ location+"31081_New_York_City__Hourly_2013.csv"
+val absPaths = fileNames.map(n => TestUtils.locate(n).getAbsolutePath)
 
 // Register files to SparkContext
-SparkContextSupport.addFiles(sc, filesPaths:_*)
+SparkContextSupport.addFiles(sc, absPaths:_*)
 
 // Load and parse data into H2O
 val dataFiles = fileNames.map(name => new java.io.File(SparkFiles.get(name)).toURI)

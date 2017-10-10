@@ -23,6 +23,7 @@ import water.fvec.{H2OFrame, Vec}
 import water.parser.ParseSetup
 import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
 import water.support.H2OFrameSupport._
+import water.api.TestUtils
 
 // Create SQL support
 implicit val sqlContext = spark.sqlContext
@@ -91,10 +92,10 @@ def createCrimeTable(datafile: String, datePattern:String, dateTimeZone:String):
 //
 // Load data
 //
-SparkContextSupport.addFiles(sc,
-  "examples/smalldata/chicagoAllWeather.csv",
-  "examples/smalldata/chicagoCensus.csv",
-  "examples/smalldata/chicagoCrimes10k.csv"
+SparkContextSupportaddFiles(sc,
+  TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv").getAbsolutePath,
+  TestUtils.locate("smalldata/chicago/chicagoCensus.csv").getAbsolutePath,
+  TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip").getAbsolutePath
 )
 
 val weatherTable = asDataFrame(createWeatherTable(SparkFiles.get("chicagoAllWeather.csv")))(sqlContext)
@@ -103,7 +104,7 @@ weatherTable.createOrReplaceTempView("chicagoWeather")
 val censusTable = asDataFrame(createCensusTable(SparkFiles.get("chicagoCensus.csv")))(sqlContext)
 censusTable.createOrReplaceTempView("chicagoCensus")
 // Crime data
-val crimeTable  = asDataFrame(createCrimeTable(SparkFiles.get("chicagoCrimes10k.csv"), "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))(sqlContext)
+val crimeTable  = asDataFrame(createCrimeTable(SparkFiles.get("chicagoCrimes10k.csv.zip"), "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))(sqlContext)
 crimeTable.createOrReplaceTempView("chicagoCrime")
 
 //

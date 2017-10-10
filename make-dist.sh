@@ -34,7 +34,7 @@ examples/smalldata/airlines/year2005.csv.gz
 examples/smalldata/chicago/Chicago_Ohare_International_Airport.csv
 examples/smalldata/chicago/chicagoAllWeather.csv
 examples/smalldata/chicago/chicagoCensus.csv
-examples/smalldata/chicago/chicagoCrimes10k.csv
+examples/smalldata/chicago/chicagoCrimes10k.csv.zip
 examples/smalldata/iris/iris_wheader.csv
 examples/smalldata/prostate/prostate.csv
 examples/smalldata/smsData.txt

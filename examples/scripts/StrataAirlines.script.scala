@@ -19,6 +19,7 @@ import java.io.File
 
 import water.support.SparkContextSupport.addFiles
 import water.support.H2OFrameSupport._
+import water.api.TestUtils
 
 // Create SQL support
 implicit val sqlContext = spark.sqlContext
@@ -31,8 +32,9 @@ import h2oContext.implicits._
 
 // Register files to SparkContext
 addFiles(sc,
-  "examples/smalldata/year2005.csv.gz",
-  "examples/smalldata/Chicago_Ohare_International_Airport.csv")
+  TestUtils.locate("smalldata/airlines/year2005.csv.gz").getAbsolutePath,
+  TestUtils.locate("smalldata/chicago/Chicago_Ohare_International_Airport.csv").getAbsolutePath
+)
 
 // Import all year airlines data into H2O
 val airlinesData = new H2OFrame(new File(SparkFiles.get("year2005.csv.gz")))

@@ -35,7 +35,7 @@ object ChicagoCrimeAppSmall extends SparkContextSupport {
     addFiles(sc,
       TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv").getAbsolutePath,
       TestUtils.locate("smalldata/chicago/chicagoCensus.csv").getAbsolutePath,
-      TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv").getAbsolutePath
+      TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip").getAbsolutePath
     )
     // SQL support
     val sqlContext = SparkSession.builder().getOrCreate().sqlContext
@@ -45,7 +45,7 @@ object ChicagoCrimeAppSmall extends SparkContextSupport {
     val app = new ChicagoCrimeApp(
       weatherFile = SparkFiles.get("chicagoAllWeather.csv"),
       censusFile = SparkFiles.get("chicagoCensus.csv"),
-      crimesFile = SparkFiles.get("chicagoCrimes10k.csv"))(sc, sqlContext, h2oContext)
+      crimesFile = SparkFiles.get("chicagoCrimes10k.csv.zip"))(sc, sqlContext, h2oContext)
 
     // Load data
     val (weatherTable, censusTable, crimesTable) = app.loadAll()
