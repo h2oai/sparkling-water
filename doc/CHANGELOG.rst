@@ -4,7 +4,7 @@ Change Log
 v2.0.16 (2017-10-10)
 --------------------
 
-- Bug
+-  Bug
 
    -  `SW-423 <https://0xdata.atlassian.net/browse/SW-423>`__ - Tests of External Cluster mode fails
    -  `SW-516 <https://0xdata.atlassian.net/browse/SW-516>`__ - External cluster improperly convert RDD[ml.linalg.Vector]
@@ -23,13 +23,13 @@ v2.0.16 (2017-10-10)
    -  `SW-542 <https://0xdata.atlassian.net/browse/SW-542>`__ - sw does not support parquet import
    -  `SW-552 <https://0xdata.atlassian.net/browse/SW-552>`__ - Fix documentation bug
 
-- New Feature
+-  New Feature
 
    -  `SW-521 <https://0xdata.atlassian.net/browse/SW-521>`__ - Fix typo in documentation
    -  `SW-523 <https://0xdata.atlassian.net/browse/SW-523>`__ - Use linux label to determine which nodes are used for Jenkins testing
    -  `SW-533 <https://0xdata.atlassian.net/browse/SW-533>`__ - In external cluster, remove notification file at the end. This affects nothing, it is just cleanup.
 
-- Improvement
+-  Improvement
 
    -  `SW-543 <https://0xdata.atlassian.net/browse/SW-543>`__ - Upgrade Gradle to 4.2
    -  `SW-544 <https://0xdata.atlassian.net/browse/SW-544>`__ - Improve exception in ExternalH2OBackend
