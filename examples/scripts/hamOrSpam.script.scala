@@ -10,14 +10,15 @@
  *    SparkContext is available as sc
  */
 import _root_.hex.deeplearning.DeepLearningModel
+
 import _root_.hex.ModelMetricsBinomial
 import org.apache.spark.h2o._
 import org.apache.spark.{SparkFiles, mllib}
-import org.apache.spark.mllib.feature.{HashingTF, IDF, IDFModel}
+import org.apache.spark.mllib.feature.{IDFModel, IDF, HashingTF}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{SQLContext, DataFrame}
 import water.Key
-import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
+import water.support.{H2OFrameSupport, SparkContextSupport, ModelMetricsSupport}
 import water.api.TestUtils
 
 // Register files to SparkContext
@@ -27,7 +28,7 @@ case class SMS(target: String, fv: org.apache.spark.mllib.linalg.Vector)
 
 // Data loader
 def load(dataFile: String): RDD[Array[String]] = {
-  sc.textFile(enforceLocalSparkFile(dataFile)).map(l => l.split("\t")).filter(r => !r(0).isEmpty)
+  sc.textFile(SparkFiles.get(dataFile)).map(l => l.split("\t")).filter(r => !r(0).isEmpty)
 }
 
 // Tokenizer

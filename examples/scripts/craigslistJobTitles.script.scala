@@ -25,7 +25,7 @@ def isHeader(line: String) = line.contains("category")
 
 SparkContextSupport.addFiles(sc, TestUtils.locate("smalldata/craigslistJobTitles.csv"))
 // Load and split data based on ","
-val data = sc.textFile(enforceLocalSparkFile("craigslistJobTitles.csv")).filter(x => !isHeader(x)).map(d => d.split(','))
+val data = sc.textFile(SparkFiles.get("craigslistJobTitles.csv")).filter(x => !isHeader(x)).map(d => d.split(','))
 
 // Extract job category from job description
 val jobCategories = data.map(l => l(0))
