@@ -13,7 +13,7 @@ Available Demos And Applications
 | |CraigslistJobTitlesApp|          | Predict job category based on posted job description.                    |
 +-----------------------------------+--------------------------------------------------------------------------+
 | |ChicagoCrimeAppSmall|            | Builds a model predicting a probability of arrest for given crime in     |
-|                                   | Chicago using data in `smalldata directory <smalldata/>`__.              |
+|                                   | Chicago using data in |ChicagoDataset|.                                  |
 +-----------------------------------+--------------------------------------------------------------------------+
 | |ChicagoCrimeApp|                 | Implementation of Chicago Crime demo with setup for data stored on HDFS. |
 +-----------------------------------+--------------------------------------------------------------------------+
@@ -21,10 +21,9 @@ Available Demos And Applications
 +-----------------------------------+--------------------------------------------------------------------------+
 | |HamOrSpamDemo|                   | Shows Spam detector with Spark and H2O's DeepLearning.                   |
 +-----------------------------------+--------------------------------------------------------------------------+
-| |ProstateDemo|                    | Running K-means on `prostate dataset <smalldata/prostate.csv>`__.        |
+| |ProstateDemo|                    | Running K-means on |ProstateDataset|.
 +-----------------------------------+--------------------------------------------------------------------------+
-| |DeepLearningDemo|                | Running DeepLearning on a subset of                                      |
-|                                   | `airlines dataset <smalldata/allyears2k_headers.csv.gz>`__.              |
+| |DeepLearningDemo|                | Running DeepLearning on a subset of |AirlinesDataset|.                   |
 +-----------------------------------+--------------------------------------------------------------------------+
 | |AirlinesWithWeatherDemo|         | Joining flights data with weather data and running Deep Learning.        |
 +-----------------------------------+--------------------------------------------------------------------------+
@@ -96,7 +95,7 @@ Step-by-Step Weather Data Example
 .. code:: scala
 
     import org.apache.spark.examples.h2o._
-    val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
+    val weatherDataFile = "examples/smalldata/chicago/Chicago_Ohare_International_Airport.csv"
     val wrawdata = spark.sparkContext.textFile(weatherDataFile,3).cache()
     val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
 
@@ -105,7 +104,7 @@ Step-by-Step Weather Data Example
 .. code:: scala
 
     import java.io.File
-    val dataFile = "examples/smalldata/allyears2k_headers.csv.gz"
+    val dataFile = "examples/smalldata/airlines/allyears2k_headers.zip"
     val airlinesData = new H2OFrame(new File(dataFile))
 
 6.  Select flights destined for Chicago (ORD):
@@ -233,3 +232,6 @@ Step-by-Step Weather Data Example
 .. |hamOrSpamScript| replace:: `hamOrSpam.script.scala <scripts/hamOrSpam.script.scala>`__
 .. |strata2015Script| replace:: `strata2015.script.scala <scripts/strata2015.script.scala>`__
 .. |StrataAirlinesScript| replace:: `StrataAirlines.script.scala <scripts/StrataAirlines.script.scala>`__
+.. |ProstateDataset| replace:: `prostate dataset <smalldata/prostate/prostate.csv>`__
+.. |AirlinesDataset| replace:: `airlines dataset <smalldata/airlines/allyears2k_headers.zip>`__
+.. |ChicagoDataset| replace:: `chicago datasets <smalldata/chicago/>`__
