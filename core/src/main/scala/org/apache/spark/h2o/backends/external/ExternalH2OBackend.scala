@@ -143,6 +143,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
     // Register web API for client
     RestAPIManager(hc).registerAll()
+    Thread.sleep(3000)
     H2O.startServingRestApi()
 
     if (cloudMembers.length == 0) {
