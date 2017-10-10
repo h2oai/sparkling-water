@@ -17,9 +17,10 @@
 
 package org.apache.spark.examples.h2o
 
+import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.{SparkContext, SparkFiles}
+import water.api.TestUtils
 import water.support.SparkContextSupport
 
 /**
@@ -30,21 +31,16 @@ object ChicagoCrimeAppSmall extends SparkContextSupport {
   def main(args: Array[String]) {
     // Prepare environment
     val sc = new SparkContext(configure("ChicagoCrimeTest"))
-    // Add local files into the context
-    addFiles(sc,
-      absPath("examples/smalldata/chicagoAllWeather.csv"),
-      absPath("examples/smalldata/chicagoCensus.csv"),
-      absPath("examples/smalldata/chicagoCrimes10k.csv")
-    )
+
     // SQL support
     val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // Start H2O services
     val h2oContext = H2OContext.getOrCreate(sc)
 
     val app = new ChicagoCrimeApp(
-      weatherFile = SparkFiles.get("chicagoAllWeather.csv"),
-      censusFile = SparkFiles.get("chicagoCensus.csv"),
-      crimesFile = SparkFiles.get("chicagoCrimes10k.csv"))(sc, sqlContext, h2oContext)
+      weatherFile = TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv"),
+      censusFile = TestUtils.locate("smalldata/chicago/chicagoCensus.csv"),
+      crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip"))(sc, sqlContext, h2oContext)
 
     // Load data
     val (weatherTable, censusTable, crimesTable) = app.loadAll()

@@ -14,7 +14,6 @@ import _root_.hex.genmodel.utils.DistributionFamily
 import _root_.hex.deeplearning.DeepLearningModel
 import _root_.hex.tree.gbm.GBMModel
 import _root_.hex.{Model, ModelMetricsBinomial}
-import org.apache.spark.SparkFiles
 import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
@@ -23,6 +22,7 @@ import water.fvec.{H2OFrame, Vec}
 import water.parser.ParseSetup
 import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
 import water.support.H2OFrameSupport._
+import water.api.TestUtils
 
 // Create SQL support
 implicit val sqlContext = spark.sqlContext
@@ -88,22 +88,17 @@ def createCrimeTable(datafile: String, datePattern:String, dateTimeZone:String):
   }
 }
 
-//
-// Load data
-//
-SparkContextSupport.addFiles(sc,
-  "examples/smalldata/chicagoAllWeather.csv",
-  "examples/smalldata/chicagoCensus.csv",
-  "examples/smalldata/chicagoCrimes10k.csv"
-)
+val weatherFile = TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv")
+val censusFile = TestUtils.locate("smalldata/chicago/chicagoCensus.csv")
+val crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip")
 
-val weatherTable = asDataFrame(createWeatherTable(SparkFiles.get("chicagoAllWeather.csv")))(sqlContext)
+val weatherTable = asDataFrame(createWeatherTable(weatherFile))(sqlContext)
 weatherTable.createOrReplaceTempView("chicagoWeather")
 // Census data
-val censusTable = asDataFrame(createCensusTable(SparkFiles.get("chicagoCensus.csv")))(sqlContext)
+val censusTable = asDataFrame(createCensusTable(censusFile))(sqlContext)
 censusTable.createOrReplaceTempView("chicagoCensus")
 // Crime data
-val crimeTable  = asDataFrame(createCrimeTable(SparkFiles.get("chicagoCrimes10k.csv"), "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))(sqlContext)
+val crimeTable  = asDataFrame(createCrimeTable(crimesFile, "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))(sqlContext)
 crimeTable.createOrReplaceTempView("chicagoCrime")
 
 //
