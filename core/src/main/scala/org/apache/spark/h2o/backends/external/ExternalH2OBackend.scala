@@ -97,13 +97,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (!notifFile.exists()) {
       throw new RuntimeException(
         s"""
-          |Cluster notification file ${notifFile.getAbsolutePath} could not be created. The possible causes are:
-          |
+           |Cluster notification file ${notifFile.getAbsolutePath} could not be created. The possible causes are:
+           |
           |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
-          |   to increase the timeout for starting the external cluster as:
-          |   Python: H2OConf(sc).set_cluster_start_timeout(timeout)....
-          |   Scala:  new H2OConf(sc).setClusterStartTimeout(timeout)....
-          |
+           |   to increase the timeout for starting the external cluster as:
+           |   Python: H2OConf(sc).set_cluster_start_timeout(timeout)....
+           |   Scala:  new H2OConf(sc).setClusterStartTimeout(timeout)....
+           |
           |2) The file could not be created because of missing write rights.""".stripMargin
       )
     }
@@ -181,6 +181,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       hc.sparkContext.stop()
     }
     H2O.orderlyShutdown(1000)
+    H2O.exit(0)
   }
 
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {

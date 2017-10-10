@@ -54,6 +54,12 @@ def get_default_spark_conf():
 
     return conf
 
+def locate(file_name):
+    if os.path.isfile("/home/0xdiag/" + file_name):
+        return "/home/0xdiag/" + file_name
+    else:
+        return "../examples/" + file_name
+
 def set_up_class(cls):
     if ExternalClusterTestHelper.tests_in_external_mode(cls._spark.conf):
         cls.external_cluster_test_helper = ExternalClusterTestHelper()
