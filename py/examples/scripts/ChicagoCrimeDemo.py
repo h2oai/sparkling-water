@@ -78,8 +78,11 @@ def crime(date,
     return crime
 
 # This is just helper function returning path to data-files
-def _locate(example_name):
-    return "../examples/smalldata/" + example_name
+def _locate(file_name):
+    if os.path.isfile("/home/0xdiag/smalldata/chicago/" + file_name):
+        return "/home/0xdiag/smalldata/chicago/" + file_name
+    else:
+        return "../examples/smalldata/chicago/" + file_name
 
 spark = SparkSession.builder.appName("ChicagoCrimeTest").getOrCreate()
 # Start H2O services
@@ -87,7 +90,7 @@ h2oContext = H2OContext.getOrCreate(spark)
 # Define file names
 chicagoAllWeather = "chicagoAllWeather.csv"
 chicagoCensus = "chicagoCensus.csv"
-chicagoCrimes10k = "chicagoCrimes10k.csv"
+chicagoCrimes10k = "chicagoCrimes10k.csv.zip"
 
 
 # h2o.import_file expects cluster-relative path

@@ -80,7 +80,7 @@ executed in all testing environments (if applicable). Spark 2.0+ required:
         val h2oContext = H2OContext.getOrCreate(spark)
 
         import java.io.File
-        val df: H2OFrame = new H2OFrame(new File("examples/smalldata/allyears2k_headers.csv.gz"))
+        val df: H2OFrame = new H2OFrame(new File("examples/smalldata/airlines/allyears2k_headers.zip"))
 
     Note: The file must be present on all nodes. In case of Sparkling Water internal backend, on all nodes with Spark. In case
     of Sparkling Water external backend, on all nodes with H2O.
