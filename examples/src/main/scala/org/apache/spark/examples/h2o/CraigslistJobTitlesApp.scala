@@ -27,15 +27,16 @@ import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkContext, mllib}
-
+import water.api.TestUtils
 import water.support._
 
+
 /**
- * This application use word2vec to build a model
- * classifying job offers at Craigslist.
- */
-class CraigslistJobTitlesApp(jobsFile: String = "examples/smalldata/craigslistJobTitles.csv")
-                            (@transient override val sc: SparkContext,
+  * This application use word2vec to build a model
+  * classifying job offers at Craigslist.
+  */
+class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/craigslistJobTitles.csv"))
+                              (@transient override val sc: SparkContext,
                               @transient override val sqlContext: SQLContext,
                               @transient override val h2oContext: H2OContext) extends SparklingWaterApp
                             with SparkContextSupport with GBMSupport with ModelMetricsSupport with H2OFrameSupport with Serializable {
@@ -197,7 +198,7 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
     // Start H2O services
     val h2oContext = H2OContext.getOrCreate(sc)
 
-    val app = new CraigslistJobTitlesApp("examples/smalldata/craigslistJobTitles.csv")(sc, sqlContext, h2oContext)
+    val app = new CraigslistJobTitlesApp(TestUtils.locate("smalldata/craigslistJobTitles.csv"))(sc, sqlContext, h2oContext)
     try {
       app.run()
     } catch {

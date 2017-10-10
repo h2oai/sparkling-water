@@ -81,8 +81,11 @@ def crime(date,
     return crime
 
 # This is just helper function returning path to data-files
-def _locate(example_name):
-    return "../examples/smalldata/" + example_name
+def _locate(file_name):
+    if os.path.isfile("/home/0xdiag/smalldata/chicago/" + file_name):
+        return "/home/0xdiag/smalldata/chicago/" + file_name
+    else:
+        return "../examples/smalldata/chicago/" + file_name
 
 conf = SparkConf().setAppName("ChicagoCrimeTest").setIfMissing("spark.master", os.getenv("spark.master", "local[*]"))
 sc = SparkContext(conf=conf)
@@ -93,7 +96,7 @@ h2oContext = H2OContext.getOrCreate(sc)
 # Define file names
 chicagoAllWeather = "chicagoAllWeather.csv"
 chicagoCensus = "chicagoCensus.csv"
-chicagoCrimes10k = "chicagoCrimes10k.csv"
+chicagoCrimes10k = "chicagoCrimes10k.csv.zip"
 
 # Add files to Spark Cluster
 sc.addFile(_locate(chicagoAllWeather))
