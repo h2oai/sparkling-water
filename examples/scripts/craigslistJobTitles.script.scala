@@ -17,11 +17,15 @@ import org.apache.spark.mllib.feature.Word2Vec
 import org.apache.spark.mllib.feature.Word2VecModel
 import org.apache.spark.mllib.linalg._
 import org.apache.spark.sql.DataFrame
-
+import water.api.TestUtils
+import water.support.SparkContextSupport
+import org.apache.spark.SparkFiles
 
 def isHeader(line: String) = line.contains("category")
+
+SparkContextSupport.addFiles(sc, TestUtils.locate("smalldata/craigslistJobTitles.csv"))
 // Load and split data based on ","
-val data = sc.textFile("examples/smalldata/craigslistJobTitles.csv").filter(x => !isHeader(x)).map(d => d.split(','))
+val data = sc.textFile(SparkFiles.get("craigslistJobTitles.csv")).filter(x => !isHeader(x)).map(d => d.split(','))
 
 // Extract job category from job description
 val jobCategories = data.map(l => l(0))

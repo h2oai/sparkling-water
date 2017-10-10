@@ -19,9 +19,10 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, DataFrame}
 import water.Key
 import water.support.{H2OFrameSupport, SparkContextSupport, ModelMetricsSupport}
+import water.api.TestUtils
 
 // Register files to SparkContext
-SparkContextSupport.addFiles(sc,"examples/smalldata/smsData.txt")
+SparkContextSupport.addFiles(sc, TestUtils.locate("smalldata/smsData.txt"))
 // One training message
 case class SMS(target: String, fv: org.apache.spark.mllib.linalg.Vector)
 
