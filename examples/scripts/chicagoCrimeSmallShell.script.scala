@@ -92,7 +92,7 @@ def createCrimeTable(datafile: String, datePattern:String, dateTimeZone:String):
 //
 // Load data
 //
-SparkContextSupportaddFiles(sc,
+SparkContextSupport.addFiles(sc,
   TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv").getAbsolutePath,
   TestUtils.locate("smalldata/chicago/chicagoCensus.csv").getAbsolutePath,
   TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip").getAbsolutePath
