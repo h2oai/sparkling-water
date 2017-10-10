@@ -34,14 +34,13 @@ import h2oContext.implicits._
 
 val location = "bigdata/laptop/citibike-nyc/"
 val fileNames = Seq[String]("2013-07.csv","2013-08.csv","2013-09.csv","2013-10.csv","2013-11.csv","2013-12.csv")
-val filesPaths = fileNames.map(name => location + name) :+ location+"31081_New_York_City__Hourly_2013.csv"
-val absPaths = fileNames.map(n => TestUtils.locate(n).getAbsolutePath)
+val filesPaths = fileNames.map(name => TestUtils.locate(location + name))
 
-// Register files to SparkContext
-SparkContextSupport.addFiles(sc, absPaths:_*)
+// Register relevant files to SparkContext
+SparkContextSupport.addFiles(sc, TestUtils.locate(location + "31081_New_York_City__Hourly_2013.csv"))
 
 // Load and parse data into H2O
-val dataFiles = fileNames.map(name => new java.io.File(SparkFiles.get(name)).toURI)
+val dataFiles = filesPaths.map(path => new java.io.File(path).toURI)
 val bikesDF = new H2OFrame(dataFiles:_*)
 
 withLockAndUpdate(bikesDF){ fr =>

@@ -53,7 +53,7 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport with ModelSer
     // Build an initial model
     val staticApp = new CraigslistJobTitlesApp()(sc, sqlContext, h2oContext)
     try {
-      val (svModel, w2vModel) = staticApp.buildModels(TestUtils.locate("smalldata/craigslistJobTitles.csv").getAbsolutePath, "initialModel")
+      val (svModel, w2vModel) = staticApp.buildModels(TestUtils.locate("smalldata/craigslistJobTitles.csv"), "initialModel")
       val modelId = svModel._key.toString
       val classNames = svModel._output.asInstanceOf[Output].classNames()
 

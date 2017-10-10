@@ -86,7 +86,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
 
   // H2OFrame to RDD[T] JUnits
   test("H2OFrame[T_NUM] to RDD[Prostate]") {
-    val h2oFrame: H2OFrame = new H2OFrame(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    val h2oFrame: H2OFrame = new H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
     assert(h2oFrame.vec(0).isNumeric & h2oFrame.vec(1).isNumeric & h2oFrame.vec(2).isNumeric &
       h2oFrame.vec(3).isNumeric & h2oFrame.vec(4).isNumeric & h2oFrame.vec(5).isNumeric & h2oFrame.vec(6).isNumeric
       & h2oFrame.vec(7).isNumeric & h2oFrame.vec(8).isNumeric)

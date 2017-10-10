@@ -49,7 +49,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
   test("Creation of H2ODataFrame") {
     // FIXME: create different shapes of frame
-    val h2oFrame = new H2OFrame(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    val h2oFrame = new H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 

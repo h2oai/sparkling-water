@@ -38,7 +38,7 @@ object ProstateDemo extends SparkContextSupport {
     val conf = configure("Sparkling Water: Prostate demo")
     val sc = new SparkContext(conf)
     // Add a file to be available for cluster mode
-    addFiles(sc, TestUtils.locate("smalldata/prostate/prostate.csv").getAbsolutePath)
+    addFiles(sc, TestUtils.locate("smalldata/prostate/prostate.csv"))
 
     // Run H2O cluster inside Spark cluster
     val h2oContext = H2OContext.getOrCreate(sc)

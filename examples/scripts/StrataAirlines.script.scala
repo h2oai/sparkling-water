@@ -30,14 +30,11 @@ val h2oContext = H2OContext.getOrCreate(sc)
 import h2oContext._
 import h2oContext.implicits._
 
-// Register files to SparkContext
-addFiles(sc,
-  TestUtils.locate("smalldata/airlines/year2005.csv.gz").getAbsolutePath,
-  TestUtils.locate("smalldata/chicago/Chicago_Ohare_International_Airport.csv").getAbsolutePath
-)
+// Register relevant files to Spark Context
+addFiles(sc, TestUtils.locate("smalldata/chicago/Chicago_Ohare_International_Airport.csv"))
 
 // Import all year airlines data into H2O
-val airlinesData = new H2OFrame(new File(SparkFiles.get("year2005.csv.gz")))
+val airlinesData = new H2OFrame(new File(TestUtils.locate("smalldata/airlines/year2005.csv.gz")))
 
 // Import weather data into Spark
 val wrawdata = sc.textFile(SparkFiles.get("Chicago_Ohare_International_Airport.csv"),8).cache()

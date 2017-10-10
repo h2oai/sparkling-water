@@ -14,7 +14,6 @@ import _root_.hex.genmodel.utils.DistributionFamily
 import _root_.hex.deeplearning.DeepLearningModel
 import _root_.hex.tree.gbm.GBMModel
 import _root_.hex.{Model, ModelMetricsBinomial}
-import org.apache.spark.SparkFiles
 import org.apache.spark.examples.h2o.{Crime, RefineDateColumn}
 import org.apache.spark.h2o._
 import org.apache.spark.sql._
@@ -89,9 +88,9 @@ def createCrimeTable(datafile: String, datePattern:String, dateTimeZone:String):
   }
 }
 
-val weatherFile = TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv").getAbsolutePath
-val censusFile = TestUtils.locate("smalldata/chicago/chicagoCensus.csv").getAbsolutePath
-val crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip").getAbsolutePath
+val weatherFile = TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv")
+val censusFile = TestUtils.locate("smalldata/chicago/chicagoCensus.csv")
+val crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip")
 
 val weatherTable = asDataFrame(createWeatherTable(weatherFile))(sqlContext)
 weatherTable.createOrReplaceTempView("chicagoWeather")

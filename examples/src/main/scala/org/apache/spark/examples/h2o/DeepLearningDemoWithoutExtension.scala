@@ -21,8 +21,8 @@ import java.io.File
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import org.apache.spark.SparkConf
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
-import org.apache.spark.{SparkConf, SparkFiles}
 import water.api.TestUtils
 import water.support.{H2OFrameSupport, SparkContextSupport, SparkSessionSupport}
 
@@ -35,7 +35,6 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport with SparkSe
 
     // Create SparkContext to execute application on Spark cluster
     val sc = sparkContext(conf)
-    addFiles(sc, TestUtils.locate("smalldata/airlines/allyears2k_headers.zip").getAbsolutePath)
 
     val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext._
@@ -44,7 +43,7 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport with SparkSe
     //
     // Load H2O from CSV file (i.e., access directly H2O cloud)
     // Use super-fast advanced H2O CSV parser !!!
-    val airlinesData = new H2OFrame(new File(SparkFiles.get("allyears2k_headers.zip")))
+    val airlinesData = new H2OFrame(new File(TestUtils.locate("smalldata/airlines/allyears2k_headers.zip")))
 
     //
     // Use H2O to RDD transformation

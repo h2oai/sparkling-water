@@ -32,7 +32,7 @@ import water.support._
   * This application use word2vec to build a model
   * classifying job offers at Craigslist.
   */
-class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/craigslistJobTitles.csv").getAbsolutePath)
+class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/craigslistJobTitles.csv"))
                             (@transient override val sc: SparkContext,
                              @transient override val sqlContext: SQLContext,
                              @transient override val h2oContext: H2OContext) extends SparklingWaterApp
@@ -194,7 +194,7 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
     // Start H2O services
     val h2oContext = H2OContext.getOrCreate(sc)
 
-    val app = new CraigslistJobTitlesApp(TestUtils.locate("smalldata/craigslistJobTitles.csv").getAbsolutePath)(sc, sqlContext, h2oContext)
+    val app = new CraigslistJobTitlesApp(TestUtils.locate("smalldata/craigslistJobTitles.csv"))(sc, sqlContext, h2oContext)
     try {
       app.run()
     } catch {

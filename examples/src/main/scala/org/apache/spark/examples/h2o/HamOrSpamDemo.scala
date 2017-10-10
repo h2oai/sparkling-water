@@ -46,7 +46,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H
     // Create SparkContext to execute application on Spark cluster
     val sc = new SparkContext(conf)
     // Register input file as Spark file
-    addFiles(sc, TestUtils.locate("smalldata/" + DATAFILE).getAbsolutePath)
+    addFiles(sc, TestUtils.locate("smalldata/" + DATAFILE))
     // Initialize H2O context
     implicit val h2oContext = H2OContext.getOrCreate(sc)
     import h2oContext.implicits._

@@ -87,12 +87,12 @@ class SupportAPISuite extends FunSuite with SharedH2OTestContext {
 
 object TestUtils {
 
-  def locate(name: String): File = {
+  def locate(name: String): String = {
     val abs = new File("/home/0xdiag/" + name)
     if (abs.exists()) {
-      abs
+      abs.getAbsolutePath
     } else {
-      new File("./examples/" + name)
+      new File("./examples/" + name).getAbsolutePath
     }
   }
 
