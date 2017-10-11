@@ -2,8 +2,10 @@
 
 @Library('test-shared-library') _
 
-echo ${env.JOB_NAME}
 pipeline{
+
+echo ${env.JOB_NAME}
+
     // Use given machines to run pipeline
     agent { label 'dX-hadoop' }
 
