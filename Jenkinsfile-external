@@ -2,6 +2,7 @@
 
 @Library('test-shared-library') _
 
+echo ${env.JOB_NAME)
 pipeline{
     // Use given machines to run pipeline
     agent { label 'dX-hadoop' }
@@ -16,6 +17,7 @@ pipeline{
 
     // Job parameters
     parameters {
+
         choice(
                 choices: '2.2.0\n2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0',
                 description: 'Version of Spark used for testing.',
