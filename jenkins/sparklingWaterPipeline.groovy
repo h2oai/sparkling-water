@@ -1,6 +1,7 @@
 #!/usr/bin/groovy
 
 def call(params, body) {
+    println(params)
     def config = [:]
     body.resolveStrategy = Closure.DELEGATE_FIRST
     body.delegate = config
