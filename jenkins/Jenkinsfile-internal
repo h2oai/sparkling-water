@@ -1,0 +1,47 @@
+#!/usr/bin/groovy
+
+// Job parameters
+parameters {
+    choice(name: 'sparkVersion',
+            choices: '2.2.0\n2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0',
+            description: 'Version of Spark used for testing.')
+
+    booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit and pyunit tests')
+    booleanParam(name: 'runLocalIntegTests', defaultValue: true, description: 'Run local integration tests')
+    booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests')
+    booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run integration tests')
+    booleanParam(name: 'runPySparklingIntegTests', defaultValue: true, description: 'Run pySparkling integration tests')
+
+    choice(
+            choices: 'yarn\nstandalone\nlocal',
+            description: 'Sparkling water test profile',
+            name: 'sparklingTestEnv')
+
+    string(name: 'hdpVersion', defaultValue: '2.2.6.3-1', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current will not do since it is not automatically expanded -> so please set 2.2.6.3-1')
+
+    booleanParam(name: 'buildAgainstH2OBranch', defaultValue: false, description: 'By default, Sparkling Water is built with the included H2O. This option may be used to force build to use specific H2O branch against which Sparkling Water is built.')
+    string(name: 'h2oBranch', defaultValue: 'master', description: 'H2O branch to build against if buildAgainstH2OBranch is set to true')
+
+}
+
+node('dX-hadoop'){
+    // Get Sparkling Water
+    checkout scm
+
+    // Get the script with the pipeline
+    def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
+
+    // Execute the pipeline
+    pipeline(params) { p ->
+        sparkVersion = "${p.sparkVersion}"
+        runUnitLocalTests = "${p.runUnitLocalTests}"
+        runScriptTests = "${p.runScriptTests}"
+        runIntegTests = "${p.runIntegTests}"
+        runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
+        sparklingWaterTestEnv = "${p.sparklingWaterTestEnv}"
+        buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
+        h2oBranch = "${p.h2oBranch}"
+        hadoopVersion = "2.6"
+        backendMode = "internal"
+    }
+}
