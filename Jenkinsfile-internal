@@ -28,7 +28,7 @@ node('dX-hadoop'){
     checkout scm
 
     // Get the script with the pipeline
-    def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
+    def pipeline = load 'sparklingWaterPipeline.groovy'
 
     // Execute the pipeline
     pipeline(params) { p ->
