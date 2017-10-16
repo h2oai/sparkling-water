@@ -37,7 +37,7 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTi
     *         This has also effect of Spark stopping the current job and
     *         rescheduling it
     */
-  override def closeChunks(): Unit = {
+  override def closeChunks(numRows: Int): Unit = {
     try{
       externalFrameWriter.waitUntilAllWritten(writeTimeout)
     } finally {
@@ -48,7 +48,7 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTi
   /**
     * Initialize the communication before the chunks are created
     */
-  override def createChunks(keystr: String, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int]): Unit = {
+  override def createChunks(keystr: String, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int], vecStartSize: Map[Int, Int]): Unit = {
     externalFrameWriter.createChunks(keystr, expectedTypes, chunkId, totalNumOfRows, maxVecSizes)
   }
 
@@ -76,6 +76,9 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTi
   override def putDenseVector(startIdx: Int, vector: DenseVector, maxVecSize: Int): Unit = {
     externalFrameWriter.sendDenseVector(vector.values)
   }
+
+  override def startRow(rowIdx: Int): Unit = {}
+  override def finishRow(): Unit = {}
 }
 
 
