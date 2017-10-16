@@ -20,12 +20,14 @@ import java.io.File
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.ml.linalg.Vectors
 import org.scalatest.FunSuite
 import water.fvec.{AppendableVec, Frame, NewChunk, Vec}
 import water.munging.JoinMethod
 
 import scala.collection.immutable.IndexedSeq
 import scala.reflect.ClassTag
+import scala.util.Random
 
 class SupportAPISuite extends FunSuite with SharedH2OTestContext {
 
@@ -116,6 +118,12 @@ object TestUtils {
     val vec = avec.layout_and_close(fs)
     fs.blockForPending
     vec
+  }
+
+  def sparseVector(len: Int, elements: Int, rng: Random = Random): org.apache.spark.ml.linalg.SparseVector = {
+    assert(elements < len)
+    val data = (1 to elements).map(_ => rng.nextInt(len)).sortBy(identity).distinct.map(it => (it, rng.nextDouble()))
+    Vectors.sparse(len, data).toSparse
   }
 
   implicit object TestJoinSupportConverter extends ((Frame, Int) => (String, Int, Int)) {
