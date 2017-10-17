@@ -114,7 +114,7 @@ For running on YARN and other supported platforms please see `Running Sparkling 
 
       from pysparkling import *
       import h2o
-      hc = H2OContext.getOrCreate(sparkSession)
+      hc = H2OContext.getOrCreate(spark)
 
 
 Run IPython Notebook with PySparkling
