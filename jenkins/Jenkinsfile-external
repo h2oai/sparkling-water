@@ -57,5 +57,6 @@ node('dX-hadoop'){
         hadoopVersion = "2.6"
         backendMode = "external"
         hdpVersion = ${params.hdpVersion}
+        driverHadoopVersion = ${params.driverHadoopVersion}
     }
 }
