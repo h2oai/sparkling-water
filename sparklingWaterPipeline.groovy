@@ -130,21 +130,20 @@ def buildAndLint(){
 def unitTests() {
     return { config ->
         stage('QA: Unit Tests') {
-            when {
-                expression { env.runUnitTests == true }
-            }
-            steps {
-                sh """
+            if (env.runUnitTests) {
+                steps {
+                    sh """
                     # Run unit tests
                     ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                     """
-            }
+                }
 
-            post {
-                always {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
-                    junit 'core/build/test-results/test/*.xml'
-                    testReport 'core/build/reports/tests/test', 'Core Unit tests'
+                post {
+                    always {
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                        junit 'core/build/test-results/test/*.xml'
+                        testReport 'core/build/reports/tests/test', 'Core Unit tests'
+                    }
                 }
             }
         }
