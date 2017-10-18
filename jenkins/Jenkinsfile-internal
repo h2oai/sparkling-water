@@ -44,7 +44,8 @@ node('dX-hadoop') {
     // Execute the pipeline
     pipeline(params) { p ->
         sparkVersion = "${p.sparkVersion}"
-        runUnitLocalTests = "${p.runUnitLocalTests}"
+        runUnitTests = "${p.runUnitTests}"
+        runLocalIntegTests = "${p.runLocalIntegTests}"
         runScriptTests = "${p.runScriptTests}"
         runIntegTests = "${p.runIntegTests}"
         runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
