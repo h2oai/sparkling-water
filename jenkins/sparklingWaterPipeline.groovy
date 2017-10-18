@@ -91,7 +91,7 @@ def prepareSparklingWaterEnvironment(){
                 if [ ${config.backendMode} = external ]; then
                     # In this case, PySparkling build is driven by H2O_HOME property
                     # When extending from specific jar the jar has already the desired name
-                    ./gradlew -q extendJar
+                    ${env.WORKSPACE}/gradlew -q extendJar
                 fi
             fi
     
