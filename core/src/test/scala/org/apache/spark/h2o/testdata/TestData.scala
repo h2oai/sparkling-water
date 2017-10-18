@@ -101,3 +101,5 @@ case class SemiPartialPerson(name: String, age: Option[Int], email: Option[Strin
 case class SampleString(x: String)
 
 case class SampleAltString(y: String)
+
+case class SparseVectorHolder(v: org.apache.spark.ml.linalg.SparseVector)
