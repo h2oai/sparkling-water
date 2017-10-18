@@ -135,12 +135,10 @@ def unitTests() {
                     ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                     """
 
-                post {
-                    always {
-                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
-                        junit 'core/build/test-results/test/*.xml'
-                        testReport 'core/build/reports/tests/test', 'Core Unit tests'
-                    }
+                always {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    junit 'core/build/test-results/test/*.xml'
+                    testReport 'core/build/reports/tests/test', 'Core Unit tests'
                 }
             }
         }
