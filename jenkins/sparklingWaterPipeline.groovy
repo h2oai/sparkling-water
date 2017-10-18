@@ -130,12 +130,10 @@ def unitTests() {
     return { config ->
         stage('QA: Unit Tests') {
             if (env.runUnitTests) {
-                steps {
-                    sh """
+                sh """
                     # Run unit tests
                     ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                     """
-                }
 
                 post {
                     always {
