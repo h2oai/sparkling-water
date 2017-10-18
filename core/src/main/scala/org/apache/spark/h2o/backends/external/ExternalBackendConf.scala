@@ -120,11 +120,11 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_H2O_NODES = ("spark.ext.h2o.external.cluster.num.h2o.nodes", None)
 
   /** Timeout in milliseconds specifying how often the check for connected watchdog client is done */
-  val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT = ("spark.ext.h2o.cluster.client.retry.timeout", 10000)
+  val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT = ("spark.ext.h2o.cluster.client.retry.timeout", 60000)
 
   /** Timeout in milliseconds for watchdog client connection. If client is not connected
     * to the external cluster in the given time, the cluster is killed */
-  val PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT = ("spark.ext.h2o.cluster.client.connect.timeout", 120000 + 10000)
+  val PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT = ("spark.ext.h2o.cluster.client.connect.timeout", 120000 + 60000)
 
   /** Timeout in seconds for confirmation of read operation ( h2o frame => spark frame) on external cluster. */
   val PROP_EXTERNAL_READ_TIMEOUT = ("spark.ext.h2o.external.read.confirmation.timeout", 60)
