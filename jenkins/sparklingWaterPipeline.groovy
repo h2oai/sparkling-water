@@ -5,7 +5,7 @@ def call(params, body) {
     body.resolveStrategy = Closure.DELEGATE_FIRST
     body.delegate = config
     body(params)
-    
+
     def customEnv = [
             "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
             "SPARK_HOME=${env.WORKSPACE}/spark",
