@@ -86,7 +86,7 @@ def prepareSparklingWaterEnvironment(){
                 git clone https://github.com/h2oai/h2o-3.git
                 cd h2o-3
                 git checkout ${config.h2oBranch}
-                ./gradlew build -x check
+                ${env.WORKSPACE}/gradlew build -x check
                 cd ..
                 if [ ${config.backendMode} = external ]; then
                     # In this case, PySparkling build is driven by H2O_HOME property
@@ -100,9 +100,9 @@ def prepareSparklingWaterEnvironment(){
                 # Download h2o-python client, save it in private directory
                 # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
                 mkdir -p ${env.WORKSPACE}/private/
-                curl -s `./gradlew -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
+                curl -s `${env.WORKSPACE}/gradlew -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
                 if [ ${config.backendMode} = external ]; then
-                    cp `./gradlew -q extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
+                    cp `${env.WORKSPACE}/gradlew -q extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
                 fi
             fi
     
