@@ -56,7 +56,7 @@ node('dX-hadoop') {
         runScriptTests = "${p.runScriptTests}"
         runIntegTests = "${p.runIntegTests}"
         runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
-        sparklingWaterTestEnv = "${p.sparklingTestEnv}"
+        sparklingTestEnv = "${p.sparklingTestEnv}"
         buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
         h2oBranch = "${p.h2oBranch}"
         hadoopVersion = "2.6"
