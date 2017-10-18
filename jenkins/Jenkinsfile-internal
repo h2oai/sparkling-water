@@ -1,5 +1,5 @@
 #!/usr/bin/groovy
-
+@Library('h2o3-shared-lib') _
 // Job parameters
 properties(
         [
@@ -29,6 +29,10 @@ properties(
                 buildDiscarder(logRotator(numToKeepStr: '10'))
         ]
 )
+
+if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != '') {
+    cancelPreviousBuilds()
+}
 
 node('dX-hadoop') {
     // Get Sparkling Water

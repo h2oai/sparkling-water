@@ -5,11 +5,7 @@ def call(params, body) {
     body.resolveStrategy = Closure.DELEGATE_FIRST
     body.delegate = config
     body(params)
-
-    if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != '') {
-        cancelPreviousBuilds()
-    }
-
+    
     def customEnv = [
             "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
             "SPARK_HOME=${env.WORKSPACE}/spark",
@@ -227,26 +223,6 @@ def pysparklingIntegTest() {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                 }
             }
-        }
-    }
-}
-
-
-def cancelPreviousBuilds() {
-    def hi = Hudson.instance
-    def pname = env.JOB_NAME.split('/')[0]
-
-    hi.getItem(pname).getItem(env.JOB_BASE_NAME).getBuilds().each{ build ->
-        def exec = build.getExecutor()
-
-        if (build.number != currentBuild.number && exec != null) {
-            exec.interrupt(
-                    Result.ABORTED,
-                    new CauseOfInterruption.UserInterruption(
-                            "Aborted by #${currentBuild.id}"
-                    )
-            )
-            println("Aborted previous running build #${build.number}")
         }
     }
 }
