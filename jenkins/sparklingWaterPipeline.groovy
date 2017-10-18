@@ -22,20 +22,18 @@ def call(params, body) {
             "H2O_ORIGINAL_JAR=${env.WORKSPACE}/h2o-3/h2o-hadoop/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
     ]
 
-    node('dX-hadoop') {
-        ansiColor('xterm') {
-            timestamps {
-                withEnv(customEnv) {
-                    timeout(time: 120, unit: 'MINUTES') {
-                        prepareSparkEnvironment()(config)
-                        prepareSparklingWaterEnvironment()(config)
-                        buildAndLint()(config)
-                        unitTests()(config)
-                        localIntegTest()(config)
-                        scriptsTest()(config)
-                        integTest()(config)
-
-                    }
+    ansiColor('xterm') {
+        timestamps {
+            withEnv(customEnv) {
+                timeout(time: 120, unit: 'MINUTES') {
+                    prepareSparkEnvironment()(config)
+                    prepareSparklingWaterEnvironment()(config)
+                    buildAndLint()(config)
+                    unitTests()(config)
+                    localIntegTest()(config)
+                    scriptsTest()(config)
+                    integTest()(config)
+                    pysparklingIntegTest()(config)
                 }
             }
         }
