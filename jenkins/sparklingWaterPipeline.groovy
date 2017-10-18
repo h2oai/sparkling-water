@@ -22,7 +22,7 @@ def call(params, body) {
             "H2O_ORIGINAL_JAR=${env.WORKSPACE}/h2o-3/h2o-hadoop/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
     ]
 
-    node('dX-hadoop'){
+    node('dX-hadoop') {
         ansiColor('xterm') {
             timestamps {
                 withEnv(customEnv) {
@@ -31,6 +31,9 @@ def call(params, body) {
                         prepareSparklingWaterEnvironment()(config)
                         buildAndLint()(config)
                         unitTests()(config)
+                        localIntegTest()(config)
+                        scriptsTest()(config)
+                        integTest()(config)
 
                     }
                 }
@@ -42,34 +45,34 @@ def call(params, body) {
 def prepareSparkEnvironment() {
     return { config ->
         stage('Prepare Spark Environment') {
-            sh """
-                                if [ ! -d "${env.SPARK_HOME}" ]; then
-                                        wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
-                                        mkdir -p "${env.SPARK_HOME}"
-                                        tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
-                                        rm -rf ${env.SPARK}.tgz
-                                fi
-                                """
+            sh  """
+                if [ ! -d "${env.SPARK_HOME}" ]; then
+                    wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
+                    mkdir -p "${env.SPARK_HOME}"
+                    tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
+                    rm -rf ${env.SPARK}.tgz
+                fi
+                """
 
             // Spark work directory cleanup
             dir("${env.SPARK_HOME}/work") {
                 deleteDir()
             }
 
-            sh """
-        # Setup 
-        echo "spark.driver.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
-        echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
-        echo "spark.executor.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
-
-        echo "-Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/java-opts
-       """
+            sh  """
+                # Setup 
+                echo "spark.driver.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
+                echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
+                echo "spark.executor.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
+                
+                echo "-Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/java-opts
+                """
         }
     }
 }
 
 
-def prepareSparklingWaterEnvironment(){
+def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment') {
 
@@ -78,50 +81,50 @@ def prepareSparklingWaterEnvironment(){
                 deleteDir()
             }
 
-            sh """
-            # Check if we are bulding against specific H2O branch
-            if [ ${config.buildAgainstH2OBranch} = true ]; then
-                # Clone H2O
-                rm -rf h2o-3
-                git clone https://github.com/h2oai/h2o-3.git
-                cd h2o-3
-                git checkout ${config.h2oBranch}
-                ${env.WORKSPACE}/gradlew build -x check
-                cd ..
-                if [ ${config.backendMode} = external ]; then
-                    # In this case, PySparkling build is driven by H2O_HOME property
-                    # When extending from specific jar the jar has already the desired name
-                    ${env.WORKSPACE}/gradlew -q extendJar
+            sh  """
+                # Check if we are bulding against specific H2O branch
+                if [ ${config.buildAgainstH2OBranch} = true ]; then
+                    # Clone H2O
+                    rm -rf h2o-3
+                    git clone https://github.com/h2oai/h2o-3.git
+                    cd h2o-3
+                    git checkout ${config.h2oBranch}
+                    ${env.WORKSPACE}/gradlew build -x check
+                    cd ..
+                    if [ ${config.backendMode} = external ]; then
+                        # In this case, PySparkling build is driven by H2O_HOME property
+                        # When extending from specific jar the jar has already the desired name
+                        ${env.WORKSPACE}/gradlew -q extendJar
+                    fi
                 fi
-            fi
     
-            # Check if we are building against included H2O 
-            if [ ${config.buildAgainstH2OBranch} = false ]; then
-                # Download h2o-python client, save it in private directory
-                # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
-                mkdir -p ${env.WORKSPACE}/private/
-                curl -s `${env.WORKSPACE}/gradlew -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
-                if [ ${config.backendMode} = external ]; then
-                    cp `${env.WORKSPACE}/gradlew -q extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
+                # Check if we are building against included H2O 
+                if [ ${config.buildAgainstH2OBranch} = false ]; then
+                    # Download h2o-python client, save it in private directory
+                    # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
+                    mkdir -p ${env.WORKSPACE}/private/
+                    curl -s `${env.WORKSPACE}/gradlew -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
+                    if [ ${config.backendMode} = external ]; then
+                        cp `${env.WORKSPACE}/gradlew -q extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
+                    fi
                 fi
-            fi
     
-        """
+                """
         }
     }
 }
 
-def buildAndLint(){
+def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint') {
-            sh """
-            # Build
-            if [ ${config.buildAgainstH2OBranch} = true ]; then
-                H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew clean --include-build ${env.WORKSPACE}/h2o-3 build -x check scalaStyle
-            else
-                ${env.WORKSPACE}/gradlew clean build -x check scalaStyle
-            fi
-            """
+            sh  """
+                # Build
+                if [ ${config.buildAgainstH2OBranch} = true ]; then
+                    H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew clean --include-build ${env.WORKSPACE}/h2o-3 build -x check scalaStyle
+                else
+                    ${env.WORKSPACE}/gradlew clean build -x check scalaStyle
+                fi
+                """
         }
     }
 }
@@ -129,8 +132,8 @@ def buildAndLint(){
 def unitTests() {
     return { config ->
         stage('QA: Unit Tests') {
-            if (env.runUnitTests) {
-                sh """
+            if (config.runUnitTests) {
+                sh  """
                     # Run unit tests
                     ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                     """
@@ -144,6 +147,86 @@ def unitTests() {
         }
     }
 
+}
+
+def localIntegTest() {
+    return { config ->
+        stage('QA: Local Integration Tests') {
+
+            if (config.runLocalIntegTests) {
+                sh  """
+                    # Run local integration tests
+                    ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                    """
+
+                always {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    junit 'examples/build/test-results/integTest/*.xml'
+                    testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
+                    testReport 'examples/build/reports/tests/integTest', 'Local Examples Integration tests'
+                }
+            }
+        }
+    }
+}
+
+
+def scriptsTest() {
+    return { config ->
+        stage('QA: Script Tests') {
+            if (config.runScriptTests) {
+                sh  """
+                    # Run scripts tests
+                    ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                    """
+
+                always {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    junit 'examples/build/test-results/scriptsTest/*.xml'
+                    testReport 'examples/build/reports/tests/scriptsTest', 'Examples Script Tests'
+                }
+            }
+        }
+    }
+}
+
+
+def integTest() {
+    return { config ->
+        stage('QA: Integration Tests') {
+            if (config.runIntegTests) {
+                sh  """
+                    ${env.WORKSPACE}/gradlew integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                    #  echo 'Archiving artifacts after Integration test'
+                    """
+
+                always {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    junit 'examples/build/test-results/integTest/*.xml'
+                    testReport 'examples/build/reports/tests/integTest', "${config.backendMode} Examples Integration tests"
+
+                }
+            }
+        }
+    }
+}
+
+def pysparklingIntegTest() {
+    return { config ->
+        stage('QA: PySparkling Integration Tests') {
+            if (config.runPySparklingIntegTests) {
+
+                sh  """
+                    ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                    #  echo 'Archiving artifacts after PySparkling Integration test'
+                    """
+
+                always {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                }
+            }
+        }
+    }
 }
 
 return this
