@@ -94,13 +94,13 @@ val crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip")
 
 
 val weatherTable = asDataFrame(createWeatherTable(weatherFile))(sqlContext)
-weatherTable.createOrReplaceTempView("chicagoWeather")
+weatherTable.registerTempTable("chicagoWeather")
 // Census data
 val censusTable = asDataFrame(createCensusTable(censusFile))(sqlContext)
-censusTable.createOrReplaceTempView("chicagoCensus")
+censusTable.registerTempTable("chicagoCensus")
 // Crime data
 val crimeTable  = asDataFrame(createCrimeTable(crimesFile, "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))(sqlContext)
-crimeTable.createOrReplaceTempView("chicagoCrime")
+crimeTable.registerTempTable("chicagoCrime")
 
 //
 // Join crime data with weather and census tables
