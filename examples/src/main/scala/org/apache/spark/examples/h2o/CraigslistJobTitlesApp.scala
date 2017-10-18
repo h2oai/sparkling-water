@@ -17,6 +17,8 @@
 
 package org.apache.spark.examples.h2o
 
+import java.io.File
+
 import hex.Model
 import hex.Model.Output
 import org.apache.spark.h2o._
@@ -24,7 +26,7 @@ import org.apache.spark.mllib.feature.{Word2Vec, Word2VecModel}
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, SparkSession}
-import org.apache.spark.{SparkContext, mllib}
+import org.apache.spark.{SparkContext, SparkFiles, mllib}
 import water.api.TestUtils
 import water.support._
 
@@ -163,7 +165,8 @@ class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/crai
 
   // Load data via Spark API
   private def loadData(filename: String): RDD[Array[String]] = {
-    val data = sc.textFile(enforceLocalSparkFile(filename))
+    SparkContextSupport.addFiles(sc, filename)
+    val data = sc.textFile(enforceLocalSparkFile(new File(filename).getName))
       .filter(line => !line.contains("category")).map(_.split(','))
     data
   }
