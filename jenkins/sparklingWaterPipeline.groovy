@@ -26,14 +26,16 @@ def call(params, body) {
         timestamps {
             withEnv(customEnv) {
                 timeout(time: 120, unit: 'MINUTES') {
-                    prepareSparkEnvironment()(config)
-                    prepareSparklingWaterEnvironment()(config)
-                    buildAndLint()(config)
-                    unitTests()(config)
-                    localIntegTest()(config)
-                    scriptsTest()(config)
-                    integTest()(config)
-                    pysparklingIntegTest()(config)
+                    dir(${env.WORKSPACE}) {
+                        prepareSparkEnvironment()(config)
+                        prepareSparklingWaterEnvironment()(config)
+                        buildAndLint()(config)
+                        unitTests()(config)
+                        localIntegTest()(config)
+                        scriptsTest()(config)
+                        integTest()(config)
+                        pysparklingIntegTest()(config)
+                    }
                 }
             }
         }
