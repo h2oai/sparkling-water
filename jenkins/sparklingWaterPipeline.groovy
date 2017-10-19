@@ -133,17 +133,15 @@ def unitTests() {
     return { config ->
         stage('QA: Unit Tests') {
             if (config.runUnitTests) {
-                try {
-                    sh """
-                    # Run unit tests
-                    ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
-                    """
+                sh """
+                # Run unit tests
+                ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                """
 
 
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
-                    junit 'core/build/test-results/test/*.xml'
-                    testReport 'core/build/reports/tests/test', 'Core Unit tests'
-                }
+                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                junit 'core/build/test-results/test/*.xml'
+                testReport 'core/build/reports/tests/test', 'Core Unit tests'
             }
         }
 
