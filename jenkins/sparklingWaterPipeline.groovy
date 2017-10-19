@@ -26,7 +26,7 @@ def call(params, body) {
         timestamps {
             withEnv(customEnv) {
                 timeout(time: 120, unit: 'MINUTES') {
-                    dir(${env.WORKSPACE}) {
+                    dir("${env.WORKSPACE}") {
                         prepareSparkEnvironment()(config)
                         prepareSparklingWaterEnvironment()(config)
                         buildAndLint()(config)
