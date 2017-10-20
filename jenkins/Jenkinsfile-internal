@@ -1,5 +1,6 @@
 #!/usr/bin/groovy
 @Library('test-shared-library') _
+
 // Job parameters
 properties(
         [
@@ -29,10 +30,6 @@ properties(
                 buildDiscarder(logRotator(numToKeepStr: '10'))
         ]
 )
-
-if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != '') {
-    cancelBuild.abortPreviousRunningBuilds
-}
 
 node('dX-hadoop') {
     // Get Sparkling Water
