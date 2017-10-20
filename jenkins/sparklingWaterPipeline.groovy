@@ -1,5 +1,5 @@
 #!/usr/bin/groovy
-@Library('test-shared-lib') _
+@Library('h2o-jenkins-pipeline-lib') _
 
 def call(params, body) {
     def config = [:]
