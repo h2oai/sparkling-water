@@ -44,21 +44,15 @@ def prepareSparkEnvironment() {
     return { config ->
         stage('Prepare Spark Environment') {
             sh  """
-                if [ ! -d "${env.SPARK_HOME}" ]; then
-                    wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
-                    mkdir -p "${env.SPARK_HOME}"
-                    tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
-                    rm -rf ${env.SPARK}.tgz
-                fi
+                # Download Spark
+                wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
+                mkdir -p "${env.SPARK_HOME}"
+                tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
+                rm -rf ${env.SPARK}.tgz
                 """
 
-            // Spark work directory cleanup
-            dir("${env.SPARK_HOME}/work") {
-                deleteDir()
-            }
-
             sh  """
-                # Setup 
+                # Setup Spark
                 echo "spark.driver.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                 echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                 echo "spark.executor.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
@@ -73,11 +67,6 @@ def prepareSparkEnvironment() {
 def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment') {
-
-            // Clean previous H2O Jars
-            dir("${env.WORKSPACE}/assembly-h2o/private") {
-                deleteDir()
-            }
 
             sh  """
                 # Check if we are bulding against specific H2O branch

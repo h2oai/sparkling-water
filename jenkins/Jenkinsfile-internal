@@ -32,6 +32,8 @@ properties(
 )
 
 node('dX-hadoop') {
+    // Clean workspace
+    sh 'rm -rf *'
     // Get Sparkling Water
     checkout scm
 
