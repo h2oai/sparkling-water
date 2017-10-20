@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+@Library('test-shared-lib') _
 
 def call(params, body) {
     def config = [:]
