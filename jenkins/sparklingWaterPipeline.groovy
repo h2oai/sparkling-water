@@ -24,14 +24,16 @@ def call(params, body) {
         timestamps {
             withEnv(customEnv) {
                 timeout(time: 120, unit: 'MINUTES') {
-                    prepareSparkEnvironment()(config)
-                    prepareSparklingWaterEnvironment()(config)
-                    buildAndLint()(config)
-                    unitTests()(config)
-                    localIntegTest()(config)
-                    scriptsTest()(config)
-                    integTest()(config)
-                    pysparklingIntegTest()(config)
+                    dir("${env.WORKSPACE}") {
+                        prepareSparkEnvironment()(config)
+                        prepareSparklingWaterEnvironment()(config)
+                        buildAndLint()(config)
+                        unitTests()(config)
+                        localIntegTest()(config)
+                        scriptsTest()(config)
+                        integTest()(config)
+                        pysparklingIntegTest()(config)
+                    }
                 }
             }
         }
@@ -129,20 +131,19 @@ def unitTests() {
     return { config ->
         stage('QA: Unit Tests') {
             if (config.runUnitTests) {
-                sh  """
-                    # Run unit tests
-                    ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
-                    """
+                sh """
+                # Run unit tests
+                ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                """
 
-                always {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
-                    junit 'core/build/test-results/test/*.xml'
-                    testReport 'core/build/reports/tests/test', 'Core Unit tests'
-                }
+
+                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                junit 'core/build/test-results/test/*.xml'
+                testReport 'core/build/reports/tests/test', 'Core Unit tests'
             }
         }
-    }
 
+    }
 }
 
 def localIntegTest() {
@@ -155,12 +156,10 @@ def localIntegTest() {
                     ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                     """
 
-                always {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                    junit 'examples/build/test-results/integTest/*.xml'
-                    testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
-                    testReport 'examples/build/reports/tests/integTest', 'Local Examples Integration tests'
-                }
+                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                junit 'examples/build/test-results/integTest/*.xml'
+                testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
+                testReport 'examples/build/reports/tests/integTest', 'Local Examples Integration tests'
             }
         }
     }
@@ -176,11 +175,9 @@ def scriptsTest() {
                     ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                     """
 
-                always {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                    junit 'examples/build/test-results/scriptsTest/*.xml'
-                    testReport 'examples/build/reports/tests/scriptsTest', 'Examples Script Tests'
-                }
+                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                junit 'examples/build/test-results/scriptsTest/*.xml'
+                testReport 'examples/build/reports/tests/scriptsTest', 'Examples Script Tests'
             }
         }
     }
@@ -196,12 +193,9 @@ def integTest() {
                     #  echo 'Archiving artifacts after Integration test'
                     """
 
-                always {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                    junit 'examples/build/test-results/integTest/*.xml'
-                    testReport 'examples/build/reports/tests/integTest', "${config.backendMode} Examples Integration tests"
-
-                }
+                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                junit 'examples/build/test-results/integTest/*.xml'
+                testReport 'examples/build/reports/tests/integTest', "${config.backendMode} Examples Integration tests"
             }
         }
     }
@@ -217,9 +211,7 @@ def pysparklingIntegTest() {
                     #  echo 'Archiving artifacts after PySparkling Integration test'
                     """
 
-                always {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                }
             }
         }
     }
