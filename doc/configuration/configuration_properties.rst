@@ -28,7 +28,11 @@ Configuration properties independent on selected backend
 |                                                    | unique name    |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.nthreads``                         | ``-1``         | Limit for number of threads used by    |
-|                                                    |                | H2O, default ``-1`` means  unlimited.  |
+|                                                    |                | H2O, default ``-1`` means:             |
+|                                                    |                | Use value of ``spark.executor.cores``  |
+|                                                    |                | in case this property is set.          |
+|                                                    |                | Otherwise use H2O's default value      |
+|                                                    |                | |H2ONThreadsDefault|.                  |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.disable.ga``                       | ``true``       | Disable Google Analytics tracking for  |
 |                                                    |                | embedded H2O.                          |
@@ -248,3 +252,5 @@ External backend configuration properties
 +-------------------------------------------------------+----------------+-------------------------------------+
 
 --------------
+
+.. |H2ONThreadsDefault| replace:: ``Runtime.getRuntime().availableProcessors()``
