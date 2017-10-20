@@ -30,9 +30,9 @@ properties(
         ]
 )
 
-//if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != '') {
-//    cancelPreviousBuilds()
-//}
+if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != '') {
+    cancelBuild.abortPreviousRunningBuilds
+}
 
 node('dX-hadoop') {
     // Get Sparkling Water
