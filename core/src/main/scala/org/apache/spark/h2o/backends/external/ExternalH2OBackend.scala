@@ -66,6 +66,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-mapperXmx", conf.mapperXmx,
       "-output", conf.HDFSOutputDir.get,
       "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
+      "-J", "-disable_web",
       "-timeout", conf.clusterStartTimeout.toString,
       "-disown",
       "-J", "-watchdog_stop_without_client",
