@@ -27,9 +27,13 @@ import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vectors}
   * via unified API
   */
 trait WriteConverterCtx {
-  def createChunks(keyName: String, vecTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int])
+  def createChunks(keyName: String, h2oTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int], vecStartSize: Map[Int, Int] = Map.empty)
 
-  def closeChunks()
+  def closeChunks(numRows: Int = -1)
+
+  def startRow(rowIdx: Int)
+
+  def finishRow()
 
   def put(colIdx: Int, data: Boolean)
 
