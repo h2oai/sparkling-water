@@ -1,7 +1,9 @@
 #!/usr/bin/groovy
-@Library('h2o-jenkins-pipeline-lib') _
 
 def call(params, body) {
+
+    @Library('test-shared-library') _
+    
     def config = [:]
     body.resolveStrategy = Closure.DELEGATE_FIRST
     body.delegate = config
