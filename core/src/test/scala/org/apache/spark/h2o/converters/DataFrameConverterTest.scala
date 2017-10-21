@@ -614,9 +614,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
       StructField("f2", DoubleType)))
 
     // Verify transformation into DataFrame
-    df.show()
     val h2oFrame = hc.asH2OFrame(df)
-    println(h2oFrame.toString(0,100))
     // Basic invariants
     assert(df.count == h2oFrame.numRows(), "Number of rows has to match")
     assert(expandedSchema.length == h2oFrame.numCols(), "Number columns should match")
