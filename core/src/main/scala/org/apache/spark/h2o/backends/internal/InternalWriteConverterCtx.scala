@@ -29,23 +29,28 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
   private var chunks: Array[NewChunk] = _
 
   private var sparseVectorPts: collection.mutable.Map[Int, Array[Int]] = _
+  private var sparseVectorInUse: collection.mutable.Map[Int, Boolean] = _
 
   private var rowIdx: Int = _
 
   override def createChunks(keyName: String, h2oTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int], vecStartSize: Map[Int, Int]): Unit = {
     chunks = FrameUtils.createNewChunks(keyName, h2oTypes, chunkId)
     sparseVectorPts = collection.mutable.Map(vecStartSize.mapValues(size => new Array[Int](size)).toSeq: _*)
+    sparseVectorInUse = collection.mutable.Map(vecStartSize.mapValues(size => false).toSeq: _*)
   }
 
   override def closeChunks(numRows: Int): Unit = {
     sparseVectorPts.foreach { case (startIdx, pts) =>
+      if (sparseVectorInUse(startIdx)) {
         var i = 0
         while (i < pts.length) {
-          if (pts(i) < numRows) {
-            chunks(startIdx + i).addZeros(numRows - pts(i))
+          val lastRowIdx = pts(i)
+          if (lastRowIdx < numRows) {
+            chunks(startIdx + i).addZeros(numRows - lastRowIdx)
           }
           i += 1
         }
+      }
     }
     FrameUtils.closeNewChunks(chunks)
   }
@@ -66,17 +71,18 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
   override def numOfRows(): Int = chunks(0).len()
 
   override def putSparseVector(startIdx: Int, vector: SparseVector, maxVecSize: Int): Unit = {
+    sparseVectorInUse(startIdx) = true
     val sparseVectorPt = sparseVectorPts(startIdx)
     var i = 0
     while (i < vector.indices.length) {
       val idx = vector.indices(i)
       val value = vector.values(i)
-      val zeros = rowIdx - sparseVectorPt(idx) - 1
+      val zeros = rowIdx - sparseVectorPt(idx)
       if (zeros > 0) {
         chunks(startIdx + idx).addZeros(zeros)
       }
       put(startIdx + idx, value)
-      sparseVectorPt(idx) = rowIdx
+      sparseVectorPt(idx) = rowIdx + 1
       i += 1
     }
   }
