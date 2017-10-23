@@ -119,6 +119,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     executors
   }
 
+  override def epilog = ""
 }
 
 object InternalH2OBackend {

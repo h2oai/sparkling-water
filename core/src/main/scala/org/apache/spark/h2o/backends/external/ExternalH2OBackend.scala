@@ -35,9 +35,9 @@ import scala.util.control.NoStackTrace
 
 class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ExternalBackendUtils with Logging {
 
-  private var yarnAppId: Option[String] = None
+  var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
-
+  
   def launchH2OOnYarn(conf: H2OConf): String = {
     import ExternalH2OBackend._
 
@@ -232,6 +232,15 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
     conf
   }
+
+  override def epilog =
+    if (hc._conf.isAutoClusterStartUsed) {
+      s"""
+       | * Yarn App ID of external H2O cluster: ${yarnAppId.get}
+    """.stripMargin
+    } else {
+      ""
+    }
 }
 
 object ExternalH2OBackend {
