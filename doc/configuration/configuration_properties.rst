@@ -86,6 +86,10 @@ Configuration properties independent on selected backend
 | ``spark.ext.h2o.cloud.timeout``                    | ``60*1000``    | Timeout (in msec) for cluster          |
 |                                                    |                | formation.                             |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.node.enable.web``                  | ``false``      | Enable or disable web on h2o worker    |
+|                                                    |                | nodes. It is disabled by default for   |
+|                                                    |                | security reasons.                      |
++----------------------------------------------------+----------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |
