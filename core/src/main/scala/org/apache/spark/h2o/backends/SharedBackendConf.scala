@@ -51,6 +51,7 @@ trait SharedBackendConf {
   def h2oNodeLogDir  = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
   def uiUpdateInterval = sparkConf.getInt(PROP_UI_UPDATE_INTERVAL._1, PROP_UI_UPDATE_INTERVAL._2)
   def cloudTimeout = sparkConf.getInt(PROP_CLOUD_TIMEOUT._1, PROP_CLOUD_TIMEOUT._2)
+  def h2oNodeWebEnabled = sparkConf.getBoolean(PROP_NODE_ENABLE_WEB._1, PROP_NODE_ENABLE_WEB._2)
 
 
   /** H2O Client parameters */
@@ -123,6 +124,10 @@ trait SharedBackendConf {
   def setH2ONodeLogDir(dir: String) = set(PROP_NODE_LOG_DIR._1, dir)
   def setUiUpdateInterval(interval: Int) = set(PROP_UI_UPDATE_INTERVAL._1, interval.toString)
   def setCloudTimeout(timeout: Int) = set(PROP_CLOUD_TIMEOUT._1, timeout.toString)
+
+  def setH2ONodeWebEnabled() = set(PROP_NODE_ENABLE_WEB._1, true)
+  def setH2ONodeWebDisabled() = set(PROP_NODE_ENABLE_WEB._1, false)
+
 
 
   /** H2O Client parameters */
@@ -212,6 +217,9 @@ object SharedBackendConf {
 
   /** Configuration property - timeout for cloud up. */
   val PROP_CLOUD_TIMEOUT = ("spark.ext.h2o.cloud.timeout", 60 * 1000)
+
+  /** Enable or disable web on h2o worker nodes. It is disabled by default for security reasons. */
+  val PROP_NODE_ENABLE_WEB = ("spark.ext.h2o.node.enable.web", false)
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)
