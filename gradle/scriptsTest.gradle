@@ -1,13 +1,6 @@
 //
 // Script tests support
 //
-// FIXME: this is not necessary anymore with new version of Idea
-idea {
-    module {
-        jdkName='inheried'
-        testSourceDirs += file('src/scriptsTest/scala')
-    }
-}
 
 sourceSets {
     scriptsTest {
