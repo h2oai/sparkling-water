@@ -106,7 +106,8 @@ class RDDsHandlerSuite extends FunSuite with SharedSparkTestContext {
     val rddsHandler = new RDDsHandler(sc,hc)
 
     val rddReq = new RDDV3
-    rddReq.rdd_id =  0
+    // put high RDD number so we are sure RDD with this ID wasn't created so far
+    rddReq.rdd_id = 777
 
     intercept[H2ONotFoundArgumentException] {
       rddsHandler.getRDD(3,rddReq)
