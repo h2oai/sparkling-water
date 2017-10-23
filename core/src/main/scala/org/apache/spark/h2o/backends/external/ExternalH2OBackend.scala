@@ -73,6 +73,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
     )
 
+    if (!hc.getConf.h2oNodeWebEnabled) {
+      cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-disable_web")
+    }
+
     // start external H2O cluster and log the output
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
 
