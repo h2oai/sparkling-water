@@ -37,8 +37,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
-
-
+  
   def launchH2OOnYarn(conf: H2OConf): String = {
     import ExternalH2OBackend._
 
