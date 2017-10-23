@@ -35,5 +35,5 @@ trait SparklingBackend {
 
   def backendUIInfo: Seq[(String, String)]
 
-  def backendFinalisedString: String
+  def epilog: String
 }

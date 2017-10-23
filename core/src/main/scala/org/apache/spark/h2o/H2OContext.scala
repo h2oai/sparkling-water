@@ -301,7 +301,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
        |
     """.stripMargin
 
-    basic ++ backend.backendFinalisedString
+    basic ++ backend.epilog
   }
 
   // scalastyle:off

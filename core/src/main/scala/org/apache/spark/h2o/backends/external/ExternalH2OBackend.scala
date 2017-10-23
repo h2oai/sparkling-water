@@ -234,7 +234,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     conf
   }
 
-  override def backendFinalisedString =
+  override def epilog =
     if (hc._conf.isAutoClusterStartUsed) {
       s"""
        | * Yarn App ID of external H2O cluster: ${yarnAppId.get}
