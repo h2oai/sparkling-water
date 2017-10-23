@@ -3,14 +3,6 @@
 //
 
 
-// FIXME: this is not necessary anymore with new version of Idea
-idea {
-    module {
-        jdkName='inheried'
-        testSourceDirs += file('src/integTest/scala')
-    }
-}
-
 sourceSets {
     integTest {
         scala.srcDir file('src/integTest/scala')
