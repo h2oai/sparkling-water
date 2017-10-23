@@ -287,7 +287,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   //def openSparkUI(): Unit = sparkUI.foreach(openURI(_))
 
   override def toString: String = {
-    s"""
+    val basic = s"""
        |Sparkling Water Context:
        | * H2O name: ${H2O.ARGS.name}
        | * cluster size: ${h2oNodes.size}
@@ -297,8 +297,11 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
        |  ${h2oNodes.mkString("\n  ")}
        |  ------------------------
        |
-      |  Open H2O Flow in browser: http://$h2oLocalClient (CMD + click in Mac OSX)
+       |  Open H2O Flow in browser: http://$h2oLocalClient (CMD + click in Mac OSX)
+       |
     """.stripMargin
+
+    basic ++ backend.epilog
   }
 
   // scalastyle:off
