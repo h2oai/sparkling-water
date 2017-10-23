@@ -34,11 +34,3 @@ check.dependsOn test
 if (!project.plugins.hasPlugin('idea')) {
   apply plugin: 'idea'
 }
-// FIXME: this is not necessary anymore with new version of Idea
-idea {
-  module {
-    inheritOutputDirs = false
-    outputDir = file('py/build/main')
-    testOutputDir = file('py/build/test')
-  }
-}
