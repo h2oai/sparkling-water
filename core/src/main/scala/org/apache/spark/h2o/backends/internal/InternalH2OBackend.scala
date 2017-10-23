@@ -92,7 +92,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
     var h2oNodeArgs = InternalBackendUtils.getH2ONodeArgs(hc.getConf)
     // Disable web on h2o nodes in non-local mode
-    if (!hc.sparkContext.isLocal) {
+    if (!hc.sparkContext.isLocal &&  !hc.getConf.h2oNodeWebEnabled) {
       h2oNodeArgs = h2oNodeArgs ++ Array("-disable_web")
     } else {
       // In local mode we don't start h2o client and use standalone h2o mode right away. We need to set login configuration

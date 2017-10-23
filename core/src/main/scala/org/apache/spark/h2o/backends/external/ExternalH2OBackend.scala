@@ -66,13 +66,16 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-mapperXmx", conf.mapperXmx,
       "-output", conf.HDFSOutputDir.get,
       "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
-      "-J", "-disable_web",
       "-timeout", conf.clusterStartTimeout.toString,
       "-disown",
       "-J", "-watchdog_stop_without_client",
       "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
       "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
     )
+
+    if(!hc.getConf.h2oNodeWebEnabled){
+      cmdToLaunch ++ Seq[String]("-J", "-disable_web")
+    }
 
     // start external H2O cluster and log the output
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
