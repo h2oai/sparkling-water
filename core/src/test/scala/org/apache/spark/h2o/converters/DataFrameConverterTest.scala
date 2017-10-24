@@ -729,6 +729,13 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
   }
 
+  test("Convert DataFrame to H2OFrame with dot in column name"){
+    import sqlContext.implicits._
+    val df = sc.parallelize(1 to 10).toDF("with.dot")
+    val hf = hc.asH2OFrame(df)
+    assert(hf.name(0) == "with.dot")
+  }
+
   def fp(it: Iterator[Row]): Unit = {
     println(it.size)
   }
