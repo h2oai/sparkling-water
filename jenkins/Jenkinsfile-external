@@ -38,6 +38,11 @@ properties(
         ]
 )
 
+// Only PR builds have the CHANGE_BRANCH set
+if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
+    cancelPreviousBuilds()
+}
+
 node('dX-hadoop') {
     // Clean workspace
     sh 'rm -rf *'
