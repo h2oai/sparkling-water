@@ -142,6 +142,10 @@ object H2OSchemaUtils {
           (0 until elemMaxSizes(idx)).map { arrIdx =>
             StructField(field.name + arrIdx.toString, arrType, nullable)
           }
+        case BinaryType =>
+          (0 until elemMaxSizes(idx)).map { arrIdx =>
+            StructField(field.name + arrIdx.toString, ByteType, nullable = false)
+          }
         case _ => Seq(field)
       }
     }
