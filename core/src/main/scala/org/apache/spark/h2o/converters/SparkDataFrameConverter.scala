@@ -132,7 +132,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       } else {
         entry.dataType match {
           case BooleanType => con.put(idxH2O, if (row.getBoolean(idxField)) 1 else 0)
-          case BinaryType =>
+          case BinaryType => putArray(row.getAs[Array[Byte]](idxField), ByteType, con, idxH2O, elemSizes(idxField))
           case ByteType => con.put(idxH2O, row.getByte(idxField))
           case ShortType => con.put(idxH2O, row.getShort(idxField))
           case IntegerType => con.put(idxH2O, row.getInt(idxField))
@@ -165,7 +165,6 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       val currentIdx = idx + arrIdx
       elemType match {
         case BooleanType => con.put(currentIdx, if (arr(arrIdx).asInstanceOf[Boolean]) 1 else 0)
-        case BinaryType =>
         case ByteType => con.put(currentIdx, arr(arrIdx).asInstanceOf[Byte])
         case ShortType => con.put(currentIdx, arr(arrIdx).asInstanceOf[Short])
         case IntegerType => con.put(currentIdx, arr(arrIdx).asInstanceOf[Int])
