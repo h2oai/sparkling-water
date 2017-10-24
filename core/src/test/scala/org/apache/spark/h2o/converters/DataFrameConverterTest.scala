@@ -711,6 +711,22 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     assertVectorDoubleValues(hf.vec("label"), Seq(1.0, 1.0, 0.0, 0.0, 0.0, 0.0))
   }
 
+  test("SparkDataFrame with BinaryType to H2O Frame"){
+    import sqlContext.implicits._
+    val df = sc.parallelize(1 to 3).map{v => (0 until v).map(_.toByte).toArray[Byte]}.toDF()
+    // just verify that we are really testing the binary type case
+    assert(df.schema.fields(0).dataType == BinaryType)
+    val hf = hc.asH2OFrame(df)
+    assert(hf.numRows() == 3)
+    assert(hf.numCols() == 3) // max size of the array is 3
+
+
+    assertVectorIntValues(hf.vec(0), Seq(0, 0, 0))
+    assertVectorIntValues(hf.vec(1), Seq(-1, 1, 1))
+    assertVectorIntValues(hf.vec(2), Seq(-1, -1, 2))
+
+  }
+
   def fp(it: Iterator[Row]): Unit = {
     println(it.size)
   }

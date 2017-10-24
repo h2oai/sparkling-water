@@ -120,6 +120,10 @@ object H2OSchemaUtils {
           (0 until elemMaxSizes(idx)).map { arrIdx =>
             StructField(field.name + arrIdx.toString, arrType, nullable)
           }
+        case BinaryType =>
+          (0 until elemMaxSizes(idx)).map { arrIdx =>
+            StructField(field.name + arrIdx, ByteType, nullable = false)
+          }
         case t if t.isInstanceOf[UserDefinedType[_]] =>
           // t.isInstanceOf[UserDefinedType[mllib.linalg.Vector]]
           (0 until elemMaxSizes(idx)).map { arrIdx =>
@@ -137,6 +141,10 @@ object H2OSchemaUtils {
         case ArrayType(arrType, nullable) =>
           (0 until elemMaxSizes(idx)).map { arrIdx =>
             StructField(field.name + arrIdx.toString, arrType, nullable)
+          }
+        case BinaryType =>
+          (0 until elemMaxSizes(idx)).map { arrIdx =>
+            StructField(field.name + arrIdx.toString, ByteType, nullable = false)
           }
         case _ => Seq(field)
       }
@@ -217,6 +225,7 @@ object H2OSchemaUtils {
     flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
         case ArrayType(_, _) => Option(idx)
+        case BinaryType => Option(idx)
         case _ => None
       }
     }
@@ -235,7 +244,6 @@ object H2OSchemaUtils {
     flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
         case BooleanType => Option(idx)
-        case BinaryType => Option(idx)
         case ByteType => Option(idx)
         case ShortType => Option(idx)
         case IntegerType => Option(idx)
@@ -266,6 +274,7 @@ object H2OSchemaUtils {
     val elemType = row.schema.fields(idx)
     elemType.dataType match {
       case ArrayType(_, _) => row.getAs[Seq[_]](idx).length
+      case BinaryType => row.getAs[Array[Byte]](idx).length
       // it is user defined type - currently, only vectors are supported
       case _ =>
         val value = row.get(idx)
