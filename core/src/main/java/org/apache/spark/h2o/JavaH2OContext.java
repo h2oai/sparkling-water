@@ -25,6 +25,7 @@ import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.SparkSession;
 import scala.Option;
 import water.Key;
 import water.fvec.Frame;
@@ -193,6 +194,29 @@ which is not nice.
      */
     public static JavaH2OContext getOrCreate(JavaSparkContext jsc, H2OConf conf){
         return new JavaH2OContext(H2OContext.getOrCreate(jsc.sc(), conf));
+    }
+
+    /**
+     * Get existing or create new JavaH2OContext based on provided H2O configuration. It searches the configuration
+     * properties passed to Sparkling Water and based on them starts H2O Context. If the values are not found, the default
+     * values are used in most of the cases. The default cluster mode is internal, ie. spark.ext.h2o.external.cluster.mode=false
+     *
+     * @param  sparkSession SparkSession
+     * @return Java H2O Context
+     */
+    public static JavaH2OContext getOrCreate(SparkSession sparkSession){
+        return new JavaH2OContext(H2OContext.getOrCreate(sparkSession));
+    }
+
+    /**
+     * Get existing or create new JavaH2OContext based on provided H2O configuration
+     *
+     * @param sparkSession SparkSession
+     * @param conf H2O configuration
+     * @return Java H2O Context
+     */
+    public static JavaH2OContext getOrCreate(SparkSession sparkSession, H2OConf conf){
+        return new JavaH2OContext(H2OContext.getOrCreate(sparkSession, conf));
     }
 
 

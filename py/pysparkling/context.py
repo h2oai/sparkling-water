@@ -59,7 +59,6 @@ def _is_of_simple_type(rdd):
     else:
         return False
 
-
 def _get_first(rdd):
     if rdd.isEmpty():
         raise ValueError('rdd is empty')
@@ -77,19 +76,18 @@ class H2OContext(object):
         try:
             self.__do_init(spark_session)
             _monkey_patch_H2OFrame(self)
-            # loads sparkling water jar only if it hasn't been already loaded
+            # Load sparkling water jar only if it hasn't been already loaded
             Initializer.load_sparkling_jar(self._sc)
         except:
             raise
 
     def __do_init(self, spark_session):
-        self._ss = spark_session
-        self._sc = self._ss._sc
-        self._sql_context = self._ss._wrapped
-        self._jsql_context = self._ss._jwrapped
-        self._jsc = self._sc._jsc
-        self._jvm = self._sc._jvm
-        self._gw = self._sc._gateway
+        self._spark_session = spark_session
+        self._sc = self._spark_session._sc
+        self._sql_context = self._spark_session._wrapped
+        self._jsql_context = self._spark_session._jwrapped
+        self._jspark_session = self._spark_session._jsparkSession
+        self._jvm = self._spark_session._jvm
 
         self.is_initialized = False
 
@@ -114,14 +112,15 @@ class H2OContext(object):
         h2o_context = H2OContext(spark_session)
 
         jvm = h2o_context._jvm  # JVM
-        jsc = h2o_context._jsc  # JavaSparkContext
+        jspark_session = h2o_context._jspark_session  # Java Spark Session
+
 
         if conf is not None:
             selected_conf = conf
         else:
             selected_conf = H2OConf(spark_session)
         # Create backing Java H2OContext
-        jhc = jvm.org.apache.spark.h2o.JavaH2OContext.getOrCreate(jsc, selected_conf._jconf)
+        jhc = jvm.org.apache.spark.h2o.JavaH2OContext.getOrCreate(jspark_session, selected_conf._jconf)
         h2o_context._jhc = jhc
         h2o_context._conf = selected_conf
         h2o_context._client_ip = jhc.h2oLocalClientIp()
@@ -159,7 +158,7 @@ class H2OContext(object):
         if self.is_initialized:
             return self._jhc.toString()
         else:
-            return "H2OContext: not initialized, call H2OContext.getOrCreate(sc) or H2OContext.getOrCreate(sc, conf)"
+            return "H2OContext: not initialized, call H2OContext.getOrCreate(spark) or H2OContext.getOrCreate(spark, conf)"
 
     def __repr__(self):
         self.show()
