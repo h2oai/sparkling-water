@@ -51,7 +51,7 @@ class FrameConversions:
         # On scala backend, to transform RDD of Product to H2OFrame, we need to know Type Tag.
         # Since there is no alternative for Product class in Python, we first transform the rdd to dataframe
         # and then transform it to H2OFrame.
-        df = h2oContext._ss.createDataFrame(dataframe)
+        df = h2oContext._spark_session.createDataFrame(dataframe)
         j_h2o_frame = h2oContext._jhc.asH2OFrame(df._jdf, frame_name)
         j_h2o_frame_key = j_h2o_frame.key()
         return H2OFrame.from_java_h2o_frame(j_h2o_frame,j_h2o_frame_key)
