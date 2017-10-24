@@ -20,8 +20,8 @@ class H2OConf(object):
 
 
     def _do_init(self, spark_session):
-        self._ss = spark_session
-        self._sc = self._ss._sc
+        self._spark_session = spark_session
+        self._sc = self._spark_session._sc
         jvm = self._sc._jvm
         jsc = self._sc._jsc
         # Create instance of H2OConf class
