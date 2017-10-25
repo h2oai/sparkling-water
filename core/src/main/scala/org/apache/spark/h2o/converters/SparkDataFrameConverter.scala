@@ -53,8 +53,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
     import H2OSchemaUtils._
     val substPattern = "_____SUBST_DOT____"
-    val newNames = dataFrame.columns.map(_.replaceAllLiterally(".", substPattern))
-    val renamedDF = dataFrame.toDF(newNames: _*)
+    val renamedDF = renamedDFWithoutDots(dataFrame, substPattern)
     // Flatten the dataframe so we don't have any nested rows
     val flatDataFrame = flattenDataFrame(renamedDF)
 

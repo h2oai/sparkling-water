@@ -730,10 +730,24 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("Convert DataFrame to H2OFrame with dot in column name"){
-    import sqlContext.implicits._
+    import spark.implicits._
     val df = sc.parallelize(1 to 10).toDF("with.dot")
     val hf = hc.asH2OFrame(df)
     assert(hf.name(0) == "with.dot")
+  }
+
+
+  test("Convert nested DataFrame to H2OFrame with dots in column names"){
+    import org.apache.spark.sql.types._
+    val nameSchema = StructType(Seq[StructField](StructField("given.name", StringType, true), StructField("family", StringType, true)))
+    val personSchema = StructType(Seq(StructField("name", nameSchema, true), StructField("person.age", IntegerType, false)))
+
+    import spark.implicits._
+    val df = sc.parallelize(Seq(Person(Name("Charles", "Dickens"), 58), Person(Name("Terry", "Prachett"), 66))).toDF()
+    val renamedDF = spark.sqlContext.createDataFrame(df.rdd, personSchema)
+    val hf = hc.asH2OFrame(renamedDF)
+
+    assert(hf.names() sameElements Array("name.given.name", "name.family", "person.age"))
   }
 
   def fp(it: Iterator[Row]): Unit = {
