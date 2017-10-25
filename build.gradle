@@ -85,13 +85,7 @@ configure(allprojects) { project ->
       junitVersion       = '4.11'
     }
 }
-idea {
-    module {
-        inheritOutputDirs = false
-        outputDir = file('build/main')
-        testOutputDir = file('build/test')
-    }
-}
+
 // 
 // Common configuration for all subprojects
 //
@@ -156,7 +150,7 @@ task buildSparklingWaterDist(type: Exec) {
 task dist(dependsOn: buildSparklingWaterDist)
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '4.0'
+  gradleVersion = '4.2.1'
 }
 
 clean.doFirst {
