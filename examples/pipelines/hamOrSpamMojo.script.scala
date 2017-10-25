@@ -72,7 +72,7 @@ val idf = new IDF().
   setInputCol(hashingTF.getOutputCol).
   setOutputCol("tf_idf")
 
-// Create H2ODeepLearning model
+// Create GBM model
 val gbm = new H2OGBM().
 setTrainRatio(0.8).
   setFeaturesCols("tf_idf").
