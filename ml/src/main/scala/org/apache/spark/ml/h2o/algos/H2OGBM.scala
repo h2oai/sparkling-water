@@ -37,6 +37,8 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
 
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gbm"))
 
+  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
+
   def this(parameters: GBMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("gbm"))
 
   def this(parameters: GBMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
@@ -47,7 +49,7 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
     val model = new GBM(params).trainModel().get()
     new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
   }
-  
+
 }
 
 object H2OGBM extends MLReadable[H2OGBM] {
