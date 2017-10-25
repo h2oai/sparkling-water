@@ -16,7 +16,7 @@ dependencies {
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"
-  testCompile project(':sparkling-water-core').sourceSets.test.output
+  testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
 
 }
 
