@@ -23,7 +23,32 @@ from integ_test_utils import *
 import unittest
 
 class LocalIntegTestSuite(unittest.TestCase):
-    pass
+
+    def test_pipeline_gbm_mojo(self):
+        env = IntegTestEnv()
+
+        env.set_spark_master("local")
+        env.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
+        env.conf("spark.executor.instances", 3)
+        env.conf("spark.executor.memory", "2g")
+        env.conf("spark.ext.h2o.port.base", 63331)
+        env.conf("spark.driver.memory", "2g")
+
+        launch(env, "examples/pipelines/ham_or_spam_gbm.py")
+
+    def test_pipeline_deep_learning(self):
+        env = IntegTestEnv()
+
+        env.set_spark_master("local")
+        # Configure YARN environment
+        env.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
+        env.conf("spark.executor.instances", 3)
+        env.conf("spark.executor.memory", "2g")
+        env.conf("spark.ext.h2o.port.base", 63331)
+        env.conf("spark.driver.memory", "2g")
+
+        launch(env, "examples/pipelines/ham_or_spam_deep_learning.py")
+
 
 
 if __name__ == '__main__':
