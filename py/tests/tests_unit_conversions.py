@@ -16,7 +16,7 @@
 #
 
 """
-Unit tests for PySparkling;
+Unit tests for PySparkling Data Conversions;
 """
 
 import unittest
@@ -162,24 +162,6 @@ class FrameTransformationsTest(unittest.TestCase):
         self.assertEquals(len(dfe.columns), 3, "Number of columns should match")
         self.assertEquals(dfe.collect(), [Row(c1=1, c2='first', c3=3), Row(c1=2, c2='second', c3=3)])
 
-class H2OConfTest(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls._spark = SparkSession.builder.config(conf = unit_test_utils.get_default_spark_conf().set("spark.ext.h2o.cloud.name", "test-cloud")).getOrCreate()
-        unit_test_utils.set_up_class(cls)
-        h2o_conf = H2OConf(cls._spark).set_num_of_external_h2o_nodes(2)
-        cls._hc = H2OContext.getOrCreate(cls._spark, h2o_conf)
-
-    @classmethod
-    def tearDownClass(cls):
-        unit_test_utils.tear_down_class(cls)
-
-    # test passing h2o_conf to H2OContext
-    def test_h2o_conf(self):
-        self.assertEquals(self._hc.get_conf().cloud_name(),"test-cloud", "Configuration property cloud_name should match")
-
 
 if __name__ == '__main__':
-    generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_report")
-    #test_utils.run_tests([FrameTransformationsTest, H2OConfTest], file_name="py_unit_tests_report")
+    generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_conversions_report")

@@ -45,6 +45,21 @@ def preparePythonEnv(environment) {
 }
 
 //
+// Prepare Python environment to run python tests
+//
+def preparePythonTestEnv(environment){
+    // Add PySparkling zip on PYTHONPATH so unittests can access all the PySparkling packages
+    environment['PYTHONPATH'] = "${distPython.archivePath}${FPS}${environment['PYTHONPATH']}"
+    environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
+    environment["spark.ext.h2o.external.start.mode"] = detectExternalBackendStartMode()
+    // sparkling assembly jar is here because of external h2o tests
+    environment["sparkling.assembly.jar"] = configurations.compile.join(',')
+
+    environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
+    environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
+}
+
+//
 // Initial task checking setup of all properties required
 // by Python build
 //
@@ -170,27 +185,27 @@ artifacts {
     sdist distPython
 }
 
-//
-// Test python against Spark cloud
-//
-task testPython(type: Exec, dependsOn: distPython) {
+task testPythonConf(type: Exec, dependsOn: distPython){
     doFirst {
         preparePythonEnv(environment)
     }
-    // Add PySparkling zip on PYTHONPATH so unittests can access all the PySparkling packages
-    environment['PYTHONPATH'] = "${distPython.archivePath}${FPS}${environment['PYTHONPATH']}"
-    environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
-    environment["spark.ext.h2o.external.start.mode"] = detectExternalBackendStartMode()
-    // sparkling assembly jar is here because of external h2o tests
-    environment["sparkling.assembly.jar"] = configurations.compile.join(',')
-
-
-
-    environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
-    environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
-
-    commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_unit.py"])
+    preparePythonTestEnv(environment)
+    commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_unit_conf.py"])
 }
+
+task testPythonConversions(type: Exec, dependsOn: distPython){
+    doFirst {
+        preparePythonEnv(environment)
+    }
+    preparePythonTestEnv(environment)
+    commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_unit_conversions.py"])
+}
+
+//
+// Test python against Spark cloud
+//
+task testPython(dependsOn: [testPythonConf, testPythonConversions]) {}
+
 
 //
 // Run python integration tests
@@ -282,7 +297,6 @@ task buildPython(dependsOn: distPython)
 build.dependsOn buildPython
 
 test.dependsOn testPython
-
 def detectEnvironment(defaultEnv = "local") {
     def denv = [ project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
                     System.properties["sparklingTestEnv"],
