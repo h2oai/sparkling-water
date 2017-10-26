@@ -136,8 +136,14 @@ class H2OContext(object):
         # In driver mode the application would call exit which is handled by Spark AM as failure
         deploy_mode = spark_session.sparkContext._conf.get("spark.submit.deployMode")
         if deploy_mode != "cluster":
-            atexit.register(lambda: h2o.cluster().shutdown())
+            atexit.register(lambda: h2o_context.__stop())
         return h2o_context
+
+    def __stop(self):
+        try:
+            h2o.cluster().shutdown()
+        except:
+            pass
 
     def stop(self):
         warnings.warn("Stopping H2OContext from PySparkling is not fully supported. Please restart your PySpark session and create a new H2OContext.")
