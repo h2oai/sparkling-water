@@ -17,42 +17,13 @@
 
 import unittest
 import os
-from pyspark.sql import SparkSession
 from pyspark import SparkConf
-from external_cluster_test_utils import ExternalClusterTestHelper
 import sys
+from random import randrange
+import socket
 
-
-
-def asert_h2o_frame(test_suite, h2o_frame, rdd):
-    test_suite.assertEquals(h2o_frame.nrow, rdd.count(),"Number of rows should match")
-    test_suite.assertEquals(h2o_frame.ncol, 1,"Number of columns should equal 1")
-    test_suite.assertEquals(h2o_frame.names, ["values"],"Column should be name values")
-
-
-def get_default_spark_conf():
-    conf = SparkConf(). \
-        setAppName("pyunit-test"). \
-        setMaster("local-cluster[3,1,2048]"). \
-        set("spark.ext.h2o.disable.ga","true"). \
-        set("spark.driver.memory", "2g"). \
-        set("spark.executor.memory", "2g"). \
-        set("spark.ext.h2o.client.log.level", "DEBUG"). \
-        set("spark.ext.h2o.repl.enabled", "false"). \
-        set("spark.task.maxFailures", "1"). \
-        set("spark.rpc.numRetries", "1"). \
-        set("spark.deploy.maxExecutorRetries", "1"). \
-        set("spark.network.timeout", "360s"). \
-        set("spark.worker.timeout", "360"). \
-        set("spark.ext.h2o.backend.cluster.mode", ExternalClusterTestHelper.cluster_mode()). \
-        set("spark.ext.h2o.cloud.name", ExternalClusterTestHelper.unique_cloud_name("test")). \
-        set("spark.ext.h2o.external.start.mode", os.getenv("spark.ext.h2o.external.start.mode", "manual"))
-
-    if ExternalClusterTestHelper.tests_in_external_mode():
-        conf.set("spark.ext.h2o.client.ip", ExternalClusterTestHelper.local_ip())
-        conf.set("spark.ext.h2o.external.cluster.num.h2o.nodes", "2")
-
-    return conf
+def unique_cloud_name(script_name):
+    return str(script_name[:-3])+str(randrange(65536))
 
 def locate(file_name):
     if os.path.isfile("/home/0xdiag/" + file_name):
@@ -60,22 +31,26 @@ def locate(file_name):
     else:
         return "../examples/" + file_name
 
-def set_up_class(cls):
-    if ExternalClusterTestHelper.tests_in_external_mode(cls._spark.conf):
-        cls.external_cluster_test_helper = ExternalClusterTestHelper()
-        cloud_name = cls._spark.conf.get("spark.ext.h2o.cloud.name")
-        cloud_ip = cls._spark.conf.get("spark.ext.h2o.client.ip")
-        cls.external_cluster_test_helper.start_cloud(2, cloud_name, cloud_ip)
+def cluster_mode(spark_conf = None):
+    if spark_conf is not None:
+        return spark_conf.get("spark.ext.h2o.backend.cluster.mode", "internal")
+    else:
+        return os.getenv('spark.ext.h2o.backend.cluster.mode', "internal")
 
+def tests_in_external_mode(spark_conf = None):
+    return cluster_mode(spark_conf) == "external"
 
-def tear_down_class(cls):
-    if ExternalClusterTestHelper.tests_in_external_mode(cls._spark.conf):
-        cls.external_cluster_test_helper.stop_cloud()
-    cls._spark.stop()
+def tests_in_internal_mode(spark_conf = None):
+    return not tests_in_external_mode(spark_conf)
+
+def is_auto_cluster_start_mode_used():
+    return os.getenv("spark.ext.h2o.external.start.mode", "manual") == "auto"
+
+def is_manual_cluster_start_mode_used():
+    return os.getenv("spark.ext.h2o.external.start.mode", "manual") == "manual"
 
 # Runs python tests and by default reports to console.
 # If filename is specified it additionally reports output to file with that name into py/build directory
-
 def run_tests(cases, file_name=None):
     alltests = [unittest.TestLoader().loadTestsFromTestCase(case) for case in cases]
     testsuite = unittest.TestSuite(alltests)
@@ -104,3 +79,11 @@ def get_env_org_fail(prop_name, fail_msg):
     except KeyError:
         print(fail_msg)
         sys.exit(1)
+
+def local_ip():
+    return os.getenv("H2O_CLIENT_IP", get_local_non_loopback_ipv4_address())
+
+def get_local_non_loopback_ipv4_address():
+    ips1 = [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1]
+    ips2 = [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]
+    return [l for l in (ips1, ips2) if l][0][0]
