@@ -28,7 +28,16 @@ if [ -z "$TOPDIR" ]; then
   exit -1
 fi
 
+function checkJava(){
+if [ -z $(which java) ]; then
+    echo "Java is not installed. Please install Java first before continuing with Sparkling Water"
+    exit -1
+fi
+}
+
+
 function checkSparkVersion() {
+  checkJava
   installed_spark_version=$(spark-submit --version 2>&1 | grep version | grep -v Scala | sed -e "s/.*version //" | sed -e "s/\([0-9][0-9]*.[0-9][0-9]*\).*/\1/")
   if ! [[ "$SPARK_VERSION" =~ "$installed_spark_version".* ]]; then
     echo "You are trying to use Sparkling Water built for Spark ${SPARK_VERSION}, but your \$SPARK_HOME(=$SPARK_HOME) property points to Spark of version ${installed_spark_version}. Please ensure correct Spark is provided and re-run Sparkling Water."

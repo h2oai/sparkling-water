@@ -21,7 +21,19 @@ if not exist "%SPARK_HOME%/bin/spark-submit.cmd" (
 )
 exit /b 0
 
+
+:checkJava
+
+set "JV="
+For /F "Tokens=3" %%A In ('java -version 2^>^&1') Do If Not Defined JV Set "JV=%%~A"
+if /I "%JV%"=="not" (
+  echo Java is not installed
+  call :haltHelper 2> nul
+)
+exit /b 0
+
 :checkSparkVersion
+call :checkJava
 for /f "delims=" %%i in ( 'CMD /C %SPARK_HOME%/bin/spark-submit.cmd --version 2^>^&1 1^>NUL ^| findstr /v "Scala" ^| findstr "version" ') do set linewithversion=%%i
 set INSTALLED_SPARK_VERSION=%linewithversion:~-5%
 
