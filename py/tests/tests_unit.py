@@ -22,26 +22,25 @@ Unit tests for PySparkling;
 import unittest
 from pysparkling.context import H2OContext
 from pysparkling.conf import H2OConf
-from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
-from pyspark.sql import Row
 
 import h2o
-import test_utils
+import unit_test_utils
+import generic_test_utils
 
 # Test of transformations from dataframe/rdd to h2o frame and from h2o frame back to dataframe
 class FrameTransformationsTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._spark = SparkSession.builder.config(conf = test_utils.get_default_spark_conf()).getOrCreate()
-        test_utils.set_up_class(cls)
+        cls._spark = SparkSession.builder.config(conf = unit_test_utils.get_default_spark_conf()).getOrCreate()
+        unit_test_utils.set_up_class(cls)
         cls._hc = H2OContext.getOrCreate(cls._spark, H2OConf(cls._spark).set_num_of_external_h2o_nodes(2))
 
     @classmethod
     def tearDownClass(cls):
         h2o.cluster().shutdown()
-        test_utils.tear_down_class(cls)
+        unit_test_utils.tear_down_class(cls)
 
 
     # test transformation from dataframe to h2o frame
@@ -60,7 +59,7 @@ class FrameTransformationsTest(unittest.TestCase):
         rdd = self._spark.sparkContext.parallelize([num for num in range(0,100)])
         h2o_frame = hc.as_h2o_frame(rdd)
         self.assertEquals(h2o_frame[0,0], 0, "Value should match")
-        test_utils.asert_h2o_frame(self,h2o_frame,rdd)
+        unit_test_utils.asert_h2o_frame(self, h2o_frame, rdd)
 
     # test transformation from RDD consisting of python booleans to h2o frame
     def test_rdd_bool_to_h2o_frame(self):
@@ -69,7 +68,7 @@ class FrameTransformationsTest(unittest.TestCase):
         h2o_frame = hc.as_h2o_frame(rdd)
         self.assertEquals(h2o_frame[0,0],1,"Value should match")
         self.assertEquals(h2o_frame[1,0],0,"Value should match")
-        test_utils.asert_h2o_frame(self,h2o_frame,rdd)
+        unit_test_utils.asert_h2o_frame(self, h2o_frame, rdd)
 
     # test transformation from RDD consisting of python strings to h2o frame
     def test_rdd_str_h2o_frame(self):
@@ -78,7 +77,7 @@ class FrameTransformationsTest(unittest.TestCase):
         h2o_frame = hc.as_h2o_frame(rdd)
         self.assertEquals(h2o_frame[0,0],"a","Value should match")
         self.assertEquals(h2o_frame[2,0],"c","Value should match")
-        test_utils.asert_h2o_frame(self,h2o_frame,rdd)
+        unit_test_utils.asert_h2o_frame(self, h2o_frame, rdd)
 
     # test transformation from RDD consisting of python floats to h2o frame
     def test_rdd_float_h2o_frame(self):
@@ -87,7 +86,7 @@ class FrameTransformationsTest(unittest.TestCase):
         h2o_frame = hc.as_h2o_frame(rdd)
         self.assertEquals(h2o_frame[0,0],0.5,"Value should match")
         self.assertEquals(h2o_frame[1,0],1.3333333333,"Value should match")
-        test_utils.asert_h2o_frame(self,h2o_frame,rdd)
+        unit_test_utils.asert_h2o_frame(self, h2o_frame, rdd)
 
     # test transformation from RDD consisting of python doubles to h2o frame
     def test_rdd_double_h2o_frame(self):
@@ -96,7 +95,7 @@ class FrameTransformationsTest(unittest.TestCase):
         h2o_frame = hc.as_h2o_frame(rdd)
         self.assertEquals(h2o_frame[0,0],0.5,"Value should match")
         self.assertEquals(h2o_frame[1,0],1.3333333333,"Value should match")
-        test_utils.asert_h2o_frame(self, h2o_frame, rdd)
+        unit_test_utils.asert_h2o_frame(self, h2o_frame, rdd)
 
     # test transformation from RDD consisting of python complex types to h2o frame
     def test_rdd_complex_h2o_frame_1(self):
@@ -121,7 +120,7 @@ class FrameTransformationsTest(unittest.TestCase):
     # on h2o context
     def test_h2o_frame_2_data_frame_new(self):
         hc = self._hc
-        h2o_frame = h2o.upload_file(test_utils.locate("smalldata/prostate/prostate.csv"))
+        h2o_frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
         df = hc.as_spark_frame(h2o_frame)
         self.assertEquals(df.count(), h2o_frame.nrow, "Number of rows should match")
         self.assertEquals(len(df.columns), h2o_frame.ncol, "Number of columns should match")
@@ -167,14 +166,14 @@ class H2OConfTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._spark = SparkSession.builder.config(conf = test_utils.get_default_spark_conf().set("spark.ext.h2o.cloud.name", "test-cloud")).getOrCreate()
-        test_utils.set_up_class(cls)
+        cls._spark = SparkSession.builder.config(conf = unit_test_utils.get_default_spark_conf().set("spark.ext.h2o.cloud.name", "test-cloud")).getOrCreate()
+        unit_test_utils.set_up_class(cls)
         h2o_conf = H2OConf(cls._spark).set_num_of_external_h2o_nodes(2)
         cls._hc = H2OContext.getOrCreate(cls._spark, h2o_conf)
 
     @classmethod
     def tearDownClass(cls):
-        test_utils.tear_down_class(cls)
+        unit_test_utils.tear_down_class(cls)
 
     # test passing h2o_conf to H2OContext
     def test_h2o_conf(self):
@@ -182,5 +181,5 @@ class H2OConfTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_report")
+    generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_report")
     #test_utils.run_tests([FrameTransformationsTest, H2OConfTest], file_name="py_unit_tests_report")
