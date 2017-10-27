@@ -74,7 +74,6 @@ def prepareSparklingWaterEnvironment() {
                 # Check if we are bulding against specific H2O branch
                 if [ ${config.buildAgainstH2OBranch} = true ]; then
                     # Clone H2O
-                    rm -rf h2o-3
                     git clone https://github.com/h2oai/h2o-3.git
                     cd h2o-3
                     git checkout ${config.h2oBranch}
@@ -85,10 +84,7 @@ def prepareSparklingWaterEnvironment() {
                         # When extending from specific jar the jar has already the desired name
                         ${env.WORKSPACE}/gradlew -q extendJar
                     fi
-                fi
-    
-                # Check if we are building against included H2O 
-                if [ ${config.buildAgainstH2OBranch} = false ]; then
+                else
                     # Download h2o-python client, save it in private directory
                     # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
                     mkdir -p ${env.WORKSPACE}/private/
@@ -121,7 +117,7 @@ def buildAndLint() {
 def unitTests() {
     return { config ->
         stage('QA: Unit Tests') {
-            if (config.runUnitTests) {
+            if (config.runUnitTests.toBoolean()) {
                 sh """
                 # Run unit tests
                 ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
@@ -141,7 +137,7 @@ def localIntegTest() {
     return { config ->
         stage('QA: Local Integration Tests') {
 
-            if (config.runLocalIntegTests) {
+            if (config.runLocalIntegTests.toBoolean()) {
                 sh  """
                     # Run local integration tests
                     ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
@@ -160,7 +156,7 @@ def localIntegTest() {
 def scriptsTest() {
     return { config ->
         stage('QA: Script Tests') {
-            if (config.runScriptTests) {
+            if (config.runScriptTests.toBoolean()) {
                 sh  """
                     # Run scripts tests
                     ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
@@ -178,7 +174,7 @@ def scriptsTest() {
 def integTest() {
     return { config ->
         stage('QA: Integration Tests') {
-            if (config.runIntegTests) {
+            if (config.runIntegTests.toBoolean()) {
                 sh  """
                     ${env.WORKSPACE}/gradlew integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
                     #  echo 'Archiving artifacts after Integration test'
@@ -195,7 +191,7 @@ def integTest() {
 def pysparklingIntegTest() {
     return { config ->
         stage('QA: PySparkling Integration Tests') {
-            if (config.runPySparklingIntegTests) {
+            if (config.runPySparklingIntegTests.toBoolean()) {
 
                 sh  """
                     ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
