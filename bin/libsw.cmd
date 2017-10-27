@@ -25,9 +25,9 @@ exit /b 0
 :checkJava
 
 set "JV="
-For /F "Tokens=3" %%A In ('java -version 2^>^&1') Do If Not Defined JV Set "JV=%%~A"
+for /f "tokens=3" %%A in ('java -version 2^>^&1') do if not defined JV set "JV=%%~A"
 if /I "%JV%"=="not" (
-  echo Java is not installed
+  echo Java is not installed. Please install Java first before continuing with Sparkling Water.
   call :haltHelper 2> nul
 )
 exit /b 0

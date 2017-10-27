@@ -30,7 +30,7 @@ fi
 
 function checkJava(){
 if [ -z $(which java) ]; then
-    echo "Java is not installed. Please install Java first before continuing with Sparkling Water"
+    echo "Java is not installed. Please install Java first before continuing with Sparkling Water."
     exit -1
 fi
 }
