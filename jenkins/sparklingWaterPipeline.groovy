@@ -97,16 +97,20 @@ def prepareSparklingWaterEnvironment() {
     }
 }
 
+def getGradleCommand(config) {
+    if (config.buildAgainstH2OBranch.toBoolean()) {
+        "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew --include-build ${env.WORKSPACE}/h2o-3"
+    } else {
+        "${env.WORKSPACE}/gradlew"
+    }
+}
+
 def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint') {
             sh  """
                 # Build
-                if [ ${config.buildAgainstH2OBranch} = true ]; then
-                    H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew clean --include-build ${env.WORKSPACE}/h2o-3 build -x check scalaStyle
-                else
-                    ${env.WORKSPACE}/gradlew clean build -x check scalaStyle
-                fi
+                ${getGradleCommand(config)} clean build -x check scalaStyle
                 """
         }
     }
@@ -118,7 +122,7 @@ def unitTests() {
             if (config.runUnitTests.toBoolean()) {
                 sh """
                 # Run unit tests
-                ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                ${getGradleCommand(config)} test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                 """
 
 
@@ -138,7 +142,7 @@ def localIntegTest() {
             if (config.runLocalIntegTests.toBoolean()) {
                 sh  """
                     # Run local integration tests
-                    ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                    ${getGradleCommand(config)} integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                     """
 
                 arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -157,7 +161,7 @@ def scriptsTest() {
             if (config.runScriptTests.toBoolean()) {
                 sh  """
                     # Run scripts tests
-                    ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                    ${getGradleCommand(config)} scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                     """
 
                 arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -174,7 +178,7 @@ def integTest() {
         stage('QA: Integration Tests') {
             if (config.runIntegTests.toBoolean()) {
                 sh  """
-                    ${env.WORKSPACE}/gradlew integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                    ${getGradleCommand(config)} integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
                     #  echo 'Archiving artifacts after Integration test'
                     """
 
@@ -192,7 +196,7 @@ def pysparklingIntegTest() {
             if (config.runPySparklingIntegTests.toBoolean()) {
 
                 sh  """
-                    ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                     ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
                     #  echo 'Archiving artifacts after PySparkling Integration test'
                     """
 
