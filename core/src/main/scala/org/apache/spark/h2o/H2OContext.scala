@@ -101,7 +101,7 @@ class H2OContext private (val sparkContext: SparkContext, conf: H2OConf) extends
     */
   def init(): H2OContext = {
     if (!isRunningOnCorrectSpark(sparkContext)) {
-      throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark $buildSparkMajorVersion," +
+      throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
         s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
         s" points to Spark of version ${sparkContext.version}. Please ensure correct Spark is provided and" +
         s" re-run Sparkling Water.")
