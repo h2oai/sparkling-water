@@ -88,8 +88,18 @@ task createSparkVersionFile {
     }
 }
 
+task createH2OVersionFile {
+    doLast {
+        File version_file = file("src/main/resources/h2o.version")
+        // Create parent directories if not created yet
+        version_file.getParentFile().mkdirs()
+        version_file.write(h2oVersion)
+    }
+}
+
 test.dependsOn testJar
 processResources.dependsOn createSparkVersionFile
+processResources.dependsOn createH2OVersionFile
 
 integTest {
     // Pass references to libraries to test launcher
