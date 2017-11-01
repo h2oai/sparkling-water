@@ -95,6 +95,22 @@ object H2OSchemaUtils {
   }
 
 
+  private def renamedColsWithoutDots(schema: StructType, substPattern: String): StructType = {
+    val renamed = schema.fields.map{ f =>
+      val newName = f.name.replaceAllLiterally(".", substPattern)
+      f.dataType match {
+        case st: StructType => StructField(newName , renamedColsWithoutDots(st, substPattern), f.nullable, f.metadata)
+        case _ => StructField(newName, f.dataType, f.nullable, f.metadata)
+      }
+    }
+
+    StructType(renamed)
+  }
+
+  def renamedDFWithoutDots(df: DataFrame, substPattern: String): DataFrame = {
+    df.sparkSession.createDataFrame(df.rdd, renamedColsWithoutDots(df.schema, substPattern))
+  }
+
   def flattenDataFrame(df: DataFrame): DataFrame = {
     import org.apache.spark.sql.functions.col
     val flattenSchema = flattenSchemaToCol(df.schema)
