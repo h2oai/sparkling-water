@@ -103,3 +103,7 @@ case class SampleString(x: String)
 case class SampleAltString(y: String)
 
 case class SparseVectorHolder(v: org.apache.spark.ml.linalg.SparseVector)
+
+case class Name(given: String, family: String)
+
+case class Person(name: Name, age: Int)
