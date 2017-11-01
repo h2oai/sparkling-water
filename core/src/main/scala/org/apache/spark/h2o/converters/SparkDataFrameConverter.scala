@@ -52,9 +52,10 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
     import H2OSchemaUtils._
-
+    val substPattern = "_____SUBST_DOT____"
+    val renamedDF = renamedDFWithoutDots(dataFrame, substPattern)
     // Flatten the dataframe so we don't have any nested rows
-    val flatDataFrame = flattenDataFrame(dataFrame)
+    val flatDataFrame = flattenDataFrame(renamedDF)
 
     val dfRdd = flatDataFrame.rdd
     val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
@@ -64,9 +65,10 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     val startPositions = collectElemStartPositions(elemMaxSizes)
 
     // Expands RDD's schema ( Arrays and Vectors)
-    val flatRddSchema = expandedSchema(hc.sparkContext, H2OSchemaUtils.flattenSchema(dataFrame.schema), elemMaxSizes)
+    val flatRddSchema = expandedSchema(hc.sparkContext, H2OSchemaUtils.flattenSchema(renamedDF.schema), elemMaxSizes)
     // Patch the flat schema based on information about types
-    val fnames = flatRddSchema.map(_.name).toArray
+    // Also give the dot back
+    val fnames = flatRddSchema.map(_.name.replaceAllLiterally(substPattern, ".")).toArray
 
     // in case of internal backend, store regular vector types
     // otherwise for external backend store expected types
@@ -103,12 +105,14 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
     // Collect mapping start position of vector and its size
-    val vecStartSize = (for (vecIdx <- vecIndices) yield { (startPositions(vecIdx), elemMaxSizes(vecIdx))}).toMap
+    val vecStartSize = (for (vecIdx <- vecIndices) yield {
+      (startPositions(vecIdx), elemMaxSizes(vecIdx))
+    }).toMap
     // Creates array of H2O NewChunks; A place to record all the data in this partition
     con.createChunks(keyName, vecTypes, context.partitionId(), vecMaxSizes, vecStartSize)
 
     var localRowIdx = 0
-    iterator.foreach {row =>
+    iterator.foreach { row =>
       sparkRowToH2ORow(row, localRowIdx, con, startPositions, elemMaxSizes)
       localRowIdx += 1
     }
