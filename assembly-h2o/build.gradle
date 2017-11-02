@@ -120,6 +120,7 @@ task extendJar(type: ShadowJar, dependsOn:[":sparkling-water-ml:jar", ":sparklin
         exclude("META-INF/LICENSE")
         zip64 = true
         destinationDir = file("private/extended")
+        destinationDir.mkdirs()
         mergeServiceFiles()
         def fileName = h2oJarFileName(originalJar)
         if(fileName != null){
