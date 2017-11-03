@@ -42,7 +42,7 @@ node('dX-hadoop') {
     sh 'rm -rf *'
     // Get Sparkling Water
     checkout scm
-    printenv
+    sh 'printenv'
     githubNotify description: 'This is a shorted example',  status: 'SUCCESS', credentialsId: 'd57016f6-d172-43ea-bea1-1d6c7c1747a0'
 
     // Get the script with the pipeline
