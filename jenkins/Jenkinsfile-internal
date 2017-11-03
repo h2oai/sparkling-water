@@ -59,4 +59,5 @@ node('dX-hadoop') {
         hadoopVersion = "2.6"
         backendMode = "internal"
     }
+    githubNotify description: 'This is a shorted example',  status: 'SUCCESS'
 }
