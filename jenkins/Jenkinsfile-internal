@@ -43,13 +43,13 @@ node('dX-hadoop') {
     // Get Sparkling Water
     checkout scm
     withCredentials([string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'OAUTH_TOKEN')]) {
-    sh """
-      curl -XPOST -H "Authorization: token ${OAUTH_TOKEN}" https://api.github.com/repos/h2oai/sparkling-water/statuses/\$(git rev-parse HEAD) -d "{
-        \"state\": \"pending\",
-        \"target_url\": \"${BUILD_URL}\",
-        \"description\": \"The build is pending!\"
-      }"
-    """
+      sh """
+        curl -XPOST -H "Authorization: token ${OAUTH_TOKEN}" https://api.github.com/repos/h2oai/sparkling-water/statuses/\$(git rev-parse HEAD) -d "{
+\"state\": \"pending\",
+\"target_url\": \"${BUILD_URL}\",
+\"description\": \"The build is pending!\"
+        }"
+      """
     }
     githubNotify description: 'This is a shorted example', status: 'PENDING', context: 'Final Test', gitApiUrl: 'https://api.github.com',
       repo: 'sparkling-water', account: 'h2oai', credentialsId: 'd57016f6-d172-43ea-bea1-1d6c7c1747a0', sha: env.GIT_COMMIT
