@@ -41,9 +41,10 @@ node('dX-hadoop') {
     // Clean workspace
     sh 'rm -rf *'
     // Get Sparkling Water
-    checkout scm
+    def scmVars = checkout scm
     sh 'printenv'
-    githubNotify description: 'This is a shorted example',  status: 'SUCCESS', credentialsId: 'd57016f6-d172-43ea-bea1-1d6c7c1747a0'
+    echo "${scmVars}"
+    githubNotify description: 'This is a shorted example',  status: 'PENDING', credentialsId: 'd57016f6-d172-43ea-bea1-1d6c7c1747a0'
 
     // Get the script with the pipeline
     def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
