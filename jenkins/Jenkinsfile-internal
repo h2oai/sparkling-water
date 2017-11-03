@@ -36,6 +36,17 @@ if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
     cancelPreviousBuilds()
 }
 
+withCredentials([string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'OAUTH_TOKEN')]) {
+  sh """
+    curl -XPOST -H "Authorization: token ${OAUTH_TOKEN}" https://api.github.com/repos/h2oai/sparkling-water/statuses/\$(git rev-parse HEAD) -d "{
+      \\"state\\": \\"pending\\",
+      \\"target_url\\": \\"${BUILD_URL}\\",
+      \\"description\\": \\"The build is pending!\\",
+      \\"context\\": \\"continuous-integration/jenkins/internal/pr-head\\"
+    }"
+  """
+}
+
 node('dX-hadoop') {
 
     // Clean workspace
@@ -45,16 +56,6 @@ node('dX-hadoop') {
     def buildStatus = 'success'
     def buildMessage = 'This commit looks good'
     try {
-      withCredentials([string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'OAUTH_TOKEN')]) {
-        sh """
-          curl -XPOST -H "Authorization: token ${OAUTH_TOKEN}" https://api.github.com/repos/h2oai/sparkling-water/statuses/\$(git rev-parse HEAD) -d "{
-            \\"state\\": \\"pending\\",
-            \\"target_url\\": \\"${BUILD_URL}\\",
-            \\"description\\": \\"The build is pending!\\",
-            \\"context\\": \\"continuous-integration/jenkins/internal/pr-head\\"
-          }"
-        """
-      }
       error 'Testing'
       // Get the script with the pipeline
       def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
