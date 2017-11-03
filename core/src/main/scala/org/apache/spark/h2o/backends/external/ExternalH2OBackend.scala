@@ -70,7 +70,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-disown",
       "-J", "-watchdog_stop_without_client",
       "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
-      "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
+      "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString,
+      "-J", "-watchdog_stop_without_client",
     )
 
     if (!hc.getConf.h2oNodeWebEnabled) {
@@ -135,7 +136,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     logTrace("Starting H2O client node and connecting to external H2O cluster.")
 
     val h2oClientArgs = if (hc.getConf.isAutoClusterStartUsed) {
-      getH2OClientArgs(hc.getConf) ++ Array("-watchdog_client")
+      getH2OClientArgs(hc.getConf) ++ Array("-client")
     } else {
       getH2OClientArgs(hc.getConf)
     }
