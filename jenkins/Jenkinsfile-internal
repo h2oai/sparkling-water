@@ -45,9 +45,9 @@ node('dX-hadoop') {
     withCredentials([string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'OAUTH_TOKEN')]) {
       sh """
         curl -XPOST -H "Authorization: token ${OAUTH_TOKEN}" https://api.github.com/repos/h2oai/sparkling-water/statuses/\$(git rev-parse HEAD) -d "{
-"state": "pending",
-"target_url": "${BUILD_URL}\",
-"description": "The build is pending!\"
+\\"state\\": \\"pending\\",
+\\"target_url\\": \\"${BUILD_URL}\\",
+\\"description\\": \\"The build is pending!\\"
         }"
       """
     }
