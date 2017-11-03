@@ -37,26 +37,58 @@ if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
 }
 
 node('dX-hadoop') {
+
     // Clean workspace
     sh 'rm -rf *'
     // Get Sparkling Water
     checkout scm
 
-    // Get the script with the pipeline
-    def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
+    withCredentials([string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'OAUTH_TOKEN')]) {
+      sh """
+        curl -XPOST -H "Authorization: token ${OAUTH_TOKEN}" https://api.github.com/repos/h2oai/sparkling-water/statuses/\$(git rev-parse HEAD) -d "{
+          \\"state\\": \\"pending\\",
+          \\"target_url\\": \\"${BUILD_URL}\\",
+          \\"description\\": \\"The build is pending!\\",
+          \\"context\\": \\"continuous-integration/jenkins/internal/pr-head\\"
+        }"
+      """
+    }
+    
+    def buildStatus = 'success'
+    def buildMessage = 'This commit looks good'
+    try {
+      error 'Testing'
+      // Get the script with the pipeline
+      def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
 
-    // Execute the pipeline
-    pipeline(params) { p ->
-        sparkVersion = "${p.sparkVersion}"
-        runUnitTests = "${p.runUnitTests}"
-        runLocalIntegTests = "${p.runLocalIntegTests}"
-        runScriptTests = "${p.runScriptTests}"
-        runIntegTests = "${p.runIntegTests}"
-        runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
-        sparklingTestEnv = "${p.sparklingTestEnv}"
-        buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
-        h2oBranch = "${p.h2oBranch}"
-        hadoopVersion = "2.6"
-        backendMode = "internal"
+      // Execute the pipeline
+      pipeline(params) { p ->
+          sparkVersion = "${p.sparkVersion}"
+          runUnitTests = "${p.runUnitTests}"
+          runLocalIntegTests = "${p.runLocalIntegTests}"
+          runScriptTests = "${p.runScriptTests}"
+          runIntegTests = "${p.runIntegTests}"
+          runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
+          sparklingTestEnv = "${p.sparklingTestEnv}"
+          buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
+          h2oBranch = "${p.h2oBranch}"
+          hadoopVersion = "2.6"
+          backendMode = "internal"
+      }
+    } catch (e) {
+      buildStatus = 'failure'
+      buildMessage = 'This commit cannot be built'
+      throw e
+    } finally {
+      withCredentials([string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'OAUTH_TOKEN')]) {
+        sh """
+          curl -XPOST -H "Authorization: token ${OAUTH_TOKEN}" https://api.github.com/repos/h2oai/sparkling-water/statuses/\$(git rev-parse HEAD) -d "{
+            \\"state\\": \\"${buildStatus}\\",
+            \\"target_url\\": \\"${BUILD_URL}\\",
+            \\"description\\": \\"${buildMessage}\\",
+            \\"context\\": \\"continuous-integration/jenkins/internal/pr-head\\"
+          }"
+        """
+      }
     }
 }
