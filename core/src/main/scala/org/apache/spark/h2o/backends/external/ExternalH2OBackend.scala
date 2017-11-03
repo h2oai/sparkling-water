@@ -147,8 +147,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
     // Register web API for client
     RestAPIManager(hc).registerAll()
-    // Remove this workaround once we have proper fix
-    Thread.sleep(hc.sparkContext.getConf.get("spark.ext.h2o.external.deadlock.timeout", "5000").toInt)
     H2O.startServingRestApi()
 
     if (cloudMembers.length == 0) {
