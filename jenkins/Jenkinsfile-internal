@@ -37,12 +37,12 @@ if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
 }
 
 node('dX-hadoop') {
-    githubNotify description: 'This is a shorted example',  status: 'SUCCESS'
 
     // Clean workspace
     sh 'rm -rf *'
     // Get Sparkling Water
     checkout scm
+    githubNotify description: 'This is a shorted example',  status: 'SUCCESS'
 
     // Get the script with the pipeline
     def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
