@@ -132,24 +132,21 @@ class H2OContext(object):
         print(h2o_context)
 
         # Stop h2o when running standalone pysparkling scripts, only in client deploy mode
-        #, so the user does not explicitly close h2o.
+        #, so the user does not need explicitly close h2o.
         # In driver mode the application would call exit which is handled by Spark AM as failure
         deploy_mode = spark_session.sparkContext._conf.get("spark.submit.deployMode")
         if deploy_mode != "cluster":
-            atexit.register(lambda: h2o_context.stop_with_jvm())
+            atexit.register(lambda: h2o_context.__stop())
         return h2o_context
 
-
-    def stop_with_jvm(self):
-        Initializer.clean_temp_dir()
-        h2o.cluster().shutdown()
-        self.stop()
-
+    def __stop(self):
+        try:
+            h2o.cluster().shutdown()
+        except:
+            pass
 
     def stop(self):
-        warnings.warn("Stopping H2OContext. (Restarting H2O is not yet fully supported...) ")
-        Initializer.clean_temp_dir()
-        self._jhc.stop(False)
+        warnings.warn("Stopping H2OContext from PySparkling is not fully supported. Please restart your PySpark session and create a new H2OContext.")
 
     def __del__(self):
         self.stop()
