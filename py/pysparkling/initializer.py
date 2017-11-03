@@ -73,12 +73,6 @@ class Initializer(object):
 
         return os.path.abspath("{}/sparkling_water/sparkling_water_assembly.jar".format(Initializer.__extracted_jar_dir))
 
-    @staticmethod
-    def clean_temp_dir():
-        ## Clean temporary directory containing extracted Sparkling Water Jar
-        if Initializer.__extracted_jar_dir is not None:
-            import shutil
-            shutil.rmtree(Initializer.__extracted_jar_dir)
 
     @staticmethod
     def __get_sw_jar():
