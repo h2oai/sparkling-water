@@ -43,6 +43,7 @@ node('dX-hadoop') {
     // Get Sparkling Water
     checkout scm
     def buildStatus = 'success'
+    def buildMessage = 'This commit looks good'
     try {
       withCredentials([string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'OAUTH_TOKEN')]) {
         sh """
@@ -74,13 +75,14 @@ node('dX-hadoop') {
       }
     } catch (e) {
       buildStatus = 'failure'
+      buildStatus = 'This commit cannot be built'
     } finally {
       withCredentials([string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'OAUTH_TOKEN')]) {
         sh """
           curl -XPOST -H "Authorization: token ${OAUTH_TOKEN}" https://api.github.com/repos/h2oai/sparkling-water/statuses/\$(git rev-parse HEAD) -d "{
             \\"state\\": \\"${buildStatus}\\",
             \\"target_url\\": \\"${BUILD_URL}\\",
-            \\"description\\": \\"The build is pending!\\",
+            \\"description\\": \\"${buildMessage}\\",
             \\"context\\": \\"continuous-integration/jenkins/internal/pr-head\\"
           }"
         """
