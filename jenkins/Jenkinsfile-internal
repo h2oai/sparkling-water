@@ -42,7 +42,7 @@ node('dX-hadoop') {
     sh 'rm -rf *'
     // Get Sparkling Water
     checkout scm
-    githubNotify description: 'This is a shorted example', status: 'PENDING', context: 'Final Test'
+    githubNotify description: 'This is a shorted example', status: 'PENDING', context: 'Final Test',
       repo: 'sparkling-water', account: 'h2oai', credentialsId: 'd57016f6-d172-43ea-bea1-1d6c7c1747a0', sha: env.GIT_COMMIT
     error 'Testing'
     // Get the script with the pipeline
