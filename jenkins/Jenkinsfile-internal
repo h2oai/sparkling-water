@@ -44,7 +44,7 @@ node('dX-hadoop') {
     def scmVars = checkout scm
     sh 'printenv'
     echo "${scmVars}"
-    githubNotify description: 'This is a shorted example',  status: 'PENDING', credentialsId: 'd57016f6-d172-43ea-bea1-1d6c7c1747a0'
+    githubNotify description: 'This is a shorted example',  status: 'PENDING', credentialsId: 'github-sw'
 
     // Get the script with the pipeline
     def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
