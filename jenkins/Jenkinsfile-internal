@@ -75,7 +75,7 @@ node('dX-hadoop') {
       }
     } catch (e) {
       buildStatus = 'failure'
-      buildStatus = 'This commit cannot be built'
+      buildMessage = 'This commit cannot be built'
     } finally {
       withCredentials([string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'OAUTH_TOKEN')]) {
         sh """
