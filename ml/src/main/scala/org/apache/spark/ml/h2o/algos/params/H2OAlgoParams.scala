@@ -19,10 +19,7 @@ package org.apache.spark.ml.h2o.algos.params
 import com.google.common.base.CaseFormat
 import hex.Model.Parameters
 import org.apache.spark.h2o.utils.ReflectionUtils._
-import org.apache.spark.ml.h2o.algos.H2OAlgorithm
 import org.apache.spark.ml.param._
-import org.apache.spark.ml.param.h2o.H2OKeyParam
-import water.fvec.Frame
 
 import scala.reflect.ClassTag
 
