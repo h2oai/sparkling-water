@@ -23,8 +23,7 @@ import hex.{FrameSplitter, Model}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
-import org.apache.spark.ml.h2o.algos.params.H2OAlgoParams
-import org.apache.spark.ml.h2o.models.H2OModelParams
+import org.apache.spark.ml.h2o.algos.params.{H2OAlgoParams, H2OModelParams}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Estimator, Model => SparkModel}
