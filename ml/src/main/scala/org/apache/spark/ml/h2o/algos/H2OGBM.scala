@@ -41,12 +41,8 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
 
 
   override def trainModel(params: GBMParameters): H2OMOJOModel = {
-    set(responseColumn, $(predictionCol)) {
-      getParams._response_column = $(predictionCol)
-    }
     val model = new GBM(params).trainModel().get()
-    val (mojoModel, mojoData) = ModelSerializationSupport.getMojo(model)
-    new H2OMOJOModel(mojoModel, mojoData)
+    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
   }
 
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gbm"))
@@ -86,11 +82,9 @@ trait H2OGBMParams extends H2OSharedTreeParams[GBMParameters] {
   final val learnRateAnnealing = doubleParam("learnRateAnnealing")
   final val colSampleRate = doubleParam("colSampleRate")
   final val maxAbsLeafnodePred = doubleParam("maxAbsLeafnodePred")
-  final val responseColumn = param[String]("responseColumn")
 
   setDefault(learnRate -> parameters._learn_rate)
   setDefault(learnRateAnnealing -> parameters._learn_rate_annealing)
   setDefault(colSampleRate -> parameters._col_sample_rate)
   setDefault(maxAbsLeafnodePred -> parameters._max_abs_leafnode_pred)
-  setDefault(responseColumn -> parameters._response_column)
 }
