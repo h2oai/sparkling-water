@@ -54,24 +54,37 @@ trait ModelSerializationSupport {
     destination
   }
 
-  def exportMOJOModel(model : Model[_, _, _], destination: URI): URI = {
+  def exportMOJOModel(model: Model[_, _, _], destination: URI): URI = {
     val destFile = new File(destination)
     val fos = new FileOutputStream(destFile)
     model.getMojo.writeTo(fos)
     destination
   }
 
-  def loadMOJOModel(source: URI) : MojoModel = {
+  def loadMOJOModel(source: URI): MojoModel = {
     hex.genmodel.MojoModel.load(source.getPath)
   }
 }
 
 object ModelSerializationSupport extends ModelSerializationSupport {
-  
+
+  def getMojo(model: Model[_, _, _]): (MojoModel, Array[Byte]) = {
+    val mojoData = getMojoData(model)
+    val bais = new ByteArrayInputStream(mojoData)
+    val reader = MojoReaderBackendFactory.createReaderBackend(bais, MojoReaderBackendFactory.CachingStrategy.MEMORY)
+    (ModelMojoReader.readFrom(reader), mojoData)
+  }
+
   def getMojoModel(model: Model[_, _, _]) = {
     val mojoData = getMojoData(model)
     val bais = new ByteArrayInputStream(mojoData)
     val reader = MojoReaderBackendFactory.createReaderBackend(bais, MojoReaderBackendFactory.CachingStrategy.MEMORY)
+    ModelMojoReader.readFrom(reader)
+  }
+
+  def getMojoModel(mojoData: Array[Byte]) = {
+    val is = new ByteArrayInputStream(mojoData)
+    val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
     ModelMojoReader.readFrom(reader)
   }
 
@@ -81,10 +94,4 @@ object ModelSerializationSupport extends ModelSerializationSupport {
     baos.toByteArray
   }
 
-  def getMojo(model: Model[_, _, _]): (MojoModel, Array[Byte]) = {
-    val mojoData = getMojoData(model)
-    val bais = new ByteArrayInputStream(mojoData)
-    val reader = MojoReaderBackendFactory.createReaderBackend(bais, MojoReaderBackendFactory.CachingStrategy.MEMORY)
-    (ModelMojoReader.readFrom(reader), mojoData)
-  }
 }
