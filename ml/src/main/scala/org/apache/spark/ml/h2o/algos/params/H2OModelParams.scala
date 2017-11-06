@@ -14,13 +14,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.models
+package org.apache.spark.ml.h2o.algos.params
 
 import org.apache.spark.ml.param.{Param, Params, StringArrayParam}
 
 
+/**
+  * Parameters which need to be available on the model itself
+  */
 trait H2OModelParams extends Params{
-
   /**
     * By default it is set to 1.0 which use whole frame for training
     */
