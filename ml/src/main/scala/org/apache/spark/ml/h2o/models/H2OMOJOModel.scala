@@ -20,25 +20,26 @@ package org.apache.spark.ml.h2o.models
 import java.io._
 
 import hex.ModelCategory
-import hex.genmodel.MojoReaderBackendFactory.CachingStrategy
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
 import org.apache.spark._
 import org.apache.spark.annotation.{DeveloperApi, Since}
+import org.apache.spark.ml.h2o.algos.params.H2OModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
+import water.support.ModelSerializationSupport
 
 import scala.reflect.ClassTag
 
-class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val uid: String)
+class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable {
 
-  def this(model: MojoModel, mojoData: Array[Byte]) = this(model, mojoData, Identifiable.randomUID("mojoModel"))
+  def this(mojoData: Array[Byte]) = this(mojoData, Identifiable.randomUID("mojoModel"))
 
-  val easyPredictModelWrapper = new EasyPredictModelWrapper(model)
+  // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
+  @transient var easyPredictModelWrapper: EasyPredictModelWrapper = createEasyPredictModelWrapper()
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
@@ -65,12 +66,16 @@ class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val
     df.select(renamedCols: _*)
   }
 
+  private def createEasyPredictModelWrapper() = new EasyPredictModelWrapper(ModelSerializationSupport.getMojoModel(mojoData))
 
   override def transform(dataset: Dataset[_]): DataFrame = {
+
     val spark = SparkSession.builder().getOrCreate()
     val df = flattenDataFrame(dataset.toDF())
 
     val predictedRows = df.rdd.map { row =>
+      // create predict wrapper from mojo data on each executor where predictions take place
+      easyPredictModelWrapper = createEasyPredictModelWrapper()
       // create RowData on which we do the predictions
       val dt = new RowData
       val values = row.schema.fields.zipWithIndex.map { case (entry, idxRow) =>
@@ -120,7 +125,7 @@ class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val
           val value = row.get(idxRow)
           value match {
             case vector: mllib.linalg.Vector =>
-              (0 until vector.size).foreach { idx =>     // WRONG this patter needs to share the same code as in the data transformation
+              (0 until vector.size).foreach { idx => // WRONG this patter needs to share the same code as in the data transformation
                 dt.put(entry.name + idx, vector(idx).toString)
               }
             case vector: ml.linalg.Vector =>
@@ -140,14 +145,15 @@ class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val
       case ModelCategory.Regression => Seq(StructField("value", DoubleType))
       case ModelCategory.Clustering => Seq(StructField("cluster", DoubleType))
       case ModelCategory.AutoEncoder => throw new RuntimeException("Unimplemented model category")
-      case ModelCategory.DimReduction => throw new RuntimeException("Unimplemented model categoy")
+      case ModelCategory.DimReduction => throw new RuntimeException("Unimplemented model category")
       case ModelCategory.WordEmbedding => throw new RuntimeException("Unimplemented model category")
       case _ => throw new RuntimeException("Unknown model category")
     }
   }
 
   def predict(data: RowData): Row = {
-    model.getModelCategory match {
+    easyPredictModelWrapper.getModelCategory
+    match {
       case ModelCategory.Binomial => Row(easyPredictModelWrapper.predictBinomial(data).classProbabilities: _*)
       case ModelCategory.Multinomial => Row(easyPredictModelWrapper.predictMultinomial(data).classProbabilities: _*)
       case ModelCategory.Regression => Row(easyPredictModelWrapper.predictRegression(data).value)
@@ -168,9 +174,7 @@ class H2OMOJOModel(val model: MojoModel, val mojoData: Array[Byte], override val
   }
 
   @Since("1.6.0")
-  override def write: MLWriter
-
-  = new H2OMOJOModelWriter(this)
+  override def write: MLWriter = new H2OMOJOModelWriter(this)
 
 }
 
@@ -199,15 +203,15 @@ private[models] class H2OMOJOModelReader
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
     val file = new File(path, defaultFileName)
     val is = new FileInputStream(file)
-    val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
-    val model = ModelMojoReader.readFrom(reader)
-    val h2oModel = make(model, null, metadata.uid)(sqlContext)
+    val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
+
+    val h2oModel = make(mojoData, metadata.uid)(sqlContext)
     DefaultParamsReader.getAndSetParams(h2oModel, metadata)
     h2oModel
   }
 
-  def make(model: MojoModel, mojoData: Array[Byte], uid: String)(sqLContext: SQLContext): H2OMOJOModel = {
-    new H2OMOJOModel(model, mojoData, uid)
+  def make(mojoData: Array[Byte], uid: String)(sqLContext: SQLContext): H2OMOJOModel = {
+    new H2OMOJOModel(mojoData, uid)
   }
 }
 
@@ -221,12 +225,14 @@ object H2OMOJOModel extends MLReadable[H2OMOJOModel] {
   override def load(path: String): H2OMOJOModel = super.load(path)
 
   def createFromMojo(is: InputStream, uid: String = Identifiable.randomUID("mojoModel")): H2OMOJOModel = {
-    val reader = MojoReaderBackendFactory.createReaderBackend(is, CachingStrategy.MEMORY)
-    val mojo = ModelMojoReader.readFrom(reader)
-    val mojoModel = new H2OMOJOModel(mojo, null, uid)
-    // Reconstruct state of Spark H2O MOJO transformer
-    mojoModel.setFeaturesCols(mojo.getNames.filter(_ != mojo.getResponseName))
-    mojoModel.setPredictionsCol(mojo.getResponseName)
-    mojoModel
+
+    val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
+    val mojoModel = ModelSerializationSupport.getMojoModel(mojoData)
+    val sparkMojoModel = new H2OMOJOModel(mojoData, uid)
+
+    // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
+    sparkMojoModel.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))
+    sparkMojoModel.setPredictionsCol(mojoModel.getResponseName)
+    sparkMojoModel
   }
 }
