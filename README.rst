@@ -137,15 +137,15 @@ See `PySparkling README <py/README.rst>`__ to learn about PySparkling.
 Use Sparkling Water via Spark Packages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To see how Sparkling Water can be used as Spark package, please see `Use as Spark Package <doc/spark_package.rst>`__.
+To see how Sparkling Water can be used as Spark package, please see `Use as Spark Package <doc/tutorials/use_as_spark_package.rst>`__.
 
 Use Sparkling Water in Windows environments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-See `Windows Tutorial <doc/windows_manual.rst>`__ to learn how to use Sparkling Water in Windows environments.
+See `Windows Tutorial <doc/tutorials/run_on_windows.rst>`__ to learn how to use Sparkling Water in Windows environments.
 
 Sparkling Water examples
 ~~~~~~~~~~~~~~~~~~~~~~~~
-To see how to run examples for Sparkling Water, please see `Running Examples <doc/running_examples.rst>`__.
+To see how to run examples for Sparkling Water, please see `Running Examples <doc/devel/running_examples.rst>`__.
 
 --------------
 
@@ -158,7 +158,7 @@ backend. The backend can be specified before creationg of the
 ``H2OContext``.
 
 For more details regarding the internal or external backend, please see
-`Backends <doc/backends.rst>`__.
+`Backends <doc/tutorials/backends.rst>`__.
 
 --------------
 
@@ -177,7 +177,7 @@ Complete development documentation is available at `Development Documentation <d
 Build Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~
 
-To see how to build Sparkling Water, please see `Build Sparkling Water <doc/build.rst>`__.
+To see how to build Sparkling Water, please see `Build Sparkling Water <doc/devel/build.rst>`__.
 
 Develop applications with Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
