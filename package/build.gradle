@@ -4,7 +4,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 dependencies {
     // hack to go around Spark Ivy resolver
-    compileOnly "no.priv.garshol.duke:duke:1.2"
+    compile "no.priv.garshol.duke:duke:1.2"
 
     compile project(':sparkling-water-core')
     compile project(":sparkling-water-examples")
