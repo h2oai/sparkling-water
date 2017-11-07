@@ -229,6 +229,6 @@ for i in crime_examples:
         """)
 
 # stop H2O and Spark services
-h2o.shutdown(prompt=False)
+h2o.cluster().shutdown()
 spark.stop()
 
