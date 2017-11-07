@@ -5,8 +5,6 @@ apply from: "$rootDir/gradle/utils.gradle"
 dependencies {
     // Spark REPL
     compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
-    // H2O Scala API
-    compile "ai.h2o:h2o-scala_${scalaBaseVersion}:${h2oVersion}"
 
     testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
     testCompile "junit:junit:4.11"
