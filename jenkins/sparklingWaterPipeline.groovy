@@ -122,15 +122,17 @@ def unitTests() {
     return { config ->
         stage('QA: Unit Tests') {
             if (config.runUnitTests.toBoolean()) {
-                sh """
-                # Run unit tests
-                ${getGradleCommand(config)} test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
-                """
+                try {
+                    sh  """
+                        # Run unit tests
+                        ${getGradleCommand(config)} test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        """
+                } finally {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    junit 'core/build/test-results/test/*.xml'
+                    testReport 'core/build/reports/tests/test', 'Core Unit tests'
+                }
 
-
-                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
-                junit 'core/build/test-results/test/*.xml'
-                testReport 'core/build/reports/tests/test', 'Core Unit tests'
             }
         }
 
@@ -142,15 +144,17 @@ def localIntegTest() {
         stage('QA: Local Integration Tests') {
 
             if (config.runLocalIntegTests.toBoolean()) {
-                sh  """
-                    # Run local integration tests
-                    ${getGradleCommand(config)} integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
-                    """
-
-                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                junit 'examples/build/test-results/integTest/*.xml'
-                testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
-                testReport 'examples/build/reports/tests/integTest', 'Local Examples Integration tests'
+                try {
+                    sh  """
+                        # Run local integration tests
+                        ${getGradleCommand(config)} integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        """
+                } finally {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    junit 'examples/build/test-results/integTest/*.xml'
+                    testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
+                    testReport 'examples/build/reports/tests/integTest', 'Local Integration tests'
+                }
             }
         }
     }
@@ -161,14 +165,16 @@ def scriptsTest() {
     return { config ->
         stage('QA: Script Tests') {
             if (config.runScriptTests.toBoolean()) {
-                sh  """
-                    # Run scripts tests
-                    ${getGradleCommand(config)} scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
-                    """
-
-                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                junit 'examples/build/test-results/scriptsTest/*.xml'
-                testReport 'examples/build/reports/tests/scriptsTest', 'Examples Script Tests'
+                try {
+                    sh  """
+                        # Run scripts tests
+                        ${getGradleCommand(config)} scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        """
+                } finally {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    junit 'examples/build/test-results/scriptsTest/*.xml'
+                    testReport 'examples/build/reports/tests/scriptsTest', 'Script Tests'
+                }
             }
         }
     }
@@ -179,14 +185,16 @@ def integTest() {
     return { config ->
         stage('QA: Integration Tests') {
             if (config.runIntegTests.toBoolean()) {
-                sh  """
+                try {
+                    sh  """
                     ${getGradleCommand(config)} integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
                     #  echo 'Archiving artifacts after Integration test'
                     """
-
-                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                junit 'examples/build/test-results/integTest/*.xml'
-                testReport 'examples/build/reports/tests/integTest', "${config.backendMode} Examples Integration tests"
+                } finally {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    junit 'examples/build/test-results/integTest/*.xml'
+                    testReport 'examples/build/reports/tests/integTest', "Integration tests"
+                }
             }
         }
     }
@@ -196,13 +204,15 @@ def pysparklingIntegTest() {
     return { config ->
         stage('QA: PySparkling Integration Tests') {
             if (config.runPySparklingIntegTests.toBoolean()) {
-
-                sh  """
-                     ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
-                    #  echo 'Archiving artifacts after PySparkling Integration test'
-                    """
-
+                try{
+                    sh  """
+                         ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                         # echo 'Archiving artifacts after PySparkling Integration test'
+                        """
+                } finally {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+
+                }
             }
         }
     }
