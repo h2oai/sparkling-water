@@ -14,32 +14,43 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.algos.params
+package org.apache.spark.ml.h2o.param
 
-import org.apache.spark.ml.param.{Param, Params, StringArrayParam}
-
+import org.apache.spark.ml.param._
 
 /**
-  * Parameters which need to be available on the model itself
+  * Parameters which need to be available on the model itself for prediction purposes. This can't be backed
+  * byt H2OParamsHelper as at the time of prediction we might be using mojo and binary parameters are not available.
   */
-trait H2OModelParams extends Params{
-  /**
-    * By default it is set to 1.0 which use whole frame for training
-    */
+trait H2OModelParams extends Params {
+
+  //
+  // Param definitions
+  //
   final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
   final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
+
+  //
+  // Default values
+  //
   setDefault(predictionCol -> "prediction")
   setDefault(featuresCols -> Array.empty[String])
 
+  //
+  // Getters
+  //
   /** @group getParam */
-  final def getFeaturesCols: Array[String] = $(featuresCols)
+  def getPredictionsCol() = $(predictionCol)
+
+  /** @group getParam */
+  def getFeaturesCols() = $(featuresCols)
+
+  //
+  // Setters
+  //
+  /** @group setParam */
+  def setFeaturesCols(cols: Array[String]): this.type = set(featuresCols, cols)
 
   /** @group setParam */
-  def setFeaturesCols(cols: Array[String]) = set(featuresCols, cols)
-
-  /** @group getParam */
-  def getPredictionsCol: String = $(predictionCol)
-
-  /** @group setParam */
-  def setPredictionsCol(value: String) = set(predictionCol, value)
+  def setPredictionsCol(value: String): this.type = set(predictionCol, value)
 }

@@ -23,7 +23,7 @@ import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.spark._
 import org.apache.spark.annotation.{DeveloperApi, Since}
-import org.apache.spark.ml.h2o.algos.params.H2OModelParams
+import org.apache.spark.ml.h2o.param.H2OModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
@@ -61,7 +61,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   private def flattenDataFrame(df: DataFrame): DataFrame = {
     import org.apache.spark.sql.functions.col
     val flattenSchema = flattenSchemaToCol(df.schema)
-    // this is needed so the flattened data frame has hiearchical names
+    // this is needed so the flattened data frame has hierarchical names
     val renamedCols = flattenSchema.map(name => col(name.toString()).as(name.toString()))
     df.select(renamedCols: _*)
   }
