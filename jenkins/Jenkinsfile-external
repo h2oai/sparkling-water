@@ -43,29 +43,30 @@ if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
     cancelPreviousBuilds()
 }
 
-node('dX-hadoop') {
-    // Clean workspace
-    sh 'rm -rf *'
-    // Get Sparkling Water
-    checkout scm
+withCustomCommitStates(scm, 'h2o-ops-personal-auth-token', 'continuous-integration/jenkins/sw-external') {
+    node('dX-hadoop') {
+        // Clean workspace
+        sh 'rm -rf *'
+        // Get Sparkling Water and save the scm environment variables
+        checkout scm
+        // Get the script with the pipeline
+        def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
 
-    // Get the script with the pipeline
-    def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
-
-    // Execute the pipeline
-    pipeline(params) { p ->
-        sparkVersion = "${p.sparkVersion}"
-        runUnitTests = "${p.runUnitTests}"
-        runLocalIntegTests = "${p.runLocalIntegTests}"
-        runScriptTests = "${p.runScriptTests}"
-        runIntegTests = "${p.runIntegTests}"
-        runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
-        sparklingTestEnv = "${p.sparklingTestEnv}"
-        buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
-        h2oBranch = "${p.h2oBranch}"
-        hadoopVersion = "2.6"
-        backendMode = "external"
-        hdpVersion = "${p.hdpVersion}"
-        driverHadoopVersion = "${p.driverHadoopVersion}"
-    }
-}
+        // Execute the pipeline
+        pipeline(params) { p ->
+            sparkVersion = "${p.sparkVersion}"
+            runUnitTests = "${p.runUnitTests}"
+            runLocalIntegTests = "${p.runLocalIntegTests}"
+            runScriptTests = "${p.runScriptTests}"
+            runIntegTests = "${p.runIntegTests}"
+            runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
+            sparklingTestEnv = "${p.sparklingTestEnv}"
+            buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
+            h2oBranch = "${p.h2oBranch}"
+            hadoopVersion = "2.6"
+            backendMode = "external"
+            hdpVersion = "${p.hdpVersion}"
+            driverHadoopVersion = "${p.driverHadoopVersion}"
+         }
+     }
+ }
