@@ -21,7 +21,7 @@ import java.io.File
 import hex.Model
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
-import org.apache.spark.ml.h2o.algos.params.H2OModelParams
+import org.apache.spark.ml.h2o.param.H2OModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}

@@ -22,25 +22,22 @@ import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.h2o.algos.params.H2OAlgoParams
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
-import org.apache.spark.ml.param._
+import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.SQLContext
 import water.support.ModelSerializationSupport
 
 
 /**
-  * Creates H2ODeepLearning model
-  * If the key specified the training set is specified using setTrainKey, then frame with this key is used as the
-  * training frame, otherwise it uses the frame from the previous stage as the training frame
+  * H2O Deep learning algorithm exposed via Spark ML pipelines.
+  *
+  * TODO: There are still bunch of parameters defined DeepLearningParameters which need to be ported here
   */
 class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val uid: String)
                      (implicit h2oContext: H2OContext, sqlContext: SQLContext)
                       extends H2OAlgorithm[DeepLearningParameters, H2OMOJOModel](parameters)
                       with H2ODeepLearningParams {
-
-  type SELF = H2ODeepLearning
 
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("dl"))
 
@@ -79,51 +76,54 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
 
   protected def schemaTag = reflect.classTag[H2O_SCHEMA]
 
-  /** @group setParam */
-  def setEpochs(value: Double) = set(epochs, value) {
-    getParams._epochs = value
-  }
-
-  /** @group setParam */
-  def setL1(value: Double) = set(l1, value) {
-    getParams._l1 = value
-  }
-
-  /** @group setParam */
-  def setL2(value: Double) = set(l2, value) {
-    getParams._l2 = value
-  }
-
-  /** @group setParam */
-  def setHidden(value: Array[Int]) = set(hidden, value) {
-    getParams._hidden = value
-  }
-
-
-  /**
-    * All parameters should be set here along with their documentation and explained default values
-    */
+  //
+  // Param definitions
+  //
   private final val epochs = doubleParam("epochs")
   private final val l1 = doubleParam("l1")
   private final val l2 = doubleParam("l2")
-  private final val hidden = new IntArrayParam(this, "hidden", doc("hidden"))
+  private final val hidden = intArrayParam("hidden")
 
+  //
+  // Default values
+  //
   setDefault(
     epochs -> parameters._epochs,
     l1 -> parameters._l1,
     l2 -> parameters._l2,
     hidden -> parameters._hidden)
 
+  //
+  // Getters
+  //
   /** @group getParam */
-  def getEpochs: Double = $(epochs)
+  def getEpochs() = $(epochs)
+  /** @group getParam */
+  def getL1() = $(l1)
+  /** @group getParam */
+  def getL2() = $(l2)
+  /** @group getParam */
+  def getHidden() = $(hidden)
 
-  /** @group getParam */
-  def getL1: Double = $(l1)
+  //
+  // Setters
+  //
+  /** @group setParam */
+  def setEpochs(value: Double): this.type = set(epochs, value)
+  /** @group setParam */
+  def setL1(value: Double): this.type = set(l1, value)
+  /** @group setParam */
+  def setL2(value: Double): this.type = set(l2, value)
+  /** @group setParam */
+  def setHidden(value: Array[Int]): this.type = set(hidden, value)
 
-  /** @group getParam */
-  def getL2: Double = $(l2)
 
-  /** @group getParam */
-  def getHidden: Array[Int] = $(hidden)
+  def updateParams(): Unit ={
+    parameters._epochs = $(epochs)
+    parameters._l1 = $(l1)
+    parameters._l2 = $(l2)
+    parameters._hidden = $(hidden)
+  }
+
 
 }
