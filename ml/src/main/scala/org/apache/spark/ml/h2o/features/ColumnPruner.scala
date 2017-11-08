@@ -21,8 +21,8 @@ import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
-import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Dataset}
 
 /**
   * Column pruner removes specified columns in the input dataset
@@ -30,12 +30,6 @@ import org.apache.spark.sql.types.{StructField, StructType}
 class ColumnPruner(override val uid: String) extends Transformer with ColumnPrunerParams with DefaultParamsWritable {
 
   def this() = this(Identifiable.randomUID("h2oColRemover"))
-
-  /** @group setParam */
-  def setKeep(value: Boolean): this.type = set(keep, value)
-
-  /** @group setParam */
-  def setColumns(value: Array[String]): this.type = set(columns, value)
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
@@ -69,23 +63,36 @@ class ColumnPruner(override val uid: String) extends Transformer with ColumnPrun
 object ColumnPruner extends DefaultParamsReadable[ColumnPruner]
 
 trait ColumnPrunerParams extends Params {
-  /**
-    * By default it is set to false which means removing specified columns
-    */
+
+  //
+  // Param definitions
+  //
   final val keep = new BooleanParam(this, "keep", "Determines if the column specified in the 'columns' parameter should be kept or removed")
-
-  setDefault(keep -> false)
-
-  /** @group getParam */
-  def getKeep: Boolean = $(keep)
-
-  /**
-    * By default it is empty array which means no columns are removed
-    */
   final val columns = new StringArrayParam(this, "columns", "List of columns to be kept or removed")
 
-  setDefault(columns -> Array[String]())
+  //
+  // Default values
+  //
+  setDefault(
+    keep -> false, // default is false which means remove specified columns
+    columns -> Array[String]() // default is empty array which means no columns are removed
+  )
+
+  //
+  // Getters
+  //
+  /** @group getParam */
+  def getKeep() = $(keep)
 
   /** @group getParam */
-  def getColumns: Array[String] = $(columns)
+  def getColumns() = $(columns)
+
+  //
+  // Setters
+  //
+  /** @group setParam */
+  def setKeep(value: Boolean): this.type = set(keep, value)
+
+  /** @group setParam */
+  def setColumns(value: Array[String]): this.type = set(columns, value)
 }

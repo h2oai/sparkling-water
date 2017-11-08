@@ -23,8 +23,8 @@ import hex.{FrameSplitter, Model}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
-import org.apache.spark.ml.h2o.algos.params.{H2OAlgoParams, H2OModelParams}
-import org.apache.spark.ml.param._
+import org.apache.spark.ml.h2o.param.{H2OAlgoParams, H2OModelParams}
+import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Estimator, Model => SparkModel}
 import org.apache.spark.sql.types.StructType
@@ -50,16 +50,18 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   override def fit(dataset: Dataset[_]): M = {
     import org.apache.spark.sql.functions.col
 
+    // Update H2O params based on provided configuration
+    updateH2OParams()
+
     // if this is left empty select
-    if (getFeaturesCols.isEmpty) {
-      setFeaturesCols(dataset.columns.filter(n => n.compareToIgnoreCase(getPredictionsCol) != 0))
+    if (getFeaturesCols().isEmpty) {
+      setFeaturesCols(dataset.columns.filter(n => n.compareToIgnoreCase(getPredictionsCol()) != 0))
     }
 
-    val cols = getFeaturesCols.map(col) ++ Array(col(getPredictionsCol))
+    val cols = getFeaturesCols().map(col) ++ Array(col(getPredictionsCol()))
     val input = hc.asH2OFrame(dataset.select(cols: _*).toDF())
 
     // check if we need to do any splitting
-
     if ($(ratio) < 1.0) {
       // need to do splitting
       val keys = split(input, hc)
@@ -77,9 +79,9 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     }
     if ((getParams._distribution == DistributionFamily.bernoulli
       || getParams._distribution == DistributionFamily.multinomial)
-      && !trainFrame.vec(getPredictionsCol).isCategorical) {
-      trainFrame.replace(trainFrame.find(getPredictionsCol),
-                         trainFrame.vec(getPredictionsCol).toCategoricalVec).remove()
+      && !trainFrame.vec(getPredictionsCol()).isCategorical) {
+      trainFrame.replace(trainFrame.find(getPredictionsCol()),
+                         trainFrame.vec(getPredictionsCol()).toCategoricalVec).remove()
     }
     water.DKV.put(trainFrame)
 
@@ -96,9 +98,9 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    require(schema.fields.exists(f => f.name.compareToIgnoreCase(getPredictionsCol) == 0),
-            s"Specified prediction columns '${getPredictionsCol} was not found in input dataset!")
-    require(!getFeaturesCols.exists(n => n.compareToIgnoreCase(getPredictionsCol) == 0),
+    require(schema.fields.exists(f => f.name.compareToIgnoreCase(getPredictionsCol()) == 0),
+            s"Specified prediction columns '${getPredictionsCol()} was not found in input dataset!")
+    require(!getFeaturesCols().exists(n => n.compareToIgnoreCase(getPredictionsCol()) == 0),
             s"Specified input features cannot contain prediction column!")
     schema
   }
