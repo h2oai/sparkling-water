@@ -115,35 +115,32 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
   def binomialModelFixture() = {
     val inputDf = prostateDataFrame
     val gbm = new H2OGBM()(hc, sqlContext)
-    gbm.setParams(p => {
-      p._ntrees = 2
-      p._distribution = DistributionFamily.bernoulli
-      p._seed = 42
-    })
-    gbm.setPredictionsCol("capsule")
+        .setNtrees(2)
+        .setSeed(42)
+        .setDistribution(DistributionFamily.bernoulli)
+        .setPredictionsCol("capsule")
+
     (inputDf, gbm.fit(inputDf))
   }
 
   def multinomialModelFixture() = {
     val inputDf = irisDataFrame
     val gbm = new H2OGBM()(hc, sqlContext)
-    gbm.setParams(p => {
-      p._ntrees = 2
-      p._distribution = DistributionFamily.multinomial
-      p._seed = 42
-    })
-    gbm.setPredictionsCol("class")
+        .setNtrees(2)
+        .setSeed(42)
+        .setDistribution(DistributionFamily.multinomial)
+        .setPredictionsCol("class")
+
     (inputDf, gbm.fit(inputDf))
   }
 
   def regressionModelFixture() = {
     val inputDf = prostateDataFrame
     val gbm = new H2OGBM()(hc, sqlContext)
-    gbm.setParams(p => {
-      p._ntrees = 2
-      p._seed = 42
-    })
-    gbm.setPredictionsCol("capsule")
+      .setNtrees(2)
+      .setSeed(42)
+      .setPredictionsCol("capsule")
+
     (inputDf, gbm.fit(inputDf))
   }
 
