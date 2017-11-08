@@ -21,35 +21,33 @@ import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.h2o.algos.params.H2OSharedTreeParams
 import org.apache.spark.ml.h2o.models._
+import org.apache.spark.ml.h2o.param.H2OSharedTreeParams
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 import org.apache.spark.sql.SQLContext
 import water.support.ModelSerializationSupport
 
 /**
-  * H2O GBM Algo exposed via Spark ML pipelines.
+  * H2O GBM algorithm exposed via Spark ML pipelines.
   */
 class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
             (implicit h2oContext: H2OContext, sqlContext: SQLContext)
   extends H2OAlgorithm[GBMParameters, H2OMOJOModel](parameters)
     with H2OGBMParams {
 
-  type SELF = H2OGBM
-
-  override def defaultFileName: String = H2OGBM.defaultFileName
-
-
-  override def trainModel(params: GBMParameters): H2OMOJOModel = {
-    val model = new GBM(params).trainModel().get()
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
-  }
-
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gbm"))
 
   def this(parameters: GBMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("gbm"))
 
   def this(parameters: GBMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
+
+  override def defaultFileName: String = H2OGBM.defaultFileName
+
+  override def trainModel(params: GBMParameters): H2OMOJOModel = {
+    val model = new GBM(params).trainModel().get()
+    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
+  }
+  
 }
 
 object H2OGBM extends MLReadable[H2OGBM] {
@@ -75,16 +73,62 @@ trait H2OGBMParams extends H2OSharedTreeParams[GBMParameters] {
 
   protected def schemaTag = reflect.classTag[H2O_SCHEMA]
 
-  /**
-    * All parameters should be set here along with their documentation and explained default values
-    */
+  //
+  // Param definitions
+  //
   final val learnRate = doubleParam("learnRate")
   final val learnRateAnnealing = doubleParam("learnRateAnnealing")
   final val colSampleRate = doubleParam("colSampleRate")
   final val maxAbsLeafnodePred = doubleParam("maxAbsLeafnodePred")
+  final val predNoiseBandwidth = doubleParam("predNoiseBandwidth")
 
-  setDefault(learnRate -> parameters._learn_rate)
-  setDefault(learnRateAnnealing -> parameters._learn_rate_annealing)
-  setDefault(colSampleRate -> parameters._col_sample_rate)
-  setDefault(maxAbsLeafnodePred -> parameters._max_abs_leafnode_pred)
+  //
+  // Default values
+  //
+  setDefault(
+    learnRate -> parameters._learn_rate,
+    learnRateAnnealing -> parameters._learn_rate_annealing,
+    colSampleRate -> parameters._col_sample_rate,
+    maxAbsLeafnodePred -> parameters._max_abs_leafnode_pred,
+    predNoiseBandwidth -> parameters._pred_noise_bandwidth
+  )
+
+  //
+  // Getters
+  //
+  /** @group getParam */
+  def getLearnRate() = $(learnRate)
+  /** @group getParam */
+  def getLearnRateAnnealing() = $(learnRateAnnealing)
+  /** @group getParam */
+  def getColSampleRate() = $(colSampleRate)
+  /** @group getParam */
+  def getMaxAbsLeafnodePred() = $(maxAbsLeafnodePred)
+  /** @group getParam */
+  def getPredNoiseBandwidth() = $(predNoiseBandwidth)
+
+  //
+  // Setters
+  //
+  /** @group setParam */
+  def setLearnRate(value: Double): this.type = set(learnRate, value)
+  /** @group setParam */
+  def setLearnRateAnnealing(value: Double): this.type = set(learnRateAnnealing, value)
+  /** @group setParam */
+  def setColSampleRate(value: Double): this.type = set(colSampleRate, value)
+  /** @group setParam */
+  def setMaxAbsLeafnodePred(value: Double): this.type = set(maxAbsLeafnodePred, value)
+  /** @group setParam */
+  def setPredNoiseBandwidth(value: Double): this.type = set(predNoiseBandwidth, value)
+
+
+  override def updateH2OParams(): Unit = {
+    super.updateH2OParams()
+    parameters._learn_rate = $(learnRate)
+    parameters._learn_rate_annealing = $(learnRateAnnealing)
+    parameters._col_sample_rate = $(colSampleRate)
+    parameters._max_abs_leafnode_pred = $(maxAbsLeafnodePred)
+    parameters._pred_noise_bandwidth = $(predNoiseBandwidth)
+    
+  }
 }
