@@ -17,6 +17,10 @@
 package org.apache.spark.ml.h2o.param
 
 import hex.Model.Parameters
+import hex.genmodel.utils.DistributionFamily
+import org.apache.spark.ml.param.{Param, ParamPair, Params}
+import org.json4s.jackson.JsonMethods.{compact, parse, render}
+import org.json4s.{JNull, JString, JValue}
 
 /**
   * A trait extracting a shared parameters among all models.
@@ -49,7 +53,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
   final val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
   final val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
   final val seed = longParam("seed")
-
+  final val distribution = H2ODistributionParam("distribution")
 
   //
   // Default values
@@ -63,7 +67,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
     keepCrossValidationPredictions -> parameters._keep_cross_validation_predictions,
     keepCrossValidationFoldAssignment -> parameters._keep_cross_validation_fold_assignment,
     parallelizeCrossValidation -> parameters._parallelize_cross_validation,
-    seed -> parameters._seed
+    seed -> parameters._seed,
+    distribution -> parameters._distribution
   )
 
   //
@@ -95,6 +100,9 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
 
   /** @group getParam */
   def getSeed() = $(seed)
+
+  /** @group getParam */
+  def getDistribution() = $(distribution)
 
   //
   // Setters
@@ -137,6 +145,13 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
   /** @group setParam */
   def setSeed(value: Long): this.type = set(seed, value)
 
+  /** @group setParam */
+  def setDistribution(value: DistributionFamily): this.type = set(distribution, value)
+
+  def H2ODistributionParam(name: String): H2ODistributionParam = {
+    new H2ODistributionParam(this, name, getDoc(None, name))
+  }
+
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
   protected def updateH2OParams(): Unit = {
     parameters._response_column = $(predictionCol)
@@ -145,5 +160,37 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
     parameters._keep_cross_validation_fold_assignment = $(keepCrossValidationFoldAssignment)
     parameters._parallelize_cross_validation = $(parallelizeCrossValidation)
     parameters._seed = $(seed)
+    parameters._distribution = $(distribution)
+  }
+}
+
+class H2ODistributionParam private(parent: Params, name: String, doc: String, isValid: DistributionFamily => Boolean)
+  extends Param[DistributionFamily](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
+
+  /** Creates a param pair with the given value (for Java). */
+  override def w(value: DistributionFamily): ParamPair[DistributionFamily] = super.w(value)
+
+  override def jsonEncode(value: DistributionFamily): String = {
+    val encoded: JValue = if (value == null) {
+      JNull
+    } else {
+      JString(value.toString)
+    }
+    compact(render(encoded))
+  }
+
+  override def jsonDecode(json: String): DistributionFamily = {
+    val parsed = parse(json)
+    parsed match {
+      case JString(x) =>
+        DistributionFamily.valueOf(x)
+      case JNull =>
+        null
+      case _ =>
+        throw new IllegalArgumentException(s"Cannot decode $parsed to DistributionFamily.")
+    }
+
   }
 }
