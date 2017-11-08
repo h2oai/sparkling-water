@@ -45,8 +45,6 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
 
   def setParams(params: P): Unit = this.parameters = params
 
-  def setParams(body: P => Unit): Unit = body(getParams)
-
   def booleanParam(name: String, doc: String): BooleanParam = booleanParam(name, Some(doc))
 
   def booleanParam(name: String, doc: Option[String] = None): BooleanParam = {
