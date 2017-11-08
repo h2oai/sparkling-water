@@ -1,5 +1,5 @@
 #!/usr/bin/groovy
-@Library('test-shared-library@mr/ita/68-custom-commit-states') _
+@Library('test-shared-library') _
 
 // Job parameters
 properties(
