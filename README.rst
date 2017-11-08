@@ -18,8 +18,8 @@ Select right version
 ~~~~~~~~~~~~~~~~~~~~
 
 The Sparkling Water is developed in multiple parallel branches. Each
-branch corresponds to a Spark major release (e.g., branch **rel-2.1**
-provides implementation of Sparkling Water for Spark **2.1**).
+branch corresponds to a Spark major release (e.g., branch **rel-2.2**
+provides implementation of Sparkling Water for Spark **2.2**).
 
 Please, switch to the right branch:
 
@@ -59,14 +59,18 @@ Maven
 Each Sparkling Water release is published into Maven central. Published artifacts are provided with the following Scala
 versions:
 
+- Sparkling Water 2.2.x - Scala 2.11
 - Sparkling Water 2.1.x - Scala 2.11
 - Sparkling Water 2.0.x - Scala 2.11
 - Sparkling Water 1.6.x - Scala 2.10
 
 The artifacts coordinates are:
 
-- ``ai.h2o:sparkling-water-core_{{scala_version}}:{{version}}`` - includes core of Sparkling Water.
-- ``ai.h2o:sparkling-water-examples_{{scala_version}}:{{version}}`` - includes example applications.
+- ``ai.h2o:sparkling-water-core_{{scala_version}}:{{version}}`` - Includes core of Sparkling Water
+- ``ai.h2o:sparkling-water-examples_{{scala_version}}:{{version}}`` - Includes example applications
+- ``ai.h2o:sparkling-water-repl_{{scala_version}}:{{version}}`` - Spark REPL integration into H2O Flow UI
+- ``ai.h2o:sparkling-water-ml_{{scala_version}}:{{version}}`` - Extends Spark ML package by H2O-based transformations
+- ``ai.h2o:sparkling-water-package_{{scala_version}}:{{version}}`` - Uber Sparkling Water package referencing all available Sparkling Water modules. This is designed to use as Spark package via ``--packages`` option
 
    **Note:** The ``{{version}}`` references to a release version of Sparkling Water, the ``{{scala_version}}``
    references to Scala base version (``2.10`` or ``2.11``). For example:
