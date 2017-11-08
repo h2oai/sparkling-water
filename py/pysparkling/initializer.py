@@ -26,7 +26,12 @@ class Initializer(object):
         jvm = sc._jvm
         # Add Sparkling water assembly JAR to driver
         sw_jar_file = Initializer.__get_sw_jar()
-        url = jvm.java.net.URL("file://{}".format(sw_jar_file))
+        
+        #SW-593 - adding an extra / to fix a windows shell issue creating malform url 
+        if not sw_jar_file.startswith('/'):
+            sw_jar_file = '/' + sw_jar_file
+            
+        url = jvm.java.net.URL("file://{0}".format(sw_jar_file))
         # Assuming that context class loader is always instance of URLClassLoader
         # ( which should be always true)
         cl = jvm.Thread.currentThread().getContextClassLoader()
