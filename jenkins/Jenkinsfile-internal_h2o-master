@@ -1,6 +1,12 @@
 #!/usr/bin/groovy
 @Library('test-shared-library') _
 
+properties(
+        [
+                pipelineTriggers([cron('H 23 * * *')]),
+                buildDiscarder(logRotator(numToKeepStr: '10'))
+        ]
+)
 
 node('dX-hadoop') {
     // Clean workspace
