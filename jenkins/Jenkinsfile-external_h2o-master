@@ -3,7 +3,7 @@
 
 properties(
         [
-                pipelineTriggers([cron('* * * * *')]),
+                pipelineTriggers([cron('H 23 * * *')]),
                 buildDiscarder(logRotator(numToKeepStr: '10'))
         ]
 )
