@@ -65,10 +65,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-jobname", conf.cloudName.get,
       "-mapperXmx", conf.mapperXmx,
       "-output", conf.HDFSOutputDir.get,
-      "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
+      "-J", "-log_level", "-J", "DEBUG",
       "-timeout", conf.clusterStartTimeout.toString,
       "-disown",
-      "-J", "-watchdog_stop_without_client",
       "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
       "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
     )
@@ -135,7 +134,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     logTrace("Starting H2O client node and connecting to external H2O cluster.")
 
     val h2oClientArgs = if (hc.getConf.isAutoClusterStartUsed) {
-      getH2OClientArgs(hc.getConf) ++ Array("-watchdog_client")
+      getH2OClientArgs(hc.getConf) ++ Array("-client")
     } else {
       getH2OClientArgs(hc.getConf)
     }
@@ -147,8 +146,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
     // Register web API for client
     RestAPIManager(hc).registerAll()
-    // Remove this workaround once we have proper fix
-    Thread.sleep(hc.sparkContext.getConf.get("spark.ext.h2o.external.deadlock.timeout", "5000").toInt)
     H2O.startServingRestApi()
 
     if (cloudMembers.length == 0) {
