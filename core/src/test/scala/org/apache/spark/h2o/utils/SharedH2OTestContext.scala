@@ -17,6 +17,8 @@
 
 package org.apache.spark.h2o.utils
 
+import java.security.Permission
+
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import org.scalatest.Suite
@@ -39,10 +41,38 @@ trait SharedH2OTestContext extends SparkTestContext {
   }
 
   override def afterAll() {
-    H2OContextTestHelper.stopH2OContext(sc, hc)
-    hc = null
-    resetSparkContext()
-    super.afterAll()
+    // The method H2O.exit calls System.exit which confuses Gradle and marks the build
+    // as successful even though some tests failed.
+    // We can solve this by using security manager which forbids System.exit call.
+    // It is safe to use as all the methods closing H2O cloud and stopping operations have been
+    // already called and we just need to ensure that JVM with the client/driver doesn't call the System.exit method
+    try {
+      val securityManager = new NoExitCheckSecurityManager
+      System.setSecurityManager(securityManager)
+      H2OContextTestHelper.stopH2OContext(sc, hc)
+      hc = null
+      resetSparkContext()
+      super.afterAll()
+      System.setSecurityManager(null)
+    } catch {
+      case _: SecurityException => // ignore
+    }
   }
+
+  private class NoExitCheckSecurityManager extends SecurityManager {
+    override def checkPermission(perm: Permission): Unit = {
+      /* allow any */
+    }
+
+    override def checkPermission(perm: Permission, context: scala.Any): Unit = {
+      /* allow any */
+    }
+
+    override def checkExit(status: Int): Unit = {
+      super.checkExit(status)
+      throw new SecurityException()
+    }
+  }
+
 }
 
