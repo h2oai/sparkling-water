@@ -126,9 +126,11 @@ def unitTests() {
                         ${getGradleCommand(config)} test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                         """
                 } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
                     junit 'core/build/test-results/test/*.xml'
+                    junit 'ml/build/test-results/test/*.xml'
                     testReport 'core/build/reports/tests/test', 'Core Unit tests'
+                    testReport 'ml/build/reports/tests/test', "ML Unit Tests"
                 }
 
             }
@@ -148,7 +150,7 @@ def localIntegTest() {
                         ${getGradleCommand(config)} integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                         """
                 } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'examples/build/test-results/integTest/*.xml'
                     testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
                     testReport 'examples/build/reports/tests/integTest', 'Local Integration tests'
@@ -169,7 +171,7 @@ def scriptsTest() {
                         ${getGradleCommand(config)} scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                         """
                 } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, **/build/reports/'
                     junit 'examples/build/test-results/scriptsTest/*.xml'
                     testReport 'examples/build/reports/tests/scriptsTest', 'Script Tests'
                 }
@@ -189,7 +191,7 @@ def integTest() {
                     #  echo 'Archiving artifacts after Integration test'
                     """
                 } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'examples/build/test-results/integTest/*.xml'
                     testReport 'examples/build/reports/tests/integTest', "Integration tests"
                 }
@@ -208,7 +210,7 @@ def pysparklingIntegTest() {
                          # echo 'Archiving artifacts after PySparkling Integration test'
                         """
                 } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
 
                 }
             }
