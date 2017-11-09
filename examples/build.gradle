@@ -40,18 +40,16 @@ dependencies {
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"
-  testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
-
   // to reuse some utils test classes defined in the core
   testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
+
 
   // Integration tests requirements
   integTestCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   integTestCompile "junit:junit:4.11"
-  integTestCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
-
   // to reuse some utils test classes defined in the core
   integTestCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
+
 
   // To enable Idea compiler even for integTestCode which use mllib
   /*integTestCompile*/ compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
