@@ -130,7 +130,7 @@ def unitTests() {
                 } finally {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
                     junit 'core/build/test-results/test/*.xml'
-                    junit 'ml/build/rest-results/test/*.xml'
+                    junit 'ml/build/test-results/test/*.xml'
                     testReport 'core/build/reports/tests/test', 'Core Unit tests'
                     testReport 'ml/build/reports/tests/test', "ML Unit Tests"
                 }
