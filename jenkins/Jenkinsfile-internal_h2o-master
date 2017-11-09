@@ -1,0 +1,33 @@
+#!/usr/bin/groovy
+@Library('test-shared-library') _
+
+properties(
+        [
+                pipelineTriggers([cron('H 23 * * *')]),
+                buildDiscarder(logRotator(numToKeepStr: '10'))
+        ]
+)
+
+node('dX-hadoop') {
+    // Clean workspace
+    sh 'rm -rf *'
+    // Get Sparkling Water and save the scm environment variables
+    checkout scm
+    // Get the script with the pipeline
+    def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
+
+    // Execute the pipeline
+    pipeline(params) { p ->
+        sparkVersion = "2.2.0"
+        runUnitTests = "true"
+        runLocalIntegTests = "true"
+        runScriptTests = "true"
+        runIntegTests = "true"
+        runPySparklingIntegTests = "true"
+        sparklingTestEnv = "yarn"
+        buildAgainstH2OBranch = "true"
+        h2oBranch = "master"
+        hadoopVersion = "2.6"
+        backendMode = "internal"
+    }
+}
