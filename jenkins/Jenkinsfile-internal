@@ -58,6 +58,8 @@ withCustomCommitStates(scm, 'h2o-ops-personal-auth-token', 'continuous-integrati
             h2oBranch = "${p.h2oBranch}"
             hadoopVersion = "2.6"
             backendMode = "internal"
+            buildNightly = "false"
+            uploadNightly = "false"
         }
     }
 }
