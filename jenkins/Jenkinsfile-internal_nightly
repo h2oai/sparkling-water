@@ -25,9 +25,11 @@ node('dX-hadoop') {
         runIntegTests = "true"
         runPySparklingIntegTests = "true"
         sparklingTestEnv = "yarn"
-        buildAgainstH2OBranch = "true"
+        buildAgainstH2OBranch = "false"
         h2oBranch = "master"
         hadoopVersion = "2.6"
         backendMode = "internal"
+        buildNightly = "true"
+        uploadNightly = "true"
     }
 }
