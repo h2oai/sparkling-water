@@ -252,6 +252,7 @@ def publishNightly(){
                     # Upload to S3
                     """
 
+                def tmpdir="./buildsparklingwater.tmp"
                 sh """
                     # Publish the output to S3.
                     echo
@@ -281,7 +282,16 @@ def publishNightly(){
                         s3cmd --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/\${f}
                     done
                     
-                    echo Release available at: https://s3.amazonaws.com/h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/index.html
+                    echo UPDATE LATEST POINTER
+                    mkdir -p ${tmpdir}
+                    echo ${BUILD_NUMBER} > ${tmpdir}/latest
+                    echo "<head>" > ${tmpdir}/latest.html
+                    echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${BUILD_NUMBER}/index.html\\" />" >> ${tmpdir}/latest.html
+                    echo "</head>" >> ${tmpdir}/latest.html
+                    s3cmd --acl-public put ${tmpdir}/latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest
+                    s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest.html
+                    s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/index.html
+                                        
                     """
             }
         }
