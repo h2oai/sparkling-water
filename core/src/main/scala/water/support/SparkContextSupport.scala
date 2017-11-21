@@ -19,11 +19,12 @@ package water.support
 import java.io.File
 import java.net.URI
 
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext, SparkFiles}
 
 /**
- * Publish useful method to configure Spark context.
- */
+  * Publish useful method to configure Spark context.
+  */
 trait SparkContextSupport {
 
   def configure(appName: String = "Sparkling Water Demo", defaultMaster: String = "local[*]"): SparkConf = {
@@ -39,7 +40,9 @@ trait SparkContextSupport {
     files.foreach(f => sc.addFile(f))
   }
 
-  def enforceLocalSparkFile(file: String): String ={
+  def addFiles(spark: SparkSession, files: String*): Unit = addFiles(spark.sparkContext, files: _*)
+
+  def enforceLocalSparkFile(file: String): String = {
     "file://" + SparkFiles.get(file)
   }
 
@@ -53,7 +56,7 @@ trait SparkContextSupport {
     oos.close()
   }
 
-  def loadSparkModel[M](source: URI) : M = {
+  def loadSparkModel[M](source: URI): M = {
     import java.io.{FileInputStream, ObjectInputStream}
     val fos = new FileInputStream(new File(source))
     val oos = new ObjectInputStream(fos)
@@ -61,4 +64,5 @@ trait SparkContextSupport {
     newModel
   }
 }
+
 object SparkContextSupport extends SparkContextSupport
