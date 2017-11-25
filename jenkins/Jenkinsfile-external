@@ -67,6 +67,9 @@ withCustomCommitStates(scm, 'h2o-ops-personal-auth-token', 'continuous-integrati
             backendMode = "external"
             hdpVersion = "${p.hdpVersion}"
             driverHadoopVersion = "${p.driverHadoopVersion}"
+            buildNightly = "false"
+            uploadNightly = "false"
+
          }
      }
  }

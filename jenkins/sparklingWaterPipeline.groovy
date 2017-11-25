@@ -3,6 +3,7 @@
 def call(params, body) {
     def config = [:]
     body.resolveStrategy = Closure.DELEGATE_FIRST
+
     body.delegate = config
     body(params)
 
@@ -33,12 +34,23 @@ def call(params, body) {
                         scriptsTest()(config)
                         integTest()(config)
                         pysparklingIntegTest()(config)
+                        publishNightly()(config)
                     }
                 }
             }
         }
     }
 }
+
+
+def getGradleCommand(config) {
+    if (config.buildAgainstH2OBranch.toBoolean()) {
+        "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew --include-build ${env.WORKSPACE}/h2o-3"
+    } else {
+        "${env.WORKSPACE}/gradlew"
+    }
+}
+
 
 def prepareSparkEnvironment() {
     return { config ->
@@ -68,6 +80,22 @@ def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment') {
 
+            // In case of nightly build, modify gradle.properties
+            if(config.buildNightly.toBoolean()){
+
+                def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
+
+                def h2oNightlyMajorVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/${h2oNightlyBuildVersion}/project_version").getText().trim()
+                h2oNightlyMajorVersion = h2oNightlyMajorVersion.substring(0, h2oNightlyMajorVersion.lastIndexOf('.'))
+
+                sh  """
+                     sed -i.backup -E "s/h2oMajorName=.*/h2oMajorName=master/" gradle.properties
+                     sed -i.backup -E "s/h2oMajorVersion=.*/h2oMajorVersion=${h2oNightlyMajorVersion}/" gradle.properties
+                     sed -i.backup -E "s/h2oBuild=.*/h2oBuild=${h2oNightlyBuildVersion}/" gradle.properties
+                     sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\${BUILD_NUMBER}_nightly/" gradle.properties
+                    """
+            }
+
             sh  """
                 # Check if we are bulding against specific H2O branch
                 if [ ${config.buildAgainstH2OBranch} = true ]; then
@@ -94,14 +122,6 @@ def prepareSparklingWaterEnvironment() {
     
                 """
         }
-    }
-}
-
-def getGradleCommand(config) {
-    if (config.buildAgainstH2OBranch.toBoolean()) {
-        "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew --include-build ${env.WORKSPACE}/h2o-3"
-    } else {
-        "${env.WORKSPACE}/gradlew"
     }
 }
 
@@ -218,4 +238,51 @@ def pysparklingIntegTest() {
     }
 }
 
+def publishNightly(){
+    return { config ->
+        stage ('Nightly: Publishing Artifacts to S3'){
+            if (config.buildNightly.toBoolean() && config.uploadNightly.toBoolean()) {
+
+                sh """
+                    # echo 'Making distribution'
+                    ${getGradleCommand(config)} buildSparklingWaterDist
+
+                    # Upload to S3
+                    """
+
+                sh """
+                    # Publish the output to S3.
+                    echo
+                    echo PUBLISH
+                    echo
+                    s3cmd --rexclude='target/classes/*' --acl-public sync ${env.WORKSPACE}/dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/
+                    
+                    echo EXPLICITLY SET MIME TYPES AS NEEDED
+                    list_of_html_files=`find dist/build -name '*.html' | sed 's/dist\\/build\\///g'`
+                    echo \${list_of_html_files}
+                    for f in \${list_of_html_files}
+                    do
+                        s3cmd --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/\${f}
+                    done
+                    
+                    list_of_js_files=`find dist/build -name '*.js' | sed 's/dist\\/build\\///g'`
+                    echo \${list_of_js_files}
+                    for f in \${list_of_js_files}
+                    do
+                        s3cmd --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/\${BRANCH_NAME}/\${BUILD_NUMBER}/\${f}
+                    done
+                    
+                    list_of_css_files=`find dist/build -name '*.css' | sed 's/dist\\/build\\///g'`
+                    echo \${list_of_css_files}
+                    for f in \${list_of_css_files}
+                    do
+                        s3cmd --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/\${f}
+                    done
+                    
+                    echo Release available at: https://s3.amazonaws.com/h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/index.html
+                    """
+            }
+        }
+    }
+}
 return this
