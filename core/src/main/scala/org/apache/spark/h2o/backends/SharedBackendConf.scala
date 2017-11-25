@@ -231,7 +231,7 @@ object SharedBackendConf {
   val PROP_CLIENT_ICED_DIR = ("spark.ext.h2o.client.iced.dir", None)
 
   /** H2O log level for client running in Spark driver */
-  val PROP_CLIENT_LOG_LEVEL = ("spark.ext.h2o.client.log.level", "WARN")
+  val PROP_CLIENT_LOG_LEVEL = ("spark.ext.h2o.client.log.level", "INFO")
 
   /** Location of log directory for the driver instance. */
   val PROP_CLIENT_LOG_DIR = ("spark.ext.h2o.client.log.dir", None)
