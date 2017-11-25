@@ -31,7 +31,9 @@ properties(
                                 string(name: 'hdpVersion', defaultValue: '2.2.6.3-1', description: 'HDP version to pass to Spark configuration - for example, 2.2.0.0-2041, or 2.6.0.2.2, or current. When running external tests on yarn, the current will not do since it is not automatically expanded -> so please set 2.2.6.3-1'),
 
                                 booleanParam(name: 'buildAgainstH2OBranch', defaultValue: false, description: 'By default, Sparkling Water is built with the included H2O. This option may be used to force build to use specific H2O branch against which Sparkling Water is built.'),
-                                string(name: 'h2oBranch', defaultValue: 'master', description: 'H2O branch to build against if buildAgainstH2OBranch is set to true')
+                                string(name: 'h2oBranch', defaultValue: 'master', description: 'H2O branch to build against if buildAgainstH2OBranch is set to true'),
+                                booleanParam(name: 'buildAgainstSparkBranch', defaultValue: false, description: 'By default, Sparkling Water is build against released Spark version. This option may be used to force build to use specific Spark branch against which Sparkling Water is built & tested.'),
+                                string(name: 'sparkBranch', defaultValue: 'master', description: 'Spark branch to build against if buildAgainstSparkBranch is set to true')
                         ]
                 ),
                 buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -63,6 +65,8 @@ withCustomCommitStates(scm, 'h2o-ops-personal-auth-token', 'continuous-integrati
             sparklingTestEnv = "${p.sparklingTestEnv}"
             buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
             h2oBranch = "${p.h2oBranch}"
+            buildAgainstSparkBranch = "${p.buildAgainstSparkBranch}"
+            sparkBranch = "${p.sparkBranch}"
             hadoopVersion = "2.6"
             backendMode = "external"
             hdpVersion = "${p.hdpVersion}"
