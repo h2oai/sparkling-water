@@ -38,10 +38,11 @@ def _monkey_patch_H2OFrame(hc):
         return self._java_frame
 
     @staticmethod
-    def from_java_h2o_frame(h2o_frame, h2o_frame_id):
+    def from_java_h2o_frame(h2o_frame, h2o_frame_id, cols_limit=100):
         # Cache Java reference to the backend frame
         sid = h2o_frame_id.toString()
-        fr = H2OFrame.get_frame(sid)
+        cols = cols_limit if h2o_frame.numCols() > cols_limit else -1
+        fr = H2OFrame.get_frame(sid, cols=cols, light=True)
         fr._java_frame = h2o_frame
         fr._java_frame_sid = sid
         fr._backed_by_java_obj = True
