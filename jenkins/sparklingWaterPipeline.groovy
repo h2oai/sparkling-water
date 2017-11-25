@@ -44,10 +44,17 @@ def call(params, body) {
 
 
 def getGradleCommand(config) {
+    def gradleStr
     if (config.buildAgainstH2OBranch.toBoolean()) {
-        "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew --include-build ${env.WORKSPACE}/h2o-3"
+        gradleStr = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew --include-build ${env.WORKSPACE}/h2o-3"
     } else {
-        "${env.WORKSPACE}/gradlew"
+        gradleStr = "${env.WORKSPACE}/gradlew"
+    }
+
+    if(config.buildAgainstSparkBranch.toBoolean()) {
+        "${gradleStr} -x checkSparkVersionTask"
+    }else{
+        gradleStr
     }
 }
 
@@ -55,13 +62,25 @@ def getGradleCommand(config) {
 def prepareSparkEnvironment() {
     return { config ->
         stage('Prepare Spark Environment') {
-            sh  """
-                # Download Spark
-                wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
-                mkdir -p "${env.SPARK_HOME}"
-                tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
-                rm -rf ${env.SPARK}.tgz
-                """
+
+            if (config.buildAgainstSparkBranch.toBoolean()) {
+                // build spark
+                sh """
+                    git clone https://github.com/apache/spark.git spark_repo
+                    cd spark_repo
+                    git checkout ${config.sparkBranch}
+                    ./dev/make-distribution.sh --name custom-spark --pip -Phadoop-2.6 -Pyarn
+                    cp -r ./dist/ ${env.SPARK_HOME}
+                    """
+            }else {
+                sh  """
+                    # Download Spark
+                    wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
+                    mkdir -p "${env.SPARK_HOME}"
+                    tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
+                    rm -rf ${env.SPARK}.tgz
+                    """
+            }
 
             sh  """
                 # Setup Spark
@@ -71,6 +90,11 @@ def prepareSparkEnvironment() {
                 
                 echo "-Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/java-opts
                 """
+            if(config.buildAgainstSparkBranch.toBoolean()){
+                sh  """
+                    echo "spark.ext.h2o.spark.version.check.enabled false" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
+                    """
+            }
         }
     }
 }
@@ -124,6 +148,7 @@ def prepareSparklingWaterEnvironment() {
         }
     }
 }
+
 
 def buildAndLint() {
     return { config ->
