@@ -23,6 +23,7 @@ import hex.Model
 import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
 import water.persist.Persist
 import water.{AutoBuffer, H2O, Key, Keyed}
+import org.apache.spark.SparkContext
 
 trait ModelSerializationSupport {
 
@@ -59,6 +60,15 @@ trait ModelSerializationSupport {
     val fos = new FileOutputStream(destFile)
     model.getMojo.writeTo(fos)
     destination
+  }
+
+  def exportMOJOModelToHDFS(model: Model[_, _, _], destination: String, sc: SparkContext): Unit = {
+    import org.apache.hadoop.fs.{FileSystem, Path}
+    val fs = FileSystem.get(sc.hadoopConfiguration)
+    val uri = URI.create(destination)
+    val output = fs.create(new Path(uri))
+    val os = new BufferedOutputStream(output)
+    model.getMojo.writeTo(os)
   }
 
   def loadMOJOModel(source: URI): MojoModel = {
