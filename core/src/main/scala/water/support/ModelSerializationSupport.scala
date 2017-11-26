@@ -62,13 +62,13 @@ trait ModelSerializationSupport {
     destination
   }
 
-  def exportMOJOModelToHDFS(model: Model[_, _, _], destination: String, sc: SparkContext): Unit = {
+  def exportMOJOModelToHDFS(model: Model[_, _, _], destination: URI, sc: SparkContext): URI = {
     import org.apache.hadoop.fs.{FileSystem, Path}
     val fs = FileSystem.get(sc.hadoopConfiguration)
-    val uri = URI.create(destination)
-    val output = fs.create(new Path(uri))
+    val output = fs.create(new Path(destination))
     val os = new BufferedOutputStream(output)
     model.getMojo.writeTo(os)
+    destination
   }
 
   def loadMOJOModel(source: URI): MojoModel = {
