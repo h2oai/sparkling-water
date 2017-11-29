@@ -70,7 +70,8 @@ trait ModelSerializationSupport {
     val os = new BufferedOutputStream(output)
     model.getMojo.writeTo(os)
     } catch {
-      case e: IllegalArgumentException => e.printStackTrace
+      case e: IllegalArgumentException =>
+        throw new IllegalArgumentException (s"Error while writing to HDFS (most likely no HDFS is available) in destination $destination : ${e.getMessage}")
     }
     destination
   }
