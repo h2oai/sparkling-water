@@ -55,6 +55,9 @@ speedup and stabilize creation of H2O services on top of Spark cluster:
 +-------------------------------------------------+--------------------------+----------------------------+
 | **YARN environment**                            |                          |                            |
 +-------------------------------------------------+--------------------------+----------------------------+
+| ``spark.dynamicAllocation.enabled``             | ``false``                | Disable Spark support for  |
+|                                                 |                          | dynamic allocation.        |
++-------------------------------------------------+--------------------------+----------------------------+
 | ``spark.yarn.am.extraJavaOptions``              | ``-XX:MaxPermSize=384m`` | Increase PermGem if you    |
 |                                                 |                          | are running in Java7 on    |
 |                                                 |                          | the Yarn application       |
