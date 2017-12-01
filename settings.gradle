@@ -10,6 +10,7 @@ include 'py'
 include 'repl'
 include 'docker'
 include 'app-streaming'
+include 'app-streaming-pipeline'
 include 'package'
 
 // Prefix all projects with sparkling-water name

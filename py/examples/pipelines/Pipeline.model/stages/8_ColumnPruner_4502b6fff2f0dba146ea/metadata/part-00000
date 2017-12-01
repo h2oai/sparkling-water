@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.h2o.features.ColumnPruner","timestamp":1512154125357,"sparkVersion":"2.2.0","uid":"ColumnPruner_4502b6fff2f0dba146ea","paramMap":{"columns":["tf_idf","wordToIndex","CleanedSummary","TokenizedSummary"],"keep":false}}
