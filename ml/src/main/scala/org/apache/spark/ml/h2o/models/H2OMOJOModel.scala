@@ -70,39 +70,11 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   private def createEasyPredictModelWrapper() = new EasyPredictModelWrapper(ModelSerializationSupport.getMojoModel(mojoData))
 
-  val modelUdf = {
-    udf[Row, Row] { row: Row =>
-
-      easyPredictModelWrapper = createEasyPredictModelWrapper()
-      val dt = new RowData
-      val values = row.schema.fields.zipWithIndex.map { case (entry, idxRow) =>
-
-        if ($(featuresCols).contains(entry.name)) {
-          setRowData(row, idxRow, dt, entry) // use only relevant columns for training
-        }
-
-        if (row.isNullAt(idxRow)) {
-          0
-        } else {
-          row.get(idxRow)
-        }
-      }
-      predict(dt)
-
-    }
-  }
-
   override def transform(dataset: Dataset[_]): DataFrame = {
 
     val spark = SparkSession.builder().getOrCreate()
     val df = flattenDataFrame(dataset.toDF())
-
-    val inputSchema = df.schema
-    val args = inputSchema.fields.map(f => df(f.name))
-
-
-    dataset.select(col("*"), modelUdf(struct(args: _*)))
-
+    
     val predictedRows = df.rdd.map { row =>
       // create predict wrapper from mojo data on each executor where predictions take place
       easyPredictModelWrapper = createEasyPredictModelWrapper()
