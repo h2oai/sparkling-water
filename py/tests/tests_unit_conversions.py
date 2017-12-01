@@ -27,6 +27,8 @@ from pyspark.sql import SparkSession
 import h2o
 import unit_test_utils
 import generic_test_utils
+import time
+from pyspark.mllib.linalg import *
 
 # Test of transformations from dataframe/rdd to h2o frame and from h2o frame back to dataframe
 class FrameTransformationsTest(unittest.TestCase):
@@ -162,6 +164,16 @@ class FrameTransformationsTest(unittest.TestCase):
         self.assertEquals(len(dfe.columns), 3, "Number of columns should match")
         self.assertEquals(dfe.collect(), [Row(c1=1, c2='first', c3=3), Row(c1=2, c2='second', c3=3)])
 
+    def test_sparse_data_conversion(self):
+        data = [(float(x), SparseVector(50000, {x: float(x)})) for x in range(1, 90)]
+        df = self._spark.sparkContext.parallelize(data).toDF()
+
+        t0 = time.time()
+        self._hc.as_h2o_frame(df)
+        t1 = time.time()
+        total = t1 - t0
+
+        assert total < 10 # The conversion should not take longer then 10 seconds
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_conversions_report")
