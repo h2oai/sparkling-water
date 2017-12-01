@@ -1,6 +1,19 @@
 Change Log
 ==========
 
+v2.1.18 (2017-12-01)
+--------------------
+
+-  Bug
+
+   -  `SW-602 <https://0xdata.atlassian.net/browse/SW-602>`__ - conversion of sparse data DataFrame to H2OFrame is slow
+   -  `SW-620 <https://0xdata.atlassian.net/browse/SW-620>`__ - Fix obtaining version from bundled h2o inside pysparkling
+
+-  Improvement
+
+   -  `SW-613 <https://0xdata.atlassian.net/browse/SW-613>`__ - Append dynamic allocation option into SW tuning documentation.
+   -  `SW-618 <https://0xdata.atlassian.net/browse/SW-618>`__ - Integration with H2O 3.16.0.2
+
 v2.1.17 (2017-11-25)
 --------------------
 
