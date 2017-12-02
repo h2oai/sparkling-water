@@ -166,17 +166,17 @@ from os import path
 __version__ = "0.0.local"
 if '.zip' in here:
     with zipfile.ZipFile(path.dirname(here), 'r') as archive:
-        __version__ = archive.read('h2o/version.txt')
+        __version__ = archive.read('h2o/version.txt').decode('utf-8').strip()
 else:
     with open(path.join(here, 'version.txt'), encoding='utf-8') as f:
-        __version__ = f.read()
+        __version__ = f.read().strip()
 
 if '.zip' in here:
     with zipfile.ZipFile(path.dirname(here), 'r') as archive:
-        __buildinfo__ = archive.read('h2o/buildinfo.txt')
+        __buildinfo__ = archive.read('h2o/buildinfo.txt').decode('utf-8').strip()
 else:
     with open(path.join(here, 'buildinfo.txt'), encoding='utf-8') as f:
-        __buildinfo__ = f.read()
+        __buildinfo__ = f.read().strip()
                 """
 
         // Change __init__.py in H2O to be aware of being zipped
