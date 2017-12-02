@@ -33,6 +33,7 @@ import water.support.ModelSerializationSupport
 
 import scala.reflect.ClassTag
 import org.apache.spark.sql.functions._
+import _root_.hex.genmodel.easy.prediction.{AbstractPrediction, BinomialModelPrediction, RegressionModelPrediction}
 import org.apache.spark.sql.types._
 
 class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
@@ -42,6 +43,33 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient var easyPredictModelWrapper: EasyPredictModelWrapper = createEasyPredictModelWrapper()
+
+  case class BinomialPrediction(p0: Double, p1: Double)
+  case class RegressionPrediction(value: Double)
+
+  implicit def toBinomialPrediction(bmp: AbstractPrediction) = BinomialPrediction(bmp.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
+                                                                                  bmp.asInstanceOf[BinomialModelPrediction].classProbabilities(1))
+  implicit def toRegressionPrediction(rmp: AbstractPrediction) = RegressionPrediction(rmp.asInstanceOf[RegressionModelPrediction].value)
+
+  val modelUdf = {
+    val epmw = createEasyPredictModelWrapper()
+    epmw.getModelCategory match {
+      case ModelCategory.Binomial => udf[BinomialPrediction, Row] { r: Row =>
+        print("YYYYYYYYYYYYYYYY: " + r)
+        epmw.predict(rowToRowData(r))
+      }
+      case ModelCategory.Regression => udf[RegressionPrediction, Row] { r: Row =>
+        epmw.predict(rowToRowData(r))
+      }
+    }
+  }
+
+  val predictStruct = easyPredictModelWrapper.getModelCategory match {
+    case ModelCategory.Binomial =>  StructField("p0", DoubleType)::StructField("p1", DoubleType)::Nil
+    case ModelCategory.Regression => StructField("pred", DoubleType)::Nil
+  }
+
+  val outputCol = s"${uid}Prediction"
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
@@ -71,33 +99,23 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   private def createEasyPredictModelWrapper() = new EasyPredictModelWrapper(ModelSerializationSupport.getMojoModel(mojoData))
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-
-    val spark = SparkSession.builder().getOrCreate()
-    val df = flattenDataFrame(dataset.toDF())
-    
-    val predictedRows = df.rdd.map { row =>
-      // create predict wrapper from mojo data on each executor where predictions take place
-      easyPredictModelWrapper = createEasyPredictModelWrapper()
-      // create RowData on which we do the predictions
-      val dt = new RowData
-      val values = row.schema.fields.zipWithIndex.map { case (entry, idxRow) =>
-
-        if ($(featuresCols).contains(entry.name)) {
-          setRowData(row, idxRow, dt, entry) // use only relevant columns for training
-        }
-
-        if (row.isNullAt(idxRow)) {
-          0
-        } else {
-          row.get(idxRow)
-        }
-      }
-      Row.merge(Row.fromSeq(values.toSeq), predict(dt))
-    }
-    spark.createDataFrame(predictedRows, StructType(df.schema.fields ++ getPredictionFrameSchema()))
+    println("XXXXXXXXXXXXXXXXXXXXXXX" + dataset)
+    val inputSchema = dataset.schema
+    val args = inputSchema.fields.map(f => dataset(f.name))
+    dataset.select(col("*"), modelUdf(struct(args: _*)).as(outputCol))
   }
 
-
+  private def rowToRowData(row: Row): RowData = new RowData {
+    row.schema.fields.foreach(f => {
+      row.getAs[AnyRef](f.name) match {
+        case v: Number => put(f.name, v.doubleValue().asInstanceOf[Object])
+        case v: java.sql.Timestamp => put(f.name, v.getTime.toDouble.asInstanceOf[Object])
+        case null => // nop
+        case v => put(f.name, v)
+      }
+    })
+  }
+  /*
   def setRowData(row: Row, idxRow: Int, dt: RowData, entry: StructField) {
     if (row.isNullAt(idxRow)) {
       dt.put(entry.name, 0.toString) // 0 as NA
@@ -138,7 +156,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
         case _ => dt.put(entry.name, dt.get(idxRow).toString)
       }
     }
-  }
+  }*/
 
   def getPredictionFrameSchema(): Seq[StructField] = {
     easyPredictModelWrapper.getModelCategory match {
