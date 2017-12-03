@@ -55,7 +55,6 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     val epmw = createEasyPredictModelWrapper()
     epmw.getModelCategory match {
       case ModelCategory.Binomial => udf[BinomialPrediction, Row] { r: Row =>
-        print("YYYYYYYYYYYYYYYY: " + r)
         epmw.predict(rowToRowData(r))
       }
       case ModelCategory.Regression => udf[RegressionPrediction, Row] { r: Row =>
@@ -99,7 +98,6 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   private def createEasyPredictModelWrapper() = new EasyPredictModelWrapper(ModelSerializationSupport.getMojoModel(mojoData))
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    println("XXXXXXXXXXXXXXXXXXXXXXX" + dataset)
     val inputSchema = dataset.schema
     val args = inputSchema.fields.map(f => dataset(f.name))
     dataset.select(col("*"), modelUdf(struct(args: _*)).as(outputCol))

@@ -10,22 +10,39 @@ object StreamingPipeline {
 
       val spark = SparkSession.builder().master("local").getOrCreate()
 
+      //
+      // Load exported pipeline
+      //
       import org.apache.spark.sql.types.DataType
       val pipelineModel = PipelineModel.read.load("py/examples/pipelines/Pipeline.model")
 
+      //
+      // Load exported schema of input data
+      //
       val schema = StructType(DataType.fromJson(scala.io.Source.fromFile("py/examples/pipelines/schema.json").mkString).asInstanceOf[StructType].map {
         case StructField(name, dtype, nullable, metadata) => StructField(name, dtype, true, metadata)
         case rec => rec
       })
-      // Print schema
       println(schema)
 
+      //
+      // Define input stream
+      //
       val inputDataStream = spark.readStream.schema(schema).csv("/tmp/input/*.csv")
 
+      //
+      // Apply loaded model
+      //
       val outputDataStream = pipelineModel.transform(inputDataStream)
 
+      //
+      // Forward output stream into memory-sink
+      //
       outputDataStream.writeStream.format("memory").queryName("predictions").start()
 
+      //
+      // Query results
+      //
       while(true){
         spark.sql("select * from predictions").show()
         Thread.sleep(5000)
