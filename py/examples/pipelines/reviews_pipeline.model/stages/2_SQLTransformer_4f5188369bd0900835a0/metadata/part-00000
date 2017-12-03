@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.SQLTransformer","timestamp":1512344799419,"sparkVersion":"2.2.0","uid":"SQLTransformer_4f5188369bd0900835a0","paramMap":{"statement":"\n    SELECT  IF(Score<3,'NEGATIVE', 'POSITIVE') as Sentiment, Summary, Day, Month, Year,\n            WeekNum, WeekDay, HourOfDay, Weekend, Seasson \n    FROM __THIS__ WHERE Score !=3 "}}

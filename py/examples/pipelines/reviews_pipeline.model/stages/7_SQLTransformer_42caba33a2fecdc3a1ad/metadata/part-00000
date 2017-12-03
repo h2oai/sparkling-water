@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.SQLTransformer","timestamp":1512344800223,"sparkVersion":"2.2.0","uid":"SQLTransformer_42caba33a2fecdc3a1ad","paramMap":{"statement":"\n    SELECT Sentiment, Day, Month, Year, WeekNum, WeekDay, HourOfDay, Weekend, Seasson, tf_idf_frequencies\n    FROM __THIS__ "}}

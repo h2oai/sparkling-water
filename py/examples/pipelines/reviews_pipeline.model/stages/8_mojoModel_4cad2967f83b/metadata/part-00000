@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.h2o.models.H2OMOJOModel","timestamp":1512344800276,"sparkVersion":"2.2.0","uid":"mojoModel_4cad2967f83b","paramMap":{"featuresCols":["tf_idf_frequencies"],"predictionCol":"Sentiment"}}

@@ -52,4 +52,4 @@ spark-tfidf-data/
 # RStudio file
 rsparkling.Rproj
 
-py/examples/pipelines/data/
+py/examples/data/
