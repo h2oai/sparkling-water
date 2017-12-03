@@ -19,7 +19,7 @@ object StreamingPipeline {
       //
       // Load exported schema of input data
       //
-      val schema = StructType(DataType.fromJson(scala.io.Source.fromFile("py/examples/pipeline/schema.json").mkString).asInstanceOf[StructType].map {
+      val schema = StructType(DataType.fromJson(scala.io.Source.fromFile("py/examples/pipelines/schema.json").mkString).asInstanceOf[StructType].map {
         case StructField(name, dtype, nullable, metadata) => StructField(name, dtype, true, metadata)
         case rec => rec
       })
@@ -28,7 +28,7 @@ object StreamingPipeline {
       //
       // Define input stream
       //
-      val inputDataStream = spark.readStream.schema(schema).csv("py/examples/pipeline/data/kuba/input/*.csv")
+      val inputDataStream = spark.readStream.schema(schema).csv("py/examples/data/kuba/input/*.csv")
 
       //
       // Apply loaded model
