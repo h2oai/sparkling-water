@@ -169,9 +169,12 @@ else:
         def initContent = initFile.readLines()
         def lineStart = initContent.findIndexOf {it == "with open(os.path.join(here, 'buildinfo.txt'), encoding='utf-8') as f:"}
         def lineEnd = initContent.findIndexOf {it == "    __version__ = f.read()"}
-        def before = initContent.subList(0, lineStart).join("\n")
-        def full = before + replaceStr + initContent.subList(lineEnd + 1, initContent.size()).join("\n")
-        initFile.write(full)
+        if (lineStart != -1 && lineEnd != -1){
+            def before = initContent.subList(0, lineStart).join("\n")
+            def full = before + replaceStr + initContent.subList(lineEnd + 1, initContent.size()).join("\n")
+            initFile.write(full)
+        }
+
 
         // Copy sparkling water fatjar
         def fatJarName = "sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar"
