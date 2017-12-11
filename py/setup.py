@@ -10,7 +10,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Get the version from the relevant file
-with open(path.join(here, 'version.txt'), encoding='utf-8') as f:
+with open(path.join(here, 'pysparkling/version.txt'), encoding='utf-8') as f:
     version = f.read()
 
 setup(
@@ -51,6 +51,7 @@ setup(
 
     # bundled binary packages
     package_data={'sparkling_water': ['*.jar'],
-                  'h2o': ['version.txt', 'buildinfo.txt']},
+                  'h2o': ['version.txt', 'buildinfo.txt'],
+                  'pysparkling': ['version.txt']},
 )
 

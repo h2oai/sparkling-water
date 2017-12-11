@@ -18,10 +18,11 @@ dependencies {
 //
 task createVersionFile {
     doLast {
-        if (!pkgDir.exists()) {
-            pkgDir.mkdirs()
+        def versionFileDir = new File(pkgDir, "pysparkling")
+        if (!versionFileDir.exists()) {
+            versionFileDir.mkdirs()
         }
-        File version_file = new File(pkgDir, "version.txt")
+        File version_file = new File(versionFileDir, "version.txt")
         def version_txt = version.replace("-SNAPSHOT","")
         version_file.write(version_txt)
     }
