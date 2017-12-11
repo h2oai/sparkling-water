@@ -53,6 +53,7 @@ ext {
       project(':sparkling-water-examples'),
       project(':sparkling-water-ml'),
       project(':sparkling-water-app-streaming'),
+      project(':sparkling-water-app-streaming-pipeline'),
       project(':sparkling-water-package')
     ]
     // Python projects

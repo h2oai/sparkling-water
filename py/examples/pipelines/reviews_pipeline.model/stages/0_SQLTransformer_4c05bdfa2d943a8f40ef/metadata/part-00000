@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.SQLTransformer","timestamp":1512344799304,"sparkVersion":"2.2.0","uid":"SQLTransformer_4c05bdfa2d943a8f40ef","paramMap":{"statement":"SELECT Score, from_unixtime(Time) as Time, Summary FROM __THIS__"}}

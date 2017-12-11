@@ -51,3 +51,5 @@ spark-tfidf-data/
 
 # RStudio file
 rsparkling.Rproj
+
+py/examples/data/
