@@ -9,6 +9,7 @@ import h2o
 from pysparkling.conversions import FrameConversions as fc
 import warnings
 import atexit
+import sys
 
 def _monkey_patch_H2OFrame(hc):
     @staticmethod
@@ -55,7 +56,14 @@ def _is_of_simple_type(rdd):
     if not isinstance(rdd, RDD):
         raise ValueError('rdd is not of type pyspark.rdd.RDD')
 
-    if isinstance(rdd.first(), (str, int, bool, long, float)):
+    # Python 3.6 does not contain type long
+    # this code ensures we are compatible with both, python 2.7 and python 3.6
+    if sys.version_info > (3,):
+        type_checks = (str, int, bool, float)
+    else:
+        type_checks = (str, int, bool, long, float)
+
+    if isinstance(rdd.first(), type_checks):
         return True
     else:
         return False
@@ -214,19 +222,24 @@ class H2OContext(object):
             # String, Boolean, Int and Double (Python Long is converted to java.lang.BigInteger)
             if _is_of_simple_type(dataframe):
                 first = _get_first(dataframe)
+                # Make this code compatible with python 3.6 and python 2.7
+                global long
+                if sys.version_info > (3,):
+                    long = int
+
                 if isinstance(first, str):
                     return fc._as_h2o_frame_from_RDD_String(self, dataframe, framename)
                 elif isinstance(first, bool):
                     return fc._as_h2o_frame_from_RDD_Bool(self, dataframe, framename)
-                elif isinstance(dataframe.min(), int) and isinstance(dataframe.max(), int):
+                elif (isinstance(dataframe.min(), int) and isinstance(dataframe.max(), int)) or (isinstance(dataframe.min(), long) and isinstance(dataframe.max(), long)):
                     if dataframe.min() >= self._jvm.Integer.MIN_VALUE and dataframe.max() <= self._jvm.Integer.MAX_VALUE:
                         return fc._as_h2o_frame_from_RDD_Int(self, dataframe, framename)
-                    else:
+                    elif dataframe.min() >= self._jvm.Long.MIN_VALUE and dataframe.max() <= self._jvm.Long.MAX_VALUE:
                         return fc._as_h2o_frame_from_RDD_Long(self, dataframe, framename)
+                    else:
+                        raise ValueError('Numbers in RDD Too Big')
                 elif isinstance(first, float):
                     return fc._as_h2o_frame_from_RDD_Float(self, dataframe, framename)
-                elif isinstance(dataframe.max(), long):
-                    raise ValueError('Numbers in RDD Too Big')
             else:
                 return fc._as_h2o_frame_from_complex_type(self, dataframe, framename)
 

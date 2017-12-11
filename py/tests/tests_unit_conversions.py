@@ -114,7 +114,21 @@ class FrameTransformationsTest(unittest.TestCase):
     # test transformation from RDD consisting of python long to h2o frame
     def test_rdd_long_h2o_frame(self):
         hc = self._hc
-        rdd = self._spark.sparkContext.parallelize([1,55555555555555555555555555])
+        min = hc._jvm.Integer.MIN_VALUE - 1
+        max = hc._jvm.Integer.MAX_VALUE + 1
+        rdd = self._spark.sparkContext.parallelize([1, min , max])
+        h2o_frame = hc.as_h2o_frame(rdd)
+        self.assertEquals(h2o_frame[0,0],1,"Value should match")
+        self.assertEquals(h2o_frame[1,0],min,"Value should match")
+        self.assertEquals(h2o_frame[2,0],max,"Value should match")
+        unit_test_utils.asert_h2o_frame(self, h2o_frame, rdd)
+
+    # test transformation of numeric too big to be handled by standard java types
+    def test_rdd_numeric_too_big_h2o_frame(self):
+        hc = self._hc
+        min = hc._jvm.Long.MIN_VALUE - 1
+        max = hc._jvm.Long.MAX_VALUE + 1
+        rdd = self._spark.sparkContext.parallelize([1, min , max])
         with self.assertRaises(ValueError):
             h2o_frame = hc.as_h2o_frame(rdd)
 
