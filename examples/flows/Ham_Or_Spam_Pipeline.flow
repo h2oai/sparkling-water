@@ -23,7 +23,7 @@
     },
     {
       "type": "sca",
-      "input": "import org.apache.spark.SparkFiles\nimport org.apache.spark.ml.PipelineModel\nimport org.apache.spark.ml.feature._\nimport org.apache.spark.ml.h2o.H2OPipeline\nimport org.apache.spark.ml.h2o.features.{ColRemover, DatasetSplitter}\nimport org.apache.spark.ml.h2o.models.H2ODeepLearning\nimport org.apache.spark.sql.types.{StringType, StructField, StructType}\nimport org.apache.spark.sql.{DataFrame, Row, SQLContext}\nimport water.support.SparkContextSupport\nimport water.fvec.H2OFrame"
+      "input": "import org.apache.spark.SparkFiles\nimport org.apache.spark.ml._\nimport org.apache.spark.ml.feature._\nimport org.apache.spark.ml.h2o.features._\nimport org.apache.spark.ml.h2o.algos._\nimport org.apache.spark.sql.types.{StringType, StructField, StructType}\nimport org.apache.spark.sql.{DataFrame, Row, SQLContext}\nimport water.support.SparkContextSupport\nimport water.fvec.H2OFrame"
     },
     {
       "type": "sca",
@@ -39,7 +39,7 @@
     },
     {
       "type": "sca",
-      "input": "// Hash the words\nval hashingTF = new HashingTF().\n  setNumFeatures(1 << 10).\n  setInputCol(tokenizer.getOutputCol).\n  setOutputCol(\"wordToIndex\")\n"
+      "input": "// Hash the words\nval hashingTF = new HashingTF().\n  setNumFeatures(1 << 10).\n  setInputCol(tokenizer.getOutputCol).\n  setOutputCol(\"wordToIndex\")"
     },
     {
       "type": "sca",
@@ -47,19 +47,15 @@
     },
     {
       "type": "sca",
-      "input": "// Remove specified columns\n// This is OneTimeTransformer which is executed only during fitting stage\nval colRemover = new ColRemover().\n  setKeep(true).\n  setColumns(Array[String](\"label\", \"tf_idf\"))"
+      "input": "// Create H2ODeepLearning model\nval dl = new H2ODeepLearning().\n  setEpochs(10).\n  setL1(0.001).\n  setL2(0.0).\n  setHidden(Array[Int](200, 200)).\n  setFeaturesCols(idf.getOutputCol).\n  setPredictionsCol(\"label\")"
     },
     {
       "type": "sca",
-      "input": "// Split the dataset and store the splits with the specified keys into DKV\n// This is OneTimeTransformer which is executed only during fitting stage\n// It determines the frame which is passed on the output in the following order:\n//    1) If the train key is specified using setTrainKey method and the key is also specified in the list of keys, then frame with this key is passed on the output\n//    2) Otherwise, if the default key - \"train.hex\" is specified in the list of keys, then frame with this key is passed on the output\n//    3) Otherwise the first frame specified in the list of keys is passed on the output\nval splitter = new DatasetSplitter().\n  setKeys(Array[String](\"train.hex\", \"valid.hex\")).\n  setRatios(Array[Double](0.8)).\n  setTrainKey(\"train.hex\")"
+      "input": "// Remove all intermediate columns\nval colPruner = new ColumnPruner().\n  setColumns(Array[String](idf.getOutputCol, hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))"
     },
     {
       "type": "sca",
-      "input": "// Create H2ODeepLearning model\n// If the key specified the training set is specified using setTrainKey, then frame with this key is used as the training\n// frame, otherwise it uses the frame from the previous stage as the training frame\nval dl = new H2ODeepLearning().\n  setEpochs(10).\n  setL1(0.001).\n  setL2(0.0).\n  setHidden(Array[Int](200, 200)).\n  setValidKey(splitter.getKeys(1)).\n  setResponseColumn(\"label\")"
-    },
-    {
-      "type": "sca",
-      "input": "// Create the pipeline by defining all the stages\nval pipeline = new H2OPipeline().\n  setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, colRemover, splitter, dl))\n"
+      "input": "// Create the pipeline by defining all the stages\nval pipeline = new Pipeline().\n  setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, dl, colPruner))"
     },
     {
       "type": "sca",
@@ -67,15 +63,11 @@
     },
     {
       "type": "sca",
-      "input": "\n// now we can optionally save the fitted pipeline to disk\nmodel.write.overwrite().save(\"/tmp/hamOrSpamPipeline\")\n// load the fitted model\nval loadedModel = PipelineModel.load(\"/tmp/hamOrSpamPipeline\")\n\n// we can also save this unfit pipeline to disk\npipeline.write.overwrite().save(\"/tmp/unfit-hamOrSpamPipeline\")\n// load unfitted pipeline\nval loadedPipeline = H2OPipeline.load(\"/tmp/unfit-hamOrSpamPipeline\")\n// Train the pipeline model\nval modelOfLoadedPipeline = pipeline.fit(data)"
+      "input": "/*\n * Make predictions on unlabeled data\n * Spam detector\n */\ndef isSpam(smsText: String,\n           model: PipelineModel,\n           h2oContext: H2OContext,\n           hamThreshold: Double = 0.5) = {\n  val smsTextSchema = StructType(Array(StructField(\"text\", StringType, nullable = false)))\n  val smsTextRowRDD = sc.parallelize(Seq(smsText)).map(Row(_))\n  val smsTextDF = sqlContext.createDataFrame(smsTextRowRDD, smsTextSchema)\n  val prediction = model.transform(smsTextDF)\n  prediction.select(\"spam\").first.getDouble(0) > hamThreshold\n}"
     },
     {
       "type": "sca",
-      "input": "/*\n * Make predictions on unlabeled data\n * Spam detector\n */\ndef isSpam(smsText: String,\n           model: PipelineModel,\n           h2oContext: H2OContext,\n           hamThreshold: Double = 0.5):Boolean = {\n  import h2oContext.implicits._\n  val smsTextSchema = StructType(Array(StructField(\"text\", StringType, nullable = false)))\n  val smsTextRowRDD = sc.parallelize(Seq(smsText)).map(Row(_))\n  val smsTextDF = sqlContext.createDataFrame(smsTextRowRDD, smsTextSchema)\n  val prediction: H2OFrame = model.transform(smsTextDF)\n  prediction.vecs()(1).at(0) < hamThreshold\n}"
-    },
-    {
-      "type": "sca",
-      "input": "println(isSpam(\"Peter, what about a nice glass of vine after the meetup?\", modelOfLoadedPipeline, h2oContext))\nprintln(isSpam(\"We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?\", loadedModel, h2oContext))\n"
+      "input": "println(isSpam(\"Peter, what about a nice glass of vine after the meetup?\", model, h2oContext))\nprintln(isSpam(\"We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?\", model, h2oContext))\n"
     }
   ]
 }
