@@ -1,5 +1,6 @@
 # include additional files which are not fetched by default by setuptools
-include version.txt
-# We need to manually specify version files for h2o to make sdist happy
+
+# We need to manually specify version files for h2o and sparkling water to make sdist and pip happy
+include pysparkling/version.txt
 include h2o/version.txt
 include h2o/buildinfo.txt
