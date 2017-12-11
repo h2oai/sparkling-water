@@ -50,6 +50,7 @@ setup(
     install_requires=['requests', 'tabulate', 'future', 'colorama'],
 
     # bundled binary packages
-    package_data={'sparkling_water': ['*.jar']},
+    package_data={'sparkling_water': ['*.jar'],
+                  'h2o': ['version.txt', 'buildinfo.txt']},
 )
 
