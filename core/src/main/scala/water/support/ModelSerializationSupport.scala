@@ -23,6 +23,8 @@ import hex.Model
 import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
 import water.persist.Persist
 import water.{AutoBuffer, H2O, Key, Keyed}
+import org.apache.spark.SparkContext
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 trait ModelSerializationSupport {
 
@@ -54,10 +56,24 @@ trait ModelSerializationSupport {
     destination
   }
 
-  def exportMOJOModel(model: Model[_, _, _], destination: URI): URI = {
-    val destFile = new File(destination)
-    val fos = new FileOutputStream(destFile)
-    model.getMojo.writeTo(fos)
+
+  def exportMOJOModel(model: Model[_, _, _], destination: URI, sc: SparkContext): URI = {
+    if (destination.getScheme() == "hdfs") {
+      try {
+        val fs = FileSystem.get(sc.hadoopConfiguration)
+        val output = fs.create(new Path(destination))
+        val os = new BufferedOutputStream(output)
+        model.getMojo.writeTo(os)
+      } catch {
+        case e: IllegalArgumentException =>
+          throw new IllegalArgumentException (s"Error while writing to HDFS " +
+            s"(most likely no HDFS is available) in destination $destination : ${e.getMessage}")
+      }
+    } else {
+      val destFile = new File(destination)
+      val fos = new FileOutputStream(destFile)
+      model.getMojo.writeTo(fos)
+    }
     destination
   }
 
