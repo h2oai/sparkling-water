@@ -7,7 +7,7 @@ properties(
                 parameters(
                         [
                                 choice(name: 'sparkVersion',
-                                        choices: '2.2.0\n2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0',
+                                        choices: '2.2.1\n2.2.0\n2.1.0\n2.0.2\n2.0.1\n2.0.0\n1.6.3\n1.6.2\n1.6.1\n1.6.0',
                                         description: 'Version of Spark used for testing.'),
 
                                 booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit and pyunit tests'),

@@ -18,7 +18,7 @@ node('dX-hadoop') {
 
     // Execute the pipeline
     pipeline(params) { p ->
-        sparkVersion = "2.2.0"
+        sparkVersion = "2.2.1"
         runUnitTests = "true"
         runLocalIntegTests = "true"
         runScriptTests = "true"
