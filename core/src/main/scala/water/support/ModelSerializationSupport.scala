@@ -55,9 +55,9 @@ trait ModelSerializationSupport {
   }
 
   def exportMOJOModel(model: Model[_, _, _], destination: URI): URI = {
-    val destFile = new File(destination)
-    val fos = new FileOutputStream(destFile)
-    model.getMojo.writeTo(fos)
+    val p: Persist = H2O.getPM.getPersistForURI(destination)
+    val os: OutputStream = p.create(destination.toString, true)
+    model.getMojo.writeTo(os)
     destination
   }
 
