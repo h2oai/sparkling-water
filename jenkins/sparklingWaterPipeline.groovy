@@ -77,7 +77,7 @@ def prepareSparkEnvironment() {
             }else {
                 sh  """
                     # Download Spark
-                    wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
+                    wget -q "http://mirrors.ocf.berkeley.edu/apache/spark/spark-${config.sparkVersion}/${env.SPARK}.tgz"
                     mkdir -p "${env.SPARK_HOME}"
                     tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
                     rm -rf ${env.SPARK}.tgz
