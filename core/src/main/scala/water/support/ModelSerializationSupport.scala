@@ -43,14 +43,11 @@ trait ModelSerializationSupport {
 
 
   def exportPOJOModel(model: Model[_, _, _], destination: URI): URI = {
-    val destFile = new File(destination)
-    val fos = new FileOutputStream(destFile)
+    val p: Persist = H2O.getPM.getPersistForURI(destination)
+    val os: OutputStream = p.create(destination.toString, true)
     val writer = new model.JavaModelStreamWriter(false)
-    try {
-      writer.writeTo(fos)
-    } finally {
-      fos.close()
-    }
+    writer.writeTo(os)
+    os.close()
     destination
   }
 
