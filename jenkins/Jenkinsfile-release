@@ -3,12 +3,23 @@ pipeline {
 
     environment {
         SPARK_VERSION="2.0.2"
-        BRANCH_DIR="/builds2/sparkling-water/${BRANCH_NAME}"
-        BUILD_NUMBER_DIR="${BRANCH_DIR}/${BUILD_NUMBER}"
         SPARK_HOME="${env.WORKSPACE}/spark"
     }
 
     stages {
+
+        stage('Prepare Environment') {
+            steps {
+                sh """
+                        # Transform build number to start with 0
+                        BUILD_NUMBER="\$(( $BUILD_NUMBER - 1 ))"
+                        
+                        # Clean workspace
+                        sh 'rm -rf *'
+                    """
+            }
+        }
+
         stage('Download Spark') {
             steps {
                 sh  """
@@ -20,31 +31,17 @@ pipeline {
             }
         }
 
-        stage('Prepare Environment') {
-            steps {
-                sh """
-                        # Transform build number to start with 0
-                        BUILD_NUMBER="\$(( $BUILD_NUMBER - 1 ))"
-                        
-                        # Do everything in the job directory. Ignore the standard jenkins workspace.
-                        mkdir -p ${BUILD_NUMBER_DIR}
-                    """
-            }
-        }
 
         stage('Clone the repository'){
             steps{
-                dir("${env.BUILD_NUMBER_DIR}") {
                     checkout scm
                 }
-            }
         }
 
         stage('Build Sparkling Water'){
             steps {
                 withCredentials([file(credentialsId: 'release-gradle.properties', variable: 'GRADLE_PROPERTIES_PATH'),
                                  file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
-                    dir("${env.BUILD_NUMBER_DIR}") {
                         sh """
                             # Update gradle build number
                             sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.$BUILD_NUMBER/" gradle.properties
@@ -77,7 +74,6 @@ pipeline {
                             # Restore gradle.properties before pushing to S3
                             git checkout -- gradle.properties
                         """
-                    }
                 }
             }
         }
@@ -85,7 +81,6 @@ pipeline {
 
         stage('Create Extended H2O Jars'){
             steps {
-                dir("${env.BUILD_NUMBER_DIR}"){
                     sh """
                         # Create h2o extended jar for all supported hadoop distributions
                         HADOOP_DISTRIBUTIONS=`./gradlew -q :sparkling-water-assembly-h2o:printHadoopDistributions)`
@@ -96,13 +91,11 @@ pipeline {
                         # Create extended jar also for the regular h2o ( no h2o driver )
                         ./gradlew extendJar -PdownloadH2O
                     """
-                }
             }
         }
 
         stage('Publish to S3') {
             steps {
-                dir("${env.BUILD_NUMBER_DIR}"){
                     sh  """
                             s3cmd --rexclude='target/classes/*' --acl-public sync dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/
                             
@@ -148,30 +141,18 @@ pipeline {
                             s3cmd --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest.html
                             s3cmd --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/index.html
                         """
-                }
             }
         }
 
         stage('Publish To PyPi') {
             steps {
-                dir("${env.BUILD_NUMBER_DIR}/py/build/pkg") {
+                dir("py/build/pkg") {
                     withCredentials([usernamePassword(credentialsId: "pypi-credentials", usernameVariable: 'PIPY_USERNAME', passwordVariable: 'PIPY_PASSWORD')]) {
                         sh  """
                             python setup.py sdist
                             twine -u $PIPY_USERNAME -p $PIPY_PASSWORD upload dist/*
                             """
                     }
-                }
-            }
-        }
-
-        stage('Update Success Pointer'){
-            steps {
-                dir("${env.BRANCH_DIR}") {
-                    sh  """
-                            rm -f lastSuccessfulBuild
-                            ln -s ${BUILD_NUMBER} lastSuccessfulBuild
-                        """
                 }
             }
         }
