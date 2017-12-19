@@ -94,6 +94,10 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     * otherwise it creates new H2O cluster living in Spark
     */
   def init(): H2OContext = {
+    
+    logDebug("Dumping Spark Configuration:\n")
+    logDebug(_conf.getAll.mkString("\n"))
+
     if (!isRunningOnCorrectSpark(sparkContext)) {
       throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
         s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
