@@ -72,7 +72,7 @@ object H2OSchemaUtils {
   def flattenSchema(schema: StructType, prefix: String = null, nullable: Boolean = false): StructType = {
 
     val flattened = schema.fields.flatMap { f =>
-      val escaped = if (f.name.contains(".")) "`"+ f.name+"`" else f.name
+      val escaped = if (f.name.contains(".")) "`" + f.name + "`" else f.name
       val colName = if (prefix == null) escaped else prefix + "." + escaped
 
       f.dataType match {
