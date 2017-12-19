@@ -63,7 +63,16 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
     }
 
     val conf = sparkContext.getConf
-    val jars = Utils.getUserJars(conf, isShell = true).mkString(File.pathSeparator)
+    val localJars = {
+      conf.getOption("spark.repl.local.jars") match { /* starting Spark 2.2.1. See SPARK-21714 */
+        case Some(s:String) => s.split(",").filter(_.nonEmpty).toSeq
+        case None => Utils.unionFileLists(
+          conf.getOption("spark.yarn.dist.jars"),
+          conf.getOption("spark.jars")
+        ).toSeq
+      }
+    }
+    val jars = localJars.mkString(File.pathSeparator)
     val interpArguments = List(
       "-Yrepl-class-based", // ensure that lines in REPL are wrapped in the classes instead of objects
       "-Yrepl-outdir", s"${H2OInterpreter.classOutputDirectory.getAbsolutePath}",
