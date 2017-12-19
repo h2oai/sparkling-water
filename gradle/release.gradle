@@ -5,6 +5,7 @@ release {
   tagTemplate = 'RELEASE-$version'
   // Safe point - do releases only from release branch - can be deleted in future
   failOnUnversionedFiles = false
+  failOnCommitNeeded = false
   preCommitText = ":tada: "
   git {
     // Note: the releases are only allowed from master branch
