@@ -23,6 +23,7 @@
 package org.apache.spark.repl.h2o
 
 
+import java.io.File
 import java.net.URI
 
 import org.apache.spark.SparkContext
@@ -50,7 +51,7 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
       logWarning("ADD_JARS environment variable is deprecated, use --jar spark submit argument instead")
     }
     val jars = {
-      val userJars = Utils.getUserJars(conf, isShell = true)
+      val userJars = BaseH2OInterpreter.getUserJars(conf).mkString(File.pathSeparator)
       if (userJars.isEmpty) {
         envJars.getOrElse("")
       } else {
