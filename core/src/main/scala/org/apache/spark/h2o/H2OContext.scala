@@ -175,6 +175,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     ))
   }
 
+
   /**
     * Return a copy of this H2OContext's configuration. The configuration ''cannot'' be changed at runtime.
     */
@@ -183,7 +184,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   /** Transforms RDD[Supported type] to H2OFrame */
   def asH2OFrame(rdd: SupportedRDD): H2OFrame = asH2OFrame(rdd, None)
   def asH2OFrame(rdd: SupportedRDD, frameName: Option[String]): H2OFrame =
-    SupportedRDDConverter.toH2OFrame(this, rdd, frameName)
+    withConversionDebugPrints(sparkContext, "SupportedRDD", SupportedRDDConverter.toH2OFrame(this, rdd, frameName))
   def asH2OFrame(rdd: SupportedRDD, frameName: String): H2OFrame = asH2OFrame(rdd, Option(frameName))
 
 
@@ -195,7 +196,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   /** Transform DataFrame to H2OFrame */
   def asH2OFrame(df: DataFrame): H2OFrame = asH2OFrame(df, None)
   def asH2OFrame(df: DataFrame, frameName: Option[String]): H2OFrame =
-    SparkDataFrameConverter.toH2OFrame(this, df, frameName)
+    withConversionDebugPrints(sparkContext, "DataFrame", SparkDataFrameConverter.toH2OFrame(this, df, frameName))
   def asH2OFrame(df: DataFrame, frameName: String): H2OFrame = asH2OFrame(df, Option(frameName))
 
   /** Transform DataFrame to H2OFrame key */
@@ -206,7 +207,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   /** Transforms Dataset[Supported type] to H2OFrame */
   def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T]): H2OFrame = asH2OFrame(ds, None)
   def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): H2OFrame =
-    DatasetConverter.toH2OFrame(this, ds, frameName)
+    withConversionDebugPrints(sparkContext, "Dataset", DatasetConverter.toH2OFrame(this, ds, frameName))
   def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
 
   /** Transforms Dataset[Supported type] to H2OFrame key */
