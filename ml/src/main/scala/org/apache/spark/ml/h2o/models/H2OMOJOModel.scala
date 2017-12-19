@@ -224,6 +224,11 @@ object H2OMOJOModel extends MLReadable[H2OMOJOModel] {
   @Since("1.6.0")
   override def load(path: String): H2OMOJOModel = super.load(path)
 
+  def createFromMojo(path: String): H2OMOJOModel = {
+    val f = new File(path)
+    createFromMojo(new FileInputStream(f), f.getName)
+  }
+
   def createFromMojo(is: InputStream, uid: String = Identifiable.randomUID("mojoModel")): H2OMOJOModel = {
 
     val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray

@@ -8,5 +8,6 @@ pySparkling - The Sparkling-Water Python Package
 
 from .feature import ColumnPruner
 from .algo import H2OGBM, H2ODeepLearning
+from .models import H2OMOJOModel
 # set what is meant by * packages in statement from foo import *
-__all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning"]
+__all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OMOJOModel"]
