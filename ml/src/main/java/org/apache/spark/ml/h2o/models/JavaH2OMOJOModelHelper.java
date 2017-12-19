@@ -1,7 +1,7 @@
 package org.apache.spark.ml.h2o.models;
 
 /**
- * Helper class allowing us to call H2OMOJOModel.load defined in Scala via Py4j
+ * Helper class allowing us to call H2OMOJOModel.createFromMojo defined in Scala via Py4j
  */
 public class JavaH2OMOJOModelHelper {
 
