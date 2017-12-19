@@ -17,16 +17,18 @@
 
 package org.apache.spark.h2o.utils
 
-import org.apache.spark.h2o.{BuildInfo, WrongSparkVersion}
-import org.apache.spark.internal.Logging
 import org.apache.spark.SparkContext
+import org.apache.spark.h2o.BuildInfo
+import org.apache.spark.internal.Logging
+import water.fvec.Frame
+import water.util.Log
 
-import language.postfixOps
+import scala.language.postfixOps
 
 /**
   * Support methods for H2OContext.
   */
-private[spark] trait H2OContextUtils extends Logging{
+private[spark] trait H2OContextUtils extends Logging {
 
   /**
     * Open browser for given address.
@@ -60,5 +62,19 @@ private[spark] trait H2OContextUtils extends Logging{
   def isRunningOnCorrectSpark(sc: SparkContext) = sc.version.startsWith(BuildInfo.buildSparkMajorVersion)
 
 
+  def withConversionDebugPrints[R <: Frame](sc: SparkContext, conversionName: String, block: => R): R = {
+    val propName = "spark.h2o.measurements.timing"
+    val performancePrintConf = sc.getConf.getOption(propName).orElse(sys.props.get(propName))
+
+    if (performancePrintConf.nonEmpty && performancePrintConf.get.toBoolean) {
+      val t0 = System.nanoTime()
+      val result = block
+      val t1 = System.nanoTime()
+      Log.info(s"Elapsed time of the ${conversionName} conversion into H2OFrame ${result._key}: " + (t1 - t0) / 1000 + " millis")
+      result
+    } else {
+      block
+    }
+  }
 
 }
