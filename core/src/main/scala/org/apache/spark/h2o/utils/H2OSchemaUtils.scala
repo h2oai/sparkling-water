@@ -20,6 +20,7 @@ package org.apache.spark.h2o.utils
 import org.apache.spark.h2o._
 import org.apache.spark.ml.attribute.AttributeGroup
 import org.apache.spark.sql._
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types._
 import org.apache.spark.{SparkContext, ml, mllib}
 
@@ -68,23 +69,11 @@ object H2OSchemaUtils {
     StructType(types)
   }
 
-  def flattenSchemaToCol(schema: StructType, prefix: String = null): Array[Column] = {
-    import org.apache.spark.sql.functions.col
-
-    schema.fields.flatMap { f =>
-      val colName = if (prefix == null) f.name else prefix + "." + f.name
-
-      f.dataType match {
-        case st: StructType => flattenSchemaToCol(st, colName)
-        case _ => Array[Column](col(colName))
-      }
-    }
-  }
-
   def flattenSchema(schema: StructType, prefix: String = null, nullable: Boolean = false): StructType = {
 
     val flattened = schema.fields.flatMap { f =>
-      val colName = if (prefix == null) f.name else prefix + "." + f.name
+      val escaped = if (f.name.contains(".")) "`" + f.name + "`" else f.name
+      val colName = if (prefix == null) escaped else prefix + "." + escaped
 
       f.dataType match {
         case st: StructType => flattenSchema(st, colName, nullable || f.nullable)
@@ -94,30 +83,13 @@ object H2OSchemaUtils {
     StructType(flattened)
   }
 
-
-  private def renamedColsWithoutDots(schema: StructType, substPattern: String): StructType = {
-    val renamed = schema.fields.map{ f =>
-      val newName = f.name.replaceAllLiterally(".", substPattern)
-      f.dataType match {
-        case st: StructType => StructField(newName , renamedColsWithoutDots(st, substPattern), f.nullable, f.metadata)
-        case _ => StructField(newName, f.dataType, f.nullable, f.metadata)
-      }
-    }
-
-    StructType(renamed)
-  }
-
-  def renamedDFWithoutDots(df: DataFrame, substPattern: String): DataFrame = {
-    df.sparkSession.createDataFrame(df.rdd, renamedColsWithoutDots(df.schema, substPattern))
-  }
-
   def flattenDataFrame(df: DataFrame): DataFrame = {
     import org.apache.spark.sql.functions.col
-    val flattenSchema = flattenSchemaToCol(df.schema)
-    // this is needed so the flattened data frame has hiearchical names
-    val renamedCols = flattenSchema.map(name => col(name.toString()).as(name.toString()))
-    df.select(renamedCols: _*)
+    val flatten = flattenSchema(df.schema)
+    val cols = flatten.map(f => col(f.name).as(f.name.replaceAll("`", "")))
+    df.select(cols: _*)
   }
+
 
   /** Returns expanded schema
     *  - schema is represented as list of types
