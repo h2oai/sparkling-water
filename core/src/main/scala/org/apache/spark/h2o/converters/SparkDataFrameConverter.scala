@@ -52,11 +52,8 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
     import H2OSchemaUtils._
-    val substPattern = "_____SUBST_DOT____"
-    val renamedDF = renamedDFWithoutDots(dataFrame, substPattern)
-    // Flatten the dataframe so we don't have any nested rows
-    val flatDataFrame = flattenDataFrame(renamedDF)
-
+    // Flatten the Spark data frame so we don't have any nested rows
+    val flatDataFrame = flattenDataFrame(dataFrame)
     val dfRdd = flatDataFrame.rdd
     val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
     val elemMaxSizes = collectMaxElementSizes(hc.sparkContext, flatDataFrame)
@@ -65,10 +62,9 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     val startPositions = collectElemStartPositions(elemMaxSizes)
 
     // Expands RDD's schema ( Arrays and Vectors)
-    val flatRddSchema = expandedSchema(hc.sparkContext, H2OSchemaUtils.flattenSchema(renamedDF.schema), elemMaxSizes)
+    val flatRddSchema = expandedSchema(hc.sparkContext, flatDataFrame.schema, elemMaxSizes)
     // Patch the flat schema based on information about types
-    // Also give the dot back
-    val fnames = flatRddSchema.map(_.name.replaceAllLiterally(substPattern, ".")).toArray
+    val fnames = flatRddSchema.map(_.name).toArray
 
     // in case of internal backend, store regular vector types
     // otherwise for external backend store expected types
@@ -76,7 +72,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       // Transform datatype into h2o types
       flatRddSchema.map(f => ReflectionUtils.vecTypeFor(f.dataType)).toArray
     } else {
-      val internalJavaClasses = H2OSchemaUtils.expandWithoutVectors(hc.sparkContext, H2OSchemaUtils.flattenSchema(dataFrame.schema), elemMaxSizes).map { f =>
+      val internalJavaClasses = H2OSchemaUtils.expandWithoutVectors(hc.sparkContext, flatDataFrame.schema, elemMaxSizes).map { f =>
         ExternalWriteConverterCtx.internalJavaClassOf(f.dataType)
       }.toArray
       ExternalBackendUtils.prepareExpectedTypes(internalJavaClasses)
