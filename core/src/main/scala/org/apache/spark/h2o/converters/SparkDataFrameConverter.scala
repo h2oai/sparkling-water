@@ -53,10 +53,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
     import H2OSchemaUtils._
     // Flatten the Spark data frame so we don't have any nested rows
-    // Also replace dots in columns names by temporary string as Spark can't handle dot in column names
     val flatDataFrame = flattenDataFrame(dataFrame)
-
-
     val dfRdd = flatDataFrame.rdd
     val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
     val elemMaxSizes = collectMaxElementSizes(hc.sparkContext, flatDataFrame)
