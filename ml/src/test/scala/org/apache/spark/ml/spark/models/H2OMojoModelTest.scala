@@ -23,7 +23,7 @@ import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.ml.h2o.algos.H2OGBM
+import org.apache.spark.ml.h2o.algos.{H2ODeepLearning, H2OGBM}
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.sql.DataFrame
 import org.junit.runner.RunWith
@@ -49,6 +49,11 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
   test("[MOJO] Export and Import - regression model") {
     val (inputDf, model) = regressionModelFixture
     testModelReload("regression_model_import_export", inputDf, model)
+  }
+
+  test("[MOJO] Export and import - deep learning model") {
+    val (inputDf, model) = deepLearningModelFixture
+    testModelReload("deeplearning_model_import_export", inputDf, model)
   }
 
   // @formatter:off
@@ -142,6 +147,15 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
       .setPredictionsCol("capsule")
 
     (inputDf, gbm.fit(inputDf))
+  }
+
+  def deepLearningModelFixture() = {
+    val inputDf = prostateDataFrame
+    val dl = new H2ODeepLearning()(hc, sqlContext)
+        .setSeed(42)
+        .setPredictionsCol("CAPSULE")
+
+    (inputDf, dl.fit(inputDf))
   }
 
   def savedBinomialModel() = {
