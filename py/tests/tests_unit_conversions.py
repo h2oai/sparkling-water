@@ -206,5 +206,22 @@ class FrameTransformationsTest(unittest.TestCase):
         for i in range(0, len(pred_mojo)):
             assert pred_mojo[i]==pred_model[i]
 
+    def test_load_mojo_deeplearning(self):
+        from pysparkling.ml import H2OMOJOModel, H2ODeepLearning
+        mojo = H2OMOJOModel.create_from_mojo("../ml/src/test/resources/deep_learning_prostate.mojo")
+        prostate_frame = self._hc.as_spark_frame(h2o.upload_file(unit_test_utils.locate("smalldata/prostate/prostate.csv")))
+
+        dl = H2ODeepLearning(seed=42, reproducible=True, predictionCol="CAPSULE")
+
+        model = dl.fit(prostate_frame)
+
+        pred_mojo = mojo.predict(prostate_frame).repartition(1).collect()
+        pred_model = model.transform(prostate_frame).repartition(1).collect()
+
+        assert len(pred_mojo)==len(pred_model)
+        for i in range(0, len(pred_mojo)):
+            assert pred_mojo[i]==pred_model[i]
+
+
 if __name__ == '__main__':
     generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_conversions_report")
