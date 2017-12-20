@@ -29,11 +29,10 @@ def load():
 
 ## Tokenize the messages
 tokenizer = RegexTokenizer(inputCol="text",
-                           outputCol="words",
-                           minTokenLength=3,
-                           gaps=False,
-                           pattern="[a-zA-Z]+")
-
+                                        outputCol="words",
+                                        minTokenLength=3,
+                                        gaps=False,
+                                        pattern="[a-zA-Z]+")
 
 ## Remove ignored words
 stopWordsRemover = StopWordsRemover(inputCol=tokenizer.getOutputCol(),
@@ -41,12 +40,10 @@ stopWordsRemover = StopWordsRemover(inputCol=tokenizer.getOutputCol(),
                                     stopWords=["the", "a", "", "in", "on", "at", "as", "not", "for"],
                                     caseSensitive=False)
 
-
 ## Hash the words
 hashingTF = HashingTF(inputCol=stopWordsRemover.getOutputCol(),
                       outputCol="wordToIndex",
                       numFeatures=1 << 10)
-
 
 ## Create inverse document frequencies model
 idf = IDF(inputCol=hashingTF.getOutputCol(),
@@ -61,7 +58,7 @@ gbm = H2OGBM(ratio=0.8,
 ## Remove all helper columns
 colPruner = ColumnPruner(columns=[idf.getOutputCol(), hashingTF.getOutputCol(), stopWordsRemover.getOutputCol(), tokenizer.getOutputCol()])
 
-##  Create the pipeline by defining all the stages
+## Create the pipeline by defining all the stages
 pipeline = Pipeline(stages=[tokenizer, stopWordsRemover, hashingTF, idf, gbm, colPruner])
 
 ## Train the pipeline model
