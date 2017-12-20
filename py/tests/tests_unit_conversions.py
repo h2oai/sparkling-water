@@ -22,6 +22,7 @@ Unit tests for PySparkling Data Conversions;
 import unittest
 from pysparkling.context import H2OContext
 from pysparkling.conf import H2OConf
+
 from pyspark.sql import SparkSession
 
 import h2o
@@ -190,6 +191,7 @@ class FrameTransformationsTest(unittest.TestCase):
         assert total < 10 # The conversion should not take longer then 10 seconds
 
     def test_load_mojo_gbm(self):
+        from pysparkling.ml import H2OMOJOModel, H2OGBM
         mojo = H2OMOJOModel.create_from_mojo("../ml/src/test/resources/binom_model_prostate.mojo")
         prostate_frame = self._hc.as_spark_frame(h2o.upload_file(unit_test_utils.locate("smalldata/prostate/prostate.csv")))
 
