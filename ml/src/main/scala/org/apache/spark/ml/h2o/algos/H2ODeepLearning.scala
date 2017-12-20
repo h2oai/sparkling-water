@@ -85,7 +85,7 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
   private final val l1 = doubleParam("l1")
   private final val l2 = doubleParam("l2")
   private final val hidden = intArrayParam("hidden")
-
+  private final val reproducible = booleanParam("reproducible")
   //
   // Default values
   //
@@ -93,7 +93,8 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
     epochs -> parameters._epochs,
     l1 -> parameters._l1,
     l2 -> parameters._l2,
-    hidden -> parameters._hidden)
+    hidden -> parameters._hidden,
+    reproducible -> parameters._reproducible)
 
   //
   // Getters
@@ -106,6 +107,8 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
   def getL2() = $(l2)
   /** @group getParam */
   def getHidden() = $(hidden)
+  /** @group getParam */
+  def getReproducible() = $(reproducible)
 
   //
   // Setters
@@ -118,13 +121,17 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
   def setL2(value: Double): this.type = set(l2, value)
   /** @group setParam */
   def setHidden(value: Array[Int]): this.type = set(hidden, value)
+  /** @group setParam */
+  def setReproducible(value: Boolean): this.type = set(reproducible, value)
 
 
-  def updateParams(): Unit ={
+  override def updateH2OParams(): Unit = {
+    super.updateH2OParams()
     parameters._epochs = $(epochs)
     parameters._l1 = $(l1)
     parameters._l2 = $(l2)
     parameters._hidden = $(hidden)
+    parameters._reproducible = $(reproducible)
   }
 
 
