@@ -203,7 +203,7 @@ class FrameTransformationsTest(unittest.TestCase):
 
         assert len(pred_mojo)==len(pred_model)
         for i in range(0, len(pred_mojo)):
-            assert pred_mojo[0]==pred_model[0]
+            assert pred_mojo[i]==pred_model[i]
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_conversions_report")
