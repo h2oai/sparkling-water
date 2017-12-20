@@ -20,7 +20,7 @@ import org.apache.spark.ml.param._
 
 /**
   * Parameters which need to be available on the model itself for prediction purposes. This can't be backed
-  * byt H2OParamsHelper as at the time of prediction we might be using mojo and binary parameters are not available.
+  * byt H2OAlgoParamsHelper as at the time of prediction we might be using mojo and binary parameters are not available.
   */
 trait H2OModelParams extends Params {
 
