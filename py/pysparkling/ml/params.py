@@ -271,7 +271,7 @@ class H2ODeepLearningParams(H2OAlgorithmParams):
                                       " produces substantial gains in modeling as estimate variance is reduced.")
 
     hidden = Param(Params._dummy(), "hidden", "The number and size of each hidden layer in the model")
-
+    reproducible = Param(Params._dummy(), "reproducible", "Force reproducibility on small data (will be slow - only uses 1 thread)")
 
     ##
     ## Getters
@@ -288,6 +288,8 @@ class H2ODeepLearningParams(H2OAlgorithmParams):
     def getHidden(self):
         return self.getOrDefault(self.hidden)
 
+    def getReproducible(self):
+        return self.getOrDefault(self.reproducible)
 
     ##
     ## Setters
@@ -303,3 +305,6 @@ class H2ODeepLearningParams(H2OAlgorithmParams):
 
     def setHidden(self, value):
         return self._set(hidden=value)
+
+    def setReproducible(self, value):
+        return self._set(reproducible=value)
