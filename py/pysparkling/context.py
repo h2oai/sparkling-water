@@ -36,6 +36,8 @@ def _monkey_patch_H2OFrame(hc):
            or not self._ex._cache._id == self._java_frame_sid:
             # Note: self.frame_id will trigger frame evaluation
             self._java_frame = hc._jhc.asH2OFrame(self.frame_id)
+            self._java_frame_sid = self._java_frame.key().toString()
+            self._backed_by_java_obj = True
         return self._java_frame
 
     @staticmethod
