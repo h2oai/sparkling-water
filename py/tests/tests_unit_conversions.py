@@ -29,6 +29,7 @@ import unit_test_utils
 import generic_test_utils
 import time
 from pyspark.mllib.linalg import *
+from pysparkling.ml import *
 
 # Test of transformations from dataframe/rdd to h2o frame and from h2o frame back to dataframe
 class FrameTransformationsTest(unittest.TestCase):
@@ -188,6 +189,21 @@ class FrameTransformationsTest(unittest.TestCase):
         total = t1 - t0
 
         assert total < 10 # The conversion should not take longer then 10 seconds
+
+    def test_load_mojo_gbm(self):
+        mojo = H2OMOJOModel.create_from_mojo("../ml/src/test/resources/binom_model_prostate.mojo")
+        prostate_frame = hc.as_spark_frame(h2o.upload_file(unit_test_utils.locate("smalldata/prostate/prostate.csv")))
+
+        gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", predictionCol="capsule")
+
+        model = gbm.fit(prostate_frame)
+
+        pred_mojo = mojo.predict(prostate_frame).repartition(1).collect()
+        pred_model = model.transform(prostate_frame).repartition(1).collect()
+
+        assert len(pred_mojo)==len(pred_model)
+        for i in range(0, len(pred_mojo)):
+            assert pred_mojo[0]==pred_model[0]
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_conversions_report")
