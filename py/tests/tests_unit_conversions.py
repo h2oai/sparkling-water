@@ -143,6 +143,15 @@ class FrameTransformationsTest(unittest.TestCase):
         self.assertEquals(len(df.columns), h2o_frame.ncol, "Number of columns should match")
         self.assertEquals(df.columns,h2o_frame.names, "Column names should match")
 
+    def test_h2o_frame_2_data_frame_second_conversion(self):
+        hc = self._hc
+        h2o_frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
+        df1 = hc.as_spark_frame(h2o_frame)
+        df2 = hc.as_spark_frame(h2o_frame)
+        self.assertEquals(df1.count(), df2.count(), "Number of rows should match")
+        self.assertEquals(len(df1.columns), len(df2.columns), "Number of columns should match")
+        self.assertEquals(df1.columns, df2.columns, "Column names should match")
+
     # test transformation from h2o frame to data frame, when given h2o frame was obtained using as_h2o_frame method
     # on h2o context
     def test_h2o_frame_2_data_frame_2(self):
