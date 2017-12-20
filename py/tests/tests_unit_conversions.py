@@ -192,7 +192,7 @@ class FrameTransformationsTest(unittest.TestCase):
 
     def test_load_mojo_gbm(self):
         mojo = H2OMOJOModel.create_from_mojo("../ml/src/test/resources/binom_model_prostate.mojo")
-        prostate_frame = hc.as_spark_frame(h2o.upload_file(unit_test_utils.locate("smalldata/prostate/prostate.csv")))
+        prostate_frame = self._hc.as_spark_frame(h2o.upload_file(unit_test_utils.locate("smalldata/prostate/prostate.csv")))
 
         gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", predictionCol="capsule")
 
