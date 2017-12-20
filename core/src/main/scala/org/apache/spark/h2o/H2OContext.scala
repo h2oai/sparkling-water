@@ -94,9 +94,9 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     * otherwise it creates new H2O cluster living in Spark
     */
   def init(): H2OContext = {
-    
-    logDebug("Dumping Spark Configuration:\n")
-    logDebug(_conf.getAll.mkString("\n"))
+
+    // Use H2O's logging as H2O info log level is default
+    Log.info("The following Spark configuration is used: " + _conf.getAll.mkString(", "))
 
     if (!isRunningOnCorrectSpark(sparkContext)) {
       throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
