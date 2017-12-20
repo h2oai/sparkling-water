@@ -29,10 +29,10 @@ def load():
 
 ## Tokenize the messages
 tokenizer = RegexTokenizer(inputCol="text",
-                                        outputCol="words",
-                                        minTokenLength=3,
-                                        gaps=False,
-                                        pattern="[a-zA-Z]+")
+                           outputCol="words",
+                           minTokenLength=3,
+                           gaps=False,
+                           pattern="[a-zA-Z]+")
 
 ## Remove ignored words
 stopWordsRemover = StopWordsRemover(inputCol=tokenizer.getOutputCol(),
