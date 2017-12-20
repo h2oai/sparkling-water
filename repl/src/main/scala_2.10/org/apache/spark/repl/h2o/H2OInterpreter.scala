@@ -26,7 +26,7 @@ package org.apache.spark.repl.h2o
 import java.io.File
 import java.net.URI
 
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.util.Utils
 
 import scala.Predef.{println => _, _}
@@ -51,7 +51,7 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
       logWarning("ADD_JARS environment variable is deprecated, use --jar spark submit argument instead")
     }
     val jars = {
-      val userJars = BaseH2OInterpreter.getUserJars(conf).mkString(File.pathSeparator)
+      val userJars = H2OInterpreter.getUserJars(conf).mkString(File.pathSeparator)
       if (userJars.isEmpty) {
         envJars.getOrElse("")
       } else {
@@ -101,4 +101,24 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 
 object H2OInterpreter {
   def classOutputDirectory = H2OIMain.classOutputDirectory
+
+
+  def getUserJars(conf: SparkConf): Seq[String] = {
+    import scala.reflect.runtime.{universe => ru}
+
+    try {
+
+      val instanceMirror = ru.runtimeMirror(this.getClass.getClassLoader).reflect(Utils)
+      val methodSymbol = ru.typeOf[Utils.type].declaration(ru.stringToTermName("getLocalUserJarsForShell")).asMethod
+      val method = instanceMirror.reflectMethod(methodSymbol)
+      method(conf).asInstanceOf[Seq[String]]
+    } catch {
+      case _: NoSuchMethodException => // Fallback to Spark 2.2.0
+        val m = ru.runtimeMirror(this.getClass.getClassLoader)
+        val instanceMirror = m.reflect(Utils)
+        val methodSymbol = ru.typeOf[Utils.type].declaration(ru.stringToTermName("getUserJars")).asMethod
+        val method = instanceMirror.reflectMethod(methodSymbol)
+        method(conf, true).asInstanceOf[Seq[String]]
+    }
+  }
 }
