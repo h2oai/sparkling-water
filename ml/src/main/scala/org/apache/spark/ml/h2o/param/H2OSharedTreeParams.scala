@@ -31,7 +31,7 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
   final val maxDepth = intParam("maxDepth")
   final val minRows = doubleParam("minRows")
   final val nbins = intParam("nbins")
-  final val nbinsCat = intParam("nbinsCats")
+  final val nbinsCats = intParam("nbinsCats")
   final val minSplitImprovement = doubleParam("minSplitImprovement")
   final val histogramType = H2OHistogramTypeParam("histogramType")
   final val r2Stopping = doubleParam("r2Stopping")
@@ -51,7 +51,7 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
     maxDepth -> parameters._max_depth,
     minRows -> parameters._min_rows,
     nbins -> parameters._nbins,
-    nbinsCat -> parameters._nbins_cats,
+    nbinsCats -> parameters._nbins_cats,
     minSplitImprovement -> parameters._min_split_improvement,
     histogramType -> parameters._histogram_type,
     r2Stopping -> parameters._r2_stopping,
@@ -80,7 +80,7 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
   def getNbins() = $(nbins)
 
   /** @group getParam */
-  def getNbinsCat() = $(nbinsCat)
+  def getNbinsCats() = $(nbinsCats)
 
   /** @group getParam */
   def getMinSplitImprovement() = $(minSplitImprovement)
@@ -128,7 +128,7 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
   def setNbins(value: Int): this.type = set(nbins, value)
 
   /** @group setParam */
-  def setNbinsCat(value: Int): this.type = set(nbinsCat, value)
+  def setNbinsCats(value: Int): this.type = set(nbinsCats, value)
 
   /** @group setParam */
   def setMinSplitImprovement(value: Double): this.type = set(minSplitImprovement, value)
@@ -171,7 +171,7 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
     parameters._max_depth = $(maxDepth)
     parameters._min_rows = $(minRows)
     parameters._nbins = $(nbins)
-    parameters._nbins_cats = $(nbinsCat)
+    parameters._nbins_cats = $(nbinsCats)
     parameters._min_split_improvement = $(minSplitImprovement)
     parameters._histogram_type = $(histogramType)
     parameters._r2_stopping = $(r2Stopping)
