@@ -302,26 +302,4 @@ object BaseH2OInterpreter {
     finally Thread.currentThread().setContextClassLoader(classloader)
   }
 
-  /**
-    * This method looks for jars we need to put on the repl classpath
-    * in a way it works on different Spark versions
-    */
-  def getUserJars(conf: SparkConf): Seq[String] = {
-    import scala.reflect.runtime.{universe => ru}
-
-    try {
-
-      val instanceMirror = ru.runtimeMirror(this.getClass.getClassLoader).reflect(Utils)
-      val methodSymbol = ru.typeOf[Utils.type].decl(ru.TermName("getLocalUserJarsForShell")).asMethod
-      val method = instanceMirror.reflectMethod(methodSymbol)
-      method(conf).asInstanceOf[Seq[String]]
-    } catch {
-      case _: NoSuchMethodException => // Fallback to Spark 2.2.0
-        val m = ru.runtimeMirror(this.getClass.getClassLoader)
-        val instanceMirror = m.reflect(Utils)
-        val methodSymbol = ru.typeOf[Utils.type].decl(ru.TermName("getUserJars")).asMethod
-        val method = instanceMirror.reflectMethod(methodSymbol)
-        method(conf, true).asInstanceOf[Seq[String]]
-    }
-  }
 }
