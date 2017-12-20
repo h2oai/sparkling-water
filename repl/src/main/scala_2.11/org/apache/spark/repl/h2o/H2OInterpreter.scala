@@ -64,7 +64,7 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 
     val conf = sparkContext.getConf
 
-    val jars = BaseH2OInterpreter.getUserJars(conf).mkString(File.pathSeparator)
+    val jars = H2OInterpreter.getUserJars(conf).mkString(File.pathSeparator)
 
     val interpArguments = List(
       "-Yrepl-class-based", // ensure that lines in REPL are wrapped in the classes instead of objects
@@ -86,4 +86,22 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 object H2OInterpreter {
   def classOutputDirectory = H2OIMain.classOutputDirectory
 
+  def getUserJars(conf: SparkConf): Seq[String] = {
+    import scala.reflect.runtime.{universe => ru}
+
+    try {
+
+      val instanceMirror = ru.runtimeMirror(this.getClass.getClassLoader).reflect(Utils)
+      val methodSymbol = ru.typeOf[Utils.type].decl(ru.TermName("getLocalUserJarsForShell")).asMethod
+      val method = instanceMirror.reflectMethod(methodSymbol)
+      method(conf).asInstanceOf[Seq[String]]
+    } catch {
+      case _: NoSuchMethodException => // Fallback to Spark 2.2.0
+        val m = ru.runtimeMirror(this.getClass.getClassLoader)
+        val instanceMirror = m.reflect(Utils)
+        val methodSymbol = ru.typeOf[Utils.type].decl(ru.TermName("getUserJars")).asMethod
+        val method = instanceMirror.reflectMethod(methodSymbol)
+        method(conf, true).asInstanceOf[Seq[String]]
+    }
+  }
 }
