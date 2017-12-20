@@ -75,6 +75,12 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
     assertEqual(mojoModel, model, inputDf)
   }
 
+  test("[MOJO] Load from mojo file - deep learning model") {
+    val (inputDf, mojoModel) = savedDeepLearningModel()
+    val (_, model) = deepLearningModelFixture()
+    assertEqual(mojoModel, model, inputDf)
+  }
+
   def testModelReload(name: String, df: DataFrame, model: H2OMOJOModel): Unit = {
     val predBeforeSave = model.transform(df)
     val modelFolder = tempFolder(name)
@@ -152,8 +158,9 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
   def deepLearningModelFixture() = {
     val inputDf = prostateDataFrame
     val dl = new H2ODeepLearning()(hc, sqlContext)
-        .setSeed(42)
-        .setPredictionsCol("CAPSULE")
+      .setSeed(42)
+      .setReproducible(true)
+      .setPredictionsCol("CAPSULE")
 
     (inputDf, dl.fit(inputDf))
   }
@@ -177,5 +184,12 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
       this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
       "multi_model_iris.mojo")
     (irisDataFrame, mojo)
+  }
+
+  def savedDeepLearningModel() = {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("deep_learning_prostate.mojo"),
+      "deep_learning_prostate.mojo")
+    (prostateDataFrame, mojo)
   }
 }
