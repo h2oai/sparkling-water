@@ -9,5 +9,4 @@ public class JavaH2OMOJOModelHelper {
         return H2OMOJOModel$.MODULE$.createFromMojo(path);
     }
 
-
 }
