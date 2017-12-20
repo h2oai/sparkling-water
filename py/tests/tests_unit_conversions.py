@@ -29,7 +29,6 @@ import unit_test_utils
 import generic_test_utils
 import time
 from pyspark.mllib.linalg import *
-from pysparkling.ml import *
 
 # Test of transformations from dataframe/rdd to h2o frame and from h2o frame back to dataframe
 class FrameTransformationsTest(unittest.TestCase):
