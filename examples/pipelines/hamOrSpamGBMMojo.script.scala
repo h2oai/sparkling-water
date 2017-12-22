@@ -33,7 +33,7 @@ def load(dataFile: String)(implicit sqlContext: SQLContext): DataFrame = {
   val smsSchema = StructType(Array(
     StructField("label", StringType, nullable = false),
     StructField("text", StringType, nullable = false)))
-  val rowRDD = sc.textFile(SparkFiles.get(dataFile)).map(_.split("\t")).filter(r => !r(0).isEmpty).map(p => Row(p(0),p(1)))
+  val rowRDD = sc.textFile(SparkFiles.get(dataFile)).map(_.split("\t", 2)).filter(r => !r(0).isEmpty).map(p => Row(p(0),p(1)))
   sqlContext.createDataFrame(rowRDD, smsSchema)
 }
 
@@ -63,7 +63,7 @@ val stopWordsRemover = new StopWordsRemover().
 // Hash the words
 val hashingTF = new HashingTF().
   setNumFeatures(1 << 10).
-  setInputCol(tokenizer.getOutputCol).
+  setInputCol(stopWordsRemover.getOutputCol).
   setOutputCol("wordToIndex")
 
 // Create inverse document frequencies model
@@ -97,7 +97,6 @@ val model = pipeline.fit(data)
  */
 def isSpam(smsText: String,
            model: PipelineModel,
-           h2oContext: H2OContext,
            hamThreshold: Double = 0.5) = {
   val smsTextSchema = StructType(Array(StructField("text", StringType, nullable = false)))
   val smsTextRowRDD = sc.parallelize(Seq(smsText)).map(Row(_))
