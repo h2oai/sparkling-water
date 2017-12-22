@@ -102,7 +102,7 @@ def isSpam(smsText: String,
   val smsTextRowRDD = sc.parallelize(Seq(smsText)).map(Row(_))
   val smsTextDF = sqlContext.createDataFrame(smsTextRowRDD, smsTextSchema)
   val prediction = model.transform(smsTextDF)
-  prediction.select("prediction_output.p1").first.getDouble(0) > hamThreshold
+  prediction.select("spam").first.getDouble(0) > hamThreshold
 }
 
 println(isSpam("Michal, h2oworld party tonight in MV?", model, h2oContext))
