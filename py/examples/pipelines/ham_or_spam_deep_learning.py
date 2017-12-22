@@ -73,7 +73,7 @@ model = pipeline.fit(data)
 ## Make predictions on unlabeled data
 ## Spam detector
 ##
-def isSpam(smsText, model, h2oContext, hamThreshold = 0.5):
+def isSpam(smsText, model, hamThreshold = 0.5):
     smsTextDF = spark.createDataFrame([(smsText,)], ["text"]) # create one element tuple
     prediction = model.transform(smsTextDF)
     return prediction.first()["spam"] > hamThreshold
