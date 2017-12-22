@@ -18,17 +18,21 @@
 package org.apache.spark.ml.h2o.models
 
 import java.io._
+import java.util
 
+import _root_.hex.genmodel.easy.prediction._
 import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import org.apache.spark._
 import org.apache.spark.annotation.{DeveloperApi, Since}
+import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.h2o.param.H2OModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
-import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, _}
+import org.apache.spark.{ml, mllib}
 import water.support.ModelSerializationSupport
 
 import scala.reflect.ClassTag
@@ -39,129 +43,149 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   def this(mojoData: Array[Byte]) = this(mojoData, Identifiable.randomUID("mojoModel"))
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
-  @transient var easyPredictModelWrapper: EasyPredictModelWrapper = createEasyPredictModelWrapper()
+  @transient var easyPredictModelWrapper: EasyPredictModelWrapper = getOrCreateEasyModelWrapper()
+
+  case class BinomialPrediction(p0: Double, p1: Double)
+
+  case class RegressionPrediction(value: Double)
+
+  case class MultinomialPrediction(probabilities: Array[Double])
+
+  case class ClusteringPrediction(cluster: Integer)
+
+  case class AutoEncoderPrediction(original: Array[Double], reconstructed: Array[Double])
+
+  case class DimReductionPrediction(dimensions: Array[Double])
+
+  case class WordEmbeddingPrediction(wordEmbeddings: util.HashMap[String, Array[Float]])
+
+  def predictionSchema(): Seq[StructField] = {
+    val fields = getOrCreateEasyModelWrapper().getModelCategory match {
+      case ModelCategory.Binomial => StructField("p0", DoubleType) :: StructField("p1", DoubleType) :: Nil
+      case ModelCategory.Regression => StructField("value", DoubleType) :: Nil
+      case ModelCategory.Multinomial => StructField("probabilities", ArrayType(DoubleType)) :: Nil
+      case ModelCategory.Clustering => StructField("cluster", DoubleType) :: Nil
+      case ModelCategory.AutoEncoder => StructField("original", ArrayType(DoubleType)) :: StructField("reconstructed", ArrayType(DoubleType)) :: Nil
+      case ModelCategory.DimReduction => StructField("dimensions", ArrayType(DoubleType)) :: Nil
+      case ModelCategory.WordEmbedding => StructField("wordEmbeddings", DataTypes.createMapType(StringType, ArrayType(FloatType))) :: Nil
+      case _ => throw new RuntimeException("Unknown model category")
+    }
+
+    Seq(StructField($(outputCol), StructType(fields), nullable = false))
+  }
+
+
+  implicit def toBinomialPrediction(pred: AbstractPrediction) = BinomialPrediction(
+    pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
+    pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1))
+
+  implicit def toRegressionPrediction(pred: AbstractPrediction) = RegressionPrediction(
+    pred.asInstanceOf[RegressionModelPrediction].value)
+
+  implicit def toMultinomialPrediction(pred: AbstractPrediction) = MultinomialPrediction(
+    pred.asInstanceOf[MultinomialModelPrediction].classProbabilities)
+
+  implicit def toClusteringPrediction(pred: AbstractPrediction) = ClusteringPrediction(
+    pred.asInstanceOf[ClusteringModelPrediction].cluster)
+
+  implicit def toAutoEncoderPrediction(pred: AbstractPrediction) = AutoEncoderPrediction(
+    pred.asInstanceOf[AutoEncoderModelPrediction].original,
+    pred.asInstanceOf[AutoEncoderModelPrediction].reconstructed)
+
+  implicit def toDimReductionPrediction(pred: AbstractPrediction) = DimReductionPrediction(
+    pred.asInstanceOf[DimReductionModelPrediction].dimensions)
+
+  implicit def toWordEmbeddingPrediction(pred: AbstractPrediction) = WordEmbeddingPrediction(
+    pred.asInstanceOf[Word2VecPrediction].wordEmbeddings)
+
+  def getModelUdf() = {
+    val modelUdf = {
+      getOrCreateEasyModelWrapper().getModelCategory match {
+        case ModelCategory.Binomial => udf[BinomialPrediction, Row] { r: Row =>
+          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+        }
+        case ModelCategory.Regression => udf[RegressionPrediction, Row] { r: Row =>
+          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+        }
+        case ModelCategory.Multinomial => udf[MultinomialPrediction, Row] { r: Row =>
+          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+        }
+        case ModelCategory.Clustering => udf[ClusteringPrediction, Row] { r: Row =>
+          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+        }
+        case ModelCategory.AutoEncoder => udf[AutoEncoderPrediction, Row] { r: Row =>
+          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+        }
+        case ModelCategory.DimReduction => udf[DimReductionPrediction, Row] { r: Row =>
+          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+        }
+        case ModelCategory.WordEmbedding => udf[WordEmbeddingPrediction, Row] { r: Row =>
+          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+        }
+        case _ => throw new RuntimeException("Unknown model category")
+      }
+    }
+    modelUdf
+  }
+
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
-  private def flattenSchemaToCol(schema: StructType, prefix: String = null): Array[Column] = {
-    import org.apache.spark.sql.functions.col
-
-    schema.fields.flatMap { f =>
-      val colName = if (prefix == null) f.name else prefix + "." + f.name
-
-      f.dataType match {
-        case st: StructType => flattenSchemaToCol(st, colName)
-        case _ => Array[Column](col(colName))
-      }
-    }
-  }
-
   def defaultFileName: String = H2OMOJOModel.defaultFileName
 
-  private def flattenDataFrame(df: DataFrame): DataFrame = {
-    import org.apache.spark.sql.functions.col
-    val flattenSchema = flattenSchemaToCol(df.schema)
-    // this is needed so the flattened data frame has hierarchical names
-    val renamedCols = flattenSchema.map(name => col(name.toString()).as(name.toString()))
-    df.select(renamedCols: _*)
+  private def getOrCreateEasyModelWrapper() = {
+    if (easyPredictModelWrapper == null) {
+      easyPredictModelWrapper = new EasyPredictModelWrapper(ModelSerializationSupport.getMojoModel(mojoData))
+    }
+    easyPredictModelWrapper
   }
 
-  private def createEasyPredictModelWrapper() = new EasyPredictModelWrapper(ModelSerializationSupport.getMojoModel(mojoData))
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-
-    val spark = SparkSession.builder().getOrCreate()
-    val df = flattenDataFrame(dataset.toDF())
-
-    val predictedRows = df.rdd.map { row =>
-      // create predict wrapper from mojo data on each executor where predictions take place
-      easyPredictModelWrapper = createEasyPredictModelWrapper()
-      // create RowData on which we do the predictions
-      val dt = new RowData
-      val values = row.schema.fields.zipWithIndex.map { case (entry, idxRow) =>
-
-        if ($(featuresCols).contains(entry.name)) {
-          setRowData(row, idxRow, dt, entry) // use only relevant columns for training
-        }
-
-        if (row.isNullAt(idxRow)) {
-          0
-        } else {
-          row.get(idxRow)
-        }
-      }
-      Row.merge(Row.fromSeq(values.toSeq), predict(dt))
-    }
-    spark.createDataFrame(predictedRows, StructType(df.schema.fields ++ getPredictionFrameSchema()))
+    val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
+    val args = flatten.schema.fields.map(f => flatten(f.name))
+    flatten.select(col("*"), getModelUdf()(struct(args: _*)).as($(outputCol)))
   }
 
 
-  def setRowData(row: Row, idxRow: Int, dt: RowData, entry: StructField) {
-    if (row.isNullAt(idxRow)) {
-      dt.put(entry.name, 0.toString) // 0 as NA
-    } else {
-      entry.dataType match {
+  private def rowToRowData(row: Row): RowData = new RowData {
+    row.schema.fields.zipWithIndex.foreach { case (f, idxRow) =>
+      f.dataType match {
         case BooleanType =>
-          if (row.getBoolean(idxRow)) dt.put(entry.name, 1.toString) else dt.put(entry.name, 0.toString)
+          if (row.getBoolean(idxRow)) put(f.name, 1.toString) else put(f.name, 0.toString)
         case BinaryType =>
           row.getAs[Array[Byte]](idxRow).zipWithIndex.foreach { case (v, idx) =>
-            dt.put(entry.name + idx, v.toString)
+            put(f.name + idx, v.toString)
           }
-        case ByteType => dt.put(entry.name, row.getByte(idxRow).toString)
-        case ShortType => dt.put(entry.name, row.getShort(idxRow).toString)
-        case IntegerType => dt.put(entry.name, row.getInt(idxRow).toString)
-        case LongType => dt.put(entry.name, row.getLong(idxRow).toString)
-        case FloatType => dt.put(entry.name, row.getFloat(idxRow).toString)
-        case _: DecimalType => dt.put(entry.name, row.getDecimal(idxRow).doubleValue().toString)
-        case DoubleType => dt.put(entry.name, row.getDouble(idxRow).toString)
-        case StringType => dt.put(entry.name, row.getString(idxRow))
-        case TimestampType => dt.put(entry.name, row.getAs[java.sql.Timestamp](idxRow).getTime.toString)
-        case DateType => dt.put(entry.name, row.getAs[java.sql.Date](idxRow).getTime.toString)
+        case ByteType => put(f.name, row.getByte(idxRow).toString)
+        case ShortType => put(f.name, row.getShort(idxRow).toString)
+        case IntegerType => put(f.name, row.getInt(idxRow).toString)
+        case LongType => put(f.name, row.getLong(idxRow).toString)
+        case FloatType => put(f.name, row.getFloat(idxRow).toString)
+        case _: DecimalType => put(f.name, row.getDecimal(idxRow).doubleValue().toString)
+        case DoubleType => put(f.name, row.getDouble(idxRow).toString)
+        case StringType => put(f.name, row.getString(idxRow))
+        case TimestampType => put(f.name, row.getAs[java.sql.Timestamp](idxRow).getTime.toString)
+        case DateType => put(f.name, row.getAs[java.sql.Date](idxRow).getTime.toString)
         case ArrayType(_, _) => // for now assume that all arrays and vecs have the same size - we can store max size as part of the model
           row.getAs[Seq[_]](idxRow).zipWithIndex.foreach { case (v, idx) =>
-            dt.put(entry.name + idx, v.toString)
+            put(f.name + idx, v.toString)
           }
         case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] =>
           val value = row.get(idxRow)
           value match {
             case vector: mllib.linalg.Vector =>
               (0 until vector.size).foreach { idx => // WRONG this patter needs to share the same code as in the data transformation
-                dt.put(entry.name + idx, vector(idx).toString)
+                put(f.name + idx, vector(idx).toString)
               }
             case vector: ml.linalg.Vector =>
               (0 until vector.size).foreach { idx =>
-                dt.put(entry.name + idx, vector(idx).toString)
+                put(f.name + idx, vector(idx).toString)
               }
           }
-        case _ => dt.put(entry.name, dt.get(idxRow).toString)
+        case null => // no op
+        case _ => put(f.name, get(idxRow).toString)
       }
-    }
-  }
-
-  def getPredictionFrameSchema(): Seq[StructField] = {
-    easyPredictModelWrapper.getModelCategory match {
-      case ModelCategory.Binomial => easyPredictModelWrapper.getResponseDomainValues.map(StructField(_, DoubleType))
-      case ModelCategory.Multinomial => easyPredictModelWrapper.getResponseDomainValues.map(StructField(_, DoubleType))
-      case ModelCategory.Regression => Seq(StructField("value", DoubleType))
-      case ModelCategory.Clustering => Seq(StructField("cluster", DoubleType))
-      case ModelCategory.AutoEncoder => throw new RuntimeException("Unimplemented model category")
-      case ModelCategory.DimReduction => throw new RuntimeException("Unimplemented model category")
-      case ModelCategory.WordEmbedding => throw new RuntimeException("Unimplemented model category")
-      case _ => throw new RuntimeException("Unknown model category")
-    }
-  }
-
-  def predict(data: RowData): Row = {
-    easyPredictModelWrapper.getModelCategory
-    match {
-      case ModelCategory.Binomial => Row(easyPredictModelWrapper.predictBinomial(data).classProbabilities: _*)
-      case ModelCategory.Multinomial => Row(easyPredictModelWrapper.predictMultinomial(data).classProbabilities: _*)
-      case ModelCategory.Regression => Row(easyPredictModelWrapper.predictRegression(data).value)
-      case ModelCategory.Clustering => Row(easyPredictModelWrapper.predictClustering(data).cluster)
-      case ModelCategory.AutoEncoder => throw new RuntimeException("Unimplemented model category")
-      case ModelCategory.DimReduction => throw new RuntimeException("Unimplemented model category")
-      case ModelCategory.WordEmbedding => throw new RuntimeException("Unimplemented model category")
-      case _ => throw new RuntimeException("Unknown model category")
     }
   }
 
@@ -170,7 +194,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     // Here we should check validity of input schema however
     // in theory user can pass invalid schema with missing columns
     // and model will be able to still provide a prediction
-    StructType(schema.fields ++ getPredictionFrameSchema)
+    StructType(schema.fields ++ predictionSchema)
   }
 
   @Since("1.6.0")
@@ -230,11 +254,9 @@ object H2OMOJOModel extends MLReadable[H2OMOJOModel] {
   }
 
   def createFromMojo(is: InputStream, uid: String = Identifiable.randomUID("mojoModel")): H2OMOJOModel = {
-
     val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
     val mojoModel = ModelSerializationSupport.getMojoModel(mojoData)
     val sparkMojoModel = new H2OMOJOModel(mojoData, uid)
-
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     sparkMojoModel.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))
     sparkMojoModel.setPredictionsCol(mojoModel.getResponseName)
