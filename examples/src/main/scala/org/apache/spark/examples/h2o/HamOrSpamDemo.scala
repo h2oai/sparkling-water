@@ -106,7 +106,7 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H
 
   /** Data loader */
   def load(sc: SparkContext, dataFile: String): RDD[Array[String]] = {
-    sc.textFile(enforceLocalSparkFile(dataFile)).map(l => l.split("\t")).filter(r => !r(0).isEmpty)
+    sc.textFile(enforceLocalSparkFile(dataFile)).map(l => l.split("\t", 2)).filter(r => !r(0).isEmpty)
   }
 
   /** Text message tokenizer.
