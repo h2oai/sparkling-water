@@ -105,6 +105,6 @@ def isSpam(smsText: String,
   prediction.select("spam").first.getDouble(0) > hamThreshold
 }
 
-println(isSpam("Michal, h2oworld party tonight in MV?", model, h2oContext))
+println(isSpam("Michal, h2oworld party tonight in MV?", model))
 
-println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model, h2oContext))
+println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model))
