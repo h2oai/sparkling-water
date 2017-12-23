@@ -106,19 +106,18 @@ object H2OInterpreter {
   def getUserJars(conf: SparkConf): Seq[String] = {
     import scala.reflect.runtime.{universe => ru}
 
-    try {
-
-      val instanceMirror = ru.runtimeMirror(this.getClass.getClassLoader).reflect(Utils)
-      val methodSymbol = ru.typeOf[Utils.type].declaration(ru.stringToTermName("getLocalUserJarsForShell")).asMethod
-      val method = instanceMirror.reflectMethod(methodSymbol)
+    val instanceMirror = ru.runtimeMirror(this.getClass.getClassLoader).reflect(Utils)
+    val methodSymbol = ru.typeOf[Utils.type].declaration(ru.stringToTermName("getLocalUserJarsForShell"))
+    if (methodSymbol.isMethod) {
+      val method = instanceMirror.reflectMethod(methodSymbol.asMethod)
       method(conf).asInstanceOf[Seq[String]]
-    } catch {
-      case _: NoSuchMethodException => // Fallback to Spark 2.2.0
-        val m = ru.runtimeMirror(this.getClass.getClassLoader)
-        val instanceMirror = m.reflect(Utils)
-        val methodSymbol = ru.typeOf[Utils.type].declaration(ru.stringToTermName("getUserJars")).asMethod
-        val method = instanceMirror.reflectMethod(methodSymbol)
-        method(conf, true).asInstanceOf[Seq[String]]
+    } else {
+      // Fallback to Spark 2.2.0
+      val m = ru.runtimeMirror(this.getClass.getClassLoader)
+      val instanceMirror = m.reflect(Utils)
+      val methodSymbol = ru.typeOf[Utils.type].declaration(ru.stringToTermName("getUserJars")).asMethod
+      val method = instanceMirror.reflectMethod(methodSymbol)
+      method(conf, true).asInstanceOf[Seq[String]]
     }
   }
 }
