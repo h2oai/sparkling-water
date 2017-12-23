@@ -79,6 +79,6 @@ def isSpam(smsText, model, hamThreshold = 0.5):
     return prediction.first()["spam"] > hamThreshold
 
 
-print(isSpam("Michal, h2oworld party tonight in MV?", model, hc))
+print(isSpam("Michal, h2oworld party tonight in MV?", model))
 
-print(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model, hc))
+print(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model))
