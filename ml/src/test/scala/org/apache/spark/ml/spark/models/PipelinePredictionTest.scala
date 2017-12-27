@@ -17,32 +17,27 @@
 
 package org.apache.spark.ml.spark.models
 
-import org.apache.spark.h2o.H2OContext
-import org.apache.spark.{SparkContext, SparkFiles}
+import java.io.{File, PrintWriter}
+
 import org.apache.spark.h2o.utils.{H2OContextTestHelper, SparkTestContext}
-import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.feature._
 import org.apache.spark.ml.h2o.algos.H2OGBM
 import org.apache.spark.ml.h2o.features.ColumnPruner
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
+import org.apache.spark.util.Utils
+import org.apache.spark.{SparkContext, SparkFiles}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
 import water.support.SparkContextSupport
 
-
-@RunWith(classOf[JUnitRunner])
-class PipelinePredictionTest extends FunSuite with SparkTestContext {
-
-  override def beforeAll(): Unit = {
-    sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-    super.beforeAll()
-  }
+object TestPipelineUtils {
 
   // This method loads the data, perform some basic filtering and create Spark's dataframe
-  def load(dataFile: String)(implicit sqlContext: SQLContext): DataFrame = {
+  def load(sc: SparkContext, dataFile: String)(implicit sqlContext: SQLContext): DataFrame = {
     val smsSchema = StructType(Array(
       StructField("label", StringType, nullable = false),
       StructField("text", StringType, nullable = false)))
@@ -50,8 +45,8 @@ class PipelinePredictionTest extends FunSuite with SparkTestContext {
     sqlContext.createDataFrame(rowRDD, smsSchema)
   }
 
-  def trainedPipelineModel = {
-    implicit val hc = H2OContextTestHelper.createH2OContext(sc, 3)
+  def trainedPipelineModel(spark: SparkSession) = {
+    implicit val hc = H2OContextTestHelper.createH2OContext(spark.sparkContext, 3)
     implicit val sqlContext = spark.sqlContext
     /**
       * Define the pipeline stages
@@ -99,12 +94,22 @@ class PipelinePredictionTest extends FunSuite with SparkTestContext {
       setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, gbm, colPruner))
 
     // Train the pipeline model
-    val data = load("smsData.txt")
+    val data = load(spark.sparkContext, "smsData.txt")
     val model = pipeline.fit(data)
 
-    H2OContextTestHelper.stopH2OContext(sc, hc)
+    H2OContextTestHelper.stopH2OContext(spark.sparkContext, hc)
     // return the trained model
     model
+  }
+
+}
+
+@RunWith(classOf[JUnitRunner])
+class PipelinePredictionTest extends FunSuite with SparkTestContext {
+
+  override def beforeAll(): Unit = {
+    sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+    super.beforeAll()
   }
 
   /**
@@ -115,28 +120,17 @@ class PipelinePredictionTest extends FunSuite with SparkTestContext {
     //
     // Load exported pipeline
     //
-    import org.apache.spark.sql.types.DataType
     val model_path = getClass.getResource("/sms_pipeline_deployment/sms_pipeline.model")
-    val schema_path = getClass.getResource("/sms_pipeline_deployment/schema.json")
     val pipelineModel = PipelineModel.read.load(model_path.getFile)
-
-    //
-    // Load exported schema of input data
-    //
-    val schema = StructType(DataType.fromJson(scala.io.Source.fromFile(schema_path.toURI).mkString).asInstanceOf[StructType].map {
-      case StructField(name, dtype, nullable, metadata) => StructField(name, dtype, nullable, metadata)
-      case rec => rec
-    })
-    println(schema)
 
     //
     // Define input stream
     //
     val smsDataFileName = "smsData.txt"
-    val smsDataFilePath = TestUtils.locate(s"smalldata/$smsDataFileName")
+    val smsDataFilePath = "/Users/kuba/devel/repos/sparkling-water/examples/smalldata/smsData.txt" //TestUtils.locate(s"smalldata/$smsDataFileName")
     SparkContextSupport.addFiles(sc, smsDataFilePath)
 
-    val inputDataStream = load("smsData.txt")
+    val inputDataStream = TestPipelineUtils.load(sc, "smsData.txt")
 
     //
     // Run predictions on the loaded model which was trained in PySparkling pipeline
@@ -147,9 +141,67 @@ class PipelinePredictionTest extends FunSuite with SparkTestContext {
     // UNTIL NOW, RUNTIME WAS NOT AVAILABLE
     //
     // Run predictions on the trained model right now in Scala
-    val predictions2 = trainedPipelineModel.transform(inputDataStream)
+    val predictions2 = TestPipelineUtils.trainedPipelineModel(spark).transform(inputDataStream)
+
+    TestUtils.assertEqual(predictions1, predictions2)
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class StreamingPipelinePredictionTest extends FunSuite with SparkTestContext {
+
+  override def beforeAll(): Unit = {
+    sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+    super.beforeAll()
+  }
+
+  test("Test streaming pipeline with H2O MOJO") {
+    //
+    val model_path = getClass.getResource("/sms_pipeline_deployment/sms_pipeline.model")
+    val pipelineModel = PipelineModel.read.load(model_path.getFile)
+
+    //
+    // Define input data
+    //
+    val smsDataFileName = "smsData.txt"
+    val smsDataFilePath = "/Users/kuba/devel/repos/sparkling-water/examples/smalldata/smsData.txt" //TestUtils.locate(s"smalldata/$smsDataFileName")
+    SparkContextSupport.addFiles(sc, smsDataFilePath)
+
+    // This directory is automatically deleted when the JVM shuts down
+    val streamingDataDir = Utils.createTempDir()
+
+    val data = TestPipelineUtils.load(sc, "smsData.txt")
+    // Create data for streaming input
+    data.select("text").collect().zipWithIndex.foreach { case (r, idx) =>
+      val printer = new PrintWriter(new File(streamingDataDir, s"$idx.txt"))
+      printer.write(r.getString(0))
+      printer.close()
+    }
+    val schema = StructType(Seq(StructField("text", StringType)))
+    val inputDataStream = spark.readStream.schema(schema).text(streamingDataDir.getAbsolutePath)
+
+    val outputDataStream = pipelineModel.transform(inputDataStream)
+    outputDataStream.writeStream.format("memory").queryName("predictions").start()
+
+    //
+    // Run predictions on the loaded model which was trained in PySparkling pipeline
+    //
+    var predictions1 = spark.sql("select * from predictions")
+
+    while (predictions1.count() != 1324) { // The file has 380 entries
+      Thread.sleep(1000)
+      predictions1 = spark.sql("select * from predictions")
+    }
+
+    //
+    // UNTIL NOW, RUNTIME WAS NOT AVAILABLE
+    //
+    // Run predictions on the trained model right now in Scala
+    val predictions2 = TestPipelineUtils.trainedPipelineModel(spark).transform(data)
 
     TestUtils.assertEqual(predictions1, predictions2)
   }
 
 }
+
+
