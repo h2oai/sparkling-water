@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.h2o.models.H2OMOJOModel","timestamp":1513945002816,"sparkVersion":"2.2.1","uid":"mojoModel_4886dd97b3a0","paramMap":{"predictionCol":"label","outputCol":"prediction_output","featuresCols":["tf_idf"]}}

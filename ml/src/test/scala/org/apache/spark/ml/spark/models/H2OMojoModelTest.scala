@@ -88,24 +88,15 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
     val reloadedModel  = H2OMOJOModel.load(modelFolder)
     val predAfterReload = reloadedModel.transform(df)
     // Check if predictions are same
-    assertEqual(predBeforeSave, predAfterReload)
+    TestUtils.assertEqual(predBeforeSave, predAfterReload)
   }
 
-  // Note: this comparision expects implicit ordering of spark DataFrames which is not ensured!
-  def assertEqual(df1: DataFrame, df2: DataFrame, msg: String = "DataFrames are not same!"): Unit = {
-    val l1 = df1.repartition(1).collect()
-    val l2 = df2.repartition(1).collect()
-
-    assert(l1.zip(l2).forall { case (row1, row2) =>
-        row1.equals(row2)
-    }, "DataFrames are not same!")
-  }
 
   def assertEqual(m1: H2OMOJOModel, m2: H2OMOJOModel, df: DataFrame): Unit = {
     val predMojo = m1.transform(df)
     val predModel = m2.transform(df)
 
-    assertEqual(predMojo, predModel)
+    TestUtils.assertEqual(predMojo, predModel)
 
   }
 
