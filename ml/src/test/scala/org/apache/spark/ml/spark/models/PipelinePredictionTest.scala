@@ -127,7 +127,7 @@ class PipelinePredictionTest extends FunSuite with SparkTestContext {
     // Define input stream
     //
     val smsDataFileName = "smsData.txt"
-    val smsDataFilePath = "/Users/kuba/devel/repos/sparkling-water/examples/smalldata/smsData.txt" //TestUtils.locate(s"smalldata/$smsDataFileName")
+    val smsDataFilePath = TestUtils.locate(s"smalldata/$smsDataFileName")
     SparkContextSupport.addFiles(sc, smsDataFilePath)
 
     val inputDataStream = TestPipelineUtils.load(sc, "smsData.txt")
@@ -164,7 +164,7 @@ class StreamingPipelinePredictionTest extends FunSuite with SparkTestContext {
     // Define input data
     //
     val smsDataFileName = "smsData.txt"
-    val smsDataFilePath = "/Users/kuba/devel/repos/sparkling-water/examples/smalldata/smsData.txt" //TestUtils.locate(s"smalldata/$smsDataFileName")
+    val smsDataFilePath = TestUtils.locate(s"smalldata/$smsDataFileName")
     SparkContextSupport.addFiles(sc, smsDataFilePath)
 
     // This directory is automatically deleted when the JVM shuts down
