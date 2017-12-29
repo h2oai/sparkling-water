@@ -1,25 +1,21 @@
 Running Sparkling Water
 -----------------------
 
-In order to run Sparkling Water, the environment must contain the
-property ``SPARK_HOME`` that points to the Spark distribution.
+In order to run Sparkling Water, the environment must contain the property ``SPARK_HOME`` that points to the Spark distribution.
 
-H2O on Spark can be started in the Spark Shell or in the Spark
-application as:
+H2O on Spark can be started in the Spark Shell or in the Spark application as:
 
 .. code:: bash
 
     ./bin/sparkling-shell
 
-Sparkling Water ( H2O on Spark) can be initiated using the following call:
+Sparkling Water (H2O on Spark) can be initiated using the following call:
 
 .. code:: scala
 
     val hc = H2OContext.getOrCreate(spark)
 
-The semantic of the call depends on the configured Sparkling Water
-backend. For more information about the backends, please see `Sparkling
-Water Backends <backends.rst>`__.
+The semantic of the call depends on the configured Sparkling Water backend. For more information about the backends, please see :ref:`backend`.
 
 In internal backend mode, the call will:
 
@@ -31,8 +27,7 @@ In internal backend mode, the call will:
 In external backend mode, the call will:
 
 1. Start H2O in client mode on the Spark driver
-2. Start separated H2O cluster on the configured YARN queue
-3. Connects to the external cluster from the H2O client
+2. Start the separated H2O cluster on the configured YARN queue
+3. Connect to the external cluster from the H2O client
 
-
-To see how to run Sparkling Water on Windows, please visit `Run on Windows <run_on_windows.rst>`__.
+To see how to run Sparkling Water on Windows, please visit :ref:`run_on_windows`.

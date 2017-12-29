@@ -1,13 +1,10 @@
 Spark - H2O Frame Mapping
 -------------------------
 
-Type mapping between H2O H2OFrame types and Spark DataFrame types
+Type Mapping between H2O H2OFrame Types and Spark DataFrame Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For all primitive Scala types or Spark SQL (see
-``org.apache.spark.sql.types``) types which can be part of Spark
-RDD/DataFrame we provide mapping into H2O vector types (numeric,
-categorical, string, time, UUID - see ``water.fvec.Vec``):
+For all primitive Scala types or Spark SQL (see ``org.apache.spark.sql.types``) types that can be part of Spark RDD/DataFrame, we provide mapping into H2O vector types (numeric, categorical, string, time, UUID - see ``water.fvec.Vec``):
 
 +----------------------+-----------------+------------+
 | Scala type           | SQL type        | H2O type   |
@@ -35,10 +32,11 @@ categorical, string, time, UUID - see ``water.fvec.Vec``):
 
 --------------
 
-Type mapping between H2O H2OFrame types and RDD[T] types
+Type Mapping Between H2O H2OFrame Types and RDD[T] Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As type ``T`` we support following types:
+
+As type ``T``, we support following types:
 
 +--------------------------------------------------+
 | T                                                |
@@ -68,6 +66,4 @@ As type ``T`` we support following types:
 | org.apache.spark.mllib.regression.LabeledPoint   |
 +--------------------------------------------------+
 
-As is specified in the table, Sparkling Water provides support for
-transforming arbitrary scala class extending ``Product``, which are, for
-example, all case classes.
+As is specified in the table, Sparkling Water provides support for transforming arbitrary scala class extending ``Product``, which are, for example, all case classes.

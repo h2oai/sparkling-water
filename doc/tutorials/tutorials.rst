@@ -1,29 +1,57 @@
 Tutorials
 ---------
 
--  `Running Sparkling Water <run_sparkling_water.rst>`__
--  `Running Sparkling Water on Windows <run_on_windows.rst>`__
--  `Sparkling Water Backends Run & Configuration <backends.rst>`__
--  `Enabling Security <security.rst>`__
--  `Calling H2O Algorithms <calling_h2o_algos.rst>`__
--  Frames Conversions & Creation
 
-   -  `Spark - H2O Frame Conversions <spark_h2o_conversions.rst>`__
-   -  `H2O Frame as Spark's DataSource <h2oframe_as_data_source.rst>`__
-   -  `Create H2OFrame From an Existing Key <h2o_frame_from_key.rst>`__
+**General**
 
--  Logging
+.. toctree::
+   :maxdepth: 1
+   
+   backends
+   extending_h2o_jar_manually
+   security
+   calling_h2o_algos
+   run_sparkling_water
+   run_on_windows
 
-   -  `Change Sparkling Shell Logging Level <change_log_level.rst>`__
-   -  `Change Sparkling Water Log location <change_log_location.rst>`__
-   -  `Obtain Sparkling Water Logs <obtaining_logs.rst>`__
+**Frames Conversions and Creation**
 
--  `Sparkling Water and Zeppelin <use_on_zeppelin.rst>`__
--  `Use Sparkling Water as Spark Package <use_as_spark_package.rst>`__
+.. toctree::
+   :maxdepth: 2
 
--  Databricks Azure
+   spark_h2o_conversions
+   h2oframe_as_data_source
+   h2o_frame_from_key
 
-   -  `RSparkling on Databricks Azure Cluster <rsparkling_azure_dbc.rst>`__
-   -  `Sparkling Water on Databricks Azure Cluster <sw_azure_dbc.rst>`__
-   -  `PySparkling on Databricks Azure Cluster <pysparkling_azure_dbc.rst>`__
+**Logging**
 
+.. toctree::
+   :maxdepth: 2
+
+   change_log_level
+   change_log_location
+   obtaining_logs
+
+**Databricks Azure**
+
+.. toctree::
+:maxdepth: 2
+
+      rsparkling_azure_dbc
+      sw_azure_dbc.rst
+      pysparkling_azure_dbc
+
+**Zeppelin**
+
+.. toctree::
+   :maxdepth: 2
+
+   use_on_zeppelin
+
+**As Spark Package**
+
+.. toctree::
+   :maxdepth: 2
+
+   use_as_spark_package
+>>>>>>> [SW-652] - Documentation as HTML output for master branch

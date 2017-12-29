@@ -1,8 +1,7 @@
 H2O Frame as Spark's Data Source
 --------------------------------
 
-The way how H2O Frame can be used as Spark's Data Source differs a
-little bit in Python and Scala.
+The way that an H2O Frame can be used as Spark's Data Source differs between Python and Scala.
 
 Quick links:
 
@@ -16,10 +15,9 @@ Usage in Python - PySparkling
 Reading from H2O Frame
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Let's suppose we have H2OFrame ``frame``.
+Let's suppose we have an H2OFrame ``frame``.
 
-There are two ways how dataframe can be loaded from H2OFrame in
-PySparkling:
+There are two ways in which the dataframe can be loaded from H2OFrame in PySparkling:
 
 .. code:: python
 
@@ -36,8 +34,7 @@ Saving to H2O Frame
 
 Let's suppose we have DataFrame ``df``.
 
-There are two ways how dataframe can be saved as H2OFrame in
-PySparkling:
+There are two ways in which the dataframe can be saved as H2OFrame in PySparkling:
 
 .. code:: python
 
@@ -49,14 +46,12 @@ or
 
     df.write.format("h2o").save("new_key")
 
-Both variants save dataframe as H2OFrame with key ``new_key``. They
-don't succeed if the H2OFrame with the same key already exists.
+Both variants save the dataframe as an H2OFrame with the key ``new_key``. They will not succeed if the H2OFrame with the same key already exists.
 
 Loading & Saving Options
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-If the key is specified as ``key`` option and also in the ``load/save``
-method, the option ``key`` is preferred
+If the key is specified with the ``key`` option and also in the ``load/save`` method, then the ``key`` option is preferred
 
 .. code:: python
 
@@ -78,15 +73,13 @@ Reading from H2O Frame
 
 Let's suppose we have H2OFrame ``frame``.
 
-The shortest way how dataframe can be loaded from H2OFrame with default
-settings is:
+The shortest way in which the dataframe can be loaded from the H2OFrame with default settings is:
 
 .. code:: scala
 
     val df = spark.read.h2o(frame.key)
 
-There are two more ways how dataframe can be loaded from H2OFrame. These calls allow
-us to specify additional options:
+There are two more ways in which the dataframe can be loaded from H2OFrame. These calls allow us to specify additional options:
 
 .. code:: scala
 
@@ -103,15 +96,13 @@ Saving to H2O Frame
 
 Let's suppose we have DataFrame ``df``.
 
-The shortest way how dataframe can be saved as H2O Frame with default
-settings is:
+The shortest way in which a dataframe can be saved as an H2O Frame with default settings is:
 
 .. code:: scala
 
     df.write.h2o("new_key")
 
-There are two more ways how dataframe can be saved as H2OFrame. These calls allow
-us to specify additional options:
+There are two additional methods for saving a dataframe as an H2OFrame. These calls allow us to specify additional options:
 
 .. code:: scala
 
@@ -123,14 +114,12 @@ or
 
     df.write.format("h2o").save("new_key")
 
-All three variants save dataframe as H2OFrame with key ``new_key``. They
-don't succeed if the H2OFrame with the same key already exists.
+All three variants save the dataframe as an H2OFrame with key ``new_key``. They will not succeed if the H2OFrame with the same key already exists.
 
 Loading & Saving Options
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-If the key is specified as ``key`` option and also in the ``load/save``
-method, the option ``key`` is preferred
+If the key is specified with the ``key`` option and also in the ``load/save`` method, then the ``key`` option is preferred.
 
 .. code:: scala
 
@@ -147,18 +136,12 @@ In both examples, ``key_one`` is used.
 Specifying Saving Mode
 ~~~~~~~~~~~~~~~~~~~~~~
 
-There are 4 save modes available when saving data using Data Source
-API - ``append``, ``overwrite``, ``error`` and ``ignore``. The full description is available at `Spark Save Modes <http://spark.apache.org/docs/latest/sql-programming-guide.html#save-modes>`__.
+There are four save modes available when saving data using the Data Source API: ``append``, ``overwrite``, ``error`` and ``ignore``. The full description is available in the Spark documentation for `Spark Save Modes <http://spark.apache.org/docs/latest/sql-programming-guide.html#save-modes>`__.
 
-- If ``append`` mode is used, an existing H2OFrame with the same key is
-  deleted and new one containing union of all rows from original H2O Frame
-  and appended Data Frame is created with the same key.
+- If ``append`` is used, an existing H2OFrame with the same key is deleted, and a new one containing the union of all rows from the original H2O Frame and from the appended Data Frame is created with the same key.
 
-- If ``overwrite`` mode is used, an existing H2OFrame with the same key is
-  deleted and new one with the new rows is created with the same key.
+- If ``overwrite`` is used, an existing H2OFrame with the same key is deleted, and new one with the new rows is created with the same key.
 
-- If ``error`` mode is used and a H2OFrame with the specified key already
-  exists, exception is thrown.
+- If ``error`` is used and an H2OFrame with the specified key already exists, then an exception is thrown.
 
-- If ``ignore`` mode is used and a H2OFrame with the specified key already
-  exists, no data is changed.
+- If ``ignore`` is used and an H2OFrame with the specified key already exists, then no data is changed.

@@ -1,10 +1,7 @@
 Use Sparkling Water via Spark Packages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sparkling Water is also published as a Spark package. You can use it
-directly from your Spark distribution. The name of published package is `ai.h2o:sparkling-water-package`
-and it references all published Sparkling Water modules. Moreover, each
-module can be used as Spark package if necessary.
+Sparkling Water is also published as a Spark package. You can use it directly from your Spark distribution. The name of the published package is **ai.h2o:sparkling-water-package**, and it references all published Sparkling Water modules. Moreover, each module can be used as a Spark package if necessary.
 
 For example, if you have Spark version 2.2 and would like to use
 Sparkling Water version 2.2.7 and launch example
@@ -15,10 +12,9 @@ command:
 
     $SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-package_2.11:2.2.7 --class org.apache.spark.examples.h2o.CraigslistJobTitlesStreamingApp /dev/null
 
-The Spark option ``--packages`` points to Duke package and published Sparkling Water
-packages in Maven repository.
+The Spark option ``--packages`` points to the Duke package and the published Sparkling Water packages in the Maven repository.
 
-The similar command works for ``spark-shell``:
+A similar command works for ``spark-shell``:
 
 .. code:: bash
 
@@ -31,6 +27,5 @@ The same command works for Python programs:
     $SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-package_2.11:2.2.7 example.py
 
 
-Note 1: When you are using Spark packages you do not need to download Sparkling Water distribution! Spark installation is sufficient!
-
+**Note**: When you are using Spark packages, you do not need to download the Sparkling Water distribution. The Spark installation is sufficient.
 

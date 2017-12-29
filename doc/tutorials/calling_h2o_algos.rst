@@ -1,8 +1,7 @@
 Calling H2O Algorithms
 ----------------------
 
-1. Create the parameters object that holds references to input data and
-   parameters specific for the algorithm:
+1. Create the parameters object that holds references to input data and the parameters for the specific algorithm:
 
 .. code:: scala
 

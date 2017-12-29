@@ -1,21 +1,20 @@
 Sparkling Water Tuning
 ----------------------
 
-For running Sparkling Water general recommendation are:
+For running Sparkling Water, general recommendations include:
 
-- Increase available memory in driver and executors (options ``spark.driver.memory`` resp., ``spark.yarn.am.memory`` and ``spark.executor.memory``).
-- Make cluster homogeneous - use the same value for driver and executor memory.
+- Increase available memory in the driver and executors (options ``spark.driver.memory`` resp., ``spark.yarn.am.memory`` and ``spark.executor.memory``).
+- Make cluster homogeneous. Use the same value for driver and executor memory.
 - Increase PermGen size if you are running on top of Java7 (options ``spark.driver.extraJavaOptions`` resp., ``spark.yarn.am.extraJavaOptions`` and ``spark.executor.extraJavaOptions``).
 - In rare cases, it helps to increase ``spark.yarn.driver.memoryOverhead``, ``spark.yarn.am.memoryOverhead``, or ``spark.yarn.executor.memoryOverhead``.
 
-For running Sparkling Water on top of Yarn:
+For running Sparkling Water on top of YARN:
 
-- Make sure that Yarn provides stable containers, do not use preemptive Yarn scheduler.
-- Make sure that Spark application manager has enough memory and increase PermGen size.
-- In case of a container failure, Yarn should not restart container and application should gracefully terminate.
+- Make sure that YARN provides stable containers; do not use preemptive YARN scheduler.
+- Make sure that the Spark application manager has enough memory, and increase PermGen size.
+- In the case of a container failure, YARN should not restart the container, and the application should gracefully terminate.
 
-Furthermore, we recommend to configure the following Spark properties to
-speedup and stabilize creation of H2O services on top of Spark cluster:
+Furthermore, we recommend that you configure the following Spark properties to speed up and stabilize the creation of H2O services on top of Spark cluster:
 
 +-------------------------------------------------+--------------------------+----------------------------+
 | Property                                        | Value                    | Explanation                |

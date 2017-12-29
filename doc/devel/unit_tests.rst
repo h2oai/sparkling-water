@@ -1,8 +1,7 @@
 Running Unit Tests
 ------------------
 
-To invoke tests for example from IntelliJ Idea, the following JVM
-options are required:
+To invoke tests for examples from IntelliJ Idea, the following JVM option is required:
 
 - ``-Dspark.testing=true``
 

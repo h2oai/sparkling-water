@@ -1,9 +1,7 @@
 Running Sparkling Water Examples
 --------------------------------
 
-The Sparkling Water distribution includes also a set of examples. You
-can find their implementation in `examples directory <../../examples/>`__. You
-can build and run them in the following way:
+The Sparkling Water distribution includes also a set of examples. You can find their implementation in `examples directory <https://github.com/h2oai/sparkling-water/tree/master/examples>`__. You can build and run them in the following way:
 
 1. Build a package that can be submitted to Spark cluster:
 
@@ -23,17 +21,16 @@ can build and run them in the following way:
 
 3. And run the example:
 
-- On Local Cluster:
+ - On Local Cluster:
 
     The local cluster is defined by ``MASTER`` address ``local``, ``local[*]`` or additional variants
     available at `Spark Master URLs <https://spark.apache.org/docs/latest/submitting-applications.html#master-urls>`__.
-
 
     .. code:: bash
 
         bin/run-example.sh <name of example>
 
-- On a Spark Standalone Cluster:
+ - On a Spark Standalone Cluster:
 
     - Run the Spark cluster, for example via:
 
@@ -57,12 +54,10 @@ can build and run them in the following way:
             bin/run-example.sh <name of example>
 
 
-    - Observe status of the application via Spark UI on http://localhost:8080/
+    - Observe the status of the application via Spark UI on http://localhost:8080/
 
 
-For more details about examples, please see the
-`README <../../examples/README.rst>`__ file in the `examples directory <../../examples/>`__.
+Additional Details and Examples
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Additional Examples
-~~~~~~~~~~~~~~~~~~~
-Additional examples are available at `examples folder <../../examples/>`__.
+For more information about examples or to view additional examples, review the README file in the `examples folder <https://github.com/h2oai/sparkling-water/blob/master/examples/README.rst>`__.
