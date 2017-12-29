@@ -25,6 +25,7 @@ Have questions about Sparkling Water? Post them on Stack Overflow using the `spa
    tutorials/tutorials
    devel/devel
    rest_api/rest_api
+   pysparkling
    FAQ
    CHANGELOG
 
