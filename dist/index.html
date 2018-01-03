@@ -664,7 +664,7 @@
             <p>3. Install Spark:</p>
             <p class="terminal">
               library(sparklyr)<br>
-              spark_install(version = "SUBST_SPARK_MAJOR_VERSION.0")
+              spark_install(version = "SUBST_SPARK_VERSION")
             </p>
 
             <p>4. Install H2O of correct version:</p>
@@ -692,7 +692,7 @@
 
             <p>7. Connect to Spark</p>
             <p class="terminal">
-              sc <- spark_connect(master = "local", version = "SUBST_SPARK_MAJOR_VERSION.0")
+              sc <- spark_connect(master = "local", version = "SUBST_SPARK_VERSION")
             </p>
 
             <p>8. Now, H2OContext is available and we can use any H2O features available in R.</p>
