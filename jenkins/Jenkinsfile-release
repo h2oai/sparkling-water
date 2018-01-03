@@ -76,8 +76,7 @@ pipeline {
                     
                     rm -rf release_notes
                     git add doc/CHANGELOG.rst
-                    git commit -m "Release notes for \$REL_VERSION"
-                    git push --set-upstream origin ${env.BRANCH_NAME}                   
+                    git commit -m "Release notes for \$REL_VERSION"              
                     """
             }
         }
