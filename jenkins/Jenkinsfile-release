@@ -10,15 +10,9 @@ pipeline {
 
     stages {
 
-        stage('Prepare Environment') {
+        stage('Clean workspace') {
             steps {
-                sh """
-                        # Transform build number to start with 0
-                        BUILD_NUMBER="\$(( $BUILD_NUMBER - 1 ))"
-                        
-                        # Clean workspace
-                        sh 'rm -rf *'
-                    """
+                sh " rm -rf * "
             }
         }
 
@@ -40,15 +34,59 @@ pipeline {
                 }
         }
 
+        stage ('Prepare release notes'){
+            steps {
+                    sh """
+                    sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                    REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                    git checkout -- gradle.properties
+
+                    # Get id of this release
+                    jira_version_id=\$(curl --silent "https://0xdata.atlassian.net/rest/api/2/project/SW/versions" | tr '}' '\\n' | grep "\\"name\\":\\"\$REL_VERSION\\"" | cut -d'"' -f8)
+                    # Get the JIRA page (currently, there is no endpoint for release notes)
+                    release_notes_page="https://0xdata.atlassian.net/secure/ReleaseNote.jspa?projectId=12000&version=\${jira_version_id}"
+                    
+                    # Obtain the release notes and process them so they look like we expect
+                    curl --silent "\$release_notes_page" | sed '/<body>/,/<a name="editarea"><\\/a>/!d;//D' | sed 's/<ul>//' | sed 's/<\\/ul>//' | sed 's/ *<h2>/-  /' | sed 's/<\\/h2>//'  | sed 's/<\\/li>//' | sed "s/ *<li>\\[<a href='https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\([0-9]*\\)'>SW-[0-9]*<\\/a>\\]/\\   -  \\`SW-\\1 <https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\1>\\`__/" | sed '\$ d' | sed '1d' > release_notes
+                    
+                    # Put the release notes into the doc/CHANGELOG.rst
+                    
+                    release_date=\$(date +%Y-%m-%d)
+                    rel_prefix=\$(echo "v\$REL_VERSION (\$release_date)")
+                    underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
+                    
+                    # Release notes
+                    echo \$rel_prefix
+                    echo \$underscores
+                    echo
+                    cat release_notes
+                   
+                    # Insert release info
+                    sed -i "4i \$rel_prefix" doc/CHANGELOG.rst
+                    
+                    # Insert the underscores
+                    sed -i "5i \$underscores" doc/CHANGELOG.rst
+                    
+                    # Insert the release notes
+                    sed -i "5r release_notes" doc/CHANGELOG.rst
+                    
+                    rm -rf release_notes
+                    git add doc/CHANGELOG.rst
+                    git commit -m "Release notes for \$REL_VERSION"
+                    git push --set-upstream origin ${env.BRANCH_NAME}              
+                    """
+            }
+        }
+
         stage('Build Sparkling Water'){
             steps {
                 withCredentials([file(credentialsId: 'release-gradle.properties', variable: 'GRADLE_PROPERTIES_PATH'),
                                  file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
-                        sh """
+                    sh """
                             # Update gradle build number
-                            sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.$BUILD_NUMBER/" gradle.properties
+                            sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
                             REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                            NEXT_BUILD_NUMBER=\$(( $BUILD_NUMBER + 1 ))
+                            NEXT_BUILD_NUMBER=\$(( $BUILD_NUMBER ))
                             NEW_VERSION=`echo "\$REL_VERSION" | sed -E "s/\\.[0-9]+\$/.\${NEXT_BUILD_NUMBER}-SNAPSHOT/"`
                             echo "org.gradle.jvmargs=-XX:MaxPermSize=512m -Xmx1024m" >> gradle.properties
                             echo 
@@ -83,7 +121,7 @@ pipeline {
 
         stage('Create Extended H2O Jars'){
             steps {
-                    sh """
+                sh """
                         # Create h2o extended jar for all supported hadoop distributions
                         HADOOP_DISTRIBUTIONS=`./gradlew -q :sparkling-water-assembly-h2o:printHadoopDistributions)`
                         for distro in \${HADOOP_DISTRIBUTIONS}
@@ -98,36 +136,36 @@ pipeline {
 
         stage('Publish to S3') {
             steps {
-                    sh  """
-                            s3cmd --rexclude='target/classes/*' --acl-public sync dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/
+                sh  """
+                            s3cmd --rexclude='target/classes/*' --acl-public sync dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/
                             
                             echo EXPLICITLY SET MIME TYPES AS NEEDED
                             list_of_html_files=`find dist/build -name '*.html' | sed 's/dist\\/build\\///g'`
                             echo \${list_of_html_files}
                             for f in \${list_of_html_files}
                             do
-                                s3cmd --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/\${f}
+                                s3cmd --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
                             done
                             
                             list_of_js_files=`find dist/build -name '*.js' | sed 's/dist\\/build\\///g'`
                             echo \${list_of_js_files}
                             for f in \${list_of_js_files}
                             do
-                                s3cmd --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/\${f}
+                                s3cmd --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
                             done
                             
                             list_of_css_files=`find dist/build -name '*.css' | sed 's/dist\\/build\\///g'`
                             echo \${list_of_css_files}
                             for f in \${list_of_css_files}
                             do
-                                s3cmd --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/\${f}
+                                s3cmd --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
                             done
                             
                             list_of_extended_jars=`find assembly-h2o/private -name '*-extended.jar' | sed 's/assembly-h2o\\\\/private\\\\///g'`
                             echo \${list_of_extended_jars}
                             for jar in \${list_of_extended_jars}
                             do
-                                 s3cmd --acl-public put assembly-h2o/private/\${jar} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/\${jar}
+                                 s3cmd --acl-public put assembly-h2o/private/\${jar} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${jar}
                             done
                             ./gradlew :sparkling-water-assembly-h2o:clean
                             ./gradlew :sparkling-water-assembly-h2o:cleanH2OJars
@@ -135,9 +173,9 @@ pipeline {
                             echo UPDATE LATEST POINTER
                             tmpdir=./buildsparklingwater.tmp
                             mkdir -p \${tmpdir}
-                            echo ${BUILD_NUMBER} > \${tmpdir}/latest
+                            echo \$(( $BUILD_NUMBER - 1 )) > \${tmpdir}/latest
                             echo "<head>" > \${tmpdir}/latest.html
-                            echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${BUILD_NUMBER}/index.html\\" />" >> \${tmpdir}/latest.html
+                            echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\$(( $BUILD_NUMBER - 1 ))/index.html\\" />" >> \${tmpdir}/latest.html
                             echo "</head>" >> \${tmpdir}/latest.html
                             s3cmd --acl-public put \${tmpdir}/latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest
                             s3cmd --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest.html
@@ -158,7 +196,6 @@ pipeline {
                 }
             }
         }
-
-
+        
     }
 }
