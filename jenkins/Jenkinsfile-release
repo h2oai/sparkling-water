@@ -1,21 +1,27 @@
 pipeline {
     agent {label 'master'}
+    
+    parameters {
+        booleanParam(name: 'prepareReleaseNotes', defaultValue: true, description: 'Prepare release notes')
+        booleanParam(name: 'promoteAndPublishToNexus', defaultValue: true, description: 'Release and Promote')
+        booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3')
+        booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy')
+    }
 
     environment {
         SPARK_VERSION="1.6.3"
         SPARK_HOME="${env.WORKSPACE}/spark"
+        GRADLE_USER_HOME="${env.WORKSPACE}/gradle_home"
     }
 
     stages {
 
-        stage('Prepare Environment') {
+        stage('Prepare environment') {
             steps {
-                sh """
-                        # Transform build number to start with 0
-                        BUILD_NUMBER="\$(( $BUILD_NUMBER - 1 ))"
+                sh  """
+                        rm -rf *
                         
-                        # Clean workspace
-                        sh 'rm -rf *'
+                        mkdir -p "${env.GRADLE_USER_HOME}"
                     """
             }
         }
@@ -38,7 +44,57 @@ pipeline {
                 }
         }
 
+        stage ('Prepare release notes'){
+            when {
+                expression { params.prepareReleaseNotes == true }
+            }
+            steps {
+                    sh """
+                    sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                    REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                    git checkout -- gradle.properties
+
+                    # Get id of this release
+                    jira_version_id=\$(curl --silent "https://0xdata.atlassian.net/rest/api/2/project/SW/versions" | tr '}' '\\n' | grep "\\"name\\":\\"\$REL_VERSION\\"" | cut -d'"' -f8)
+                    # Get the JIRA page (currently, there is no endpoint for release notes)
+                    release_notes_page="https://0xdata.atlassian.net/secure/ReleaseNote.jspa?projectId=12000&version=\${jira_version_id}"
+                    
+                    # Obtain the release notes and process them so they look like we expect
+                    curl --silent "\$release_notes_page" | sed '/<body>/,/<a name="editarea"><\\/a>/!d;//D' | sed 's/<ul>//' | sed 's/<\\/ul>//' | sed 's/ *<h2>/-  /' | sed 's/<\\/h2>//'  | sed 's/<\\/li>//' | sed "s/ *<li>\\[<a href='https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\([0-9]*\\)'>SW-[0-9]*<\\/a>\\]/\\   -  \\`SW-\\1 <https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\1>\\`__/" | sed '\$ d' | sed '1d' > release_notes
+                    
+                    # Put the release notes into the doc/CHANGELOG.rst
+                    
+                    release_date=\$(date +%Y-%m-%d)
+                    rel_prefix=\$(echo "v\$REL_VERSION (\$release_date)")
+                    underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
+                    
+                    # Release notes
+                    echo \$rel_prefix
+                    echo \$underscores
+                    echo
+                    cat release_notes
+                   
+                    # Insert release info
+                    sed -i "4i \$rel_prefix" doc/CHANGELOG.rst
+                    
+                    # Insert the underscores
+                    sed -i "5i \$underscores" doc/CHANGELOG.rst
+                    
+                    # Insert the release notes
+                    sed -i "5r release_notes" doc/CHANGELOG.rst
+                    
+                    rm -rf release_notes
+                    git add doc/CHANGELOG.rst
+                    git commit -m "Release notes for \$REL_VERSION"
+                    git push --set-upstream origin ${env.BRANCH_NAME}              
+                    """
+            }
+        }
+
         stage('Build Sparkling Water'){
+            when {
+                expression { params.promoteAndPublishToNexus == true }
+            }
             steps {
                 withCredentials([file(credentialsId: 'release-gradle.properties', variable: 'GRADLE_PROPERTIES_PATH'),
                                  file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
@@ -68,8 +124,8 @@ pipeline {
                             
                             # Restore gradle.properties before release
                             git checkout -- gradle.properties
-                            cat ${GRADLE_PROPERTIES_PATH} >> gradle.properties
-                            echo signing.secretKeyRingFile=$RING_FILE_PATH >> gradle.properties
+                            cat ${GRADLE_PROPERTIES_PATH} >> ${env.GRADLE_USER_HOME}/gradle.properties
+                            echo signing.secretKeyRingFile=$RING_FILE_PATH >> ${env.GRADLE_USER_HOME}/gradle.properties
                             ./gradlew -PdoPromotion -PdoRelease -Pgradle.release.useAutomaticVersion=true -PreleaseVersion="\$REL_VERSION" -PnewVersion="\$NEW_VERSION" release -x check
                             # Restore gradle.properties before pushing to S3
                             git checkout -- gradle.properties
@@ -77,7 +133,6 @@ pipeline {
                 }
             }
         }
-
 
         stage('Create Extended H2O Jars'){
             steps {
@@ -95,6 +150,9 @@ pipeline {
         }
 
         stage('Publish to S3') {
+            when {
+                expression { params.publishToS3 == true }
+            }
             steps {
                     sh  """
                             s3cmd --rexclude='target/classes/*' --acl-public sync dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/
@@ -145,6 +203,9 @@ pipeline {
         }
 
         stage('Publish To PyPi') {
+            when {
+                expression { params.publishToPiPy == true }
+            }
             steps {
                 dir("py/build/pkg") {
                     withCredentials([usernamePassword(credentialsId: "pypi-credentials", usernameVariable: 'PIPY_USERNAME', passwordVariable: 'PIPY_PASSWORD')]) {
