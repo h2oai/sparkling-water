@@ -75,7 +75,12 @@ def prepareSparkEnvironment() {
             }else {
                 sh  """
                     # Download Spark
-                    wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
+                    if [ "${config.sparkVersion}" = "2.1.2" ]; then
+                        # Spark 2.1.2 is available here, but not the older versions
+                        wget -q "http://mirrors.ocf.berkeley.edu/apache/spark/spark-${config.sparkVersion}/${env.SPARK}.tgz"
+                    else   
+                        wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
+                    fi
                     mkdir -p "${env.SPARK_HOME}"
                     tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
                     rm -rf ${env.SPARK}.tgz
