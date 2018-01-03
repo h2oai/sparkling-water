@@ -188,7 +188,7 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: "pypi-credentials", usernameVariable: 'PIPY_USERNAME', passwordVariable: 'PIPY_PASSWORD')]) {
                         sh  """
                             python setup.py sdist
-                            twine -u $PIPY_USERNAME -p $PIPY_PASSWORD upload dist/*
+                            twine upload dist/* -u $PIPY_USERNAME -p $PIPY_PASSWORD
                             """
                     }
                 }
