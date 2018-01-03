@@ -1,16 +1,28 @@
 pipeline {
     agent {label 'master'}
+    
+    parameters {
+        booleanParam(name: 'prepareReleaseNotes', defaultValue: true, description: 'Prepare release notes')
+        booleanParam(name: 'promoteAndPublishToNexus', defaultValue: true, description: 'Release and Promote')
+        booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3')
+        booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy')
+    }
 
     environment {
         SPARK_VERSION="2.1.2"
         SPARK_HOME="${env.WORKSPACE}/spark"
+        GRADLE_USER_HOME="${env.WORKSPACE}/gradle_home"
     }
 
     stages {
 
-        stage('Clean workspace') {
+        stage('Prepare environment') {
             steps {
-                sh " rm -rf * "
+                sh  """
+                        rm -rf *
+                        
+                        mkdir -p "${env.GRADLE_USER_HOME}"
+                    """
             }
         }
 
@@ -33,6 +45,9 @@ pipeline {
         }
 
         stage ('Prepare release notes'){
+            when {
+                expression { params.prepareReleaseNotes == true }
+            }
             steps {
                     sh """
                     sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
@@ -77,6 +92,9 @@ pipeline {
         }
 
         stage('Build Sparkling Water'){
+            when {
+                expression { params.promoteAndPublishToNexus == true }
+            }
             steps {
                 withCredentials([file(credentialsId: 'release-gradle.properties', variable: 'GRADLE_PROPERTIES_PATH'),
                                  file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
@@ -106,8 +124,8 @@ pipeline {
                             
                             # Restore gradle.properties before release
                             git checkout -- gradle.properties
-                            cat ${GRADLE_PROPERTIES_PATH} >> gradle.properties
-                            echo signing.secretKeyRingFile=$RING_FILE_PATH >> gradle.properties
+                            cat ${GRADLE_PROPERTIES_PATH} >> ${env.GRADLE_USER_HOME}/gradle.properties
+                            echo signing.secretKeyRingFile=$RING_FILE_PATH >> ${env.GRADLE_USER_HOME}/gradle.properties
                             ./gradlew -PdoPromotion -PdoRelease -Pgradle.release.useAutomaticVersion=true -PreleaseVersion="\$REL_VERSION" -PnewVersion="\$NEW_VERSION" release -x check
                             # Restore gradle.properties before pushing to S3
                             git checkout -- gradle.properties
@@ -115,7 +133,6 @@ pipeline {
                 }
             }
         }
-
 
         stage('Create Extended H2O Jars'){
             steps {
@@ -133,6 +150,9 @@ pipeline {
         }
 
         stage('Publish to S3') {
+            when {
+                expression { params.publishToS3 == true }
+            }
             steps {
                 sh  """
                             s3cmd --rexclude='target/classes/*' --acl-public sync dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/
@@ -183,6 +203,9 @@ pipeline {
         }
 
         stage('Publish To PyPi') {
+            when {
+                expression { params.publishToPiPy == true }
+            }
             steps {
                 dir("py/build/pkg") {
                     withCredentials([usernamePassword(credentialsId: "pypi-credentials", usernameVariable: 'PIPY_USERNAME', passwordVariable: 'PIPY_PASSWORD')]) {
