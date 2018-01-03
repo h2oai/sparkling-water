@@ -6,6 +6,15 @@ from pyspark.sql import SparkSession
 from pysparkling import *
 from .params import H2OGBMParams, H2ODeepLearningParams
 
+def get_input_kwargs(self, spark_context):
+    if spark_context.version == "2.1.0":
+        return self.__init__._input_kwargs
+    else:
+        # on older versions we need to use the following variant
+        return self._input_kwargs
+
+
+
 class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
     @keyword_only
     def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, nfolds=0,
@@ -32,7 +41,9 @@ class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
                          sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                          learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=self._hc._jvm.Double.MAX_VALUE,
                          predNoiseBandwidth=0.0)
-        kwargs = self._input_kwargs
+
+
+        kwargs = get_input_kwargs(self, self._hc._sc)
         self.setParams(**kwargs)
     @keyword_only
     def setParams(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True,
@@ -43,7 +54,7 @@ class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
                   sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                   learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=SparkSession.builder.getOrCreate()._jvm.Double.MAX_VALUE,
                   predNoiseBandwidth=0.0):
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self, self._hc._sc)
 
         if "distribution" in kwargs:
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
@@ -79,14 +90,14 @@ class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, Java
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
                          epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False)
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self, self._hc._sc)
         self.setParams(**kwargs)
 
     @keyword_only
     def setParams(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True,
                   nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                   seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False):
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self, self._hc._sc)
 
         if "distribution" in kwargs:
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
