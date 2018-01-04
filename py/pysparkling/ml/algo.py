@@ -10,7 +10,7 @@ def get_input_kwargs(self, spark_context):
     if spark_context.version == "2.1.0":
         return self.__init__._input_kwargs
     else:
-        # on older versions we need to use the following variant
+        # on newer versions we need to use the following variant
         return self._input_kwargs
 
 
