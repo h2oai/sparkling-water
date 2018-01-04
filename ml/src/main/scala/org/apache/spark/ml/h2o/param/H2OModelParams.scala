@@ -29,13 +29,13 @@ trait H2OModelParams extends Params {
   //
   final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
   final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
-  final val outputCol: Param[String] = new Param[String](this, "outputCol", "Column where predictions are created")
+
   //
   // Default values
   //
   setDefault(predictionCol -> "prediction")
   setDefault(featuresCols -> Array.empty[String])
-  setDefault(outputCol -> "prediction_output")
+
   //
   // Getters
   //
@@ -45,9 +45,6 @@ trait H2OModelParams extends Params {
   /** @group getParam */
   def getFeaturesCols() = $(featuresCols)
 
-  /** @group getParam */
-  def getOutputCol() = $(outputCol)
-
   //
   // Setters
   //
@@ -56,7 +53,4 @@ trait H2OModelParams extends Params {
 
   /** @group setParam */
   def setPredictionsCol(value: String): this.type = set(predictionCol, value)
-
-  /** @group setParam */
-  def setOutputCol(value: String): this.type = set(outputCol, value)
 }

@@ -21,7 +21,6 @@ import java.io.File
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.linalg.Vectors
-import org.apache.spark.sql.DataFrame
 import org.scalatest.FunSuite
 import water.fvec.{AppendableVec, Frame, NewChunk, Vec}
 import water.munging.JoinMethod
@@ -97,16 +96,6 @@ object TestUtils {
     } else {
       new File("./examples/" + name).getAbsolutePath
     }
-  }
-
-  // Note: this comparision expects implicit ordering of spark DataFrames which is not ensured!
-  def assertEqual(df1: DataFrame, df2: DataFrame, msg: String = "DataFrames are not same!"): Unit = {
-    val l1 = df1.repartition(1).collect()
-    val l2 = df2.repartition(1).collect()
-
-    assert(l1.zip(l2).forall { case (row1, row2) =>
-      row1.equals(row2)
-    }, "DataFrames are not same!")
   }
 
   def frame(name: String, vec: Vec): Frame = {
