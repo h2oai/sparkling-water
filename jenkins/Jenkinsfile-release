@@ -67,7 +67,8 @@ pipeline {
                     release_date=\$(date +%Y-%m-%d)
                     rel_prefix=\$(echo "v\$REL_VERSION (\$release_date)")
                     underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
-                    
+                    download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/sparkling-water/${env.BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/${env.BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/index.html>\\`__"
+
                     # Release notes
                     echo \$rel_prefix
                     echo \$underscores
@@ -80,8 +81,11 @@ pipeline {
                     # Insert the underscores
                     sed -i "5i \$underscores" doc/CHANGELOG.rst
                     
+                    # Insert the download link
+                    sed -i "6i \$download_line" doc/CHANGELOG.rst
+                    
                     # Insert the release notes
-                    sed -i "5r release_notes" doc/CHANGELOG.rst
+                    sed -i "6r release_notes" doc/CHANGELOG.rst
                     
                     rm -rf release_notes
                     git add doc/CHANGELOG.rst
