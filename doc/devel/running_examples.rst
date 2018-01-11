@@ -11,7 +11,7 @@ can build and run them in the following way:
 
         ./gradlew build -x check
 
-2. Set the configuration of the demo Spark cluster (for example, ``local[*]`` or ``local-cluster[3,2,1024]``)
+2. Set the configuration of the demo Spark cluster (for example, ``local[*]``)
 
    .. code:: bash
 
@@ -25,7 +25,9 @@ can build and run them in the following way:
 
 - On Local Cluster:
 
-    The cluster is defined by ``MASTER`` address ``local-cluster[3,2,3072]`` which means that cluster contains 3 worker nodes, each having 2 CPU cores and 3GB of memory:
+    The local cluster is defined by ``MASTER`` address ``local``, ``local[*]`` or additional variants
+    available at `Spark Master URLs <https://spark.apache.org/docs/latest/submitting-applications.html#master-urls>`__.
+
 
     .. code:: bash
 
