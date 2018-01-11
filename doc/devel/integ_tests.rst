@@ -17,7 +17,7 @@ Testing Environments
 --------------------
 
 -  Local - corresponds to setting Spark ``MASTER`` variable to one of
-   ``local``, or ``local[*]``, or ``local-cluster[_,_,_]`` values
+   ``local``, or ``local[*]``, or ``local-cluster[_,_,_]``(use just for testing purposes) values
 -  Standalone cluster - the ``MASTER`` variable points to existing
    standalone Spark cluster ``spark://...``
 -  YARN cluster - the ``MASTER`` variable contains ``yarn-client`` or

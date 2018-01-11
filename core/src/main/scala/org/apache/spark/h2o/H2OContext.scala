@@ -288,22 +288,20 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   /** Open H2O Flow running in this client. */
   def openFlow(): Unit = openURI(sparkContext, s"http://$h2oLocalClient")
 
-  /** Open Spark task manager. */
-  //def openSparkUI(): Unit = sparkUI.foreach(openURI(_))
-
   override def toString: String = {
-    val basic = s"""
-       |Sparkling Water Context:
-       | * H2O name: ${H2O.ARGS.name}
-       | * cluster size: ${h2oNodes.size}
-       | * list of used nodes:
-       |  (executorId, host, port)
-       |  ------------------------
-       |  ${h2oNodes.mkString("\n  ")}
-       |  ------------------------
-       |
-       |  Open H2O Flow in browser: http://$h2oLocalClient (CMD + click in Mac OSX)
-       |
+    val basic =
+      s"""
+         |Sparkling Water Context:
+         | * H2O name: ${H2O.ARGS.name}
+         | * cluster size: ${h2oNodes.size}
+         | * list of used nodes:
+         |  (executorId, host, port)
+         |  ------------------------
+         |  ${h2oNodes.mkString("\n  ")}
+         |  ------------------------
+         |
+         |  Open H2O Flow in browser: http://$h2oLocalClient (CMD + click in Mac OSX)
+         |
     """.stripMargin
 
     basic ++ backend.epilog

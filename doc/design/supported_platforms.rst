@@ -9,8 +9,8 @@ Local
 ~~~~~
 
 In this case Sparkling Water runs as a local cluster (Spark master
-variable points to one of values ``local``, ``local[*]``, or
-``local-cluster[...]``
+variable points to one of the values ``local``, local[*] or some additional local modes available at
+`Spark Master URLs <https://spark.apache.org/docs/latest/submitting-applications.html#master-urls>`__).
 
 Standalone Spark Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~

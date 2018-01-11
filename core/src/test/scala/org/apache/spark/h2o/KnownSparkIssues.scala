@@ -26,8 +26,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
   * Tests for known Spark issues and our workaround which doesn't fit to any category in other tests
   */
 @RunWith(classOf[JUnitRunner])
-class KnownSparkIssues extends FunSuite
-  with Matchers with BeforeAndAfter with SharedH2OTestContext {
+class KnownSparkIssues extends FunSuite with SharedH2OTestContext {
 
   // we use local-cluster since the non-determinism isn't reproducible in local mode
   override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,2,2048]", "test-local-cluster", conf = defaultSparkConf)
