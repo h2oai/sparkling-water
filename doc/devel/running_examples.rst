@@ -25,7 +25,7 @@ can build and run them in the following way:
 
 - On Local Cluster:
 
-    The local cluster is defined by ``MASTER`` address ``local``, ``local[*]`` or some additional available variants
+    The local cluster is defined by ``MASTER`` address ``local``, ``local[*]`` or additional variants
     available at `Spark Master URLs <https://spark.apache.org/docs/latest/submitting-applications.html#master-urls>`__.
 
 
