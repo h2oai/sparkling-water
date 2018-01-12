@@ -9,5 +9,5 @@ spark = SparkSession.builder.appName("App name").getOrCreate()
 hc = H2OContext.getOrCreate(spark)
 
 # Stop H2O and Spark services
-h2o.shutdown(prompt=False)
+h2o.cluster().shutdown()
 spark.stop()
