@@ -9,9 +9,8 @@ of ``H2OContext.getOrCreate``. Since it's not technically possible to
 get number of executors in Spark, we try to discover all executors at
 the initiation of ``H2OContext`` and we start H2O instance inside of
 each discovered executor. This solution is easiest to deploy; however
-when Spark or YARN kills the executor - which is not an unusual case -
-the whole H2O cluster goes down since h2o doesn't support high
-availability.
+when Spark or YARN kills the executor the whole H2O cluster goes down
+since H2O doesn't support high availability.
 
 Internal backend is default for behaviour for Sparkling Water. It can be
 changed via spark configuration property

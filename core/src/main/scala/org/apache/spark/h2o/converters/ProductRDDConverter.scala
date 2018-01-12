@@ -41,7 +41,7 @@ private[h2o] object ProductRDDConverter extends Logging {
   }
 
   /** Transform typed RDD into H2O Frame */
-  def toH2OFrame[T <: Product : TypeTag](hc: H2OContext, rdd: RDD[T], frameKeyName: Option[String]): H2OFrame = {
+  def toH2OFrame[T <: Product : ClassTag: TypeTag](hc: H2OContext, rdd: RDD[T], frameKeyName: Option[String]): H2OFrame = {
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand()) // There are uniq IDs for RDD
 
     val fnames = ReflectionUtils.fieldNamesOf[T]

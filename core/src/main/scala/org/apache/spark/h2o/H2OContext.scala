@@ -72,7 +72,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   /** REST port of H2O client */
   private var localClientPort: Int = _
   /** Runtime list of active H2O nodes */
-  private val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
+  val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
   private var stopped = false
 
   /** Used backend */

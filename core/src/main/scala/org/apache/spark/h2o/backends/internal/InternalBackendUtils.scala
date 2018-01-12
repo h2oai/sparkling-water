@@ -161,6 +161,8 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
         }
       }
     }.collect()
+
+
     // The accumulable should contain all IP:PORTs from all exeuctors
     if (bc.value.size != numOfExecutors ||
       executorStatus.groupBy(_._1).flatMap( x => x._2.find(_._2)).size != numOfExecutors) {

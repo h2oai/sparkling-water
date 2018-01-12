@@ -27,11 +27,12 @@ import water.Key
 import water.fvec.H2OFrame
 
 import scala.language.implicitConversions
+import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 private[converters] object PrimitiveRDDConverter extends Logging {
 
-  def toH2OFrame[T: TypeTag](hc: H2OContext, rdd: RDD[T], frameKeyName: Option[String]): H2OFrame = {
+  def toH2OFrame[T: ClassTag : TypeTag](hc: H2OContext, rdd: RDD[T], frameKeyName: Option[String]): H2OFrame = {
     import ReflectionUtils._
 
     val keyName = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())

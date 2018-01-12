@@ -48,7 +48,7 @@ trait SupportedRDD {
 
 private[this] object SupportedRDD {
 
-  class PrimitiveSupportedRDD[T: TypeTag](rdd: RDD[T]) extends SupportedRDD {
+  class PrimitiveSupportedRDD[T: TypeTag: ClassTag](rdd: RDD[T]) extends SupportedRDD {
     override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
   }
 
@@ -124,7 +124,7 @@ private[this] object SupportedRDD {
   implicit def toH2OFrameFromRDDProductNoTypeTag(rdd : RDD[Product]): SupportedRDD = new SupportedRDD {
     override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = ProductRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
   }
-  implicit def toH2OFrameFromRDDProduct[A <: Product : TypeTag](rdd : RDD[A]): SupportedRDD = new SupportedRDD {
+  implicit def toH2OFrameFromRDDProduct[A <: Product : ClassTag: TypeTag](rdd : RDD[A]): SupportedRDD = new SupportedRDD {
     override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = ProductRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
   }
 
