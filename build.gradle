@@ -21,9 +21,7 @@ buildscript {
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
         classpath 'org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.10:0.8.2'
-        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
         classpath 'net.researchgate:gradle-release:2.6.0'
-        classpath 'com.adaptc.gradle:nexus-workflow:0.6'
         classpath 'com.bmuschko:gradle-docker-plugin:2.6.5'
         classpath 'com.netflix.nebula:gradle-lint-plugin:latest.release'
     }
@@ -134,9 +132,6 @@ configure(subprojects) { project ->
     }
 }
 
-// This task is used by the Jenkins on test.h2o.ai.
-//
-// See ~jenkins/bin/buildsparklingwater.sh.
 task buildSparklingWaterDist(type: Exec) {
     def buildTimeMillis = System.currentTimeMillis();
     def buildTimeIso8601 = new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("UTC"))
@@ -152,7 +147,7 @@ task buildSparklingWaterDist(type: Exec) {
 task dist(dependsOn: buildSparklingWaterDist)
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '4.2.1'
+  gradleVersion = '4.4.1'
 }
 
 clean.doFirst {

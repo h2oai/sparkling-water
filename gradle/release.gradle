@@ -1,30 +1,21 @@
+/**
+ * This Plugin is used to:
+ *  - create release artifacts of Sparkling Water
+ *  - create tag on Github pointing to the release hash
+ *  - create commit with new version on Github
+ */
 apply plugin: 'net.researchgate.release'
-apply plugin: 'nexus-workflow'
 
 release {
-  tagTemplate = 'RELEASE-$version'
-  // Safe point - do releases only from release branch - can be deleted in future
-  failOnUnversionedFiles = false
-  failOnCommitNeeded = false
-  preCommitText = ":tada: "
-  git {
-    // Note: the releases are only allowed from master branch
-    // requireBranch = '<<FILL ME>>'
-    // DEBUG: disable dry run in production/CI
-    // pushOptions = ["--dry-run"]
-  }
+    tagTemplate = 'RELEASE-$version'
+    // Safe point - do releases only from release branch - can be deleted in future
+    failOnUnversionedFiles = false
+    failOnCommitNeeded = false
+    preCommitText = ":tada: "
+    git {
+        // Note: the releases are only allowed from master branch
+        requireBranch = '<<FILL ME>>'
+        // DEBUG: disable dry run in production/CI
+        // pushOptions = ["--dry-run"]
+    }
 }
-
-// Helper task uploading all artifacts to Nexus
-task uploadAll
-uploadAll.dependsOn {
-  subprojects.uploadArchives
-}
-
-// Helper task uploading and releasing all staged artifacts in Nexus
-task stageAll
-stageAll.dependsOn uploadAll
-
-// Upload artifacts after release
-afterReleaseBuild.dependsOn stageAll
-
