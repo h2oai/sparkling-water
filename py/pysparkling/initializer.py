@@ -48,21 +48,6 @@ class Initializer(object):
         # when they need to use the dependency.
         jsc.addJar(sw_jar_file)
 
-        # SW-272: For yarn and cluster deployments we need to modify location of the jar file
-        # to a driver cache location
-        #
-        # WARNING: This is low-level code accessing internal Spark API to enable SW2.0
-        #          on Azure/CDH clusters.
-        #          It needs to be properly tested and verified on different platforms!
-        if jsc.sc().master() == "yarn" and jsc.sc().deployMode() == "cluster":
-            file_server = jsc.env().rpcEnv().fileServer()
-            field_jars = file_server.getClass().getDeclaredField("jars")
-            if field_jars:
-                field_jars.setAccessible(True)
-                field_jars_value = field_jars.get(file_server)
-                field_jars_value.put('sparkling_water_assembly.jar', jvm.java.io.File(sw_jar_file))
-
-
     @staticmethod
     def __extracted_jar_path():
         import sparkling_water
