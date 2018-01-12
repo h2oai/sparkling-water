@@ -132,7 +132,7 @@ def prepareSparklingWaterEnvironment() {
                     if [ ${config.backendMode} = external ]; then
                         # In this case, PySparkling build is driven by H2O_HOME property
                         # When extending from specific jar the jar has already the desired name
-                        ${env.WORKSPACE}/gradlew -q extendJar
+                        ${getGradleCommand(config)} -q :sparkling-water-examples:build -x check extendJar
                     fi
                 else
                     # Download h2o-python client, save it in private directory
@@ -140,7 +140,7 @@ def prepareSparklingWaterEnvironment() {
                     mkdir -p ${env.WORKSPACE}/private/
                     curl -s `${env.WORKSPACE}/gradlew -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
                     if [ ${config.backendMode} = external ]; then
-                        cp `${env.WORKSPACE}/gradlew -q :sparkling-water-examples:build -x check extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
+                        cp `${getGradleCommand(config)} -q :sparkling-water-examples:build -x check extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
                     fi
                 fi
     
