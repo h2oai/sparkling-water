@@ -3,6 +3,7 @@
 def call(params, body) {
     def config = [:]
     body.resolveStrategy = Closure.DELEGATE_FIRST
+
     body.delegate = config
     body(params)
 
@@ -33,6 +34,7 @@ def call(params, body) {
                         scriptsTest()(config)
                         integTest()(config)
                         pysparklingIntegTest()(config)
+                        publishNightly()(config)
                     }
                 }
             }
@@ -40,16 +42,45 @@ def call(params, body) {
     }
 }
 
+
+def getGradleCommand(config) {
+    def gradleStr
+    if (config.buildAgainstH2OBranch.toBoolean()) {
+        gradleStr = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew --include-build ${env.WORKSPACE}/h2o-3"
+    } else {
+        gradleStr = "${env.WORKSPACE}/gradlew"
+    }
+
+    if(config.buildAgainstSparkBranch.toBoolean()) {
+        "${gradleStr} -x checkSparkVersionTask"
+    }else{
+        gradleStr
+    }
+}
+
+
 def prepareSparkEnvironment() {
     return { config ->
         stage('Prepare Spark Environment') {
-            sh  """
-                # Download Spark
-                wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
-                mkdir -p "${env.SPARK_HOME}"
-                tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
-                rm -rf ${env.SPARK}.tgz
-                """
+
+            if (config.buildAgainstSparkBranch.toBoolean()) {
+                // build spark
+                sh """
+                    git clone https://github.com/apache/spark.git spark_repo
+                    cd spark_repo
+                    git checkout ${config.sparkBranch}
+                    ./dev/make-distribution.sh --name custom-spark --pip -Phadoop-2.6 -Pyarn
+                    cp -r ./dist/ ${env.SPARK_HOME}
+                    """
+            }else {
+                sh  """
+                    # Download Spark
+                    wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
+                    mkdir -p "${env.SPARK_HOME}"
+                    tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
+                    rm -rf ${env.SPARK}.tgz
+                    """
+            }
 
             sh  """
                 # Setup Spark
@@ -59,6 +90,11 @@ def prepareSparkEnvironment() {
                 
                 echo "-Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/java-opts
                 """
+            if(config.buildAgainstSparkBranch.toBoolean()){
+                sh  """
+                    echo "spark.ext.h2o.spark.version.check.enabled false" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
+                    """
+            }
         }
     }
 }
@@ -68,11 +104,26 @@ def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment') {
 
+            // In case of nightly build, modify gradle.properties
+            if(config.buildNightly.toBoolean()){
+
+                def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
+
+                def h2oNightlyMajorVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/${h2oNightlyBuildVersion}/project_version").getText().trim()
+                h2oNightlyMajorVersion = h2oNightlyMajorVersion.substring(0, h2oNightlyMajorVersion.lastIndexOf('.'))
+
+                sh  """
+                     sed -i.backup -E "s/h2oMajorName=.*/h2oMajorName=master/" gradle.properties
+                     sed -i.backup -E "s/h2oMajorVersion=.*/h2oMajorVersion=${h2oNightlyMajorVersion}/" gradle.properties
+                     sed -i.backup -E "s/h2oBuild=.*/h2oBuild=${h2oNightlyBuildVersion}/" gradle.properties
+                     sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\${BUILD_NUMBER}_nightly/" gradle.properties
+                    """
+            }
+
             sh  """
                 # Check if we are bulding against specific H2O branch
                 if [ ${config.buildAgainstH2OBranch} = true ]; then
                     # Clone H2O
-                    rm -rf h2o-3
                     git clone https://github.com/h2oai/h2o-3.git
                     cd h2o-3
                     git checkout ${config.h2oBranch}
@@ -83,10 +134,7 @@ def prepareSparklingWaterEnvironment() {
                         # When extending from specific jar the jar has already the desired name
                         ${getGradleCommand(config)} -q :sparkling-water-examples:build -x check extendJar
                     fi
-                fi
-    
-                # Check if we are building against included H2O 
-                if [ ${config.buildAgainstH2OBranch} = false ]; then
+                else
                     # Download h2o-python client, save it in private directory
                     # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
                     mkdir -p ${env.WORKSPACE}/private/
@@ -101,16 +149,13 @@ def prepareSparklingWaterEnvironment() {
     }
 }
 
+
 def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint') {
             sh  """
                 # Build
-                if [ ${config.buildAgainstH2OBranch} = true ]; then
-                    H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew clean --include-build ${env.WORKSPACE}/h2o-3 build -x check scalaStyle
-                else
-                    ${env.WORKSPACE}/gradlew clean build -x check scalaStyle
-                fi
+                ${getGradleCommand(config)} clean build -x check scalaStyle
                 """
         }
     }
@@ -119,16 +164,20 @@ def buildAndLint() {
 def unitTests() {
     return { config ->
         stage('QA: Unit Tests') {
-            if (config.runUnitTests) {
-                sh """
-                # Run unit tests
-                ${env.WORKSPACE}/gradlew test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
-                """
+            if (config.runUnitTests.toBoolean()) {
+                try {
+                    sh  """
+                        # Run unit tests
+                        ${getGradleCommand(config)} test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        """
+                } finally {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    junit 'core/build/test-results/test/*.xml'
+                    junit 'ml/build/test-results/test/*.xml'
+                    testReport 'core/build/reports/tests/test', 'Core Unit tests'
+                    testReport 'ml/build/reports/tests/test', "ML Unit Tests"
+                }
 
-
-                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
-                junit 'core/build/test-results/test/*.xml'
-                testReport 'core/build/reports/tests/test', 'Core Unit tests'
             }
         }
 
@@ -139,16 +188,18 @@ def localIntegTest() {
     return { config ->
         stage('QA: Local Integration Tests') {
 
-            if (config.runLocalIntegTests) {
-                sh  """
-                    # Run local integration tests
-                    ${env.WORKSPACE}/gradlew integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
-                    """
-
-                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                junit 'examples/build/test-results/integTest/*.xml'
-                testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
-                testReport 'examples/build/reports/tests/integTest', 'Local Examples Integration tests'
+            if (config.runLocalIntegTests.toBoolean()) {
+                try {
+                    sh  """
+                        # Run local integration tests
+                        ${getGradleCommand(config)} integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        """
+                } finally {
+                    arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    junit 'examples/build/test-results/integTest/*.xml'
+                    testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
+                    testReport 'examples/build/reports/tests/integTest', 'Local Integration tests'
+                }
             }
         }
     }
@@ -158,15 +209,17 @@ def localIntegTest() {
 def scriptsTest() {
     return { config ->
         stage('QA: Script Tests') {
-            if (config.runScriptTests) {
-                sh  """
-                    # Run scripts tests
-                    ${env.WORKSPACE}/gradlew scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
-                    """
-
-                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                junit 'examples/build/test-results/scriptsTest/*.xml'
-                testReport 'examples/build/reports/tests/scriptsTest', 'Examples Script Tests'
+            if (config.runScriptTests.toBoolean()) {
+                try {
+                    sh  """
+                        # Run scripts tests
+                        ${getGradleCommand(config)} scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        """
+                } finally {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, **/build/reports/'
+                    junit 'examples/build/test-results/scriptsTest/*.xml'
+                    testReport 'examples/build/reports/tests/scriptsTest', 'Script Tests'
+                }
             }
         }
     }
@@ -176,15 +229,17 @@ def scriptsTest() {
 def integTest() {
     return { config ->
         stage('QA: Integration Tests') {
-            if (config.runIntegTests) {
-                sh  """
-                    ${env.WORKSPACE}/gradlew integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+            if (config.runIntegTests.toBoolean()) {
+                try {
+                    sh  """
+                    ${getGradleCommand(config)} integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
                     #  echo 'Archiving artifacts after Integration test'
                     """
-
-                arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                junit 'examples/build/test-results/integTest/*.xml'
-                testReport 'examples/build/reports/tests/integTest', "${config.backendMode} Examples Integration tests"
+                } finally {
+                    arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    junit 'examples/build/test-results/integTest/*.xml'
+                    testReport 'examples/build/reports/tests/integTest', "Integration tests"
+                }
             }
         }
     }
@@ -193,17 +248,76 @@ def integTest() {
 def pysparklingIntegTest() {
     return { config ->
         stage('QA: PySparkling Integration Tests') {
-            if (config.runPySparklingIntegTests) {
+            if (config.runPySparklingIntegTests.toBoolean()) {
+                try{
+                    sh  """
+                         ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                         # echo 'Archiving artifacts after PySparkling Integration test'
+                        """
+                } finally {
+                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
 
-                sh  """
-                    ${env.WORKSPACE}/gradlew integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
-                    #  echo 'Archiving artifacts after PySparkling Integration test'
-                    """
-
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt,examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                }
             }
         }
     }
 }
 
+def publishNightly(){
+    return { config ->
+        stage ('Nightly: Publishing Artifacts to S3'){
+            if (config.buildNightly.toBoolean() && config.uploadNightly.toBoolean()) {
+
+                sh """
+                    # echo 'Making distribution'
+                    ${getGradleCommand(config)} buildSparklingWaterDist
+
+                    # Upload to S3
+                    """
+
+                def tmpdir="./buildsparklingwater.tmp"
+                sh """
+                    # Publish the output to S3.
+                    echo
+                    echo PUBLISH
+                    echo
+                    s3cmd --rexclude='target/classes/*' --acl-public sync ${env.WORKSPACE}/dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/
+                    
+                    echo EXPLICITLY SET MIME TYPES AS NEEDED
+                    list_of_html_files=`find dist/build -name '*.html' | sed 's/dist\\/build\\///g'`
+                    echo \${list_of_html_files}
+                    for f in \${list_of_html_files}
+                    do
+                        s3cmd --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/\${f}
+                    done
+                    
+                    list_of_js_files=`find dist/build -name '*.js' | sed 's/dist\\/build\\///g'`
+                    echo \${list_of_js_files}
+                    for f in \${list_of_js_files}
+                    do
+                        s3cmd --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/\${BRANCH_NAME}/\${BUILD_NUMBER}/\${f}
+                    done
+                    
+                    list_of_css_files=`find dist/build -name '*.css' | sed 's/dist\\/build\\///g'`
+                    echo \${list_of_css_files}
+                    for f in \${list_of_css_files}
+                    do
+                        s3cmd --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${BUILD_NUMBER}/\${f}
+                    done
+                    
+                    echo UPDATE LATEST POINTER
+                    mkdir -p ${tmpdir}
+                    echo ${BUILD_NUMBER} > ${tmpdir}/latest
+                    echo "<head>" > ${tmpdir}/latest.html
+                    echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${BUILD_NUMBER}/index.html\\" />" >> ${tmpdir}/latest.html
+                    echo "</head>" >> ${tmpdir}/latest.html
+                    s3cmd --acl-public put ${tmpdir}/latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest
+                    s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest.html
+                    s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/index.html
+                                        
+                    """
+            }
+        }
+    }
+}
 return this
