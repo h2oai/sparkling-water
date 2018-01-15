@@ -68,12 +68,6 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     // Create dummy RDD distributed over executors
     val (spreadRDD, spreadRDDNodes) = new SpreadRDDBuilder(hc, InternalBackendUtils.guessTotalExecutorSize(hc.sparkContext)).build()
 
-    if (hc.getConf.isClusterTopologyListenerEnabled) {
-      // Attach listener which kills H2O cluster when new Spark executor has been launched ( which means
-      // that this executors hasn't been discovered during the spreadRDD phase)
-      hc.sparkContext.addSparkListener(new ExecutorAddNotSupportedListener())
-    }
-
     // Start H2O nodes
     // Get executors to execute H2O
     val allExecutorIds = spreadRDDNodes.map(_.nodeId).distinct
@@ -103,6 +97,14 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     }
     logDebug(s"Arguments used for launching h2o nodes: ${h2oNodeArgs.mkString(" ")}")
     val executors = InternalBackendUtils.startH2O(hc.sparkContext, spreadRDD, spreadRDDNodes.length, h2oNodeArgs, hc.getConf.nodeNetworkMask)
+
+    // H2O is already started on the nodes, make sure that we kill the cloud when a new executor joins
+    if (!(hc.sparkContext.isLocal || hc.sparkContext.master.startsWith("local-cluster[")) && hc.getConf.isClusterTopologyListenerEnabled) {
+      // Attach listener which kills H2O cluster when new Spark executor has been launched ( which means
+      // that this executors hasn't been discovered during the spreadRDD phase)
+      hc.sparkContext.addSparkListener(new ExecutorAddNotSupportedListener())
+    }
+
 
     // Connect to a cluster via H2O client, but only in non-local case
     if (!hc.sparkContext.isLocal) {
