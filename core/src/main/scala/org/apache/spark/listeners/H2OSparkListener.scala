@@ -17,6 +17,8 @@
 package org.apache.spark.listeners
 
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
+import water.H2O
+import water.util.Log
 
 trait H2OSparkListener extends SparkListener {
 }
@@ -24,7 +26,8 @@ trait H2OSparkListener extends SparkListener {
 class ExecutorAddNotSupportedListener extends H2OSparkListener {
 
   override def onExecutorAdded(executorAdded: SparkListenerExecutorAdded): Unit = {
-    throw new IllegalArgumentException("Executor without H2O instance discovered, killing the cloud!")
+    Log.err(s"Executor ${executorAdded.executorId} without H2O instance discovered, killing the cloud!")
+    H2O.shutdown(-1)
   }
 
 }
