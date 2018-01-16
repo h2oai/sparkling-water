@@ -16,20 +16,15 @@ release {
   }
 }
 
-// Helper task uploading all artifacts
+// Helper task uploading all artifacts to Nexus
 task uploadAll
 uploadAll.dependsOn {
   subprojects.uploadArchives
 }
 
-// Helper task uploading and releasing all staged artifacts 
+// Helper task uploading and releasing all staged artifacts in Nexus
 task stageAll
 stageAll.dependsOn uploadAll
-
-if (project.hasProperty("doPromotion")) {
-  //stageAll.dependsOn nexusStagingRelease
-  //nexusStagingRelease.mustRunAfter uploadAll
-}
 
 // Upload artifacts after release
 afterReleaseBuild.dependsOn stageAll

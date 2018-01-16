@@ -130,7 +130,7 @@ pipeline {
                             git checkout -- gradle.properties
                             cat ${GRADLE_PROPERTIES_PATH} >> ${env.GRADLE_USER_HOME}/gradle.properties
                             echo signing.secretKeyRingFile=$RING_FILE_PATH >> ${env.GRADLE_USER_HOME}/gradle.properties
-                            ./gradlew -PdoPromotion -PdoRelease -Pgradle.release.useAutomaticVersion=true -PreleaseVersion="\$REL_VERSION" -PnewVersion="\$NEW_VERSION" release -x check
+                            ./gradlew -PdoRelease -Prelease.useAutomaticVersion=true -Prelease.releaseVersion="\$REL_VERSION" -Prelease.newVersion="\$NEW_VERSION" release -x check
                             # Restore gradle.properties before pushing to S3
                             git checkout -- gradle.properties
                         """
