@@ -13,17 +13,14 @@ pipeline {
         SPARK_HOME="${env.WORKSPACE}/spark"
         JAVA_HOME="${JAVA_HOME_8}"
         PATH="${JAVA_HOME_8}/bin:${PATH}"
-        GRADLE_USER_HOME="${env.WORKSPACE}/gradle_home"
     }
 
     stages {
 
-        stage('Prepare environment') {
+        stage('Clean Workspace') {
             steps {
                 sh  """
                         rm -rf *
-                        
-                        mkdir -p "${env.GRADLE_USER_HOME}"
                     """
             }
         }
@@ -102,18 +99,17 @@ pipeline {
                 expression { params.releaseAndPublishToNexus == true }
             }
             steps {
-                withCredentials([file(credentialsId: 'release-gradle.properties', variable: 'GRADLE_PROPERTIES_PATH'),
+                withCredentials([usernamePassword(credentialsId: "PUBLIC_NEXUS", usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD'),
+                                 usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
                                  file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
                     sh """
-                            # Update gradle build number
+
+                            # Calculate the current and future version
                             sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
                             REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
                             NEXT_BUILD_NUMBER=\$(( $BUILD_NUMBER ))
                             NEW_VERSION=`echo "\$REL_VERSION" | sed -E "s/\\.[0-9]+\$/.\${NEXT_BUILD_NUMBER}-SNAPSHOT/"`
-                            echo "org.gradle.jvmargs=-XX:MaxPermSize=512m -Xmx1024m" >> gradle.properties
-                            echo 
-                            echo "gradle.properties"
-                            cat gradle.properties
+                                                 
                             echo
                             echo "RELEASE VERSION: \${REL_VERSION}"
                             echo "NEW VERSION: \${NEW_VERSION}"
@@ -121,20 +117,20 @@ pipeline {
                             
                             # Fetch H2O python package
                             mkdir -p private/
-                            curl \$(./gradlew -q printH2OWheelPackage) > private/h2o.whl
+                            curl \$(./gradlew -q printH2OWheelPackage ) > private/h2o.whl
                             export H2O_PYTHON_WHEEL="\$(pwd)/private/h2o.whl"
                             
                             # Perform a build
-                            ./gradlew build -x check 
+                            ./gradlew build -x check
                             ./gradlew buildSparklingWaterDist
                             
-                            # Restore gradle.properties before release
-                            git checkout -- gradle.properties
-                            cat ${GRADLE_PROPERTIES_PATH} >> ${env.GRADLE_USER_HOME}/gradle.properties
-                            echo signing.secretKeyRingFile=$RING_FILE_PATH >> ${env.GRADLE_USER_HOME}/gradle.properties
-                            ./gradlew -PdoRelease -Prelease.useAutomaticVersion=true -Prelease.releaseVersion="\$REL_VERSION" -Prelease.newVersion="\$NEW_VERSION" release -x check
-                            # Restore gradle.properties before pushing to S3
-                            git checkout -- gradle.properties
+                            ./gradlew -Porg.gradle.daemon=false -Porg.gradle.daemon.performance.enable-monitoring=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\$REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -Psigning.password= -PdoRelease release -x check
+                            # Note: 
+                            # After this step, gradle.properties has the new future version ending with "-SNAPSHOT" so
+                            # we change it back to the version of the current release in case the following stages
+                            # require to use the correct version
+                              
+                            sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
                         """
                 }
             }
@@ -143,13 +139,13 @@ pipeline {
         stage('Create Extended H2O Jars'){
             steps {
                 sh """
-                        # Create h2o extended jar for all supported hadoop distributions
+                        # Create extended H2O jar for all supported hadoop distributions
                         HADOOP_DISTRIBUTIONS=`./gradlew -q :sparkling-water-assembly-h2o:printHadoopDistributions)`
                         for distro in \${HADOOP_DISTRIBUTIONS}
                         do
                           ./gradlew extendJar -PdownloadH2O="\${distro}"
                         done
-                        # Create extended jar also for the regular h2o ( no h2o driver )
+                        # Create extended H2O jar also for the regular h2o (no H2O driver)
                         ./gradlew extendJar -PdownloadH2O
                     """
             }
