@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+v2.0.22 (2018-01-18)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/22/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/22/index.html>`__
+
+-  Bug
+        
+   -  `SW-551 <https://0xdata.atlassian.net/browse/SW-551>`__ - Remove hotfix introduced by [SW-541] and implement proper fix
+   -  `SW-661 <https://0xdata.atlassian.net/browse/SW-661>`__ - Use always correct Spark version on the R download page
+   -  `SW-662 <https://0xdata.atlassian.net/browse/SW-662>`__ - Remove extra files that got into the repo
+   -  `SW-666 <https://0xdata.atlassian.net/browse/SW-666>`__ - Kill the cluster when a new executors joins in the internal backend
+   -  `SW-668 <https://0xdata.atlassian.net/browse/SW-668>`__ - Generate download link as part of the release notes
+   -  `SW-669 <https://0xdata.atlassian.net/browse/SW-669>`__ - Remove mentions of local-cluster in public docs
+   -  `SW-670 <https://0xdata.atlassian.net/browse/SW-670>`__ - Deprecated call in H2OContextInitDemo
+   -  `SW-671 <https://0xdata.atlassian.net/browse/SW-671>`__ - Fix jenkinsfile for builds again specific h2o branches
+                
+-  Improvement
+        
+   -  `SW-674 <https://0xdata.atlassian.net/browse/SW-674>`__ - Update H2O to 3.16.0.4
+   -  `SW-675 <https://0xdata.atlassian.net/browse/SW-675>`__ - Tiny clean up of the release code
+   -  `SW-679 <https://0xdata.atlassian.net/browse/SW-679>`__ - Cleaner release script
+   -  `SW-680 <https://0xdata.atlassian.net/browse/SW-680>`__ - Ensure S3 in release pipeline does depend only on credentials provided from Jenkins
+   -  `SW-681 <https://0xdata.atlassian.net/browse/SW-681>`__ - Separate releasing on Github and Publishing artifacts
+                
+                                
 v2.0.21 (2018-01-03)
 --------------------
 
