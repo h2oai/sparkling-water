@@ -268,15 +268,17 @@ def publishNightly(){
         stage ('Nightly: Publishing Artifacts to S3'){
             if (config.buildNightly.toBoolean() && config.uploadNightly.toBoolean()) {
 
-                sh """
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+
+                    sh """
                     # echo 'Making distribution'
                     ${getGradleCommand(config)} buildSparklingWaterDist
 
                     # Upload to S3
                     """
 
-                def tmpdir="./buildsparklingwater.tmp"
-                sh """
+                    def tmpdir = "./buildsparklingwater.tmp"
+                    sh """
                     # Publish the output to S3.
                     echo
                     echo PUBLISH
@@ -316,6 +318,7 @@ def publishNightly(){
                     s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/index.html
                                         
                     """
+                }
             }
         }
     }
