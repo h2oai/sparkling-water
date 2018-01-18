@@ -145,7 +145,9 @@ pipeline {
                     sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
                     REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
                     NEW_VERSION=`echo "\$REL_VERSION" | sed -E "s/\\.[0-9]+\$/.$BUILD_NUMBER-SNAPSHOT/"`
-                     
+                    
+                    # Restore before releasing                     
+                    git checkout -- gradle.properties  
                     ./gradlew -Porg.gradle.daemon=false -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\${REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -PdoRelease release -x check
                     
                     # Note: 
