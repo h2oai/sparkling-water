@@ -1,67 +1,137 @@
-// Nexus plugin for releasing https://github.com/bmuschko/gradle-nexus-plugin
-apply plugin: 'com.bmuschko.nexus'
-
-task mappings {
-  doLast {
-    println conf2ScopeMappings.mappings
-    poms.each { pom ->
-      pom.writeTo("/tmp/x" + project.name)
-    }
-  }
-}
-// for publishing to maven local
+/**
+ * Support for publishing the artifacts
+ */
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+// Source code as JAR
+task sourcesJar(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+// Javadoc as JAR
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+configurations {
+  extraPublish
+}
+
+artifacts {
+  extraPublish sourcesJar
+  extraPublish javadocJar
+}
+
+task signAll(type : Sign) {
+  sign configurations.archives
+  // Sign additional artifacts
+  sign configurations.extraPublish
+  // Sign only in case of release
+  required = project.hasProperty("doRelease")
+}
+
 publishing {
   publications {
-    mavenJava(MavenPublication) {
+
+    mavenAll(MavenPublication) {
+      artifactId project.name
+      version "${project.version}"
+
       from components.java
+      // Publish additional artifacts such as documentation or source code
+      configurations.extraPublish.allArtifacts.each { artifact it }
+
+      if (signAll.required) {
+        signAll.signatures.all { Signature signature ->
+          logger.debug("Publishing signature for: " + signature.file + ", type=" + signature.type)
+          artifact(signature, new Action<MavenArtifact>() {
+            @Override
+            void execute(MavenArtifact t) {
+              t.classifier = signature.toSignArtifact.classifier != "" ? signature.toSignArtifact.classifier : null
+              t.extension = signature.type == "xml.asc" ? "pom.asc" : signature.type
+            }
+          })
+        }
+      }
+
+      /** Define the POM file */
+      pom.withXml { provider ->
+        def sparklingWaterPom = {
+          // See https://discuss.gradle.org/t/some-elements-are-removed-when-generate-a-pom-xml-using-the-maven-publish-plugin/2073/4
+          resolveStrategy = Closure.DELEGATE_FIRST
+          name project.name
+          // Basic info
+          url 'https://github.com/h2oai/sparkling-water'
+          inceptionYear '2013'
+          description project.description
+          organization {
+            name 'H2O.ai'
+            url 'http://h2o.ai/'
+          }
+          // H2O licensing
+          licenses {
+            license {
+              name 'The Apache Software License, Version 2.0'
+              url  'http://www.apache.org/licenses/LICENSE-2.0.txt'
+              distribution 'repo'
+            }
+          }
+
+          // Info for contributors
+          scm {
+            url 'https://github.com/h2oai/sparkling-water'
+            connection 'scm:git:https://github.com/h2oai/sparkling-water.git'
+            developerConnection 'scm:git:git@github.com:h2oai/sparkling-water.git'
+          }
+
+          // Public H2O JIRA for issue management
+          issueManagement {
+            system 'Jira'
+            url 'http://jira.h2o.ai'
+          }
+          // Developer information
+          developers {
+            developer {
+              id 'support'
+              name 'H2O.ai Support'
+              email 'support@h2o.ai'
+            }
+          }
+        }
+        // Append basic POM information
+        provider.asNode().children().last() + sparklingWaterPom
+      }
     }
+  }
+
+/**
+ * Define the repositories where to publish
+ */
+  repositories {
+
+    /** Local directory */
+    maven {
+      name "BuildRepo"
+      url "$rootDir/build/repo"
+    }
+
+    /** Nexus repository */
+    if (project.hasProperty("doRelease")) {
+      maven {
+        name "SonatypeRelease"
+        url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+
+        credentials {
+          username project["nexusUsername"]
+          password project["nexusPassword"]
+        }
+      }
+    }
+
   }
 }
 
-
-modifyPom {
-    project {
-      name project.name
-      // Basic info
-      url 'https://github.com/h2oai/sparkling-water'
-      inceptionYear '2013'
-      description project.description
-
-      organization {
-        name = 'H2O.ai'
-        url  = 'http://h2o.ai/'
-      }
-
-      // H2O licensing
-      licenses {
-        license {
-          name 'The Apache Software License, Version 2.0'
-          url  'http://www.apache.org/licenses/LICENSE-2.0.txt'
-          distribution 'repo'
-        }
-      }
-
-      // Info for contributors
-      scm {
-        url        = 'https://github.com/h2oai/sparkling-water'
-        connection = 'scm:git:https://github.com/h2oai/sparkling-water.git'
-        developerConnection = 'scm:git:git@github.com:h2oai/sparkling-water.git'
-      }
-
-      // Public H2O JIRA for issue management
-      issueManagement {
-        system = 'Jira'
-        url    = 'http://jira.h2o.ai'
-      }
-      // Developer information
-      developers {
-        developer {
-          id 'support'
-          name 'H2O.ai Support'
-          email 'support@h2o.ai'
-        }
-      }
-    }
-}
 

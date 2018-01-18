@@ -2,7 +2,6 @@ rootProject.name = 'sparkling-water'
 
 include 'core'
 include 'examples'
-// Disable for now
 include 'ml'
 include 'assembly'
 include 'assembly-h2o'
