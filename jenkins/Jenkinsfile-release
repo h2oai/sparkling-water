@@ -122,7 +122,7 @@ pipeline {
                             ./gradlew build -x check
                             ./gradlew buildSparklingWaterDist
                             
-                            ./gradlew -Porg.gradle.daemon=false -Porg.gradle.daemon.performance.enable-monitoring=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\$REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -Psigning.password= -PdoRelease release -x check
+                            ./gradlew -Porg.gradle.daemon=false -Porg.gradle.daemon.performance.enable-monitoring=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\${REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -Psigning.password= -PdoRelease release -x check
                             # Note: 
                             # After this step, gradle.properties has the new future version ending with "-SNAPSHOT" so
                             # we change it back to the version of the current release in case the following stages
