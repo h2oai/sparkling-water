@@ -1,7 +1,8 @@
 /**
- * This plugin is used for
- *  - Create release tag on Github
- *  - Create a new SNAPSHOT version on the release branch
+ * This plugin is used for:
+ *  - Creating pre-release commit with release version
+ *  - Creating release tag on Github
+ *  - Creating a new SNAPSHOT version on the release branch
  */
 apply plugin: 'net.researchgate.release'
 
@@ -13,7 +14,7 @@ release {
     preCommitText = ":tada: "
     git {
         // Note: the releases are only allowed from master branch
-        requireBranch = '<<FILL ME>>'
+        // requireBranch = '<<FILL ME>>'
         // DEBUG: disable dry run in production/CI
         // pushOptions = ["--dry-run"]
     }
