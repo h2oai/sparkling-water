@@ -4,6 +4,7 @@ pipeline {
     parameters {
         booleanParam(name: 'prepareReleaseNotes', defaultValue: true, description: 'Prepare release notes')
         booleanParam(name: 'releaseAndPublishToNexus', defaultValue: true, description: 'Release and publish to Nexus')
+        booleanParam(name: 'buildExtendedH2OJars', defaultValue: true, description: 'Build extended H2O Jars')
         booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3')
         booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy')
     }
@@ -94,7 +95,34 @@ pipeline {
             }
         }
 
-        stage('Build Sparkling Water'){
+        stage('Build Sparkling Water Distribution'){
+            steps {
+                sh  """
+                     # Calculate the current and future version
+                    sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                    REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                    NEW_VERSION=`echo "\$REL_VERSION" | sed -E "s/\\.[0-9]+\$/.$BUILD_NUMBER-SNAPSHOT/"`
+                                         
+                    echo
+                    echo "RELEASE VERSION: \${REL_VERSION}"
+                    echo "NEW VERSION: \${NEW_VERSION}"
+                    echo
+                    
+                                                
+                    # Fetch H2O python package
+                    mkdir -p private/
+                    curl \$(./gradlew -q printH2OWheelPackage ) > private/h2o.whl
+                    export H2O_PYTHON_WHEEL="\$(pwd)/private/h2o.whl"
+                        
+                    # Perform a build
+                    ./gradlew build -x check
+                    ./gradlew buildSparklingWaterDist
+                                
+                    """
+            }
+        }
+
+        stage('Release and Publish to Nexus'){
             when {
                 expression { params.releaseAndPublishToNexus == true }
             }
@@ -103,40 +131,27 @@ pipeline {
                                  usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
                                  file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
                     sh """
-
-                            # Calculate the current and future version
-                            sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
-                            REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                            NEXT_BUILD_NUMBER=\$(( $BUILD_NUMBER ))
-                            NEW_VERSION=`echo "\$REL_VERSION" | sed -E "s/\\.[0-9]+\$/.\${NEXT_BUILD_NUMBER}-SNAPSHOT/"`
-                                                 
-                            echo
-                            echo "RELEASE VERSION: \${REL_VERSION}"
-                            echo "NEW VERSION: \${NEW_VERSION}"
-                            echo
-                            
-                            # Fetch H2O python package
-                            mkdir -p private/
-                            curl \$(./gradlew -q printH2OWheelPackage ) > private/h2o.whl
-                            export H2O_PYTHON_WHEEL="\$(pwd)/private/h2o.whl"
-                            
-                            # Perform a build
-                            ./gradlew build -x check
-                            ./gradlew buildSparklingWaterDist
-                            
-                            ./gradlew -Porg.gradle.daemon=false -Porg.gradle.daemon.performance.enable-monitoring=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\${REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -Psigning.password= -PdoRelease release -x check
-                            # Note: 
-                            # After this step, gradle.properties has the new future version ending with "-SNAPSHOT" so
-                            # we change it back to the version of the current release in case the following stages
-                            # require to use the correct version
-                              
-                            sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                        # Calculate the current and future version
+                        sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                        REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                        NEW_VERSION=`echo "\$REL_VERSION" | sed -E "s/\\.[0-9]+\$/.$BUILD_NUMBER-SNAPSHOT/"`
+                         
+                        ./gradlew -Porg.gradle.daemon=false -Porg.gradle.daemon.performance.enable-monitoring=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\${REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -Psigning.password= -PdoRelease release -x check
+                        # Note: 
+                        # After this step, gradle.properties has the new future version ending with "-SNAPSHOT" so
+                        # we change it back to the version of the current release in case the following stages
+                        # require to use the correct version
+                          
+                        sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
                         """
                 }
             }
         }
 
         stage('Create Extended H2O Jars'){
+            when {
+                expression { params.buildExtendedH2OJars == true }
+            }
             steps {
                 sh """
                         # Create extended H2O jar for all supported hadoop distributions
@@ -156,7 +171,9 @@ pipeline {
                 expression { params.publishToS3 == true }
             }
             steps {
-                sh  """
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+
+                    sh """
                             s3cmd --rexclude='target/classes/*' --acl-public sync dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/
                             
                             echo EXPLICITLY SET MIME TYPES AS NEEDED
@@ -201,6 +218,7 @@ pipeline {
                             s3cmd --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest.html
                             s3cmd --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/index.html
                         """
+                }
             }
         }
 
