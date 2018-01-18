@@ -3,7 +3,8 @@ pipeline {
 
     parameters {
         booleanParam(name: 'prepareReleaseNotes', defaultValue: true, description: 'Prepare release notes')
-        booleanParam(name: 'releaseAndPublishToNexus', defaultValue: true, description: 'Release and publish to Nexus')
+        booleanParam(name: 'publishToNexus', defaultValue: true, description: 'Publish to Nexus')
+        booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
         booleanParam(name: 'buildExtendedH2OJars', defaultValue: true, description: 'Build extended H2O Jars')
         booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3')
         booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy')
@@ -119,29 +120,41 @@ pipeline {
             }
         }
 
-        stage('Release and Publish to Nexus'){
+        stage('Publish to Nexus'){
             when {
-                expression { params.releaseAndPublishToNexus == true }
+                expression { params.publishToNexus == true }
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: "PUBLIC_NEXUS", usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD'),
                                  usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
                                  file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
-                    sh """
-                        # Calculate the current and future version
-                        sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
-                        REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                        NEW_VERSION=`echo "\$REL_VERSION" | sed -E "s/\\.[0-9]+\$/.$BUILD_NUMBER-SNAPSHOT/"`
-                         
-                        ./gradlew -Porg.gradle.daemon=false -Porg.gradle.daemon.performance.enable-monitoring=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\${REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -Psigning.password= -PdoRelease release -x check
-                        # Note: 
-                        # After this step, gradle.properties has the new future version ending with "-SNAPSHOT" so
-                        # we change it back to the version of the current release in case the following stages
-                        # require to use the correct version
-                          
-                        sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                    sh  """
+                        ./gradlew -Porg.gradle.daemon=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password= uploadArchives -x check
                         """
                 }
+            }
+        }
+
+        stage('Release on Github'){
+            when {
+                expression { params.releaseOnGithub == true }
+            }
+            steps {
+                sh  """
+                    # Calculate the current and future version
+                    sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                    REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                    NEW_VERSION=`echo "\$REL_VERSION" | sed -E "s/\\.[0-9]+\$/.$BUILD_NUMBER-SNAPSHOT/"`
+                     
+                    ./gradlew -Porg.gradle.daemon=false -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\${REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -PdoRelease release -x check
+                    
+                    # Note: 
+                    # After this step, gradle.properties has the new future version ending with "-SNAPSHOT" so
+                    # we change it back to the version of the current release in case the following stages
+                    # require to use the correct version
+                      
+                    sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                    """
             }
         }
 
