@@ -1,31 +1,21 @@
+/**
+ * This plugin is used for:
+ *  - Creating pre-release commit with release version
+ *  - Creating release tag on Github
+ *  - Creating a new SNAPSHOT version on the release branch
+ */
 apply plugin: 'net.researchgate.release'
-apply plugin: 'nexus-workflow'
 
 release {
-  tagTemplate = 'RELEASE-$version'
-  // Safe point - do releases only from release branch - can be deleted in future
-  failOnUnversionedFiles = false
-  failOnCommitNeeded = false
-  preCommitText = ":tada: "
-  git {
-    // Note: the releases are only allowed from master branch
-    // requireBranch = '<<FILL ME>>'
-    requireBranch = "rel-1.6"
-    // DEBUG: disable dry run in production/CI
-    // pushOptions = ["--dry-run"]
-  }
+    tagTemplate = 'RELEASE-$version'
+    // Safe point - do releases only from release branch - can be deleted in future
+    failOnUnversionedFiles = false
+    failOnCommitNeeded = false
+    preCommitText = ":tada: "
+    git {
+        // Note: the releases are only allowed from master branch
+        requireBranch = 'rel-1.6'
+        // DEBUG: disable dry run in production/CI
+        // pushOptions = ["--dry-run"]
+    }
 }
-
-// Helper task uploading all artifacts to Nexus
-task uploadAll
-uploadAll.dependsOn {
-  subprojects.uploadArchives
-}
-
-// Helper task uploading and releasing all staged artifacts in Nexus
-task stageAll
-stageAll.dependsOn uploadAll
-
-// Upload artifacts after release
-afterReleaseBuild.dependsOn stageAll
-
