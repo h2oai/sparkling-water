@@ -30,10 +30,12 @@ trait ExternalBackendManualTestStarter {
   @transient var nodeProcesses: Seq[Process] = _
 
   lazy val swJar = sys.props.getOrElse("sparkling.assembly.jar", sys.env.getOrElse("sparkling.assembly.jar",
-    throw new IllegalArgumentException("sparkling.assembly.jar environment variable is not set! It should point to the location of sparkling-water assembly JAR")))
+    throw new IllegalArgumentException("sparkling.assembly.jar environment variable is not set! It should " +
+      "point to the location of sparkling-water assembly JAR")))
 
   lazy val h2oExtendedJar = sys.props.getOrElse("H2O_EXTENDED_JAR", sys.env.getOrElse("H2O_EXTENDED_JAR",
-    throw new IllegalArgumentException("H2O_EXTENDED_JAR environment variable is not set! It should point to the location of H2O assembly jar file")))
+    throw new IllegalArgumentException("H2O_EXTENDED_JAR environment variable is not set! It should point to the " +
+      "location of H2O assembly jar file")))
 
   lazy val clusterStartTimeout = sys.props.getOrElse("cluster.start.timeout", sys.env.getOrElse("cluster.start.timeout", "6000")).toInt
 

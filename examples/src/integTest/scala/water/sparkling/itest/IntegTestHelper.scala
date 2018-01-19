@@ -1,5 +1,6 @@
 package water.sparkling.itest
 
+import org.apache.spark.h2o.H2OLogging
 import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
 import org.apache.spark.h2o.utils.H2OContextTestHelper

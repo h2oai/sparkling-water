@@ -76,7 +76,7 @@ class FrameMLUtilsTest extends FunSuite with SharedH2OTestContext {
       3,
       MissingValuesHandling.Skip,
       hc,
-      sqlc
+      sqlContext
     )._1.collect()
 
     assertResult(17)(labelPoints.length)
@@ -95,7 +95,7 @@ class FrameMLUtilsTest extends FunSuite with SharedH2OTestContext {
       3,
       MissingValuesHandling.MeanImputation,
       hc,
-      sqlc
+      sqlContext
     )._1.collect()
 
     assertResult(50)(labelPoints.length)
