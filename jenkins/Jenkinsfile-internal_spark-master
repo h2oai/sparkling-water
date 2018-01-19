@@ -28,7 +28,7 @@ node('dX-hadoop') {
         buildAgainstH2OBranch = "false"
         h2oBranch = "master"
         buildAgainstSparkBranch = "true"
-        sparkBranch = "master"
+        sparkBranch = "branch-2.3"
         hadoopVersion = "2.6"
         backendMode = "internal"
     }
