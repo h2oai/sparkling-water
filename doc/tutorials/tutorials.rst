@@ -19,3 +19,10 @@ Tutorials
 
 -  `Sparkling Water and Zeppelin <use_on_zeppelin.rst>`__
 -  `Use Sparkling Water as Spark Package <use_as_spark_package.rst>`__
+
+-  Databricks Azure
+
+   -  `RSparkling on Databricks Azure Cluster <rsparkling_azure_dbc.rst>`__
+   -  `Sparkling Water on Databricks Azure Cluster <sw_azure_dbc.rst>`__
+   -  `PySparkling on Databricks Azure Cluster <pysparkling_azure_dbc.rst>`__
+
