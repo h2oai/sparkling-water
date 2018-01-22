@@ -17,7 +17,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
 3.  Upload PySparkling Library as a library from PiPy
 
-    In order to create the Python library in Databricks, go to **Libraries**, select **Upload Python Egg or Pipy** and insert ``h2o_pysparkling_2.2`` for the latest PySparkling for Spark 2.0.
+    In order to create the Python library in Databricks, go to **Libraries**, select **Upload Python Egg or Pipy** and insert ``h2o_pysparkling_2.2`` for the latest PySparkling for Spark 2.2.
 
     The advantage of adding the library from PiPy, instead of uploading manually, is that the latest version is always selected and also, the dependencies are automatically resolved.
 
