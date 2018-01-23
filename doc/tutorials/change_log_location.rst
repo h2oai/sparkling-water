@@ -38,7 +38,7 @@ it is available, we store the logs there.
 
 
 If this environmental property is missing we try to read ``spark.ext.h2o.node.log.dir`` spark configuration property
-and store the logs there. If even this property is missing, we store the logs from the worker nodes into the default
+and store the logs there. If this property is missing, we store the logs from the worker nodes into the default
 directory which is specified as:
 
 .. code:: scala
