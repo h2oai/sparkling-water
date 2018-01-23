@@ -15,6 +15,7 @@ Tutorials
 -  Logging
 
    -  `Change Sparkling Shell Logging Level <change_log_level.rst>`__
+   -  `Change Sparkling Water Log location <change_log_location.rst>`__
    -  `Obtain Sparkling Water Logs <obtaining_logs.rst>`__
 
 -  `Sparkling Water and Zeppelin <use_on_zeppelin.rst>`__
