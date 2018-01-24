@@ -55,7 +55,7 @@ We can start the spark application with this configuration being passed on the c
 
     $SPARK_HOME/bin/spark-submit --conf "spark.ext.h2o.node.log.dir=/worker/node/log/location"
 
-or we can set it at runtime, but before you create the ``H2OContext`,` as the in the following examples:
+or we can set it at runtime, but before you create the ``H2OContext``, as the in the following examples:
 
 In Scala:
 
