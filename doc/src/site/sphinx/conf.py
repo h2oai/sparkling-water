@@ -63,8 +63,8 @@ author = u'h2o'
 # built documents.
 #
 # The short X.Y version.
-if os.path.exists("project_version"):
-    f = open("project_version", "r")
+if os.path.exists("../../../build/project_version"):
+    f = open("../../../build/project_version", "r")
     version = f.readline().strip()
 else:
     version = "AnonDeveloperBuild"
