@@ -1,0 +1,8 @@
+
+description = "Sparkling Water Documentation"
+
+task cleanDoc(type: Delete) {
+    delete getBuildDir()
+}
+
+clean.dependsOn cleanDoc

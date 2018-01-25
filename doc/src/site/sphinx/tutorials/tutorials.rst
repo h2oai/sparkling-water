@@ -35,11 +35,11 @@ Tutorials
 **Databricks Azure**
 
 .. toctree::
-:maxdepth: 2
+   :maxdepth: 2
 
-      rsparkling_azure_dbc
-      sw_azure_dbc.rst
-      pysparkling_azure_dbc
+   rsparkling_azure_dbc
+   sw_azure_dbc.rst
+   pysparkling_azure_dbc
 
 **Zeppelin**
 
