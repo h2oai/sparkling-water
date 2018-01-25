@@ -53,5 +53,3 @@ spark-tfidf-data/
 # RStudio file
 rsparkling.Rproj
 
-# ignore built doc files
-doc/_build/
