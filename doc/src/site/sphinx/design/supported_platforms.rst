@@ -24,19 +24,17 @@ When submitting a Sparkling Water application to a CHD or Apache Hadoop cluster,
 
 .. code:: bash
 
-    ./spark-submit --master=yarn-client --class water.SparklingWaterDriver --conf "spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=current"
-    --driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-XX:MaxPermSize=384m -Dhdp.version=current"
-    sparkling-water-assembly-2.1.9-all.jar
+    ./spark-submit --master=yarn --deploy-mode=client --class water.SparklingWaterDriver
+    --driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-Dhdp.version=current"
+    sparkling-water-assembly-2.2.7-all.jar
 
 When submitting a Sparkling Water application to an HDP Cluster, the command to submit may look like:
 
 .. code:: bash
 
-    ./spark-submit --master=yarn-client --class water.SparklingWaterDriver --conf "spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=current"
-    --driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-XX:MaxPermSize=384m -Dhdp.version=current"
-    sparkling-water-assembly-2.1.9-all.jar
-
-Apart from the typical spark configuration, it is necessary to add ``-XX:MaxPermSize=384m`` (or higher, but 384m is minimum) to both ``spark.executor.extraClassPath`` and ``spark.yarn.am.extraJavaOptions`` (or for client mode, ``spark.driver.extraJavaOptions``) configuration properties in order to run Sparkling Water correctly.
+    ./spark-submit --master=yarn --deploy-mode=client --class water.SparklingWaterDriver --conf "spark.yarn.am.extraJavaOptions=-Dhdp.version=current"
+    --driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-Dhdp.version=current"
+    sparkling-water-assembly-2.2.7-all.jar
 
 The only difference between the HDP cluster and the CDH and Apache Hadoop clusters is that we need to add ``-Dhdp.version=current`` to both the ``spark.executor.extraClassPath`` and ``spark.yarn.am.extraJavaOptions`` (resp., ``spark.driver.extraJavaOptions``) configuration properties in the HDP case.
 

@@ -28,10 +28,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
     - Make sure the assembly JAR is attached to the cluster
 
-    - Select Spark version according to your Sparkling Water version:
-        - for the latest Sparkling Water 2.2.7, select Spark 2.2.1.
-        - for the latest Sparkling Water 2.1.21, select Spark 2.1.2.
-        - for the latest Sparkling Water 2.0.22, select Spark 2.0.2.
+    - For Sparkling Water SUBST_SW_VERSION select Spark 2.2.1
 
     It is advised to always use the latest Sparkling Water and Spark version for the given Spark major version.
 

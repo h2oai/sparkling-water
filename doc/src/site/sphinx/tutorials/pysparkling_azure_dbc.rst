@@ -30,10 +30,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
     - Make sure the library is attached to the cluster
 
-    - Select Spark version according to you Sparkling Water version:
-        - for the latest PySparkling 2.2, select Spark 2.2.1.
-        - for the latest PySparkling 2.1, select Spark 2.1.2.
-        - for the latest PySparkling 2.0, select Spark 2.0.2.
+    - Select Spark 2.2.1
 
     .. figure:: ../images/databricks_cluster_creation.png
         :alt: Example of configured cluster ready to be started
