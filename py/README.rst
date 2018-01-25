@@ -78,8 +78,8 @@ In order to use PySparkling, it requires the following runtime python dependenci
 
   $ pip install requests
   $ pip install tabulate
-  $ pip install six
   $ pip install future
+  $ pip install colorama
   
 The required packages are installed automatically in case when PySparkling is installed from PyPI.
 
