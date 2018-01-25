@@ -96,8 +96,8 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   def init(): H2OContext = {
 
     // Use H2O's logging as H2O info log level is default
+    Log.info("Running Sparkling Water: " + BuildInfo.SWVersion)
     Log.info("The following Spark configuration is used: " + _conf.getAll.mkString(", "))
-
     if (!isRunningOnCorrectSpark(sparkContext)) {
       throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
         s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +

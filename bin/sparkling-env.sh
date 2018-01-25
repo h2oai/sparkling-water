@@ -106,6 +106,7 @@ cat <<EOF
   Spark master (MASTER)     : $MASTER
   Spark home   (SPARK_HOME) : $SPARK_HOME
   H2O build version         : ${H2O_VERSION}.${H2O_BUILD} ($H2O_NAME)
+  Sparkling Water version   : ${VERSION}
   Spark build version       : ${SPARK_VERSION}
   Scala version             : ${SCALA_VERSION}
 ----

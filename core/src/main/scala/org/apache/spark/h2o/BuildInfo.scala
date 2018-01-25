@@ -65,6 +65,22 @@ object BuildInfo {
         case x: Exception => throw new WrongSparkVersion(s"Failed to read H2O version from  $VERSION_FILE: ${x.getMessage}")
       }
     }
+  }
 
+  /**
+    * Returns H2O version used by this Sparkling Water
+    */
+  def SWVersion = {
+    val VERSION_FILE: String = "/sw.version"
+    val stream = getClass.getResourceAsStream(VERSION_FILE)
+
+    stream match {
+      case null => throw new RuntimeException(s"Unknown Sparkling Water version: $VERSION_FILE missing")
+      case s => try {
+        scala.io.Source.fromInputStream(s).mkString
+      } catch {
+        case x: Exception => throw new WrongSparkVersion(s"Failed to read Sparkling Water version from  $VERSION_FILE: ${x.getMessage}")
+      }
+    }
   }
 }
