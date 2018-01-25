@@ -6,7 +6,7 @@ Tutorials
 
 .. toctree::
    :maxdepth: 1
-   
+
    backends
    extending_h2o_jar_manually
    security
@@ -54,4 +54,3 @@ Tutorials
    :maxdepth: 2
 
    use_as_spark_package
->>>>>>> [SW-652] - Documentation as HTML output for master branch
