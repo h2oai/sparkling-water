@@ -20,6 +20,7 @@ package org.apache.spark.h2o
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
+import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
@@ -96,8 +97,11 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   def init(): H2OContext = {
 
     // Use H2O's logging as H2O info log level is default
-    Log.info("Running Sparkling Water: " + BuildInfo.SWVersion)
-    Log.info("The following Spark configuration is used: " + _conf.getAll.mkString(", "))
+    Log.info("Sparkling Water version: " + BuildInfo.SWVersion)
+    Log.info("Spark version: " + sparkContext.version)
+    Log.info("Integrated H2O version: " + BuildInfo.H2OVersion)
+    Log.info("The following Spark configuration is used: \n    " + _conf.getAll.mkString("\n    "))
+    Log.info("")
     if (!isRunningOnCorrectSpark(sparkContext)) {
       throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
         s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
