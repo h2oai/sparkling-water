@@ -9,7 +9,7 @@ Quick links:
 - `Converting a DataFrame into an H2OFrame`_
 
 Converting an H2OFrame into an RDD[T]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``H2OContext`` class provides the explicit conversion ``asRDD``, which creates an RDD-like wrapper around the provided H2O's H2OFrame:
 

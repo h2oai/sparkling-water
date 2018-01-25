@@ -22,4 +22,4 @@ The commands that set the ``H2O_PYTHON_WHEEL`` will be shown on your console and
 
 - To build and test a specific module, use, for example, ``./gradlew :sparkling-water-examples:check``.
 
-Sparkling can be be built with Scala 2.10 or Scala 2.11. To build Sparkling Water with non-default Scala version, use, for example, ``./gradlew build -x check -PscalaBaseVersion=2.10``.
+Sparkling Water SUBST_SW_VERSION can be be built with Scala 2.10 or Scala 2.11. To build Sparkling Water with non-default Scala version, use, for example, ``./gradlew build -x check -PscalaBaseVersion=2.10``.

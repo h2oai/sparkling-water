@@ -1,8 +1,32 @@
-
 description = "Sparkling Water Documentation"
+
+import static groovy.io.FileType.FILES
 
 task cleanDoc(type: Delete) {
     delete getBuildDir()
 }
 
+/**
+ * We can't use Sphinx substitutions in for example code blocks and other container, so we post-process
+ * the generated files manually
+ */
+task substitute(){
+    doLast {
+        def siteDir = "${buildDir}/site"
+
+        new File(siteDir).eachFileRecurse(FILES) {
+            if (it.name.endsWith('.html')) {
+                def contents = file(it).getText('UTF-8')
+                contents = contents
+                        .replaceAll("SUBST_SW_VERSION", version)
+                        .replaceAll("SUBST_H2O_VERSION", h2oVersion)
+                        .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
+                        .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
+                file(it).write(contents, 'UTF-8')
+            }
+        }
+    }
+}
+
 clean.dependsOn cleanDoc
+site.dependsOn substitute

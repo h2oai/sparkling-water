@@ -26,7 +26,7 @@ When submitting a Sparkling Water application to a CHD or Apache Hadoop cluster,
 
     ./spark-submit --master=yarn --deploy-mode=client --class water.SparklingWaterDriver
     --driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-Dhdp.version=current"
-    sparkling-water-assembly-2.2.7-all.jar
+    sparkling-water-assembly-SUBST_SW_VERSION-all.jar
 
 When submitting a Sparkling Water application to an HDP Cluster, the command to submit may look like:
 
@@ -34,11 +34,10 @@ When submitting a Sparkling Water application to an HDP Cluster, the command to 
 
     ./spark-submit --master=yarn --deploy-mode=client --class water.SparklingWaterDriver --conf "spark.yarn.am.extraJavaOptions=-Dhdp.version=current"
     --driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-Dhdp.version=current"
-    sparkling-water-assembly-2.2.7-all.jar
+    sparkling-water-assembly-SUBST_SW_VERSION-all.jar
 
 The only difference between the HDP cluster and the CDH and Apache Hadoop clusters is that we need to add ``-Dhdp.version=current`` to both the ``spark.executor.extraClassPath`` and ``spark.yarn.am.extraJavaOptions`` (resp., ``spark.driver.extraJavaOptions``) configuration properties in the HDP case.
 
 Mesos
 ~~~~~
-
 Spark documentation: `Running Spark on Mesos <http://spark.apache.org/docs/latest/running-on-mesos.html>`__
