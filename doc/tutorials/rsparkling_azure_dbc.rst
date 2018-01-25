@@ -29,7 +29,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
     - Put ``spark.ui.enabled false`` line in the spark configuration field. This is currently required due to limitation in our code and will be fixed as soon as possible.
 
     - Select Spark version according to your Sparkling Water version:
-        - for the latest Sparkling Water 2.2.7, select Spark 2.2.0. Spark 2.2.1 is not yet supported due to missing SparklyR support.
+        - for the latest Sparkling Water 2.2.7, select Spark 2.2.1.
         - for the latest Sparkling Water 2.1.21, select Spark 2.1.2.
         - for the latest Sparkling Water 2.0.22, select Spark 2.0.2.
 
