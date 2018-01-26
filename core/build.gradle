@@ -97,9 +97,18 @@ task createH2OVersionFile {
     }
 }
 
+task createSparklingWaterVersionFile {
+    doLast {
+        File version_file = file("src/main/resources/sw.version")
+        // Create parent directories if not created yet
+        version_file.getParentFile().mkdirs()
+        version_file.write(version)
+    }
+}
 test.dependsOn testJar
 processResources.dependsOn createSparkVersionFile
 processResources.dependsOn createH2OVersionFile
+processResources.dependsOn createSparklingWaterVersionFile
 
 integTest {
     // Pass references to libraries to test launcher
