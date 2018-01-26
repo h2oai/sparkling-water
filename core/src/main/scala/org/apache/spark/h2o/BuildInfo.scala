@@ -68,7 +68,7 @@ object BuildInfo {
   }
 
   /**
-    * Returns H2O version used by this Sparkling Water
+    * Returns Sparkling Water version
     */
   def SWVersion = {
     val VERSION_FILE: String = "/sw.version"
