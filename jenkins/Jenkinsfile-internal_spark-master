@@ -31,5 +31,7 @@ node('dX-hadoop') {
         sparkBranch = "branch-2.3"
         hadoopVersion = "2.6"
         backendMode = "internal"
+        buildNightly = "false"
+        uploadNightly = "false"
     }
 }
