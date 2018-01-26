@@ -77,4 +77,13 @@ private[spark] trait H2OContextUtils extends Logging {
     }
   }
 
+  def isRunningOnDatabricks(): Boolean = {
+    try {
+      Class.forName("com.databricks.backend.daemon.driver.DriverLocal")
+      true
+    } catch {
+      case _: ClassNotFoundException => false
+    }
+  }
+
 }
