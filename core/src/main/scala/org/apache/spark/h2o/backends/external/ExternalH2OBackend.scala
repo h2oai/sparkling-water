@@ -37,7 +37,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
-  
+
   def launchH2OOnYarn(conf: H2OConf): String = {
     import ExternalH2OBackend._
 
@@ -71,6 +71,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
       "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
     )
+
+    if (conf.h2oDriverIf.isDefined) {
+      cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-driverif", "-J", conf.h2oDriverIf.get)
+    }
 
     if (!hc.getConf.h2oNodeWebEnabled) {
       cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-disable_web")
@@ -237,7 +241,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   override def epilog =
     if (hc._conf.isAutoClusterStartUsed) {
       s"""
-       | * Yarn App ID of external H2O cluster: ${yarnAppId.get}
+         | * Yarn App ID of external H2O cluster: ${yarnAppId.get}
     """.stripMargin
     } else {
       ""
