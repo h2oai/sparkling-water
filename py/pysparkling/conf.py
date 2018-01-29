@@ -330,6 +330,10 @@ class H2OConf(object):
         self._jconf.setYARNQueue(queue_name)
         return self
 
+    def set_h2o_driver_if(self, ip):
+        self._jconf.setH2ODriverIf(ip)
+        return self
+
     # getters independent on backend
 
     def backend_cluster_mode(self):
@@ -516,6 +520,8 @@ class H2OConf(object):
     def yarn_queue(self):
         return self._get_option(self._jconf.YARNQueue())
 
+    def h2o_driver_if(self):
+        return self._get_option(self._jconf.h2oDriverIf())
 
 
     def set(self, key, value):

@@ -50,6 +50,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def clusterStartMode = sparkConf.get(PROP_EXTERNAL_CLUSTER_START_MODE._1, PROP_EXTERNAL_CLUSTER_START_MODE._2)
   def h2oDriverPath = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_DRIVER_PATH._1)
   def YARNQueue = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1)
+  def h2oDriverIf = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_DRIVER_IF._1)
 
   /** Setters */
 
@@ -97,6 +98,8 @@ trait ExternalBackendConf extends SharedBackendConf {
   }
 
   def setYARNQueue(queueName: String) = set(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1, queueName)
+
+  def setH2ODriverIf(ip: String) = set(PROP_EXTERNAL_CLUSTER_DRIVER_IF._1, ip)
 
 
   def externalConfString: String =
@@ -155,4 +158,8 @@ object ExternalBackendConf {
 
   /** Yarn queue on which external cluster should be started */
   val PROP_EXTERNAL_CLUSTER_YARN_QUEUE = ("spark.ext.h2o.external.yarn.queue", None)
+
+  /** Driver IP address in case of auto mode in external cluster backend */
+  val PROP_EXTERNAL_CLUSTER_DRIVER_IF = ("spark.ext.h2o.external.driver.if", None)
+
 }
