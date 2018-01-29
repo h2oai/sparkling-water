@@ -90,7 +90,6 @@ language = None
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = [
     # Exclude rst files that aren't ready to be included yet.
-    "DEVEL.rst"
 
     # Exclude directories that were part of the old docs that might still need to be purged.
 ]
