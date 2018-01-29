@@ -255,6 +255,9 @@ External backend configuration properties
 | ``spark.ext.h2o.external.yarn.queue``                 | ``None``       | Yarn queue on which external H2O    |
 |                                                       |                | cluster is started.                 |
 +-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.external.driver.if``                  | ``None``       | IP address of H2O driver in case of |
+|                                                       |                | external cluster in automatic mode. |
++-------------------------------------------------------+----------------+-------------------------------------+
 
 --------------
 
