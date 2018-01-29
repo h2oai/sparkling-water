@@ -38,6 +38,13 @@ task substitute(){
         }
     }
 }
+
+task docJar(type: Jar) {
+    from "${buildDir}"
+    include "site/**"
+}
+
 sphinx.dependsOn createVersionFile
 clean.dependsOn cleanDoc
-site.dependsOn substitute
+docJar.dependsOn substitute
+site.dependsOn docJar
