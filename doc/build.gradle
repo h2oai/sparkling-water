@@ -46,5 +46,6 @@ task docJar(type: Jar) {
 
 sphinx.dependsOn createVersionFile
 clean.dependsOn cleanDoc
-//docJar.dependsOn substitute
-site.dependsOn substitute
+substitute.dependsOn sphinx
+docJar.dependsOn substitute
+site.dependsOn docJar
