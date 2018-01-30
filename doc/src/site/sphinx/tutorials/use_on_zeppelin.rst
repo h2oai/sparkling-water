@@ -11,7 +11,7 @@ Using Sparkling Water from Zeppelin is easy because Sparkling Water is distribut
 .. code:: bash
 
     export SPARK_HOME=...# Spark 2.2 home
-    export SPARK_SUBMIT_OPTIONS="--packages ai.h2o:sparkling-water-examples_SCALA_BASE_VERSION:SUBST_SW_VERSION"
+    export SPARK_SUBMIT_OPTIONS="--packages ai.h2o:sparkling-water-examples_2.11:SUBST_SW_VERSION"
     bin/zeppelin.sh -Pspark-2.2
 
 The above command uses Spark 2.2 and the corresponding Sparkling Water package.

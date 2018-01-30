@@ -22,9 +22,9 @@ Have questions about Sparkling Water? Post them on Stack Overflow using the `spa
    requirements
    design/design
    configuration/configuration
+   deployment/deployment
    tutorials/tutorials
    devel/devel
-   rest_api/rest_api
    pysparkling
    FAQ
    CHANGELOG

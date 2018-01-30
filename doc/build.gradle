@@ -55,6 +55,7 @@ task sourcesDocJar(type: Jar){
 
 }
 
+createVersionFile.dependsOn cleanDoc
 sphinx.dependsOn createVersionFile
 clean.dependsOn cleanDoc
 substitute.dependsOn sphinx

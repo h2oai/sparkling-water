@@ -1,5 +1,5 @@
-Tutorials
----------
+How to
+======
 
 
 **General**
@@ -7,7 +7,6 @@ Tutorials
 .. toctree::
    :maxdepth: 1
 
-   backends
    extending_h2o_jar_manually
    security
    calling_h2o_algos
