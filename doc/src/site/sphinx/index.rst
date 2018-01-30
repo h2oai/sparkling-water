@@ -7,9 +7,9 @@
 Overview
 ========
 
-Welcome to the H2O Sparkling Water documentation site! Sparkling Water allows users to combine the fast, scalable machine learning algorithms of H2O with the capabilities of Spark. With Sparkling Water, users can drive computation from Scala/R/Python and utilize the H2O Flow UI, providing an ideal machine learning platform for application developers.
+Welcome to the H2O Sparkling Water documentation site! This document describes how to install and run Sparkling Water.
 
-Depending on your area of interest, select a learning path from the sidebar, or look at the full content outline below.
+Depending on your area of interest, select a learning path from the sidebar, or look at the full content outline below. To view Sparkling Water examples, please visit the Sparkling Water GitHub repository at https://github.com/h2oai/sparkling-water/tree/master/examples.
 
 Have questions about Sparkling Water? Post them on Stack Overflow using the `sparkling-water tag <http://stackoverflow.com/questions/tagged/sparkling-water>`__, or join the chat on `Gitter <https://gitter.im/h2oai/sparkling-water>`__.
 
@@ -18,6 +18,7 @@ Have questions about Sparkling Water? Post them on Stack Overflow using the `spa
 .. toctree::
    :maxdepth: 2
    
+   about
    typical_use_case
    requirements
    design/design
@@ -26,6 +27,7 @@ Have questions about Sparkling Water? Post them on Stack Overflow using the `spa
    tutorials/tutorials
    devel/devel
    pysparkling
+   rsparkling
    FAQ
    CHANGELOG
 
