@@ -176,7 +176,7 @@ List of all Frequently Asked Questions is available at `FAQ <doc/src/site/sphinx
 Development
 -----------
 
-Complete development documentation is available at `Development Documentation <doc/src/site/sphinx/devel/devel.rst>`__.
+Complete development documentation is available at `Development Documentation <doc/src/site/sphinx/devel>`__.
 
 Build Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~
