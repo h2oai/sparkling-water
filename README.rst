@@ -145,11 +145,11 @@ To see how Sparkling Water can be used as Spark package, please see `Use as Spar
 
 Use Sparkling Water in Windows environments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-See `Windows Tutorial <doc/tutorials/run_on_windows.rst>`__ to learn how to use Sparkling Water in Windows environments.
+See `Windows Tutorial <doc/src/site/sphinx/tutorials/run_on_windows.rst>`__ to learn how to use Sparkling Water in Windows environments.
 
 Sparkling Water examples
 ~~~~~~~~~~~~~~~~~~~~~~~~
-To see how to run examples for Sparkling Water, please see `Running Examples <doc/devel/running_examples.rst>`__.
+To see how to run examples for Sparkling Water, please see `Running Examples <doc/src/site/sphinx/devel/running_examples.rst>`__.
 
 --------------
 
@@ -162,26 +162,26 @@ backend. The backend can be specified before creationg of the
 ``H2OContext``.
 
 For more details regarding the internal or external backend, please see
-`Backends <doc/tutorials/backends.rst>`__.
+`Backends <doc/src/site/sphinx/deployment/backends.rst>`__.
 
 --------------
 
 FAQ
 ---
 
-List of all Frequently Asked Questions is available at `FAQ <doc/FAQ.rst>`__.
+List of all Frequently Asked Questions is available at `FAQ <doc/src/site/sphinx/FAQ.rst>`__.
 
 --------------
 
 Development
 -----------
 
-Complete development documentation is available at `Development Documentation <doc/DEVEL.rst>`__.
+Complete development documentation is available at `Development Documentation <doc/src/site/sphinx/devel>`__.
 
 Build Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~
 
-To see how to build Sparkling Water, please see `Build Sparkling Water <doc/devel/build.rst>`__.
+To see how to build Sparkling Water, please see `Build Sparkling Water <doc/src/site/sphinx/devel/build.rst>`__.
 
 Develop applications with Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
