@@ -44,8 +44,20 @@ task docJar(type: Jar) {
     include "site/**"
 }
 
+task sourcesDocJar(type: Jar){
+    classifier = "sources"
+    from "${projectDir}"
+    include "src/**"
+
+
+    from "${projectDir}"
+    include "CHANGELOG.rst"
+
+}
+
 sphinx.dependsOn createVersionFile
 clean.dependsOn cleanDoc
 substitute.dependsOn sphinx
-docJar.dependsOn substitute
+sourcesDocJar.dependsOn substitute
+docJar.dependsOn sourcesDocJar
 site.dependsOn docJar
