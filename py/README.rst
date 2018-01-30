@@ -92,6 +92,7 @@ with Spark built with non-default Scala version, you have to build PySparkling m
 
 The default Scala versions for supported Spark versions are:
 
+- Spark 2.2.x - Scala 2.11
 - Spark 2.1.x - Scala 2.11
 - Spark 2.0.x - Scala 2.11
 
