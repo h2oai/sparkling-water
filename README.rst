@@ -145,11 +145,11 @@ To see how Sparkling Water can be used as Spark package, please see `Use as Spar
 
 Use Sparkling Water in Windows environments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-See `Windows Tutorial <doc/src/site/sphinx/devel/run_on_windows.rst>`__ to learn how to use Sparkling Water in Windows environments.
+See `Windows Tutorial <doc/src/site/sphinx/tutorials/run_on_windows.rst>`__ to learn how to use Sparkling Water in Windows environments.
 
 Sparkling Water examples
 ~~~~~~~~~~~~~~~~~~~~~~~~
-To see how to run examples for Sparkling Water, please see `Running Examples <ddoc/src/site/sphinx/devel/running_examples.rst>`__.
+To see how to run examples for Sparkling Water, please see `Running Examples <doc/src/site/sphinx/devel/running_examples.rst>`__.
 
 --------------
 
