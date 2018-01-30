@@ -52,6 +52,7 @@ PySparkling and Spark Version
 
 There are multiple PySparkling packages, each is intended to be used with different Spark version.
 
+ - h2o_pysparkling_2.2 - for Spark 2.2.x
  - h2o_pysparkling_2.1 - for Spark 2.1.x
  - h2o_pysparkling_2.0 - for Spark 2.0.x
 
@@ -91,6 +92,7 @@ with Spark built with non-default Scala version, you have to build PySparkling m
 
 The default Scala versions for supported Spark versions are:
 
+- Spark 2.2.x - Scala 2.11
 - Spark 2.1.x - Scala 2.11
 - Spark 2.0.x - Scala 2.11
 
