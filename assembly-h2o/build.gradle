@@ -126,18 +126,18 @@ if(project.hasProperty("doExtend")) {
         finalizedBy "printExtendedJarLocation"
     }
 
-    task printHadoopDistributions() {
-        doLast {
-            println(getSupportedHadoopDistributions(h2oMajorName, h2oBuild))
-        }
-    }
-
     task cleanH2OJars(type: Delete) {
         delete(file("private/downloaded"))
     }
 
     task cleanExtendedH2OJars(type: Delete) {
         delete(file("private/extended"))
+    }
+}
+
+task printHadoopDistributions() {
+    doLast {
+        println(getSupportedHadoopDistributions(h2oMajorName, h2oBuild))
     }
 }
 
