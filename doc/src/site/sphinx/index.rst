@@ -9,7 +9,7 @@ Overview
 
 Welcome to the H2O Sparkling Water documentation site! This document describes how to install and run Sparkling Water.
 
-Depending on your area of interest, select a learning path from the sidebar, or look at the full content outline below. To view Sparkling Water examples, please visit the Sparkling Water GitHub repository at https://github.com/h2oai/sparkling-water/tree/master/examples.
+Depending on your area of interest, select a learning path from the sidebar, or look at the full content outline below. To view Sparkling Water examples, please visit the Sparkling Water GitHub repository at https://github.com/h2oai/sparkling-water/tree/rel-2.1/examples.
 
 Have questions about Sparkling Water? Post them on Stack Overflow using the `sparkling-water tag <http://stackoverflow.com/questions/tagged/sparkling-water>`__, or join the chat on `Gitter <https://gitter.im/h2oai/sparkling-water>`__.
 
