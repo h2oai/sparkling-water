@@ -156,7 +156,7 @@ There is also a less strict configuration ``setClientNetworkMask`` in Scala and 
 
 The same configuration can be applied when the H2O cluster has been started via multicast discovery.
 
-Automatic Mode of External backend
+Automatic Mode of External Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In automatic mode, the H2O cluster is started automatically. The cluster can be started automatically only in a YARN environment at the moment. We recommend this approach, as it is easier to deploy external clusters in this mode and it is also more suitable for production environments. When the H2O cluster is started on YARN, it is started as a map reduce job, and it always uses the flatfile approach for nodes to cloud up.

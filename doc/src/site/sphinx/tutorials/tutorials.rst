@@ -1,5 +1,5 @@
-How to
-======
+How to...
+=========
 
 
 **General**
