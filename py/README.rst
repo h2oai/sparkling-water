@@ -1,5 +1,7 @@
-An Introduction to PySparkling
-==============================
+PySparkling
+===========
+
+This section provides an introduction to PySparkling. To understand more about PySparkling, it's best to first understand H2O, Spark, and Sparkling Water. 
 
 What is H2O?
 ------------
