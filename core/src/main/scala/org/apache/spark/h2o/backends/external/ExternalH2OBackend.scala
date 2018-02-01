@@ -180,11 +180,11 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       cloudHealthCheckThread = Some(new Thread {
         override def run(): Unit = {
           while (true) {
+            Thread.sleep(HeartBeatThread.TIMEOUT * 3)
             if (!H2O.CLOUD.healthy()) {
               Log.info("Exiting! External H2O cloud not healthy!!")
               H2O.exit(-1)
             }
-            Thread.sleep(HeartBeatThread.TIMEOUT + HeartBeatThread.TIMEOUT/2)
           }
         }
       })
