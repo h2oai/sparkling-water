@@ -184,7 +184,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
               Log.info("Exiting! External H2O cloud not healthy!!")
               H2O.exit(-1)
             }
-            Thread.sleep(HeartBeatThread.TIMEOUT * 10) // always wait 10 times more then is usual heart beat timeout
+            Thread.sleep(HeartBeatThread.TIMEOUT + HeartBeatThread.TIMEOUT/2)
           }
         }
       })
