@@ -95,7 +95,6 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     * otherwise it creates new H2O cluster living in Spark
     */
   def init(): H2OContext = {
-
     // Use H2O's logging as H2O info log level is default
     Log.info("Sparkling Water version: " + BuildInfo.SWVersion)
     Log.info("Spark version: " + sparkContext.version)
