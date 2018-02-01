@@ -27,7 +27,8 @@ import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
-import water.{H2O, H2OStarter}
+import water.util.Log
+import water.{H2O, H2OStarter, HeartBeatThread}
 
 import scala.io.Source
 import scala.util.control.NoStackTrace
@@ -37,6 +38,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
+  private var cloudHealthCheckThread: Option[Thread] = None
 
   def launchH2OOnYarn(conf: H2OConf): String = {
     import ExternalH2OBackend._
@@ -173,6 +175,23 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
           "Please check the YARN logs.")
       }
     }
+
+    if (hc.getConf.isAutoClusterStartUsed) {
+      cloudHealthCheckThread = Some(new Thread {
+        override def run(): Unit = {
+          while (true) {
+            if (!H2O.CLOUD.healthy()) {
+              Log.info("Exiting! External H2O cloud not healthy!!")
+              H2O.exit(-1)
+            }
+            Thread.sleep(HeartBeatThread.TIMEOUT + HeartBeatThread.TIMEOUT/2)
+          }
+        }
+      })
+
+      cloudHealthCheckThread.get.start()
+    }
+
     cloudMembers
   }
 
