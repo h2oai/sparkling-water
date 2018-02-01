@@ -327,7 +327,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
       ""
     }
 
-    basic ++ backend.epilog
+    basic ++ sparkYarnAppId ++ backend.epilog
   }
 
   // scalastyle:off
