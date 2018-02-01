@@ -28,7 +28,7 @@ import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
 import water.util.Log
-import water.{H2O, H2OStarter}
+import water.{H2O, H2OStarter, HeartBeatThread}
 
 import scala.io.Source
 import scala.util.control.NoStackTrace
@@ -39,6 +39,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
   private var cloudHealthCheckThread: Option[Thread] = None
+
   def launchH2OOnYarn(conf: H2OConf): String = {
     import ExternalH2OBackend._
 
@@ -152,7 +153,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     // Register web API for client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
-    val fullSize = cloudMembers.length
+
     if (cloudMembers.length == 0) {
       if (hc.getConf.isManualClusterStartUsed) {
         throw new H2OClusterNotRunning(
@@ -175,15 +176,15 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       }
     }
 
-    if(hc.getConf.isAutoClusterStartUsed){
-      cloudHealthCheckThread = Some(new Thread{
+    if (hc.getConf.isAutoClusterStartUsed) {
+      cloudHealthCheckThread = Some(new Thread {
         override def run(): Unit = {
-          while(true){
-            if(!H2O.CLOUD.healthy() || cloudMembers.length < fullSize){
-              Log.info("Exiting! cloud health: " + H2O.CLOUD.healthy() + ", cloud size: " + cloudMembers.length)
+          while (true) {
+            if (!H2O.CLOUD.healthy()) {
+              Log.info("Exiting! External H2O cloud not healthy!!")
               H2O.exit(-1)
             }
-            Thread.sleep(10000)
+            Thread.sleep(HeartBeatThread.TIMEOUT * 10) // always wait 10 times more then is usual heart beat timeout
           }
         }
       })
