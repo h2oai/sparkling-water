@@ -187,37 +187,49 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
 
   /** Transforms RDD[Supported type] to H2OFrame */
   def asH2OFrame(rdd: SupportedRDD): H2OFrame = asH2OFrame(rdd, None)
+
   def asH2OFrame(rdd: SupportedRDD, frameName: Option[String]): H2OFrame =
     withConversionDebugPrints(sparkContext, "SupportedRDD", SupportedRDDConverter.toH2OFrame(this, rdd, frameName))
+
   def asH2OFrame(rdd: SupportedRDD, frameName: String): H2OFrame = asH2OFrame(rdd, Option(frameName))
 
 
   /** Transforms RDD[Supported type] to H2OFrame key */
   def toH2OFrameKey(rdd: SupportedRDD): Key[_] = toH2OFrameKey(rdd, None)
+
   def toH2OFrameKey(rdd: SupportedRDD, frameName: Option[String]): Key[_] = asH2OFrame(rdd, frameName)._key
+
   def toH2OFrameKey(rdd: SupportedRDD, frameName: String): Key[_] = toH2OFrameKey(rdd, Option(frameName))
 
   /** Transform DataFrame to H2OFrame */
   def asH2OFrame(df: DataFrame): H2OFrame = asH2OFrame(df, None)
+
   def asH2OFrame(df: DataFrame, frameName: Option[String]): H2OFrame =
     withConversionDebugPrints(sparkContext, "DataFrame", SparkDataFrameConverter.toH2OFrame(this, df, frameName))
+
   def asH2OFrame(df: DataFrame, frameName: String): H2OFrame = asH2OFrame(df, Option(frameName))
 
   /** Transform DataFrame to H2OFrame key */
-  def toH2OFrameKey(df : DataFrame): Key[Frame] = toH2OFrameKey(df, None)
-  def toH2OFrameKey(df : DataFrame, frameName: Option[String]): Key[Frame] = asH2OFrame(df, frameName)._key
-  def toH2OFrameKey(df : DataFrame, frameName: String): Key[Frame] = toH2OFrameKey(df, Option(frameName))
+  def toH2OFrameKey(df: DataFrame): Key[Frame] = toH2OFrameKey(df, None)
+
+  def toH2OFrameKey(df: DataFrame, frameName: Option[String]): Key[Frame] = asH2OFrame(df, frameName)._key
+
+  def toH2OFrameKey(df: DataFrame, frameName: String): Key[Frame] = toH2OFrameKey(df, Option(frameName))
 
   /** Transforms Dataset[Supported type] to H2OFrame */
-  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T]): H2OFrame = asH2OFrame(ds, None)
-  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): H2OFrame =
+  def asH2OFrame[T <: Product : TypeTag](ds: Dataset[T]): H2OFrame = asH2OFrame(ds, None)
+
+  def asH2OFrame[T <: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): H2OFrame =
     withConversionDebugPrints(sparkContext, "Dataset", DatasetConverter.toH2OFrame(this, ds, frameName))
-  def asH2OFrame[T<: Product : TypeTag](ds: Dataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
+
+  def asH2OFrame[T <: Product : TypeTag](ds: Dataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
 
   /** Transforms Dataset[Supported type] to H2OFrame key */
-  def toH2OFrameKey[T<: Product : TypeTag](ds: Dataset[T]): Key[Frame] = toH2OFrameKey(ds, None)
-  def toH2OFrameKey[T<: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): Key[Frame] = asH2OFrame(ds, frameName)._key
-  def toH2OFrameKey[T<: Product : TypeTag](ds: Dataset[T], frameName: String): Key[Frame] = toH2OFrameKey(ds, Option(frameName))
+  def toH2OFrameKey[T <: Product : TypeTag](ds: Dataset[T]): Key[Frame] = toH2OFrameKey(ds, None)
+
+  def toH2OFrameKey[T <: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): Key[Frame] = asH2OFrame(ds, frameName)._key
+
+  def toH2OFrameKey[T <: Product : TypeTag](ds: Dataset[T], frameName: String): Key[Frame] = toH2OFrameKey(ds, Option(frameName))
 
   /** Create a new H2OFrame based on existing Frame referenced by its key. */
   def asH2OFrame(s: String): H2OFrame = new H2OFrame(s)
@@ -307,8 +319,15 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
          |  Open H2O Flow in browser: http://$h2oLocalClient (CMD + click in Mac OSX)
          |
     """.stripMargin
+    val sparkYarnAppId = if (sparkContext.master.toLowerCase.startsWith("yarn")) {
+      s"""
+         | * Yarn App ID of Spark application: ${sparkContext.applicationId}
+    """.stripMargin
+    } else {
+      ""
+    }
 
-    basic ++ backend.epilog
+    basic ++ sparkYarnAppId ++ backend.epilog
   }
 
   // scalastyle:off
