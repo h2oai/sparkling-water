@@ -214,6 +214,8 @@ You can file a bug report of feature request directly in the Sparkling Water JIR
 .. figure:: /doc/src/site/sphinx/images/jira_new_issue.png
    :alt: center
 
+ Enter the following on the form:
+ 
  - Select the Project that you want to file the issue under. For example, if this is an open source public bug, you should file it under **SW (SW)**.
  - Specify the Issue Type. For example, if you believe you've found a bug, then select **Bug**, or if you want to request a new feature, then select **New Feature**.
  - Provide a short but concise summar about the issue. The summary will be shown when engineers organize, filter, and search for Jira tickets.
