@@ -206,24 +206,24 @@ You can file a bug report of feature request directly in the Sparkling Water JIR
 
 2. Once inside the home page, click the **Create** button.
 
-.. figure:: /doc/src/site/sphinx/images/jira_create.png
-   :alt: center
+ .. figure:: /doc/src/site/sphinx/images/jira_create.png
+    :alt: center
 
 3. A form will display allowing you to enter information about the bug or feature request.
 
-.. figure:: /doc/src/site/sphinx/images/jira_new_issue.png
-   :alt: center
+ .. figure:: /doc/src/site/sphinx/images/jira_new_isue.png
+    :alt: center
 
- Enter the following on the form:
- 
- - Select the Project that you want to file the issue under. For example, if this is an open source public bug, you should file it under **SW (SW)**.
- - Specify the Issue Type. For example, if you believe you've found a bug, then select **Bug**, or if you want to request a new feature, then select **New Feature**.
- - Provide a short but concise summar about the issue. The summary will be shown when engineers organize, filter, and search for Jira tickets.
- - Specify the urgency of the issue using the Priority dropdown menu. 
- - If there is a due date specify it with the Due Date.
- - The Components drop down refers to the API or language that the issue relates to. (See the drop down menu for available options.)
- - You can leave Affects Version/s, Fix Version\s, and Assignee fields blank. Our engineering team will fill this in.
- - Add a detailed description of your bug in the Description section. Best practice for descriptions include:
+  Enter the following on the form:
+
+  - Select the Project that you want to file the issue under. For example, if this is an open source public bug, you should file it under **SW (SW)**.
+  - Specify the Issue Type. For example, if you believe you've found a bug, then select **Bug**, or if you want to request a new feature, then select **New Feature**.
+  - Provide a short but concise summar about the issue. The summary will be shown when engineers organize, filter, and search for Jira tickets.
+  - Specify the urgency of the issue using the Priority dropdown menu. 
+  - If there is a due date specify it with the Due Date.
+  - The Components drop down refers to the API or language that the issue relates to. (See the drop down menu for available options.)
+  - You can leave Affects Version/s, Fix Version\s, and Assignee fields blank. Our engineering team will fill this in.
+  - Add a detailed description of your bug in the Description section. Best practice for descriptions include:
 
    - A summary of what the issue is
    - What you think is causing the issue
