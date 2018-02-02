@@ -197,15 +197,48 @@ Look at our `list of JIRA
 tasks <https://0xdata.atlassian.net/issues/?filter=13600>`__ for new
 contributors or send your idea to support@h2o.ai.
 
-Issues
-~~~~~~
+Filing Bug Reports and Feature Requests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To report issues, please use our JIRA page at
-`http://jira.h2o.ai/ <https://0xdata.atlassian.net/projects/SW/issues>`__.
+You can file a bug report of feature request directly in the Sparkling Water JIRA page at `http://jira.h2o.ai/ <https://0xdata.atlassian.net/projects/SW/issues>`__.
 
-We also respond to questions tagged with sparkling-water and h2o tags on
-the `Stack
-Overflow <https://stackoverflow.com/questions/tagged/sparkling-water>`__.
+Log in to the Sparkling Water JIRA tracking system. (Create an account if necessary.)
+
+Once inside the home page, click the **Create** button.
+
+.. figure:: /doc/src/site/sphinx/images/jira_create.png
+   :alt: center
+
+A form will display allowing you to enter information about the bug or feature request.
+
+.. figure:: /doc/src/site/sphinx/images/jira_new_issue.png
+   :alt: center
+
+ - Select the Project that you want to file the issue under. For example, if this is an open source public bug, you should file it under **Public H2O 3 (PUBDEV)**.
+ - Specify the Issue Type. For example, if you believe you've found a bug, then select **Bug**, or if you want to request a new feature, then select **New Feature**.
+ - Provide a short but concise summar about the issue. The summary will be shown when engineers organize, filter, and search for Jira tickets.
+ - Specify the urgency of the issue using the Priority dropdown menu. 
+ - If there is a due date specify it with the Due Date.
+ - The Components drop down refers to the API or language that the issue relates to. (See the drop down menu for available options.)
+ - You can leave Affects Version/s, Fix Version\s, and Assignee fields blank. Our engineering team will fill this in.
+ - Add a detailed description of your bug in the Description section. Best practice for descriptions include:
+
+   - A summary of what the issue is
+   - What you think is causing the issue
+   - Reproducible code that can be run end to end without requiring an engineer to edit your code. Use {code} {code} around your code to make it appear in code format.
+   - Any scripts or necessary documents. Add by dragging and dropping your files into the create issue dialogue box.
+
+- You can be able to leave the rest of the ticket blank.
+
+When you are done with your ticket, simply click on the **Create** button at the bottom of the page.
+
+.. figure:: /doc/src/site/sphinx/images/jira_finished_create.png
+   :alt: center
+
+Have Questions?
+~~~~~~~~~~~~~~~
+
+We also respond to questions tagged with sparkling-water and h2o tags on the `Stack Overflow <https://stackoverflow.com/questions/tagged/sparkling-water>`__.
 
 Change Logs
 ~~~~~~~~~~~
