@@ -171,10 +171,10 @@ pipeline {
                         HADOOP_DISTRIBUTIONS=`./gradlew -q :sparkling-water-assembly-h2o:printHadoopDistributions)`
                         for distro in \${HADOOP_DISTRIBUTIONS}
                         do
-                          ./gradlew extendJar -PdownloadH2O="\${distro}"
+                          ./gradlew -PdoExtend extendJar -PdownloadH2O="\${distro}"
                         done
                         # Create extended H2O jar also for the regular h2o (no H2O driver)
-                        ./gradlew extendJar -PdownloadH2O
+                        ./gradlew -PdoExtend extendJar -PdownloadH2O
                     """
             }
         }
@@ -217,8 +217,8 @@ pipeline {
                             do
                                  s3cmd --acl-public put assembly-h2o/private/\${jar} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${jar}
                             done
-                            ./gradlew :sparkling-water-assembly-h2o:clean
-                            ./gradlew :sparkling-water-assembly-h2o:cleanH2OJars
+                            ./gradlew -PdoExtend :sparkling-water-assembly-h2o:clean
+                            ./gradlew -PdoExtend :sparkling-water-assembly-h2o:cleanH2OJars
                             
                             echo UPDATE LATEST POINTER
                             tmpdir=./buildsparklingwater.tmp
