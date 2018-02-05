@@ -276,6 +276,9 @@ def publishNightly(){
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 
                     sh """
+                    # echo 'Build documentation'
+                    ${getGradleCommand(config)} site
+
                     # echo 'Making distribution'
                     ${getGradleCommand(config)} buildSparklingWaterDist
 
