@@ -19,11 +19,11 @@ node('dX-hadoop') {
     // Execute the pipeline
     pipeline(params) { p ->
         sparkVersion = "2.2.1"
-        runUnitTests = "true"
-        runLocalIntegTests = "true"
-        runScriptTests = "true"
-        runIntegTests = "true"
-        runPySparklingIntegTests = "true"
+        runUnitTests = "false"
+        runLocalIntegTests = "false"
+        runScriptTests = "false"
+        runIntegTests = "false"
+        runPySparklingIntegTests = "false"
         sparklingTestEnv = "yarn"
         buildAgainstH2OBranch = "false"
         h2oBranch = "master"
