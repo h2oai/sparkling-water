@@ -91,8 +91,9 @@ rsync -rtvW "$SCALADOC_SRC_DIR" "$SCALADOC_DST_DIR"
 # Copy user documentation
 rsync -rtvW "$USERDOC_SRC_DIR" "$USERDOC_DST_DIR"
 
-GITHASH=$(git rev-parse --verify HEAD)
-GITBRANCH=$(git rev-parse --verify --abbrev-ref HEAD)
+# Try to use variables defined in Jenkins first
+GITHASH=${GIT_COMMIT:-$(git rev-parse --verify HEAD)}
+GITBRANCH=${BRANCH_NAME:-$(git rev-parse --verify --abbrev-ref HEAD)}
 
 if [ "${H2O_NAME}" == "master" ]; then
   H2O_BRANCH_NAME="master"
