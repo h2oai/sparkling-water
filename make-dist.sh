@@ -48,7 +48,7 @@ $(find py/examples/ -type f | grep -v h2ologs | grep -v metastore_db)
 $(find py/pysparkling -type f -name '*.py')
 LICENSE
 README.rst
-$(find doc -type f)
+$(find doc/build/site -type f)
 gradle.properties
 EOF
 
@@ -60,6 +60,10 @@ DEST_DIR="$TOPDIR/private/$DEST_DIRNAME"
 # Source and destination folders for Scaladoc
 SCALADOC_SRC_DIR="$TOPDIR/core/build/docs/scaladoc/"
 SCALADOC_DST_DIR="$DIST_BUILD_DIR/scaladoc/"
+
+# Source and destination folders for User documentation
+USERDOC_SRC_DIR="$TOPDIR/doc/build/site/"
+USERDOC_DST_DIR="$DIST_BUILD_DIR/doc/"
 
 # Resulting zip file
 ZIP_NAME="sparkling-water-$VERSION.zip" 
@@ -83,6 +87,9 @@ echo "$H2O_DRIVERS_LIST" > "$DEST_DIR/h2o_drivers.txt"
 )
 # Copy scaladoc
 rsync -rtvW "$SCALADOC_SRC_DIR" "$SCALADOC_DST_DIR"
+
+# Copy user documentation
+rsync -rtvW "$USERDOC_SRC_DIR" "$USERDOC_DST_DIR"
 
 GITHASH=$(git rev-parse --verify HEAD)
 GITBRANCH=$(git rev-parse --verify --abbrev-ref HEAD)
