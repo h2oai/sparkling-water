@@ -19,6 +19,7 @@ package org.apache.spark.h2o.backends.external
 
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendConf
+import water.HeartBeatThread
 
 /**
   * External backend configuration
@@ -51,6 +52,8 @@ trait ExternalBackendConf extends SharedBackendConf {
   def h2oDriverPath = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_DRIVER_PATH._1)
   def YARNQueue = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1)
   def h2oDriverIf = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_DRIVER_IF._1)
+  def healthCheckInterval = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._2)
+  def isKillOnUnhealthyClusterEnabled = sparkConf.getBoolean(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._2)
 
   /** Setters */
 
@@ -101,6 +104,10 @@ trait ExternalBackendConf extends SharedBackendConf {
 
   def setH2ODriverIf(ip: String) = set(PROP_EXTERNAL_CLUSTER_DRIVER_IF._1, ip)
 
+  def setHealthCheckInterval(interval: Int) = set(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, interval.toString)
+
+  def setKillOnUnhealthyClusterEnabled = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, true)
+  def setKillOnUnhealthyClusterDisabled = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, false)
 
   def externalConfString: String =
     s"""Sparkling Water configuration:
@@ -162,4 +169,12 @@ object ExternalBackendConf {
   /** Driver IP address in case of auto mode in external cluster backend */
   val PROP_EXTERNAL_CLUSTER_DRIVER_IF = ("spark.ext.h2o.external.driver.if", None)
 
+  /** Health check interval. Needs to be higher than HeartBeatThread.TIMEOUT
+    */
+  val PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL = ("spark.ext.h2o.external.health.check.interval", HeartBeatThread.TIMEOUT * 3)
+
+  /**
+    * If true, the client will try to kill the cluster and then itself in case some nodes in the cluster report unhealthy status
+    */
+  val PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY = ("spark.ext.h2o.external.kill.on.unhealthy", true)
 }

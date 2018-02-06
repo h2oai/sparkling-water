@@ -259,7 +259,20 @@ External backend configuration properties
 | ``spark.ext.h2o.external.driver.if``                  | ``None``       | IP address of H2O driver in case of |
 |                                                       |                | external cluster in automatic mode. |
 +-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.external.health.check.interval``      | ``HeartBeatThr | Health check interval. Needs to be  |
+|                                                       | ead.TIMEOUT *  | higher than                         |
+|                                                       | 3``            | ``HeartBeatThread.TIMEOUT``         |
++-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.external.kill.on.unhealthy``          | ``true``       | If true, the client will try to     |
+|                                                       |                | kill the cluster and then itself in |
+|                                                       |                | case some nodes in the cluster      |
+|                                                       |                | report unhealthy status.            |
++-------------------------------------------------------+----------------+-------------------------------------+
 
+  /**
+    * If true, the client will try to kill the cluster and then itself in case some nodes in the cluster report unhealthy status
+    */
+  val PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY = ("", true)
 --------------
 
 .. |H2ONThreadsDefault| replace:: ``Runtime.getRuntime().availableProcessors()``
