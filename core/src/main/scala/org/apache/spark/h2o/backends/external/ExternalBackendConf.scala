@@ -54,6 +54,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def h2oDriverIf = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_DRIVER_IF._1)
   def healthCheckInterval = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._2)
   def isKillOnUnhealthyClusterEnabled = sparkConf.getBoolean(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._2)
+  def killOnUnhealthyClusterInterval = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._2)
 
   /** Setters */
 
@@ -106,8 +107,10 @@ trait ExternalBackendConf extends SharedBackendConf {
 
   def setHealthCheckInterval(interval: Int) = set(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, interval.toString)
 
-  def setKillOnUnhealthyClusterEnabled = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, true)
-  def setKillOnUnhealthyClusterDisabled = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, false)
+  def setKillOnUnhealthyClusterEnabled() = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, true)
+  def setKillOnUnhealthyClusterDisabled() = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, false)
+
+  def setKillOnUnhealthyClusterInterval(interval: Int) = set(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, interval.toString)
 
   def externalConfString: String =
     s"""Sparkling Water configuration:
@@ -169,12 +172,17 @@ object ExternalBackendConf {
   /** Driver IP address in case of auto mode in external cluster backend */
   val PROP_EXTERNAL_CLUSTER_DRIVER_IF = ("spark.ext.h2o.external.driver.if", None)
 
-  /** Health check interval. Needs to be higher than HeartBeatThread.TIMEOUT
+  /** Health check interval for external H2O nodes
     */
-  val PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL = ("spark.ext.h2o.external.health.check.interval", HeartBeatThread.TIMEOUT * 3)
+  val PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL = ("spark.ext.h2o.external.health.check.interval", HeartBeatThread.TIMEOUT)
 
   /**
     * If true, the client will try to kill the cluster and then itself in case some nodes in the cluster report unhealthy status
     */
   val PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY = ("spark.ext.h2o.external.kill.on.unhealthy", true)
+
+  /**
+    * How often check the healthy status for the decision whether to kill the cloud or not.
+    */
+  val PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY_INTERVAL = ("spark.ext.h2o.external.kill.on.unhealthy.interval", HeartBeatThread.TIMEOUT * 3)
 }

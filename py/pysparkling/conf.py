@@ -346,7 +346,11 @@ class H2OConf(object):
         self._jconf.setKillOnUnhealthyClusterDisabled()
         return self
 
-    # getters independent on backend
+    def set_kill_on_unhealthy_cluster_interval(self, interval):
+        self._jconf.setKillOnUnhealthyClusterInterval(interval)
+        return self
+
+# getters independent on backend
 
     def backend_cluster_mode(self):
         return self._jconf.backendClusterMode()
@@ -540,6 +544,9 @@ class H2OConf(object):
 
     def is_kill_on_unhealthy_cluster_enabled(self):
         return self._jconf.isKillOnUnhealthyClusterEnabled()
+
+    def kill_on_unhealthy_cluster_interval(self):
+        return self._jconf.killOnUnhealthyClusterInterval()
 
     def set(self, key, value):
         self._jconf.set(key, value)
