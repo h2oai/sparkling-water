@@ -30,17 +30,15 @@ import generic_test_utils
 class H2OMojoPredictionsTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._cloud_name = generic_test_utils.unique_cloud_name("h2o_conf_test")
-        cls._spark = SparkSession.builder.config(
-            conf=unit_test_utils.get_default_spark_conf().set("spark.ext.h2o.cloud.name",
-                                                              cls._cloud_name)).getOrCreate()
+        cls._cloud_name = generic_test_utils.unique_cloud_name("h2o_mojo_predictions_test")
+        cls._spark = SparkSession.builder.config(conf = unit_test_utils.get_default_spark_conf()).getOrCreate()
 
     # test predictions on H2O Mojo
     def test_h2o_mojo_predictions(self):
         from pysparkling.ml import H2OMOJOModel
         # Try loading the Mojo and prediction on it without starting H2O Context
         mojo = H2OMOJOModel.create_from_mojo("../ml/src/test/resources/binom_model_prostate.mojo")
-        prostate_frame = self._spark.read.csv(unit_test_utils.locate("smalldata/prostate/prostate.csv"), header=True)
+        prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"), header=True)
         mojo.predict(prostate_frame).repartition(1).collect()
 
 if __name__ == '__main__':
