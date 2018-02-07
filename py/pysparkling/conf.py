@@ -334,7 +334,23 @@ class H2OConf(object):
         self._jconf.setH2ODriverIf(ip)
         return self
 
-    # getters independent on backend
+    def set_health_check_interval(self, interval):
+        self._jconf.setHealthCheckInterval(interval)
+        return self
+
+    def set_kill_on_unhealthy_cluster_enabled(self):
+        self._jconf.setKillOnUnhealthyClusterEnabled()
+        return self
+
+    def set_kill_on_unhealthy_cluster_disabled(self):
+        self._jconf.setKillOnUnhealthyClusterDisabled()
+        return self
+
+    def set_kill_on_unhealthy_cluster_interval(self, interval):
+        self._jconf.setKillOnUnhealthyClusterInterval(interval)
+        return self
+
+# getters independent on backend
 
     def backend_cluster_mode(self):
         return self._jconf.backendClusterMode()
@@ -523,6 +539,14 @@ class H2OConf(object):
     def h2o_driver_if(self):
         return self._get_option(self._jconf.h2oDriverIf())
 
+    def get_health_check_interval(self):
+        return self._jconf.healthCheckInterval()
+
+    def is_kill_on_unhealthy_cluster_enabled(self):
+        return self._jconf.isKillOnUnhealthyClusterEnabled()
+
+    def kill_on_unhealthy_cluster_interval(self):
+        return self._jconf.killOnUnhealthyClusterInterval()
 
     def set(self, key, value):
         self._jconf.set(key, value)
