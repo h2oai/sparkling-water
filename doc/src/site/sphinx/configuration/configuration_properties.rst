@@ -272,10 +272,6 @@ External backend configuration properties
 |                                                       | * 3``          | the cloud or not.                   |
 +-------------------------------------------------------+----------------+-------------------------------------+
 
-  /**
-    * If true, the client will try to kill the cluster and then itself in case some nodes in the cluster report unhealthy status
-    */
-  val PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY = ("", true)
 --------------
 
 .. |H2ONThreadsDefault| replace:: ``Runtime.getRuntime().availableProcessors()``
