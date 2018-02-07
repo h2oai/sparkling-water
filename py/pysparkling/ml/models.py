@@ -8,6 +8,7 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaMLReadable):
     @staticmethod
     def create_from_mojo(path_to_mojo):
         spark_session = SparkSession.builder.getOrCreate()
+        # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
         return H2OMOJOModel(spark_session._jvm.org.apache.spark.ml.h2o.models.JavaH2OMOJOModelHelper.createFromMojo(path_to_mojo))
 
