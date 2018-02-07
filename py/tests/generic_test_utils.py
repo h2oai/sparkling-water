@@ -27,9 +27,9 @@ def unique_cloud_name(script_name):
 
 def locate(file_name):
     if os.path.isfile("/home/0xdiag/" + file_name):
-        return "/home/0xdiag/" + file_name
+        return os.path.abspath("/home/0xdiag/" + file_name)
     else:
-        return "../examples/" + file_name
+        return os.path.abspath("../examples/" + file_name)
 
 def cluster_mode(spark_conf = None):
     if spark_conf is not None:
