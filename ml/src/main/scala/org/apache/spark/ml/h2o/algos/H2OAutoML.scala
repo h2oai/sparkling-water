@@ -20,21 +20,24 @@ import java.io._
 import java.util.Date
 
 import ai.h2o.automl.{AutoML, AutoMLBuildSpec}
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.schemas.DeepLearningV3.DeepLearningParametersV3
+import hex.{FrameSplitter, ScoreKeeper}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
-import org.apache.spark.ml.h2o.param.H2OAlgoParams
-import org.apache.spark.ml.param.{Param, ParamMap, Params}
+import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Estimator, Model => SparkModel}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, SQLContext}
+import org.json4s.JsonAST.JArray
+import org.json4s.jackson.JsonMethods.{compact, parse, render}
+import org.json4s.{JNull, JString, JValue}
 import water.Key
+import water.fvec.{Frame, H2OFrame}
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 /**
@@ -48,10 +51,42 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val spec = automlBuildSpec.getOrElse(new AutoMLBuildSpec)
-    val trainFrame = hc.asH2OFrame(dataset.toDF())
-    H2OFrameSupport.allStringVecToCategorical(trainFrame)
-    spec.input_spec.training_frame = trainFrame._key
-    spec.input_spec.response_column = getPredictionCol()
+
+    // override the buildSpec with the configuration specified directly on the estimator
+
+    val input = hc.asH2OFrame(dataset.toDF())
+    // check if we need to do any splitting
+    if (getRatio() < 1.0) {
+      // need to do splitting
+      val keys = split(input, hc)
+      spec.input_spec.training_frame = keys(0)
+      if (keys.length > 1) {
+        spec.input_spec.validation_frame = keys(1)
+      }
+    } else {
+      spec.input_spec.training_frame = input._key
+    }
+
+
+
+    val trainFrame = spec.input_spec.training_frame.get()
+    if (getAllStringColumnsToCategorical()) {
+      H2OFrameSupport.allStringVecToCategorical(trainFrame)
+    }
+    spec.input_spec.response_column = getPredictionsCol()
+    spec.input_spec.fold_column = getFoldColumn()
+    spec.input_spec.weights_column = getWeightsColumn()
+    spec.input_spec.ignored_columns = getIgnoredColumns()
+    spec.feature_engineering.try_mutations = getTryMutations()
+    spec.build_models.exclude_algos = getExcludeAlgos()
+    spec.build_control.project_name = getProjectName()
+    spec.build_control.loss = getLoss()
+    spec.build_control.stopping_criteria.set_max_runtime_secs(getMaxRuntimeSecs())
+    spec.build_control.stopping_criteria.set_stopping_rounds(getStoppingRounds())
+    spec.build_control.stopping_criteria.set_stopping_tolerance(getStoppingTolerance())
+    spec.build_control.stopping_criteria.set_stopping_metric(getStoppingMetric())
+    spec.build_control.nfolds = getNfolds()
+
     water.DKV.put(trainFrame)
     val aml = new AutoML(Key.make(uid), new Date(), spec)
     AutoML.startAutoML(aml)
@@ -60,6 +95,20 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     val model = new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()))
 
     model
+  }
+
+  private def split(fr: H2OFrame, hc: H2OContext): Array[Key[Frame]] = {
+    val trainKey = Key.make[Frame]("train")
+    val validKey = Key.make[Frame]("valid")
+    val keys = Array(trainKey, validKey)
+    val ratios = Array[Double](getRatio())
+
+    val splitter = new FrameSplitter(fr, ratios, keys, null)
+    water.H2O.submitTask(splitter)
+    // return results
+    splitter.getResult
+
+    keys
   }
 
   @DeveloperApi
@@ -126,23 +175,174 @@ trait H2OAutoMLParams extends Params {
   // Param definitions
   //
   private final val predictionCol = new Param[String](this, "predictionCol", "Prediction column name")
+  private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
+  private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
+  private final val foldColumn = new Param[String](this, "foldColumn", "Fold column name")
+  private final val weightsColumn = new Param[String](this, "weightsColumn", "Weights column name")
+  private final val ignoredColumns = new StringArrayParam(this, "ignoredColumns", "Ignored columns names")
+  private final val tryMutations = new BooleanParam(this, "tryMutations", "Whether to use mutations as part of the feature engineering")
+  private final val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
+  private final val projectName = new Param[String](this, "projectName", "Identifier for models that should be grouped together in the leaderboard (e.g., airlines and iris)")
+  private final val loss = new Param[String](this, "loss", "loss")
+  private final val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
+  private final val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
+  private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
+  private final val stoppingMetric = new H2OAutoMLStoppingMetricParam(this, "stoppingMetric", "Stopping metric")
+  private final val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
+
+
   //
   // Default values
   //
   setDefault(
-    predictionCol -> "prediction"
+    predictionCol -> "prediction",
+    allStringColumnsToCategorical -> true,
+    ratio -> 1.0, // 1.0 means use whole frame as training frame,
+    foldColumn -> null,
+    weightsColumn -> null,
+    ignoredColumns -> Array.empty[String],
+    tryMutations -> true,
+    excludeAlgos -> null,
+    projectName -> null, // will be automatically generated
+    loss -> "AUTO",
+    maxRuntimeSecs -> 3600,
+    stoppingRounds -> 3,
+    stoppingTolerance -> 0.001,
+    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
+    nfolds -> 5
   )
 
   //
   // Getters
   //
   /** @group getParam */
-  def getPredictionCol() = $(predictionCol)
-
+  def getPredictionsCol() = $(predictionCol)
+  /** @group getParam */
+  def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
+  /** @group getParam */
+  def getRatio() = $(ratio)
+  /** @group getParam */
+  def getFoldColumn() = $(foldColumn)
+  /** @group getParam */
+  def getWeightsColumn() = $(weightsColumn)
+  /** @group getParam */
+  def getIgnoredColumns() = $(ignoredColumns)
+  /** @group getParam */
+  def getTryMutations() = $(tryMutations)
+  /** @group getParam */
+  def getExcludeAlgos() = $(excludeAlgos)
+  /** @group getParam */
+  def getProjectName() = $(projectName)
+  /** @group getParam */
+  def getLoss() = $(loss)
+  /** @group getParam */
+  def getMaxRuntimeSecs() = $(maxRuntimeSecs)
+  /** @group getParam */
+  def getStoppingRounds() = $(stoppingRounds)
+  /** @group getParam */
+  def getStoppingTolerance() = $(stoppingTolerance)
+  /** @group getParam */
+  def getStoppingMetric() = $(stoppingMetric)
+  /** @group getParam */
+  def getNfolds() = $(nfolds)
   //
   // Setters
   //
   /** @group setParam */
-  def setPredictionCol(value: String): this.type = set(predictionCol, value)
+  def setPredictionsCol(value: String): this.type = set(predictionCol, value)
+  /** @group setParam */
+  def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
+  /** @group setParam */
+  def setRatio(value: Double): this.type = set(ratio, value)
+  /** @group setParam */
+  def setFoldColumn(value: String): this.type = set(foldColumn, value)
+  /** @group setParam */
+  def setWeightsColumn(value: String): this.type = set(weightsColumn, value)
+  /** @group setParam */
+  def setIgnoredColumns(value: Array[String]): this.type = set(ignoredColumns, value)
+  /** @group setParam */
+  def setTryMutations(value: Boolean): this.type = set(tryMutations, value)
+  /** @group setParam */
+  def setExcludeAlgos(value: Array[AutoML.algo]): this.type = set(excludeAlgos, value)
+  /** @group setParam */
+  def setProjectName(value: String): this.type = set(projectName, value)
+  /** @group setParam */
+  def setLoss(value: String): this.type = set(loss, value)
+  /** @group setParam */
+  def setMaxRuntimeSecs(value: Double): this.type = set(maxRuntimeSecs, value)
+  /** @group setParam */
+  def setStoppingRounds(value: Int): this.type = set(stoppingRounds, value)
+  /** @group setParam */
+  def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
+  /** @group setParam */
+  def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = set(stoppingMetric, value)
+  /** @group setParam */
+  def setNfolds(value: Int): this.type = set(nfolds, value)
 
+}
+
+class H2OAutoMLAlgosParam private(parent: Params, name: String, doc: String, isValid: Array[AutoML.algo] => Boolean)
+  extends Param[Array[AutoML.algo]](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
+
+  /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
+  def w(value: java.util.List[AutoML.algo]): ParamPair[Array[AutoML.algo]] = w(value.asScala.toArray)
+
+  override def jsonEncode(value: Array[AutoML.algo]): String = {
+    val encoded: JValue = if (value == null) {
+      JNull
+    } else {
+      JArray(value.map(algo => JString(algo.toString)).toList)
+    }
+    compact(render(encoded))
+  }
+
+
+  override def jsonDecode(json: String): Array[AutoML.algo] = {
+    parse(json) match {
+      case JArray(values) =>
+        values.map {
+          case JString(x) =>
+            AutoML.algo.valueOf(x)
+          case _ =>
+            throw new IllegalArgumentException(s"Cannot decode $json to AutoML.algo.")
+        }.toArray
+      case JNull =>
+        null
+      case _ =>
+        throw new IllegalArgumentException(s"Cannot decode $json to Array[AutoML.algo].")
+    }
+  }
+}
+
+class H2OAutoMLStoppingMetricParam private(parent: Params, name: String, doc: String, isValid: ScoreKeeper.StoppingMetric => Boolean)
+  extends Param[ScoreKeeper.StoppingMetric](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
+
+  /** Creates a param pair with the given value (for Java). */
+  override def w(value: ScoreKeeper.StoppingMetric): ParamPair[ScoreKeeper.StoppingMetric] = super.w(value)
+
+  override def jsonEncode(value: ScoreKeeper.StoppingMetric): String = {
+    val encoded: JValue = if (value == null) {
+      JNull
+    } else {
+      JString(value.toString)
+    }
+    compact(render(encoded))
+  }
+
+  override def jsonDecode(json: String): ScoreKeeper.StoppingMetric = {
+    val parsed = parse(json)
+    parsed match {
+      case JString(x) =>
+        ScoreKeeper.StoppingMetric.valueOf(x)
+      case JNull =>
+        null
+      case _ =>
+        throw new IllegalArgumentException(s"Cannot decode $parsed to ScoreKeeper.StoppingMetric.")
+    }
+
+  }
 }
