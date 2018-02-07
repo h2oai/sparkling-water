@@ -49,6 +49,18 @@ class LocalIntegTestSuite(unittest.TestCase):
 
         launch(env, "examples/pipelines/ham_or_spam_deep_learning.py")
 
+    def test_import_pysparkling_standalone_app(self):
+        env = IntegTestEnv()
+
+        env.set_spark_master("local")
+        # Configure YARN environment
+        env.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
+        env.conf("spark.executor.instances", 3)
+        env.conf("spark.executor.memory", "2g")
+        env.conf("spark.ext.h2o.port.base", 63331)
+        env.conf("spark.driver.memory", "2g")
+
+        launch(env, "py/scripts/tests/pysparkling_ml_import_overrides_spark_test.py")
 
 
 if __name__ == '__main__':
