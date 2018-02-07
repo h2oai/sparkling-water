@@ -40,9 +40,8 @@ import scala.reflect.ClassTag
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
-class H2OAutoML
-(val automlBuildSpec: Option[AutoMLBuildSpec],  override val uid: String)
-(implicit hc: H2OContext, sqlContext: SQLContext)
+class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: String)
+               (implicit hc: H2OContext, sqlContext: SQLContext)
   extends Estimator[H2OMOJOModel] with MLWritable with H2OAutoMLParams {
 
   def this()(implicit hc: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("automl"))
@@ -139,6 +138,7 @@ trait H2OAutoMLParams extends Params {
   //
   /** @group getParam */
   def getPredictionCol() = $(predictionCol)
+
   //
   // Setters
   //
