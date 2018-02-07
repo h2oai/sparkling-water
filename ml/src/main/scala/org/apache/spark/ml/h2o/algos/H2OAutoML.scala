@@ -68,7 +68,6 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     }
 
 
-
     val trainFrame = spec.input_spec.training_frame.get()
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(trainFrame)
@@ -93,7 +92,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     // Block until AutoML finishes
     aml.get()
     val model = new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()))
-
+    model.setConvertUnknownCategoricalLevelsToNa(true)
     model
   }
 
@@ -189,7 +188,7 @@ trait H2OAutoMLParams extends Params {
   private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
   private final val stoppingMetric = new H2OAutoMLStoppingMetricParam(this, "stoppingMetric", "Stopping metric")
   private final val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
-
+  private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "setConvertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
 
   //
   // Default values
@@ -209,7 +208,8 @@ trait H2OAutoMLParams extends Params {
     stoppingRounds -> 3,
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
-    nfolds -> 5
+    nfolds -> 5,
+    convertUnknownCategoricalLevelsToNa -> false
   )
 
   //
@@ -217,68 +217,102 @@ trait H2OAutoMLParams extends Params {
   //
   /** @group getParam */
   def getPredictionsCol() = $(predictionCol)
+
   /** @group getParam */
   def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
+
   /** @group getParam */
   def getRatio() = $(ratio)
+
   /** @group getParam */
   def getFoldColumn() = $(foldColumn)
+
   /** @group getParam */
   def getWeightsColumn() = $(weightsColumn)
+
   /** @group getParam */
   def getIgnoredColumns() = $(ignoredColumns)
+
   /** @group getParam */
   def getTryMutations() = $(tryMutations)
+
   /** @group getParam */
   def getExcludeAlgos() = $(excludeAlgos)
+
   /** @group getParam */
   def getProjectName() = $(projectName)
+
   /** @group getParam */
   def getLoss() = $(loss)
+
   /** @group getParam */
   def getMaxRuntimeSecs() = $(maxRuntimeSecs)
+
   /** @group getParam */
   def getStoppingRounds() = $(stoppingRounds)
+
   /** @group getParam */
   def getStoppingTolerance() = $(stoppingTolerance)
+
   /** @group getParam */
   def getStoppingMetric() = $(stoppingMetric)
+
   /** @group getParam */
   def getNfolds() = $(nfolds)
+
+  /** @group getParam */
+  def getConvertUnknownCategoricalLevelsToNa() = $(convertUnknownCategoricalLevelsToNa)
+
   //
   // Setters
   //
   /** @group setParam */
   def setPredictionsCol(value: String): this.type = set(predictionCol, value)
+
   /** @group setParam */
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
+
   /** @group setParam */
   def setRatio(value: Double): this.type = set(ratio, value)
+
   /** @group setParam */
   def setFoldColumn(value: String): this.type = set(foldColumn, value)
+
   /** @group setParam */
   def setWeightsColumn(value: String): this.type = set(weightsColumn, value)
+
   /** @group setParam */
   def setIgnoredColumns(value: Array[String]): this.type = set(ignoredColumns, value)
+
   /** @group setParam */
   def setTryMutations(value: Boolean): this.type = set(tryMutations, value)
+
   /** @group setParam */
   def setExcludeAlgos(value: Array[AutoML.algo]): this.type = set(excludeAlgos, value)
+
   /** @group setParam */
   def setProjectName(value: String): this.type = set(projectName, value)
+
   /** @group setParam */
   def setLoss(value: String): this.type = set(loss, value)
+
   /** @group setParam */
   def setMaxRuntimeSecs(value: Double): this.type = set(maxRuntimeSecs, value)
+
   /** @group setParam */
   def setStoppingRounds(value: Int): this.type = set(stoppingRounds, value)
+
   /** @group setParam */
   def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
+
   /** @group setParam */
   def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = set(stoppingMetric, value)
+
   /** @group setParam */
   def setNfolds(value: Int): this.type = set(nfolds, value)
 
+  /** @group setParam */
+  def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 }
 
 class H2OAutoMLAlgosParam private(parent: Params, name: String, doc: String, isValid: Array[AutoML.algo] => Boolean)

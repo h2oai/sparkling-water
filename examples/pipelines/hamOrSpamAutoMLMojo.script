@@ -75,7 +75,8 @@ val idf = new IDF().
 // Create H2ODeepLearning model
 val automl = new H2OAutoML().
   setPredictionsCol("label").
-  setMaxRuntimeSecs(300) // 5 minutes
+  setMaxRuntimeSecs(300). // 5 minutes
+  setConvertUnknownCategoricalLevelsToNa(true)
 
 // Remove all intermediate columns
 val colPruner = new ColumnPruner().
