@@ -59,6 +59,7 @@ class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
 
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
+        # the whole type is actually int and we get class cast exception
         double_types = ["minRows", "predNoiseBandwidth", "ratio", "learnRate", "colSampleRate", "learnRateAnnealing", "maxAbsLeafnodePred"
                         "minSplitImprovement", "r2Stopping", "sampleRate", "colSampleRateChangePerLevel", "colSampleRatePerTree"]
         set_double_values(kwargs, double_types)
@@ -105,6 +106,7 @@ class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, Java
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
+        # the whole type is actually int and we get class cast exception
         double_types = ["ratio", "epochs", "l1", "l2"]
         set_double_values(kwargs, double_types)
 
