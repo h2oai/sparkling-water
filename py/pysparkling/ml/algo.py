@@ -8,6 +8,11 @@ from .params import H2OGBMParams, H2ODeepLearningParams
 
 java_max_double_value = (2-2**(-52))*(2**1023)
 
+def set_double_values(kwargs, values):
+    for v in values:
+        if v in kwargs:
+            kwargs[v] = float(kwargs[v])
+
 class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
     @keyword_only
     def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, nfolds=0,
@@ -51,11 +56,17 @@ class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
         if "histogramType" in kwargs:
             kwargs["histogramType"] = self._hc._jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(kwargs["histogramType"])
-        # we need to convert few parameters explicitly to float as py4j can't handle that
-        if "minRows" in kwargs:
-            kwargs["minRows"] = float(kwargs["minRows"])
-        if "predNoiseBandwidth" in kwargs:
-            kwargs["predNoiseBandwidth"] = float(kwargs["predNoiseBandwidth"])
+
+
+        # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
+        double_types = ["minRows", "predNoiseBandwidth", "ratio", "learnRate", "colSampleRate", "learnRateAnnealing", "maxAbsLeafnodePred"
+                        "minSplitImprovement", "r2Stopping", "sampleRate", "colSampleRateChangePerLevel", "colSampleRatePerTree"]
+        set_double_values(kwargs, double_types)
+
+        # We need to also map all doubles in the arrays
+        if "sampleRatePerClass" in kwargs:
+            kwargs["sampleRatePerClass"] = map(float, kwargs["sampleRatePerClass"])
+
         return self._set(**kwargs)
 
     def _create_model(self, java_model):
@@ -68,7 +79,7 @@ class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, Java
 
     @keyword_only
     def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True,
-                 nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,parallelizeCrossValidation=True,
+                 nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                  seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False):
         super(H2ODeepLearning, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
@@ -92,9 +103,11 @@ class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, Java
 
         if "distribution" in kwargs:
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
-        # we need to convert few parameters explicitly to float as py4j can't handle that
-        if "epochs" in kwargs:
-            kwargs["epochs"] = float(kwargs["epochs"])
+
+        # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
+        double_types = ["ratio", "epochs", "l1", "l2"]
+        set_double_values(kwargs, double_types)
+
         return self._set(**kwargs)
 
     def _create_model(self, java_model):
