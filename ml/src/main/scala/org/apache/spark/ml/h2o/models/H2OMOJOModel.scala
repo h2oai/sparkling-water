@@ -43,7 +43,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   def this(mojoData: Array[Byte]) = this(mojoData, Identifiable.randomUID("mojoModel"))
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
-  @transient var easyPredictModelWrapper: EasyPredictModelWrapper = getOrCreateEasyModelWrapper()
+  @transient var easyPredictModelWrapper: EasyPredictModelWrapper = _
 
   case class BinomialPrediction(p0: Double, p1: Double)
 
@@ -135,7 +135,10 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   private def getOrCreateEasyModelWrapper() = {
     if (easyPredictModelWrapper == null) {
-      easyPredictModelWrapper = new EasyPredictModelWrapper(ModelSerializationSupport.getMojoModel(mojoData))
+      val config = new EasyPredictModelWrapper.Config()
+      config.setModel(ModelSerializationSupport.getMojoModel(mojoData))
+      config.setConvertUnknownCategoricalLevelsToNa($(convertUnknownCategoricalLevelsToNa))
+      easyPredictModelWrapper = new EasyPredictModelWrapper(config)
     }
     easyPredictModelWrapper
   }
