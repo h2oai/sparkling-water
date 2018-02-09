@@ -30,12 +30,16 @@ trait H2OModelParams extends Params {
   final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
   final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
   final val outputCol: Param[String] = new Param[String](this, "outputCol", "Column where predictions are created")
+  final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
+         "convertUnknownCategoricalLevelsToNa",
+         "Convert unknown categorical levels to NA during predictions")
   //
   // Default values
   //
   setDefault(predictionCol -> "prediction")
   setDefault(featuresCols -> Array.empty[String])
   setDefault(outputCol -> "prediction_output")
+  setDefault(convertUnknownCategoricalLevelsToNa -> false)
   //
   // Getters
   //
@@ -48,6 +52,9 @@ trait H2OModelParams extends Params {
   /** @group getParam */
   def getOutputCol() = $(outputCol)
 
+  /** @group getParam */
+  def getConvertUnknownCategoricalLevelsToNa() = $(convertUnknownCategoricalLevelsToNa)
+
   //
   // Setters
   //
@@ -59,4 +66,7 @@ trait H2OModelParams extends Params {
 
   /** @group setParam */
   def setOutputCol(value: String): this.type = set(outputCol, value)
+
+  /** @group setParam */
+  def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 }
