@@ -22,6 +22,7 @@ that mojo can run without H2O runtime in PySparkling environment
 
 import unittest
 from pyspark.sql import SparkSession
+from pysparkling.ml import H2OMOJOModel
 
 import unit_test_utils
 import generic_test_utils
@@ -35,11 +36,24 @@ class H2OMojoPredictionsTest(unittest.TestCase):
 
     # test predictions on H2O Mojo
     def test_h2o_mojo_predictions(self):
-        from pysparkling.ml import H2OMOJOModel
         # Try loading the Mojo and prediction on it without starting H2O Context
         mojo = H2OMOJOModel.create_from_mojo("../ml/src/test/resources/binom_model_prostate.mojo")
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"), header=True)
         mojo.predict(prostate_frame).repartition(1).collect()
+
+    def test_h2o_mojo_predictions_unseen_categoricals(self):
+        mojo = H2OMOJOModel.create_from_mojo("../ml/src/test/resources/deep_learning_airlines_categoricals.zip")
+        mojo.setConvertUnknownCategoricalLevelsToNa(True)
+        d =[{'sepal_len':5.1, 'sepal_wid':3.5, 'petal_len':1.4, 'petal_wid':0.2, 'class':'Missing_categorical'}]
+        df = self._spark.createDataFrame(d)
+        data = mojo.transform(df).collect()[0]
+        assert data["class"] == "Missing_categorical"
+        assert data["petal_len"] == 1.4
+        assert data["petal_wid"] == 0.2
+        assert data["sepal_len"] == 5.1
+        assert data["sepal_wid"] == 3.5
+        assert data["prediction_output"][0] == 5.240174068202646
+
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([H2OMojoPredictionsTest], file_name="py_unit_tests_mojo_predictions_report")

@@ -39,7 +39,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   def this(mojoData: Array[Byte]) = this(mojoData, Identifiable.randomUID("mojoModel"))
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
-  @transient var easyPredictModelWrapper: EasyPredictModelWrapper = createEasyPredictModelWrapper()
+  @transient var easyPredictModelWrapper: EasyPredictModelWrapper = _
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
@@ -66,7 +66,15 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     df.select(renamedCols: _*)
   }
 
-  private def createEasyPredictModelWrapper() = new EasyPredictModelWrapper(ModelSerializationSupport.getMojoModel(mojoData))
+  private def getOrCreateEasyModelWrapper() = {
+    if (easyPredictModelWrapper == null) {
+      val config = new EasyPredictModelWrapper.Config()
+      config.setModel(ModelSerializationSupport.getMojoModel(mojoData))
+      config.setConvertUnknownCategoricalLevelsToNa($(convertUnknownCategoricalLevelsToNa))
+      easyPredictModelWrapper = new EasyPredictModelWrapper(config)
+    }
+    easyPredictModelWrapper
+  }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
 
@@ -74,8 +82,6 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     val df = flattenDataFrame(dataset.toDF())
 
     val predictedRows = df.rdd.map { row =>
-      // create predict wrapper from mojo data on each executor where predictions take place
-      easyPredictModelWrapper = createEasyPredictModelWrapper()
       // create RowData on which we do the predictions
       val dt = new RowData
       val values = row.schema.fields.zipWithIndex.map { case (entry, idxRow) =>
@@ -139,9 +145,9 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   }
 
   def getPredictionFrameSchema(): Seq[StructField] = {
-    easyPredictModelWrapper.getModelCategory match {
-      case ModelCategory.Binomial => easyPredictModelWrapper.getResponseDomainValues.map(StructField(_, DoubleType))
-      case ModelCategory.Multinomial => easyPredictModelWrapper.getResponseDomainValues.map(StructField(_, DoubleType))
+    getOrCreateEasyModelWrapper().getModelCategory match {
+      case ModelCategory.Binomial => getOrCreateEasyModelWrapper().getResponseDomainValues.map(StructField(_, DoubleType))
+      case ModelCategory.Multinomial => getOrCreateEasyModelWrapper().getResponseDomainValues.map(StructField(_, DoubleType))
       case ModelCategory.Regression => Seq(StructField("value", DoubleType))
       case ModelCategory.Clustering => Seq(StructField("cluster", DoubleType))
       case ModelCategory.AutoEncoder => throw new RuntimeException("Unimplemented model category")
@@ -152,12 +158,12 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   }
 
   def predict(data: RowData): Row = {
-    easyPredictModelWrapper.getModelCategory
+    getOrCreateEasyModelWrapper().getModelCategory
     match {
-      case ModelCategory.Binomial => Row(easyPredictModelWrapper.predictBinomial(data).classProbabilities: _*)
-      case ModelCategory.Multinomial => Row(easyPredictModelWrapper.predictMultinomial(data).classProbabilities: _*)
-      case ModelCategory.Regression => Row(easyPredictModelWrapper.predictRegression(data).value)
-      case ModelCategory.Clustering => Row(easyPredictModelWrapper.predictClustering(data).cluster)
+      case ModelCategory.Binomial => Row(getOrCreateEasyModelWrapper().predictBinomial(data).classProbabilities: _*)
+      case ModelCategory.Multinomial => Row(getOrCreateEasyModelWrapper().predictMultinomial(data).classProbabilities: _*)
+      case ModelCategory.Regression => Row(getOrCreateEasyModelWrapper().predictRegression(data).value)
+      case ModelCategory.Clustering => Row(getOrCreateEasyModelWrapper().predictClustering(data).cluster)
       case ModelCategory.AutoEncoder => throw new RuntimeException("Unimplemented model category")
       case ModelCategory.DimReduction => throw new RuntimeException("Unimplemented model category")
       case ModelCategory.WordEmbedding => throw new RuntimeException("Unimplemented model category")
