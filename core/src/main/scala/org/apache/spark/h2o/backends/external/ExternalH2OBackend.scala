@@ -76,7 +76,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     )
 
     if (conf.h2oDriverIf.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-driverif", "-J", conf.h2oDriverIf.get)
+      cmdToLaunch = cmdToLaunch ++ Seq[String]("-driverif", conf.h2oDriverIf.get)
     }
 
     if (!hc.getConf.h2oNodeWebEnabled) {
