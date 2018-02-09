@@ -15,5 +15,11 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaMLReadable):
     def predict(self, dataframe):
         return self.transform(dataframe)
 
+    def getConvertUnknownCategoricalLevelsToNa(self):
+        return self._java_obj.getConvertUnknownCategoricalLevelsToNa()
+
+    def setConvertUnknownCategoricalLevelsToNa(self, value):
+        self._java_obj.setConvertUnknownCategoricalLevelsToNa(value)
+        return self
 
 

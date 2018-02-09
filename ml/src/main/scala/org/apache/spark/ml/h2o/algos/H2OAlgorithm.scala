@@ -91,6 +91,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     // pass some parameters set on algo to model
     model.setFeaturesCols($(featuresCols))
     model.setPredictionsCol($(predictionCol))
+    model.setConvertUnknownCategoricalLevelsToNa($(convertUnknownCategoricalLevelsToNa))
     model
   }
 

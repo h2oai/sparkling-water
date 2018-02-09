@@ -17,6 +17,7 @@ class H2OAlgorithmParams(Params):
     parallelizeCrossValidation = Param(Params._dummy(), "parallelizeCrossValidation", "Allow parallel training of cross-validation models", )
     seed = Param(Params._dummy(), "seed", "Seed for random numbers (affects sampling) - Note: only reproducible when running single threaded.")
     distribution = Param(Params._dummy(), "distribution", "Distribution function")
+    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
 
     ##
     ## Getters
@@ -52,6 +53,9 @@ class H2OAlgorithmParams(Params):
         # Convert Java Enum to String so we can represent it in Python
         return self.getOrDefault(self.distribution).toString()
 
+    def getConvertUnknownCategoricalLevelsToNa(self):
+        return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
+
     ##
     ## Setters
     ##
@@ -86,6 +90,9 @@ class H2OAlgorithmParams(Params):
         assert_is_type(value, None, Enum("AUTO", "bernoulli", "multinomial", "gaussian", "poisson", "gamma", "tweedie", "laplace", "quantile", "huber"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         return self._set(distribution=jvm.hex.genmodel.utils.DistributionFamily.valueOf(value))
+
+    def setConvertUnknownCategoricalLevelsToNa(self, value):
+        return self._set(convertUnknownCategoricalLevelsToNa=value)
 
 class H2OSharedTreeParams(H2OAlgorithmParams):
 
