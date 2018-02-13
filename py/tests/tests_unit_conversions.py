@@ -231,6 +231,20 @@ class FrameTransformationsTest(unittest.TestCase):
         for i in range(0, len(pred_mojo)):
             assert pred_mojo[i]==pred_model[i]
 
+    def test_simple_parquet_import(self):
+
+        import tempfile
+        import shutil
+
+        dirpath = tempfile.mkdtemp()
+        df = self._spark.sparkContext.parallelize([(num, "text") for num in range(0,100)]).toDF()
+        df.write.parquet(dirpath + "/test.parquet")
+        frame = h2o.import_file(path=dirpath + "/test.parquet", pattern=".*\.parquet")
+        assert frame.ncols == len(df.columns)
+        assert frame.nrows == df.count()
+        assert frame[0, 1] == "text"
+        shutil.rmtree(dirpath)
+
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_conversions_report")
