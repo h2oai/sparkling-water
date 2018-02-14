@@ -1,6 +1,53 @@
 Change Log
 ==========
 
+v2.1.22 (2018-02-14)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/22/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/22/index.html>`__
+
+-  Technical task
+        
+   -  `SW-652 <https://0xdata.atlassian.net/browse/SW-652>`__ - Deliver SW documentation in HTML output
+                
+-  Bug
+        
+   -  `SW-685 <https://0xdata.atlassian.net/browse/SW-685>`__ - Fix Typo in documentation
+   -  `SW-695 <https://0xdata.atlassian.net/browse/SW-695>`__ - Make printHadoopDistributions gradle task available again for testing
+   -  `SW-701 <https://0xdata.atlassian.net/browse/SW-701>`__ - Kill the client when one of the h2o nodes went OOM in external mode
+   -  `SW-706 <https://0xdata.atlassian.net/browse/SW-706>`__ - Fix pysparkling.ml import for non-interactive sessions
+   -  `SW-707 <https://0xdata.atlassian.net/browse/SW-707>`__ - parquet import fails on HDP with Spark 2.0 (azure hdi cluster)
+   -  `SW-708 <https://0xdata.atlassian.net/browse/SW-708>`__ - Make sure H2OMojoModel does not required H2OContext to be initialized
+   -  `SW-709 <https://0xdata.atlassian.net/browse/SW-709>`__ - Fix mojo predictions tests
+   -  `SW-710 <https://0xdata.atlassian.net/browse/SW-710>`__ - In PySparkling pipelines, ensure that if users pass integer to double type we handle that correctly for all possible double values
+   -  `SW-713 <https://0xdata.atlassian.net/browse/SW-713>`__ - Write a simple test for parquet import in Sparkling Water
+   -  `SW-714 <https://0xdata.atlassian.net/browse/SW-714>`__ - Add option to H2OModel pipeline step allowing us to convert unknown categoricals to NAs
+   -  `SW-715 <https://0xdata.atlassian.net/browse/SW-715>`__ - Fix driverif configuration on the external backend
+                
+-  Improvement
+        
+   -  `SW-606 <https://0xdata.atlassian.net/browse/SW-606>`__ - Verify &amp; Document run of RSparkling on top of Databricks Azure cluster
+   -  `SW-678 <https://0xdata.atlassian.net/browse/SW-678>`__ - Document how to change log location 
+   -  `SW-683 <https://0xdata.atlassian.net/browse/SW-683>`__ - H2OContext can&#39;t be initalized on Databricks cloud
+   -  `SW-686 <https://0xdata.atlassian.net/browse/SW-686>`__ - Fix typo in documentation
+   -  `SW-687 <https://0xdata.atlassian.net/browse/SW-687>`__ - Upgrade Gradle to 4.5
+   -  `SW-688 <https://0xdata.atlassian.net/browse/SW-688>`__ - Update docs - SparklyR supports Spark 2.2.1 in the latest release
+   -  `SW-690 <https://0xdata.atlassian.net/browse/SW-690>`__ - Log Sparkling Water version during startup of Sparkling Water
+   -  `SW-693 <https://0xdata.atlassian.net/browse/SW-693>`__ - Allow to set driverIf on external H2O backend
+   -  `SW-694 <https://0xdata.atlassian.net/browse/SW-694>`__ - Fix creation of Extended JAR in gradle task
+   -  `SW-700 <https://0xdata.atlassian.net/browse/SW-700>`__ - Report Yarn App ID of spark application in H2OContext
+   -  `SW-703 <https://0xdata.atlassian.net/browse/SW-703>`__ - Upload generated sphinx documentation to S3
+   -  `SW-704 <https://0xdata.atlassian.net/browse/SW-704>`__ - Update links on the download page to point to the new docs
+   -  `SW-705 <https://0xdata.atlassian.net/browse/SW-705>`__ - Increase memory for JUNIT tests
+   -  `SW-718 <https://0xdata.atlassian.net/browse/SW-718>`__ - Upgrade to Gradle 4.5.1
+   -  `SW-719 <https://0xdata.atlassian.net/browse/SW-719>`__ - Upgrade to H2O 3.18.0.1
+   -  `SW-720 <https://0xdata.atlassian.net/browse/SW-720>`__ - Fix parquet import test on external backend
+                
+-  Docs
+        
+   -  `SW-697 <https://0xdata.atlassian.net/browse/SW-697>`__ - Final updates for Sparkling Water html output
+   -  `SW-698 <https://0xdata.atlassian.net/browse/SW-698>`__ - Update &quot;Contributing&quot; section in Sparkling Water
+                
+                            
 v2.1.21 (2018-01-18)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/21/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/21/index.html>`__
