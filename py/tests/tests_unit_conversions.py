@@ -245,6 +245,7 @@ class FrameTransformationsTest(unittest.TestCase):
         frame = h2o.upload_file(path=os.path.abspath("build/tests_tmp/test.parquet/" + parquet_file))
         assert frame.ncols == len(df.columns)
         assert frame.nrows == df.count()
+        assert frame[0, 0] == 0.0
         assert frame[0, 1] == "text"
 
 
