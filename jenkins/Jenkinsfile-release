@@ -217,8 +217,8 @@ pipeline {
                             do
                                  s3cmd --acl-public put assembly-h2o/private/\${jar} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${jar}
                             done
-                            ./gradlew -PdoExtend :sparkling-water-assembly-h2o:clean
-                            ./gradlew -PdoExtend :sparkling-water-assembly-h2o:cleanH2OJars
+                            ./gradlew :sparkling-water-assembly-h2o:clean
+                            ./gradlew :sparkling-water-assembly-h2o:cleanH2OJars
                             
                             echo UPDATE LATEST POINTER
                             tmpdir=./buildsparklingwater.tmp
