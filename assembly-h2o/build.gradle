@@ -59,7 +59,7 @@ The extendJar tasks also print the path to the extend jar. It can be saved to en
 export H2O_EXTENDED_JAR=`./gradlew -q -PdoExtend extendJar -PdownloadH2O`
 """
 
-if(project.hasProperty("doExtend")) {
+if (project.hasProperty("doExtend")) {
 
     configurations {
         artifactsToMerge
@@ -125,20 +125,20 @@ if(project.hasProperty("doExtend")) {
 
         finalizedBy "printExtendedJarLocation"
     }
-
-    task cleanH2OJars(type: Delete) {
-        delete(file("private/downloaded"))
-    }
-
-    task cleanExtendedH2OJars(type: Delete) {
-        delete(file("private/extended"))
-    }
 }
 
 task printHadoopDistributions() {
     doLast {
         println(getSupportedHadoopDistributions(h2oMajorName, h2oBuild))
     }
+}
+
+task cleanH2OJars(type: Delete) {
+    delete(file("private/downloaded"))
+}
+
+task cleanExtendedH2OJars(type: Delete) {
+    delete(file("private/extended"))
 }
 
 /**
@@ -186,7 +186,11 @@ The hadoop version you have specified is $hadoopVersion, however supported hadoo
             logger.info("\"H2O_ORIGINAL_JAR\" property set to $originalJar")
             return originalJar
         } else {
-            throw new RuntimeException("Either -PdownloadH2O option or H2O_ORIGINAL_JAR environmental property needs to be specified")
+            gradle.taskGraph.whenReady {
+                if (gradle.taskGraph.hasTask("extendJar")) {
+                    throw new RuntimeException("Either -PdownloadH2O option or H2O_ORIGINAL_JAR environmental property needs to be specified")
+                }
+            }
         }
     }
 }
