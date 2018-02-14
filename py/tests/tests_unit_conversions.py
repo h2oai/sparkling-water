@@ -29,6 +29,7 @@ import h2o
 import unit_test_utils
 import generic_test_utils
 import time
+import os
 from pyspark.mllib.linalg import *
 
 # Test of transformations from dataframe/rdd to h2o frame and from h2o frame back to dataframe
@@ -230,6 +231,14 @@ class FrameTransformationsTest(unittest.TestCase):
         assert len(pred_mojo)==len(pred_model)
         for i in range(0, len(pred_mojo)):
             assert pred_mojo[i]==pred_model[i]
+
+    def test_simple_parquet_import(self):
+        df = self._spark.sparkContext.parallelize([(num, "text") for num in range(0,100)]).toDF()
+        df.write.mode('overwrite').parquet("file://" + os.path.abspath("build/tests_tmp/test.parquet"))
+        frame = h2o.import_file(path=os.path.abspath("build/tests_tmp/test.parquet"), pattern=".*\.parquet")
+        assert frame.ncols == len(df.columns)
+        assert frame.nrows == df.count()
+        assert frame[0, 1] == "text"
 
 
 if __name__ == '__main__':
