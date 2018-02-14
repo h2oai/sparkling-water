@@ -59,7 +59,7 @@ The extendJar tasks also print the path to the extend jar. It can be saved to en
 export H2O_EXTENDED_JAR=`./gradlew -q -PdoExtend extendJar -PdownloadH2O`
 """
 
-if(project.hasProperty("doExtend")) {
+if (project.hasProperty("doExtend")) {
 
     configurations {
         artifactsToMerge
@@ -125,20 +125,20 @@ if(project.hasProperty("doExtend")) {
 
         finalizedBy "printExtendedJarLocation"
     }
-
-    task cleanH2OJars(type: Delete) {
-        delete(file("private/downloaded"))
-    }
-
-    task cleanExtendedH2OJars(type: Delete) {
-        delete(file("private/extended"))
-    }
 }
 
 task printHadoopDistributions() {
     doLast {
         println(getSupportedHadoopDistributions(h2oMajorName, h2oBuild))
     }
+}
+
+task cleanH2OJars(type: Delete) {
+    delete(file("private/downloaded"))
+}
+
+task cleanExtendedH2OJars(type: Delete) {
+    delete(file("private/extended"))
 }
 
 /**
