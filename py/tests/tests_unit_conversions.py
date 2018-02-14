@@ -234,7 +234,7 @@ class FrameTransformationsTest(unittest.TestCase):
 
     def test_simple_parquet_import(self):
 
-        cwd =
+        cwd = os.getcwd()
         df = self._spark.sparkContext.parallelize([(num, "text") for num in range(0,100)]).toDF()
         df.write.parquet("file://" + cwd + "/test.parquet")
         frame = h2o.import_file(path="file://" + cwd + "/test.parquet", pattern=".*\.parquet")
