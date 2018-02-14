@@ -21,41 +21,48 @@ import java.net.URI
 
 import hex.Model
 import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
+import water.H2O
 import water.persist.Persist
-import water.{AutoBuffer, H2O, Key, Keyed}
 
 trait ModelSerializationSupport {
 
-  def exportH2OModel(model: Model[_, _, _], destination: URI): URI = {
-    val modelKey = model._key.asInstanceOf[Key[_ <: Keyed[_ <: Keyed[_ <: AnyRef]]]]
-    val p: Persist = H2O.getPM.getPersistForURI(destination)
-    val os: OutputStream = p.create(destination.toString, true)
-    model.writeAll(new AutoBuffer(os, true)).close
-
+  def exportH2OModel(model: Model[_, _, _], destination: URI, force: Boolean = false): URI = {
+    model.exportBinaryModel(destination.toString, force)
     destination
   }
 
-  def loadH2OModel[M <: Model[_, _, _]](source: URI): M = {
-    val p: Persist = H2O.getPM.getPersistForURI(source)
-    val is: InputStream = p.open(source.toString)
-    Keyed.readAll(new AutoBuffer(is)).asInstanceOf[M]
+  def exportH2OModel(model: Model[_, _, _], destination: String, force: Boolean): String = {
+    exportH2OModel(model, new URI(destination), force).toString
   }
 
+  def loadH2OModel[M <: Model[_, _, _]](source: URI): M = {
+    Model.importBinaryModel[M](source.toString)
+  }
 
-  def exportPOJOModel(model: Model[_, _, _], destination: URI): URI = {
+  def loadH2OModel[M <: Model[_, _, _]](source: String): M = {
+    Model.importBinaryModel[M](source)
+  }
+
+  def exportPOJOModel(model: Model[_, _, _], destination: URI, force: Boolean = false): URI = {
     val p: Persist = H2O.getPM.getPersistForURI(destination)
-    val os: OutputStream = p.create(destination.toString, true)
+    val os: OutputStream = p.create(destination.toString, force)
     val writer = new model.JavaModelStreamWriter(false)
     writer.writeTo(os)
     os.close()
     destination
   }
 
-  def exportMOJOModel(model: Model[_, _, _], destination: URI): URI = {
-    val p: Persist = H2O.getPM.getPersistForURI(destination)
-    val os: OutputStream = p.create(destination.toString, true)
-    model.getMojo.writeTo(os)
+  def exportPOJOModel(model: Model[_, _, _], destination: String, force: Boolean): String = {
+    exportPOJOModel(model, new URI(destination), force).toString
+  }
+
+  def exportMOJOModel(model: Model[_, _, _], destination: URI, force: Boolean = false): URI = {
+    model.exportMojo(destination.toString, force)
     destination
+  }
+
+  def exportMOJOModel(model: Model[_, _, _], destination: String, force: Boolean): String = {
+    exportMOJOModel(model, new URI(destination), force).toString
   }
 
   def loadMOJOModel(source: URI): MojoModel = {
