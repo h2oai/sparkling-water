@@ -233,11 +233,19 @@ class FrameTransformationsTest(unittest.TestCase):
             assert pred_mojo[i]==pred_model[i]
 
     def test_simple_parquet_import(self):
-        df = self._spark.sparkContext.parallelize([(num, "text") for num in range(0,100)]).toDF()
+        df = self._spark.sparkContext.parallelize([(num, "text") for num in range(0,100)]).toDF().coalesce(1)
         df.write.mode('overwrite').parquet("file://" + os.path.abspath("build/tests_tmp/test.parquet"))
-        frame = h2o.import_file(path=os.path.abspath("build/tests_tmp/test.parquet"), pattern=".*\.parquet")
+
+
+        parquet_file = None
+        for file in os.listdir(os.path.abspath("build/tests_tmp/test.parquet")):
+            if file.endswith(".parquet"):
+                # it is always set
+                parquet_file = file
+        frame = h2o.upload_file(path=os.path.abspath("build/tests_tmp/test.parquet/" + parquet_file))
         assert frame.ncols == len(df.columns)
         assert frame.nrows == df.count()
+        assert frame[0, 0] == 0.0
         assert frame[0, 1] == "text"
 
 
