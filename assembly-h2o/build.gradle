@@ -186,11 +186,7 @@ The hadoop version you have specified is $hadoopVersion, however supported hadoo
             logger.info("\"H2O_ORIGINAL_JAR\" property set to $originalJar")
             return originalJar
         } else {
-            gradle.taskGraph.whenReady {
-                if (gradle.taskGraph.hasTask("extendJar")) {
-                    throw new RuntimeException("Either -PdownloadH2O option or H2O_ORIGINAL_JAR environmental property needs to be specified")
-                }
-            }
+            throw new RuntimeException("Either -PdownloadH2O option or H2O_ORIGINAL_JAR environmental property needs to be specified")
         }
     }
 }
