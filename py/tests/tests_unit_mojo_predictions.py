@@ -52,7 +52,7 @@ class H2OMojoPredictionsTest(unittest.TestCase):
         assert data["petal_wid"] == 0.2
         assert data["sepal_len"] == 5.1
         assert data["sepal_wid"] == 3.5
-        assert data["prediction_output"][0] == 5.240174068202646
+        assert data["value"] == 5.240174068202646
 
 
 if __name__ == '__main__':
