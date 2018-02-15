@@ -329,6 +329,17 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     basic ++ sparkYarnAppId ++ backend.epilog
   }
 
+  /**
+    * @param path directory where the logs will be downloaded
+    */
+  def downloadH2OLogs(path: String, logFileName: String = "logs.zip"): String = {
+    import sys.process._
+    import java.net.URL
+    import java.io.File
+    new URL(s"http://$localClientIp:$localClientPort/3/Logs/download").#>(new File(path, logFileName)).!!
+    path + File.separator + logFileName
+  }
+
   // scalastyle:off
   // Disable style checker so "implicits" object can start with lowercase i
   /** Define implicits available via h2oContext.implicits._ */
