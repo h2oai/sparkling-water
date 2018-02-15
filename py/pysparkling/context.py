@@ -41,11 +41,11 @@ def _monkey_patch_H2OFrame(hc):
         return self._java_frame
 
     @staticmethod
-    def from_java_h2o_frame(h2o_frame, h2o_frame_id, cols_limit=100):
+    def from_java_h2o_frame(h2o_frame, h2o_frame_id, full_cols=100):
         # Cache Java reference to the backend frame
         sid = h2o_frame_id.toString()
-        cols = cols_limit if h2o_frame.numCols() > cols_limit else -1
-        fr = H2OFrame.get_frame(sid, cols=cols, light=True)
+        cols = full_cols if h2o_frame.numCols() > full_cols else -1
+        fr = H2OFrame.get_frame(sid, full_cols=cols, light=True)
         fr._java_frame = h2o_frame
         fr._java_frame_sid = sid
         fr._backed_by_java_obj = True
@@ -204,7 +204,7 @@ class H2OContext(object):
             df._h2o_frame = h2o_frame
             return df
 
-    def as_h2o_frame(self, dataframe, framename=None):
+    def as_h2o_frame(self, dataframe, framename=None, full_cols=100):
         """
         Transforms given Spark RDD or DataFrame to H2OFrame.
 
@@ -212,13 +212,14 @@ class H2OContext(object):
         ----------
           dataframe : Spark RDD or DataFrame
           framename : Optional name for resulting H2OFrame
+          full_cols : number of first n columns which are sent to the client together with the data
 
         Returns
         -------
           H2OFrame which contains data of original input Spark data structure
         """
         if isinstance(dataframe, DataFrame):
-            return fc._as_h2o_frame_from_dataframe(self, dataframe, framename)
+            return fc._as_h2o_frame_from_dataframe(self, dataframe, framename, full_cols)
         elif isinstance(dataframe, RDD):
             # First check if the type T in RDD[T] is one of the python "primitive" types
             # String, Boolean, Int and Double (Python Long is converted to java.lang.BigInteger)
@@ -230,18 +231,18 @@ class H2OContext(object):
                     long = int
 
                 if isinstance(first, str):
-                    return fc._as_h2o_frame_from_RDD_String(self, dataframe, framename)
+                    return fc._as_h2o_frame_from_RDD_String(self, dataframe, framename, full_cols)
                 elif isinstance(first, bool):
-                    return fc._as_h2o_frame_from_RDD_Bool(self, dataframe, framename)
+                    return fc._as_h2o_frame_from_RDD_Bool(self, dataframe, framename, full_cols)
                 elif (isinstance(dataframe.min(), int) and isinstance(dataframe.max(), int)) or (isinstance(dataframe.min(), long) and isinstance(dataframe.max(), long)):
                     if dataframe.min() >= self._jvm.Integer.MIN_VALUE and dataframe.max() <= self._jvm.Integer.MAX_VALUE:
-                        return fc._as_h2o_frame_from_RDD_Int(self, dataframe, framename)
+                        return fc._as_h2o_frame_from_RDD_Int(self, dataframe, framename, full_cols)
                     elif dataframe.min() >= self._jvm.Long.MIN_VALUE and dataframe.max() <= self._jvm.Long.MAX_VALUE:
-                        return fc._as_h2o_frame_from_RDD_Long(self, dataframe, framename)
+                        return fc._as_h2o_frame_from_RDD_Long(self, dataframe, framename, full_cols)
                     else:
                         raise ValueError('Numbers in RDD Too Big')
                 elif isinstance(first, float):
-                    return fc._as_h2o_frame_from_RDD_Float(self, dataframe, framename)
+                    return fc._as_h2o_frame_from_RDD_Float(self, dataframe, framename, full_cols)
             else:
-                return fc._as_h2o_frame_from_complex_type(self, dataframe, framename)
+                return fc._as_h2o_frame_from_complex_type(self, dataframe, framename, full_cols)
 
