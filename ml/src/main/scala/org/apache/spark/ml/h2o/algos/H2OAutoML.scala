@@ -49,6 +49,8 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
 
   def this()(implicit hc: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("automl"))
 
+  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
+
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val spec = automlBuildSpec.getOrElse(new AutoMLBuildSpec)
 
@@ -181,14 +183,16 @@ trait H2OAutoMLParams extends Params {
   private final val ignoredColumns = new StringArrayParam(this, "ignoredColumns", "Ignored columns names")
   private final val tryMutations = new BooleanParam(this, "tryMutations", "Whether to use mutations as part of the feature engineering")
   private final val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
-  private final val projectName = new Param[String](this, "projectName", "Identifier for models that should be grouped together in the leaderboard (e.g., airlines and iris)")
+  private final val projectName = new Param[String](this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
+    " (e.g., airlines and iris)")
   private final val loss = new Param[String](this, "loss", "loss")
   private final val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
   private final val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
   private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
   private final val stoppingMetric = new H2OAutoMLStoppingMetricParam(this, "stoppingMetric", "Stopping metric")
   private final val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
-  private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "setConvertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
+  private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "setConvertUnknownCategoricalLevelsToNa", "Convert unknown" +
+    " categorical levels to NA during predictions")
 
   //
   // Default values
