@@ -196,7 +196,7 @@ class FrameTransformationsTest(unittest.TestCase):
         t0 = time.time()
         self._hc.as_h2o_frame(df)
         total = time.time() - t0
-        assert total < 10 # The conversion should not take longer then 10 seconds
+        assert total < 20 # The conversion should not take longer then 20 seconds
 
     def test_load_mojo_gbm(self):
         from pysparkling.ml import H2OMOJOModel, H2OGBM
