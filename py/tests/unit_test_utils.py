@@ -11,7 +11,7 @@ def asert_h2o_frame(test_suite, h2o_frame, rdd):
 def get_default_spark_conf():
     conf = SparkConf(). \
         setAppName("pyunit-test"). \
-        setMaster("local-cluster[3,1,2048]"). \
+        setMaster("local[*]"). \
         set("spark.ext.h2o.disable.ga","true"). \
         set("spark.driver.memory", "2g"). \
         set("spark.executor.memory", "2g"). \
