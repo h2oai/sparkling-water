@@ -315,3 +315,35 @@ class H2ODeepLearningParams(H2OAlgorithmParams):
 
     def setReproducible(self, value):
         return self._set(reproducible=value)
+
+
+class H2OAutoMLParams(Params):
+
+    ##
+    ## Param definitions
+    ##
+    predictionCol = Param(Params._dummy(), "predictionCol", "label")
+    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
+    ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
+    foldColumn = Param(Params._dummy(), "foldColumn", "Fold column name")
+    weightsColumn = Param(Params._dummy(), "weightsColumn", "Weights column name")
+    ignoredColumns = Param(Params._dummy(), "ignoredColumns", "Ignored columns names")
+    tryMutations = Param(Params._dummy(), "tryMutations", "Whether to use mutations as part of the feature engineering")
+    excludeAlgos = Param(Params._dummy(), "excludeAlgos", "Algorithms to exclude when using automl")
+    projectName = Param(Params._dummy(), "projectName", "dentifier for models that should be grouped together in the leaderboard" +
+                        " (e.g., airlines and iris)")
+    loss = Param(Params._dummy(), "loss", "loss")
+    maxRuntimeSecs = Param(Params._dummy(), "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
+    stoppingRounds = Param(Params._dummy(), "stoppingRounds", "Stopping rounds")
+    stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "Stopping tolerance")
+    stoppingMetric = Param(Params._dummy(), "stoppingMetric", "Stopping metric")
+    nfolds = Param(Params._dummy(), "nfolds", "Cross-validation fold construction")
+    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
+
+    ##
+    ## Getters
+    ##
+
+    ##
+    ## Setters
+    ##

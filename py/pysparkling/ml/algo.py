@@ -4,7 +4,7 @@ from pyspark.ml.util import JavaMLReadable, JavaMLWritable
 from pyspark.ml.wrapper import JavaEstimator, JavaModel, JavaTransformer, _jvm
 from pyspark.sql import SparkSession
 from pysparkling import *
-from .params import H2OGBMParams, H2ODeepLearningParams
+from .params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams
 
 java_max_double_value = (2-2**(-52))*(2**1023)
 
@@ -120,7 +120,7 @@ class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, Java
 class H2ODeepLearningModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
-class H2OAutoML(JavaModel, JavaMLWritable, JavaMLReadable):
+class H2OAutoML(JavaModel, H2OAutoMLParams, JavaMLWritable, JavaMLReadable):
 
     @keyword_only
     def __init__(self, predictionCol=None, allStringColumnsToCategorical=True, ratio=1.0, foldColumn=None, weightsColumn=None,
