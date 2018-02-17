@@ -35,6 +35,8 @@ class H2OKMeans(parameters: Option[KMeansParameters], override val uid: String)
                 extends H2OAlgorithm[KMeansParameters, H2OMOJOModel](parameters)
                 with H2OKMeansParams {
 
+  override protected val isSupervised = false
+
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("kmeans"))
 
   def this(uid: String, h2oContext: H2OContext, sqlContext: SQLContext) = this(None, uid)(h2oContext, sqlContext)

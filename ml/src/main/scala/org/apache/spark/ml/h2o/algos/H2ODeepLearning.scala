@@ -39,6 +39,8 @@ class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val u
                       extends H2OAlgorithm[DeepLearningParameters, H2OMOJOModel](parameters)
                       with H2ODeepLearningParams {
 
+  override protected val isSupervised = true
+
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("dl"))
 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
