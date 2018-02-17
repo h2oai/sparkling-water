@@ -4,7 +4,7 @@ from pyspark.ml.util import JavaMLReadable, JavaMLWritable
 from pyspark.ml.wrapper import JavaEstimator, JavaModel, JavaTransformer, _jvm
 from pyspark.sql import SparkSession
 from pysparkling import *
-from .params import H2OGBMParams, H2ODeepLearningParams
+from .params import H2OGBMParams, H2ODeepLearningParams, H2OKMeansParams
 
 java_max_double_value = (2-2**(-52))*(2**1023)
 
@@ -74,6 +74,32 @@ class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
         return H2OGBMModel(java_model)
 
 class H2OGBMModel(JavaModel, JavaMLWritable, JavaMLReadable):
+    pass
+
+class H2OKMeans(JavaModel, H2OKMeansParams, JavaMLWritable, JavaMLReadable):
+
+    @keyword_only
+    def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True,
+                 nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
+                 seed=-1, distribution="AUTO", k=1):
+        super(H2OKMeans, self).__init__()
+        self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
+        self._java_obj = self._new_java_obj("org.apache.spark.ml.h2o.algos.H2OKmeans",
+                                            self.uid,
+                                            self._hc._jhc.h2oContext(),
+                                            self._hc._jsql_context)
+
+        self._setDefault(ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True,
+                         nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
+                         seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"), k=1)
+        kwargs = self._input_kwargs
+        self.setParams(**kwargs)
+
+    def _create_model(selfself, java_model):
+        return H2OKMeansModel(java_model)
+
+
+class H2OKMeansModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
 class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, JavaMLWritable):

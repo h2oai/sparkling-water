@@ -262,6 +262,25 @@ class H2OGBMParams(H2OSharedTreeParams):
     def setPredNoiseBandwidth(self, value):
         return self._set(predNoiseBandwidth=value)
 
+class H2OKMeansParams(H2OAlgorithmParams):
+
+    ##
+    ## Param definitions
+    ##
+    k = Param(Params._dummy(), "k", "The number of clusters to be created")
+
+    ##
+    ## Getters
+    ##
+    def getK(self):
+        return self.getOrDefault(self.k)
+
+    ##
+    ## Setters
+    ##
+    def setK(self, value):
+        return self._set(k=value)
+
 class H2ODeepLearningParams(H2OAlgorithmParams):
 
     ##
