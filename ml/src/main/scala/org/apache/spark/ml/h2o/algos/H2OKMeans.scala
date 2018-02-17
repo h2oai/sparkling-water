@@ -17,12 +17,10 @@
 
 package org.apache.spark.ml.h2o.algos
 
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.kmeans.KMeans
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.schemas.KMeansV3
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.h2o.algos
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param.{H2OAlgoParams, H2OModelParams}
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
@@ -51,6 +49,7 @@ class H2OKMeans(parameters: Option[KMeansParameters], override val uid: String)
   }
 
   override def defaultFileName: String = H2OKMeans.defaultFileName
+
 }
 
 object H2OKMeans extends MLReadable[H2OKMeans] {
@@ -60,6 +59,7 @@ object H2OKMeans extends MLReadable[H2OKMeans] {
   override def read: MLReader[H2OKMeans] = new H2OAlgorithmReader[H2OKMeans, KMeansParameters](defaultFileName)
 
   override def load(path: String): H2OKMeans = super.load(path)
+
 }
 
 trait H2OKMeansParams extends H2OAlgoParams[KMeansParameters] {
@@ -70,5 +70,33 @@ trait H2OKMeansParams extends H2OAlgoParams[KMeansParameters] {
 
   protected def schemaTag = reflect.classTag[H2O_SCHEMA]
 
+  //
+  // Param definitions
+  //
+  private final val k = intParam("k")
+
+  //
+  // Default values
+  //
+  setDefault(
+    k -> parameters._k
+  )
+
+  //
+  // Getters
+  //
+  /** @group getParam */
+  def getK() = $(k)
+
+  //
+  // Setters
+  //
+  /** @group getParam */
+  def setK(value: Int) = set(k, value)
+
+  override protected def updateH2OParams(): Unit = {
+    super.updateH2OParams()
+    parameters._k = $(k)
+  }
 
 }
