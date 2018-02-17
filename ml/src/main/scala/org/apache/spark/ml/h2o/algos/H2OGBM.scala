@@ -35,6 +35,8 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
   extends H2OAlgorithm[GBMParameters, H2OMOJOModel](parameters)
     with H2OGBMParams {
 
+  override protected val isSupervised = true
+
   def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gbm"))
 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)

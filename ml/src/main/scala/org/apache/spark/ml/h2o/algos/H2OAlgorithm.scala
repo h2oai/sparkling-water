@@ -43,6 +43,8 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 (implicit hc: H2OContext, sqlContext: SQLContext)
   extends Estimator[M] with MLWritable with H2OAlgoParams[P] {
 
+  abstract protected val isSupervised: Boolean
+
   if (parameters.isDefined) {
     setParams(parameters.get)
   }
@@ -99,8 +101,10 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    require(schema.fields.exists(f => f.name.compareToIgnoreCase(getPredictionsCol()) == 0),
-            s"Specified prediction columns '${getPredictionsCol()} was not found in input dataset!")
+    if (isSupervised) {
+      require(schema.fields.exists(f => f.name.compareToIgnoreCase(getPredictionsCol()) == 0),
+             s"Specified prediction columns '${getPredictionsCol()} was not found in input dataset!")
+    }
     require(!getFeaturesCols().exists(n => n.compareToIgnoreCase(getPredictionsCol()) == 0),
             s"Specified input features cannot contain prediction column!")
     schema
