@@ -54,7 +54,6 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
   final val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
   final val seed = longParam("seed")
   final val distribution = H2ODistributionParam("distribution")
-
   final val convertUnknownCategoricalLevelsToNa = booleanParam(
         "convertUnknownCategoricalLevelsToNa",
         "Convert unknown categorical levels to NA during predictions")
@@ -108,8 +107,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
   /** @group getParam */
   def getDistribution() = $(distribution)
 
-  /** @group getParam *//** @group getParam */
-  def getConvertUnknownCategoricalLevelsToNa = $(convertUnknownCategoricalLevelsToNa)
+  /** @group getParam */
+  def getConvertUnknownCategoricalLevelsToNa() = $(convertUnknownCategoricalLevelsToNa)
 
   //
   // Setters
