@@ -29,7 +29,6 @@ import scala.reflect.ClassTag
   * @tparam P H2O's parameter type
   */
 trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
-
   // Target schema type
   type H2O_SCHEMA
 
