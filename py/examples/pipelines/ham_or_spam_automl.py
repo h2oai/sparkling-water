@@ -16,7 +16,7 @@ def _locate(file_name):
     if os.path.isfile("/home/0xdiag/smalldata/" + file_name):
         return "file:///home/0xdiag/smalldata/" + file_name
     else:
-        return "/Users/kuba/devel/repos/sparkling-water/examples/smalldata/" + file_name
+        return "../examples/smalldata/" + file_name
 
 ## This method loads the data, perform some basic filtering and create Spark's dataframe
 def load():
