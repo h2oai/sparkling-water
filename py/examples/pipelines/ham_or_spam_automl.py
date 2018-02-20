@@ -73,7 +73,7 @@ model = pipeline.fit(data)
 def isSpam(smsText, model, hamThreshold = 0.5):
     smsTextDF = spark.createDataFrame([(smsText,)], ["text"]) # create one element tuple
     prediction = model.transform(smsTextDF)
-    return prediction.select("prediction_output.p1").first()["p1"] > hamThreshold
+    return prediction.first()["spam"] > hamThreshold
 
 
 print(isSpam("Michal, h2oworld party tonight in MV?", model))

@@ -15,12 +15,12 @@ class ColumnPruner(JavaTransformer, JavaMLReadable, JavaMLWritable):
        super(ColumnPruner, self).__init__()
        self._java_obj = self._new_java_obj("org.apache.spark.ml.h2o.features.ColumnPruner", self.uid)
        self._setDefault(keep=False, columns=[])
-       kwargs = self._input_kwargs
+       kwargs = self.__init__._input_kwargs
        self.setParams(**kwargs)
 
     @keyword_only
     def setParams(self, keep=False, columns=[]):
-        kwargs = self._input_kwargs
+        kwargs = self.__init__._input_kwargs
         return self._set(**kwargs)
 
     def setKeep(self, value):
