@@ -4,7 +4,7 @@ from pyspark.ml.util import JavaMLReadable, JavaMLWritable
 from pyspark.ml.wrapper import JavaEstimator, JavaModel, JavaTransformer, _jvm
 from pyspark.sql import SparkSession
 from pysparkling import *
-from .params import H2OGBMParams, H2ODeepLearningParams
+from .params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams
 
 java_max_double_value = (2-2**(-52))*(2**1023)
 
@@ -120,4 +120,44 @@ class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, Java
 
 
 class H2ODeepLearningModel(JavaModel, JavaMLWritable, JavaMLReadable):
+    pass
+
+class H2OAutoML(JavaEstimator, H2OAutoMLParams, JavaMLWritable, JavaMLReadable):
+
+    @keyword_only
+    def __init__(self, predictionCol=None, allStringColumnsToCategorical=True, ratio=1.0, foldColumn=None, weightsColumn=None,
+                       ignoredColumns=[], tryMutations=True, excludeAlgos=None, projectName=None, loss="AUTO", maxRuntimeSecs=3600.0, stoppingRounds=3,
+                       stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False):
+        super(H2OAutoML, self).__init__()
+        self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
+        self._java_obj = self._new_java_obj("org.apache.spark.ml.h2o.algos.H2OAutoML",
+                                        self.uid,
+                                        self._hc._jhc.h2oContext(),
+                                        self._hc._jsql_context)
+
+        self._setDefault(predictionCol=None, allStringColumnsToCategorical=True, ratio=1.0, foldColumn=None, weightsColumn=None,
+                         ignoredColumns=[], tryMutations=True, excludeAlgos=None, projectName=None, loss="AUTO", maxRuntimeSecs=3600.0, stoppingRounds=3,
+                         stoppingTolerance=0.001, stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5, convertUnknownCategoricalLevelsToNa=False)
+        kwargs = self.__init__._input_kwargs
+        self.setParams(**kwargs)
+
+    @keyword_only
+    def setParams(self, predictionCol=None, allStringColumnsToCategorical=True, ratio=1.0, foldColumn=None, weightsColumn=None,
+                  ignoredColumns=[], tryMutations=True, excludeAlgos=None, projectName=None, loss="AUTO", maxRuntimeSecs=3600.0, stoppingRounds=3,
+                  stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False):
+        kwargs = self.__init__._input_kwargs
+
+        if "stoppingMetric" in kwargs:
+            kwargs["stoppingMetric"] = self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf(kwargs["stoppingMetric"])
+
+        # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
+        double_types = ["maxRuntimeSecs", "stoppingTolerance", "ratio"]
+        set_double_values(kwargs, double_types)
+        return self._set(**kwargs)
+
+
+    def _create_model(self, java_model):
+        return H2OAutoMLModel(java_model)
+
+class H2OAutoMLModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass

@@ -38,6 +38,7 @@ trait H2OModelParams extends Params {
   setDefault(predictionCol -> "prediction")
   setDefault(featuresCols -> Array.empty[String])
   setDefault(convertUnknownCategoricalLevelsToNa -> false)
+
   //
   // Getters
   //
@@ -49,6 +50,7 @@ trait H2OModelParams extends Params {
 
   /** @group getParam */
   def getConvertUnknownCategoricalLevelsToNa() = $(convertUnknownCategoricalLevelsToNa)
+
 
   //
   // Setters
