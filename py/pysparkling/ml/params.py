@@ -3,6 +3,13 @@ from h2o.utils.typechecks import assert_is_type, Enum
 from pysparkling.context import H2OContext
 from pyspark.sql import SparkSession
 
+
+def get_correct_case_enum(enum_values, enum_single_value):
+    for a in enum_values:
+        if a.toString().lower() == enum_single_value.lower():
+            return a.toString()
+
+
 class H2OAlgorithmParams(Params):
     ##
     ## Param definitions
@@ -89,7 +96,8 @@ class H2OAlgorithmParams(Params):
     def setDistribution(self, value):
         assert_is_type(value, None, Enum("AUTO", "bernoulli", "multinomial", "gaussian", "poisson", "gamma", "tweedie", "laplace", "quantile", "huber"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        return self._set(distribution=jvm.hex.genmodel.utils.DistributionFamily.valueOf(value))
+        correct_case_value = get_correct_case_enum(jvm.hex.genmodel.utils.DistributionFamily.values(), value)
+        return self._set(distribution=jvm.hex.genmodel.utils.DistributionFamily.valueOf(correct_case_value))
 
     def setConvertUnknownCategoricalLevelsToNa(self, value):
         return self._set(convertUnknownCategoricalLevelsToNa=value)
@@ -188,7 +196,8 @@ class H2OSharedTreeParams(H2OAlgorithmParams):
     def setHistogramType(self, value):
         assert_is_type(value, None, Enum("AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        return self._set(histogramType=jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(value))
+        correct_case_value = get_correct_case_enum(jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.values(), value)
+        return self._set(histogramType=jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(correct_case_value))
 
     def setR2Stopping(self, value):
         return self._set(r2Stopping=value)
@@ -343,7 +352,120 @@ class H2OAutoMLParams(Params):
     ##
     ## Getters
     ##
+    def getPredictionCol(self):
+        return self.getOrDefault(self.predictionCol)
+
+    def getAllStringColumnsToCategorical(self):
+        return self.getOrDefault(self.allStringColumnsToCategorical)
+
+    def getRatio(self):
+        return self.getOrDefault(self.ratio)
+
+    def getFoldColumn(self):
+        return self.getOrDefault(self.foldColumn)
+
+    def getWeightsColumn(self):
+        return self.getOrDefault(self.weightsColumn)
+
+    def getIgnoredColumns(self):
+        return self.getOrDefault(self.ignoredColumns)
+
+    def getTryMutations(self):
+        return self.getOrDefault(self.tryMutations)
+
+    def getExcludeAlgos(self):
+        # Convert Java Enum to String so we can represent it in Python
+        algos = self.getOrDefault(self.excludeAlgos)
+        algos_str = []
+        if algos is not None:
+            for a in algos:
+                algos_str.append(a)
+        return algos_str
+
+    def getProjectName(self):
+        return self.getOrDefault(self.projectName)
+
+    def getLoss(self):
+        return self.getOrDefault(self.loss)
+
+    def getMaxRuntimeSecs(self):
+        return self.getOrDefault(self.maxRuntimeSecs)
+
+    def getStoppingRounds(self):
+        return self.getOrDefault(self.stoppingRounds)
+
+    def getStoppingTolerance(self):
+        return self.getOrDefault(self.stoppingTolerance)
+
+    def getStoppingMetric(self):
+        # Convert Java Enum to String so we can represent it in Python
+        return self.getOrDefault(self.stoppingMetric).toString()
+
+    def getNfolds(self):
+        return self.getOrDefault(self.nfolds)
+
+    def getConvertUnknownCategoricalLevelsToNa(self):
+        return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
+
 
     ##
     ## Setters
     ##
+    def setPredictionCol(self, value):
+        return self._set(predictionCol=value)
+
+    def setAllStringColumnsToCategorical(self, value):
+        return self._set(allStringColumnsToCategorical=value)
+
+    def setRatio(self, value):
+        return self._set(ratio=value)
+
+    def setFoldColumn(self, value):
+        return self._set(foldColumn=value)
+
+    def setWeightsColumn(self, value):
+        return self._set(weightsColumn=value)
+
+    def setIgnoredColumns(self, value):
+        return self._set(ignoredColumns=value)
+
+    def setTryMutations(self, value):
+        return self._set(tryMutations=value)
+
+    def setExcludeAlgos(self, value):
+        # H2O typechecks does not check for case sensitivity
+        java_enums = []
+        if value is not None:
+            for algo in value:
+                assert_is_type(algo, Enum("GLM", "DRF", "GBM", "DeepLearning", "StackedEnsemble"))
+                jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+                java_enums.append(get_correct_case_enum(jvm.ai.h2o.automl.AutoML.algo.values(), algo))
+        return self._set(excludeAlgos=java_enums)
+
+    def setProjectName(self, value):
+        return self._set(projectName=value)
+
+    def setLoss(self, value):
+        return self._set(loss=value)
+
+    def setMaxRuntimeSecs(self, value):
+        return self._set(maxRuntimeSecs=value)
+
+    def setStoppingRounds(self, value):
+        return self._set(stoppingRounds=value)
+
+    def setStoppingTolerance(self, value):
+        return self._set(stoppingTolerance=value)
+
+    def setStoppingMetric(self, value):
+        # H2O typechecks does not check for case sensitivity
+        assert_is_type(value, Enum("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "lift_top_group", "misclassification", "mean_per_class_error", "custom"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.ScoreKeeper.StoppingMetric.values(), value)
+        return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
+
+    def setNfolds(self, value):
+        return self._set(nfolds=value)
+
+    def setConvertUnknownCategoricalLevelsToNa(self, value):
+        return self._set(convertUnknownCategoricalLevelsToNa=value)

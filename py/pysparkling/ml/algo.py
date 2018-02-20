@@ -120,7 +120,7 @@ class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, Java
 class H2ODeepLearningModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
-class H2OAutoML(JavaModel, H2OAutoMLParams, JavaMLWritable, JavaMLReadable):
+class H2OAutoML(JavaEstimator, H2OAutoMLParams, JavaMLWritable, JavaMLReadable):
 
     @keyword_only
     def __init__(self, predictionCol=None, allStringColumnsToCategorical=True, ratio=1.0, foldColumn=None, weightsColumn=None,
@@ -135,7 +135,7 @@ class H2OAutoML(JavaModel, H2OAutoMLParams, JavaMLWritable, JavaMLReadable):
 
         self._setDefault(predictionCol=None, allStringColumnsToCategorical=True, ratio=1.0, foldColumn=None, weightsColumn=None,
                          ignoredColumns=[], tryMutations=True, excludeAlgos=None, projectName=None, loss="AUTO", maxRuntimeSecs=3600.0, stoppingRounds=3,
-                         stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False)
+                         stoppingTolerance=0.001, stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5, convertUnknownCategoricalLevelsToNa=False)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
@@ -146,7 +146,7 @@ class H2OAutoML(JavaModel, H2OAutoMLParams, JavaMLWritable, JavaMLReadable):
         kwargs = self._input_kwargs
 
         if "stoppingMetric" in kwargs:
-            kwargs["stoppingMetric"] = self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf(kwargs["distribution"])
+            kwargs["stoppingMetric"] = self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf(kwargs["stoppingMetric"])
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         double_types = ["maxRuntimeSecs", "stoppingTolerance", "ratio"]

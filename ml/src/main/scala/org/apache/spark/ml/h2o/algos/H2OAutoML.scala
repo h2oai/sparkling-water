@@ -191,7 +191,7 @@ trait H2OAutoMLParams extends Params {
   private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
   private final val stoppingMetric = new H2OAutoMLStoppingMetricParam(this, "stoppingMetric", "Stopping metric")
   private final val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
-  private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "setConvertUnknownCategoricalLevelsToNa", "Convert unknown" +
+  private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
     " categorical levels to NA during predictions")
 
   //
