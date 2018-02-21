@@ -60,10 +60,10 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     // check if we need to do any splitting
     if (getRatio() < 1.0) {
       // need to do splitting
-      val keys = split(input, hc)
-      spec.input_spec.training_frame = keys(0)
+      val keys = H2OFrameSupport.split(input, Seq(Key.rand(), Key.rand()), Seq(getRatio()))
+      spec.input_spec.training_frame = keys(0)._key
       if (keys.length > 1) {
-        spec.input_spec.validation_frame = keys(1)
+        spec.input_spec.validation_frame = keys(1)._key
       }
     } else {
       spec.input_spec.training_frame = input._key
@@ -96,20 +96,6 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     val model = new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()))
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
-  }
-
-  private def split(fr: H2OFrame, hc: H2OContext): Array[Key[Frame]] = {
-    val trainKey = Key.make[Frame]("train")
-    val validKey = Key.make[Frame]("valid")
-    val keys = Array(trainKey, validKey)
-    val ratios = Array[Double](getRatio())
-
-    val splitter = new FrameSplitter(fr, ratios, keys, null)
-    water.H2O.submitTask(splitter)
-    // return results
-    splitter.getResult
-
-    keys
   }
 
   @DeveloperApi

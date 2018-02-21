@@ -64,10 +64,10 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     // check if we need to do any splitting
     if ($(ratio) < 1.0) {
       // need to do splitting
-      val keys = split(input, hc)
-      getParams._train = keys(0)
+      val keys = H2OFrameSupport.split(input, Seq(Key.rand(), Key.rand()), Seq($(ratio)))
+      getParams._train = keys(0)._key
       if (keys.length > 1) {
-        getParams._valid = keys(1)
+        getParams._valid = keys(1)._key
       }
     } else {
       getParams._train = input._key
@@ -110,21 +110,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 
   @Since("1.6.0")
   override def write: MLWriter = new H2OAlgorithmWriter(this)
-
-  private def split(fr: H2OFrame, hc: H2OContext): Array[Key[Frame]] = {
-    val trainKey = Key.make[Frame]("train")
-    val validKey = Key.make[Frame]("valid")
-    val keys = Array(trainKey, validKey)
-    val ratios = Array[Double]($(ratio))
-
-    val splitter = new FrameSplitter(fr, ratios, keys, null)
-    water.H2O.submitTask(splitter)
-    // return results
-    splitter.getResult
-
-    keys
-  }
-
+  
   def defaultFileName: String
 }
 
