@@ -31,13 +31,15 @@ How to...
    change_log_location
    obtaining_logs
 
-**Databricks Azure**
+
+**Databricks**
 
 .. toctree::
    :maxdepth: 2
 
+   databricks_logs
    rsparkling_azure_dbc
-   sw_azure_dbc.rst
+   sw_azure_dbc
    pysparkling_azure_dbc
 
 **Zeppelin**
