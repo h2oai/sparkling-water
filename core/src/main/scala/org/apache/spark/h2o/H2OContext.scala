@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o
 
+import java.net.URI
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
@@ -327,17 +328,6 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     }
 
     basic ++ sparkYarnAppId ++ backend.epilog
-  }
-
-  /**
-    * @param path directory where the logs will be downloaded
-    */
-  def downloadH2OLogs(path: String, logFileName: String = "logs.zip"): String = {
-    import sys.process._
-    import java.net.URL
-    import java.io.File
-    new URL(s"http://$localClientIp:$localClientPort/3/Logs/download").#>(new File(path, logFileName)).!!
-    path + File.separator + logFileName
   }
 
   // scalastyle:off
