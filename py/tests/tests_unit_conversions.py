@@ -190,13 +190,12 @@ class FrameTransformationsTest(unittest.TestCase):
         self.assertEquals(dfe.collect(), [Row(c1=1, c2='first', c3=3), Row(c1=2, c2='second', c3=3)])
 
     def test_sparse_data_conversion(self):
-        data = [(float(x), SparseVector(50000, {x: float(x)})) for x in range(1, 90)]
+        data = [(float(x), SparseVector(5000, {x: float(x)})) for x in range(1, 90)]
         df = self._spark.sparkContext.parallelize(data).toDF()
-
         t0 = time.time()
         self._hc.as_h2o_frame(df)
         total = time.time() - t0
-        assert total < 20 # The conversion should not take longer then 20 seconds
+        assert total < 10 # The conversion should not take longer then 20 seconds
 
     def test_load_mojo_gbm(self):
         from pysparkling.ml import H2OMOJOModel, H2OGBM
