@@ -39,7 +39,6 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def nodeBasePort = sparkConf.getInt(PROP_NODE_PORT_BASE._1, PROP_NODE_PORT_BASE._2)
   def nodeIcedDir = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
-  def nodeNetworkMask = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
 
   def isInternalSecureConnectionsEnabled = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
                                                                 PROP_INTERNAL_SECURE_CONNECTIONS._2)
@@ -57,7 +56,6 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def setNodeBasePort(port: Int) = set(PROP_NODE_PORT_BASE._1, port.toString)
   def setNodeIcedDir(dir: String) = set(PROP_NODE_ICED_DIR._1, dir)
-  def setNodeNetworkMask(mask: String) = set(PROP_NODE_NETWORK_MASK._1, mask)
 
   def setInternalSecureConnectionsEnabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, true)
   def setInternalSecureConnectionsDisabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, false)
@@ -107,9 +105,6 @@ object InternalBackendConf {
 
   /** Location of iced directory for Spark nodes */
   val PROP_NODE_ICED_DIR = ("spark.ext.h2o.node.iced.dir", None)
-
-  /** Subnet selector for H2O nodes running inside executors - if the mask is specified then Spark network setup is not discussed. */
-  val PROP_NODE_NETWORK_MASK = ("spark.ext.h2o.node.network.mask", None)
 
   /** Secure internal connections by automatically generated credentials */
   val PROP_INTERNAL_SECURE_CONNECTIONS = ("spark.ext.h2o.internal_secure_connections", false)

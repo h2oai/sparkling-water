@@ -96,6 +96,11 @@ Configuration properties independent of selected backend
 |                                                    |                | nodes. It is disabled by default for   |
 |                                                    |                | security reasons.                      |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.node.network.mask``                | ``None``       | Subnet selector for H2O running inside |
+|                                                    |                | Spark executors. This disables using   |
+|                                                    |                | IP reported by Spark but tries to find |
+|                                                    |                | IP based on the specified mask.        |
++----------------------------------------------------+----------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |
@@ -186,11 +191,6 @@ Internal backend configuration properties
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.node.iced.dir``                    | ``None``       | Location of iced directory for H2O     |
 |                                                    |                | nodes on the Spark executors.          |
-+----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.node.network.mask``                | ``None``       | Subnet selector for H2O running inside |
-|                                                    |                | Spark executors. This disables using   |
-|                                                    |                | IP reported by Spark but tries to find |
-|                                                    |                | IP based on the specified mask.        |
 +----------------------------------------------------+----------------+----------------------------------------+
 
 --------------
