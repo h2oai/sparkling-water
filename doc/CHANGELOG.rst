@@ -1,6 +1,27 @@
 Change Log
 ==========
 
+v2.0.24 (2018-02-26)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/24/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/24/index.html>`__
+
+-  Bug
+        
+   -  `SW-723 <https://0xdata.atlassian.net/browse/SW-723>`__ - Sparkling water doc artefact is missing scala version
+   -  `SW-727 <https://0xdata.atlassian.net/browse/SW-727>`__ - Improve method for downloading H2O logs 
+   -  `SW-728 <https://0xdata.atlassian.net/browse/SW-728>`__ - Use new light endpoint introduced in 3.18.0.1
+   -  `SW-734 <https://0xdata.atlassian.net/browse/SW-734>`__ - Make sure we use the unique key names in split method
+   -  `SW-736 <https://0xdata.atlassian.net/browse/SW-736>`__ - Document how to download logs on Databricks cluster
+   -  `SW-737 <https://0xdata.atlassian.net/browse/SW-737>`__ - Expose downloadH2OLogs on H2OContext in PySparkling
+   -  `SW-738 <https://0xdata.atlassian.net/browse/SW-738>`__ - Move spark.ext.h2o.node.network.mask setter to SharedArguments
+                
+-  Improvement
+        
+   -  `SW-702 <https://0xdata.atlassian.net/browse/SW-702>`__ - Create Spark Transformer for AutoML
+   -  `SW-725 <https://0xdata.atlassian.net/browse/SW-725>`__ - create an an equvivalent of h2o.download_all_logs in scala
+   -  `SW-730 <https://0xdata.atlassian.net/browse/SW-730>`__ - Upgrade H2O to 3.18.0.2
+                
+                                
 v2.0.23 (2018-02-14)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/23/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/23/index.html>`__
