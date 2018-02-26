@@ -83,6 +83,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-disable_web")
     }
 
+    if(hc.getConf.nodeNetworkMask.isDefined) {
+      cmdToLaunch = Seq("-network", hc.getConf.nodeNetworkMask.get)
+    }
+
     // start external H2O cluster and log the output
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
 

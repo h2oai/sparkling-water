@@ -164,6 +164,10 @@ class H2OConf(object):
         self._jconf.setH2ONodeWebDisabled()
         return self
 
+    def set_node_network_mask(self, mask):
+        self._jconf.setNodeNetworkMask(mask)
+        return self
+
     def set_flow_dir(self, dir):
         self._jconf.setFlowDir(dir)
         return self
@@ -236,10 +240,6 @@ class H2OConf(object):
 
     def set_node_iced_dir(self, dir):
         self._jconf.setNodeIcedDir(dir)
-        return self
-
-    def set_node_network_mask(self, mask):
-        self._jconf.setNodeNetworkMask(mask)
         return self
 
     def set_internal_secure_connections_enabled(self):
@@ -424,6 +424,9 @@ class H2OConf(object):
     def h2o_node_web_enabled(self):
         return self._jconf.h2oNodeWebEnabled()
 
+    def node_network_mask(self):
+        return self._get_option(self._jconf.nodeNetworkMask())
+
     def flow_dir(self):
         return self._get_option(self._jconf.flowDir())
 
@@ -476,9 +479,6 @@ class H2OConf(object):
 
     def node_iced_dir(self):
         return self._get_option(self._jconf.nodeIcedDir())
-
-    def node_network_mask(self):
-        return self._get_option(self._jconf.nodeNetworkMask())
 
     def is_internal_secure_connections_enabled(self):
         return self._jconf.isInternalSecureConnectionsEnabled()
