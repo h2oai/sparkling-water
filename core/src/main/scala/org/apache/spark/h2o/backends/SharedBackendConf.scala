@@ -52,7 +52,7 @@ trait SharedBackendConf {
   def uiUpdateInterval = sparkConf.getInt(PROP_UI_UPDATE_INTERVAL._1, PROP_UI_UPDATE_INTERVAL._2)
   def cloudTimeout = sparkConf.getInt(PROP_CLOUD_TIMEOUT._1, PROP_CLOUD_TIMEOUT._2)
   def h2oNodeWebEnabled = sparkConf.getBoolean(PROP_NODE_ENABLE_WEB._1, PROP_NODE_ENABLE_WEB._2)
-
+  def nodeNetworkMask = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -128,7 +128,7 @@ trait SharedBackendConf {
   def setH2ONodeWebEnabled() = set(PROP_NODE_ENABLE_WEB._1, true)
   def setH2ONodeWebDisabled() = set(PROP_NODE_ENABLE_WEB._1, false)
 
-
+  def setNodeNetworkMask(mask: String) = set(PROP_NODE_NETWORK_MASK._1, mask)
 
   /** H2O Client parameters */
   def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
@@ -220,6 +220,9 @@ object SharedBackendConf {
 
   /** Enable or disable web on h2o worker nodes. It is disabled by default for security reasons. */
   val PROP_NODE_ENABLE_WEB = ("spark.ext.h2o.node.enable.web", false)
+
+  /** Subnet selector for H2O nodes running inside executors - if the mask is specified then Spark network setup is not discussed. */
+  val PROP_NODE_NETWORK_MASK = ("spark.ext.h2o.node.network.mask", None)
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)
