@@ -8,10 +8,18 @@ How to...
    :maxdepth: 1
 
    extending_h2o_jar_manually
-   security
    calling_h2o_algos
    run_sparkling_water
    run_on_windows
+
+**Security**
+
+.. toctree::
+   :maxdepth: 2
+
+   ssl
+   ldap
+
 
 **Frames Conversions and Creation**
 
