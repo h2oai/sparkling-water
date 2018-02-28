@@ -84,7 +84,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
 
     if(hc.getConf.nodeNetworkMask.isDefined) {
-      cmdToLaunch = Seq("-network", hc.getConf.nodeNetworkMask.get)
+      cmdToLaunch = cmdToLaunch ++ Seq("-network", hc.getConf.nodeNetworkMask.get)
     }
 
     // start external H2O cluster and log the output
