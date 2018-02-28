@@ -67,6 +67,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-jobname", conf.cloudName.get,
       "-mapperXmx", conf.mapperXmx,
       "-output", conf.HDFSOutputDir.get,
+      "-nthreads", conf.nthreads.toString,
       "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
       "-timeout", conf.clusterStartTimeout.toString,
       "-disown",
@@ -83,8 +84,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-disable_web")
     }
 
-    if(hc.getConf.nodeNetworkMask.isDefined) {
+    if (hc.getConf.nodeNetworkMask.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq("-network", hc.getConf.nodeNetworkMask.get)
+    }
+
+    val loginArgs = getLoginArgs(conf)
+    if (loginArgs.nonEmpty) {
+      cmdToLaunch = cmdToLaunch ++ loginArgs
     }
 
     // start external H2O cluster and log the output
