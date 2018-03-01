@@ -71,14 +71,53 @@ The sections that follow explain how to use the external cluster in both modes. 
 Manual Mode of External Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We need to start the H2O cluster before connecting to it manually. In general, an H2O cluster can be started in two ways: using the multicast discovery of the other nodes, or using the flatfile where we manually specify the future locations of H2O nodes. We recommend using the flatfile to specify the location of nodes for production usage of Sparkling Water, but in simple environments where multicast is supported, the multicast discovery should work as well.
+We need to start the H2O cluster before connecting to it manually.
+
+Running External Backend on Hadoop
+##################################
+
+This assumes that ``$H2O_EXTENDED_JAR`` contains the extended h2o driver (with support for particular Hadoop version)
+
+To start H2O cluster on Hadoop, please run:
+
+.. code:: bash
+
+    hadoop -jar $H2O_EXTENDED -jobname test -nodes 3 -mapperXmx 6g
+
+After this step, we should have an H2O cluster with three nodes running on Hadoop (Internally, the nodes discovered each other using the multicast discovery).
+
+To connect to this external cluster, run the following commands in the corresponding shell (Sparkling in case of Scala; PySparkling in case of Python):
+
+Scala:
+
+ .. code:: scala
+
+    import org.apache.spark.h2o._
+    val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setH2OCluster("representant_ip", representant_port).setCloudName("test”)
+    val hc = H2OContext.getOrCreate(spark, conf)
+
+Python:
+
+ .. code:: python
+
+    from pysparkling import *
+    conf = H2OConf(spark).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_cloud_name("test”)
+    hc = H2OContext.getOrCreate(spark, conf)
+
+
+Running External Backend in Standalone H2O Mode
+###############################################
+
+This assumes that ``$H2O_EXTENDED_JAR`` contains the standalone h2o extended jar (no Hadoop support):
+
+In general, an H2O cluster can be started in standalone mode in two ways: using the multicast discovery of the other nodes, or using the flatfile where we manually specify the future locations of H2O nodes.
+We recommend using the flatfile to specify the location of nodes for production usage of Sparkling Water, but in simple environments where multicast is supported, the multicast discovery should work as well.
 
 Let's have a look on how to start the H2O cluster and connect to it from Sparkling Water in a multicast environment. To start an H2O cluster with 3 nodes, run the following line three times:
 
 .. code:: bash
 
     java -jar $H2O_EXTENDED_JAR  -name test
-
 
 After this step, we should have an H2O cluster with three nodes running, and the nodes should have discovered each other using the multicast discovery.
 
@@ -124,7 +163,11 @@ Python:
     conf = H2OConf(spark).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_cloud_name("test”)
     hc = H2OContext.getOrCreate(spark, conf)
 
-We can see in this case that we are using an extra call ``setH2OCluster`` in Scala and ``set_h2o_cluster`` in Python. When the external cluster is started via the flatfile approach, we need to give Sparkling Water the IP address and port of an arbitrary node inside the H2O cloud in order to connect to the cluster. The IP and port of this node are passed as arguments to the ``setH2OCluster/set_h2o_cluster`` method.
+
+Specifying Client IP
+####################
+
+In case we are running H2O on Hadoop or using standalone H2O with flatfile, we need to use an extra call ``setH2OCluster`` in Scala and ``set_h2o_cluster`` in Python. When the external cluster is started via the flatfile approach, we need to give Sparkling Water the IP address and port of an arbitrary node inside the H2O cloud in order to connect to the cluster. The IP and port of this node are passed as arguments to the ``setH2OCluster/set_h2o_cluster`` method.
 
 It's possible in both cases that the node on which want to start Sparkling shell is connected to more networks. In this case, it can happen that the H2O cloud decides to use addresses from network A while Spark decides to use addresses for its executors and driver from network B. Later, when we start ``H2OContext``, the special H2O client running inside of the Spark Driver can get the same IP address as the Spark driver, and, thus, the rest of the H2O cloud can't see it. This shouldn't happen in environments where the nodes are connected to only one network; however we provide a configuration for how to deal with this case as well.
 
