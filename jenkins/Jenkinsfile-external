@@ -7,7 +7,7 @@ properties(
                 parameters(
                         [
                                 choice(
-                                        choices: '2.2.1\n2.2.0',
+                                        choices: '2.3.0',
                                         description: 'Version of Spark used for testing.',
                                         name: 'sparkVersion'),
 

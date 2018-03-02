@@ -15,21 +15,25 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.utils
+package org.apache.spark.h2o.ui
 
-import scala.language.{implicitConversions, postfixOps}
-import scala.reflect.runtime.universe._
+import org.apache.spark.SparkConf
+import org.apache.spark.scheduler._
+import org.apache.spark.status.{AppHistoryServerPlugin, ElementTrackingStore}
+import org.apache.spark.ui.SparkUI
 
 /**
-  * Utils object which is in both scala 2.10 and scala 2.11 and contains same methods but with implementation tailored
-  * to specific scala version
+  * History server plugin to enable Sparkling Water UI on history server
   */
-object CrossScalaUtils extends CrossScalaShared {
-  override def getConstructorSymbol(tpe: _root_.scala.reflect.runtime.universe.Type): _root_.scala.reflect.runtime.universe.Symbol = {
-    tpe.decl(termNames.CONSTRUCTOR)
+class AppStatusPlugin extends AppHistoryServerPlugin {
+  override def createListeners(conf: SparkConf, store: ElementTrackingStore): Seq[SparkListener] = {
+    Seq(new AppStatusListener(conf, store, live = false))
   }
 
-  override def getParams(methodSymbol: _root_.scala.reflect.runtime.universe.MethodSymbol): List[List[_root_.scala.reflect.runtime.universe.Symbol]] = {
-    methodSymbol.paramLists
+  override def setupUI(ui: SparkUI): Unit = {
+    val sparklingWaterAppStatusStore = new AppStatusStore(ui.store.store)
+    if (sparklingWaterAppStatusStore.isSparklingWaterStarted()) {
+      new SparklingWaterUITab(sparklingWaterAppStatusStore, ui)
+    }
   }
 }

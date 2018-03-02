@@ -28,10 +28,10 @@ import scala.xml.Node
   */
 case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage("") {
 
-  private val listener = parent.listener
+  private val store = parent.store
 
   private def h2oInfo(): Seq[(String, String)] = {
-    val h2oBuildInfo = listener.h2oBuildInfo.get
+    val h2oBuildInfo = store.getStartedInfo().h2oBuildInfo
     Seq(
       ("H2O Build Version", h2oBuildInfo.h2oBuildVersion),
       ("H2O Git Branch", h2oBuildInfo.h2oGitBranch),
@@ -42,12 +42,12 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
     )
   }
 
-  private def flowUrl(): String = s"http://${listener.h2oCloudInfo.get.localClientIpPort}"
+  private def flowUrl(): String = s"http://${store.getStartedInfo().h2oCloudInfo.localClientIpPort}"
   
-  private def swProperties(): Seq[(String, String)] = listener.swProperties.get
+  private def swProperties(): Seq[(String, String)] = store.getStartedInfo().swProperties
 
   private def swInfo(): Seq[(String, String)] = {
-    val cloudInfo = listener.h2oCloudInfo.get
+    val cloudInfo = store.getStartedInfo().h2oCloudInfo
     Seq(
       ("Flow UI", flowUrl()),
       ("Nodes", cloudInfo.cloudNodes.mkString(","))
@@ -60,7 +60,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
         |Sparkling Water runtime information.
       """.stripMargin
 
-    val content = if (listener.uiReady) {
+    val content = if (store.isSparklingWaterStarted()) {
 
       val swInfoTable = UIUtils.listingTable(
         propertyHeader, h2oRow, swInfo(), fixedWidth = true)
@@ -74,16 +74,16 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
             <strong>User:</strong>{parent.getSparkUser}
           </li>
           <li>
-            <strong>Uptime:</strong>{UIUtils.formatDuration(listener.lastTimeHeadFromH2O - listener.h2oCloudInfo.get.h2oStartTime)}
+            <strong>Uptime:</strong>{UIUtils.formatDuration(store.getUpdateInfo().timeInMillis - store.getStartedInfo().h2oCloudInfo.h2oStartTime)}
           </li>
           <li>
-            <strong>Health:</strong>{if (listener.cloudHealthy) "\u2714" else "\u2716"}
+            <strong>Health:</strong>{if (store.getUpdateInfo().cloudHealthy) "\u2714" else "\u2716"}
           </li>
           <li>
-            <strong>Secured communication:</strong>{listener.h2oCloudInfo.map(p => if (p.cloudSecured) "\u2714" else "\u2716").getOrElse("\u2754")}
+            <strong>Secured communication:</strong>{if (store.getStartedInfo().h2oCloudInfo.cloudSecured) "\u2714" else "\u2716"}
           </li>
           <li>
-            <strong>Nodes:</strong>{listener.h2oCloudInfo.get.cloudNodes.length}
+            <strong>Nodes:</strong>{store.getStartedInfo().h2oCloudInfo.cloudNodes.length}
           </li>
           <li>
             <a href={flowUrl()}>
