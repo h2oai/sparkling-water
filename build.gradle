@@ -56,6 +56,9 @@ ext {
       project(':sparkling-water-app-streaming'),
       project(':sparkling-water-package')
     ]
+    javaProjects = [
+      project(':sparkling-water-extension-stack-trace')
+    ]
     // Python projects
     pythonProjects = [
       project(':sparkling-water-py')
@@ -125,6 +128,9 @@ configure(subprojects) { project ->
       apply from: "$rootDir/gradle/python.gradle"
     }
 
+    if(project in javaProjects) {
+        apply plugin: 'java'
+    }
     // All subprojects needs Spark support
     apply from: "$rootDir/gradle/spark.gradle"
 

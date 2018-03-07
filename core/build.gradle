@@ -61,6 +61,9 @@ dependencies {
   // Sparkling Water REPL
   compile(project(':sparkling-water-repl'))
 
+  // Extension for collecting the stack traces
+  runtime project(':sparkling-water-extension-stack-trace')
+
   // Add joda optional convert library which is required in Scala environment
   compile "org.joda:joda-convert:1.7"
 
