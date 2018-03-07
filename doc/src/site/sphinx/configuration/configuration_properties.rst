@@ -101,7 +101,7 @@ Configuration properties independent of selected backend
 |                                                    |                | IP reported by Spark but tries to find |
 |                                                    |                | IP based on the specified mask.        |
 +----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.stacktrace.collector.enabled``     | ``true``       | Enable or disable stack trace          |
+| ``spark.ext.h2o.stacktrace.collector.enabled``     | ``false``      | Enable or disable stack trace          |
 |                                                    |                | collector on each H2O node.            |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.stacktrace.collector.interval``    | ``20``         | Interval specifying how often stack    |
