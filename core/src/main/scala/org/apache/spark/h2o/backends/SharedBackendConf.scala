@@ -232,7 +232,7 @@ object SharedBackendConf {
   val PROP_NODE_NETWORK_MASK = ("spark.ext.h2o.node.network.mask", None)
 
   /** Enable or disable stack trace collector on each h2o node */
-  val PROP_NODE_STACK_TRACE_COLLECTOR_ENABLED = ("spark.ext.h2o.stacktrace.collector.enabled", true)
+  val PROP_NODE_STACK_TRACE_COLLECTOR_ENABLED = ("spark.ext.h2o.stacktrace.collector.enabled", false)
 
   /** Set how often stack traces are taken on each h2o node */
   val PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL = ("spark.ext.h2o.stacktrace.collector.interval", 20)
