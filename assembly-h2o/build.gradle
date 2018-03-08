@@ -73,6 +73,11 @@ if (project.hasProperty("doExtend")) {
         artifactsToMerge(project(":sparkling-water-ml")) {
             transitive = false
         }
+
+        artifactsToMerge(project(":sparkling-water-extension-stack-trace")){
+            transitive = false
+        }
+
         artifactsToMerge(project(":sparkling-water-core")) {
             exclude group: "org.joda", module: "joda-convert:1.7"
             transitive = false

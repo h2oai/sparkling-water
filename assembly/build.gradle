@@ -8,12 +8,16 @@ dependencies {
   compile( project(":sparkling-water-core") ) { 
     exclude group: "javax.servlet", module: "servlet-api"
   }
+
   compile( project(":sparkling-water-examples") )
 
   compile (project(":sparkling-water-ml"))
 
+  compile project(":sparkling-water-extension-stack-trace")
+
   // And Scala library
-  compile "org.scala-lang:scala-library:${scalaVersion}" 
+  compile "org.scala-lang:scala-library:${scalaVersion}"
+
 }
 
 jar {
@@ -40,6 +44,7 @@ shadowJar {
     include(project(":sparkling-water-examples"))
     include(project(":sparkling-water-repl"))
     include(project(":sparkling-water-ml"))
+    include(project(":sparkling-water-extension-stack-trace"))
     include(dependency("ai.h2o:h2o-genmodel"))
     include(dependency("ai.h2o:h2o-core"))
     include(dependency("ai.h2o:h2o-scala_${scalaBaseVersion}"))
