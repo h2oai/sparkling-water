@@ -20,7 +20,7 @@ public class StackTraceExtension extends AbstractH2OExtension {
   @Override
   public void printHelp() {
     System.out.println(
-            "\nFailed node watchdog extension:\n" +
+            "\nStack trace collector extension:\n" +
                     "    -stacktrace_collector_interval\n" +
                     "          Time in seconds specifying how often to collect logs. \n"
 
