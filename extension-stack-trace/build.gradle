@@ -1,0 +1,12 @@
+description = "Extension for H2O in Sparkling Water to collect stack traces periodically"
+
+dependencies {
+// H2O core
+    compile("ai.h2o:h2o-core:${h2oVersion}") {
+        //
+        // Exclude all dependencies provided by Spark environment already
+        // The motivation is to catch error at compile time
+        exclude(group: "net.java.dev.jets3t", module: "jets3t")
+        exclude(group: "commons-collections", module: "commons-collections")
+    }
+}

@@ -168,6 +168,10 @@ class H2OConf(object):
         self._jconf.setNodeNetworkMask(mask)
         return self
 
+    def set_stacktrace_collector_interval(self, interval):
+        self._jconf.setStacktraceCollectorInterval(interval)
+        return self
+
     def set_flow_dir(self, dir):
         self._jconf.setFlowDir(dir)
         return self
@@ -426,6 +430,9 @@ class H2OConf(object):
 
     def node_network_mask(self):
         return self._get_option(self._jconf.nodeNetworkMask())
+
+    def stacktrace_collector_interval(self):
+        return self._jconf.stacktraceCollectorInterval()
 
     def flow_dir(self):
         return self._get_option(self._jconf.flowDir())
