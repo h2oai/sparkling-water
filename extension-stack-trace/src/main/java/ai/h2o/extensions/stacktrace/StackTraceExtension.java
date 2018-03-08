@@ -62,10 +62,10 @@ public class StackTraceExtension extends AbstractH2OExtension {
     public void run() {
       while (true) {
         try {
-          Log.debug("Taking stacktrace at time: " + new Date());
+          Log.info("Taking stacktrace at time: " + new Date());
           Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
           for (Map.Entry<Thread, StackTraceElement[]> e : allStackTraces.entrySet()) {
-            Log.debug("Taking stacktrace for thread: " + e.getKey());
+            Log.info("Taking stacktrace for thread: " + e.getKey());
             for (StackTraceElement st : e.getValue()) {
               Log.info("\t" + st.toString());
             }
