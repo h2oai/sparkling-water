@@ -115,6 +115,7 @@ pipeline {
                         
                     # Perform a build
                     ./gradlew build -x check
+                    ./gradlew site
                     ./gradlew buildSparklingWaterDist
                                 
                     """
