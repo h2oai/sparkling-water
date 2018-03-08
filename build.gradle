@@ -144,7 +144,6 @@ configure(subprojects) { project ->
     }
 
     if (project in docProjects){
-        apply plugin: 'base'
         apply plugin: 'java'
         apply plugin: 'kr.motd.sphinx'
     }
@@ -166,7 +165,7 @@ task buildSparklingWaterDist(type: Exec) {
 task dist(dependsOn: buildSparklingWaterDist)
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '4.5'
+  gradleVersion = '4.6'
 }
 
 clean.doFirst {
