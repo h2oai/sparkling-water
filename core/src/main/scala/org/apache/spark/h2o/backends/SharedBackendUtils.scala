@@ -46,7 +46,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     *
     * @param conf H2O Configuration to check
     * @return checked and updated configuration
-    * */
+    **/
   def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
 
@@ -56,15 +56,15 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       conf.set("spark.locality.wait", "30000")
     }
 
-    if(conf.h2oClientLogDir.isEmpty){
+    if (conf.h2oClientLogDir.isEmpty) {
       conf.setH2OClientLogDir(defaultLogDir(conf.sparkConf.getAppId))
     }
 
-    if(conf.clientIp.isEmpty){
+    if (conf.clientIp.isEmpty) {
       conf.setClientIp(getHostname(SparkEnv.get))
     }
 
-    if(conf.backendClusterMode != "internal" && conf.backendClusterMode != "external"){
+    if (conf.backendClusterMode != "internal" && conf.backendClusterMode != "external") {
       logWarning(
         s"""'spark.ext.h2o.backend.cluster.mode' property is set to ${conf.backendClusterMode}.
           Valid options are "internal" or "external". Running in internal cluster mode now!
@@ -73,9 +73,9 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
 
     if (conf.getInt("spark.sql.autoBroadcastJoinThreshold", 0) != -1) {
       logWarning("Due to non-deterministic behavior of Spark broadcast-based joins\n" +
-                 "We recommend to disable them by\n" +
-                 "configuring `spark.sql.autoBroadcastJoinThreshold` variable to value `-1`:\n" +
-                 "sqlContext.sql(\"SET spark.sql.autoBroadcastJoinThreshold=-1\")")
+        "We recommend to disable them by\n" +
+        "configuring `spark.sql.autoBroadcastJoinThreshold` variable to value `-1`:\n" +
+        "sqlContext.sql(\"SET spark.sql.autoBroadcastJoinThreshold=-1\")")
     }
 
     conf
@@ -95,13 +95,14 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     * @return sequence of arguments
     */
   def getH2OCommonArgs(conf: H2OConf): Seq[String] = (
-  // Options in form key=value
+    // Options in form key=value
     Seq("-name", conf.cloudName.get)
-    ++ addIfNotNull("-nthreads", Some(conf.nthreads).filter( _ > 0).map(_.toString).orElse(conf.sparkConf.getOption("spark.executor.cores")).orNull)
-    ++ addIfNotNull("-internal_security_conf", conf.sslConf.orNull)
-  // Append single boolean options
-    ++ Seq(("-ga_opt_out", conf.disableGA))
-        .filter(_._2).map(x => x._1)
+      ++ Seq("-stacktrace_collector_interval", conf.stacktraceCollectorInterval.toString)
+      ++ addIfNotNull("-nthreads", Some(conf.nthreads).filter(_ > 0).map(_.toString).orElse(conf.sparkConf.getOption("spark.executor.cores")).orNull)
+      ++ addIfNotNull("-internal_security_conf", conf.sslConf.orNull)
+      // Append single boolean options
+      ++ Seq(("-ga_opt_out", conf.disableGA))
+      .filter(_._2).map(x => x._1)
     )
 
   def getLoginArgs(conf: H2OConf): Seq[String] = (
@@ -136,6 +137,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
 
   private def createTempDir(): File = {
     def baseDir = new File(System.getProperty("java.io.tmpdir"))
+
     def baseName = System.currentTimeMillis() + "-"
 
     var cnt = 0
@@ -163,12 +165,13 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
 
   /**
     * Increment log level to at least desired minimal log level.
-    * @param logLevel  actual log level
-    * @param minLogLevel  desired minimal log level
+    *
+    * @param logLevel    actual log level
+    * @param minLogLevel desired minimal log level
     * @return if logLevel is less verbose than minLogLeve then minLogLevel, else logLevel
     */
   private def incLogLevel(logLevel: String, minLogLevel: String): String = {
-    val logLevels = Seq( ("OFF", 0), ("FATAL", 1), ("ERROR", 2),
+    val logLevels = Seq(("OFF", 0), ("FATAL", 1), ("ERROR", 2),
       ("WARN", 3), ("INFO", 4), ("DEBUG", 5), ("TRACE", 6), ("ALL", 7))
     val ll = logLevels.find(t => t._1 == logLevel)
     val mll = logLevels.find(t => t._1 == minLogLevel)
