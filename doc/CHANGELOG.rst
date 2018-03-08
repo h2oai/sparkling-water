@@ -1,6 +1,32 @@
 Change Log
 ==========
 
+v2.0.25 (2018-03-08)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/25/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/25/index.html>`__
+
+-  Bug
+        
+   -  `SW-739 <https://0xdata.atlassian.net/browse/SW-739>`__ - Sparkling Water Doc artefact is still missing Scala version
+   -  `SW-742 <https://0xdata.atlassian.net/browse/SW-742>`__ - Fix setting up node network mask on external cluster
+   -  `SW-743 <https://0xdata.atlassian.net/browse/SW-743>`__ - Allow to set LDAP and different security options in external backend as well
+   -  `SW-747 <https://0xdata.atlassian.net/browse/SW-747>`__ - Fix bug in documentation for manual mode of external backend
+   -  `SW-757 <https://0xdata.atlassian.net/browse/SW-757>`__ - Fix tests after enabling the stack-trace collection
+                
+-  Improvement
+        
+   -  `SW-744 <https://0xdata.atlassian.net/browse/SW-744>`__ - Document how to use Sparkling Water with LDAP in Sparkling Water docs
+   -  `SW-745 <https://0xdata.atlassian.net/browse/SW-745>`__ - Expose Grid search as Spark pipeline step in the Scala API
+   -  `SW-748 <https://0xdata.atlassian.net/browse/SW-748>`__ - Upgrade to Gradle 4.6
+   -  `SW-752 <https://0xdata.atlassian.net/browse/SW-752>`__ - Collect stack traces on each h2o node as part of log collecting extension
+   -  `SW-754 <https://0xdata.atlassian.net/browse/SW-754>`__ - Upgrade H2O to 3.18.0.3
+   -  `SW-756 <https://0xdata.atlassian.net/browse/SW-756>`__ - Upgrade H2O to 3.18.0.4
+                
+-  Docs
+        
+   -  `SW-753 <https://0xdata.atlassian.net/browse/SW-753>`__ - Add &quot;How to&quot; for changing the default H2O port 
+                
+                            
 v2.0.24 (2018-02-26)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/24/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/24/index.html>`__
