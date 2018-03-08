@@ -56,11 +56,20 @@ task sourcesDocJar(type: Jar){
     include "CHANGELOG.rst"
 }
 
+
 project.tasks.withType(Jar).all { it -> if (it != docJar && it != sourcesDocJar) enabled = false}
 
+configurations {
+    customJars
+}
+
 artifacts {
-    archives docJar
-    archives sourcesDocJar
+    customJars docJar
+    customJars sourcesDocJar
+}
+
+uploadArchives {
+    configuration = configurations.customJars
 }
 
 createVersionFile.dependsOn cleanDoc
