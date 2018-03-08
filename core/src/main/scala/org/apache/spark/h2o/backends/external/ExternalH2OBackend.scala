@@ -77,10 +77,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
     )
 
-    if(conf.stacktraceCollectorEnabled){
-      cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-stacktrace_collector_enabled")
-    }
-
     if (conf.h2oDriverIf.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq[String]("-driverif", conf.h2oDriverIf.get)
     }

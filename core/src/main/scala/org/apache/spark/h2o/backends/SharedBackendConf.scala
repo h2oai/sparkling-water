@@ -53,7 +53,6 @@ trait SharedBackendConf {
   def cloudTimeout = sparkConf.getInt(PROP_CLOUD_TIMEOUT._1, PROP_CLOUD_TIMEOUT._2)
   def h2oNodeWebEnabled = sparkConf.getBoolean(PROP_NODE_ENABLE_WEB._1, PROP_NODE_ENABLE_WEB._2)
   def nodeNetworkMask = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
-  def stacktraceCollectorEnabled = sparkConf.getBoolean(PROP_NODE_STACK_TRACE_COLLECTOR_ENABLED._1, PROP_NODE_STACK_TRACE_COLLECTOR_ENABLED._2)
   def stacktraceCollectorInterval = sparkConf.getInt(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._2)
 
   /** H2O Client parameters */
@@ -131,9 +130,6 @@ trait SharedBackendConf {
   def setH2ONodeWebDisabled() = set(PROP_NODE_ENABLE_WEB._1, false)
 
   def setNodeNetworkMask(mask: String) = set(PROP_NODE_NETWORK_MASK._1, mask)
-
-  def setStacktraceCollectorEnabled() = set(PROP_NODE_STACK_TRACE_COLLECTOR_ENABLED._1, true)
-  def setStacktraceCollectorDisabled() = set(PROP_NODE_STACK_TRACE_COLLECTOR_ENABLED._1, false)
 
   def setStacktraceCollectorInterval(interval: Int) = set(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, interval.toString)
 
@@ -231,11 +227,8 @@ object SharedBackendConf {
   /** Subnet selector for H2O nodes running inside executors - if the mask is specified then Spark network setup is not discussed. */
   val PROP_NODE_NETWORK_MASK = ("spark.ext.h2o.node.network.mask", None)
 
-  /** Enable or disable stack trace collector on each h2o node */
-  val PROP_NODE_STACK_TRACE_COLLECTOR_ENABLED = ("spark.ext.h2o.stacktrace.collector.enabled", false)
-
-  /** Set how often stack traces are taken on each h2o node */
-  val PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL = ("spark.ext.h2o.stacktrace.collector.interval", 20)
+  /** Set how often in seconds stack traces are taken on each h2o node. -1 represents that the stack traces are not collected. */
+  val PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL = ("spark.ext.h2o.stacktrace.collector.interval", -1)
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)

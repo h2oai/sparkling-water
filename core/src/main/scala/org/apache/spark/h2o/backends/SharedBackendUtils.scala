@@ -102,7 +102,6 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
   // Append single boolean options
     ++ Seq(("-ga_opt_out", conf.disableGA))
         .filter(_._2).map(x => x._1)
-    ++ (if(conf.stacktraceCollectorEnabled) Seq("-stacktrace_collector_enabled") else Nil)
     ++ Seq("-stacktrace_collector_interval", conf.stacktraceCollectorInterval.toString)
     )
 

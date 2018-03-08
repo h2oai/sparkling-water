@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class StackTraceExtension extends AbstractH2OExtension {
-  private int interval = 10; // 10 seconds
+  private int interval = -1; // -1 means disabled
   private boolean enabled = false;
 
   @Override
@@ -22,25 +22,9 @@ public class StackTraceExtension extends AbstractH2OExtension {
     System.out.println(
             "\nFailed node watchdog extension:\n" +
                     "    -stacktrace_collector_interval\n" +
-                    "          Time in seconds specifying how often to collect logs. \n" +
-                    "    -stacktrace_collector_enabled\n" +
-                    "          True if the collector is enabled, false otherwise \n"
+                    "          Time in seconds specifying how often to collect logs. \n"
 
     );
-  }
-
-  private String[] parseEnabled(String[] args) {
-    for (int i = 0; i < args.length; i++) {
-      H2O.OptString s = new H2O.OptString(args[i]);
-      if (s.matches("stacktrace_collector_enabled")) {
-        enabled = true;
-        String[] new_args = new String[args.length - 1];
-        System.arraycopy(args, 0, new_args, 0, i);
-        System.arraycopy(args, i + 1, new_args, i, args.length - (i + 1));
-        return new_args;
-      }
-    }
-    return args;
   }
 
   private String[] parseInterval(String args[]) {
@@ -59,19 +43,12 @@ public class StackTraceExtension extends AbstractH2OExtension {
 
   @Override
   public String[] parseArguments(String[] args) {
-    return parseEnabled(parseInterval(args));
-  }
-
-
-  public void validateArguments() {
-    if (interval < 0) {
-      H2O.parseFailed("Stack trace collector interval has to be positive, got : " + interval);
-    }
+    return parseInterval(args);
   }
 
   @Override
   public void onLocalNodeStarted() {
-    if (enabled) {
+    if (interval > 0) {
       new StackTraceCollectorThread().start();
     }
   }
@@ -90,7 +67,7 @@ public class StackTraceExtension extends AbstractH2OExtension {
           for (Map.Entry<Thread, StackTraceElement[]> e : allStackTraces.entrySet()) {
             Log.debug("Taking stacktrace for thread: " + e.getKey());
             for (StackTraceElement st : e.getValue()) {
-              Log.debug("\t" + st.toString());
+              Log.info("\t" + st.toString());
             }
           }
           sleep(interval * 1000);
