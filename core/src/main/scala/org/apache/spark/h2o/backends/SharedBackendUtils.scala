@@ -97,12 +97,12 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
   def getH2OCommonArgs(conf: H2OConf): Seq[String] = (
   // Options in form key=value
     Seq("-name", conf.cloudName.get)
+     ++ Seq("-stacktrace_collector_interval", conf.stacktraceCollectorInterval.toString)
     ++ addIfNotNull("-nthreads", Some(conf.nthreads).filter( _ > 0).map(_.toString).orElse(conf.sparkConf.getOption("spark.executor.cores")).orNull)
     ++ addIfNotNull("-internal_security_conf", conf.sslConf.orNull)
-  // Append single boolean options
+   // Append single boolean options
     ++ Seq(("-ga_opt_out", conf.disableGA))
         .filter(_._2).map(x => x._1)
-    ++ Seq("-stacktrace_collector_interval", conf.stacktraceCollectorInterval.toString)
     )
 
   def getLoginArgs(conf: H2OConf): Seq[String] = (

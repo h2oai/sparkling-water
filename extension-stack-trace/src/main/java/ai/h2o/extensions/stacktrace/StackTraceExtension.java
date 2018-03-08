@@ -6,11 +6,9 @@ import water.util.Log;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.Set;
 
 public class StackTraceExtension extends AbstractH2OExtension {
   private int interval = -1; // -1 means disabled
-  private boolean enabled = false;
 
   @Override
   public String getExtensionName() {
