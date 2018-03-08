@@ -42,6 +42,7 @@ dependencies {
   testCompile "junit:junit:4.11"
   // to reuse some utils test classes defined in the core
   testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
+  testCompile(project(":sparkling-water-extension-stack-trace"))
 
 
   // Integration tests requirements
@@ -49,6 +50,7 @@ dependencies {
   integTestCompile "junit:junit:4.11"
   // to reuse some utils test classes defined in the core
   integTestCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
+  integTestCompile(project(":sparkling-water-extension-stack-trace"))
 
 
   // To enable Idea compiler even for integTestCode which use mllib
