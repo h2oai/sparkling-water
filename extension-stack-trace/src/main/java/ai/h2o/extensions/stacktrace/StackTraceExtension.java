@@ -71,8 +71,7 @@ public class StackTraceExtension extends AbstractH2OExtension {
             }
           }
           sleep(interval * 1000);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
+        } catch (InterruptedException ignored) {
         }
       }
     }
