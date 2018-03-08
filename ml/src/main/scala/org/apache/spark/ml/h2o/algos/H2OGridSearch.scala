@@ -253,9 +253,3 @@ class H2OGridSearchAlgoParameters private(parent: Params, name: String, doc: Str
     }
   }
 }
-
-
-trait H2OGBMHyperParameters extends Params {
-
-}
-
