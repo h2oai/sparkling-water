@@ -67,6 +67,7 @@ dependencies {
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"
 
+  testCompile(project(":sparkling-water-extension-stack-trace"))
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"
