@@ -76,7 +76,10 @@ val idf = new IDF().
 
 val hyperParams: HashMap[String, Array[AnyRef]] = HashMap()
 hyperParams += ("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
-val grid = new H2OGridSearch().setPredictionsCol("label").setHyperParameters(hyperParams.asJava).setParameters(new H2OGBM().setMaxDepth(30))
+val grid = new H2OGridSearch().
+  setPredictionsCol("label").
+  setHyperParameters(hyperParams.asJava).
+  setParameters(new H2OGBM().setMaxDepth(30))
 
 // Remove all intermediate columns
 val colPruner = new ColumnPruner().
