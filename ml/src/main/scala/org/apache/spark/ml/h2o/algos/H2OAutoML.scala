@@ -41,7 +41,7 @@ import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 /**
-  * Base class for H2O algorithm wrapper as a Spark transformer.
+  * H2O AutoML pipeline step
   */
 class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: String)
                (implicit hc: H2OContext, sqlContext: SQLContext)
