@@ -56,27 +56,6 @@ task sourcesDocJar(type: Jar){
     include "CHANGELOG.rst"
 }
 
-
-project.tasks.withType(Jar).all { it -> if (it != docJar && it != sourcesDocJar) enabled = false }
-
-project.tasks.withType(Sign).all {it -> if( it.name != "signArchives") enabled = false }
-configurations {
-    customJars
-}
-
-artifacts {
-    customJars docJar
-    customJars sourcesDocJar
-}
-signing {
-    sign configurations.customJars
-}
-
-
-uploadArchives {
-    configuration = configurations.customJars
-}
-
 createVersionFile.dependsOn cleanDoc
 sphinx.dependsOn createVersionFile
 clean.dependsOn cleanDoc
