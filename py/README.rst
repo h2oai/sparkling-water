@@ -102,7 +102,7 @@ To build PySparkling for Spark with specific Scala version:
 
 1. Clone Sparkling Water Repo
 
-.. code-block:: bash
+  .. code-block:: bash
 
     git clone http://github.com/h2oai/sparkling-water
     cd sparkling-water
@@ -110,7 +110,7 @@ To build PySparkling for Spark with specific Scala version:
 2. Point ``$SPARK_HOME`` environmental variable to Spark you want to build PySparkling for.
 3. Build PySparkling with the Scala version your Spark is built with. The supported Scala versions are 2.11 and 2.10. To build it, for example, with Scala 2.11, use:
 
-.. code-block:: bash
+  .. code-block:: bash
 
     ./gradlew build -x check -PscalaBaseVersion=2.11
 
@@ -124,7 +124,7 @@ Prepare the environment
 
 1. Either clone and build Sparkling Water project
 
-.. code-block:: bash
+  .. code-block:: bash
 
     git clone http://github.com/h2oai/sparkling-water
     cd sparkling-water
@@ -135,7 +135,7 @@ Prepare the environment
 
 2. Configure the location of Spark distribution and cluster:
 
-.. code-block:: bash
+  .. code-block:: bash
 
     export SPARK_HOME="/path/to/spark/installation"
     export MASTER='local[*]'
