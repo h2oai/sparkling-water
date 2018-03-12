@@ -26,8 +26,8 @@ package org.apache.spark.repl.h2o
 import java.io.File
 import java.net.URI
 
+import org.apache.spark.SparkContext
 import org.apache.spark.util.Utils
-import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.language.{existentials, implicitConversions, postfixOps}
 import scala.reflect._
