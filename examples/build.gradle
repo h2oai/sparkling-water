@@ -35,7 +35,6 @@ dependencies {
 
   // Add streaming
   compile "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
-  compile project(path: ':sparkling-water-core', configuration: 'testArchives')
 
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
@@ -43,7 +42,6 @@ dependencies {
   // to reuse some utils test classes defined in the core
   testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
   testCompile(project(":sparkling-water-extension-stack-trace"))
-
 
   // Integration tests requirements
   integTestCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"

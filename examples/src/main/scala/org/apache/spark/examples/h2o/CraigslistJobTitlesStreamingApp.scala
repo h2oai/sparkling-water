@@ -25,7 +25,6 @@ import org.apache.spark.examples.h2o.CraigslistJobTitlesApp.show
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming._
-import water.api.TestUtils
 import water.support.{ModelSerializationSupport, SparkContextSupport}
 
 /**
