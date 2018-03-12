@@ -28,7 +28,6 @@ import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.SparkConf
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import water.Key
-import water.api.TestUtils
 import water.fvec.Frame
 import water.support.{H2OFrameSupport, SparkContextSupport, SparkSessionSupport}
 

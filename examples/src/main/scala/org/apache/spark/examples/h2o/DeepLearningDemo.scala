@@ -23,7 +23,6 @@ import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
 import org.apache.spark.sql.Dataset
-import water.api.TestUtils
 import water.support.{H2OFrameSupport, SparkContextSupport, SparkSessionSupport}
 
 

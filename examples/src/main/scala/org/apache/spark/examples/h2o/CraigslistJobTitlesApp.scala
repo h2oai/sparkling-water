@@ -27,7 +27,6 @@ import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.{SparkContext, SparkFiles, mllib}
-import water.api.TestUtils
 import water.support._
 
 /**

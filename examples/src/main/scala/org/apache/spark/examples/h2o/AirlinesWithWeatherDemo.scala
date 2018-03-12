@@ -24,9 +24,7 @@ import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import org.apache.spark.SparkConf
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
-import water.api.TestUtils
 import water.support.{SparkContextSupport, SparkSessionSupport}
-
 
 object AirlinesWithWeatherDemo extends SparkContextSupport with SparkSessionSupport {
 
