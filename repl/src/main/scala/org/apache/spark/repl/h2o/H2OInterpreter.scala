@@ -24,6 +24,7 @@ package org.apache.spark.repl.h2o
 
 
 import java.io.File
+import java.net.URI
 
 import org.apache.spark.util.Utils
 import org.apache.spark.{SparkConf, SparkContext}
@@ -64,7 +65,11 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 
     val conf = sparkContext.getConf
 
-    val jars = H2OInterpreter.getUserJars(conf).mkString(File.pathSeparator)
+    val jars = Utils.getLocalUserJarsForShell(conf)
+      // Remove file:///, file:// or file:/ scheme if exists for each jar
+      .map { x => if (x.startsWith("file:")) new File(new URI(x)).getPath else x }
+      .mkString(File.pathSeparator)
+
 
     val interpArguments = List(
       "-Yrepl-class-based", // ensure that lines in REPL are wrapped in the classes instead of objects
@@ -87,12 +92,4 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 
 object H2OInterpreter {
   def classOutputDirectory = H2OIMain.classOutputDirectory
-
-  def getUserJars(conf: SparkConf): Seq[String] = {
-    import scala.reflect.runtime.{universe => ru}
-    val instanceMirror = ru.runtimeMirror(this.getClass.getClassLoader).reflect(Utils)
-    val methodSymbol = ru.typeOf[Utils.type].decl(ru.TermName("getLocalUserJarsForShell"))
-    val method = instanceMirror.reflectMethod(methodSymbol.asMethod)
-    method(conf).asInstanceOf[Seq[String]]
-  }
 }
