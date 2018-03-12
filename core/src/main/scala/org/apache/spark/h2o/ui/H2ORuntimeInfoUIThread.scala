@@ -24,13 +24,13 @@ import water.H2O
 /**
   * Periodically publish info to UI
   */
-class H2ORuntimeInfoUIThread(sc: SparkContext, conf : H2OConf) extends Thread{
+class H2ORuntimeInfoUIThread(sc: SparkContext, conf: H2OConf) extends Thread {
   override def run(): Unit = {
-    while(!Thread.interrupted()){
+    while (!Thread.interrupted()) {
       sc.listenerBus.post(SparkListenerH2ORuntimeUpdate(H2O.CLOUD.healthy(), System.currentTimeMillis()))
       try {
         Thread.sleep(conf.uiUpdateInterval)
-      }catch {
+      } catch {
         case _: InterruptedException => Thread.currentThread.interrupt()
       }
     }

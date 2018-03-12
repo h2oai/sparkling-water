@@ -16,7 +16,7 @@
 */
 /**
   * This code is based on code org.apache.spark.repl.SparkILoop released under Apache 2.0"
-  * Link on Github: https://github.com/apache/spark/blob/master/repl/scala-2.10/src/main/scala/org/apache/spark/repl/SparkILoop.scala
+  * Link on Github: https://github.com/apache/spark/blob/master/repl/scala-2.11/src/main/scala/org/apache/spark/repl/SparkILoop.scala
   * Author: Alexander Spoon
   */
 
@@ -24,8 +24,9 @@ package org.apache.spark.repl.h2o
 
 
 import java.io.File
+import java.net.URI
 
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.util.Utils
 
 import scala.language.{existentials, implicitConversions, postfixOps}
@@ -37,7 +38,7 @@ import scala.tools.nsc._
   * H2O Interpreter which is use to interpret scala code
   *
   * @param sparkContext spark context
-  * @param sessionId session ID for interpreter
+  * @param sessionId    session ID for interpreter
   */
 class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2OInterpreter(sparkContext, sessionId) {
 
@@ -64,7 +65,11 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 
     val conf = sparkContext.getConf
 
-    val jars = H2OInterpreter.getUserJars(conf).mkString(File.pathSeparator)
+    val jars = Utils.getLocalUserJarsForShell(conf)
+      // Remove file:///, file:// or file:/ scheme if exists for each jar
+      .map { x => if (x.startsWith("file:")) new File(new URI(x)).getPath else x }
+      .mkString(File.pathSeparator)
+
 
     val interpArguments = List(
       "-Yrepl-class-based", // ensure that lines in REPL are wrapped in the classes instead of objects
@@ -79,27 +84,12 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 
 
   override def valueOfTerm(term: String): Option[Any] = {
-    try Some(intp.eval(term))  catch { case _ : Exception => None }
+    try Some(intp.eval(term)) catch {
+      case _: Exception => None
+    }
   }
 }
 
 object H2OInterpreter {
   def classOutputDirectory = H2OIMain.classOutputDirectory
-
-  def getUserJars(conf: SparkConf): Seq[String] = {
-    import scala.reflect.runtime.{universe => ru}
-    val instanceMirror = ru.runtimeMirror(this.getClass.getClassLoader).reflect(Utils)
-    val methodSymbol = ru.typeOf[Utils.type].decl(ru.TermName("getLocalUserJarsForShell"))
-    if (methodSymbol.isMethod) {
-      val method = instanceMirror.reflectMethod(methodSymbol.asMethod)
-      method(conf).asInstanceOf[Seq[String]]
-    } else {
-      // Fallback to Spark 2.2.0
-      val m = ru.runtimeMirror(this.getClass.getClassLoader)
-      val instanceMirror = m.reflect(Utils)
-      val methodSymbol = ru.typeOf[Utils.type].decl(ru.TermName("getUserJars")).asMethod
-      val method = instanceMirror.reflectMethod(methodSymbol)
-      method(conf, true).asInstanceOf[Seq[String]]
-    }
-  }
 }

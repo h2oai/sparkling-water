@@ -58,11 +58,11 @@ test {
     environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
 }
 
-// add additional source set for desired scala version
+// Add additional source sets for Java
 sourceSets {
     main {
         scala {
-            srcDirs += ["src/main/scala_$scalaBaseVersion", "src/main/java"]
+            srcDirs += ["src/main/java"]
         }
         java {
             srcDirs = []
@@ -70,7 +70,7 @@ sourceSets {
     }
     test {
         scala {
-            srcDirs += ["src/test/scala_$scalaBaseVersion", "src/test/java"]
+            srcDirs += ["src/test/java"]
         }
         java {
             srcDirs = []
