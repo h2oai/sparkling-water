@@ -17,11 +17,9 @@
 
 package org.apache.spark.h2o
 
-import java.net.URI
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
-import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
