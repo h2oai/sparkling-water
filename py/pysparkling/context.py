@@ -248,4 +248,6 @@ class H2OContext(object):
                     return fc._as_h2o_frame_from_RDD_Float(self, dataframe, framename, full_cols)
             else:
                 return fc._as_h2o_frame_from_complex_type(self, dataframe, framename, full_cols)
+        else:
+            raise ValueError('The as_h2o_frame method expects Spark DataFrame or RDD as the input only!')
 
