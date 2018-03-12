@@ -23,7 +23,7 @@ import scala.tools.nsc.interpreter.JPrintWriter
 
 
 class IntpResponseWriter() extends JPrintWriter(new StringWriter()){
-  def reset(): Unit ={
+  def reset(): Unit = {
     out.asInstanceOf[StringWriter].getBuffer.setLength(0)
   }
   def content: String = {
