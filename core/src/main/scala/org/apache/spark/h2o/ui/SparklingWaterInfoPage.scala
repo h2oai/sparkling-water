@@ -103,7 +103,6 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
     }
 
     UIUtils.headerSparkPage("Sparkling Water", content, parent, helpText = Some(helpText))
-
   }
 
   private def propertyHeader = Seq("Name", "Value")
