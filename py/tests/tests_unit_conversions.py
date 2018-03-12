@@ -245,6 +245,9 @@ class FrameTransformationsTest(unittest.TestCase):
         assert frame[0, 0] == 0.0
         assert frame[0, 1] == "text"
 
+    def test_unknown_type_conversion(self):
+        with self.assertRaises(ValueError):
+            self._hc.as_h2o_frame("unknown type")
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_conversions_report")
