@@ -12,6 +12,7 @@ import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import water.api.TestUtils
 import water.fvec.H2OFrame
 import water.sparkling.itest.{IntegTestHelper, IntegTestStopper, LocalTest}
 import water.support.{H2OFrameSupport, SparkContextSupport}
