@@ -20,7 +20,6 @@ package org.apache.spark.examples.h2o
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
-import water.api.TestUtils
 import water.support.SparkContextSupport
 
 /**

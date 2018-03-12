@@ -9,11 +9,11 @@ dependencies {
     exclude group: "javax.servlet", module: "servlet-api"
   }
 
-  compile( project(":sparkling-water-examples") )
+  compile (project(":sparkling-water-examples") )
 
   compile (project(":sparkling-water-ml"))
 
-  compile project(":sparkling-water-extension-stack-trace")
+  compile (project(":sparkling-water-extension-stack-trace"))
 
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"

@@ -25,7 +25,6 @@ import org.apache.spark.mllib.feature.{HashingTF, IDF, IDFModel}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext, mllib}
-import water.api.TestUtils
 import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
 
 /**
