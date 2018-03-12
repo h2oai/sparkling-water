@@ -22,7 +22,6 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.spark.models.svm.{SVM, SVMParameters}
 import org.apache.spark.sql.SparkSession
-import water.api.TestUtils
 import water.fvec.H2OFrame
 import water.support.SparkContextSupport
 
