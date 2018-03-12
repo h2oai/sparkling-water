@@ -5,14 +5,13 @@ import java.io.File
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.SparkContext
-import org.apache.spark.examples.h2o.Airlines
+import org.apache.spark.examples.h2o.{Airlines, TestUtils}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.TestUtils
 import water.fvec.H2OFrame
 import water.sparkling.itest.{IntegTestHelper, IntegTestStopper, LocalTest}
 import water.support.{H2OFrameSupport, SparkContextSupport}
