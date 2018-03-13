@@ -75,6 +75,7 @@ val idf = new IDF().
 // Create GBM model
 val gbm = new H2OGBM().
   setTrainRatio(0.8).
+  setSeed(1).
   setFeaturesCols("tf_idf").
   setPredictionsCol("label")
 

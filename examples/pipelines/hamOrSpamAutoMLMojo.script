@@ -76,6 +76,7 @@ val idf = new IDF().
 val automl = new H2OAutoML().
   setPredictionsCol("label").
   setMaxRuntimeSecs(300). // 5 minutes
+  setSeed(1).
   setConvertUnknownCategoricalLevelsToNa(true)
 
 // Remove all intermediate columns
