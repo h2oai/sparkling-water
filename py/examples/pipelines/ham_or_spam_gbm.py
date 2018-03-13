@@ -52,6 +52,7 @@ idf = IDF(inputCol=hashingTF.getOutputCol(),
 
 ## Create GBM model
 gbm = H2OGBM(ratio=0.8,
+             seed=1,
              featuresCols=[idf.getOutputCol()],
              predictionCol="label")
 

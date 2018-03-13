@@ -53,6 +53,7 @@ idf = IDF(inputCol=hashingTF.getOutputCol(),
 
 ## Create H2OAutoML model
 automl = H2OAutoML(convertUnknownCategoricalLevelsToNa=False,
+                   seed=1,
                    maxRuntimeSecs=300, # 5 minutes
                    predictionCol="label")
 
