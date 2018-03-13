@@ -61,7 +61,7 @@ def buildIDFModel(tokens: RDD[Seq[String]],
   (hashingTF, idfModel, expandedText)
 }
 
-def buildDLModel(train: Frame, valid: Frame,
+def buildDLModel(train: Frame, valid: Frame, seed: Int = 1,
                  epochs: Int = 10, l1: Double = 0.001, l2: Double = 0.0,
                  hidden: Array[Int] = Array[Int](200, 200))
                 (implicit h2oContext: H2OContext): DeepLearningModel = {
@@ -71,6 +71,7 @@ def buildDLModel(train: Frame, valid: Frame,
   import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters
   val dlParams = new DeepLearningParameters()
   dlParams._train = train
+  dlParams._seed = seed
   dlParams._valid = valid
   dlParams._response_column = 'target
   dlParams._epochs = epochs
