@@ -261,11 +261,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       if (conf.numOfExternalH2ONodes.isEmpty) {
         throw new IllegalArgumentException("Number of external H2O nodes has to be specified in the auto H2O external start mode!")
       }
-
-      if (conf.HDFSOutputDir.isEmpty) {
-        conf.setHDFSOutputDir(conf.cloudName.get)
-      }
-
+      
       if (conf.clusterInfoFile.isEmpty) {
         conf.setClusterConfigFile("notify_" + conf.cloudName.get)
       }
