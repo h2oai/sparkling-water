@@ -77,6 +77,7 @@ val dl = new H2ODeepLearning().
   setEpochs(10).
   setL1(0.001).
   setL2(0.0).
+  setSeed(1).
   setHidden(Array[Int](200, 200)).
   setFeaturesCols(idf.getOutputCol).
   setPredictionsCol("label")

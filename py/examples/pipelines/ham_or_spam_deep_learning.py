@@ -53,6 +53,7 @@ idf = IDF(inputCol=hashingTF.getOutputCol(),
 
 ## Create H2ODeepLearning model
 dl = H2ODeepLearning(epochs=10,
+                     seed=1,
                      l1=0.001,
                      l2=0.0,
                      hidden=[200, 200],
