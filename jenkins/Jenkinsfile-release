@@ -131,7 +131,7 @@ pipeline {
                                  usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
                                  file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
                     sh  """
-                        ./gradlew -Porg.gradle.daemon=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password= uploadArchives -x check
+                        ./gradlew -Porg.gradle.daemon=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password= publish -x check
                         """
                 }
             }
