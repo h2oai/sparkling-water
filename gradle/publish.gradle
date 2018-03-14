@@ -37,7 +37,6 @@ artifacts {
 project.tasks.whenTaskAdded({ t ->
     // This is adhoc specific task for defined publication
     if (t.name.contains('generatePomFileForMavenAll')) {
-        println(t.destination)
         t.doLast({ tt ->
             artifacts {
                 pom file(t.destination)
