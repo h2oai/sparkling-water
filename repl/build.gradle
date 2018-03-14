@@ -4,7 +4,7 @@ apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
     // Spark REPL
-    compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+    compileOnly "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 
     testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
     testCompile "junit:junit:4.11"

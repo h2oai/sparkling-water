@@ -8,7 +8,7 @@ dependencies {
     exclude group: "javax.servlet", module: "servlet-api"
   }
   // MLLIb pipelines
-  compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+  compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"

@@ -52,11 +52,11 @@ dependencies {
 
   // Spark components
   // - core
-  compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
+  compileOnly "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
   // - SQL component
-  compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
+  compileOnly "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
   // - MLLib component
-  compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+  compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
   // Sparkling Water REPL
   compile(project(':sparkling-water-repl'))
