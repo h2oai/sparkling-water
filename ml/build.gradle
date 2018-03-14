@@ -9,6 +9,7 @@ dependencies {
   }
   // MLLIb pipelines
   compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"
