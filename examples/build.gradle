@@ -23,32 +23,35 @@ jar {
 
 dependencies {
   // Sparkling Water Core
-  compile( project(":sparkling-water-core") ) {
+  compile (project(":sparkling-water-core") ) {
     exclude group: "javax.servlet", module: "servlet-api"
   }
 
   // Sparkling Water ML
-  compile( project(":sparkling-water-ml") )
+  compile project(":sparkling-water-ml")
 
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"
 
   // Add streaming
-  compile "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
+  compileOnly "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
 
-  // And use scalatest for Scala testing
+  testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+
+    // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"
   // to reuse some utils test classes defined in the core
   testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
-  testCompile(project(":sparkling-water-extension-stack-trace"))
+  testCompile project(":sparkling-water-extension-stack-trace")
 
   // Integration tests requirements
   integTestCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   integTestCompile "junit:junit:4.11"
   // to reuse some utils test classes defined in the core
   integTestCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
-  integTestCompile(project(":sparkling-water-extension-stack-trace"))
+  integTestCompile project(":sparkling-water-extension-stack-trace")
 
 
   // To enable Idea compiler even for integTestCode which use mllib
