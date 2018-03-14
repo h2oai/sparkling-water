@@ -66,7 +66,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-notify", conf.clusterInfoFile.get,
       "-jobname", conf.cloudName.get,
       "-mapperXmx", conf.mapperXmx,
-      "-output", conf.HDFSOutputDir.get,
       "-nthreads", conf.nthreads.toString,
       "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
       "-timeout", conf.clusterStartTimeout.toString,
@@ -76,6 +75,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
       "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
     )
+
+    if (conf.HDFSOutputDir.isDefined) {
+      cmdToLaunch = cmdToLaunch ++ Seq[String]("-output", conf.HDFSOutputDir.get)
+    }
 
     if (conf.h2oDriverIf.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq[String]("-driverif", conf.h2oDriverIf.get)
@@ -261,11 +264,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       if (conf.numOfExternalH2ONodes.isEmpty) {
         throw new IllegalArgumentException("Number of external H2O nodes has to be specified in the auto H2O external start mode!")
       }
-
-      if (conf.HDFSOutputDir.isEmpty) {
-        conf.setHDFSOutputDir(conf.cloudName.get)
-      }
-
+      
       if (conf.clusterInfoFile.isEmpty) {
         conf.setClusterConfigFile("notify_" + conf.cloudName.get)
       }
