@@ -14,6 +14,13 @@ dependencies {
   compile( project(":sparkling-water-core") ) {
     exclude group: "javax.servlet", module: "servlet-api"
   }
+  // Spark Core
+  compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
+  // Spark SQL
+  compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
+  // Spark MLLib
+  compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+
   // Spark Streaming
   compile "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
 
