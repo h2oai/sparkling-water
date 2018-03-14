@@ -49,7 +49,6 @@ configurations {
 // Explicitly
 artifacts {
     testArchives testJar
-    archives scaladocJar
 }
 
 test {

@@ -52,14 +52,21 @@ dependencies {
 
   // Spark components
   // - core
-  compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
-  // - SQL component
-  compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
-  // - MLLib component
-  compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+  compileOnly "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
 
-  // Sparkling Water REPL
-  compile(project(':sparkling-water-repl'))
+  // - SQL component
+  compileOnly "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
+
+  // - MLLib component
+  compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+
+  testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+
+    // Sparkling Water REPL
+  compile project(':sparkling-water-repl')
 
   // Add joda optional convert library which is required in Scala environment
   compile "org.joda:joda-convert:1.7"

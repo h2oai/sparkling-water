@@ -8,10 +8,13 @@ dependencies {
     exclude group: "javax.servlet", module: "servlet-api"
   }
   // MLLIb pipelines
-  compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+  compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"
+
+  testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
