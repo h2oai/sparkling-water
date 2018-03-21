@@ -58,7 +58,6 @@ shadowJar {
     include(dependency("ai.h2o:h2o-parquet-parser"))
     include(dependency("ai.h2o:reflections"))
     include(dependency("ai.h2o:google-analytics-java"))
-    include(dependency("ai.h2o:deepwater-backend-api"))
     include(dependency("ai.h2o:h2o-ext-xgboost"))
     include(dependency("ai.h2o:h2o-genmodel-ext-xgboost"))
 
