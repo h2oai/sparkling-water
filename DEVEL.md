@@ -1,1 +1,1 @@
-The development documentation has been moved to a new location. Please go to [Development Documentation](doc/DEVEL.rst).
+The development documentation has moved to a new location. Please go to the Development documentation section in the Sparkling Water online help (available [here](https://s3.amazonaws.com/h2o-release/sparkling-water/master/latest.html)).
