@@ -1,1 +1,1 @@
-The development documentation has been moved to a new location. Please go to [Development Documentation](https://github.com/h2oai/sparkling-water/tree/master/doc/src/site/sphinx/devel) folder.
+The development documentation has moved to a new location. Please go to the [Development](https://s3.amazonaws.com/h2o-release/sparkling-water/master/latest.html) documentation section in the Sparkling Water online help.
