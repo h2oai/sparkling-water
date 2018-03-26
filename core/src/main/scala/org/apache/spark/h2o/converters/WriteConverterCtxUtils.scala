@@ -23,9 +23,10 @@ import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OContext, _}
 import org.apache.spark.TaskContext
 import water.fvec.H2OFrame
-import water.{DKV, ExternalFrameUtils, Key}
+import water.{DKV, ExternalFrameUtils, H2ONode, Key}
+import water.util.Log
 
-import scala.collection.immutable
+import scala.collection.{immutable, mutable}
 
 
 object WriteConverterCtxUtils {
@@ -93,7 +94,25 @@ object WriteConverterCtxUtils {
     } else {
       vecTypes
     }
-    new H2OFrame(finalizeFrame(keyName, res, types))
+    val fr = new H2OFrame(finalizeFrame(keyName, res, types)) 
+
+    if(Log.isLoggingFor("DEBUG")) {
+      Log.debug("Number of chunks on frame: " + fr.anyVec.nChunks)
+      val nodes = mutable.Map.empty[H2ONode, Int]
+      (0 until fr.anyVec().nChunks()).foreach { i =>
+        val home = fr.anyVec().chunkKey(i).home_node()
+        if (!nodes.contains(home)) {
+          nodes += (home -> 0)
+        }
+        nodes(home) = nodes(home) + 1
+      }
+      Log.debug("Frame distributed on nodes:")
+      nodes.foreach {
+        case (node, n) =>
+          Log.debug(node + ": " + n + " chunks.")
+      }
+    }
+    fr
   }
 
   private def initFrame(keyName: String, names: Array[String]): Unit = {
