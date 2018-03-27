@@ -127,7 +127,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     val nodes = backend.init()
     // Fill information about H2O client and H2O nodes in the cluster
     h2oNodes.append(nodes: _*)
-    localClientIp = sys.env.getOrElse("SPARK_PUBLIC_DNS", sparkContext.env.rpcEnv.address.host)
+    localClientIp = sys.env.getOrElse("SPARK_PUBLIC_DNS", H2O.getIpPortString.split(":")(0))
     localClientPort = H2O.API_PORT
     // Register UI, but not in Databricks as Databricks is not using standard Spark UI API
     if (conf.getBoolean("spark.ui.enabled", true) && !isRunningOnDatabricks()) {
