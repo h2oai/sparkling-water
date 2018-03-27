@@ -153,7 +153,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   private def rowToRowData(row: Row): RowData = new RowData {
     row.schema.fields.zipWithIndex.foreach { case (f, idxRow) =>
-      if(row.get(idxRow) != null) {
+      if (row.get(idxRow) != null) {
         f.dataType match {
           case BooleanType =>
             if (row.getBoolean(idxRow)) put(f.name, 1.toString) else put(f.name, 0.toString)
