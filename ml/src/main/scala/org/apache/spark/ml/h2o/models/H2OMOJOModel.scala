@@ -153,41 +153,43 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   private def rowToRowData(row: Row): RowData = new RowData {
     row.schema.fields.zipWithIndex.foreach { case (f, idxRow) =>
-      f.dataType match {
-        case BooleanType =>
-          if (row.getBoolean(idxRow)) put(f.name, 1.toString) else put(f.name, 0.toString)
-        case BinaryType =>
-          row.getAs[Array[Byte]](idxRow).zipWithIndex.foreach { case (v, idx) =>
-            put(f.name + idx, v.toString)
-          }
-        case ByteType => put(f.name, row.getByte(idxRow).toString)
-        case ShortType => put(f.name, row.getShort(idxRow).toString)
-        case IntegerType => put(f.name, row.getInt(idxRow).toString)
-        case LongType => put(f.name, row.getLong(idxRow).toString)
-        case FloatType => put(f.name, row.getFloat(idxRow).toString)
-        case _: DecimalType => put(f.name, row.getDecimal(idxRow).doubleValue().toString)
-        case DoubleType => put(f.name, row.getDouble(idxRow).toString)
-        case StringType => put(f.name, row.getString(idxRow))
-        case TimestampType => put(f.name, row.getAs[java.sql.Timestamp](idxRow).getTime.toString)
-        case DateType => put(f.name, row.getAs[java.sql.Date](idxRow).getTime.toString)
-        case ArrayType(_, _) => // for now assume that all arrays and vecs have the same size - we can store max size as part of the model
-          row.getAs[Seq[_]](idxRow).zipWithIndex.foreach { case (v, idx) =>
-            put(f.name + idx, v.toString)
-          }
-        case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] =>
-          val value = row.get(idxRow)
-          value match {
-            case vector: mllib.linalg.Vector =>
-              (0 until vector.size).foreach { idx => // WRONG this patter needs to share the same code as in the data transformation
-                put(f.name + idx, vector(idx).toString)
-              }
-            case vector: ml.linalg.Vector =>
-              (0 until vector.size).foreach { idx =>
-                put(f.name + idx, vector(idx).toString)
-              }
-          }
-        case null => // no op
-        case _ => put(f.name, get(idxRow).toString)
+      if(row.get(idxRow) != null) {
+        f.dataType match {
+          case BooleanType =>
+            if (row.getBoolean(idxRow)) put(f.name, 1.toString) else put(f.name, 0.toString)
+          case BinaryType =>
+            row.getAs[Array[Byte]](idxRow).zipWithIndex.foreach { case (v, idx) =>
+              put(f.name + idx, v.toString)
+            }
+          case ByteType => put(f.name, row.getByte(idxRow).toString)
+          case ShortType => put(f.name, row.getShort(idxRow).toString)
+          case IntegerType => put(f.name, row.getInt(idxRow).toString)
+          case LongType => put(f.name, row.getLong(idxRow).toString)
+          case FloatType => put(f.name, row.getFloat(idxRow).toString)
+          case _: DecimalType => put(f.name, row.getDecimal(idxRow).doubleValue().toString)
+          case DoubleType => put(f.name, row.getDouble(idxRow).toString)
+          case StringType => put(f.name, row.getString(idxRow))
+          case TimestampType => put(f.name, row.getAs[java.sql.Timestamp](idxRow).getTime.toString)
+          case DateType => put(f.name, row.getAs[java.sql.Date](idxRow).getTime.toString)
+          case ArrayType(_, _) => // for now assume that all arrays and vecs have the same size - we can store max size as part of the model
+            row.getAs[Seq[_]](idxRow).zipWithIndex.foreach { case (v, idx) =>
+              put(f.name + idx, v.toString)
+            }
+          case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] =>
+            val value = row.get(idxRow)
+            value match {
+              case vector: mllib.linalg.Vector =>
+                (0 until vector.size).foreach { idx => // WRONG this patter needs to share the same code as in the data transformation
+                  put(f.name + idx, vector(idx).toString)
+                }
+              case vector: ml.linalg.Vector =>
+                (0 until vector.size).foreach { idx =>
+                  put(f.name + idx, vector(idx).toString)
+                }
+            }
+          case null => // no op
+          case _ => put(f.name, get(idxRow).toString)
+        }
       }
     }
   }
