@@ -2,6 +2,13 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: "signing"
 
+/**
+ * This plugin works by naming convention.
+ *
+ * It publishes by default java jar package and it also
+ * expects publishArchives configuration and publishes whatever is inside it.
+ */
+
 // Container for generated POMs (by default added into archive configuration)
 configurations {
     pom {
@@ -9,27 +16,6 @@ configurations {
     }
 }
 
-// Sources Jar generation
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-// Javadoc Jar generation
-task javadocJar (type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-configurations {
-    toPublish
-}
-
-artifacts {
-    toPublish sourcesJar
-    toPublish javadocJar
-    toPublish scaladocJar
-}
 
 //
 // Record all generated POM files for given publishing task
@@ -45,11 +31,10 @@ project.tasks.whenTaskAdded({ t ->
     }
 })
 
-
 task signAll(type: Sign) {
     sign configurations.archives
     // Sign also additional artifacts
-    sign configurations.toPublish
+    sign configurations.publishArchives
     // Sign only in case of release
     required = project.hasProperty("doRelease")
 }
@@ -64,10 +49,11 @@ publishing {
             from components.java
 
             // Publish additional artifacts as documentation or source code
-            configurations.toPublish.allArtifacts.each { art ->
+            configurations.publishArchives.allArtifacts.each { art ->
                 logger.debug("Publishing artifact for: " + art)
                 artifact art
             }
+
             if (signAll.required) {
                 signAll.signatures.all { Signature signature ->
                     logger.debug("Publishing signature for: " + signature.file + ", type=" + signature.type)
