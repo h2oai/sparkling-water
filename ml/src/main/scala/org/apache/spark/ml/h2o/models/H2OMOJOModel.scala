@@ -103,9 +103,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
 
   def setRowData(row: Row, idxRow: Int, dt: RowData, entry: StructField) {
-    if (row.isNullAt(idxRow)) {
-      dt.put(entry.name, 0.toString) // 0 as NA
-    } else {
+    if (row.get(idxRow) != null) {
       entry.dataType match {
         case BooleanType =>
           if (row.getBoolean(idxRow)) dt.put(entry.name, 1.toString) else dt.put(entry.name, 0.toString)
