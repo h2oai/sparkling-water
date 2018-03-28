@@ -1,13 +1,12 @@
 Using Grid Search GBM in Spark Pipelines
 ----------------------------------------
 
-H2O's Grid Search for GBM is exposed for the Spark pipelines. This tutorial demonstrates how it used in a simple
-Spark pipeline on the Ham or Spam dataset.
+H2O's Grid Search for GBM is exposed for the Spark pipelines. This tutorial demonstrates how it is used in a simple Spark pipeline on the Ham or Spam dataset.
 
 Prepare the environment
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Add the data to Spark
+Add the data to Spark:
 
 .. code:: scala
 
@@ -27,7 +26,7 @@ Prepare the method for loading the data:
     }
 
 
-First, we need to make sure ``H2OContext`` is available:
+Make sure ``H2OContext`` is available:
 
 .. code:: scala
 
@@ -36,7 +35,7 @@ First, we need to make sure ``H2OContext`` is available:
     implicit val sqlContext = spark.sqlContext
 
 
-Define the pipeline stages
+Define the Pipeline Stages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Tokenize the Messages
@@ -56,7 +55,7 @@ This Spark Transformer tokenizes the messages and splits sentences into words.
 Remove Ignored Words
 ####################
 
-Remove words which does not bring much value for the model.
+Remove words that do not bring much value for the model.
 
 .. code:: scala
 
@@ -78,11 +77,10 @@ Crete hashes for the observed words.
       setInputCol(stopWordsRemover.getOutputCol).
       setOutputCol("wordToIndex")
 
-Create Inverse Document Frequencies Model
-#########################################
+Create an Inverse Document Frequencies Model
+############################################
 
-Create IDF model. It creates a numerical representation of how much information a
-given word provides in the whole message.
+Create an IDF model. This creates a numerical representation of how much information a given word provides in the whole message.
 
 .. code:: scala
 
@@ -91,14 +89,12 @@ given word provides in the whole message.
       setInputCol(hashingTF.getOutputCol).
       setOutputCol("tf_idf")
 
-Create Grid Search GBM Model
-############################
+Create a Grid Search GBM Model
+##############################
 
-First, we need to define the hyper parameters. Hyper parameters are stored in the map where key
-is the name of the parameter and value is array of possible values.
+First, we need to define the hyper parameters. Hyper parameters are stored in the map where key is the name of the parameter and value is an array of possible values.
 
-We can also set regular arguments using the ``setParameters`` call. In this case, we are doing Grid Search
-on GBM so we can reuse ``H2OGBM`` for the parameter specification.
+We can also set regular arguments using the ``setParameters`` call. In this case, we are doing Grid Search on GBM, so we can reuse ``H2OGBM`` for the parameter specification.
 
 .. code:: scala
 
@@ -113,7 +109,7 @@ on GBM so we can reuse ``H2OGBM`` for the parameter specification.
 Remove Temporary Columns
 ########################
 
-Remove unnecessary columns
+Remove unnecessary columns:
 
 .. code:: scala
 
@@ -136,7 +132,7 @@ Create and Train the Pipeline
 Run Predictions
 ~~~~~~~~~~~~~~~
 
-Prepare the predictor function
+Prepare the predictor function:
 
 .. code:: scala
 
@@ -157,6 +153,3 @@ And finally, run the predictions:
     println(isSpam("Michal, h2oworld party tonight in MV?", model))
 
     println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model))
-
-
-
