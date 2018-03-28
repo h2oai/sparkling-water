@@ -34,7 +34,7 @@ class LocalIntegTestSuite(unittest.TestCase):
         env.conf("spark.ext.h2o.port.base", 63331)
         env.conf("spark.driver.memory", "2g")
 
-        launch(env, "examples/pipelines/ham_or_spam_gbm.py")
+        launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "gbm")
 
     def test_pipeline_deep_learning(self):
         env = IntegTestEnv()
@@ -47,7 +47,20 @@ class LocalIntegTestSuite(unittest.TestCase):
         env.conf("spark.ext.h2o.port.base", 63331)
         env.conf("spark.driver.memory", "2g")
 
-        launch(env, "examples/pipelines/ham_or_spam_deep_learning.py")
+        launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "dl")
+
+    def test_pipeline_automl(self):
+        env = IntegTestEnv()
+
+        env.set_spark_master("local")
+        # Configure YARN environment
+        env.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
+        env.conf("spark.executor.instances", 3)
+        env.conf("spark.executor.memory", "2g")
+        env.conf("spark.ext.h2o.port.base", 63331)
+        env.conf("spark.driver.memory", "2g")
+
+        launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "automl")
 
     def test_import_pysparkling_standalone_app(self):
         env = IntegTestEnv()

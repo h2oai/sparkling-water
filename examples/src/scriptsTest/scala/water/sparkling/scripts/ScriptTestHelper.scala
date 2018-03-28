@@ -93,13 +93,13 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll{
     testResult
   }
 
-  def launchScript(scriptName: String, inspections: ScriptInspections = new ScriptInspections(), baseDirectoryName: String = "scripts"): ScriptTestResult = {
+  def launchScript(scriptName: String, inspections: ScriptInspections = new ScriptInspections(), baseDirectoryName: String = "scripts", prefixCode: String = ""): ScriptTestResult = {
 
     logInfo("\n\n\n\n\nLAUNCHING TEST FOR SCRIPT: " + scriptName + "\n\n\n\n\n")
 
     val sourceFile = new File("examples" + File.separator + baseDirectoryName + File.separator + scriptName)
 
-    val code = scala.io.Source.fromFile(sourceFile).mkString
+    val code = prefixCode + "\n" + scala.io.Source.fromFile(sourceFile).mkString
     val loop = new H2OInterpreter(sc, sessionId = 1)
     val res = launch(code, loop, inspections)
     loop.closeInterpreter()
