@@ -31,6 +31,13 @@ How to...
    h2oframe_as_data_source
    h2o_frame_from_key
 
+**Spark Pipelines**
+
+.. toctree::
+   :maxdepth: 2
+
+   grid_gbm_pipeline
+
 **Logging**
 
 .. toctree::
