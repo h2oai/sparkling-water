@@ -14,12 +14,14 @@ import org.apache.spark.SparkFiles
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.feature._
 import org.apache.spark.ml.h2o.features.ColumnPruner
-import org.apache.spark.ml.h2o.algos.H2OGBM
+import org.apache.spark.ml.h2o.algos.{H2OAutoML, H2ODeepLearning, H2OGBM, H2OGridSearch}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import water.support.SparkContextSupport
 import water.fvec.H2OFrame
 import org.apache.spark.ml.Pipeline
+
+import scala.collection.mutable.HashMap
 
 
 val smsDataFileName = "smsData.txt"
@@ -72,12 +74,42 @@ val idf = new IDF().
   setInputCol(hashingTF.getOutputCol).
   setOutputCol("tf_idf")
 
-// Create GBM model
-val gbm = new H2OGBM().
-  setTrainRatio(0.8).
-  setSeed(1).
-  setFeaturesCols("tf_idf").
-  setPredictionsCol("label")
+val algoStage = algo match {
+  case "gbm" =>
+    // Create GBM model
+    new H2OGBM().
+      setTrainRatio(0.8).
+      setSeed(1).
+      setFeaturesCols("tf_idf").
+      setPredictionsCol("label")
+  case "dl" =>
+    // Create H2ODeepLearning model
+    new H2ODeepLearning().
+      setEpochs(10).
+      setL1(0.001).
+      setL2(0.0).
+      setSeed(1).
+      setHidden(Array[Int](200, 200)).
+      setFeaturesCols(idf.getOutputCol).
+      setPredictionsCol("label")
+  case "automl" =>
+    // Create H2OAutoML model
+    new H2OAutoML().
+      setPredictionsCol("label").
+      setMaxRuntimeSecs(300). // 5 minutes
+      setConvertUnknownCategoricalLevelsToNa(true)
+  case "grid_gbm" =>
+    // Create Grid GBM Model
+    import scala.collection.JavaConverters._
+    import scala.collection.mutable.HashMap
+    val hyperParams: HashMap[String, Array[AnyRef]] = HashMap()
+    hyperParams += ("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
+    new H2OGridSearch().
+      setPredictionsCol("label").
+      setHyperParameters(hyperParams.asJava).
+      setParameters(new H2OGBM().setMaxDepth(30).setSeed(1))
+}
+
 
 // Remove all intermediate columns
 val colPruner = new ColumnPruner().
@@ -85,7 +117,7 @@ val colPruner = new ColumnPruner().
 
 // Create the pipeline by defining all the stages
 val pipeline = new Pipeline().
-  setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, gbm, colPruner))
+  setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, algoStage, colPruner))
 
 // Train the pipeline model
 val data = load("smsData.txt")

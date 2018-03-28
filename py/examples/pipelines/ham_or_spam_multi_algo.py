@@ -3,8 +3,15 @@ from pyspark.sql.types import *
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import HashingTF, RegexTokenizer, StopWordsRemover, IDF
 from pysparkling import *
-from pysparkling.ml import ColumnPruner, H2OGBM
+from pysparkling.ml import ColumnPruner, H2OGBM, H2ODeepLearning, H2OAutoML
 import os
+import sys
+
+# Determine which algorithm to use, if no specified as argument, gbm is used
+if len(sys.argv) != 2 or sys.argv[1] not in ["gbm", "dl", "automl"]:
+    algo="gbm"
+else:
+    algo=sys.argv[1]
 
 # Initiate SparkSession
 spark = SparkSession.builder.appName("App name").getOrCreate()
@@ -50,17 +57,33 @@ idf = IDF(inputCol=hashingTF.getOutputCol(),
           outputCol="tf_idf",
           minDocFreq=4)
 
-## Create GBM model
-gbm = H2OGBM(ratio=0.8,
-             seed=1,
-             featuresCols=[idf.getOutputCol()],
-             predictionCol="label")
+
+if algo == "gbm":
+    ## Create GBM model
+    algoStage = H2OGBM(ratio=0.8,
+                 seed=1,
+                 featuresCols=[idf.getOutputCol()],
+                 predictionCol="label")
+elif algo == "dl":
+    ## Create H2ODeepLearning model
+    algoStage = H2ODeepLearning(epochs=10,
+                         seed=1,
+                         l1=0.001,
+                         l2=0.0,
+                         hidden=[200, 200],
+                         featuresCols=[idf.getOutputCol()],
+                         predictionCol="label")
+elif algo == "automl":
+    ## Create H2OAutoML model
+    algoStage = H2OAutoML(convertUnknownCategoricalLevelsToNa=False,
+                       maxRuntimeSecs=300, # 5 minutes
+                       predictionCol="label")
 
 ## Remove all helper columns
 colPruner = ColumnPruner(columns=[idf.getOutputCol(), hashingTF.getOutputCol(), stopWordsRemover.getOutputCol(), tokenizer.getOutputCol()])
 
 ## Create the pipeline by defining all the stages
-pipeline = Pipeline(stages=[tokenizer, stopWordsRemover, hashingTF, idf, gbm, colPruner])
+pipeline = Pipeline(stages=[tokenizer, stopWordsRemover, hashingTF, idf, algoStage, colPruner])
 
 ## Train the pipeline model
 data = load()
