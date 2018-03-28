@@ -48,7 +48,7 @@ class IntegTestEnv:
         self.spark_master = master
 
 
-def launch(test_env, script_name):
+def launch(test_env, script_name, param=None):
     cloud_name = generic_test_utils.unique_cloud_name(script_name)
     client_ip = generic_test_utils.local_ip()
     if generic_test_utils.tests_in_external_mode() and generic_test_utils.is_manual_cluster_start_mode_used():
@@ -88,6 +88,10 @@ def launch(test_env, script_name):
 
     # Add python script
     cmd_line.append(script_name)
+
+    if param is not None:
+        cmd_line.append(param)
+
     # Launch it via command line
     return_code = subprocess.call(cmd_line)
 
