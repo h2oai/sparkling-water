@@ -36,6 +36,18 @@ task testJar(type: Jar, dependsOn: testClasses) {
     from sourceSets.test.output
 }
 
+// Sources Jar generation
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+// Javadoc Jar generation
+task javadocJar (type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
 task scaladocJar(type: Jar, dependsOn: scaladoc) {
     classifier = 'scaladoc'
     from scaladoc
@@ -43,7 +55,14 @@ task scaladocJar(type: Jar, dependsOn: scaladoc) {
 
 // Create a configuration containing only for test artifacts
 configurations {
+    publishArchives
     testArchives
+}
+
+artifacts {
+    publishArchives sourcesJar
+    publishArchives javadocJar
+    publishArchives scaladocJar
 }
 
 // Explicitly
