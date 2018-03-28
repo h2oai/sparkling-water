@@ -39,14 +39,16 @@ task substitute(){
     }
 }
 
+
 task docJar(type: Jar) {
     from "${buildDir}"
+    classifier ="site"
     include "site/**"
     baseName = "${project.name}_${scalaBaseVersion}"
 }
 
 task sourcesDocJar(type: Jar){
-    classifier = "sources"
+    classifier = "site-sources"
     from "${projectDir}"
     include "src/**"
     baseName = "${project.name}_${scalaBaseVersion}"
@@ -54,6 +56,11 @@ task sourcesDocJar(type: Jar){
 
     from "${projectDir}"
     include "CHANGELOG.rst"
+}
+
+artifacts {
+    publishArchives docJar
+    publishArchives sourcesDocJar
 }
 
 createVersionFile.dependsOn cleanDoc
