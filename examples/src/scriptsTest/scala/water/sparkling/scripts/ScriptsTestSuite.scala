@@ -4,7 +4,7 @@
 
 package water.sparkling.scripts
 
-import org.apache.spark.repl.h2o.{H2OInterpreter, CodeResults}
+import org.apache.spark.repl.h2o.{CodeResults, H2OInterpreter}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -91,7 +91,7 @@ class ScriptChicagoCrimeHDFS extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  ignore("chicagoCrimeLarge.script.scala ") {
+  test("chicagoCrimeLarge.script.scala ") {
     val result = launchScript("chicagoCrimeLarge.script.scala")
     assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
   }
@@ -212,8 +212,8 @@ class ScriptPipelineHamOrSpamGBM extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  test("hamOrSpamGBM.script.scala") {
-    HamOrSpamTester.test(this, "hamOrSpamGBMMojo.script.scala")
+  test("Ham or Spam GBM Pipeline") {
+    HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "gbm")
   }
 }
 
@@ -226,21 +226,35 @@ class ScriptPipelineHamOrSpamDL extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  test("hamOrSpamDeepLearning.script.scala") {
-    HamOrSpamTester.test(this, "hamOrSpamDeepLearningMojo.script.scala")
+  test("Ham or Spam DeepLearning Pipeline") {
+    HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "dl")
   }
 }
 
+  @RunWith(classOf[JUnitRunner])
+  class ScriptPipelineHamOrSpamAutoML extends ScriptsTestHelper {
+    override protected def beforeAll(): Unit = {
+      sparkConf = defaultConf.setMaster("local-cluster[3,2,4096]")
+        .set("spark.driver.memory", "4G")
+        .set("spark.executor.memory", "4G")
+      super.beforeAll()
+    }
+
+    test("Ham or Spam AutoML Pipeline") {
+      HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "automl")
+    }
+  }
+
 object HamOrSpamTester {
 
-  def test(scriptsTestHelper: ScriptsTestHelper, fileName: String) {
+  def test(scriptsTestHelper: ScriptsTestHelper, fileName: String, algo: String) {
     val inspections = new ScriptInspections()
     inspections.addSnippet("val answer1 = isSpam(\"Michal, h2oworld party tonight in MV?\", model)")
     inspections.addTermToCheck("answer1")
     inspections.addSnippet("val answer2 = isSpam(\"We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?\", model)")
     inspections.addTermToCheck("answer2")
 
-    val result = scriptsTestHelper.launchScript(fileName, inspections, "pipelines")
+    val result = scriptsTestHelper.launchScript(fileName, inspections, "pipelines", "val algo=\"" + algo + "\"")
     assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
     assert(result.realTermValues.get("answer1").get == "false", "Value of term \"answer1\" should be false")
     assert(result.realTermValues.get("answer2").get == "true", "Value of term \"answer2\" should be true")
