@@ -39,7 +39,8 @@ ext {
       project(':sparkling-water-core'),
       project(':sparkling-water-examples'),
       project(':sparkling-water-ml'),
-      project(':sparkling-water-package')
+      project(':sparkling-water-package'),
+      project(":sparkling-water-doc")
     ]
     // Project with integration tests
     integTestProjects = [
@@ -133,6 +134,15 @@ configure(subprojects) { project ->
     // All subprojects needs Spark support
     apply from: "$rootDir/gradle/spark.gradle"
 
+    if (project in docProjects){
+        apply plugin: 'java'
+        apply plugin: 'kr.motd.sphinx'
+        
+        configurations {
+            publishArchives
+        }
+    }
+
     // Publish artifacts
     if (project in publishedProjects) {
         apply from: "$rootDir/gradle/publish.gradle"
@@ -140,11 +150,6 @@ configure(subprojects) { project ->
 
     if (project in integTestProjects) {
         apply from: "$rootDir/gradle/itest.gradle"
-    }
-
-    if (project in docProjects){
-        apply plugin: 'java'
-        apply plugin: 'kr.motd.sphinx'
     }
 }
 
