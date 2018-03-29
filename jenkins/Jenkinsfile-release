@@ -114,7 +114,7 @@ pipeline {
                     export H2O_PYTHON_WHEEL="\$(pwd)/private/h2o.whl"
                         
                     # Perform a build
-                    ./gradlew build -x check
+                    ./gradlew build -x check scaladoc javadoc
                     ./gradlew site
                     ./gradlew buildSparklingWaterDist
                                 
