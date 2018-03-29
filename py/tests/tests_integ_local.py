@@ -49,6 +49,7 @@ class LocalIntegTestSuite(unittest.TestCase):
 
         launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "dl")
 
+    @unittest.skip
     def test_pipeline_automl(self):
         env = IntegTestEnv()
 
