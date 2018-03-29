@@ -94,8 +94,72 @@ object ModelSerializationSupport extends ModelSerializationSupport {
 
   def getMojoData(model: Model[_, _, _]) = {
     val baos = new ByteArrayOutputStream()
-    model.getMojo.writeTo(baos)
+    exportMojo(model, baos)
     baos.toByteArray
+  }
+
+  /**
+    * Exports the model mojo bytes to an (local) file.
+    *
+    * The file can then be used to create the mojo using ModelSerializationSupport (thus with sparkling-water):
+    * <pre>
+    * {@code
+    * ModelSerializationSupport.exportMojo(model, file)
+    * val bytes = java.nio.file.Files.readAllBytes(file.toPath)
+    * val mojo = ModelSerializationSupport.getMojoModel(bytes)
+    * }
+    * </pre>
+    *
+    * The file can also be used to create a mojo model without sparkling water (with just h2o-genmodel)
+    * <pre>
+    * {@code
+    * ModelSerializationSupport.exportMojo(model, file)
+    * val is = new FileInputStream(file)
+    * val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
+    * val mojoModel = ModelMojoReader.readFrom(reader)
+    * }
+    * </pre>
+    *
+    * Note that this does not generate a .zip file, which is expected by the `MojoModel.load(path)`
+    * @param model The model to serialize
+    * @param file  The location to write the model to
+    */
+  def exportMojo(model: Model[_, _, _], file: File) = {
+    val outputStream = new FileOutputStream(file)
+    try {
+      exportMojo(model, outputStream)
+      model.getMojo.writeTo(outputStream)
+    }
+    finally if (outputStream != null) outputStream.close()
+  }
+
+  /**
+    * Exports the model mojo bytes to an outputstream.
+    *
+    * The byte array can then be used to create the mojo using ModelSerializationSupport (thus with sparkling-water):
+    * <pre>
+    * {@code
+    * val baos = new ByteArrayOutputStream()
+    * ModelSerializationSupport.exportMojo(baos)
+    * val mojo = ModelSerializationSupport.getMojoModel(baos.toByteArray)
+    * }
+    * </pre>
+    *
+    * The byte array can also be used to create a mojo model without sparkling water (with just h2o-genmodel)
+    * <pre>
+    * {@code
+    * val baos = new ByteArrayOutputStream()
+    * ModelSerializationSupport.exportMojo(baos)
+    * val is = new ByteArrayInputStream(baos.toByteArray)
+    * val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
+    * val mojoModel = ModelMojoReader.readFrom(reader)
+    * }
+    * </pre>
+    * @param model The model to serialize
+    * @param baos  The destination to send the serialization bytes to
+    */
+  def exportMojo(model: Model[_, _, _], baos: OutputStream) = {
+    model.getMojo.writeTo(baos)
   }
 
 }
