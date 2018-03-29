@@ -63,9 +63,6 @@ artifacts {
     publishArchives sourcesJar
     publishArchives javadocJar
     publishArchives scaladocJar
-    archives sourcesJar
-    archives javadocJar
-    archives scaladocJar
 }
 
 // Explicitly
