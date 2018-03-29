@@ -82,6 +82,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     spec.build_models.exclude_algos = getExcludeAlgos()
     spec.build_control.project_name = getProjectName()
     spec.build_control.loss = getLoss()
+    spec.build_control.stopping_criteria.set_seed(getSeed())
     spec.build_control.stopping_criteria.set_max_runtime_secs(getMaxRuntimeSecs())
     spec.build_control.stopping_criteria.set_stopping_rounds(getStoppingRounds())
     spec.build_control.stopping_criteria.set_stopping_tolerance(getStoppingTolerance())
@@ -179,6 +180,7 @@ trait H2OAutoMLParams extends Params {
   private final val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
   private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
     " categorical levels to NA during predictions")
+  private final val seed = new IntParam(this, "seed", "seed")
 
   //
   // Default values
@@ -199,7 +201,8 @@ trait H2OAutoMLParams extends Params {
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
     nfolds -> 5,
-    convertUnknownCategoricalLevelsToNa -> false
+    convertUnknownCategoricalLevelsToNa -> false,
+    seed -> -1 // true random
   )
 
   //
@@ -252,6 +255,8 @@ trait H2OAutoMLParams extends Params {
 
   /** @group getParam */
   def getConvertUnknownCategoricalLevelsToNa() = $(convertUnknownCategoricalLevelsToNa)
+  /** @group getParam */
+  def getSeed() = $(seed)
 
   //
   // Setters
@@ -303,6 +308,10 @@ trait H2OAutoMLParams extends Params {
 
   /** @group setParam */
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
+
+  /** @group setParam */
+  def setSeed(value: Int): this.type = set(seed, value)
+
 }
 
 class H2OAutoMLAlgosParam private(parent: Params, name: String, doc: String, isValid: Array[AutoML.algo] => Boolean)
