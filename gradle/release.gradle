@@ -14,7 +14,7 @@ release {
     preCommitText = ":tada: "
     git {
         // Note: the releases are only allowed from master branch
-        // requireBranch = '<<FILL ME>>'
+        requireBranch = 'rel-2.3'
         // DEBUG: disable dry run in production/CI
         // pushOptions = ["--dry-run"]
     }
