@@ -3,7 +3,7 @@ Use Sparkling Water via Spark Packages
 
 Sparkling Water is also published as a Spark package. You can use it directly from your Spark distribution. The name of the published package is **ai.h2o:sparkling-water-package**, and it references all published Sparkling Water modules. Moreover, each module can be used as a Spark package if necessary.
 
-Id you would like to use Sparkling Water version SUBST_SW_VERSION on Spark 2.1 and launch example
+If you would like to use Sparkling Water version SUBST_SW_VERSION on Spark SUBST_SPARK_MAJOR_VERSION and launch example
 ``CraigslistJobTitlesStreamingApp``, then you can use the following
 command:
 
