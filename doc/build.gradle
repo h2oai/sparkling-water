@@ -30,6 +30,8 @@ task substitute(){
                 def contents = file(it).getText('UTF-8')
                 contents = contents
                         .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", ""))
+                        .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+                        .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.')))
                         .replaceAll("SUBST_H2O_VERSION", h2oVersion)
                         .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
                         .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
