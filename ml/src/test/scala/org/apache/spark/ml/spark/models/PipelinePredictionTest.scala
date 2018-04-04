@@ -109,6 +109,7 @@ class PipelinePredictionTest extends FunSuite with SparkTestContext {
 
   override def beforeAll(): Unit = {
     sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+    sc.setLogLevel("WARN")
     super.beforeAll()
   }
 
@@ -152,6 +153,7 @@ class StreamingPipelinePredictionTest extends FunSuite with SparkTestContext {
 
   override def beforeAll(): Unit = {
     sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+    sc.setLogLevel("WARN")
     super.beforeAll()
   }
 
