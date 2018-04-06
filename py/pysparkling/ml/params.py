@@ -348,6 +348,7 @@ class H2OAutoMLParams(Params):
     stoppingMetric = Param(Params._dummy(), "stoppingMetric", "Stopping metric")
     nfolds = Param(Params._dummy(), "nfolds", "Cross-validation fold construction")
     convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
+    seed = Param(Params._dummy(), "seed", "Seed for random numbers")
 
     ##
     ## Getters
@@ -407,6 +408,9 @@ class H2OAutoMLParams(Params):
     def getConvertUnknownCategoricalLevelsToNa(self):
         return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
 
+
+    def getSeed(self):
+        return self.getOrDefault(self.seed)
 
     ##
     ## Setters
@@ -469,3 +473,6 @@ class H2OAutoMLParams(Params):
 
     def setConvertUnknownCategoricalLevelsToNa(self, value):
         return self._set(convertUnknownCategoricalLevelsToNa=value)
+
+    def setSeed(self, value):
+        return self._set(seed=value)
