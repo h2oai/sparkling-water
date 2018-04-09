@@ -172,6 +172,10 @@ class H2OConf(object):
         self._jconf.setStacktraceCollectorInterval(interval)
         return self
 
+    def set_context_path(self, context_path):
+        self._jconf.setContextPath(context_path)
+        return self
+
     def set_flow_dir(self, dir):
         self._jconf.setFlowDir(dir)
         return self
@@ -433,6 +437,9 @@ class H2OConf(object):
 
     def stacktrace_collector_interval(self):
         return self._jconf.stacktraceCollectorInterval()
+
+    def context_path(self):
+        return self._get_option(self._jconf.contextPath())
 
     def flow_dir(self):
         return self._get_option(self._jconf.flowDir())
