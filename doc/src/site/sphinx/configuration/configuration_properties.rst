@@ -106,6 +106,8 @@ Configuration properties independent of selected backend
 |                                                    |                | -1 means that no stack traces will be  |
 |                                                    |                | taken.                                 |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.context.path``                     | ``None``       | H2O Flow context path.                 |
++----------------------------------------------------+----------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |
