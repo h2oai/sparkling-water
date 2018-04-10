@@ -54,6 +54,7 @@ trait SharedBackendConf {
   def h2oNodeWebEnabled = sparkConf.getBoolean(PROP_NODE_ENABLE_WEB._1, PROP_NODE_ENABLE_WEB._2)
   def nodeNetworkMask = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
   def stacktraceCollectorInterval = sparkConf.getInt(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._2)
+  def contextPath = sparkConf.getOption(PROP_CONTEXT_PATH._1)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -132,6 +133,7 @@ trait SharedBackendConf {
   def setNodeNetworkMask(mask: String) = set(PROP_NODE_NETWORK_MASK._1, mask)
 
   def setStacktraceCollectorInterval(interval: Int) = set(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, interval.toString)
+  def setContextPath(contextPath: String) = set(PROP_CONTEXT_PATH._1, contextPath)
 
   /** H2O Client parameters */
   def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
@@ -229,6 +231,9 @@ object SharedBackendConf {
 
   /** Set how often in seconds stack traces are taken on each h2o node. -1 represents that the stack traces are not collected. */
   val PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL = ("spark.ext.h2o.stacktrace.collector.interval", -1)
+
+  /** H2O's URL context path */
+  val PROP_CONTEXT_PATH = ("spark.ext.h2o.context.path", None)
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)
