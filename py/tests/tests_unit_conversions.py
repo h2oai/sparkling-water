@@ -59,16 +59,16 @@ class FrameTransformationsTest(unittest.TestCase):
 
     # test transformation from wide dataframe to h2o frame and edit it
     def test_wide_df_to_h2o_frame_and_edit(self):
-        n_col = 210
+        n_col = 110
         test_data_frame = self._spark.createDataFrame([tuple(range(n_col))])
         h2o_frame = self._hc.as_h2o_frame(test_data_frame)
         self.assertEquals(h2o_frame.dim[1], n_col, "Number of cols should match")
         self.assertEquals(h2o_frame['_107'], 107, "Content of columns should be the same")
         # h2o_frame.refresh()     # this helps to pass the test
         # in commit f50dd728281d11f9a2ab3cdaeb994644b892d65a
-        col_202 = '_202'
+        col_102 = '_102'
         # replace a column after the column 100
-        h2o_frame[col_202] = h2o_frame[col_202].asfactor()
+        h2o_frame[col_102] = h2o_frame[col_102].asfactor()
         h2o_frame.refresh()
         self.assertEquals(h2o_frame.dim[1], n_col, "Number of cols after replace should match")
 
