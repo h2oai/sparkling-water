@@ -7,6 +7,7 @@ pipeline {
         booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
         booleanParam(name: 'buildExtendedH2OJars', defaultValue: true, description: 'Build extended H2O Jars')
         booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3')
+        booleanParam(name: 'updateDocLinks', defaultValue: true, description: 'Update documentation links')
         booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy')
     }
 
@@ -235,6 +236,23 @@ pipeline {
                             s3cmd --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/index.html
                         """
                 }
+            }
+        }
+
+        stage('Update the Documentation links') {
+            when {
+                expression { params.updateDocLinks == true }
+            }
+            steps {
+                // Update the links
+                sh  """
+                    git clone https://github.com/h2oai/docs.h2o.ai.git
+                    cd docs.h2o.ai/sites-available/
+                    sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/\$(( $BUILD_NUMBER - 1 ))/?" 000-default.conf
+                    git add 000-default.conf
+                    git commit -m "Update links of Sparkling Water 2.2 version to \$(( $BUILD_NUMBER - 1 ))"
+                    git push --set-upstream origin master
+                    """
             }
         }
 
