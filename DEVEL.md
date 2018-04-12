@@ -1,1 +1,1 @@
-The development documentation has moved to a new location. Please go to the Development documentation section in the Sparkling Water online help (available [here](https://s3.amazonaws.com/h2o-release/sparkling-water/master/latest.html)).
+The development documentation has moved to a new location. Please go to the Development documentation section in the Sparkling Water online help (available [here](http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/index.html)).
