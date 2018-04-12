@@ -322,6 +322,16 @@ def publishNightly(){
                                         
                     """
                 }
+
+                // Update the links
+                sh  """
+                    git clone https://github.com/h2oai/docs.h2o.ai.git
+                    cd docs.h2o.ai/sites-available/
+                    sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/master/[0-9]+_nightly/?http://h2o-release.s3.amazonaws.com/sparkling-water/master/${BUILD_NUMBER}_nightly/?" 000-default.conf
+                    git add 000-default.conf
+                    git commit -m "Update links of Sparkling Water nighly version to ${BUILD_NUMBER}_nightly"
+                    git push --set-upstream origin master
+                    """
             }
         }
     }
