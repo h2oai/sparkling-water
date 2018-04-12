@@ -33,6 +33,7 @@ dependencies {
       exclude group: 'org.apache.hadoop', module: 'hadoop-common'
       exclude group: 'ai.h2o', module: 'h2o-persist-hdfs'
       exclude group: 'ai.h2o', module: 'h2o-core'
+      exclude group: 'org.apache.parquet', module: 'parquet-hadoop'
   }
   // H2O Orc  parser support
   compile("ai.h2o:h2o-orc-parser:${h2oVersion}") {
