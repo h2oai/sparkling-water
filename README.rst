@@ -1,7 +1,7 @@
 Sparkling Water
 ===============
 
-|Join the chat at https://gitter.im/h2oai/sparkling-water| |image1|
+|Documentation| |Join the chat at https://gitter.im/h2oai/sparkling-water| |image1|
 |image2| |image3| |Powered by H2O.ai|
 
 Sparkling Water integrates |H2O|'s fast scalable machine learning engine with Spark. It provides:
@@ -137,20 +137,20 @@ Use Sparkling Water with PySpark
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sparkling Water can be also used directly from PySpark and the integration is called PySparkling.
 
-See `PySparkling README <py/README.rst>`__ to learn about PySparkling.
+See `PySparkling README <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/pysparkling.html>`__ to learn about PySparkling.
 
 Use Sparkling Water via Spark Packages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To see how Sparkling Water can be used as Spark package, please see `Use as Spark Package <doc/tutorials/use_as_spark_package.rst>`__.
+To see how Sparkling Water can be used as Spark package, please see `Use as Spark Package <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/tutorials/use_as_spark_package.html>`__.
 
 Use Sparkling Water in Windows environments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-See `Windows Tutorial <doc/src/site/sphinx/tutorials/run_on_windows.rst>`__ to learn how to use Sparkling Water in Windows environments.
+See `Windows Tutorial <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/tutorials/run_on_windows.html>`__ to learn how to use Sparkling Water in Windows environments.
 
 Sparkling Water examples
 ~~~~~~~~~~~~~~~~~~~~~~~~
-To see how to run examples for Sparkling Water, please see `Running Examples <doc/src/site/sphinx/devel/running_examples.rst>`__.
+To see how to run examples for Sparkling Water, please see `Running Examples <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/devel/running_examples.html>`__.
 
 --------------
 
@@ -163,26 +163,26 @@ backend. The backend can be specified before creationg of the
 ``H2OContext``.
 
 For more details regarding the internal or external backend, please see
-`Backends <doc/src/site/sphinx/deployment/backends.rst>`__.
+`Backends <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/deployment/backends.html>`__.
 
 --------------
 
 FAQ
 ---
 
-List of all Frequently Asked Questions is available at `FAQ <doc/src/site/sphinx/FAQ.rst>`__.
+List of all Frequently Asked Questions is available at `FAQ <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/FAQ.html>`__.
 
 --------------
 
 Development
 -----------
 
-Complete development documentation is available at `Development Documentation <doc/src/site/sphinx/devel>`__.
+Complete development documentation is available at `Development Documentation <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/devel/devel.html>`__.
 
 Build Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~
 
-To see how to build Sparkling Water, please see `Build Sparkling Water <doc/src/site/sphinx/devel/build.rst>`__.
+To see how to build Sparkling Water, please see `Build Sparkling Water <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/devel/build.html>`__.
 
 Develop applications with Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -219,7 +219,7 @@ You can file a bug report of feature request directly in the Sparkling Water JIR
 
    - Select the Project that you want to file the issue under. For example, if this is an open source public bug, you should file it under **SW (SW)**.
    - Specify the Issue Type. For example, if you believe you've found a bug, then select **Bug**, or if you want to request a new feature, then select **New Feature**.
-   - Provide a short but concise summar about the issue. The summary will be shown when engineers organize, filter, and search for Jira tickets.
+   - Provide a short but concise summary about the issue. The summary will be shown when engineers organize, filter, and search for Jira tickets.
    - Specify the urgency of the issue using the Priority dropdown menu.
    - If there is a due date specify it with the Due Date.
    - The Components drop down refers to the API or language that the issue relates to. (See the drop down menu for available options.)
@@ -250,10 +250,12 @@ We also respond to questions tagged with sparkling-water and h2o tags on the `St
 Change Logs
 ~~~~~~~~~~~
 
-Change logs are available at `Change Logs <doc/CHANGELOG.rst>`__.
+Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/CHANGELOG.html>`__.
 
 ---------------
 
+.. |Documentation| image:: https://media.readthedocs.org/static/projects/badges/passing.svg
+   :target: http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/index.html
 .. |Join the chat at https://gitter.im/h2oai/sparkling-water| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/h2oai/sparkling-water?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. |image1| image:: https://travis-ci.org/h2oai/sparkling-water.svg?branch=master
@@ -265,3 +267,4 @@ Change logs are available at `Change Logs <doc/CHANGELOG.rst>`__.
 .. |Powered by H2O.ai| image:: https://img.shields.io/badge/powered%20by-h2oai-yellow.svg
    :target: https://github.com/h2oai/
 .. |H2O| replace:: H\ :sub:`2`\ O
+
