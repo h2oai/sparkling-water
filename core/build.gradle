@@ -20,7 +20,8 @@ dependencies {
   compile "ai.h2o:h2o-web:${h2oVersion}"
   // H2O Avro parser support 
   compile("ai.h2o:h2o-avro-parser:${h2oVersion}") {
-      transitive = false
+      exclude group: 'org.apache.avro', module: 'avro'
+      exclude group: 'ai.h2o', module: 'h2o-core'
   }
 
   // H2O XGBoost
@@ -29,11 +30,16 @@ dependencies {
 
   // H2O Parquet parser support
   compile("ai.h2o:h2o-parquet-parser:${h2oVersion}") {
-      transitive = false
+      exclude group: 'org.apache.hadoop', module: 'hadoop-common'
+      exclude group: 'ai.h2o', module: 'h2o-persist-hdfs'
+      exclude group: 'ai.h2o', module: 'h2o-core'
   }
   // H2O Orc  parser support
   compile("ai.h2o:h2o-orc-parser:${h2oVersion}") {
-      transitive = false
+      exclude group: 'org.apache.hive', module: 'hive-exec'
+      exclude group: 'org.apache.hadoop', module: 'hadoop-common'
+      exclude group: 'ai.h2o', module: 'h2o-persist-hdfs'
+      exclude group: 'ai.h2o', module: 'h2o-core'
   }
   // H2O Scala API
   compile "ai.h2o:h2o-scala_${scalaBaseVersion}:${h2oVersion}"
@@ -50,6 +56,18 @@ dependencies {
   // H2O AutoML
   compile "ai.h2o:h2o-automl:${h2oVersion}"
 
+  // Sparkling Water REPL
+  compile project(':sparkling-water-repl')
+
+  // Add joda optional convert library which is required in Scala environment
+  compile "org.joda:joda-convert:1.7"
+
+  // And Scala library
+  compile "org.scala-lang:scala-library:${scalaVersion}"
+
+
+  // TEST DEPENDENCIES
+
   // Spark components
   // - core
   compileOnly "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
@@ -64,15 +82,6 @@ dependencies {
   testCompile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
   testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
-
-    // Sparkling Water REPL
-  compile project(':sparkling-water-repl')
-
-  // Add joda optional convert library which is required in Scala environment
-  compile "org.joda:joda-convert:1.7"
-
-  // And Scala library
-  compile "org.scala-lang:scala-library:${scalaVersion}"
 
 
   // And use scalatest for Scala testing
