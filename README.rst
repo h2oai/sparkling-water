@@ -14,7 +14,12 @@ Sparkling Water integrates |H2O|'s fast scalable machine learning engine with Sp
 Getting Started
 ---------------
 
-**User Documentation:** `http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/index.html <http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/index.html>`__
+User Documentation
+~~~~~~~~~~~~~~~~~~
+
+- `Sparkling Water 2.3.x (for Spark 2.3 users) <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/index.html>`__
+- `Sparkling Water 2.2.x (for Spark 2.2 users) <http://docs.h2o.ai/sparkling-water/2.2/latest-stable/doc/index.html>`__
+- `Sparkling Water 2.1.x (for Spark 2.1 users) <http://docs.h2o.ai/sparkling-water/2.1/latest-stable/doc/index.html>`__
 
 Select right version
 ~~~~~~~~~~~~~~~~~~~~
