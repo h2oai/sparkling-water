@@ -20,14 +20,14 @@ Select right version
 ~~~~~~~~~~~~~~~~~~~~
 
 The Sparkling Water is developed in multiple parallel branches. Each
-branch corresponds to a Spark major release (e.g., branch **rel-2.2**
-provides implementation of Sparkling Water for Spark **2.2**).
+branch corresponds to a Spark major release (e.g., current branch **rel-2.1**
+provides implementation of Sparkling Water for Spark **2.1**).
 
 Please, switch to the right branch:
 
+- For Spark 2.3 use branch `rel-2.1 <https://github.com/h2oai/sparkling-water/tree/rel-2.3>`__
+- For Spark 2.2 use branch `rel-2.1 <https://github.com/h2oai/sparkling-water/tree/rel-2.2>`__
 - For Spark 2.1 use branch `rel-2.1 <https://github.com/h2oai/sparkling-water/tree/rel-2.1>`__
-- For Spark 2.0 use branch `rel-2.0 <https://github.com/h2oai/sparkling-water/tree/rel-2.0>`__
-- For Spark 1.6 use branch `rel-1.6 <https://github.com/h2oai/sparkling-water/tree/rel-1.6>`__ (Only critical fixes)
 
    **Note:** The `master <https://github.com/h2oai/sparkling-water/tree/master>`__
    branch includes the latest changes for the latest Spark version.
@@ -36,50 +36,42 @@ Please, switch to the right branch:
 .. The Requirements section is copied from doc/requirements.rst as github does not support include directive of
 .. reStructuredText
 
+The rest of this documentation applies to Sparkling Water 2.1.
+
 Requirements
 ~~~~~~~~~~~~
 
 -  Linux/OS X/Windows
 -  Java 7+
 -  Python 2.6+ For Python version of Sparkling Water (PySparkling)
--  `Spark 1.6+ <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
+-  `Spark 2.1.x <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
 
 
 Download Binaries
 ~~~~~~~~~~~~~~~~~
 
-For each Sparkling Water you can download binaries here:
+For each Sparkling Water release you can download binaries here:
 
-- `Sparkling Water - Latest version <http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html>`__
 - `Sparkling Water - Latest 2.1 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/latest.html>`__
-- `Sparkling Water - Latest 2.0 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/latest.html>`__
-- `Sparkling Water - Latest 1.6 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-1.6/latest.html>`__
 
 Maven
 ~~~~~
 
-Each Sparkling Water release is published into Maven central. Published artifacts are provided with the following Scala
-versions:
-
-- Sparkling Water 2.2.x - Scala 2.11
-- Sparkling Water 2.1.x - Scala 2.11
-- Sparkling Water 2.0.x - Scala 2.11
-- Sparkling Water 1.6.x - Scala 2.10
+Each Sparkling Water release is published into Maven central. Published artifacts are provided for Scala 2.11.
 
 The artifacts coordinates are:
 
-- ``ai.h2o:sparkling-water-core_{{scala_version}}:{{version}}`` - Includes core of Sparkling Water
-- ``ai.h2o:sparkling-water-examples_{{scala_version}}:{{version}}`` - Includes example applications
-- ``ai.h2o:sparkling-water-repl_{{scala_version}}:{{version}}`` - Spark REPL integration into H2O Flow UI
-- ``ai.h2o:sparkling-water-ml_{{scala_version}}:{{version}}`` - Extends Spark ML package by H2O-based transformations
-- ``ai.h2o:sparkling-water-package_{{scala_version}}:{{version}}`` - Uber Sparkling Water package referencing all available Sparkling Water modules. This is designed to use as Spark package via ``--packages`` option
+- ``ai.h2o:sparkling-water-core_2.11:{{version}}`` - Includes core of Sparkling Water
+- ``ai.h2o:sparkling-water-examples_2.11:{{version}}`` - Includes example applications
+- ``ai.h2o:sparkling-water-repl_2.11:{{version}}`` - Spark REPL integration into H2O Flow UI
+- ``ai.h2o:sparkling-water-ml_2.11:{{version}}`` - Extends Spark ML package by H2O-based transformations
+- ``ai.h2o:sparkling-water-package_2.11:{{version}}`` - Uber Sparkling Water package referencing all available Sparkling Water modules. This is designed to use as Spark package via ``--packages`` option
 
-   **Note:** The ``{{version}}`` references to a release version of Sparkling Water, the ``{{scala_version}}``
-   references to Scala base version (``2.10`` or ``2.11``). For example:
-   ``ai.h2o:sparkling-water-examples_2.11:2.1.0``
+   **Note:** The ``{{version}}`` references to a release version of Sparkling Water. For example:
+   ``ai.h2o:sparkling-water-examples_2.11:2.1.25``
 
 The full list of published packages is available
-`here <http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*>`__.
+`here <https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*%20AND%20v%3A2.1*>`__.
 
 ---------------
 
@@ -159,7 +151,7 @@ Sparkling Water Backends
 
 Sparkling water supports two backend/deployment modes - internal and
 external. Sparkling Water applications are independent on the selected
-backend. The backend can be specified before creationg of the
+backend. The backend can be specified before creation of the
 ``H2OContext``.
 
 For more details regarding the internal or external backend, please see
