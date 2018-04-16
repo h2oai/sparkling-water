@@ -59,7 +59,6 @@ For each Sparkling Water you can download binaries here:
 - `Sparkling Water - Latest 2.3 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/latest.html>`__
 - `Sparkling Water - Latest 2.2 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/latest.html>`__
 - `Sparkling Water - Latest 2.1 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/latest.html>`__
-- `Sparkling Water - Latest 2.0 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/latest.html>`__
 
 Maven
 ~~~~~
@@ -70,7 +69,6 @@ versions:
 - Sparkling Water 2.3.x - Scala 2.11
 - Sparkling Water 2.2.x - Scala 2.11
 - Sparkling Water 2.1.x - Scala 2.11
-- Sparkling Water 2.0.x - Scala 2.11
 
 The artifacts coordinates are:
 
