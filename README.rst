@@ -33,7 +33,6 @@ Please, switch to the right branch:
 - For Spark 2.3 use branch `rel-2.3 <https://github.com/h2oai/sparkling-water/tree/rel-2.3>`__
 - For Spark 2.2 use branch `rel-2.2 <https://github.com/h2oai/sparkling-water/tree/rel-2.2>`__
 - For Spark 2.1 use branch `rel-2.1 <https://github.com/h2oai/sparkling-water/tree/rel-2.1>`__
-- For Spark 2.0 use branch `rel-2.0 <https://github.com/h2oai/sparkling-water/tree/rel-2.0>`__
 
    **Note:** The `master <https://github.com/h2oai/sparkling-water/tree/master>`__
    branch includes the latest changes for the latest Spark version.
@@ -60,7 +59,6 @@ For each Sparkling Water you can download binaries here:
 - `Sparkling Water - Latest 2.3 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/latest.html>`__
 - `Sparkling Water - Latest 2.2 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/latest.html>`__
 - `Sparkling Water - Latest 2.1 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/latest.html>`__
-- `Sparkling Water - Latest 2.0 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.0/latest.html>`__
 
 Maven
 ~~~~~
@@ -71,7 +69,6 @@ versions:
 - Sparkling Water 2.3.x - Scala 2.11
 - Sparkling Water 2.2.x - Scala 2.11
 - Sparkling Water 2.1.x - Scala 2.11
-- Sparkling Water 2.0.x - Scala 2.11
 
 The artifacts coordinates are:
 
