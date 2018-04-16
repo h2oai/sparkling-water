@@ -144,20 +144,20 @@ Use Sparkling Water with PySpark
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sparkling Water can be also used directly from PySpark and the integration is called PySparkling.
 
-See `PySparkling README <http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/pysparkling.html>`__ to learn about PySparkling.
+See `PySparkling README <http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/pysparkling.html>`__ to learn about PySparkling.
 
 Use Sparkling Water via Spark Packages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To see how Sparkling Water can be used as Spark package, please see `Use as Spark Package <http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/tutorials/use_as_spark_package.html>`__.
+To see how Sparkling Water can be used as Spark package, please see `Use as Spark Package <http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/tutorials/use_as_spark_package.html>`__.
 
 Use Sparkling Water in Windows environments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-See `Windows Tutorial <http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/tutorials/run_on_windows.html>`__ to learn how to use Sparkling Water in Windows environments.
+See `Windows Tutorial <http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/tutorials/run_on_windows.html>`__ to learn how to use Sparkling Water in Windows environments.
 
 Sparkling Water examples
 ~~~~~~~~~~~~~~~~~~~~~~~~
-To see how to run examples for Sparkling Water, please see `Running Examples <http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/devel/running_examples.html>`__.
+To see how to run examples for Sparkling Water, please see `Running Examples <http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/devel/running_examples.html>`__.
 
 --------------
 
@@ -170,26 +170,26 @@ backend. The backend can be specified before creationg of the
 ``H2OContext``.
 
 For more details regarding the internal or external backend, please see
-`Backends <http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/deployment/backends.html>`__.
+`Backends <http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/deployment/backends.html>`__.
 
 --------------
 
 FAQ
 ---
 
-List of all Frequently Asked Questions is available at `FAQ <http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/FAQ.html>`__.
+List of all Frequently Asked Questions is available at `FAQ <http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/FAQ.html>`__.
 
 --------------
 
 Development
 -----------
 
-Complete development documentation is available at `Development Documentation <http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/devel/devel.html>`__.
+Complete development documentation is available at `Development Documentation <http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/devel/devel.html>`__.
 
 Build Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~
 
-To see how to build Sparkling Water, please see `Build Sparkling Water <http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/devel/build.html>`__.
+To see how to build Sparkling Water, please see `Build Sparkling Water <http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/devel/build.html>`__.
 
 Develop applications with Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -257,12 +257,12 @@ We also respond to questions tagged with sparkling-water and h2o tags on the `St
 Change Logs
 ~~~~~~~~~~~
 
-Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/CHANGELOG.html>`__.
+Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/CHANGELOG.html>`__.
 
 ---------------
 
 .. |Documentation| image:: https://media.readthedocs.org/static/projects/badges/passing.svg
-   :target: http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/index.html
+   :target: http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/index.html
 .. |Join the chat at https://gitter.im/h2oai/sparkling-water| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/h2oai/sparkling-water?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. |image1| image:: https://travis-ci.org/h2oai/sparkling-water.svg?branch=master
