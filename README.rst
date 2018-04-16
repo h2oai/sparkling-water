@@ -163,7 +163,7 @@ Sparkling Water Backends
 
 Sparkling water supports two backend/deployment modes - internal and
 external. Sparkling Water applications are independent on the selected
-backend. The backend can be specified before creationg of the
+backend. The backend can be specified before creation of the
 ``H2OContext``.
 
 For more details regarding the internal or external backend, please see
