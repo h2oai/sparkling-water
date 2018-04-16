@@ -20,12 +20,12 @@ Select right version
 ~~~~~~~~~~~~~~~~~~~~
 
 The Sparkling Water is developed in multiple parallel branches. Each
-branch corresponds to a Spark major release (e.g., branch **rel-2.2**
+branch corresponds to a Spark major release (e.g., current branch **rel-2.2**
 provides implementation of Sparkling Water for Spark **2.2**).
 
 Please, switch to the right branch:
 
-- For Spark 2.3 use branch `rel-2.2 <https://github.com/h2oai/sparkling-water/tree/rel-2.3>`__
+- For Spark 2.3 use branch `rel-2.3 <https://github.com/h2oai/sparkling-water/tree/rel-2.3>`__
 - For Spark 2.2 use branch `rel-2.2 <https://github.com/h2oai/sparkling-water/tree/rel-2.2>`__
 - For Spark 2.1 use branch `rel-2.1 <https://github.com/h2oai/sparkling-water/tree/rel-2.1>`__
 
@@ -151,7 +151,7 @@ Sparkling Water Backends
 
 Sparkling water supports two backend/deployment modes - internal and
 external. Sparkling Water applications are independent on the selected
-backend. The backend can be specified before creationg of the
+backend. The backend can be specified before creation of the
 ``H2OContext``.
 
 For more details regarding the internal or external backend, please see
