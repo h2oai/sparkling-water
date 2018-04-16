@@ -40,7 +40,7 @@ shadowJar {
     // to run inside Spark environment providing some jars 
     // (like hadoop, aws) on classpath
     //
-    include(dependency("ai.h2o:mojo2-runtime:0.8.5-SNAPSHOT"))
+    include(dependency("ai.h2o:mojo2-runtime:0.8.7-SNAPSHOT"))
     include(project(":sparkling-water-core"))
     include(project(":sparkling-water-examples"))
     include(project(":sparkling-water-repl"))

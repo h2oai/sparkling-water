@@ -20,6 +20,7 @@ package org.apache.spark.ml.spark.models
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.ml.h2o.models.H2OMojoPipelineModel
+import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -33,7 +34,7 @@ class H2OMojoPipelineModelTest extends FunSuite with SparkTestContext {
     super.beforeAll()
   }
 
-  test("Prediction on Mojo Pipeline (Mojo2)") {
+  test("Prediction on Mojo Pipeline using internal API") {
     // Test data
     val df = spark.read.option("header", "true").csv("../examples/smalldata/prostate/prostate.csv")
     // Test mojo
@@ -55,6 +56,16 @@ class H2OMojoPipelineModelTest extends FunSuite with SparkTestContext {
     val transDf = mojo.transform(df)
     println(s"\n\nSpark Transformer Output:\n${transDf.dtypes.map { case (n,t) => s"${n}[${t}]" }.mkString(" ")}")
     println("Predictions:")
-    println(transDf.select("prediction.preds").take(5).mkString("\n"))
+    val preds = transDf.select("prediction.preds").take(5)
+    assertPredictedValues(preds)
+    println(preds.mkString("\n"))
+  }
+  
+  private def assertPredictedValues(preds: Array[Row]): Unit = {
+    assert(preds(0).getSeq[String](0).head == "65.36320409515132")
+    assert(preds(1).getSeq[String](0).head == "64.96902128114817")
+    assert(preds(2).getSeq[String](0).head == "64.96721023747583")
+    assert(preds(3).getSeq[String](0).head == "65.78772654671035")
+    assert(preds(4).getSeq[String](0).head == "66.11327967814829")
   }
 }
