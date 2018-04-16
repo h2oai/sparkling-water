@@ -262,7 +262,7 @@ Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/ni
 ---------------
 
 .. |Documentation| image:: https://media.readthedocs.org/static/projects/badges/passing.svg
-   :target: http://docs.h2o.ai/sparkling-water/nightly/latest-stable/doc/index.html
+   :target: http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/index.html
 .. |Join the chat at https://gitter.im/h2oai/sparkling-water| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/h2oai/sparkling-water?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. |image1| image:: https://travis-ci.org/h2oai/sparkling-water.svg?branch=master
