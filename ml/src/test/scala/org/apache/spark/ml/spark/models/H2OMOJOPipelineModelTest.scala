@@ -19,7 +19,7 @@ package org.apache.spark.ml.spark.models
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
-import org.apache.spark.ml.h2o.models.H2OMojoPipelineModel
+import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel
 import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -27,7 +27,7 @@ import org.scalatest.junit.JUnitRunner
 
 import scala.collection.mutable
 @RunWith(classOf[JUnitRunner])
-class H2OMojoPipelineModelTest extends FunSuite with SparkTestContext {
+class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
 
   override def beforeAll(): Unit = {
     sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
@@ -38,7 +38,7 @@ class H2OMojoPipelineModelTest extends FunSuite with SparkTestContext {
     // Test data
     val df = spark.read.option("header", "true").csv("../examples/smalldata/prostate/prostate.csv")
     // Test mojo
-    val mojo = H2OMojoPipelineModel.createFromMojo(
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
     val rawMojo = mojo.getOrCreateModel()
