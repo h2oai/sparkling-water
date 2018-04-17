@@ -86,7 +86,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
       val dt = new RowData
       val values = row.schema.fields.zipWithIndex.map { case (entry, idxRow) =>
 
-        if(row.get(idxRow) != null){
+        if (row.get(idxRow) != null) {
           setRowData(row, idxRow, dt, entry)
         }
 
