@@ -97,7 +97,7 @@ val algoStage = algo match {
     new H2OAutoML().
       setPredictionsCol("label").
       setSeed(1).
-      setMaxRuntimeSecs(300). // 5 minutes
+      setMaxRuntimeSecs(60). // 1 minutes
       setConvertUnknownCategoricalLevelsToNa(true)
   case "grid_gbm" =>
     // Create Grid GBM Model
