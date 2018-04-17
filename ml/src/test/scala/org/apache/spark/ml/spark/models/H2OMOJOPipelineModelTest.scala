@@ -25,7 +25,6 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
-import scala.collection.mutable
 @RunWith(classOf[JUnitRunner])
 class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
 
@@ -48,19 +47,19 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val ocolNames = (0 until rawMojo.getOutputMeta.size()).map(i => rawMojo.getOutputMeta.getColumnName(i))
     val ocolTypes = (0 until rawMojo.getOutputMeta.size()).map(i => rawMojo.getOutputMeta.getColumnType(i))
     println("\nMOJO Inputs:")
-    println(icolNames.zip(icolTypes).map { case (n,t) => s"${n}[${t}]" }.mkString(", "))
+    println(icolNames.zip(icolTypes).map { case (n, t) => s"${n}[${t}]" }.mkString(", "))
     println("\nMOJO Outputs:")
-    println(ocolNames.zip(ocolTypes).map { case (n,t) => s"${n}[${t}]" }.mkString(", "))
+    println(ocolNames.zip(ocolTypes).map { case (n, t) => s"${n}[${t}]" }.mkString(", "))
 
 
     val transDf = mojo.transform(df)
-    println(s"\n\nSpark Transformer Output:\n${transDf.dtypes.map { case (n,t) => s"${n}[${t}]" }.mkString(" ")}")
+    println(s"\n\nSpark Transformer Output:\n${transDf.dtypes.map { case (n, t) => s"${n}[${t}]" }.mkString(" ")}")
     println("Predictions:")
     val preds = transDf.select("prediction.preds").take(5)
     assertPredictedValues(preds)
     println(preds.mkString("\n"))
   }
-  
+
   private def assertPredictedValues(preds: Array[Row]): Unit = {
     assert(preds(0).getSeq[String](0).head == "65.36320409515132")
     assert(preds(1).getSeq[String](0).head == "64.96902128114817")
