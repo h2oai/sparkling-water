@@ -86,8 +86,8 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
       val dt = new RowData
       val values = row.schema.fields.zipWithIndex.map { case (entry, idxRow) =>
 
-        if ($(featuresCols).contains(entry.name)) {
-          setRowData(row, idxRow, dt, entry) // use only relevant columns for training
+        if(row.get(idxRow) != null){
+          setRowData(row, idxRow, dt, entry)
         }
 
         if (row.isNullAt(idxRow)) {
