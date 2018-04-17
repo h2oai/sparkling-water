@@ -14,6 +14,8 @@ include 'package'
 include 'doc'
 include 'extension-stack-trace'
 include 'templates'
+include 'agent'
+
 // Prefix all projects with sparkling-water name
 rootProject.children.each { project ->
     if (project.name.startsWith("app-")) {

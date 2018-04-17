@@ -54,7 +54,8 @@ ext {
       project(':sparkling-water-examples'),
       project(':sparkling-water-ml'),
       project(':sparkling-water-app-streaming'),
-      project(':sparkling-water-package')
+      project(':sparkling-water-package'),
+      project(':sparkling-water-agent')
     ]
     javaProjects = [
       project(':sparkling-water-extension-stack-trace')

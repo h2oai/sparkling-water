@@ -1,0 +1,31 @@
+apply plugin: 'com.github.johnrengelman.shadow'
+
+description = "Sparkling Water Agent"
+
+dependencies{
+    compile "net.bytebuddy:byte-buddy:1.8.5"
+    compile "net.bytebuddy:byte-buddy-agent:1.8.5"
+    compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
+}
+
+jar {
+    manifest {
+        attributes(
+                "Premain-Class": "Agent"
+        )
+    }
+}
+
+// Shadow jar settings
+shadowJar {
+    dependencies {
+        include(dependency("net.bytebuddy:byte-buddy"))
+        include(dependency("net.bytebuddy-agent:byte-buddy"))
+    }
+    manifest {
+        attributes "Premain-Class": "Agent"
+    }
+}
+artifacts {
+    archives shadowJar
+}
