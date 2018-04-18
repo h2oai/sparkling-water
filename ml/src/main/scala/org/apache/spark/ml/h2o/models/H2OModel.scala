@@ -94,7 +94,6 @@ private[models] class H2OModelWriter[T <: H2OModel[T, _ <: Model[_, _, _ <: Mode
   override protected def saveImpl(path: String): Unit = {
     DefaultParamsWriter.saveMetadata(instance, path, sc)
     val file = new java.io.File(path, instance.defaultFileName)
-
     ModelSerializationSupport.exportH2OModel(instance.model, file.toURI)
   }
 }

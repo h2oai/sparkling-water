@@ -18,8 +18,8 @@ package org.apache.spark.ml.h2o.algos
 
 import java.io._
 
+import hex.Model
 import hex.genmodel.utils.DistributionFamily
-import hex.{FrameSplitter, Model}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
@@ -30,7 +30,6 @@ import org.apache.spark.ml.{Estimator, Model => SparkModel}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, SQLContext}
 import water.Key
-import water.fvec.{Frame, H2OFrame}
 import water.support.H2OFrameSupport
 
 import scala.reflect.ClassTag
@@ -81,7 +80,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
       || getParams._distribution == DistributionFamily.multinomial)
       && !trainFrame.vec(getPredictionsCol()).isCategorical) {
       trainFrame.replace(trainFrame.find(getPredictionsCol()),
-                         trainFrame.vec(getPredictionsCol()).toCategoricalVec).remove()
+        trainFrame.vec(getPredictionsCol()).toCategoricalVec).remove()
     }
     water.DKV.put(trainFrame)
 
@@ -100,9 +99,9 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
     require(schema.fields.exists(f => f.name.compareToIgnoreCase(getPredictionsCol()) == 0),
-            s"Specified prediction columns '${getPredictionsCol()} was not found in input dataset!")
+      s"Specified prediction columns '${getPredictionsCol()} was not found in input dataset!")
     require(!getFeaturesCols().exists(n => n.compareToIgnoreCase(getPredictionsCol()) == 0),
-            s"Specified input features cannot contain prediction column!")
+      s"Specified input features cannot contain prediction column!")
     schema
   }
 
@@ -110,7 +109,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 
   @Since("1.6.0")
   override def write: MLWriter = new H2OAlgorithmWriter(this)
-  
+
   def defaultFileName: String
 }
 
@@ -120,11 +119,7 @@ private[algos] class H2OAlgorithmWriter[T <: H2OAlgorithm[_, _]](instance: T) ex
   @Since("1.6.0") override protected def saveImpl(path: String): Unit = {
     val hadoopConf = sc.hadoopConfiguration
     DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val outputPath = if (path.startsWith("file://")) {
-      new Path(path, instance.defaultFileName)
-    } else {
-      new Path("file://" + path, instance.defaultFileName)
-    }
+    val outputPath = new Path(path, instance.defaultFileName)
     val fs = outputPath.getFileSystem(hadoopConf)
     val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     fs.create(qualifiedOutputPath)

@@ -127,11 +127,7 @@ private[algos] class H2OGridSearchWriter(instance: H2OGridSearch) extends MLWrit
   @Since("1.6.0") override protected def saveImpl(path: String): Unit = {
     val hadoopConf = sc.hadoopConfiguration
     DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val outputPath = if (path.startsWith("file://")) {
-      new Path(path, instance.defaultFileName)
-    } else {
-      new Path("file://" + path, instance.defaultFileName)
-    }
+    val outputPath = new Path(path, instance.defaultFileName)
     val fs = outputPath.getFileSystem(hadoopConf)
     val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     fs.create(qualifiedOutputPath)
