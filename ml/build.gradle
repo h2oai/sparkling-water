@@ -16,7 +16,8 @@ dependencies {
 
   testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 
-  compile "ai.h2o:mojo2-runtime:0.8.7-SNAPSHOT"
+  compileOnly "ai.h2o:mojo2-runtime:0.9.3"
+  testCompile "ai.h2o:mojo2-runtime:0.9.3"
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"

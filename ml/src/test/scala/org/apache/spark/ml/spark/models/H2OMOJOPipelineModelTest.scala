@@ -35,7 +35,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
 
   test("Prediction on Mojo Pipeline using internal API") {
     // Test data
-    val df = spark.read.option("header", "true").csv("../examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
