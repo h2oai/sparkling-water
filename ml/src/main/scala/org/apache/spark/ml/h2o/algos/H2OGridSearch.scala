@@ -130,8 +130,8 @@ private[algos] class H2OGridSearchWriter(instance: H2OGridSearch) extends MLWrit
     val outputPath = new Path(path, instance.defaultFileName)
     val fs = outputPath.getFileSystem(hadoopConf)
     val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    fs.create(qualifiedOutputPath)
-    val oos = new ObjectOutputStream(new FileOutputStream(new File(qualifiedOutputPath.toUri), false))
+    val out = fs.create(qualifiedOutputPath)
+    val oos = new ObjectOutputStream(out)
     oos.writeObject(instance.gridSearchParams.get)
   }
 }
@@ -142,8 +142,12 @@ private[algos] class H2OGridSearchReader(val defaultFileName: String) extends ML
 
   override def load(path: String): H2OGridSearch = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
-    val file = new File(path, defaultFileName)
-    val ois = new ObjectInputStream(new FileInputStream(file))
+
+    val inputPath =  new Path(path, defaultFileName)
+    val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val ois = new ObjectInputStream(fs.open(qualifiedInputPath))
+
     val gridSearchParams = ois.readObject().asInstanceOf[H2OGridSearchParams]
     implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
     new H2OGridSearch(Some(gridSearchParams), metadata.uid)(h2oContext, sqlContext)

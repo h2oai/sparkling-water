@@ -122,8 +122,8 @@ private[algos] class H2OAlgorithmWriter[T <: H2OAlgorithm[_, _]](instance: T) ex
     val outputPath = new Path(path, instance.defaultFileName)
     val fs = outputPath.getFileSystem(hadoopConf)
     val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    fs.create(qualifiedOutputPath)
-    val oos = new ObjectOutputStream(new FileOutputStream(new File(qualifiedOutputPath.toUri), false))
+    val out = fs.create(qualifiedOutputPath)
+    val oos = new ObjectOutputStream(out)
     oos.writeObject(instance.getParams)
   }
 }
@@ -135,8 +135,12 @@ private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <:
 
   override def load(path: String): A = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
-    val file = new File(path, defaultFileName)
-    val ois = new ObjectInputStream(new FileInputStream(file))
+
+    val inputPath =  new Path(path, defaultFileName)
+    val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val ois = new ObjectInputStream(fs.open(qualifiedInputPath))
+
     val parameters = ois.readObject().asInstanceOf[P]
     implicit val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
     val h2oAlgo = make[A, P](parameters, metadata.uid, h2oContext, sqlContext)

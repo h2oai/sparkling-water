@@ -216,12 +216,11 @@ private[models] class H2OMOJOModelWriter(instance: H2OMOJOModel) extends MLWrite
     val outputPath = new Path(path, instance.defaultFileName)
     val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
     val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    fs.create(qualifiedOutputPath)
-    val fos = new FileOutputStream(new File(qualifiedOutputPath.toUri))
+    val out = fs.create(qualifiedOutputPath)
     try {
-      fos.write(instance.mojoData)
+      out.write(instance.mojoData)
     } finally {
-      fos.close()
+      out.close()
     }
   }
 }
@@ -234,9 +233,13 @@ private[models] class H2OMOJOModelReader
   @org.apache.spark.annotation.Since("1.6.0")
   override def load(path: String): H2OMOJOModel = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
-    val file = new File(path, defaultFileName)
-    val is = new FileInputStream(file)
-    val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
+
+    val inputPath =  new Path(path, defaultFileName)
+    val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val is = fs.open(qualifiedInputPath)
+
+    val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
 
     val h2oModel = make(mojoData, metadata.uid)(sqlContext)
     DefaultParamsReader.getAndSetParams(h2oModel, metadata)
@@ -258,8 +261,13 @@ object H2OMOJOModel extends MLReadable[H2OMOJOModel] {
   override def load(path: String): H2OMOJOModel = super.load(path)
 
   def createFromMojo(path: String): H2OMOJOModel = {
-    val f = new File(path)
-    createFromMojo(new FileInputStream(f), f.getName)
+
+    val inputPath =  new Path(path)
+    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val is = fs.open(qualifiedInputPath)
+
+    createFromMojo(is, new File(path).getName)
   }
 
   def createFromMojo(is: InputStream, uid: String = Identifiable.randomUID("mojoModel")): H2OMOJOModel = {
