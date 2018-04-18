@@ -98,6 +98,7 @@ private[models] class H2OModelWriter[T <: H2OModel[T, _ <: Model[_, _, _ <: Mode
     val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
     val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     ModelSerializationSupport.exportH2OModel(instance.model, qualifiedOutputPath.toUri)
+    logInfo(s"Saved to: $qualifiedOutputPath")
   }
 }
 

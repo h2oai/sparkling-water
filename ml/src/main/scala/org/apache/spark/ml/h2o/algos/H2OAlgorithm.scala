@@ -125,6 +125,7 @@ private[algos] class H2OAlgorithmWriter[T <: H2OAlgorithm[_, _]](instance: T) ex
     val out = fs.create(qualifiedOutputPath)
     val oos = new ObjectOutputStream(out)
     oos.writeObject(instance.getParams)
+    logInfo(s"Saved to: $qualifiedOutputPath")
   }
 }
 

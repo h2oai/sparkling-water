@@ -222,6 +222,7 @@ private[models] class H2OMOJOModelWriter(instance: H2OMOJOModel) extends MLWrite
     } finally {
       out.close()
     }
+    logInfo(s"Saved to: $qualifiedOutputPath")
   }
 }
 

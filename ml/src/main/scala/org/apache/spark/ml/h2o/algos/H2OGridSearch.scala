@@ -19,22 +19,24 @@ package org.apache.spark.ml.h2o.algos
 import java.io._
 import java.util
 
+import hex.Model
 import hex.grid.{Grid, GridSearch}
 import hex.tree.gbm.GBMModel.GBMParameters
-import hex.{Model, ScoreKeeper}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
+import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
+import org.apache.spark.ml.h2o.param.NullableStringParam
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
-import org.apache.spark.ml.{Estimator, Model => SparkModel}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, SQLContext}
+import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import org.json4s.{JNull, JString, JValue}
-import water.Key
+import org.json4s.{JNull, JValue}
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
+import water.{AutoBuffer, Key}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -132,7 +134,8 @@ private[algos] class H2OGridSearchWriter(instance: H2OGridSearch) extends MLWrit
     val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val out = fs.create(qualifiedOutputPath)
     val oos = new ObjectOutputStream(out)
-    oos.writeObject(instance.gridSearchParams.get)
+    oos.writeObject(instance.gridSearchParams.orNull)
+    logInfo(s"Saved to: $qualifiedOutputPath")
   }
 }
 
@@ -150,7 +153,7 @@ private[algos] class H2OGridSearchReader(val defaultFileName: String) extends ML
 
     val gridSearchParams = ois.readObject().asInstanceOf[H2OGridSearchParams]
     implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
-    new H2OGridSearch(Some(gridSearchParams), metadata.uid)(h2oContext, sqlContext)
+    new H2OGridSearch(Option(gridSearchParams), metadata.uid)(h2oContext, sqlContext)
   }
 }
 
@@ -160,10 +163,10 @@ trait H2OGridSearchParams extends Params {
   // Param definitions
   //
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
-  private final val algo = new Param[String](this, "algo", "Specifies the algorithm for the GridSearch")
-  private final val parameters = new Param[GBMParameters](this, "parameters", "Parameters for the algorithm")
-  private final val hyperParameters = new Param[util.Map[String, Array[AnyRef]]](this, "hyperParameters", "Hyper Parameters")
-  private final val predictionCol = new Param[String](this, "predictionCol", "Prediction column name")
+  private final val algo = new NullableStringParam(this, "algo", "Specifies the algorithm for the GridSearch")
+  private final val parameters = new GBMParametersParam(this, "parameters", "Parameters for the algorithm")
+  private final val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
+  private final val predictionCol = new NullableStringParam(this, "predictionCol", "Prediction column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
   //
   // Default values
@@ -224,32 +227,77 @@ trait H2OGridSearchParams extends Params {
 
 }
 
-class H2OGridSearchAlgoParameters private(parent: Params, name: String, doc: String, isValid: ScoreKeeper.StoppingMetric => Boolean)
-  extends Param[ScoreKeeper.StoppingMetric](parent, name, doc, isValid) {
+class HyperParamsParam(parent: Params, name: String, doc: String, isValid: util.Map[String, Array[AnyRef]] => Boolean)
+  extends Param[util.Map[String, Array[AnyRef]]](parent, name, doc, isValid) {
 
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
+  def this(parent: Params, name: String, doc: String) =
+    this(parent, name, doc, _ => true)
 
-  /** Creates a param pair with the given value (for Java). */
-  override def w(value: ScoreKeeper.StoppingMetric): ParamPair[ScoreKeeper.StoppingMetric] = super.w(value)
-
-  override def jsonEncode(value: ScoreKeeper.StoppingMetric): String = {
+  override def jsonEncode(value: util.Map[String, Array[AnyRef]]): String = {
     val encoded: JValue = if (value == null) {
       JNull
     } else {
-      JString(value.toString)
+      val ab = new AutoBuffer()
+      ab.putSer(value)
+      val bytes = ab.buf()
+      JArray(bytes.toSeq.map(JInt(_)).toList)
     }
     compact(render(encoded))
   }
 
-  override def jsonDecode(json: String): ScoreKeeper.StoppingMetric = {
-    val parsed = parse(json)
-    parsed match {
-      case JString(x) =>
-        ScoreKeeper.StoppingMetric.valueOf(x)
+  override def jsonDecode(json: String): util.Map[String, Array[AnyRef]] = {
+    parse(json) match {
       case JNull =>
         null
+      case JArray(values) =>
+        val bytes = values.map {
+          case JInt(x) =>
+            x.asInstanceOf[Byte]
+          case _ =>
+            throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
+        }.toArray
+        val ab = new AutoBuffer(bytes)
+        ab.getSer().asInstanceOf[util.Map[String, Array[AnyRef]]]
       case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $parsed to ScoreKeeper.StoppingMetric.")
+        throw new IllegalArgumentException(s"Cannot decode $json to util.Map[String, Array[AnyRef]].")
+    }
+  }
+}
+
+class GBMParametersParam(parent: Params, name: String, doc: String, isValid: GBMParameters => Boolean)
+  extends Param[GBMParameters](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) =
+    this(parent, name, doc, _ => true)
+
+  override def jsonEncode(value: GBMParameters): String = {
+    val encoded: JValue = if (value == null) {
+      JNull
+    } else {
+      val ab = new AutoBuffer()
+      value.write(ab)
+      val bytes = ab.buf()
+      JArray(bytes.toSeq.map(JInt(_)).toList)
+    }
+    compact(render(encoded))
+  }
+
+  override def jsonDecode(json: String): GBMParameters = {
+    parse(json) match {
+      case JNull =>
+        null
+      case JArray(values) =>
+        val bytes = values.map {
+          case JInt(x) =>
+            x.asInstanceOf[Byte]
+          case _ =>
+            throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
+        }.toArray
+        val params = new GBMParameters()
+        params.read(new AutoBuffer(bytes))
+        params
+      case _ =>
+        throw new IllegalArgumentException(s"Cannot decode $json to GBMParameters.")
     }
   }
 }

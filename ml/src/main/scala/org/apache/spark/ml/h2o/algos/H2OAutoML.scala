@@ -20,21 +20,21 @@ import java.io._
 import java.util.Date
 
 import ai.h2o.automl.{AutoML, AutoMLBuildSpec}
-import hex.{FrameSplitter, ScoreKeeper}
+import hex.ScoreKeeper
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
+import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
+import org.apache.spark.ml.h2o.param.NullableStringParam
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
-import org.apache.spark.ml.{Estimator, Model => SparkModel}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, SQLContext}
 import org.json4s.JsonAST.JArray
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JString, JValue}
 import water.Key
-import water.fvec.{Frame, H2OFrame}
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
 import scala.collection.JavaConverters._
@@ -135,7 +135,8 @@ private[algos] class H2OAutoMLWriter(instance: H2OAutoML) extends MLWriter {
     val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val out = fs.create(qualifiedOutputPath)
     val oos = new ObjectOutputStream(out)
-    oos.writeObject(instance.automlBuildSpec.get)
+    oos.writeObject(instance.automlBuildSpec.orNull)
+    logInfo(s"Saved to: $qualifiedOutputPath")
   }
 }
 
@@ -153,7 +154,7 @@ private[algos] class H2OAutoMLReader(val defaultFileName: String) extends MLRead
 
     val buildSpec = ois.readObject().asInstanceOf[AutoMLBuildSpec]
     implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
-    new H2OAutoML(Some(buildSpec), metadata.uid)(h2oContext, sqlContext)
+    new H2OAutoML(Option(buildSpec), metadata.uid)(h2oContext, sqlContext)
   }
 }
 
@@ -162,17 +163,17 @@ trait H2OAutoMLParams extends Params {
   //
   // Param definitions
   //
-  private final val predictionCol = new Param[String](this, "predictionCol", "Prediction column name")
+  private final val predictionCol = new NullableStringParam(this, "predictionCol", "Prediction column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
-  private final val foldColumn = new Param[String](this, "foldColumn", "Fold column name")
-  private final val weightsColumn = new Param[String](this, "weightsColumn", "Weights column name")
+  private final val foldColumn = new NullableStringParam(this, "foldColumn", "Fold column name")
+  private final val weightsColumn = new NullableStringParam(this, "weightsColumn", "Weights column name")
   private final val ignoredColumns = new StringArrayParam(this, "ignoredColumns", "Ignored columns names")
   private final val tryMutations = new BooleanParam(this, "tryMutations", "Whether to use mutations as part of the feature engineering")
   private final val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
-  private final val projectName = new Param[String](this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
+  private final val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
     " (e.g., airlines and iris)")
-  private final val loss = new Param[String](this, "loss", "loss")
+  private final val loss = new NullableStringParam(this, "loss", "loss")
   private final val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
   private final val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
   private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
@@ -379,3 +380,4 @@ class H2OAutoMLStoppingMetricParam private(parent: Params, name: String, doc: St
 
   }
 }
+
