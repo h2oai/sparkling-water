@@ -19,6 +19,7 @@ package org.apache.spark.ml.h2o.models
 import java.io.File
 
 import hex.Model
+import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.ml.h2o.param.H2OModelParams
@@ -93,7 +94,11 @@ private[models] class H2OModelWriter[T <: H2OModel[T, _ <: Model[_, _, _ <: Mode
   @org.apache.spark.annotation.Since("1.6.0")
   override protected def saveImpl(path: String): Unit = {
     DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val file = new java.io.File(path, instance.defaultFileName)
+    val outputPath = new Path(path, instance.defaultFileName)
+    val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
+    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    fs.create(qualifiedOutputPath)
+    val file = new File(qualifiedOutputPath.toUri)
     ModelSerializationSupport.exportH2OModel(instance.model, file.toURI)
   }
 }

@@ -23,6 +23,7 @@ import java.util
 import _root_.hex.genmodel.easy.prediction._
 import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
+import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.h2o.param.H2OModelParams
@@ -212,8 +213,11 @@ private[models] class H2OMOJOModelWriter(instance: H2OMOJOModel) extends MLWrite
   @org.apache.spark.annotation.Since("1.6.0")
   override protected def saveImpl(path: String): Unit = {
     DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val file = new java.io.File(path, instance.defaultFileName)
-    val fos = new FileOutputStream(file)
+    val outputPath = new Path(path, instance.defaultFileName)
+    val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
+    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    fs.create(qualifiedOutputPath)
+    val fos = new FileOutputStream(new File(qualifiedOutputPath.toUri))
     try {
       fos.write(instance.mojoData)
     } finally {
