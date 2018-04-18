@@ -136,6 +136,7 @@ private[algos] class H2OAutoMLWriter(instance: H2OAutoML) extends MLWriter {
     val out = fs.create(qualifiedOutputPath)
     val oos = new ObjectOutputStream(out)
     oos.writeObject(instance.automlBuildSpec.orNull)
+    out.close()
     logInfo(s"Saved to: $qualifiedOutputPath")
   }
 }

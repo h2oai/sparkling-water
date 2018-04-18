@@ -135,6 +135,7 @@ private[algos] class H2OGridSearchWriter(instance: H2OGridSearch) extends MLWrit
     val out = fs.create(qualifiedOutputPath)
     val oos = new ObjectOutputStream(out)
     oos.writeObject(instance.gridSearchParams.orNull)
+    out.close()
     logInfo(s"Saved to: $qualifiedOutputPath")
   }
 }
