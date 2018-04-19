@@ -100,13 +100,14 @@ pipeline {
         stage('Build Sparkling Water Distribution'){
             steps {
 
-                // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
-                // with release notes which can mess up the build
-                sh  """
+                withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
+                    // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
+                    // with release notes which can mess up the build
+                    sh """
                     ${env.WORKSPACE}/gradlew --help
                     """
 
-                sh  """
+                    sh """
                      # Calculate the current and future version
                     sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
                     REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
@@ -124,11 +125,12 @@ pipeline {
                     export H2O_PYTHON_WHEEL="\$(pwd)/private/h2o.whl"
                         
                     # Perform a build
-                    ./gradlew build -x check scaladoc javadoc
+                    ./gradlew build -x check scaladoc javadoc -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
                     ./gradlew site
                     ./gradlew buildSparklingWaterDist
                                 
                     """
+                }
             }
         }
 
