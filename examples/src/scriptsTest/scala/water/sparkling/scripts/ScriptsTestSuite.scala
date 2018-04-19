@@ -206,7 +206,7 @@ class ScriptStrataAirlines extends ScriptsTestHelper {
 @RunWith(classOf[JUnitRunner])
 class ScriptPipelineHamOrSpamGBM extends ScriptsTestHelper {
   override protected def beforeAll(): Unit = {
-    sparkConf = defaultConf.setMaster("local-cluster[3,2,4096]")
+    sparkConf = defaultConf.setMaster("local")
       .set("spark.driver.memory", "4G")
       .set("spark.executor.memory", "4G")
     super.beforeAll()

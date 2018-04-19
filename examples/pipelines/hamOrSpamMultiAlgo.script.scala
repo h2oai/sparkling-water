@@ -122,15 +122,14 @@ val pipeline = new Pipeline().
 // Test exporting and importing the pipeline. On Systems where HDFS & Hadoop is not available, this call store the pipeline
 // to local file in the current directory. In case HDFS & Hadoop is available, this call stores the pipeline to HDFS home
 // directory for the current user. Absolute paths can be used as wells. The same holds for the model import/export bellow.
-pipeline.write.overwrite.save("pipeline")
-
-val loadedPipeline = Pipeline.load("pipeline")
+pipeline.write.overwrite.save("examples/build/pipeline")
+val loadedPipeline = Pipeline.load("examples/build/pipeline")
 // Train the pipeline model
 val data = load("smsData.txt")
 val model = loadedPipeline.fit(data)
 
-model.write.overwrite.save("model")
-val loadedModel = PipelineModel.load("model")
+model.write.overwrite.save("examples/build/model")
+val loadedModel = PipelineModel.load("examples/build/model")
 
 /*
  * Make predictions on unlabeled data
