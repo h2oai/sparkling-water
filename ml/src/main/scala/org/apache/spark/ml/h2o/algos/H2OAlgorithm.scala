@@ -138,7 +138,7 @@ private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <:
   override def load(path: String): A = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
 
-    val inputPath =  new Path(path, defaultFileName)
+    val inputPath = new Path(path, defaultFileName)
     val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val ois = new ObjectInputStream(fs.open(qualifiedInputPath))
