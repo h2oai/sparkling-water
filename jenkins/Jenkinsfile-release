@@ -99,6 +99,13 @@ pipeline {
 
         stage('Build Sparkling Water Distribution'){
             steps {
+
+                // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
+                // with release notes which can mess up the build
+                sh  """
+                    ${env.WORKSPACE}/gradlew --help
+                    """
+
                 sh  """
                      # Calculate the current and future version
                     sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
