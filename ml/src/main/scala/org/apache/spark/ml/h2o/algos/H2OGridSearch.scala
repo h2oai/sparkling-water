@@ -17,7 +17,6 @@
 package org.apache.spark.ml.h2o.algos
 
 import java.io._
-import java.util
 
 import hex.Model
 import hex.grid.{Grid, GridSearch}
@@ -39,6 +38,7 @@ import water.support.{H2OFrameSupport, ModelSerializationSupport}
 import water.{AutoBuffer, Key}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -76,7 +76,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
 
     water.DKV.put(trainFrame)
-    val job = GridSearch.startGridSearch(Key.make(), params, hyperParams)
+    val job = GridSearch.startGridSearch(Key.make(), params, hyperParams.asJava)
     val grid = job.get()
     if (grid.getModels.length == 0) {
       throw new IllegalArgumentException("No Model returned.")
@@ -178,7 +178,7 @@ trait H2OGridSearchParams extends Params {
     ratio -> 1.0, // 1.0 means use whole frame as training frame
     algo -> "GBM",
     parameters -> new GBMParameters(),
-    hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
+    hyperParameters -> Map.empty[String, Array[AnyRef]],
     predictionCol -> "prediction",
     allStringColumnsToCategorical -> true
   )
@@ -220,9 +220,12 @@ trait H2OGridSearchParams extends Params {
   def setParameters(value: H2OGBM): this.type = set(parameters, value.getParams)
 
   /** @group getParam */
-  def setHyperParameters(value: util.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
+  def setHyperParameters(value: Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
 
-  /** @group setParam */
+  /** @group getParam */
+  def setHyperParameters(value: mutable.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.toMap)
+
+      /** @group setParam */
   def setPredictionsCol(value: String): this.type = set(predictionCol, value)
 
   /** @group setParam */
@@ -230,25 +233,29 @@ trait H2OGridSearchParams extends Params {
 
 }
 
-class HyperParamsParam(parent: Params, name: String, doc: String, isValid: util.Map[String, Array[AnyRef]] => Boolean)
-  extends Param[util.Map[String, Array[AnyRef]]](parent, name, doc, isValid) {
+class HyperParamsParam(parent: Params, name: String, doc: String, isValid: Map[String, Array[AnyRef]] => Boolean)
+  extends Param[Map[String, Array[AnyRef]]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)
 
-  override def jsonEncode(value: util.Map[String, Array[AnyRef]]): String = {
+  override def jsonEncode(value: Map[String, Array[AnyRef]]): String = {
     val encoded: JValue = if (value == null) {
       JNull
     } else {
       val ab = new AutoBuffer()
-      ab.putSer(value)
+      ab.put1(value.size)
+      value.foreach{ case (k, v) =>
+        ab.putStr(k)
+        ab.putASer(v)
+      }
       val bytes = ab.buf()
       JArray(bytes.toSeq.map(JInt(_)).toList)
     }
     compact(render(encoded))
   }
 
-  override def jsonDecode(json: String): util.Map[String, Array[AnyRef]] = {
+  override def jsonDecode(json: String): Map[String, Array[AnyRef]] = {
     parse(json) match {
       case JNull =>
         null
@@ -260,9 +267,10 @@ class HyperParamsParam(parent: Params, name: String, doc: String, isValid: util.
             throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
         }.toArray
         val ab = new AutoBuffer(bytes)
-        ab.getSer().asInstanceOf[util.Map[String, Array[AnyRef]]]
+        val numParams = ab.get1()
+        (0 until numParams).map{ _ => (ab.getStr, ab.getASer[AnyRef](classOf[AnyRef]))}.toMap
       case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to util.Map[String, Array[AnyRef]].")
+        throw new IllegalArgumentException(s"Cannot decode $json to Map[String, Array[AnyRef]].")
     }
   }
 }

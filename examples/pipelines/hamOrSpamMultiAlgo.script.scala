@@ -101,13 +101,12 @@ val algoStage = algo match {
       setConvertUnknownCategoricalLevelsToNa(true)
   case "grid_gbm" =>
     // Create Grid GBM Model
-    import scala.collection.JavaConverters._
     import scala.collection.mutable.HashMap
     val hyperParams: HashMap[String, Array[AnyRef]] = HashMap()
     hyperParams += ("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
     new H2OGridSearch().
       setPredictionsCol("label").
-      setHyperParameters(hyperParams.asJava).
+      setHyperParameters(hyperParams).
       setParameters(new H2OGBM().setMaxDepth(30).setSeed(1))
 }
 
