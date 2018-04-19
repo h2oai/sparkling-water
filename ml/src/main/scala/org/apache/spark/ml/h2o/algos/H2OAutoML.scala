@@ -148,14 +148,16 @@ private[algos] class H2OAutoMLReader(val defaultFileName: String) extends MLRead
   override def load(path: String): H2OAutoML = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
 
-    val inputPath =  new Path(path, defaultFileName)
+    val inputPath = new Path(path, defaultFileName)
     val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val ois = new ObjectInputStream(fs.open(qualifiedInputPath))
 
     val buildSpec = ois.readObject().asInstanceOf[AutoMLBuildSpec]
     implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
-    new H2OAutoML(Option(buildSpec), metadata.uid)(h2oContext, sqlContext)
+    val algo = new H2OAutoML(Option(buildSpec), metadata.uid)(h2oContext, sqlContext)
+    DefaultParamsReader.getAndSetParams(algo, metadata)
+    algo
   }
 }
 

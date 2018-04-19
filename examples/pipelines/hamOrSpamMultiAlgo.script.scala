@@ -90,7 +90,7 @@ val algoStage = algo match {
       setL2(0.0).
       setSeed(1).
       setHidden(Array[Int](200, 200)).
-      setFeaturesCols(idf.getOutputCol).
+      setFeaturesCols("tf_idf").
       setPredictionsCol("label")
   case "automl" =>
     // Create H2OAutoML model
@@ -120,10 +120,18 @@ val colPruner = new ColumnPruner().
 val pipeline = new Pipeline().
   setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, algoStage, colPruner))
 
+// Test exporting and importing the pipeline. On Systems where HDFS & Hadoop is not available, this call store the pipeline
+// to local file in the current directory. In case HDFS & Hadoop is available, this call stores the pipeline to HDFS home
+// directory for the current user. Absolute paths can be used as wells. The same holds for the model import/export bellow.
+pipeline.write.overwrite.save("pipeline")
+
+val loadedPipeline = Pipeline.load("pipeline")
 // Train the pipeline model
 val data = load("smsData.txt")
-val model = pipeline.fit(data)
+val model = loadedPipeline.fit(data)
 
+model.write.overwrite.save("model")
+val loadedModel = PipelineModel.load("model")
 
 /*
  * Make predictions on unlabeled data
@@ -139,6 +147,6 @@ def isSpam(smsText: String,
   prediction.select("prediction_output.p1").first.getDouble(0) > hamThreshold
 }
 
-println(isSpam("Michal, h2oworld party tonight in MV?", model))
+println(isSpam("Michal, h2oworld party tonight in MV?", loadedModel))
 
-println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model))
+println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", loadedModel))

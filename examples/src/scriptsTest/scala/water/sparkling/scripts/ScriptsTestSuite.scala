@@ -249,9 +249,9 @@ object HamOrSpamTester {
 
   def test(scriptsTestHelper: ScriptsTestHelper, fileName: String, algo: String) {
     val inspections = new ScriptInspections()
-    inspections.addSnippet("val answer1 = isSpam(\"Michal, h2oworld party tonight in MV?\", model)")
+    inspections.addSnippet("val answer1 = isSpam(\"Michal, h2oworld party tonight in MV?\", loadedModel)")
     inspections.addTermToCheck("answer1")
-    inspections.addSnippet("val answer2 = isSpam(\"We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?\", model)")
+    inspections.addSnippet("val answer2 = isSpam(\"We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?\", loadedModel)")
     inspections.addTermToCheck("answer2")
 
     val result = scriptsTestHelper.launchScript(fileName, inspections, "pipelines", "val algo=\"" + algo + "\"")

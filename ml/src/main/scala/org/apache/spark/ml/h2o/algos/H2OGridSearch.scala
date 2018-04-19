@@ -154,7 +154,9 @@ private[algos] class H2OGridSearchReader(val defaultFileName: String) extends ML
 
     val gridSearchParams = ois.readObject().asInstanceOf[H2OGridSearchParams]
     implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
-    new H2OGridSearch(Option(gridSearchParams), metadata.uid)(h2oContext, sqlContext)
+    val algo = new H2OGridSearch(Option(gridSearchParams), metadata.uid)(h2oContext, sqlContext)
+    DefaultParamsReader.getAndSetParams(algo, metadata)
+    algo
   }
 }
 
@@ -253,7 +255,7 @@ class HyperParamsParam(parent: Params, name: String, doc: String, isValid: util.
       case JArray(values) =>
         val bytes = values.map {
           case JInt(x) =>
-            x.asInstanceOf[Byte]
+            x.byteValue()
           case _ =>
             throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
         }.toArray
@@ -290,7 +292,7 @@ class GBMParametersParam(parent: Params, name: String, doc: String, isValid: GBM
       case JArray(values) =>
         val bytes = values.map {
           case JInt(x) =>
-            x.asInstanceOf[Byte]
+            x.byteValue()
           case _ =>
             throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
         }.toArray
