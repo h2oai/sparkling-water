@@ -1,6 +1,33 @@
 Change Log
 ==========
 
+v2.3.1 (2018-04-19)
+-------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/1/index.html>`__
+
+-  Bug
+        
+   -  `SW-672 <https://0xdata.atlassian.net/browse/SW-672>`__ - Enable using sparkling water maven packages in databricks cloud 
+   -  `SW-787 <https://0xdata.atlassian.net/browse/SW-787>`__ - Documentation fixes
+   -  `SW-788 <https://0xdata.atlassian.net/browse/SW-788>`__ - Fix Travis tests on Spark 2.3
+   -  `SW-790 <https://0xdata.atlassian.net/browse/SW-790>`__ - Add missing seed argument to H2OAutoml pipeline step
+   -  `SW-794 <https://0xdata.atlassian.net/browse/SW-794>`__ - Point to proper web-based docs
+   -  `SW-796 <https://0xdata.atlassian.net/browse/SW-796>`__ - Use parquet provided by Spark
+   -  `SW-797 <https://0xdata.atlassian.net/browse/SW-797>`__ - Automatically update redirect table as part of release pipeline
+   -  `SW-806 <https://0xdata.atlassian.net/browse/SW-806>`__ - Fix exporting and importing of pipeline steps and mojo models to and from HDFS
+                
+-  Improvement
+        
+   -  `SW-772 <https://0xdata.atlassian.net/browse/SW-772>`__ - Integrate &amp; Test Mojo Pipeline with Sparkling Water
+   -  `SW-789 <https://0xdata.atlassian.net/browse/SW-789>`__ - Upgrade H2O to 3.18.0.7
+   -  `SW-791 <https://0xdata.atlassian.net/browse/SW-791>`__ - Expose context_path in Sparkling Water
+   -  `SW-793 <https://0xdata.atlassian.net/browse/SW-793>`__ - Create additional test verifying that the new light endpoint works as expected
+   -  `SW-798 <https://0xdata.atlassian.net/browse/SW-798>`__ - Additional link to documentation
+   -  `SW-800 <https://0xdata.atlassian.net/browse/SW-800>`__ - Remove references to Sparkling Water 2.0
+   -  `SW-804 <https://0xdata.atlassian.net/browse/SW-804>`__ - Reduce time of H2OAutoml step in pipeline tests to 1 minute
+   -  `SW-808 <https://0xdata.atlassian.net/browse/SW-808>`__ - Upgrade to Gradle 4.7
+                
+                                
 v2.3.0 (2018-03-29)
 -------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/0/index.html>`__
