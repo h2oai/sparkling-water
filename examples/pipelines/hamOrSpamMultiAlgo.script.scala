@@ -90,7 +90,7 @@ val algoStage = algo match {
       setL2(0.0).
       setSeed(1).
       setHidden(Array[Int](200, 200)).
-      setFeaturesCols(idf.getOutputCol).
+      setFeaturesCols("tf_idf").
       setPredictionsCol("label")
   case "automl" =>
     // Create H2OAutoML model
@@ -101,13 +101,12 @@ val algoStage = algo match {
       setConvertUnknownCategoricalLevelsToNa(true)
   case "grid_gbm" =>
     // Create Grid GBM Model
-    import scala.collection.JavaConverters._
     import scala.collection.mutable.HashMap
     val hyperParams: HashMap[String, Array[AnyRef]] = HashMap()
     hyperParams += ("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
     new H2OGridSearch().
       setPredictionsCol("label").
-      setHyperParameters(hyperParams.asJava).
+      setHyperParameters(hyperParams).
       setParameters(new H2OGBM().setMaxDepth(30).setSeed(1))
 }
 
@@ -120,10 +119,17 @@ val colPruner = new ColumnPruner().
 val pipeline = new Pipeline().
   setStages(Array(tokenizer, stopWordsRemover, hashingTF, idf, algoStage, colPruner))
 
+// Test exporting and importing the pipeline. On Systems where HDFS & Hadoop is not available, this call store the pipeline
+// to local file in the current directory. In case HDFS & Hadoop is available, this call stores the pipeline to HDFS home
+// directory for the current user. Absolute paths can be used as wells. The same holds for the model import/export bellow.
+pipeline.write.overwrite.save("examples/build/pipeline")
+val loadedPipeline = Pipeline.load("examples/build/pipeline")
 // Train the pipeline model
 val data = load("smsData.txt")
-val model = pipeline.fit(data)
+val model = loadedPipeline.fit(data)
 
+model.write.overwrite.save("examples/build/model")
+val loadedModel = PipelineModel.load("examples/build/model")
 
 /*
  * Make predictions on unlabeled data
@@ -139,6 +145,6 @@ def isSpam(smsText: String,
   prediction.select("prediction_output.p1").first.getDouble(0) > hamThreshold
 }
 
-println(isSpam("Michal, h2oworld party tonight in MV?", model))
+println(isSpam("Michal, h2oworld party tonight in MV?", loadedModel))
 
-println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model))
+println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", loadedModel))
