@@ -19,8 +19,8 @@ package org.apache.spark.ml.h2o.param
 import hex.tree.SharedTreeModel.SharedTreeParameters
 import hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType
 import org.apache.spark.ml.param.{Param, ParamPair, Params}
-import org.json4s.{JNull, JString, JValue}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
+import org.json4s.{JNull, JString, JValue}
 
 trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
 
@@ -39,7 +39,7 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
   final val buildTreeOneNode = booleanParam("buildTreeOneNode")
   final val scoreTreeInterval = intParam("scoreTreeInterval")
   final val sampleRate = doubleParam("sampleRate")
-  final val sampleRatePerClass = doubleArrayParam("sampleRatePerClass")
+  final val sampleRatePerClass =  nullableDoubleArrayParam("sampleRatePerClass")
   final val colSampleRateChangePerLevel = doubleParam("colSampleRateChangePerLevel")
   final val colSampleRatePerTree = doubleParam("colSampleRatePerTree")
 
