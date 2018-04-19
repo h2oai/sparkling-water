@@ -103,7 +103,7 @@ We can also set regular arguments using the ``setParameters`` call. In this case
 
     val grid = new H2OGridSearch().
       setPredictionsCol("label").
-      setHyperParameters(hyperParams.asJava).
+      setHyperParameters(hyperParams).
       setParameters(new H2OGBM().setMaxDepth(30))
 
 Remove Temporary Columns

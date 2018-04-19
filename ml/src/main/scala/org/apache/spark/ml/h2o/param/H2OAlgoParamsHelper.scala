@@ -20,6 +20,10 @@ import com.google.common.base.CaseFormat
 import hex.Model.Parameters
 import org.apache.spark.h2o.utils.ReflectionUtils.api
 import org.apache.spark.ml.param._
+import org.json4s.JsonAST.JArray
+import org.json4s.jackson.JsonMethods.{compact, parse, render}
+import org.json4s.{JDouble, JNull, JString}
+
 
 import scala.reflect.ClassTag
 
@@ -107,4 +111,11 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
       getH2ODoc(underscoredName)
     }
   }
+
+  def nullableDoubleArrayParam(name: String, doc: String): NullableDoubleArrayParam = nullableDoubleArrayParam(name, Some(doc))
+
+  def nullableDoubleArrayParam(name: String, doc: Option[String] = None): NullableDoubleArrayParam = {
+    new NullableDoubleArrayParam(this, name, getDoc(doc, name))
+  }
+
 }

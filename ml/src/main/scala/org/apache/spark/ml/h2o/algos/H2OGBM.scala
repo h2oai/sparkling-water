@@ -131,6 +131,5 @@ trait H2OGBMParams extends H2OSharedTreeParams[GBMParameters] {
     parameters._col_sample_rate = $(colSampleRate)
     parameters._max_abs_leafnode_pred = $(maxAbsLeafnodePred)
     parameters._pred_noise_bandwidth = $(predNoiseBandwidth)
-    
   }
 }
