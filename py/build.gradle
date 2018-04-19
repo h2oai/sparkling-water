@@ -10,8 +10,14 @@ ext {
 
 description = "PySparkling - Sparkling-Water Python Package"
 
+configurations {
+    mojopipeline
+}
 dependencies {
     compile project(path: ':sparkling-water-assembly')
+
+    // This dependency is used just for tests
+    mojopipeline "ai.h2o:mojo2-runtime:0.9.5"
 }
 //
 // Create a file with version for Python dist task
@@ -58,6 +64,9 @@ def preparePythonTestEnv(environment){
 
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
     environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
+
+    //For MOJO Pipeline
+    environment["sparkling.mojo.pipeline.jar"] = configurations.mojopipeline.resolve().find {it.name.contains("mojo2-runtime")}.absolutePath
 }
 
 //
