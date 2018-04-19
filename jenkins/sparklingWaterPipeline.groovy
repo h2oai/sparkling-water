@@ -127,7 +127,6 @@ def prepareSparklingWaterEnvironment() {
                     git clone https://github.com/h2oai/h2o-3.git
                     cd h2o-3
                     git checkout ${config.h2oBranch}
-                    ${env.WORKSPACE}/gradlew build -x check
                     cd ..
                     if [ ${config.backendMode} = external ]; then
                         # In this case, PySparkling build is driven by H2O_HOME property
