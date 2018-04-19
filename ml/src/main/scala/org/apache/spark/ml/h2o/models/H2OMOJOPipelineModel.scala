@@ -21,6 +21,7 @@ import java.io._
 
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
+import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.param.ParamMap
@@ -105,13 +106,16 @@ private[models] class H2OMOJOPipelineModelWriter(instance: H2OMOJOPipelineModel)
   @org.apache.spark.annotation.Since("1.6.0")
   override protected def saveImpl(path: String): Unit = {
     DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val file = new java.io.File(path, instance.defaultFileName)
-    val fos = new FileOutputStream(file)
+    val outputPath = new Path(path, instance.defaultFileName)
+    val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
+    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val out = fs.create(qualifiedOutputPath)
     try {
-      fos.write(instance.mojoData)
+      out.write(instance.mojoData)
     } finally {
-      fos.close()
+      out.close()
     }
+    logInfo(s"Saved to: $qualifiedOutputPath")
   }
 }
 
@@ -123,9 +127,13 @@ private[models] class H2OMOJOModelPipelineReader
   @org.apache.spark.annotation.Since("1.6.0")
   override def load(path: String): H2OMOJOPipelineModel = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
-    val file = new File(path, defaultFileName)
-    val is = new FileInputStream(file)
-    val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
+
+    val inputPath =  new Path(path, defaultFileName)
+    val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val is = fs.open(qualifiedInputPath)
+
+    val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
 
     val h2oModel = make(mojoData, metadata.uid)(sqlContext)
     DefaultParamsReader.getAndSetParams(h2oModel, metadata)
