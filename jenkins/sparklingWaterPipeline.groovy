@@ -163,10 +163,12 @@ def prepareSparklingWaterEnvironment() {
 def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint') {
-            sh  """
-                # Build
-                ${getGradleCommand(config)} clean build -x check scalaStyle
-                """
+            withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
+                sh  """
+                    # Build
+                    ${getGradleCommand(config)} clean build -x check scalaStyle -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
+                    """
+            }
         }
     }
 }
@@ -176,10 +178,12 @@ def unitTests() {
         stage('QA: Unit Tests') {
             if (config.runUnitTests.toBoolean()) {
                 try {
-                    sh  """
-                        # Run unit tests
-                        ${getGradleCommand(config)} test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
-                        """
+                    withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
+                        sh  """
+                            # Run unit tests
+                            ${getGradleCommand(config)} test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                            """
+                    }
                 } finally {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
                     junit 'core/build/test-results/test/*.xml'
