@@ -62,12 +62,6 @@ def getGradleCommand(config) {
 def prepareSparkEnvironment() {
     return { config ->
         stage('Prepare Spark Environment') {
-
-            // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
-            // with release notes which can mess up the build
-            sh  """
-                ${env.WORKSPACE}/gradlew --help
-                """
             
             if (config.buildAgainstSparkBranch.toBoolean()) {
                 // build spark
@@ -110,6 +104,12 @@ def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment') {
 
+            // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
+            // with release notes which can mess up the build
+            sh  """
+                ${env.WORKSPACE}/gradlew --help
+                """
+            
             // In case of nightly build, modify gradle.properties
             if(config.buildNightly.toBoolean()){
 
