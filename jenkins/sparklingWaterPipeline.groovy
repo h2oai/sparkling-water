@@ -63,6 +63,12 @@ def prepareSparkEnvironment() {
     return { config ->
         stage('Prepare Spark Environment') {
 
+            // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
+            // with release notes which can mess up the build
+            sh  """
+                ${env.WORKSPACE}/gradlew --help
+                """
+            
             if (config.buildAgainstSparkBranch.toBoolean()) {
                 // build spark
                 sh """
