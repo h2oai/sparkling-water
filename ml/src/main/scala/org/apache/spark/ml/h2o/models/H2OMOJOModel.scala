@@ -262,7 +262,6 @@ object H2OMOJOModel extends MLReadable[H2OMOJOModel] {
   override def load(path: String): H2OMOJOModel = super.load(path)
 
   def createFromMojo(path: String): H2OMOJOModel = {
-
     val inputPath =  new Path(path)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)

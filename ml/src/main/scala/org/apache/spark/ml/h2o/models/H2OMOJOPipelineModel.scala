@@ -24,12 +24,13 @@ import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.utils.H2OSchemaUtils
+import org.apache.spark.ml.h2o.models.H2OMOJOModel.createFromMojo
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
 import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SQLContext}
+import org.apache.spark.sql._
 
 import scala.reflect.ClassTag
 
@@ -156,8 +157,12 @@ object H2OMOJOPipelineModel extends MLReadable[H2OMOJOPipelineModel] {
   override def load(path: String): H2OMOJOPipelineModel = super.load(path)
 
   def createFromMojo(path: String): H2OMOJOPipelineModel = {
-    val f = new File(path)
-    createFromMojo(new FileInputStream(f), f.getName)
+    val inputPath =  new Path(path)
+    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val is = fs.open(qualifiedInputPath)
+
+    createFromMojo(is, new File(path).getName)
   }
 
   def createFromMojo(is: InputStream, uid: String = Identifiable.randomUID("mojoPipelineModel")): H2OMOJOPipelineModel = {
