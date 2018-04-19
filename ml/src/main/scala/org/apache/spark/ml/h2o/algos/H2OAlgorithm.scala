@@ -18,8 +18,8 @@ package org.apache.spark.ml.h2o.algos
 
 import java.io._
 
+import hex.Model
 import hex.genmodel.utils.DistributionFamily
-import hex.{FrameSplitter, Model}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
@@ -30,7 +30,6 @@ import org.apache.spark.ml.{Estimator, Model => SparkModel}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, SQLContext}
 import water.Key
-import water.fvec.{Frame, H2OFrame}
 import water.support.H2OFrameSupport
 
 import scala.reflect.ClassTag
@@ -81,7 +80,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
       || getParams._distribution == DistributionFamily.multinomial)
       && !trainFrame.vec(getPredictionsCol()).isCategorical) {
       trainFrame.replace(trainFrame.find(getPredictionsCol()),
-                         trainFrame.vec(getPredictionsCol()).toCategoricalVec).remove()
+        trainFrame.vec(getPredictionsCol()).toCategoricalVec).remove()
     }
     water.DKV.put(trainFrame)
 
@@ -100,9 +99,9 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
     require(schema.fields.exists(f => f.name.compareToIgnoreCase(getPredictionsCol()) == 0),
-            s"Specified prediction columns '${getPredictionsCol()} was not found in input dataset!")
+      s"Specified prediction columns '${getPredictionsCol()} was not found in input dataset!")
     require(!getFeaturesCols().exists(n => n.compareToIgnoreCase(getPredictionsCol()) == 0),
-            s"Specified input features cannot contain prediction column!")
+      s"Specified input features cannot contain prediction column!")
     schema
   }
 
@@ -110,7 +109,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 
   @Since("1.6.0")
   override def write: MLWriter = new H2OAlgorithmWriter(this)
-  
+
   def defaultFileName: String
 }
 
@@ -120,16 +119,14 @@ private[algos] class H2OAlgorithmWriter[T <: H2OAlgorithm[_, _]](instance: T) ex
   @Since("1.6.0") override protected def saveImpl(path: String): Unit = {
     val hadoopConf = sc.hadoopConfiguration
     DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val outputPath = if (path.startsWith("file://")) {
-      new Path(path, instance.defaultFileName)
-    } else {
-      new Path("file://" + path, instance.defaultFileName)
-    }
+    val outputPath = new Path(path, instance.defaultFileName)
     val fs = outputPath.getFileSystem(hadoopConf)
     val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    fs.create(qualifiedOutputPath)
-    val oos = new ObjectOutputStream(new FileOutputStream(new File(qualifiedOutputPath.toUri), false))
+    val out = fs.create(qualifiedOutputPath)
+    val oos = new ObjectOutputStream(out)
     oos.writeObject(instance.getParams)
+    out.close()
+    logInfo(s"Saved to: $qualifiedOutputPath")
   }
 }
 
@@ -140,8 +137,12 @@ private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <:
 
   override def load(path: String): A = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
-    val file = new File(path, defaultFileName)
-    val ois = new ObjectInputStream(new FileInputStream(file))
+
+    val inputPath = new Path(path, defaultFileName)
+    val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val ois = new ObjectInputStream(fs.open(qualifiedInputPath))
+
     val parameters = ois.readObject().asInstanceOf[P]
     implicit val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
     val h2oAlgo = make[A, P](parameters, metadata.uid, h2oContext, sqlContext)

@@ -19,6 +19,7 @@ package org.apache.spark.ml.h2o.models
 import java.io.File
 
 import hex.Model
+import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.ml.h2o.param.H2OModelParams
@@ -93,9 +94,11 @@ private[models] class H2OModelWriter[T <: H2OModel[T, _ <: Model[_, _, _ <: Mode
   @org.apache.spark.annotation.Since("1.6.0")
   override protected def saveImpl(path: String): Unit = {
     DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val file = new java.io.File(path, instance.defaultFileName)
-
-    ModelSerializationSupport.exportH2OModel(instance.model, file.toURI)
+    val outputPath = new Path(path, instance.defaultFileName)
+    val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
+    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    ModelSerializationSupport.exportH2OModel(instance.model, qualifiedOutputPath.toUri)
+    logInfo(s"Saved to: $qualifiedOutputPath")
   }
 }
 
@@ -107,8 +110,11 @@ private[models] abstract class H2OModelReader[T <: H2OModel[T, M] : ClassTag, M 
   @org.apache.spark.annotation.Since("1.6.0")
   override def load(path: String): T = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
-    val file = new File(path, defaultFileName)
-    val model = ModelSerializationSupport.loadH2OModel[M](file.toURI)
+    val inputPath =  new Path(path, defaultFileName)
+    val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val model = ModelSerializationSupport.loadH2OModel[M](qualifiedInputPath.toUri)
+
     implicit val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements")
     val h2oModel = make(model, metadata.uid)(h2oContext, sqlContext)
     DefaultParamsReader.getAndSetParams(h2oModel, metadata)
