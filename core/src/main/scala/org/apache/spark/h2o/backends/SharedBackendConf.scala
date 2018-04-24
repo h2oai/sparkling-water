@@ -135,6 +135,7 @@ trait SharedBackendConf {
   def setStacktraceCollectorInterval(interval: Int) = set(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, interval.toString)
   def setContextPath(contextPath: String) = set(PROP_CONTEXT_PATH._1, contextPath)
 
+
   /** H2O Client parameters */
   def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
   def setClientIp(ip: String) = set(PROP_CLIENT_IP._1, ip)
@@ -237,7 +238,7 @@ object SharedBackendConf {
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)
-
+  
   /** IP of H2O client node */
   val PROP_CLIENT_IP = ("spark.ext.h2o.client.ip", None)
 
