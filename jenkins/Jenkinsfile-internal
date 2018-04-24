@@ -37,30 +37,33 @@ properties(
 if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
     cancelPreviousBuilds()
 }
-node('dX-hadoop') {
-    // Clean workspace
-    sh 'rm -rf *'
-    // Get Sparkling Water and save the scm environment variables
-    checkout scm
-    // Get the script with the pipeline
-    def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
 
-    // Execute the pipeline
-    pipeline(params) { p ->
-        sparkVersion = "${p.sparkVersion}"
-        runUnitTests = "${p.runUnitTests}"
-        runLocalIntegTests = "${p.runLocalIntegTests}"
-        runScriptTests = "${p.runScriptTests}"
-        runIntegTests = "${p.runIntegTests}"
-        runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
-        sparklingTestEnv = "${p.sparklingTestEnv}"
-        buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
-        h2oBranch = "${p.h2oBranch}"
-        buildAgainstSparkBranch = "${p.buildAgainstSparkBranch}"
-        sparkBranch = "${p.sparkBranch}"
-        hadoopVersion = "2.6"
-        backendMode = "internal"
-        buildNightly = "false"
-        uploadNightly = "false"
+docker.withRegistry("https://docker.h2o.ai") {
+    node('dX-hadoop') {
+        // Clean workspace
+        sh 'rm -rf *'
+        // Get Sparkling Water and save the scm environment variables
+        checkout scm
+        // Get the script with the pipeline
+        def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
+
+        // Execute the pipeline
+        pipeline(params) { p ->
+            sparkVersion = "${p.sparkVersion}"
+            runUnitTests = "${p.runUnitTests}"
+            runLocalIntegTests = "${p.runLocalIntegTests}"
+            runScriptTests = "${p.runScriptTests}"
+            runIntegTests = "${p.runIntegTests}"
+            runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
+            sparklingTestEnv = "${p.sparklingTestEnv}"
+            buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
+            h2oBranch = "${p.h2oBranch}"
+            buildAgainstSparkBranch = "${p.buildAgainstSparkBranch}"
+            sparkBranch = "${p.sparkBranch}"
+            hadoopVersion = "2.6"
+            backendMode = "internal"
+            buildNightly = "false"
+            uploadNightly = "false"
+        }
     }
 }
