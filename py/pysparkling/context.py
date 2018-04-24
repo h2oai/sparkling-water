@@ -102,42 +102,59 @@ class H2OContext(object):
 
         self.is_initialized = False
 
+    def __default_h2o_connect(h2o_context, **kwargs):
+        return h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port, **kwargs)
+
+
     @staticmethod
-    def getOrCreate(spark, conf=None, verbose=True, **kwargs):
+    def getOrCreate(spark, conf=None, verbose=True, pre_create_hook=None, h2o_connect_hook=__default_h2o_connect, **kwargs):
         """
-         Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
-         configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
-         If the values are not found the default values are used in most of the cases. The default cluster mode
-         is internal, ie. spark.ext.h2o.external.cluster.mode=false
+        Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
+        configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
+        If the values are not found the default values are used in most of the cases. The default cluster mode
+        is internal, ie. spark.ext.h2o.external.cluster.mode=false
 
-         param - Spark Context or Spark Session
-         returns H2O Context
+        :param spark: Spark Context or Spark Session
+        :param conf: H2O configuration as instance of H2OConf
+        :param verbose; True if verbose H2O output
+        :param pre_create_hook:  hook to reconfigure conf on given spark context
+        :param h2o_connect_hook:  hook which realize connection of h2o client
+        :param kwargs:  additional parameters which are passed to h2o_connect_hook
+        :return:  instance of H2OContext
         """
 
+        # Get spark session
         spark_session = spark
         if isinstance(spark, SparkContext):
             warnings.warn("Method H2OContext.getOrCreate with argument of type SparkContext is deprecated and " +
                           "parameter of type SparkSession is preferred.")
             spark_session = SparkSession.builder.getOrCreate()
+        # Get H2OConf
+        if conf is not None:
+            selected_conf = conf
+        else:
+            selected_conf = H2OConf(spark_session)
+
+        # Call pre_create hook
+        if pre_create_hook:
+            pre_create_hook(spark_session, selected_conf)
 
         h2o_context = H2OContext(spark_session)
 
         jvm = h2o_context._jvm  # JVM
         jspark_session = h2o_context._jspark_session  # Java Spark Session
 
-
-        if conf is not None:
-            selected_conf = conf
-        else:
-            selected_conf = H2OConf(spark_session)
         # Create backing Java H2OContext
         jhc = jvm.org.apache.spark.h2o.JavaH2OContext.getOrCreate(jspark_session, selected_conf._jconf)
         h2o_context._jhc = jhc
         h2o_context._conf = selected_conf
         h2o_context._client_ip = jhc.h2oLocalClientIp()
         h2o_context._client_port = jhc.h2oLocalClientPort()
+
         # Create H2O REST API client
-        h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port, verbose=verbose, **kwargs)
+        if h2o_connect_hook:
+            h2o_connect_hook(h2o_context, verbose=verbose, **kwargs)
+
         h2o_context.is_initialized = True
 
         if verbose:
