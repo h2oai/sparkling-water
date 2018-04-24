@@ -85,7 +85,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
   }
 
-  private def addIfNotNull(arg: String, value: String) = if (value != null) Seq(arg, value.toString) else Nil
+  def addIfNotNull(arg: String, value: String) = if (value != null) Seq(arg, value.toString) else Nil
 
 
   /**
@@ -131,6 +131,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       ++ addIfNotNull("-port", Some(conf.clientWebPort).filter(_ > 0).map(_.toString).orNull)
       ++ addIfNotNull("-jks", conf.jks.orNull)
       ++ addIfNotNull("-jks_pass", conf.jksPass.orNull)
+      ++ addIfNotNull("-context_path", conf.contextPath.orNull)
       ++ conf.clientNetworkMask.map(mask => Seq("-network", mask)).getOrElse(Seq("-ip", conf.clientIp.get))
     ).toArray
 
