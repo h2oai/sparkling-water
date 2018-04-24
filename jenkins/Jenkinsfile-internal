@@ -46,7 +46,7 @@ docker.withRegistry("https://docker.h2o.ai") {
         checkout scm
         // Get the script with the pipeline
         def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
-
+        
         // Execute the pipeline
         pipeline(params) { p ->
             sparkVersion = "${p.sparkVersion}"
