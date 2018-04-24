@@ -40,9 +40,10 @@ if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
 
 
 docker.withRegistry("https://docker.h2o.ai") {
-    node('dX-hadoop') {
+    node('docker && !mr-0xc8') {
         // Clean workspace
-        sh 'rm -rf *'
+        cleanWs()
+
         // Get Sparkling Water and save the scm environment variables
         checkout scm
         // Get the script with the pipeline
