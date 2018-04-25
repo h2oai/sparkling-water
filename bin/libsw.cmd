@@ -45,7 +45,7 @@ exit /b 0
 
 
 :checkFatJarExists
-if not exist "%FAT_JAR_FILE% (
+if not exist "%FAT_JAR_FILE%" (
         echo
         echo Sparkling Water assembly jar does not exist at: %FAT_JAR_FILE%. Can not continue!
         echo
@@ -54,7 +54,7 @@ if not exist "%FAT_JAR_FILE% (
 exit /b 0
 
 :checkPyZipExists
-if not exist "%PY_ZIP_FILE% (
+if not exist "%PY_ZIP_FILE%" (
         echo
         echo PySparkling zip distribution does not exist at: %PY_ZIP_FILE%. Can not continue!
         echo
