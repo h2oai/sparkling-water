@@ -47,7 +47,7 @@ setup(
     packages = find_packages(),
 
     # run-time dependencies
-    install_requires=['requests', 'tabulate', 'future', 'colorama'],
+    install_requires=['requests', 'tabulate', 'future', 'colorama>=0.3.8'],
 
     # bundled binary packages
     package_data={'sparkling_water': ['*.jar'],
