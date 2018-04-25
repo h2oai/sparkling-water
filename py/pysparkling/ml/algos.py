@@ -1,11 +1,11 @@
 from pyspark import since, keyword_only
 from pyspark.ml.param.shared import *
 from pyspark.ml.util import JavaMLReadable, JavaMLWritable
-from pyspark.ml.wrapper import JavaEstimator, JavaModel, JavaTransformer, _jvm
+from pyspark.ml.wrapper import JavaModel, JavaTransformer, _jvm
 from pyspark.sql import SparkSession
 from pysparkling import *
 from .params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams
-
+from .util import H2OAlgo
 java_max_double_value = (2-2**(-52))*(2**1023)
 
 def set_double_values(kwargs, values):
@@ -13,7 +13,7 @@ def set_double_values(kwargs, values):
         if v in kwargs:
             kwargs[v] = float(kwargs[v])
 
-class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
+class H2OGBM(H2OGBMParams, H2OAlgo):
     @keyword_only
     def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[], nfolds=0,
                  keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
@@ -77,7 +77,7 @@ class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
 class H2OGBMModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
-class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, JavaMLWritable):
+class H2ODeepLearning(H2ODeepLearningParams, H2OAlgo):
 
     @keyword_only
     def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
@@ -121,7 +121,7 @@ class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, Java
 class H2ODeepLearningModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
-class H2OAutoML(JavaEstimator, H2OAutoMLParams, JavaMLWritable, JavaMLReadable):
+class H2OAutoML(H2OAutoMLParams, H2OAlgo):
 
     @keyword_only
     def __init__(self, predictionCol=None, allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightsColumn=None,
