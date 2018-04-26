@@ -60,6 +60,23 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     println(preds.mkString("\n"))
   }
 
+  /**
+    * The purpose of this test is to simply pass and don't throw NullPointerException
+    */
+  test("Prediction with null as row element"){
+    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    // Test mojo
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
+      "prostate_pipeline.mojo")
+
+    import spark.implicits._
+    val rdd = sc.parallelize(Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", null)))
+    val df2 = spark.createDataFrame(rdd, df.first().schema)
+    val preds = mojo.transform(df2)
+    // materialize the frame to see that it is passing
+    preds.collect()
+  }
   private def assertPredictedValues(preds: Array[Row]): Unit = {
     assert(preds(0).getSeq[String](0).head == "65.36320409515132")
     assert(preds(1).getSeq[String](0).head == "64.96902128114817")
