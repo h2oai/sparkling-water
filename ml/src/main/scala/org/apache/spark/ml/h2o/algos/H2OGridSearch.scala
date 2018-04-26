@@ -74,6 +74,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(trainFrame)
     }
+    H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
     water.DKV.put(trainFrame)
     val job = GridSearch.startGridSearch(Key.make(), params, hyperParams.asJava)
@@ -171,6 +172,7 @@ trait H2OGridSearchParams extends Params {
   private final val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
   private final val predictionCol = new NullableStringParam(this, "predictionCol", "Prediction column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
+  private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
   //
   // Default values
   //
@@ -180,7 +182,8 @@ trait H2OGridSearchParams extends Params {
     parameters -> new GBMParameters(),
     hyperParameters -> Map.empty[String, Array[AnyRef]],
     predictionCol -> "prediction",
-    allStringColumnsToCategorical -> true
+    allStringColumnsToCategorical -> true,
+    columnsToCategorical -> Array.empty[String]
   )
 
   //
@@ -203,6 +206,9 @@ trait H2OGridSearchParams extends Params {
 
   /** @group getParam */
   def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
+
+  /** @group getParam */
+  def getColumnsToCategorical() = $(columnsToCategorical)
 
   //
   // Setters
@@ -231,6 +237,11 @@ trait H2OGridSearchParams extends Params {
   /** @group setParam */
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
 
+  /** @group setParam */
+  def setColumnsToCategorical(first: String, others: String*): this.type  = set(columnsToCategorical, Array(first) ++ others)
+
+  /** @group setParam */
+  def setColumnsToCategorical(columns: Array[String]): this.type  = set(columnsToCategorical, columns)
 }
 
 class HyperParamsParam(parent: Params, name: String, doc: String, isValid: Map[String, Array[AnyRef]] => Boolean)
