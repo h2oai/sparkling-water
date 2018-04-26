@@ -57,6 +57,15 @@ trait H2OFrameSupport extends JoinSupport {
       .foreach(idx => fr.replace(idx, fr.vec(idx).toCategoricalVec).remove())
     fr
   }
+
+  def columnsToCategorical[T <: Frame](fr: T, colIndices: Array[Int]): T = {
+    colIndices.foreach(idx => fr.replace(idx, fr.vec(idx).toCategoricalVec).remove())
+    fr
+  }
+
+  def columnsToCategorical[T <: Frame](fr: T, colNames: Array[String]): T  = {
+    columnsToCategorical(fr, colNames.map(fr.names().indexOf(_)))
+  }
 }
 
 object H2OFrameSupport extends H2OFrameSupport

@@ -74,6 +74,8 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(trainFrame)
     }
+    H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
+
     spec.input_spec.response_column = getPredictionsCol()
     spec.input_spec.fold_column = getFoldColumn()
     spec.input_spec.weights_column = getWeightsColumn()
@@ -168,6 +170,7 @@ trait H2OAutoMLParams extends Params {
   //
   private final val predictionCol = new NullableStringParam(this, "predictionCol", "Prediction column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
+  private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   private final val foldColumn = new NullableStringParam(this, "foldColumn", "Fold column name")
   private final val weightsColumn = new NullableStringParam(this, "weightsColumn", "Weights column name")
@@ -192,6 +195,7 @@ trait H2OAutoMLParams extends Params {
   setDefault(
     predictionCol -> "prediction",
     allStringColumnsToCategorical -> true,
+    columnsToCategorical -> Array.empty[String],
     ratio -> 1.0, // 1.0 means use whole frame as training frame,
     foldColumn -> null,
     weightsColumn -> null,
@@ -217,6 +221,9 @@ trait H2OAutoMLParams extends Params {
 
   /** @group getParam */
   def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
+
+  /** @group getParam */
+  def getColumnsToCategorical() = $(columnsToCategorical)
 
   /** @group getParam */
   def getRatio() = $(ratio)
@@ -270,6 +277,12 @@ trait H2OAutoMLParams extends Params {
 
   /** @group setParam */
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
+
+  /** @group setParam */
+  def setColumnsToCategorical(first: String, others: String*): this.type  = set(columnsToCategorical, Array(first) ++ others)
+
+  /** @group setParam */
+  def setColumnsToCategorical(columns: Array[String]): this.type  = set(columnsToCategorical, columns)
 
   /** @group setParam */
   def setRatio(value: Double): this.type = set(ratio, value)

@@ -18,6 +18,7 @@ class H2OAlgorithmParams(Params):
     predictionCol = Param(Params._dummy(), "predictionCol", "label")
     featuresCols = Param(Params._dummy(), "featuresCols", "columns used as features")
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
+    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
     nfolds = Param(Params._dummy(), "nfolds", "Number of folds for K-fold cross-validation (0 to disable or >= 2)")
     keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Whether to keep the predictions of the cross-validation models", )
     keepCrossValidationFoldAssignment = Param(Params._dummy(), "keepCrossValidationFoldAssignment", "Whether to keep the cross-validation fold assignment", )
@@ -40,6 +41,9 @@ class H2OAlgorithmParams(Params):
 
     def getAllStringColumnsToCategorical(self):
         return self.getOrDefault(self.allStringColumnsToCategorical)
+
+    def getColumnsToCategorical(self):
+        return self.getOrDefault(self.columnsToCategorical)
 
     def getNfolds(self):
         return self.getOrDefault(self.nfolds)
@@ -77,6 +81,9 @@ class H2OAlgorithmParams(Params):
 
     def setAllStringColumnsToCategorical(self, value):
         return self._set(allStringColumnsToCategorical=value)
+
+    def setSolumnsToCategorical(self, value):
+        return self._set(columnsToCategorical=value)
 
     def setNfolds(self, value):
         return self._set(nfolds=value)
@@ -333,6 +340,7 @@ class H2OAutoMLParams(Params):
     ##
     predictionCol = Param(Params._dummy(), "predictionCol", "label")
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
+    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     foldColumn = Param(Params._dummy(), "foldColumn", "Fold column name")
     weightsColumn = Param(Params._dummy(), "weightsColumn", "Weights column name")
@@ -358,6 +366,9 @@ class H2OAutoMLParams(Params):
 
     def getAllStringColumnsToCategorical(self):
         return self.getOrDefault(self.allStringColumnsToCategorical)
+
+    def columnsToCategorical(self):
+        return self.getOrDefault(self.columnsToCategorical)
 
     def getRatio(self):
         return self.getOrDefault(self.ratio)
@@ -420,6 +431,9 @@ class H2OAutoMLParams(Params):
 
     def setAllStringColumnsToCategorical(self, value):
         return self._set(allStringColumnsToCategorical=value)
+
+    def setColumnsToCategorical(self, value):
+        return self._set(columnsToCategorical=value)
 
     def setRatio(self, value):
         return self._set(ratio=value)

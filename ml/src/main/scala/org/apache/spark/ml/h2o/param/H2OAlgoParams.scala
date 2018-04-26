@@ -18,6 +18,7 @@ package org.apache.spark.ml.h2o.param
 
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
+import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param.{Param, ParamPair, Params}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JString, JValue}
@@ -27,7 +28,7 @@ import org.json4s.{JNull, JString, JValue}
   *
   * TODO: There are still bunch of parameters defined Model.ModelParameters which need to be ported here
   */
-trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
+trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging {
 
   //
   // Param definitions
@@ -48,6 +49,10 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
     "allStringColumnsToCategorical",
     "Transform all strings columns to categorical")
 
+  final val columnsToCategorical = stringArrayParam(
+    "columnsToCategorical",
+    "List of columns to convert to categorical before modelling")
+
   final val nfolds = intParam("nfolds")
   final val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
   final val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
@@ -55,8 +60,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
   final val seed = longParam("seed")
   final val distribution = H2ODistributionParam("distribution")
   final val convertUnknownCategoricalLevelsToNa = booleanParam(
-        "convertUnknownCategoricalLevelsToNa",
-        "Convert unknown categorical levels to NA during predictions")
+    "convertUnknownCategoricalLevelsToNa",
+    "Convert unknown categorical levels to NA during predictions")
   //
   // Default values
   //
@@ -66,6 +71,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
     featuresCols -> Array.empty[String],
     nfolds -> parameters._nfolds,
     allStringColumnsToCategorical -> true,
+    columnsToCategorical -> Array.empty[String],
     keepCrossValidationPredictions -> parameters._keep_cross_validation_predictions,
     keepCrossValidationFoldAssignment -> parameters._keep_cross_validation_fold_assignment,
     parallelizeCrossValidation -> parameters._parallelize_cross_validation,
@@ -84,10 +90,20 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
   def getPredictionsCol() = $(predictionCol)
 
   /** @group getParam */
-  def getFeaturesCols() = $(featuresCols)
+  def getFeaturesCols() = {
+    if ($(featuresCols).contains($(predictionCol))) {
+      logDebug("Prediction col '" + $(predictionCol) + "' removed from the list of features.")
+      $(featuresCols).filter(_ != $(predictionCol))
+    } else {
+      $(featuresCols)
+    }
+  }
 
   /** @group getParam */
   def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
+
+  /** @group getParam */
+  def getColumnsToCategorical() = $(columnsToCategorical)
 
   /** @group getParam */
   def getNfolds() = $(nfolds)
@@ -135,6 +151,13 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
 
   /** @group setParam */
   def setAllStringColumnsToCategorical(transform: Boolean): this.type = set(allStringColumnsToCategorical, transform)
+
+  /** @group setParam */
+  def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
+
+  /** @group setParam */
+  def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
+
 
   /** @group setParam */
   def setNfolds(value: Int): this.type = set(nfolds, value)

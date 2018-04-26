@@ -76,6 +76,8 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(trainFrame)
     }
+    H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
+
     if ((getParams._distribution == DistributionFamily.bernoulli
       || getParams._distribution == DistributionFamily.multinomial)
       && !trainFrame.vec(getPredictionsCol()).isCategorical) {
