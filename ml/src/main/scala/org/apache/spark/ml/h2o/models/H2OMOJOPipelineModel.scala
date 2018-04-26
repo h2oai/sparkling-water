@@ -24,7 +24,6 @@ import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.utils.H2OSchemaUtils
-import org.apache.spark.ml.h2o.models.H2OMOJOModel.createFromMojo
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
@@ -58,10 +57,10 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
     r: Row =>
       val m = getOrCreateModel()
       val builder = m.getInputFrameBuilder
-      val data = r.getValuesMap[Any](names).values.toArray.map(_.toString).zip(r.getValuesMap[Any](names).keys)
+      val data = r.getValuesMap[Any](names).filter{case (_, v) => v != null}.values.toArray.map(_.toString).zip(r.getValuesMap[Any](names).keys)
       val rowBuilder = builder.getMojoRowBuilder
 
-      data.foreach{
+      data.foreach {
         case (colData, colName) =>
           rowBuilder.setValue(colName, colData)
       }
