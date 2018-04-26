@@ -23,7 +23,7 @@ def set_double_values(kwargs, values):
 
 class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
     @keyword_only
-    def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, nfolds=0,
+    def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[], nfolds=0,
                  keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                  seed=-1, distribution="AUTO", ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024, minSplitImprovement=1e-5,
                  histogramType="AUTO", r2Stopping=java_max_double_value,
@@ -38,7 +38,7 @@ class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True,
+        self._setDefault(ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
                          ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024, minSplitImprovement=1e-5,
@@ -50,8 +50,9 @@ class H2OGBM(JavaEstimator, H2OGBMParams, JavaMLReadable, JavaMLWritable):
 
         kwargs = get_input_kwargs(self, self._hc._sc)
         self.setParams(**kwargs)
+
     @keyword_only
-    def setParams(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True,
+    def setParams(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                   nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,parallelizeCrossValidation=True,
                   seed=-1, distribution="AUTO", ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024, minSplitImprovement=1e-5,
                   histogramType="AUTO", r2Stopping=java_max_double_value,
@@ -89,7 +90,7 @@ class H2OGBMModel(JavaModel, JavaMLWritable, JavaMLReadable):
 class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, JavaMLWritable):
 
     @keyword_only
-    def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True,
+    def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                  seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False,
                  convertUnknownCategoricalLevelsToNa=False):
@@ -100,7 +101,7 @@ class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, Java
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True,
+        self._setDefault(ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
                          epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False)
@@ -109,7 +110,7 @@ class H2ODeepLearning(JavaEstimator, H2ODeepLearningParams, JavaMLReadable, Java
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True,
+    def setParams(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                   nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                   seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False,
                   convertUnknownCategoricalLevelsToNa=False):
@@ -136,7 +137,7 @@ class H2ODeepLearningModel(JavaModel, JavaMLWritable, JavaMLReadable):
 class H2OAutoML(JavaEstimator, H2OAutoMLParams, JavaMLWritable, JavaMLReadable):
 
     @keyword_only
-    def __init__(self, predictionCol=None, allStringColumnsToCategorical=True, ratio=1.0, foldColumn=None, weightsColumn=None,
+    def __init__(self, predictionCol=None, allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightsColumn=None,
                        ignoredColumns=[], tryMutations=True, excludeAlgos=None, projectName=None, loss="AUTO", maxRuntimeSecs=3600.0, stoppingRounds=3,
                        stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1):
         super(H2OAutoML, self).__init__()
@@ -146,7 +147,7 @@ class H2OAutoML(JavaEstimator, H2OAutoMLParams, JavaMLWritable, JavaMLReadable):
                                         self._hc._jhc.h2oContext(),
                                         self._hc._jsql_context)
 
-        self._setDefault(predictionCol=None, allStringColumnsToCategorical=True, ratio=1.0, foldColumn=None, weightsColumn=None,
+        self._setDefault(predictionCol=None, allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightsColumn=None,
                          ignoredColumns=[], tryMutations=True, excludeAlgos=None, projectName=None, loss="AUTO", maxRuntimeSecs=3600.0, stoppingRounds=3,
                          stoppingTolerance=0.001, stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5,
                          convertUnknownCategoricalLevelsToNa=False, seed=-1)
@@ -154,7 +155,7 @@ class H2OAutoML(JavaEstimator, H2OAutoMLParams, JavaMLWritable, JavaMLReadable):
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, predictionCol=None, allStringColumnsToCategorical=True, ratio=1.0, foldColumn=None, weightsColumn=None,
+    def setParams(self, predictionCol=None, allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightsColumn=None,
                   ignoredColumns=[], tryMutations=True, excludeAlgos=None, projectName=None, loss="AUTO", maxRuntimeSecs=3600.0, stoppingRounds=3,
                   stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1):
         kwargs = get_input_kwargs(self, self._hc._sc)
