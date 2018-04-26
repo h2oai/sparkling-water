@@ -18,6 +18,7 @@ package org.apache.spark.ml.h2o.param
 
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
+import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param.{Param, ParamPair, Params}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JString, JValue}
@@ -27,7 +28,7 @@ import org.json4s.{JNull, JString, JValue}
   *
   * TODO: There are still bunch of parameters defined Model.ModelParameters which need to be ported here
   */
-trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
+trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging {
 
   //
   // Param definitions
@@ -84,7 +85,14 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] {
   def getPredictionsCol() = $(predictionCol)
 
   /** @group getParam */
-  def getFeaturesCols() = $(featuresCols)
+  def getFeaturesCols() = {
+    if ($(featuresCols).contains($(predictionCol))) {
+      logDebug("Prediction col '" + $(predictionCol) + "' removed from the list of features.")
+      $(featuresCols).filter(_ != $(predictionCol))
+    } else {
+      $(featuresCols)
+    }
+  }
 
   /** @group getParam */
   def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
