@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
-from pyspark.ml import Pipeline
+from pyspark.ml import Pipeline, PipelineModel
 from pyspark.ml.feature import HashingTF, RegexTokenizer, StopWordsRemover, IDF
 from pysparkling import *
 from pysparkling.ml import ColumnPruner, H2OGBM, H2ODeepLearning, H2OAutoML
@@ -86,9 +86,21 @@ colPruner = ColumnPruner(columns=[idf.getOutputCol(), hashingTF.getOutputCol(), 
 ## Create the pipeline by defining all the stages
 pipeline = Pipeline(stages=[tokenizer, stopWordsRemover, hashingTF, idf, algoStage, colPruner])
 
+## Test exporting and importing the pipeline. On Systems where HDFS & Hadoop is not available, this call store the pipeline
+## to local file in the current directory. In case HDFS & Hadoop is available, this call stores the pipeline to HDFS home
+## directory for the current user. Absolute paths can be used as wells. The same holds for the model import/export bellow.
+pipeline.write().overwrite().save("examples/build/pipeline")
+loaded_pipeline = Pipeline.load("examples/build/pipeline")
+
 ## Train the pipeline model
 data = load()
-model = pipeline.fit(data)
+model = loaded_pipeline.fit(data)
+
+model.write.overwrite.save("examples/build/model")
+loaded_model = PipelineModel.load("examples/build/model")
+
+
+
 
 ##
 ## Make predictions on unlabeled data
@@ -100,6 +112,6 @@ def isSpam(smsText, model, hamThreshold = 0.5):
     return prediction.select("prediction_output.p1").first()["p1"] > hamThreshold
 
 
-print(isSpam("Michal, h2oworld party tonight in MV?", model))
+print(isSpam("Michal, h2oworld party tonight in MV?", loaded_model))
 
-print(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model))
+print(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", loaded_model))
