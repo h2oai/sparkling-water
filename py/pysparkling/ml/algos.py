@@ -1,14 +1,14 @@
 from pyspark import keyword_only
 from pyspark.ml.util import JavaMLReadable, JavaMLWritable
+from pyspark.ml.wrapper import JavaEstimator
 from pyspark.ml.wrapper import JavaModel
 from pyspark.sql import SparkSession
 
 import py_sparkling.ml.algos
+import py_sparkling.ml.models
 from pysparkling import *
 from .params import H2OAutoMLParams
-from .util import H2OAlgo
 
-java_max_double_value = (2-2**(-52))*(2**1023)
 
 def set_double_values(kwargs, values):
     for v in values:
@@ -18,16 +18,11 @@ def set_double_values(kwargs, values):
 class H2OGBM(py_sparkling.ml.algos.H2OGBM):
    pass
 
-class H2OGBMModel(py_sparkling.ml.algos.H2OGBMModel):
-    pass
-
 class H2ODeepLearning(py_sparkling.ml.algos.H2ODeepLearning):
     pass
 
-class H2ODeepLearningModel(py_sparkling.ml.algos.H2ODeepLearningModel):
-    pass
 
-class H2OAutoML(H2OAutoMLParams, H2OAlgo):
+class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
 
     @keyword_only
     def __init__(self, predictionCol=None, allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightsColumn=None,

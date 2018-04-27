@@ -37,7 +37,7 @@ import org.apache.spark.{ml, mllib}
 import water.support.ModelSerializationSupport
 
 import scala.reflect.ClassTag
-
+import scala.reflect.{ClassTag, classTag}
 class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable {
 
@@ -226,14 +226,12 @@ private[models] class H2OMOJOModelWriter(instance: H2OMOJOModel) extends MLWrite
   }
 }
 
-private[models] class H2OMOJOModelReader
-(val defaultFileName: String) extends MLReader[H2OMOJOModel] {
-
-  private val className = implicitly[ClassTag[H2OMOJOModel]].runtimeClass.getName
+private[models] class H2OMOJOModelReader[T <: H2OMOJOModel : ClassTag]
+(val defaultFileName: String) extends MLReader[T] {
 
   @org.apache.spark.annotation.Since("1.6.0")
-  override def load(path: String): H2OMOJOModel = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
+  override def load(path: String): T = {
+    val metadata = DefaultParamsReader.loadMetadata(path, sc)
 
     val inputPath =  new Path(path, defaultFileName)
     val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
@@ -247,21 +245,22 @@ private[models] class H2OMOJOModelReader
     h2oModel
   }
 
-  def make(mojoData: Array[Byte], uid: String)(sqLContext: SQLContext): H2OMOJOModel = {
-    new H2OMOJOModel(mojoData, uid)
+  def make(mojoData: Array[Byte], uid: String)(sqLContext: SQLContext): T = {
+    classTag[T].runtimeClass.getConstructor(classOf[Array[Byte]], classOf[String]).
+      newInstance(mojoData, uid).asInstanceOf[T]
   }
 }
 
-object H2OMOJOModel extends MLReadable[H2OMOJOModel] {
+class H2OMOJOModelHelper[T<: H2OMOJOModel](implicit m: ClassTag[T]) extends MLReadable[T]{
   val defaultFileName = "mojo_model"
 
   @Since("1.6.0")
-  override def read: MLReader[H2OMOJOModel] = new H2OMOJOModelReader(defaultFileName)
+  override def read: MLReader[T] = new H2OMOJOModelReader[T](defaultFileName)
 
   @Since("1.6.0")
-  override def load(path: String): H2OMOJOModel = super.load(path)
+  override def load(path: String): T = super.load(path)
 
-  def createFromMojo(path: String): H2OMOJOModel = {
+  def createFromMojo(path: String): T = {
     val inputPath =  new Path(path)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
@@ -270,13 +269,16 @@ object H2OMOJOModel extends MLReadable[H2OMOJOModel] {
     createFromMojo(is, new File(path).getName)
   }
 
-  def createFromMojo(is: InputStream, uid: String = Identifiable.randomUID("mojoModel")): H2OMOJOModel = {
+  def createFromMojo(is: InputStream, uid: String = Identifiable.randomUID("mojoModel")): T = {
     val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
     val mojoModel = ModelSerializationSupport.getMojoModel(mojoData)
-    val sparkMojoModel = new H2OMOJOModel(mojoData, uid)
+    val sparkMojoModel = m.runtimeClass.getConstructor(classOf[Array[Byte]], classOf[String]).
+      newInstance(mojoData, uid).asInstanceOf[T]
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     sparkMojoModel.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))
     sparkMojoModel.setPredictionsCol(mojoModel.getResponseName)
     sparkMojoModel
   }
 }
+
+object H2OMOJOModel extends H2OMOJOModelHelper[H2OMOJOModel] {}
