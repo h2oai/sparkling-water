@@ -1,11 +1,12 @@
-from pyspark.sql import SparkSession
-from pyspark.sql.types import *
-from pyspark.ml import Pipeline, PipelineModel
-from pyspark.ml.feature import HashingTF, RegexTokenizer, StopWordsRemover, IDF
-from pysparkling import *
-from pysparkling.ml import ColumnPruner, H2OGBM, H2ODeepLearning, H2OAutoML
 import os
 import sys
+
+from pyspark.ml import Pipeline, PipelineModel
+from pyspark.ml.feature import HashingTF, RegexTokenizer, StopWordsRemover, IDF
+from pyspark.sql import SparkSession
+
+from pysparkling import *
+from pysparkling.ml import ColumnPruner, H2OGBM, H2ODeepLearning, H2OAutoML
 
 # Determine which algorithm to use, if no specified as argument, gbm is used
 if len(sys.argv) != 2 or sys.argv[1] not in ["gbm", "dl", "automl"]:
@@ -96,7 +97,7 @@ loaded_pipeline = Pipeline.load("examples/build/pipeline")
 data = load()
 model = loaded_pipeline.fit(data)
 
-model.write.overwrite.save("examples/build/model")
+model.write().overwrite().save("examples/build/model")
 loaded_model = PipelineModel.load("examples/build/model")
 
 

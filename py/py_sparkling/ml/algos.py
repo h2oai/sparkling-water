@@ -1,11 +1,11 @@
-from pyspark import since, keyword_only
-from pyspark.ml.param.shared import *
-from pyspark.ml.util import JavaMLReadable, JavaMLWritable
-from pyspark.ml.wrapper import JavaModel, JavaTransformer, _jvm
+from pyspark import keyword_only
+from pyspark.ml.util import JavaMLReadable, JavaMLWritable, JavaMLReader, MLReadable
+from pyspark.ml.wrapper import JavaModel, JavaEstimator
 from pyspark.sql import SparkSession
+
 from pysparkling import *
-from .params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams
-from .util import H2OAlgo
+from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams
+
 java_max_double_value = (2-2**(-52))*(2**1023)
 
 def set_double_values(kwargs, values):
@@ -13,7 +13,44 @@ def set_double_values(kwargs, values):
         if v in kwargs:
             kwargs[v] = float(kwargs[v])
 
-class H2OGBM(H2OGBMParams, H2OAlgo):
+class JavaH2OMLReadable(MLReadable):
+    """
+    Special version of JavaMLReadable to be able to load pipelines exported together with H2O pipeline stages
+    """
+    def __init__(self):
+        super(JavaH2OMLReadable, self).__init__()
+
+    """
+    (Private) Mixin for instances that provide JavaMLReader.
+    """
+
+    @classmethod
+    def read(cls):
+        """Returns an MLReader instance for this class."""
+        return JavaH2OMLReader(cls)
+
+
+class JavaH2OMLReader(JavaMLReader):
+
+    def __init__(self, clazz):
+        super(JavaH2OMLReader, self).__init__(clazz)
+        self._clazz = clazz
+        self._jread = self._load_java_obj(clazz).read()
+
+    @classmethod
+    def _java_loader_class(cls, clazz):
+        """
+        Returns the full class name of the Java ML instance. The default
+        implementation replaces "pyspark" by "org.apache.spark" in
+        the Python full class name.
+        """
+        java_package = clazz.__module__.replace("pysparkling", "py_sparkling")
+        if clazz.__name__ in ("Pipeline", "PipelineModel"):
+            # Remove the last package name "pipeline" for Pipeline and PipelineModel.
+            java_package = ".".join(java_package.split(".")[0:-1])
+        return java_package + "." + clazz.__name__
+
+class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     @keyword_only
     def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[], nfolds=0,
                  keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
@@ -25,7 +62,7 @@ class H2OGBM(H2OGBMParams, H2OAlgo):
                  predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False):
         super(H2OGBM, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
-        self._java_obj = self._new_java_obj("org.apache.spark.ml.h2o.algos.H2OGBM",
+        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGBM",
                                             self.uid,
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
@@ -77,7 +114,7 @@ class H2OGBM(H2OGBMParams, H2OAlgo):
 class H2OGBMModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
-class H2ODeepLearning(H2ODeepLearningParams, H2OAlgo):
+class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
     @keyword_only
     def __init__(self, ratio=1.0, predictionCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
@@ -86,7 +123,7 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OAlgo):
                  convertUnknownCategoricalLevelsToNa=False):
         super(H2ODeepLearning, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
-        self._java_obj = self._new_java_obj("org.apache.spark.ml.h2o.algos.H2ODeepLearning",
+        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2ODeepLearning",
                                             self.uid,
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
@@ -119,45 +156,4 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OAlgo):
 
 
 class H2ODeepLearningModel(JavaModel, JavaMLWritable, JavaMLReadable):
-    pass
-
-class H2OAutoML(H2OAutoMLParams, H2OAlgo):
-
-    @keyword_only
-    def __init__(self, predictionCol=None, allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightsColumn=None,
-                       ignoredColumns=[], tryMutations=True, excludeAlgos=None, projectName=None, loss="AUTO", maxRuntimeSecs=3600.0, stoppingRounds=3,
-                       stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1):
-        super(H2OAutoML, self).__init__()
-        self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
-        self._java_obj = self._new_java_obj("org.apache.spark.ml.h2o.algos.H2OAutoML",
-                                        self.uid,
-                                        self._hc._jhc.h2oContext(),
-                                        self._hc._jsql_context)
-
-        self._setDefault(predictionCol=None, allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightsColumn=None,
-                         ignoredColumns=[], tryMutations=True, excludeAlgos=None, projectName=None, loss="AUTO", maxRuntimeSecs=3600.0, stoppingRounds=3,
-                         stoppingTolerance=0.001, stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5,
-                         convertUnknownCategoricalLevelsToNa=False, seed=-1)
-        kwargs = self._input_kwargs
-        self.setParams(**kwargs)
-
-    @keyword_only
-    def setParams(self, predictionCol=None, allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightsColumn=None,
-                  ignoredColumns=[], tryMutations=True, excludeAlgos=None, projectName=None, loss="AUTO", maxRuntimeSecs=3600.0, stoppingRounds=3,
-                  stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1):
-        kwargs = self._input_kwargs
-
-        if "stoppingMetric" in kwargs:
-            kwargs["stoppingMetric"] = self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf(kwargs["stoppingMetric"])
-
-        # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
-        double_types = ["maxRuntimeSecs", "stoppingTolerance", "ratio"]
-        set_double_values(kwargs, double_types)
-        return self._set(**kwargs)
-
-
-    def _create_model(self, java_model):
-        return H2OAutoMLModel(java_model)
-
-class H2OAutoMLModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
