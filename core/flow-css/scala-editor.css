@@ -1,0 +1,47 @@
+/**
+    Name:       IDEA default theme
+    From IntelliJ IDEA by JetBrains
+ */
+
+.cm-s-flow .cm-meta { color: #808000; }
+.cm-s-flow .cm-number { color: #0000FF; }
+.cm-s-flow .cm-keyword { line-height: 1em; font-weight: bold; color: #000080; }
+.cm-s-flow .cm-atom { font-weight: bold; color: #000080; }
+.cm-s-flow .cm-def { color: #000000; }
+.cm-s-flow .cm-variable { color: black; }
+.cm-s-flow .cm-variable-2 { color: black; }
+.cm-s-flow .cm-variable-3, .cm-s-flow .cm-type { color: black; }
+.cm-s-flow .cm-property { color: black; }
+.cm-s-flow .cm-operator { color: black; }
+.cm-s-flow .cm-comment { color: #808080; }
+.cm-s-flow .cm-string { color: #008000; }
+.cm-s-flow .cm-string-2 { color: #008000; }
+.cm-s-flow .cm-qualifier { color: #555; }
+.cm-s-flow .cm-error { color: #FF0000; }
+.cm-s-flow .cm-attribute { color: #0000FF; }
+.cm-s-flow .cm-tag { color: #000080; }
+.cm-s-flow .cm-link { color: #0000FF; }
+.cm-s-flow .cm
+.cm-s-flow .CodeMirror-activeline-background { background: #FFFAE3; }
+
+.cm-s-flow .cm-builtin { color: #30a; }
+.cm-s-flow .cm-bracket { color: #cc7; }
+.cm-s-flow  { font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;}
+
+
+.cm-s-flow .CodeMirror-matchingbracket { outline:1px solid grey; color:black !important; }
+
+/* Editor styling */
+.cm-s-flow.CodeMirror {
+  line-height: 1.4em;
+  color: rgba(0, 0, 0, .87);
+  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=");
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+  border: none;
+  border-left: 2px solid #f5871f;
+  resize: both;
+  padding: 5px 10px;
+  margin: 0px 0px 2px;
+}
