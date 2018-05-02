@@ -57,7 +57,7 @@ object H2OGBM extends MLReadable[H2OGBM] {
   private final val defaultFileName = "gbm_params"
 
   @Since("1.6.0")
-  override def read: MLReader[H2OGBM] = new H2OAlgorithmReader[H2OGBM, GBMParameters](defaultFileName)
+  override def read: MLReader[H2OGBM] = H2OAlgorithmReader.create[H2OGBM, GBMParameters](defaultFileName)
 
   @Since("1.6.0")
   override def load(path: String): H2OGBM = super.load(path)
