@@ -17,7 +17,7 @@ dependencies {
     compile project(path: ':sparkling-water-assembly')
 
     // This dependency is used just for tests
-    mojopipeline "ai.h2o:mojo2-runtime-java7:0.9.5"
+    mojopipeline "ai.h2o:mojo2-runtime:0.9.6"
 }
 //
 // Create a file with version for Python dist task
