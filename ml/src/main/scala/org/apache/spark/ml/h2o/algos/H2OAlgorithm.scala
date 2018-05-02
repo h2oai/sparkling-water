@@ -132,13 +132,15 @@ private[algos] class H2OAlgorithmWriter[T <: H2OAlgorithm[_, _]](instance: T) ex
   }
 }
 
+object H2OAlgorithmReader {
+  def create[A <: H2OAlgorithm[P, _] : ClassTag, P <: Model.Parameters : ClassTag](defaultFileName: String) = new H2OAlgorithmReader[A, P](defaultFileName)
+}
+
 private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <: Model.Parameters : ClassTag]
 (val defaultFileName: String) extends MLReader[A] {
 
-  private val className = implicitly[ClassTag[A]].runtimeClass.getName
-
   override def load(path: String): A = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
+    val metadata = DefaultParamsReader.loadMetadata(path, sc)
 
     val inputPath = new Path(path, defaultFileName)
     val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
