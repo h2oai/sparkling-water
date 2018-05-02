@@ -3,6 +3,24 @@ description = "Sparkling Water Core"
 apply from: "$rootDir/gradle/utils.gradle"
 apply from: "$rootDir/gradle/sparkTest.gradle"
 
+project.ext.cssResources = project.file("flow-css")
+
+sourceSets {
+    main {
+        resources {
+            srcDir("flow-css")
+        }
+    }
+}
+
+jar {
+    eachFile { f ->
+        if(new File(cssResources, f.file.name).exists()) {
+            f.path = "www/flow/css/$f.name"
+        }
+    }
+}
+
 dependencies {
   // Generic model support
   compile("ai.h2o:h2o-genmodel:${h2oVersion}")
