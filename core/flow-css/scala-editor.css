@@ -35,7 +35,7 @@
 .cm-s-flow.CodeMirror {
   line-height: 1.4em;
   color: rgba(0, 0, 0, .87);
-  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=");;
+  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=");
   width: 100%;
   height: auto;
   max-height: 500px;
