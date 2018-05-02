@@ -15,7 +15,7 @@ def call(params, body) {
             "H2O_PYTHON_WHEEL=${env.WORKSPACE}/private/h2o.whl",
             "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
             "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
-            "PATH=/usr/lib/jvm/java-8-oracle//bin:${PATH}",
+            "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}",
 
             // Properties used in case we are building against specific H2O version
             "BUILD_HADOOP=true",
