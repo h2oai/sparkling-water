@@ -367,7 +367,7 @@ class H2OAutoMLParams(Params):
     def getAllStringColumnsToCategorical(self):
         return self.getOrDefault(self.allStringColumnsToCategorical)
 
-    def columnsToCategorical(self):
+    def getColumnsToCategorical(self):
         return self.getOrDefault(self.columnsToCategorical)
 
     def getRatio(self):

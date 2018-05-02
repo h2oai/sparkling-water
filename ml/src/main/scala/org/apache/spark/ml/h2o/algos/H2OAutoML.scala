@@ -96,9 +96,14 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     AutoML.startAutoML(aml)
     // Block until AutoML finishes
     aml.get()
-    val model = new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()))
+    val model = trainModel(aml)
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
+  }
+
+
+  def trainModel(aml: AutoML) = {
+    new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()))
   }
 
   @DeveloperApi
@@ -120,7 +125,7 @@ object H2OAutoML extends MLReadable[H2OAutoML] {
   private final val defaultFileName = "automl_params"
 
   @Since("1.6.0")
-  override def read: MLReader[H2OAutoML] = new H2OAutoMLReader(defaultFileName)
+  override def read: MLReader[H2OAutoML] = H2OAutoMLReader.create[H2OAutoML](defaultFileName)
 
   @Since("1.6.0")
   override def load(path: String): H2OAutoML = super.load(path)
@@ -143,12 +148,10 @@ private[algos] class H2OAutoMLWriter(instance: H2OAutoML) extends MLWriter {
   }
 }
 
-private[algos] class H2OAutoMLReader(val defaultFileName: String) extends MLReader[H2OAutoML] {
+private[algos] class H2OAutoMLReader[A <: H2OAutoML : ClassTag](val defaultFileName: String) extends MLReader[A] {
 
-  private val className = implicitly[ClassTag[H2OAutoML]].runtimeClass.getName
-
-  override def load(path: String): H2OAutoML = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
+  override def load(path: String): A = {
+    val metadata = DefaultParamsReader.loadMetadata(path, sc)
 
     val inputPath = new Path(path, defaultFileName)
     val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
@@ -157,10 +160,22 @@ private[algos] class H2OAutoMLReader(val defaultFileName: String) extends MLRead
 
     val buildSpec = ois.readObject().asInstanceOf[AutoMLBuildSpec]
     implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
-    val algo = new H2OAutoML(Option(buildSpec), metadata.uid)(h2oContext, sqlContext)
+    val algo = make[A](Option(buildSpec), metadata.uid, h2oContext, sqlContext)
     DefaultParamsReader.getAndSetParams(algo, metadata)
     algo
   }
+
+  private def make[CT: ClassTag]
+  (autoMLBuildSpec: Option[AutoMLBuildSpec], uid: String, h2oContext: H2OContext, sqlContext: SQLContext): CT = {
+    val aClass = implicitly[ClassTag[CT]].runtimeClass
+    val ctor = aClass.getConstructor(classOf[Option[AutoMLBuildSpec]], classOf[String], classOf[H2OContext], classOf[SQLContext])
+    ctor.newInstance(autoMLBuildSpec, uid, h2oContext, sqlContext).asInstanceOf[CT]
+  }
+}
+
+
+object H2OAutoMLReader {
+  def create[A <: H2OAutoML : ClassTag](defaultFileName: String) = new H2OAutoMLReader[A](defaultFileName)
 }
 
 trait H2OAutoMLParams extends Params {
