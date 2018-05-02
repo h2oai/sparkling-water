@@ -37,7 +37,8 @@ class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val u
 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
 
-  def this(parameters: DeepLearningParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("deeplearning"))
+  def this(parameters: DeepLearningParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) =
+    this(Option(parameters), Identifiable.randomUID("deeplearning"))
 
   def this(parameters: DeepLearningParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
 
