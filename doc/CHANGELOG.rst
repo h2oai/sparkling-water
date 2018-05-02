@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+v2.2.13 (2018-05-02)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/13/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/13/index.html>`__
+
+-  Bug
+        
+   -  `SW-574 <https://0xdata.atlassian.net/browse/SW-574>`__ - Process steam handle and use it for connection to external h2o cluster
+   -  `SW-822 <https://0xdata.atlassian.net/browse/SW-822>`__ - Require correct colorama version
+   -  `SW-823 <https://0xdata.atlassian.net/browse/SW-823>`__ - Fix Windows starting scripts
+   -  `SW-824 <https://0xdata.atlassian.net/browse/SW-824>`__ - Fix NPE in mojo pipeline predictions
+                
+-  New Feature
+        
+   -  `SW-827 <https://0xdata.atlassian.net/browse/SW-827>`__ - Change color highlight in scala cell as it is too dark
+                
+-  Improvement
+        
+   -  `SW-815 <https://0xdata.atlassian.net/browse/SW-815>`__ - Upgrade H2O to 3.18.0.8
+   -  `SW-816 <https://0xdata.atlassian.net/browse/SW-816>`__ - Update Mojo2 dependency to one which is compatible with Java7
+   -  `SW-818 <https://0xdata.atlassian.net/browse/SW-818>`__ - Spark Pipeline imports do not work in PySparkling
+   -  `SW-819 <https://0xdata.atlassian.net/browse/SW-819>`__ - Add ability to convert specific columns to categoricals in Sparkling Water pipelines
+   -  `SW-820 <https://0xdata.atlassian.net/browse/SW-820>`__ - Sparkling Water pipelines add duplicate response column to the list of features
+                
+                                
 v2.2.12 (2018-04-19)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/12/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/12/index.html>`__
