@@ -1,9 +1,11 @@
-from pyspark import since, keyword_only
+from pyspark import keyword_only
 from pyspark.ml.param.shared import *
 from pyspark.ml.util import JavaMLReadable, JavaMLWritable
-from pyspark.ml.wrapper import JavaEstimator, JavaModel, JavaTransformer, _jvm
-from pysparkling import *
+from pyspark.ml.wrapper import JavaTransformer
 from pyspark.sql import SparkSession
+
+from pysparkling import *
+
 
 def get_input_kwargs(self, spark_context):
     if spark_context.version == "2.1.0":
@@ -23,7 +25,7 @@ class ColumnPruner(JavaTransformer, JavaMLReadable, JavaMLWritable):
     @keyword_only
     def __init__(self, keep=False, columns=[]):
        super(ColumnPruner, self).__init__()
-       self._java_obj = self._new_java_obj("org.apache.spark.ml.h2o.features.ColumnPruner", self.uid)
+       self._java_obj = self._new_java_obj("py_sparkling.ml.features.ColumnPruner", self.uid)
        self._setDefault(keep=False, columns=[])
        self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
        kwargs = get_input_kwargs(self, self._hc._sc)
