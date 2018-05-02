@@ -36,7 +36,6 @@ import org.apache.spark.sql.{DataFrame, _}
 import org.apache.spark.{ml, mllib}
 import water.support.ModelSerializationSupport
 
-import scala.reflect.ClassTag
 import scala.reflect.{ClassTag, classTag}
 class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable {

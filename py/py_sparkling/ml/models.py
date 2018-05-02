@@ -3,11 +3,18 @@ from pyspark.ml.wrapper import JavaModel
 from pysparkling.initializer import *
 from pyspark.sql import SparkSession
 
+
 class H2OGBMModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
+
 class H2ODeepLearningModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
+
+
+class H2OAutoMLModel(JavaModel, JavaMLWritable, JavaMLReadable):
+    pass
+
 
 class H2OMOJOModel(JavaModel, JavaMLWritable, JavaMLReadable):
 

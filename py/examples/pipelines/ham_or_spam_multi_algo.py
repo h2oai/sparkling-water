@@ -77,7 +77,7 @@ elif algo == "dl":
 elif algo == "automl":
     ## Create H2OAutoML model
     algoStage = H2OAutoML(convertUnknownCategoricalLevelsToNa=False,
-                       maxRuntimeSecs=300, # 5 minutes
+                       maxRuntimeSecs=60, # 1 minutes
                        seed=1,
                        predictionCol="label")
 
