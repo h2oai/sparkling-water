@@ -1,5 +1,6 @@
 import sys
 import os
+from pyspark.context import SparkContext
 
 """
 This class is used to load sparkling water JAR into spark environment.
@@ -14,10 +15,14 @@ class Initializer(object):
     __extracted_jar_dir = None
 
     @staticmethod
-    def load_sparkling_jar(spark_context):
+    def load_sparkling_jar(spark):
+        if isinstance(spark, SparkContext):
+            sc = spark
+        else:  # We have Spark Session
+            sc = spark.sparkContext
         if not Initializer.__sparkling_jar_loaded:
             sys.path.append(".")
-            Initializer.__add_sparkling_jar_to_spark(spark_context)
+            Initializer.__add_sparkling_jar_to_spark(sc)
             Initializer.__sparkling_jar_loaded = True
 
     @staticmethod
