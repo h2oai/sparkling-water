@@ -1,7 +1,7 @@
-Deploying PySparkling Pipeline Model
-------------------------------------
+Deploying PySparkling Pipeline Models
+-------------------------------------
 
-This tutorial demonstrates how we can import PySparkling pipeline model for scoring.
+This tutorial demonstrates how we can import PySparkling pipeline models for scoring.
 
 Let's first create and export the model as:
 
@@ -37,7 +37,7 @@ Let's first create and export the model as:
 
 
 Once we have exported the model, let's start a new ``./pysparkling`` shell as we want to demonstrate that for scoring,
-H2OContext does not need to be created as the ``H2OGBM`` step is internally using MOJO which does not require runtime of H2O.
+H2OContext does not need to be created as the ``H2OGBM`` step is internally using MOJO which does not require run-time of H2O.
 
 
 First, we need to ensure that all Java classes internally stored in the PySparkling distribution are distributed in the Spark
@@ -51,12 +51,14 @@ cluster. For that, we use the following code:
 Once we initialized PySparkling, we can load the model as:
 
 .. code:: python
+
     from pyspark.ml import PipelineModel
     model = PipelineModel.load("exported_model")
 
 And we can run the predictions on the model as:
 
 .. code:: python
+
     df_for_predictions = ..
     model.transform(df_for_predictions)
 
