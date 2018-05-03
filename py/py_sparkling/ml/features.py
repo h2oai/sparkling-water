@@ -3,6 +3,7 @@ from pyspark.ml.param.shared import *
 from pyspark.ml.util import JavaMLReadable, JavaMLWritable
 from pyspark.ml.wrapper import JavaTransformer
 
+
 class ColumnPruner(JavaTransformer, JavaMLReadable, JavaMLWritable):
 
     keep = Param(Params._dummy(), "keep", "keep the specified columns in the frame")
