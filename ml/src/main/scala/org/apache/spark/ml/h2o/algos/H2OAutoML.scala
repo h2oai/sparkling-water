@@ -208,7 +208,7 @@ trait H2OAutoMLParams extends Params {
   // Default values
   //
   setDefault(
-    predictionCol -> "prediction",
+    predictionCol -> "predictionCol",
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
     ratio -> 1.0, // 1.0 means use whole frame as training frame,
