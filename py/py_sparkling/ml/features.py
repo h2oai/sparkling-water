@@ -15,6 +15,7 @@ def get_input_kwargs(self, spark_context):
         return self._input_kwargs
 
 
+
 class ColumnPruner(JavaTransformer, JavaMLReadable, JavaMLWritable):
 
     keep = Param(Params._dummy(), "keep", "keep the specified columns in the frame")

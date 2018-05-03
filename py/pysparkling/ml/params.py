@@ -12,7 +12,7 @@ def get_correct_case_enum(enum_values, enum_single_value):
 
 class H2OAlgorithmParams(Params):
     ##
-    ## Param definitions
+    # Param definitions
     ##
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     predictionCol = Param(Params._dummy(), "predictionCol", "label")
@@ -28,7 +28,7 @@ class H2OAlgorithmParams(Params):
     convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
 
     ##
-    ## Getters
+    # Getters
     ##
     def getRatio(self):
         return self.getOrDefault(self.ratio)
@@ -68,36 +68,46 @@ class H2OAlgorithmParams(Params):
         return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
 
     ##
-    ## Setters
+    # Setters
     ##
     def setRatio(self, value):
+        assert_is_type(value, int, float)
         return self._set(ratio=value)
 
     def setPredictionCol(self, value):
+        assert_is_type(value, str)
         return self._set(predictionCol=value)
 
     def setFeaturesCols(self, value):
+        assert_is_type(value, [str])
         return self._set(featuresCols=value)
 
     def setAllStringColumnsToCategorical(self, value):
+        assert_is_type(value, bool)
         return self._set(allStringColumnsToCategorical=value)
 
-    def setSolumnsToCategorical(self, value):
+    def setColumnsToCategorical(self, value):
+        assert_is_type(value, [str])
         return self._set(columnsToCategorical=value)
 
     def setNfolds(self, value):
+        assert_is_type(value, int)
         return self._set(nfolds=value)
 
     def setKeepCrossValidationPredictions(self, value):
+        assert_is_type(value, bool)
         return self._set(keepCrossValidationPredictions=value)
 
     def setKeepCrossValidationFoldAssignment(self, value):
+        assert_is_type(value, bool)
         return self._set(keepCrossValidationFoldAssignment=value)
 
     def setParallelizeCrossValidation(self, value):
+        assert_is_type(value, bool)
         return self._set(parallelizeCrossValidation=value)
 
     def setSeed(self, value):
+        assert_is_type(value, int)
         return self._set(seed=value)
 
     def setDistribution(self, value):
@@ -107,12 +117,14 @@ class H2OAlgorithmParams(Params):
         return self._set(distribution=jvm.hex.genmodel.utils.DistributionFamily.valueOf(correct_case_value))
 
     def setConvertUnknownCategoricalLevelsToNa(self, value):
+        assert_is_type(value, bool)
         return self._set(convertUnknownCategoricalLevelsToNa=value)
+
 
 class H2OSharedTreeParams(H2OAlgorithmParams):
 
     ##
-    ## Param definitions
+    # Param definitions
     ##
     ntrees = Param(Params._dummy(), "ntrees", "Number of trees")
     maxDepth = Param(Params._dummy(), "maxDepth", "Maximum tree depth")
@@ -131,7 +143,7 @@ class H2OSharedTreeParams(H2OAlgorithmParams):
     colSampleRatePerTree = Param(Params._dummy(), "colSampleRatePerTree", "Column sample rate per tree (from 0.0 to 1.0)")
 
     ##
-    ## Getters
+    # Getters
     ##
     def getNtrees(self):
         return self.getOrDefault(self.ntrees)
@@ -180,24 +192,30 @@ class H2OSharedTreeParams(H2OAlgorithmParams):
         return self.getOrDefault(self.colSampleRatePerTree)
 
     ##
-    ## Setters
+    # Setters
     ##
     def setNtrees(self, value):
+        assert_is_type(value, int)
         return self._set(ntrees=value)
 
     def setMaxDepth(self, value):
+        assert_is_type(value, int)
         return self._set(maxDepth=value)
 
     def setMinRows(self, value):
+        assert_is_type(value, int, float)
         return self._set(minRows=float(value))
 
     def setNbins(self, value):
+        assert_is_type(value, int)
         return self._set(nbins=value)
 
     def setNbinsCats(self, value):
+        assert_is_type(value, int)
         return self._set(nbinsCats=value)
 
     def setMinSplitImprovement(self, value):
+        assert_is_type(value, int, float)
         return self._set(minSplitImprovement=value)
 
     def setHistogramType(self, value):
@@ -207,43 +225,51 @@ class H2OSharedTreeParams(H2OAlgorithmParams):
         return self._set(histogramType=jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(correct_case_value))
 
     def setR2Stopping(self, value):
+        assert_is_type(value, int, float)
         return self._set(r2Stopping=value)
 
     def setNbinsTopLevel(self, value):
+        assert_is_type(value, int, float)
         return self._set(nbinsTopLevel=value)
 
     def setBuildTreeOneNode(self, value):
+        assert_is_type(value, bool)
         return self._set(buildTreeOneNode=value)
 
     def setScoreTreeInterval(self, value):
+        assert_is_type(value, int)
         return self._set(scoreTreeInterval=value)
 
     def setSampleRate(self, value):
+        assert_is_type(value, int, float)
         return self._set(sampleRate=value)
 
     def setSampleRatePerClass(self, value):
+        assert_is_type(value, None, [int, float])
         return self._set(sampleRatePerClass=value)
 
     def setColSampleRateChangePerLevel(self, value):
+        assert_is_type(value, int, float)
         return self._set(colSampleRateChangePerLevel=value)
 
     def setColSampleRatePerTree(self, value):
+        assert_is_type(value, int, float)
         return self._set(colSampleRatePerTree=value)
 
 
 class H2OGBMParams(H2OSharedTreeParams):
 
     ##
-    ## Param definitions
+    # Param definitions
     ##
     learnRate = Param(Params._dummy(), "learnRate", "Learning rate (from 0.0 to 1.0)")
-    learnRateAnnealing = Param(Params._dummy(),"learnRateAnnealing", "Scale the learning rate by this factor after each tree (e.g., 0.99 or 0.999)")
+    learnRateAnnealing = Param(Params._dummy(), "learnRateAnnealing", "Scale the learning rate by this factor after each tree (e.g., 0.99 or 0.999)")
     colSampleRate = Param(Params._dummy(), "colSampleRate", "Column sample rate (from 0.0 to 1.0)")
     maxAbsLeafnodePred = Param(Params._dummy(), "maxAbsLeafnodePred", "Maximum absolute value of a leaf node prediction")
     predNoiseBandwidth = Param(Params._dummy(), "predNoiseBandwidth", "Bandwidth (sigma) of Gaussian multiplicative noise ~N(1,sigma) for tree node predictions")
 
     ##
-    ## Getters
+    # Getters
     ##
     def getLearnRate(self):
         return self.getOrDefault(self.learnRate)
@@ -261,27 +287,33 @@ class H2OGBMParams(H2OSharedTreeParams):
         return self.getOrDefault(self.predNoiseBandwidth)
 
     ##
-    ## Setters
+    # Setters
     ##
     def setLearnRate(self, value):
+        assert_is_type(value, int, float)
         return self._set(learnRate=value)
 
     def setLearnRateAnnealing(self, value):
+        assert_is_type(value, int, float)
         return self._set(learnRateAnnealing=value)
 
     def setColSampleRate(self, value):
+        assert_is_type(value, int, float)
         return self._set(colSampleRate=value)
 
     def setMaxAbsLeafnodePred(self, value):
+        assert_is_type(value, int, float)
         return self._set(maxAbsLeafnodePred=value)
 
     def setPredNoiseBandwidth(self, value):
+        assert_is_type(value, int, float)
         return self._set(predNoiseBandwidth=value)
+
 
 class H2ODeepLearningParams(H2OAlgorithmParams):
 
     ##
-    ## Param definitions
+    # Param definitions
     ##
     epochs = Param(Params._dummy(), "epochs", "The number of passes over the training dataset to be carried out")
 
@@ -297,7 +329,7 @@ class H2ODeepLearningParams(H2OAlgorithmParams):
     reproducible = Param(Params._dummy(), "reproducible", "Force reproducibility on small data (will be slow - only uses 1 thread)")
 
     ##
-    ## Getters
+    # Getters
     ##
     def getEpochs(self):
         return self.getOrDefault(self.epochs)
@@ -315,28 +347,33 @@ class H2ODeepLearningParams(H2OAlgorithmParams):
         return self.getOrDefault(self.reproducible)
 
     ##
-    ## Setters
+    # Setters
     ##
     def setEpochs(self, value):
+        assert_is_type(value, int, float)
         return self._set(epochs=value)
 
     def setL1(self, value):
+        assert_is_type(value, int, float)
         return self._set(l1=value)
 
     def setL2(self, value):
+        assert_is_type(value, int, float)
         return self._set(l2=value)
 
     def setHidden(self, value):
+        assert_is_type(value, [int])
         return self._set(hidden=value)
 
     def setReproducible(self, value):
+        assert_is_type(value, bool)
         return self._set(reproducible=value)
 
 
 class H2OAutoMLParams(Params):
 
     ##
-    ## Param definitions
+    # Param definitions
     ##
     predictionCol = Param(Params._dummy(), "predictionCol", "label")
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
@@ -359,7 +396,7 @@ class H2OAutoMLParams(Params):
     seed = Param(Params._dummy(), "seed", "Seed for random numbers")
 
     ##
-    ## Getters
+    # Getters
     ##
     def getPredictionCol(self):
         return self.getOrDefault(self.predictionCol)
@@ -419,60 +456,72 @@ class H2OAutoMLParams(Params):
     def getConvertUnknownCategoricalLevelsToNa(self):
         return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
 
-
     def getSeed(self):
         return self.getOrDefault(self.seed)
 
     ##
-    ## Setters
+    # Setters
     ##
     def setPredictionCol(self, value):
+        assert_is_type(value, str)
         return self._set(predictionCol=value)
 
     def setAllStringColumnsToCategorical(self, value):
+        assert_is_type(value, bool)
         return self._set(allStringColumnsToCategorical=value)
 
     def setColumnsToCategorical(self, value):
+        assert_is_type(value, [str])
         return self._set(columnsToCategorical=value)
 
     def setRatio(self, value):
+        assert_is_type(value, int, float)
         return self._set(ratio=value)
 
     def setFoldColumn(self, value):
+        assert_is_type(value, None, str)
         return self._set(foldColumn=value)
 
     def setWeightsColumn(self, value):
+        assert_is_type(value, None, str)
         return self._set(weightsColumn=value)
 
     def setIgnoredColumns(self, value):
+        assert_is_type(value, [str])
         return self._set(ignoredColumns=value)
 
     def setTryMutations(self, value):
+        assert_is_type(value, bool)
         return self._set(tryMutations=value)
 
     def setExcludeAlgos(self, value):
+        assert_is_type(value, None, [Enum("GLM", "DRF", "GBM", "DeepLearning", "StackedEnsemble")])
         # H2O typechecks does not check for case sensitivity
         java_enums = []
         if value is not None:
             for algo in value:
-                assert_is_type(algo, Enum("GLM", "DRF", "GBM", "DeepLearning", "StackedEnsemble"))
                 jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
                 java_enums.append(get_correct_case_enum(jvm.ai.h2o.automl.AutoML.algo.values(), algo))
         return self._set(excludeAlgos=java_enums)
 
     def setProjectName(self, value):
+        assert_is_type(value, None, str)
         return self._set(projectName=value)
 
     def setLoss(self, value):
+        assert_is_type(value, "AUTO")
         return self._set(loss=value)
 
     def setMaxRuntimeSecs(self, value):
+        assert_is_type(value, int, float)
         return self._set(maxRuntimeSecs=value)
 
     def setStoppingRounds(self, value):
+        assert_is_type(value, int)
         return self._set(stoppingRounds=value)
 
     def setStoppingTolerance(self, value):
+        assert_is_type(value, int, float)
         return self._set(stoppingTolerance=value)
 
     def setStoppingMetric(self, value):
@@ -483,10 +532,13 @@ class H2OAutoMLParams(Params):
         return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
 
     def setNfolds(self, value):
+        assert_is_type(value, int)
         return self._set(nfolds=value)
 
     def setConvertUnknownCategoricalLevelsToNa(self, value):
+        assert_is_type(value, bool)
         return self._set(convertUnknownCategoricalLevelsToNa=value)
 
     def setSeed(self, value):
+        assert_is_type(value, int)
         return self._set(seed=value)
