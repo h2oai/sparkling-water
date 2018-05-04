@@ -19,11 +19,14 @@ package water.api.scalaInt
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.repl.h2o.H2OInterpreter
-import water.Iced
-import water.api.{Handler, HandlerFactory, RestApiContext}
+import water.H2O.H2OCountedCompleter
+import water._
+import water.api.schemas3.JobV3
+import water.api._
 import water.exceptions.H2ONotFoundArgumentException
 
 import scala.collection.concurrent.TrieMap
+
 
 /**
   * Handler for all Scala related endpoints
@@ -41,16 +44,48 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
     if (s.session_id == -1 || !mapIntr.isDefinedAt(s.session_id)) {
       throw new H2ONotFoundArgumentException("Session does not exists. Create session using the address /3/scalaint!")
     }
-    val intp = mapIntr(s.session_id)
-    s.status = intp.runCode(s.code).toString
-    s.response = intp.interpreterResponse
-    s.output = intp.consoleOutput
+
+    val job = new Job[ScalaCodeResult](Key.make[ScalaCodeResult](), classOf[ScalaCodeResult].getName, "ScalaCodeResult")
+
+    job.start(new H2OCountedCompleter() {
+      override def compute2(): Unit = {
+
+        val scalaCodeExecution = new ScalaCodeResult(job._result)
+        val intp = mapIntr(s.session_id)
+        scalaCodeExecution.code = s.code
+        scalaCodeExecution.scalaStatus = intp.runCode(s.code).toString
+        scalaCodeExecution.scalaResponse = intp.interpreterResponse
+        scalaCodeExecution.scalaOutput = intp.consoleOutput
+        DKV.put(scalaCodeExecution)
+        tryComplete()
+      }
+    }, 1)
+
+    s.job = new JobV3(job)
+
+    /** If we are not running in asynchronous mode, compute the result right away */
+    if (!h2oContext.getConf.flowScalaCellAsync) {
+      val result = job.get()
+      s.status = result.scalaStatus
+      s.response = result.scalaResponse
+      s.output = result.scalaOutput
+    }
     s
   }
 
   def initSession(version: Int, s: ScalaSessionIdV3): ScalaSessionIdV3 = {
     val intp = fetchInterpreter()
     s.session_id = intp.sessionId
+    s.async = h2oContext.getConf.flowScalaCellAsync
+    s
+  }
+
+  def getScalaCodeResult(version: Int, s: ScalaCodeV3): ScalaCodeV3 = {
+    val result = DKV.getGet[ScalaCodeResult](s.result_key)
+    s.code = result.code
+    s.status = result.scalaStatus
+    s.response = result.scalaResponse
+    s.output = result.scalaOutput
     s
   }
 
@@ -120,9 +155,9 @@ private[api] class IcedCode(val session_id: Int, val code: String) extends Iced[
 
 private[api] class IcedSessions extends Iced[IcedSessions] {}
 
-private[api] class IcedSessionId(val rdd_id: Integer) extends Iced[IcedSessionId] {
+private[api] class IcedSessionId(val rdd_id: Integer, val async: Boolean) extends Iced[IcedSessionId] {
 
-  def this() = this(-1) // initialize with empty values, this is used by the createImpl method in the
+  def this() = this(-1, false) // initialize with empty values, this is used by the createImpl method in the
   //RequestServer, as it calls constructor without any arguments
 }
 
@@ -149,6 +184,11 @@ object ScalaCodeHandler {
     context.registerEndpoint("destroyScalaSession", "DELETE", "/3/scalaint/{session_id}",
       classOf[ScalaCodeHandler], "destroySession", "Return session id for communication with scala interpreter",
       scalaCodeFactory)
+
+    context.registerEndpoint("getScalaCodeResult", "POST", "/3/scalaint/result/{result_key}",
+      classOf[ScalaCodeHandler], "getScalaCodeResult", "Get Scala code result for desired job", scalaCodeFactory)
   }
 
 }
+
+
