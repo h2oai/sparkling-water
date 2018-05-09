@@ -65,8 +65,8 @@ case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], fram
   private[this] def withMeta(meta: MetaInfo): H2OFrame = {
     val kn: String = keyName(rdd, frameKeyName)
 
-    // in case of internal backend, store regular vector types
-    // otherwise for external backend store expected types
+    // In case of internal backend, store regular H2O vector types
+    // otherwise for external backend, store expected types
     val expectedTypes = if (hc.getConf.runsInInternalClusterMode) {
       meta.vecTypes
     } else {
@@ -101,7 +101,7 @@ object H2OFrameFromRDDProductBuilder{
   /**
     *
     * @param keyName key of the frame
-    * @param vecTypes h2o vec types
+    * @param expectedTypes expected types
     * @param uploadPlan plan which assigns each partition h2o node where the data from that partition will be uploaded
     * @param context spark task context
     * @param it iterator over data in the partition
@@ -109,13 +109,13 @@ object H2OFrameFromRDDProductBuilder{
     * @return pair (partition ID, number of rows in this partition)
     */
   private[converters] def perTypedDataPartition[T<:Product]()
-                                                           (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int)
+                                                           (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int)
                                                            (context: TaskContext, it: Iterator[T]): (Int, Long) = {
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     // An array of H2O NewChunks; A place to record all the data in this partition
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
 
-    con.createChunks(keyName, vecTypes, context.partitionId(), Array.empty[Int])
+    con.createChunks(keyName, expectedTypes, context.partitionId(), Array.empty[Int])
     iterator.foreach(prod => { // For all rows which are subtype of Product
       for ( i <- 0 until prod.productArity ) { // For all fields...
       val fld = prod.productElement(i)

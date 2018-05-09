@@ -46,8 +46,8 @@ private[converters] object MLLibVectorConverter extends Logging {
 
     val fnames = 0.until(maxNumFeatures).map("v_" +).toArray[String]
 
-    // in case of internal backend, store regular vector types
-    // otherwise for external backend store expected types
+    // In case of internal backend, store regular H2O vector types
+    // otherwise for external backend, store expected types
     val expectedTypes = if (hc.getConf.runsInInternalClusterMode) {
       Array.fill(maxNumFeatures)(Vec.T_NUM)
     } else {
@@ -61,7 +61,7 @@ private[converters] object MLLibVectorConverter extends Logging {
   /**
     *
     * @param keyName        key of the frame
-    * @param vecTypes       h2o vec types
+    * @param expectedTypes  expected types
     * @param maxNumFeatures maximum number of features in the labeled point
     * @param uploadPlan     plan which assigns each partition h2o node where the data from that partition will be uploaded
     * @param context        spark task context
@@ -70,12 +70,12 @@ private[converters] object MLLibVectorConverter extends Logging {
     */
   private[this]
   def perMLlibVectorPartition(maxNumFeatures: Int)
-                             (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int)
+                             (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int)
                              (context: TaskContext, it: Iterator[mllib.linalg.Vector]): (Int, Long) = {
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
     // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunks(keyName, vecTypes, context.partitionId(), Array(maxNumFeatures))
+    con.createChunks(keyName, expectedTypes, context.partitionId(), Array(maxNumFeatures))
 
     iterator.foreach(vec => con.putVector(0, vec, maxNumFeatures))
 

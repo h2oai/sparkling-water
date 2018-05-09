@@ -56,18 +56,18 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     val flatDataFrame = flattenDataFrame(dataFrame)
     val dfRdd = flatDataFrame.rdd
     val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
+
     val elemMaxSizes = collectMaxElementSizes(hc.sparkContext, flatDataFrame)
+    val elemStartIndices = collectElemStartPositions(elemMaxSizes)
     val vecIndices = collectVectorLikeTypes(flatDataFrame.schema).toArray
-    val vecMaxSizes = vecIndices.map(elemMaxSizes(_))
-    val startPositions = collectElemStartPositions(elemMaxSizes)
 
     // Expands RDD's schema ( Arrays and Vectors)
     val flatRddSchema = expandedSchema(hc.sparkContext, flatDataFrame.schema, elemMaxSizes)
     // Patch the flat schema based on information about types
     val fnames = flatRddSchema.map(_.name).toArray
 
-    // in case of internal backend, store regular vector types
-    // otherwise for external backend store expected types
+    // In case of internal backend, store regular H2O vector types
+    // otherwise for external backend, store expected types
     val expectedTypes = if (hc.getConf.runsInInternalClusterMode) {
       // Transform datatype into h2o types
       flatRddSchema.map(f => ReflectionUtils.vecTypeFor(f.dataType)).toArray
@@ -78,38 +78,38 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       ExternalBackendUtils.prepareExpectedTypes(internalJavaClasses)
     }
 
-    WriteConverterCtxUtils.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecMaxSizes,
-      perSQLPartition(elemMaxSizes, vecMaxSizes, startPositions, vecIndices))
+    WriteConverterCtxUtils.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)),
+      perSQLPartition(elemMaxSizes, elemStartIndices, vecIndices))
   }
 
   /**
     *
     * @param keyName        key of the frame
-    * @param vecTypes       h2o vec types
+    * @param expectedTypes  expected types of H2O vectors after the corresponding data are converted from Spark
     * @param elemMaxSizes   array containing max size of each element in the dataframe
-    * @param startPositions array containing positions in h2o frame corresponding to spark frame
+    * @param elemStartIndices array containing positions in h2o frame corresponding to spark frame
     * @param uploadPlan     plan which assigns each partition h2o node where the data from that partition will be uploaded
     * @param context        spark task context
     * @param it             iterator over data in the partition
     * @return pair (partition ID, number of rows in this partition)
     */
   private[this]
-  def perSQLPartition(elemMaxSizes: Array[Int], vecMaxSizes: Array[Int], startPositions: Array[Int], vecIndices: Array[Int])
-                     (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int)
+  def perSQLPartition(elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
+                     (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int)
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
 
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
     // Collect mapping start position of vector and its size
     val vecStartSize = (for (vecIdx <- vecIndices) yield {
-      (startPositions(vecIdx), elemMaxSizes(vecIdx))
+      (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))
     }).toMap
     // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunks(keyName, vecTypes, context.partitionId(), vecMaxSizes, vecStartSize)
+    con.createChunks(keyName, expectedTypes, context.partitionId(), vecIndices.map(elemMaxSizes(_)), vecStartSize)
 
     var localRowIdx = 0
     iterator.foreach { row =>
-      sparkRowToH2ORow(row, localRowIdx, con, startPositions, elemMaxSizes)
+      sparkRowToH2ORow(row, localRowIdx, con, elemStartIndices, elemMaxSizes)
       localRowIdx += 1
     }
 
@@ -123,10 +123,10 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   /**
     * Converts a single Spark Row to H2O Row with expanded vectors and arrays
     */
-  def sparkRowToH2ORow(row: Row, rowIdx: Int, con: WriteConverterCtx, startIndices: Array[Int], elemSizes: Array[Int]) {
+  def sparkRowToH2ORow(row: Row, rowIdx: Int, con: WriteConverterCtx, elemStartIndices: Array[Int], elemSizes: Array[Int]) {
     con.startRow(rowIdx)
     row.schema.fields.zipWithIndex.foreach { case (entry, idxField) =>
-      val idxH2O = startIndices(idxField)
+      val idxH2O = elemStartIndices(idxField)
       if (row.isNullAt(idxField)) {
         con.putNA(idxH2O)
       } else {
