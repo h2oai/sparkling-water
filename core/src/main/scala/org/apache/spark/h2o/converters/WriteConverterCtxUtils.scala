@@ -62,14 +62,14 @@ object WriteConverterCtxUtils {
     * @param rdd      rdd to convert
     * @param keyName  key of the resulting frame
     * @param colNames names of the columns in the H2O Frame
-    * @param vecTypes types of the vectors in the H2O Frame
+    * @param expectedTypes expected types of the vectors in the H2O Frame
     * @param func     conversion function - the function takes parameters needed extra by specific transformations
     *                 and returns function which does the general transformation
     * @tparam T type of RDD to convert
     * @return H2O Frame
     */
 
-  def convert[T](hc: H2OContext, rdd: RDD[T], keyName: String, colNames: Array[String], vecTypes: Array[Byte],
+  def convert[T](hc: H2OContext, rdd: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                  maxVecSizes: Array[Int], func: ConversionFunction[T]) = {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, colNames)
@@ -81,7 +81,7 @@ object WriteConverterCtxUtils {
       None
     }
 
-    val operation: SparkJob[T] = func(keyName, vecTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout)
+    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout)
 
     val rows = hc.sparkContext.runJob(rdd, operation) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
@@ -90,9 +90,9 @@ object WriteConverterCtxUtils {
 
     // get the vector types from expected types in case of external h2o cluster
     val types = if (hc.getConf.runsInExternalClusterMode) {
-      ExternalFrameUtils.vecTypesFromExpectedTypes(vecTypes, maxVecSizes)
+      ExternalFrameUtils.vecTypesFromExpectedTypes(expectedTypes, maxVecSizes)
     } else {
-      vecTypes
+      expectedTypes
     }
     val fr = new H2OFrame(finalizeFrame(keyName, res, types)) 
 

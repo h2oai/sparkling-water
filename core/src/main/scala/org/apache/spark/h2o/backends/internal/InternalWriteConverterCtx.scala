@@ -33,10 +33,10 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
 
   private var rowIdx: Int = _
 
-  override def createChunks(keyName: String, h2oTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int], vecStartSize: Map[Int, Int]): Unit = {
-    chunks = FrameUtils.createNewChunks(keyName, h2oTypes, chunkId)
+  override def createChunks(keyName: String, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int], vecStartSize: Map[Int, Int]): Unit = {
+    chunks = FrameUtils.createNewChunks(keyName, expectedTypes, chunkId)
     sparseVectorPts = collection.mutable.Map(vecStartSize.mapValues(size => new Array[Int](size)).toSeq: _*)
-    sparseVectorInUse = collection.mutable.Map(vecStartSize.mapValues(size => false).toSeq: _*)
+    sparseVectorInUse = collection.mutable.Map(vecStartSize.mapValues(_ => false).toSeq: _*)
   }
 
   override def closeChunks(numRows: Int): Unit = {
@@ -85,6 +85,7 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
       sparseVectorPt(idx) = rowIdx + 1
       i += 1
     }
+
   }
 
   override def startRow(rowIdx: Int): Unit = {
@@ -93,10 +94,6 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
   override def finishRow(): Unit = {}
 
   override def putDenseVector(startIdx: Int, vector: DenseVector, maxVecSize: Int): Unit = {
-    putAnyVector(startIdx, vector, maxVecSize)
-  }
-
-  private def putAnyVector(startIdx: Int, vector: mllib.linalg.Vector, maxVecSize: Int): Unit ={
     (0 until vector.size).foreach{ idx => put(startIdx + idx, vector(idx))}
 
     (vector.size until maxVecSize).foreach( idx => put(startIdx + idx, 0.0))

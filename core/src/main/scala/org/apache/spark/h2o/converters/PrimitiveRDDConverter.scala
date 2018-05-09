@@ -38,8 +38,8 @@ private[converters] object PrimitiveRDDConverter extends Logging {
 
     val fnames = Array[String]("values")
 
-    // in case of internal backend, store regular vector types
-    // otherwise for external backend store expected types
+    // In case of internal backend, store regular H2O vector types
+    // otherwise for external backend, store expected types
     val expectedTypes = if (hc.getConf.runsInInternalClusterMode) {
       Array[Byte](vecTypeOf[T])
     } else {
@@ -54,7 +54,7 @@ private[converters] object PrimitiveRDDConverter extends Logging {
   /**
     *
     * @param keyName    key of the frame
-    * @param vecTypes   h2o vec types
+    * @param expectedTypes   expected types
     * @param uploadPlan if external backend is used, then it is a plan which assigns each partition h2o
     *                   node where the data from that partition will be uploaded, otherwise is Node
     * @param context    spark task context
@@ -64,13 +64,13 @@ private[converters] object PrimitiveRDDConverter extends Logging {
     */
   private[this]
   def perPrimitiveRDDPartition[T]() // extra arguments for this transformation
-                                 (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int) // general arguments
+                                 (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int) // general arguments
                                  (context: TaskContext, it: Iterator[T]): (Int, Long) = { // arguments and return types needed for spark's runJob input
 
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
 
-    con.createChunks(keyName, vecTypes, context.partitionId(), Array.empty[Int])
+    con.createChunks(keyName, expectedTypes, context.partitionId(), Array.empty[Int])
     iterator.foreach {
       con.putAnySupportedType(0, _)
     }
