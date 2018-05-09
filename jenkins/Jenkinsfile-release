@@ -14,6 +14,8 @@ pipeline {
     environment {
         SPARK_VERSION="2.1.2"
         SPARK_HOME="${env.WORKSPACE}/spark"
+        JAVA_HOME="/usr/lib/jvm/java-7-oracle/"
+        PATH="/usr/lib/jvm/java-7-oracle/bin:${PATH}"
     }
 
     stages {
