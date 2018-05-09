@@ -45,8 +45,8 @@ private[converters] object LabeledPointConverter extends Logging {
     }
     val fnames = ("label" :: 0.until(maxNumFeatures).map("feature" +).toList).toArray[String]
 
-    // in case of internal backend, store regular vector types
-    // otherwise for external backend store expected types
+    // In case of internal backend, store regular H2O vector types
+    // otherwise for external backend, store expected types
     val typeToUse = if (hc.getConf.runsInInternalClusterMode) Vec.T_NUM else ExternalFrameUtils.EXPECTED_DOUBLE
     val expectedTypes = Array.fill(maxNumFeatures + 1)(typeToUse)
 
@@ -56,7 +56,7 @@ private[converters] object LabeledPointConverter extends Logging {
   /**
     *
     * @param keyName        key of the frame
-    * @param vecTypes       h2o vec types
+    * @param expectedTypes  expected types
     * @param maxNumFeatures maximum number of features in the labeled point
     * @param uploadPlan     plan which assigns each partition h2o node where the data from that partition will be uploaded
     * @param context        spark task context
@@ -65,12 +65,12 @@ private[converters] object LabeledPointConverter extends Logging {
     */
   private[this]
   def perLabeledPointRDDPartition(maxNumFeatures: Int)
-                                 (keyName: String, vecTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int)
+                                 (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int)
                                  (context: TaskContext, it: Iterator[LabeledPoint]): (Int, Long) = {
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
     // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunks(keyName, vecTypes, context.partitionId(), Array.empty[Int])
+    con.createChunks(keyName, expectedTypes, context.partitionId(), Array.empty[Int])
 
     iterator.foreach(labeledPoint => {
       // For all LabeledPoints in RDD
@@ -86,7 +86,7 @@ private[converters] object LabeledPointConverter extends Logging {
         nextChunkId = nextChunkId + 1
       }
 
-      for (i <- labeledPoint.features.size until maxNumFeatures) {
+      for (_ <- labeledPoint.features.size until maxNumFeatures) {
         // Fill missing features with n/a
         con.putNA(nextChunkId)
         nextChunkId = nextChunkId + 1
