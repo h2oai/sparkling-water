@@ -82,9 +82,6 @@ configure(allprojects) { project ->
     gradleLint.rules = ['all-dependency']
     gradleLint.alwaysRun = false // Run linter manually
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-
     // Version of main components
     ext {
       scalaBaseVersion   = project.findProperty('scalaBaseVersion') ?: defaultScalaBaseVersion
@@ -142,6 +139,9 @@ configure(subprojects) { project ->
 
     if(project in javaProjects) {
         apply plugin: 'java'
+
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
     }
     // All subprojects needs Spark support
     apply from: "$rootDir/gradle/spark.gradle"
