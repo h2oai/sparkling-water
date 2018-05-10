@@ -11,7 +11,7 @@ ScalaCompileOptions.metaClass.useCompileDaemon = false
 // Activate Zinc compiler and configure scalac
 tasks.withType(ScalaCompile) {
     scalaCompileOptions.additionalParameters = [
-            "-target:jvm-1.6",
+            "-target:jvm-1.7",
             "-feature",
             // enable several optional scala features so Scala knows we use them on purpose
             "-language:reflectiveCalls",
