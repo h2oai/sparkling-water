@@ -21,7 +21,6 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.IntegerType
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -35,7 +34,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
   }
 
   test("Test columns names and numbers") {
-    val df = spark.read.option("header", "true").option("inferSchema", true).csv("file:/Users/kuba/devel/repos/sparkling-water/examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").option("inferSchema", true).csv("examples/smalldata/prostate/prostate.csv")
 
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
@@ -99,8 +98,6 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
-
-    import spark.implicits._
     val rdd = sc.parallelize(Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", null)))
     val df2 = spark.createDataFrame(rdd, df.first().schema)
     val preds = mojo.transform(df2)
