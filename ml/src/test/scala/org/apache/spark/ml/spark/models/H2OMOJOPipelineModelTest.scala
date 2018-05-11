@@ -21,6 +21,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.IntegerType
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -31,6 +32,35 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
   override def beforeAll(): Unit = {
     sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
     super.beforeAll()
+  }
+
+  test("Test columns names and numbers") {
+    val df = spark.read.option("header", "true").option("inferSchema", true).csv("file:/Users/kuba/devel/repos/sparkling-water/examples/smalldata/prostate/prostate.csv")
+
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
+      "prostate_pipeline.mojo")
+    val rawMojo = mojo.getOrCreateModel()
+
+    val mojoInputCols = (0 until rawMojo.getInputMeta.size()).map(rawMojo.getInputMeta.getColumnName(_))
+    val mojoInputTypes = (0 until rawMojo.getInputMeta.size()).map(rawMojo.getInputMeta.getColumnType(_).javatype)
+    val dfTypes = df.dtypes.filter(_._1 != "AGE").map{case (_, typ) => sparkTypeToMojoType(typ)}.toSeq
+
+    assert(rawMojo.getInputMeta.size() == df.columns.length -1) // response column is not on the input
+    assert(mojoInputCols == df.columns.filter(_ != "AGE").toSeq)
+    assert(mojoInputTypes == dfTypes)
+
+    assert(rawMojo.getOutputMeta.size() == 1)
+    assert(rawMojo.getOutputMeta.getColumnName(0) == "AGE")
+    assert(rawMojo.getOutputMeta.getColumnType(0).javatype == "double") // Spark type is int, byt the prediction can be decimal
+  }
+
+
+  private def sparkTypeToMojoType(sparkType: String): String = {
+    sparkType match {
+      case "IntegerType" => "int"
+      case "DoubleType" => "double"
+    }
   }
 
   test("Prediction on Mojo Pipeline using internal API") {
@@ -63,7 +93,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
   /**
     * The purpose of this test is to simply pass and don't throw NullPointerException
     */
-  test("Prediction with null as row element"){
+  test("Prediction with null as row element") {
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -77,6 +107,8 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     // materialize the frame to see that it is passing
     preds.collect()
   }
+
+
   private def assertPredictedValues(preds: Array[Row]): Unit = {
     assert(preds(0).getSeq[String](0).head == "65.36320409515132")
     assert(preds(1).getSeq[String](0).head == "64.96902128114817")
