@@ -125,9 +125,7 @@ pipeline {
                     export H2O_PYTHON_WHEEL="\$(pwd)/private/h2o.whl"
                         
                     # Perform a build
-                    ./gradlew build -x check scaladoc javadoc -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
-                    ./gradlew site
-                    ./gradlew buildSparklingWaterDist
+                    ./gradlew buildSparklingWaterDist -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
                                 
                     """
                 }
