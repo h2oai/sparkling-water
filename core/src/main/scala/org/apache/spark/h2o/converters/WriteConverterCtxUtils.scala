@@ -22,8 +22,9 @@ import org.apache.spark.h2o.backends.internal.InternalWriteConverterCtx
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OContext, _}
 import org.apache.spark.TaskContext
-import water.fvec.H2OFrame
-import water.{DKV, ExternalFrameUtils, H2ONode, Key}
+import org.apache.spark.h2o.utils.LogUtil.setLogLevel
+import water.fvec.{Chunk, H2OFrame}
+import water._
 import water.util.Log
 
 import scala.collection.{immutable, mutable}
@@ -58,13 +59,13 @@ object WriteConverterCtxUtils {
   /**
     * Converts the RDD to H2O Frame using specified conversion function
     *
-    * @param hc       H2O context
-    * @param rdd      rdd to convert
-    * @param keyName  key of the resulting frame
-    * @param colNames names of the columns in the H2O Frame
+    * @param hc            H2O context
+    * @param rdd           rdd to convert
+    * @param keyName       key of the resulting frame
+    * @param colNames      names of the columns in the H2O Frame
     * @param expectedTypes expected types of the vectors in the H2O Frame
-    * @param func     conversion function - the function takes parameters needed extra by specific transformations
-    *                 and returns function which does the general transformation
+    * @param func          conversion function - the function takes parameters needed extra by specific transformations
+    *                      and returns function which does the general transformation
     * @tparam T type of RDD to convert
     * @return H2O Frame
     */
@@ -94,9 +95,9 @@ object WriteConverterCtxUtils {
     } else {
       expectedTypes
     }
-    val fr = new H2OFrame(finalizeFrame(keyName, res, types)) 
+    val fr = new H2OFrame(finalizeFrame(keyName, res, types))
 
-    if(Log.isLoggingFor("DEBUG")) {
+    if (Log.isLoggingFor("DEBUG")) {
       Log.debug("Number of chunks on frame: " + fr.anyVec.nChunks)
       val nodes = mutable.Map.empty[H2ONode, Int]
       (0 until fr.anyVec().nChunks()).foreach { i =>
@@ -112,6 +113,61 @@ object WriteConverterCtxUtils {
           Log.debug(node + ": " + n + " chunks.")
       }
     }
+
+    // Validate num of chunks in each vector
+    if (!fr.vecs().isEmpty) {
+      val first = fr.vecs.head
+      fr.vecs.tail.foreach { vec =>
+        if (vec.nChunks() != first.nChunks()) {
+          throw new IllegalArgumentException(
+            s"""
+               | Vectors have different number of chunks: ${fr.vecs().map(_.nChunks()).mkString(", ")}
+        """.stripMargin)
+        }
+      }
+    }
+
+    // Validate that espc is the same in each vector
+    if (!fr.vecs().isEmpty) {
+      val layouts = fr.vecs().map(_.espc())
+      val first = layouts.head
+      layouts.tail.foreach { espc =>
+        if (first != espc) {
+          throw new IllegalArgumentException(
+            s"""
+               | Invalid shape of H2O Frame:
+               |
+          | ${layouts.zipWithIndex.map { case (arr, idx) => s"Vec $idx has layout: ${arr.mkString(", ")}\n" }}
+               |
+        }
+        """.stripMargin)
+        }
+      }
+    }
+
+    // Check number of entries in each chunk
+    if (!fr.vecs().isEmpty) {
+
+      new MRTask() {
+
+        override def map(cs: Array[Chunk]): Unit = {
+
+          val values = cs.map(_.len())
+          if (values.length > 1) {
+            val firstLen = values.head
+            values.tail.zipWithIndex.foreach { case (len, idx) =>
+              if (firstLen != len) {
+                throw new IllegalArgumentException(s"Chunks have different sizes in different vectors: $firstLen in vector 1 and" +
+                  s"$len in vector $idx")
+              }
+            }
+          }
+        }
+
+      }.doAll(fr)
+
+    }
+
     fr
   }
 
