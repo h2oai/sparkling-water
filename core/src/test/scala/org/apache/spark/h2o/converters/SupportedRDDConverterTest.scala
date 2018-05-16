@@ -160,7 +160,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     val rdd = sc.parallelize(Array.empty[ByteField])
     val fr = hc.asH2OFrame(rdd)
 
-    assert(fr.numCols() == 2)
+    assert(fr.numCols() == 1)
     assert(fr.numRows() == 0)
   }
 
