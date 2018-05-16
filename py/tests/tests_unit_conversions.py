@@ -274,7 +274,7 @@ class FrameTransformationsTest(unittest.TestCase):
         assert fr.ncols == 0
 
     def test_convert_empty_dataframe_non_empty_schema(self):
-        schema = StructType([StructField("name", StringType), StructField("age", IntegerType)])
+        schema = StructType([StructField("name", StringType()), StructField("age", IntegerType())])
         empty = self._spark.createDataFrame(self._spark.sparkContext.emptyRDD(), schema)
         hc = H2OContext.getOrCreate(self._spark)
         fr = hc.as_h2o_frame(empty)
