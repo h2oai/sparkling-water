@@ -157,8 +157,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
   }
 
   test("Empty RDD to H2O frame, Product type"){
-    case class Test(name: String, age: Int)
-    val rdd = sc.parallelize(Array.empty[Test])
+    val rdd = sc.parallelize(Array.empty[ByteField])
     val fr = hc.asH2OFrame(rdd)
 
     assert(fr.numCols() == 2)
