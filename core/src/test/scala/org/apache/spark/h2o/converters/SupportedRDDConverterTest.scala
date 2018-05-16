@@ -84,6 +84,95 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(c2 == numRows, "Number of rows should match")
   }
 
+  test("Empty RDD to H2O frame, Byte type"){
+    val rdd = sc.parallelize(Array.empty[Byte])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 1)
+    assert(fr.numRows() == 0)
+  }
+
+  test("Empty RDD to H2O frame, Short type"){
+    val rdd = sc.parallelize(Array.empty[Short])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 1)
+    assert(fr.numRows() == 0)
+  }
+
+  test("Empty RDD to H2O frame, Integer type"){
+    val rdd = sc.parallelize(Array.empty[Integer])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 1)
+    assert(fr.numRows() == 0)
+  }
+
+  test("Empty RDD to H2O frame, Long type"){
+    val rdd = sc.parallelize(Array.empty[Long])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 1)
+    assert(fr.numRows() == 0)
+  }
+
+  test("Empty RDD to H2O frame, Float type"){
+    val rdd = sc.parallelize(Array.empty[Float])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 1)
+    assert(fr.numRows() == 0)
+  }
+
+  test("Empty RDD to H2O frame, Double type"){
+    val rdd = sc.parallelize(Array.empty[Double])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 1)
+    assert(fr.numRows() == 0)
+  }
+
+  test("Empty RDD to H2O frame, String type"){
+    val rdd = sc.parallelize(Array.empty[String])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 1)
+    assert(fr.numRows() == 0)
+  }
+
+  test("Empty RDD to H2O frame, String type"){
+    val rdd = sc.parallelize(Array.empty[Boolean])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 1)
+    assert(fr.numRows() == 0)
+  }
+
+  test("Empty RDD to H2O frame, Timestamp type"){
+    val rdd = sc.parallelize(Array.empty[Timestamp])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 1)
+    assert(fr.numRows() == 0)
+  }
+
+  test("Empty RDD to H2O frame, Product type"){
+    case class Test(name: String, age: Int)
+    val rdd = sc.parallelize(Array.empty[Test])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 2)
+    assert(fr.numRows() == 0)
+  }
+
+  test("Empty RDD to H2O frame, Labeled point"){
+    val rdd = sc.parallelize(Array.empty[LabeledPoint])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 1)
+    assert(fr.numRows() == 0)
+  }
+
   // H2OFrame to RDD[T] JUnits
   test("H2OFrame[T_NUM] to RDD[Prostate]") {
     val h2oFrame: H2OFrame = new H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
