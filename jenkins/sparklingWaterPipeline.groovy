@@ -62,7 +62,7 @@ def getGradleCommand(config) {
 
 def prepareSparkEnvironment() {
     return { config ->
-        stage('Prepare Spark Environment- ' + config.backendMode) {
+        stage('Prepare Spark Environment - ' + config.backendMode) {
             
             if (config.buildAgainstSparkBranch.toBoolean()) {
                 // build spark
@@ -108,7 +108,7 @@ def prepareSparkEnvironment() {
 
 def prepareSparklingWaterEnvironment() {
     return { config ->
-        stage('QA: Prepare Sparkling Water Environment- ' + config.backendMode) {
+        stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
 
             // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
             // with release notes which can mess up the build
@@ -164,7 +164,7 @@ def prepareSparklingWaterEnvironment() {
 
 def buildAndLint() {
     return { config ->
-        stage('QA: Build and Lint- ' + config.backendMode) {
+        stage('QA: Build and Lint - ' + config.backendMode) {
             withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
                 sh  """
                     # Build
@@ -177,7 +177,7 @@ def buildAndLint() {
 
 def unitTests() {
     return { config ->
-        stage('QA: Unit Tests- ' + config.backendMode) {
+        stage('QA: Unit Tests - ' + config.backendMode) {
             if (config.runUnitTests.toBoolean()) {
                 try {
                     withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
@@ -202,7 +202,7 @@ def unitTests() {
 
 def localIntegTest() {
     return { config ->
-        stage('QA: Local Integration Tests- ' + config.backendMode) {
+        stage('QA: Local Integration Tests - ' + config.backendMode) {
 
             if (config.runLocalIntegTests.toBoolean()) {
                 try {
@@ -224,7 +224,7 @@ def localIntegTest() {
 
 def scriptsTest() {
     return { config ->
-        stage('QA: Script Tests- ' + config.backendMode) {
+        stage('QA: Script Tests - ' + config.backendMode) {
             if (config.runScriptTests.toBoolean()) {
                 try {
                     sh  """
@@ -244,7 +244,7 @@ def scriptsTest() {
 
 def integTest() {
     return { config ->
-        stage('QA: Integration Tests- ' + config.backendMode) {
+        stage('QA: Integration Tests - ' + config.backendMode) {
             if (config.runIntegTests.toBoolean()) {
                 try {
                     sh  """
@@ -263,7 +263,7 @@ def integTest() {
 
 def pysparklingIntegTest() {
     return { config ->
-        stage('QA: PySparkling Integration Tests- ' + config.backendMode) {
+        stage('QA: PySparkling Integration Tests - ' + config.backendMode) {
             if (config.runPySparklingIntegTests.toBoolean()) {
                 try{
                     sh  """
@@ -281,7 +281,7 @@ def pysparklingIntegTest() {
 
 def publishNightly(){
     return { config ->
-        stage ('Nightly: Publishing Artifacts to S3- ' + config.backendMode){
+        stage ('Nightly: Publishing Artifacts to S3 - ' + config.backendMode){
             if (config.buildNightly.toBoolean() && config.uploadNightly.toBoolean()) {
 
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
