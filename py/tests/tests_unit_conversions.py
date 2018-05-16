@@ -31,6 +31,7 @@ import generic_test_utils
 import time
 import os
 from pyspark.mllib.linalg import *
+from pyspark.sql.types import *
 
 # Test of transformations from dataframe/rdd to h2o frame and from h2o frame back to dataframe
 class FrameTransformationsTest(unittest.TestCase):
@@ -263,6 +264,30 @@ class FrameTransformationsTest(unittest.TestCase):
     def test_unknown_type_conversion(self):
         with self.assertRaises(ValueError):
             self._hc.as_h2o_frame("unknown type")
+
+    def test_convert_empty_dataframe_empty_schema(self):
+        schema = StructType([])
+        empty = self._spark.createDataFrame(self._spark.sparkContext.emptyRDD(), schema)
+        hc = H2OContext.getOrCreate(self._spark)
+        fr = hc.as_h2o_frame(empty)
+        assert fr.nrows == 0
+        assert fr.ncols == 0
+
+    def test_convert_empty_dataframe_non_empty_schema(self):
+        schema = StructType([StructField("name", StringType()), StructField("age", IntegerType())])
+        empty = self._spark.createDataFrame(self._spark.sparkContext.emptyRDD(), schema)
+        hc = H2OContext.getOrCreate(self._spark)
+        fr = hc.as_h2o_frame(empty)
+        assert fr.nrows == 0
+        assert fr.ncols == 2
+
+    def test_convert_empty_rdd(self):
+        schema = StructType([])
+        empty = self._spark.createDataFrame(self._spark.sparkContext.emptyRDD(), schema)
+        hc = H2OContext.getOrCreate(self._spark)
+        fr = hc.as_h2o_frame(empty)
+        assert fr.nrows == 0
+        assert fr.ncols == 0
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_conversions_report")
