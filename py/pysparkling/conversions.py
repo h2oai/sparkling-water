@@ -39,8 +39,6 @@ class FrameConversions:
 
     @staticmethod
     def _as_h2o_frame_from_dataframe(h2oContext, dataframe, frame_name, full_cols=100):
-        if dataframe.count() == 0:
-            raise ValueError('Cannot transform empty H2OFrame')
         j_h2o_frame = h2oContext._jhc.asH2OFrame(dataframe._jdf, frame_name)
         j_h2o_frame_key = j_h2o_frame.key()
         return H2OFrame.from_java_h2o_frame(j_h2o_frame,j_h2o_frame_key, full_cols)

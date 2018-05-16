@@ -37,8 +37,8 @@ private[converters] object LabeledPointConverter extends Logging {
     // first convert vector to dense vector
     val rddDense = rdd.map(labeledPoint => new LabeledPoint(labeledPoint.label, labeledPoint.features.toDense))
     val numFeatures = rddDense.map(labeledPoint => labeledPoint.features.size)
-    val maxNumFeatures = numFeatures.max()
-    val minNumFeatures = numFeatures.min()
+    val maxNumFeatures = if (numFeatures.isEmpty()) 0 else numFeatures.max()
+    val minNumFeatures = if (numFeatures.isEmpty()) 0 else numFeatures.min()
     if (minNumFeatures < maxNumFeatures) {
       // Features vectors of different sizes, filling missing with n/a
       logWarning("WARNING: Converting RDD[LabeledPoint] to H2OFrame where features vectors have different size, filling missing with n/a")

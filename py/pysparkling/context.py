@@ -6,6 +6,7 @@ from h2o.frame import H2OFrame
 from pysparkling.initializer import Initializer
 from pysparkling.conf import H2OConf
 import h2o
+from pyspark.sql.types import *
 from pysparkling.conversions import FrameConversions as fc
 import warnings
 import atexit
@@ -54,6 +55,7 @@ def _monkey_patch_H2OFrame(hc):
     H2OFrame.from_java_h2o_frame = from_java_h2o_frame
     H2OFrame.get_java_h2o_frame = get_java_h2o_frame
 
+
 def _is_of_simple_type(rdd):
     if not isinstance(rdd, RDD):
         raise ValueError('rdd is not of type pyspark.rdd.RDD')
@@ -65,10 +67,11 @@ def _is_of_simple_type(rdd):
     else:
         type_checks = (str, int, bool, long, float)
 
-    if isinstance(rdd.first(), type_checks):
+    if not rdd.isEmpty() and isinstance(rdd.first(), type_checks):
         return True
     else:
         return False
+
 
 def _get_first(rdd):
     if rdd.isEmpty():
@@ -240,6 +243,10 @@ class H2OContext(object):
         """
         if isinstance(dataframe, DataFrame):
             return fc._as_h2o_frame_from_dataframe(self, dataframe, framename, full_cols)
+        elif isinstance(dataframe, RDD) and dataframe.isEmpty():
+            schema = StructType([])
+            empty = self._spark_session.createDataFrame(self._spark_session.sparkContext.emptyRDD(), schema)
+            return fc._as_h2o_frame_from_dataframe(self, empty, framename, full_cols)
         elif isinstance(dataframe, RDD):
             # First check if the type T in RDD[T] is one of the python "primitive" types
             # String, Boolean, Int and Double (Python Long is converted to java.lang.BigInteger)

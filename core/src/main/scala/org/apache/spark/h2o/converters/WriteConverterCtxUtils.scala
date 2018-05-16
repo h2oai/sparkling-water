@@ -98,19 +98,21 @@ object WriteConverterCtxUtils {
     val fr = new H2OFrame(finalizeFrame(keyName, res, types))
 
     if (Log.isLoggingFor("DEBUG")) {
-      Log.debug("Number of chunks on frame: " + fr.anyVec.nChunks)
-      val nodes = mutable.Map.empty[H2ONode, Int]
-      (0 until fr.anyVec().nChunks()).foreach { i =>
-        val home = fr.anyVec().chunkKey(i).home_node()
-        if (!nodes.contains(home)) {
-          nodes += (home -> 0)
+      if (!fr.vecs().isEmpty) {
+        Log.debug("Number of chunks on frame: " + fr.anyVec.nChunks)
+        val nodes = mutable.Map.empty[H2ONode, Int]
+        (0 until fr.anyVec().nChunks()).foreach { i =>
+          val home = fr.anyVec().chunkKey(i).home_node()
+          if (!nodes.contains(home)) {
+            nodes += (home -> 0)
+          }
+          nodes(home) = nodes(home) + 1
         }
-        nodes(home) = nodes(home) + 1
-      }
-      Log.debug("Frame distributed on nodes:")
-      nodes.foreach {
-        case (node, n) =>
-          Log.debug(node + ": " + n + " chunks.")
+        Log.debug("Frame distributed on nodes:")
+        nodes.foreach {
+          case (node, n) =>
+            Log.debug(node + ": " + n + " chunks.")
+        }
       }
     }
 
