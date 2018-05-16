@@ -140,7 +140,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Empty RDD to H2O frame, String type"){
+  test("Empty RDD to H2O frame, Boolean type"){
     val rdd = sc.parallelize(Array.empty[Boolean])
     val fr = hc.asH2OFrame(rdd)
 
