@@ -147,12 +147,15 @@ object H2OSchemaUtils {
   def collectElemStartPositions(maxElemSizes: Array[Int]): Array[Int] = {
     // empty array filled with zeros
     val startPositions = Array.ofDim[Int](maxElemSizes.length)
-    startPositions(0) = 0
-
-    (1 until maxElemSizes.length).foreach { idx =>
-      startPositions(idx) = startPositions(idx - 1) + maxElemSizes(idx - 1)
+    if(maxElemSizes.length == 0){
+      startPositions
+    }else {
+      startPositions(0) = 0
+      (1 until maxElemSizes.length).foreach { idx =>
+        startPositions(idx) = startPositions(idx - 1) + maxElemSizes(idx - 1)
+      }
+      startPositions
     }
-    startPositions
   }
 
   /**
