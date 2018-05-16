@@ -57,6 +57,24 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     h2oFrame.delete()
   }
 
+  test("Convert Empty dataframe, empty schema"){
+    val schema = StructType(Seq())
+    val empty = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], schema)
+    val fr = hc.asH2OFrame(empty)
+
+    assert(fr.numCols() == 0)
+    assert(fr.numRows() == 0)
+  }
+
+  test("Convert Empty dataframe, non-empty schema"){
+    val schema = StructType(Seq(StructField("name", StringType), StructField("age", IntegerType)))
+    val empty = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], schema)
+    val fr = hc.asH2OFrame(empty)
+
+    assert(fr.numCols() == 2)
+    assert(fr.numRows() == 0)
+  }
+
   // H2OFrame to DataFrame[T] JUnits
   test("PUBDEV-766 H2OFrame[T_ENUM] to DataFrame[StringType]") {
     val fname: String = "testEnum.hex"
