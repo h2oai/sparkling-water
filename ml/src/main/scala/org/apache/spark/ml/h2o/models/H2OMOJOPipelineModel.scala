@@ -57,17 +57,16 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
     r: Row =>
       val m = getOrCreateModel()
       val builder = m.getInputFrameBuilder
-      val data = r.getValuesMap[Any](names).filter{case (_, v) => v != null}.values.toArray.map(_.toString).zip(r.getValuesMap[Any](names).keys)
       val rowBuilder = builder.getMojoRowBuilder
-
-      data.foreach {
-        case (colData, colName) =>
-          rowBuilder.setValue(colName, colData)
+      val filtered = r.getValuesMap[Any](names).filter{case (n, _) => m.getInputMeta.contains(n) }
+      filtered.foreach{
+        case (colName, colData) =>  rowBuilder.setValue(colName.toString, if (colData == null) null else colData.toString)
       }
+
       builder.addRow(rowBuilder)
       val output = m.transform(builder.toMojoFrame)
       val predictions = output.getColumnNames.zipWithIndex.map { case (_, i) =>
-        val predictedRows =output.getColumnData(i).asInstanceOf[Array[_]]
+        val predictedRows = output.getColumnData(i).asInstanceOf[Array[_]]
         if (predictedRows.length != 1) {
           throw new RuntimeException("Invalid state, we predict on each row by row, independently at this moment.")
         }
