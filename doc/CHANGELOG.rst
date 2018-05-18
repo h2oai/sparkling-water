@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+v2.2.15 (2018-05-18)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/15/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/15/index.html>`__
+
+-  Bug
+        
+   -  `SW-836 <https://0xdata.atlassian.net/browse/SW-836>`__ - Add support for converting empty dataframe/RDD in Python and Scala to H2OFrame
+   -  `SW-841 <https://0xdata.atlassian.net/browse/SW-841>`__ - Remove withCustomCommitsState in pipelines as it&#39;s now duplicating Github 
+   -  `SW-843 <https://0xdata.atlassian.net/browse/SW-843>`__ - Fix data obtaining for mojo pipeline
+   -  `SW-844 <https://0xdata.atlassian.net/browse/SW-844>`__ - Upgrade Mojo pipeline to 0.9.9
+                
+                                                    
 v2.2.14 (2018-05-15)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/14/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/14/index.html>`__
