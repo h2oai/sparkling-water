@@ -20,6 +20,7 @@ package org.apache.spark.ml.h2o.models
 import java.io._
 
 import ai.h2o.mojos.runtime.MojoPipeline
+import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.Since
@@ -56,6 +57,23 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
 
   case class Mojo2Prediction(preds: List[Double])
 
+  private def prepareBooleans(colType: Type, colData: Any): Any = {
+    if (colData == null) {
+      null
+    } else if (colType == Type.Bool) {
+      // expected is Bool, do nothing
+      colData
+    } else if (colType != Type.Bool && colType.isnumeric && colData.toString.toLowerCase() == "true") {
+      // expected is Numeric value, convert to number
+      1
+    } else if (colType != Type.Bool && colType.isnumeric && colData.toString.toLowerCase() == "false") {
+      0
+    } else {
+      colData
+    }
+
+  }
+
   private val modelUdf = (names: Array[String]) =>
     udf[Mojo2Prediction, Row] {
       r: Row =>
@@ -63,18 +81,34 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
         val builder = m.getInputFrameBuilder
         val rowBuilder = builder.getMojoRowBuilder
         val filtered = r.getValuesMap[Any](names).filter { case (n, _) => m.getInputMeta.contains(n) }
+
         filtered.foreach {
           case (colName, colData) =>
-            val data = if (colData == null) {
-              null
-            } else if (m.getInputMeta.getColumnType(colName).isnumeric && colData.toString.toLowerCase() == "true") {
-              1.toString
-            } else if (m.getInputMeta.getColumnType(colName).isnumeric && colData.toString.toLowerCase() == "false") {
-              0.toString
-            } else {
-              colData.toString
+            val prepared = prepareBooleans(m.getInputMeta.getColumnType(colName), colData)
+
+            prepared match {
+              case v: Boolean => rowBuilder.setBool(colName, v)
+              case v: Char => rowBuilder.setChar(colName, v)
+              case v: Byte => rowBuilder.setByte(colName, v)
+              case v: Short => rowBuilder.setShort(colName, v)
+              case v: Int => rowBuilder.setInt(colName, v)
+              case v: Long => rowBuilder.setLong(colName, v)
+              case v: Float => rowBuilder.setFloat(colName, v)
+              case v: Double => rowBuilder.setDouble(colName, v)
+              case v: String => if (m.getInputMeta.getColumnType(colName).isAssignableFrom(classOf[String])) {
+                // if String is expected, no need to do the parse
+                rowBuilder.setString(colName, v)
+              } else {
+                // some other type is expected, we need to perform the parse
+                rowBuilder.setValue(colName, v)
+              }
+              case v: java.sql.Timestamp => rowBuilder.setTimestamp(colName, v)
+              case v: java.sql.Date => rowBuilder.setDate(colName, v)
+              case null => rowBuilder.setValue(colName, null)
+              case v: Any =>
+                // Some other type, do the parse
+                rowBuilder.setValue(colName, v.toString)
             }
-            rowBuilder.setValue(colName.toString, data)
         }
 
         builder.addRow(rowBuilder)
