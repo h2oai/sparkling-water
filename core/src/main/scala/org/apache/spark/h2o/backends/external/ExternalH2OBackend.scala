@@ -61,7 +61,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     cmdToLaunch = cmdToLaunch ++ Seq[String](
       conf.YARNQueue.map("-Dmapreduce.job.queuename=" + _).getOrElse(""),
       s"-Dmapreduce.job.tags=${yarnAppTags}",
-      s"D-ai.h2o.args.config=sparkling-water-external",
+      s"-Dai.h2o.args.config=sparkling-water-external",
       "-Dmapreduce.framework.name=h2o-yarn", // use H2O's custom application Master
       "-nodes", conf.numOfExternalH2ONodes.get,
       "-notify", conf.clusterInfoFile.get,
