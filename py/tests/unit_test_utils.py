@@ -12,7 +12,6 @@ def get_default_spark_conf():
     conf = SparkConf(). \
         setAppName("pyunit-test"). \
         setMaster("local-cluster[3,1,2048]"). \
-        set("spark.ext.h2o.disable.ga","true"). \
         set("spark.driver.memory", "2g"). \
         set("spark.executor.memory", "2g"). \
         set("spark.ext.h2o.client.log.level", "DEBUG"). \

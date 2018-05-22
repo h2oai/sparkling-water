@@ -51,7 +51,6 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll {
 
   def defaultSparkConf = H2OConf.checkSparkConf({
     val conf = new SparkConf()
-      .set("spark.ext.h2o.disable.ga", "true")
       .set(SharedBackendConf.PROP_CLOUD_NAME._1,
         "sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + Math.abs(Random.nextInt()))
       .set("spark.driver.memory", "3G")

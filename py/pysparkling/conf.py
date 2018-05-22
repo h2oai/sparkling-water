@@ -52,14 +52,6 @@ class H2OConf(object):
         self._jconf.setNthreads(nthreads)
         return self
 
-    def set_ga_enabled(self):
-        self._jconf.setGAEnabled()
-        return self
-
-    def set_ga_disabled(self):
-        self._jconf.setGADisabled()
-        return self
-
     def set_repl_enabled(self):
         self._jconf.setReplEnabled()
         return self
@@ -374,9 +366,6 @@ class H2OConf(object):
 
     def nthreads(self):
         return self._jconf.nthreads()
-
-    def disable_ga(self):
-        return self._jconf.disableGA()
 
     def is_h2o_repl_enabled(self):
         return self._jconf.isH2OReplEnabled()

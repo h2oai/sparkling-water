@@ -100,9 +100,6 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       ++ addIfNotNull("-stacktrace_collector_interval", Some(conf.stacktraceCollectorInterval).filter(_ > 0).map(_.toString).orNull)
       ++ addIfNotNull("-nthreads", Some(conf.nthreads).filter(_ > 0).map(_.toString).orElse(conf.sparkConf.getOption("spark.executor.cores")).orNull)
       ++ addIfNotNull("-internal_security_conf", conf.sslConf.orNull)
-      // Append single boolean options
-      ++ Seq(("-ga_opt_out", conf.disableGA))
-      .filter(_._2).map(x => x._1)
     )
 
   def getLoginArgs(conf: H2OConf): Seq[String] = (

@@ -35,9 +35,6 @@ Configuration properties independent of selected backend
 |                                                    |                | Otherwise use H2O's default value      |
 |                                                    |                | |H2ONThreadsDefault|.                  |
 +----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.disable.ga``                       | ``true``       | Disable Google Analytics tracking for  |
-|                                                    |                | embedded H2O.                          |
-+----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.repl.enabled``                     | ``true``       | Decides whether H2O REPL is initiated  |
 |                                                    |                | or not.                                |
 +----------------------------------------------------+----------------+----------------------------------------+

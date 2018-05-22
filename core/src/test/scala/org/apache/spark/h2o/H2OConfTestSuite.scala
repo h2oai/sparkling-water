@@ -46,7 +46,6 @@ class H2OConfTestSuite extends FunSuite
       .set("spark.ext.h2o.client.network.mask", "127.0.0.1/32")
       .set("spark.ext.h2o.node.network.mask", "0.0.0.1/24")
       .set("spark.ext.h2o.nthreads", "7")
-      .set("spark.ext.h2o.disable.ga", "true")
       .set("spark.ext.h2o.client.web.port", "13321")
       .set("spark.ext.h2o.dummy.rdd.mul.factor", "2")
 
@@ -74,8 +73,7 @@ class H2OConfTestSuite extends FunSuite
     assert(conf.clientNetworkMask == Some("127.0.0.1/32"))
     assert(conf.nodeNetworkMask == Some("0.0.0.1/24"))
     assert(conf.nthreads == 7)
-    assert(conf.disableGA)
-    assert(conf.clientWebPort == 13321)
+G    assert(conf.clientWebPort == 13321)
     assert(conf.drddMulFactor == 2)
 
     resetSparkContext()
