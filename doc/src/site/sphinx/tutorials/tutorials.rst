@@ -20,6 +20,7 @@ How to...
 
    ssl
    ldap
+   kerberos
 
 
 **Frames Conversions and Creation**
