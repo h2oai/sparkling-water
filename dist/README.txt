@@ -6,5 +6,5 @@ This package contains:
                              open source license.
 Thanks,
 The H2O team
-www.0xdata.com
+www.h2o.ai
 
