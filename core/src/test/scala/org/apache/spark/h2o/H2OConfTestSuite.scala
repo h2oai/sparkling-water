@@ -73,7 +73,7 @@ class H2OConfTestSuite extends FunSuite
     assert(conf.clientNetworkMask == Some("127.0.0.1/32"))
     assert(conf.nodeNetworkMask == Some("0.0.0.1/24"))
     assert(conf.nthreads == 7)
-G    assert(conf.clientWebPort == 13321)
+    assert(conf.clientWebPort == 13321)
     assert(conf.drddMulFactor == 2)
 
     resetSparkContext()
