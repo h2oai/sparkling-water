@@ -33,7 +33,6 @@ trait SharedBackendConf {
   def backendClusterMode = sparkConf.get(PROP_BACKEND_CLUSTER_MODE._1, PROP_BACKEND_CLUSTER_MODE._2)
   def cloudName = sparkConf.getOption(PROP_CLOUD_NAME._1)
   def nthreads = sparkConf.getInt(PROP_NTHREADS._1, PROP_NTHREADS._2)
-  def disableGA = sparkConf.getBoolean(PROP_DISABLE_GA._1, PROP_DISABLE_GA._2)
   def isH2OReplEnabled = sparkConf.getBoolean(PROP_REPL_ENABLED._1, PROP_REPL_ENABLED._2)
   def scalaIntDefaultNum = sparkConf.getInt(PROP_SCALA_INT_DEFAULT_NUM._1, PROP_SCALA_INT_DEFAULT_NUM._2)
   def isClusterTopologyListenerEnabled = sparkConf.getBoolean(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1, PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._2)
@@ -89,9 +88,6 @@ trait SharedBackendConf {
 
   def setCloudName(cloudName: String) = set(PROP_CLOUD_NAME._1, cloudName)
   def setNthreads(numThreads: Int) = set(PROP_NTHREADS._1, nthreads.toString)
-
-  def setGAEnabled() = set(PROP_DISABLE_GA._1, true)
-  def setGADisabled() = set(PROP_DISABLE_GA._1, false)
 
   def setReplEnabled() = set(PROP_REPL_ENABLED._1, true)
   def setReplDisabled() = set(PROP_REPL_ENABLED._1, false)
@@ -169,9 +165,6 @@ object SharedBackendConf {
 
   /** Limit for number of threads used by H2O, default -1 means unlimited */
   val PROP_NTHREADS = ("spark.ext.h2o.nthreads", -1)
-
-  /** Disable GA tracking */
-  val PROP_DISABLE_GA = ("spark.ext.h2o.disable.ga", true)
 
   /** Enable/Disable Sparkling-Water REPL **/
   val PROP_REPL_ENABLED = ("spark.ext.h2o.repl.enabled", true)
