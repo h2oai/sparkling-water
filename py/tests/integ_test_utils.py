@@ -60,8 +60,6 @@ def launch(test_env, script_name, param=None):
     cmd_line.extend(["--master", test_env.spark_master])
     if test_env.spark_conf.has_key("spark.driver.memory"):
         cmd_line.extend(["--driver-memory", test_env.spark_conf.get("spark.driver.memory")])
-    # Disable GA collection by default
-    cmd_line.extend(["--conf", 'spark.ext.h2o.disable.ga=true'])
     # remove ".py" from cloud name
     cmd_line.extend(["--conf", 'spark.ext.h2o.cloud.name=sparkling-water-' + cloud_name])
     cmd_line.extend(["--conf", '"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=' + test_env.hdp_version+'"'])

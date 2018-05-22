@@ -31,8 +31,6 @@ trait IntegTestHelper extends BeforeAndAfterEach {
       "--verbose",
       "--master", env.sparkMaster) ++
       env.sparkConf.get("spark.driver.memory").map(m => Seq("--driver-memory", m)).getOrElse(Nil) ++
-      // Disable GA collection by default
-      Seq("--conf",  "spark.ext.h2o.disable.ga=true") ++
       Seq("--conf", s"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", s"spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
       Seq("--conf", s"spark.executor.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
