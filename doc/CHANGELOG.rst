@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+v2.3.5 (2018-05-23)
+-------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/5/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/5/index.html>`__
+
+-  Bug
+        
+   -  `SW-842 <https://0xdata.atlassian.net/browse/SW-842>`__ - Enforce system level properties in SW
+                
+-  Improvement
+        
+   -  `SW-845 <https://0xdata.atlassian.net/browse/SW-845>`__ - Upgrade H2O to 3.18.0.10
+   -  `SW-847 <https://0xdata.atlassian.net/browse/SW-847>`__ - Remove GA from Sparkling Water
+                
+                                
 v2.3.4 (2018-05-18)
 -------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/4/index.html>`__
