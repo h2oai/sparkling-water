@@ -24,7 +24,7 @@ RUN apt-get -q -y install wget git curl
 USER jenkins
 
 RUN cd /home/jenkins && \
-    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.3.0/spark-2.3.0-bin-hadoop2.7 && \
+    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.3.0/spark-2.3.0-bin-hadoop2.7.tgz  && \
     mkdir -p spark-2.3.0-bin-hadoop2.7 &&  \
     tar zxvf spark-2.3.0-bin-hadoop2.7.tgz -C spark-2.3.0-bin-hadoop2.7 --strip-components 1 && \
     rm -rf spark-2.3.0-bin-hadoop2.7.tgz
