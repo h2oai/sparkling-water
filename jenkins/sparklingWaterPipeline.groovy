@@ -49,7 +49,7 @@ def call(params, body) {
 }
 
 def withDocker(config, code) {
-    docker.image('opsh2oai/sparkling_water_tests:15').inside("--init --dns 172.16.0.200") {
+    docker.image('opsh2oai/sparkling_water_tests:16').inside("--init --dns 172.16.0.200") {
         code()
     }
 }

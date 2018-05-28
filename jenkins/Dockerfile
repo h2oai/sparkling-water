@@ -3,6 +3,9 @@ FROM ubuntu:16.04
 ARG JENKINS_UID='2117'
 ARG JENKINS_GID='2117'
 
+ENV LANG 'C.UTF-8'
+RUN locale
+
 # Add the Jenkins user
 RUN \
   groupadd -g ${JENKINS_GID} jenkins && \
@@ -31,11 +34,10 @@ RUN cd /home/jenkins && \
 
 ENV SPARK_HOME_2_3_0 /home/jenkins/spark-2.3.0-bin-hadoop2.7
 
-
 # Warm up Gradle caches
 ENV cd /home/jenkins && \
     git clone https://github.com/h2oai/sparkling-water.git && \
-    cd sparkling-water && \\
+    cd sparkling-water && \
     ./gradlew build -x check -x :sparkling-water-py:build && \
     cd .. && rm -rf sparkling-water
 
