@@ -23,7 +23,7 @@ RUN apt-get update && \
     apt-get install oracle-java8-set-default
 
 RUN apt-get -q -y install wget git curl gcc make
-RUN apt-get -q -y install zlib1g-dev
+RUN apt-get -q -y install zlib1g-dev bzip2 libreadline-dev libssl-dev
 # Install pyenv
 ENV HOME  /home/jenkins
 ENV PYENV_ROOT $HOME/.pyenv
@@ -34,7 +34,12 @@ RUN pyenv install 3.6.5
 RUN pyenv install 2.7.13
 RUN pyenv global 3.6.5
 RUN pyenv rehash
-
+RUN cd /home/jenkins && \
+    pyenv virtualenv 2.7.13 sparkling-water-2.7 && \
+    pip install future colorama request tabulate
+RUN cd /home/jenkins && \
+    pyenv virtualenv 3.6.3 sparkling-water-3.6 && \
+    pip install future colorama request tabulate
 
 
 USER jenkins

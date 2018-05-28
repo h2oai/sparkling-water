@@ -212,18 +212,34 @@ def unitTests() {
 
 def pyUnitTests() {
     return { config ->
-        stage('QA: Python Unit Tests - ' + config.backendMode) {
+        stage('QA: Python Unit Tests 2.7 - ' + config.backendMode) {
             withDocker(config) {
                 if (config.runPyUnitTests.toBoolean()) {
                     try {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
                             sh """
-                            # Run unit tests
+                            # Run unit tests on Py 2.7
+                            pyenv activate sparkling-water-2.7
                             ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
+                        }
+                    } finally {
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    }
+
+                }
+            }
+        }
+
+        stage('QA: Python Unit Tests 3.6 - ' + config.backendMode) {
+            withDocker(config) {
+                if (config.runPyUnitTests.toBoolean()) {
+                    try {
+                        withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
 
                             sh """
-                            # Run unit tests
+                            # Run unit tests on Py 3.6
+                            pyenv activate sparkling-water-3.6
                             ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
                         }
