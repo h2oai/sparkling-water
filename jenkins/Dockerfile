@@ -29,6 +29,9 @@ ENV HOME  /home/jenkins
 ENV PYENV_ROOT $HOME/.pyenv
 ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
 
+USER jenkins
+
+RUN echo -e 'eval "$(pyenv init -)"\nl"$(pyenv virtualenv-init -)"' >> /home/jenkins/.profile
 RUN cd /home/jenkins/ && git clone git://github.com/yyuu/pyenv.git .pyenv
 RUN pyenv install 3.6.5
 RUN pyenv install 2.7.13
@@ -44,8 +47,10 @@ RUN cd /home/jenkins && \
     pyenv virtualenv 3.6.5 sparkling-water-3.6 && \
     pip install future colorama request tabulate
 
+# Try
+RUN pyenv activate 2.7.13
 
-USER jenkins
+
 
 ###
 ###  Download Spark versions
