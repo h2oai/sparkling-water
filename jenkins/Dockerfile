@@ -1,5 +1,12 @@
 FROM ubuntu:16.04
 
+ARG JENKINS_UID='2117'
+ARG JENKINS_GID='2117'
+
+# Add the Jenkins user
+RUN \
+  groupadd -g ${JENKINS_GID} jenkins && \
+  adduser --uid ${JENKINS_UID} -gid ${JENKINS_GID} --disabled-password --gecos "" jenkins
 
 RUN apt-get update && \
     apt-get -q -y update && \
