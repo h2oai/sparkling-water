@@ -85,11 +85,8 @@ def prepareSparkEnvironment() {
                     """
                 } else {
                     sh """
-                    # Download Spark
-                    wget -q "http://mirrors.ocf.berkeley.edu/apache/spark/spark-${config.sparkVersion}/${env.SPARK}.tgz"
-                    mkdir -p "${env.SPARK_HOME}"
-                    tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
-                    rm -rf ${env.SPARK}.tgz
+
+                    cp -R ${SPARK_HOME_2_3_0} ${env.SPARK_HOME}
                     """
                 }
 
@@ -125,7 +122,7 @@ def prepareSparklingWaterEnvironment() {
                 // In case of nightly build, modify gradle.properties
                 if (config.buildNightly.toBoolean()) {
 
-                    def h2oNightlyBuildVersfion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
+                    def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
 
                     def h2oNightlyMajorVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/${h2oNightlyBuildVersion}/project_version").getText().trim()
                     h2oNightlyMajorVersion = h2oNightlyMajorVersion.substring(0, h2oNightlyMajorVersion.lastIndexOf('.'))
