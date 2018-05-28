@@ -41,7 +41,7 @@ RUN cd /home/jenkins && \
     pyenv virtualenv 2.7.13 sparkling-water-2.7 && \
     pip install future colorama request tabulate
 RUN cd /home/jenkins && \
-    pyenv virtualenv 3.6.3 sparkling-water-3.6 && \
+    pyenv virtualenv 3.6.5 sparkling-water-3.6 && \
     pip install future colorama request tabulate
 
 
