@@ -3,8 +3,8 @@
 
 
 docker.withRegistry("https://docker.h2o.ai") {
-    node('dX-hadoop') {
-        
+    node('docker && !mr-0xc8') {
+
         // Clean workspace
         sh 'rm -rf *'
         // Get Sparkling Water and save the scm environment variables
@@ -13,7 +13,7 @@ docker.withRegistry("https://docker.h2o.ai") {
         stage("Build Docker"){
             sh  """
                     cd jenkins
-                    docker build -t sparkling_water_2.3_${BUILD_NUMBER} .
+                    docker build -t sparkling_water_${BUILD_NUMBER} .
                 """
 
         }
