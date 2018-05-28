@@ -22,15 +22,14 @@ RUN apt-get update && \
     apt-get clean all && \
     apt-get install oracle-java8-set-default
 
-RUN apt-get -q -y install wget git curl gcc
+RUN apt-get -q -y install wget git curl gcc make
 
 # Install pyenv
-RUN cd /home/jenkins/ && git clone git://github.com/yyuu/pyenv.git .pyenv
-
 ENV HOME  /home/jenkins
 ENV PYENV_ROOT $HOME/.pyenv
 ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
 
+RUN cd /home/jenkins/ && git clone git://github.com/yyuu/pyenv.git .pyenv
 RUN pyenv install 3.6.5
 RUN pyenv install 2.7.13
 RUN pyenv install 3.6.0
