@@ -84,10 +84,9 @@ def prepareSparkEnvironment() {
                     cp -r ./dist/ ${env.SPARK_HOME}
                     """
                 } else {
-                    sh """
-
-                    cp -R ${env.SPARK_HOME_2_3_0} ${env.SPARK_HOME}
-                    """
+                    sh  """
+                        cp -R \${SPARK_HOME_2_3_0} ${env.SPARK_HOME}
+                        """
                 }
 
                 sh """
