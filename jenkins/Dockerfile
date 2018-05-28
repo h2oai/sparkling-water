@@ -23,7 +23,7 @@ RUN apt-get update && \
     apt-get install oracle-java8-set-default
 
 RUN apt-get -q -y install wget git curl gcc make
-RUN apt-get -q -y install zlib
+RUN apt-get -q -y install zlib1g-dev
 # Install pyenv
 ENV HOME  /home/jenkins
 ENV PYENV_ROOT $HOME/.pyenv
