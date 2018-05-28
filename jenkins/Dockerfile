@@ -24,9 +24,10 @@ RUN apt-get update && \
 
 RUN apt-get -q -y install wget git curl
 
-RUN add-apt-repository ppa:deadsnakes/ppa && apt install python3.6 && apt install python2.7
 
 RUN cd /home/jenkins && curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+
+RUN pyenv versions
 
 USER jenkins
 
