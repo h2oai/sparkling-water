@@ -49,7 +49,7 @@ def call(params, body) {
 }
 
 def withDocker(config, code) {
-    docker.image('opsh2oai/sparkling_water_tests:5').inside("--init --dns 172.16.0.200") {
+    docker.image('opsh2oai/sparkling_water_tests:6').inside("--init --dns 172.16.0.200") {
         code()
     }
 }
@@ -125,7 +125,7 @@ def prepareSparklingWaterEnvironment() {
                 // In case of nightly build, modify gradle.properties
                 if (config.buildNightly.toBoolean()) {
 
-                    def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
+                    def h2oNightlyBuildVersfion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
 
                     def h2oNightlyMajorVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/${h2oNightlyBuildVersion}/project_version").getText().trim()
                     h2oNightlyMajorVersion = h2oNightlyMajorVersion.substring(0, h2oNightlyMajorVersion.lastIndexOf('.'))

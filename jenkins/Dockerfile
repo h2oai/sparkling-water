@@ -13,4 +13,4 @@ RUN apt-get update && \
     apt-get install oracle-java8-set-default
 
 
-RUN apt-get -q -y install wget git
+RUN apt-get -q -y install wget git curl
