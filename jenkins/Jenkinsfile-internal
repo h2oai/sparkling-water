@@ -68,4 +68,3 @@ docker.withRegistry("https://docker.h2o.ai") {
             uploadNightly = "false"
         }
     }
-}
