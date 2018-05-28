@@ -24,9 +24,14 @@ RUN apt-get update && \
 
 RUN apt-get -q -y install wget git curl
 
+# Install pyenv
+RUN cd /home/jenkins && git clone https://github.com/pyenv/pyenv.git ~/.pyenv && \
+    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile && \
+    echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile && \
+    echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.bash_profile
 
-RUN cd /home/jenkins && curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
 RUN cd /home/jenkins && git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
+
 RUN pyenv versions
 
 USER jenkins
