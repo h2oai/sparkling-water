@@ -12,14 +12,14 @@ docker.withRegistry("https://docker.h2o.ai") {
         stage("Build Docker"){
             sh  """
                     cd jenkins
-                    docker build -t docker.h2o.ai/opsh2oai/sparkling_water_${BUILD_NUMBER} .
+                    docker build -t docker.h2o.ai/opsh2oai/sparkling_water_tests:${BUILD_NUMBER} .
                 """
 
         }
 
         stage("Publish Docker"){
             sh  """
-                docker push docker.h2o.ai/sparkling_water_tests
+                docker push docker.h2o.ai/sparkling_water_tests:${BUILD_NUMBER}
                 """
 
         }
