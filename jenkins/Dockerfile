@@ -25,7 +25,7 @@ RUN apt-get update && \
 RUN apt-get -q -y install wget git curl
 
 # Install pyenv
-RUN git clone git://github.com/yyuu/pyenv.git .pyenv
+RUN cd /home/jenkins/ && git clone git://github.com/yyuu/pyenv.git .pyenv
 RUN cd /home/jenkins && git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
 
 ENV HOME  /home/jenkins
