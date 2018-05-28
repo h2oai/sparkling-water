@@ -35,7 +35,7 @@ RUN cd /home/jenkins && \
 ENV SPARK_HOME_2_3_0 /home/jenkins/spark-2.3.0-bin-hadoop2.7
 
 # Warm up Gradle caches
-ENV cd /home/jenkins && \
+RUN cd /home/jenkins && \
     git clone https://github.com/h2oai/sparkling-water.git && \
     cd sparkling-water && \
     ./gradlew build -x check -x :sparkling-water-py:build && \
