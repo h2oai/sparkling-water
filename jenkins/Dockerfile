@@ -31,7 +31,9 @@ ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
 
 USER jenkins
 
-RUN echo -e 'eval "$(pyenv init -)"\nl"$(pyenv virtualenv-init -)"' >> /home/jenkins/.profile
+RUN echo -e 'eval "$(pyenv init -)"' >> /home/jenkins/.profile
+RUN echo -e 'eval "$(pyenv virtualenv-init -)"' >> /home/jenkins/.profile
+
 RUN cd /home/jenkins/ && git clone git://github.com/yyuu/pyenv.git .pyenv
 RUN pyenv install 3.6.5
 RUN pyenv install 2.7.13
