@@ -34,6 +34,9 @@ RUN pyenv install 3.6.5
 RUN pyenv install 2.7.13
 RUN pyenv global 3.6.5
 RUN pyenv rehash
+
+RUN /home/jenkins && git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
+
 RUN cd /home/jenkins && \
     pyenv virtualenv 2.7.13 sparkling-water-2.7 && \
     pip install future colorama request tabulate
@@ -44,13 +47,30 @@ RUN cd /home/jenkins && \
 
 USER jenkins
 
+###
+###  Download Spark versions
+###
 RUN cd /home/jenkins && \
     wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.3.0/spark-2.3.0-bin-hadoop2.6.tgz  && \
     mkdir -p spark-2.3.0-bin-hadoop2.6 &&  \
     tar zxvf spark-2.3.0-bin-hadoop2.6.tgz -C spark-2.3.0-bin-hadoop2.6 --strip-components 1 && \
     rm -rf spark-2.3.0-bin-hadoop2.6.tgz
 
+RUN cd /home/jenkins && \
+    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.6.tgz  && \
+    mkdir -p spark-2.2.1-bin-hadoop2.6 &&  \
+    tar zxvf spark-2.2.1-bin-hadoop2.6.tgz -C spark-2.2.1-bin-hadoop2.6 --strip-components 1 && \
+    rm -rf spark-2.2.1-bin-hadoop2.6.tgz
+ 
+RUN cd /home/jenkins && \
+    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.1.2/spark-2.1.2-bin-hadoop2.6.tgz  && \
+    mkdir -p spark-2.1.2-bin-hadoop2.6 &&  \
+    tar zxvf spark-2.1.2-bin-hadoop2.6.tgz -C spark-2.1.2-bin-hadoop2.6 --strip-components 1 && \
+    rm -rf spark-2.1.2-bin-hadoop2.6.tgz   
+    
 ENV SPARK_HOME_2_3_0 /home/jenkins/spark-2.3.0-bin-hadoop2.6
+ENV SPARK_HOME_2_2_1 /home/jenkins/spark-2.2.1-bin-hadoop2.6
+ENV SPARK_HOME_2_1_2 /home/jenkins/spark-2.1.2-bin-hadoop2.6
 
 # Warm up Gradle caches
 RUN cd /home/jenkins && \
