@@ -35,7 +35,7 @@ RUN pyenv install 2.7.13
 RUN pyenv global 3.6.5
 RUN pyenv rehash
 
-RUN /home/jenkins && git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
+RUN cd /home/jenkins && git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
 
 RUN cd /home/jenkins && \
     pyenv virtualenv 2.7.13 sparkling-water-2.7 && \
