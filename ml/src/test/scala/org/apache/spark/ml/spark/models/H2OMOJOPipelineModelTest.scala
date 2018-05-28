@@ -17,10 +17,15 @@
 
 package org.apache.spark.ml.spark.models
 
+import java.sql.{Date, Timestamp}
+import java.time.temporal.TemporalField
+
+import ai.h2o.mojos.runtime.utils.MojoDateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -105,6 +110,48 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     preds.collect()
   }
 
+
+  test("Date column conversion from Spark to Mojo"){
+    val data = List(Date.valueOf("2016-09-30"))
+
+    val sparkDf = spark.createDataFrame(
+      sc.parallelize(data).map(Row(_)),
+      StructType(Seq(StructField("date", DataTypes.DateType)))
+    )
+
+
+    val r = sparkDf.first()
+    val dt = MojoDateTime.parse(r.getDate(0).toString)
+
+    assert(dt.getYear == 2016)
+    assert(dt.getMonth == 9)
+    assert(dt.getDay == 30)
+    assert(dt.getHour == 0)
+    assert(dt.getMinute == 0)
+    assert(dt.getSecond == 0)
+  }
+
+  test("Timestamp column conversion from Spark to Mojo"){
+    val ts = new Timestamp(1526891676)
+
+    val data = List(ts)
+
+    val sparkDf = spark.createDataFrame(
+      sc.parallelize(data).map(Row(_)),
+      StructType(Seq(StructField("timestamp", DataTypes.TimestampType)))
+    )
+
+
+    val r = sparkDf.first()
+    val dt = MojoDateTime.parse(r.getTimestamp(0).toString)
+
+    assert(dt.getYear == ts.toLocalDateTime.getYear)
+    assert(dt.getMonth == ts.toLocalDateTime.getMonth.getValue)
+    assert(dt.getDay == ts.toLocalDateTime.getDayOfMonth)
+    assert(dt.getHour == ts.toLocalDateTime.getHour)
+    assert(dt.getMinute == ts.toLocalDateTime.getMinute)
+    assert(dt.getSecond == ts.toLocalDateTime.getSecond)
+  }
 
   private def assertPredictedValues(preds: Array[Row]): Unit = {
     assert(preds(0).getSeq[String](0).head == "65.36320409515132")
