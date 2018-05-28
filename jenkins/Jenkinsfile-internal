@@ -10,7 +10,8 @@ properties(
                                         choices: '2.3.0',
                                         description: 'Version of Spark used for testing.'),
 
-                                booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit and pyunit tests'),
+                                booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit tests'),
+                                booleanParam(name: 'runPyUnitTests', defaultValue: true, description: 'Run PyUnit tests'),
                                 booleanParam(name: 'runLocalIntegTests', defaultValue: true, description: 'Run local integration tests'),
                                 booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests'),
                                 booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run integration tests'),
@@ -53,6 +54,7 @@ docker.withRegistry("https://docker.h2o.ai") {
         pipeline(params) { p ->
             sparkVersion = "${p.sparkVersion}"
             runUnitTests = "${p.runUnitTests}"
+            runPyUnitTests = "${p.runPyUnitTests}"
             runLocalIntegTests = "${p.runLocalIntegTests}"
             runScriptTests = "${p.runScriptTests}"
             runIntegTests = "${p.runIntegTests}"

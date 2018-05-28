@@ -32,6 +32,7 @@ def call(params, body) {
                         prepareSparklingWaterEnvironment()(config)
                         buildAndLint()(config)
                         unitTests()(config)
+                        pyUnitTests()(config)
                         localIntegTest()(config)
                         scriptsTest()(config)
                         node("dX-hadoop") {
@@ -191,7 +192,7 @@ def unitTests() {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
                             sh """
                             # Run unit tests
-                            ${getGradleCommand(config)} test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                            ${getGradleCommand(config)} test -x :sparkling-water-py:test integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
                         }
                     } finally {
@@ -200,6 +201,34 @@ def unitTests() {
                         junit 'ml/build/test-results/test/*.xml'
                         testReport 'core/build/reports/tests/test', 'Core Unit tests'
                         testReport 'ml/build/reports/tests/test', "ML Unit Tests"
+                    }
+
+                }
+            }
+        }
+
+    }
+}
+
+def pyUnitTests() {
+    return { config ->
+        stage('QA: Python Unit Tests - ' + config.backendMode) {
+            withDocker(config) {
+                if (config.runPyUnitTests.toBoolean()) {
+                    try {
+                        withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
+                            sh """
+                            # Run unit tests
+                            ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                            """
+
+                            sh """
+                            # Run unit tests
+                            ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                            """
+                        }
+                    } finally {
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
                     }
 
                 }

@@ -24,15 +24,19 @@ RUN apt-get update && \
 
 RUN apt-get -q -y install wget git curl
 
+RUN add-apt-repository ppa:deadsnakes/ppa && apt install python3.6 && apt install python2.7
+
+RUN cd /home/jenkins && curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+
 USER jenkins
 
 RUN cd /home/jenkins && \
-    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.3.0/spark-2.3.0-bin-hadoop2.7.tgz  && \
-    mkdir -p spark-2.3.0-bin-hadoop2.7 &&  \
-    tar zxvf spark-2.3.0-bin-hadoop2.7.tgz -C spark-2.3.0-bin-hadoop2.7 --strip-components 1 && \
-    rm -rf spark-2.3.0-bin-hadoop2.7.tgz
+    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.3.0/spark-2.3.0-bin-hadoop2.6.tgz  && \
+    mkdir -p spark-2.3.0-bin-hadoop2.6 &&  \
+    tar zxvf spark-2.3.0-bin-hadoop2.6.tgz -C spark-2.3.0-bin-hadoop2.6 --strip-components 1 && \
+    rm -rf spark-2.3.0-bin-hadoop2.6.tgz
 
-ENV SPARK_HOME_2_3_0 /home/jenkins/spark-2.3.0-bin-hadoop2.7
+ENV SPARK_HOME_2_3_0 /home/jenkins/spark-2.3.0-bin-hadoop2.6
 
 # Warm up Gradle caches
 RUN cd /home/jenkins && \
