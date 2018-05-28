@@ -31,8 +31,6 @@ ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
 
 USER jenkins
 
-RUN echo -e 'eval "$(pyenv init -)"' >> /home/jenkins/.profile
-RUN echo -e 'eval "$(pyenv virtualenv-init -)"' >> /home/jenkins/.profile
 
 RUN cd /home/jenkins/ && git clone git://github.com/yyuu/pyenv.git .pyenv
 RUN pyenv install 3.6.5
@@ -41,6 +39,12 @@ RUN pyenv global 3.6.5
 RUN pyenv rehash
 
 RUN cd /home/jenkins && git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
+
+RUN set -ex && \
+    echo 'eval "$(pyenv init -)"' >> $HOME/.bashrc && \
+    echo 'eval "$(pyenv virtualenv-init -)"' >> $HOME/.bashrc && \
+    /bin/bash -c 'source $HOME/.bashrc'
+
 
 RUN cd /home/jenkins && \
     pyenv virtualenv 2.7.13 sparkling-water-2.7 && \

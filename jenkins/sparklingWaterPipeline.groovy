@@ -39,9 +39,7 @@ def call(params, body) {
                             integTest()(config)
                             pysparklingIntegTest()(config)
                         }
-                        docker.image('opsh2oai/sparkling_water_tests:5').inside("--init --dns 172.16.0.200") {
-                            publishNightly()(config)
-                        }
+                        publishNightly()(config)
                     }
                 }
             }
