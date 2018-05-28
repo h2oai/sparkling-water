@@ -1,0 +1,26 @@
+#!/usr/bin/groovy
+@Library('test-shared-library') _
+
+
+docker.withRegistry("https://docker.h2o.ai") {
+    node('dX-hadoop') {
+
+        stage
+        // Clean workspace
+        sh 'rm -rf *'
+        // Get Sparkling Water and save the scm environment variables
+        checkout scm
+
+        stage("Build Docker"){
+            sh  """
+                    cd jenkins
+                    docker build -t sparkling_water_2.3_${BUILD_NUMBER} .
+                """
+
+        }
+
+        stage("Publish Docker"){
+
+        }
+    }
+}
