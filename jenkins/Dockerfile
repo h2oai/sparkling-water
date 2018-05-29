@@ -41,9 +41,9 @@ RUN pyenv rehash
 RUN cd /home/jenkins && git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
 
 RUN set -ex && \
-    echo 'eval "$(pyenv init -)"' >> $HOME/.bashrc && \
-    echo 'eval "$(pyenv virtualenv-init -)"' >> $HOME/.bashrc && \
-    /bin/bash -c 'source $HOME/.bashrc'
+    echo 'eval "$(pyenv init -)"' >> $HOME/.prepare_venv.sh && \
+    echo 'eval "$(pyenv virtualenv-init -)"' >> $HOME/.prepare_venv.sh && \
+    chmod +x $HOME/.prepare_venv.sh
 
 
 RUN cd /home/jenkins && \

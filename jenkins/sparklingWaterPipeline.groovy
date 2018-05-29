@@ -16,7 +16,6 @@ def call(params, body) {
             "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
             "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
             "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}",
-
             // Properties used in case we are building against specific H2O version
             "BUILD_HADOOP=true",
             "H2O_TARGET=${config.driverHadoopVersion}",
@@ -48,7 +47,7 @@ def call(params, body) {
 }
 
 def withDocker(config, code) {
-    docker.image('opsh2oai/sparkling_water_tests:41').inside("--init --dns 172.16.0.200") {
+    docker.image('opsh2oai/sparkling_water_tests:' + config.dockerVersion).inside("--init --dns 172.16.0.200") {
         code()
     }
 }
@@ -237,7 +236,8 @@ def pyUnitTests() {
 
                             sh """
                             # Run unit tests on Py 3.6
-                            pyenv activate sparkling-water-3.6
+                            ./prepare-venv.sh
+                             pyenv activate sparkling-water-3.6
                             ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
                         }
