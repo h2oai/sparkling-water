@@ -70,7 +70,7 @@ docker.withRegistry("https://docker.h2o.ai") {
             backendMode = "internal"
             buildNightly = "false"
             uploadNightly = "false"
-            dockerVersion = "56"
+            dockerVersion = "57"
             hadoopDockerVersion = "1"
         }
     }
