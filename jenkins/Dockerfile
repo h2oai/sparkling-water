@@ -48,11 +48,11 @@ USER jenkins
 
 RUN \
     virtualenv -p python2.7 /envs/h2o_env_python2.7 && \
-    source /envs/h2o_env_python2.7/bin/activate && \
+    . /envs/h2o_env_python2.7/bin/activate && \
     pip install future colorama request tabulate && \
     deactivate && \
     virtualenv -p python3.6 /envs/h2o_env_python3.6 && \
-    source /envs/h2o_env_python3.6/bin/activate && \
+    . /envs/h2o_env_python3.6/bin/activate && \
     pip install future colorama request tabulate && \
     deactivate
 
