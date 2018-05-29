@@ -199,7 +199,7 @@ def unitTests() {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
                             sh """
                             # Run unit tests
-                            ${getGradleCommand(config)} test -x :sparkling-water-py:test integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                            ${getGradleCommand(config)} test -x :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
                         }
                     } finally {
