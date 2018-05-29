@@ -237,7 +237,7 @@ def pyUnitTests() {
 
                             sh """
                             # Run unit tests on Py 3.6
-                             /home/jenkins/.prepare_venv.sh
+                             . /home/jenkins/.prepare_venv.sh
                              pyenv activate sparkling-water-3.6
                             ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
