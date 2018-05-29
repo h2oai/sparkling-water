@@ -216,7 +216,7 @@ def pyUnitTests() {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
                             sh """
                             # Run unit tests on Py 2.7
-                            /home/jenkins/prepare-venv.sh
+                            /home/jenkins/.prepare_venv.sh
                             pyenv activate sparkling-water-2.7
                             ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
@@ -237,7 +237,7 @@ def pyUnitTests() {
 
                             sh """
                             # Run unit tests on Py 3.6
-                             /home/jenkins/prepare-venv.sh
+                             /home/jenkins/.prepare_venv.sh
                              pyenv activate sparkling-water-3.6
                             ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
@@ -261,9 +261,7 @@ def localIntegTest() {
                     try {
                         sh """
                         # Run local integration tests
-                        ${getGradleCommand(config)} integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${
-                            config.backendMode
-                        } -PexternalBackendStartMode=auto
+                        ${getGradleCommand(config)} integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                         """
                     } finally {
                         arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
