@@ -35,10 +35,12 @@ def call(params, body) {
                         localIntegTest()(config)
                         localPyIntegTests()(config)
                         scriptsTest()(config)
+                        // Run Integration tests on YARN
                         node("dX-hadoop") {
                             integTest()(config)
-                            pysparklingIntegTest()(config)
                         }
+                        pysparklingIntegTest()(config)
+
                         publishNightly()(config)
                     }
                 }
@@ -47,8 +49,11 @@ def call(params, body) {
     }
 }
 
-def withDocker(config, code) {
-    docker.image('opsh2oai/sparkling_water_tests:' + config.dockerVersion).inside("--init --dns 172.16.0.200") {
+def localDockerImage = 'opsh2oai/sparkling_water_tests:' + config.dockerVersion
+def hadoopDocker = "TODO"
+
+def withDocker(config, image, image, code) {
+    docker.image(image).inside("--init --dns 172.16.0.200") {
         code()
     }
 }
@@ -72,7 +77,7 @@ def getGradleCommand(config) {
 def prepareSparkEnvironment() {
     return { config ->
         stage('Prepare Spark Environment - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker(config, localDockerImage) {
                 if (config.buildAgainstSparkBranch.toBoolean()) {
                     // build spark
                     sh """
@@ -110,7 +115,7 @@ def prepareSparkEnvironment() {
 def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker(config, localDockerImage) {
                 // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
                 // with release notes which can mess up the build
                 sh """
@@ -167,7 +172,7 @@ def prepareSparklingWaterEnvironment() {
 def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker(config, localDockerImage) {
                 withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
                     sh """
                     # Build
@@ -184,7 +189,7 @@ def buildAndLint() {
 def unitTests() {
     return { config ->
         stage('QA: Unit Tests - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker(config, localDockerImage) {
                 if (config.runUnitTests.toBoolean()) {
                     try {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
@@ -211,7 +216,7 @@ def unitTests() {
 def pyUnitTests() {
     return { config ->
         stage('QA: Python Unit Tests 2.7 - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker(config, localDockerImage) {
                 if (config.runPyUnitTests.toBoolean()) {
                     try {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
@@ -230,7 +235,7 @@ def pyUnitTests() {
         }
 
         stage('QA: Python Unit Tests 3.6 - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker(config, localDockerImage) {
                 if (config.runPyUnitTests.toBoolean()) {
                     try {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
@@ -255,7 +260,7 @@ def pyUnitTests() {
 def localIntegTest() {
     return { config ->
         stage('QA: Local Integration Tests - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker(config, localDockerImage) {
                 if (config.runLocalIntegTests.toBoolean()) {
                     try {
                         sh """
@@ -277,7 +282,7 @@ def localIntegTest() {
 def localPyIntegTest() {
     return { config ->
         stage('QA: Local Py Integration Tests 2.7 - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker(config, localDockerImage) {
                 if (config.runPyLocalIntegTests.toBoolean()) {
                     try {
                         sh """
@@ -296,7 +301,7 @@ def localPyIntegTest() {
         }
 
         stage('QA: Local Py Integration Tests 3.6 - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker(config, localDockerImage) {
                 if (config.runPyLocalIntegTests.toBoolean()) {
                     try {
                         sh """
@@ -321,7 +326,7 @@ def localPyIntegTest() {
 def scriptsTest() {
     return { config ->
         stage('QA: Script Tests - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker(config, localDockerImage) {
                 if (config.runScriptTests.toBoolean()) {
                     try {
                         sh """
@@ -362,15 +367,21 @@ def integTest() {
 def pysparklingIntegTest() {
     return { config ->
         stage('QA: PySparkling Integration Tests - ' + config.backendMode) {
-            if (config.runPySparklingIntegTests.toBoolean()) {
-                try {
-                    sh """
-                         ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+            withDocker(config, localDockerImage) {
+                if (config.runPySparklingIntegTests.toBoolean()) {
+                    try {
+                        sh """
+                         ${getGradleCommand(config)} integTestPython -PbackendMode=${
+                            config.backendMode
+                        } -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${
+                            env.MASTER
+                        } -PsparkHome=${env.SPARK_HOME} -x check
                          # echo 'Archiving artifacts after PySparkling Integration test'
                         """
-                } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    } finally {
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
 
+                    }
                 }
             }
         }
@@ -380,7 +391,7 @@ def pysparklingIntegTest() {
 def publishNightly() {
     return { config ->
         stage('Nightly: Publishing Artifacts to S3 - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker(config, localDockerImage) {
                 if (config.buildNightly.toBoolean() && config.uploadNightly.toBoolean()) {
 
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
