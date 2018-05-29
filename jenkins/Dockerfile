@@ -11,6 +11,10 @@ RUN \
   groupadd -g ${JENKINS_GID} jenkins && \
   adduser --uid ${JENKINS_UID} -gid ${JENKINS_GID} --disabled-password --gecos "" jenkins
 
+RUN \
+  add-apt-repository -y ppa:deadsnakes && \
+  apt-get update -q -y
+  
 RUN apt-get update && \
     apt-get -q -y update && \
     apt-get -y install software-properties-common && \
@@ -22,37 +26,33 @@ RUN apt-get update && \
     apt-get clean all && \
     apt-get install oracle-java8-set-default
 
-RUN apt-get -q -y install wget git curl gcc make
-RUN apt-get -q -y install zlib1g-dev bzip2 libreadline-dev libssl-dev
-# Install pyenv
-ENV HOME  /home/jenkins
-ENV PYENV_ROOT $HOME/.pyenv
-ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
+# Add repositories
+
+
+RUN apt-get -q -y install wget git curl && \
+    apt-get -y install python2.7 python2.7-dev && \
+    apt-get -y install python3.6 python3.6-dev && \
+
+RUN echo "###### Creating Virtualenv for Python 2.7 ######" && \
+  virtualenv -p python2.7 /envs/h2o_env_python2.7 && \
+  chmod a+w -R /envs/h2o_env_python2.7
+
+RUN echo "###### Creating Virtualenv for Python 3.6 ######" && \
+  virtualenv -p python3.6 /envs/h2o_env_python3.6 && \
+  chmod a+w -R /envs/h2o_env_python3.6
+
+
+RUN echo "###### Installing dependencies for Python 2.7 ######" && \
+    source /envs/h2o_env_python2.7/bin/activate
+    pip install future colorama request tabulate
+    deactivate
+
+RUN echo "###### Installing dependencies for Python 3.6 ######" && \
+    source /envs/h2o_env_python3.6/bin/activate
+    pip install future colorama request tabulate
+    deactivate
 
 USER jenkins
-
-
-RUN cd /home/jenkins/ && git clone git://github.com/yyuu/pyenv.git .pyenv
-RUN pyenv install 3.6.5
-RUN pyenv install 2.7.13
-RUN pyenv global 3.6.5
-RUN pyenv rehash
-
-RUN cd /home/jenkins && git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
-
-RUN set -ex && \
-    echo 'eval "$(pyenv init -)"' >> $HOME/.prepare_venv.sh && \
-    echo 'eval "$(pyenv virtualenv-init -)"' >> $HOME/.prepare_venv.sh && \
-    chmod +x $HOME/.prepare_venv.sh
-
-
-RUN cd /home/jenkins && \
-    pyenv virtualenv 2.7.13 sparkling-water-2.7 && \
-    pip install future colorama request tabulate
-RUN cd /home/jenkins && \
-    pyenv virtualenv 3.6.5 sparkling-water-3.6 && \
-    pip install future colorama request tabulate
-
 
 
 ###
