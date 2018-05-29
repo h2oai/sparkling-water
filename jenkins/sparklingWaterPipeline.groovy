@@ -56,7 +56,7 @@ def withDocker(config, code) {
 }
 
 def withHadoopDocker(config, code) {
-    docker.image('TODO').inside("--init --dns 172.16.0.200") {
+    docker.image('opsh2oai/sparkling_water_tests:' + config.hadoopDockerVersion).inside("--init --dns 172.16.0.200") {
         code()
     }
 }
@@ -371,21 +371,17 @@ def integTest() {
 
 def pysparklingIntegTest() {
     return { config ->
-        stage('QA: PySparkling Integration Tests - ' + config.backendMode) {
-            withDocker(config) {
+        stage('QA: PySparkling Integration Tests 2.7 HDP 2.2 - ' + config.backendMode) {
+            withHadoopDocker(config) {
                 if (config.runPySparklingIntegTests.toBoolean()) {
                     try {
                         sh """
-                         ${getGradleCommand(config)} integTestPython -PbackendMode=${
-                            config.backendMode
-                        } -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${
-                            env.MASTER
-                        } -PsparkHome=${env.SPARK_HOME} -x check
+                         . /envs/h2o_env_python2.7/bin/activate
+                         ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
                          # echo 'Archiving artifacts after PySparkling Integration test'
                         """
                     } finally {
                         arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
-
                     }
                 }
             }

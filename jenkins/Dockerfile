@@ -49,11 +49,11 @@ USER jenkins
 RUN \
     virtualenv -p python2.7 /envs/sparkling-water2.7 && \
     . /envs/sparkling-water2.7/bin/activate && \
-    pip install future colorama requests tabulate && \
+    pip install future colorama requests tabulate numpy && \
     deactivate && \
     virtualenv -p python3.6 /envs/sparkling-water3.6 && \
     . /envs/sparkling-water3.6/bin/activate && \
-    pip install future colorama requests tabulate && \
+    pip install future colorama requests tabulate numpy && \
     deactivate
 
 

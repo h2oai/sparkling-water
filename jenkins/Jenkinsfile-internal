@@ -71,6 +71,7 @@ docker.withRegistry("https://docker.h2o.ai") {
             buildNightly = "false"
             uploadNightly = "false"
             dockerVersion = "56"
+            hadoopDockerVersion = "1"
         }
     }
 }
