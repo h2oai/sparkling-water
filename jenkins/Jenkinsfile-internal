@@ -68,7 +68,7 @@ docker.withRegistry("https://docker.h2o.ai") {
             backendMode = "internal"
             buildNightly = "false"
             uploadNightly = "false"
-            dockerVersion = "54"
+            dockerVersion = "55"
         }
     }
 }
