@@ -36,7 +36,7 @@ node('dX-hadoop') {
         buildNightly = "true"
         uploadNightly = "true"
         dockerVersion = "57"
-        hadoopDockerVersion = "3"
+        hadoopDockerVersion = "4"
 
     }
 }
