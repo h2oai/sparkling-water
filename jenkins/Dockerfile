@@ -27,7 +27,7 @@ RUN \
     echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" > /etc/apt/sources.list.d/webupd8team-java-trusty.list && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886 && \
     apt-get update -q -y && \
-    apt-get install -y --no-install-recommends oracle-java8-installer oracle-java8-set-default wget git curl python2.7 python2.7-dev python3.6 python3.6-dev python-virtualenv && \
+    apt-get install -y --no-install-recommends oracle-java8-installer oracle-java8-set-default wget git curl python2.7 python2.7-dev python3.6 python3.6-dev python-virtualenv virtualenv && \
     apt-get clean all
 
 ###
