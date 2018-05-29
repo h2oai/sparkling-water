@@ -287,7 +287,7 @@ def localPyIntegTest() {
     return { config ->
         stage('QA: Local Py Integration Tests 2.7 - ' + config.backendMode) {
             withDocker(config) {
-                if (config.runPyLocalIntegTests.toBoolean()) {
+                if (config.runLocalPyIntegTests.toBoolean()) {
                     try {
                         sh """
                         # Run local integration tests
@@ -306,7 +306,7 @@ def localPyIntegTest() {
 
         stage('QA: Local Py Integration Tests 3.6 - ' + config.backendMode) {
             withDocker(config) {
-                if (config.runPyLocalIntegTests.toBoolean()) {
+                if (config.runLocalPyIntegTests.toBoolean()) {
                     try {
                         sh """
                         # Run local integration tests
