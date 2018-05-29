@@ -40,7 +40,6 @@ def call(params, body) {
                             integTest()(config)
                         }
                         pysparklingIntegTest()(config)
-
                         publishNightly()(config)
                     }
                 }
@@ -56,7 +55,7 @@ def withDocker(config, code) {
 }
 
 def withHadoopDocker(config, code) {
-    docker.image('opsh2oai/sparkling_water_tests:' + config.hadoopDockerVersion).inside("--init --dns 172.16.0.200") {
+    docker.image('opsh2oai/sparkling_water_hadoop_tests:' + config.hadoopDockerVersion).inside("--init --dns 172.16.0.200") {
         code()
     }
 }
@@ -376,6 +375,7 @@ def pysparklingIntegTest() {
                 if (config.runPySparklingIntegTests.toBoolean()) {
                     try {
                         sh """
+                         sudo -E /usr/sbin/startup.sh
                          . /envs/h2o_env_python2.7/bin/activate
                          ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
                          # echo 'Archiving artifacts after PySparkling Integration test'
