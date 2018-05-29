@@ -11,10 +11,11 @@ RUN \
   groupadd -g ${JENKINS_GID} jenkins && \
   adduser --uid ${JENKINS_UID} -gid ${JENKINS_GID} --disabled-password --gecos "" jenkins
 
+# Add repositories
 RUN \
   add-apt-repository -y ppa:deadsnakes && \
   apt-get update -q -y
-  
+
 RUN apt-get update && \
     apt-get -q -y update && \
     apt-get -y install software-properties-common && \
@@ -26,12 +27,11 @@ RUN apt-get update && \
     apt-get clean all && \
     apt-get install oracle-java8-set-default
 
-# Add repositories
 
 
 RUN apt-get -q -y install wget git curl && \
     apt-get -y install python2.7 python2.7-dev && \
-    apt-get -y install python3.6 python3.6-dev && \
+    apt-get -y install python3.6 python3.6-dev
 
 RUN echo "###### Creating Virtualenv for Python 2.7 ######" && \
   virtualenv -p python2.7 /envs/h2o_env_python2.7 && \
