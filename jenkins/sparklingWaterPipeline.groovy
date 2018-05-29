@@ -33,7 +33,7 @@ def call(params, body) {
                         unitTests()(config)
                         pyUnitTests()(config)
                         localIntegTest()(config)
-                        localPyIntegTests()(config)
+                        localPyIntegTest()(config)
                         scriptsTest()(config)
                         // Run Integration tests on YARN
                         node("dX-hadoop") {
@@ -52,7 +52,7 @@ def call(params, body) {
 def localDockerImage = 'opsh2oai/sparkling_water_tests:' + config.dockerVersion
 def hadoopDocker = "TODO"
 
-def withDocker(config, image, image, code) {
+def withDocker(config, image, code) {
     docker.image(image).inside("--init --dns 172.16.0.200") {
         code()
     }
