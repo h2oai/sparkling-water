@@ -11,7 +11,7 @@ node('docker && !mr-0xc8') {
     stage("Build Docker"){
         sh  """
                 cd jenkins
-                docker build -f Dockerfile-hadoop .-t docker.h2o.ai/opsh2oai/sparkling_water_hadoop_tests:${BUILD_NUMBER} .
+                docker build -f Dockerfile-hadoop -t docker.h2o.ai/opsh2oai/sparkling_water_hadoop_tests:${BUILD_NUMBER} .
             """
 
     }
