@@ -216,7 +216,7 @@ def pyUnitTests() {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
                             sh """
                             # Run unit tests on Py 2.7
-                            ./prepare-venv.sh
+                            /home/jenkins/prepare-venv.sh
                             pyenv activate sparkling-water-2.7
                             ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
@@ -237,7 +237,7 @@ def pyUnitTests() {
 
                             sh """
                             # Run unit tests on Py 3.6
-                            ./prepare-venv.sh
+                             /home/jenkins/prepare-venv.sh
                              pyenv activate sparkling-water-3.6
                             ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
