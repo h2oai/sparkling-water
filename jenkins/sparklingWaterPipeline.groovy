@@ -33,6 +33,7 @@ def call(params, body) {
                         unitTests()(config)
                         pyUnitTests()(config)
                         localIntegTest()(config)
+                        localPyIntegTests()(config)
                         scriptsTest()(config)
                         node("dX-hadoop") {
                             integTest()(config)
@@ -272,6 +273,49 @@ def localIntegTest() {
         }
     }
 }
+
+def localPyIntegTest() {
+    return { config ->
+        stage('QA: Local Py Integration Tests 2.7 - ' + config.backendMode) {
+            withDocker(config) {
+                if (config.runPyLocalIntegTests.toBoolean()) {
+                    try {
+                        sh """
+                        # Run local integration tests
+                        . /envs/sparkling-water2.7/bin/activate
+                        ${getGradleCommand(config)} integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        """
+                    } finally {
+                        arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                        junit 'examples/build/test-results/integTest/*.xml'
+                        testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
+                        testReport 'examples/build/reports/tests/integTest', 'Local Integration tests'
+                    }
+                }
+            }
+        }
+
+        stage('QA: Local Py Integration Tests 3.6 - ' + config.backendMode) {
+            withDocker(config) {
+                if (config.runPyLocalIntegTests.toBoolean()) {
+                    try {
+                        sh """
+                        # Run local integration tests
+                        . /envs/sparkling-water3.6/bin/activate
+                        ${getGradleCommand(config)} integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        """
+                    } finally {
+                        arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                        junit 'examples/build/test-results/integTest/*.xml'
+                        testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
+                        testReport 'examples/build/reports/tests/integTest', 'Local Integration tests'
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 
 def scriptsTest() {

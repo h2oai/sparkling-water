@@ -20,7 +20,9 @@ node('dX-hadoop') {
     pipeline(params) { p ->
         sparkVersion = "2.3.0"
         runUnitTests = "true"
+        runPyUnitTests = "true"
         runLocalIntegTests = "true"
+        runLocalPyIntegTests = "true"
         runScriptTests = "true"
         runIntegTests = "true"
         runPySparklingIntegTests = "true"

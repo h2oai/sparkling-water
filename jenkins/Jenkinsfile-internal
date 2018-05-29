@@ -13,6 +13,7 @@ properties(
                                 booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit tests'),
                                 booleanParam(name: 'runPyUnitTests', defaultValue: true, description: 'Run PyUnit tests'),
                                 booleanParam(name: 'runLocalIntegTests', defaultValue: true, description: 'Run local integration tests'),
+                                booleanParam(name: 'runLocalPyIntegTests', defaultValue: true, description: 'Run local Python integration tests'),
                                 booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests'),
                                 booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run integration tests'),
                                 booleanParam(name: 'runPySparklingIntegTests', defaultValue: true, description: 'Run pySparkling integration tests'),
@@ -56,6 +57,7 @@ docker.withRegistry("https://docker.h2o.ai") {
             runUnitTests = "${p.runUnitTests}"
             runPyUnitTests = "${p.runPyUnitTests}"
             runLocalIntegTests = "${p.runLocalIntegTests}"
+            runLocalPyIntegTests = "${p.runLocalPyIntegTests}"
             runScriptTests = "${p.runScriptTests}"
             runIntegTests = "${p.runIntegTests}"
             runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
