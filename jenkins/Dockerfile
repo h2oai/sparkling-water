@@ -53,9 +53,6 @@ RUN cd /home/jenkins && \
     pyenv virtualenv 3.6.5 sparkling-water-3.6 && \
     pip install future colorama request tabulate
 
-# Try
-RUN pyenv activate 2.7.13
-
 
 
 ###
