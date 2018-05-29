@@ -49,14 +49,19 @@ def call(params, body) {
     }
 }
 
-def localDockerImage = 'opsh2oai/sparkling_water_tests:' + config.dockerVersion
-def hadoopDocker = "TODO"
-
-def withDocker(config, image, code) {
-    docker.image(image).inside("--init --dns 172.16.0.200") {
+def withDocker(config, code) {
+    docker.image('opsh2oai/sparkling_water_tests:' + config.dockerVersion).inside("--init --dns 172.16.0.200") {
         code()
     }
 }
+
+def withHadoopDocker(config, code) {
+    docker.image('TODO').inside("--init --dns 172.16.0.200") {
+        code()
+    }
+}
+
+
 
 def getGradleCommand(config) {
     def gradleStr
