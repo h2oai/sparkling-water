@@ -49,13 +49,23 @@ def call(params, body) {
 }
 
 def withDocker(config, code) {
-    docker.image('opsh2oai/sparkling_water_tests:' + config.dockerVersion).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
+    def image = 'opsh2oai/sparkling_water_tests:' + config.dockerVersion
+    withCredentials([usernamePassword(credentialsId: registry, usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
+      sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
+      sh "docker pull ${image}"
+    }
+    docker.image(image).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
         code()
     }
 }
 
 def withHadoopDocker(config, code) {
-    docker.image('opsh2oai/sparkling_water_hadoop_tests:' + config.hadoopDockerVersion).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
+    def image = 'opsh2oai/sparkling_water_hadoop_tests:' + config.hadoopDockerVersion
+    withCredentials([usernamePassword(credentialsId: registry, usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
+        sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
+        sh "docker pull ${image}"
+    }
+    docker.image(image).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
         code()
     }
 }
