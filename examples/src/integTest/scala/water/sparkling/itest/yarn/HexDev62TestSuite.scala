@@ -18,7 +18,6 @@ class HexDev62TestSuite extends FunSuite with IntegTestHelper {
   ignore("HEX-DEV 62 test") {
     launch("water.sparkling.itest.yarn.HexDev62Test",
       env {
-        isYarnIntegTest
         sparkMaster("yarn-client")
         // Configure YARN environment
         conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test
@@ -27,6 +26,7 @@ class HexDev62TestSuite extends FunSuite with IntegTestHelper {
         conf("spark.ext.h2o.port.base", 63331) //Start at baseport 63331
         conf("spark.driver.memory", "2g")
         conf("spark.executor.cores", 32) //Use up all the cores on the machines
+        isYarnIntegTest()
       }
     )
   }

@@ -18,8 +18,7 @@ class ChicagoCrimeTestSuite extends FunSuite with IntegTestHelper {
 
   test("Chicago Crime Demo") {
     launch("water.sparkling.itest.yarn.ChicagoCrimeTest",
-      env {
-        isYarnIntegTest
+      env() {
         sparkMaster("yarn-client")
         // Configure YARN environment
         conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test
@@ -27,6 +26,7 @@ class ChicagoCrimeTestSuite extends FunSuite with IntegTestHelper {
         conf("spark.executor.memory", "8g")
         conf("spark.ext.h2o.port.base", 63331)
         conf("spark.driver.memory", "8g")
+        isYarnIntegTest()
       }
     )
   }
