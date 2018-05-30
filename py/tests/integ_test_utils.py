@@ -53,7 +53,7 @@ def launch(test_env, script_name, param=None):
     client_ip = generic_test_utils.local_ip()
     if generic_test_utils.tests_in_external_mode() and generic_test_utils.is_manual_cluster_start_mode_used():
         external_cluster_test_helper = ExternalBackendManualTestStarter()
-        external_cluster_test_helper.start_cloud(2, cloud_name, client_ip)
+        external_cluster_test_helper.start_cloud(1, cloud_name, client_ip)
 
 
     cmd_line = [get_submit_script(test_env.spark_home), "--verbose"]
