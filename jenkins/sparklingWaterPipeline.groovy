@@ -37,7 +37,7 @@ def call(params, body) {
                         scriptsTest()(config)
                         // Run Integration tests on YARN
                         node("dX-hadoop") {
-                            prepareSparkEnvironmentNoStage(config)
+                            prepareSparkEnvironmentNoStage()(config)
                             integTest()(config)
                         }
                         pysparklingIntegTest()(config)
@@ -77,23 +77,24 @@ def getGradleCommand(config) {
 }
 
 
-def prepareSparkEnvironmentNoStage(config){
-    if (config.buildAgainstSparkBranch.toBoolean()) {
-        // build spark
-        sh  """
+def prepareSparkEnvironmentNoStage(){
+    return { config ->
+        if (config.buildAgainstSparkBranch.toBoolean()) {
+            // build spark
+            sh """
             git clone https://github.com/apache/spark.git spark_repo
             cd spark_repo
             git checkout ${config.sparkBranch}
             ./dev/make-distribution.sh --name custom-spark --pip -Phadoop-2.6 -Pyarn
             cp -r ./dist/ ${env.SPARK_HOME}
             """
-    } else {
-        sh  """
+        } else {
+            sh """
             cp -R \${SPARK_HOME_2_3_0} ${env.SPARK_HOME}
             """
-    }
+        }
 
-    sh  """
+        sh """
         # Setup Spark
         echo "spark.driver.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
         echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
@@ -101,10 +102,11 @@ def prepareSparkEnvironmentNoStage(config){
         
         echo "-Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/java-opts
         """
-    if (config.buildAgainstSparkBranch.toBoolean()) {
-        sh  """
+        if (config.buildAgainstSparkBranch.toBoolean()) {
+            sh """
             echo "spark.ext.h2o.spark.version.check.enabled false" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
             """
+        }
     }
 }
 
@@ -112,7 +114,7 @@ def prepareSparkEnvironment() {
     return { config ->
         stage('Prepare Spark Environment - ' + config.backendMode) {
             withDocker(config) {
-                prepareSparkEnvironmentNoStage()
+                prepareSparkEnvironmentNoStage()(config)
             }
         }
     }
