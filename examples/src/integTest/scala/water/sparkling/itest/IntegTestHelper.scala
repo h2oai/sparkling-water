@@ -56,7 +56,7 @@ trait IntegTestHelper extends BeforeAndAfterEach {
 
   }
 
-  def isYarnIntegTest = testEnv.isYarnIntegTest = true
+  def isYarnIntegTest() = testEnv.isYarnIntegTest = true
 
   // Helper function to setup environment
   def sparkMaster(uri: String) = sys.props += (("spark.master", uri))
