@@ -38,7 +38,23 @@ def call(params, body) {
                         scriptsTest()(config)
                         // Run Integration tests on YARN
                         node("dX-hadoop") {
-                            integTest()(config)
+                            def customEnvNew = [
+                                    "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
+                                    "SPARK_HOME=${env.WORKSPACE}/spark",
+                                    "HADOOP_CONF_DIR=/etc/hadoop/conf",
+                                    "MASTER=yarn-client",
+                                    "H2O_PYTHON_WHEEL=${env.WORKSPACE}/private/h2o.whl",
+                                    "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
+                                    "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
+                                    "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}",
+                                    // Properties used in case we are building against specific H2O version
+                                    "BUILD_HADOOP=true",
+                                    "H2O_TARGET=${config.driverHadoopVersion}",
+                                    "H2O_ORIGINAL_JAR=${env.WORKSPACE}/h2o-3/h2o-hadoop/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
+                            ]
+                            withEnv(customEnvNew) {
+                                integTest()(config)
+                            }
                         }
                         pysparklingIntegTest()(config)
                         publishNightly()(config)
