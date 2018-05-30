@@ -318,7 +318,6 @@ def localPyIntegTest() {
 
         stage('QA: Local Py Integration Tests 3.6 - ' + config.backendMode) {
             withDocker(config) {
-                unstash 'sw-build'
                 if (config.runLocalPyIntegTests.toBoolean()) {
                     try {
                         sh """
@@ -400,7 +399,6 @@ def pysparklingIntegTest() {
 
         stage('QA: PySparkling Integration Tests 3.6 HDP 2.2 - ' + config.backendMode) {
             withDocker(config) {
-                unstash 'sw-build'
                 if (config.runPySparklingIntegTests.toBoolean()) {
                     try {
                         sh """
