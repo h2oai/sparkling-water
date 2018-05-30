@@ -42,7 +42,7 @@ if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
 
 node('docker && !mr-0xc8') {
     docker.withRegistry("https://docker.h2o.ai") {
-        
+
         // Clean workspace
         cleanWs()
 
@@ -70,7 +70,7 @@ node('docker && !mr-0xc8') {
             backendMode = "internal"
             buildNightly = "false"
             uploadNightly = "false"
-            dockerVersion = "5"
+            dockerVersion = "6"
         }
     }
 }

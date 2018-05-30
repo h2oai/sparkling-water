@@ -10,6 +10,7 @@ node('docker && !mr-0xc8') {
 
     stage("Build Docker"){
         sh  """
+                docker pull docker.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:46
                 cd jenkins
                 docker build -t docker.h2o.ai/opsh2oai/sparkling_water_tests:${BUILD_NUMBER} .
             """
