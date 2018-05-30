@@ -27,7 +27,6 @@ def call(params, body) {
             withEnv(customEnv) {
                 timeout(time: 120, unit: 'MINUTES') {
                     dir("${env.WORKSPACE}") {
-
                         prepareSparkEnvironment()(config)
                         prepareSparklingWaterEnvironment()(config)
                         buildAndLint()(config)
@@ -38,6 +37,7 @@ def call(params, body) {
                         scriptsTest()(config)
                         // Run Integration tests on YARN
                         node("dX-hadoop") {
+                            prepareSparkEnvironment()(config)
                             integTest()(config)
                         }
                         pysparklingIntegTest()(config)
@@ -193,7 +193,6 @@ def unitTests() {
     return { config ->
         stage('QA: Unit Tests - ' + config.backendMode) {
             withDocker(config) {
-                unstash 'sw-build'
                 if (config.runUnitTests.toBoolean()) {
                     try {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
@@ -221,7 +220,6 @@ def pyUnitTests() {
     return { config ->
         stage('QA: Python Unit Tests 2.7 - ' + config.backendMode) {
             withDocker(config) {
-                unstash 'sw-build'
                 if (config.runPyUnitTests.toBoolean()) {
                     try {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
@@ -241,7 +239,6 @@ def pyUnitTests() {
 
         stage('QA: Python Unit Tests 3.6 - ' + config.backendMode) {
             withDocker(config) {
-                unstash 'sw-build'
                 if (config.runPyUnitTests.toBoolean()) {
                     try {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
@@ -267,7 +264,6 @@ def localIntegTest() {
     return { config ->
         stage('QA: Local Integration Tests - ' + config.backendMode) {
             withDocker(config) {
-                unstash 'sw-build'
                 if (config.runLocalIntegTests.toBoolean()) {
                     try {
                         sh """
@@ -290,7 +286,6 @@ def localPyIntegTest() {
     return { config ->
         stage('QA: Local Py Integration Tests 2.7 - ' + config.backendMode) {
             withDocker(config) {
-                unstash 'sw-build'
                 if (config.runLocalPyIntegTests.toBoolean()) {
                     try {
                         sh """
@@ -330,7 +325,6 @@ def scriptsTest() {
     return { config ->
         stage('QA: Script Tests - ' + config.backendMode) {
             withDocker(config) {
-                unstash 'sw-build'
                 if (config.runScriptTests.toBoolean()) {
                     try {
                         sh """
@@ -373,7 +367,6 @@ def pysparklingIntegTest() {
     return { config ->
         stage('QA: PySparkling Integration Tests 2.7 HDP 2.2 - ' + config.backendMode) {
             withDocker(config) {
-                unstash 'sw-build'
                 if (config.runPySparklingIntegTests.toBoolean()) {
                     try {
                         sh """
@@ -413,7 +406,6 @@ def publishNightly() {
     return { config ->
         stage('Nightly: Publishing Artifacts to S3 - ' + config.backendMode) {
             withDocker(config) {
-                unstash 'sw-build'
                 if (config.buildNightly.toBoolean() && config.uploadNightly.toBoolean()) {
 
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
