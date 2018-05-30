@@ -3,6 +3,9 @@ FROM docker.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:46
 ENV LANG 'C.UTF-8'
 RUN locale
 
+RUN rm -rf /etc/hadoop/conf/yarn-site.xml
+COPY jenkins/conf/yarn-site.xml /etc/hadoop/conf/yarn-site.xml
+
 RUN \
     rm /etc/startup/40_hive_start && \
     rm /etc/startup/60_start_slapd

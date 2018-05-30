@@ -1,0 +1,60 @@
+<configuration>
+    <property>
+        <name>yarn.scheduler.minimum-allocation-mb</name>
+        <value>3048</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.resource.memory-mb</name>
+        <value>14960</value>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name>
+        <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+    </property>
+
+    <property>
+        <name>yarn.log-aggregation-enable</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>yarn.dispatcher.exit-on-error</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <description>List of directories to store localized files in.</description>
+        <name>yarn.nodemanager.local-dirs</name>
+        <value>/var/lib/hadoop-yarn/cache/${user.name}/nm-local-dir</value>
+    </property>
+
+    <property>
+        <description>Where to store container logs.</description>
+        <name>yarn.nodemanager.log-dirs</name>
+        <value>/var/log/hadoop-yarn/containers</value>
+    </property>
+
+    <property>
+        <description>Where to aggregate logs to.</description>
+        <name>yarn.nodemanager.remote-app-log-dir</name>
+        <value>/var/log/hadoop-yarn/apps</value>
+    </property>
+
+    <property>
+        <name>yarn.application.classpath</name>
+        <value>$HADOOP_CONF_DIR,/usr/hdp/${HDP_VERSION}/hadoop-client/*,
+            /usr/hdp/${HDP_VERSION}/hadoop-client/lib/*,
+            /usr/hdp/${HDP_VERSION}/hadoop-hdfs-client/*,
+            /usr/hdp/${HDP_VERSION}/hadoop-hdfs-client/lib/*,
+            /usr/hdp/${HDP_VERSION}/hadoop-yarn-client/*,
+            /usr/hdp/${HDP_VERSION}/hadoop-yarn-client/lib/*
+        </value>
+    </property>
+
+</configuration>
