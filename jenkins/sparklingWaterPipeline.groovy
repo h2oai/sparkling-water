@@ -52,7 +52,7 @@ def withDocker(config, code) {
     def image = 'opsh2oai/sparkling_water_tests:' + config.dockerVersion
     withCredentials([usernamePassword(credentialsId: "docker.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
       sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
-      sh "docker pull ${image}"
+      sh "docker pull docker.h2o.ai/${image}"
     }
     docker.image(image).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
         code()
