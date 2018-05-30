@@ -38,7 +38,7 @@ node('docker && !mr-0xc8') {
             driverHadoopVersion = "hdp2.2"
             buildNightly = "false"
             uploadNightly = "false"
-            dockerVersion = "7"
+            dockerVersion = "8"
         }
     }
 }

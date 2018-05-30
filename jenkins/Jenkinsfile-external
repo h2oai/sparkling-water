@@ -77,7 +77,7 @@ node('docker && !mr-0xc8') {
             driverHadoopVersion = "${p.driverHadoopVersion}"
             buildNightly = "false"
             uploadNightly = "false"
-            dockerVersion = "7"
+            dockerVersion = "8"
         }
     }
 }
