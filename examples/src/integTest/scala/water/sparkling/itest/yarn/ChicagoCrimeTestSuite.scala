@@ -18,7 +18,7 @@ class ChicagoCrimeTestSuite extends FunSuite with IntegTestHelper {
 
   test("Chicago Crime Demo") {
     launch("water.sparkling.itest.yarn.ChicagoCrimeTest",
-      env() {
+      env {
         sparkMaster("yarn-client")
         // Configure YARN environment
         conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test
