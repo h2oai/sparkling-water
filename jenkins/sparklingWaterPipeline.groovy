@@ -212,6 +212,9 @@ def unitTests() {
                 if (config.runUnitTests.toBoolean()) {
                     try {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
+                            if(config.backendMode == "external"){
+                                sh  "sudo -E /usr/sbin/startup.sh"
+                            }
                             sh """
                             # Run unit tests
                             ${getGradleCommand(config)} test -x :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
@@ -239,6 +242,9 @@ def pyUnitTests() {
                 if (config.runPyUnitTests.toBoolean()) {
                     try {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
+                            if(config.backendMode == "external"){
+                                sh  "sudo -E /usr/sbin/startup.sh"
+                            }
                             sh """
                             # Run unit tests on Py 2.7
                             . /envs/h2o_env_python2.7/bin/activate
@@ -258,7 +264,9 @@ def pyUnitTests() {
                 if (config.runPyUnitTests.toBoolean()) {
                     try {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
-
+                            if(config.backendMode == "external"){
+                                sh  "sudo -E /usr/sbin/startup.sh"
+                            }
                             sh """
                             # Run unit tests on Py 3.6
                             . /envs/h2o_env_python3.6/bin/activate
@@ -282,6 +290,9 @@ def localIntegTest() {
             withDocker(config) {
                 if (config.runLocalIntegTests.toBoolean()) {
                     try {
+                        if(config.backendMode == "external"){
+                            sh  "sudo -E /usr/sbin/startup.sh"
+                        }
                         sh """
                         # Run local integration tests
                         ${getGradleCommand(config)} integTest -x :sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
@@ -304,6 +315,9 @@ def localPyIntegTest() {
             withDocker(config) {
                 if (config.runLocalPyIntegTests.toBoolean()) {
                     try {
+                        if(config.backendMode == "external"){
+                            sh  "sudo -E /usr/sbin/startup.sh"
+                        }
                         sh """
                         # Run local integration tests
                         . /envs/h2o_env_python2.7/bin/activate
@@ -342,6 +356,9 @@ def scriptsTest() {
             withDocker(config) {
                 if (config.runScriptTests.toBoolean()) {
                     try {
+                        if(config.backendMode == "external"){
+                            sh  "sudo -E /usr/sbin/startup.sh"
+                        }
                         sh """
                         # Run scripts tests
                         ${getGradleCommand(config)} scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
