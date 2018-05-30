@@ -35,7 +35,7 @@ node('dX-hadoop') {
         backendMode = "internal"
         buildNightly = "true"
         uploadNightly = "true"
-        dockerVersion = "2"
+        dockerVersion = "3"
 
     }
 }

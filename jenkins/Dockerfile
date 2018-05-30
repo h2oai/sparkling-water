@@ -4,7 +4,7 @@ RUN \
     rm /etc/startup/40_hive_start && \
     rm /etc/startup/60_start_slapd
 
-RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y git curl
 
 ###
 ###  Prepare Spark
