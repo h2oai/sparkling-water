@@ -58,7 +58,7 @@ def launch(test_env, script_name, param=None):
 
     cmd_line = [get_submit_script(test_env.spark_home), "--verbose"]
     cmd_line.extend(["--master", test_env.spark_master])
-    if test_env.spark_conf.has_key("spark.driver.memory"):
+    if "spark.driver.memory" in test_env.spark_conf:
         cmd_line.extend(["--driver-memory", test_env.spark_conf.get("spark.driver.memory")])
     # remove ".py" from cloud name
     cmd_line.extend(["--conf", 'spark.ext.h2o.cloud.name=sparkling-water-' + cloud_name])
