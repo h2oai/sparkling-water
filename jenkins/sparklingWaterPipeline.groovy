@@ -294,9 +294,6 @@ def localPyIntegTest() {
                         """
                     } finally {
                         arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                        junit 'examples/build/test-results/integTest/*.xml'
-                        testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
-                        testReport 'examples/build/reports/tests/integTest', 'Local Integration tests'
                     }
                 }
             }
@@ -313,9 +310,6 @@ def localPyIntegTest() {
                         """
                     } finally {
                         arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                        junit 'examples/build/test-results/integTest/*.xml'
-                        testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
-                        testReport 'examples/build/reports/tests/integTest', 'Local Integration tests'
                     }
                 }
             }
@@ -375,6 +369,23 @@ def pysparklingIntegTest() {
                         sh """
                          sudo -E /usr/sbin/startup.sh
                          . /envs/h2o_env_python2.7/bin/activate
+                         ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                         # echo 'Archiving artifacts after PySparkling Integration test'
+                        """
+                    } finally {
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    }
+                }
+            }
+        }
+
+        stage('QA: PySparkling Integration Tests 3.6 HDP 2.2 - ' + config.backendMode) {
+            withDocker(config) {
+                if (config.runPySparklingIntegTests.toBoolean()) {
+                    try {
+                        sh """
+                         sudo -E /usr/sbin/startup.sh
+                         . /envs/h2o_env_python3.6/bin/activate
                          ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
                          # echo 'Archiving artifacts after PySparkling Integration test'
                         """
