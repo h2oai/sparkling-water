@@ -35,6 +35,7 @@ ENV SPARK_HOME_2_3_0 /home/jenkins/spark-2.3.0-bin-hadoop2.6
 ENV SPARK_HOME_2_2_1 /home/jenkins/spark-2.2.1-bin-hadoop2.6
 ENV SPARK_HOME_2_1_2 /home/jenkins/spark-2.1.2-bin-hadoop2.6
 
+USER jenkins
 
 ###
 ### Warm up Gradle caches for Sparkling Water
@@ -44,3 +45,5 @@ RUN cd /home/jenkins && \
     cd sparkling-water && \
     ./gradlew build -x check -x :sparkling-water-py:build && \
     cd .. && rm -rf sparkling-water
+
+USER root

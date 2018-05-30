@@ -37,6 +37,6 @@ node('dX-hadoop') {
         driverHadoopVersion = "hdp2.2"
         buildNightly = "false"
         uploadNightly = "false"
-        dockerVersion = "4"
+        dockerVersion = "5"
     }
 }
