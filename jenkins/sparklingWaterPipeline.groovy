@@ -49,13 +49,13 @@ def call(params, body) {
 }
 
 def withDocker(config, code) {
-    docker.image('opsh2oai/sparkling_water_tests:' + config.dockerVersion).inside("--init --dns 172.16.0.200") {
+    docker.image('opsh2oai/sparkling_water_tests:' + config.dockerVersion).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
         code()
     }
 }
 
 def withHadoopDocker(config, code) {
-    docker.image('opsh2oai/sparkling_water_hadoop_tests:' + config.hadoopDockerVersion).inside("--init --dns 172.16.0.200") {
+    docker.image('opsh2oai/sparkling_water_hadoop_tests:' + config.hadoopDockerVersion).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
         code()
     }
 }
