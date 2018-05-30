@@ -42,7 +42,7 @@ node('dX-hadoop') {
         // Note: We can do that as these 2 jobs run at the same time
         uploadNightly = "false"
         dockerVersion = "1"
-        hadoopDockerVersion = "4"
+        hadoopDockerVersion = "1"
 
     }
 }
