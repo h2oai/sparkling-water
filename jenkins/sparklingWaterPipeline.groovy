@@ -226,7 +226,7 @@ def pyUnitTests() {
                         withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
                             sh """
                             # Run unit tests on Py 2.7
-                            . /envs/sparkling-water2.7/bin/activate
+                            . /envs/h2o_env_python2.7/bin/activate
                             ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
                         }
@@ -246,7 +246,7 @@ def pyUnitTests() {
 
                             sh """
                             # Run unit tests on Py 3.6
-                            . /envs/sparkling-water3.6/bin/activate
+                            . /envs/h2o_env_python3.6/bin/activate
                             ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
                         }
@@ -291,7 +291,7 @@ def localPyIntegTest() {
                     try {
                         sh """
                         # Run local integration tests
-                        . /envs/sparkling-water2.7/bin/activate
+                        . /envs/h2o_env_python2.7/bin/activate
                         ${getGradleCommand(config)} sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                         """
                     } finally {
@@ -310,7 +310,7 @@ def localPyIntegTest() {
                     try {
                         sh """
                         # Run local integration tests
-                        . /envs/sparkling-water3.6/bin/activate
+                        . /envs/h2o_env_python3.6/bin/activate
                         ${getGradleCommand(config)} sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                         """
                     } finally {
