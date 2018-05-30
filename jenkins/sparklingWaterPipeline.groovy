@@ -59,18 +59,6 @@ def withDocker(config, code) {
     }
 }
 
-def withHadoopDocker(config, code) {
-    def image = 'opsh2oai/sparkling_water_hadoop_tests:' + config.hadoopDockerVersion
-    withCredentials([usernamePassword(credentialsId: registry, usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
-        sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
-        sh "docker pull ${image}"
-    }
-    docker.image(image).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
-        code()
-    }
-}
-
-
 
 def getGradleCommand(config) {
     def gradleStr
@@ -381,7 +369,7 @@ def integTest() {
 def pysparklingIntegTest() {
     return { config ->
         stage('QA: PySparkling Integration Tests 2.7 HDP 2.2 - ' + config.backendMode) {
-            withHadoopDocker(config) {
+            withDocker(config) {
                 if (config.runPySparklingIntegTests.toBoolean()) {
                     try {
                         sh """
