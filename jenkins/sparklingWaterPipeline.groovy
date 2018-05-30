@@ -38,6 +38,9 @@ def call(params, body) {
                         scriptsTest()(config)
                         // Run Integration tests on YARN
                         node("dX-hadoop") {
+                            sh  """
+                                env
+                                """
                             integTest()(config)
                         }
                         pysparklingIntegTest()(config)
