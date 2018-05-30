@@ -18,6 +18,7 @@ class HexDev62TestSuite extends FunSuite with IntegTestHelper {
   ignore("HEX-DEV 62 test") {
     launch("water.sparkling.itest.yarn.HexDev62Test",
       env {
+        isYarnIntegTest
         sparkMaster("yarn-client")
         // Configure YARN environment
         conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test

@@ -18,6 +18,7 @@ class KMeansITestSuite extends FunSuite with IntegTestHelper {
   test("MLlib KMeans on airlines_all data", YarnTest) {
     launch("water.sparkling.itest.yarn.KMeansITest",
       env {
+        isYarnIntegTest
         sparkMaster("yarn-client")
         // Configure YARN environment
         conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test
