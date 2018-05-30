@@ -1,5 +1,8 @@
 FROM docker.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:46
 
+ENV LANG 'C.UTF-8'
+RUN locale
+
 RUN \
     rm /etc/startup/40_hive_start && \
     rm /etc/startup/60_start_slapd

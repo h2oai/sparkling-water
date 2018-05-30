@@ -76,6 +76,6 @@ node('dX-hadoop') {
         driverHadoopVersion = "${p.driverHadoopVersion}"
         buildNightly = "false"
         uploadNightly = "false"
-        dockerVersion = "3"
+        dockerVersion = "4"
     }
 }
