@@ -404,7 +404,7 @@ def pysparklingIntegTest() {
                         sh """
                          sudo -E /usr/sbin/startup.sh
                          . /envs/h2o_env_python2.7/bin/activate
-                         ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                         PYSPARK_DRIVER_PYTHON=\$(which python) PYSPARK_PYTHON=\$(which python) ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
                          # echo 'Archiving artifacts after PySparkling Integration test'
                         """
                     } finally {
@@ -421,7 +421,7 @@ def pysparklingIntegTest() {
                         sh """
                          sudo -E /usr/sbin/startup.sh
                          . /envs/h2o_env_python3.6/bin/activate
-                         ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                         PYSPARK_DRIVER_PYTHON=\$(which python) PYSPARK_PYTHON=\$(which python) ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
                          # echo 'Archiving artifacts after PySparkling Integration test'
                         """
                     } finally {
