@@ -25,7 +25,7 @@ def call(params, body) {
     ansiColor('xterm') {
         timestamps {
             withEnv(customEnv) {
-                timeout(time: 120, unit: 'MINUTES') {
+                timeout(time: 180, unit: 'MINUTES') {
                     dir("${env.WORKSPACE}") {
 
                         prepareSparkEnvironment()(config)
