@@ -110,6 +110,19 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
   override def transformSchema(schema: StructType): StructType = {
     StructType(schema ++ predictionSchema())
   }
+
+  def getInputNames(): Seq[String] = getOrCreateModel().getInputMeta.getColumnNames
+
+  def getInputTypes(): Seq[String] = {
+    getOrCreateModel().getInputMeta.getColumnTypes.map(_.javatype)
+  }
+
+  def getOutputNames(): Seq[String] = getOrCreateModel().getOutputMeta.getColumnNames
+
+  def getOutputTypes(): Seq[String] = {
+    getOrCreateModel().getOutputMeta.getColumnTypes.map(_.javatype)
+  }
+
 }
 
 private[models] class H2OMOJOPipelineModelWriter(instance: H2OMOJOPipelineModel) extends MLWriter {
