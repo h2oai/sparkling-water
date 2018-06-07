@@ -60,4 +60,11 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaMLReadable):
     def get_output_types(self):
         self._java_obj.getOutputTypes()
 
+    def get(self):
+            return self._java_obj.getConvertUnknownCategoricalLevelsToNa()
+
+    def setConvertUnknownCategoricalLevelsToNa(self, value):
+        self._java_obj.setConvertUnknownCategoricalLevelsToNa(value)
+        return self
+
 
