@@ -104,7 +104,7 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
     var converted = flatten.select(col("*"), modelUdf(flatten.columns)(struct(names: _*)).as(outputCol))
 
     // This behaviour is turned off by default, it can be enabled manually and will be default
-    // in the release for Spark 2.54
+    // in the release for Spark 2.4
     if ($(namedMojoOutputColumns)) {
 
       def split(idx: Int) = udf[Double, mutable.WrappedArray[Double]] {
