@@ -4,6 +4,7 @@ rem Top-level directory for this product
 set TOPDIR=%~dp0..
 call %TOPDIR%\bin\sparkling-env.cmd
 rem Verify Spark installation
+call %LIBSW% checkJava
 call %LIBSW% checkSparkHome
 call %LIBSW% checkSparkVersion
 call %LIBSW% checkFatJarExists
