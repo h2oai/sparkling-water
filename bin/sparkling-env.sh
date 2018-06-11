@@ -6,8 +6,15 @@ function checkSparkHome() {
     if [ -z "$(which spark-submit)" ] ; then
       echo "Please setup SPARK_HOME variable to your Spark installation!"
       exit -1
+    else
+      echo
+      echo "Using Spark defined on the system PATH=${PATH}"
+      echo
     fi
   else
+      echo
+      echo "Using Spark defined in the SPARK_HOME=${SPARK_HOME} environmental property"
+      echo
       export PATH=$SPARK_HOME/bin:$PATH
   fi
 }
@@ -37,10 +44,9 @@ fi
 
 
 function checkSparkVersion() {
-  checkJava
   installed_spark_version=$(spark-submit --version 2>&1 | grep version | grep -v Scala | sed -e "s/.*version //" | sed -e "s/\([0-9][0-9]*.[0-9][0-9]*\).*/\1/")
   if ! [[ "$SPARK_VERSION" =~ "$installed_spark_version".* ]]; then
-    echo "You are trying to use Sparkling Water built for Spark ${SPARK_VERSION}, but your \$SPARK_HOME(=$SPARK_HOME) property points to Spark of version ${installed_spark_version}. Please ensure correct Spark is provided and re-run Sparkling Water."
+    echo "You are trying to use Sparkling Water built for Spark ${SPARK_VERSION}, but your Spark is of version ${installed_spark_version}. Please ensure correct Spark is provided and re-run Sparkling Water."
     exit -1
   fi
 }
