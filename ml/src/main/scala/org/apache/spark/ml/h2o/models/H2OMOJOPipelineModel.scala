@@ -20,23 +20,25 @@ package org.apache.spark.ml.h2o.models
 import java.io._
 
 import ai.h2o.mojos.runtime.MojoPipeline
-import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.utils.H2OSchemaUtils
+import org.apache.spark.ml.h2o.param.H2OMOJOPipelineModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
+import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql._
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
+import scala.util.Random
 
 
 class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
-  extends SparkModel[H2OMOJOPipelineModel] with MLWritable {
+  extends SparkModel[H2OMOJOPipelineModel] with H2OMOJOPipelineModelParams with MLWritable {
 
   @transient private var model: MojoPipeline = _
 
@@ -52,7 +54,7 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
 
   val outputCol = "prediction"
 
-  case class Mojo2Prediction(preds: List[String])
+  case class Mojo2Prediction(preds: List[Double])
 
   private val modelUdf = (names: Array[String]) =>
     udf[Mojo2Prediction, Row] {
@@ -78,11 +80,11 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
         builder.addRow(rowBuilder)
         val output = m.transform(builder.toMojoFrame)
         val predictions = output.getColumnNames.zipWithIndex.map { case (_, i) =>
-          val predictedRows = output.getColumnData(i).asInstanceOf[Array[_]]
-          if (predictedRows.length != 1) {
+          val predictedVal = output.getColumnData(i).asInstanceOf[Array[Double]]
+          if (predictedVal.length != 1) {
             throw new RuntimeException("Invalid state, we predict on each row by row, independently at this moment.")
           }
-          predictedRows(0).toString
+          predictedVal(0)
         }
 
         Mojo2Prediction(predictions.toList)
@@ -99,7 +101,38 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
     val names = flatten.schema.fields.map(f => flatten(f.name))
 
     // get the altered frame
-    flatten.select(col("*"), modelUdf(flatten.columns)(struct(names: _*)).as(outputCol))
+    var converted = flatten.select(col("*"), modelUdf(flatten.columns)(struct(names: _*)).as(outputCol))
+
+    // This behaviour is turned off by default, it can be enabled manually and will be default
+    // in the release for Spark 2.4
+    if ($(namedMojoOutputColumns)) {
+
+      def split(idx: Int) = udf[Double, mutable.WrappedArray[Double]] {
+        pred => pred(idx)
+      }
+
+      def uniqueRandomName(colName: String, r: Random) = {
+        var randName = r.nextString(30)
+        while (colName == randName) {
+          randName = r.nextString(30)
+        }
+        randName
+      }
+
+      val r = new scala.util.Random(31)
+      val tempColNames = getOutputNames().map(n => uniqueRandomName(n, r))
+      val tempCols = tempColNames.map(col)
+      // Transform the resulted Array of predictions into own columns
+      getOutputNames().indices.foreach { idx =>
+        val name = getOutputNames()(idx)
+        converted = converted.withColumn(tempColNames(idx), split(idx)(converted.col(outputCol + ".preds")))
+          .withColumn(outputCol, struct(tempCols.map(_.alias(name)): _*))
+          .drop(tempColNames(idx))
+
+      }
+    }
+
+    converted
   }
 
   def predictionSchema(): Seq[StructField] = {
