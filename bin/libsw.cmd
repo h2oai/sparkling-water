@@ -33,7 +33,6 @@ if /i "%JV%"=="not" (
 exit /b 0
 
 :checkSparkVersion
-call :checkJava
 for /f "delims=" %%i in ( 'CMD /C %SPARK_HOME%/bin/spark-submit.cmd --version 2^>^&1 1^>NUL ^| findstr /v "Scala" ^| findstr "version" ') do set linewithversion=%%i
 set INSTALLED_SPARK_VERSION=%linewithversion:~-5%
 
