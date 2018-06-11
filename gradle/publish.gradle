@@ -16,7 +16,6 @@ configurations {
     }
 }
 
-
 //
 // Record all generated POM files for given publishing task
 //
@@ -54,63 +53,45 @@ publishing {
                 artifact art
             }
 
-            if (signAll.required) {
-                signAll.signatures.all { Signature signature ->
-                    logger.debug("Publishing signature for: " + signature.file + ", type=" + signature.type)
-                    artifact(signature, new Action<MavenArtifact>() {
-                        @Override
-                        void execute(MavenArtifact t) {
-                            t.classifier = signature.toSignArtifact.classifier != "" ? signature.toSignArtifact.classifier : null
-                            t.extension = signature.type == "xml.asc" ? "pom.asc" : signature.type
-                        }
-                    })
+            pom {
+                name = project.name + "_" + scalaBaseVersion
+                description = project.description
+                url = 'https://github.com/h2oai/sparkling-water'
+                inceptionYear = '2013'
+
+                organization {
+                    name = 'H2O.ai'
+                    url = 'http://h2o.ai/'
                 }
-            }
 
-
-            pom.withXml { provider ->
-                asNode().children().last() + {
-                    // See https://discuss.gradle.org/t/some-elements-are-removed-when-generate-a-pom-xml-using-the-maven-publish-plugin/2073/4
-                    resolveStrategy = Closure.DELEGATE_FIRST
-                    name project.name + "_" + scalaBaseVersion
-                    description project.description
-                    url 'https://github.com/h2oai/sparkling-water'
-                    inceptionYear '2013'
-
-                    organization {
-                        name 'H2O.ai'
-                        url 'http://h2o.ai/'
+                // H2O licensing
+                licenses {
+                    license {
+                        name = 'The Apache Software License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution = 'repo'
                     }
+                }
 
-                    // H2O licensing
-                    licenses {
-                        license {
-                            name 'The Apache Software License, Version 2.0'
-                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                            distribution 'repo'
-                        }
-                    }
+                // Info for contributors
+                scm {
+                    url = 'https://github.com/h2oai/sparkling-water'
+                    connection = 'scm:git:https://github.com/h2oai/sparkling-water.git'
+                    developerConnection = 'scm:git:git@github.com:h2oai/sparkling-water.git'
+                }
 
-                    // Info for contributors
-                    scm {
-                        url 'https://github.com/h2oai/sparkling-water'
-                        connection 'scm:git:https://github.com/h2oai/sparkling-water.git'
-                        developerConnection 'scm:git:git@github.com:h2oai/sparkling-water.git'
-                    }
+                // Public H2O JIRA for issue management
+                issueManagement {
+                    system = 'Jira'
+                    url = 'http://jira.h2o.ai'
+                }
 
-                    // Public H2O JIRA for issue management
-                    issueManagement {
-                        system 'Jira'
-                        url 'http://jira.h2o.ai'
-                    }
-
-                    // Developer information
-                    developers {
-                        developer {
-                            id 'support'
-                            name 'H2O.ai Support'
-                            email 'support@h2o.ai'
-                        }
+                // Developer information
+                developers {
+                    developer {
+                        id = 'support'
+                        name = 'H2O.ai Support'
+                        email = 'support@h2o.ai'
                     }
                 }
             }
