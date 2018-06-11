@@ -4,6 +4,8 @@
 TOPDIR=$(cd "$(dirname "$0")/.."; pwd)
 
 source "$TOPDIR/bin/sparkling-env.sh"
+# Java check
+checkJava
 # Verify there is Spark installation
 checkSparkHome
 # Verify if correct Spark version is used
