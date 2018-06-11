@@ -39,7 +39,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
   }
 
   test("Test columns names and numbers") {
-    val df = spark.read.option("header", "true").option("inferSchema", true).csv("../examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").option("inferSchema", true).csv("examples/smalldata/prostate/prostate.csv")
 
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
@@ -69,7 +69,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
 
   test("Prediction on Mojo Pipeline using internal API") {
     // Test data
-    val df = spark.read.option("header", "true").csv("../examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
@@ -96,7 +96,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
 
   test("Verify that output columns are correct when using the named columns") {
     // Test data
-    val df = spark.read.option("header", "true").csv("../examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
@@ -117,7 +117,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     * The purpose of this test is to simply pass and don't throw NullPointerException
     */
   test("Prediction with null as row element") {
-    val df = spark.read.option("header", "true").csv("../examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
