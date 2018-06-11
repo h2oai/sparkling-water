@@ -94,6 +94,25 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     println(preds.mkString("\n"))
   }
 
+  test("Verify that output columns are correct when using the named columns") {
+    // Test data
+    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    // Test mojo
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
+      "prostate_pipeline.mojo")
+    mojo.setNamedMojoOutputColumns(true)
+
+    val transDf = mojo.transform(df)
+    println("Predictions:")
+    val preds = transDf.select("prediction.AGE").take(5)
+    assert(preds(0).getDouble(0) == 65.36320409515132)
+    assert(preds(1).getDouble(0) == 64.96902128114817)
+    assert(preds(2).getDouble(0) == 64.96721023747583)
+    assert(preds(3).getDouble(0) == 65.78772654671035)
+    assert(preds(4).getDouble(0) == 66.11327967814829)
+  }
+
   /**
     * The purpose of this test is to simply pass and don't throw NullPointerException
     */
@@ -154,10 +173,10 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
   }
 
   private def assertPredictedValues(preds: Array[Row]): Unit = {
-    assert(preds(0).getSeq[String](0).head == "65.36320409515132")
-    assert(preds(1).getSeq[String](0).head == "64.96902128114817")
-    assert(preds(2).getSeq[String](0).head == "64.96721023747583")
-    assert(preds(3).getSeq[String](0).head == "65.78772654671035")
-    assert(preds(4).getSeq[String](0).head == "66.11327967814829")
+    assert(preds(0).getSeq[Double](0).head == 65.36320409515132)
+    assert(preds(1).getSeq[Double](0).head == 64.96902128114817)
+    assert(preds(2).getSeq[Double](0).head == 64.96721023747583)
+    assert(preds(3).getSeq[Double](0).head == 65.78772654671035)
+    assert(preds(4).getSeq[Double](0).head == 66.11327967814829)
   }
 }
