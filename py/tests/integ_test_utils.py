@@ -53,12 +53,12 @@ def launch(test_env, script_name, param=None):
     client_ip = generic_test_utils.local_ip()
     if generic_test_utils.tests_in_external_mode() and generic_test_utils.is_manual_cluster_start_mode_used():
         external_cluster_test_helper = ExternalBackendManualTestStarter()
-        external_cluster_test_helper.start_cloud(2, cloud_name, client_ip)
+        external_cluster_test_helper.start_cloud(1, cloud_name, client_ip)
 
 
     cmd_line = [get_submit_script(test_env.spark_home), "--verbose"]
     cmd_line.extend(["--master", test_env.spark_master])
-    if test_env.spark_conf.has_key("spark.driver.memory"):
+    if "spark.driver.memory" in test_env.spark_conf:
         cmd_line.extend(["--driver-memory", test_env.spark_conf.get("spark.driver.memory")])
     # remove ".py" from cloud name
     cmd_line.extend(["--conf", 'spark.ext.h2o.cloud.name=sparkling-water-' + cloud_name])

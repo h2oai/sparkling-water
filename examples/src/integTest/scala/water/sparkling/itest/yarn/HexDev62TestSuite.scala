@@ -26,6 +26,7 @@ class HexDev62TestSuite extends FunSuite with IntegTestHelper {
         conf("spark.ext.h2o.port.base", 63331) //Start at baseport 63331
         conf("spark.driver.memory", "2g")
         conf("spark.executor.cores", 32) //Use up all the cores on the machines
+        isYarnIntegTest()
       }
     )
   }

@@ -29,7 +29,7 @@ def get_default_spark_conf():
 
     if tests_in_external_mode():
         conf.set("spark.ext.h2o.client.ip", local_ip())
-        conf.set("spark.ext.h2o.external.cluster.num.h2o.nodes", "2")
+        conf.set("spark.ext.h2o.external.cluster.num.h2o.nodes", "1")
 
     return conf
 
@@ -38,7 +38,7 @@ def set_up_class(cls):
         cls.external_cluster_test_helper = ExternalBackendManualTestStarter()
         cloud_name = cls._spark.conf.get("spark.ext.h2o.cloud.name")
         cloud_ip = cls._spark.conf.get("spark.ext.h2o.client.ip")
-        cls.external_cluster_test_helper.start_cloud(2, cloud_name, cloud_ip)
+        cls.external_cluster_test_helper.start_cloud(1, cloud_name, cloud_ip)
 
 
 def tear_down_class(cls):

@@ -30,7 +30,7 @@ class YarnIntegTestSuite(unittest.TestCase):
             env.set_spark_master("yarn-client")
             # Configure YARN environment
             env.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
-            env.conf("spark.executor.instances", 3)
+            env.conf("spark.executor.instances", 1)
             env.conf("spark.executor.memory", "2g")
             env.conf("spark.ext.h2o.port.base", 63331)
             env.conf("spark.driver.memory", "2g")

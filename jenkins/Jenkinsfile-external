@@ -11,8 +11,10 @@ properties(
                                         description: 'Version of Spark used for testing.',
                                         name: 'sparkVersion'),
 
-                                booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit and pyunit tests'),
+                                booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit tests'),
+                                booleanParam(name: 'runPyUnitTests', defaultValue: true, description: 'Run PyUnit tests'),
                                 booleanParam(name: 'runLocalIntegTests', defaultValue: true, description: 'Run local integration tests'),
+                                booleanParam(name: 'runLocalPyIntegTests', defaultValue: true, description: 'Run local Python integration tests'),
                                 booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests'),
                                 booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run integration tests'),
                                 booleanParam(name: 'runPySparklingIntegTests', defaultValue: true, description: 'Run pySparkling integration tests'),
@@ -45,33 +47,37 @@ if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
     cancelPreviousBuilds()
 }
 
-node('dX-hadoop') {
-    // Clean workspace
-    sh 'rm -rf *'
-    // Get Sparkling Water and save the scm environment variables
-    checkout scm
-    // Get the script with the pipeline
-    def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
+node('docker && !mr-0xc8') {
+    docker.withRegistry("https://docker.h2o.ai") {
+        // Clean workspace
+        sh 'rm -rf *'
+        // Get Sparkling Water and save the scm environment variables
+        checkout scm
+        // Get the script with the pipeline
+        def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
 
-    // Execute the pipeline
-    pipeline(params) { p ->
-        sparkVersion = "${p.sparkVersion}"
-        runUnitTests = "${p.runUnitTests}"
-        runLocalIntegTests = "${p.runLocalIntegTests}"
-        runScriptTests = "${p.runScriptTests}"
-        runIntegTests = "${p.runIntegTests}"
-        runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
-        sparklingTestEnv = "${p.sparklingTestEnv}"
-        buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
-        h2oBranch = "${p.h2oBranch}"
-        buildAgainstSparkBranch = "${p.buildAgainstSparkBranch}"
-        sparkBranch = "${p.sparkBranch}"
-        hadoopVersion = "2.6"
-        backendMode = "external"
-        hdpVersion = "${p.hdpVersion}"
-        driverHadoopVersion = "${p.driverHadoopVersion}"
-        buildNightly = "false"
-        uploadNightly = "false"
-
+        // Execute the pipeline
+        pipeline(params) { p ->
+            sparkVersion = "${p.sparkVersion}"
+            runUnitTests = "${p.runUnitTests}"
+            runPyUnitTests = "${p.runPyUnitTests}"
+            runLocalIntegTests = "${p.runLocalIntegTests}"
+            runLocalPyIntegTests = "${p.runLocalPyIntegTests}"
+            runScriptTests = "${p.runScriptTests}"
+            runIntegTests = "${p.runIntegTests}"
+            runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
+            sparklingTestEnv = "${p.sparklingTestEnv}"
+            buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
+            h2oBranch = "${p.h2oBranch}"
+            buildAgainstSparkBranch = "${p.buildAgainstSparkBranch}"
+            sparkBranch = "${p.sparkBranch}"
+            hadoopVersion = "2.6"
+            backendMode = "external"
+            hdpVersion = "${p.hdpVersion}"
+            driverHadoopVersion = "${p.driverHadoopVersion}"
+            buildNightly = "false"
+            uploadNightly = "false"
+            dockerVersion = "8"
+        }
     }
 }
