@@ -192,12 +192,12 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val r = sparkDf.first()
     val dt = MojoDateTime.parse(r.getTimestamp(0).toString)
 
-    assert(dt.getYear == 1970)
-    assert(dt.getMonth == 1)
-    assert(dt.getDay == 18)
-    assert(dt.getHour == 17)
-    assert(dt.getMinute == 8)
-    assert(dt.getSecond == 11)
+    assert(dt.getYear == ts.toLocalDateTime.getYear)
+    assert(dt.getMonth == ts.toLocalDateTime.getMonth.getValue)
+    assert(dt.getDay == ts.toLocalDateTime.getDayOfMonth)
+    assert(dt.getHour == ts.toLocalDateTime.getHour)
+    assert(dt.getMinute == ts.toLocalDateTime.getMinute)
+    assert(dt.getSecond == ts.toLocalDateTime.getSecond)
   }
 
   private def assertPredictedValues(preds: Array[Row]): Unit = {
