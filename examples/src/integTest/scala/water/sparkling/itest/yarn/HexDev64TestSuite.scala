@@ -21,6 +21,7 @@ class HexDev64TestSuite extends FunSuite with IntegTestHelper {
         conf("spark.executor.memory", "8g") // 20g per executor
         conf("spark.ext.h2o.port.base", 63331)
         conf("spark.driver.memory", "8g")
+        isYarnIntegTest()
       }
     )
   }
