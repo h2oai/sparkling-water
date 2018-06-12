@@ -96,6 +96,10 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
 
   override def write: MLWriter = new H2OMOJOPipelineModelWriter(this)
 
+  private def selectFromArray(idx: Int) = udf[Double, mutable.WrappedArray[Double]] {
+    pred => pred(idx)
+  }
+
   override def transform(dataset: Dataset[_]): DataFrame = {
     val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
     val names = flatten.schema.fields.map(f => flatten(f.name))
@@ -106,10 +110,6 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
     // This behaviour is turned off by default, it can be enabled manually and will be default
     // in the release for Spark 2.4
     if ($(namedMojoOutputColumns)) {
-
-      def split(idx: Int) = udf[Double, mutable.WrappedArray[Double]] {
-        pred => pred(idx)
-      }
 
       def uniqueRandomName(colName: String, r: Random) = {
         var randName = r.nextString(30)
@@ -125,7 +125,7 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
       // Transform the resulted Array of predictions into own columns
       getOutputNames().indices.foreach { idx =>
         val name = getOutputNames()(idx)
-        converted = converted.withColumn(tempColNames(idx), split(idx)(converted.col(outputCol + ".preds")))
+        converted = converted.withColumn(tempColNames(idx), selectFromArray(idx)(converted.col(outputCol + ".preds")))
           .withColumn(outputCol, struct(tempCols.map(_.alias(name)): _*))
           .drop(tempColNames(idx))
 
@@ -144,16 +144,31 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
     StructType(schema ++ predictionSchema())
   }
 
-  def getInputNames(): Seq[String] = getOrCreateModel().getInputMeta.getColumnNames
+  def getInputNames(): Array[String] = getOrCreateModel().getInputMeta.getColumnNames
 
-  def getInputTypes(): Seq[String] = {
+  def getInputTypes(): Array[String] = {
     getOrCreateModel().getInputMeta.getColumnTypes.map(_.javatype)
   }
 
-  def getOutputNames(): Seq[String] = getOrCreateModel().getOutputMeta.getColumnNames
+  def getOutputNames(): Array[String] = getOrCreateModel().getOutputMeta.getColumnNames
 
-  def getOutputTypes(): Seq[String] = {
+  def getOutputTypes(): Array[String] = {
     getOrCreateModel().getOutputMeta.getColumnTypes.map(_.javatype)
+  }
+
+  def predictedValsFor(column: String) = {
+    if (!getOutputNames().contains(column)) {
+      throw new IllegalArgumentException(s"Column '$column' is not defined as the output column in MOJO Pipeline.")
+    }
+    if ($(namedMojoOutputColumns)) {
+      val func = udf[Double, Double] {
+        identity
+      }
+      func(col(s"$outputCol.$column")).alias(column)
+    } else {
+      val func = selectFromArray(getOutputNames().indexOf(column))
+      func(col(s"$outputCol.preds")).alias(column)
+    }
   }
 
 }
