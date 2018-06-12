@@ -8,30 +8,35 @@ properties(
         ]
 )
 
-node('dX-hadoop') {
-    // Clean workspace
-    sh 'rm -rf *'
-    // Get Sparkling Water and save the scm environment variables
-    checkout scm
-    // Get the script with the pipeline
-    def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
+node('docker && !mr-0xc8') {
+    docker.withRegistry("https://docker.h2o.ai") {
+        // Clean workspace
+        sh 'rm -rf *'
+        // Get Sparkling Water and save the scm environment variables
+        checkout scm
+        // Get the script with the pipeline
+        def pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
 
-    // Execute the pipeline
-    pipeline(params) { p ->
-        sparkVersion = "2.3.0"
-        runUnitTests = "true"
-        runLocalIntegTests = "true"
-        runScriptTests = "true"
-        runIntegTests = "true"
-        runPySparklingIntegTests = "true"
-        sparklingTestEnv = "yarn"
-        buildAgainstH2OBranch = "false"
-        h2oBranch = "master"
-        buildAgainstSparkBranch = "true"
-        sparkBranch = "branch-2.3"
-        hadoopVersion = "2.6"
-        backendMode = "internal"
-        buildNightly = "false"
-        uploadNightly = "false"
+        // Execute the pipeline
+        pipeline(params) { p ->
+            sparkVersion = "2.3.0"
+            runUnitTests = "true"
+            runPyUnitTests = "true"
+            runLocalIntegTests = "true"
+            runLocalPyIntegTests = "true"
+            runScriptTests = "true"
+            runIntegTests = "true"
+            runPySparklingIntegTests = "true"
+            sparklingTestEnv = "yarn"
+            buildAgainstH2OBranch = "false"
+            h2oBranch = "master"
+            buildAgainstSparkBranch = "true"
+            sparkBranch = "branch-2.3"
+            hadoopVersion = "2.6"
+            backendMode = "internal"
+            buildNightly = "false"
+            uploadNightly = "false"
+            dockerVersion = "8"
+        }
     }
 }

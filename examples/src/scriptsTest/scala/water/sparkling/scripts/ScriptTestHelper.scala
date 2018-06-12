@@ -34,7 +34,7 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll{
     sparkConf.set(SharedBackendConf.PROP_CLIENT_IP._1,
       sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress))
 
-    val cloudSize = 2
+    val cloudSize = 1
     sparkConf.set(ExternalBackendConf.PROP_EXTERNAL_H2O_NODES._1, cloudSize.toString)
 
     if(isExternalClusterUsed(sparkConf) && isManualClusterStartModeUsed(sparkConf)){

@@ -37,7 +37,7 @@ class H2OConfTest(unittest.TestCase):
             conf=unit_test_utils.get_default_spark_conf().set("spark.ext.h2o.cloud.name",
                                                               cls._cloud_name)).getOrCreate()
         unit_test_utils.set_up_class(cls)
-        h2o_conf = H2OConf(cls._spark).set_num_of_external_h2o_nodes(2)
+        h2o_conf = H2OConf(cls._spark).set_num_of_external_h2o_nodes(1)
         cls._hc = H2OContext.getOrCreate(cls._spark, h2o_conf)
 
     @classmethod
