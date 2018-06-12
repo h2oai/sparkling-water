@@ -56,6 +56,10 @@ trait IntegTestHelper extends BeforeAndAfterEach {
 
   }
 
+  def isYarnIntegTest() = {
+    testEnv.sparkConf += ExternalBackendConf.PROP_EXTERNAL_H2O_NODES._1 -> "2"
+  }
+
   // Helper function to setup environment
   def sparkMaster(uri: String) = sys.props += (("spark.master", uri))
 
@@ -72,7 +76,7 @@ trait IntegTestHelper extends BeforeAndAfterEach {
     testEnv.sparkConf += SharedBackendConf.PROP_CLIENT_IP._1 ->
       sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress)
 
-    val cloudSize = 2
+    val cloudSize = 1
     testEnv.sparkConf += ExternalBackendConf.PROP_EXTERNAL_H2O_NODES._1 -> cloudSize.toString
     if (isExternalClusterUsed() && isManualClusterStartModeUsed()) {
       testEnv.sparkConf += SharedBackendConf.PROP_BACKEND_CLUSTER_MODE._1 -> "external"
@@ -121,6 +125,8 @@ trait IntegTestHelper extends BeforeAndAfterEach {
     def verbose: Boolean = true
 
     def sparkConf: mutable.Map[String, String]
+
+    var isYarnIntegTest = false
   }
 
   private class TestEnvironment extends IntegTestEnv {

@@ -46,7 +46,7 @@ object TestPipelineUtils {
   }
 
   def trainedPipelineModel(spark: SparkSession) = {
-    implicit val hc = H2OContextTestHelper.createH2OContext(spark.sparkContext, 3)
+    implicit val hc = H2OContextTestHelper.createH2OContext(spark.sparkContext, 1)
     implicit val sqlContext = spark.sqlContext
     /**
       * Define the pipeline stages

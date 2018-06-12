@@ -105,7 +105,7 @@ f_weather = f_weather[1:]
 
 # Transform census table
 # Remove all spaces from column names (causing problems in Spark SQL)
-col_names = map(lambda s: s.strip().replace(' ', '_').replace('+', '_'), f_census.col_names)
+col_names = list(map(lambda s: s.strip().replace(' ', '_').replace('+', '_'), f_census.col_names))
 
 # Update column names in the table
 # f_weather.names = col_names
@@ -120,7 +120,7 @@ f_crimes = f_crimes[2:]
 h2o.cluster().timezone = "Etc/UTC"
 
 # Replace ' ' by '_' in column names
-col_names = map(lambda s: s.replace(' ', '_'), f_crimes.col_names)
+col_names = list(map(lambda s: s.replace(' ', '_'), f_crimes.col_names))
 f_crimes.names = col_names
 refine_date_col(f_crimes, "Date")
 f_crimes = f_crimes.drop("Date")
