@@ -179,8 +179,8 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
   }
 
   test("Timestamp column conversion from Spark to Mojo"){
-    val ts = new Timestamp(1526891676)
-
+    System.currentTimeMillis()
+    val ts = new Timestamp(System.currentTimeMillis())
     val data = List(ts)
 
     val sparkDf = spark.createDataFrame(
@@ -191,13 +191,15 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
 
     val r = sparkDf.first()
     val dt = MojoDateTime.parse(r.getTimestamp(0).toString)
-
-    assert(dt.getYear == 1970)
-    assert(dt.getMonth == 1)
-    assert(dt.getDay == 18)
-    assert(dt.getHour == 17)
-    assert(dt.getMinute == 8)
-    assert(dt.getSecond == 11)
+    import java.util.Calendar
+    val cal = Calendar.getInstance
+    cal.setTimeInMillis(ts.getTime)
+    assert(dt.getYear == cal.get(Calendar.YEAR))
+    assert(dt.getMonth == cal.get(Calendar.MONTH) + 1)
+    assert(dt.getDay == cal.get(Calendar.DAY_OF_MONTH))
+    assert(dt.getHour == cal.get(Calendar.HOUR_OF_DAY))
+    assert(dt.getMinute == cal.get(Calendar.MINUTE))
+    assert(dt.getSecond == cal.get(Calendar.SECOND))
   }
 
   private def assertPredictedValues(preds: Array[Row]): Unit = {
