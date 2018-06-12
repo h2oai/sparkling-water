@@ -36,7 +36,7 @@ node('docker && !mr-0xc8') {
             backendMode = "internal"
             buildNightly = "true"
             uploadNightly = "true"
-            dockerVersion = "8"
+            dockerVersion = "1"
         }
     }
 }
