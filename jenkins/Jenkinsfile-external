@@ -47,7 +47,7 @@ if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
     cancelPreviousBuilds()
 }
 
-node('docker && !mr-0xc8') {
+node('docker && micro') {
     docker.withRegistry("https://docker.h2o.ai") {
         // Clean workspace
         sh 'rm -rf *'

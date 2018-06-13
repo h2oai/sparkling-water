@@ -8,7 +8,7 @@ properties(
         ]
 )
 
-node('docker && !mr-0xc8') {
+node('docker && micro') {
     docker.withRegistry("https://docker.h2o.ai") {
 
         // Clean workspace
