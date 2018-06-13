@@ -79,7 +79,7 @@ class H2OMojoPredictionsTest(unittest.TestCase):
         assert normalSelection[3][0][0] == 65.78772654671035
         assert normalSelection[4][0][0] == 66.11327967814829
 
-        udfSelection = preds.select(mojo.predicted_vals_for("AGE")).take(5)
+        udfSelection = preds.select(mojo.select_prediction_udf("AGE")).take(5)
 
         assert udfSelection[0][0] == 65.36320409515132
         assert udfSelection[1][0] == 64.96902128114817
@@ -95,7 +95,7 @@ class H2OMojoPredictionsTest(unittest.TestCase):
         mojo.set_named_mojo_output_columns(True)
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
-        preds = mojo.predict(prostate_frame).repartition(1).select(mojo.predicted_vals_for("AGE")).take(5)
+        preds = mojo.predict(prostate_frame).repartition(1).select(mojo.select_prediction_udf("AGE")).take(5)
 
         assert preds[0][0] == 65.36320409515132
         assert preds[1][0] == 64.96902128114817

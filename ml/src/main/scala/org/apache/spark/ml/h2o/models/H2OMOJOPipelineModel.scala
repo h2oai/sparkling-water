@@ -156,7 +156,7 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
     getOrCreateModel().getOutputMeta.getColumnTypes.map(_.javatype)
   }
 
-  def predictedValsFor(column: String) = {
+  def selectPredictionUDF(column: String) = {
     if (!getOutputNames().contains(column)) {
       throw new IllegalArgumentException(s"Column '$column' is not defined as the output column in MOJO Pipeline.")
     }
