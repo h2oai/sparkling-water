@@ -25,7 +25,7 @@ node('docker && !mr-0xc8') {
             runLocalIntegTests = "true"
             runLocalPyIntegTests = "true"
             runScriptTests = "true"
-            runIntegTests = "true"
+            runIntegTests = "false"
             runPySparklingIntegTests = "true"
             sparklingTestEnv = "yarn"
             buildAgainstH2OBranch = "false"
