@@ -86,7 +86,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
 
 
     val transDf = mojo.transform(df)
-    val udfSelection = transDf.select(mojo.predictedValsFor("AGE"))
+    val udfSelection = transDf.select(mojo.selectPredictionUDF("AGE"))
     val normalSelection = transDf.select("prediction.preds")
 
     println(s"\n\nSpark Transformer Output:\n${transDf.dtypes.map { case (n, t) => s"${n}[${t}]" }.mkString(" ")}")
@@ -114,7 +114,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     mojo.setNamedMojoOutputColumns(true)
 
     val transDf = mojo.transform(df)
-    val udfSelection = transDf.select(mojo.predictedValsFor("AGE"))
+    val udfSelection = transDf.select(mojo.selectPredictionUDF("AGE"))
     val normalSelection = transDf.select("prediction.AGE")
 
     // Check that frames returned using udf and normal selection are the same
@@ -136,7 +136,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
 
     val transDf = mojo.transform(df)
     intercept[IllegalArgumentException] {
-      transDf.select(mojo.predictedValsFor("I_DO_NOT_EXIST")).first()
+      transDf.select(mojo.selectPredictionUDF("I_DO_NOT_EXIST")).first()
     }
   }
 
