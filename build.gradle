@@ -108,7 +108,8 @@ configure(subprojects) { project ->
         }
 
         mavenCentral()
-
+        jcenter()
+        
         // Public Sonatype repository
         maven {
             url "https://oss.sonatype.org/content/repositories/releases/"
