@@ -68,7 +68,7 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaMLReadable):
         self._java_obj.setNamedMojoOutputColumns(value)
         return self
 
-    def predicted_vals_for(self, column):
+    def select_prediction_udf(self, column):
         if column not in self.get_output_names():
             raise ValueError("Column '" + column + "' is not defined as the output column in MOJO Pipeline.")
 
