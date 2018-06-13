@@ -22,14 +22,15 @@ import generic_test_utils
 from integ_test_utils import *
 import unittest
 
+
 class LocalIntegTestSuite(unittest.TestCase):
 
     def test_pipeline_gbm_mojo(self):
         env = IntegTestEnv()
 
         env.set_spark_master("local")
-        env.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
-        env.conf("spark.executor.instances", 3)
+        env.conf("spark.yarn.max.executor.failures", 1)  # In fail of executor, fail the test
+        env.conf("spark.executor.instances", 1)
         env.conf("spark.executor.memory", "2g")
         env.conf("spark.ext.h2o.port.base", 63331)
         env.conf("spark.driver.memory", "2g")
@@ -41,8 +42,8 @@ class LocalIntegTestSuite(unittest.TestCase):
 
         env.set_spark_master("local")
         # Configure YARN environment
-        env.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
-        env.conf("spark.executor.instances", 3)
+        env.conf("spark.yarn.max.executor.failures", 1)  # In fail of executor, fail the test
+        env.conf("spark.executor.instances", 1)
         env.conf("spark.executor.memory", "2g")
         env.conf("spark.ext.h2o.port.base", 63331)
         env.conf("spark.driver.memory", "2g")
@@ -54,8 +55,8 @@ class LocalIntegTestSuite(unittest.TestCase):
 
         env.set_spark_master("local")
         # Configure YARN environment
-        env.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
-        env.conf("spark.executor.instances", 3)
+        env.conf("spark.yarn.max.executor.failures", 1)  # In fail of executor, fail the test
+        env.conf("spark.executor.instances", 1)
         env.conf("spark.executor.memory", "2g")
         env.conf("spark.ext.h2o.port.base", 63331)
         env.conf("spark.driver.memory", "2g")
@@ -67,13 +68,13 @@ class LocalIntegTestSuite(unittest.TestCase):
 
         env.set_spark_master("local")
         # Configure YARN environment
-        env.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
-        env.conf("spark.executor.instances", 3)
+        env.conf("spark.yarn.max.executor.failures", 1)  # In fail of executor, fail the test
+        env.conf("spark.executor.instances", 1)
         env.conf("spark.executor.memory", "2g")
         env.conf("spark.ext.h2o.port.base", 63331)
         env.conf("spark.driver.memory", "2g")
 
-        launch(env, "py/scripts/tests/pysparkling_ml_import_overrides_spark_test.py")
+        launch(env, "examples/scripts/tests/pysparkling_ml_import_overrides_spark_test.py")
 
 
 if __name__ == '__main__':
