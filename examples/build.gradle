@@ -96,4 +96,7 @@ scriptsTest {
   maxHeapSize = "4g"
   // Working dir will be root project
   workingDir = rootDir
+
+  // Show standard out and standard error of the test JVM(s) on the console
+  testLogging.showStandardStreams = true
 }
