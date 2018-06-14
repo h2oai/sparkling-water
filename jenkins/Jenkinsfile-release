@@ -12,7 +12,7 @@ pipeline {
     }
 
     environment {
-        SPARK_VERSION="2.3.0"
+        SPARK_VERSION="2.3.1"
         SPARK_HOME="${env.WORKSPACE}/spark"
         JAVA_HOME="/usr/lib/jvm/java-8-oracle/"
         PATH="/usr/lib/jvm/java-8-oracle/bin:${PATH}"

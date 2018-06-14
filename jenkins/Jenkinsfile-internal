@@ -7,7 +7,7 @@ properties(
                 parameters(
                         [
                                 choice(name: 'sparkVersion',
-                                        choices: '2.3.0',
+                                        choices: '2.3.1\n2.3.0',
                                         description: 'Version of Spark used for testing.'),
 
                                 booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit tests'),
@@ -66,7 +66,7 @@ node('docker && micro') {
             h2oBranch = "${p.h2oBranch}"
             buildAgainstSparkBranch = "${p.buildAgainstSparkBranch}"
             sparkBranch = "${p.sparkBranch}"
-            hadoopVersion = "2.6"
+            hadoopVersion = "2.7"
             backendMode = "internal"
             buildNightly = "false"
             uploadNightly = "false"
