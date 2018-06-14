@@ -33,7 +33,7 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, SQLContext}
 import org.json4s.JsonAST.JArray
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import org.json4s.{JNull, JString, JValue}
+import org.json4s.{JDouble, JNull, JString, JValue}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
@@ -80,17 +80,20 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     spec.input_spec.fold_column = getFoldColumn()
     spec.input_spec.weights_column = getWeightsColumn()
     spec.input_spec.ignored_columns = getIgnoredColumns()
-    spec.feature_engineering.try_mutations = getTryMutations()
+    spec.input_spec.sort_metric = getSortMetric()
     spec.build_models.exclude_algos = getExcludeAlgos()
     spec.build_control.project_name = getProjectName()
-    spec.build_control.loss = getLoss()
     spec.build_control.stopping_criteria.set_seed(getSeed())
     spec.build_control.stopping_criteria.set_max_runtime_secs(getMaxRuntimeSecs())
     spec.build_control.stopping_criteria.set_stopping_rounds(getStoppingRounds())
     spec.build_control.stopping_criteria.set_stopping_tolerance(getStoppingTolerance())
     spec.build_control.stopping_criteria.set_stopping_metric(getStoppingMetric())
     spec.build_control.nfolds = getNfolds()
-
+    spec.build_control.balance_classes = getBalanceClasses()
+    spec.build_control.class_sampling_factors = getClassSamplingFactors()
+    spec.build_control.max_after_balance_size = getMaxAfterBalanceSize()
+    spec.build_control.keep_cross_validation_predictions = getKeepCrossValidationPredictions()
+    spec.build_control.keep_cross_validation_models = getKeepCrossValidationModels()
     water.DKV.put(trainFrame)
     val aml = new AutoML(Key.make(uid), new Date(), spec)
     AutoML.startAutoML(aml)
@@ -190,11 +193,9 @@ trait H2OAutoMLParams extends Params {
   private final val foldColumn = new NullableStringParam(this, "foldColumn", "Fold column name")
   private final val weightsColumn = new NullableStringParam(this, "weightsColumn", "Weights column name")
   private final val ignoredColumns = new StringArrayParam(this, "ignoredColumns", "Ignored columns names")
-  private final val tryMutations = new BooleanParam(this, "tryMutations", "Whether to use mutations as part of the feature engineering")
   private final val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
   private final val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
     " (e.g., airlines and iris)")
-  private final val loss = new NullableStringParam(this, "loss", "loss")
   private final val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
   private final val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
   private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
@@ -203,7 +204,12 @@ trait H2OAutoMLParams extends Params {
   private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
     " categorical levels to NA during predictions")
   private final val seed = new IntParam(this, "seed", "seed")
-
+  private final val sortMetric = new NullableStringParam(this, "sortMetric", "Sort metric for the AutoML leaderboard")
+  private final val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
+  private final val classSamplingFactors = new NullableFloatArrayParam(this, "classSamplingFactors", "Class sampling factors")
+  private final val maxAfterBalanceSize = new FloatParam(this, "maxAfterBalanceSize", "Max after balance size")
+  private final val keepCrossValidationPredictions = new BooleanParam(this, "keepCrossValidationPredictions", "Keep cross Validation predictions")
+  private final val keepCrossValidationModels = new BooleanParam(this, "keepCrossValidationModels", "Keep cross validation models")
   //
   // Default values
   //
@@ -215,17 +221,21 @@ trait H2OAutoMLParams extends Params {
     foldColumn -> null,
     weightsColumn -> null,
     ignoredColumns -> Array.empty[String],
-    tryMutations -> true,
     excludeAlgos -> null,
     projectName -> null, // will be automatically generated
-    loss -> "AUTO",
     maxRuntimeSecs -> 3600,
     stoppingRounds -> 3,
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
     nfolds -> 5,
     convertUnknownCategoricalLevelsToNa -> false,
-    seed -> -1 // true random
+    seed -> -1, // true random
+    sortMetric -> null,
+    balanceClasses -> false,
+    classSamplingFactors -> null,
+    maxAfterBalanceSize -> 5.0f,
+    keepCrossValidationPredictions -> true,
+    keepCrossValidationModels -> true
   )
 
   //
@@ -253,16 +263,10 @@ trait H2OAutoMLParams extends Params {
   def getIgnoredColumns() = $(ignoredColumns)
 
   /** @group getParam */
-  def getTryMutations() = $(tryMutations)
-
-  /** @group getParam */
   def getExcludeAlgos() = $(excludeAlgos)
 
   /** @group getParam */
   def getProjectName() = $(projectName)
-
-  /** @group getParam */
-  def getLoss() = $(loss)
 
   /** @group getParam */
   def getMaxRuntimeSecs() = $(maxRuntimeSecs)
@@ -281,8 +285,27 @@ trait H2OAutoMLParams extends Params {
 
   /** @group getParam */
   def getConvertUnknownCategoricalLevelsToNa() = $(convertUnknownCategoricalLevelsToNa)
+
   /** @group getParam */
   def getSeed() = $(seed)
+
+  /** @group getParam */
+  def getSortMetric() = $(sortMetric)
+
+  /** @group getParam */
+  def getBalanceClasses() = $(balanceClasses)
+
+  /** @group getParam */
+  def getClassSamplingFactors() = $(classSamplingFactors)
+
+  /** @group getParam */
+  def getMaxAfterBalanceSize() = $(maxAfterBalanceSize)
+
+  /** @group getParam */
+  def getKeepCrossValidationPredictions() = $(keepCrossValidationPredictions)
+
+  /** @group getParam */
+  def getKeepCrossValidationModels() = $(keepCrossValidationModels)
 
   //
   // Setters
@@ -294,10 +317,10 @@ trait H2OAutoMLParams extends Params {
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
 
   /** @group setParam */
-  def setColumnsToCategorical(first: String, others: String*): this.type  = set(columnsToCategorical, Array(first) ++ others)
+  def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
 
   /** @group setParam */
-  def setColumnsToCategorical(columns: Array[String]): this.type  = set(columnsToCategorical, columns)
+  def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
 
   /** @group setParam */
   def setRatio(value: Double): this.type = set(ratio, value)
@@ -312,16 +335,10 @@ trait H2OAutoMLParams extends Params {
   def setIgnoredColumns(value: Array[String]): this.type = set(ignoredColumns, value)
 
   /** @group setParam */
-  def setTryMutations(value: Boolean): this.type = set(tryMutations, value)
-
-  /** @group setParam */
   def setExcludeAlgos(value: Array[AutoML.algo]): this.type = set(excludeAlgos, value)
 
   /** @group setParam */
   def setProjectName(value: String): this.type = set(projectName, value)
-
-  /** @group setParam */
-  def setLoss(value: String): this.type = set(loss, value)
 
   /** @group setParam */
   def setMaxRuntimeSecs(value: Double): this.type = set(maxRuntimeSecs, value)
@@ -344,7 +361,35 @@ trait H2OAutoMLParams extends Params {
   /** @group setParam */
   def setSeed(value: Int): this.type = set(seed, value)
 
+  /** @group setParam */
+  def setSortMetric(value: String): this.type = {
+    val allowedValues = Seq("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "mean_per_class_error")
+    if (!allowedValues.contains(value)) {
+      throw new IllegalArgumentException(s"Allowed values for AutoML Stopping Metric are: ${allowedValues.mkString(", ")}")
+    }
+    if (value == "AUTO") {
+      set(sortMetric, null)
+    } else {
+      set(sortMetric, value)
+    }
+  }
+
+  /** @group setParam */
+  def setBalanceClasses(value: Boolean): this.type = set(balanceClasses, value)
+
+  /** @group setParam */
+  def setClassSamplingFactors(value: Array[Float]): this.type = set(classSamplingFactors, value)
+
+  /** @group setParam */
+  def setMaxAfterBalanceSize(value: Float): this.type = set(maxAfterBalanceSize, value)
+
+  /** @group setParam */
+  def setKeepCrossValidationPredictions(value: Boolean): this.type = set(keepCrossValidationPredictions, value)
+
+  /** @group setParam */
+  def setKeepCrossValidationModels(value: Boolean): this.type = set(keepCrossValidationModels, value)
 }
+
 
 class H2OAutoMLAlgosParam private(parent: Params, name: String, doc: String, isValid: Array[AutoML.algo] => Boolean)
   extends Param[Array[AutoML.algo]](parent, name, doc, isValid) {
@@ -411,4 +456,56 @@ class H2OAutoMLStoppingMetricParam private(parent: Params, name: String, doc: St
 
   }
 }
+
+class NullableFloatArrayParam(parent: Params, name: String, doc: String, isValid: Array[Float] => Boolean)
+  extends Param[Array[Float]](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) =
+    this(parent, name, doc, _ => true)
+
+  /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
+  def w(value: java.util.List[java.lang.Float]): ParamPair[Array[Float]] =
+    w(value.asScala.map(_.asInstanceOf[Float]).toArray)
+
+  override def jsonEncode(value: Array[Float]): String = {
+    if (value == null) {
+      compact(render(JNull))
+    } else {
+      import org.json4s.JsonDSL._
+      compact(render(value.toSeq.map {
+        case v if v.isNaN =>
+          JString("NaN")
+        case Float.NegativeInfinity =>
+          JString("-Inf")
+        case Float.PositiveInfinity =>
+          JString("Inf")
+        case v =>
+          JDouble(v)
+      }))
+    }
+  }
+
+  override def jsonDecode(json: String): Array[Float] = {
+    parse(json) match {
+      case JNull =>
+        null
+      case JArray(values) =>
+        values.map {
+          case JString("NaN") =>
+            Float.NaN
+          case JString("-Inf") =>
+            Float.NegativeInfinity
+          case JString("Inf") =>
+            Float.PositiveInfinity
+          case JDouble(x) =>
+            x.toFloat
+          case jValue =>
+            throw new IllegalArgumentException(s"Cannot decode $jValue to Float.")
+        }.toArray
+      case _ =>
+        throw new IllegalArgumentException(s"Cannot decode $json to Array[Float].")
+    }
+  }
+}
+
 
