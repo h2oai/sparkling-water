@@ -74,19 +74,18 @@ def prepareSparkEnvironment() {
                     cp -r ./dist/ ${env.SPARK_HOME}
                     """
             }else {
-                if(config.sparkVersion == "2.1.2"){
-                    sh  """
-                        cp -R \${SPARK_HOME_2_1_2} ${env.SPARK_HOME}
-                        """
-                } else if(config.sparkVersion == "2.1.1"){
-                    sh  """
-                        cp -R \${SPARK_HOME_2_1_1} ${env.SPARK_HOME}
-                        """
-                } else{
-                    sh  """
-                        cp -R \${SPARK_HOME_2_1_0} ${env.SPARK_HOME}
-                        """
-                }
+                sh  """
+                    # Download Spark
+                    if [ "${config.sparkVersion}" = "2.1.2" ]; then
+                        # Spark 2.1.2 is available here, but not the older versions
+                        wget -q "http://mirrors.ocf.berkeley.edu/apache/spark/spark-${config.sparkVersion}/${env.SPARK}.tgz"
+                    else   
+                        wget -q "http://d3kbcqa49mib13.cloudfront.net/${env.SPARK}.tgz"
+                    fi
+                    mkdir -p "${env.SPARK_HOME}"
+                    tar zxvf ${env.SPARK}.tgz -C "${env.SPARK_HOME}" --strip-components 1
+                    rm -rf ${env.SPARK}.tgz
+                    """
             }
 
             sh  """
