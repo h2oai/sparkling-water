@@ -58,7 +58,7 @@ node('dX-hadoop') {
         h2oBranch = "${p.h2oBranch}"
         buildAgainstSparkBranch = "${p.buildAgainstSparkBranch}"
         sparkBranch = "${p.sparkBranch}"
-        hadoopVersion = "2.6"
+        hadoopVersion = "2.7"
         backendMode = "internal"
         buildNightly = "false"
         uploadNightly = "false"
