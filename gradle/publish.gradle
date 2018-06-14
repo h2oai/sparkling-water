@@ -124,7 +124,7 @@ publishing {
             url "$rootDir/build/repo"
         }
 
-        if (project.hasProperty("doRelease1")) {
+        if (project.hasProperty("doRelease")) {
             maven {
                 name "SonatypeRelease"
                 url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
