@@ -111,7 +111,7 @@ class H2OAlgorithmParams(Params):
         return self._set(seed=value)
 
     def setDistribution(self, value):
-        assert_is_type(value, None, Enum("AUTO", "bernoulli", "multinomial", "gaussian", "poisson", "gamma", "tweedie", "laplace", "quantile", "huber"))
+        assert_is_type(value, None, Enum("AUTO", "bernoulli", "quasibinomial", "modified_huber", "multinomial", "ordinal", "gaussian", "poisson", "gamma", "tweedie", "huber", "laplace", "quantile"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.genmodel.utils.DistributionFamily.values(), value)
         return self._set(distribution=jvm.hex.genmodel.utils.DistributionFamily.valueOf(correct_case_value))
@@ -382,11 +382,9 @@ class H2OAutoMLParams(Params):
     foldColumn = Param(Params._dummy(), "foldColumn", "Fold column name")
     weightsColumn = Param(Params._dummy(), "weightsColumn", "Weights column name")
     ignoredColumns = Param(Params._dummy(), "ignoredColumns", "Ignored columns names")
-    tryMutations = Param(Params._dummy(), "tryMutations", "Whether to use mutations as part of the feature engineering")
     excludeAlgos = Param(Params._dummy(), "excludeAlgos", "Algorithms to exclude when using automl")
     projectName = Param(Params._dummy(), "projectName", "dentifier for models that should be grouped together in the leaderboard" +
                         " (e.g., airlines and iris)")
-    loss = Param(Params._dummy(), "loss", "loss")
     maxRuntimeSecs = Param(Params._dummy(), "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
     stoppingRounds = Param(Params._dummy(), "stoppingRounds", "Stopping rounds")
     stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "Stopping tolerance")
@@ -394,6 +392,12 @@ class H2OAutoMLParams(Params):
     nfolds = Param(Params._dummy(), "nfolds", "Cross-validation fold construction")
     convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
     seed = Param(Params._dummy(), "seed", "Seed for random numbers")
+    sortMetric = Param(Params._dummy(), "sortMetric", "Sort metric for the AutoML leaderboard")
+    balanceClasses = Param(Params._dummy(), "balanceClasses", "Balance classes")
+    classSamplingFactors = Param(Params._dummy(), "classSamplingFactors", "Class sampling factors")
+    maxAfterBalanceSize = Param(Params._dummy(), "maxAfterBalanceSize", "Max after balance size")
+    keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Keep cross validation predictions")
+    keepCrossValidationModels = Param(Params._dummy(), "keepCrossValidationModels", "Keep cross validation models")
 
     ##
     # Getters
@@ -458,6 +462,24 @@ class H2OAutoMLParams(Params):
 
     def getSeed(self):
         return self.getOrDefault(self.seed)
+
+    def getSortMetric(self):
+        return self.getOrDefault(self.sortMetric)
+
+    def getBalanceClasses(self):
+        return self.getOrDefault(self.balanceClasses)
+
+    def getClassSamplingFactors(self):
+        return self.getOrDefault(self.classSamplingFactors)
+
+    def getMaxAfterBalanceSize(self):
+        return self.getOrDefault(self.maxAfterBalanceSize)
+
+    def getKeepCrossValidationPredictions(self):
+        return self.getOrDefault(self.keepCrossValidationPredictions)
+
+    def getKeepCrossValidationModels(self):
+        return self.getOrDefault(self.keepCrossValidationModels)
 
     ##
     # Setters
@@ -542,3 +564,27 @@ class H2OAutoMLParams(Params):
     def setSeed(self, value):
         assert_is_type(value, int)
         return self._set(seed=value)
+
+    def setSortMetric(self, value):
+        assert_is_type(value, "AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC" "mean_per_class_error")
+        return self._set(sortMetric=value)
+
+    def setBalanceClasses(self, value):
+        assert_is_type(value, bool)
+        return self._set(balanceClasses=value)
+
+    def setClassSamplingFactors(self, value):
+        assert_is_type(value, [int, float])
+        return self._set(classSamplingFactors=value)
+
+    def setMaxAfterBalanceSize(self, value):
+        assert_is_type(value, int, float)
+        return self._set(maxAfterBalanceSize=value)
+
+    def setKeepCrossValidationPredictions(self, value):
+        assert_is_type(value, bool)
+        return self._set(keepCrossValidationPredictions=value)
+
+    def setKeepCrossValidationModels(self, value):
+        assert_is_type(value, bool)
+        return self._set(keepCrossValidationModels=value)
