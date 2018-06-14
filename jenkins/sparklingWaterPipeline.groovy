@@ -73,7 +73,7 @@ def prepareSparkEnvironment() {
                     ./dev/make-distribution.sh --name custom-spark --pip -Phadoop-${config.hadoopVersion} -Pyarn
                     cp -r ./dist/ ${env.SPARK_HOME}
                     """
-            }else {
+            } else {
                 sh  """
                     # Download Spark
                     if [ "${config.sparkVersion}" = "2.1.2" ]; then
