@@ -70,7 +70,7 @@ node('docker && micro') {
             h2oBranch = "${p.h2oBranch}"
             buildAgainstSparkBranch = "${p.buildAgainstSparkBranch}"
             sparkBranch = "${p.sparkBranch}"
-            hadoopVersion = "2.6"
+            hadoopVersion = "2.7"
             backendMode = "external"
             hdpVersion = "${p.hdpVersion}"
             driverHadoopVersion = "${p.driverHadoopVersion}"
