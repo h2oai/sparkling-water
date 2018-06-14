@@ -1,6 +1,36 @@
 Change Log
 ==========
 
+v2.3.6 (2018-06-14)
+-------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/6/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/6/index.html>`__
+
+-  Bug
+        
+   -  `SW-712 <https://0xdata.atlassian.net/browse/SW-712>`__ - Test non-distributed sparkling water tests in docker
+   -  `SW-850 <https://0xdata.atlassian.net/browse/SW-850>`__ - Expose methods to get input/output names in H2OMOJOPipelineModel
+   -  `SW-859 <https://0xdata.atlassian.net/browse/SW-859>`__ - Print Warning when spark-home is defined on PATH
+   -  `SW-862 <https://0xdata.atlassian.net/browse/SW-862>`__ - Create &amp; fix test in PySparkling for named mojo columns
+   -  `SW-864 <https://0xdata.atlassian.net/browse/SW-864>`__ - Fix &amp; more readable test
+   -  `SW-865 <https://0xdata.atlassian.net/browse/SW-865>`__ - Better Naming of the UDF method to obtain predictions
+   -  `SW-869 <https://0xdata.atlassian.net/browse/SW-869>`__ - Add repository to build required by xgboost-predictor
+                
+-  Story
+        
+   -  `SW-856 <https://0xdata.atlassian.net/browse/SW-856>`__ - Upgrade Mojo2 to latest version
+                
+-  Improvement
+        
+   -  `SW-839 <https://0xdata.atlassian.net/browse/SW-839>`__ - Verify that Spark time column representation can be digested by Mojo2
+   -  `SW-848 <https://0xdata.atlassian.net/browse/SW-848>`__ - Document Kerberos on Sparkling Water
+   -  `SW-849 <https://0xdata.atlassian.net/browse/SW-849>`__ - Update use from maven on sparkling water download page
+   -  `SW-851 <https://0xdata.atlassian.net/browse/SW-851>`__ - Make use of output types when creating Spark DataFrame out of mojo2 predicted values
+   -  `SW-852 <https://0xdata.atlassian.net/browse/SW-852>`__ - Create spark UDF used to extract predicted values
+   -  `SW-853 <https://0xdata.atlassian.net/browse/SW-853>`__ - Sparkling Water py should require pyspark dependency
+   -  `SW-854 <https://0xdata.atlassian.net/browse/SW-854>`__ - Upgrade MojoPipeline to 0.10.0
+   -  `SW-855 <https://0xdata.atlassian.net/browse/SW-855>`__ - Upgrade H2O to 3.18.0.11
+                
+                                
 v2.3.5 (2018-05-23)
 -------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/5/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/5/index.html>`__
