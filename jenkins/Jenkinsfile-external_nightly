@@ -20,7 +20,7 @@ node('docker && micro') {
 
         // Execute the pipeline
         pipeline(params) { p ->
-            sparkVersion = "2.3.0"
+            sparkVersion = "2.3.1"
             runUnitTests = "true"
             runPyUnitTests = "true"
             runLocalIntegTests = "true"
@@ -33,7 +33,7 @@ node('docker && micro') {
             h2oBranch = "master"
             buildAgainstSparkBranch = "false"
             sparkBranch = "master"
-            hadoopVersion = "2.6"
+            hadoopVersion = "2.7"
             backendMode = "external"
             hdpVersion = "2.2.6.3-1"
             driverHadoopVersion = "hdp2.2"
