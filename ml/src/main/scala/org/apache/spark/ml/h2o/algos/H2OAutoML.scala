@@ -33,7 +33,7 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, SQLContext}
 import org.json4s.JsonAST.JArray
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import org.json4s.{JNull, JString, JValue}
+import org.json4s.{JDouble, JNull, JString, JValue}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
@@ -204,9 +204,9 @@ trait H2OAutoMLParams extends Params {
   private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
     " categorical levels to NA during predictions")
   private final val seed = new IntParam(this, "seed", "seed")
-  private final val sortMetric = new Param[String](this, "sortMetric", "Sort metric for the AutoML leaderboard")
+  private final val sortMetric = new NullableStringParam(this, "sortMetric", "Sort metric for the AutoML leaderboard")
   private final val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
-  private final val classSamplingFactors = new Param[Array[Float]](this, "classSamplingFactors", "Class sampling factors")
+  private final val classSamplingFactors = new NullableFloatArrayParam(this, "classSamplingFactors", "Class sampling factors")
   private final val maxAfterBalanceSize = new FloatParam(this, "maxAfterBalanceSize", "Max after balance size")
   private final val keepCrossValidationPredictions = new BooleanParam(this, "keepCrossValidationPredictions", "Keep cross Validation predictions")
   private final val keepCrossValidationModels = new BooleanParam(this, "keepCrossValidationModels", "Keep cross validation models")
@@ -230,7 +230,7 @@ trait H2OAutoMLParams extends Params {
     nfolds -> 5,
     convertUnknownCategoricalLevelsToNa -> false,
     seed -> -1, // true random
-    sortMetric -> "AUTO",
+    sortMetric -> null,
     balanceClasses -> false,
     classSamplingFactors -> null,
     maxAfterBalanceSize -> 5.0f,
@@ -367,7 +367,11 @@ trait H2OAutoMLParams extends Params {
     if (!allowedValues.contains(value)) {
       throw new IllegalArgumentException(s"Allowed values for AutoML Stopping Metric are: ${allowedValues.mkString(", ")}")
     }
-    set(sortMetric, value)
+    if (value == "AUTO") {
+      set(sortMetric, null)
+    } else {
+      set(sortMetric, value)
+    }
   }
 
   /** @group setParam */
@@ -452,4 +456,56 @@ class H2OAutoMLStoppingMetricParam private(parent: Params, name: String, doc: St
 
   }
 }
+
+class NullableFloatArrayParam(parent: Params, name: String, doc: String, isValid: Array[Float] => Boolean)
+  extends Param[Array[Float]](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) =
+    this(parent, name, doc, _ => true)
+
+  /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
+  def w(value: java.util.List[java.lang.Float]): ParamPair[Array[Float]] =
+    w(value.asScala.map(_.asInstanceOf[Float]).toArray)
+
+  override def jsonEncode(value: Array[Float]): String = {
+    if (value == null) {
+      compact(render(JNull))
+    } else {
+      import org.json4s.JsonDSL._
+      compact(render(value.toSeq.map {
+        case v if v.isNaN =>
+          JString("NaN")
+        case Float.NegativeInfinity =>
+          JString("-Inf")
+        case Float.PositiveInfinity =>
+          JString("Inf")
+        case v =>
+          JDouble(v)
+      }))
+    }
+  }
+
+  override def jsonDecode(json: String): Array[Float] = {
+    parse(json) match {
+      case JNull =>
+        null
+      case JArray(values) =>
+        values.map {
+          case JString("NaN") =>
+            Float.NaN
+          case JString("-Inf") =>
+            Float.NegativeInfinity
+          case JString("Inf") =>
+            Float.PositiveInfinity
+          case JDouble(x) =>
+            x.toFloat
+          case jValue =>
+            throw new IllegalArgumentException(s"Cannot decode $jValue to Float.")
+        }.toArray
+      case _ =>
+        throw new IllegalArgumentException(s"Cannot decode $json to Array[Float].")
+    }
+  }
+}
+
 

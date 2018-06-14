@@ -464,7 +464,11 @@ class H2OAutoMLParams(Params):
         return self.getOrDefault(self.seed)
 
     def getSortMetric(self):
-        return self.getOrDefault(self.sortMetric)
+        metric = self.getOrDefault(self.sortMetric)
+        if metric is None:
+            return "AUTO"
+        else:
+            return metric
 
     def getBalanceClasses(self):
         return self.getOrDefault(self.balanceClasses)
@@ -566,8 +570,11 @@ class H2OAutoMLParams(Params):
         return self._set(seed=value)
 
     def setSortMetric(self, value):
-        assert_is_type(value, "AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC" "mean_per_class_error")
-        return self._set(sortMetric=value)
+        assert_is_type(value, None, "AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC" "mean_per_class_error")
+        if value is "AUTO":
+            return self._set(sortMetric=None)
+        else:
+            return self._set(sortMetric=value)
 
     def setBalanceClasses(self, value):
         assert_is_type(value, bool)
