@@ -322,9 +322,7 @@ def localPyIntegTest() {
             withDocker(config) {
                 if (config.runLocalPyIntegTests.toBoolean()) {
                     try {
-                        if(config.backendMode == "external"){
-                            sh  "sudo -E /usr/sbin/startup.sh"
-                        }
+                        sh "sudo -E /usr/sbin/startup.sh"
                         sh """
                         # Run local integration tests
                         . /envs/h2o_env_python2.7/bin/activate
@@ -341,6 +339,7 @@ def localPyIntegTest() {
             withDocker(config) {
                 if (config.runLocalPyIntegTests.toBoolean()) {
                     try {
+                        sh "sudo -E /usr/sbin/startup.sh"
                         sh """
                         # Run local integration tests
                         . /envs/h2o_env_python3.6/bin/activate
