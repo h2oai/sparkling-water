@@ -36,14 +36,15 @@ import water.support.ModelSerializationSupport
   */
 class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val uid: String)
                      (implicit h2oContext: H2OContext, sqlContext: SQLContext)
-                      extends H2OAlgorithm[DeepLearningParameters, H2OMOJOModel](parameters)
-                      with H2ODeepLearningParams {
+  extends H2OAlgorithm[DeepLearningParameters, H2OMOJOModel](parameters)
+    with H2ODeepLearningParams {
 
-  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("dl"))
+  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("deeplearning"))
 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
 
-  def this(parameters: DeepLearningParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("dl"))
+  def this(parameters: DeepLearningParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters),
+    Identifiable.randomUID("deeplearning"))
 
   def this(parameters: DeepLearningParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
 
@@ -58,7 +59,7 @@ class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val u
 
 object H2ODeepLearning extends MLReadable[H2ODeepLearning] {
 
-  private final val defaultFileName = "dl_params"
+  private final val defaultFileName = "deeplearning_params"
 
   @Since("1.6.0")
   override def read: MLReader[H2ODeepLearning] = new H2OAlgorithmReader[H2ODeepLearning, DeepLearningParameters](defaultFileName)
@@ -101,12 +102,16 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
   //
   /** @group getParam */
   def getEpochs() = $(epochs)
+
   /** @group getParam */
   def getL1() = $(l1)
+
   /** @group getParam */
   def getL2() = $(l2)
+
   /** @group getParam */
   def getHidden() = $(hidden)
+
   /** @group getParam */
   def getReproducible() = $(reproducible)
 
@@ -115,12 +120,16 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
   //
   /** @group setParam */
   def setEpochs(value: Double): this.type = set(epochs, value)
+
   /** @group setParam */
   def setL1(value: Double): this.type = set(l1, value)
+
   /** @group setParam */
   def setL2(value: Double): this.type = set(l2, value)
+
   /** @group setParam */
   def setHidden(value: Array[Int]): this.type = set(hidden, value)
+
   /** @group setParam */
   def setReproducible(value: Boolean): this.type = set(reproducible, value)
 

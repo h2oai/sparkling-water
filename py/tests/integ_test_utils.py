@@ -79,7 +79,7 @@ def launch(test_env, script_name, param=None):
         cloud_ip = generic_test_utils.local_ip()
         test_env.conf("spark.ext.h2o.client.ip", cloud_ip)
         test_env.conf("spark.ext.h2o.backend.cluster.mode", "external")
-        test_env.conf("spark.ext.h2o.external.cluster.num.h2o.nodes", "2")
+        test_env.conf("spark.ext.h2o.external.cluster.num.h2o.nodes", "1")
     else:
         test_env.conf("spark.ext.h2o.backend.cluster.mode", "internal")
 
