@@ -216,7 +216,8 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
                                 svm.run(training, vec2vec(_parms.initialWeights().vecs()));
                 training.unpersist(false);
 
-                sc.listenerBus().listeners().remove(progressBar);
+
+                sc.removeSparkListener(progressBar);
 
                 model._output.weights_$eq(trainedModel.weights().toArray());
                 model._output.iterations_$eq(_parms._max_iterations);
