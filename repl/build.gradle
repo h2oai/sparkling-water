@@ -1,4 +1,4 @@
-description = "Sparkling Water Repl Package"
+description = "Sparkling Water REPL"
 
 apply from: "$rootDir/gradle/utils.gradle"
 
