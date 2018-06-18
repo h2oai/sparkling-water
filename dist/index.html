@@ -480,14 +480,14 @@
             <p>3. Set the HADOOP_CONF_DIR and Spark MASTER environmental variables.</p>
             <p class="terminal">
               export HADOOP_CONF_DIR=/etc/hadoop/conf <br />
-              export MASTER="yarn-client" <br />
+              export MASTER="yarn" <br />
             </p>
             <p>4. Download Spark and Use spark-submit to launch Sparkling Shell on YARN.</p>
             <p class="terminal">
               wget <script type="text/javascript">var url = location.href; var url2 = url.substring(0, url.lastIndexOf("/")); document.write(url2);</script>/sparkling-water-SUBST_PROJECT_VERSION.zip <br/>
               unzip sparkling-water-SUBST_PROJECT_VERSION.zip <br />
               cd sparkling-water-SUBST_PROJECT_VERSION/ <br />
-              bin/sparkling-shell --num-executors 3 --executor-memory 2g --master yarn-client <br />
+              bin/sparkling-shell --num-executors 3 --executor-memory 2g --master yarn --deploy-mode client <br />
             </p>
             <p>5. Create an H<sub>2</sub>O cloud inside the Spark cluster:</p>
             <p class="terminal">
