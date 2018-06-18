@@ -36,7 +36,7 @@ dependencies {
   compile "ai.h2o:h2o-algos:${h2oVersion}"
   // H2O web
   compile "ai.h2o:h2o-web:${h2oVersion}"
-  // H2O Avro parser support 
+  // H2O Avro parser support
   compile("ai.h2o:h2o-avro-parser:${h2oVersion}") {
       exclude group: 'org.apache.avro', module: 'avro'
       exclude group: 'ai.h2o', module: 'h2o-core'
