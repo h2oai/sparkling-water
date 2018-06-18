@@ -134,3 +134,5 @@ val table:H2OFrame = resultRDD
 
 // OPEN FLOW UI
 openFlow
+
+h2oContext.stop()

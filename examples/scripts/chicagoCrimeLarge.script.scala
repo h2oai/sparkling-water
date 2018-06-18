@@ -113,3 +113,4 @@ plot (g) -> g(
 )
 */
 
+h2oContext.stop()

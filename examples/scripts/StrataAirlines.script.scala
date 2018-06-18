@@ -96,3 +96,4 @@ val glmModel = glm.trainModel().get()
 val predGLMH2OFrame = glmModel.score(trainFrame)('predict)
 val predGLMFromModel = asRDD[DoubleHolder](predGLMH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
 
+h2oContext.stop()
