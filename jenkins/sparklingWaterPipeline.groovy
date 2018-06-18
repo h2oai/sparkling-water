@@ -66,7 +66,7 @@ def call(params, body) {
 }
 
 def withDocker(config, code) {
-    def image = 'opsh2oai/sparkling_water_tests:' + config.dockerVersion
+    def image = 'opsh2oai/debug_sparkling_water_tests:' + config.dockerVersion
     withCredentials([usernamePassword(credentialsId: "docker.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
       sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
       sh "docker pull docker.h2o.ai/${image}"
