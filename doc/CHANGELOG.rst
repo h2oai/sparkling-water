@@ -1,6 +1,27 @@
 Change Log
 ==========
 
+v2.1.32 (2018-06-18)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/32/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/32/index.html>`__
+
+-  Bug
+        
+   -  `SW-861 <https://0xdata.atlassian.net/browse/SW-861>`__ - Upgrade Gradle to 4.8 (publishing plugin)
+   -  `SW-872 <https://0xdata.atlassian.net/browse/SW-872>`__ - Fix reference to local-cluster on download page
+   -  `SW-880 <https://0xdata.atlassian.net/browse/SW-880>`__ - Update Hadoop version on download page
+   -  `SW-881 <https://0xdata.atlassian.net/browse/SW-881>`__ - Fix Script tests on Dockerized Jenkins infrastructure
+   -  `SW-882 <https://0xdata.atlassian.net/browse/SW-882>`__ - Call h2oContext.stop after ham or spam Scala example
+   -  `SW-883 <https://0xdata.atlassian.net/browse/SW-883>`__ - Add mising description in publish.gradle
+                
+-  Improvement
+        
+   -  `SW-860 <https://0xdata.atlassian.net/browse/SW-860>`__ - Modify the hadoop launch command on download page
+   -  `SW-873 <https://0xdata.atlassian.net/browse/SW-873>`__ - Upgrade H2O to 3.20.0.1
+   -  `SW-874 <https://0xdata.atlassian.net/browse/SW-874>`__ - Update Mojo2 to 0.10.4
+   -  `SW-879 <https://0xdata.atlassian.net/browse/SW-879>`__ - Print output of script tests
+                
+                                
 v2.1.31 (2018-06-13)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/31/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/31/index.html>`__
