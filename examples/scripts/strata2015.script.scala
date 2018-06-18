@@ -160,3 +160,5 @@ val bikesWeatherRdd = sqlContext.sql(
 
 // And make prediction again but now on RDD
 val result2 = buildModel(bikesWeatherRdd)
+
+h2oContext.stop()
