@@ -148,3 +148,5 @@ def isSpam(smsText: String,
 println(isSpam("Michal, h2oworld party tonight in MV?", loadedModel))
 
 println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", loadedModel))
+
+h2oContext.stop()
