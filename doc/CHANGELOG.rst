@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+v2.3.7 (2018-06-18)
+-------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/7/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/7/index.html>`__
+
+-  Bug
+        
+   -  `SW-858 <https://0xdata.atlassian.net/browse/SW-858>`__ - SVM throws unsupported operations exception on Spark 2.3
+   -  `SW-861 <https://0xdata.atlassian.net/browse/SW-861>`__ - Upgrade Gradle to 4.8 (publishing plugin)
+   -  `SW-872 <https://0xdata.atlassian.net/browse/SW-872>`__ - Fix reference to local-cluster on download page
+   -  `SW-880 <https://0xdata.atlassian.net/browse/SW-880>`__ - Update Hadoop version on download page
+   -  `SW-881 <https://0xdata.atlassian.net/browse/SW-881>`__ - Fix Script tests on Dockerized Jenkins infrastructure
+   -  `SW-882 <https://0xdata.atlassian.net/browse/SW-882>`__ - Call h2oContext.stop after ham or spam Scala example
+   -  `SW-883 <https://0xdata.atlassian.net/browse/SW-883>`__ - Add mising description in publish.gradle
+                
+-  Improvement
+        
+   -  `SW-860 <https://0xdata.atlassian.net/browse/SW-860>`__ - Modify the hadoop launch command on download page
+   -  `SW-863 <https://0xdata.atlassian.net/browse/SW-863>`__ - Upgrade infrastructure and references to Spark 2.3.1 
+   -  `SW-873 <https://0xdata.atlassian.net/browse/SW-873>`__ - Upgrade H2O to 3.20.0.1
+   -  `SW-874 <https://0xdata.atlassian.net/browse/SW-874>`__ - Update Mojo2 to 0.10.4
+   -  `SW-876 <https://0xdata.atlassian.net/browse/SW-876>`__ - FIx local PySparkling integtest on jenkins infrastracture
+   -  `SW-879 <https://0xdata.atlassian.net/browse/SW-879>`__ - Print output of script tests
+                
+                                
 v2.3.6 (2018-06-14)
 -------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/6/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/6/index.html>`__
