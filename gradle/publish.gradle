@@ -8,6 +8,7 @@ apply plugin: "signing"
  * expects publishArchives configuration and publishes whatever is inside it.
  */
 
+
 // Container for generated POMs (by default added into archive configuration)
 configurations {
     pom {
@@ -33,6 +34,26 @@ if(project.name == "sparkling-water-doc") {
     publish.dependsOn project.getTasksByName("site", false)
 }
 
+/** For some reason project.description is not resolved here in gradle 4.8 */
+
+def getProjectDescription(){
+    switch (project.name){
+        case "sparkling-water-doc":
+            return "Sparkling Water Documentation"
+        case "sparkling-water-core":
+            return "Sparkling Water Core"
+        case "sparkling-water-examples":
+            return "Sparkling Water Examples"
+        case "sparkling-water-ml":
+            return "Sparkling Water ML Pipelines"
+        case "sparkling-water-repl":
+            return "Sparkling Water REPL"
+        case "sparkling-water-package":
+            return "Sparkling Water Spark Package"
+    }
+}
+
+println(getProjectDescription())
 publishing {
     publications {
 
@@ -51,7 +72,7 @@ publishing {
 
             pom {
                 name = project.name + "_" + scalaBaseVersion
-                description = project.description
+                description = getProjectDescription()
                 url = 'https://github.com/h2oai/sparkling-water'
                 inceptionYear = '2013'
 
