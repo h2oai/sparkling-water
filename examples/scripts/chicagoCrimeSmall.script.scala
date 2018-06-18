@@ -56,3 +56,5 @@ for (crime <- crimeExamples) {
        |  Probability of arrest best on GBM: ${arrestProbGBM} %
         """.stripMargin)
 }
+
+h2oContext.stop()

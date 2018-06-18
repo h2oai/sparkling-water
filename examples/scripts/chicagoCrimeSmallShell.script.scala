@@ -310,3 +310,5 @@ plot (g) -> g(
   g.from inspect "data", getFrame "frame_rdd_83"
 )
 */
+
+h2oContext.stop()
