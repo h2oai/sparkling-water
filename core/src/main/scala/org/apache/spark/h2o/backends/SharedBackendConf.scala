@@ -17,7 +17,11 @@
 
 package org.apache.spark.h2o.backends
 
+import java.io.File
+
+import org.apache.spark.SparkFiles
 import org.apache.spark.h2o.H2OConf
+import org.apache.spark.sql.SparkSession
 
 /**
   * Shared configuration independent on used backend
@@ -115,7 +119,10 @@ trait SharedBackendConf {
   def setKerberosLoginEnabled() = set(PROP_KERBEROS_LOGIN._1, true)
   def setKerberosLoginDisabled() = set(PROP_KERBEROS_LOGIN._1, false)
 
-  def setLoginConf(file: String) = set(PROP_LOGIN_CONF._1, file)
+  def setLoginConf(file: String) = {
+    SparkSession.builder().getOrCreate().sparkContext.addFile(file)
+    set(PROP_LOGIN_CONF._1, SparkFiles.get(new File(file).getName))
+  }
   def setUserName(username: String) = set(PROP_USER_NAME._1, username)
   def setSslConf(path: String) = set(PROP_SSL_CONF._1, path)
   def setH2ONodeLogLevel(level: String) = set(PROP_NODE_LOG_LEVEL._1, level)
