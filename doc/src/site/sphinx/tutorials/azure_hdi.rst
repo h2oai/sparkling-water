@@ -15,7 +15,7 @@ The H2O Artificial Intelligence for Azure HDInsight is an application you can in
 Create the H2O AI for Azure HDInsight
 '''''''''''''''''''''''''''''''''''''
 
-**Requirement**: Python 2.7. Sparkling Water currently works only on Python 2.7; it will not work on PySpark3 kernel.  
+**Requirement**: Python 2.7 or 3.
 
 Follow the steps below to create a new H2O Artificial Intelligence for Azure HDInsight.
 
@@ -28,7 +28,7 @@ Follow the steps below to create a new H2O Artificial Intelligence for Azure HDI
    .. figure:: ../images/azure_select_h2o_hdinsight.png
       :alt: Select H2O Artificial Intelligence for HDInsight
 
-3. In the next screen, under **Basics**, change the Cluster Type to Spark 2.0.2. Sparkling Water is currently configured to work only on Spark 2.0 and above.
+3. In the next screen, under **Basics**, change the Cluster Type to Spark SUBST_SPARK_VERSION. (Note that Sparkling Water is currently configured to work only on Spark 2.1 and above.)
 
 4. On the **Applications** tab, select and accept the Terms of Use for H2O.
 
