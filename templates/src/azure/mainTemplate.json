@@ -1,0 +1,200 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the HDInsight cluster to create."
+            }
+        },
+        "clusterLoginUserName": {
+            "type": "string",
+            "defaultValue": "hdiadmin",
+            "metadata": {
+                "description": "These credentials can be used to submit jobs to the cluster and to log into cluster dashboards."
+            }
+        },        
+        "sshUserName": {
+            "type": "string",
+            "defaultValue": "sshuser",
+            "metadata": {
+                "description": "These credentials can be used to remotely access the cluster."
+            }
+        },        
+        "sparkVersion": {
+            "type": "string",
+            "metadata": {
+                "description": "The Spark version to be installed on the cluster."
+            },
+            "allowedValues": [
+                "1.6",
+                "2.0"
+            ],
+            "defaultValue": "2.0"
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "East US",
+            "allowedValues": [
+                "East US",
+                "East US 2",
+                "North Central US",
+                "South Central US",
+                "West US",
+                "North Europe",
+                "West Europe",
+                "East Asia",
+                "Southeast Asia",
+                "Japan East",
+                "Japan West",
+                "Australia East",
+                "Australia Southeast"
+            ],
+            "metadata": {
+                "description": "The location where all azure resources will be deployed."
+            }
+        },
+        "clusterType": {
+            "type": "string",
+            "defaultValue": "spark",
+            "allowedValues": [
+                "spark"
+            ],
+            "metadata": {
+                "description": "The type of the HDInsight cluster to create."
+            }
+        },
+        "galleryPackageIdentity": {
+            "type": "string",
+            "metadata": {
+                "description": "H2O is an open source, in-memory, distributed, fast, and scalable machine learning and predictive analytics platform."
+            },
+            "defaultValue": "H2O HDInsight App"
+        },
+        "edgeNodeSize": {
+            "type": "string",
+            "metadata": {
+                "description": "Size of the edge node that hosts the application"
+            },
+            "defaultValue": "Standard_D3",
+            "allowedValues": [
+                "Standard_A1",
+                "Standard_A2",
+                "Standard_A3",
+                "Standard_A4",
+                "Standard_D1",
+                "Standard_D2",
+                "Standard_D3",
+                "Standard_D4"
+            ]
+        },
+        "clusterHeadNodeSize": {
+            "type": "string",
+            "defaultValue": "Standard_D12_v2",
+            "allowedValues": [
+                "Standard_D3_v2",
+                "Standard_D4_v2",
+                "Standard_D5_v2",
+                "Standard_D11_v2",
+                "Standard_D12_v2",
+                "Standard_D13_v2",
+                "Standard_D14_v2",
+                "Standard_D15_v2",
+                "Standard_D3",
+                "Standard_D4",
+                "Standard_D5"
+            ],
+            "metadata": {
+                "description": "The size of the head nodes in the HDInsight Spark cluster."
+            }
+        },
+        "clusterWorkerNodeSize": {
+            "type": "string",
+            "defaultValue": "Standard_D13_v2",
+            "allowedValues": [
+                "Standard_D1_v2",
+                "Standard_D2_v2",
+                "Standard_D3_v2",
+                "Standard_D4_v2",
+                "Standard_D5_v2",
+                "Standard_D12_v2",
+                "Standard_D13_v2",
+                "Standard_D14_v2",
+                "Standard_D15_v2",
+                "Standard_D1",
+                "Standard_D2",
+                "Standard_D3",
+                "Standard_D4",
+                "Standard_D5"
+            ],
+            "metadata": {
+                "description": "The size of the head nodes in the HDInsight Spark cluster."
+            }
+        },
+        "clusterWorkerNodeCount": {
+            "type": "int",
+            "defaultValue": 3,
+            "metadata": {
+                "description": "The number of nodes in the HDInsight cluster."
+            }
+        }
+        
+    },
+        "variables": {
+            "defaultApiVersion": "2015-05-01-preview",
+            "clusterApiVersion": "2015-03-01-preview",
+            "clusterStorageAccountName": "[concat(parameters('clusterName'),'store')]"
+        },
+    "resources": [        
+        {
+            "name": "[concat(parameters('clusterName'),'/', 'h2o-sparklingwater')]",
+            "type": "Microsoft.HDInsight/clusters/applications",
+            "apiVersion": "[variables('clusterApiVersion')]",
+          "properties": {
+            "marketPlaceIdentifier": "EmptyNode",
+            "computeProfile": {
+              "roles": [
+                {
+                  "name": "edgenode",
+                  "targetInstanceCount": 1,
+                  "hardwareProfile": {
+                    "vmSize": "[parameters('edgeNodeSize')]"
+                  }
+                }
+              ]
+            },
+            "installScriptActions": [
+              {
+                "name": "[concat('head-install-v0','-' ,uniquestring('h2o-sparklingwater'))]",
+                "uri": "https://h2ostore.blob.core.windows.net/marketplacescripts/SparklingWater/head_node_installv2.sh",
+                "parameters": "[concat(parameters('sshUserName'), ' ', parameters('sparkVersion'))]",
+                "roles": [ "headnode" ]
+              },
+              {
+                "name": "[concat('worker-install-v0','-' ,uniquestring('h2o-sparklingwater'))]",
+                "uri": "https://h2ostore.blob.core.windows.net/marketplacescripts/SparklingWater/worker_installs.sh",
+                "parameters": "",
+                "roles": [ "workernode" ]
+              },
+              {
+                "name": "[concat('edge-install-v0','-' ,uniquestring('h2o-sparklingwater'))]",
+                "uri": "https://h2ostore.blob.core.windows.net/marketplacescripts/SparklingWater/edgenodeinstall.sh",
+                "parameters": "",
+                "roles": [ "edgenode" ]
+              }
+            ],
+            "uninstallScriptActions": [],
+            "httpsEndpoints": [
+              {
+                "subDomainSuffix": "h2o",
+                "destinationPort": 80,
+                "accessModes": [ "WebPage" ]
+              }
+            ],
+            "applicationType": "CustomApplication"
+          }
+        }
+    ]
+        
+    }
