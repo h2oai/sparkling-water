@@ -1,6 +1,8 @@
 Use Sparkling Water with Amazon EMR
 -----------------------------------
 
+This section describes how to use Sparkling Water with Amazon EMR via the Web Services UI. An example describing how to do this using the AWS CLI is available in the `Analytics at Scale: h2o, Apache Spark and R on AWS EMR <https://redoakstrategic.com/h2oaws/>`__ blog post (courtesy of Red Oak Strategic). 
+
 To use Sparkling Water with an EMR cluster, you can use a premade H2O template.
 
 1. Log in to the `AWS Marketplace <https://aws.amazon.com/marketplace/>`__. 
