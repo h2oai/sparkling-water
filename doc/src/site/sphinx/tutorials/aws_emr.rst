@@ -1,7 +1,7 @@
 Use Sparkling Water with Amazon EMR
 -----------------------------------
 
-This section describes how to use Sparkling Water with Amazon EMR via the Web Services UI. An example describing how to do this using the AWS CLI is available in the `Analytics at Scale: h2o, Apache Spark and R on AWS EMR <https://redoakstrategic.com/h2oaws/>`__ blog post (courtesy of Red Oak Strategic). 
+This section describes how to use Sparkling Water with Amazon EMR via the Web Services UI. An example describing how to do this using the AWS CLI is available in the `Analytics at Scale: H2O, Apache Spark and R on AWS EMR <https://redoakstrategic.com/h2oaws/>`__ blog post (courtesy of Red Oak Strategic). 
 
 To use Sparkling Water with an EMR cluster, you can use a premade H2O template.
 
@@ -56,7 +56,7 @@ To use Sparkling Water with an EMR cluster, you can use a premade H2O template.
 
 7. Review the Stack configuration. Click **Create** to create the Stack, or click **Previous** to return to another page and edit any information.
 
-After your EMR cluster is created, you can ssh into your head node. In the head node, you will find an H2O folder with Sparkling Water inside. To start any h2o jobs with Sparkling Water, follow the instructions located on the download page (https://www.h2o.ai/download/).
+After your EMR cluster is created, you can ssh into your head node. In the head node, you will find an H2O folder with Sparkling Water inside. To start any H2O jobs with Sparkling Water, follow the instructions located on the download page (https://www.h2o.ai/download/).
 
 **Note**: It is important to add the following Spark configuration to any of your EMR jobs:
 
