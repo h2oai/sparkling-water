@@ -65,6 +65,10 @@ SCALADOC_DST_DIR="$DIST_BUILD_DIR/scaladoc/"
 USERDOC_SRC_DIR="$TOPDIR/doc/build/site/"
 USERDOC_DST_DIR="$DIST_BUILD_DIR/doc/"
 
+# Source and destination folders for deployement templates
+TEMPLATES_SRC_DIR="$TOPDIR/templates/build/"
+TEMPLATES_DST_DIR="$DIST_BUILD_DIR/templates/"
+
 # Resulting zip file
 ZIP_NAME="sparkling-water-$VERSION.zip" 
 ZIP_FILE="$DIST_BUILD_DIR/$ZIP_NAME"
@@ -90,6 +94,9 @@ rsync -rtvW "$SCALADOC_SRC_DIR" "$SCALADOC_DST_DIR"
 
 # Copy user documentation
 rsync -rtvW "$USERDOC_SRC_DIR" "$USERDOC_DST_DIR"
+
+# Copy templates
+rsync -rtvW "$TEMPLATES_SRC_DIR" "$TEMPLATES_DST_DIR"
 
 # Try to use variables defined in Jenkins first
 GITHASH=${GIT_COMMIT:-$(git rev-parse --verify HEAD)}
