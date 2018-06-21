@@ -10,7 +10,7 @@ RUN \
     rm /etc/startup/40_hive_start && \
     rm /etc/startup/60_start_slapd
 
-RUN apt-get update && apt-get install -y git curl
+RUN apt-get update && apt-get install -y git curl zip s3cmd
 
 ###
 ###  Prepare Spark
@@ -77,4 +77,4 @@ RUN cd /home/jenkins && \
     ./gradlew build -x check -x :sparkling-water-py:build && \
     cd .. && rm -rf sparkling-water
 
-USER root
+ENV USER jenkins

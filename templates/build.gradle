@@ -1,0 +1,34 @@
+apply plugin: 'base'
+description = "Templates for Sparkling Water deployment"
+
+
+/**
+ * We can't use Sphinx substitutions in for example code blocks and other container, so we post-process
+ * the generated files manually
+ */
+task substituteAWS(){
+    doLast {
+        def aws_script = "${project.buildDir.toString()}/aws/install_sparkling_water_${version.replace('-SNAPSHOT', '')}.sh"
+        def contents = file(aws_script).getText('UTF-8')
+        def (first, second, third) = version.replace("-SNAPSHOT", "").tokenize(".")
+        def majorVersion = "${first}.${second}"
+        def minorVersion = third
+        def branchName = version.toString().endsWith("nightly") ? "master" : "rel-${majorVersion}"
+        contents = contents
+                .replaceAll("SUBST_BRANCH_NAME", branchName)
+                .replaceAll("SUBST_MAJOR_VERSION", majorVersion)
+                .replaceAll("SUBST_MINOR_VERSION", minorVersion)
+
+        file(aws_script).write(contents, 'UTF-8')
+    }
+}
+
+
+task copyAWS(type: Copy) {
+    from 'src/aws'
+    into "build/aws"
+    rename "install_sparkling_water.sh", "install_sparkling_water_${version.replace('-SNAPSHOT', '')}.sh"
+}
+
+substituteAWS.dependsOn copyAWS
+build.dependsOn substituteAWS
