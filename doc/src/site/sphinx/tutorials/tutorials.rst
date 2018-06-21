@@ -48,6 +48,19 @@ How to...
    change_log_location
    obtaining_logs
 
+**Amazon EMR**
+
+.. toctree::
+   :maxdepth: 2
+
+   aws_emr
+
+**HD Insight**
+
+.. toctree::
+   :maxdepth: 2
+
+   azure_hdi
 
 **Databricks**
 
