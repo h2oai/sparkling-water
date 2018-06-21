@@ -77,4 +77,4 @@ RUN cd /home/jenkins && \
     ./gradlew build -x check -x :sparkling-water-py:build && \
     cd .. && rm -rf sparkling-water
 
-USER root
+ENV USER jenkins
