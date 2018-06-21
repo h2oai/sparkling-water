@@ -297,9 +297,7 @@ def localIntegTest() {
             withDocker(config) {
                 if (config.runLocalIntegTests.toBoolean()) {
                     try {
-                        if(config.backendMode == "external"){
-                            sh  "sudo -E /usr/sbin/startup.sh"
-                        }
+                        sh  "sudo -E /usr/sbin/startup.sh"
                         sh """
                         # Run local integration tests
                         ${getGradleCommand(config)} integTest -x :sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
@@ -362,9 +360,7 @@ def scriptsTest() {
             withDocker(config) {
                 if (config.runScriptTests.toBoolean()) {
                     try {
-                        if(config.backendMode == "external"){
-                            sh  "sudo -E /usr/sbin/startup.sh"
-                        }
+                        sh  "sudo -E /usr/sbin/startup.sh"
                         sh """
                         # Run scripts tests
                         ${getGradleCommand(config)} scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
