@@ -82,6 +82,7 @@ USER root
 ### Copy Sparkling Water data files
 RUN cd /home/jenkins && \
     mkdir -p /home/0xdiag/smalldata && \
+    mkdir -p /home/0xdiag/bigdata/laptop/citibike-nyc/ && \
     cp -R sparkling-water/examples/smalldata/ /home/0xdiag/smalldata
 
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv
