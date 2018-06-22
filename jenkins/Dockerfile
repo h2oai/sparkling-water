@@ -77,11 +77,13 @@ RUN cd /home/jenkins && \
     ./gradlew build -x check -x :sparkling-water-py:build && \
     cd ..
 
+USER root
+
 ### Copy Sparkling Water data files
 RUN cd /home/jenkins && \
     mkdir -p /home/0xdiag/smalldata && \
     cp -R sparkling-water/examples/smalldata/ /home/0xdiag/smalldata
-    
+
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-08.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-08.csv
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-09.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-09.csv
@@ -93,5 +95,6 @@ COPY /home/0xdiag/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.c
 ### Remove Sparkling Water
 RUN cd /home/jenkins && rm -rf sparkling-water
 
+USER jenkins
 
 ENV USER jenkins
