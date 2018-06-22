@@ -75,6 +75,19 @@ RUN cd /home/jenkins && \
     git clone https://github.com/h2oai/sparkling-water.git && \
     cd sparkling-water && \
     ./gradlew build -x check -x :sparkling-water-py:build && \
-    cd .. && rm -rf sparkling-water
+    cd ..
+
+### Copy Sparkling Water data files
+RUN cp -r sparkling-water/examples/smalldata/ /home/0xdiag/smalldata
+COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv
+COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-08.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-08.csv
+COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-09.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-09.csv
+COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-10.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-10.csv
+COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-11.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-11.csv
+COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-12.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-12.csv
+COPY /home/0xdiag/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv /home/0xdiag/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv
+# Remove Sparkling Water
+RUN rm -rf sparkling-water
+
 
 ENV USER jenkins
