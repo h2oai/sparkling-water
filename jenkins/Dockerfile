@@ -78,7 +78,10 @@ RUN cd /home/jenkins && \
     cd ..
 
 ### Copy Sparkling Water data files
-RUN cd /home/jenkins && cp -R sparkling-water/examples/smalldata/ /home/0xdiag/smalldata
+RUN cd /home/jenkins && \
+    mkdir -p /home/0xdiag/smalldata && \
+    cp -R sparkling-water/examples/smalldata/ /home/0xdiag/smalldata
+    
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-08.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-08.csv
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-09.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-09.csv
