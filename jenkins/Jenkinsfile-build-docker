@@ -12,12 +12,12 @@ node('docker && !mr-0xc8') {
         sh  """
             mkdir -p bigdata/laptop/citibike-nyc/
             cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv bigdata/laptop/citibike-nyc/2013-07.csv
-            cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-08.csv bigdata/laptop/citibike-nyc/2013-07.csv
-            cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-09.csv bigdata/laptop/citibike-nyc/2013-07.csv
-            cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-10.csv bigdata/laptop/citibike-nyc/2013-07.csv
-            cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-11.csv bigdata/laptop/citibike-nyc/2013-07.csv
-            cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-12.csv bigdata/laptop/citibike-nyc/2013-07.csv
-            cp /home/0xdiag/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv bigdata/laptop/citibike-nyc/2013-07.csv
+            cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-08.csv bigdata/laptop/citibike-nyc/2013-08.csv
+            cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-09.csv bigdata/laptop/citibike-nyc/2013-09.csv
+            cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-10.csv bigdata/laptop/citibike-nyc/2013-10.csv
+            cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-11.csv bigdata/laptop/citibike-nyc/2013-11.csv
+            cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-12.csv bigdata/laptop/citibike-nyc/2013-12.csv
+            cp /home/0xdiag/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv
     
             docker pull docker.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:46
             cd jenkins
