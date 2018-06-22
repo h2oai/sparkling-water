@@ -69,7 +69,7 @@ def withDocker(config, code) {
       sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
       sh "docker pull docker.h2o.ai/${image}"
     }
-    docker.image(image).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
+    docker.image(image).inside("--init --dns 172.16.0.200") {
         code()
     }
 }
