@@ -78,7 +78,7 @@ RUN cd /home/jenkins && \
     cd ..
 
 ### Copy Sparkling Water data files
-RUN cp -r sparkling-water/examples/smalldata/ /home/0xdiag/smalldata
+RUN cd /home/jenkins && cp -R sparkling-water/examples/smalldata/ /home/0xdiag/smalldata
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-07.csv
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-08.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-08.csv
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-09.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-09.csv
@@ -86,8 +86,9 @@ COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-10.csv /home/0xdiag/bigdata/l
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-11.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-11.csv
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/2013-12.csv /home/0xdiag/bigdata/laptop/citibike-nyc/2013-12.csv
 COPY /home/0xdiag/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv /home/0xdiag/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv
-# Remove Sparkling Water
-RUN rm -rf sparkling-water
+
+### Remove Sparkling Water
+RUN cd /home/jenkins && rm -rf sparkling-water
 
 
 ENV USER jenkins
