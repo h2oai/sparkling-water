@@ -7,8 +7,8 @@ RUN rm -rf /etc/hadoop/conf/yarn-site.xml
 COPY conf/yarn-site.xml /etc/hadoop/conf/yarn-site.xml
 
 RUN \
-    rm /etc/startup/40_hive_start && \
-    rm /etc/startup/60_start_slapd
+    rm /etc/startup/50_hive_start && \
+    rm /etc/startup/70_start_slapd
 
 RUN apt-get update && apt-get install -y git curl zip s3cmd
 
