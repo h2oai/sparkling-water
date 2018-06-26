@@ -19,7 +19,7 @@ node('docker && !mr-0xc8') {
             cp /home/0xdiag/bigdata/laptop/citibike-nyc/2013-12.csv jenkins/bigdata/laptop/citibike-nyc/2013-12.csv
             cp /home/0xdiag/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv jenkins/bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv
     
-            docker pull docker.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:46
+            docker pull docker.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:47
             cd jenkins
             docker build -t docker.h2o.ai/opsh2oai/sparkling_water_tests:${BUILD_NUMBER} .
             """
