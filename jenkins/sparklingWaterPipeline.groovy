@@ -69,7 +69,7 @@ def withDocker(config, code) {
       sh "docker pull docker.h2o.ai/${image}"
     }
     docker.image(image).inside("--init --dns 172.16.0.200") {
-        sh "activate_java_8"
+        sh "activate_java_7"
         code()
     }
 }
