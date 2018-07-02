@@ -67,8 +67,6 @@ dependencies {
       // Cannot use here: transitive = false since Gradle is producing wrong POM file
       // Hence the exlusions are listed manually
       exclude(group: "org.apache.hadoop", module: "hadoop-client")
-      exclude(group: "org.apache.hadoop", module: "hadoop-hdfs-client")
-      exclude(group: "org.apache.hadoop", module: "hadoop-aws")
   }
   // H2O S3 persistance support
   compile("ai.h2o:h2o-persist-s3:${h2oVersion}") {
