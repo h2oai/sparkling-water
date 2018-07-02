@@ -35,6 +35,7 @@ spark-submit \
 --driver-java-options "$SCRIPT_H2O_SYS_OPS" \
 --deploy-mode "$SCRIPT_DEPLOY_MODE" \
 --py-files "$PY_ZIP_FILE" \
+--driver-class-path "$TOPDIR/jars/httpclient-4.5.2.jar" \
 $VERBOSE \
 "$@"
 
