@@ -485,7 +485,7 @@ def publishNightly() {
                             """
                     }
 
-                    // Update the links
+              /*      // Update the links
                     sh  """
                         git clone git@github.com:h2oai/docs.h2o.ai.git
                         cd docs.h2o.ai/sites-available/
@@ -493,7 +493,7 @@ def publishNightly() {
                         git add 000-default.conf
                         git commit -m "Update links of Sparkling Water nighly version to ${BUILD_NUMBER}_nightly"
                         git push --set-upstream origin master
-                        """
+                        """*/
                 }
             }
         }
