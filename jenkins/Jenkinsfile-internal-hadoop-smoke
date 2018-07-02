@@ -1,0 +1,80 @@
+#!/usr/bin/groovy
+@Library('test-shared-library') _
+
+// Only PR builds have the CHANGE_BRANCH set
+if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
+    cancelPreviousBuilds()
+}
+
+node('docker && micro') {
+    docker.withRegistry("https://docker.h2o.ai") {
+
+        // Clean workspace
+        cleanWs()
+
+        // Get Sparkling Water and save the scm environment variables
+        checkout scm
+
+        def customEnv = [
+                "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
+                "SPARK_HOME=${env.WORKSPACE}/spark",
+                "HADOOP_CONF_DIR=/etc/hadoop/conf",
+                "MASTER=yarn-client",
+                "H2O_PYTHON_WHEEL=${env.WORKSPACE}/private/h2o.whl",
+                "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
+                // Properties used in case we are building against specific H2O version
+                "BUILD_HADOOP=true",
+                "H2O_TARGET=${config.driverHadoopVersion}",
+                "H2O_ORIGINAL_JAR=${env.WORKSPACE}/h2o-3/h2o-hadoop/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
+        ]
+
+        ansiColor('xterm') {
+            timestamps {
+                withEnv(customEnv) {
+                    timeout(time: 180, unit: 'MINUTES') {
+                        dir("${env.WORKSPACE}") {
+                            prepareSparkEnvironment()()
+                            smokeTests()()
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+def prepareSparkEnvironment() {
+    return { ->
+        stage('Prepare Spark Environment - ' + config.backendMode) {
+            withDocker(config) {
+
+                sh  """
+                    cp -R \${SPARK_HOME_2_3_1} ${env.SPARK_HOME}
+                    """
+            }
+        }
+    }
+}
+
+def smokeTests() {
+    return { ->
+        stage('Hadoop Smoke Tests 2.7 HDP 2.2 - ' + config.backendMode) {
+            withDocker(config) {
+                if (config.runPySparklingIntegTests.toBoolean()) {
+                    try {
+                        sh """
+                         sudo -E /usr/sbin/startup.sh
+                         . /envs/h2o_env_python2.7/bin/activate
+                         PYSPARK_DRIVER_PYTHON=\$(which python) PYSPARK_PYTHON=\$(which python) ./gradlew build -x check hadoopSmokeTests -PbackendMode=internal -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                         # echo 'Archiving artifacts smoke tests for Hadoop'
+                        """
+                    } finally {
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    }
+                }
+            }
+        }
+
+    }
+}
