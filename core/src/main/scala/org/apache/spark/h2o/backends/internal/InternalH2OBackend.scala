@@ -34,7 +34,12 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
   override def stop(stopSparkContext: Boolean): Unit = {
     if (stopSparkContext) hc.sparkContext.stop()
     H2O.orderlyShutdown(5000)
-    H2O.exit(0)
+    // Stop h2o when running standalone pysparkling scripts, only in client deploy mode
+    //, so the user does not need explicitly close h2o.
+    // In driver mode the application would call exit which is handled by Spark AM as failure
+    if(hc.sparkContext.conf.get("spark.submit.deployMode") != "cluster") {
+      H2O.exit(0)
+    }
   }
 
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
