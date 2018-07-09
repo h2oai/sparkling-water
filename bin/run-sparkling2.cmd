@@ -30,7 +30,6 @@ echo   Driver memory   (DRIVER_MEMORY): %DRIVER_MEMORY%
 echo   H2O JVM options (H2O_SYS_OPS)  : %H2O_SYS_OPS%
 echo ---------
 
-cd %TOPDIR%
 call %SPARK_HOME%/bin/spark-submit2.cmd ^
  --class %DRIVER_CLASS% ^
  --master %MASTER% ^
@@ -38,7 +37,7 @@ call %SPARK_HOME%/bin/spark-submit2.cmd ^
  --driver-java-options "%H2O_SYS_OPS%" ^
  --conf spark.driver.extraJavaOptions="-XX:MaxPermSize=384m" ^
  %VERBOSE% ^
- %TOPDIR%/assembly/build/libs/%FAT_JAR% ^
+ %FAT_JAR_FILE% ^
  %*
 exit /b %ERRORLEVEL%
 
