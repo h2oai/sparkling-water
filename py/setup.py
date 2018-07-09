@@ -47,7 +47,7 @@ setup(
     packages = find_packages(),
 
     # run-time dependencies
-    install_requires=['requests', 'tabulate', 'future', 'colorama>=0.3.8', 'pyspark>=2.1.1,<=2.1.2'],
+    install_requires=['requests', 'tabulate', 'future', 'colorama>=0.3.8', 'pyspark>=2.1.1,<=2.1.3'],
 
     # bundled binary packages
     package_data={'sparkling_water': ['*.jar'],

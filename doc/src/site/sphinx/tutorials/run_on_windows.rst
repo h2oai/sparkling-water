@@ -16,7 +16,7 @@ To use Sparkling Water in Windows environments:
       SET SPARK_HOME=<location of your downloaded Spark distribution>
 
 
-3. From https://github.com/steveloughran/winutils, download ``winutils.exe`` for the Hadoop version that is referenced by your Spark distribution (For example, for ``spark-2.1.2-bin-hadoop2.7.tgz``, you need ``wintutils.exe`` for Hadoop 2.7.)
+3. From https://github.com/steveloughran/winutils, download ``winutils.exe`` for the Hadoop version that is referenced by your Spark distribution (For example, for ``spark-SUBST_SPARK_VERSION-bin-hadoop2.7.tgz``, you need ``wintutils.exe`` for Hadoop 2.7.)
 
 4. Move ``winutils.exe`` into a new directory ``%SPARK_HOME%\hadoop\bin`` and set:
 
