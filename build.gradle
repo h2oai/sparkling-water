@@ -169,6 +169,7 @@ configure(subprojects) { project ->
 
 task buildSparklingWaterDist(type: Exec, dependsOn:
         ["sparkling-water-assembly:shadowJar"] + // Build Java/Scala
+        ["sparkling-water-templates:build"] + // Build templates
         ["sparkling-water-py:distPython"] +
         getTasksByName("javadoc", true) + // Build javadoc
         getTasksByName("scaladoc", true) + // Build scaladoc
