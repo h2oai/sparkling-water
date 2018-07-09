@@ -10,14 +10,8 @@ ext {
 
 description = "PySparkling - Sparkling-Water Python Package"
 
-configurations {
-    mojopipeline
-}
 dependencies {
     compile project(path: ':sparkling-water-assembly')
-
-    // This dependency is used just for tests
-    mojopipeline "ai.h2o:mojo2-runtime:${mojoPipelineVersion}"
 }
 //
 // Create a file with version for Python dist task
@@ -64,9 +58,6 @@ def preparePythonTestEnv(environment){
 
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
     environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
-
-    //For MOJO Pipeline
-    environment["sparkling.mojo.pipeline.jar"] = configurations.mojopipeline.resolve().find {it.name.contains("mojo2-runtime")}.absolutePath
 }
 
 //
@@ -254,11 +245,22 @@ task testPythonMojoPredictions(type: Exec, dependsOn: distPython){
     commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_unit_mojo_predictions.py"])
 }
 
+task testPythonMojoPipeline(type: Exec, dependsOn: distPython) {
+        doFirst {
+            preparePythonEnv(environment)
+        }
+        preparePythonTestEnv(environment)
+        commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_unit_mojo_pipeline.py"])
+}
+
 //
 // Test python against Spark cloud
 //
 task testPython(dependsOn: [testPythonConf, testPythonConversions, testPythonMojoPredictions]) {}
 
+if (project.property("testMojoPipeline") == "true") {
+ testPython.dependsOn testPythonMojoPipeline
+}
 
 //
 // Run python integration tests
