@@ -23,9 +23,7 @@ def get_default_spark_conf():
         set("spark.worker.timeout", "360"). \
         set("spark.ext.h2o.backend.cluster.mode", cluster_mode()). \
         set("spark.ext.h2o.cloud.name", unique_cloud_name("test")). \
-        set("spark.ext.h2o.external.start.mode", os.getenv("spark.ext.h2o.external.start.mode", "manual")). \
-        set("spark.driver.extraClassPath", os.getenv("sparkling.mojo.pipeline.jar")). \
-        set("spark.executor.extraClassPath", os.getenv("sparkling.mojo.pipeline.jar"))
+        set("spark.ext.h2o.external.start.mode", os.getenv("spark.ext.h2o.external.start.mode", "manual"))
 
     if tests_in_external_mode():
         conf.set("spark.ext.h2o.client.ip", local_ip())

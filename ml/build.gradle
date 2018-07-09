@@ -18,10 +18,17 @@ dependencies {
 
   compileOnly "ai.h2o:mojo2-runtime:${mojoPipelineVersion}"
   testCompile "ai.h2o:mojo2-runtime:${mojoPipelineVersion}"
+
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"
   testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
   testCompile(project(":sparkling-water-extension-stack-trace"))
 
+}
+
+test {
+  if (project.property("testMojoPipeline") == "false") {
+    exclude 'org/apache/spark/ml/spark/models/H2OMOJOPipelineModelTest.class'
+  }
 }
