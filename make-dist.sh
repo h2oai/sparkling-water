@@ -19,7 +19,7 @@ DIST_BUILD_DIR="${DIST_DIR}build/"
 [ -d "$DIST_BUILD_DIR" ] || mkdir "$DIST_BUILD_DIR" 
 [ -d "private" ] || mkdir private 
 
-cat > "$TOPDIR/demofiles.list" <<EOF
+cat > "$TOPDIR/content.list" <<EOF
 bin/
 $(find bin -type f)
 assembly/build/libs/sparkling-water-assembly_$SCALA_VERSION-$VERSION-all.jar
@@ -75,7 +75,7 @@ ZIP_FILE="$DIST_BUILD_DIR/$ZIP_NAME"
 [ -f "$ZIP_FILE" ] && rm "$ZIP_FILE"
 
 # Make distribution package and put it into dist directory
-rsync -rtvW --files-from "$TOPDIR/demofiles.list" "$TOPDIR/" "$DEST_DIR/"
+rsync -rtvW --files-from "$TOPDIR/content.list" "$TOPDIR/" "$DEST_DIR/"
 
 # Get Latest RSparkling Version
 RSPARKLING_DOWNLOAD_LINK=$(./gradlew -q :sparkling-water-assembly:printRSparklingCranLink)
