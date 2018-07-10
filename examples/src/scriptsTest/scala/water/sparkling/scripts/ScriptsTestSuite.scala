@@ -172,7 +172,7 @@ class ScriptCraigListJobTitles extends ScriptsTestHelper {
 @RunWith(classOf[JUnitRunner])
 class ScriptStrata2015 extends ScriptsTestHelper {
   override protected def beforeAll(): Unit = {
-    sparkConf = defaultConf.setMaster("local-cluster[3,2,2096]")
+    sparkConf = defaultConf.setMaster("local")
       .set("spark.driver.memory", "2G")
       .set("spark.executor.memory", "2G")
     super.beforeAll()
