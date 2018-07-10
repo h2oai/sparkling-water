@@ -22,6 +22,7 @@ node('docker && micro') {
             sparkVersion = "2.3.1"
             runUnitTests = "true"
             runPyUnitTests = "true"
+            runRUnitTests = "${p.runRUnitTests}"
             runLocalIntegTests = "true"
             runLocalPyIntegTests = "true"
             runScriptTests = "true"

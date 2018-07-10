@@ -1,0 +1,42 @@
+apply from: "$rootDir/gradle/utils.gradle"
+
+description = "RSparkling - Sparkling-Water R Package"
+
+dependencies {
+    compile project(path: ':sparkling-water-assembly')
+}
+
+task distR(type: Exec) {
+
+    doFirst {
+        file(project.buildDir).mkdir()
+        copy {
+            from file("src")
+            into new File(project.buildDir, "src")
+        }
+    }
+    workingDir project.buildDir
+    commandLine getOsSpecificCommandLine(['R', 'CMD', 'build', 'src'])
+}
+
+task buildR(dependsOn: distR)
+build.dependsOn buildR
+
+task cleanR(type: Delete) {
+    delete getBuildDir()
+}
+
+
+task test(type: Exec, dependsOn: [configurations.compile]) {
+    environment["spark.version"] = sparkVersion
+    environment["sparkling.assembly.jar"] =  configurations.compile.find {it.name.endsWith("sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar")}.toString()
+    environment["sparkling.water.version"] = version.toString()
+    environment["NOT_CRAN"] = "true"
+    environment["SPARK_HOME"] = sparkHome
+
+    workingDir file("tests")
+    commandLine getOsSpecificCommandLine(['R', '-f', 'testthat.R'])
+}
+
+
+clean.dependsOn cleanR

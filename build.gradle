@@ -62,10 +62,13 @@ ext {
     javaProjects = [
       project(':sparkling-water-extension-stack-trace')
     ]
-    // Python projects
     pythonProjects = [
       project(':sparkling-water-py')
     ]
+    rProjects = [
+      project(':sparkling-water-r')
+    ]
+
     docProjects = [
       project(':sparkling-water-doc')
     ]
@@ -139,6 +142,9 @@ configure(subprojects) { project ->
     }
     if (project in pythonProjects) {
       apply from: "$rootDir/gradle/python.gradle"
+    }
+    if (project in rProjects) {
+        apply from: "$rootDir/gradle/r.gradle"
     }
 
     if(project in javaProjects) {
