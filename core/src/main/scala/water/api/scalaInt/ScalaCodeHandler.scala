@@ -16,6 +16,8 @@
 */
 package water.api.scalaInt
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.repl.h2o.H2OInterpreter
@@ -27,7 +29,6 @@ import water.exceptions.H2ONotFoundArgumentException
 
 import scala.collection.concurrent.TrieMap
 
-
 /**
   * Handler for all Scala related endpoints
   */
@@ -37,6 +38,7 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
   val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
   var mapIntr = new TrieMap[Int, H2OInterpreter]
   var lastIdUsed = 0
+  var jobCount = new AtomicInteger(0)
   initializeInterpreterPool()
 
   def interpret(version: Int, s: ScalaCodeV3): ScalaCodeV3 = {
@@ -46,6 +48,13 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
     }
 
     val job = new Job[ScalaCodeResult](Key.make[ScalaCodeResult](), classOf[ScalaCodeResult].getName, "ScalaCodeResult")
+
+    this.synchronized {
+      jobCount.incrementAndGet()
+      while (h2oContext.getConf.maxParallelScalaCellJobs != -1 && jobCount.intValue() > h2oContext.getConf.maxParallelScalaCellJobs) {
+        Thread.sleep(1000)
+      }
+    }
 
     job.start(new H2OCountedCompleter() {
       override def compute2(): Unit = {
@@ -58,6 +67,7 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
         scalaCodeExecution.scalaOutput = intp.consoleOutput
         DKV.put(scalaCodeExecution)
         tryComplete()
+        jobCount.decrementAndGet()
       }
     }, 1)
 

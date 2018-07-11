@@ -110,6 +110,10 @@ Configuration properties independent of selected backend
 |                                                    |                | Asynchronously. Default is             |
 |                                                    |                | synchronously.                         |
 +----------------------------------------------------+----------------+----------------------------------------+
+| `spark.ext.h2o.flow.scala.cell.max.parallel``      | ``-1``         | Number of max parallel Scala cell      |
+|                                                    |                | jobs The value -1 means                |
+|                                                    |                | not limited.                           |
++----------------------------------------------------+----------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |
