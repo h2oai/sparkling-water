@@ -12,7 +12,7 @@ class ProstateDemoSuite extends FunSuite with IntegTestHelper {
   test("Launch ProstateDemo", LocalTest) {
     launch("water.sparkling.itest.local.ProstateDemoTest",
       env {
-        sparkMaster("local-cluster[3,2,2048]")
+        sparkMaster("local[*]")
         conf("spark.executor.memory", "2g")
         conf("spark.driver.memory", "2g")
       }
