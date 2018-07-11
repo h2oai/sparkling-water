@@ -76,7 +76,7 @@ node('docker && micro') {
             driverHadoopVersion = "${p.driverHadoopVersion}"
             buildNightly = "false"
             uploadNightly = "false"
-            dockerVersion = "3"
+            dockerVersion = "4"
         }
     }
 }
