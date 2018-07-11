@@ -28,7 +28,7 @@ class PubDev928Suite extends FunSuite with IntegTestHelper {
   test("Verify scoring on 0-length chunks", LocalTest) {
     launch("water.sparkling.itest.local.PubDev928Test",
       env {
-        sparkMaster("local-cluster[3,2,2048]")
+        sparkMaster("local[*]")
         conf("spark.executor.memory", "2g")
         conf("spark.driver.memory", "2g")
       }

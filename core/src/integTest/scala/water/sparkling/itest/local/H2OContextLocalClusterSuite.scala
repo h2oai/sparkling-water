@@ -35,10 +35,10 @@ class H2OContextLocalClusterSuite extends FunSuite
   test("verify H2O cloud building on local cluster") {
     // For distributed testing we need to pass around jar containing all implementation classes plus test classes
     val conf = defaultSparkConf.setJars(swassembly :: Nil)
-    sc = new SparkContext("local-cluster[1,2,2048]", "test-local-cluster", conf)
+    sc = new SparkContext("local", "test-local-cluster", conf)
 
     val hc = H2OContextTestHelper.createH2OContext(sc, 1)
-    assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 3 members")
+    assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 member")
 
     H2OContextTestHelper.stopH2OContext(sc, hc)
     // Does not reset

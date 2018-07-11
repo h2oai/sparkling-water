@@ -13,7 +13,7 @@ class AirlinesWithWeatherDemoSuite extends FunSuite with IntegTestHelper {
   test("Launch AirlinesWithWeatherDemo", LocalTest) {
     launch("water.sparkling.itest.local.AirlinesWithWeatherDemoTest",
       env {
-        sparkMaster("local-cluster[3,2,2048]")
+        sparkMaster("local[*]")
         conf("spark.executor.memory", "2g")
         conf("spark.driver.memory", "2g")
       }

@@ -12,7 +12,7 @@ class DeepLearningDemoSuite extends FunSuite with IntegTestHelper {
   test("Launch DeepLearnigDemo", LocalTest) {
     launch("water.sparkling.itest.local.DeepLearningDemoTest",
       env {
-        sparkMaster("local-cluster[3,2,2048]")
+        sparkMaster("local[*]")
         conf("spark.executor.memory", "2g")
         conf("spark.driver.memory", "2g")
       }
