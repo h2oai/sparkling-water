@@ -17,13 +17,8 @@
 
 package water
 
-import java.io.File
-
-import hex.tree.gbm.GBM
-import hex.tree.gbm.GBMModel.GBMParameters
-import org.apache.spark.h2o.{H2OConf, H2OContext, H2OFrame}
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.{SparkConf, SparkSessionUtils}
-import water.support.ModelSerializationSupport
 
 /**
   * A simple wrapper to allow launching H2O itself on the
@@ -38,7 +33,7 @@ object SparklingWaterDriver {
       new SparkConf()
         .setAppName("Sparkling Water Driver")
         .setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
-        .set("spark.ext.h2o.repl.enabled", "false"))
+        .set("spark.ext.h2o.repl.enabled", "true"))
 
     val spark = SparkSessionUtils.createSparkSession(conf)
     // Start H2O cluster only
@@ -46,19 +41,10 @@ object SparklingWaterDriver {
 
     println(hc)
 
+    // Infinite wait
+    this.synchronized(while (true) {
+      wait()
+    })
 
-    val uri = java.net.URI.create("/Users/kuba/devel/repos/sparkling-water/examples/smalldata/chicago/chicagoAllWeather.csv")
-    val frame = new H2OFrame(water.fvec.H2OFrame.parserSetup(uri), uri)
-
-    val gbmParams = new GBMParameters()
-    gbmParams._train = frame._key
-    gbmParams._response_column = "maxTemp"
-
-    val gbm = new GBM(gbmParams)
-    val model = gbm.trainModel.get
-    println("Going to export")
-    ModelSerializationSupport.exportMOJOModel(model, new File("/Users/kuba/devel/model.mojo").toURI)
-    println("Exported")
-    System.exit(0)
   }
 }
