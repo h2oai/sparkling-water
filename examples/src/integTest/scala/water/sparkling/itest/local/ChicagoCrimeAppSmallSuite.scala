@@ -12,7 +12,7 @@ class ChicagoCrimeAppSmallSuite extends FunSuite with IntegTestHelper {
   test("Launch Chicago Crime Demo", LocalTest) {
     launch("water.sparkling.itest.local.ChicagoCrimeAppSmallTest",
       env {
-        sparkMaster("local-cluster[3,2,3072]")
+        sparkMaster("local[*]")
         conf("spark.executor.memory", "3g")
         conf("spark.driver.memory", "3g")
       }

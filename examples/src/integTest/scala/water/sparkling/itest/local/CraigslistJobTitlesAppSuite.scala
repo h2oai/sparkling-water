@@ -12,7 +12,7 @@ class CraigslistJobTitlesAppSuite extends FunSuite with IntegTestHelper {
   test("Launch Craigslist App Demo", LocalTest) {
     launch("water.sparkling.itest.local.CraigslistJobTitlesAppTest",
       env {
-        sparkMaster("local-cluster[3,2,2048]")
+        sparkMaster("local[*]")
         conf("spark.executor.memory", "2g")
         conf("spark.driver.memory", "2g")
       }

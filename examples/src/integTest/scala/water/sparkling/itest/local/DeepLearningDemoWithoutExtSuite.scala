@@ -12,7 +12,7 @@ class DeepLearningDemoWithoutExtSuite extends FunSuite with IntegTestHelper {
   test("Launch DeepLearningDemoWithoutExtension", LocalTest) {
     launch("water.sparkling.itest.local.DeepLearningDemoWithoutExtTest",
       env {
-        sparkMaster("local-cluster[3,2,2048]")
+        sparkMaster("local[*]")
         conf("spark.executor.memory", "2g")
         conf("spark.driver.memory", "2g")
       }
