@@ -168,6 +168,14 @@ class H2OConf(object):
         self._jconf.setContextPath(context_path)
         return self
 
+    def set_flow_scala_cell_async_enabled(self):
+        self._jconf.setFlowScalaCellAsyncEnabled()
+        return self
+
+    def set_flow_scala_cell_async_disabled(self):
+        self._jconf.setFlowScalaCellAsyncDisabled()
+        return self
+
     def set_flow_dir(self, dir):
         self._jconf.setFlowDir(dir)
         return self
@@ -429,6 +437,9 @@ class H2OConf(object):
 
     def context_path(self):
         return self._get_option(self._jconf.contextPath())
+
+    def flow_scala_cell_async(self):
+        return self._jconf.flowScalaCellAsync()
 
     def flow_dir(self):
         return self._get_option(self._jconf.flowDir())
