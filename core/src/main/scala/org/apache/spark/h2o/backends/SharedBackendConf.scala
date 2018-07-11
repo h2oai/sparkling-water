@@ -59,6 +59,7 @@ trait SharedBackendConf {
   def stacktraceCollectorInterval = sparkConf.getInt(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._2)
   def contextPath = sparkConf.getOption(PROP_CONTEXT_PATH._1)
   def flowScalaCellAsync = sparkConf.getBoolean(PROP_FLOW_SCALA_CELL_ASYNC._1, PROP_FLOW_SCALA_CELL_ASYNC._2)
+  def maxParallelScalaCellJobs = sparkConf.getInt(PROP_FLOW_SCALA_CELL_MAX_PARALLEL._1, PROP_FLOW_SCALA_CELL_MAX_PARALLEL._2)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -141,6 +142,8 @@ trait SharedBackendConf {
 
   def setFlowScalaCellAsyncEnabled() = set(PROP_FLOW_SCALA_CELL_ASYNC._1, true)
   def setFlowScalaCellAsyncDisabled() = set(PROP_FLOW_SCALA_CELL_ASYNC._1, false)
+
+  def setMaxParallelScalaCellJobs(limit: Int) = set(PROP_FLOW_SCALA_CELL_MAX_PARALLEL._1, limit.toString)
 
   /** H2O Client parameters */
   def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
@@ -241,6 +244,9 @@ object SharedBackendConf {
 
   /** Decide whether Scala cells are running synchronously or asynchronously */
   val PROP_FLOW_SCALA_CELL_ASYNC = ("spark.ext.h2o.flow.scala.cell.async", false)
+
+  /** Number of max parallel Scala cell jobs. */
+  val PROP_FLOW_SCALA_CELL_MAX_PARALLEL = ("spark.ext.h2o.flow.scala.cell.max.parallel", -1)
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)

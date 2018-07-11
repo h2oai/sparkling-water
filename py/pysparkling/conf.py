@@ -176,6 +176,10 @@ class H2OConf(object):
         self._jconf.setFlowScalaCellAsyncDisabled()
         return self
 
+    def set_max_parallel_scala_cell_jobs(self, limit):
+        self._jconf.setMaxParallelScalaCellJobs(limit)
+        return self
+
     def set_flow_dir(self, dir):
         self._jconf.setFlowDir(dir)
         return self
@@ -440,6 +444,9 @@ class H2OConf(object):
 
     def flow_scala_cell_async(self):
         return self._jconf.flowScalaCellAsync()
+
+    def max_parallel_scala_cell_jobs(self):
+        return self._jconf.maxParallelScalaCellJobs()
 
     def flow_dir(self):
         return self._get_option(self._jconf.flowDir())
