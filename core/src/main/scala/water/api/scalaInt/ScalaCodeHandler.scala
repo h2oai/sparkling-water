@@ -37,7 +37,7 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
   val intrPoolSize = h2oContext.getConf.scalaIntDefaultNum
   val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
   var mapIntr = new TrieMap[Int, H2OInterpreter]
-  var lastIdUsed = 0
+  var lastIdUsed = new AtomicInteger(0)
   var jobCount = new AtomicInteger(0)
   initializeInterpreterPool()
 
@@ -112,7 +112,7 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
         intp
       } else {
         // pool is empty at the moment and is being filled, return new interpreter without using the pool
-        val id = createID()
+        val id = lastIdUsed.incrementAndGet()
         val intp = new H2OInterpreter(sc, id)
         mapIntr.put(intp.sessionId, intp)
         intp
@@ -135,24 +135,18 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
   }
 
   def initializeInterpreterPool(): Unit = {
-    for (i <- 0 until intrPoolSize) {
+    for (_ <- 0 until intrPoolSize) {
       createInterpreterInPool()
     }
   }
 
   def createInterpreterInPool(): H2OInterpreter = {
-    val id = createID()
+    val id = lastIdUsed.incrementAndGet()
     val intp = new H2OInterpreter(sc, id)
     freeInterpreters.add(intp)
     intp
   }
 
-  def createID(): Int = {
-    this.synchronized {
-      lastIdUsed = lastIdUsed + 1
-      lastIdUsed
-    }
-  }
 }
 
 private[api] class IcedCode(val session_id: Int, val code: String) extends Iced[IcedCode] {

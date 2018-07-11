@@ -27,7 +27,7 @@ class LocalIntegTestSuite(unittest.TestCase):
 
     def test_pipeline_gbm_mojo(self):
         env = IntegTestEnv()
-        env.set_spark_master("local-cluster[3,1,2048]")
+        env.set_spark_master("local[*]")
         env.conf("spark.ext.h2o.port.base", 63331)
 
         return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "gbm")
@@ -35,7 +35,7 @@ class LocalIntegTestSuite(unittest.TestCase):
 
     def test_pipeline_deep_learning(self):
         env = IntegTestEnv()
-        env.set_spark_master("local-cluster[3,1,2048]")
+        env.set_spark_master("local[*]")
         env.conf("spark.ext.h2o.port.base", 63331)
 
         return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "dl")
@@ -43,7 +43,7 @@ class LocalIntegTestSuite(unittest.TestCase):
 
     def test_pipeline_automl(self):
         env = IntegTestEnv()
-        env.set_spark_master("local-cluster[3,1,2048]")
+        env.set_spark_master("local[*]")
         env.conf("spark.ext.h2o.port.base", 63331)
 
         return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "automl")
@@ -51,7 +51,7 @@ class LocalIntegTestSuite(unittest.TestCase):
 
     def test_import_pysparkling_standalone_app(self):
         env = IntegTestEnv()
-        env.set_spark_master("local-cluster[3,1,2048]")
+        env.set_spark_master("local[*]")
         env.conf("spark.ext.h2o.port.base", 63331)
 
         return_code = launch(env, "examples/scripts/tests/pysparkling_ml_import_overrides_spark_test.py")
