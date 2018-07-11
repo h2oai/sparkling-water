@@ -25,4 +25,7 @@ import water.api.Schema;
 public class ScalaSessionIdV3  extends Schema<IcedSessionId, ScalaSessionIdV3> {
     @API(help = "Session id identifying the correct interpreter", direction = API.Direction.INOUT)
     public int session_id;
+
+    @API(help = "Is this session asynchronous or not", direction = API.Direction.INOUT)
+    public boolean async;
 }
