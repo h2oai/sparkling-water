@@ -45,6 +45,5 @@ object SparklingWaterDriver {
     this.synchronized(while (true) {
       wait()
     })
-
   }
 }
