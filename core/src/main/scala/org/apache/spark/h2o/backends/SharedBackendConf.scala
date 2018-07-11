@@ -58,6 +58,7 @@ trait SharedBackendConf {
   def nodeNetworkMask = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
   def stacktraceCollectorInterval = sparkConf.getInt(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._2)
   def contextPath = sparkConf.getOption(PROP_CONTEXT_PATH._1)
+  def flowScalaCellAsync = sparkConf.getBoolean(PROP_FLOW_SCALA_CELL_ASYNC._1, PROP_FLOW_SCALA_CELL_ASYNC._2)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -138,6 +139,8 @@ trait SharedBackendConf {
   def setStacktraceCollectorInterval(interval: Int) = set(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, interval.toString)
   def setContextPath(contextPath: String) = set(PROP_CONTEXT_PATH._1, contextPath)
 
+  def setFlowScalaCellAsyncEnabled() = set(PROP_FLOW_SCALA_CELL_ASYNC._1, true)
+  def setFlowScalaCellAsyncDisabled() = set(PROP_FLOW_SCALA_CELL_ASYNC._1, false)
 
   /** H2O Client parameters */
   def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
@@ -235,6 +238,9 @@ object SharedBackendConf {
 
   /** H2O's URL context path */
   val PROP_CONTEXT_PATH = ("spark.ext.h2o.context.path", None)
+
+  /** Decide whether Scala cells are running synchronously or asynchronously */
+  val PROP_FLOW_SCALA_CELL_ASYNC = ("spark.ext.h2o.flow.scala.cell.async", false)
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)

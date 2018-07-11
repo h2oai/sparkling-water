@@ -105,6 +105,11 @@ Configuration properties independent of selected backend
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.context.path``                     | ``None``       | Context path to expose H2O web server. |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.flow.scala.cell.async``            | ``false``      | Decide whether the Scala cells in      |
+|                                                    |                | H2O Flow will run synchronously or     |
+|                                                    |                | Asynchronously. Default is             |
+|                                                    |                | synchronously.                         |
++----------------------------------------------------+----------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |

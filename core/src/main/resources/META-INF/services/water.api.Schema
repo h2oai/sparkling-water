@@ -8,3 +8,4 @@ water.api.RDDs.RDDsV3
 water.api.scalaInt.ScalaCodeV3
 water.api.scalaInt.ScalaSessionIdV3
 water.api.scalaInt.ScalaSessionsV3
+water.api.scalaInt.ScalaCodeResultV3
