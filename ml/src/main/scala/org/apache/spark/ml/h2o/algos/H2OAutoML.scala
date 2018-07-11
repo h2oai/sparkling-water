@@ -88,6 +88,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     spec.build_control.stopping_criteria.set_stopping_rounds(getStoppingRounds())
     spec.build_control.stopping_criteria.set_stopping_tolerance(getStoppingTolerance())
     spec.build_control.stopping_criteria.set_stopping_metric(getStoppingMetric())
+    spec.build_control.stopping_criteria.set_max_models(getMaxModels())
     spec.build_control.nfolds = getNfolds()
     spec.build_control.balance_classes = getBalanceClasses()
     spec.build_control.class_sampling_factors = getClassSamplingFactors()
