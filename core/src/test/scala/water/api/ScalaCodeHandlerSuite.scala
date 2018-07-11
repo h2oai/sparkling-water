@@ -32,7 +32,10 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
 
   var scalaCodeHandler: ScalaCodeHandler = _
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf.set("spark.ext.h2o.repl.enabled", "true"))
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local",
+    conf = defaultSparkConf
+      .set("spark.ext.h2o.repl.enabled", "true")
+      .set("spark.ext.scala.int.default.num", "2"))
 
   override protected def beforeEach(): Unit = {
     scalaCodeHandler = new ScalaCodeHandler(sc, hc)
@@ -40,7 +43,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
 
   test("ScalaCodeHandler after initialization") {
     assert(scalaCodeHandler.mapIntr.isEmpty, "Number of currently used interpreters should be equal to 0")
-    assert(scalaCodeHandler.freeInterpreters.size() == 1, "Number of prepared but not used interpreters should be equal to 1")
+    assert(scalaCodeHandler.freeInterpreters.size() == 2, "Number of prepared but not used interpreters should be equal to 1")
   }
 
   test("ScalaCodeHandler.initSession() method") {
