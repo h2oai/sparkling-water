@@ -163,7 +163,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                  ignoredColumns=[], excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                  stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
                  sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
-                 keepCrossValidationPredictions=True, keepCrossValidationModels=True):
+                 keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0):
         super(H2OAutoML, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OAutoML",
@@ -176,7 +176,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                          stoppingTolerance=0.001, stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5,
                          convertUnknownCategoricalLevelsToNa=False, seed=-1, sortMetric=None, balanceClasses=False,
                          classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
-                         keepCrossValidationModels=True)
+                         keepCrossValidationModels=True, maxModels=0)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
@@ -185,7 +185,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                   ignoredColumns=[], excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                   stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
                   sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
-                  keepCrossValidationModels=True):
+                  keepCrossValidationModels=True, maxModels=0):
         kwargs = self._input_kwargs
 
         if "stoppingMetric" in kwargs:
