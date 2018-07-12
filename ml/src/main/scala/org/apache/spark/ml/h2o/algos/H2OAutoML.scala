@@ -239,7 +239,7 @@ trait H2OAutoMLParams extends Params {
     maxAfterBalanceSize -> 5.0f,
     keepCrossValidationPredictions -> true,
     keepCrossValidationModels -> true,
-    maxModels-> 0
+    maxModels -> 0
   )
 
   //

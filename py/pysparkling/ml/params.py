@@ -398,7 +398,7 @@ class H2OAutoMLParams(Params):
     maxAfterBalanceSize = Param(Params._dummy(), "maxAfterBalanceSize", "Max after balance size")
     keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Keep cross validation predictions")
     keepCrossValidationModels = Param(Params._dummy(), "keepCrossValidationModels", "Keep cross validation models")
-    maxModels = Param(Params._dummy(), "maxModels", "Max models to limit")
+    maxModels = Param(Params._dummy(), "maxModels", "Max models to train in AutoML")
     ##
     # Getters
     ##
