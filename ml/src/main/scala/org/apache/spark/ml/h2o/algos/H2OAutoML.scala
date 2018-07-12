@@ -88,6 +88,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     spec.build_control.stopping_criteria.set_stopping_rounds(getStoppingRounds())
     spec.build_control.stopping_criteria.set_stopping_tolerance(getStoppingTolerance())
     spec.build_control.stopping_criteria.set_stopping_metric(getStoppingMetric())
+    spec.build_control.stopping_criteria.set_max_models(getMaxModels())
     spec.build_control.nfolds = getNfolds()
     spec.build_control.balance_classes = getBalanceClasses()
     spec.build_control.class_sampling_factors = getClassSamplingFactors()
@@ -210,6 +211,8 @@ trait H2OAutoMLParams extends Params {
   private final val maxAfterBalanceSize = new FloatParam(this, "maxAfterBalanceSize", "Max after balance size")
   private final val keepCrossValidationPredictions = new BooleanParam(this, "keepCrossValidationPredictions", "Keep cross Validation predictions")
   private final val keepCrossValidationModels = new BooleanParam(this, "keepCrossValidationModels", "Keep cross validation models")
+  private final val maxModels = new IntParam(this, "maxModels", "Maximal number of models to be trained in AutoML")
+
   //
   // Default values
   //
@@ -235,7 +238,8 @@ trait H2OAutoMLParams extends Params {
     classSamplingFactors -> null,
     maxAfterBalanceSize -> 5.0f,
     keepCrossValidationPredictions -> true,
-    keepCrossValidationModels -> true
+    keepCrossValidationModels -> true,
+    maxModels -> 0
   )
 
   //
@@ -306,6 +310,9 @@ trait H2OAutoMLParams extends Params {
 
   /** @group getParam */
   def getKeepCrossValidationModels() = $(keepCrossValidationModels)
+
+  /** @group getParam */
+  def getMaxModels() = $(maxModels)
 
   //
   // Setters
@@ -388,6 +395,9 @@ trait H2OAutoMLParams extends Params {
 
   /** @group setParam */
   def setKeepCrossValidationModels(value: Boolean): this.type = set(keepCrossValidationModels, value)
+
+  /** @group setParam */
+  def setMaxModels(value: Int): this.type = set(maxModels, value)
 }
 
 
