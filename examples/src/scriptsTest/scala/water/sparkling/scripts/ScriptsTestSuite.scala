@@ -240,7 +240,7 @@ class ScriptPipelineHamOrSpamDL extends ScriptsTestHelper {
       super.beforeAll()
     }
 
-    test("Ham or Spam AutoML Pipeline") {
+    ignore("Ham or Spam AutoML Pipeline") {
       HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "automl")
     }
   }
