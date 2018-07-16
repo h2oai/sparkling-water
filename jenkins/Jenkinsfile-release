@@ -29,7 +29,7 @@ pipeline {
             steps{
                 script {
                     docker.withRegistry("https://docker.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:3').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:5').inside("--init --dns 172.16.0.200") {
                             checkout scm
                         }
                     }
