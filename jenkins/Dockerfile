@@ -23,7 +23,7 @@ RUN cd /home/jenkins && \
     rm -rf spark-2.3.1-bin-hadoop2.7.tgz
 
 RUN cd /home/jenkins && \
-    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.3.0/spark-2.3.0-bin-hadoop2.7.tgz  && \
+    wget http://archive.apache.org/dist/spark/spark-2.3.0/spark-2.3.0-bin-hadoop2.7.tgz  && \
     mkdir -p spark-2.3.0-bin-hadoop2.7 &&  \
     tar zxvf spark-2.3.0-bin-hadoop2.7.tgz -C spark-2.3.0-bin-hadoop2.7 --strip-components 1 && \
     rm -rf spark-2.3.0-bin-hadoop2.7.tgz
@@ -35,7 +35,7 @@ RUN cd /home/jenkins && \
     rm -rf spark-2.2.2-bin-hadoop2.7.tgz
 
 RUN cd /home/jenkins && \
-    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz  && \
+    wget http://archive.apache.org/dist/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz  && \
     mkdir -p spark-2.2.1-bin-hadoop2.7 &&  \
     tar zxvf spark-2.2.1-bin-hadoop2.7.tgz -C spark-2.2.1-bin-hadoop2.7 --strip-components 1 && \
     rm -rf spark-2.2.1-bin-hadoop2.7.tgz
@@ -53,7 +53,7 @@ RUN cd /home/jenkins && \
     rm -rf spark-2.1.3-bin-hadoop2.7.tgz
 
 RUN cd /home/jenkins && \
-    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.1.2/spark-2.1.2-bin-hadoop2.7.tgz  && \
+    wget http://archive.apache.org/dist/spark/spark-2.1.2/spark-2.1.2-bin-hadoop2.7.tgz  && \
     mkdir -p spark-2.1.2-bin-hadoop2.7 &&  \
     tar zxvf spark-2.1.2-bin-hadoop2.7.tgz -C spark-2.1.2-bin-hadoop2.7 --strip-components 1 && \
     rm -rf spark-2.1.2-bin-hadoop2.7.tgz
