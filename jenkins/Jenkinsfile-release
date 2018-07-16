@@ -191,6 +191,8 @@ pipeline {
 
 
                             sh  """
+                                git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
+
                                 # Calculate the current and future version
                                 sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
                                 REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
