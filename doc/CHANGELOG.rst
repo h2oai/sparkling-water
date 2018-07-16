@@ -1,6 +1,42 @@
 Change Log
 ==========
 
+v2.3.9 (2018-07-16)
+-------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/9/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/9/index.html>`__
+
+-  Bug
+        
+   -  `SW-898 <https://0xdata.atlassian.net/browse/SW-898>`__ - Issues with HTTP libraries on SPark 2.3
+   -  `SW-902 <https://0xdata.atlassian.net/browse/SW-902>`__ - Upgrade Gradle to 4.8.1
+   -  `SW-904 <https://0xdata.atlassian.net/browse/SW-904>`__ - Upgrade Mojo2 version to 0.10.7
+   -  `SW-908 <https://0xdata.atlassian.net/browse/SW-908>`__ - Exclude Hadoop dependencies as they are provided by Spark
+   -  `SW-909 <https://0xdata.atlassian.net/browse/SW-909>`__ - Fix issues when stopping Sparkling Water (Scala) in yarn-cluster mode
+   -  `SW-925 <https://0xdata.atlassian.net/browse/SW-925>`__ - Fix missing aposthrope in documentation
+   -  `SW-929 <https://0xdata.atlassian.net/browse/SW-929>`__ - Disable temporarily AutoML tests in Sparkling Water
+                
+-  New Feature
+        
+   -  `SW-826 <https://0xdata.atlassian.net/browse/SW-826>`__ - Implement Synchronous and Asynchronous Scala cell behaviour
+                
+-  Improvement
+        
+   -  `SW-846 <https://0xdata.atlassian.net/browse/SW-846>`__ - Don&#39;t parse types again when passing data to mojo pipeline
+   -  `SW-886 <https://0xdata.atlassian.net/browse/SW-886>`__ - Several Scala cell improvements in H2O flow
+   -  `SW-887 <https://0xdata.atlassian.net/browse/SW-887>`__ - Make sure that we can use schemes unsupported by H2O in H2O Confoguration
+   -  `SW-889 <https://0xdata.atlassian.net/browse/SW-889>`__ - Port AWS preparation scripts into SW codebase
+   -  `SW-894 <https://0xdata.atlassian.net/browse/SW-894>`__ - Add support for queuing of Scala cell jobs 
+   -  `SW-914 <https://0xdata.atlassian.net/browse/SW-914>`__ - Wrong Spark version in documentation
+   -  `SW-917 <https://0xdata.atlassian.net/browse/SW-917>`__ - Dockerize Sparkling Water release pipeline
+   -  `SW-919 <https://0xdata.atlassian.net/browse/SW-919>`__ - Clean gradle build with regards to mojo2
+   -  `SW-922 <https://0xdata.atlassian.net/browse/SW-922>`__ - Upgrade H2O to 3.20.0.3
+   -  `SW-928 <https://0xdata.atlassian.net/browse/SW-928>`__ - Expose AutoML max models
+                
+-  Docs
+        
+   -  `SW-878 <https://0xdata.atlassian.net/browse/SW-878>`__ - Add section for using Sparkling Water with AWS
+                
+                            
 v2.3.8 (2018-06-18)
 -------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/8/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/8/index.html>`__
