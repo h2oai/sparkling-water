@@ -313,7 +313,24 @@ pipeline {
                 script {
                     docker.withRegistry("https://docker.h2o.ai") {
                         docker.image('opsh2oai/sparkling_water_tests:5').inside("--init --dns 172.16.0.200") {
+                            withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN'), sshUserPrivateKey(credentialsId: 'h2oOpsGitPrivateKey', keyFileVariable: 'SSH_KEY_GITHUB')]){
 
+                            sh """
+                               # Copy keys
+                               mkdir -p ~/.ssh
+                               cp \${ID_RSA_PATH} ~/.ssh/id_rsa
+                               cp \${GITCONFIG_PATH} ~/.gitconfig
+
+cat <<EOF >>  ~/.ssh/config
+Host github.com
+   HostName github.com
+   User git
+   IdentityFile \${SSH_KEY_GITHUB}
+   IdentitiesOnly yes
+EOF
+
+                                ssh-keyscan github.com >> ~/.ssh/known_hosts
+                               """
                             // Update the links
                             sh  """
                                 git clone git@github.com:h2oai/docs.h2o.ai.git
@@ -323,6 +340,7 @@ pipeline {
                                 git commit -m "Update links of Sparkling Water 2.3 version to \$(( $BUILD_NUMBER - 1 ))"
                                 git push --set-upstream origin master
                                 """
+                            }
                         }
                     }
                 }
