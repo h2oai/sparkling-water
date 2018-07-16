@@ -180,8 +180,20 @@ pipeline {
                 script {
                     docker.withRegistry("https://docker.h2o.ai") {
                         docker.image('opsh2oai/sparkling_water_tests:5').inside("--init --dns 172.16.0.200") {
+                            withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
                             sh " ${env.WORKSPACE}/gradlew --help "
+
+                            sh """
+                               # Copy keys
+                               mkdir -p ~/.ssh
+                               cp \${ID_RSA_PATH} ~/.ssh/id_rsa
+                               cp \${GITCONFIG_PATH} ~/.gitconfig
+                               """
+
+
                             sh  """
+                                git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
+
                                 # Calculate the current and future version
                                 sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
                                 REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
@@ -198,6 +210,7 @@ pipeline {
 
                                 sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
                                 """
+                            }
                         }
                     }
                 }
