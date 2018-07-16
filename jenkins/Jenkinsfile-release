@@ -253,35 +253,35 @@ pipeline {
                             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                                 sh " ${env.WORKSPACE}/gradlew --help "
                                 sh """
-                                        s3cmd --rexclude='target/classes/*' --acl-public sync dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/
+                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY}  --rexclude='target/classes/*' --acl-public sync dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/
 
                                         echo EXPLICITLY SET MIME TYPES AS NEEDED
                                         list_of_html_files=`find dist/build -name '*.html' | sed 's/dist\\/build\\///g'`
                                         echo \${list_of_html_files}
                                         for f in \${list_of_html_files}
                                         do
-                                            s3cmd --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
+                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
                                         done
 
                                         list_of_js_files=`find dist/build -name '*.js' | sed 's/dist\\/build\\///g'`
                                         echo \${list_of_js_files}
                                         for f in \${list_of_js_files}
                                         do
-                                            s3cmd --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
+                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
                                         done
 
                                         list_of_css_files=`find dist/build -name '*.css' | sed 's/dist\\/build\\///g'`
                                         echo \${list_of_css_files}
                                         for f in \${list_of_css_files}
                                         do
-                                            s3cmd --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
+                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
                                         done
 
                                         list_of_extended_jars=`find assembly-h2o/private -name '*-extended.jar' | sed 's/assembly-h2o\\\\/private\\\\///g'`
                                         echo \${list_of_extended_jars}
                                         for jar in \${list_of_extended_jars}
                                         do
-                                             s3cmd --acl-public put assembly-h2o/private/\${jar} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${jar}
+                                             s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put assembly-h2o/private/\${jar} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${jar}
                                         done
                                         ./gradlew :sparkling-water-assembly-h2o:clean
                                         ./gradlew :sparkling-water-assembly-h2o:cleanH2OJars
@@ -293,9 +293,9 @@ pipeline {
                                         echo "<head>" > \${tmpdir}/latest.html
                                         echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\$(( $BUILD_NUMBER - 1 ))/index.html\\" />" >> \${tmpdir}/latest.html
                                         echo "</head>" >> \${tmpdir}/latest.html
-                                        s3cmd --acl-public put \${tmpdir}/latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest
-                                        s3cmd --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest.html
-                                        s3cmd --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/index.html
+                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put \${tmpdir}/latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest
+                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest.html
+                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/index.html
                                     """
                             }
                         }
