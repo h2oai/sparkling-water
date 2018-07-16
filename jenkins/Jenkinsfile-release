@@ -139,8 +139,7 @@ pipeline {
                                 export H2O_PYTHON_WHEEL="\$(pwd)/private/h2o.whl"
 
                                 # Perform a build
-                                JAVA_HOME=/usr/lib/jvm/java-current-oracle ./gradlew buildSparklingWaterDist -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
-
+                                ./gradlew buildSparklingWaterDist -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
                                 """
                             }
                         }
