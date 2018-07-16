@@ -359,6 +359,7 @@ EOF
                             dir("py/build/pkg") {
                                 withCredentials([usernamePassword(credentialsId: "pypi-credentials", usernameVariable: 'PIPY_USERNAME', passwordVariable: 'PIPY_PASSWORD')]) {
                                     sh  """
+                                        . /envs/h2o_env_python3.6/bin/activate
                                         python setup.py sdist
                                         twine upload dist/* -u $PIPY_USERNAME -p $PIPY_PASSWORD
                                         """
