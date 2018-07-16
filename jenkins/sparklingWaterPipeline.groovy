@@ -495,8 +495,26 @@ def publishNightly() {
                             """
                     }
 
-                    // Update the links
-                    sh  """
+                    withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN'), sshUserPrivateKey(credentialsId: 'h2oOpsGitPrivateKey', keyFileVariable: 'SSH_KEY_GITHUB')]) {
+
+                        sh """
+                               # Copy keys
+                               mkdir -p ~/.ssh
+                               cp \${ID_RSA_PATH} ~/.ssh/id_rsa
+                               cp \${GITCONFIG_PATH} ~/.gitconfig
+
+cat <<EOF >>  ~/.ssh/config
+Host github.com
+   HostName github.com
+   User git
+   IdentityFile \${SSH_KEY_GITHUB}
+   IdentitiesOnly yes
+EOF
+
+                                ssh-keyscan github.com >> ~/.ssh/known_hosts
+                               """
+                        // Update the links
+                        sh """
                         git clone git@github.com:h2oai/docs.h2o.ai.git
                         cd docs.h2o.ai/sites-available/
                         sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/master/[0-9]+_nightly/?http://h2o-release.s3.amazonaws.com/sparkling-water/master/${BUILD_NUMBER}_nightly/?" 000-default.conf
@@ -504,6 +522,7 @@ def publishNightly() {
                         git commit -m "Update links of Sparkling Water nighly version to ${BUILD_NUMBER}_nightly"
                         git push --set-upstream origin master
                         """
+                    }
                 }
             }
         }
