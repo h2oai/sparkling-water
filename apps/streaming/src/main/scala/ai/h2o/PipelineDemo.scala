@@ -14,6 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package ai.h2o
 
 import org.apache.spark.streaming._
