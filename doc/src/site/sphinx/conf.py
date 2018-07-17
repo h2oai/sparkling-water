@@ -68,7 +68,7 @@ if os.path.exists("../../../build/project_version"):
     version = f.readline().strip()
 else:
     version = "AnonDeveloperBuild"
-print "version is " + str(version)
+print("version is " + str(version))
 # The full version, including alpha/beta/rc tags.
 release = version
 
