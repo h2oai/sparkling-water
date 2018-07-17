@@ -14,12 +14,12 @@ buildscript {
 
     dependencies {
         classpath 'org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.11:1.0.1'
+        classpath 'com.bmuschko:gradle-docker-plugin:3.4.4'
     }
 }
 
 plugins {
     id 'base'
-    id "com.bmuschko.docker-remote-api" version "3.4.4"
     id 'net.researchgate.release' version '2.6.0'
     id "com.github.johnrengelman.shadow" version "2.0.4"
     id "kr.motd.sphinx" version "2.2.2"
