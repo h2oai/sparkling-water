@@ -34,8 +34,6 @@ if(project.name == "sparkling-water-doc") {
     publish.dependsOn project.getTasksByName("site", false)
 }
 
-/** For some reason project.description is not resolved here in gradle 4.8 */
-
 def getProjectDescription(){
     switch (project.name){
         case "sparkling-water-doc":
@@ -111,18 +109,6 @@ publishing {
         maven {
             name "BuildRepo"
             url "$rootDir/build/repo"
-        }
-
-        if (project.hasProperty("doRelease")) {
-            maven {
-                name "SonatypeRelease"
-                url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-
-                credentials {
-                    username project.findProperty("nexusUsername") ?: "<NA>"
-                    password project.findProperty("nexusPassword") ?: "<NA>"
-                }
-            }
         }
 
         // Setup local repo only for internal builds
