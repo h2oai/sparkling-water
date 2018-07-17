@@ -110,10 +110,6 @@ COPY bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv /home/0xdi
 ### Remove Sparkling Water
 RUN cd /home/jenkins && rm -rf sparkling-water
 
-RUN . /envs/h2o_env_python3.6/bin/activate && pip install twine
-RUN . /envs/h2o_env_python2.7/bin/activate && pip install twine
-
-
 USER jenkins
 
 ENV USER jenkins
