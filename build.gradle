@@ -198,3 +198,26 @@ clean.doFirst {
   delete file("metastore_db/")
 }
 
+def createStagingId(def username, def password) {
+   def proc = ['./createStagingId.sh', username, password].execute([], file("${rootDir.toString()}/gradle/publish"))
+   return proc.text
+}
+
+def uploadFiles(def username, def password, def repoDir, def stagingId) {
+    def proc = ['./uploadToNexus.sh', username, password, repoDir, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+    proc.waitFor()
+}
+
+task publishToNexus(dependsOn: [
+         "sparkling-water-doc:publish",
+         "sparkling-water-core:publish",
+         "sparkling-water-repl:publish",
+         "sparkling-water-ml:publish",
+         "sparkling-water-examples:publish",
+         "sparkling-water-package:publish"
+        ]){
+    doLast {
+        def stagingId = createStagingId(project.findProperty('nexusUsername'), project.findProperty('nexusPassword')).replace('\n', '')
+        uploadFiles(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), "$rootDir/build/repo", stagingId)
+    }
+}
