@@ -2,12 +2,6 @@
 // Sparkling Water build file.
 // This is a multi-module build file.
 //
-apply plugin: 'base'
-
-// For multiproject setup we have to apply release plugin here (we share same release number cross all modules)
-if (project.hasProperty("doRelease")) {
-    apply from: 'gradle/release.gradle'
-}
 
 // The build script settings to fetch plugins and put them on
 // classpath
@@ -19,14 +13,23 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
-        classpath 'org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.10:0.8.2'
-        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
-        classpath 'net.researchgate:gradle-release:2.6.0'
-        classpath 'com.bmuschko:gradle-docker-plugin:2.6.5'
-        classpath 'com.netflix.nebula:gradle-lint-plugin:latest.release'
-        classpath 'kr.motd.gradle:sphinx-gradle-plugin:1.0.6'
+        classpath 'org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.11:1.0.1'
     }
+}
+
+plugins {
+    id 'base'
+    id "com.bmuschko.docker-remote-api" version "3.4.4"
+    id 'net.researchgate.release' version '2.6.0'
+    id "com.github.johnrengelman.shadow" version "2.0.4"
+    id "kr.motd.sphinx" version "2.2.2"
+    id 'nebula.lint' version '9.3.2'
+}
+
+
+// For multiproject setup we have to apply release plugin here (we share same release number cross all modules)
+if (project.hasProperty("doRelease")) {
+    apply from: 'gradle/release.gradle'
 }
 
 //
@@ -187,10 +190,6 @@ task buildSparklingWaterDist(type: Exec, dependsOn:
 }
 
 task dist(dependsOn: buildSparklingWaterDist)
-
-task wrapper(type: Wrapper) {
-  gradleVersion = '4.7'
-}
 
 clean.doFirst {
   delete file("build/")
