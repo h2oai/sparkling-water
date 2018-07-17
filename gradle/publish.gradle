@@ -34,8 +34,6 @@ if(project.name == "sparkling-water-doc") {
     publish.dependsOn project.getTasksByName("site", false)
 }
 
-/** For some reason project.description is not resolved here in gradle 4.8 */
-
 def getProjectDescription(){
     switch (project.name){
         case "sparkling-water-doc":
