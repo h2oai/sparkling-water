@@ -175,6 +175,10 @@ configure(subprojects) { project ->
     }
 }
 
+if (project.hasProperty("doRelease")){
+  // We want the documentation contain the updated RSparkling README
+  task("sparkling-water-doc:site").dependsOn "sparkling-water-r:build"
+}
 
 
 task buildSparklingWaterDist(type: Exec, dependsOn:

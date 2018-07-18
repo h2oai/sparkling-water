@@ -531,7 +531,7 @@ Additional Resources
 - `Main documentation site <http://docs.h2o.ai>`__
 - `H2O.ai website <http://h2o.ai>`__
 - `Example code <https://github.com/h2oai/rsparkling/blob/master/inst/examples/example_rsparkling.R>`__
-- `Troubleshooting RSparkling on Windows <https://github.com/h2oai/rsparkling/wiki/RSparkling-on-Windows>`__
+- `Troubleshooting RSparkling on Windows <http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/tutorials/rsparkling_on_windows.html>`__
 
 If you are new to H2O for machine learning, we recommend you start with:
 
