@@ -126,28 +126,36 @@ Install rsparkling
 
 The latest stable version of **rsparkling** on CRAN can be installed as follows:
 
-```r
-install.packages("rsparkling")
-```
+.. code:: r
 
-Alternatively, the development version can be installed from the "master" branch as follows:
-
-```r
-library(devtools)
-devtools::install_github("h2oai/rsparkling", ref = "master")
-``` 
+   install.packages("rsparkling")
 
 
-### Advanced Configuration
+Alternatively, to install the nightly version of RSparkling, please follow the information on the RSparkling tab
+on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest>`__.
 
-If a particular version of Sparkling Water is desired/required, you can specify a specific Sparkling Water version by making a call to `options(rsparkling.sparklingwater.version = ...)`, which will globally set up a specific Sparkling Water version.
+
+Configuration
+~~~~~~~~~~~~~
+If a particular version of Sparkling Water is required, you can specify a specific Sparkling
+Water version as:
+
+.. code:: r
+
+   options(rsparkling.sparklingwater.version = ...)
+
+This call globally sets up a specific Sparkling Water version.
 
 **NOTE**:
-If you do not set `rsparkling.sparklingwater.version`, then the latest version of Sparkling Water will be used based on the version of Spark installed.
+If you do not set `rsparkling.sparklingwater.version`, then the latest version of Sparkling Water will be
+used based on the version of Spark installed.
 
-**NOTE**: 
-If you would like to use a custom Sparkling Water jar, then you need to call the following:
-`options(rsparkling.sparklingwater.location = "path/to/sparkling_water.jar")`. 
+**NOTE**:
+If you would like to use a custom Sparkling Water Jar, then please specify:
+
+.. code:: r
+
+   options(rsparkling.sparklingwater.location = "path/to/sparkling_water.jar")
 
 #### Set Sparkling Water Version
 This will be the version of Sparkling Water that will be called in the `library(rsparkling)` command, and thus you should set the option before loading the library.
