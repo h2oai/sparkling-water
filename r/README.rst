@@ -379,23 +379,23 @@ Now train an H2O GBM using the training H2OFrame.
                   seed = 1)
    print(fit)
 
-      H2ORegressionModel: gbm
-      Model ID:  GBM_model_R_1474763476171_1
-      Model Summary:
-        number_of_trees number_of_internal_trees model_size_in_bytes min_depth
-      1              50                       50               14807         5
-        max_depth mean_depth min_leaves max_leaves mean_leaves
-      1         5    5.00000         17         21    18.64000
-
-
-      H2ORegressionMetrics: gbm
-      ** Reported on training data. **
-
-      MSE:  0.001211724
-      RMSE:  0.03480983
-      MAE:  0.02761402
-      RMSLE:  0.001929304
-      Mean Residual Deviance :  0.001211724
+      ## H2ORegressionModel: gbm
+      ## Model ID:  GBM_model_R_1474763476171_1
+      ## Model Summary:
+      ##  number_of_trees number_of_internal_trees model_size_in_bytes min_depth
+      ##   1              50                       50               14807         5
+      ##  max_depth mean_depth min_leaves max_leaves mean_leaves
+      ##   1         5    5.00000         17         21    18.64000
+      ##
+      ##
+      ## H2ORegressionMetrics: gbm
+      ## ** Reported on training data. **
+      ##
+      ## MSE:  0.001211724
+      ## RMSE:  0.03480983
+      ## MAE:  0.02761402
+      ## RMSLE:  0.001929304
+      ## Mean Residual Deviance :  0.001211724
 
 Model Performance:
 ~~~~~~~~~~~~~~~~~~
@@ -407,13 +407,13 @@ We can evaluate the performance of the GBM by evaluating its performance on a te
    perf <- h2o.performance(fit, newdata = splits[[2]])
    print(perf)
 
-      H2ORegressionMetrics: gbm
-
-      MSE:  2.707001
-      RMSE:  1.645297
-      MAE:  1.455267
-      RMSLE:  0.08579109
-      Mean Residual Deviance :  2.707001
+      ## H2ORegressionMetrics: gbm
+      ##
+      ## MSE:  2.707001
+      ## RMSE:  1.645297
+      ## MAE:  1.455267
+      ## RMSLE:  0.08579109
+      ## Mean Residual Deviance :  2.707001
 
 
 
@@ -430,13 +430,13 @@ and in multi-class prediction it will be C+1 columns (where C is the number of c
    pred_hf <- h2o.predict(fit, newdata = splits[[2]])
    head(pred_hf)
 
-         predict
-      1 21.39512
-      2 16.92804
-      3 15.19558
-      4 20.47695
-      5 20.47695
-      6 15.24433
+      ##   predict
+      ## 1 21.39512
+      ## 2 16.92804
+      ## 3 15.19558
+      ## 4 20.47695
+      ## 5 20.47695
+      ## 6 15.24433
 
 
 
@@ -450,14 +450,14 @@ Now let's say you want to make this H2OFrame available to Spark. You can convert
       Source:   query [?? x 1]
       Database: spark connection master=local[8] app=sparklyr local=TRUE
 
-         predict
-           <dbl>
-      1 21.39512
-      2 16.92804
-      3 15.19558
-      4 20.47695
-      5 20.47695
-      6 15.24433
+      ##   predict
+      ##   <dbl>
+      ## 1 21.39512
+      ## 2 16.92804
+      ## 3 15.19558
+      ## 4 20.47695
+      ## 5 20.47695
+      ## 6 15.24433
 
 
 H2O Machine Learning Tutorials
