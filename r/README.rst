@@ -78,7 +78,7 @@ By default, **rsparkling** automatically uses the latest Sparkling Water based o
 and advices the user which H2O version to install.
 
 Advanced users may want to choose a particular Sparking Water / H2O version (specific Sparkling Water
-versions must match specific Spark and H2O versions). This is available in the `Release Integration Table <release_table.rst>`__.
+versions must match specific Spark and H2O versions). This is available in the `Release Integration Table <r_release_table.rst>`__.
 
 
 **NOTE**: A call to ``rsparkling::h2o_release_table()`` displays the release table in your R console and returns
@@ -132,7 +132,7 @@ The latest stable version of **rsparkling** on CRAN can be installed as follows:
 
 
 Alternatively, to install the nightly version of RSparkling, please follow the information on the RSparkling tab
-on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest>`__.
+on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html>`__.
 
 
 RSparkling & SparklyR Configuration

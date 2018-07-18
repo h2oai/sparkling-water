@@ -57,6 +57,7 @@ node('docker && micro') {
             sparkVersion = "${p.sparkVersion}"
             runUnitTests = "${p.runUnitTests}"
             runPyUnitTests = "${p.runPyUnitTests}"
+            runRUnitTests = "${p.runRUnitTests}"
             runLocalIntegTests = "${p.runLocalIntegTests}"
             runLocalPyIntegTests = "${p.runLocalPyIntegTests}"
             runScriptTests = "${p.runScriptTests}"
