@@ -297,7 +297,7 @@ def rUnitTests() {
                 if (config.runRUnitTests.toBoolean()) {
                     try {
                           sh """
-                             ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage
+                             ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage :sparkling-water-r:installRSparklingPackage
                              ${getGradleCommand(config)} :sparkling-water-r:test -x check
                              """
                     } finally {
