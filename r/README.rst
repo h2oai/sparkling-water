@@ -15,18 +15,8 @@ interface, and converting between Spark DataFrames and H2O Frames). The main pur
 this package is to provide a connector between sparklyr and H2O's machine learning algorithms.
 
 The **rsparkling** package uses **sparklyr** for Spark job deployment and initialization
-of Sparkling Water. After that, user can use the regular **h2o** R package for modeling.
-
-Additional Resources
---------------------
-- `Main documentation site <http://docs.h2o.ai>`__
-- `H2O.ai website <http://h2o.ai>`__
-- `Example code <https://github.com/h2oai/rsparkling/blob/master/inst/examples/example_rsparkling.R>`__
-- `Troubleshooting RSparkling on Windows <https://github.com/h2oai/rsparkling/wiki/RSparkling-on-Windows>`__
-
-
-The **rsparkling** R package requires the **sparklyr** and **h2o** R packages to run, so in the following sections
-we show how to install each of these packages.
+of Sparkling Water. After that, user can use the regular **h2o** R package for modeling. In the
+following sections we show how to install each of these packages.
 
 Installation of SparklyR & Spark
 --------------------------------
@@ -78,7 +68,78 @@ By default, **rsparkling** automatically uses the latest Sparkling Water based o
 and advices the user which H2O version to install.
 
 Advanced users may want to choose a particular Sparking Water / H2O version (specific Sparkling Water
-versions must match specific Spark and H2O versions). This is available in the `Release Integration Table <r_release_table.rst>`__.
+versions must match specific Spark and H2O versions).
+
+============= ======================= =========== ================ ======================== 
+Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_Patch_Number 
+============= ======================= =========== ================ ======================== 
+2.3           2.3.9                   3.20.0.3    rel-wright       3                        
+2.3           2.3.8                   3.20.0.2    rel-wright       2                        
+2.3           2.3.7                   3.20.0.1    rel-wright       1                        
+2.3           2.3.6                   3.18.0.11   rel-wolpert      11                       
+2.3           2.3.5                   3.18.0.10   rel-wolpert      10                       
+2.3           2.3.4                   3.18.0.9    rel-wolpert      9                        
+2.3           2.3.3                   3.18.0.9    rel-wolpert      9                        
+2.3           2.3.2                   3.18.0.8    rel-wolpert      8                        
+2.3           2.3.1                   3.18.0.7    rel-wolpert      7                        
+2.3           2.3.0                   3.18.0.5    rel-wolpert      5                        
+2.2           2.2.20                  3.20.0.3    rel-wright       3                        
+2.2           2.2.19                  3.20.0.2    rel-wright       2                        
+2.2           2.2.18                  3.20.0.1    rel-wright       1                        
+2.2           2.2.17                  3.18.0.11   rel-wolpert      11                       
+2.2           2.2.16                  3.18.0.10   rel-wolpert      10                       
+2.2           2.2.15                  3.18.0.9    rel-wolpert      9                        
+2.2           2.2.14                  3.18.0.9    rel-wolpert      9                        
+2.2           2.2.13                  3.18.0.8    rel-wolpert      8                        
+2.2           2.2.12                  3.18.0.7    rel-wolpert      7                        
+2.2           2.2.11                  3.18.0.5    rel-wolpert      5                        
+2.2           2.2.10                  3.18.0.4    rel-wolpert      4                        
+2.2           2.2.9                   3.18.0.2    rel-wolpert      2                        
+2.2           2.2.8                   3.18.0.1    rel-wolpert      1                        
+2.2           2.2.7                   3.16.0.4    rel-wheeler      4                        
+2.2           2.2.6                   3.16.0.2    rel-wheeler      2                        
+2.2           2.2.5                   3.16.0.2    rel-wheeler      2                        
+2.2           2.2.4                   3.16.0.2    rel-wheeler      2                        
+2.2           2.2.3                   3.16.0.1    rel-wheeler      1                        
+2.2           2.2.2                   3.14.0.7    rel-weierstrass  7                        
+2.2           2.2.1                   3.14.0.6    rel-weierstrass  6                        
+2.2           2.2.0                   3.14.0.2    rel-weierstrass  2                        
+2.1           2.1.34                  3.20.0.3    rel-wright       3                        
+2.1           2.1.33                  3.20.0.2    rel-wright       2                        
+2.1           2.1.32                  3.20.0.1    rel-wright       1                        
+2.1           2.1.31                  3.18.0.11   rel-wolpert      11                       
+2.1           2.1.30                  3.18.0.10   rel-wolpert      10                       
+2.1           2.1.29                  3.18.0.9    rel-wolpert      9                        
+2.1           2.1.28                  3.18.0.9    rel-wolpert      9                        
+2.1           2.1.27                  3.18.0.8    rel-wolpert      8                        
+2.1           2.1.26                  3.18.0.7    rel-wolpert      7                        
+2.1           2.1.25                  3.18.0.5    rel-wolpert      5                        
+2.1           2.1.24                  3.18.0.4    rel-wolpert      4                        
+2.1           2.1.23                  3.18.0.2    rel-wolpert      2                        
+2.1           2.1.22                  3.18.0.1    rel-wolpert      1                        
+2.1           2.1.21                  3.16.0.4    rel-wheeler      4                        
+2.1           2.1.20                  3.16.0.2    rel-wheeler      2                        
+2.1           2.1.19                  3.16.0.2    rel-wheeler      2                        
+2.1           2.1.18                  3.16.0.2    rel-wheeler      2                        
+2.1           2.1.17                  3.16.0.1    rel-wheeler      1                        
+2.1           2.1.16                  3.14.0.7    rel-weierstrass  7                        
+2.1           2.1.15                  3.14.0.6    rel-weierstrass  6                        
+2.1           2.1.14                  3.14.0.2    rel-weierstrass  2                        
+2.1           2.1.13                  3.10.5.4    rel-vajda        4                        
+2.1           2.1.12                  3.10.5.4    rel-vajda        4                        
+2.1           2.1.11                  3.10.5.3    rel-vajda        3                        
+2.1           2.1.10                  3.10.5.2    rel-vajda        2                        
+2.1           2.1.9                   3.10.5.1    rel-vajda        1                        
+2.1           2.1.8                   3.10.4.8    rel-ueno         8                        
+2.1           2.1.7                   3.10.4.7    rel-ueno         7                        
+2.1           2.1.6                   3.10.4.7    rel-ueno         7                        
+2.1           2.1.5                   3.10.4.6    rel-ueno         6                        
+2.1           2.1.4                   3.10.4.5    rel-ueno         5                        
+2.1           2.1.3                   3.10.4.3    rel-ueno         3                        
+2.1           2.1.2                   3.10.4.2    rel-ueno         2                        
+2.1           2.1.1                   3.10.4.2    rel-ueno         2                        
+2.1           2.1.0                   3.10.3.2    rel-tverberg     2                        
+============= ======================= =========== ================ ======================== 
 
 
 **NOTE**: A call to ``rsparkling::h2o_release_table()`` displays the release table in your R console and returns
@@ -132,7 +193,7 @@ The latest stable version of **rsparkling** on CRAN can be installed as follows:
 
 
 Alternatively, to install the nightly version of RSparkling, please follow the information on the RSparkling tab
-on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html>`__.
+on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest>`__.
 
 
 RSparkling & SparklyR Configuration
@@ -460,14 +521,21 @@ Now let's say you want to make this H2OFrame available to Spark. You can convert
       ## 6 15.24433
 
 
-H2O Machine Learning Tutorials
-------------------------------
-If you are new to H2O for machine learning, we recommend you start with
-the [Intro to H2O Tutorial](https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.R), followed by
-the [H2O Grid Search & Model Selection Tutorial](https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/grid-search-model-selection.R).
-There are a number of other H2O R [tutorials](https://github.com/h2oai/h2o-tutorials) and [demos](https://github.com/h2oai/h2o-3/tree/master/h2o-r/demos) available,
-as well as the [H2O World 2015 Training Gitbook](http://learn.h2o.ai/content/), and the [Machine Learning with R and
-H2O Booklet (pdf)](http://docs.h2o.ai/h2o/latest-stable/h2o-docs/booklets/RBooklet.pdf).
+
+Additional Resources
+--------------------
+- `Main documentation site <http://docs.h2o.ai>`__
+- `H2O.ai website <http://h2o.ai>`__
+- `Example code <https://github.com/h2oai/rsparkling/blob/master/inst/examples/example_rsparkling.R>`__
+- `Troubleshooting RSparkling on Windows <https://github.com/h2oai/rsparkling/wiki/RSparkling-on-Windows>`__
+
+If you are new to H2O for machine learning, we recommend you start with:
+- `Intro to H2O Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.R>`__
+- `H2O Grid Search & Model Selection Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/grid-search-model-selection.R>`__
+
+There is also number of other H2O R `tutorials <https://github.com/h2oai/h2o-tutorials>`__ and `demos <https://github.com/h2oai/h2o-3/tree/master/h2o-r/demos>`__ available,
+as well as the `H2O World 2015 Training Gitbook <http://learn.h2o.ai/content/>`__, and the `Machine Learning with R and
+H2O Booklet (pdf) <http://docs.h2o.ai/h2o/latest-stable/h2o-docs/booklets/RBooklet.pdf>`__.
 
 
 .. |Join the chat at https://gitter.im/h2oai/rsparkling| image:: https://badges.gitter.im/Join%20Chat.svg

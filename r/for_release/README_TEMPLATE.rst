@@ -15,18 +15,8 @@ interface, and converting between Spark DataFrames and H2O Frames). The main pur
 this package is to provide a connector between sparklyr and H2O's machine learning algorithms.
 
 The **rsparkling** package uses **sparklyr** for Spark job deployment and initialization
-of Sparkling Water. After that, user can use the regular **h2o** R package for modeling.
-
-Additional Resources
---------------------
-- `Main documentation site <http://docs.h2o.ai>`__
-- `H2O.ai website <http://h2o.ai>`__
-- `Example code <https://github.com/h2oai/rsparkling/blob/master/inst/examples/example_rsparkling.R>`__
-- `Troubleshooting RSparkling on Windows <https://github.com/h2oai/rsparkling/wiki/RSparkling-on-Windows>`__
-
-
-The **rsparkling** R package requires the **sparklyr** and **h2o** R packages to run, so in the following sections
-we show how to install each of these packages.
+of Sparkling Water. After that, user can use the regular **h2o** R package for modeling. In the
+following sections we show how to install each of these packages.
 
 Installation of SparklyR & Spark
 --------------------------------
@@ -78,7 +68,9 @@ By default, **rsparkling** automatically uses the latest Sparkling Water based o
 and advices the user which H2O version to install.
 
 Advanced users may want to choose a particular Sparking Water / H2O version (specific Sparkling Water
-versions must match specific Spark and H2O versions). This is available in the `Release Integration Table <release_table.rst>`__.
+versions must match specific Spark and H2O versions).
+
+SUBST_RSPARKLING_RELEASE_TABLE
 
 
 **NOTE**: A call to ``rsparkling::h2o_release_table()`` displays the release table in your R console and returns
@@ -460,14 +452,22 @@ Now let's say you want to make this H2OFrame available to Spark. You can convert
       ## 6 15.24433
 
 
-H2O Machine Learning Tutorials
-------------------------------
-If you are new to H2O for machine learning, we recommend you start with
-the [Intro to H2O Tutorial](https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.R), followed by
-the [H2O Grid Search & Model Selection Tutorial](https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/grid-search-model-selection.R).
-There are a number of other H2O R [tutorials](https://github.com/h2oai/h2o-tutorials) and [demos](https://github.com/h2oai/h2o-3/tree/master/h2o-r/demos) available,
-as well as the [H2O World 2015 Training Gitbook](http://learn.h2o.ai/content/), and the [Machine Learning with R and
-H2O Booklet (pdf)](http://docs.h2o.ai/h2o/latest-stable/h2o-docs/booklets/RBooklet.pdf).
+Additional Resources
+--------------------
+
+- `Main documentation site <http://docs.h2o.ai>`__
+- `H2O.ai website <http://h2o.ai>`__
+- `Example code <https://github.com/h2oai/rsparkling/blob/master/inst/examples/example_rsparkling.R>`__
+- `Troubleshooting RSparkling on Windows <https://github.com/h2oai/rsparkling/wiki/RSparkling-on-Windows>`__
+
+If you are new to H2O for machine learning, we recommend you start with:
+
+- `Intro to H2O Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.R>`__
+- `H2O Grid Search & Model Selection Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/grid-search-model-selection.R>`__
+
+There is also number of other H2O R `tutorials <https://github.com/h2oai/h2o-tutorials>`__ and `demos <https://github.com/h2oai/h2o-3/tree/master/h2o-r/demos>`__ available,
+as well as the `H2O World 2015 Training Gitbook <http://learn.h2o.ai/content/>`__, and the `Machine Learning with R and
+H2O Booklet (pdf) <http://docs.h2o.ai/h2o/latest-stable/h2o-docs/booklets/RBooklet.pdf>`__.
 
 
 .. |Join the chat at https://gitter.im/h2oai/rsparkling| image:: https://badges.gitter.im/Join%20Chat.svg
