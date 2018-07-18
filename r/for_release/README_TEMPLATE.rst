@@ -46,12 +46,12 @@ Prior to installing **h2o** and **rsparkling**, the user will need to decide whi
 Spark they would like to work with, as the remaining installation revolve around a particular major
 version of Spark (2.1, 2.2 or 2.3).
 
-The following command will install Spark 2.3.1:
+The following command will install Spark SUBST_SPARK_VERSION:
 
 .. code:: r
 
    library(sparklyr)
-   spark_install(version = "2.3.1")
+   spark_install(version = "SUBST_SPARK_VERSION")
 
 **NOTE**: The previous command requires access to the internet. If you are not connected to the
 internet/behind a firewall you would need to do the following:
@@ -103,7 +103,7 @@ can be used for this.
 
 Install H2O from CRAN
 ~~~~~~~~~~~~~~~~~~~~~
-In case of installation from CRAN, the typical ``install.packages("h2o", "3.20.0.3")`` command can be used. Please note
+In case of installation from CRAN, the typical ``install.packages("h2o", "SUBST_H2O_VERSION")`` command can be used. Please note
 that the latest released version might not be available in CRAN. In that case, please install H2O from S3.
 
 Install H2O from S3
@@ -111,12 +111,12 @@ Install H2O from S3
 H2O can be also installed from hosted R repository in H2O's S3 buckets.
 
 At present, you can install the **h2o** R package using a repository URL comprised
-of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.com/h2o/rel-wright/3/R`
+of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R`
 
 .. code:: r
    # Download, install, and initialize the H2O package for R.
-   # In this case we are using rel-wright 3 (3.20.0.3)
-   install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-wright/3/R")
+   # In this case we are using rel-SUBST_H2O_RELEASE_NAME SUBST_H2O_BUILD_NUMBER (SUBST_H2O_VERSION)
+   install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R")
 
 
 
@@ -181,7 +181,7 @@ Once we've installed **rsparkling** and it's dependencies, the first step would 
 
 .. code:: r
 
-   sc <- spark_connect(master = "local", version = "2.3.1")
+   sc <- spark_connect(master = "local", version = "SUBST_SPARK_VERSION")
 
 
 **NOTE**: Please be sure to set `version` to the proper Spark version utilized by your version of Sparkling Water in `spark_connect()`

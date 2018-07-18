@@ -38,5 +38,44 @@ task test(type: Exec, dependsOn: [configurations.compile]) {
     commandLine getOsSpecificCommandLine(['R', '-f', 'testthat.R'])
 }
 
+/**
+ * We can't use Sphinx substitutions in for example code blocks and other container, so we post-process
+ * the generated files manually
+ */
+task updateRReadme(){
+    doLast {
+
+        def (first, second, third) = version.replace("-SNAPSHOT", "").tokenize(".")
+        def majorVersion = "${first}.${second}"
+        def minorVersion = third
+
+        def contents = file("for_release/README_TEMPLATE.RST").getText('UTF-8')
+        contents = contents
+                .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", ""))
+                .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
+                .replaceAll("SUBST_SW_MINOR_VERSION", minorVersion)
+                .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+                .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.')))
+                .replaceAll("SUBST_H2O_VERSION", h2oVersion)
+                .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
+                .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
+
+        file("README.rst").write(contents, 'UTF-8')
+
+    }
+}
+
+
+task generateSysData(type: Exec){
+    workingDir projectDir
+    commandLine getOsSpecificCommandLine(["./for_release/generate_release_table_sysdata.sh"])
+}
+
+task updateReleaseIntegTable(type: Exec){
+    workingDir projectDir
+    commandLine getOsSpecificCommandLine(["./for_release/update_release_table.sh"])
+}
+
+task prepareForRSparklingRelease(dependsOn: [updateRReadme, generateSysData, updateReleaseIntegTable])
 
 clean.dependsOn cleanR
