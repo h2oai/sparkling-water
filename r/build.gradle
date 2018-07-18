@@ -6,8 +6,10 @@ dependencies {
     compile project(path: ':sparkling-water-assembly')
 }
 
-task distR(type: Exec) {
-
+/**
+ * Copy R sources to output directory
+ */
+task copyRSources(){
     doFirst {
         file(project.buildDir).mkdir()
         copy {
@@ -15,6 +17,20 @@ task distR(type: Exec) {
             into new File(project.buildDir, "src")
         }
     }
+}
+
+/**
+ * Generate required Sys Data
+ */
+task generateSysData(type: Exec, dependsOn: copyRSources){
+    workingDir "${project.buildDir}/src"
+    commandLine getOsSpecificCommandLine(["R", "-e", "source('../../for_release/utils.R'); generate_sys_data();"])
+}
+
+/**
+ * Build R package
+ */
+task distR(type: Exec, dependsOn: generateSysData) {
     workingDir project.buildDir
     commandLine getOsSpecificCommandLine(['R', 'CMD', 'build', 'src'])
 }
@@ -38,11 +54,21 @@ task test(type: Exec, dependsOn: [configurations.compile]) {
     commandLine getOsSpecificCommandLine(['R', '-f', 'testthat.R'])
 }
 
+/**
+ * Automatically create release table which is part of README.rst
+ *
+ *  It is called only when RSparkling is Released
+ */
 task createReleaseIntegTable(type: Exec){
     workingDir projectDir
     commandLine getOsSpecificCommandLine(["./for_release/update_release_table.sh"])
 }
 
+/**
+ * Update Readme files.
+ *
+ * It is called only when RSparkling is Released
+ */
 task updateRReadme(dependsOn: createReleaseIntegTable){
     doLast {
 
@@ -67,10 +93,20 @@ task updateRReadme(dependsOn: createReleaseIntegTable){
     }
 }
 
-task bumpVersion(type: Exec){
+/**
+ * Bump RSparkling version
+ *
+ * It is called only when RSparkling is Released
+ */
+task bumpVersion(type: Exec, dependsOn: updateRReadme){
     workingDir projectDir
     commandLine getOsSpecificCommandLine(["R", "-e", "source('for_release/utils.R'); updatePackageVersion(\"src\");"])
 }
+
+if(project.hasProperty("doRelease")){
+    copyRSources.dependsOn bumpVersion
+}
+
 
 task installH2ORPackage(type: Exec){
     commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"h2o\", type = \"source\", repos = \"http://h2o-release.s3.amazonaws.com/h2o/rel-${h2oMajorName}/${h2oBuild}/R\")"])
@@ -81,10 +117,6 @@ task installRSparklingPackage(type: Exec, dependsOn: buildR){
     commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_${getCurrentVersion()}.tar.gz\", type=\"source\", repos=NULL)"])
 }
 
-task generateSysData(type: Exec){
-    workingDir projectDir
-    commandLine getOsSpecificCommandLine(["R", "-e", "source('for_release/utils.R'); generate_sys_data();"])
-}
 
 static def String getCurrentVersion(){
     def proc = ['R', '-e', "source('for_release/utils.R'); getCurrentVersion(\"src\");"].execute()
@@ -97,10 +129,19 @@ task getCurrentVersion(){
     println(getCurrentVersion())
 }
 
-task prepareForRSparklingRelease(dependsOn: [updateRReadme, generateSysData, bumpVersion])
 
-task releaseRSparkling(type: Exec, dependsOn: [buildR, prepareForRSparklingRelease]){
+task printRSparklingCranLink(){
+    doLast {
+        def link = "https://CRAN.R-project.org/package=rsparkling"
+        def lines = link.toURL().readLines()
+        def versionIdx = lines.findIndexOf {it.equals("<td>Version:</td>")} + 1
+        def version = lines.get(versionIdx).replace("<td>", "").replace("</td>", "")
+
+        def downloadLink = "https://cran.r-project.org/src/contrib/rsparkling_${version}.tar.gz"
+        println(downloadLink)
+    }
 }
+
 clean.dependsOn cleanR
 
 check.dependsOn test

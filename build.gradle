@@ -176,13 +176,15 @@ configure(subprojects) { project ->
 }
 
 
+
 task buildSparklingWaterDist(type: Exec, dependsOn:
         ["sparkling-water-assembly:shadowJar"] + // Build Java/Scala
         ["sparkling-water-templates:build"] + // Build templates
         ["sparkling-water-py:distPython"] +
         getTasksByName("javadoc", true) + // Build javadoc
         getTasksByName("scaladoc", true) + // Build scaladoc
-        getTasksByName("site", true)) {
+        getTasksByName("site", true)
+        ) {
 
     def buildTimeMillis = System.currentTimeMillis();
     def buildTimeIso8601 = new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("UTC"))
