@@ -142,6 +142,7 @@ Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_P
 ============= ======================= =========== ================ ======================== 
 
 
+
 **NOTE**: A call to ``rsparkling::h2o_release_table()`` displays the release table in your R console and returns
 a ``data.frame`` containing this information.
 
@@ -175,6 +176,7 @@ At present, you can install the **h2o** R package using a repository URL compris
 of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.com/h2o/rel-wright/3/R`
 
 .. code:: r
+
    # Download, install, and initialize the H2O package for R.
    # In this case we are using rel-wright 3 (3.20.0.3)
    install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-wright/3/R")
@@ -265,6 +267,7 @@ RSparkling does not expose setters and getters for specifying configuration opti
 You must specify the Spark configuration options directly, for example:
 
 .. code:: r
+
    config=spark_config()
    config=c(config, list("spark.ext.h2o.node.port.base"="55555", "spark.ext.h2o.client.port.base"="44444"))
    sc <- spark_connect(master="yarn-client", app_name = "demo", config = config)
@@ -333,7 +336,8 @@ As an example, let's copy the mtcars dataset to to Spark so we can access it fro
       ## 8   24.4     4 146.7    62  3.69 3.190 20.00     1     0     4     2
       ## 9   22.8     4 140.8    95  3.92 3.150 22.90     1     0     4     2
       ## 10  19.2     6 167.6   123  3.92 3.440 18.30     1     0     4     4
-      ## # ... with more rows
+      ## ... with more rows
+
 
 The use case we'd like to enable is calling the H2O algorithms and feature transformers directly on Spark DataFrames
 that we've manipulated with dplyr. This is indeed supported by the Sparkling Water package.
@@ -521,15 +525,16 @@ Now let's say you want to make this H2OFrame available to Spark. You can convert
       ## 6 15.24433
 
 
-
 Additional Resources
 --------------------
+
 - `Main documentation site <http://docs.h2o.ai>`__
 - `H2O.ai website <http://h2o.ai>`__
 - `Example code <https://github.com/h2oai/rsparkling/blob/master/inst/examples/example_rsparkling.R>`__
 - `Troubleshooting RSparkling on Windows <https://github.com/h2oai/rsparkling/wiki/RSparkling-on-Windows>`__
 
 If you are new to H2O for machine learning, we recommend you start with:
+
 - `Intro to H2O Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.R>`__
 - `H2O Grid Search & Model Selection Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/grid-search-model-selection.R>`__
 

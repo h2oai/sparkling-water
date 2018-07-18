@@ -106,6 +106,7 @@ At present, you can install the **h2o** R package using a repository URL compris
 of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R`
 
 .. code:: r
+
    # Download, install, and initialize the H2O package for R.
    # In this case we are using rel-SUBST_H2O_RELEASE_NAME SUBST_H2O_BUILD_NUMBER (SUBST_H2O_VERSION)
    install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R")
@@ -196,6 +197,7 @@ RSparkling does not expose setters and getters for specifying configuration opti
 You must specify the Spark configuration options directly, for example:
 
 .. code:: r
+
    config=spark_config()
    config=c(config, list("spark.ext.h2o.node.port.base"="55555", "spark.ext.h2o.client.port.base"="44444"))
    sc <- spark_connect(master="yarn-client", app_name = "demo", config = config)
@@ -264,7 +266,8 @@ As an example, let's copy the mtcars dataset to to Spark so we can access it fro
       ## 8   24.4     4 146.7    62  3.69 3.190 20.00     1     0     4     2
       ## 9   22.8     4 140.8    95  3.92 3.150 22.90     1     0     4     2
       ## 10  19.2     6 167.6   123  3.92 3.440 18.30     1     0     4     4
-      ## # ... with more rows
+      ## ... with more rows
+
 
 The use case we'd like to enable is calling the H2O algorithms and feature transformers directly on Spark DataFrames
 that we've manipulated with dplyr. This is indeed supported by the Sparkling Water package.
