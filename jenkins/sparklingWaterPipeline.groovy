@@ -294,7 +294,7 @@ def rUnitTests() {
     return { config ->
         stage('QA: RUnit Tests - ' + config.backendMode) {
             withDocker(config) {
-                if (config.runPyUnitTests.toBoolean()) {
+                if (config.runRUnitTests.toBoolean()) {
                     try {
                           sh """
                              ${getGradleCommand(config)} :sparkling-water-r:test -x check

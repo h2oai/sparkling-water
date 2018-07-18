@@ -41,6 +41,7 @@ task substitute(){
                         .replaceAll("SUBST_H2O_VERSION", h2oVersion)
                         .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
                         .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
+                        .replaceAll("r_release_table.rst", "r_release_table.html")
                 file(it).write(contents, 'UTF-8')
             }
         }
