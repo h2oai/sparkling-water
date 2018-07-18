@@ -25,10 +25,11 @@ Additional Resources
 - `Troubleshooting RSparkling on Windows <https://github.com/h2oai/rsparkling/wiki/RSparkling-on-Windows>`__
 
 
-Installation
-------------
-The **rsparkling** R package requires the **sparklyr** and **h2o** R packages to run, so below we show
-how to install each of these packages.
+The **rsparkling** R package requires the **sparklyr** and **h2o** R packages to run, so in the following sections
+we show how to install each of these packages.
+
+Installation of SparklyR & Spark
+--------------------------------
 
 Install sparklyr
 ~~~~~~~~~~~~~~~~
@@ -52,9 +53,9 @@ The following command will install Spark 2.3.1:
    library(sparklyr)
    spark_install(version = "2.3.1")
 
-
 **NOTE**: The previous command requires access to the internet. If you are not connected to the
 internet/behind a firewall you would need to do the following:
+
 
 1. Download `Spark <https://spark.apache.org/downloads.html>`__ (Pick the major version that corresponds to Sparkling Water)
 2. Unzip Spark files
@@ -64,52 +65,64 @@ internet/behind a firewall you would need to do the following:
 
       Sys.setenv(SPARK_HOME="/path/to/spark")
 
-
 Install H2O
-~~~~~~~~~~~
-**rsparkling** currently requires that a certain version of H2O be used, depending on
-which major version of Spark is used, although this requirement will be relaxed in a future version.
-Each release of Sparking Water is built from specific versions of H2O, and those versions are listed in
-the table below.
+-----------
 
-**rsparkling** will automatically use the latest Sparkling Water based on the major Spark version provided. 
+
+H2O & Sparkling Water Versions Mapping
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**rsparkling** requires certain version of H2O to be used depending on desired Sparkling Water & Spark versions.
+This is because each release of Sparking Water is built from specific versions of H2O.
+
+By default, **rsparkling** automatically uses the latest Sparkling Water based on the major Spark version provided
+and advices the user which H2O version to install.
 
 Advanced users may want to choose a particular Sparking Water / H2O version (specific Sparkling Water
-versions must match specific Spark and H2O versions).  Refer to integration info below.
-
-The release table which shows the integration between H2O & Sparkling Water is available at
-`Release Integration Table <./release_table.rst>`__
+versions must match specific Spark and H2O versions). This is available in the `Release Integration Table <release_table.rst>`__.
 
 
-**NOTE**: A call to `h2o_release_table()` will display the above table in your R console and return a data.frame containing this information.
+**NOTE**: A call to ``rsparkling::h2o_release_table()`` displays the release table in your R console and returns
+a ``data.frame`` containing this information.
 
-#### Install h2o from S3
+Prepare Environment for H2O Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+It is advised to remove previously installed H2O versions and install H2O dependencies. The command bellow
+can be used for this.
 
-To install any one of the above versions, we recommend using the H2O hosted repository on S3. In future versions of **rsparkling**, all Sparkling Water compatible versions of H2O will be available on CRAN and will be able to be easily installed using the [versions](https://CRAN.R-project.org/package=versions) R package using a command such as `versions::install.packages("h2o", "3.20.0.2")`.
+.. code:: r
 
-At present, you can install the **h2o** R package using a repository URL comprised of the H2O version name and number.  Example: `http://h2o-release.s3.amazonaws.com/h2o/rel-wolpert/10/R`
+   # The following two commands remove any previously installed H2O packages for R.
+   if ("package:h2o" %in% search()) { detach("package:h2o", unload=TRUE) }
+   if ("h2o" %in% rownames(installed.packages())) { remove.packages("h2o") }
 
-The R code below will install the most recent Spark 2.3 compatible release of H2O, which is "rel-wright" patch 2 (aka H2O version 3.20.0.2).
+   # Install packages H2O depends on
+   pkgs <- c("methods", "statmod", "stats", "graphics", "RCurl", "jsonlite", "tools", "utils")
+   for (pkg in pkgs) {
+       if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
+   }
 
-```r
-# The following two commands remove any previously installed H2O packages for R.
-if ("package:h2o" %in% search()) { detach("package:h2o", unload=TRUE) }
-if ("h2o" %in% rownames(installed.packages())) { remove.packages("h2o") }
+Install H2O from CRAN
+~~~~~~~~~~~~~~~~~~~~~
+In case of installation from CRAN, the typical ``install.packages("h2o", "3.20.0.2")`` command can be used. Please note
+that the latest released version might not be available in CRAN. In that case, please install H2O from S3.
 
-# Next, we download packages that H2O depends on.
-pkgs <- c("methods","statmod","stats","graphics","RCurl","jsonlite","tools","utils")
-for (pkg in pkgs) {
-    if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
-}
+Install H2O from S3
+~~~~~~~~~~~~~~~~~~~
+H2O can be also installed from hosted R repository in H2O's S3 buckets.
 
-# Now we download, install, and initialize the H2O package for R. 
-# In this case we are using rel-wolpert 11 (3.20.0.2).
-install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-wright/2/R")
-```
+At present, you can install the **h2o** R package using a repository URL comprised
+of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.com/h2o/rel-wright/3/R`
+
+.. code:: r
+   # Download, install, and initialize the H2O package for R.
+   # In this case we are using rel-wright 3 (3.20.0.3)
+   install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-wright/3/R")
 
 
 
-### Install rsparkling
+
+Install rsparkling
+------------------
 
 The latest stable version of **rsparkling** on CRAN can be installed as follows:
 
