@@ -78,7 +78,7 @@ Advanced users may want to choose a particular Sparking Water / H2O version (spe
 versions must match specific Spark and H2O versions).  Refer to integration info below.
 
 The release table which shows the integration between H2O & Sparkling Water is available at
-`Release Integration Table <release_table.rst>`__
+`Release Integration Table <./release_table.rst>`__
 
 
 **NOTE**: A call to `h2o_release_table()` will display the above table in your R console and return a data.frame containing this information.
