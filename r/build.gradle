@@ -71,9 +71,11 @@ task installH2ORPackage(type: Exec){
     commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"h2o\", type = \"source\", repos = \"http://h2o-release.s3.amazonaws.com/h2o/rel-${h2oMajorName}/${h2oBuild}/R\")"])
 }
 
-task installRSparklingPacakge(type: Exec){
-    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling.tar.gz\", type=\"source\", repos=NULL)"])
+task installRSparklingPackage(type: Exec, dependsOn: buildR){
+    workingDir project.buildDir
+    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_0.2.4.tar.gz\", type=\"source\", repos=NULL)"])
 }
+
 task generateSysData(type: Exec){
     workingDir projectDir
     commandLine getOsSpecificCommandLine(["./for_release/generate_release_table_sysdata.sh"])
@@ -83,3 +85,5 @@ task generateSysData(type: Exec){
 task prepareForRSparklingRelease(dependsOn: [updateRReadme, generateSysData])
 
 clean.dependsOn cleanR
+
+check.dependsOn test
