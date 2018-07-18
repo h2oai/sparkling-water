@@ -38,7 +38,7 @@ node('docker && micro') {
             driverHadoopVersion = "hdp2.2"
             buildNightly = "true"
             uploadNightly = "true"
-            dockerVersion = "6"
+            dockerVersion = "7"
         }
     }
 }
