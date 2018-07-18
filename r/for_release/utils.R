@@ -58,7 +58,6 @@ getCurrentVersion <- function(packageLocation = "."){
     # Split the version number into two; a piece to keep, a piece to increment
     versionNumber <- strsplit(vNumber, "\\.")[[1]]
     versionParts <- length(versionNumber)
-    vNumberKeep <- paste(versionNumber[1:(versionParts-1)], sep= "", collapse= ".")
     vNumberUpdate <- versionNumber[versionParts]
 
     # Replace old version number with new one (increment by 1)
@@ -67,7 +66,23 @@ getCurrentVersion <- function(packageLocation = "."){
 }
 
 updatePackageVersion <- function(packageLocation = "."){
-    oldVersion <- getCurrentVersion(packageLocation)
+    # Read DESCRIPTION file
+    desc <- readLines(file.path(packageLocation, "DESCRIPTION"))
+
+    # Find the line where the version is defined
+    vLine <- grep("^Version\\:", desc)
+
+    # Extract version number
+    vNumber <- gsub("^Version\\:\\s*", "", desc[vLine])
+
+    # Split the version number into two; a piece to keep, a piece to increment
+    versionNumber <- strsplit(vNumber, "\\.")[[1]]
+    versionParts <- length(versionNumber)
+    vNumberKeep <- paste(versionNumber[1:(versionParts-1)], sep= "", collapse= ".")
+    vNumberUpdate <- versionNumber[versionParts]
+
+    # Replace old version number with new one (increment by 1)
+    oldVersion <- as.numeric(vNumberUpdate)
     newVersion <- oldVersion + 1
 
     # Build final version number

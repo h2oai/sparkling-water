@@ -103,7 +103,7 @@ task bumpVersion(type: Exec, dependsOn: updateRReadme){
     commandLine getOsSpecificCommandLine(["R", "-e", "source('for_release/utils.R'); updatePackageVersion(\"src\");"])
 }
 
-if(project.hasProperty("doRelease")){
+if(project.hasProperty("doReleaseRSparkling")){
     copyRSources.dependsOn bumpVersion
 }
 
