@@ -23,7 +23,7 @@ RUN \
     R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("dplyr", repos = "http://cran.us.r-project.org")'
 
-    
+
 
 
 ###
@@ -123,6 +123,9 @@ COPY bigdata/laptop/citibike-nyc/31081_New_York_City__Hourly_2013.csv /home/0xdi
 
 ### Remove Sparkling Water
 RUN cd /home/jenkins && rm -rf sparkling-water
+
+# Change permissions so we can install R packages
+RUN chmod 777 /usr/local/lib/R/site-library
 
 USER jenkins
 
