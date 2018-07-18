@@ -67,23 +67,40 @@ task updateRReadme(dependsOn: createReleaseIntegTable){
     }
 }
 
+task bumpVersion(type: Exec){
+    workingDir projectDir
+    commandLine getOsSpecificCommandLine(["R", "-e", "source('for_release/utils.R'); updatePackageVersion(\"src\");"])
+}
+
 task installH2ORPackage(type: Exec){
     commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"h2o\", type = \"source\", repos = \"http://h2o-release.s3.amazonaws.com/h2o/rel-${h2oMajorName}/${h2oBuild}/R\")"])
 }
 
 task installRSparklingPackage(type: Exec, dependsOn: buildR){
     workingDir project.buildDir
-    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_0.2.4.tar.gz\", type=\"source\", repos=NULL)"])
+    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_${getCurrentVersion()}.tar.gz\", type=\"source\", repos=NULL)"])
 }
 
 task generateSysData(type: Exec){
     workingDir projectDir
-    commandLine getOsSpecificCommandLine(["./for_release/generate_release_table_sysdata.sh"])
+    commandLine getOsSpecificCommandLine(["R", "-e", "source('for_release/utils.R'); generate_sys_data();"])
 }
 
+static def String getCurrentVersion(){
+    def proc = ['R', '-e', "source('for_release/utils.R'); getCurrentVersion(\"src\");"].execute()
+    def lines = proc.text.readLines()
+    def patchVersion = lines[-3].replace("[1] ", "").toString()
+    return "0.2." + patchVersion
+}
 
-task prepareForRSparklingRelease(dependsOn: [updateRReadme, generateSysData])
+task getCurrentVersion(){
+    println(getCurrentVersion())
+}
 
+task prepareForRSparklingRelease(dependsOn: [updateRReadme, generateSysData, bumpVersion])
+
+task releaseRSparkling(type: Exec, dependsOn: [buildR, prepareForRSparklingRelease]){
+}
 clean.dependsOn cleanR
 
 check.dependsOn test
