@@ -34,9 +34,9 @@ Install sparklyr
 ~~~~~~~~~~~~~~~~
 We recommend the latest stable version of [sparklyr](http://spark.rstudio.com/index.html).
 
-   .. code:: r
+.. code:: r
 
-      install.packages("sparklyr")
+   install.packages("sparklyr")
 
 Install Spark via sparklyr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,10 +47,10 @@ version of Spark (2.1, 2.2 or 2.3).
 
 The following command will install Spark 2.3.1:
 
-   .. code:: r
+.. code:: r
 
-      library(sparklyr)
-      spark_install(version = "2.3.1")
+   library(sparklyr)
+   spark_install(version = "2.3.1")
 
 
 **NOTE**: The previous command requires access to the internet. If you are not connected to the
