@@ -10,7 +10,18 @@ RUN \
     rm /etc/startup/50_hive_start && \
     rm /etc/startup/70_start_slapd
 
-RUN apt-get update && apt-get install -y git curl zip s3cmd
+RUN apt-get update && apt-get install -y git curl zip s3cmd r-base r-base-dev libxml2-dev libssl-dev
+
+RUN \
+    R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("openssl", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("bitops", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")'
+
+    
+
 
 ###
 ###  Prepare Spark
