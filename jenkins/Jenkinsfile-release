@@ -3,6 +3,7 @@ pipeline {
     
     parameters {
         booleanParam(name: 'prepareReleaseNotes', defaultValue: true, description: 'Prepare release notes')
+        booleanParam(name: 'releaseRSparkling', defaultValue: true, description: 'Release RSparkling')
         booleanParam(name: 'publishToNexus', defaultValue: true, description: 'Publish to Nexus')
         booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
         booleanParam(name: 'buildExtendedH2OJars', defaultValue: true, description: 'Build extended H2O Jars')
@@ -105,6 +106,45 @@ pipeline {
             }
         }
 
+        stage('Release RSparkling'){
+            when {
+                expression { params.releaseRSparkling == true }
+            }
+            steps {
+                script {
+                    docker.withRegistry("https://docker.h2o.ai") {
+                        docker.image('opsh2oai/sparkling_water_tests:7').inside("--init --dns 172.16.0.200") {
+                            withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
+                                sh """
+                                   # Copy keys
+                                   mkdir -p ~/.ssh
+                                   cp \${ID_RSA_PATH} ~/.ssh/id_rsa
+                                   cp \${GITCONFIG_PATH} ~/.gitconfig
+                                   """
+
+
+                                 sh """
+                                    sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                                    REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+
+                                    ./gradlew :sparkling-water-r:build -x check -PdoReleaseRSparkling
+                                    git checkout -- gradle.properties
+
+                                    git add r/README.rst
+                                    git add r/src/DESCRIPTION
+
+                                    git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
+                                    RSPARKLING_VERSION=\$(./gradlew -q :sparkling-water-r:printCurrentVersion)
+                                    git commit -m "Release RSparkling \$RSPARKLING_VERSION on Sparkling Water branch ${env.BRANCH_NAME}"
+                                    git push --set-upstream origin ${env.BRANCH_NAME}
+                                    """
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Build Sparkling Water Distribution'){
             steps {
                 script {
@@ -114,12 +154,6 @@ pipeline {
                             withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
                                 sh " ${env.WORKSPACE}/gradlew --help "
                                 sh "activate_java_7"
-
-                                // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
-                                // with release notes which can mess up the build
-                                sh """
-                                ${env.WORKSPACE}/gradlew --help
-                                """
 
                                 sh """
                                  # Calculate the current and future version

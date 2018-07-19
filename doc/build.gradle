@@ -37,7 +37,7 @@ task substitute(){
                         .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
                         .replaceAll("SUBST_SW_MINOR_VERSION", minorVersion)
                         .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-                        .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.')))
+                        .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
                         .replaceAll("SUBST_H2O_VERSION", h2oVersion)
                         .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
                         .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
