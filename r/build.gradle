@@ -119,7 +119,7 @@ task installRSparklingPackage(type: Exec, dependsOn: buildR){
 
 
 def getCurrentVersion(def projectDir){
-    def proc = ['R', '-e', "source('for_release/utils.R'); getCurrentVersion(\"src\");"].execute([], file("/Users/kuba/devel/repos/sparkling-water/r"))
+    def proc = ['R', '-e', "source('for_release/utils.R'); getCurrentVersion(\"src\");"].execute([], file(projectDir))
     def lines = proc.text.readLines()
     def idx = lines.findIndexOf {it.contains("[1]")}
     def patchVersion = lines[idx].replace("[1] ", "").toString()
