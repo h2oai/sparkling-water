@@ -30,6 +30,7 @@ def call(params, body) {
                         buildAndLint()(config)
                         unitTests()(config)
                         pyUnitTests()(config)
+                        rUnitTests()(config)
                         localIntegTest()(config)
                         localPyIntegTest()(config)
                         scriptsTest()(config)
@@ -278,6 +279,27 @@ def pyUnitTests() {
                             ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                             """
                         }
+                    } finally {
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    }
+
+                }
+            }
+        }
+
+    }
+}
+
+def rUnitTests() {
+    return { config ->
+        stage('QA: RUnit Tests - ' + config.backendMode) {
+            withDocker(config) {
+                if (config.runRUnitTests.toBoolean()) {
+                    try {
+                          sh """
+                             ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage :sparkling-water-r:installRSparklingPackage
+                             ${getGradleCommand(config)} :sparkling-water-r:test -x check
+                             """
                     } finally {
                         arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
                     }
