@@ -182,7 +182,7 @@ task buildSparklingWaterDist(type: Exec, dependsOn:
         getTasksByName("javadoc", true) + // Build javadoc
         getTasksByName("scaladoc", true) + // Build scaladoc
         getTasksByName("site", true) +
-        ["sparkling-water-r:build"]
+        ["sparkling-water-r:distR"]
         ) {
 
     def buildTimeMillis = System.currentTimeMillis();
