@@ -44,7 +44,7 @@ h2o_release_table <- function(spark_version, sw_version, h2o_version, h2o_name, 
     H2O_Release_Name = h2o_name_vec,
     H2O_Release_Patch_Number = h2o_patch_version_vec)
 
-    return(rbind(latest, get_release_table_for("2.3"), get_release_table_for("2.2"), get_release_table_for("2.1")))
+    return(rbind(get_release_table_for("2.3"), latest, get_release_table_for("2.2"), get_release_table_for("2.1")))
 }
 
 generate_sys_data <- function(spark_version, sw_version, h2o_version, h2o_name, h2o_build){
