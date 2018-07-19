@@ -76,7 +76,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
     )
 
-    if(conf.stacktraceCollectorInterval != -1){ // -1 means don't do stacktrace collection
+    if (conf.stacktraceCollectorInterval != -1) { // -1 means don't do stacktrace collection
       cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-stacktrace_collector_interval", "-J", conf.stacktraceCollectorInterval.toString)
     }
 
@@ -89,7 +89,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
 
     if (hc.getConf.h2oNodeWebEnabled) {
-      if (hc.getConf.contextPath.isDefined){
+      if (hc.getConf.contextPath.isDefined) {
         cmdToLaunch = cmdToLaunch ++ Seq("-context_path", hc.getConf.contextPath.get)
       }
     } else {
@@ -241,7 +241,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (stopSparkContext) {
       hc.sparkContext.stop()
     }
-    H2O.orderlyShutdown(1000)
+    // In Manual mode of external backend, we want the H2O cluster to be managed by the user, not by Sparkling Water
+    if (hc._conf.isAutoClusterStartUsed) {
+      H2O.orderlyShutdown(1000)
+    }
     H2O.exit(0)
   }
 
@@ -272,7 +275,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       if (conf.numOfExternalH2ONodes.isEmpty) {
         throw new IllegalArgumentException("Number of external H2O nodes has to be specified in the auto H2O external start mode!")
       }
-      
+
       if (conf.clusterInfoFile.isEmpty) {
         conf.setClusterConfigFile("notify_" + conf.cloudName.get)
       }
