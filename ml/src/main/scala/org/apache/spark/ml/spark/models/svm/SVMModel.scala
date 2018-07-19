@@ -71,15 +71,18 @@ class SVMModel private[svm](val selfKey: Key[SVMModel],
     if (_parms._threshold.isNaN) { // Regression
       preds(0) = pred
     } else { // Binomial
-      val dt = defaultThreshold()
       if (pred > _parms._threshold) {
-        preds(2) = if (pred < dt) dt else pred
-        preds(1) = preds(2) - 1
-        preds(0) = 1
+        // the probability far first and second class, since SVM does not give us probabilities, we assign
+        // the probabilities to 0 or respectively to 1
+        preds(2) = 1 // we
+        preds(1) = 0
+        preds(0) = 1 // final class, either 1 or 0
       } else {
-        preds(2) = if (pred >= dt) dt - 1 else pred
-        preds(1) = preds(2) + 1
-        preds(0) = 0
+        // the probability far first and second class, since SVM does not give us probabilities, we assign
+        // the probabilities to 0 or respectively to 1
+        preds(2) = 0
+        preds(1) = 1
+        preds(0) = 0 // final class either 1 or 0
       }
     }
     preds
