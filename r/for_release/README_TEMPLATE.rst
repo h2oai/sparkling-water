@@ -156,9 +156,9 @@ central. If you don't have internet access or firewall is set up, you can specif
 This JAR file can be obtain in following steps:
 
 1. Download the Sparkling Water jar of your choice based on the integration table above.
-To do this go to the following link where ``[SW Major Version]`` is the major version of Sparkling Water you wish to use, i.e., `2.3` and `[SW Minor Version]` is the minor version of Sparkling Water you wish to use, i.e., `5`,
-such as ``http://h2o-release.s3.amazonaws.com/sparkling-water/rel-[SW Major Version]/[SW Minor Version]/index.html``
-2. Click the `DOWNLOAD SPARKLING WATER` tab, which will download a `.zip` file of Sparkling Water.
+   To do this go to the following link where ``[SW Major Version]`` is the major version of Sparkling Water you wish to use, i.e., ``SUBST_SW_MAJOR_VERSION`` and ``[SW Minor Version]`` is the minor version of Sparkling Water you wish to use, i.e., ``SUBST_SW_MINOR_VERSION``,
+   such as ``http://h2o-release.s3.amazonaws.com/sparkling-water/rel-[SW Major Version]/[SW Minor Version]/index.html``
+2. Click the ``DOWNLOAD SPARKLING WATER`` tab, which will download a ``.zip`` file of Sparkling Water.
 3. Run the following command to unzip the folder:
 
 .. code:: bash
@@ -177,7 +177,7 @@ Once we've installed **rsparkling** and it's dependencies, the first step would 
    sc <- spark_connect(master = "local", version = "SUBST_SPARK_VERSION")
 
 
-**NOTE**: Please be sure to set `version` to the proper Spark version utilized by your version of Sparkling Water in `spark_connect()`
+**NOTE**: Please be sure to set ``version`` to the proper Spark version utilized by your version of Sparkling Water in ``spark_connect()``
 
 **NOTE**: The previous command requires access to the internet. If you are not connected to the internet/behind a firewall, please
 first read the previous section about Spark installation.
