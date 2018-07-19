@@ -114,19 +114,23 @@ task installH2ORPackage(type: Exec){
 
 task installRSparklingPackage(type: Exec, dependsOn: buildR){
     workingDir project.buildDir
-    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_${getCurrentVersion()}.tar.gz\", type=\"source\", repos=NULL)"])
+    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_${getCurrentVersion("${rootDir}/r")}.tar.gz\", type=\"source\", repos=NULL)"])
 }
 
 
-static def String getCurrentVersion(){
-    def proc = ['R', '-e', "source('for_release/utils.R'); getCurrentVersion(\"src\");"].execute()
+def getCurrentVersion(def projectDir){
+    def proc = ['R', '-e', "source('for_release/utils.R'); getCurrentVersion(\"src\");"].execute([], file("/Users/kuba/devel/repos/sparkling-water/r"))
     def lines = proc.text.readLines()
-    def patchVersion = lines[-3].replace("[1] ", "").toString()
+    def idx = lines.findIndexOf {it.contains("[1]")}
+    def patchVersion = lines[idx].replace("[1] ", "").toString()
     return "0.2." + patchVersion
 }
 
-task getCurrentVersion(){
-    println(getCurrentVersion())
+task printCurrentVersion(){
+    doLast {
+        println(getCurrentVersion("${rootDir}/r"))
+    }
+
 }
 
 

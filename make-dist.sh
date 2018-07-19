@@ -81,7 +81,7 @@ rsync -rtvW --files-from "$TOPDIR/content.list" "$TOPDIR/" "$DEST_DIR/"
 
 # Get Latest RSparkling Version
 RSPARKLING_DOWNLOAD_LINK=$(./gradlew -q :sparkling-water-assembly:printRSparklingCranLink)
-cp "$TOPDIR/r/build/rsparkling_$(./gradlew -q :sparkling-water-r:getCurrentVersion).tar.gz" "$DEST_DIR"
+cp "$TOPDIR/r/build/rsparkling_$(./gradlew -q :sparkling-water-r:printCurrentVersion).tar.gz" "$DEST_DIR"
 
 # Print available H2O Hadoop distributions to config file
 H2O_DRIVERS_LIST="standalone $(./gradlew -q :sparkling-water-assembly-h2o:printHadoopDistributions)"

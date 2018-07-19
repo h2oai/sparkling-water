@@ -89,7 +89,7 @@ updatePackageVersion <- function(packageLocation = "."){
     vFinal <- paste(vNumberKeep, newVersion, sep = ".")
 
     # Update DESCRIPTION file (in R)
-    desc[vLine] <- paste0("Version: ", vFinal )
+    desc[vLine] <- paste0("Version: ", vFinal)
 
     # Update the actual DESCRIPTION file
     writeLines(desc, file.path(packageLocation, "DESCRIPTION"))
