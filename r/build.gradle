@@ -53,7 +53,7 @@ task test(type: Exec, dependsOn: [configurations.compile]) {
     environment["sparkling.water.version"] = version.toString()
     environment["NOT_CRAN"] = "true"
     environment["SPARK_HOME"] = sparkHome
-    environment["H2O_CLIENT_IP"] = localhost.hostAddress
+    environment["H2O_CLIENT_IP"] = InetAddress.getLocalHost().hostAddress
     environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
     environment["spark.ext.h2o.external.start.mode"] = detectExternalBackendStartMode()
 
