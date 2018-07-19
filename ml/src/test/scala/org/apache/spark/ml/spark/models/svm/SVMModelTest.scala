@@ -26,28 +26,28 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.support.H2OFrameSupport
 
-import scala.util.Random
-
 @RunWith(classOf[JUnitRunner])
 class SVMModelTest extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+  override def createSparkContext: SparkContext = new SparkContext("local", "test-local", conf = defaultSparkConf)
 
-  ignore("Should score the same regression value.") {
+  test("Should score the same regression value.") {
     import sqlContext.implicits._
     val h2oContext = hc
     import h2oContext.implicits._
 
     // Generate random training data
     val trainRDD = sc.parallelize(1 to 50, 1).map(iter => {
-      val values = Array.fill(5){0}.map(_ => iter/50.0)
+      val values = Array.fill(5) {
+        0
+      }.map(_ => iter / 50.0)
       val label = if (iter % 2 == 0) "1" else "0"
       (label, Vectors.dense(values))
     }).cache()
     val trainDF = trainRDD.toDF("Label", "Vector")
 
     val trainFrame = h2oContext.asH2OFrame(trainDF, "bubbles")
-    H2OFrameSupport.withLockAndUpdate(trainFrame){ fr =>
+    H2OFrameSupport.withLockAndUpdate(trainFrame) { fr =>
       fr.replace(0, fr.vec(0).toCategoricalVec).remove()
     }
     val initialWeights = Vectors.dense(1, 1, 1, 1, 1)
@@ -75,6 +75,6 @@ class SVMModelTest extends FunSuite with SharedH2OTestContext {
     val h2oPreds = (0 until 50).map(h2oPredsVec.at(_)).toArray
     val sparkPreds = sparkSVMModel.predict(trainRDD.map(_._2)).collect()
 
-    assert( h2oPreds.sameElements(sparkPreds) )
+    assert(h2oPreds.sameElements(sparkPreds))
   }
 }
