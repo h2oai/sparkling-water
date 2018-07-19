@@ -296,6 +296,7 @@ def rUnitTests() {
             withDocker(config) {
                 if (config.runRUnitTests.toBoolean()) {
                     try {
+                          sh "sudo -E /usr/sbin/startup.sh"
                           sh """
                              ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage :sparkling-water-r:installRSparklingPackage
                              ${getGradleCommand(config)} :sparkling-water-r:test -x check
