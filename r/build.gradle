@@ -52,6 +52,9 @@ task test(type: Exec, dependsOn: [configurations.compile]) {
     environment["NOT_CRAN"] = "true"
     environment["SPARK_HOME"] = sparkHome
 
+    environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
+    environment["spark.ext.h2o.external.start.mode"] = detectExternalBackendStartMode()
+
     workingDir file("tests")
     commandLine getOsSpecificCommandLine(['R', '-f', 'testthat.R'])
 }
