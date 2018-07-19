@@ -60,6 +60,7 @@ task test(type: Exec, dependsOn: [configurations.compile]) {
  *  It is called only when RSparkling is Released
  */
 task createReleaseIntegTable(type: Exec){
+    file(project.buildDir).mkdir()
     workingDir projectDir
     commandLine getOsSpecificCommandLine(["./for_release/update_release_table.sh"])
 }
