@@ -79,9 +79,8 @@ ZIP_FILE="$DIST_BUILD_DIR/$ZIP_NAME"
 # Make distribution package and put it into dist directory
 rsync -rtvW --files-from "$TOPDIR/content.list" "$TOPDIR/" "$DEST_DIR/"
 
-# Get Latest RSparkling Version
-RSPARKLING_DOWNLOAD_LINK=$(./gradlew -q :sparkling-water-assembly:printRSparklingCranLink)
-wget -O "$DEST_DIR/rsparkling.tar.gz" "$RSPARKLING_DOWNLOAD_LINK"
+# Bundle RSparkling
+cp "$TOPDIR/r/build/rsparkling_$(./gradlew -q :sparkling-water-r:printCurrentVersion).tar.gz" "$DEST_DIR"
 
 # Print available H2O Hadoop distributions to config file
 H2O_DRIVERS_LIST="standalone $(./gradlew -q :sparkling-water-assembly-h2o:printHadoopDistributions)"
@@ -113,6 +112,8 @@ fi
 H2O_PROJECT_VERSION=${H2O_VERSION}.${H2O_BUILD}
 H2O_BUILD_NUMBER=${H2O_BUILD}
 
+RSPARKLING_VERSION=$(./gradlew -q :sparkling-water-r:printCurrentVersion)
+
 SPARK_MAJOR_VERSION=$(echo $SPARK_VERSION | cut -f 1,2 -d .)
 # Copy dist dir files
 cat "$DIST_DIR/index.html" \
@@ -128,6 +129,7 @@ cat "$DIST_DIR/index.html" \
   | sed -e "s/SUBST_SPARK_MAJOR_VERSION/${SPARK_MAJOR_VERSION}/g"\
   | sed -e "s/SUBST_H2O_BRANCH_NAME/${H2O_BRANCH_NAME}/g"\
   | sed -e "s/SUBST_SCALA_VERSION/${SCALA_VERSION}/g"\
+  | sed -e "s/SUBST_RSPARKLING_VERSION/${RSPARKLING_VERSION}/g"\
   > "$DIST_BUILD_DIR/index.html"
 
 # Create json metadata file.

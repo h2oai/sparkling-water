@@ -12,6 +12,7 @@ How to...
    run_sparkling_water
    change_default_port
    run_on_windows
+   rsparkling_on_windows
 
 **Security**
 

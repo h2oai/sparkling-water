@@ -62,10 +62,13 @@ ext {
     javaProjects = [
       project(':sparkling-water-extension-stack-trace')
     ]
-    // Python projects
     pythonProjects = [
       project(':sparkling-water-py')
     ]
+    rProjects = [
+      project(':sparkling-water-r')
+    ]
+
     docProjects = [
       project(':sparkling-water-doc')
     ]
@@ -140,6 +143,9 @@ configure(subprojects) { project ->
     if (project in pythonProjects) {
       apply from: "$rootDir/gradle/python.gradle"
     }
+    if (project in rProjects) {
+        apply from: "$rootDir/gradle/r.gradle"
+    }
 
     if(project in javaProjects) {
         apply plugin: 'java'
@@ -169,14 +175,15 @@ configure(subprojects) { project ->
     }
 }
 
-
 task buildSparklingWaterDist(type: Exec, dependsOn:
         ["sparkling-water-assembly:shadowJar"] + // Build Java/Scala
         ["sparkling-water-templates:build"] + // Build templates
         ["sparkling-water-py:distPython"] +
         getTasksByName("javadoc", true) + // Build javadoc
         getTasksByName("scaladoc", true) + // Build scaladoc
-        getTasksByName("site", true)) {
+        getTasksByName("site", true) +
+        ["sparkling-water-r:distR"]
+        ) {
 
     def buildTimeMillis = System.currentTimeMillis();
     def buildTimeIso8601 = new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("UTC"))
