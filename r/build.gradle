@@ -24,7 +24,9 @@ task copyRSources(){
  */
 task generateSysData(type: Exec, dependsOn: copyRSources){
     workingDir "${project.buildDir}/src"
-    commandLine getOsSpecificCommandLine(["R", "-e", "source('../../for_release/utils.R'); generate_sys_data();"])
+    // generate_sys_data needs to add information about the current Sparkling Water, but it is not available on-line
+    // at the time this code is called. Therefore, we add the row manually there
+    commandLine getOsSpecificCommandLine(["R", "-e", "source('../../for_release/utils.R'); generate_sys_data(\"${sparkMajorVersion}\", \"${version}\", \"${h2oVersion}\", \"rel-${h2oMajorName}\", \"${h2oBuild}\");"])
 }
 
 /**
@@ -62,7 +64,7 @@ task test(type: Exec, dependsOn: [configurations.compile]) {
 task createReleaseIntegTable(type: Exec){
     file(project.buildDir).mkdir()
     workingDir projectDir
-    commandLine getOsSpecificCommandLine(["./for_release/update_release_table.sh"])
+    commandLine getOsSpecificCommandLine(["./for_release/update_release_table.sh", "'${sparkMajorVersion}'", "'${version}'", "'${h2oVersion}'", "'rel-${h2oMajorName}'", "'${h2oBuild}'"])
 }
 
 /**
@@ -77,13 +79,13 @@ task updateRReadme(dependsOn: createReleaseIntegTable){
         def majorVersion = "${first}.${second}"
         def minorVersion = third
         def rsparklingReleaseTable = file("build/r_release_table.rst").getText('UTF-8')
-        def contents = file("for_release/README_TEMPLATE.RST").getText('UTF-8')
+        def contents = file("for_release/README_TEMPLATE.rst").getText('UTF-8')
         contents = contents
                 .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", ""))
                 .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
                 .replaceAll("SUBST_SW_MINOR_VERSION", minorVersion)
                 .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-                .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.')))
+                .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
                 .replaceAll("SUBST_H2O_VERSION", h2oVersion)
                 .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
                 .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
