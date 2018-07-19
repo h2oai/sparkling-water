@@ -12,6 +12,7 @@ properties(
 
                                 booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit tests'),
                                 booleanParam(name: 'runPyUnitTests', defaultValue: true, description: 'Run PyUnit tests'),
+                                booleanParam(name: 'runRUnitTests', defaultValue: true, description: 'Run PyRUnit tests'),
                                 booleanParam(name: 'runLocalIntegTests', defaultValue: true, description: 'Run local integration tests'),
                                 booleanParam(name: 'runLocalPyIntegTests', defaultValue: true, description: 'Run local Python integration tests'),
                                 booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests'),
@@ -60,6 +61,7 @@ node('docker && micro') {
             sparkVersion = "${p.sparkVersion}"
             runUnitTests = "${p.runUnitTests}"
             runPyUnitTests = "${p.runPyUnitTests}"
+            runRUnitTests = "${p.runRUnitTests}"
             runLocalIntegTests = "${p.runLocalIntegTests}"
             runLocalPyIntegTests = "${p.runLocalPyIntegTests}"
             runScriptTests = "${p.runScriptTests}"
