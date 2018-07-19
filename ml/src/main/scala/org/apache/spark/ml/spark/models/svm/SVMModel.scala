@@ -74,7 +74,7 @@ class SVMModel private[svm](val selfKey: Key[SVMModel],
       if (pred > _parms._threshold) {
         // the probability far first and second class, since SVM does not give us probabilities, we assign
         // the probabilities to 0 or respectively to 1
-        preds(2) = 1 // we
+        preds(2) = 1
         preds(1) = 0
         preds(0) = 1 // final class, either 1 or 0
       } else {
