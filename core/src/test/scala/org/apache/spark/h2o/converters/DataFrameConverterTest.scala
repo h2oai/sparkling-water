@@ -345,6 +345,22 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).isNumeric)
   }
 
+  test("DataFrame[BooleanField] to H2OFrame[Numeric]") {
+    import spark.implicits._
+
+    val values = Seq(true, false, true, false)
+    val df = sc.parallelize(values).toDF()
+    val h2oFrame = hc.asH2OFrame(df)
+
+    assertH2OFrameInvariants(df, h2oFrame)
+    assert(h2oFrame.vec(0).isNumeric)
+    assert(h2oFrame.vec(0).at8(0) == 1)
+    assert(h2oFrame.vec(0).at8(1) == 0)
+    assert(h2oFrame.vec(0).at8(2) == 1)
+    assert(h2oFrame.vec(0).at8(3) == 0)
+
+  }
+
   test("DataFrame[DoubleField] to H2OFrame[Numeric]") {
     import spark.implicits._
 
