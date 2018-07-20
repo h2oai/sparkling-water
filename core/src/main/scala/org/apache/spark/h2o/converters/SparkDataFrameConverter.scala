@@ -131,7 +131,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
         con.putNA(idxH2O)
       } else {
         entry.dataType match {
-          case BooleanType => con.put(idxH2O, if (row.getBoolean(idxField)) 1 else 0)
+          case BooleanType => con.put(idxH2O, row.getBoolean(idxField))
           case BinaryType => putArray(row.getAs[Array[Byte]](idxField), ByteType, con, idxH2O, elemSizes(idxField))
           case ByteType => con.put(idxH2O, row.getByte(idxField))
           case ShortType => con.put(idxH2O, row.getShort(idxField))
