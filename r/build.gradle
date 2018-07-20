@@ -1,3 +1,5 @@
+import java.net.InetAddress
+
 apply from: "$rootDir/gradle/utils.gradle"
 
 description = "RSparkling - Sparkling-Water R Package"
@@ -51,6 +53,9 @@ task test(type: Exec, dependsOn: [configurations.compile]) {
     environment["sparkling.water.version"] = version.toString()
     environment["NOT_CRAN"] = "true"
     environment["SPARK_HOME"] = sparkHome
+    environment["H2O_CLIENT_IP"] = InetAddress.getLocalHost().hostAddress
+    environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
+    environment["spark.ext.h2o.external.start.mode"] = detectExternalBackendStartMode()
 
     workingDir file("tests")
     commandLine getOsSpecificCommandLine(['R', '-f', 'testthat.R'])
