@@ -117,7 +117,8 @@ if(project.hasProperty("doReleaseRSparkling")){
 
 
 task installH2ORPackage(type: Exec){
-    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"h2o\", type = \"source\", repos = \"http://h2o-release.s3.amazonaws.com/h2o/rel-${h2oMajorName}/${h2oBuild}/R\")"])
+    def majorName = (h2oMajorName == "master") ? "master": "rel-${h2oMajorName}"
+    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"h2o\", type = \"source\", repos = \"http://h2o-release.s3.amazonaws.com/h2o/${majorName}/${h2oBuild}/R\")"])
 }
 
 task installRSparklingPackage(type: Exec, dependsOn: buildR){
