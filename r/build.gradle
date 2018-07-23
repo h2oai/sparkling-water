@@ -51,7 +51,7 @@ task cleanR(type: Delete) {
 task test(type: Exec, dependsOn: [configurations.compile]) {
     environment["spark.version"] = sparkVersion
     environment["sparkling.assembly.jar"] =  configurations.compile.find {it.name.endsWith("sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar")}.toString()
-    environment["sparkling.water.version"] = version.toString().replace("_nightly", "99999")
+    environment["sparkling.water.version"] = version.toString().replace("_nightly", ".99999")
     environment["NOT_CRAN"] = "true"
     environment["SPARK_HOME"] = sparkHome
     environment["H2O_CLIENT_IP"] = InetAddress.getLocalHost().hostAddress
@@ -70,7 +70,7 @@ task test(type: Exec, dependsOn: [configurations.compile]) {
 task createReleaseIntegTable(type: Exec){
     file(project.buildDir).mkdir()
     workingDir projectDir
-    def updatedVersion = version.replace("-SNAPSHOT", "").replace("_nightly", "99999")
+    def updatedVersion = version.replace("-SNAPSHOT", "").replace("_nightly", ".99999")
     commandLine getOsSpecificCommandLine(["./for_release/update_release_table.sh", "'${sparkMajorVersion}'", "'${updatedVersion}'", "'${h2oVersion}'", "'rel-${h2oMajorName}'", "'${h2oBuild}'"])
 }
 
@@ -88,7 +88,7 @@ task updateRReadme(dependsOn: createReleaseIntegTable){
         def rsparklingReleaseTable = file("build/r_release_table.rst").getText('UTF-8')
         def contents = file("for_release/README_TEMPLATE.rst").getText('UTF-8')
         contents = contents
-                .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", "")).replace("_nightly", "99999")
+                .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", "")).replace("_nightly", ".99999")
                 .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
                 .replaceAll("SUBST_SW_MINOR_VERSION", minorVersion)
                 .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
