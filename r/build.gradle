@@ -26,9 +26,10 @@ task copyRSources(){
  */
 task generateSysData(type: Exec, dependsOn: copyRSources){
     workingDir "${project.buildDir}/src"
+    def updatedVersion = version.replace("-SNAPSHOT", "").replace("_nightly", ".99999")
     // generate_sys_data needs to add information about the current Sparkling Water, but it is not available on-line
     // at the time this code is called. Therefore, we add the row manually there
-    commandLine getOsSpecificCommandLine(["R", "-e", "source('../../for_release/utils.R'); generate_sys_data(\"${sparkMajorVersion}\", \"${version}\", \"${h2oVersion}\", \"rel-${h2oMajorName}\", \"${h2oBuild}\");"])
+    commandLine getOsSpecificCommandLine(["R", "-e", "source('../../for_release/utils.R'); generate_sys_data(\"${sparkMajorVersion}\", \"${updatedVersion}\", \"${h2oVersion}\", \"rel-${h2oMajorName}\", \"${h2oBuild}\");"])
 }
 
 /**
@@ -50,7 +51,7 @@ task cleanR(type: Delete) {
 task test(type: Exec, dependsOn: [configurations.compile]) {
     environment["spark.version"] = sparkVersion
     environment["sparkling.assembly.jar"] =  configurations.compile.find {it.name.endsWith("sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar")}.toString()
-    environment["sparkling.water.version"] = version.toString()
+    environment["sparkling.water.version"] = version.toString().replace("_nightly", ".99999")
     environment["NOT_CRAN"] = "true"
     environment["SPARK_HOME"] = sparkHome
     environment["H2O_CLIENT_IP"] = InetAddress.getLocalHost().hostAddress
@@ -69,7 +70,8 @@ task test(type: Exec, dependsOn: [configurations.compile]) {
 task createReleaseIntegTable(type: Exec){
     file(project.buildDir).mkdir()
     workingDir projectDir
-    commandLine getOsSpecificCommandLine(["./for_release/update_release_table.sh", "'${sparkMajorVersion}'", "'${version}'", "'${h2oVersion}'", "'rel-${h2oMajorName}'", "'${h2oBuild}'"])
+    def updatedVersion = version.replace("-SNAPSHOT", "").replace("_nightly", ".99999")
+    commandLine getOsSpecificCommandLine(["./for_release/update_release_table.sh", "'${sparkMajorVersion}'", "'${updatedVersion}'", "'${h2oVersion}'", "'rel-${h2oMajorName}'", "'${h2oBuild}'"])
 }
 
 /**
@@ -86,7 +88,7 @@ task updateRReadme(dependsOn: createReleaseIntegTable){
         def rsparklingReleaseTable = file("build/r_release_table.rst").getText('UTF-8')
         def contents = file("for_release/README_TEMPLATE.rst").getText('UTF-8')
         contents = contents
-                .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", ""))
+                .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", "")).replace("_nightly", ".99999")
                 .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
                 .replaceAll("SUBST_SW_MINOR_VERSION", minorVersion)
                 .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
