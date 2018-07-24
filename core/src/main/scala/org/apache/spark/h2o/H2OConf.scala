@@ -29,7 +29,7 @@ import org.apache.spark.sql.SparkSession
   * Configuration holder which is representing
   * properties passed from user to Sparkling Water.
   */
-class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf with ExternalBackendConf {
+class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf with ExternalBackendConf with Serializable {
 
   /** Support for creating H2OConf in Java environments */
   def this(jsc: JavaSparkContext) = this(jsc.sc.getConf)
