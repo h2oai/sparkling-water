@@ -168,6 +168,13 @@ Internal backend configuration properties
 | ``spark.ext.h2o.flatfile``                         | ``true``       | Use flatfile instead of multicast      |
 |                                                    |                | approach for creating H2O cluster.     |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.ip.based.flatfile``                | ``false``      | Translate hostnames of the worker      |
+|                                                    |                | nodes discovered by Spark to the IP    |
+|                                                    |                | address. The generated flatfile will   |
+|                                                    |                | contain these IP address. Can be       |
+|                                                    |                | useful in certain restricted DNS       |
+|                                                    |                | environments.                          |
++----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.cluster.size``                     | ``None``       | Expected number of workers of H2O      |
 |                                                    |                | cluster. Value None means automatic    |
 |                                                    |                | detection of cluster size. This number |

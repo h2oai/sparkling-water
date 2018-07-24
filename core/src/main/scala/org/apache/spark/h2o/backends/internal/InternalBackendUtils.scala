@@ -34,7 +34,7 @@ import water.init.AbstractEmbeddedH2OConfig
   */
 private[internal] trait InternalBackendUtils extends SharedBackendUtils {
 
-  def checkUnsupportedSparkOptions(unsupportedSparkOptions: Seq[(String, String)], conf: H2OConf): Unit ={
+  def checkUnsupportedSparkOptions(unsupportedSparkOptions: Seq[(String, String)], conf: H2OConf): Unit = {
     unsupportedSparkOptions.foreach(opt => if (conf.contains(opt._1) && (opt._2 == None || conf.get(opt._1) == opt._2)) {
       logWarning(s"Unsupported options ${opt._1} detected!")
       if (conf.isFailOnUnsupportedSparkParamEnabled) {
@@ -51,7 +51,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
   def toH2OArgs(h2oArgs: Array[String], conf: H2OConf, executors: Array[NodeDesc]): Array[String] = {
     toH2OArgs(
       h2oArgs,
-      if (conf.useFlatFile) Some(toFlatFileString(executors))
+      if (conf.useFlatFile) Some(toFlatFileString(conf, executors))
       else None)
   }
 
@@ -62,6 +62,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
       .getOrElse(h2oArgs)
     launcherArgs
   }
+
   /**
     * Produce arguments for H2O node based on provided configuration
     *
@@ -70,26 +71,45 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
   def getH2ONodeArgs(conf: H2OConf): Array[String] = (getH2OCommonArgs(conf) ++
     Seq("-log_level", conf.h2oNodeLogLevel, "-baseport", conf.nodeBasePort.toString)).toArray
 
+  def translateHostnameToIp(hostname: String): String = {
+    import java.net.InetAddress
+    InetAddress.getByName(hostname).getHostAddress
+  }
 
-  def toFlatFileString(executors: Array[NodeDesc]): String = {
-    executors.map(en => s"${en.hostname}:${en.port}").mkString("\n")
+  def toFlatFileString(conf: H2OConf, executors: Array[NodeDesc]): String = {
+    executors.map {
+      en => s"${if (conf.ipBasedFlatfile) translateHostnameToIp(en.hostname) else en.hostname}:${en.port}"
+    }.mkString("\n")
+  }
+
+  private def identifyLogDir(conf: H2OConf, sparkEnv: SparkEnv): String = {
+    val s = System.getProperty("spark.yarn.app.container.log.dir")
+    if (s != null) {
+      return s + java.io.File.separator
+    }
+    if (conf.h2oNodeLogDir.isDefined) {
+      conf.h2oNodeLogDir.get
+    } else {
+      // Needs to be executed at remote node!
+      SharedBackendUtils.defaultLogDir(sparkEnv.conf.getAppId)
+    }
   }
 
   /**
     * Start H2O nodes on given executors.
     *
-    * @param sc  Spark context
-    * @param spreadRDD  helper RDD spread over all executors
+    * @param sc             Spark context
+    * @param spreadRDD      helper RDD spread over all executors
     * @param numOfExecutors number of executors in Spark cluster
-    * @param h2oArgs arguments passed to H2O instances
-    * @param networkMask node network mask
+    * @param h2oArgs        arguments passed to H2O instances
+    * @param conf           H2O Conf
     * @return flatfile string if flatfile mode is enabled, else None
     */
-  def startH2O( sc: SparkContext,
-                spreadRDD: RDD[NodeDesc],
-                numOfExecutors: Int,
-                h2oArgs: Array[String],
-                networkMask: Option[String]): Array[NodeDesc] = {
+  def startH2O(sc: SparkContext,
+               spreadRDD: RDD[NodeDesc],
+               numOfExecutors: Int,
+               h2oArgs: Array[String],
+               conf: H2OConf): Array[NodeDesc] = {
 
     // Create global accumulator for list of nodes IP:PORT
     val bc = sc.collectionAccumulator[NodeDesc]
@@ -97,24 +117,15 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
     val userSpecifiedCloudSize = sc.getConf.getOption("spark.executor.instances").map(_.toInt)
 
     // Try to launch H2O
-    val executorStatus = spreadRDD.map { nodeDesc =>  // RDD partition index
-      assert(nodeDesc.hostname == getHostname(SparkEnv.get),  // Make sure we are running on right node
+    val executorStatus = spreadRDD.map { nodeDesc => // RDD partition index
+      assert(nodeDesc.hostname == getHostname(SparkEnv.get), // Make sure we are running on right node
         s"SpreadRDD failure - IPs are not equal: ${nodeDesc} != (${SparkEnv.get.executorId}, ${getHostname(SparkEnv.get)})")
       // Launch the node
       val sparkEnv = SparkEnv.get
+
       // Define log dir
-      def logDir: String = {
-        val s = System.getProperty("spark.yarn.app.container.log.dir")
-        if (s != null) {
-          return s + java.io.File.separator
-        }
-        if (sparkEnv.conf.contains(SharedBackendConf.PROP_NODE_LOG_DIR._1)) {
-          sparkEnv.conf.get(SharedBackendConf.PROP_NODE_LOG_DIR._1)
-        } else {
-          // Needs to be executed at remote node!
-          SharedBackendUtils.defaultLogDir(sparkEnv.conf.getAppId)
-        }
-      }
+      def logDir: String = identifyLogDir(conf, sparkEnv)
+
       val executorId = sparkEnv.executorId
       try {
         // Get this node hostname
@@ -122,7 +133,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
         // Always trust Spark networking except when network mask is specified
         val launcherArgs = toH2OArgs(
           h2oArgs
-            ++ networkMask.map(mask => Array("-network", mask)).getOrElse(Array("-ip", ip))
+            ++ conf.nodeNetworkMask.map(mask => Array("-network", mask)).getOrElse(Array("-ip", ip))
             ++ Array("-log_dir", logDir),
           None)
         // Do not launch H2O several times
@@ -131,7 +142,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
             if (water.H2O.START_TIME_MILLIS.get() == 0) {
               val t = new Thread("H2O Launcher thread") {
                 override def run(): Unit = {
-                  water.H2O.setEmbeddedH2OConfig(new SparklingWaterConfig(bc, if (networkMask.isEmpty) Some(ip) else None))
+                  water.H2O.setEmbeddedH2OConfig(new SparklingWaterConfig(bc, conf, if (conf.nodeNetworkMask.isEmpty) Some(ip) else None))
                   // Finalize REST API only if running in non-local mode.
                   // In local mode, we are not going to create H2O client
                   // but use executor's H2O instance directly.
@@ -145,7 +156,9 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
               }
               t.start()
               // Need to wait since we are using shared but local broadcast variable
-              bc.synchronized { bc.wait() }
+              bc.synchronized {
+                bc.wait()
+              }
             }
           }
         }
@@ -155,7 +168,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
           e.printStackTrace()
           println(
             s""""Cannot start H2O node because: ${e.getMessage}
-                | h2o parameters: ${h2oArgs.mkString(",")}
+               | h2o parameters: ${h2oArgs.mkString(",")}
              """.stripMargin)
           (executorId, false)
         }
@@ -163,13 +176,13 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
     }.collect()
     // The accumulable should contain all IP:PORTs from all exeuctors
     if (bc.value.size != numOfExecutors ||
-      executorStatus.groupBy(_._1).flatMap( x => x._2.find(_._2)).size != numOfExecutors) {
+      executorStatus.groupBy(_._1).flatMap(x => x._2.find(_._2)).size != numOfExecutors) {
       throw new RuntimeException(s"Cannot launch H2O on executors: numOfExecutors=${numOfExecutors}, " +
         s"executorStatus=${executorStatus.mkString(",")}")
     }
     // Create flatfile string and pass it around cluster
     val flatFile = bc.value.toArray(new Array[NodeDesc](bc.value.size()))
-    val flatFileString = toFlatFileString(flatFile)
+    val flatFileString = toFlatFileString(conf, flatFile)
     // Pass flatfile around cluster
 
     spreadRDD.foreach { nodeDesc =>
@@ -185,7 +198,9 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
     }
     // Wait for start of H2O in single JVM
     if (isLocal) {
-      H2OStartedSignal.synchronized { while (!H2OStartedSignal.isStarted) H2OStartedSignal.wait() }
+      H2OStartedSignal.synchronized {
+        while (!H2OStartedSignal.isStarted) H2OStartedSignal.wait()
+      }
     }
     // Return flatfile
     flatFile
@@ -216,47 +231,56 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
   }
 
 
-/**
- * Embedded config for passing around information of ip and port of created H2O instance.
- * It is using Spark's accumulable variable to collect IP and PORT, and also executor id.
- *
- * @param flatfileBVariable Spark's accumulable variable
- */
-private class SparklingWaterConfig(val flatfileBVariable: CollectionAccumulator[NodeDesc],
-                                   val sparkHostname: Option[String])
-  extends AbstractEmbeddedH2OConfig with Logging {
+  /**
+    * Embedded config for passing around information of ip and port of created H2O instance.
+    * It is using Spark's accumulable variable to collect IP and PORT, and also executor id.
+    *
+    * @param flatfileBVariable Spark's accumulable variable
+    */
+  private class SparklingWaterConfig(val flatfileBVariable: CollectionAccumulator[NodeDesc], conf: H2OConf,
+                                     val sparkHostname: Option[String])
+    extends AbstractEmbeddedH2OConfig with Logging {
 
     /** String containing a flatfile string filled asynchronously by different thread. */
     @volatile var flatFile: Option[String] = None
 
-  override def notifyAboutEmbeddedWebServerIpPort(ip: InetAddress, port: Int): Unit = {
-    val env = SparkEnv.get
-    // assert: ip.isDefined && ip == getHostname(env)
-    val hostname = sparkHostname.getOrElse(ip.getHostAddress)
-    val thisNodeInfo = NodeDesc(env.executorId, hostname, port)
-    flatfileBVariable.synchronized {
-      flatfileBVariable.add(thisNodeInfo)
-      flatfileBVariable.notifyAll()
+    override def notifyAboutEmbeddedWebServerIpPort(ip: InetAddress, port: Int): Unit = {
+      val env = SparkEnv.get
+      // assert: ip.isDefined && ip == getHostname(env)
+      val hostname = if (conf.ipBasedFlatfile) {
+        translateHostnameToIp(sparkHostname.getOrElse(ip.getHostAddress))
+      } else {
+        sparkHostname.getOrElse(ip.getHostAddress)
+      }
+      val thisNodeInfo = NodeDesc(env.executorId, hostname, port)
+      flatfileBVariable.synchronized {
+        flatfileBVariable.add(thisNodeInfo)
+        flatfileBVariable.notifyAll()
 
+      }
     }
-  }
 
     override def notifyAboutCloudSize(ip: InetAddress, port: Int, size: Int): Unit = {
       /* do nothing */
     }
 
     override def fetchFlatfile(): String = {
-      this.synchronized { while (flatFile.isEmpty) this.wait() }
+      this.synchronized {
+        while (flatFile.isEmpty) this.wait()
+      }
 
       flatFile.get
     }
 
     override def providesFlatfile(): Boolean = true
 
-    override def exit(status: Int): Unit = { /* do nothing */ }
+    override def exit(status: Int): Unit = {
+      /* do nothing */
+    }
 
     override def print(): Unit = logInfo("""Debug info: NA""")
   }
+
 }
 
 private[internal] object InternalBackendUtils extends InternalBackendUtils
@@ -265,7 +289,9 @@ private[internal] object InternalBackendUtils extends InternalBackendUtils
 // Ugly, but what we can do with h2o
 private object H2OStartedSignal {
   @volatile private var started = false
+
   def isStarted = started
+
   def setStarted(): Unit = {
     started = true
   }

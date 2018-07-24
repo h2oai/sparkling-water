@@ -234,6 +234,14 @@ class H2OConf(object):
         self._jconf.setFlatFileDisabled()
         return self
 
+    def set_ip_based_faltfile_enabled(self):
+        self._jconf.setIpBasedFlatFileEnabled()
+        return self
+
+    def set_ip_based_faltfile_disabled(self):
+        self._jconf.setIpBasedFlatFileDisabled()
+        return self
+
     def set_num_h2o_workers(self, num_workers):
         self._jconf.setNumH2OWorkers(num_workers)
         return self
@@ -490,6 +498,9 @@ class H2OConf(object):
 
     def use_flatfile(self):
         return self._jconf.useFlatFile()
+
+    def ip_based_flatfile(self):
+        return self._jconf.ipBasedFlatfile()
 
     def num_h2o_workers(self):
         return self._get_option(self._jconf.numH2OWorkers())
