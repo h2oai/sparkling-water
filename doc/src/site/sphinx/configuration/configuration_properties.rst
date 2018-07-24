@@ -150,6 +150,10 @@ Configuration properties independent of selected backend
 |                                                    |                | but tries to find IP based on the      |
 |                                                    |                | specified mask.                        |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.client.ignore.SPARK_PUBLIC_DNS``   | ``false``      | Ignore SPARK_PUBLIC_DNS setting on     |
+|                                                    |                | the H2O client. The option still       |
+|                                                    |                | applies to the Spark application.      |
++----------------------------------------------------+----------------+----------------------------------------+
 
 --------------
 

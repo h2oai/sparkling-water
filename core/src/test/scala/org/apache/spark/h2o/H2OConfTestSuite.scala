@@ -16,9 +16,9 @@
 */
 package org.apache.spark.h2o
 
+import org.apache.spark.SparkConf
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
