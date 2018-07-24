@@ -101,7 +101,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
       h2oNodeArgs = h2oNodeArgs ++ getLoginArgs(hc.getConf) ++ addIfNotNull("-context_path", hc.getConf.contextPath.orNull)
     }
     logDebug(s"Arguments used for launching h2o nodes: ${h2oNodeArgs.mkString(" ")}")
-    val executors = InternalBackendUtils.startH2O(hc.sparkContext, spreadRDD, spreadRDDNodes.length, h2oNodeArgs, hc.getConf.nodeNetworkMask)
+    val executors = InternalBackendUtils.startH2O(hc.sparkContext, spreadRDD, spreadRDDNodes.length, h2oNodeArgs, hc.getConf)
 
     // H2O is already started on the nodes, make sure that we kill the cloud when a new executor joins
     if (!(hc.sparkContext.isLocal || hc.sparkContext.master.startsWith("local-cluster[")) && hc.getConf.isClusterTopologyListenerEnabled) {
