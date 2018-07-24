@@ -71,6 +71,7 @@ trait SharedBackendConf {
   def clientWebPort = sparkConf.getInt(PROP_CLIENT_WEB_PORT._1, PROP_CLIENT_WEB_PORT._2)
   def clientVerboseOutput = sparkConf.getBoolean(PROP_CLIENT_VERBOSE._1, PROP_CLIENT_VERBOSE._2)
   def clientNetworkMask = sparkConf.getOption(PROP_CLIENT_NETWORK_MASK._1)
+  def ignoreSparkPublicDNS = sparkConf.getBoolean(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._2)
 
   def runsInExternalClusterMode: Boolean = backendClusterMode.toLowerCase() == "external"
   def runsInInternalClusterMode: Boolean = !runsInExternalClusterMode
@@ -157,6 +158,9 @@ trait SharedBackendConf {
   def setClientVerboseDisabled() = set(PROP_CLIENT_VERBOSE._1, false)
 
   def setClientNetworkMask(mask: String) = set(PROP_CLIENT_NETWORK_MASK._1, mask)
+
+  def setIgnoreSparkPublicDNSEnabled() = set(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, true)
+  def setIgnoreSparkPublicDNSDisabled() = set(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, false)
 
   private[this] def setBackendClusterMode(backendClusterMode: String) = {
     set(PROP_BACKEND_CLUSTER_MODE._1, backendClusterMode)
@@ -275,4 +279,7 @@ object SharedBackendConf {
 
   /** Subnet selector for H2O client - if the mask is specified then Spark network setup is not discussed. */
   val PROP_CLIENT_NETWORK_MASK = ("spark.ext.h2o.client.network.mask", None)
+
+  /** Ignore SPARK_PUBLIC_DNS setting on the H2O client. The option still applies to the Spark application. */
+  val PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS = ("spark.ext.h2o.client.ignore.SPARK_PUBLIC_DNS", false)
 }
