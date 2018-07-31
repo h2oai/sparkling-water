@@ -178,14 +178,12 @@ class H2OContext(object):
             pass
 
     def stop(self):
-        warnings.warn("Stopping H2OContext from PySparkling is not fully supported. Please restart your PySpark session and create a new H2OContext.")
+        self.__stop()
+        exit()
 
     def download_h2o_logs(self, destination):
         return self._jhc.h2oContext().downloadH2OLogs(destination)
     
-    def __del__(self):
-        self.stop()
-
     def __str__(self):
         if self.is_initialized:
             return self._jhc.toString()
