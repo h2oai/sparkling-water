@@ -73,7 +73,8 @@ versions must match specific Spark and H2O versions).
 ============= ======================= =========== ================ ======================== 
 Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_Patch_Number 
 ============= ======================= =========== ================ ======================== 
-2.3           2.3.9                   3.20.0.3    rel-wright       3
+2.3           2.3.10                  3.20.0.4    rel-wright       4                        
+2.3           2.3.9                   3.20.0.3    rel-wright       3                        
 2.3           2.3.8                   3.20.0.2    rel-wright       2                        
 2.3           2.3.7                   3.20.0.1    rel-wright       1                        
 2.3           2.3.6                   3.18.0.11   rel-wolpert      11                       
@@ -165,7 +166,7 @@ can be used for this.
 
 Install H2O from CRAN
 ~~~~~~~~~~~~~~~~~~~~~
-In case of installation from CRAN, the typical ``install.packages("h2o", "3.20.0.3")`` command can be used. Please note
+In case of installation from CRAN, the typical ``install.packages("h2o", "3.20.0.4")`` command can be used. Please note
 that the latest released version might not be available in CRAN. In that case, please install H2O from S3.
 
 Install H2O from S3
@@ -173,13 +174,13 @@ Install H2O from S3
 H2O can be also installed from hosted R repository in H2O's S3 buckets.
 
 At present, you can install the **h2o** R package using a repository URL comprised
-of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.com/h2o/rel-wright/3/R`
+of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.com/h2o/rel-wright/4/R`
 
 .. code:: r
 
    # Download, install, and initialize the H2O package for R.
-   # In this case we are using rel-wright 3 (3.20.0.3)
-   install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-wright/3/R")
+   # In this case we are using rel-wright 4 (3.20.0.4)
+   install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-wright/4/R")
 
 
 
@@ -226,7 +227,7 @@ central. If you don't have internet access or firewall is set up, you can specif
 This JAR file can be obtain in following steps:
 
 1. Download the Sparkling Water jar of your choice based on the integration table above.
-   To do this go to the following link where ``[SW Major Version]`` is the major version of Sparkling Water you wish to use, i.e., ``2.3`` and ``[SW Minor Version]`` is the minor version of Sparkling Water you wish to use, i.e., ``8``,
+   To do this go to the following link where ``[SW Major Version]`` is the major version of Sparkling Water you wish to use, i.e., ``2.3`` and ``[SW Minor Version]`` is the minor version of Sparkling Water you wish to use, i.e., ``10``,
    such as ``http://h2o-release.s3.amazonaws.com/sparkling-water/rel-[SW Major Version]/[SW Minor Version]/index.html``
 2. Click the ``DOWNLOAD SPARKLING WATER`` tab, which will download a ``.zip`` file of Sparkling Water.
 3. Run the following command to unzip the folder:
