@@ -181,7 +181,7 @@ class H2OConf(object):
         return self
 
     def set_internal_port_offset(self, offset):
-        self._jconf.setClientInternalPortOffset(offset)
+        self._jconf.setInternalPortOffset(offset)
         return self
 
     def set_flow_dir(self, dir):
@@ -473,7 +473,7 @@ class H2OConf(object):
         return self._jconf.maxParallelScalaCellJobs()
 
     def internal_port_offset(self):
-        return self._jconf.nodeInternalPortOffset()
+        return self._jconf.internalPortOffset()
 
     def flow_dir(self):
         return self._get_option(self._jconf.flowDir())
