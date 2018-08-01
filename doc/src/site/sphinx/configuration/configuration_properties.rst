@@ -114,6 +114,11 @@ Configuration properties independent of selected backend
 |                                                    |                | jobs The value -1 means                |
 |                                                    |                | not limited.                           |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.internal.port.offset``             | ``1``          | Offset between the API(=web) port and  |
+|                                                    |                | the internal communication port on the |
+|                                                    |                | client node;                           |
+|                                                    |                | ``api_port + port_offset = h2o_port``  |
++----------------------------------------------------+----------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |
