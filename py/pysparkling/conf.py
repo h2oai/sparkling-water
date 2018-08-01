@@ -180,6 +180,10 @@ class H2OConf(object):
         self._jconf.setMaxParallelScalaCellJobs(limit)
         return self
 
+    def set_internal_port_offset(self, offset):
+        self._jconf.setInternalPortOffset(offset)
+        return self
+
     def set_flow_dir(self, dir):
         self._jconf.setFlowDir(dir)
         return self
@@ -202,6 +206,10 @@ class H2OConf(object):
 
     def set_client_port_base(self, baseport):
         self._jconf.setClientPortBase(baseport)
+        return self
+
+    def set_client_web_port(self, port):
+        self._jconf.setClientWebPort(port)
         return self
 
     def set_client_verbose_enabled(self):
@@ -463,6 +471,9 @@ class H2OConf(object):
 
     def max_parallel_scala_cell_jobs(self):
         return self._jconf.maxParallelScalaCellJobs()
+
+    def internal_port_offset(self):
+        return self._jconf.internalPortOffset()
 
     def flow_dir(self):
         return self._get_option(self._jconf.flowDir())
