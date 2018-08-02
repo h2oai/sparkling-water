@@ -41,9 +41,7 @@ next_from_existing_table <- function(release_table, spark_version, h2o_version, 
     return(latest)
 }
 
-
-h2o_release_table <- function(tables_dir, h2o_version, h2o_name, h2o_build){
-
+update_release_tables <- function(tables_dir, h2o_version, h2o_name, h2o_build){
     table_2_3 <- read.table(file=paste(tables_dir, "table_2_3.txt", sep="", collapse=""))
     table_2_2 <- read.table(file=paste(tables_dir, "table_2_2.txt", sep="", collapse=""))
     table_2_1 <- read.table(file=paste(tables_dir, "table_2_1.txt", sep="", collapse=""))
@@ -58,17 +56,24 @@ h2o_release_table <- function(tables_dir, h2o_version, h2o_name, h2o_build){
     write.table(final_2_3, file=paste(tables_dir, "table_2_3.txt", sep="", collapse=""))
     write.table(final_2_2, file=paste(tables_dir, "table_2_2.txt", sep="", collapse=""))
     write.table(final_2_1, file=paste(tables_dir, "table_2_1.txt", sep="", collapse=""))
-
-    return(rbind(final_2_3, final_2_2, final_2_1))
 }
 
-generate_sys_data <- function(tables_dir, h2o_version, h2o_name, h2o_build){
-    release_table <- h2o_release_table(tables_dir, h2o_version, h2o_name, h2o_build)
+h2o_release_table <- function(tables_dir){
+
+    table_2_3 <- read.table(file=paste(tables_dir, "table_2_3.txt", sep="", collapse=""))
+    table_2_2 <- read.table(file=paste(tables_dir, "table_2_2.txt", sep="", collapse=""))
+    table_2_1 <- read.table(file=paste(tables_dir, "table_2_1.txt", sep="", collapse=""))
+
+    return(rbind(table_2_3, table_2_2, table_2_1))
+}
+
+generate_sys_data <- function(tables_dir){
+    release_table <- h2o_release_table(tables_dir)
     devtools::use_data(release_table, internal = TRUE, overwrite = TRUE)
 }
 
-write_release_table <- function(destination, tables_dir, h2o_version, h2o_name, h2o_build){
-    release_table <- h2o_release_table(tables_dir, h2o_version, h2o_name, h2o_build)
+write_release_table <- function(destination, tables_dir){
+    release_table <- h2o_release_table(tables_dir)
     write.csv(release_table, file=destination, row.names = FALSE)
 }
 
