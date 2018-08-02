@@ -72,8 +72,9 @@ versions must match specific Spark and H2O versions).
 
 ============= ======================= =========== ================ ======================== 
 Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_Patch_Number 
-============= ======================= =========== ================ ======================== 
-2.3           2.3.9                   3.20.0.3    rel-wright       3                        
+============= ======================= =========== ================ ========================
+2.3           2.3.10                  3.20.0.4    rel-wright       4
+2.3           2.3.9                   3.20.0.3    rel-wright       3
 2.3           2.3.8                   3.20.0.2    rel-wright       2                        
 2.3           2.3.7                   3.20.0.1    rel-wright       1                        
 2.3           2.3.6                   3.18.0.11   rel-wolpert      11                       
@@ -83,7 +84,7 @@ Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_P
 2.3           2.3.2                   3.18.0.8    rel-wolpert      8                        
 2.3           2.3.1                   3.18.0.7    rel-wolpert      7                        
 2.3           2.3.0                   3.18.0.5    rel-wolpert      5                        
-2.2           2.2.21                  3.20.0.4    rel-wright       4                        
+2.2           2.2.21                  3.20.0.4    rel-wright       4
 2.2           2.2.20                  3.20.0.3    rel-wright       3                        
 2.2           2.2.19                  3.20.0.2    rel-wright       2                        
 2.2           2.2.18                  3.20.0.1    rel-wright       1                        
@@ -105,6 +106,7 @@ Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_P
 2.2           2.2.2                   3.14.0.7    rel-weierstrass  7                        
 2.2           2.2.1                   3.14.0.6    rel-weierstrass  6                        
 2.2           2.2.0                   3.14.0.2    rel-weierstrass  2                        
+2.1           2.1.35                  3.20.0.4    rel-wright       4
 2.1           2.1.34                  3.20.0.3    rel-wright       3                        
 2.1           2.1.33                  3.20.0.2    rel-wright       2                        
 2.1           2.1.32                  3.20.0.1    rel-wright       1                        

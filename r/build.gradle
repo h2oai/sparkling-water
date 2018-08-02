@@ -26,10 +26,9 @@ task copyRSources(){
  */
 task generateSysData(type: Exec, dependsOn: copyRSources){
     workingDir "${project.buildDir}/src"
-    def updatedVersion = version.replace("-SNAPSHOT", "").replace("_nightly", ".99999")
     // generate_sys_data needs to add information about the current Sparkling Water, but it is not available on-line
     // at the time this code is called. Therefore, we add the row manually there
-    commandLine getOsSpecificCommandLine(["R", "-e", "source('../../for_release/utils.R'); generate_sys_data(\"${sparkMajorVersion}\", \"${updatedVersion}\", \"${h2oVersion}\", \"rel-${h2oMajorName}\", \"${h2oBuild}\");"])
+    commandLine getOsSpecificCommandLine(["R", "-e", "source('../../for_release/utils.R'); generate_sys_data(\"${h2oVersion}\", \"rel-${h2oMajorName}\", \"${h2oBuild}\");"])
 }
 
 /**
@@ -70,8 +69,7 @@ task test(type: Exec, dependsOn: [configurations.compile]) {
 task createReleaseIntegTable(type: Exec){
     file(project.buildDir).mkdir()
     workingDir projectDir
-    def updatedVersion = version.replace("-SNAPSHOT", "").replace("_nightly", ".99999")
-    commandLine getOsSpecificCommandLine(["./for_release/update_release_table.sh", "'${sparkMajorVersion}'", "'${updatedVersion}'", "'${h2oVersion}'", "'rel-${h2oMajorName}'", "'${h2oBuild}'"])
+    commandLine getOsSpecificCommandLine(["./for_release/update_release_table.sh", "'${h2oVersion}'", "'rel-${h2oMajorName}'", "'${h2oBuild}'"])
 }
 
 /**
