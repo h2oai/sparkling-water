@@ -7,3 +7,4 @@ Deployment
    backends.rst
    load_mojo.rst
    pysparkling_pipeline.rst
+   scoring_mojo_pipeline.rst
