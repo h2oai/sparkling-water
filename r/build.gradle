@@ -28,7 +28,7 @@ task generateSysData(type: Exec, dependsOn: copyRSources){
     workingDir "${project.buildDir}/src"
     // generate_sys_data needs to add information about the current Sparkling Water, but it is not available on-line
     // at the time this code is called. Therefore, we add the row manually there
-    commandLine getOsSpecificCommandLine(["R", "-e", "source('../../for_release/utils.R'); generate_sys_data(\"${projectDir.toString()}/for_release/\", \"${h2oVersion}\", \"rel-${h2oMajorName}\", \"${h2oBuild}\");"])
+    commandLine getOsSpecificCommandLine(["R", "-e", "source('../../for_release/utils.R'); generate_sys_data(\"${projectDir.toString()}/for_release/\");"])
 }
 
 /**
