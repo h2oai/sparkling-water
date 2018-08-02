@@ -31,29 +31,45 @@ get_release_table_for <- function(spark_major_minor_version) {
     H2O_Release_Patch_Number = rev(h2o_patch_version))
 }
 
-h2o_release_table <- function(spark_version, sw_version, h2o_version, h2o_name, h2o_build){
-    spark_version_vec = c(spark_version)
-    sw_version_vec = c(sw_version)
-    h2o_version_vec = c(h2o_version)
-    h2o_name_vec = c(h2o_name)
-    h2o_patch_version_vec = c(h2o_build)
+next_from_existing_table <- function(release_table, spark_version, h2o_version, h2o_name, h2o_build){
+    latest <- data.frame( Spark_Version = spark_version,
+    Sparkling_Water_Version = paste(spark_version, ".", as.numeric(unlist(strsplit(toString(release_table[1,2]), "\\."))[3]) + 1, collapse="", sep=""),
+    H2O_Version = c(h2o_version),
+    H2O_Release_Name = c(h2o_name),
+    H2O_Release_Patch_Number = c(h2o_build), stringsAsFactors=FALSE)
 
-    latest <- data.frame( Spark_Version = spark_version_vec,
-    Sparkling_Water_Version = sw_version_vec,
-    H2O_Version = h2o_version_vec,
-    H2O_Release_Name = h2o_name_vec,
-    H2O_Release_Patch_Number = h2o_patch_version_vec)
-
-    return(rbind(get_release_table_for("2.3"), get_release_table_for("2.2"), latest, get_release_table_for("2.1")))
+    return(latest)
 }
 
-generate_sys_data <- function(spark_version, sw_version, h2o_version, h2o_name, h2o_build){
-    release_table <- h2o_release_table(spark_version, sw_version, h2o_version, h2o_name, h2o_build)
+
+h2o_release_table <- function(h2o_version, h2o_name, h2o_build){
+
+    table_2_3 <- read.table(file="../../for_release/table_2_3.txt")
+    table_2_2 <- read.table(file="../../for_release/table_2_2.txt")
+    table_2_1 <- read.table(file="../../for_release/table_2_1.txt")
+
+
+    next_version_2_3 <- next_from_existing_table(table_2_3, "2.3", h2o_version, h2o_name, h2o_build)
+    next_version_2_2 <- next_from_existing_table(table_2_2, "2.2", h2o_version, h2o_name, h2o_build)
+    next_version_2_1 <- next_from_existing_table(table_2_1, "2.1", h2o_version, h2o_name, h2o_build)
+    final_2_3 <- rbind(next_version_2_3, table_2_3)
+    final_2_2 <- rbind(next_version_2_2, table_2_2)
+    final_2_1 <- rbind(next_version_2_1, table_2_1)
+
+    write.table(final_2_3, file="../../for_release/table_2_3.txt")
+    write.table(final_2_2, file="../../for_release/table_2_2.txt")
+    write.table(final_2_1, file="../../for_release/table_2_1.txt")
+
+    return(rbind(final_2_3, final_2_2, final_2_1))
+}
+
+generate_sys_data <- function(h2o_version, h2o_name, h2o_build){
+    release_table <- h2o_release_table(h2o_version, h2o_name, h2o_build)
     devtools::use_data(release_table, internal = TRUE, overwrite = TRUE)
 }
 
-write_release_table <- function(path, spark_version, sw_version, h2o_version, h2o_name, h2o_build){
-    release_table <- h2o_release_table(spark_version, sw_version, h2o_version, h2o_name, h2o_build)
+write_release_table <- function(path,h2o_version, h2o_name, h2o_build){
+    release_table <- h2o_release_table(h2o_version, h2o_name, h2o_build)
     write.csv(release_table, file=path, row.names = FALSE)
 }
 
