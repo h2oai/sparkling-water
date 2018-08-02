@@ -30,6 +30,16 @@ function getMasterArg() {
     done
 }
 
+function getJarsArg() {
+    while [[ $# -gt 0 ]]
+    do
+      case "$1" in
+          --jars*) shift; echo "$1"
+      esac
+      shift
+    done
+}
+
 if [ -z "$TOPDIR" ]; then
   echo "Caller has to setup TOPDIR variable!"
   exit -1
