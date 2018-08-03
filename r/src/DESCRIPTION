@@ -9,6 +9,14 @@ Authors@R: c(
   person("JJ", "Allaire", role = c("aut"), email = "jj@rstudio.com"),
   person("H2O.ai", role = c("cph")),
   person("RStudio", role = c("cph")))
+Author: Jakub Hava [aut, cre],
+    Navdeep Gill [aut],
+    Erin LeDell [aut],
+    Michal Malohlava [aut],
+    JJ Allaire [aut],
+    H2O.ai [cph],
+    RStudio [cph]
+Maintainer: Jakub Hava <jakub@h2o.ai>
 Imports:
     utils,
     sparklyr (>= 0.3),
@@ -21,7 +29,7 @@ Encoding: UTF-8
 LazyData: true
 NeedsCompilation: no
 SystemRequirements: Java (>6)
-URL: https://github.com/h2oai/rsparkling
+URL: https://github.com/h2oai/sparkling-water/tree/master/r
 BugReports: http://jira.h2o.ai
 RoxygenNote: 5.0.1
 Depends:
