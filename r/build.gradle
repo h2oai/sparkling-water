@@ -50,7 +50,7 @@ task cleanR(type: Delete) {
 task test(type: Exec, dependsOn: [configurations.compile]) {
     environment["spark.version"] = sparkVersion
     environment["sparkling.assembly.jar"] =  configurations.compile.find {it.name.endsWith("sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar")}.toString()
-    environment["sparkling.water.version"] = version.toString().replace("_nightly", ".99999")
+    environment["sparkling.water.version"] = version.toString().replace("_nightly", "-SNAPSHOT") // ensure that nightly tests can be run
     environment["NOT_CRAN"] = "true"
     environment["SPARK_HOME"] = sparkHome
     environment["H2O_CLIENT_IP"] = InetAddress.getLocalHost().hostAddress
