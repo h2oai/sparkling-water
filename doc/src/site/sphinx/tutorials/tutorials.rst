@@ -73,6 +73,13 @@ How to...
    sw_azure_dbc
    pysparkling_azure_dbc
 
+**Google Cloud Dataproc**
+
+.. toctree::
+   :maxdepth: 2
+
+   sw_google_cloud_dataproc
+
 **Zeppelin**
 
 .. toctree::
