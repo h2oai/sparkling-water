@@ -43,7 +43,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
   }
 
   private def flowUrl(): String = s"http://${listener.h2oCloudInfo.get.localClientIpPort}"
-  
+
   private def swProperties(): Seq[(String, String)] = listener.swProperties.get
 
   private def swInfo(): Seq[(String, String)] = {
@@ -53,6 +53,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
       ("Nodes", cloudInfo.cloudNodes.mkString(","))
     ) ++ cloudInfo.extraBackendInfo
   }
+
 
   override def render(request: HttpServletRequest): Seq[Node] = {
     val helpText =
@@ -68,6 +69,8 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
         propertyHeader, h2oRow, swProperties(), fixedWidth = true)
       val h2oInfoTable = UIUtils.listingTable(
         propertyHeader, h2oRow, h2oInfo(), fixedWidth = true)
+      val memoryInfo = UIUtils.listingTable(
+        propertyHeader, h2oRow, listener.memoryInfo.map{ case (n, m) => (n, "Free: " + m)}, fixedWidth = true)
       <div>
         <ul class="unstyled">
           <li>
@@ -86,6 +89,9 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
             <strong>Nodes:</strong>{listener.h2oCloudInfo.get.cloudNodes.length}
           </li>
           <li>
+            <strong>Memory Info:</strong>{memoryInfo}
+          </li>
+          <li>
             <a href={flowUrl()}>
               <strong>Flow UI</strong>
             </a>
@@ -93,7 +99,9 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
         </ul>
       </div>
         <span>
-          <h4>Sparkling Water</h4>{swInfoTable}<h4>Sparkling Water Properties</h4>{swPropertiesTable}<h4>H2O Build Information</h4>{h2oInfoTable}
+          <h4>Sparkling Water</h4>{swInfoTable}
+          <h4>Sparkling Water Properties</h4>{swPropertiesTable}
+          <h4>H2O Build Information</h4>{h2oInfoTable}
         </span>
 
     } else {
