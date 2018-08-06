@@ -11,8 +11,6 @@ How to...
    calling_h2o_algos
    run_sparkling_water
    change_default_port
-   run_on_windows
-   rsparkling_on_windows
 
 **Security**
 
@@ -22,7 +20,6 @@ How to...
    ssl
    ldap
    kerberos
-
 
 **Frames Conversions and Creation**
 
@@ -48,44 +45,6 @@ How to...
    change_log_level
    change_log_location
    obtaining_logs
-
-**Amazon EMR**
-
-.. toctree::
-   :maxdepth: 2
-
-   aws_emr
-
-**HD Insight**
-
-.. toctree::
-   :maxdepth: 2
-
-   azure_hdi
-
-**Databricks**
-
-.. toctree::
-   :maxdepth: 2
-
-   databricks_logs
-   rsparkling_azure_dbc
-   sw_azure_dbc
-   pysparkling_azure_dbc
-
-**Google Cloud Dataproc**
-
-.. toctree::
-   :maxdepth: 2
-
-   sw_google_cloud_dataproc
-
-**Zeppelin**
-
-.. toctree::
-   :maxdepth: 2
-
-   use_on_zeppelin
 
 **As Spark Package**
 
