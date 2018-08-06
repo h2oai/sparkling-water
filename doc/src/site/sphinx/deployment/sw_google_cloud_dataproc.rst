@@ -85,7 +85,7 @@ Perform the following steps to start Sparkling Water ``H2OContext`` on Cloud Dat
 		done
 
 		echo "Changing Spark Configurations"
-		sudo sed -i 's/spark.dynamicAllocation.enabled true/# spark.dynamicAllocation.enabled false/g' /usr/lib/spark/conf/spark-defaults.conf
+		sudo sed -i 's/spark.dynamicAllocation.enabled true/spark.dynamicAllocation.enabled false/g' /usr/lib/spark/conf/spark-defaults.conf
 		sudo sed -i 's/spark.executor.instances 10000/# spark.executor.instances 10000/g' /usr/lib/spark/conf/spark-defaults.conf
 		sudo sed -i 's/spark.executor.cores.*/# removing unnecessary limits to executor cores/g' /usr/lib/spark/conf/spark-defaults.conf
 		sudo sed -i 's/^spark.executor.memory.*/# removing unnecessary limits to executor memory/g' /usr/lib/spark/conf/spark-defaults.conf
