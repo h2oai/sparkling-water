@@ -20,6 +20,7 @@ package org.apache.spark.h2o.ui
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OConf
 import water.H2O
+import water.util.PrettyPrint
 
 /**
   * Periodically publish info to UI
@@ -27,7 +28,9 @@ import water.H2O
 class H2ORuntimeInfoUIThread(sc: SparkContext, conf: H2OConf) extends Thread {
   override def run(): Unit = {
     while (!Thread.interrupted()) {
-      sc.listenerBus.post(SparkListenerH2ORuntimeUpdate(H2O.CLOUD.healthy(), System.currentTimeMillis()))
+      val nodes = H2O.CLOUD.members() ++ Array(H2O.SELF)
+      val memoryInfo = nodes.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
+      sc.listenerBus.post(SparkListenerH2ORuntimeUpdate(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo))
       try {
         Thread.sleep(conf.uiUpdateInterval)
       } catch {

@@ -60,6 +60,7 @@ trait SharedBackendConf {
   def contextPath = sparkConf.getOption(PROP_CONTEXT_PATH._1)
   def flowScalaCellAsync = sparkConf.getBoolean(PROP_FLOW_SCALA_CELL_ASYNC._1, PROP_FLOW_SCALA_CELL_ASYNC._2)
   def maxParallelScalaCellJobs = sparkConf.getInt(PROP_FLOW_SCALA_CELL_MAX_PARALLEL._1, PROP_FLOW_SCALA_CELL_MAX_PARALLEL._2)
+  def internalPortOffset = sparkConf.getInt(PROP_INTERNAL_PORT_OFFSET._1, PROP_INTERNAL_PORT_OFFSET._2)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -145,6 +146,7 @@ trait SharedBackendConf {
   def setFlowScalaCellAsyncDisabled() = set(PROP_FLOW_SCALA_CELL_ASYNC._1, false)
 
   def setMaxParallelScalaCellJobs(limit: Int) = set(PROP_FLOW_SCALA_CELL_MAX_PARALLEL._1, limit.toString)
+  def setInternalPortOffset(offset: Int) = set(PROP_INTERNAL_PORT_OFFSET._1, offset.toString)
 
   /** H2O Client parameters */
   def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
@@ -153,6 +155,7 @@ trait SharedBackendConf {
   def setH2OClientLogLevel(level: String) = set(PROP_CLIENT_LOG_LEVEL._1, level)
   def setH2OClientLogDir(dir: String) = set(PROP_CLIENT_LOG_DIR._1, dir)
   def setClientPortBase(basePort: Int) = set(PROP_CLIENT_PORT_BASE._1, basePort.toString)
+  def setClientWebPort(port: Int) = set(PROP_CLIENT_WEB_PORT._1, port.toString)
 
   def setClientVerboseEnabled() = set(PROP_CLIENT_VERBOSE._1, true)
   def setClientVerboseDisabled() = set(PROP_CLIENT_VERBOSE._1, false)
@@ -251,6 +254,9 @@ object SharedBackendConf {
 
   /** Number of max parallel Scala cell jobs. */
   val PROP_FLOW_SCALA_CELL_MAX_PARALLEL = ("spark.ext.h2o.flow.scala.cell.max.parallel", -1)
+
+  /** Offset between the API(=web) port and the internal communication port; api_port + port_offset = h2o_port */
+  val PROP_INTERNAL_PORT_OFFSET = ("spark.ext.h2o.internal.port.offset", 1)
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)
