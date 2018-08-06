@@ -30,7 +30,7 @@ case class SparkListenerH2OStart(h2oCloudInfo: H2OCloudInfo,
 /**
   * Event representing update of H2O status at run-time
   */
-case class SparkListenerH2ORuntimeUpdate(cloudHealthy: Boolean, timeInMillis: Long) extends SparkListenerEvent
+case class SparkListenerH2ORuntimeUpdate(cloudHealthy: Boolean, timeInMillis: Long, memoryInfo: Array[(String, String)]) extends SparkListenerEvent
 
 
 case class H2OCloudInfo(

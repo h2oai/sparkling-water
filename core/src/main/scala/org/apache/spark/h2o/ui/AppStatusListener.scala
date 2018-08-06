@@ -34,9 +34,9 @@ class AppStatusListener(conf: SparkConf, store: ElementTrackingStore, live: Bool
   }
 
   private def onSparklingWaterUpdate(event: SparkListenerH2ORuntimeUpdate): Unit = {
-    val SparkListenerH2ORuntimeUpdate(cloudHealthy, timeInMillis) = event
+    val SparkListenerH2ORuntimeUpdate(cloudHealthy, timeInMillis, memoryInfo) = event
     val now = System.nanoTime()
-    new SparklingWaterUpdate(cloudHealthy, timeInMillis).write(store, now)
+    new SparklingWaterUpdate(cloudHealthy, timeInMillis, memoryInfo).write(store, now)
   }
 
   override def onOtherEvent(event: SparkListenerEvent): Unit = event match {
@@ -54,9 +54,9 @@ class AppStatusListener(conf: SparkConf, store: ElementTrackingStore, live: Bool
     }
   }
 
-  private class SparklingWaterUpdate(cloudHealthy: Boolean, timeInMillis: Long) extends LiveEntity {
+  private class SparklingWaterUpdate(cloudHealthy: Boolean, timeInMillis: Long, val memoryInfo: Array[(String, String)]) extends LiveEntity {
     override protected def doUpdate(): Any = {
-      new SparklingWaterUpdateInfo(cloudHealthy, timeInMillis)
+      new SparklingWaterUpdateInfo(cloudHealthy, timeInMillis, memoryInfo)
     }
   }
 
