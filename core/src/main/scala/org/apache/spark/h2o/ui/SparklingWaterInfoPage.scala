@@ -41,11 +41,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
       ("H2O Build On", h2oBuildInfo.h2oBuildOn)
     )
   }
-
-  private def memoryInfo(): Seq[(String, String)] = {
-    Seq()
-  }
-
+  
   private def flowUrl(): String = s"http://${store.getStartedInfo().h2oCloudInfo.localClientIpPort}"
   
   private def swProperties(): Seq[(String, String)] = store.getStartedInfo().swProperties
