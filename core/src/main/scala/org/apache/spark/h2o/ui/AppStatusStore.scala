@@ -39,6 +39,7 @@ class AppStatusStore(store: KVStore, val listener: Option[AppStatusListener] = N
     val klass = classOf[SparklingWaterStartedInfo]
     store.count(klass) != 0
   }
+
 }
 
 /**
@@ -54,7 +55,7 @@ class SparklingWaterStartedInfo(val h2oCloudInfo: H2OCloudInfo,
 /**
   * Object encapsulating information about Sparkling Water Heartbeat
   */
-class SparklingWaterUpdateInfo(val cloudHealthy: Boolean, val timeInMillis: Long) {
+class SparklingWaterUpdateInfo(val cloudHealthy: Boolean, val timeInMillis: Long, val memoryInfo: Array[(String, String)]) {
   // Use lass name ad key since there is always just a single instance of this object in KVStore
   @KVIndexParam val id: String = getClass.getName
 }
