@@ -32,7 +32,7 @@ import org.apache.spark.sql.execution.ui.{SQLAppStatusListener, SQLAppStatusStor
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.status.ElementTrackingStore
 import water._
-import water.util.{Log, LogBridge}
+import water.util.{Log, LogBridge, PrettyPrint}
 
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
@@ -180,7 +180,9 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
 
     val swPropertiesInfo = _conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
     // Initial update
-    sparkSession.sparkContext.listenerBus.post(SparkListenerH2ORuntimeUpdate(H2O.CLOUD.healthy(), System.currentTimeMillis()))
+    val nodes = H2O.CLOUD.members() ++ Array(H2O.SELF)
+    val memoryInfo = nodes.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
+    sparkSession.sparkContext.listenerBus.post(SparkListenerH2ORuntimeUpdate(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo))
     sparkSession.sparkContext.listenerBus.post(SparkListenerH2OStart(
       h2oCloudInfo,
       h2oBuildInfo,
