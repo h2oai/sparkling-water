@@ -5,7 +5,7 @@ This section describes how to run Sparkling Water on `Google Cloud Dataproc <htt
 
 Perform the following steps to start Sparkling Water ``H2OContext`` on Cloud Dataproc. 
 
-**Note**: Be sure to allocate enough resources handle your data. As a minimum recommendation, if your data is 1GB, then you would want 5GB total (for example).
+**Note**: Be sure to allocate enough resources to handle your data. As a minimum recommendation, you should allocate 4 times memory of the size of your data in H2O.
 
 1. Install the `Google SDK <https://cloud.google.com/sdk/gcloud/>`__.
 
@@ -23,8 +23,8 @@ Perform the following steps to start Sparkling Water ``H2OContext`` on Cloud Dat
 	apt-get install -y python-dev python-pip jq
 
 	cd /usr/lib/
-	wget http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/8/sparkling-water-2.3.8.zip
-	unzip sparkling-water-2.3.8.zip
+	wget http://h2o-release.s3.amazonaws.com/sparkling-water/rel-SUBST_SW_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/sparkling-water-SUBST_SW_VERSION.zip
+	unzip sparkling-water-SUBST_SW_VERSION.zip
 
 	pip install pip==9.0.3
 	pip install requests==2.18.4
@@ -36,7 +36,7 @@ Perform the following steps to start Sparkling Water ``H2OContext`` on Cloud Dat
 	pip install --upgrade google-cloud-bigquery
 	pip install --upgrade google-cloud-storage
 
-	pip install h2o_pysparkling_2.3
+	pip install h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION
 
 
 5. Create a Dataproc Custom Image as defined `here <https://cloud.google.com/dataproc/docs/guides/dataproc-images>`__. Note that this references the Daisy path, the custom image name, and the customization script from previous steps. The code will be similar to the following:
@@ -85,7 +85,7 @@ Perform the following steps to start Sparkling Water ``H2OContext`` on Cloud Dat
 		done
 
 		echo "Changing Spark Configurations"
-		sudo sed -i 's/spark.dynamicAllocation.enabled true/# spark.dynamicAllocation.enabled true/g' /usr/lib/spark/conf/spark-defaults.conf
+		sudo sed -i 's/spark.dynamicAllocation.enabled true/# spark.dynamicAllocation.enabled false/g' /usr/lib/spark/conf/spark-defaults.conf
 		sudo sed -i 's/spark.executor.instances 10000/# spark.executor.instances 10000/g' /usr/lib/spark/conf/spark-defaults.conf
 		sudo sed -i 's/spark.executor.cores.*/# removing unnecessary limits to executor cores/g' /usr/lib/spark/conf/spark-defaults.conf
 		sudo sed -i 's/^spark.executor.memory.*/# removing unnecessary limits to executor memory/g' /usr/lib/spark/conf/spark-defaults.conf
@@ -131,7 +131,7 @@ Sample Script for Sparkling Water Job
 
 Below is a sample script for running a Sparkling Water job. Edit the arguments to match your bucket and GCP setup.
 
-::
+.. code:: python
 
 	import h2o
 	from h2o.automl import H2OAutoML
@@ -149,8 +149,6 @@ Below is a sample script for running a Sparkling Water job. Edit the arguments t
 
 	drop_cols = []
 	aml_args = {"max_runtime_secs": 120}
-
-	# ----------- No Need To Edit Anything Below this Line -----------
 
 	train_data = spark.read\
 	                  .options(header='true', inferSchema='true')\
