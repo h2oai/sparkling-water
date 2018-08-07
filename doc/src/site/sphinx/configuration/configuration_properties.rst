@@ -159,6 +159,14 @@ Configuration properties independent of selected backend
 |                                                    |                | the H2O client. The option still       |
 |                                                    |                | applies to the Spark application.      |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.client.enable.web``                | ``true``       | Enable or disable web on h2o client    |
+|                                                    |                | node. It is enabled by default.        |
+|                                                    |                | Disabling the web just on the client   |
+|                                                    |                | node just restricts everybody from     |
+|                                                    |                | accessing flow, the internal ports     |
+|                                                    |                | between client and rest of the cluster |
+|                                                    |                | remain open.                           |
++----------------------------------------------------+----------------+----------------------------------------+
 
 --------------
 

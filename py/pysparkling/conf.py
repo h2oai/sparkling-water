@@ -232,6 +232,14 @@ class H2OConf(object):
         self._jconf.setIgnoreSparkPublicDNSDisabled()
         return self
 
+    def set_client_web_enabled(self):
+        self._jconf.setClientWebEnabled()
+        return self
+
+    def set_client_web_disabled(self):
+        self._jconf.setClientWebDisabled()
+        return self
+
     # setters for internal backend
 
     def set_flatfile_enabled(self):
@@ -504,6 +512,9 @@ class H2OConf(object):
 
     def ignore_spark_public_dns(self):
         return self._jconf.ignoreSparkPublicDNS()
+
+    def client_web_enabled(self):
+        return self._jconf.clientWebEnabled()
 
     # Getters for internal backend
 
