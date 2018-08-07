@@ -133,7 +133,7 @@ Troubleshooting
     If the previous does not work, you can delete the ``metastore_db`` folder in your R working directory.
 
 References
-----------
+~~~~~~~~~~
 
 - `Main RSparkling Documentation <../rsparkling.rst>`__
 - `H2O.ai website <http://h2o.ai>`__
