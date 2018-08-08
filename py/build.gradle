@@ -12,6 +12,10 @@ description = "PySparkling - Sparkling-Water Python Package"
 
 dependencies {
     compile project(path: ':sparkling-water-assembly')
+
+    if (project.property("testMojoPipeline") == "true") {
+        testRuntime "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
+    }
 }
 //
 // Create a file with version for Python dist task
@@ -54,7 +58,7 @@ def preparePythonTestEnv(environment){
     environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
     environment["spark.ext.h2o.external.start.mode"] = detectExternalBackendStartMode()
     // sparkling assembly jar is here because of external h2o tests
-    environment["sparkling.assembly.jar"] = configurations.compile.join(',')
+    environment["sparkling.assembly.jar"] = configurations.testRuntime.join(',')
 
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
     environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
