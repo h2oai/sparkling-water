@@ -43,7 +43,7 @@ shadowJar {
     include(project(":sparkling-water-repl"))
     include(project(":sparkling-water-ml"))
     include(project(":sparkling-water-extension-stack-trace"))
-    include(dependency("ai.h2o:mojo2-runtime:${mojoPipelineVersion}"))
+    include(dependency("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"))
     include(dependency("ai.h2o:h2o-genmodel"))
     include(dependency("ai.h2o:h2o-core"))
     include(dependency("ai.h2o:h2o-scala_${scalaBaseVersion}"))
