@@ -10,8 +10,16 @@ ext {
 
 description = "PySparkling - Sparkling-Water Python Package"
 
+configurations {
+    mojopipeline
+}
+
 dependencies {
     compile project(path: ':sparkling-water-assembly')
+
+    if (project.property("testMojoPipeline") == "true") {
+        mojopipeline "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
+    }
 }
 //
 // Create a file with version for Python dist task
@@ -48,7 +56,7 @@ def preparePythonEnv(environment) {
 //
 // Prepare Python environment to run python tests
 //
-def preparePythonTestEnv(environment){
+def preparePythonTestEnv(environment) {
     // Add PySparkling zip on PYTHONPATH so unittests can access all the PySparkling packages
     environment['PYTHONPATH'] = "${distPython.archivePath}${FPS}${environment['PYTHONPATH']}"
     environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
@@ -58,8 +66,11 @@ def preparePythonTestEnv(environment){
 
     environment['SPARK_WORKER_DIR'] = file('build/h2ologs-pyunit/nodes')
     environment['SPARK_CONF_DIR'] = file("tests/conf/pyunit")
-}
 
+    if (project.property("testMojoPipeline") == "true") {
+        environment["sparkling.mojo.pipeline.jar"] = configurations.mojopipeline.resolve().join(",")
+    }
+}
 //
 // Initial task checking setup of all properties required
 // by Python build
