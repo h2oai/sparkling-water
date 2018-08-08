@@ -46,7 +46,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     *
     * @param conf H2O Configuration to check
     * @return checked and updated configuration
-    **/
+    * */
   def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
 
@@ -102,13 +102,25 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       ++ addIfNotNull("-internal_security_conf", conf.sslConf.orNull)
     )
 
-  def getLoginArgs(conf: H2OConf): Seq[String] = (
-    (if (conf.hashLogin) Seq("-hash_login") else Nil)
-      ++ (if (conf.ldapLogin) Seq("-ldap_login") else Nil)
-      ++ (if (conf.kerberosLogin) Seq("-kerberos_login") else Nil)
-      ++ addIfNotNull("-user_name", conf.userName.orNull)
-      ++ addIfNotNull("-login_conf", conf.loginConf.orNull)
-    )
+  def getLoginArgs(conf: H2OConf): Seq[String] = {
+    val base = (
+      (if (conf.hashLogin) Seq("-hash_login") else Nil)
+        ++ (if (conf.ldapLogin) Seq("-ldap_login") else Nil)
+        ++ (if (conf.kerberosLogin) Seq("-kerberos_login") else Nil)
+        ++ addIfNotNull("-user_name", conf.userName.orNull)
+        ++ addIfNotNull("-login_conf", conf.loginConf.orNull)
+      )
+
+    if (!conf.clientWebEnabled) {
+      val f = new File(SharedBackendUtils.createTempDir(), "dummy")
+      f.createNewFile()
+      f.deleteOnExit()
+      base ++ Seq("-hash_login", "-login_conf", f.toString)
+    }
+    else {
+      base
+    }
+  }
 
   /**
     * Get common arguments for H2O client.
@@ -134,7 +146,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
 
   val TEMP_DIR_ATTEMPTS = 1000
 
-  private def createTempDir(): File = {
+  def createTempDir(): File = {
     def baseDir = new File(System.getProperty("java.io.tmpdir"))
 
     def baseName = System.currentTimeMillis() + "-"
