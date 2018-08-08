@@ -21,7 +21,7 @@ task createVersionFile {
  * We can't use Sphinx substitutions in for example code blocks and other container, so we post-process
  * the generated files manually
  */
-task substitute(){
+task substitute() {
     doLast {
         def siteDir = "${buildDir}/site"
 
@@ -50,12 +50,12 @@ task substitute(){
 
 task docJar(type: Jar) {
     from "${buildDir}"
-    classifier ="site"
+    classifier = "site"
     include "site/**"
     baseName = "${project.name}_${scalaBaseVersion}"
 }
 
-task sourcesDocJar(type: Jar){
+task sourcesDocJar(type: Jar) {
     classifier = "site-sources"
     from "${projectDir}"
     include "src/**"
@@ -65,6 +65,18 @@ task sourcesDocJar(type: Jar){
     from "${projectDir}"
     include "CHANGELOG.rst"
 }
+
+task openSite {
+    doFirst {
+        def sitePath = "file://" + project.buildDir.toString() + "/site/index.html"
+        if (file(sitePath).exists()) {
+            java.awt.Desktop.desktop.browse sitePath.toURI()
+        } else {
+            throw new IllegalArgumentException("Documentation is not available, please build it first by running ./gradlew site")
+        }
+    }
+}
+
 
 artifacts {
     publishArchives docJar
