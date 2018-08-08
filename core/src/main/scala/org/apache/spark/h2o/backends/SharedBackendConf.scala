@@ -73,6 +73,7 @@ trait SharedBackendConf {
   def clientVerboseOutput = sparkConf.getBoolean(PROP_CLIENT_VERBOSE._1, PROP_CLIENT_VERBOSE._2)
   def clientNetworkMask = sparkConf.getOption(PROP_CLIENT_NETWORK_MASK._1)
   def ignoreSparkPublicDNS = sparkConf.getBoolean(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._2)
+  def clientWebEnabled = sparkConf.getBoolean(PROP_CLIENT_ENABLE_WEB._1, PROP_CLIENT_ENABLE_WEB._2)
 
   def runsInExternalClusterMode: Boolean = backendClusterMode.toLowerCase() == "external"
   def runsInInternalClusterMode: Boolean = !runsInExternalClusterMode
@@ -164,6 +165,9 @@ trait SharedBackendConf {
 
   def setIgnoreSparkPublicDNSEnabled() = set(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, true)
   def setIgnoreSparkPublicDNSDisabled() = set(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, false)
+
+  def setClientWebEnabled() = set(PROP_CLIENT_ENABLE_WEB._1, true)
+  def setClientWebDisabled() = set(PROP_CLIENT_ENABLE_WEB._1, false)
 
   private[this] def setBackendClusterMode(backendClusterMode: String) = {
     set(PROP_BACKEND_CLUSTER_MODE._1, backendClusterMode)
@@ -288,4 +292,9 @@ object SharedBackendConf {
 
   /** Ignore SPARK_PUBLIC_DNS setting on the H2O client. The option still applies to the Spark application. */
   val PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS = ("spark.ext.h2o.client.ignore.SPARK_PUBLIC_DNS", false)
+
+  /** Enable or disable web on h2o client node. It is enabled by default. Disabling the web just
+    * on the client node just restricts everybody from accessing flow, the internal ports
+    * between client and rest of the cluster remain open*/
+  val PROP_CLIENT_ENABLE_WEB = ("spark.ext.h2o.client.enable.web", true)
 }
