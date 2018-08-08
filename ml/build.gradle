@@ -33,7 +33,7 @@ dependencies {
 }
 
 test {
-  if (project.property("testMojoPipeline") == "false") {
+  if (project.property("testMojoPipeline") != "true") {
     exclude 'org/apache/spark/ml/spark/models/H2OMOJOPipelineModelTest.class'
   }
 }
