@@ -25,6 +25,9 @@ def get_default_spark_conf():
         set("spark.ext.h2o.cloud.name", unique_cloud_name("test")). \
         set("spark.ext.h2o.external.start.mode", os.getenv("spark.ext.h2o.external.start.mode", "manual"))
 
+    if os.getenv("sparkling.mojo.pipeline.jar", "empty") is not "empty":
+        conf.set("spark.jars", os.getenv("sparkling.mojo.pipeline.jar"))
+
     if tests_in_external_mode():
         conf.set("spark.ext.h2o.client.ip", local_ip())
         conf.set("spark.ext.h2o.external.cluster.num.h2o.nodes", "1")
