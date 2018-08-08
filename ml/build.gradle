@@ -16,8 +16,13 @@ dependencies {
 
   testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 
-  compile "ai.h2o:mojo2-runtime:${mojoPipelineVersion}"
-  testCompile "ai.h2o:mojo2-runtime:${mojoPipelineVersion}"
+
+  compile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
+  testCompile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
+
+  if (project.property("testMojoPipeline") == "true") {
+    testRuntime "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
+  }
 
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
