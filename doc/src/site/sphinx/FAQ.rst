@@ -135,3 +135,14 @@ Frequently Asked Questions
 
     where:
         - ``{file_location}`` is the location to the metastore_db database file.
+
+- After conversion of Spark Data Frame to H2O Frame, I see only 100 columns on the console.
+
+    If your Spark Data Frame has more than 100 columns, we don't treat it any different. We always fully convert
+    the Spark Data Frame to H2O Frame. We just limit the number of columns we send to the client as it's hard to read that
+    many columns in the console plus it optimizes the amount of data we transfer betweeen the client and backend.
+    If you wish to configure how many columns are sent to the client, you can specify it as part of the conversion method as:
+
+    .. code:: python
+
+        as_h2o_frame(dataframe, framename=None, full_cols=100):
