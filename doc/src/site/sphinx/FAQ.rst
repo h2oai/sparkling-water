@@ -145,4 +145,6 @@ Frequently Asked Questions
 
     .. code:: python
 
-        as_h2o_frame(dataframe, framename=None, full_cols=100):
+        h2o_context.as_h2o_frame(dataframe, "Frame_Name", 200):
+
+    The last parameter specifies the number of columns to sent for the preview.
