@@ -1,6 +1,41 @@
 Change Log
 ==========
 
+v2.3.11 (2018-08-09)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/11/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/11/index.html>`__
+
+-  Bug
+        
+   -  `SW-971 <https://0xdata.atlassian.net/browse/SW-971>`__ - Change maintainer of RSparkling to jakub@h2o.ai
+   -  `SW-972 <https://0xdata.atlassian.net/browse/SW-972>`__ - Fix Content of RSparkling release table
+   -  `SW-973 <https://0xdata.atlassian.net/browse/SW-973>`__ - Allow passing custom cars when running ./bin/sparkling/shell
+   -  `SW-975 <https://0xdata.atlassian.net/browse/SW-975>`__ - Fix CRAN issues of Rsparkling
+   -  `SW-981 <https://0xdata.atlassian.net/browse/SW-981>`__ - Fix wrong comparison of versions when detecing other h2o versions in PySparkling
+   -  `SW-982 <https://0xdata.atlassian.net/browse/SW-982>`__ - Set up client_disconnect_timeout correctly in context on External backend, auto  mode
+   -  `SW-983 <https://0xdata.atlassian.net/browse/SW-983>`__ - Fix missing mojo impl artifact when running pysparkling tests in jenkins
+                
+-  Task
+        
+   -  `SW-633 <https://0xdata.atlassian.net/browse/SW-633>`__ - Add to doc that  100 columns are displayed in the preview data by default
+                
+-  Improvement
+        
+   -  `SW-528 <https://0xdata.atlassian.net/browse/SW-528>`__ - Update PySparkling Notebooks to work for Python 3
+   -  `SW-548 <https://0xdata.atlassian.net/browse/SW-548>`__ - List nodes and driver memory in Spark UI - SParkling Water Tab
+   -  `SW-910 <https://0xdata.atlassian.net/browse/SW-910>`__ - Use Mojo Pipeline API in Sparkling Water
+   -  `SW-969 <https://0xdata.atlassian.net/browse/SW-969>`__ - Port documentation for mojo pipeline on Spark to SW repo
+   -  `SW-970 <https://0xdata.atlassian.net/browse/SW-970>`__ - Upgrade Mojo 2 in SW to 0.11.0
+   -  `SW-976 <https://0xdata.atlassian.net/browse/SW-976>`__ - Upgrade H2O to 3.20.0.5
+   -  `SW-977 <https://0xdata.atlassian.net/browse/SW-977>`__ - Need ability to disable Flow UI for Sparkling-Water
+   -  `SW-979 <https://0xdata.atlassian.net/browse/SW-979>`__ - Verify that we are running on correct Spark for PySparkling at init time
+   -  `SW-984 <https://0xdata.atlassian.net/browse/SW-984>`__ - Cache also test and runtime dependencies in docker image
+                
+-  Docs
+        
+   -  `SW-946 <https://0xdata.atlassian.net/browse/SW-946>`__ - Add &quot;How to&quot; for using Sparkling Water on Google Cloud Dataproc
+                
+                            
 v2.3.10 (2018-08-01)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/10/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/10/index.html>`__
