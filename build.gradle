@@ -99,6 +99,7 @@ configure(allprojects) { project ->
       sparkMajorVersion  = sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
       junitVersion       = '4.11'
     }
+
 }
 
 // 
@@ -141,9 +142,11 @@ configure(subprojects) { project ->
     if (project in scalaProjects) {
       apply from: "$rootDir/gradle/scala.gradle"
     }
+
     if (project in pythonProjects) {
       apply from: "$rootDir/gradle/python.gradle"
     }
+
     if (project in rProjects) {
         apply from: "$rootDir/gradle/r.gradle"
     }

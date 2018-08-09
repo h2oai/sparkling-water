@@ -21,6 +21,13 @@ dependencies {
         mojopipeline "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
     }
 }
+
+task resolveTestRuntimeDependencies {
+    doLast {
+        project.configurations.mojopipeline.resolve()
+    }
+}
+
 //
 // Create a file with version for Python dist task
 //
