@@ -103,7 +103,7 @@ USER jenkins
 RUN cd /home/jenkins && \
     git clone https://github.com/h2oai/sparkling-water.git && \
     cd sparkling-water && \
-    ./gradlew build -x check -x :sparkling-water-py:build && \
+    ./gradlew build testClasses resolveTestRuntimeDependencies -PtestMojoPipeline=true -x check -x :sparkling-water-py:build && \
     cd ..
 
 USER root
