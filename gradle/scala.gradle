@@ -96,6 +96,11 @@ sourceSets {
     }
 }
 
+task resolveTestRuntimeDependencies {
+    doLast {
+        project.configurations.testRuntime.resolve()
+    }
+}
 
 //
 // Initial task checking setup of all properties required
