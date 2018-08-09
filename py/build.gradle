@@ -264,6 +264,14 @@ task testPythonMojoPipeline(type: Exec, dependsOn: distPython) {
         commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_unit_mojo_pipeline.py"])
 }
 
+task hadoopSmokeTests(type: Exec, dependsOn: distPython){
+    doFirst {
+        preparePythonEnv(environment)
+    }
+    preparePythonTestEnv(environment)
+    commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_hadoop_smoke.py"])
+}
+
 //
 // Test python against Spark cloud
 //
