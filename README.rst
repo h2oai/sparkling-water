@@ -11,6 +11,9 @@ Sparkling Water integrates |H2O|'s fast scalable machine learning engine with Sp
 - Basic building blocks to create ML applications utilizing Spark and H2O APIs.
 - Python interface enabling use of Sparkling Water directly from PySpark.
 
+
+Are you looking for RSparkling? It's README is available `here <https://github.com/h2oai/sparkling-water/tree/rel-2.1/r>`__.
+
 Getting Started
 ---------------
 
