@@ -6,7 +6,7 @@ RSparkling
 
 The **rsparkling** R package is an extension package for `sparklyr <http://spark.rstudio.com>`__
 that creates an R front-end for the `Sparkling Water <https://www.h2o.ai/sparkling-water/>`__
-package from `H2O <http://h2o.ai)>`__.
+package from `H2O <http://h2o.ai>`__.
 This provides an interface to H2O's high performance, distributed machine learning algorithms on
 Spark, using R.
 
@@ -23,7 +23,7 @@ Installation of SparklyR & Spark
 
 Install sparklyr
 ~~~~~~~~~~~~~~~~
-We recommend the latest stable version of [sparklyr](http://spark.rstudio.com/index.html).
+We recommend the latest stable version of `sparklyr <http://spark.rstudio.com/index.html>`__.
 
 .. code:: r
 
@@ -125,7 +125,7 @@ The latest stable version of **rsparkling** on CRAN can be installed as follows:
 
 
 Alternatively, to install the nightly version of RSparkling, please follow the information on the RSparkling tab
-on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest>`__.
+on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/index.html>`__.
 
 
 RSparkling & SparklyR Configuration
@@ -468,8 +468,7 @@ If you are new to H2O for machine learning, we recommend you start with:
 - `Intro to H2O Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.R>`__
 - `H2O Grid Search & Model Selection Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/grid-search-model-selection.R>`__
 
-There is also number of other H2O R `tutorials <https://github.com/h2oai/h2o-tutorials>`__ and `demos <https://github.com/h2oai/h2o-3/tree/master/h2o-r/demos>`__ available,
-as well as the `H2O World 2015 Training Gitbook <http://learn.h2o.ai/content/>`__, and the `Machine Learning with R and
+There is also number of other H2O R `tutorials <https://github.com/h2oai/h2o-tutorials>`__, `demos <https://github.com/h2oai/h2o-3/tree/master/h2o-r/demos>`__ available, and the `Machine Learning with R and
 H2O Booklet (pdf) <http://docs.h2o.ai/h2o/latest-stable/h2o-docs/booklets/RBooklet.pdf>`__.
 
 

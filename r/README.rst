@@ -6,7 +6,7 @@ RSparkling
 
 The **rsparkling** R package is an extension package for `sparklyr <http://spark.rstudio.com>`__
 that creates an R front-end for the `Sparkling Water <https://www.h2o.ai/sparkling-water/>`__
-package from `H2O <http://h2o.ai)>`__.
+package from `H2O <http://h2o.ai>`__.
 This provides an interface to H2O's high performance, distributed machine learning algorithms on
 Spark, using R.
 
@@ -23,7 +23,7 @@ Installation of SparklyR & Spark
 
 Install sparklyr
 ~~~~~~~~~~~~~~~~
-We recommend the latest stable version of [sparklyr](http://spark.rstudio.com/index.html).
+We recommend the latest stable version of `sparklyr <http://spark.rstudio.com/index.html>`__.
 
 .. code:: r
 
@@ -72,10 +72,11 @@ versions must match specific Spark and H2O versions).
 
 ============= ======================= =========== ================ ======================== 
 Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_Patch_Number 
-============= ======================= =========== ================ ========================
+============= ======================= =========== ================ ======================== 
+2.3           2.3.12                  3.20.0.5    rel-wright       5                        
 2.3           2.3.11                  3.20.0.5    rel-wright       5                        
 2.3           2.3.10                  3.20.0.4    rel-wright       4                        
-2.3           2.3.9                   3.20.0.3    rel-wright       3
+2.3           2.3.9                   3.20.0.3    rel-wright       3                        
 2.3           2.3.8                   3.20.0.2    rel-wright       2                        
 2.3           2.3.7                   3.20.0.1    rel-wright       1                        
 2.3           2.3.6                   3.18.0.11   rel-wolpert      11                       
@@ -85,6 +86,7 @@ Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_P
 2.3           2.3.2                   3.18.0.8    rel-wolpert      8                        
 2.3           2.3.1                   3.18.0.7    rel-wolpert      7                        
 2.3           2.3.0                   3.18.0.5    rel-wolpert      5                        
+2.2           2.2.23                  3.20.0.5    rel-wright       5                        
 2.2           2.2.22                  3.20.0.5    rel-wright       5                        
 2.2           2.2.21                  3.20.0.4    rel-wright       4                        
 2.2           2.2.20                  3.20.0.3    rel-wright       3                        
@@ -108,6 +110,7 @@ Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_P
 2.2           2.2.2                   3.14.0.7    rel-weierstrass  7                        
 2.2           2.2.1                   3.14.0.6    rel-weierstrass  6                        
 2.2           2.2.0                   3.14.0.2    rel-weierstrass  2                        
+2.1           2.1.37                  3.20.0.5    rel-wright       5                        
 2.1           2.1.36                  3.20.0.5    rel-wright       5                        
 2.1           2.1.35                  3.20.0.4    rel-wright       4                        
 2.1           2.1.34                  3.20.0.3    rel-wright       3                        
@@ -201,7 +204,7 @@ The latest stable version of **rsparkling** on CRAN can be installed as follows:
 
 
 Alternatively, to install the nightly version of RSparkling, please follow the information on the RSparkling tab
-on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest>`__.
+on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/index.html>`__.
 
 
 RSparkling & SparklyR Configuration
@@ -544,8 +547,7 @@ If you are new to H2O for machine learning, we recommend you start with:
 - `Intro to H2O Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.R>`__
 - `H2O Grid Search & Model Selection Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/grid-search-model-selection.R>`__
 
-There is also number of other H2O R `tutorials <https://github.com/h2oai/h2o-tutorials>`__ and `demos <https://github.com/h2oai/h2o-3/tree/master/h2o-r/demos>`__ available,
-as well as the `H2O World 2015 Training Gitbook <http://learn.h2o.ai/content/>`__, and the `Machine Learning with R and
+There is also number of other H2O R `tutorials <https://github.com/h2oai/h2o-tutorials>`__, `demos <https://github.com/h2oai/h2o-3/tree/master/h2o-r/demos>`__ available, and the `Machine Learning with R and
 H2O Booklet (pdf) <http://docs.h2o.ai/h2o/latest-stable/h2o-docs/booklets/RBooklet.pdf>`__.
 
 
