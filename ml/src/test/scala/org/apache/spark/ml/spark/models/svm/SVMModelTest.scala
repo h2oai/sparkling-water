@@ -33,7 +33,7 @@ class SVMModelTest extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
-  ignore("Should score the same regression value.") {
+  test("Should score the same regression value.") {
     import sqlContext.implicits._
     val h2oContext = hc
     import h2oContext.implicits._
@@ -58,7 +58,7 @@ class SVMModelTest extends FunSuite with SharedH2OTestContext {
     // Learning parameters
     val parms = new SVMParameters
     parms._train = trainFrame
-    parms._response_column = 'Label
+    parms._response_column = "Label"
     parms._initial_weights = weightsFrame
 
     val svm = new SVM(parms, h2oContext)
