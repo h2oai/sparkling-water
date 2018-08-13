@@ -148,3 +148,9 @@ Frequently Asked Questions
         h2o_context.as_h2o_frame(dataframe, "Frame_Name", 200):
 
     The last parameter specifies the number of columns to sent for the preview.
+
+- I'm getting the following exception when trying to start PySparkling installed via ``pip``:
+  ``No matching distribution found for pyspark<=SUBST_SPARK_VERSION,>=UBST_SPARK_MAJOR_VERSION.0`` ``(from h2o-pysparkling-UBST_SPARK_MAJOR_VERSION==SUBST_SW_VERSION)``
+
+    h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION package now correctly requires PySpark package. If you want to use PySparkling from
+    installation from ``pip``, please also make sure to install `PySpark package <https://pypi.org/project/pyspark/>`__.
