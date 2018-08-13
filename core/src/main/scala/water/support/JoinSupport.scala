@@ -16,23 +16,30 @@
 */
 package water.support
 
-import org.apache.spark.h2o.Frame
+import water.fvec.Frame
 import water.munging.JoinMethod
 import water.rapids.Rapids
 
 /**
-  * A wrapper to call H2O Merge operation.
+  * Trait which contains methods for specific H2O join and merge operation.
   */
 trait JoinSupport {
 
   private val MERGE_RAPIDS: String = "(merge %s %s %s %s [] [] \"%s\")"
 
-  def join(left: Frame,
-           right: Frame,
+  /**
+    * Join H2O frames
+    * @param left left frame
+    * @param right right frame
+    * @param allX all X values
+    * @param allY all Y values
+    * @param method joining method
+    * @return
+    */
+  def join[T <: Frame](left: T,
+           right: T,
            allX: Boolean = false,
            allY: Boolean = false,
-           byX: Array[Int] = Array.empty[Int],
-           byY: Array[Int] = Array.empty[Int],
            method: JoinMethod = JoinMethod.AUTO
           ): Frame = {
     val rCode = String.format(MERGE_RAPIDS,
@@ -46,24 +53,52 @@ trait JoinSupport {
     ret.getFrame
   }
 
+  /**
+    * Left join two frames
+    * @param left left frame
+    * @param right right frame
+    * @param method joining method
+    * @return new frame
+    */
   def leftJoin(left: Frame,
                right: Frame,
                method: JoinMethod = JoinMethod.AUTO): Frame = {
     join(left, right, allX = true, allY = false, method = method)
   }
 
+  /**
+    * Right join two frames
+    * @param left left frame
+    * @param right right frame
+    * @param method joining method
+    * @return new frame
+    */
   def rightJoin(left: Frame,
                right: Frame,
                method: JoinMethod = JoinMethod.AUTO): Frame = {
     join(left, right, allX = false, allY = true, method = method)
   }
 
+  /**
+    * Inner join two frames
+    * @param left left frame
+    * @param right right frame
+    * @param method joining method
+    * @return new frame
+    */
   def innerJoin(left: Frame,
                 right: Frame,
                 method: JoinMethod = JoinMethod.AUTO): Frame = {
     join(left, right, allX = false, allY = false, method = method)
   }
 
+  /**
+    * Outer join two frames
+    * @param left left frame
+    * @param right right frame
+    * @param method joining method
+    * @return new frame
+    */
   def outerJoin(left: Frame,
                 right: Frame,
                 method: JoinMethod = JoinMethod.AUTO): Frame = {
@@ -73,5 +108,4 @@ trait JoinSupport {
   private def toStr(b: Boolean): String = if (b) "1" else "0"
 }
 
-object JoinSupport extends JoinSupport {
-}
+object JoinSupport extends JoinSupport {}
