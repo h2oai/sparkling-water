@@ -21,11 +21,11 @@ import hex.{Model, ModelMetrics}
 import water.fvec.Frame
 
 /**
-  * Interface to access different model metrics provided by H2O model.
+  * Trait to access different model metrics provided by H2O model.
   */
 trait ModelMetricsSupport {
 
-  /* Helper class to have nice API */
+  /** Helper class to have nice API. The purpose of this class is to fetch model metrics from the specified model */
   class ModelMetricsExtractor[T <: ModelMetrics] {
     def apply[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
     (model: Model[M, P, O], fr: Frame): T = {
@@ -37,6 +37,11 @@ trait ModelMetricsSupport {
     }
   }
 
+  /**
+    * Extract the model metrics from the specified model
+    * @tparam T Model Metrics Type
+    * @return model metrics
+    */
   def modelMetrics[T <: ModelMetrics] = new ModelMetricsExtractor[T]
 }
 
