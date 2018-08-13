@@ -67,6 +67,12 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
     new LongParam(this, name, getDoc(doc, name))
   }
 
+  def floatParam(name: String, doc: String): FloatParam = floatParam(name, Some(doc))
+
+  def floatParam(name: String, doc: Option[String] = None): FloatParam = {
+    new FloatParam(this, name, getDoc(doc, name))
+  }
+
   def doubleParam(name: String, doc: String): DoubleParam = doubleParam(name, Some(doc))
 
   def doubleParam(name: String, doc: Option[String] = None): DoubleParam = {
