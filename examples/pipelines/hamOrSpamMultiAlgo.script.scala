@@ -99,6 +99,10 @@ val algoStage = algo match {
       setSeed(1).
       setMaxRuntimeSecs(60). // 1 minutes
       setConvertUnknownCategoricalLevelsToNa(true)
+  case "xgboost" =>
+    new H2OXGBoost().
+      setFeaturesCols("tf_idf").
+      setPredictionsCol("label")
   case "grid_gbm" =>
     // Create Grid GBM Model
     import scala.collection.mutable.HashMap
