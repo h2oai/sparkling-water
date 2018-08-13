@@ -19,9 +19,7 @@ package org.apache.spark.ml.h2o.param
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.internal.Logging
-import org.apache.spark.ml.param.{Param, ParamPair, Params}
-import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import org.json4s.{JNull, JString, JValue}
+import org.apache.spark.ml.param.Params
 
 /**
   * A trait extracting a shared parameters among all models.
@@ -196,33 +194,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   }
 }
 
-class H2ODistributionParam private(parent: Params, name: String, doc: String, isValid: DistributionFamily => Boolean)
-  extends Param[DistributionFamily](parent, name, doc, isValid) {
+class H2ODistributionParam(parent: Params, name: String, doc: String, isValid: DistributionFamily => Boolean)
+  extends EnumParam[DistributionFamily](parent, name, doc) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-
-  /** Creates a param pair with the given value (for Java). */
-  override def w(value: DistributionFamily): ParamPair[DistributionFamily] = super.w(value)
-
-  override def jsonEncode(value: DistributionFamily): String = {
-    val encoded: JValue = if (value == null) {
-      JNull
-    } else {
-      JString(value.toString)
-    }
-    compact(render(encoded))
-  }
-
-  override def jsonDecode(json: String): DistributionFamily = {
-    val parsed = parse(json)
-    parsed match {
-      case JString(x) =>
-        DistributionFamily.valueOf(x)
-      case JNull =>
-        null
-      case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $parsed to DistributionFamily.")
-    }
-
-  }
 }
