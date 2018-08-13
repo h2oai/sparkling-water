@@ -31,12 +31,20 @@ trait SparklingWaterApp {
   @(transient @field @getter) val sqlContext: SQLContext
   @(transient @field @getter) val h2oContext: H2OContext
 
+  /**
+    * Create H2OFrame from specified data file
+    * @param datafile path to the file
+    * @return created H2O Frame
+    */
   def loadH2OFrame(datafile: String) = new H2OFrame(new java.net.URI(datafile))
 
+  /**
+    * Shutdown the application
+    */
   def shutdown(): Unit = {
     // Shutdown Spark
     sc.stop()
-    // Shutdown H2O explicitly (at least the driver)
+    // Shutdown H2O explicitly
     h2oContext.stop()
   }
 }

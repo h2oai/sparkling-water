@@ -25,7 +25,13 @@ import org.apache.spark.sql.SparkSession
   */
 trait SparkSessionSupport { self: SparkContextSupport =>
 
+  /**
+    * Spark Session reference
+    */
   @transient lazy val spark = SparkSession.builder().getOrCreate()
 
+  /**
+    * SqlContext reference
+    */
   @transient lazy val sqlContext = spark.sqlContext
 }
