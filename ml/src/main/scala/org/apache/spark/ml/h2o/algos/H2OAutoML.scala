@@ -396,12 +396,16 @@ trait H2OAutoMLParams extends Params {
   def setMaxModels(value: Int): this.type = set(maxModels, value)
 }
 
-class H2OAutoMLAlgosParam private(parent: Params, name: String, doc: String,
+class H2OAutoMLAlgosParam private[h2o](parent: Params, name: String, doc: String,
                                   isValid: Array[AutoML.algo] => Boolean)
-  extends EnumArrayParam[AutoML.algo](parent, name, doc) {
+  extends EnumArrayParam[AutoML.algo](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
 
-class H2OAutoMLStoppingMetricParam private(parent: Params, name: String, doc: String,
+class H2OAutoMLStoppingMetricParam private[h2o](parent: Params, name: String, doc: String,
                                            isValid: ScoreKeeper.StoppingMetric => Boolean)
-  extends EnumParam[ScoreKeeper.StoppingMetric](parent, name, doc) {
+  extends EnumParam[ScoreKeeper.StoppingMetric](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }

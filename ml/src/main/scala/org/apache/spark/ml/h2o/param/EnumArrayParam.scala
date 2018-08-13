@@ -16,21 +16,21 @@
 */
 package org.apache.spark.ml.h2o.param
 
-import ai.h2o.automl.AutoML
 import org.apache.spark.ml.param.{Param, ParamPair, Params}
 import org.json4s.JsonAST.JArray
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JString, JValue}
 
 import scala.collection.JavaConverters._
+import scala.reflect.{ClassTag, classTag}
 
-abstract class EnumArrayParam[T] private(parent: Params, name: String, doc: String, isValid: Array[T] => Boolean)
+abstract class EnumArrayParam[T: ClassTag](parent: Params, name: String, doc: String, isValid: Array[T] => Boolean)
   extends Param[Array[T]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 
   /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
-  def w(value: java.util.List[AutoML.algo]): ParamPair[Array[AutoML.algo]] = w(value.asScala.toArray)
+  def w(value: java.util.List[T]): ParamPair[Array[T]] = w(value.asScala.toArray)
 
   override def jsonEncode(value: Array[T]): String = {
     val encoded: JValue = if (value == null) {
@@ -46,15 +46,16 @@ abstract class EnumArrayParam[T] private(parent: Params, name: String, doc: Stri
       case JArray(values) =>
         values.map {
           case JString(x) =>
-            val method = classOf[T].getMethod("valueOf", classOf[String])
+            import scala.reflect._
+            val method = classTag[T].runtimeClass.getMethod("valueOf", classOf[String])
             method.invoke(null, x).asInstanceOf[T]
           case _ =>
-            throw new IllegalArgumentException(s"Cannot decode $json to ${classOf[T].getName}.")
-        }.toArray
+            throw new IllegalArgumentException(s"Cannot decode $json to ${classTag[T].runtimeClass.getName}.")
+        }.toArray.asInstanceOf[Array[T]]
       case JNull =>
         null
       case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to Array[${classOf[T].getName}].")
+        throw new IllegalArgumentException(s"Cannot decode $json to Array[${classTag[T].runtimeClass.getName}].")
     }
   }
 }

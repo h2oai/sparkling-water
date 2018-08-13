@@ -20,7 +20,9 @@ import org.apache.spark.ml.param.{Param, ParamPair, Params}
 import org.json4s.{JNull, JString, JValue}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 
-abstract class EnumParam[T] private(parent: Params, name: String, doc: String, isValid: T => Boolean)
+import scala.reflect.{ClassTag, classTag}
+
+abstract class EnumParam[T: ClassTag](parent: Params, name: String, doc: String, isValid: T => Boolean)
   extends Param[T](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
@@ -41,12 +43,12 @@ abstract class EnumParam[T] private(parent: Params, name: String, doc: String, i
     val parsed = parse(json)
     parsed match {
       case JString(x) =>
-        val method = classOf[T].getMethod("valueOf", classOf[String])
+        val method = classTag[T].runtimeClass.getMethod("valueOf", classOf[String])
         method.invoke(null, x).asInstanceOf[T]
       case JNull =>
         null.asInstanceOf[T]
       case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $parsed to ${classOf[T].getName}.")
+        throw new IllegalArgumentException(s"Cannot decode $parsed to ${classTag[T].runtimeClass.getName}.")
     }
 
   }

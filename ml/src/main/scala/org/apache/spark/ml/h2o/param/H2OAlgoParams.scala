@@ -194,6 +194,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   }
 }
 
-class H2ODistributionParam private(parent: Params, name: String, doc: String, isValid: DistributionFamily => Boolean)
+class H2ODistributionParam(parent: Params, name: String, doc: String, isValid: DistributionFamily => Boolean)
   extends EnumParam[DistributionFamily](parent, name, doc) {
+
+  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }

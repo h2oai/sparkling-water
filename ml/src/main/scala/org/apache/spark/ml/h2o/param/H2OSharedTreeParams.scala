@@ -183,6 +183,8 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
   }
 }
 
-class H2OHistogramTypeParam private(parent: Params, name: String, doc: String, isValid: HistogramType => Boolean)
+class H2OHistogramTypeParam(parent: Params, name: String, doc: String, isValid: HistogramType => Boolean)
   extends EnumParam[HistogramType](parent, name, doc){
+
+  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
