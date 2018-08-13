@@ -26,18 +26,14 @@ import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
-import org.apache.spark.ml.h2o.param.NullableStringParam
+import org.apache.spark.ml.h2o.param.{EnumArrayParam, EnumParam, NullableFloatArrayParam, NullableStringParam}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, SQLContext}
-import org.json4s.JsonAST.JArray
-import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import org.json4s.{JDouble, JNull, JString, JValue}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
-import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 /**
@@ -400,122 +396,12 @@ trait H2OAutoMLParams extends Params {
   def setMaxModels(value: Int): this.type = set(maxModels, value)
 }
 
-
-class H2OAutoMLAlgosParam private(parent: Params, name: String, doc: String, isValid: Array[AutoML.algo] => Boolean)
-  extends Param[Array[AutoML.algo]](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-
-  /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
-  def w(value: java.util.List[AutoML.algo]): ParamPair[Array[AutoML.algo]] = w(value.asScala.toArray)
-
-  override def jsonEncode(value: Array[AutoML.algo]): String = {
-    val encoded: JValue = if (value == null) {
-      JNull
-    } else {
-      JArray(value.map(algo => JString(algo.toString)).toList)
-    }
-    compact(render(encoded))
-  }
-
-
-  override def jsonDecode(json: String): Array[AutoML.algo] = {
-    parse(json) match {
-      case JArray(values) =>
-        values.map {
-          case JString(x) =>
-            AutoML.algo.valueOf(x)
-          case _ =>
-            throw new IllegalArgumentException(s"Cannot decode $json to AutoML.algo.")
-        }.toArray
-      case JNull =>
-        null
-      case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to Array[AutoML.algo].")
-    }
-  }
+class H2OAutoMLAlgosParam private(parent: Params, name: String, doc: String,
+                                  isValid: Array[AutoML.algo] => Boolean)
+  extends EnumArrayParam[AutoML.algo](parent, name, doc) {
 }
 
-class H2OAutoMLStoppingMetricParam private(parent: Params, name: String, doc: String, isValid: ScoreKeeper.StoppingMetric => Boolean)
-  extends Param[ScoreKeeper.StoppingMetric](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-
-  /** Creates a param pair with the given value (for Java). */
-  override def w(value: ScoreKeeper.StoppingMetric): ParamPair[ScoreKeeper.StoppingMetric] = super.w(value)
-
-  override def jsonEncode(value: ScoreKeeper.StoppingMetric): String = {
-    val encoded: JValue = if (value == null) {
-      JNull
-    } else {
-      JString(value.toString)
-    }
-    compact(render(encoded))
-  }
-
-  override def jsonDecode(json: String): ScoreKeeper.StoppingMetric = {
-    val parsed = parse(json)
-    parsed match {
-      case JString(x) =>
-        ScoreKeeper.StoppingMetric.valueOf(x)
-      case JNull =>
-        null
-      case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $parsed to ScoreKeeper.StoppingMetric.")
-    }
-
-  }
+class H2OAutoMLStoppingMetricParam private(parent: Params, name: String, doc: String,
+                                           isValid: ScoreKeeper.StoppingMetric => Boolean)
+  extends EnumParam[ScoreKeeper.StoppingMetric](parent, name, doc) {
 }
-
-class NullableFloatArrayParam(parent: Params, name: String, doc: String, isValid: Array[Float] => Boolean)
-  extends Param[Array[Float]](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) =
-    this(parent, name, doc, _ => true)
-
-  /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
-  def w(value: java.util.List[java.lang.Float]): ParamPair[Array[Float]] =
-    w(value.asScala.map(_.asInstanceOf[Float]).toArray)
-
-  override def jsonEncode(value: Array[Float]): String = {
-    if (value == null) {
-      compact(render(JNull))
-    } else {
-      import org.json4s.JsonDSL._
-      compact(render(value.toSeq.map {
-        case v if v.isNaN =>
-          JString("NaN")
-        case Float.NegativeInfinity =>
-          JString("-Inf")
-        case Float.PositiveInfinity =>
-          JString("Inf")
-        case v =>
-          JDouble(v)
-      }))
-    }
-  }
-
-  override def jsonDecode(json: String): Array[Float] = {
-    parse(json) match {
-      case JNull =>
-        null
-      case JArray(values) =>
-        values.map {
-          case JString("NaN") =>
-            Float.NaN
-          case JString("-Inf") =>
-            Float.NegativeInfinity
-          case JString("Inf") =>
-            Float.PositiveInfinity
-          case JDouble(x) =>
-            x.toFloat
-          case jValue =>
-            throw new IllegalArgumentException(s"Cannot decode $jValue to Float.")
-        }.toArray
-      case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to Array[Float].")
-    }
-  }
-}
-
-

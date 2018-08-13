@@ -18,9 +18,7 @@ package org.apache.spark.ml.h2o.param
 
 import hex.tree.SharedTreeModel.SharedTreeParameters
 import hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType
-import org.apache.spark.ml.param.{Param, ParamPair, Params}
-import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import org.json4s.{JNull, JString, JValue}
+import org.apache.spark.ml.param.Params
 
 trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
 
@@ -186,32 +184,5 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
 }
 
 class H2OHistogramTypeParam private(parent: Params, name: String, doc: String, isValid: HistogramType => Boolean)
-  extends Param[HistogramType](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-
-  /** Creates a param pair with the given value (for Java). */
-  override def w(value: HistogramType): ParamPair[HistogramType] = super.w(value)
-
-  override def jsonEncode(value: HistogramType): String = {
-    val encoded: JValue = if (value == null) {
-      JNull
-    } else {
-      JString(value.toString)
-    }
-    compact(render(encoded))
-  }
-
-  override def jsonDecode(json: String): HistogramType = {
-    val parsed = parse(json)
-    parsed match {
-      case JString(x) =>
-        HistogramType.valueOf(x)
-      case JNull =>
-        null
-      case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $parsed to HistogramType.")
-    }
-
-  }
+  extends EnumParam[HistogramType](parent, name, doc){
 }
