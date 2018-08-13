@@ -20,8 +20,25 @@ import hex.genmodel.utils.DistributionFamily
 import hex.tree.gbm.GBMModel
 import org.apache.spark.h2o._
 
+/**
+  * Support class to create and train GBM
+  */
 trait GBMSupport {
 
+  /**
+    * Create Gradient Boosting Model for the basic usage. This method exposes
+    * the basic configuration of the model. If you need to specify some arguments which are not exposed, please
+    * use the DeepLearning model via Sparkling Water pipelines API or using the raw java API
+    * @param train frame to train
+    * @param test test frame
+    * @param response response column
+    * @param modelId name of the model
+    * @param ntrees number of trees
+    * @param depth depth
+    * @param family distribution family
+    * @tparam T H2O Frame Type
+    * @return Gradient Boosting Model
+    */
   def GBMModel[T <: Frame](train: T, test: T, response: String,
                modelId: String = "model",
                ntrees: Int = 50,

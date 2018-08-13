@@ -16,15 +16,22 @@
 */
 package water.util
 
+/**
+  * This object is used to get and set log level defined in the H2O running on the current node
+  */
 object LogBridge {
 
   /**
     * Setup log level for H2O log sub system.
-    * @param levelIdx
+    * @param levelIdx log level specified by the index.
     */
   def setH2OLogLevel(levelIdx: Int): Unit = {
     water.util.Log._level = levelIdx
   }
 
+  /**
+    * Get the log level index
+    * @return index of the log level
+    */
   def getH2OLogLevel() = water.util.Log._level
 }

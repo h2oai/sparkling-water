@@ -17,6 +17,9 @@
 package water.munging;
 
 // FIXME: we need to put this into H2O !!!
+/**
+ * Enum which is used to specify the joining method
+ */
 public enum JoinMethod {
   AUTO("auto"),
   RADIX("radix"),
