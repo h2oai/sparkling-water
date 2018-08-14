@@ -20,8 +20,8 @@ package py_sparkling.ml.algos
 import hex.tree.xgboost.XGBoost
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.h2o.algos.H2OXGBoostParams
-import org.apache.spark.ml.util.Identifiable
+import org.apache.spark.ml.h2o.algos.{H2OAlgorithmReader, H2OXGBoostParams}
+import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 import org.apache.spark.sql.SQLContext
 import py_sparkling.ml.models.H2OMOJOModel
 import water.support.ModelSerializationSupport
@@ -49,3 +49,11 @@ class H2OXGBoost(parameters: Option[XGBoostParameters], override val uid: String
 }
 
 
+object H2OXGBoost extends MLReadable[H2OXGBoost] {
+
+  private final val defaultFileName = "xgboost_params"
+
+  override def read: MLReader[H2OXGBoost] = H2OAlgorithmReader.create[H2OXGBoost, XGBoostParameters](defaultFileName)
+
+  override def load(path: String): H2OXGBoost = super.load(path)
+}
