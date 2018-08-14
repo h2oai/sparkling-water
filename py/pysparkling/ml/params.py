@@ -797,7 +797,7 @@ class H2OXGBoostParams(H2OAlgorithmParams):
             return self._set(missingValuesHandling=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling.valueOf(correct_case_value))
         else:
             return self._set(missingValuesHandling=None)
-        
+
     def setNtrees(self, value):
         assert_is_type(value, int)
         return self._set(ntrees=value)
