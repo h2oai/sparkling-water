@@ -102,7 +102,8 @@ val algoStage = algo match {
   case "xgboost" =>
     new H2OXGBoost().
       setFeaturesCols("tf_idf").
-      setPredictionsCol("label")
+      setPredictionsCol("label").
+      setConvertUnknownCategoricalLevelsToNa(true)
   case "grid_gbm" =>
     // Create Grid GBM Model
     import scala.collection.mutable.HashMap

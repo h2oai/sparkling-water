@@ -602,3 +602,201 @@ class H2OAutoMLParams(Params):
     def setMaxModels(self, value):
         assert_is_type(value, int)
         return self._set(maxModels=value)
+
+
+class H2OXGBoostParams(H2OAlgorithmParams):
+
+    ##
+    # Param definitions
+    ##
+    quietMode = Param(Params._dummy(), "quietMode", "Quiet mode")
+    missingValuesHandling = Param(Params._dummy(), "missingValuesHandling", "Missing Values Handling")
+    ntrees = Param(Params._dummy(), "ntrees", "Number of trees")
+    nEstimators = Param(Params._dummy(), "nEstimators", "number of estimators")
+    maxDepth = Param(Params._dummy(), "maxDepth", "Maximal depth")
+    minRows = Param(Params._dummy(), "minRows", "Min rows")
+    minChildWeight = Param(Params._dummy(), "minChildWeight", "minimal child weight")
+    learnRate = Param(Params._dummy(), "learnRate", "learn rate")
+    eta = Param(Params._dummy(), "eta", "eta")
+    learnRateAnnealing = Param(Params._dummy(), "learnRateAnnealing", "Learn Rate Annealing")
+    sampleRate = Param(Params._dummy(), "sampleRate", "Sample rate")
+    subsample = Param(Params._dummy(), "subsample", "subsample")
+    colSampleRate = Param(Params._dummy(), "colSampleRate", "col sample rate")
+    colSampleByLevel = Param(Params._dummy(), "colSampleByLevel", "Col Sample By Level")
+    colSampleRatePerTree = Param(Params._dummy(), "colSampleRatePerTree", "col samle rate")
+    colsampleBytree = Param(Params._dummy(), "colsampleBytree", "col sample by tree")
+    maxAbsLeafnodePred = Param(Params._dummy(), "maxAbsLeafnodePred", "max abs lead node prediction")
+    maxDeltaStep = Param(Params._dummy(), "maxDeltaStep", "max delta step")
+    scoreTreeInterval = Param(Params._dummy(), "scoreTreeInterval", "score tree interval")
+    initialScoreInterval = Param(Params._dummy(), "initialScoreInterval", "Initial Score Interval")
+    scoreInterval = Param(Params._dummy(), "scoreInterval", "Score Interval")
+    minSplitImprovement = Param(Params._dummy(), "minSplitImprovement", "Min split improvement")
+    gamma = Param(Params._dummy(), "gamma", "gamma")
+    nthread = Param(Params._dummy(), "nthread", "nthread")
+    maxBins = Param(Params._dummy(), "maxBins", "nbins")
+    maxLeaves = Param(Params._dummy(), "maxLeaves", "max leaves")
+    minSumHessianInLeaf = Param(Params._dummy(), "minSumHessianInLeaf", "min sum hessian in leaf")
+    minDataInLeaf = Param(Params._dummy(), "minDataInLeaf", "min data in leaf")
+    treeMethod = Param(Params._dummy(), "treeMethod", "Tree Method")
+    growPolicy = Param(Params._dummy(), "growPolicy", "Grow Policy")
+    booster = Param(Params._dummy(), "booster", "Booster")
+    dmatrixType = Param(Params._dummy(), "dmatrixType", "DMatrix type")
+    regLambda = Param(Params._dummy(), "regLambda", "req lambda")
+    regAlpha = Param(Params._dummy(), "regAlpha", "req aplha")
+    sampleType = Param(Params._dummy(), "sampleType", "Dart Sample Type")
+    normalizeType = Param(Params._dummy(), "normalizeType", "Dart Normalize Type")
+    rateDrop = Param(Params._dummy(), "rateDrop", "rate drop")
+    oneDrop = Param(Params._dummy(), "oneDrop", "onde drop")
+    skipDrop = Param(Params._dummy(), "skipDrop", "skip drop")
+    gpuId = Param(Params._dummy(), "gpuId", "GPU id")
+    backend = Param(Params._dummy(), "backend", "Backend")
+
+    ##
+    # Getters
+    ##
+    def getQuietMode(self):
+        return self.getOrDefault(self.quietMode)
+
+    def getMissingValuesHandling(self):
+        return self.getOrDefault(self.missingValuesHandling)
+
+    def getNtrees(self):
+        return self.getOrDefault(self.ntrees)
+
+    def getNEstimators(self):
+        return self.getOrDefault(self.nEstimators)
+
+    def getMaxDepth(self):
+        return self.getOrDefault(self.maxDepth)
+
+    def getMinRows(self):
+        return self.getOrDefault(self.minRows)
+
+    def getMinChildWeight(self):
+        return self.getOrDefault(self.minChildWeight)
+
+    def getLearnRate(self):
+        return self.getOrDefault(self.learnRate)
+
+    def getEta(self):
+        return self.getOrDefault(self.eta)
+
+    def getLearnRateAnnealing(self):
+        return self.getOrDefault(self.learnRateAnnealing)
+
+    def getSampleRate(self):
+        return self.getOrDefault(self.sampleRate)
+
+    def getSubsample(self):
+        return self.getOrDefault(self.subsample)
+
+    def getColSampleRate(self):
+        return self.getOrDefault(self.colSampleRate)
+
+    def getColSampleByLevel(self):
+        return self.getOrDefault(self.colSampleByLevel)
+
+    def getColSampleRatePerTree(self):
+        return self.getOrDefault(self.colSampleRatePerTree)
+
+    def getColsampleBytree(self):
+        return self.getOrDefault(self.colsampleBytree)
+
+    def getMaxAbsLeafnodePred(self):
+        return self.getOrDefault(self.maxAbsLeafnodePred)
+
+    def getMaxDeltaStep(self):
+        return self.getOrDefault(self.maxDeltaStep)
+
+    def getScoreTreeInterval(self):
+        return self.getOrDefault(self.scoreTreeInterval)
+
+    def getInitialScoreInterval(self):
+        return self.getOrDefault(self.initialScoreInterval)
+
+    def getScoreInterval(self):
+        return self.getOrDefault(self.scoreInterval)
+
+    def getMinSplitImprovement(self):
+        return self.getOrDefault(self.minSplitImprovement)
+
+    def getGamma(self):
+        return self.getOrDefault(self.gamma)
+
+    def getNthread(self):
+        return self.getOrDefault(self.nthread)
+
+    def getMaxBins(self):
+        return self.getOrDefault(self.maxBins)
+
+    def getMaxLeaves(self):
+        return self.getOrDefault(self.maxLeaves)
+
+    def getMinSumHessianInLeaf(self):
+        return self.getOrDefault(self.minSumHessianInLeaf)
+
+    def getMinDataInLeaf(self):
+        return self.getOrDefault(self.minDataInLeaf)
+
+    def getTreeMethod(self):
+        return self.getOrDefault(self.treeMethod)
+
+    def getGrowPolicy(self):
+        return self.getOrDefault(self.growPolicy)
+
+    def getBooster(self):
+        return self.getOrDefault(self.booster)
+
+    def getDmatrixType(self):
+        return self.getOrDefault(self.dmatrixType)
+
+    def getRegLambda(self):
+        return self.getOrDefault(self.regLambda)
+
+    def getRegAlpha(self):
+        return self.getOrDefault(self.regAlpha)
+
+    def getSampleType(self):
+        return self.getOrDefault(self.sampleType)
+
+    def getNormalizeType(self):
+        return self.getOrDefault(self.normalizeType)
+
+    def getRateDrop(self):
+        return self.getOrDefault(self.rateDrop)
+
+    def getOneDrop(self):
+        return self.getOrDefault(self.oneDrop)
+
+    def getSkipDrop(self):
+        return self.getOrDefault(self.skipDrop)
+
+    def getGpuId(self):
+        return self.getOrDefault(self.gpuId)
+
+    def getBackend(self):
+        return self.getOrDefault(self.backend)
+
+
+    ##
+    # Setters
+    ##
+    def setEpochs(self, value):
+        assert_is_type(value, int, float)
+        return self._set(epochs=value)
+
+    def setL1(self, value):
+        assert_is_type(value, int, float)
+        return self._set(l1=value)
+
+    def setL2(self, value):
+        assert_is_type(value, int, float)
+        return self._set(l2=value)
+
+    def setHidden(self, value):
+        assert_is_type(value, [int])
+        return self._set(hidden=value)
+
+    def setReproducible(self, value):
+        assert_is_type(value, bool)
+        return self._set(reproducible=value)
