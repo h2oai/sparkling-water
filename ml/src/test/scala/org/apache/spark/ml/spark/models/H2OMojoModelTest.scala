@@ -120,7 +120,7 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
         .setNtrees(2)
         .setSeed(42)
         .setDistribution(DistributionFamily.bernoulli)
-        .setPredictionsCol("capsule")
+        .setPredictionCol("capsule")
 
     (inputDf, gbm.fit(inputDf))
   }
@@ -131,7 +131,7 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
         .setNtrees(2)
         .setSeed(42)
         .setDistribution(DistributionFamily.multinomial)
-        .setPredictionsCol("class")
+        .setPredictionCol("class")
 
     (inputDf, gbm.fit(inputDf))
   }
@@ -141,7 +141,7 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
     val gbm = new H2OGBM()(hc, sqlContext)
       .setNtrees(2)
       .setSeed(42)
-      .setPredictionsCol("capsule")
+      .setPredictionCol("capsule")
 
     (inputDf, gbm.fit(inputDf))
   }
@@ -151,7 +151,7 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
     val dl = new H2ODeepLearning()(hc, sqlContext)
       .setSeed(42)
       .setReproducible(true)
-      .setPredictionsCol("CAPSULE")
+      .setPredictionCol("CAPSULE")
 
     (inputDf, dl.fit(inputDf))
   }

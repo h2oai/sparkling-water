@@ -69,7 +69,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
       params._train = input._key
     }
 
-    params._response_column = getPredictionsCol()
+    params._response_column = getPredictionCol()
     val trainFrame = params._train.get()
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(trainFrame)
@@ -202,7 +202,7 @@ trait H2OGridSearchParams extends Params {
   def getHyperParameters() = $(hyperParameters)
 
   /** @group getParam */
-  def getPredictionsCol() = $(predictionCol)
+  def getPredictionCol() = $(predictionCol)
 
   /** @group getParam */
   def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
@@ -232,7 +232,7 @@ trait H2OGridSearchParams extends Params {
   def setHyperParameters(value: mutable.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.toMap)
 
       /** @group setParam */
-  def setPredictionsCol(value: String): this.type = set(predictionCol, value)
+  def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   /** @group setParam */
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)

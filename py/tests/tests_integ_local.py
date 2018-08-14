@@ -41,6 +41,14 @@ class LocalIntegTestSuite(unittest.TestCase):
         return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "dl")
         self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code "+str(return_code))
 
+    def test_pipeline_xgboost(self):
+        env = IntegTestEnv()
+        env.set_spark_master("local[*]")
+        env.conf("spark.ext.h2o.port.base", 63331)
+
+        return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "xgboost")
+        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code "+str(return_code))
+
     @unittest.skip("Skipping AutoML step due to bug in H2O - https://0xdata.atlassian.net/browse/PUBDEV-5613")
     def test_pipeline_automl(self):
         env = IntegTestEnv()

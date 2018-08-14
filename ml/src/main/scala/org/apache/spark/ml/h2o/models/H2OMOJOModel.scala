@@ -275,7 +275,7 @@ class H2OMOJOModelHelper[T<: H2OMOJOModel](implicit m: ClassTag[T]) extends MLRe
       newInstance(mojoData, uid).asInstanceOf[T]
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     sparkMojoModel.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))
-    sparkMojoModel.setPredictionsCol(mojoModel.getResponseName)
+    sparkMojoModel.setPredictionCol(mojoModel.getResponseName)
     sparkMojoModel
   }
 }

@@ -30,6 +30,13 @@ How to...
    h2oframe_as_data_source
    h2o_frame_from_key
 
+**Modelling**
+
+.. toctree::
+   :maxdepth: 2
+
+   sw_xgboost
+
 **Spark Pipelines**
 
 .. toctree::
