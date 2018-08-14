@@ -89,18 +89,18 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
   private final val minChildWeight = doubleParam("minChildWeight")
   private final val learnRate = doubleParam("learnRate")
   private final val eta = doubleParam("eta")
-  private final val learnRateAnnealing = doubleParam("learnRateAnnealing")
+  private final val learnRateAnnealing = doubleParam("learnRateAnnealing", "Learn Rate Annealing")
   private final val sampleRate = doubleParam("sampleRate")
   private final val subsample = doubleParam("subsample")
   private final val colSampleRate = doubleParam("colSampleRate")
-  private final val colSampleByLevel = doubleParam("colSampleByLevel")
+  private final val colSampleByLevel = doubleParam("colSampleByLevel", "Col Sample By Level")
   private final val colSampleRatePerTree = doubleParam("colSampleRatePerTree")
   private final val colsampleBytree = doubleParam("colsampleBytree")
   private final val maxAbsLeafnodePred = floatParam("maxAbsLeafnodePred")
   private final val maxDeltaStep = floatParam("maxDeltaStep")
   private final val scoreTreeInterval = intParam("scoreTreeInterval")
-  private final val initialScoreInterval = intParam("initialScoreInterval")
-  private final val scoreInterval = intParam("scoreInterval")
+  private final val initialScoreInterval = intParam("initialScoreInterval", "Initial Score Interval")
+  private final val scoreInterval = intParam("scoreInterval", "Score Interval")
   private final val minSplitImprovement = floatParam("minSplitImprovement")
   private final val gamma = floatParam("gamma")
   private final val nthread = intParam("nthread")
@@ -127,9 +127,9 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
   setDefault(
     quietMode -> true,
     missingValuesHandling -> null,
-    ntrees -> 50, // Number of trees in the final model. Grid Search, comma sep values:50,100,150,200
-    nEstimators -> 0,  // This doesn't seem to be used anywhere... (not in clients)
-    maxDepth -> 6, // Maximum tree depth. Grid Search, comma sep values:5,7
+    ntrees -> 50,
+    nEstimators -> 0,
+    maxDepth -> 6,
     minRows -> 1,
     minChildWeight -> 1,
     learnRate -> 0.3,
@@ -139,13 +139,13 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
     subsample -> 1.0,
     colSampleRate -> 1.0,
     colSampleByLevel -> 1.0,
-    colSampleRatePerTree -> 1.0, //fraction of columns to sample for each tree
+    colSampleRatePerTree -> 1.0,
     colsampleBytree -> 1.0,
     maxAbsLeafnodePred -> 0,
     maxDeltaStep -> 0,
-    scoreTreeInterval -> 0, // score every so many trees (no matter what)
-    initialScoreInterval -> 4000, //Adding this parameter to take away the hard coded value of 4000 for scoring the first  4 secs
-    scoreInterval -> 4000, //Adding this parameter to take away the hard coded value of 4000 for scoring each iteration every 4 secs
+    scoreTreeInterval -> 0,
+    initialScoreInterval -> 4000,
+    scoreInterval -> 4000,
     minSplitImprovement -> 0,
     gamma -> 0.0f,
     nthread -> -1,
