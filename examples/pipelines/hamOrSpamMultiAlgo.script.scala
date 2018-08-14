@@ -81,7 +81,7 @@ val algoStage = algo match {
       setTrainRatio(0.8).
       setSeed(1).
       setFeaturesCols("tf_idf").
-      setPredictionsCol("label")
+      setPredictionCol("label")
   case "dl" =>
     // Create H2ODeepLearning model
     new H2ODeepLearning().
@@ -91,18 +91,18 @@ val algoStage = algo match {
       setSeed(1).
       setHidden(Array[Int](200, 200)).
       setFeaturesCols("tf_idf").
-      setPredictionsCol("label")
+      setPredictionCol("label")
   case "automl" =>
     // Create H2OAutoML model
     new H2OAutoML().
-      setPredictionsCol("label").
+      setPredictionCol("label").
       setSeed(1).
       setMaxRuntimeSecs(60). // 1 minutes
       setConvertUnknownCategoricalLevelsToNa(true)
   case "xgboost" =>
     new H2OXGBoost().
       setFeaturesCols("tf_idf").
-      setPredictionsCol("label").
+      setPredictionCol("label").
       setConvertUnknownCategoricalLevelsToNa(true)
   case "grid_gbm" =>
     // Create Grid GBM Model
@@ -110,7 +110,7 @@ val algoStage = algo match {
     val hyperParams: HashMap[String, Array[AnyRef]] = HashMap()
     hyperParams += ("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
     new H2OGridSearch().
-      setPredictionsCol("label").
+      setPredictionCol("label").
       setHyperParameters(hyperParams).
       setParameters(new H2OGBM().setMaxDepth(30).setSeed(1))
 }

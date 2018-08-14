@@ -102,7 +102,7 @@ We can also set regular arguments using the ``setParameters`` call. In this case
     hyperParams += ("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
 
     val grid = new H2OGridSearch().
-      setPredictionsCol("label").
+      setPredictionCol("label").
       setHyperParameters(hyperParams).
       setParameters(new H2OGBM().setMaxDepth(30))
 
