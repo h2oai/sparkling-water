@@ -4,7 +4,7 @@ from pyspark.ml.wrapper import JavaEstimator
 from pyspark.sql import SparkSession
 
 from pysparkling import *
-from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams
+from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams
 from .models import H2OGBMModel, H2ODeepLearningModel, H2OAutoMLModel, H2OXGBoostModel
 
 java_max_double_value = (2-2**(-52))*(2**1023)
@@ -207,7 +207,9 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
 class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
     @keyword_only
-    def __init__(self, ):
+    def __init__(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+                 nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
+                 seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False):
         super(H2OXGBoost, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OXGBoost",
@@ -215,23 +217,24 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault()
+        self._setDefault(ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+                         nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
+                         seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"), convertUnknownCategoricalLevelsToNa=False)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, ):
+    def setParams(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
+                  seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False):
         kwargs = self._input_kwargs
 
-        if "stoppingMetric" in kwargs:
-            kwargs["stoppingMetric"] = self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf(kwargs["stoppingMetric"])
-
-        if "sortMetric" in kwargs:
-            kwargs["sortMetric"] = None
+        if "distribution" in kwargs:
+            kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
-        double_types = ["maxRuntimeSecs", "stoppingTolerance", "ratio", "maxAfterBalanceSize"]
+        double_types = ["ratio"]
         set_double_values(kwargs, double_types)
         return self._set(**kwargs)
 
