@@ -72,7 +72,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     }
     H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
-    spec.input_spec.response_column = getPredictionsCol()
+    spec.input_spec.response_column = getPredictionCol()
     spec.input_spec.fold_column = getFoldColumn()
     spec.input_spec.weights_column = getWeightsColumn()
     spec.input_spec.ignored_columns = getIgnoredColumns()
@@ -242,7 +242,7 @@ trait H2OAutoMLParams extends Params {
   // Getters
   //
   /** @group getParam */
-  def getPredictionsCol() = $(predictionCol)
+  def getPredictionCol() = $(predictionCol)
 
   /** @group getParam */
   def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
@@ -314,7 +314,7 @@ trait H2OAutoMLParams extends Params {
   // Setters
   //
   /** @group setParam */
-  def setPredictionsCol(value: String): this.type = set(predictionCol, value)
+  def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   /** @group setParam */
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
