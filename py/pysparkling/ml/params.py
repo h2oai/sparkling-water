@@ -786,7 +786,7 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(quietMode=value)
 
     def setMissingValuesHandling(self, value):
-        assert_is_type(value, Enum("MeanImputation", "Skip"))
+        assert_is_type(value, None, Enum("MeanImputation", "Skip"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling.values(), value)
         return self._set(missingValuesHandling=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling.valueOf(correct_case_value))
