@@ -63,12 +63,28 @@ def call(params, body) {
     }
 }
 
+def retryWithDelay(final int retries, final int delay, final Closure body) {
+    for (def i = 0; i < retries; i++) {
+        try {
+            body()
+            break
+        } catch (Exception e) {
+            if (i == (retries - 1)) {
+                throw e
+            }
+            script.sleep(delay)
+        }
+    }
+}
+
 def withDocker(config, code) {
     def image = 'opsh2oai/sparkling_water_tests:' + config.dockerVersion
-    withCredentials([usernamePassword(credentialsId: "docker.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
-      sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
-      sh "docker pull docker.h2o.ai/${image}"
-    }
+    retryWithDelay(3, 120,{
+        withCredentials([usernamePassword(credentialsId: "docker.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
+            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
+            sh "docker pull docker.h2o.ai/${image}"
+        }
+    })
     docker.image(image).inside("--init --dns 172.16.0.200") {
         sh "activate_java_7"
         code()
