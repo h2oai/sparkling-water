@@ -231,19 +231,33 @@ class ScriptPipelineHamOrSpamDL extends ScriptsTestHelper {
   }
 }
 
-  @RunWith(classOf[JUnitRunner])
-  class ScriptPipelineHamOrSpamAutoML extends ScriptsTestHelper {
-    override protected def beforeAll(): Unit = {
-      sparkConf = defaultConf.setMaster("local[*]")
-        .set("spark.driver.memory", "2G")
-        .set("spark.executor.memory", "2G")
-      super.beforeAll()
-    }
-
-    ignore("Ham or Spam AutoML Pipeline") {
-      HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "automl")
-    }
+@RunWith(classOf[JUnitRunner])
+class ScriptPipelineHamOrSpamXGBoost extends ScriptsTestHelper {
+  override protected def beforeAll(): Unit = {
+    sparkConf = defaultConf.setMaster("local[*]")
+      .set("spark.driver.memory", "2G")
+      .set("spark.executor.memory", "2G")
+    super.beforeAll()
   }
+
+  test("Ham or Spam DeepLearning Pipeline") {
+    HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "xgboost")
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class ScriptPipelineHamOrSpamAutoML extends ScriptsTestHelper {
+  override protected def beforeAll(): Unit = {
+    sparkConf = defaultConf.setMaster("local[*]")
+      .set("spark.driver.memory", "2G")
+      .set("spark.executor.memory", "2G")
+    super.beforeAll()
+  }
+
+  ignore("Ham or Spam AutoML Pipeline") {
+    HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "automl")
+  }
+}
 
 object HamOrSpamTester {
 

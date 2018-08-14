@@ -85,7 +85,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   def getTrainRatio() = $(ratio)
 
   /** @group getParam */
-  def getPredictionsCol() = $(predictionCol)
+  def getPredictionCol() = $(predictionCol)
 
   /** @group getParam */
   def getFeaturesCols() = {
@@ -131,7 +131,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   def setTrainRatio(value: Double): this.type = set(ratio, value)
 
   /** @group setParam */
-  def setPredictionsCol(value: String): this.type = set(predictionCol, value)
+  def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   /** @group setParam */
   def setFeaturesCols(first: String, others: String*): this.type = set(featuresCols, Array(first) ++ others)

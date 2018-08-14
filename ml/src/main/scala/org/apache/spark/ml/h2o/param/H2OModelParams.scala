@@ -64,7 +64,7 @@ trait H2OModelParams extends Params {
   def setFeaturesCols(cols: Array[String]): this.type = set(featuresCols, cols)
 
   /** @group setParam */
-  def setPredictionsCol(value: String): this.type = set(predictionCol, value)
+  def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   /** @group setParam */
   def setOutputCol(value: String): this.type = set(outputCol, value)

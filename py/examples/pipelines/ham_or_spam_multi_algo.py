@@ -6,7 +6,7 @@ from pyspark.ml.feature import HashingTF, RegexTokenizer, StopWordsRemover, IDF
 from pyspark.sql import SparkSession
 
 from pysparkling import *
-from pysparkling.ml import ColumnPruner, H2OGBM, H2ODeepLearning, H2OAutoML
+from pysparkling.ml import ColumnPruner, H2OGBM, H2ODeepLearning, H2OAutoML, H2OXGBoost
 
 # Determine which algorithm to use, if no specified as argument, gbm is used
 if len(sys.argv) != 2 or sys.argv[1] not in ["gbm", "dl", "automl"]:
@@ -81,7 +81,11 @@ elif algo == "automl":
                        maxModels=3,
                        seed=1,
                        predictionCol="label")
-
+elif algo == "xgboost":
+    ## Create H2OXGBoost model
+    algoStage = H2OXGBoost(convertUnknownCategoricalLevelsToNa=True,
+                           featuresCols=[idf.getOutputCol()],
+                           predictionCol="label")
 ## Remove all helper columns
 colPruner = ColumnPruner(columns=[idf.getOutputCol(), hashingTF.getOutputCol(), stopWordsRemover.getOutputCol(), tokenizer.getOutputCol()])
 

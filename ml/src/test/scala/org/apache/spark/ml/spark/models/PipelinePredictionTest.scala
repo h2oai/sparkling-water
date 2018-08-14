@@ -83,7 +83,7 @@ object TestPipelineUtils {
       setTrainRatio(0.8).
       setSeed(42).
       setFeaturesCols("tf_idf").
-      setPredictionsCol("label")
+      setPredictionCol("label")
 
     // Remove all intermediate columns
     val colPruner = new ColumnPruner().
