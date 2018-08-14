@@ -658,7 +658,7 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self.getOrDefault(self.quietMode)
 
     def getMissingValuesHandling(self):
-        return self.getOrDefault(self.missingValuesHandling)
+        return self.getOrDefault(self.missingValuesHandling).toString()
 
     def getNtrees(self):
         return self.getOrDefault(self.ntrees)
@@ -739,16 +739,16 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self.getOrDefault(self.minDataInLeaf)
 
     def getTreeMethod(self):
-        return self.getOrDefault(self.treeMethod)
+        return self.getOrDefault(self.treeMethod).toString()
 
     def getGrowPolicy(self):
-        return self.getOrDefault(self.growPolicy)
+        return self.getOrDefault(self.growPolicy).toString()
 
     def getBooster(self):
-        return self.getOrDefault(self.booster)
+        return self.getOrDefault(self.booster).toString()
 
     def getDmatrixType(self):
-        return self.getOrDefault(self.dmatrixType)
+        return self.getOrDefault(self.dmatrixType).toString()
 
     def getRegLambda(self):
         return self.getOrDefault(self.regLambda)
@@ -757,10 +757,10 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self.getOrDefault(self.regAlpha)
 
     def getSampleType(self):
-        return self.getOrDefault(self.sampleType)
+        return self.getOrDefault(self.sampleType).toString()
 
     def getNormalizeType(self):
-        return self.getOrDefault(self.normalizeType)
+        return self.getOrDefault(self.normalizeType).toString()
 
     def getRateDrop(self):
         return self.getOrDefault(self.rateDrop)
@@ -775,28 +775,189 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self.getOrDefault(self.gpuId)
 
     def getBackend(self):
-        return self.getOrDefault(self.backend)
+        return self.getOrDefault(self.backend).toString()
 
 
     ##
     # Setters
     ##
-    def setEpochs(self, value):
-        assert_is_type(value, int, float)
-        return self._set(epochs=value)
-
-    def setL1(self, value):
-        assert_is_type(value, int, float)
-        return self._set(l1=value)
-
-    def setL2(self, value):
-        assert_is_type(value, int, float)
-        return self._set(l2=value)
-
-    def setHidden(self, value):
-        assert_is_type(value, [int])
-        return self._set(hidden=value)
-
-    def setReproducible(self, value):
+    def setQuietMode(self, value):
         assert_is_type(value, bool)
-        return self._set(reproducible=value)
+        return self._set(quietMode=value)
+
+    def setMissingValuesHandling(self, value):
+        assert_is_type(value, Enum("MeanImputation", "Skip"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling.values(), value)
+        return self._set(missingValuesHandling=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling.valueOf(correct_case_value))
+
+    def setNtrees(self, value):
+        assert_is_type(value, int)
+        return self._set(ntrees=value)
+
+    def setNEstimators(self, value):
+        assert_is_type(value, int)
+        return self._set(nEstimators=value)
+
+    def setMaxDepth(self, value):
+        assert_is_type(value, int)
+        return self._set(maxDepth=value)
+
+    def setMinRows(self, value):
+        assert_is_type(value, int, float)
+        return self._set(minRows=value)
+
+    def setMinChildWeight(self, value):
+        assert_is_type(value, int, float)
+        return self._set(minChildWeight=value)
+
+    def setLearnRate(self, value):
+        assert_is_type(value, int, float)
+        return self._set(learnRate=value)
+
+    def setEta(self, value):
+        assert_is_type(value, int, float)
+        return self._set(eta=value)
+
+    def setLearnRateAnnealing(self, value):
+        assert_is_type(value, int, float)
+        return self._set(learnRateAnnealing=value)
+
+    def setSampleRate(self, value):
+        assert_is_type(value, int, float)
+        return self._set(sampleRate=value)
+
+    def setSubsample(self, value):
+        assert_is_type(value, int, float)
+        return self._set(subsample=value)
+
+    def setColSampleRate(self, value):
+        assert_is_type(value, int, float)
+        return self._set(colSampleRate=value)
+
+    def setColSampleByLevel(self, value):
+        assert_is_type(value, int, float)
+        return self._set(colSampleByLevel=value)
+
+    def setColSampleRatePerTree(self, value):
+        assert_is_type(value, int, float)
+        return self._set(colSampleRatePerTree=value)
+
+    def setColsampleBytree(self, value):
+        assert_is_type(value, int, float)
+        return self._set(colsampleBytree=value)
+
+    def setMaxAbsLeafnodePred(self, value):
+        assert_is_type(value, int, float)
+        return self._set(maxAbsLeafnodePred=value)
+
+    def setMaxDeltaStep(self, value):
+        assert_is_type(value, int, float)
+        return self._set(maxDeltaStep=value)
+
+    def setScoreTreeInterval(self, value):
+        assert_is_type(value, int)
+        return self._set(scoreTreeInterval=value)
+
+    def setInitialScoreInterval(self, value):
+        assert_is_type(value, int)
+        return self._set(initialScoreInterval=value)
+
+    def setScoreInterval(self, value):
+        assert_is_type(value, int)
+        return self._set(scoreInterval=value)
+
+    def setMinSplitImprovement(self, value):
+        assert_is_type(value, int, float)
+        return self._set(minSplitImprovement=value)
+
+    def setGamma(self, value):
+        assert_is_type(value, int, float)
+        return self._set(gamma=value)
+
+    def setNthread(self, value):
+        assert_is_type(value, int)
+        return self._set(nthread=value)
+
+    def setMaxBins(self, value):
+        assert_is_type(value, int)
+        return self._set(maxBins=value)
+
+    def setMaxLeaves(self, value):
+        assert_is_type(value, int)
+        return self._set(maxLeaves=value)
+
+    def setMinSumHessianInLeaf(self, value):
+        assert_is_type(value, int, float)
+        return self._set(minSumHessianInLeaf=value)
+
+    def setMinDataInLeaf(self, value):
+        assert_is_type(value, int, float)
+        return self._set(minDataInLeaf=value)
+
+    def setTreeMethod(self, value):
+        assert_is_type(value, Enum("auto", "exact", "approx", "hist"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.values(), value)
+        return self._set(treeMethod=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.valueOf(correct_case_value))
+
+    def setGrowPolicy(self, value):
+        assert_is_type(value, Enum("depthwise", "lossguide"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.values(), value)
+        return self._set(growPolicy=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.valueOf(correct_case_value))
+
+    def setBooster(self, value):
+        assert_is_type(value, Enum("gbtree", "gblinear", "dart"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.values(), value)
+        return self._set(booster=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.valueOf(correct_case_value))
+
+    def setDmatrixType(self, value):
+        assert_is_type(value, Enum("auto", "dense", "sparse"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.values(), value)
+        return self._set(dmatrixType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.valueOf(correct_case_value))
+
+    def setRegLambda(self, value):
+        assert_is_type(value, int, float)
+        return self._set(regLambda=value)
+
+    def setRegAlpha(self, value):
+        assert_is_type(value, int, float)
+        return self._set(regAlpha=value)
+
+    def setSampleType(self, value):
+        assert_is_type(value, Enum("uniform", "weighted"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.values(), value)
+        return self._set(sampleType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.valueOf(correct_case_value))
+
+    def setNormalizeType(self, value):
+        assert_is_type(value, Enum("tree", "forest"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.values(), value)
+        return self._set(normalizeType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.valueOf(correct_case_value))
+
+    def setRateDrop(self, value):
+        assert_is_type(value, int, float)
+        return self._set(rateDrop=value)
+
+    def setOneDrop(self, value):
+        assert_is_type(value, bool)
+        return self._set(oneDrop=value)
+
+    def setSkipDrop(self, value):
+        assert_is_type(value, int, float)
+        return self._set(skipDrop=value)
+
+    def setGpuId(self, value):
+        assert_is_type(value, int)
+        return self._set(gpuId=value)
+
+    def setBackend(self, value):
+        assert_is_type(value, Enum("auto", "gpu", "cpu"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.values(), value)
+        return self._set(backend=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf(correct_case_value))
+
