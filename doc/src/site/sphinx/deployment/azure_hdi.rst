@@ -38,14 +38,14 @@ Follow the steps below to create a new H2O Artificial Intelligence for Azure HDI
 5. On the **Credentials** tab, specify the following:
 
    - Cluster Login username and password. These are used to connect to your cluster.
-   - SSH Username and password. These are used to connect direcly to the VM present in the cluster.
+   - SSH Username and password. These are used to connect directly to the VM present in the cluster.
 
 6. On the **Data Source** tab, you can configure either a Blob Storage Account or a Data Lake Store. This is where your HDFS system will be located. 
 
   **Note**: Refer to the following links for more information about Blob Storage and the Data Lake Store:
 
   - `Blob Storage <https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-use-blob-storage>`__ for more information about Blob Storage
-  - `Data Lake Store <https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-process-data-lake-walkthrough>`__ for a walkthru describing the Data Lake Store
+  - `Data Lake Store <https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-process-data-lake-walkthrough>`__ for a walkthrough describing the Data Lake Store
 
 7. On the **Cluster Size** tab, select the number of workers nodes you want on your HDI Cluster. Note that you can resize your cluster any time after creation.
 
@@ -73,6 +73,6 @@ You are now ready to start building your H2O Models.
 Troubleshooting Tips
 ''''''''''''''''''''
 
-- If H2O Flow link doesn’t work and only shows the H2O documentation after the H2O cluster creation, clean your browser cache and try again.
+- If H2O Flow link does not work and only shows the H2O documentation after the H2O cluster creation, clean your browser cache and try again.
 - Make sure that the cluster has enough resources to allocate to your Spark application. Do not allocate more than 75% of the worker’s RAM to the spark application, otherwise it can fail.
 - For more information about the cluster available resources, go to **http://<ClusterName>.azurehdinsight.net**.
