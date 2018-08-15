@@ -1,7 +1,7 @@
 Train XGBoost Model in Sparkling Water
 --------------------------------------
 
-Sparkling Water provides API fro H2O XGBoost in both Scala and Python.
+Sparkling Water provides API for H2O XGBoost in both Scala and Python.
 The following sections describe how to train XGBoost model in Sparkling Water in both languages.
 
 Running XGBoost in Scala
@@ -88,13 +88,13 @@ XGBoost Memory Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 H2O XGBoost uses additionally to Java memory, off-heap memory. This means that it requires some additionally memory
-available on the System.
+available on the system.
 
 When running on YARN, please make sure to set the ``memoryOverhead`` so XGBoost has enough memory. On Spark, the following
 properties might be set
 
-- ``spark.yarn.am.memoryOverhead`` - in case of YARN Cluster deployment.
-- ``spark.yarn.driver.memoryOverhead`` - in case of YARN client and other deployment
+- ``spark.yarn.am.memoryOverhead`` - in case of YARN Cluster deployment
+- ``spark.yarn.driver.memoryOverhead`` - in case of YARN client and other deployments
 - ``spark.yarn.executor.memoryOverhead`` - in all deployment scenarios
 
 On YARN, the container size is determined by ``application_memory * memory_overhead``. Therefore, by specifying the

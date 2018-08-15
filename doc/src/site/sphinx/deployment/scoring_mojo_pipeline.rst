@@ -16,7 +16,7 @@ The H2OContext does not have to be created if you only want to run predictions o
 Preparing Your Environment
 ''''''''''''''''''''''''''
 
-Both PySparkling and Sparkling Water need to be started with some extra configurations in order to enable the MOJO scoring pipeline. Examples are provided below. Specifically, you must pass the path of the H2O Driverless AI license to the Spark ``--jars`` argument. Additionally, you need to add to the same ``--jars`` configuration path to the MOJO scoring pipeline implementation JAR file ``mojo2-runtime.jar``. This file is propriatory and is not part of the resulting Sparkling Water assembly JAR file.
+Both PySparkling and Sparkling Water need to be started with some extra configurations in order to enable the MOJO scoring pipeline. Examples are provided below. Specifically, you must pass the path of the H2O Driverless AI license to the Spark ``--jars`` argument. Additionally, you need to add to the same ``--jars`` configuration path to the MOJO scoring pipeline implementation JAR file ``mojo2-runtime.jar``. This file is proprietary and is not part of the resulting Sparkling Water assembly JAR file.
 
 **Note**: In Local Spark mode, please use ``--driver-class-path`` to specify path to the license file and the MOJO Pipeline JAR file.
 
