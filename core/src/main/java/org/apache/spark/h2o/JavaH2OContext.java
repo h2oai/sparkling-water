@@ -27,6 +27,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
 import scala.Option;
+import scala.Product;
 import water.Key;
 import water.fvec.Frame;
 import water.fvec.H2OFrame;
@@ -121,15 +122,12 @@ which is not nice.
     }
 
     /**
-     * Convert given H2O frame into a Product RDD type
+     * Convert given H2O frame into a RDD<Row>
      * @param fr the frame to be used
-     * @param <A> type of data being handled
      * @return a new RDD
      */
-     public <A> JavaRDD<A> asRDD(H2OFrame fr){
-        //TODO: Implement this conversion
-       //return hc.asRDD(fr, (RDD<A>)JavaSparkContext.fakeClassTag())
-        return null;
+     public JavaRDD<Row> asRDD(H2OFrame fr){
+         return hc.asDataFrame(fr, true, hc.sparkSession().sqlContext()).toJavaRDD();
     }
 
     /**
