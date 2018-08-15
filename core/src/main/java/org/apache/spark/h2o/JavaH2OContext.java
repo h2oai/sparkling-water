@@ -33,14 +33,13 @@ import water.fvec.H2OFrame;
 
 /**
  * A Java-friendly version of [[org.apache.spark.h2o.H2OContext]]
- * <p>
- * <p>
+ *
  * Sparkling Water can run in two modes. External cluster mode and internal cluster mode. When using external cluster
  * mode, it tries to connect to existing H2O cluster using the provided spark
  * configuration properties. In the case of internal cluster mode,it creates H2O cluster living in Spark - that means
  * that each Spark executor will have one h2o instance running in it.  This mode is not
  * recommended for big clusters and clusters where Spark executors are not stable.
- * <p>
+ *
  * Cluster mode can be set using the spark configuration
  * property spark.ext.h2o.mode which can be set in script starting sparkling-water or
  * can be set in H2O configuration class H2OConf
@@ -126,7 +125,7 @@ public class JavaH2OContext {
     }
 
     /**
-     * Convert given H2O frame into a RDD<Row>
+     * Convert given H2O frame into a RDD
      *
      * @param fr the frame to be used
      * @return a new RDD
