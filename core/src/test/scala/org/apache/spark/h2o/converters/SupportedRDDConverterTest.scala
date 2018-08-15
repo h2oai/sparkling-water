@@ -21,6 +21,7 @@ import java.sql.Timestamp
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata._
+import org.apache.spark.h2o.utils.H2OAsserts._
 import org.apache.spark.h2o.utils._
 import org.apache.spark.h2o.{ByteHolder, DoubleHolder, IntHolder, ShortHolder, StringHolder}
 import org.apache.spark.mllib.linalg.Vectors
@@ -28,11 +29,10 @@ import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import water.api.TestUtils
 import water.fvec.{H2OFrame, Vec}
 import water.parser.{BufferedString, Categorical}
 import water.support.H2OFrameSupport
-import H2OAsserts._
-import water.api.TestUtils
 
 /**
   * Testing schema for rdd  to h2o frame transformations.
@@ -454,11 +454,14 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     h2oFrame.delete()
   }
 
-  test("RDD[java.sql.Timestamp] to H2OFrame[Time]") {
+  test("RDD[java.sql.Timestamp] to H2OFrame[Time] and back") {
     // Create RDD with 100 Timestamp values, 10 values per 1 Spark partition
     val rdd = sc.parallelize(1 to 100, 10).map(v => new Timestamp(v.toLong))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
     assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
+
+    val rddBack = hc.asRDD[IntHolder](h2oFrame).map{r => new Timestamp(r.result.get)}
+    assert(rdd.collect().sameElements(rddBack.collect()))
     h2oFrame.delete()
   }
 
