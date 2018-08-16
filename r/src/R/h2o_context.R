@@ -12,11 +12,16 @@ h2o_context.spark_connection <- function(x, strict_version_check = TRUE) {
   hc <- invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x))
   conf = invoke(hc, "getConf")
   # Because of checks in Sparkling Water, we are sure context path starts with one slash
-  context_path_with_slash <- invoke(conf, "get", "spark.ext.h2o.context.path",  NA_character_)
+  context_path_with_slash <- invoke(conf, "get", "spark.ext.h2o.context.path",  "")
   context_path <- substring(context_path_with_slash, 2, nchar(context_path_with_slash))
   ip <- invoke(hc, "h2oLocalClientIp")
   port <- invoke(hc, "h2oLocalClientPort")
-  invisible(capture.output(h2o.init(ip = ip, port = port, context_path = context_path, strict_version_check = strict_version_check, startH2O=F)))
+  if (context_path == "") {
+    invisible(capture.output(h2o.init(ip = ip, port = port, strict_version_check = strict_version_check, startH2O=F)))
+  } else {
+    invisible(capture.output(h2o.init(ip = ip, port = port, context_path = context_path, strict_version_check = strict_version_check, startH2O=F)))
+
+  }
   hc
 }
 
