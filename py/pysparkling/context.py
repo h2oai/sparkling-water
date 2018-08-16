@@ -106,14 +106,15 @@ class H2OContext(object):
         self.is_initialized = False
 
     def __default_h2o_connect(h2o_context, **kwargs):
+        schema = h2o_context._jhc.h2oContext().getScheme(h2o_context._jhc.h2oContext()._conf())
+        https = False
+        if schema == "https":
+            https = True
         if h2o_context._conf.context_path() is not None:
-            schema = "http"
-            if "https" in kwargs:
-                schema = "https"
             url = "{}://{}:{}/{}".format(schema, h2o_context._client_ip, h2o_context._client_port, h2o_context._conf.context_path())
             return h2o.connect(url=url, **kwargs)
         else:
-            return h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port, **kwargs)
+            return h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port, https=https,**kwargs)
 
 
     @staticmethod

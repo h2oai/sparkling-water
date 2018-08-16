@@ -313,7 +313,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   }
 
   /** Open H2O Flow running in this client. */
-  def openFlow(): Unit = openURI(sparkContext, s"http://$h2oLocalClient")
+  def openFlow(): Unit = openURI(sparkContext, s"${getScheme(_conf)}://$h2oLocalClient")
 
   override def toString: String = {
     val basic =
@@ -327,7 +327,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
          |  ${h2oNodes.mkString("\n  ")}
          |  ------------------------
          |
-         |  Open H2O Flow in browser: http://$h2oLocalClient (CMD + click in Mac OSX)
+         |  Open H2O Flow in browser: ${getScheme(_conf)}://$h2oLocalClient (CMD + click in Mac OSX)
          |
     """.stripMargin
     val sparkYarnAppId = if (sparkContext.master.toLowerCase.startsWith("yarn")) {
