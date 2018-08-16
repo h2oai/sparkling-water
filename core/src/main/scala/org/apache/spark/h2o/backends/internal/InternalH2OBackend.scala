@@ -98,7 +98,9 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     } else {
       // In local mode we don't start h2o client and use standalone h2o mode right away. We need to set login configuration
       // in this case explicitly
-      h2oNodeArgs = h2oNodeArgs ++ getLoginArgs(hc.getConf) ++ addIfNotNull("-context_path", hc.getConf.contextPath.orNull)
+      val args = getH2OClientArgs(hc._conf)
+      args.indexOf("-client")
+      h2oNodeArgs = getH2OClientArgsLocalNode(hc._conf)
     }
     logDebug(s"Arguments used for launching h2o nodes: ${h2oNodeArgs.mkString(" ")}")
     val executors = InternalBackendUtils.startH2O(hc.sparkContext, spreadRDD, spreadRDDNodes.length, h2oNodeArgs, hc.getConf)
