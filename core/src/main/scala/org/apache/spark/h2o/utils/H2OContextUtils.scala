@@ -24,7 +24,7 @@ import java.util.Date
 import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.BuildInfo
+import org.apache.spark.h2o.{BuildInfo, H2OConf}
 import org.apache.spark.internal.Logging
 import water.H2O
 import water.fvec.Frame
@@ -50,6 +50,14 @@ private[spark] trait H2OContextUtils extends Logging {
       } else {
         logWarning(s"Desktop support is missing! Cannot open browser for $uri")
       }
+    }
+  }
+
+  def getScheme(hc: H2OConf) = {
+    if (hc.jks.isDefined && hc.jksPass.isDefined) {
+      "https"
+    } else {
+      "http"
     }
   }
 
