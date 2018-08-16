@@ -137,27 +137,28 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     }
   }
 
-  /**
-    * Get common arguments for H2O client.
-    *
-    * @return array of H2O client arguments.
-    */
-  def getH2OClientArgs(conf: H2OConf): Array[String] = (
+  def getH2OClientArgsLocalNode(conf: H2OConf): Array[String] = (
     getH2OCommonArgs(conf) ++ getLoginArgs(conf)
       ++ (if (!conf.clientVerboseOutput) Seq("-quiet") else Nil)
       ++ Seq("-log_level", if (conf.clientVerboseOutput) incLogLevel(conf.h2oClientLogLevel, "INFO") else conf.h2oClientLogLevel)
       ++ Seq("-log_dir", conf.h2oClientLogDir.get)
       ++ Seq("-baseport", conf.clientBasePort.toString)
-      ++ Seq("-client")
       ++ addIfNotNull("-context_path", conf.contextPath.orNull)
       ++ addIfNotNull("-flow_dir", conf.flowDir.orNull)
       ++ addIfNotNull("-ice_root", conf.clientIcedDir.orNull)
       ++ addIfNotNull("-port", Some(conf.clientWebPort).filter(_ > 0).map(_.toString).orNull)
       ++ addIfNotNull("-jks", conf.jks.orNull)
       ++ addIfNotNull("-jks_pass", conf.jksPass.orNull)
-      ++ addIfNotNull("-context_path", conf.contextPath.orNull)
       ++ conf.clientNetworkMask.map(mask => Seq("-network", mask)).getOrElse(Seq("-ip", conf.clientIp.get))
     ).toArray
+
+  /**
+    * Get common arguments for H2O client.
+    *
+    * @return array of H2O client arguments.
+    */
+  def getH2OClientArgs(conf: H2OConf): Array[String] = getH2OClientArgsLocalNode(conf) ++ Seq("-client")
+
 
   val TEMP_DIR_ATTEMPTS = 1000
 
