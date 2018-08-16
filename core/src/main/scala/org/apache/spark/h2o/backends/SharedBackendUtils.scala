@@ -46,7 +46,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     *
     * @param conf H2O Configuration to check
     * @return checked and updated configuration
-    * */
+    **/
   def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
 
@@ -76,6 +76,13 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
         "We recommend to disable them by\n" +
         "configuring `spark.sql.autoBroadcastJoinThreshold` variable to value `-1`:\n" +
         "sqlContext.sql(\"SET spark.sql.autoBroadcastJoinThreshold=-1\")")
+    }
+
+    if (conf.contextPath.isDefined) {
+      if (!conf.contextPath.get.startsWith("/")) {
+        logWarning("Context path does not start with mandatory \"/\", appending it.")
+        conf.setContextPath("/" + conf.contextPath.get)
+      }
     }
 
     conf
