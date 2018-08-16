@@ -112,7 +112,7 @@ class H2OContext(object):
             https = True
         if h2o_context._conf.context_path() is not None:
             url = "{}://{}:{}/{}".format(schema, h2o_context._client_ip, h2o_context._client_port, h2o_context._conf.context_path())
-            return h2o.connect(url=url, **kwargs)
+            return h2o.connect(url=url, https=https, **kwargs)
         else:
             return h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port, https=https,**kwargs)
 
