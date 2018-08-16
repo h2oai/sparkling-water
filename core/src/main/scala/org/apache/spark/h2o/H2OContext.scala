@@ -118,8 +118,8 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
         s" a bug in Spark dependency resolution.")
     }
 
-    if (conf.isInternalSecureConnectionsEnabled) {
-      Security.enableSSL(sparkSession, conf)
+    if (_conf.isInternalSecureConnectionsEnabled) {
+      Security.enableSSL(sparkSession, _conf)
     }
 
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
@@ -127,7 +127,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     val nodes = backend.init()
     // Fill information about H2O client and H2O nodes in the cluster
     h2oNodes.append(nodes: _*)
-    localClientIp = if (conf.ignoreSparkPublicDNS) {
+    localClientIp = if (_conf.ignoreSparkPublicDNS) {
       H2O.getIpPortString.split(":")(0)
     } else {
       sys.env.getOrElse("SPARK_PUBLIC_DNS", H2O.getIpPortString.split(":")(0))
@@ -135,9 +135,9 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
 
     localClientPort = H2O.API_PORT
     // Register UI, but not in Databricks as Databricks is not using standard Spark UI API
-    if (conf.getBoolean("spark.ui.enabled", true) && !isRunningOnDatabricks()) {
+    if (_conf.getBoolean("spark.ui.enabled", true) && !isRunningOnDatabricks()) {
       val kvStore = sparkContext.statusStore.store.asInstanceOf[ElementTrackingStore]
-      val listener = new AppStatusListener(sparkContext.conf, kvStore, live = true)
+      val listener = new AppStatusListener(_conf.sparkConf, kvStore, live = true)
       //sparkContext.listenerBus.addToStatusQueue(listener)
       sparkContext.addSparkListener(listener)
       val statusStore = new AppStatusStore(kvStore, Some(listener))
@@ -276,7 +276,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     SparkDataFrameConverter.toDataFrame(this, new H2OFrame(s), copyMetadata)
 
   /** Returns location of REST API of H2O client */
-  def h2oLocalClient = this.localClientIp + ":" + this.localClientPort + conf.contextPath.getOrElse("")
+  def h2oLocalClient = this.localClientIp + ":" + this.localClientPort + _conf.contextPath.getOrElse("")
 
   /** Returns IP of H2O client */
   def h2oLocalClientIp = this.localClientIp
