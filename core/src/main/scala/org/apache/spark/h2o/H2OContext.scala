@@ -117,8 +117,8 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
         s" a bug in Spark dependency resolution.")
     }
 
-    if (conf.isInternalSecureConnectionsEnabled) {
-      Security.enableSSL(sparkSession, conf)
+    if (_conf.isInternalSecureConnectionsEnabled) {
+      Security.enableSSL(sparkSession, _conf)
     }
 
     sparkContext.addSparkListener(sparklingWaterListener)
@@ -127,7 +127,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     val nodes = backend.init()
     // Fill information about H2O client and H2O nodes in the cluster
     h2oNodes.append(nodes: _*)
-    localClientIp = if (conf.ignoreSparkPublicDNS) {
+    localClientIp = if (_conf.ignoreSparkPublicDNS) {
       sparkContext.env.rpcEnv.address.host
     } else {
       sys.env.getOrElse("SPARK_PUBLIC_DNS", sparkContext.env.rpcEnv.address.host)
@@ -135,7 +135,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
 
     localClientPort = H2O.API_PORT
     // Register UI, but not in Databricks as Databricks is not using standard Spark UI API
-    if (conf.getBoolean("spark.ui.enabled", true) && !isRunningOnDatabricks()) {
+    if (_conf.getBoolean("spark.ui.enabled", true) && !isRunningOnDatabricks()) {
       new SparklingWaterUITab(sparklingWaterListener, sparkContext.ui.get)
     }
 
@@ -272,7 +272,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     SparkDataFrameConverter.toDataFrame(this, new H2OFrame(s), copyMetadata)
 
   /** Returns location of REST API of H2O client */
-  def h2oLocalClient = this.localClientIp + ":" + this.localClientPort
+  def h2oLocalClient = this.localClientIp + ":" + this.localClientPort + _conf.contextPath.getOrElse("")
 
   /** Returns IP of H2O client */
   def h2oLocalClientIp = this.localClientIp
