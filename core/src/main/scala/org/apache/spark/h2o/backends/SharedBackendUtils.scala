@@ -82,6 +82,14 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       if (!conf.contextPath.get.startsWith("/")) {
         logWarning("Context path does not start with mandatory \"/\", appending it.")
         conf.setContextPath("/" + conf.contextPath.get)
+      } else {
+        // Check if it starts with exactly one "/"
+        val pattern = "^//(/*)".r
+        if (pattern.findFirstIn(conf.contextPath.get).isDefined) {
+          logWarning("Context path contains multiple starting \"/\", it can contain only one. Replacing with one" +
+            " slash")
+          conf.setContextPath(pattern.replaceFirstIn(conf.contextPath.get, ""))
+        }
       }
     }
 
