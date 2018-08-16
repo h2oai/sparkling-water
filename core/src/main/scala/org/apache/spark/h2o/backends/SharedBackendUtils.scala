@@ -88,7 +88,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
         if (pattern.findFirstIn(conf.contextPath.get).isDefined) {
           logWarning("Context path contains multiple starting \"/\", it can contain only one. Replacing with one" +
             " slash")
-          conf.setContextPath(pattern.replaceFirstIn(conf.contextPath.get, ""))
+          conf.setContextPath(pattern.replaceFirstIn(conf.contextPath.get, "/"))
         }
       }
     }
