@@ -276,7 +276,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     SparkDataFrameConverter.toDataFrame(this, new H2OFrame(s), copyMetadata)
 
   /** Returns location of REST API of H2O client */
-  def h2oLocalClient = this.localClientIp + ":" + this.localClientPort
+  def h2oLocalClient = this.localClientIp + ":" + this.localClientPort + conf.contextPath.getOrElse("")
 
   /** Returns IP of H2O client */
   def h2oLocalClientIp = this.localClientIp
