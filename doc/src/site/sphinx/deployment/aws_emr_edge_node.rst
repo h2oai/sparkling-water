@@ -6,7 +6,7 @@ from the edge node which has several security and other benefits.
 
 In order to start Sparkling Water from the Edge node (for example, different EC2 machine), please make sure that:
 
-- You are able to submit Spark Jobs from the edge node first
+- You are able to submit Spark Jobs from the edge node first.
 - You are starting Sparkling Water with ``spark.ext.h2o.client.ignore.SPARK_PUBLIC_DNS=true`` configuration.
   This configuration ensures that the H2O client will ignore ``SPARK_PUBLIC_DNS`` configuration on the client side which
   is required for the correct cloud formation. The ``SPARK_PUBLIC_DNS`` is still being applied as expected to all Spark
