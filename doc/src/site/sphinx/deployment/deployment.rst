@@ -15,6 +15,7 @@ Deployment
    :maxdepth: 2
 
    aws_emr
+   aws_emr_edge_node
 
 **Databricks**
 
