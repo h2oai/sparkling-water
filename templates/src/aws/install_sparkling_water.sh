@@ -7,22 +7,20 @@ set -x -e
 #
 ##############################
 
-## Python installations and libraries needed on the worker roles in order to get PySparkling working
-
-sudo python -m pip install --upgrade pip
-sudo python -m pip install --upgrade colorama
+## Python installations and libraries needed on the worker roles in order to get Sparkling Water & PySparkling working
+sudo python -m pip install --upgrade pip==9.0.3
+sudo python -m pip install --upgrade colorama==0.3.9
 
 sudo ln -sf /usr/local/bin/pip2.7 /usr/bin/pip
 
-#mkdir -p /home/h2o
+# Install PySparkling Dependencies
+sudo python -m pip install -U requests
+sudo python -m pip install -U tabulate
+sudo python -m pip install -U future
+sudo python -m pip install -U six
 
-sudo pip install -U requests
-sudo pip install -U tabulate
-sudo pip install -U future
-sudo pip install -U six
-
-#Scikit Learn on the nodes
-sudo pip install -U scikit-learn
+# Install Scikit Learn
+sudo python -m pip install -U scikit-learn
 
 mkdir -p /home/hadoop/h2o
 cd /home/hadoop/h2o
@@ -36,4 +34,3 @@ unzip -o sparkling-water-SUBST_MAJOR_VERSION.SUBST_MINOR_VERSION.zip 1> /dev/nul
 wait
 
 export MASTER="yarn-client"
-
