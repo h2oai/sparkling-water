@@ -167,6 +167,10 @@ Configuration properties independent of selected backend
 |                                                    |                | between client and rest of the cluster |
 |                                                    |                | remain open.                           |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.client.flow.baseurl.override``     | ``None``       | Allows to override the base URL        |
+|                                                    |                | address of Flow UI, including the      |
+|                                                    |                | scheme, which is showed to the user.   |
++----------------------------------------------------+----------------+----------------------------------------+
 
 --------------
 

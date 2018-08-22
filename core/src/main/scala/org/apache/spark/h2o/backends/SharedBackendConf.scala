@@ -74,6 +74,7 @@ trait SharedBackendConf {
   def clientNetworkMask = sparkConf.getOption(PROP_CLIENT_NETWORK_MASK._1)
   def ignoreSparkPublicDNS = sparkConf.getBoolean(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._2)
   def clientWebEnabled = sparkConf.getBoolean(PROP_CLIENT_ENABLE_WEB._1, PROP_CLIENT_ENABLE_WEB._2)
+  def clientFlowBaseurlOverride = sparkConf.getOption(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1)
 
   def runsInExternalClusterMode: Boolean = backendClusterMode.toLowerCase() == "external"
   def runsInInternalClusterMode: Boolean = !runsInExternalClusterMode
@@ -168,6 +169,8 @@ trait SharedBackendConf {
 
   def setClientWebEnabled() = set(PROP_CLIENT_ENABLE_WEB._1, true)
   def setClientWebDisabled() = set(PROP_CLIENT_ENABLE_WEB._1, false)
+
+  def setClientFlowBaseurlOverride(baseUrl: String) = set(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1, baseUrl)
 
   private[this] def setBackendClusterMode(backendClusterMode: String) = {
     set(PROP_BACKEND_CLUSTER_MODE._1, backendClusterMode)
@@ -264,7 +267,7 @@ object SharedBackendConf {
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)
-  
+
   /** IP of H2O client node */
   val PROP_CLIENT_IP = ("spark.ext.h2o.client.ip", None)
 
@@ -297,4 +300,10 @@ object SharedBackendConf {
     * on the client node just restricts everybody from accessing flow, the internal ports
     * between client and rest of the cluster remain open*/
   val PROP_CLIENT_ENABLE_WEB = ("spark.ext.h2o.client.enable.web", true)
+
+  /**
+    * Allows to override the base URL address of Flow UI, including the scheme, which is showed
+    * to the user.
+    */
+  val PROP_CLIENT_FLOW_BASEURL_OVERRIDE = ("spark.ext.h2o.client.flow.baseurl.override", None)
 }
