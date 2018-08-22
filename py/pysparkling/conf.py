@@ -240,6 +240,10 @@ class H2OConf(object):
         self._jconf.setClientWebDisabled()
         return self
 
+    def set_client_flow_baseurl_override(self, value):
+        self._jconf.setClientFlowBaseurlOverride(value)
+        return self
+
     # setters for internal backend
 
     def set_flatfile_enabled(self):
@@ -515,6 +519,9 @@ class H2OConf(object):
 
     def client_web_enabled(self):
         return self._jconf.clientWebEnabled()
+
+    def client_flow_baseurl_override(self):
+        return self._get_option(self._jconf.clientFlowBaseurlOverride())
 
     # Getters for internal backend
 
