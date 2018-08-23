@@ -1,3 +1,5 @@
+.. _kerberos_auth:
+
 Enabling Kerberos Authentication
 --------------------------------
 
