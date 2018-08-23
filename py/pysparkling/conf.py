@@ -398,6 +398,14 @@ class H2OConf(object):
         self._jconf.setKillOnUnhealthyClusterInterval(interval)
         return self
 
+    def set_kerberos_principal(self, principal):
+        self._jconf.setKerberosPrincipal(principal)
+        return self
+
+    def set_kerberos_keytab(self, path):
+        self._jconf.setKerberosKeytab(path)
+        return self
+
 # getters independent on backend
 
     def backend_cluster_mode(self):
@@ -619,6 +627,12 @@ class H2OConf(object):
 
     def kill_on_unhealthy_cluster_interval(self):
         return self._jconf.killOnUnhealthyClusterInterval()
+
+    def kerberos_principal(self):
+        return self._get_option(self._jconf.kerberosPrincipal())
+
+    def kerberos_keytab(self):
+        return self._get_option(self._jconf.kerberosKeytab())
 
     def set(self, key, value):
         self._jconf.set(key, value)
