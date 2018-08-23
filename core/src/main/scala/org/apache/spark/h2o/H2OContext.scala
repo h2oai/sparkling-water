@@ -313,7 +313,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   }
 
   def flowURL() = if (_conf.clientFlowBaseurlOverride.isDefined) {
-    _conf.clientFlowBaseurlOverride.get
+    _conf.clientFlowBaseurlOverride.get + _conf.contextPath.getOrElse("")
   } else {
     s"${getScheme(_conf)}://$h2oLocalClient"
   }
