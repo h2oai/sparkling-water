@@ -120,6 +120,9 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     if (_conf.isInternalSecureConnectionsEnabled) {
       Security.enableSSL(sparkSession, _conf)
     }
+    if(conf.autoFlowSsl) {
+      Security.enableFlowSSL(sparkSession, conf)
+    }
 
     sparkContext.addSparkListener(sparklingWaterListener)
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
