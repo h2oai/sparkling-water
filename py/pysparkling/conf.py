@@ -132,6 +132,14 @@ class H2OConf(object):
         self._jconf.setSslConf(path)
         return self
 
+    def set_auto_flow_ssl_enabled(self):
+        self._jconf.setAutoFlowSslEnabled()
+        return self
+
+    def set_auto_flow_ssl_disabled(self):
+        self._jconf.setAutoFlowSslDisabled()
+        return self
+
     def set_h2o_node_log_level(self, level):
         self._jconf.setH2ONodeLogLevel(level)
         return self
@@ -461,6 +469,9 @@ class H2OConf(object):
 
     def ssl_conf(self):
         return self._get_option(self._jconf.sslConf())
+
+    def auto_flow_ssl(self):
+        return self._jconf.autoFlowSsl()
 
     def h2o_node_log_level(self):
         return self._jconf.h2oNodeLogLevel()
