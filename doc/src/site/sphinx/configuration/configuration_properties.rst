@@ -74,6 +74,10 @@ Configuration properties independent of selected backend
 |                                                    |                | Sparkling Water internal security      |
 |                                                    |                | configuration.                         |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.auto.flow.ssl``                    | ``false``      | Automatically generate the required    |
+|                                                    |                | key store and password to secure H2O   |
+|                                                    |                | flow by SSL.                           |
++----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.node.log.level``                   | ``INFO``       | H2O internal log level used for H2O    |
 |                                                    |                | nodes except the client.               |
 +----------------------------------------------------+----------------+----------------------------------------+

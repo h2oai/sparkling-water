@@ -18,8 +18,8 @@ package org.apache.spark.network
 
 import java.io.File
 
-import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
@@ -40,7 +40,11 @@ object Security extends Logging {
 
   def enableSSL(spark: SparkSession): Unit = enableSSL(spark, spark.sparkContext.conf)
 
-
+  def enableFlowSSL(spark: SparkSession, conf: H2OConf) = {
+    val sslPair = SecurityUtils.generateSSLPair()
+    conf.set(SharedBackendConf.PROP_JKS._1, if (sslPair.jks.path.isEmpty) sslPair.jks.name else sslPair.jks.path + File.separator + sslPair.jks.name)
+    conf.set(SharedBackendConf.PROP_JKS_PASS._1, sslPair.jks.pass)
+  }
   def enableSSL(sc: SparkContext, conf: SparkConf): Unit = {
     logWarning("Method Security.enableSSL with an argument of type SparkContext is deprecated and " +
       "parameter of type SparkSession is preferred.")

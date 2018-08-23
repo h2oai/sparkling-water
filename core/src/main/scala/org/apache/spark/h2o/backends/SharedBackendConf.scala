@@ -50,6 +50,7 @@ trait SharedBackendConf {
   def loginConf = sparkConf.getOption(PROP_LOGIN_CONF._1)
   def userName = sparkConf.getOption(PROP_USER_NAME._1)
   def sslConf = sparkConf.getOption(PROP_SSL_CONF._1)
+  def autoFlowSsl = sparkConf.getBoolean(PROP_AUTO_SSL_FLOW._1, PROP_AUTO_SSL_FLOW._2)
   def h2oNodeLogLevel = sparkConf.get(PROP_NODE_LOG_LEVEL._1, PROP_NODE_LOG_LEVEL._2)
   def h2oNodeLogDir  = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
   def uiUpdateInterval = sparkConf.getInt(PROP_UI_UPDATE_INTERVAL._1, PROP_UI_UPDATE_INTERVAL._2)
@@ -131,6 +132,10 @@ trait SharedBackendConf {
   }
   def setUserName(username: String) = set(PROP_USER_NAME._1, username)
   def setSslConf(path: String) = set(PROP_SSL_CONF._1, path)
+
+  def setAutoFlowSslEnabled() = set(PROP_AUTO_SSL_FLOW._1, true)
+  def setAutoFlowSslDisabled() = set(PROP_AUTO_SSL_FLOW._1, false)
+
   def setH2ONodeLogLevel(level: String) = set(PROP_NODE_LOG_LEVEL._1, level)
   def setH2ONodeLogDir(dir: String) = set(PROP_NODE_LOG_DIR._1, dir)
   def setUiUpdateInterval(interval: Int) = set(PROP_UI_UPDATE_INTERVAL._1, interval.toString)
@@ -229,8 +234,11 @@ object SharedBackendConf {
   /** Override user name for cluster. */
   val PROP_USER_NAME = ("spark.ext.h2o.user.name", None)
 
-  /** Path to Java KeyStore file. */
+  /** Path to Java KeyStore file used for the internal SSL communication. */
   val PROP_SSL_CONF = ("spark.ext.h2o.internal_security_conf", None)
+
+  /** Automatically generate key store for H2O Flow SSL */
+  val PROP_AUTO_SSL_FLOW = ("spark.ext.h2o.auto.flow.ssl", false)
 
   /** H2O internal log level for launched remote nodes. */
   val PROP_NODE_LOG_LEVEL = ("spark.ext.h2o.node.log.level", "INFO")
