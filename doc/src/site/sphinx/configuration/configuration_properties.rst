@@ -312,6 +312,10 @@ External backend configuration properties
 |                                                       | ead.TIMEOUT    | for the decision whether to kill    |
 |                                                       | * 3``          | the cloud or not.                   |
 +-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.external.kerberos.principal``         | ``None``       | Kerberos Principal.                 |
++-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.external.kerberos.keytab``            | ``None``       | Kerberos Keytab.                    |
++-------------------------------------------------------+----------------+-------------------------------------+
 
 --------------
 
