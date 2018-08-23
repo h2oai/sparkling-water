@@ -107,6 +107,11 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       cmdToLaunch = cmdToLaunch ++ loginArgs
     }
 
+    if (hc.getConf.kerberosKeytab.isDefined && hc.getConf.kerberosPrincipal.isDefined) {
+      cmdToLaunch = cmdToLaunch ++ Seq("-principal",
+        hc.getConf.kerberosPrincipal.get, "-keytab", hc.getConf.kerberosKeytab.get)
+    }
+
     // start external H2O cluster and log the output
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
 
@@ -251,7 +256,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     // Stop h2o when running standalone pysparkling scripts, only in client deploy mode
     //, so the user does not need explicitly close h2o.
     // In driver mode the application would call exit which is handled by Spark AM as failure
-    if(hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
+    if (hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
       H2O.exit(0)
     }
   }
@@ -286,6 +291,36 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
       if (conf.clusterInfoFile.isEmpty) {
         conf.setClusterConfigFile("notify_" + conf.cloudName.get)
+      }
+
+      if (hc.sparkContext.conf.getOption("spark.yarn.principal").isDefined &&
+        conf.kerberosPrincipal.isEmpty) {
+        Log.info(s"spark.yarn.principal provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} is" +
+          s" not set. Passing the configuration to H2O.")
+        conf.setKerberosPrincipal(hc.sparkContext.conf.get("spark.yarn.principal"))
+      }
+
+      if (hc.sparkContext.conf.getOption("spark.yarn.keytab").isDefined &&
+        conf.kerberosKeytab.isEmpty) {
+        Log.info(s"spark.yarn.keytab provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} is" +
+          s" not set. Passing the configuration to H2O.")
+        conf.setKerberosKeytab(hc.sparkContext.conf.get("spark.yarn.keytab"))
+      }
+
+      if (conf.kerberosKeytab.isDefined && conf.kerberosPrincipal.isEmpty) {
+        throw new IllegalArgumentException(
+          s"""
+             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
+             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1}
+          """.stripMargin)
+      } else if (conf.kerberosPrincipal.isDefined && conf.kerberosKeytab.isEmpty) {
+        throw new IllegalArgumentException(
+          s"""
+             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
+             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1}
+          """.stripMargin)
       }
 
     } else {

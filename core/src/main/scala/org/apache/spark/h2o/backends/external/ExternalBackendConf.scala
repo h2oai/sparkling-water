@@ -55,6 +55,8 @@ trait ExternalBackendConf extends SharedBackendConf {
   def healthCheckInterval = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._2)
   def isKillOnUnhealthyClusterEnabled = sparkConf.getBoolean(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._2)
   def killOnUnhealthyClusterInterval = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._2)
+  def kerberosPrincipal = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_PRINCIPAL._1)
+  def kerberosKeytab = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_KEYTAB._1)
 
   /** Setters */
 
@@ -111,6 +113,9 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setKillOnUnhealthyClusterDisabled() = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, false)
 
   def setKillOnUnhealthyClusterInterval(interval: Int) = set(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, interval.toString)
+
+  def setKerberosPrincipal(principal: String) = set(PROP_EXTERNAL_KERBEROS_PRINCIPAL._1, principal)
+  def setKerberosKeytab(path: String) = set(PROP_EXTERNAL_KERBEROS_KEYTAB._1, path)
 
   def externalConfString: String =
     s"""Sparkling Water configuration:
@@ -185,4 +190,15 @@ object ExternalBackendConf {
     * How often check the healthy status for the decision whether to kill the cloud or not.
     */
   val PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY_INTERVAL = ("spark.ext.h2o.external.kill.on.unhealthy.interval", HeartBeatThread.TIMEOUT * 3)
+
+  /**
+    * Kerberos principal
+    */
+  val PROP_EXTERNAL_KERBEROS_PRINCIPAL = ("spark.ext.h2o.external.kerberos.principal", None)
+
+  /**
+    * Kerberos principal
+    */
+  val PROP_EXTERNAL_KERBEROS_KEYTAB = ("spark.ext.h2o.external.kerberos.keytab", None)
+
 }
