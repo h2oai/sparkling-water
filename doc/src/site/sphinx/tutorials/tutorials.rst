@@ -19,7 +19,8 @@ How to...
 
    ssl
    ldap
-   kerberos
+   kerberos_auth
+   kerberized_cluster
 
 **Frames Conversions and Creation**
 
