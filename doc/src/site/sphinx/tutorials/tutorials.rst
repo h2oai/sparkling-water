@@ -20,6 +20,7 @@ How to...
    ssl
    ldap
    kerberos
+   kerberized_cluster
 
 **Frames Conversions and Creation**
 
