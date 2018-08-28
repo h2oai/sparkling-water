@@ -1,6 +1,51 @@
 Change Log
 ==========
 
+v2.3.12 (2018-08-28)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/12/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/12/index.html>`__
+
+-  Bug
+        
+   -  `SW-270 <https://0xdata.atlassian.net/browse/SW-270>`__ - Add test for RDD[TimeStamp] -&gt; H2OFrame[Time] -&gt; RDD[Timestamp] conversion
+   -  `SW-319 <https://0xdata.atlassian.net/browse/SW-319>`__ - SVMModelTest is failing
+   -  `SW-986 <https://0xdata.atlassian.net/browse/SW-986>`__ - Fix links on RSparkling Readme page
+   -  `SW-996 <https://0xdata.atlassian.net/browse/SW-996>`__ - Fix typos in documentation
+   -  `SW-997 <https://0xdata.atlassian.net/browse/SW-997>`__ - Fix javadoc on JavaH2OContext
+   -  `SW-1000 <https://0xdata.atlassian.net/browse/SW-1000>`__ - Setting context path in pysparkling fails to launch h2o
+   -  `SW-1001 <https://0xdata.atlassian.net/browse/SW-1001>`__ - RSparkling does not respect context path
+   -  `SW-1002 <https://0xdata.atlassian.net/browse/SW-1002>`__ - Automatically generate the keystore for H2O Flow ssl (self-signed certificates)
+   -  `SW-1003 <https://0xdata.atlassian.net/browse/SW-1003>`__ - When running in Local mode, we ignore some configuration
+   -  `SW-1004 <https://0xdata.atlassian.net/browse/SW-1004>`__ - Fix context path value checks
+   -  `SW-1005 <https://0xdata.atlassian.net/browse/SW-1005>`__ - Use correct scheme in sparkling water when ssl on flow is enabled
+   -  `SW-1006 <https://0xdata.atlassian.net/browse/SW-1006>`__ - Fix context path setting on RSparkling
+   -  `SW-1015 <https://0xdata.atlassian.net/browse/SW-1015>`__ - Add context path after value of spark.ext.h2o.client.flow.baseurl.override when specified
+                
+-  New Feature
+        
+   -  `SW-980 <https://0xdata.atlassian.net/browse/SW-980>`__ - Integrate XGBoost in Sparkling Water
+   -  `SW-1012 <https://0xdata.atlassian.net/browse/SW-1012>`__ - Sparkling water External Backend Support in kerberized cluster
+                
+-  Task
+        
+   -  `SW-988 <https://0xdata.atlassian.net/browse/SW-988>`__ - Add to docs that pysparkling has a new dependency pyspark
+                
+-  Improvement
+        
+   -  `SW-175 <https://0xdata.atlassian.net/browse/SW-175>`__ - JavaH2OContext#asRDD implementation is missing
+   -  `SW-920 <https://0xdata.atlassian.net/browse/SW-920>`__ - Sparkling Water/RSparkling needs to declare additional repository
+   -  `SW-989 <https://0xdata.atlassian.net/browse/SW-989>`__ - Improve Scala Doc API of the support classes
+   -  `SW-991 <https://0xdata.atlassian.net/browse/SW-991>`__ - Update Gradle Spinx libraries - faster documentation builds
+   -  `SW-992 <https://0xdata.atlassian.net/browse/SW-992>`__ - Create abstract class from creating parameters from Enum for Sparkling Water pipelines
+   -  `SW-993 <https://0xdata.atlassian.net/browse/SW-993>`__ - [PySparkling] Fix Wrong H2O version detection on latest bundled H2Os
+   -  `SW-994 <https://0xdata.atlassian.net/browse/SW-994>`__ - Add timeouts &amp; retries for docker pull
+   -  `SW-998 <https://0xdata.atlassian.net/browse/SW-998>`__ - Document using PySparkling on the edge node ( EMR)
+   -  `SW-1007 <https://0xdata.atlassian.net/browse/SW-1007>`__ - Upgrade H2O to 3.20.0.6
+   -  `SW-1011 <https://0xdata.atlassian.net/browse/SW-1011>`__ - Fix EMR bootstrap scripts
+   -  `SW-1013 <https://0xdata.atlassian.net/browse/SW-1013>`__ - Add option which can be used to change the flow address which is printed out after H2OConetext started
+   -  `SW-1014 <https://0xdata.atlassian.net/browse/SW-1014>`__ - Document how to run Sparkling Water on kerberized cluster
+                
+                                
 v2.3.11 (2018-08-09)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/11/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/11/index.html>`__
