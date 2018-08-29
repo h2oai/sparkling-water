@@ -157,7 +157,6 @@ pipeline {
 
                             withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
                                 sh " ${env.WORKSPACE}/gradlew --help "
-                                sh "activate_java_7"
 
                                 sh """
                                  # Calculate the current and future version
@@ -170,6 +169,10 @@ pipeline {
                                 echo "NEW VERSION: \${NEW_VERSION}"
                                 echo
 
+                                activate_java_8
+                                ./gradlew :sparkling-water-doc:sphinx
+
+                                activate_java_7
 
                                 # Fetch H2O python package
                                 mkdir -p private/
