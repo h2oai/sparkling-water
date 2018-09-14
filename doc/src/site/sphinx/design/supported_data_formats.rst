@@ -7,3 +7,4 @@ Sparkling Water can read data stored in the following formats:
 -  SVMLight
 -  ARFF
 -  Parquet
+-  ORC
