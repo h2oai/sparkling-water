@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+v2.2.24 (2018-09-14)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/24/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/24/index.html>`__
+
+-  New Feature
+        
+   -  `SW-1023 <https://0xdata.atlassian.net/browse/SW-1023>`__ - Upgrade Gradle to 4.10.1
+                
+-  Improvement
+        
+   -  `SW-1019 <https://0xdata.atlassian.net/browse/SW-1019>`__ - Upgrade H2O to 3.20.0.7
+   -  `SW-1027 <https://0xdata.atlassian.net/browse/SW-1027>`__ - Revert Upgrade to Gradle 4.10.1(bug in Gradle) and upgrade to Gradle 4.0
+   -  `SW-1028 <https://0xdata.atlassian.net/browse/SW-1028>`__ - Update docs and mention that ORC is supported
+                
+-  Docs
+        
+   -  `SW-1017 <https://0xdata.atlassian.net/browse/SW-1017>`__ - Docs: Add Parquet to list of supported data formats 
+                
+                            
 v2.2.23 (2018-08-28)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/23/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/23/index.html>`__
