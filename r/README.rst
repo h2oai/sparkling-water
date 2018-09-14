@@ -73,6 +73,7 @@ versions must match specific Spark and H2O versions).
 ============= ======================= =========== ================ ======================== 
 Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_Patch_Number 
 ============= ======================= =========== ================ ======================== 
+2.3           2.3.13                  3.20.0.7    rel-wright       7                        
 2.3           2.3.12                  3.20.0.6    rel-wright       6                        
 2.3           2.3.11                  3.20.0.5    rel-wright       5                        
 2.3           2.3.10                  3.20.0.4    rel-wright       4                        
@@ -86,6 +87,7 @@ Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_P
 2.3           2.3.2                   3.18.0.8    rel-wolpert      8                        
 2.3           2.3.1                   3.18.0.7    rel-wolpert      7                        
 2.3           2.3.0                   3.18.0.5    rel-wolpert      5                        
+2.2           2.2.24                  3.20.0.7    rel-wright       7                        
 2.2           2.2.23                  3.20.0.6    rel-wright       6                        
 2.2           2.2.22                  3.20.0.5    rel-wright       5                        
 2.2           2.2.21                  3.20.0.4    rel-wright       4                        
@@ -110,6 +112,7 @@ Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_P
 2.2           2.2.2                   3.14.0.7    rel-weierstrass  7                        
 2.2           2.2.1                   3.14.0.6    rel-weierstrass  6                        
 2.2           2.2.0                   3.14.0.2    rel-weierstrass  2                        
+2.1           2.1.38                  3.20.0.7    rel-wright       7                        
 2.1           2.1.37                  3.20.0.6    rel-wright       6                        
 2.1           2.1.36                  3.20.0.5    rel-wright       5                        
 2.1           2.1.35                  3.20.0.4    rel-wright       4                        
@@ -174,7 +177,7 @@ can be used for this.
 
 Install H2O from CRAN
 ~~~~~~~~~~~~~~~~~~~~~
-In case of installation from CRAN, the typical ``install.packages("h2o", "3.20.0.6")`` command can be used. Please note
+In case of installation from CRAN, the typical ``install.packages("h2o", "3.20.0.7")`` command can be used. Please note
 that the latest released version might not be available in CRAN. In that case, please install H2O from S3.
 
 Install H2O from S3
@@ -182,13 +185,13 @@ Install H2O from S3
 H2O can be also installed from hosted R repository in H2O's S3 buckets.
 
 At present, you can install the **h2o** R package using a repository URL comprised
-of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.com/h2o/rel-wright/6/R`
+of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.com/h2o/rel-wright/7/R`
 
 .. code:: r
 
    # Download, install, and initialize the H2O package for R.
-   # In this case we are using rel-wright 6 (3.20.0.6)
-   install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-wright/6/R")
+   # In this case we are using rel-wright 7 (3.20.0.7)
+   install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-wright/7/R")
 
 
 
@@ -235,7 +238,7 @@ central. If you don't have internet access or firewall is set up, you can specif
 This JAR file can be obtain in following steps:
 
 1. Download the Sparkling Water jar of your choice based on the integration table above.
-   To do this go to the following link where ``[SW Major Version]`` is the major version of Sparkling Water you wish to use, i.e., ``2.3`` and ``[SW Minor Version]`` is the minor version of Sparkling Water you wish to use, i.e., ``12``,
+   To do this go to the following link where ``[SW Major Version]`` is the major version of Sparkling Water you wish to use, i.e., ``2.3`` and ``[SW Minor Version]`` is the minor version of Sparkling Water you wish to use, i.e., ``13``,
    such as ``http://h2o-release.s3.amazonaws.com/sparkling-water/rel-[SW Major Version]/[SW Minor Version]/index.html``
 2. Click the ``DOWNLOAD SPARKLING WATER`` tab, which will download a ``.zip`` file of Sparkling Water.
 3. Run the following command to unzip the folder:
