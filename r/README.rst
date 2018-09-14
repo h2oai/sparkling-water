@@ -72,6 +72,7 @@ versions must match specific Spark and H2O versions).
 
 ============= ======================= =========== ================ ======================== 
 Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_Patch_Number
+============= ======================= =========== ================ ========================
 2.3           2.3.13                  3.20.0.7    rel-wright       7                        
 2.3           2.3.12                  3.20.0.6    rel-wright       6
 2.3           2.3.11                  3.20.0.5    rel-wright       5                        
