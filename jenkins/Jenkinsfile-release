@@ -143,6 +143,19 @@ pipeline {
                                     RSPARKLING_VERSION=\$(./gradlew -q :sparkling-water-r:printCurrentVersion)
                                     git commit -m "Release RSparkling \$RSPARKLING_VERSION on Sparkling Water branch ${env.BRANCH_NAME}"
                                     git push --set-upstream origin ${env.BRANCH_NAME}
+
+
+                                    # Update RSparkling README on master as well
+                                    RSPARKLING_REL_COMMIT=`git rev-parse HEAD`
+                                    git config --add remote.origin.fetch +refs/heads/master:refs/remotes/origin/master
+                                    git fetch --no-tags
+                                    git checkout master
+                                    git cherry-pick -n \$RSPARKLING_REL_COMMIT
+                                    git commit -m "Release RSparkling \$RSPARKLING_VERSION on Sparkling Water branch master"
+                                    git push --set-upstream origin master
+
+
+                                    git checkout ${env.BRANCH_NAME}
                                     """
                             }
                         }
