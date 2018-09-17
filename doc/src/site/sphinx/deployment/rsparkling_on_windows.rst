@@ -135,6 +135,6 @@ Troubleshooting
 References
 ~~~~~~~~~~
 
-- `Main RSparkling Documentation <../rsparkling.rst>`__
+- :ref:`rsparkling`
 - `H2O.ai website <http://h2o.ai>`__
 - `Running Spark Applications on Windows <https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-tips-and-tricks-running-spark-windows.html>`__
