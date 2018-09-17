@@ -123,8 +123,13 @@ The latest stable version of **rsparkling** on CRAN can be installed as follows:
 
    install.packages("rsparkling")
 
+You can also install the latest version available on Github as:
 
-Alternatively, to install the nightly version of RSparkling, please follow the information on the RSparkling tab
+.. code:: r
+
+   devtools::install_github("h2oai/sparkling-water", ref="master", subdir="r/src")
+
+Alternatively, you can also install nightly version of RSparkling. Please follow the information on the RSparkling tab
 on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/index.html>`__.
 
 
