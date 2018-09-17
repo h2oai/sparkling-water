@@ -122,10 +122,16 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
       check_spark_version_for_sw_version(spark_version, sw_version)
       verify_h2o_version(spark_version, sw_version)
     }
-  }else{
-    # SW artifact is not empty, however Sparkling Water version is not specified.
-    stop(sprintf("You specified location to Sparkling artifact, but did not specify the version. The version is
-    required argument in case Sparkling Water artifact is specified."))
+  } else {
+    # The user specified location of SW Jar file. We get the version from the jar file and check if we
+    # are running on correct Spark and have correct H2O.
+    tmp = tempdir()
+    unzip(sw_location, files = "sw.version", exdir = tmp, overwrite = TRUE)
+    version_file = file.path(tmp, "sw.version")
+    sw_version = readLines(version_file, warn = FALSE)
+
+    check_spark_version_for_sw_version(spark_version, sw_version)
+    verify_h2o_version(spark_version, sw_version)
   }
 
   # If sparkling water jar artifact is specified, use it
