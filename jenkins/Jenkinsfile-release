@@ -136,6 +136,8 @@ pipeline {
                                     git add r/for_release/table_2_2.txt
                                     git add r/for_release/table_2_3.txt
 
+                                    cp r/build/src/R/sysdata.rda r/src/R/sysdata.rda
+                                    git add r/src/R/sysdata.rda
 
                                     git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
                                     RSPARKLING_VERSION=\$(./gradlew -q :sparkling-water-r:printCurrentVersion)
