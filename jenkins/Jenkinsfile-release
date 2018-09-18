@@ -5,11 +5,11 @@ pipeline {
         booleanParam(name: 'prepareReleaseNotes', defaultValue: true, description: 'Prepare release notes')
         booleanParam(name: 'releaseRSparkling', defaultValue: true, description: 'Release RSparkling')
         booleanParam(name: 'publishToNexus', defaultValue: true, description: 'Publish to Nexus')
-        booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
         booleanParam(name: 'buildExtendedH2OJars', defaultValue: true, description: 'Build extended H2O Jars')
         booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3')
         booleanParam(name: 'updateDocLinks', defaultValue: true, description: 'Update documentation links')
         booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy')
+        booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
     }
 
     environment {
@@ -55,8 +55,9 @@ pipeline {
                                    """
 
                                 sh """
-                                sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                                sed -i.backup -E "s/\\.([0-9]+)-SNAPSHOT/.\\1/" gradle.properties
                                 REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                                PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
                                 git checkout -- gradle.properties
 
                                 # Get id of this release
@@ -72,7 +73,7 @@ pipeline {
                                 release_date=\$(date +%Y-%m-%d)
                                 rel_prefix=\$(echo "v\$REL_VERSION (\$release_date)")
                                 underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
-                                download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/sparkling-water/${env.BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/${env.BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/index.html>\\`__"
+                                download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/sparkling-water/${env.BRANCH_NAME}/\$PATCH_VERSION/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/${env.BRANCH_NAME}/\$PATCH_VERSION/index.html>\\`__"
 
                                 # Release notes
                                 echo \$rel_prefix
@@ -124,7 +125,7 @@ pipeline {
 
 
                                  sh """
-                                    sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                                    sed -i.backup -E "s/\\.([0-9]+)-SNAPSHOT/.\\1/" gradle.properties
                                     REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
 
                                     ./gradlew :sparkling-water-r:build -x check -PdoReleaseRSparkling
@@ -165,14 +166,11 @@ pipeline {
                                 sh "activate_java_8"
 
                                 sh """
-                                 # Calculate the current and future version
-                                sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
+                                sed -i.backup -E "s/\\.([0-9]+)-SNAPSHOT/.\\1/" gradle.properties
                                 REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                                NEW_VERSION=`echo "\$REL_VERSION" | sed -E "s/\\.[0-9]+\$/.$BUILD_NUMBER-SNAPSHOT/"`
 
                                 echo
                                 echo "RELEASE VERSION: \${REL_VERSION}"
-                                echo "NEW VERSION: \${NEW_VERSION}"
                                 echo
 
 
@@ -208,51 +206,6 @@ pipeline {
                                 sh  """
                                     ./gradlew -PdoRelease -Porg.gradle.daemon=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password= publishToNexus -x check
                                     """
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Release on Github'){
-            when {
-                expression { params.releaseOnGithub == true }
-            }
-            steps {
-                script {
-                    docker.withRegistry("https://docker.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:7').inside("--init --dns 172.16.0.200") {
-                            withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
-                            sh " ${env.WORKSPACE}/gradlew --help "
-
-                            sh """
-                               # Copy keys
-                               mkdir -p ~/.ssh
-                               cp \${ID_RSA_PATH} ~/.ssh/id_rsa
-                               cp \${GITCONFIG_PATH} ~/.gitconfig
-                               """
-
-
-                            sh  """
-                                git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
-
-                                # Calculate the current and future version
-                                sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
-                                REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                                NEW_VERSION=`echo "\$REL_VERSION" | sed -E "s/\\.[0-9]+\$/.$BUILD_NUMBER-SNAPSHOT/"`
-
-                                # Restore before releasing
-                                git checkout -- gradle.properties
-                                ./gradlew -Porg.gradle.daemon=false -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\${REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -PdoRelease release -x check
-
-                                # Note:
-                                # After this step, gradle.properties has the new future version ending with "-SNAPSHOT" so
-                                # we change it back to the version of the current release in case the following stages
-                                # require to use the correct version
-
-                                sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\$(( $BUILD_NUMBER - 1 ))/" gradle.properties
-                                """
                             }
                         }
                     }
@@ -296,36 +249,40 @@ pipeline {
 
                             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                                 sh " ${env.WORKSPACE}/gradlew --help "
+
                                 sh """
-                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY}  --rexclude='target/classes/*' --acl-public sync dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/
+                                        REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                                        PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
+
+                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY}  --rexclude='target/classes/*' --acl-public sync dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/
 
                                         echo EXPLICITLY SET MIME TYPES AS NEEDED
                                         list_of_html_files=`find dist/build -name '*.html' | sed 's/dist\\/build\\///g'`
                                         echo \${list_of_html_files}
                                         for f in \${list_of_html_files}
                                         do
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
+                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
                                         done
 
                                         list_of_js_files=`find dist/build -name '*.js' | sed 's/dist\\/build\\///g'`
                                         echo \${list_of_js_files}
                                         for f in \${list_of_js_files}
                                         do
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
+                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
                                         done
 
                                         list_of_css_files=`find dist/build -name '*.css' | sed 's/dist\\/build\\///g'`
                                         echo \${list_of_css_files}
                                         for f in \${list_of_css_files}
                                         do
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${f}
+                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
                                         done
 
                                         list_of_extended_jars=`find assembly-h2o/private -name '*-extended.jar' | sed 's/assembly-h2o\\\\/private\\\\///g'`
                                         echo \${list_of_extended_jars}
                                         for jar in \${list_of_extended_jars}
                                         do
-                                             s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put assembly-h2o/private/\${jar} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$(( $BUILD_NUMBER - 1 ))/\${jar}
+                                             s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put assembly-h2o/private/\${jar} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${jar}
                                         done
                                         ./gradlew :sparkling-water-assembly-h2o:clean
                                         ./gradlew :sparkling-water-assembly-h2o:cleanH2OJars
@@ -333,9 +290,9 @@ pipeline {
                                         echo UPDATE LATEST POINTER
                                         tmpdir=./buildsparklingwater.tmp
                                         mkdir -p \${tmpdir}
-                                        echo \$(( $BUILD_NUMBER - 1 )) > \${tmpdir}/latest
+                                        echo \$PATCH_VERSION > \${tmpdir}/latest
                                         echo "<head>" > \${tmpdir}/latest.html
-                                        echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\$(( $BUILD_NUMBER - 1 ))/index.html\\" />" >> \${tmpdir}/latest.html
+                                        echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\$PATCH_VERSION/index.html\\" />" >> \${tmpdir}/latest.html
                                         echo "</head>" >> \${tmpdir}/latest.html
                                         s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put \${tmpdir}/latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest
                                         s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest.html
@@ -374,13 +331,17 @@ EOF
 
                                 ssh-keyscan github.com >> ~/.ssh/known_hosts
                                """
+
                             // Update the links
                             sh  """
+                                REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                                PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
+
                                 git clone git@github.com:h2oai/docs.h2o.ai.git
                                 cd docs.h2o.ai/sites-available/
-                                sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/\$(( $BUILD_NUMBER - 1 ))/?" 000-default.conf
+                                sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/\$PATCH_VERSION/?" 000-default.conf
                                 git add 000-default.conf
-                                git commit -m "Update links of Sparkling Water 2.2 version to \$(( $BUILD_NUMBER - 1 ))"
+                                git commit -m "Update links of Sparkling Water 2.2 version to \$PATCH_VERSION"
                                 git push --set-upstream origin master
                                 """
                             }
@@ -413,6 +374,55 @@ EOF
                 }
             }
         }
-        
+
+        // Update the version on Github if all stages went fine correctly
+        stage('Release on Github'){
+            when {
+                expression { params.releaseOnGithub == true }
+            }
+            steps {
+                script {
+                    docker.withRegistry("https://docker.h2o.ai") {
+                        docker.image('opsh2oai/sparkling_water_tests:7').inside("--init --dns 172.16.0.200") {
+                            withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
+                            sh " ${env.WORKSPACE}/gradlew --help "
+
+                            sh """
+                               # Copy keys
+                               mkdir -p ~/.ssh
+                               cp \${ID_RSA_PATH} ~/.ssh/id_rsa
+                               cp \${GITCONFIG_PATH} ~/.gitconfig
+                               """
+
+
+                            sh  """
+                                git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
+
+                                # Calculate the current and future version
+                                sed -i.backup -E "s/\\.([0-9]+)-SNAPSHOT/.\\1/" gradle.properties
+                                REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                                MAJOR_MINOR=`echo \$REL_VERSION | cut -f1,2 -d.`
+                                PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
+                                NEW_PATCH_VERSION=\$((\$PATCH_VERSION + 1))
+                                NEW_VERSION=\$MAJOR_MINOR.\$NEW_PATCH_VERSION-SNAPSHOT
+
+                                # Restore before releasing
+                                git checkout -- gradle.properties
+                                ./gradlew -Porg.gradle.daemon=false -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\${REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -PdoRelease release -x check
+
+                                # Note:
+                                # After this step, gradle.properties has the new future version ending with "-SNAPSHOT" so
+                                # we change it back to the version of the current release in case the following stages
+                                # require to use the correct version
+
+                                git checkout -- gradle.properties
+                                sed -i.backup -E "s/\\.([0-9]+)-SNAPSHOT/.\\1/" gradle.properties
+                                """
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
