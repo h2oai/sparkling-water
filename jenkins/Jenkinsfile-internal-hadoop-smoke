@@ -81,6 +81,20 @@ def testInsideDocker(hadoopVersion) {
     }
 }
 
+def retryWithDelay(final int retries, final int delay, final Closure body) {
+    for (def i = 0; i < retries; i++) {
+        try {
+            body()
+            break
+        } catch (Exception e) {
+            if (i == (retries - 1)) {
+                throw e
+            }
+            script.sleep(delay)
+        }
+    }
+}
+
 def withDocker(code) {
     def image = 'opsh2oai/sparkling_water_tests:7'
     retryWithDelay(3, 120, {
