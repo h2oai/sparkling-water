@@ -32,6 +32,7 @@ node('docker && micro') {
                         dir("${env.WORKSPACE}") {
                             prepareSparkEnvironment()()
                             prepareSparklingWaterEnvironment()()
+                            buildAndLint()()
                             smokeTestsHDP22()()
                             smokeTestsHDP23()()
                             smokeTestsHDP24()()
@@ -108,6 +109,21 @@ def prepareSparklingWaterEnvironment() {
                     mkdir -p ${env.WORKSPACE}/private/
                     curl -s `${env.WORKSPACE}/gradlew -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
                 """
+            }
+        }
+    }
+}
+
+def buildAndLint() {
+    return { config ->
+        stage('QA: Build and Lint - ' + config.backendMode) {
+            withDocker(config) {
+                withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
+                    sh """
+                    # Build
+                    ${env.WORKSPACE}/gradlew clean build -x check scalaStyle -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
+                    """
+                }
             }
         }
     }
