@@ -567,7 +567,7 @@ EOF
 
                         git clone git@github.com:h2oai/docs.h2o.ai.git
                         cd docs.h2o.ai/sites-available/
-                        sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/master/[0-9]+_nightly/?http://h2o-release.s3.amazonaws.com/sparkling-water/master/${BUILD_NUMBER}_nightly/?" 000-default.conf
+                        sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/master/[0-9]+_nightly/?http://h2o-release.s3.amazonaws.com/sparkling-water/master/\${NEW_PATCH_VERSION}_nightly/?" 000-default.conf
                         git add 000-default.conf
                         git commit -m "Update links of Sparkling Water nighly version to \${NEW_PATCH_VERSION}_nightly"
                         git push --set-upstream origin master
