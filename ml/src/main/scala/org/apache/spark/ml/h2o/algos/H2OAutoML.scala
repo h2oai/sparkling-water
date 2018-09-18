@@ -19,7 +19,7 @@ package org.apache.spark.ml.h2o.algos
 import java.io._
 import java.util.Date
 
-import ai.h2o.automl.{AutoML, AutoMLBuildSpec}
+import ai.h2o.automl.{AutoML, AutoMLBuildSpec, Leaderboard}
 import hex.ScoreKeeper
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
@@ -29,8 +29,8 @@ import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param.{EnumArrayParam, EnumParam, NullableFloatArrayParam, NullableStringParam}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{Dataset, SQLContext}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{Dataset, SQLContext, _}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
@@ -46,6 +46,8 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
   def this()(implicit hc: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("automl"))
 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
+
+  var leaderboard: Option[DataFrame] = None
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val spec = automlBuildSpec.getOrElse(new AutoMLBuildSpec)
@@ -96,11 +98,23 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     AutoML.startAutoML(aml)
     // Block until AutoML finishes
     aml.get()
+
+    leaderboard = leaderboardAsSparkFrame(aml)
     val model = trainModel(aml)
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
   }
 
+  private def leaderboardAsSparkFrame(aml: AutoML): Option[DataFrame] = {
+    // Get LeaderBoard
+    val twoDimtable = aml.leaderboard().toTwoDimTable
+    val colNames = twoDimtable.getColHeaders
+    val data = aml.leaderboard().toTwoDimTable.getCellValues.map(_.map(_.toString))
+    val rows = data.map{Row.fromSeq(_)}
+    val schema = StructType(colNames.map{ name => StructField(name, StringType)})
+    val rdd = hc.sparkContext.parallelize(rows)
+    Some(hc.sparkSession.createDataFrame(rdd, schema))
+  }
 
   def trainModel(aml: AutoML) = {
     new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()))
