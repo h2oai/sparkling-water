@@ -2,6 +2,7 @@ from pyspark import keyword_only
 from pyspark.ml.util import JavaMLWritable, JavaMLReader, MLReadable
 from pyspark.ml.wrapper import JavaEstimator
 from pyspark.sql import SparkSession
+from pyspark.sql.dataframe import DataFrame
 
 from pysparkling import *
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams
@@ -218,6 +219,12 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
     def _create_model(self, java_model):
         return H2OAutoMLModel(java_model)
 
+    def leaderboard(self):
+        leaderboard_java = self._java_obj.leaderboard()
+        if leaderboard_java.isDefined():
+            return DataFrame(leaderboard_java.get(), self._hc._sql_context)
+        else:
+            return None
 
 class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
