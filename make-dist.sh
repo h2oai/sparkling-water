@@ -130,6 +130,7 @@ cat "$DIST_DIR/index.html" \
   | sed -e "s/SUBST_H2O_BRANCH_NAME/${H2O_BRANCH_NAME}/g"\
   | sed -e "s/SUBST_SCALA_VERSION/${SCALA_VERSION}/g"\
   | sed -e "s/SUBST_RSPARKLING_VERSION/${RSPARKLING_VERSION}/g"\
+  | sed -e "s/SUBST_BUILD_TIME_LOCAL/${BUILD_TIME_LOCAL}/g" \
   > "$DIST_BUILD_DIR/index.html"
 
 # Create json metadata file.
