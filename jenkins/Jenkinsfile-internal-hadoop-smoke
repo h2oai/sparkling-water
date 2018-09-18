@@ -124,7 +124,7 @@ def prepareSparkEnvironment() {
 }
 
 def prepareSparklingWaterEnvironment() {
-    return { config ->
+    return { ->
         stage('QA: Prepare Sparkling Water Environment - ' + CLUSTER_MODE) {
             withDocker() {
                 // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
@@ -145,8 +145,8 @@ def prepareSparklingWaterEnvironment() {
 }
 
 def buildAndLint() {
-    return { config ->
-        stage('QA: Build and Lint - ' + config.backendMode) {
+    return { ->
+        stage('QA: Build and Lint - ' + CLUSTER_MODE) {
             withDocker() {
                 withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
                     sh """
