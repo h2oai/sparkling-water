@@ -81,11 +81,26 @@ def testInsideDocker(hadoopVersion) {
     }
 }
 
+def withDocker(code) {
+    def image = 'opsh2oai/sparkling_water_tests:7'
+    retryWithDelay(3, 120, {
+        withCredentials([usernamePassword(credentialsId: "docker.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
+            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
+            sh "docker pull docker.h2o.ai/${image}"
+        }
+    })
+    docker.image(image).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
+        sh "activate_java_8"
+        code()
+    }
+}
+
+
+
 def prepareSparkEnvironment() {
     return { ->
         stage('Prepare Spark Environment - ' + CLUSTER_MODE) {
-            withDocker(config) {
-
+            withDocker() {
                 sh  """
                     cp -R \${SPARK_HOME_2_3_1} ${env.SPARK_HOME}
                     """
@@ -97,7 +112,7 @@ def prepareSparkEnvironment() {
 def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + CLUSTER_MODE) {
-            withDocker(config) {
+            withDocker() {
                 // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
                 // with release notes which can mess up the build
                 sh """
@@ -118,7 +133,7 @@ def prepareSparklingWaterEnvironment() {
 def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint - ' + config.backendMode) {
-            withDocker(config) {
+            withDocker() {
                 withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
                     sh """
                     # Build
