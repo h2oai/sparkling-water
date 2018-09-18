@@ -31,6 +31,7 @@ node('docker && micro') {
                     timeout(time: 180, unit: 'MINUTES') {
                         dir("${env.WORKSPACE}") {
                             prepareSparkEnvironment()()
+                            prepareSparklingWaterEnvironment()()
                             smokeTestsHDP22()()
                             smokeTestsHDP23()()
                             smokeTestsHDP24()()
