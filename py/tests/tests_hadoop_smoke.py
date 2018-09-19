@@ -111,28 +111,20 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 imported = h2o.import_file(path=export_path, header=1)
                 assert imported.ncol == fr.ncol
                 assert imported.nrow == fr.nrow
-            
-        # def test_import_txt_hive(self):
-        #         hivesample_txt_hive = "hdfs://172.17.0.24/hive/warehouse/hivesampletable/"
-        #         hivesample_txt_hive_df = h2o.import_file(path=hivesample_txt_hive)
-        #         assert hivesample_txt_hive_df.ncol == 11
-        #         assert hivesample_txt_hive_df.nrow == 119586
-        #         assert hivesample_txt_hive_df[0, 0] == 8
-        #         assert hivesample_txt_hive_df[4, 4] == "Motorola"
-        #         assert hivesample_txt_hive_df[5868, 9] == 0
-        #         assert hivesample_txt_hive_df[119585, 10] == 1
-        #
-        # def test_export_txt_hive(self):
-        #         hivesample_txt_hive = "hdfs://172.17.0.24/hive/warehouse/hivesampletable/"
-        #         hivesample_txt_hive_df = h2o.import_file(path=hivesample_txt_hive)
-        #         hivesample_txt_hive_export = "hdfs://172.17.0.24/hive/warehouse/hivesampletable_export/HiveSampleData_export.txt"
-        #         isOK = True
-        #         try:
-        #                 h2o.export_file(frame=hivesample_txt_hive_df,path=hivesample_txt_hive_export,force=True)
-        #         except:
-        #                 isOK = False
-        #         assert isOK
-        #
+
+        def test_import_hive(self):
+                connection_url = "jdbc:hive2://localhost:10000/default"
+                select_query = "select * from airlinestest"
+                username = "hive"
+                password = ""
+                fr = h2o.import_sql_select(connection_url, select_query, username, password)
+                assert fr.ncol == 12
+                assert fr.nrow == 2691
+                assert fr[0, 0] == "f1987"
+                assert fr[2690, 0] == "f2000"
+                assert fr[2690, 11] == 1.0
+
+
         # def test_import_csv_s3_h2o(self):
         #         airlines_csv_s3 = "https://s3.amazonaws.com/h2o-airlines-unpacked/allyears2k.csv"
         #         airlines_csv_s3_df = h2o.import_file(path=airlines_csv_s3)
