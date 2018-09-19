@@ -50,9 +50,9 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 userdata_orc_hdfs_df = h2o.import_file(path=userdata_orc_hdfs, header=1)
                 assert userdata_orc_hdfs_df.ncol == 9
                 assert userdata_orc_hdfs_df.nrow == 380
-                assert userdata_orc_hdfs_df[0, 2] == "65"
-                assert userdata_orc_hdfs_df[4, 4] == "1"
-                assert userdata_orc_hdfs_df[379, 8] == "6"
+                assert userdata_orc_hdfs_df[0, 2] == 65.0
+                assert userdata_orc_hdfs_df[4, 4] == 1.0
+                assert userdata_orc_hdfs_df[379, 8] == 6.0
 
         def test_export_orc_hdfs(self):
                 userdata_orc_hdfs = "hdfs://127.0.0.1/user/jenkins/prostate_NA.orc"
@@ -65,27 +65,27 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                         failure = True
                 assert not failure
 
-        # def test_import_parquet_hdfs(self):
-        #         userdata_parquet_hdfs = "hdfs://172.17.0.24/user/h2o/userdata2.parquet"
-        #         userdata_parquet_hdfs_df = h2o.import_file(path=userdata_parquet_hdfs,header=1)
-        #         assert userdata_parquet_hdfs_df.ncol == 13
-        #         assert userdata_parquet_hdfs_df.nrow == 1000
-        #         assert userdata_parquet_hdfs_df[0, 2] == "Donald"
-        #         assert userdata_parquet_hdfs_df[4, 4] == "hmiller4@fema.gov"
-        #         assert userdata_parquet_hdfs_df[999, 2] == "Alice"
-        #         assert userdata_parquet_hdfs_df[999, 7] == "5602227843485236"
-        #
-        # def test_export_parquet_hdfs(self):
-        #         userdata_parquet_hdfs = "hdfs://172.17.0.24/user/h2o/userdata2.parquet"
-        #         userdata_parquet_hdfs_df = h2o.import_file(path=userdata_parquet_hdfs,header=1)
-        #         userdata_parquet_hdfs_export = "hdfs://172.17.0.24/user/h2o/userdata2_export.parquet"
-        #         isOK = True
-        #         try:
-        #                 h2o.export_file(frame=userdata_parquet_hdfs_df,path=userdata_parquet_hdfs_export,force=True)
-        #         except:
-        #                 isOK = False
-        #         assert isOK
-        #
+        def test_import_parquet_hdfs(self):
+                userdata_parquet_hdfs = "hdfs://172.17.0.24/user/jenkins/airlines-simple.snappy.parquet"
+                userdata_parquet_hdfs_df = h2o.import_file(path=userdata_parquet_hdfs, header=1)
+                assert userdata_parquet_hdfs_df.ncol == 13
+                assert userdata_parquet_hdfs_df.nrow == 1000
+                assert userdata_parquet_hdfs_df[0, 2] == "Donald"
+                assert userdata_parquet_hdfs_df[4, 4] == "hmiller4@fema.gov"
+                assert userdata_parquet_hdfs_df[999, 2] == "Alice"
+                assert userdata_parquet_hdfs_df[999, 7] == "5602227843485236"
+
+        def test_export_parquet_hdfs(self):
+                userdata_parquet_hdfs = "hdfs://127.0.0.1/user/jenkins/airlines-simple.snappy.parquet"
+                userdata_parquet_hdfs_df = h2o.import_file(path=userdata_parquet_hdfs, header=1)
+                userdata_parquet_hdfs_export = "hdfs://127.0.0.1/user/jenkins/airlines-simple.snappy_export.parquet"
+                failure = False
+                try:
+                        h2o.export_file(frame=userdata_parquet_hdfs_df,path=userdata_parquet_hdfs_export, force=True)
+                except:
+                        failure = True
+                assert not failure
+
         # def test_import_xls_hdfs(self):
         #         salesorder_xls_hdfs = "hdfs://127.0.0.1/user/jenkins/salesorder.xls"
         #         salesorder_xls_hdfs_df = h2o.import_file(path=salesorder_xls_hdfs, header=1)
