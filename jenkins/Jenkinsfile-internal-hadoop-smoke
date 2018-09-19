@@ -70,7 +70,9 @@ def testInsideDocker(hadoopVersion) {
         try {
             sh """
                      sudo -E /usr/sbin/startup.sh
-                           
+                     
+                     hdfs dfs -put /home/0xdiag/smalldata/parser/orc/prostate_NA.orc
+      
                      . /envs/h2o_env_python2.7/bin/activate
                      PYSPARK_DRIVER_PYTHON=\$(which python) PYSPARK_PYTHON=\$(which python) ./gradlew build -x check hadoopSmokeTests -PbackendMode=internal -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
                      # echo 'Archiving artifacts smoke tests for Hadoop'
