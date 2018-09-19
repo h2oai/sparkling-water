@@ -133,7 +133,7 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 assert fr[10, 10] == "NA"
                 assert fr[43977, 30] == "YES"
 
-        def test_export_csv_s3_h2o(self):
+        def test_export_s3(self):
                 fr = h2o.import_file(path="https://s3.amazonaws.com/h2o-airlines-unpacked/allyears2k.csv")
                 export_path = "https://s3.amazonaws.com/h2o-airlines-unpacked/allyears2k_export.csv"
                 failure = False
@@ -143,7 +143,7 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                         failure = True
                 assert not failure
 
-                imported = h2o.import_file(path=export_path, header=1)
+                imported = h2o.import_file(path=export_path)
                 assert imported.ncol == fr.ncol
                 assert imported.nrow == fr.nrow
         
