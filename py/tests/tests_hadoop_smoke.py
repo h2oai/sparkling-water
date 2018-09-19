@@ -19,19 +19,18 @@
 Unit tests for PySparkling Data Conversions;
 """
 
-import unittest
-import pandas as pd
-
 import generic_test_utils
 import h2o
 import unit_test_utils
+import unittest
+import uuid
+from datetime import datetime
+from pandas.util.testing import assert_frame_equal
 from pyspark.sql import SparkSession
 
 from pysparkling.conf import H2OConf
 from pysparkling.context import H2OContext
-from datetime import datetime
-from pandas.util.testing import assert_frame_equal
-import uuid
+
 
 # Hadoop Smoke Test Suite
 class HadoopSmokeTestSuite(unittest.TestCase):
@@ -126,7 +125,6 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 assert fr[2690, 0] == "f2000"
                 assert fr[2690, 11] == 1.0
 
-
         def s3_import_export(self, scheme):
                 local_frame = h2o.import_file("/home/0xdiag/smalldata/logreg/prostate.csv")
                 timestamp = datetime.today().utcnow().strftime("%Y%m%d-%H%M%S")
@@ -142,7 +140,6 @@ class HadoopSmokeTestSuite(unittest.TestCase):
 
         def s3n_import_export(self):
                 self.s3_import_export("s3n")
-
 
 
 if __name__ == '__main__':
