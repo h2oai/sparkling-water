@@ -95,9 +95,9 @@ def withDocker(config, code) {
 def getGradleCommand(config) {
     def gradleStr
     if (config.buildAgainstH2OBranch.toBoolean()) {
-        gradleStr = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew --include-build ${env.WORKSPACE}/h2o-3"
+        gradleStr = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew org.gradle.internal.launcher.welcomeMessageEnabled=false --include-build ${env.WORKSPACE}/h2o-3"
     } else {
-        gradleStr = "${env.WORKSPACE}/gradlew"
+        gradleStr = "${env.WORKSPACE}/gradlew org.gradle.internal.launcher.welcomeMessageEnabled=false"
     }
 
     if (config.buildAgainstSparkBranch.toBoolean()) {
@@ -157,12 +157,6 @@ def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
             withDocker(config) {
-                // Warm up Gradle wrapper. When the gradle wrapper is downloaded for the first time, it prints message
-                // with release notes which can mess up the build
-                sh """
-                ${env.WORKSPACE}/gradlew --help
-                """
-
                 // In case of nightly build, modify gradle.properties
                 if (config.buildNightly.toBoolean()) {
 
