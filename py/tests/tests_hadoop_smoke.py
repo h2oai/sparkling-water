@@ -125,15 +125,14 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 assert fr[2690, 11] == 1.0
 
 
-        # def test_import_csv_s3_h2o(self):
-        #         airlines_csv_s3 = "https://s3.amazonaws.com/h2o-airlines-unpacked/allyears2k.csv"
-        #         airlines_csv_s3_df = h2o.import_file(path=airlines_csv_s3)
-        #         assert airlines_csv_s3_df.ncol == 31
-        #         assert airlines_csv_s3_df.nrow == 43978
-        #         assert airlines_csv_s3_df[0, 0] == 1987.0
-        #         assert airlines_csv_s3_df[10, 10] == "NA"
-        #         assert airlines_csv_s3_df[43977, 30] == "YES"
-        #
+        def test_import_s3(self):
+                fr = h2o.import_file(path="https://s3.amazonaws.com/h2o-airlines-unpacked/allyears2k.csv")
+                assert fr.ncol == 31
+                assert fr.nrow == 43978
+                assert fr[0, 0] == 1987.0
+                assert fr[10, 10] == "NA"
+                assert fr[43977, 30] == "YES"
+
         # def test_export_csv_s3_h2o(self):
         #         airlines_csv_s3 = "https://s3.amazonaws.com/h2o-airlines-unpacked/allyears2k.csv"
         #         airlines_csv_s3_df = h2o.import_file(path=airlines_csv_s3)
