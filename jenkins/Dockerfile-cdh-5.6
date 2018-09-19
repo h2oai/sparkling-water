@@ -10,7 +10,21 @@ RUN \
     rm /etc/startup/50_hive_start && \
     rm /etc/startup/70_start_slapd
 
-RUN apt-get update && apt-get install -y git curl zip s3cmd
+RUN apt-get update && apt-get install -y git curl zip s3cmd r-base r-base-dev libxml2-dev libssl-dev libcurl4-openssl-dev
+
+RUN \
+    R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("openssl", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("bitops", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("jsonlite", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("dplyr", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
+
 
 ###
 ###  Prepare Spark
@@ -65,6 +79,9 @@ ENV SPARK_HOME_2_2_0 /home/jenkins/spark-2.2.0-bin-hadoop2.7
 ENV SPARK_HOME_2_1_2 /home/jenkins/spark-2.1.2-bin-hadoop2.7
 ENV SPARK_HOME_2_1_1 /home/jenkins/spark-2.1.1-bin-hadoop2.7
 ENV SPARK_HOME_2_1_0 /home/jenkins/spark-2.1.0-bin-hadoop2.7
+
+# Change permissions so we can install R packages
+RUN chmod 777 /usr/local/lib/R/site-library
 
 USER jenkins
 

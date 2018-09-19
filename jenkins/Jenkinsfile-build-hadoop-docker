@@ -9,9 +9,10 @@ node('docker && !mr-0xc8') {
     checkout scm
 
     stage("Build Docker Images for Hadoop Smoke tests"){
-        versions = ["cdh-5.4","cdh-5.5","cdh-5.6", "cdh-5.7", "cdh-5.8", "cdh-5.10", "cdh-5.13", "cdh-5.14",
-                    "hdp-2.2", "hdp-2.3", "hdp-2.4", "hdp-2.5", "hdp-2.6"]
+        //versions = ["cdh-5.4","cdh-5.5","cdh-5.6", "cdh-5.7", "cdh-5.8", "cdh-5.10", "cdh-5.13", "cdh-5.14",
+        //            "hdp-2.2", "hdp-2.3", "hdp-2.4", "hdp-2.5", "hdp-2.6"]
 
+        versions = ["hdp-2.2"]
         versions.each { version ->
             sh  """
                 docker pull docker.h2o.ai/opsh2oai/h2o-3-hadoop-$version:47
@@ -22,8 +23,10 @@ node('docker && !mr-0xc8') {
     }
 
     stage("Publish Docker Images for Hadoop Smoke tests"){
-        versions = ["cdh-5.4","cdh-5.5","cdh-5.6", "cdh-5.7", "cdh-5.8", "cdh-5.10", "cdh-5.13", "cdh-5.14",
-                    "hdp-2.2", "hdp-2.3", "hdp-2.4", "hdp-2.5", "hdp-2.6"]
+        //versions = ["cdh-5.4","cdh-5.5","cdh-5.6", "cdh-5.7", "cdh-5.8", "cdh-5.10", "cdh-5.13", "cdh-5.14",
+        //            "hdp-2.2", "hdp-2.3", "hdp-2.4", "hdp-2.5", "hdp-2.6"]
+
+        versions = ["hdp-2.2"]
 
         versions.each { version ->
             sh  """
