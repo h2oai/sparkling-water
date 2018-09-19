@@ -46,66 +46,71 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 unit_test_utils.tear_down_class(cls)
 
         def test_import_orc_hdfs(self):
-                userdata_orc_hdfs = "hdfs://127.0.0.1/user/jenkins/prostate_NA.orc"
-                userdata_orc_hdfs_df = h2o.import_file(path=userdata_orc_hdfs, header=1)
-                assert userdata_orc_hdfs_df.ncol == 9
-                assert userdata_orc_hdfs_df.nrow == 380
-                assert userdata_orc_hdfs_df[0, 2] == 65.0
-                assert userdata_orc_hdfs_df[4, 4] == 1.0
-                assert userdata_orc_hdfs_df[379, 8] == 6.0
+                fr = h2o.import_file(path="hdfs://127.0.0.1/user/jenkins/prostate_NA.orc", header=1)
+                assert fr.ncol == 9
+                assert fr.nrow == 380
+                assert fr[0, 2] == 65.0
+                assert fr[4, 4] == 1.0
+                assert fr[379, 8] == 6.0
 
         def test_export_orc_hdfs(self):
-                userdata_orc_hdfs = "hdfs://127.0.0.1/user/jenkins/prostate_NA.orc"
-                userdata_orc_hdfs_df = h2o.import_file(path=userdata_orc_hdfs, header=1)
-                userdata_orc_hdfs_export = "hdfs://127.0.0.1/user/jenkins/prostate_NA_export.orc"
+                fr = h2o.import_file(path="hdfs://127.0.0.1/user/jenkins/prostate_NA.orc", header=1)
+                export_path = "hdfs://127.0.0.1/user/jenkins/prostate_NA_export.orc"
                 failure = False
                 try:
-                        h2o.export_file(frame=userdata_orc_hdfs_df, path=userdata_orc_hdfs_export, force=True)
+                        h2o.export_file(frame=fr, path=export_path, force=True)
                 except:
                         failure = True
                 assert not failure
+
+                imported = h2o.import_file(path=export_path, header=1)
+                assert imported.ncol == fr.ncol
+                assert imported.nrow == fr.nrow
+
 
         def test_import_parquet_hdfs(self):
-                userdata_parquet_hdfs = "hdfs://127.0.0.1/user/jenkins/airlines-simple.snappy.parquet"
-                userdata_parquet_hdfs_df = h2o.import_file(path=userdata_parquet_hdfs, header=1)
-                assert userdata_parquet_hdfs_df.ncol == 12
-                assert userdata_parquet_hdfs_df.nrow == 24421
-                assert userdata_parquet_hdfs_df[0, 0] == "f1987"
-                assert userdata_parquet_hdfs_df[0, 11] == 1.0
-                assert userdata_parquet_hdfs_df[24420,6] == "UA"
+                fr = h2o.import_file(path="hdfs://127.0.0.1/user/jenkins/airlines-simple.snappy.parquet", header=1)
+                assert fr.ncol == 12
+                assert fr.nrow == 24421
+                assert fr[0, 0] == "f1987"
+                assert fr[0, 11] == 1.0
+                assert fr[24420, 6] == "UA"
 
         def test_export_parquet_hdfs(self):
-                userdata_parquet_hdfs = "hdfs://127.0.0.1/user/jenkins/airlines-simple.snappy.parquet"
-                userdata_parquet_hdfs_df = h2o.import_file(path=userdata_parquet_hdfs, header=1)
-                userdata_parquet_hdfs_export = "hdfs://127.0.0.1/user/jenkins/airlines-simple.snappy_export.parquet"
+                fr = h2o.import_file(path="hdfs://127.0.0.1/user/jenkins/airlines-simple.snappy.parquet", header=1)
+                export_path = "hdfs://127.0.0.1/user/jenkins/airlines-simple.snappy_export.parquet"
                 failure = False
                 try:
-                        h2o.export_file(frame=userdata_parquet_hdfs_df,path=userdata_parquet_hdfs_export, force=True)
+                        h2o.export_file(frame=fr, path=export_path, force=True)
                 except:
                         failure = True
                 assert not failure
 
+                imported = h2o.import_file(path=export_path, header=1)
+                assert imported.ncol == fr.ncol
+                assert imported.nrow == fr.nrow
+        #
         # def test_import_xls_hdfs(self):
-        #         salesorder_xls_hdfs = "hdfs://127.0.0.1/user/jenkins/salesorder.xls"
-        #         salesorder_xls_hdfs_df = h2o.import_file(path=salesorder_xls_hdfs, header=1)
-        #         assert salesorder_xls_hdfs_df.ncol == 7
-        #         assert salesorder_xls_hdfs_df.nrow == 43
-        #         assert salesorder_xls_hdfs_df[0, 0] == 42375
-        #         assert salesorder_xls_hdfs_df[4, 2] == "Sorvino"
-        #         assert salesorder_xls_hdfs_df[10, 4] == 90
-        #         assert salesorder_xls_hdfs_df[42, 6] == 139.72
+        #         userdata_xls_hdfs = "hdfs://127.0.0.1/user/jenkins/salesorder.xls"
+        #         userdata_xls_hdfs_df = h2o.import_file(path=userdata_xls_hdfs, header=1)
+        #         assert userdata_xls_hdfs_df.ncol == 7
+        #         assert userdata_xls_hdfs_df.nrow == 43
+        #         assert userdata_xls_hdfs_df[0, 0] == 42375
+        #         assert userdata_xls_hdfs_df[4, 2] == "Sorvino"
+        #         assert userdata_xls_hdfs_df[10, 4] == 90
+        #         assert userdata_xls_hdfs_df[42, 6] == 139.72
         #
         # def test_export_xls_hdfs(self):
-        #         salesorder_xls_hdfs = "hdfs://127.0.0.1/user/jenkins/salesorder.xls"
-        #         salesorder_xls_hdfs_df = h2o.import_file(path=salesorder_xls_hdfs, header=1)
-        #         salesorder_xls_hdfs_export = "hdfs://172.17.0.24/user/h2o/salesorder_export.xls"
-        #         isOK = True
+        #         userdata_xls_hdfs = "hdfs://127.0.0.1/user/jenkins/salesorder.xls"
+        #         userdata_xls_hdfs_df = h2o.import_file(path=salesorder_xls_hdfs, header=1)
+        #         userdata_xls_hdfs_export = "hdfs://127.0.0.1/user/jenkins/salesorder_export.xls"
+        #         failure = False
         #         try:
         #                 h2o.export_file(frame=salesorder_xls_hdfs_df,path=salesorder_xls_hdfs_export,force=True)
         #         except:
-        #                 isOK = False
-        #         assert isOK
-        #
+        #                 failure = True
+        #         assert not failure
+
         # def test_import_txt_hive(self):
         #         hivesample_txt_hive = "hdfs://172.17.0.24/hive/warehouse/hivesampletable/"
         #         hivesample_txt_hive_df = h2o.import_file(path=hivesample_txt_hive)
