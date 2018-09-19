@@ -1,4 +1,4 @@
-FROM docker.h2o.ai/opsh2oai/h2o-3-hadoop-cdh-5.14:50
+FROM docker.h2o.ai/opsh2oai/h2o-3-hadoop-cdh-5.14:49
 
 ENV LANG 'C.UTF-8'
 RUN locale
