@@ -29,7 +29,9 @@ from pyspark.sql import SparkSession
 
 from pysparkling.conf import H2OConf
 from pysparkling.context import H2OContext
-
+from datetime import datetime
+from pandas.util.testing import assert_frame_equal
+import uuid
 
 # Hadoop Smoke Test Suite
 class HadoopSmokeTestSuite(unittest.TestCase):
@@ -125,28 +127,23 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 assert fr[2690, 11] == 1.0
 
 
-        def test_import_s3(self):
-                fr = h2o.import_file(path="https://s3.amazonaws.com/h2o-airlines-unpacked/allyears2k.csv")
-                assert fr.ncol == 31
-                assert fr.nrow == 43978
-                assert fr[0, 0] == 1987.0
-                assert fr[10, 10] == "NA"
-                assert fr[43977, 30] == "YES"
+        def s3_import_export(self, scheme):
+                local_frame = h2o.import_file("/home/0xdiag/smalldata/logreg/prostate.csv")
+                timestamp = datetime.today().utcnow().strftime("%Y%m%d-%H%M%S")
+                unique_suffix = str(uuid.uuid4())
+                s3_path = scheme + "://test.0xdata.com/h2o-hadoop-tests/test-export/" + scheme + "/exported." + \
+                          timestamp + "." + unique_suffix + ".csv.zip"
+                h2o.export_file(local_frame, s3_path)
+                s3_frame = h2o.import_file(s3_path)
+                assert_frame_equal(local_frame.as_data_frame(), s3_frame.as_data_frame())
 
-        def test_export_s3(self):
-                fr = h2o.import_file(path="https://s3.amazonaws.com/h2o-airlines-unpacked/allyears2k.csv")
-                export_path = "https://s3.amazonaws.com/h2o-airlines-unpacked/allyears2k_export.csv"
-                failure = False
-                try:
-                        h2o.export_file(frame=fr, path=export_path, force=True)
-                except:
-                        failure = True
-                assert not failure
+        def s3a_import_export(self):
+                self.s3_import_export("s3a")
 
-                imported = h2o.import_file(path=export_path)
-                assert imported.ncol == fr.ncol
-                assert imported.nrow == fr.nrow
-        
+        def s3n_import_export(self):
+                self.s3_import_export("s3n")
+
+
 
 if __name__ == '__main__':
         generic_test_utils.run_tests([HadoopSmokeTestSuite], file_name="py_hadoop_smoke_tests_report")
