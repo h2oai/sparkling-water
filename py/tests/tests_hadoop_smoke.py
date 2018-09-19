@@ -66,14 +66,13 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 assert not failure
 
         def test_import_parquet_hdfs(self):
-                userdata_parquet_hdfs = "hdfs://172.17.0.24/user/jenkins/airlines-simple.snappy.parquet"
+                userdata_parquet_hdfs = "hdfs://127.0.0.1/user/jenkins/airlines-simple.snappy.parquet"
                 userdata_parquet_hdfs_df = h2o.import_file(path=userdata_parquet_hdfs, header=1)
-                assert userdata_parquet_hdfs_df.ncol == 13
-                assert userdata_parquet_hdfs_df.nrow == 1000
-                assert userdata_parquet_hdfs_df[0, 2] == "Donald"
-                assert userdata_parquet_hdfs_df[4, 4] == "hmiller4@fema.gov"
-                assert userdata_parquet_hdfs_df[999, 2] == "Alice"
-                assert userdata_parquet_hdfs_df[999, 7] == "5602227843485236"
+                assert userdata_parquet_hdfs_df.ncol == 12
+                assert userdata_parquet_hdfs_df.nrow == 24421
+                assert userdata_parquet_hdfs_df[0, 0] == "f1987"
+                assert userdata_parquet_hdfs_df[0, 11] == 1.0
+                assert userdata_parquet_hdfs_df[24420,6] == "UA"
 
         def test_export_parquet_hdfs(self):
                 userdata_parquet_hdfs = "hdfs://127.0.0.1/user/jenkins/airlines-simple.snappy.parquet"
