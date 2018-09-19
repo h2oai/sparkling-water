@@ -1,7 +1,7 @@
 #!/usr/bin/groovy
 @Library('test-shared-library') _
 
-IMAGE_VERSION = 2
+IMAGE_VERSION = 1
 CLUSTER_MODE = "internal"
 
 // Only PR builds have the CHANGE_BRANCH set
