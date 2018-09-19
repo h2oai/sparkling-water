@@ -49,10 +49,10 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 userdata_orc_hdfs = "hdfs://127.0.0.1/user/jenkins/prostate_NA.orc"
                 userdata_orc_hdfs_df = h2o.import_file(path=userdata_orc_hdfs, header=1)
                 assert userdata_orc_hdfs_df.ncol == 9
-                assert userdata_orc_hdfs_df.nrow == 381
+                assert userdata_orc_hdfs_df.nrow == 380
                 assert userdata_orc_hdfs_df[0, 2] == "65"
                 assert userdata_orc_hdfs_df[4, 4] == "1"
-                assert userdata_orc_hdfs_df[380, 8] == "6"
+                assert userdata_orc_hdfs_df[379, 8] == "6"
 
         def test_export_orc_hdfs(self):
                 userdata_orc_hdfs = "hdfs://127.0.0.1/user/jenkins/prostate_NA.orc"
