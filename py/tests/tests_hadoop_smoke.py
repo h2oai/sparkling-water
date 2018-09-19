@@ -135,10 +135,10 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 s3_frame = h2o.import_file(s3_path)
                 assert_frame_equal(local_frame.as_data_frame(), s3_frame.as_data_frame())
 
-        def s3a_import_export(self):
+        def test_s3a_import_export(self):
                 self.s3_import_export("s3a")
 
-        def s3n_import_export(self):
+        def test_s3n_import_export(self):
                 self.s3_import_export("s3n")
 
 
