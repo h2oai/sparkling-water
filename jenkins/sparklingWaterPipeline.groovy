@@ -95,9 +95,9 @@ def withDocker(config, code) {
 def getGradleCommand(config) {
     def gradleStr
     if (config.buildAgainstH2OBranch.toBoolean()) {
-        gradleStr = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew org.gradle.internal.launcher.welcomeMessageEnabled=false --include-build ${env.WORKSPACE}/h2o-3"
+        gradleStr = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false --include-build ${env.WORKSPACE}/h2o-3"
     } else {
-        gradleStr = "${env.WORKSPACE}/gradlew org.gradle.internal.launcher.welcomeMessageEnabled=false"
+        gradleStr = "${env.WORKSPACE}/gradlew -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
     }
 
     if (config.buildAgainstSparkBranch.toBoolean()) {
