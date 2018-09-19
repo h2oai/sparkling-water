@@ -159,8 +159,6 @@ pipeline {
                         docker.image('opsh2oai/sparkling_water_tests:7').inside("--init --dns 172.16.0.200") {
 
                             withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
-                                sh " ${env.WORKSPACE}/gradlew --help "
-
                                 sh """
                                 sed -i.backup -E "s/\\.([0-9]+)-SNAPSHOT/.\\1/" gradle.properties
                                 REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
@@ -176,7 +174,7 @@ pipeline {
 
                                 # Fetch H2O python package
                                 mkdir -p private/
-                                curl \$(./gradlew -q printH2OWheelPackage ) > private/h2o.whl
+                                curl \$(./gradlew -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false -q printH2OWheelPackage ) > private/h2o.whl
                                 export H2O_PYTHON_WHEEL="\$(pwd)/private/h2o.whl"
 
                                 # Perform a build
@@ -201,7 +199,6 @@ pipeline {
                             withCredentials([usernamePassword(credentialsId: "PUBLIC_NEXUS", usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD'),
                                              usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
                                              file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
-                                sh " ${env.WORKSPACE}/gradlew --help "
                                 sh  """
                                     ./gradlew -PdoRelease -Porg.gradle.daemon=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password= publishToNexus -x check
                                     """
@@ -220,10 +217,9 @@ pipeline {
                 script {
                     docker.withRegistry("https://docker.h2o.ai") {
                         docker.image('opsh2oai/sparkling_water_tests:7').inside("--init --dns 172.16.0.200") {
-                            sh " ${env.WORKSPACE}/gradlew --help "
                             sh """
                                     # Create extended H2O jar for all supported hadoop distributions
-                                    HADOOP_DISTRIBUTIONS=`./gradlew -q :sparkling-water-assembly-h2o:printHadoopDistributions)`
+                                    HADOOP_DISTRIBUTIONS=`./gradlew -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false -q :sparkling-water-assembly-h2o:printHadoopDistributions)`
                                     for distro in \${HADOOP_DISTRIBUTIONS}
                                     do
                                       ./gradlew -PdoExtend extendJar -PdownloadH2O="\${distro}"
@@ -247,8 +243,6 @@ pipeline {
                         docker.image('opsh2oai/sparkling_water_tests:7').inside("--init --dns 172.16.0.200") {
 
                             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                                sh " ${env.WORKSPACE}/gradlew --help "
-
                                 sh """
                                         REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
                                         PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
@@ -384,8 +378,6 @@ EOF
                     docker.withRegistry("https://docker.h2o.ai") {
                         docker.image('opsh2oai/sparkling_water_tests:7').inside("--init --dns 172.16.0.200") {
                             withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
-                            sh " ${env.WORKSPACE}/gradlew --help "
-
                             sh """
                                # Copy keys
                                mkdir -p ~/.ssh
