@@ -21,6 +21,7 @@ How to...
    ldap
    kerberos_auth
    kerberized_cluster
+   secured_flow
 
 **Frames Conversions and Creation**
 
