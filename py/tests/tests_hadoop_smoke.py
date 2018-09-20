@@ -126,13 +126,13 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 assert fr[2690, 11] == 1.0
 
         def test_s3n_import(self):
-                fr = h2o.import_file("s3n://h2o-airlines-unpacked/allyears2k.csv", header=1)
+                fr = h2o.import_file("s3n://h2o-airlines-unpacked/allyears2k.csv")
                 assert fr.ncol == 31
                 assert fr.nrow == 43978
 
 
         def test_s3a_import(self):
-                fr = h2o.import_file("s3a://h2o-airlines-unpacked/allyears2k.csv", header=1)
+                fr = h2o.import_file("s3a://h2o-airlines-unpacked/allyears2k.csv")
                 assert fr.ncol == 31
                 assert fr.nrow == 43978
 
