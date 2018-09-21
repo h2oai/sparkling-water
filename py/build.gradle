@@ -83,7 +83,7 @@ def preparePythonTestEnv(environment) {
     }
     gradle.taskGraph.whenReady {
         if (gradle.taskGraph.hasTask(":${project.name}:hadoopSmokeTests")) {
-            environment["sparkling.s3.jars"] = configurations.mojopipeline.resolve().join(",")
+            environment["sparkling.s3.jars"] = configurations.s3deps.resolve().join(",")
         }
     }
 }
