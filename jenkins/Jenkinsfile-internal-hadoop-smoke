@@ -136,7 +136,6 @@ echo "spark.hadoop.fs.s3a.secret.key          ${AWS_SECRET_ACCESS_KEY}" >> ${env
 echo "spark.hadoop.fs.s3n.impl                org.apache.hadoop.fs.s3native.NativeS3FileSystem" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
 echo "spark.hadoop.fs.s3n.awsAccessKeyId      ${AWS_ACCESS_KEY_ID}" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
 echo "spark.hadoop.fs.s3n.awsSecretAccessKey  ${AWS_SECRET_ACCESS_KEY}" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
-echo "spark.jars.packages com.amazonaws:aws-java-sdk:1.7.4,org.apache.hadoop:hadoop-aws:2.7.3" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                     """
                 }
             }
