@@ -25,6 +25,9 @@ def get_default_spark_conf():
         set("spark.ext.h2o.cloud.name", unique_cloud_name("test")). \
         set("spark.ext.h2o.external.start.mode", os.getenv("spark.ext.h2o.external.start.mode", "manual"))
 
+    if os.getenv("sparkling.s3.jars", "empty") is not "empty":
+        conf.set("spark.jars", os.getenv("sparkling.s3.jars"))
+
     if os.getenv("sparkling.mojo.pipeline.jar", "empty") is not "empty":
         conf.set("spark.jars", os.getenv("sparkling.mojo.pipeline.jar"))
 
