@@ -12,6 +12,7 @@ description = "PySparkling - Sparkling-Water Python Package"
 
 configurations {
     mojopipeline
+    s3deps
 }
 
 dependencies {
@@ -20,6 +21,9 @@ dependencies {
     if (project.property("testMojoPipeline") == "true") {
         mojopipeline "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
     }
+
+    s3deps "com.amazonaws:aws-java-sdk:1.7.4"
+    s3deps "org.apache.hadoop:hadoop-aws:2.7.3"
 }
 
 task resolveTestRuntimeDependencies {
@@ -76,6 +80,11 @@ def preparePythonTestEnv(environment) {
 
     if (project.property("testMojoPipeline") == "true") {
         environment["sparkling.mojo.pipeline.jar"] = configurations.mojopipeline.resolve().join(",")
+    }
+    gradle.taskGraph.whenReady {
+        if (gradle.taskGraph.hasTask(":${project.name}:hadoopSmokeTests")) {
+            environment["sparkling.s3.jars"] = configurations.mojopipeline.resolve().join(",")
+        }
     }
 }
 //
