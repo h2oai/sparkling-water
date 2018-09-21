@@ -113,17 +113,17 @@ class HadoopSmokeTestSuite(unittest.TestCase):
                 assert imported.ncol == fr.ncol
                 assert imported.nrow == fr.nrow
 
-        def test_import_hive(self):
-                connection_url = "jdbc:hive2://localhost:10000/default"
-                select_query = "select * from airlinestest"
-                username = "hive"
-                password = ""
-                fr = h2o.import_sql_select(connection_url, select_query, username, password)
-                assert fr.ncol == 12
-                assert fr.nrow == 2691
-                assert fr[0, 0] == "f1987"
-                assert fr[2690, 0] == "f2000"
-                assert fr[2690, 11] == 1.0
+        # def test_import_hive(self):
+        #         connection_url = "jdbc:hive2://localhost:10000/default"
+        #         select_query = "select * from airlinestest"
+        #         username = "hive"
+        #         password = ""
+        #         fr = h2o.import_sql_select(connection_url, select_query, username, password)
+        #         assert fr.ncol == 12
+        #         assert fr.nrow == 2691
+        #         assert fr[0, 0] == "f1987"
+        #         assert fr[2690, 0] == "f2000"
+        #         assert fr[2690, 11] == 1.0
 
         def test_s3n_import(self):
                 fr = h2o.import_file("s3n://data.h2o.ai/h2o-open-tour/2016-nyc/weather.csv")
