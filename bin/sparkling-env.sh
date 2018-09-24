@@ -40,6 +40,27 @@ function getJarsArg() {
     done
 }
 
+function checkPythonPackages() {
+    packages=$(pip list --format=freeze | cut -f 1 -d "=")
+    error=0
+    checkPythonPackage "$packages" "colorama"
+    checkPythonPackage "$packages" "requests"
+    checkPythonPackage "$packages" "tabulate"
+    checkPythonPackage "$packages" "future"
+
+    if [ $error == -1 ]; then
+        exit -1
+    fi
+}
+
+function checkPythonPackage() {
+    res=$(echo $1 | tr " " "\n" | grep $2)
+    if [ -z "$res" ]; then
+        echo "\"$2\" package is not installed, please install it as: pip install $2"
+        error=-1
+    fi
+}
+
 if [ -z "$TOPDIR" ]; then
   echo "Caller has to setup TOPDIR variable!"
   exit -1
