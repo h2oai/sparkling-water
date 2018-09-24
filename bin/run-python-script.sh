@@ -12,6 +12,8 @@ checkSparkHome
 checkSparkVersion
 # Check sparkling water assembly Jar exists
 checkPyZipExists
+# Check existence of dependant Python packages
+checkPythonPackages
 
 SCRIPT_MASTER=${MASTER:-"$DEFAULT_MASTER"}
 SCRIPT_DEPLOY_MODE="cluster"
