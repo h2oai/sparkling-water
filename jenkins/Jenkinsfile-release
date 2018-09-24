@@ -158,7 +158,7 @@ pipeline {
 
                                     wget https://github.com/github/hub/releases/download/v2.5.1/hub-linux-amd64-2.5.1.tgz
                                     tar -xvf hub-linux-amd64-2.5.1.tgz
-                                    /hub-linux-amd64-2.5.1/bin/hub pull-request -m "Release RSparkling \$RSPARKLING_VERSION on Sparkling Water branch master"
+                                    ./hub-linux-amd64-2.5.1/bin/hub pull-request -m "Release RSparkling \$RSPARKLING_VERSION on Sparkling Water branch master"
                                     git checkout ${env.BRANCH_NAME}
                                     """
                             }
