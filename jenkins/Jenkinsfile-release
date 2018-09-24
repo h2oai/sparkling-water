@@ -151,11 +151,14 @@ pipeline {
                                     git config --add remote.origin.fetch +refs/heads/master:refs/remotes/origin/master
                                     git fetch --no-tags
                                     git checkout master
+                                    git checkout -b "master-rsparkling-\$RSPARKLING_VERSION"
                                     git cherry-pick -n \$RSPARKLING_REL_COMMIT
                                     git commit -m "Release RSparkling \$RSPARKLING_VERSION on Sparkling Water branch master"
-                                    git push --set-upstream origin master
+                                    git push --set-upstream origin master-rsparkling-\$RSPARKLING_VERSION
 
-
+                                    wget https://github.com/github/hub/releases/download/v2.5.1/hub-linux-amd64-2.5.1.tgz
+                                    tar -xvf hub-linux-amd64-2.5.1.tgz
+                                    /hub-linux-amd64-2.5.1/bin/hub pull-request -m "Release RSparkling \$RSPARKLING_VERSION on Sparkling Water branch master"
                                     git checkout ${env.BRANCH_NAME}
                                     """
                             }
