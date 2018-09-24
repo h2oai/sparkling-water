@@ -31,6 +31,7 @@ How to...
    spark_h2o_conversions
    h2oframe_as_data_source
    h2o_frame_from_key
+   import_export_s3
 
 **Modelling**
 
