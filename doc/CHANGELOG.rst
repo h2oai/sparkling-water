@@ -1,6 +1,35 @@
 Change Log
 ==========
 
+v2.1.39 (2018-09-24)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/39/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/39/index.html>`__
+
+-  New Feature
+        
+   -  `SW-1020 <https://0xdata.atlassian.net/browse/SW-1020>`__ - Expose leaderboard on H2OAutoML
+   -  `SW-1022 <https://0xdata.atlassian.net/browse/SW-1022>`__ - Display Release creation date on the download page
+                
+-  Improvement
+        
+   -  `SW-1024 <https://0xdata.atlassian.net/browse/SW-1024>`__ - remove call to ./gradlew --help in jenkins pipeline
+   -  `SW-1025 <https://0xdata.atlassian.net/browse/SW-1025>`__ - Ensure that release does not depend on build id
+   -  `SW-1026 <https://0xdata.atlassian.net/browse/SW-1026>`__ - Automatically update master after RSparkling release with latest version
+   -  `SW-1030 <https://0xdata.atlassian.net/browse/SW-1030>`__ - [RSparkling] In case only path to SW jar file is specified, discover the version from JAR file instead of requiring it as parameter
+   -  `SW-1031 <https://0xdata.atlassian.net/browse/SW-1031>`__ - Enable installation ot RSparkling using devtools from Github repo
+   -  `SW-1032 <https://0xdata.atlassian.net/browse/SW-1032>`__ - Upgrade mojo pipeline to 0.13.2
+   -  `SW-1033 <https://0xdata.atlassian.net/browse/SW-1033>`__ - Document automatic certificate creation for Flow UI
+   -  `SW-1034 <https://0xdata.atlassian.net/browse/SW-1034>`__ - PySparkling fails if we specify https argument as part of getOrCreate()
+   -  `SW-1035 <https://0xdata.atlassian.net/browse/SW-1035>`__ - Document using s3a and s3n on Sparkling Water
+   -  `SW-1036 <https://0xdata.atlassian.net/browse/SW-1036>`__ - Upgrade to H2O 3.20.0.8
+   -  `SW-1038 <https://0xdata.atlassian.net/browse/SW-1038>`__ - The shell script bin/pysparkling should print missing dependencies
+   -  `SW-1039 <https://0xdata.atlassian.net/browse/SW-1039>`__ - Upgrade Gradle to 4.10.2
+                
+-  Docs
+        
+   -  `SW-1018 <https://0xdata.atlassian.net/browse/SW-1018>`__ - Fix link to Installing RSparkling on Windows 
+                
+                            
 v2.1.38 (2018-09-14)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/38/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/38/index.html>`__
