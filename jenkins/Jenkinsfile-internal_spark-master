@@ -32,7 +32,7 @@ node('docker && micro') {
             buildAgainstH2OBranch = "false"
             h2oBranch = "master"
             buildAgainstSparkBranch = "true"
-            sparkBranch = "branch-2.3"
+            sparkBranch = "branch-2.4"
             hadoopVersion = "2.7"
             backendMode = "internal"
             buildNightly = "false"
