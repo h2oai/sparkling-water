@@ -19,6 +19,22 @@ function checkSparkHome() {
   fi
 }
 
+function removeArgWithParam() {
+    filter=$1
+    shift
+    arg_list=""
+    skip_next=0
+    for arg in $@
+    do
+        shift
+        [ $skip_next = 1 ] && skip_next=0 && continue
+        [ "$arg" = "$filter" ] && skip_next=1 && continue
+        arg_list="$arg_list $arg"
+    done
+
+    echo "$arg_list"
+}
+
 function getMasterArg() {
     # Find master in arguments
     while [[ $# -gt 0 ]]
@@ -39,6 +55,8 @@ function getJarsArg() {
       shift
     done
 }
+
+
 
 function checkPythonPackages() {
     packages=$(pip list --format=freeze | cut -f 1 -d "=")
