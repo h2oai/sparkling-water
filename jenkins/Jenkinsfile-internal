@@ -7,7 +7,7 @@ properties(
                 parameters(
                         [
                                 choice(name: 'sparkVersion',
-                                        choices: '2.3.1\n2.3.0',
+                                        choices: '2.3.2\n2.3.1\n2.3.0',
                                         description: 'Version of Spark used for testing.'),
 
                                 booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit tests'),
@@ -72,7 +72,7 @@ node('docker && micro') {
             backendMode = "internal"
             buildNightly = "false"
             uploadNightly = "false"
-            dockerVersion = "7"
+            dockerVersion = "8"
         }
     }
 }
