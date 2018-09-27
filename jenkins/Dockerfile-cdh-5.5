@@ -90,6 +90,7 @@ RUN cd /home/jenkins && \
     tar zxvf spark-2.1.0-bin-hadoop2.7.tgz -C spark-2.1.0-bin-hadoop2.7 --strip-components 1 && \
     rm -rf spark-2.1.0-bin-hadoop2.7.tgz
 
+ENV SPARK_HOME_2_3_2 /home/jenkins/spark-2.3.2-bin-hadoop2.7
 ENV SPARK_HOME_2_3_1 /home/jenkins/spark-2.3.1-bin-hadoop2.7
 ENV SPARK_HOME_2_3_0 /home/jenkins/spark-2.3.0-bin-hadoop2.7
 ENV SPARK_HOME_2_2_1 /home/jenkins/spark-2.2.1-bin-hadoop2.7
