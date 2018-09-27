@@ -70,8 +70,9 @@ The artifacts coordinates are:
 - ``ai.h2o:sparkling-water-ml_2.11:{{version}}`` - Extends Spark ML package by H2O-based transformations
 - ``ai.h2o:sparkling-water-package_2.11:{{version}}`` - Uber Sparkling Water package referencing all available Sparkling Water modules. This is designed to use as Spark package via ``--packages`` option
 
-   **Note:** The ``{{version}}`` references to a release version of Sparkling Water. For example:
-   ``ai.h2o:sparkling-water-examples_2.11:2.3.1``
+
+**Note:** The ``{{version}}`` references to a release version of Sparkling Water. For example:
+``ai.h2o:sparkling-water-examples_2.11:2.3.2``
 
 The full list of published packages is available
 `here <https://search.maven.org/#search|ga|1|g%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*%20AND%20v%3A2.3*>`__.
