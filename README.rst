@@ -83,7 +83,7 @@ The artifacts coordinates are:
 
    **Note:** The ``{{version}}`` references to a release version of Sparkling Water, the ``{{scala_version}}``
    references to Scala base version (For Sparkling Water 2.3 only ``2.11``). For example:
-   ``ai.h2o:sparkling-water-examples_2.11:2.3.1``
+   ``ai.h2o:sparkling-water-examples_2.11:2.3.2``
 
 The full list of published packages is available
 `here <http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*>`__.
