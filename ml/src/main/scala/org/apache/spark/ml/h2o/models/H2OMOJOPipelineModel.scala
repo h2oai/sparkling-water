@@ -139,7 +139,7 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
     val names = flatten.schema.fields.map(f => flatten(f.name))
 
     // get the altered frame
-    var converted = flatten.select(col("*"), modelUdf(flatten.columns)(struct(names: _*)).as(outputCol))
+    val frameWithPredictions = flatten.select(col("*"), modelUdf(flatten.columns)(struct(names: _*)).as(outputCol))
 
     // This behaviour is turned off by default, it can be enabled manually and will be default
     // in the next Major Sparkling Water releases.
@@ -154,16 +154,23 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
       }
 
       val r = new scala.util.Random(31)
-      val tempColNames = getOutputNames().map(n => uniqueRandomName(n, r))
+      val tempColNames = getOutputNames().map(uniqueRandomName(_, r))
       val tempCols = tempColNames.map(col)
-      // Transform the resulted Array of predictions into own columns
-      getOutputNames().indices.foreach { idx =>
-        val name = getOutputNames()(idx)
-        converted = converted.withColumn(tempColNames(idx), selectFromArray(idx)(converted.col(outputCol + ".preds")))
-          .withColumn(outputCol, struct(tempCols.map(_.alias(name)): _*))
-          .drop(tempColNames(idx))
 
-      }
+
+      // Transform the resulted Array of predictions into own but temporary columns
+      // Temporary columns are created as we can't create the columns directly as nested ones
+      val predictionCols = getOutputNames().indices.map(idx => selectFromArray(idx)(frameWithPredictions.col(outputCol + ".preds")))
+      val frameWithExtractedPredictions = frameWithPredictions.withColumns(tempColNames, predictionCols)
+
+      // Transform the columns at the top level under "output" column
+      val nestedPredictionCols = tempColNames.indices.map { idx => tempCols(idx).alias(getOutputNames()(idx)) }
+      val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(outputCol, struct(nestedPredictionCols: _*))
+
+      // Remove the temporary columns at the top level and return
+      val frameWithoutTempCols = frameWithNestedPredictions.drop(tempColNames: _*)
+
+      frameWithoutTempCols
     } else {
       logWarning(
         """
@@ -174,9 +181,9 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
           | separately and are named correctly.
           |
         """.stripMargin)
-    }
 
-    converted
+      frameWithPredictions
+    }
   }
 
   def predictionSchema(): Seq[StructField] = {
@@ -208,7 +215,7 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
       val func = udf[Double, Double] {
         identity
       }
-      func(col(s"$outputCol.$column")).alias(column)
+      func(col(s"$outputCol.`$column`")).alias(column)
     } else {
       val func = selectFromArray(getOutputNames().indexOf(column))
       func(col(s"$outputCol.preds")).alias(column)
