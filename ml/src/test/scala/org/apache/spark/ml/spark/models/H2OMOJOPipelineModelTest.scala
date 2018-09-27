@@ -126,6 +126,28 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     assertPredictedValuesForNamedCols(udfSelection.take(5))
   }
 
+  test("Named columns with multiple output columns") {
+
+    val filePath = getClass.getResource("/mojo2_multiple_outputs/example.csv").getFile
+    val df = spark.read.option("header", "true").csv(filePath)
+    import org.apache.spark.ml.h2o.models._
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("mojo2_multiple_outputs/pipeline.mojo"),
+      "iris_pipeline.mojo")
+    mojo.setNamedMojoOutputColumns(true)
+    assert(mojo.getOutputNames().length == 3)
+
+    val transDf = mojo.transform(df)
+    val udfSelection = transDf.select(mojo.selectPredictionUDF("class.Iris-setosa"))
+    val normalSelection = transDf.select("prediction.`class.Iris-setosa`") // we need to use ` as the dot is
+    // part of the column name, it does not represent the nested column
+
+    // Check that frames returned using udf and normal selection are the same
+    assert(udfSelection.schema.head.name==normalSelection.schema.head.name)
+    assert(udfSelection.schema.head.dataType==normalSelection.schema.head.dataType)
+    assert(udfSelection.first()==normalSelection.first())
+
+  }
   test("Selection using udf on non-existent column"){
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
