@@ -59,12 +59,12 @@ function getJarsArg() {
 
 
 function checkPythonPackages() {
-    packages=$(pip list --format=freeze | cut -f 1 -d "=")
+    packages=$(pip list --format=freeze)
     error=0
-    checkPythonPackage "$packages" "colorama"
+    checkPythonPackage "$packages" "colorama" "0.3.8"
     checkPythonPackage "$packages" "requests"
     checkPythonPackage "$packages" "tabulate"
-    checkPythonPackage "$packages" "future"
+    checkPythonPackage "$packages" "future" "0.4.0"
 
     if [ $error == -1 ]; then
         exit -1
@@ -72,10 +72,28 @@ function checkPythonPackages() {
 }
 
 function checkPythonPackage() {
-    res=$(echo $1 | tr " " "\n" | grep $2)
+    res=$(echo $1 | tr " " "\n" | grep "^$2==*")
     if [ -z "$res" ]; then
         echo "\"$2\" package is not installed, please install it as: pip install $2"
         error=-1
+    else
+        if [ ! -z "$3" ]; then
+            # check version
+            major_min=$(echo $3 | cut -f1 -d.)
+            minor_min=$(echo $3 | cut -f2 -d.)
+            patch_min=$(echo $3 | cut -f3 -d.)
+
+            current_version=$(echo $res | cut -f3 -d=)
+            major_curr=$(echo $current_version | cut -f1 -d.)
+            minor_curr=$(echo $current_version | cut -f2 -d.)
+            patch_curr=$(echo $current_version | cut -f3 -d.)
+
+            [ $major_curr -lt $major_min ] && echo "Please upgrade $2 to version at least $3 as: pip install --upgrade $2==$3" && exit
+            [ $minor_curr -lt $minor_min ] && echo "Please upgrade $2 to version at least $3 as: pip install --upgrade $2==$3" && exit
+            [ $patch_curr -lt $patch_min ] && echo "Please upgrade $2 to version at least $3 as: pip install --upgrade $2==$3" && exit
+
+        fi
+
     fi
 }
 
