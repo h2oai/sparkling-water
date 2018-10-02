@@ -160,8 +160,11 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
 
       // Transform the resulted Array of predictions into own but temporary columns
       // Temporary columns are created as we can't create the columns directly as nested ones
-      val predictionCols = getOutputNames().indices.map(idx => selectFromArray(idx)(frameWithPredictions.col(outputCol + ".preds")))
-      val frameWithExtractedPredictions = frameWithPredictions.withColumns(tempColNames, predictionCols)
+      var frameWithExtractedPredictions: DataFrame = frameWithPredictions
+      getOutputNames().indices.foreach{ idx =>
+        frameWithExtractedPredictions = frameWithExtractedPredictions.withColumn(tempColNames(idx),
+          selectFromArray(idx)(frameWithExtractedPredictions.col(outputCol + ".preds")))
+      }
 
       // Transform the columns at the top level under "output" column
       val nestedPredictionCols = tempColNames.indices.map { idx => tempCols(idx).alias(getOutputNames()(idx)) }
