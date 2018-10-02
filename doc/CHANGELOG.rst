@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+v2.2.26 (2018-10-02)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/26/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/26/index.html>`__
+
+-  Bug
+        
+   -  `SW-1041 <https://0xdata.atlassian.net/browse/SW-1041>`__ - Fix passing --jars to sparkling-shell
+   -  `SW-1042 <https://0xdata.atlassian.net/browse/SW-1042>`__ - More robust check for python package in PySparkling shell
+   -  `SW-1048 <https://0xdata.atlassian.net/browse/SW-1048>`__ - Add missing six dependency to setup.py for PySparkling
+                
+-  Improvement
+        
+   -  `SW-1043 <https://0xdata.atlassian.net/browse/SW-1043>`__ - Mojo pipeline with multiple output columns (and also with dots in the names) does not work in SW
+   -  `SW-1054 <https://0xdata.atlassian.net/browse/SW-1054>`__ - Upgrade H2O dependency to 3.20.0.9
+                
+                                
 v2.2.25 (2018-09-24)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/25/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/25/index.html>`__
