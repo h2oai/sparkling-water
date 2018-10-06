@@ -200,14 +200,14 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
 
   def getInputNames(): Array[String] = getOrCreateModel().getInputMeta.getColumnNames
 
-  def getInputTypes(): Array[String] = {
-    getOrCreateModel().getInputMeta.getColumnTypes.map(_.javatype)
+  def getInputTypes(): Array[Class[_]] = {
+    getOrCreateModel().getInputMeta.getColumnTypes.map(_.javaclass)
   }
 
   def getOutputNames(): Array[String] = getOrCreateModel().getOutputMeta.getColumnNames
 
-  def getOutputTypes(): Array[String] = {
-    getOrCreateModel().getOutputMeta.getColumnTypes.map(_.javatype)
+  def getOutputTypes(): Array[Class[_]] = {
+    getOrCreateModel().getOutputMeta.getColumnTypes.map(_.javaclass)
   }
 
   def selectPredictionUDF(column: String) = {
