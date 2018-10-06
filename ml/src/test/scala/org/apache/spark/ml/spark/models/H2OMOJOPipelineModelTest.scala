@@ -19,6 +19,7 @@ package org.apache.spark.ml.spark.models
 
 import java.sql.{Date, Timestamp}
 
+import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
@@ -55,14 +56,14 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
 
     assert(rawMojo.getOutputMeta.size() == 1)
     assert(rawMojo.getOutputMeta.getColumnName(0) == "AGE")
-    assert(rawMojo.getOutputMeta.getColumnType(0).javaclass == classOf[Double]) // Spark type is int, byt the prediction can be decimal
+    assert(rawMojo.getOutputMeta.getColumnType(0) == MojoColumn.Type.Float64) // Spark type is int, byt the prediction can be decimal
   }
 
 
-  private def sparkTypeToMojoType(sparkType: String): Class[_] = {
+  private def sparkTypeToMojoType(sparkType: String): MojoColumn.Type = {
     sparkType match {
-      case "IntegerType" => classOf[Integer]
-      case "DoubleType" => classOf[Double]
+      case "IntegerType" => MojoColumn.Type.Int32
+      case "DoubleType" => MojoColumn.Type.Float64
     }
   }
 
