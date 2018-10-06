@@ -20,6 +20,7 @@ package org.apache.spark.ml.h2o.models
 import java.io._
 
 import ai.h2o.mojos.runtime.MojoPipeline
+import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.hadoop.fs.Path
@@ -197,14 +198,14 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
 
   def getInputNames(): Array[String] = getOrCreateModel().getInputMeta.getColumnNames
 
-  def getInputTypes(): Array[Class[_]] = {
-    getOrCreateModel().getInputMeta.getColumnTypes.map(_.javaclass)
+  def getInputTypes(): Array[MojoColumn.Type] = {
+    getOrCreateModel().getInputMeta.getColumnTypes
   }
 
   def getOutputNames(): Array[String] = getOrCreateModel().getOutputMeta.getColumnNames
 
-  def getOutputTypes(): Array[Class[_]] = {
-    getOrCreateModel().getOutputMeta.getColumnTypes.map(_.javaclass)
+  def getOutputTypes(): Array[MojoColumn.Type] = {
+    getOrCreateModel().getOutputMeta.getColumnTypes
   }
 
   def selectPredictionUDF(column: String) = {
