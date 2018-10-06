@@ -55,13 +55,15 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaMLReadable):
         return list(self._java_obj.getInputNames())
 
     def get_input_types(self):
-        return list(self._java_obj.getInputTypes())
+        enum_list = list(self._java_obj.getInputTypes())
+        return [enum.name() for enum in enum_list]
 
     def get_output_names(self):
         return list(self._java_obj.getOutputNames())
 
     def get_output_types(self):
-        return list(self._java_obj.getOutputTypes())
+        enum_list = list(self._java_obj.getOutputTypes())
+        return [enum.name() for enum in enum_list]
 
     def get_named_mojo_output_columns(self):
         return self._java_obj.getNamedMojoOutputColumns()
