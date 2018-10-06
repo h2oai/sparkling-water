@@ -46,7 +46,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val rawMojo = mojo.getOrCreateModel()
 
     val mojoInputCols = (0 until rawMojo.getInputMeta.size()).map(rawMojo.getInputMeta.getColumnName(_))
-    val mojoInputTypes = (0 until rawMojo.getInputMeta.size()).map(rawMojo.getInputMeta.getColumnType(_).javatype)
+    val mojoInputTypes = (0 until rawMojo.getInputMeta.size()).map(rawMojo.getInputMeta.getColumnType(_))
     val dfTypes = df.dtypes.filter(_._1 != "AGE").map{case (_, typ) => sparkTypeToMojoType(typ)}.toSeq
 
     assert(rawMojo.getInputMeta.size() == df.columns.length -1) // response column is not on the input
@@ -55,14 +55,14 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
 
     assert(rawMojo.getOutputMeta.size() == 1)
     assert(rawMojo.getOutputMeta.getColumnName(0) == "AGE")
-    assert(rawMojo.getOutputMeta.getColumnType(0).javatype == "double") // Spark type is int, byt the prediction can be decimal
+    assert(rawMojo.getOutputMeta.getColumnType(0).javaclass == classOf[Double]) // Spark type is int, byt the prediction can be decimal
   }
 
 
-  private def sparkTypeToMojoType(sparkType: String): String = {
+  private def sparkTypeToMojoType(sparkType: String): Class[_] = {
     sparkType match {
-      case "IntegerType" => "int"
-      case "DoubleType" => "double"
+      case "IntegerType" => classOf[Integer]
+      case "DoubleType" => classOf[Double]
     }
   }
 
