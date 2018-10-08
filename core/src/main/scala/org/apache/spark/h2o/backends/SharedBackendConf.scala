@@ -77,8 +77,8 @@ trait SharedBackendConf {
   def clientWebEnabled = sparkConf.getBoolean(PROP_CLIENT_ENABLE_WEB._1, PROP_CLIENT_ENABLE_WEB._2)
   def clientFlowBaseurlOverride = sparkConf.getOption(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1)
 
-  def runsInExternalClusterMode: Boolean = backendClusterMode.toLowerCase() == "external"
-  def runsInInternalClusterMode: Boolean = !runsInExternalClusterMode
+  def runsInExternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_EXTERNAL
+  def runsInInternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_INTERNAL
 
   /** Setters */
 
@@ -87,14 +87,14 @@ trait SharedBackendConf {
     if (runsInExternalClusterMode){
       logWarning("Using internal cluster mode!")
     }
-    setBackendClusterMode("internal")
+    setBackendClusterMode(BACKEND_MODE_INTERNAL)
   }
 
   def setExternalClusterMode() = {
     if (runsInInternalClusterMode){
       logWarning("Using external cluster mode!")
     }
-    setBackendClusterMode("external")
+    setBackendClusterMode(BACKEND_MODE_EXTERNAL)
   }
 
   def setCloudName(cloudName: String) = set(PROP_CLOUD_NAME._1, cloudName)
@@ -184,13 +184,16 @@ trait SharedBackendConf {
 
 object SharedBackendConf {
 
+  val BACKEND_MODE_INTERNAL = "internal"
+  val BACKEND_MODE_EXTERNAL = "external"
+
   /**
     * This option can be set either to "internal" or "external"
     * When set to "external" H2O Context is created by connecting to existing H2O cluster, otherwise it creates
     * H2O cluster living in Spark - that means that each Spark executor will have one h2o instance running in it.
     * The internal is not recommended for big clusters and clusters where Spark executors are not stable.
     */
-  val PROP_BACKEND_CLUSTER_MODE = ("spark.ext.h2o.backend.cluster.mode", "internal")
+  val PROP_BACKEND_CLUSTER_MODE = ("spark.ext.h2o.backend.cluster.mode", BACKEND_MODE_INTERNAL)
 
   /** Configuration property - name of H2O cloud */
   val PROP_CLOUD_NAME = ("spark.ext.h2o.cloud.name", None)
