@@ -78,6 +78,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
     )
 
+    if (conf.runAsUser.isDefined) {
+      cmdToLaunch = cmdToLaunch ++ Seq("-run_as_user", conf.runAsUser.get)
+    }
+    
     if (conf.stacktraceCollectorInterval != -1) { // -1 means don't do stacktrace collection
       cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-stacktrace_collector_interval", "-J", conf.stacktraceCollectorInterval.toString)
     }
