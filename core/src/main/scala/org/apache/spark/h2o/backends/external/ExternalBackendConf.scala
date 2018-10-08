@@ -45,8 +45,8 @@ trait ExternalBackendConf extends SharedBackendConf {
   def mapperXmx = sparkConf.get(PROP_EXTERNAL_H2O_MEMORY._1, PROP_EXTERNAL_H2O_MEMORY._2)
   def HDFSOutputDir = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_HDFS_DIR._1)
 
-  def isAutoClusterStartUsed = clusterStartMode == "auto"
-  def isManualClusterStartUsed = !isAutoClusterStartUsed
+  def isAutoClusterStartUsed = clusterStartMode == EXTERNAL_BACKEND_AUTO_MODE
+  def isManualClusterStartUsed = clusterStartMode == EXTERNAL_BACKEND_MANUAL_MODE
 
   def clusterStartMode = sparkConf.get(PROP_EXTERNAL_CLUSTER_START_MODE._1, PROP_EXTERNAL_CLUSTER_START_MODE._2)
   def h2oDriverPath = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_DRIVER_PATH._1)
@@ -130,6 +130,9 @@ trait ExternalBackendConf extends SharedBackendConf {
 
 object ExternalBackendConf {
 
+  val EXTERNAL_BACKEND_AUTO_MODE = "auto"
+  val EXTERNAL_BACKEND_MANUAL_MODE = "manual"
+
   /** ip:port of arbitrary h2o node to identify external h2o cluster */
   val PROP_EXTERNAL_CLUSTER_REPRESENTATIVE = ("spark.ext.h2o.cloud.representative", None)
 
@@ -166,7 +169,7 @@ object ExternalBackendConf {
     * If this option is set to "auto" then h2o external cluster will be automatically started using the provided
     * h2o driver on yarn, otherwise it is expected that the cluster will be started by the user
     */
-  val PROP_EXTERNAL_CLUSTER_START_MODE = ("spark.ext.h2o.external.start.mode", "manual")
+  val PROP_EXTERNAL_CLUSTER_START_MODE = ("spark.ext.h2o.external.start.mode", EXTERNAL_BACKEND_MANUAL_MODE)
 
   /** Path to h2o driver */
   val PROP_EXTERNAL_CLUSTER_DRIVER_PATH = ("spark.ext.h2o.external.h2o.driver", None)
