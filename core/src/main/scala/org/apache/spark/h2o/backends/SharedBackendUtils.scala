@@ -46,7 +46,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     *
     * @param conf H2O Configuration to check
     * @return checked and updated configuration
-    **/
+    * */
   def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
 
@@ -65,9 +65,9 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     }
 
     if (conf.backendClusterMode != "internal" && conf.backendClusterMode != "external") {
-      logWarning(
-        s"""'spark.ext.h2o.backend.cluster.mode' property is set to ${conf.backendClusterMode}.
-          Valid options are "internal" or "external". Running in internal cluster mode now!
+      throw new IllegalArgumentException(
+        s"""'${SharedBackendConf.PROP_BACKEND_CLUSTER_MODE._1}' property is set to ${conf.backendClusterMode}.
+          Valid options are "${SharedBackendConf.BACKEND_MODE_INTERNAL}" or "${SharedBackendConf.BACKEND_MODE_EXTERNAL}".
       """)
     }
 
