@@ -414,6 +414,10 @@ class H2OConf(object):
         self._jconf.setKerberosKeytab(path)
         return self
 
+    def set_run_as_user(self, user):
+        self._jconf.setRunAsUser(user)
+        return self
+
 # getters independent on backend
 
     def backend_cluster_mode(self):
@@ -644,6 +648,9 @@ class H2OConf(object):
 
     def kerberos_keytab(self):
         return self._get_option(self._jconf.kerberosKeytab())
+
+    def run_as_user(self):
+        return self._get_option(self._jconf.runAsUser())
 
     def set(self, key, value):
         self._jconf.set(key, value)
