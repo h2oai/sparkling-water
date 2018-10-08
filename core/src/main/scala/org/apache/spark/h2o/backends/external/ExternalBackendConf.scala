@@ -57,6 +57,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def killOnUnhealthyClusterInterval = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._2)
   def kerberosPrincipal = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_PRINCIPAL._1)
   def kerberosKeytab = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_KEYTAB._1)
+  def runAsUser = sparkConf.getOption(PROP_EXTERNAL_RUN_AS_USER._1)
 
   /** Setters */
 
@@ -116,6 +117,7 @@ trait ExternalBackendConf extends SharedBackendConf {
 
   def setKerberosPrincipal(principal: String) = set(PROP_EXTERNAL_KERBEROS_PRINCIPAL._1, principal)
   def setKerberosKeytab(path: String) = set(PROP_EXTERNAL_KERBEROS_KEYTAB._1, path)
+  def setRunAsUser(user: String) = set(PROP_EXTERNAL_RUN_AS_USER._1, user)
 
   def externalConfString: String =
     s"""Sparkling Water configuration:
@@ -203,5 +205,10 @@ object ExternalBackendConf {
     * Kerberos principal
     */
   val PROP_EXTERNAL_KERBEROS_KEYTAB = ("spark.ext.h2o.external.kerberos.keytab", None)
+
+  /**
+    * Impersonated Hadoop user
+    */
+  val PROP_EXTERNAL_RUN_AS_USER = ("spark.ext.h2o.external.run.as.user", None)
 
 }
