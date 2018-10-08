@@ -264,6 +264,14 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
 
+    if (conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_MANUAL_MODE &&
+      conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_AUTO_MODE) {
+
+      throw new IllegalArgumentException(
+        s"""'${ExternalBackendConf.PROP_EXTERNAL_CLUSTER_START_MODE._1}' property is set to ${conf.clusterStartMode}.
+          Valid options are "${ExternalBackendConf.EXTERNAL_BACKEND_MANUAL_MODE}" or "${ExternalBackendConf.EXTERNAL_BACKEND_AUTO_MODE}".
+      """)
+    }
 
     if (conf.isAutoClusterStartUsed) {
       lazy val driverPath = sys.env.get(ExternalH2OBackend.ENV_H2O_EXTENDED_JAR)
