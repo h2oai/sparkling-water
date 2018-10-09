@@ -193,7 +193,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
     logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
 
-    // Identify IP to which we will bound
     H2OStarter.start(h2oClientArgs, false)
 
     if (hc.getConf.numOfExternalH2ONodes.isDefined) {
