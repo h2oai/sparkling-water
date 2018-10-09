@@ -27,6 +27,7 @@ import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
+import water.init.NetworkUtils
 import water.util.Log
 import water.{H2O, H2OStarter, HeartBeatThread}
 
@@ -170,6 +171,18 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       logInfo("Starting the external H2O cluster on YARN.")
       val ipPort = launchH2OOnYarn(hc.getConf)
       hc._conf.setH2OCluster(ipPort)
+      val clientIp = NetworkUtils.indentifyClientIp(ipPort.split(":")(0))
+      if (clientIp.isDefined && hc._conf.clientIp.isEmpty && hc._conf.clientNetworkMask.isEmpty) {
+          hc._conf.setClientIp(clientIp.get)
+      }
+    } else {
+      // manual mode, check if the user specified the cluster representative
+      if (hc._conf.h2oCluster.isDefined) {
+        val clientIp = NetworkUtils.indentifyClientIp(hc._conf.h2oClusterHost.get)
+        if (clientIp.isDefined && hc._conf.clientIp.isEmpty && hc._conf.clientNetworkMask.isEmpty) {
+          hc._conf.setClientIp(clientIp.get)
+        }
+      }
     }
     logTrace("Starting H2O client node and connecting to external H2O cluster.")
 
@@ -179,6 +192,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       getH2OClientArgs(hc.getConf)
     }
     logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
+
     H2OStarter.start(h2oClientArgs, false)
 
     if (hc.getConf.numOfExternalH2ONodes.isDefined) {

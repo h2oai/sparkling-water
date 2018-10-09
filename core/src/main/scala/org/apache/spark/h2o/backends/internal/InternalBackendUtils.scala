@@ -48,6 +48,26 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
     })
   }
 
+
+  /** Check Spark and H2O environment, update it if necessary and and warn about possible problems.
+    *
+    * This method checks the environments for generic configuration which does not depend on particular backend used
+    * In order to check the configuration for specific backend, method checkAndUpdateConf on particular backend has to be
+    * called.
+    *
+    * This method has to be called at the start of each method which override this one
+    *
+    * @param conf H2O Configuration to check
+    * @return checked and updated configuration
+    * */
+  override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
+    super.checkAndUpdateConf(conf)
+    if (conf.clientIp.isEmpty) {
+      conf.setClientIp(getHostname(SparkEnv.get))
+    }
+    conf
+  }
+
   def toH2OArgs(h2oArgs: Array[String], conf: H2OConf, executors: Array[NodeDesc]): Array[String] = {
     toH2OArgs(
       h2oArgs,
