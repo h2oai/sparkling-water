@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.backends.external
 
+import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendUtils
 import org.apache.spark.h2o.utils.NodeDesc
@@ -40,6 +41,26 @@ private[external] trait ExternalBackendUtils extends SharedBackendUtils {
 
   private[this] def getH2OClientConnectionArgs(conf: H2OConf): Array[String] = {
     conf.h2oCluster.map(clusterStr => Array("-flatfile", saveAsFile(clusterStr).getAbsolutePath)).getOrElse(Array())
+  }
+
+  /** Check Spark and H2O environment, update it if necessary and and warn about possible problems.
+    *
+    * This method checks the environments for generic configuration which does not depend on particular backend used
+    * In order to check the configuration for specific backend, method checkAndUpdateConf on particular backend has to be
+    * called.
+    *
+    * This method has to be called at the start of each method which override this one
+    *
+    * @param conf H2O Configuration to check
+    * @return checked and updated configuration
+    * */
+  override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
+    super.checkAndUpdateConf(conf)
+    // to mimic the previous behaviour, set the client ip like this only in manual cluster mode when using multi-cast
+    if (conf.clientIp.isEmpty && conf.isManualClusterStartUsed && conf.h2oCluster.isEmpty) {
+      conf.setClientIp(getHostname(SparkEnv.get))
+    }
+    conf
   }
 }
 
