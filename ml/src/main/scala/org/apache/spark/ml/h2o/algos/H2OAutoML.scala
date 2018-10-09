@@ -352,7 +352,7 @@ trait H2OAutoMLParams extends Params {
   def setIgnoredColumns(value: Array[String]): this.type = set(ignoredColumns, value)
 
   /** @group setParam */
-  def setExcludeAlgos(value: Array[AutoML.algo]): this.type = set(excludeAlgos, value)
+  def setExcludeAlgos(value: Array[AutoML.Algo]): this.type = set(excludeAlgos, value)
 
   /** @group setParam */
   def setProjectName(value: String): this.type = set(projectName, value)
@@ -411,8 +411,8 @@ trait H2OAutoMLParams extends Params {
 }
 
 class H2OAutoMLAlgosParam private[h2o](parent: Params, name: String, doc: String,
-                                  isValid: Array[AutoML.algo] => Boolean)
-  extends EnumArrayParam[AutoML.algo](parent, name, doc, isValid) {
+                                  isValid: Array[AutoML.Algo] => Boolean)
+  extends EnumArrayParam[AutoML.Algo](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
