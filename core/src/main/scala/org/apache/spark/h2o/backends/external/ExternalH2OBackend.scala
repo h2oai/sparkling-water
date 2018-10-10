@@ -59,8 +59,11 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     // Application tags shown in Yarn Resource Manager UI
     val yarnAppTags = s"${TAG_EXTERNAL_H2O},${TAG_SPARK_APP.format(hc.sparkContext.applicationId)}"
 
+    if (conf.YARNQueue.isDefined) {
+      cmdToLaunch = cmdToLaunch ++ Seq("-Dmapreduce.job.queuename=" + conf.YARNQueue.get)
+    }
+
     cmdToLaunch = cmdToLaunch ++ Seq[String](
-      conf.YARNQueue.map("-Dmapreduce.job.queuename=" + _).getOrElse(""),
       s"-Dmapreduce.job.tags=${yarnAppTags}",
       s"-Dai.h2o.args.config=sparkling-water-external",
       "-Dmapreduce.framework.name=h2o-yarn", // use H2O's custom application Master
