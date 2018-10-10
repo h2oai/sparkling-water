@@ -82,6 +82,7 @@ def _get_first(rdd):
 
 class H2OContext(object):
 
+    is_initialized = False
     def __init__(self, spark_session):
         """
          This constructor is used just to initialize the environment. It does not start H2OContext.
@@ -102,7 +103,7 @@ class H2OContext(object):
         self._jsql_context = self._spark_session._jwrapped
         self._jspark_session = self._spark_session._jsparkSession
         self._jvm = self._spark_session._jvm
-        self.is_initialized = False
+
 
     def __default_h2o_connect(h2o_context, **kwargs):
         if "https" in kwargs:
@@ -164,11 +165,11 @@ class H2OContext(object):
         h2o_context._client_port = jhc.h2oLocalClientPort()
 
         # Create H2O REST API client
-        if not h2o_context.is_initialized:
+        if not H2OContext.is_initialized:
             if h2o_connect_hook:
                 h2o_connect_hook(h2o_context, verbose=verbose, **kwargs)
 
-        h2o_context.is_initialized = True
+        H2OContext.is_initialized = True
 
         if verbose:
             print(h2o_context)
@@ -196,7 +197,7 @@ class H2OContext(object):
         return self._jhc.h2oContext().downloadH2OLogs(destination)
     
     def __str__(self):
-        if self.is_initialized:
+        if H2OContext.is_initialized:
             return self._jhc.toString()
         else:
             return "H2OContext: not initialized, call H2OContext.getOrCreate(spark) or H2OContext.getOrCreate(spark, conf)"
