@@ -171,7 +171,7 @@ def prepareSparklingWaterEnvironment() {
 
                     sh """
                      REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                     BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/master/nightly/latest -q -O -)
+                     BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
 
                      NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
                      NEW_REL_VERSION=\${REL_VERSION}-\${NEW_BUILD_VERSION}
@@ -493,7 +493,7 @@ def publishNightly() {
                         ${getGradleCommand(config)} buildSparklingWaterDist
     
 
-                         BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/master/nightly/latest -q -O -)
+                         BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
                          NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
 
                         # Upload to S3
@@ -563,7 +563,7 @@ EOF
                         // Update the links
                         sh """
 
-                         BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/master/nightly/latest -q -O -)
+                         BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
                          NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
 
 
