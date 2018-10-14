@@ -179,7 +179,7 @@ def prepareSparklingWaterEnvironment() {
                      sed -i.backup -E "s/h2oMajorName=.*/h2oMajorName=master/" gradle.properties
                      sed -i.backup -E "s/h2oMajorVersion=.*/h2oMajorVersion=${h2oNightlyMajorVersion}/" gradle.properties
                      sed -i.backup -E "s/h2oBuild=.*/h2oBuild=${h2oNightlyBuildVersion}/" gradle.properties
-                     sed -i.backup -E "s/\${REL_VERSION}/.\${NEW_REL_VERSION}/" gradle.properties
+                     sed -i.backup -E "s/\${REL_VERSION}/\${NEW_REL_VERSION}/" gradle.properties
                     """
                 }
 
