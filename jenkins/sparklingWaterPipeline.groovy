@@ -170,15 +170,16 @@ def prepareSparklingWaterEnvironment() {
                     h2oNightlyMajorVersion = h2oNightlyMajorVersion.substring(0, h2oNightlyMajorVersion.lastIndexOf('.'))
 
                     sh """
-                     PATCH_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/master/nightly/latest -q -O -)
-                     BUILD_VERSION=\$(echo \${PATCH_VERSION} | cut -f2 -d.)
+                     REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                     BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/master/nightly/latest -q -O -)
+
                      NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
-                     NEW_PATCH_VERSION=\${PATCH_VERSION}.\${NEW_BUILD_VERSION}
+                     NEW_REL_VERSION=\${REL_VERSION}-\${NEW_BUILD_VERSION}
 
                      sed -i.backup -E "s/h2oMajorName=.*/h2oMajorName=master/" gradle.properties
                      sed -i.backup -E "s/h2oMajorVersion=.*/h2oMajorVersion=${h2oNightlyMajorVersion}/" gradle.properties
                      sed -i.backup -E "s/h2oBuild=.*/h2oBuild=${h2oNightlyBuildVersion}/" gradle.properties
-                     sed -i.backup -E "s/\\.[0-9]+-SNAPSHOT/.\${NEW_PATCH_VERSION}/" gradle.properties
+                     sed -i.backup -E "s/\${REL_VERSION}/.\${NEW_REL_VERSION}/" gradle.properties
                     """
                 }
 
@@ -492,10 +493,8 @@ def publishNightly() {
                         ${getGradleCommand(config)} buildSparklingWaterDist
     
 
-                         PATCH_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/master/nightly/latest -q -O -)
-                         BUILD_VERSION=\$(echo \${PATCH_VERSION} | cut -f2 -d.)
+                         BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/master/nightly/latest -q -O -)
                          NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
-                         NEW_PATCH_VERSION=\${PATCH_VERSION}.\${NEW_BUILD_VERSION}
 
                         # Upload to S3
                         """
@@ -506,35 +505,35 @@ def publishNightly() {
                             echo
                             echo PUBLISH
                             echo
-                            s3cmd --rexclude='target/classes/*' --acl-public sync ${env.WORKSPACE}/dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_PATCH_VERSION}/
+                            s3cmd --rexclude='target/classes/*' --acl-public sync ${env.WORKSPACE}/dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_BUILD_VERSION}/
                             
                             echo EXPLICITLY SET MIME TYPES AS NEEDED
                             list_of_html_files=`find dist/build -name '*.html' | sed 's/dist\\/build\\///g'`
                             echo \${list_of_html_files}
                             for f in \${list_of_html_files}
                             do
-                                s3cmd --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_PATCH_VERSION}/\${f}
+                                s3cmd --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_BUILD_VERSION}/\${f}
                             done
                             
                             list_of_js_files=`find dist/build -name '*.js' | sed 's/dist\\/build\\///g'`
                             echo \${list_of_js_files}
                             for f in \${list_of_js_files}
                             do
-                                s3cmd --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_PATCH_VERSION}/\${f}
+                                s3cmd --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_BUILD_VERSION}/\${f}
                             done
                             
                             list_of_css_files=`find dist/build -name '*.css' | sed 's/dist\\/build\\///g'`
                             echo \${list_of_css_files}
                             for f in \${list_of_css_files}
                             do
-                                s3cmd --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_PATCH_VERSION}/\${f}
+                                s3cmd --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_BUILD_VERSION}/\${f}
                             done
                             
                             echo UPDATE LATEST POINTER
                             mkdir -p ${tmpdir} 
-                            echo \${NEW_PATCH_VERSION} > ${tmpdir}/latest
+                            echo \${NEW_BUILD_VERSION} > ${tmpdir}/latest
                             echo "<head>" > ${tmpdir}/latest.html
-                            echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\${NEW_PATCH_VERSION}/index.html\\" />" >> ${tmpdir}/latest.html
+                            echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\${NEW_BUILD_VERSION}/index.html\\" />" >> ${tmpdir}/latest.html
                             echo "</head>" >> ${tmpdir}/latest.html
                             s3cmd --acl-public put ${tmpdir}/latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest
                             s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest.html
@@ -564,15 +563,15 @@ EOF
                         // Update the links
                         sh """
 
-                        REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                        PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d. | cut -f1 -d_`
-                        NEW_PATCH_VERSION=\$((\$PATCH_VERSION + 1))
+                         BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/master/nightly/latest -q -O -)
+                         NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
+
 
                         git clone git@github.com:h2oai/docs.h2o.ai.git
                         cd docs.h2o.ai/sites-available/
-                        sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_PATCH_VERSION}/?" 000-default.conf
+                        sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_BUILD_VERSION}/?" 000-default.conf
                         git add 000-default.conf
-                        git commit -m "Update links of Sparkling Water nighly version on ${BRANCH_NAME} to \${NEW_PATCH_VERSION}"
+                        git commit -m "Update links of Sparkling Water nighly version on ${BRANCH_NAME} to \${NEW_BUILD_VERSION}"
                         git push --set-upstream origin master
                         """
                     }
