@@ -78,6 +78,7 @@ Next, let's start ``H2OContext``. This context brings H2O support into Spark env
 Finally, read the data:
 
  .. code:: scala
+
     import java.net.URI
     val fr = new H2OFrame(new URI("s3n://data.h2o.ai/h2o-open-tour/2016-nyc/weather.csv"))
 
