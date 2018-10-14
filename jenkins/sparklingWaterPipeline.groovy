@@ -491,16 +491,16 @@ def publishNightly() {
                     sh  """
                         # echo 'Making distribution'
                         ${getGradleCommand(config)} buildSparklingWaterDist
-    
-
-                         BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
-                         NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
 
                         # Upload to S3
                         """
 
                         def tmpdir = "./buildsparklingwater.tmp"
                         sh  """
+
+                            BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
+                            NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
+
                             # Publish the output to S3.
                             echo
                             echo PUBLISH
