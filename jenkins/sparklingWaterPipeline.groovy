@@ -171,8 +171,8 @@ def prepareSparklingWaterEnvironment() {
 
                     sh """
                      REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                     PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
-                     NEW_PATCH_VERSION=\$((\$PATCH_VERSION + 1))
+                     PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d. | cut -f1 -d_`
+                     NEW_PATCH_VERSION=\$((\$PATCH_VERSION + 1))_nightly
                      sed -i.backup -E "s/h2oMajorName=.*/h2oMajorName=master/" gradle.properties
                      sed -i.backup -E "s/h2oMajorVersion=.*/h2oMajorVersion=${h2oNightlyMajorVersion}/" gradle.properties
                      sed -i.backup -E "s/h2oBuild=.*/h2oBuild=${h2oNightlyBuildVersion}/" gradle.properties
@@ -490,7 +490,7 @@ def publishNightly() {
                         ${getGradleCommand(config)} buildSparklingWaterDist
     
                         REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                        PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
+                        PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d. | cut -f1 -d_`
                         NEW_PATCH_VERSION=\$((\$PATCH_VERSION + 1))
                         # Upload to S3
                         """
@@ -560,7 +560,7 @@ EOF
                         sh """
 
                         REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                        PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
+                        PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d. | cut -f1 -d_`
                         NEW_PATCH_VERSION=\$((\$PATCH_VERSION + 1))
 
                         git clone git@github.com:h2oai/docs.h2o.ai.git
