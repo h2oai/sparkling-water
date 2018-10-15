@@ -492,6 +492,10 @@ def publishNightly() {
 
                     sh  """
                         # echo 'Making distribution'
+                        activate_java_8
+                        ./gradlew :sparkling-water-doc:sphinx
+                        activate_java_7
+
                         ${getGradleCommand(config)} buildSparklingWaterDist
 
                         # Upload to S3
