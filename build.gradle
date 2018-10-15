@@ -225,6 +225,11 @@ def uploadFiles(def username, def password, def repoDir, def stagingId) {
     proc.waitFor()
 }
 
+def closeBucket(def username, def password, def stagingId) {
+    def proc = ['./closeBucket.sh', username, password, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+    proc.waitFor()
+}
+
 task publishToNexus(dependsOn: [
          "sparkling-water-doc:publish",
          "sparkling-water-core:publish",
@@ -236,5 +241,6 @@ task publishToNexus(dependsOn: [
     doLast {
         def stagingId = createStagingId(project.findProperty('nexusUsername'), project.findProperty('nexusPassword')).replace('\n', '')
         uploadFiles(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), "$rootDir/build/repo", stagingId)
+        closeBucket(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), stagingId)
     }
 }
