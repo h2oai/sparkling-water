@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+v2.3.16 (2018-10-17)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/16/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/16/index.html>`__
+
+-  Bug
+        
+   -  `SW-930 <https://0xdata.atlassian.net/browse/SW-930>`__ - Enable AutoML tests in Sparkling Water
+   -  `SW-1065 <https://0xdata.atlassian.net/browse/SW-1065>`__ - Fix isssue with empty queue name by default
+   -  `SW-1066 <https://0xdata.atlassian.net/browse/SW-1066>`__ - In PySparkling, don&#39;t reconnect if already connected
+   -  `SW-1068 <https://0xdata.atlassian.net/browse/SW-1068>`__ - Fix warning in doc
+                
+-  Improvement
+        
+   -  `SW-1057 <https://0xdata.atlassian.net/browse/SW-1057>`__ - Sparkling shell ignores parameters after last updates
+   -  `SW-1058 <https://0xdata.atlassian.net/browse/SW-1058>`__ - Automatic detection of client ip in external backend
+   -  `SW-1059 <https://0xdata.atlassian.net/browse/SW-1059>`__ - Pysparkling in external backend, manual mode stops the backend cluster, but the cluster should be left intact 
+   -  `SW-1060 <https://0xdata.atlassian.net/browse/SW-1060>`__ - Create nightly release for 2.1, 2.2 and 2.3
+   -  `SW-1061 <https://0xdata.atlassian.net/browse/SW-1061>`__ - Upgrade to Mojo 0.3.15
+   -  `SW-1062 <https://0xdata.atlassian.net/browse/SW-1062>`__ - Don&#39;t expose mojo internal types
+   -  `SW-1063 <https://0xdata.atlassian.net/browse/SW-1063>`__ - More explicit checks for valid values of Backend mode and external backend start mode
+   -  `SW-1064 <https://0xdata.atlassian.net/browse/SW-1064>`__ - Expose run_as_user for External H2O Backend
+   -  `SW-1069 <https://0xdata.atlassian.net/browse/SW-1069>`__ - Upgrade H2O to 3.20.0.10
+                
+                                
 v2.3.15 (2018-10-02)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/15/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/15/index.html>`__
