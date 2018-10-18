@@ -21,6 +21,7 @@ package org.apache.spark.h2o.backends.external
 import java.io.{File, FileInputStream}
 import java.util.Properties
 
+import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend.H2O_JOB_NAME
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.utils.NodeDesc
@@ -85,7 +86,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (conf.runAsUser.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq("-run_as_user", conf.runAsUser.get)
     }
-    
+
     if (conf.stacktraceCollectorInterval != -1) { // -1 means don't do stacktrace collection
       cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-stacktrace_collector_interval", "-J", conf.stacktraceCollectorInterval.toString)
     }
@@ -176,7 +177,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       hc._conf.setH2OCluster(ipPort)
       val clientIp = NetworkUtils.indentifyClientIp(ipPort.split(":")(0))
       if (clientIp.isDefined && hc._conf.clientIp.isEmpty && hc._conf.clientNetworkMask.isEmpty) {
-          hc._conf.setClientIp(clientIp.get)
+        hc._conf.setClientIp(clientIp.get)
       }
     } else {
       // manual mode, check if the user specified the cluster representative
@@ -187,6 +188,11 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         }
       }
     }
+
+    if (hc._conf.clientIp.isEmpty) {
+      hc._conf.setClientIp(getHostname(SparkEnv.get))
+    }
+
     logTrace("Starting H2O client node and connecting to external H2O cluster.")
 
     val h2oClientArgs = if (hc.getConf.isAutoClusterStartUsed) {
