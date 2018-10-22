@@ -103,7 +103,13 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
                 // some other type is expected, we need to perform the parse
                 rowBuilder.setValue(colName, v)
               }
-              case v: java.sql.Timestamp => rowBuilder.setTimestamp(colName, v)
+              case v: java.sql.Timestamp => if (m.getInputMeta.getColumnType(colName).isAssignableFrom(classOf[java.sql.Timestamp])) {
+                rowBuilder.setTimestamp(colName, v)
+              } else {
+                // parse
+                rowBuilder.setValue(colName, v.toString)
+              }
+
               case v: java.sql.Date => rowBuilder.setDate(colName, v)
               case null => rowBuilder.setValue(colName, null)
               case v: Any =>
