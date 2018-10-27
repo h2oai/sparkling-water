@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+v2.3.17 (2018-10-27)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/17/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/17/index.html>`__
+
+-  Bug
+        
+   -  `SW-1071 <https://0xdata.atlassian.net/browse/SW-1071>`__ - Fallback to original IP discovery in case we can&#39;t find the same network
+   -  `SW-1072 <https://0xdata.atlassian.net/browse/SW-1072>`__ - Fix handling time column for mojo pipeline
+   -  `SW-1073 <https://0xdata.atlassian.net/browse/SW-1073>`__ - Upgrade MOJO to 0.3.17
+                
+-  Improvement
+        
+   -  `SW-1045 <https://0xdata.atlassian.net/browse/SW-1045>`__ - Upgrade H2O to 3.22.0.1
+                
+                                
 v2.3.16 (2018-10-17)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/16/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/16/index.html>`__
