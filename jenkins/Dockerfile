@@ -11,8 +11,7 @@ RUN \
     rm /etc/startup/70_start_slapd
 
 RUN \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
-    add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
+    add-apt-repository 'deb https://cran.rstudio.com/bin/linux/ubuntu xenial/'
 
 
 RUN apt-get update && apt-get install -y git curl zip s3cmd r-base r-base-dev libxml2-dev libssl-dev libcurl4-openssl-dev
