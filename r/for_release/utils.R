@@ -69,7 +69,7 @@ h2o_release_table <- function(tables_dir){
 
 generate_sys_data <- function(tables_dir){
     release_table <- h2o_release_table(tables_dir)
-    devtools::use_data(release_table, internal = TRUE, overwrite = TRUE)
+    usethis::use_data(release_table, internal = TRUE, overwrite = TRUE)
 }
 
 write_release_table <- function(destination, tables_dir){

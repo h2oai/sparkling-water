@@ -29,6 +29,7 @@ RUN \
     R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("dplyr", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("usethis", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
 
 
