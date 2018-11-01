@@ -161,8 +161,9 @@ def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
             withDocker(config) {
-                // In case of nightly build, modify gradle.properties
-                if (config.buildNightly.toBoolean()) {
+                // In case of building against nightly build, modify gradle.properties
+                // We can however can do nightly based on specific H2O branch, in that case this needs to be skipped
+                if (config.buildNightly.toBoolean() && !config.buildAgainstH2OBranch) {
 
                     def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
 
