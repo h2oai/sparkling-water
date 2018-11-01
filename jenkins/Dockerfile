@@ -16,12 +16,15 @@ RUN \
     add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
 
 
-RUN apt-get update && apt-get install -y git curl zip s3cmd r-base r-base-dev libxml2-dev libssl-dev libcurl4-openssl-dev
+RUN apt-get update && apt-get install -y git npm curl zip s3cmd r-base r-base-dev libxml2-dev libssl-dev libcurl4-openssl-dev
+
+RUN \
+    curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash - && \
+    sudo apt-get install -y nodejs
 
 RUN \
     R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("openssl", repos = "http://cran.us.r-project.org")' && \
-    R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("bitops", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")' && \
