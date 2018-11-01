@@ -9,7 +9,6 @@ properties(
                                 string(name: 'h2oBranch', defaultValue: 'master', description: 'H2O branch to build against if buildAgainstH2OBranch is set to true'),
                         ]
                 ),
-                pipelineTriggers([cron('H 23 * * *')]),
                 buildDiscarder(logRotator(numToKeepStr: '10'))
         ]
 )
