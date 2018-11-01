@@ -192,7 +192,8 @@ def prepareSparklingWaterEnvironment() {
                     git clone https://github.com/h2oai/h2o-3.git
                     cd h2o-3
                     git checkout ${config.h2oBranch}
-                    ./gradlew build -x check
+                    . /envs/h2o_env_python2.7/bin/activate
+                    ./gradlew build -x check -x :h2o-r:build
                     cd ..
                     if [ ${config.backendMode} = external ]; then
                         # In this case, PySparkling build is driven by H2O_HOME property
@@ -482,6 +483,14 @@ def pysparklingIntegTest() {
     }
 }
 
+def getUploadPath(config){
+    if (config.buildAgainstH2OBranch){
+        config.h2oBranch.replace("/", "_")
+    }else{
+        "nightly"
+    }
+}
+
 def publishNightly() {
     return { config ->
         stage('Nightly: Publishing Artifacts to S3 - ' + config.backendMode) {
@@ -504,53 +513,62 @@ def publishNightly() {
                         def tmpdir = "./buildsparklingwater.tmp"
                         sh  """
 
-                            BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
-                            NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
 
+                            if [ ${config.buildAgainstH2OBranch} = false ]; then
+                                # Regular nightly build
+                                BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
+                                NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
+                            else
+                                NEW_BUILD_VERSION=\$(date '+%Y_%m_%d_%H_%M_%S')
+                            fi
+                                
                             # Publish the output to S3.
                             echo
                             echo PUBLISH
                             echo
-                            s3cmd --rexclude='target/classes/*' --acl-public sync ${env.WORKSPACE}/dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_BUILD_VERSION}/
+                            s3cmd --rexclude='target/classes/*' --acl-public sync ${env.WORKSPACE}/dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/
                             
                             echo EXPLICITLY SET MIME TYPES AS NEEDED
                             list_of_html_files=`find dist/build -name '*.html' | sed 's/dist\\/build\\///g'`
                             echo \${list_of_html_files}
                             for f in \${list_of_html_files}
                             do
-                                s3cmd --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_BUILD_VERSION}/\${f}
+                                s3cmd --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
                             done
                             
                             list_of_js_files=`find dist/build -name '*.js' | sed 's/dist\\/build\\///g'`
                             echo \${list_of_js_files}
                             for f in \${list_of_js_files}
                             do
-                                s3cmd --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_BUILD_VERSION}/\${f}
+                                s3cmd --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
                             done
                             
                             list_of_css_files=`find dist/build -name '*.css' | sed 's/dist\\/build\\///g'`
                             echo \${list_of_css_files}
                             for f in \${list_of_css_files}
                             do
-                                s3cmd --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/\${NEW_BUILD_VERSION}/\${f}
+                                s3cmd --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
                             done
                             
-                            echo UPDATE LATEST POINTER
-                            mkdir -p ${tmpdir} 
-                            echo \${NEW_BUILD_VERSION} > ${tmpdir}/latest
-                            echo "<head>" > ${tmpdir}/latest.html
-                            echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\${NEW_BUILD_VERSION}/index.html\\" />" >> ${tmpdir}/latest.html
-                            echo "</head>" >> ${tmpdir}/latest.html
-                            s3cmd --acl-public put ${tmpdir}/latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest
-                            s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest.html
-                            s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/index.html
-                                                
+                            if [ ${config.buildAgainstH2OBranch} = false ]; then
+                                echo UPDATE LATEST POINTER
+                                mkdir -p ${tmpdir} 
+                                echo \${NEW_BUILD_VERSION} > ${tmpdir}/latest
+                                echo "<head>" > ${tmpdir}/latest.html
+                                echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\${NEW_BUILD_VERSION}/index.html\\" />" >> ${tmpdir}/latest.html
+                                echo "</head>" >> ${tmpdir}/latest.html
+                                s3cmd --acl-public put ${tmpdir}/latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest
+                                s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest.html
+                                s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/index.html
+                            fi                    
                             """
                     }
 
-                    withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN'), sshUserPrivateKey(credentialsId: 'h2oOpsGitPrivateKey', keyFileVariable: 'SSH_KEY_GITHUB')]) {
+                    // Update only if we are doing regular nighly build from master and rel branches
+                    if (!config.buildAgainstH2OBranch) {
+                        withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN'), sshUserPrivateKey(credentialsId: 'h2oOpsGitPrivateKey', keyFileVariable: 'SSH_KEY_GITHUB')]) {
 
-                        sh """
+                            sh """
                                # Copy keys
                                mkdir -p ~/.ssh
                                cp \${ID_RSA_PATH} ~/.ssh/id_rsa
@@ -566,8 +584,8 @@ EOF
 
                                 ssh-keyscan github.com >> ~/.ssh/known_hosts
                                """
-                        // Update the links
-                        sh """
+                            // Update the links
+                            sh """
 
                         # S3 Already containes incremented version
                         BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
@@ -580,6 +598,7 @@ EOF
                         git commit -m "Update links of Sparkling Water nighly version on ${BRANCH_NAME} to \${BUILD_VERSION}"
                         git push --set-upstream origin master
                         """
+                        }
                     }
                 }
             }
