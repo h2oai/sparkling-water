@@ -163,9 +163,9 @@ def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
             withDocker(config) {
-                // In case of nightly build, modify gradle.properties
-                if (config.buildNightly.toBoolean()) {
-
+                // In case of building against nightly build, modify gradle.properties
+                // We can however can do nightly based on specific H2O branch, in that case this needs to be skipped
+                if (config.buildNightly.toBoolean() && !config.buildAgainstH2OBranch.toBoolean()) {
                     def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
 
                     def h2oNightlyMajorVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/${h2oNightlyBuildVersion}/project_version").getText().trim()
@@ -565,7 +565,7 @@ def publishNightly() {
                     }
 
                     // Update only if we are doing regular nighly build from master and rel branches
-                    if (!config.buildAgainstH2OBranch) {
+                    if (!config.buildAgainstH2OBranch.toBoolean()) {
                         withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN'), sshUserPrivateKey(credentialsId: 'h2oOpsGitPrivateKey', keyFileVariable: 'SSH_KEY_GITHUB')]) {
 
                             sh """
