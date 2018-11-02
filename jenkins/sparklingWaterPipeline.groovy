@@ -483,7 +483,7 @@ def pysparklingIntegTest() {
 }
 
 def getUploadPath(config){
-    if (config.buildAgainstH2OBranch){
+    if (config.buildAgainstH2OBranch.toBoolean()){
         config.h2oBranch.replace("/", "_")
     }else{
         "nightly"
