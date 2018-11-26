@@ -128,7 +128,7 @@ def prepareSparkEnvironment() {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 
                     sh """
-                    cp -R \${SPARK_HOME_2_3_1} ${env.SPARK_HOME}
+                    cp -R \${SPARK_HOME_2_4_0} ${env.SPARK_HOME}
 
 echo "spark.hadoop.fs.s3a.impl                org.apache.hadoop.fs.s3a.S3AFileSystem" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
 echo "spark.hadoop.fs.s3a.access.key          ${AWS_ACCESS_KEY_ID}" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
