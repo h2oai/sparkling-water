@@ -156,7 +156,7 @@ private[algos] class H2OGridSearchReader(val defaultFileName: String) extends ML
     val gridSearchParams = ois.readObject().asInstanceOf[H2OGridSearchParams]
     implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
     val algo = new H2OGridSearch(Option(gridSearchParams), metadata.uid)(h2oContext, sqlContext)
-    DefaultParamsReader.getAndSetParams(algo, metadata)
+    metadata.getAndSetParams(algo)
     algo
   }
 }

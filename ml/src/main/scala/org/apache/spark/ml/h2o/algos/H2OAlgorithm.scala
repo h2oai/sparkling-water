@@ -150,7 +150,8 @@ private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <:
     val parameters = ois.readObject().asInstanceOf[P]
     implicit val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
     val h2oAlgo = make[A, P](parameters, metadata.uid, h2oContext, sqlContext)
-    DefaultParamsReader.getAndSetParams(h2oAlgo, metadata)
+
+    metadata.getAndSetParams(h2oAlgo)
     h2oAlgo
   }
 

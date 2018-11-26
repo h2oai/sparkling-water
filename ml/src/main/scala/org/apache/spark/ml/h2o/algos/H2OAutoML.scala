@@ -175,7 +175,7 @@ private[algos] class H2OAutoMLReader[A <: H2OAutoML : ClassTag](val defaultFileN
     val buildSpec = ois.readObject().asInstanceOf[AutoMLBuildSpec]
     implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
     val algo = make[A](Option(buildSpec), metadata.uid, h2oContext, sqlContext)
-    DefaultParamsReader.getAndSetParams(algo, metadata)
+    metadata.getAndSetParams(algo)
     algo
   }
 
