@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+v2.1.43 (2018-11-27)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/43/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/43/index.html>`__
+
+-  Improvement
+        
+   -  `SW-1078 <https://0xdata.atlassian.net/browse/SW-1078>`__ - Upgrade H2O to 3.22.0.2
+                
+                                
 v2.1.42 (2018-10-27)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/42/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/42/index.html>`__
