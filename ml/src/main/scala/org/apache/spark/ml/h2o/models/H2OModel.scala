@@ -117,7 +117,7 @@ private[models] abstract class H2OModelReader[T <: H2OModel[T, M] : ClassTag, M 
 
     implicit val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements")
     val h2oModel = make(model, metadata.uid)(h2oContext, sqlContext)
-    DefaultParamsReader.getAndSetParams(h2oModel, metadata)
+    metadata.getAndSetParams(h2oModel)
     h2oModel
   }
 
