@@ -136,6 +136,7 @@ pipeline {
                                     git add r/for_release/table_2_1.txt
                                     git add r/for_release/table_2_2.txt
                                     git add r/for_release/table_2_3.txt
+                                    git add r/for_release/table_2_4.txt
 
                                     cp r/build/src/R/sysdata.rda r/src/R/sysdata.rda
                                     git add r/src/R/sysdata.rda
