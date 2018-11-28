@@ -79,7 +79,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     spec.input_spec.weights_column = getWeightsColumn()
     spec.input_spec.ignored_columns = getIgnoredColumns()
     spec.input_spec.sort_metric = getSortMetric()
-    spec.build_models.exclude_algos = getExcludeAlgos()
+    spec.build_models.exclude_algos = Array(getExcludeAlgos():_*)
     spec.build_control.project_name = getProjectName()
     spec.build_control.stopping_criteria.set_seed(getSeed())
     spec.build_control.stopping_criteria.set_max_runtime_secs(getMaxRuntimeSecs())
@@ -352,7 +352,7 @@ trait H2OAutoMLParams extends Params {
   def setIgnoredColumns(value: Array[String]): this.type = set(ignoredColumns, value)
 
   /** @group setParam */
-  def setExcludeAlgos(value: Array[AutoML.algo]): this.type = set(excludeAlgos, value)
+  def setExcludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(excludeAlgos, value)
 
   /** @group setParam */
   def setProjectName(value: String): this.type = set(projectName, value)
@@ -411,8 +411,8 @@ trait H2OAutoMLParams extends Params {
 }
 
 class H2OAutoMLAlgosParam private[h2o](parent: Params, name: String, doc: String,
-                                  isValid: Array[AutoML.algo] => Boolean)
-  extends EnumArrayParam[AutoML.algo](parent, name, doc, isValid) {
+                                  isValid: Array[ai.h2o.automl.Algo] => Boolean)
+  extends EnumArrayParam[ai.h2o.automl.Algo](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
