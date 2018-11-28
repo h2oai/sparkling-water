@@ -37,7 +37,7 @@ node('docker && micro') {
             backendMode = "internal"
             buildNightly = "false"
             uploadNightly = "false"
-            dockerVersion = "8"
+            dockerVersion = "9"
         }
     }
 }
