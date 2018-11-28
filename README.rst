@@ -17,7 +17,7 @@ Are you looking for RSparkling? It's README is available `here <https://github.c
 Getting Started
 ---------------
 
-**User Documentation:** `http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/index.html <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/index.html>`__
+**User Documentation:** `http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/index.html <http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/index.html>`__
 
 Select right version
 ~~~~~~~~~~~~~~~~~~~~
@@ -28,6 +28,7 @@ provides implementation of Sparkling Water for Spark **2.3**).
 
 Please, switch to the right branch:
 
+- For Spark 2.4 use branch `rel-2.4 <https://github.com/h2oai/sparkling-water/tree/rel-2.4>`__
 - For Spark 2.3 use branch `rel-2.3 <https://github.com/h2oai/sparkling-water/tree/rel-2.3>`__
 - For Spark 2.2 use branch `rel-2.2 <https://github.com/h2oai/sparkling-water/tree/rel-2.2>`__
 - For Spark 2.1 use branch `rel-2.1 <https://github.com/h2oai/sparkling-water/tree/rel-2.1>`__
@@ -47,7 +48,7 @@ Requirements
 -  Linux/OS X/Windows
 -  Java 8+
 -  Python 2.7+ For Python version of Sparkling Water (PySparkling)
--  `Spark 2.3 <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
+-  `Spark 2.4 <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
 
 
 Download Binaries

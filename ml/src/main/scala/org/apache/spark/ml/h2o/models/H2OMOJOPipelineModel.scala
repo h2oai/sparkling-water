@@ -266,7 +266,7 @@ private[models] class H2OMOJOModelPipelineReader
     val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
 
     val h2oModel = make(mojoData, metadata.uid)(sqlContext)
-    DefaultParamsReader.getAndSetParams(h2oModel, metadata)
+    metadata.getAndSetParams(h2oModel)
     h2oModel
   }
 

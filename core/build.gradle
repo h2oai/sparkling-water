@@ -85,6 +85,8 @@ dependencies {
 
   // And Scala library
   compile "org.scala-lang:scala-library:${scalaVersion}"
+  compile "org.scala-lang:scala-compiler:${scalaVersion}"
+
 
 
   // TEST DEPENDENCIES
@@ -103,7 +105,7 @@ dependencies {
   testCompile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
   testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
-
+    
 
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"

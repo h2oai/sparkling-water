@@ -34,7 +34,7 @@ Install Spark via sparklyr
 The **sparklyr** package makes it easy to install any particular version of Spark.
 Prior to installing **h2o** and **rsparkling**, the user will need to decide which version of
 Spark they would like to work with, as the remaining installation revolve around a particular major
-version of Spark (2.1, 2.2 or 2.3).
+version of Spark (2.1, 2.2, 2.3 or 2.4).
 
 The following command will install Spark SUBST_SPARK_VERSION:
 
