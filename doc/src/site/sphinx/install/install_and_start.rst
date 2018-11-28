@@ -6,7 +6,7 @@ This section describes how to download and run Sparkling Water in different envi
 Download and Run Locally
 ------------------------
 
-This section describes how to quickly get started with Sparkling Water.
+This section describes how to quickly get started with Sparkling Water on your personal computer.
 
 1. Download and install Spark (if not already installed) from the `Spark Downloads page <https://spark.apache.org/downloads.html>`__.
 
