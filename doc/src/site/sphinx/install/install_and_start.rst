@@ -10,14 +10,14 @@ This section describes how to quickly get started with Sparkling Water on your p
 
 1. Download and install Spark (if not already installed) from the `Spark Downloads page <https://spark.apache.org/downloads.html>`__.
 
-  ::
+  .. code:: bash
 
     Choose Spark release: SUBST_SPARK_VERSION
     Choose package type: Pre-built for Hadoop 2.7 and later
 
 2. Point SPARK_HOME to the existing installation of Spark and export variable MASTER.
 
-  ::
+  .. code:: bash
 
     export SPARK_HOME="/path/to/spark/installation"
     # To launch a local Spark cluster.
@@ -25,7 +25,7 @@ This section describes how to quickly get started with Sparkling Water on your p
 
 3. From your terminal, run:
 
-  ::
+  .. code:: bash
 
     cd ~/Downloads
     unzip sparkling-water-SUBST_PROJECT_VERSION.zip
@@ -34,7 +34,7 @@ This section describes how to quickly get started with Sparkling Water on your p
 
 4. Create an H2O cloud inside the Spark cluster:
 
-  ::
+  .. code:: bash
 
     import org.apache.spark.h2o._
     val h2oContext = H2OContext.getOrCreate(spark)
@@ -52,36 +52,35 @@ This section describes how to launch Sparkling Water on Hadoop using YARN.
 
 1. Download Spark (if not already installed) from the `Spark Downloads page <https://spark.apache.org/downloads.html>`__.
 
-  ::
+  .. code:: bash
 
     Choose Spark release: SUBST_SPARK_VERSION
     Choose package type: Pre-built for Hadoop 2.7 and later
 
 2. Point SPARK_HOME to the existing installation of Spark.
 
-  ::
+  .. code:: bash
 
     export SPARK_HOME='/path/to/spark/installation'
 
 3. Set the HADOOP_CONF_DIR and Spark MASTER environmental variables.
 
-  ::
+  .. code:: bash
 
     export HADOOP_CONF_DIR=/etc/hadoop/conf
     export MASTER="yarn"
 
 4. Download Spark and use ``sparkling-shell`` to launch Sparkling Shell on YARN.
 
-  ::
+  .. code:: bash
 
-    wget <script type="text/javascript">var url = location.href; var url2 = url.substring(0, url.lastIndexOf("/")); document.write(url2);</script>/sparkling-water-SUBST_PROJECT_VERSION.zip 
     unzip sparkling-water-SUBST_PROJECT_VERSION.zip 
     cd sparkling-water-SUBST_PROJECT_VERSION/
     bin/sparkling-shell --num-executors 3 --executor-memory 2g --master yarn --deploy-mode client
 
 5. Create an H2O cloud inside the Spark cluster:
 
-  ::
+  .. code:: bash
 
     import org.apache.spark.h2o._
     val h2oContext = H2OContext.getOrCreate(spark)
@@ -94,20 +93,21 @@ Run on a Standalone Cluster
 This section describes how to launch H2O on a standalone Spark cluster.
 
 1. Download Spark (if not already installed) from the `Spark Downloads page <https://spark.apache.org/downloads.html>`__.
-  ::
+
+  .. code:: bash
 
     Choose Spark release: SUBST_SPARK_VERSION
     Choose package type: Pre-built for Hadoop 2.7 and later
 
 2. Point SPARK_HOME to the existing installation of Spark and export variable MASTER.
 
-  ::
+  .. code:: bash
 
     export SPARK_HOME='/path/to/spark/installation'
 
 3. From your terminal, run:
 
-  ::
+  .. code:: bash
 
     cd ~/Downloads
     unzip sparkling-water-SUBST_PROJECT_VERSION.zip
@@ -118,7 +118,7 @@ This section describes how to launch H2O on a standalone Spark cluster.
 
 4. Create an H2O cloud inside the Spark cluster:
 
-  ::
+  .. code:: bash
 
     import org.apache.spark.h2o._
     val h2oContext = H2OContext.getOrCreate(spark)
@@ -134,26 +134,29 @@ Sparkling Water Kluster mode supports a connection to external H2O clusters (sta
 
 2. Download the corresponding ``h2odriver`` for your Hadoop distribution (e.g., hdp2.2, cdh5.4) or standalone one:
 
-  ::
+  .. code:: bash
 
     bin/get-extended-h2o.sh standalone
 
 3. Start an H2O cluster, for example, in standalone mode:
 
-  ::
+  .. code:: bash
 
     java -cp h2odriver-extended.jar water.H2OApp -md5skip -name test
 
 4. In your Sparkling Water application, create H2OContext:
 
-  .. example-code::
-     .. code-block:: Scala
+  **Scala**
+
+  .. code:: scala
 
       import org.apache.spark.h2o._
       val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")
       val hc = H2OContext.getOrCreate(spark, conf)
 
-     .. code-block:: python
+  **Python**
+
+  .. code:: python
 
       from pysparkling import *
       conf = H2OConf(spark).set_external_cluster_mode().use_manual_cluster_start().set_cloud_name("test")
@@ -171,14 +174,14 @@ This section provides a gradle-style specification for Maven artifacts.
 
 See the `h2o-droplets GitHub repository <https://github.com/h2oai/h2o-droplets>`__ for a working example.
 
-::
+.. code:: bash
 
   repositories {
-    &nbsp;mavenCentral()
+    mavenCentral()
   }
 
   dependencies {
-    &nbsp;compile "ai.h2o:sparkling-water-package_SUBST_SCALA_VERSION:SUBST_PROJECT_VERSION"
+    compile "ai.h2o:sparkling-water-package_SUBST_SCALA_VERSION:SUBST_PROJECT_VERSION"
   }
 
 See Maven Central for `artifact details <http://search.maven.org/#artifactdetails|ai.h2o|sparkling-water-package_SUBST_SCALA_VERSION|SUBST_PROJECT_VERSION|jar>`__.
@@ -192,13 +195,13 @@ This section describes how to start Spark with Sparkling Water enabled via Spark
 1. Ensure that Spark is installed, and MASTER and SPARK_HOME environmental variables are properly set.
 2. Start Spark and point to maven coordinates of Sparkling Water:
 
-  ::
+  .. code:: bash
 
    $SPARK_HOME/bin/spark-shell --packages ai.h2o:sparkling-water-package_SUBST_SCALA_VERSION:SUBST_PROJECT_VERSION
 
 3. Create an H2O cloud inside the Spark cluster:
 
-  ::
+  .. code:: bash
 
    import org.apache.spark.h2o._
    val h2oContext = H2OContext.getOrCreate(spark)
