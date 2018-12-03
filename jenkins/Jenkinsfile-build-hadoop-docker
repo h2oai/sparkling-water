@@ -14,9 +14,9 @@ node('docker && !mr-0xc8') {
 
         versions.each { version ->
             sh  """
-                docker pull docker.h2o.ai/opsh2oai/h2o-3-hadoop-$version:47
+                docker pull harbor.h2o.ai/opsh2oai/h2o-3-hadoop-$version:47
                 cd jenkins
-                docker build -t docker.h2o.ai/opsh2oai/sparkling-water-hadoop-${version}:${BUILD_NUMBER} -f Dockerfile-${version} .
+                docker build -t harbor.h2o.ai/opsh2oai/sparkling-water-hadoop-${version}:${BUILD_NUMBER} -f Dockerfile-${version} .
                 """
         }
     }
@@ -27,7 +27,7 @@ node('docker && !mr-0xc8') {
 
         versions.each { version ->
             sh  """
-                docker push docker.h2o.ai/opsh2oai/sparkling-water-hadoop-${version}:${BUILD_NUMBER}
+                docker push harbor.h2o.ai/opsh2oai/sparkling-water-hadoop-${version}:${BUILD_NUMBER}
                 """
         }
     }

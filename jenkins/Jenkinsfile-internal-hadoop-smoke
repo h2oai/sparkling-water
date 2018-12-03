@@ -17,7 +17,7 @@ if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
 }
 
 node('docker && micro') {
-    docker.withRegistry("https://docker.h2o.ai") {
+    docker.withRegistry("http://harbor.h2o.ai") {
 
         // Clean workspace
         cleanWs()
@@ -67,9 +67,9 @@ node('docker && micro') {
 def testInsideDocker(hadoopVersion) {
     def image = 'opsh2oai/sparkling-water-hadoop-' + hadoopVersion + ":" + IMAGE_VERSION
     retryWithDelay(3, 120, {
-        withCredentials([usernamePassword(credentialsId: "docker.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
-            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
-            sh "docker pull docker.h2o.ai/${image}"
+        withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
+            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
+            sh "docker pull harbor.h2o.ai/${image}"
         }
     })
     docker.image(image).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag --privileged") {
@@ -108,9 +108,9 @@ def retryWithDelay(final int retries, final int delay, final Closure body) {
 def withDocker(code) {
     def image = 'opsh2oai/sparkling_water_tests:7'
     retryWithDelay(3, 120, {
-        withCredentials([usernamePassword(credentialsId: "docker.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
-            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
-            sh "docker pull docker.h2o.ai/${image}"
+        withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
+            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
+            sh "docker pull harbor.h2o.ai/${image}"
         }
     })
     docker.image(image).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag --privileged") {
