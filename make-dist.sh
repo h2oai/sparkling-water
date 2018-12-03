@@ -109,6 +109,11 @@ else
   H2O_BRANCH_NAME="rel-${H2O_NAME}"
 fi
 
+if [[ "${PATCH_VERSION}" == *"SNAPSHOT-"* ]]; then
+    PATCH_VERSION=$(echo $PATCH_VERSION | cut -f3 -d-)
+    GITBRANCH="${GITBRANCH}/nightly"
+fi
+
 H2O_PROJECT_VERSION=${H2O_VERSION}.${H2O_BUILD}
 H2O_BUILD_NUMBER=${H2O_BUILD}
 
