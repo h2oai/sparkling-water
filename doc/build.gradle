@@ -25,7 +25,7 @@ task substitute() {
     doLast {
         def siteDir = "${buildDir}/site"
 
-        def (first, second, third) = version.replace("-SNAPSHOT", "").tokenize(".")
+        def (first, second, third) = version.tokenize(".")
         def majorVersion = "${first}.${second}"
         def minorVersion = third
 
@@ -33,7 +33,7 @@ task substitute() {
             if (it.name.endsWith('.html')) {
                 def contents = file(it).getText('UTF-8')
                 contents = contents
-                        .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", ""))
+                        .replaceAll("SUBST_SW_VERSION", version)
                         .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
                         .replaceAll("SUBST_SW_MINOR_VERSION", minorVersion)
                         .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
