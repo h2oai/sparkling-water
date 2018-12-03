@@ -9,7 +9,7 @@ properties(
 )
 
 node('docker && micro') {
-    docker.withRegistry("https://docker.h2o.ai") {
+    docker.withRegistry("http://harbor.h2o.ai") {
         // Clean workspace
         sh 'rm -rf *'
         // Get Sparkling Water and save the scm environment variables

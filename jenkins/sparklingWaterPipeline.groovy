@@ -80,9 +80,9 @@ def retryWithDelay(final int retries, final int delay, final Closure body) {
 def withDocker(config, code) {
     def image = 'opsh2oai/sparkling_water_tests:' + config.dockerVersion
     retryWithDelay(3, 120,{
-        withCredentials([usernamePassword(credentialsId: "docker.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
-            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD docker.h2o.ai"
-            sh "docker pull docker.h2o.ai/${image}"
+        withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
+            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
+            sh "docker pull harbor.h2o.ai/${image}"
         }
     })
     docker.image(image).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
