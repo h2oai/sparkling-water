@@ -60,13 +60,13 @@ Available Demos for Sparkling Shell
 Building and Running Examples
 -----------------------------
 
-Please see `Running Sparkling Water Examples <../doc/devel/running_examples.rst>`__ for more information how to build
+Please see `Running Sparkling Water Examples <../doc/src/site/sphinx/devel/running_examples.rst>`__ for more information how to build
 and run examples.
 
 Configuring Sparkling Water Variables
 -------------------------------------
 
-Please see `Available Sparkling Water Configuration Properties <../doc/configuration/configuration_properties.rst>`__ for
+Please see `Available Sparkling Water Configuration Properties <../doc/src/site/sphinx/configuration/configuration_properties.rst>`__ for
 more information about possible Sparkling Water configurations.
 
 Step-by-Step Weather Data Example
