@@ -42,7 +42,7 @@ if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
 }
 
 node('docker && micro') {
-    docker.withRegistry("https://docker.h2o.ai") {
+    docker.withRegistry("http://harbor.h2o.ai") {
 
         // Clean workspace
         cleanWs()
