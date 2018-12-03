@@ -21,6 +21,7 @@ Have questions about Sparkling Water? Post them on Stack Overflow using the `spa
    about
    typical_use_case
    requirements
+   install/install_and_start
    design/design
    configuration/configuration
    deployment/deployment
