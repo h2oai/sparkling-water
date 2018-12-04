@@ -73,7 +73,7 @@ object KMeansITest extends IntegTestStopper{
 
     // Run Kmeans in Spark
     val sqlQueryTimer = new water.util.Timer
-    val airlinesDF = asDataFrame(airlinesData)(sqlContext)
+    val airlinesDF = asDataFrame(airlinesData)
     airlinesDF.createOrReplaceTempView("airlinesRDD")
     val airlinesTable = sqlContext.sql(
       """SELECT Month, DayofMonth, DayOfWeek FROM airlinesRDD"""
