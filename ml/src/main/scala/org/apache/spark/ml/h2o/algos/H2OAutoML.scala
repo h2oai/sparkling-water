@@ -79,7 +79,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     spec.input_spec.weights_column = getWeightsColumn()
     spec.input_spec.ignored_columns = getIgnoredColumns()
     spec.input_spec.sort_metric = getSortMetric()
-    spec.build_models.exclude_algos = Array(getExcludeAlgos(): _*)
+    spec.build_models.exclude_algos = if (getExcludeAlgos() == null) null else Array(getExcludeAlgos(): _*)
     spec.build_control.project_name = getProjectName()
     spec.build_control.stopping_criteria.set_seed(getSeed())
     spec.build_control.stopping_criteria.set_max_runtime_secs(getMaxRuntimeSecs())
