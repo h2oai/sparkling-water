@@ -530,7 +530,7 @@ class H2OAutoMLParams(Params):
         if value is not None:
             for algo in value:
                 jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-                java_enums.append(get_correct_case_enum(jvm.ai.h2o.automl.AutoML.algo.values(), algo))
+                java_enums.append(get_correct_case_enum(jvm.ai.h2o.automl.Algo.values(), algo))
         return self._set(excludeAlgos=java_enums)
 
     def setProjectName(self, value):
