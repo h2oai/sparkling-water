@@ -79,7 +79,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     spec.input_spec.weights_column = getWeightsColumn()
     spec.input_spec.ignored_columns = getIgnoredColumns()
     spec.input_spec.sort_metric = getSortMetric()
-    spec.build_models.exclude_algos = Array(getExcludeAlgos():_*)
+    spec.build_models.exclude_algos = Array(getExcludeAlgos(): _*)
     spec.build_control.project_name = getProjectName()
     spec.build_control.stopping_criteria.set_seed(getSeed())
     spec.build_control.stopping_criteria.set_max_runtime_secs(getMaxRuntimeSecs())
@@ -110,8 +110,10 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     val twoDimtable = aml.leaderboard().toTwoDimTable
     val colNames = twoDimtable.getColHeaders
     val data = aml.leaderboard().toTwoDimTable.getCellValues.map(_.map(_.toString))
-    val rows = data.map{Row.fromSeq(_)}
-    val schema = StructType(colNames.map{ name => StructField(name, StringType)})
+    val rows = data.map {
+      Row.fromSeq(_)
+    }
+    val schema = StructType(colNames.map { name => StructField(name, StringType) })
     val rdd = hc.sparkContext.parallelize(rows)
     Some(hc.sparkSession.createDataFrame(rdd, schema))
   }
@@ -411,14 +413,14 @@ trait H2OAutoMLParams extends Params {
 }
 
 class H2OAutoMLAlgosParam private[h2o](parent: Params, name: String, doc: String,
-                                  isValid: Array[ai.h2o.automl.Algo] => Boolean)
+                                       isValid: Array[ai.h2o.automl.Algo] => Boolean)
   extends EnumArrayParam[ai.h2o.automl.Algo](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
 
 class H2OAutoMLStoppingMetricParam private[h2o](parent: Params, name: String, doc: String,
-                                           isValid: ScoreKeeper.StoppingMetric => Boolean)
+                                                isValid: ScoreKeeper.StoppingMetric => Boolean)
   extends EnumParam[ScoreKeeper.StoppingMetric](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
