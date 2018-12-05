@@ -9,10 +9,9 @@ dataframe or mini batch training for online ML using H2O.
 Requirements
 ------------
 
-- sbt
 - Spark 2.+
 - Sparkling Water 2.+
-- Python 2.6+
+- Python 2.7+
 
 Directions
 ----------
@@ -23,15 +22,15 @@ Directions
 
     ./gradlew build -x check
 
-2. Run the demo class ``ai.h2o.PipelineDemo``:
+2. Run the demo class ``ai.h2o.demo.PipelineDemo``:
 
 .. code:: bash
 
     $SPARK_HOME/bin/spark-submit \
-        --class ai.h2o.PipelineDemo \
+        --class ai.h2o.demo.PipelineDemo \
         --master 'local[*]' \
         --driver-memory 2G \
-        --packages ai.h2o:sparkling-water-core_2.11:2.1.0 \
+        --packages ai.h2o:sparkling-water-core_2.11:2.4.1 \
         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
         --conf spark.ext.h2o.repl.enabled=False \
         ./build/libs/*.jar 9999
