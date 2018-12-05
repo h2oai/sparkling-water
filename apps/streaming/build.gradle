@@ -2,14 +2,14 @@ description = "Sparkling Water Pipelining"
 
 // Support local launch of application 
 apply plugin: 'application'
-mainClassName = "ai.h2o.PipelineDemo"
+mainClassName = "ai.h2o.demo.PipelineDemo"
 // Disable distribution tasks
 distZip.enabled = false
 distTar.enabled = false
 
 dependencies {
   // Sparkling Water Core
-  compile( project(":sparkling-water-core") ) {
+  compile(project(":sparkling-water-core")) {
     exclude group: "javax.servlet", module: "servlet-api"
   }
   // Spark Core
