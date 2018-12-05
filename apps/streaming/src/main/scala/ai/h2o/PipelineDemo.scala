@@ -15,8 +15,9 @@
 * limitations under the License.
 */
 
-package ai.h2o
+package ai.h2o.demo
 
+import ai.h2o.RandomEvent
 import org.apache.spark.streaming._
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SparkSession
