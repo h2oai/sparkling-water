@@ -8,7 +8,7 @@ import java.util.zip.ZipInputStream
 import groovy.json.JsonSlurper
 
 apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'base'
+apply plugin: 'java'
 
 description = """
 h2o and h2o Driver Assembly. This assembly extends provided jar by sparkling-water specific classes needed in external
