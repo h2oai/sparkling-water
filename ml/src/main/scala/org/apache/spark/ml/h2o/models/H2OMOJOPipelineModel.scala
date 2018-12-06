@@ -148,7 +148,7 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
     // get the altered frame
     val frameWithPredictions = flatten.select(col("*"), modelUdf(flatten.columns)(struct(names: _*)).as(outputCol))
 
-    // This behaviour is turned on by default, it can be disabled manually.
+    // This behaviour is turned on by default since Sparkling Water 2.4.x, it can be disabled manually.
     if ($(namedMojoOutputColumns)) {
 
       def uniqueRandomName(colName: String, r: Random) = {
