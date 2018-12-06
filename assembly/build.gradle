@@ -52,6 +52,11 @@ shadowJar {
     include(dependency("ai.h2o:h2o-automl"))
     include(dependency("ai.h2o:h2o-persist-hdfs"))
     include(dependency("ai.h2o:h2o-persist-s3"))
+    include(dependency("com.google.cloud:google-cloud-storage"))
+    include(dependency("com.google.cloud:google-cloud-core"))
+    include(dependency("com.google.cloud:google-cloud-core-http"))
+
+    include(dependency("ai.h2o:h2o-persist-gcs"))
     include(dependency("ai.h2o:h2o-avro-parser"))
     include(dependency("ai.h2o:h2o-orc-parser"))
     include(dependency("ai.h2o:h2o-parquet-parser"))
