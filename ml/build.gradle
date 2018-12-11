@@ -29,7 +29,6 @@ dependencies {
   testCompile "junit:junit:4.11"
   testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
   testCompile(project(":sparkling-water-extension-stack-trace"))
-
 }
 
 test {
