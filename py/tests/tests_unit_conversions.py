@@ -289,5 +289,8 @@ class FrameTransformationsTest(unittest.TestCase):
         assert fr.nrows == 0
         assert fr.ncols == 0
 
+    def test_import_gcs(self):
+        fr = h2o.import_file("gs://gcp-public-data-nexrad-l2/2018/01/01/KABR/NWS_NEXRAD_NXL2DPBL_KABR_20180101050000_20180101055959.tar")
+
 if __name__ == '__main__':
     generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_conversions_report")
