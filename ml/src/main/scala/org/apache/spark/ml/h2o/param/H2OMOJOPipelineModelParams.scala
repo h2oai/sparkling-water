@@ -33,7 +33,7 @@ trait H2OMOJOPipelineModelParams extends Params {
   //
   // Default values
   //
-  setDefault(namedMojoOutputColumns -> false)
+  setDefault(namedMojoOutputColumns -> true)
 
   //
   // Getters
