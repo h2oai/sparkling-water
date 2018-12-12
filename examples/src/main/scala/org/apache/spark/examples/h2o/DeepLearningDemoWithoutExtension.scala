@@ -48,7 +48,7 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport with SparkSe
     // Use H2O to RDD transformation
     //
     import spark.implicits._
-    val airlinesTable = h2oContext.asDataFrame(airlinesData)(sqlContext).map(row => AirlinesParse(row))
+    val airlinesTable = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
     println(s"\n===> Number of all flights via RDD#count call: ${airlinesTable.count()}\n")
     println(s"\n===> Number of all flights via H2O#Frame#count: ${airlinesData.numRows()}\n")
 
