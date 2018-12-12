@@ -271,11 +271,14 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   }
 
   /** Convert given H2O frame into DataFrame type */
-  def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true)(implicit sqlContext: SQLContext): DataFrame =
-    SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
 
-  def asDataFrame(s: String, copyMetadata: Boolean)(implicit sqlContext: SQLContext): DataFrame =
+  def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
+    SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
+  }
+
+  def asDataFrame(s: String, copyMetadata: Boolean): DataFrame = {
     SparkDataFrameConverter.toDataFrame(this, new H2OFrame(s), copyMetadata)
+  }
 
   /** Returns location of REST API of H2O client */
   def h2oLocalClient = this.localClientIp + ":" + this.localClientPort + _conf.contextPath.getOrElse("")

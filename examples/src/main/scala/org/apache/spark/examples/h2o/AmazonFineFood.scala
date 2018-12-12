@@ -49,7 +49,7 @@ object AmazonFineFood extends SparkContextSupport with SparkSessionSupport with 
     reviews.update
     // NOTE: hour is not useful
 
-    val df = hc.asDataFrame(reviews)(sqlContext)
+    val df = hc.asDataFrame(reviews)
     df.printSchema()
 
     import org.apache.spark.sql.functions._
@@ -58,7 +58,7 @@ object AmazonFineFood extends SparkContextSupport with SparkSessionSupport with 
     val avgScorePerDay = hc.asH2OFrame(df.groupBy("DayOfWeek").agg(mean("Score"), count("Score")), "avgScorePerDay")
 
     // Input for sentiment analysis
-    val sentimentDF = hc.asDataFrame(reviews('Score, 'Month, 'Day, 'DayOfWeek, 'Summary))(sqlContext)
+    val sentimentDF = hc.asDataFrame(reviews('Score, 'Month, 'Day, 'DayOfWeek, 'Summary))
 
     // Transform Score to binary +/- feature - skip neutral reviews
     val toBinaryScore = udf { score: Byte => if (score < 3.toByte) "negative" else "positive" }
