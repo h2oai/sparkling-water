@@ -32,6 +32,7 @@ shadowJar {
   relocate 'javassist', 'ai.h2o.javassist'
   // Relocate Eclipse Jetty to avoid collisions with Spark Jetty (newer version)
   relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
+  relocate 'com.google.common', 'ai.h2o.com.google.common'
   dependencies {
     // This has to be specific list of dependencies
     // Do not forget that Sparkling Water is intended 
@@ -52,11 +53,25 @@ shadowJar {
     include(dependency("ai.h2o:h2o-automl"))
     include(dependency("ai.h2o:h2o-persist-hdfs"))
     include(dependency("ai.h2o:h2o-persist-s3"))
-    include(dependency("com.google.cloud:google-cloud-storage"))
-    include(dependency("com.google.cloud:google-cloud-core"))
-    include(dependency("com.google.cloud:google-cloud-core-http"))
-
     include(dependency("ai.h2o:h2o-persist-gcs"))
+
+
+    include(dependency("com.google.cloud:.*"))
+    include(dependency("com.google.auth:.*"))
+    include(dependency("com.google.api:.*"))
+    include(dependency("com.google.api-client:.*"))
+    include(dependency("com.google.http-client:.*"))
+    include(dependency("com.google.oauth-client:.*"))
+    include(dependency("com.google.api:.*"))
+    include(dependency("com.google.apis:.*"))
+    include(dependency("org.threeten:threetenbp"))
+    include(dependency("io.opencensus:.*"))
+    include(dependency("io.grpc:grpc-context"))
+
+    include(dependency("com.google.guava:guava"))
+    include(dependency("com.google.guava:guava-concurrent"))
+
+
     include(dependency("ai.h2o:h2o-avro-parser"))
     include(dependency("ai.h2o:h2o-orc-parser"))
     include(dependency("ai.h2o:h2o-parquet-parser"))
