@@ -131,18 +131,17 @@ public class JavaH2OContext {
      * @return a new RDD
      */
     public JavaRDD<Row> asRDD(H2OFrame fr) {
-        return hc.asDataFrame(fr, true, hc.sparkSession().sqlContext()).toJavaRDD();
+        return hc.asDataFrame(fr, true).toJavaRDD();
     }
 
     /**
      * Convert given H2O frame into DataFrame type
      *
      * @param fr         the frame to be used
-     * @param sqlContext sql context to be used for creating a frame
      * @return a new data frame
      */
-    public Dataset<Row> asDataFrame(Frame fr, SQLContext sqlContext) {
-        return asDataFrame(fr, true, sqlContext);
+    public Dataset<Row> asDataFrame(Frame fr) {
+        return asDataFrame(fr, true);
     }
 
     /**
@@ -150,22 +149,20 @@ public class JavaH2OContext {
      *
      * @param fr           H2O frame to convert
      * @param copyMetadata true if metadata should be copied
-     * @param sqlContext   sql context
      * @return Spark dataset
      */
-    public Dataset<Row> asDataFrame(Frame fr, boolean copyMetadata, SQLContext sqlContext) {
-        return hc.asDataFrame(fr, copyMetadata, sqlContext);
+    public Dataset<Row> asDataFrame(Frame fr, boolean copyMetadata) {
+        return hc.asDataFrame(fr, copyMetadata);
     }
 
     /**
      * Convert given H2O frame into DataFrame type
      *
      * @param key        key of H2O frame to convert
-     * @param sqlContext sql context
      * @return Spark dataset
      */
-    public Dataset<Row> asDataFrame(String key, SQLContext sqlContext) {
-        return asDataFrame(key, true, sqlContext);
+    public Dataset<Row> asDataFrame(String key) {
+        return asDataFrame(key, true);
     }
 
 
@@ -174,11 +171,10 @@ public class JavaH2OContext {
      *
      * @param key          key of H2O frame to convert
      * @param copyMetadata true if metadata should be copied
-     * @param sqlContext   sql context
      * @return Spark dataset
      */
-    public Dataset<Row> asDataFrame(String key, boolean copyMetadata, SQLContext sqlContext) {
-        return hc.asDataFrame(key, copyMetadata, sqlContext);
+    public Dataset<Row> asDataFrame(String key, boolean copyMetadata) {
+        return hc.asDataFrame(key, copyMetadata);
     }
 
     /**

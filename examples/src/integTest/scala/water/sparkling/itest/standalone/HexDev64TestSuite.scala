@@ -48,7 +48,7 @@ object HexDev64Test extends IntegTestStopper{
     // Transfer data from H2O to Spark RDD
     val timer2 = new water.util.Timer
     implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
-    val airlinesDataFrame = asDataFrame(airlinesData)(sqlContext)
+    val airlinesDataFrame = asDataFrame(airlinesData)
     val timeToTransfer = timer2.time / 1000
     println("Time it took to convert data to SparkRDD = " + timeToTransfer + "secs")
 

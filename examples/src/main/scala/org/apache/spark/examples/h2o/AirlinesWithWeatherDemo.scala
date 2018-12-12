@@ -50,7 +50,7 @@ object AirlinesWithWeatherDemo extends SparkContextSupport with SparkSessionSupp
     // Use super-fast advanced H2O CSV parser !!!
     val airlinesData = new H2OFrame(new File(TestUtils.locate("smalldata/airlines/allyears2k_headers.zip")))
 
-    val airlinesTable = h2oContext.asDataFrame(airlinesData)(sqlContext).map(row => AirlinesParse(row))
+    val airlinesTable = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
     // Select flights only to ORD
     val flightsToORD = airlinesTable.filter(f => f.Dest == Some("ORD"))
 

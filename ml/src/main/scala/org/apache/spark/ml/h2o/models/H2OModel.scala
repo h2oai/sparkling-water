@@ -67,7 +67,7 @@ M <: Model[_, _, _ <: Model.Output]]
     val prediction = model.score(frameNoId)
     val predictionIds = prediction.add(ids)
     predictionIds.update()
-    val predictionsSpark = h2oContext.asDataFrame(predictionIds)(sqlContext)
+    val predictionsSpark = h2oContext.asDataFrame(predictionIds)
 
     datasetWithId.join(predictionsSpark, tempId).drop(tempId)
   }
