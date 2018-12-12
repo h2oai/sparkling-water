@@ -78,12 +78,10 @@ as_h2o_frame <- function(sc, x, name=NULL, strict_version_check=TRUE) {
 as_spark_dataframe <- function(sc, x, name = paste(deparse(substitute(x)), collapse=""), strict_version_check=TRUE) {
   # TO DO: ensure we are dealing with a H2OFrame
 
-  # Get SQLContext
-  sqlContext <- invoke_static(sc, "org.apache.spark.sql.SQLContext", "getOrCreate", spark_context(sc))
   # Get H2OContext
   hc <- h2o_context(sc, strict_version_check=strict_version_check)
   # Invoke H2OContext#asDataFrame method on the backend
-  spark_df <- invoke(hc, "asDataFrame", h2o.getId(x), TRUE, sqlContext)
+  spark_df <- invoke(hc, "asDataFrame", h2o.getId(x), TRUE)
   # Register returned spark_jobj as a table for dplyr
   sdf_register(spark_df, name = name)
 }
