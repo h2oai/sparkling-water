@@ -30,7 +30,14 @@ dependencies {
   testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
   testCompile(project(":sparkling-water-extension-stack-trace"))
 
+  // For test purposes, force newer client as the tests are modifying classpath and we get errors which
+  // we do not get during normal production usage
+  testCompile('org.apache.hadoop:hadoop-mapreduce-client-core:2.7.2') {force = true}
+  testCompile('org.apache.hadoop:hadoop-common:2.7.2') {force = true} // required for org.apache.hadoop.util.StopWatch
+  testCompile('commons-io:commons-io:2.4') {force = true} // required for org.apache.commons.io.Charsets that is used internally
+
 }
+
 
 test {
   if (project.property("testMojoPipeline") != "true") {
