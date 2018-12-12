@@ -17,7 +17,7 @@ requirements:
     - tabulate >=0.7.5
     - requests >=2.10
     - six
-    - pyspark >= 2.4.0
+    - pyspark >=2.4.0
 
   run:
     - python
@@ -26,7 +26,7 @@ requirements:
     - tabulate >=0.7.5
     - requests >=2.10
     - six
-    - pyspark >= 2.4.0
+    - pyspark >=2.4.0
 
   test:
     - pip >= 9.0.3
@@ -35,7 +35,7 @@ requirements:
     - requests >= 2.18.4
     - tabulate >= 0.8.2
     - six
-    - pyspark >= 2.4.0
+    - pyspark >=2.4.0
 
 about:
   home: https://github.com/h2oai/sparkling-water.git
