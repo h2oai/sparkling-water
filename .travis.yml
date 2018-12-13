@@ -28,4 +28,4 @@ cache:
         - $HOME/.gradle/wrapper/
         - $SPARK_HOME
 
-script: travis_wait 30 ./gradlew clean build -x integTest -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME -PscalaBaseVersion=$SCALA_BASE_VERSION
+script: travis_wait 30 ./gradlew clean build -x integTest -x :sparkling-water-r:build -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME -PscalaBaseVersion=$SCALA_BASE_VERSION
