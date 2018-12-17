@@ -32,39 +32,49 @@ get_release_table_for <- function(spark_major_minor_version) {
 }
 
 next_from_existing_table <- function(release_table, spark_version, h2o_version, h2o_name, h2o_build){
-    latest <- data.frame( Spark_Version = spark_version,
-    Sparkling_Water_Version = paste(spark_version, ".", as.numeric(unlist(strsplit(toString(release_table[1,2]), "\\."))[3]) + 1, collapse="", sep=""),
-    H2O_Version = c(h2o_version),
-    H2O_Release_Name = c(h2o_name),
-    H2O_Release_Patch_Number = c(h2o_build), stringsAsFactors=FALSE)
+    print(nrow(release_table))
+    if (nrow(release_table) == 1) { # Just header
+        first <- data.frame( Spark_Version = spark_version,
+        Sparkling_Water_Version = paste(spark_version, ".", "0", collapse="", sep=""),
+        H2O_Version = c(h2o_version),
+        H2O_Release_Name = c(h2o_name),
+        H2O_Release_Patch_Number = c(h2o_build), stringsAsFactors=FALSE)
 
-    return(latest)
+        return(first)
+    } else {
+        latest <- data.frame( Spark_Version = spark_version,
+        Sparkling_Water_Version = paste(spark_version, ".", as.numeric(unlist(strsplit(toString(release_table[1,2]), "\\."))[3]) + 1, collapse="", sep=""),
+        H2O_Version = c(h2o_version),
+        H2O_Release_Name = c(h2o_name),
+        H2O_Release_Patch_Number = c(h2o_build), stringsAsFactors=FALSE)
+
+        return(latest)
+    }
+}
+
+rbind_with_previous_table <- function(new_table, old_table) {
+    if (nrow(old_table) == 1){ # Just header
+        return(new_table)
+    } else {
+        return(rbind(new_table, old_table))
+    }
+}
+
+update_release_table <- function(tables_dir, spark_version, h2o_version, h2o_name, h2o_build){
+    out_file <- paste("table_", spark_version, ".txt", collapse="", sep="")
+    table <- read.table(file=paste(tables_dir, out_file, sep="", collapse=""))
+    next_version <- next_from_existing_table(table, gsub("_", ".", spark_version), h2o_version, h2o_name, h2o_build)
+    final <- rbind_with_previous_table(next_version, table)
+    write.table(final, file=paste(tables_dir, out_file, sep="", collapse=""))
 }
 
 update_release_tables <- function(tables_dir, h2o_version, h2o_name, h2o_build){
-    table_2_4 <- read.table(file=paste(tables_dir, "table_2_4.txt", sep="", collapse=""))
-    table_2_3 <- read.table(file=paste(tables_dir, "table_2_3.txt", sep="", collapse=""))
-    table_2_2 <- read.table(file=paste(tables_dir, "table_2_2.txt", sep="", collapse=""))
-    table_2_1 <- read.table(file=paste(tables_dir, "table_2_1.txt", sep="", collapse=""))
-
-    next_version_2_4 <- next_from_existing_table(table_2_4, "2.4", h2o_version, h2o_name, h2o_build)
-    next_version_2_3 <- next_from_existing_table(table_2_3, "2.3", h2o_version, h2o_name, h2o_build)
-    next_version_2_2 <- next_from_existing_table(table_2_2, "2.2", h2o_version, h2o_name, h2o_build)
-    next_version_2_1 <- next_from_existing_table(table_2_1, "2.1", h2o_version, h2o_name, h2o_build)
-
-    final_2_4 <- rbind(next_version_2_4, table_2_4)
-    final_2_3 <- rbind(next_version_2_3, table_2_3)
-    final_2_2 <- rbind(next_version_2_2, table_2_2)
-    final_2_1 <- rbind(next_version_2_1, table_2_1)
-
-    write.table(final_2_4, file=paste(tables_dir, "table_2_4.txt", sep="", collapse=""))
-    write.table(final_2_3, file=paste(tables_dir, "table_2_3.txt", sep="", collapse=""))
-    write.table(final_2_2, file=paste(tables_dir, "table_2_2.txt", sep="", collapse=""))
-    write.table(final_2_1, file=paste(tables_dir, "table_2_1.txt", sep="", collapse=""))
+    for (spark_version in c("2_4", "2_3", "2_2", "2_1")){
+        update_release_table(tables_dir, spark_version, h2o_version, h2o_name, h2o_build)
+    }
 }
 
 h2o_release_table <- function(tables_dir){
-
     table_2_4 <- read.table(file=paste(tables_dir, "table_2_4.txt", sep="", collapse=""))
     table_2_3 <- read.table(file=paste(tables_dir, "table_2_3.txt", sep="", collapse=""))
     table_2_2 <- read.table(file=paste(tables_dir, "table_2_2.txt", sep="", collapse=""))
