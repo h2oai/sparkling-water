@@ -22,18 +22,18 @@ RUN \
     curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash - && \
     sudo apt-get install -y nodejs
 
-#RUN \
-#    R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \
-#    R -e 'install.packages("openssl", repos = "http://cran.us.r-project.org")' && \
-#    R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \
-#    R -e 'install.packages("bitops", repos = "http://cran.us.r-project.org")' && \
-#    R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")' && \
-#    R -e 'install.packages("jsonlite", repos = "http://cran.us.r-project.org")' && \
-#    R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \
-#    R -e 'install.packages("dplyr", repos = "http://cran.us.r-project.org")' && \
-#    R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")' && \
-#    R -e 'install.packages("usethis", repos = "http://cran.us.r-project.org")' && \
-#    R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
+RUN \
+    R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("openssl", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("bitops", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("jsonlite", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("dplyr", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("usethis", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
 
 ###
 ###  Prepare Spark
@@ -44,66 +44,66 @@ RUN cd /home/jenkins && \
     mkdir -p spark-2.4.0-bin-hadoop2.7 &&  \
     tar zxvf spark-2.4.0-bin-hadoop2.7.tgz -C spark-2.4.0-bin-hadoop2.7 --strip-components 1 && \
     rm -rf spark-2.4.0-bin-hadoop2.7.tgz
-#
-#RUN cd /home/jenkins && \
-#    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.3.2/spark-2.3.2-bin-hadoop2.7.tgz  && \
-#    mkdir -p spark-2.3.2-bin-hadoop2.7 &&  \
-#    tar zxvf spark-2.3.2-bin-hadoop2.7.tgz -C spark-2.3.2-bin-hadoop2.7 --strip-components 1 && \
-#    rm -rf spark-2.3.2-bin-hadoop2.7.tgz
-#
-#RUN cd /home/jenkins && \
-#    wget http://archive.apache.org/dist/spark/spark-2.3.1/spark-2.3.1-bin-hadoop2.7.tgz  && \
-#    mkdir -p spark-2.3.1-bin-hadoop2.7 &&  \
-#    tar zxvf spark-2.3.1-bin-hadoop2.7.tgz -C spark-2.3.1-bin-hadoop2.7 --strip-components 1 && \
-#    rm -rf spark-2.3.1-bin-hadoop2.7.tgz
-#
-#RUN cd /home/jenkins && \
-#    wget http://archive.apache.org/dist/spark/spark-2.3.0/spark-2.3.0-bin-hadoop2.7.tgz  && \
-#    mkdir -p spark-2.3.0-bin-hadoop2.7 &&  \
-#    tar zxvf spark-2.3.0-bin-hadoop2.7.tgz -C spark-2.3.0-bin-hadoop2.7 --strip-components 1 && \
-#    rm -rf spark-2.3.0-bin-hadoop2.7.tgz
-#
-#RUN cd /home/jenkins && \
-#    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.2.2/spark-2.2.2-bin-hadoop2.7.tgz  && \
-#    mkdir -p spark-2.2.2-bin-hadoop2.7 &&  \
-#    tar zxvf spark-2.2.2-bin-hadoop2.7.tgz -C spark-2.2.2-bin-hadoop2.7 --strip-components 1 && \
-#    rm -rf spark-2.2.2-bin-hadoop2.7.tgz
-#
-#RUN cd /home/jenkins && \
-#    wget http://archive.apache.org/dist/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz  && \
-#    mkdir -p spark-2.2.1-bin-hadoop2.7 &&  \
-#    tar zxvf spark-2.2.1-bin-hadoop2.7.tgz -C spark-2.2.1-bin-hadoop2.7 --strip-components 1 && \
-#    rm -rf spark-2.2.1-bin-hadoop2.7.tgz
-#
-#RUN cd /home/jenkins && \
-#    wget http://archive.apache.org/dist/spark/spark-2.2.0/spark-2.2.0-bin-hadoop2.7.tgz  && \
-#    mkdir -p spark-2.2.0-bin-hadoop2.7 &&  \
-#    tar zxvf spark-2.2.0-bin-hadoop2.7.tgz -C spark-2.2.0-bin-hadoop2.7 --strip-components 1 && \
-#    rm -rf spark-2.2.0-bin-hadoop2.7.tgz
-#
-#RUN cd /home/jenkins && \
-#    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.1.3/spark-2.1.3-bin-hadoop2.7.tgz  && \
-#    mkdir -p spark-2.1.3-bin-hadoop2.7 &&  \
-#    tar zxvf spark-2.1.3-bin-hadoop2.7.tgz -C spark-2.1.3-bin-hadoop2.7 --strip-components 1 && \
-#    rm -rf spark-2.1.3-bin-hadoop2.7.tgz
-#
-#RUN cd /home/jenkins && \
-#    wget http://archive.apache.org/dist/spark/spark-2.1.2/spark-2.1.2-bin-hadoop2.7.tgz  && \
-#    mkdir -p spark-2.1.2-bin-hadoop2.7 &&  \
-#    tar zxvf spark-2.1.2-bin-hadoop2.7.tgz -C spark-2.1.2-bin-hadoop2.7 --strip-components 1 && \
-#    rm -rf spark-2.1.2-bin-hadoop2.7.tgz
-#
-#RUN cd /home/jenkins && \
-#    wget http://archive.apache.org/dist/spark/spark-2.1.1/spark-2.1.1-bin-hadoop2.7.tgz  && \
-#    mkdir -p spark-2.1.1-bin-hadoop2.7 &&  \
-#    tar zxvf spark-2.1.1-bin-hadoop2.7.tgz -C spark-2.1.1-bin-hadoop2.7 --strip-components 1 && \
-#    rm -rf spark-2.1.1-bin-hadoop2.7.tgz
-#
-#RUN cd /home/jenkins && \
-#    wget http://archive.apache.org/dist/spark/spark-2.1.0/spark-2.1.0-bin-hadoop2.7.tgz  && \
-#    mkdir -p spark-2.1.0-bin-hadoop2.7 &&  \
-#    tar zxvf spark-2.1.0-bin-hadoop2.7.tgz -C spark-2.1.0-bin-hadoop2.7 --strip-components 1 && \
-#    rm -rf spark-2.1.0-bin-hadoop2.7.tgz
+
+RUN cd /home/jenkins && \
+    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.3.2/spark-2.3.2-bin-hadoop2.7.tgz  && \
+    mkdir -p spark-2.3.2-bin-hadoop2.7 &&  \
+    tar zxvf spark-2.3.2-bin-hadoop2.7.tgz -C spark-2.3.2-bin-hadoop2.7 --strip-components 1 && \
+    rm -rf spark-2.3.2-bin-hadoop2.7.tgz
+
+RUN cd /home/jenkins && \
+    wget http://archive.apache.org/dist/spark/spark-2.3.1/spark-2.3.1-bin-hadoop2.7.tgz  && \
+    mkdir -p spark-2.3.1-bin-hadoop2.7 &&  \
+    tar zxvf spark-2.3.1-bin-hadoop2.7.tgz -C spark-2.3.1-bin-hadoop2.7 --strip-components 1 && \
+    rm -rf spark-2.3.1-bin-hadoop2.7.tgz
+
+RUN cd /home/jenkins && \
+    wget http://archive.apache.org/dist/spark/spark-2.3.0/spark-2.3.0-bin-hadoop2.7.tgz  && \
+    mkdir -p spark-2.3.0-bin-hadoop2.7 &&  \
+    tar zxvf spark-2.3.0-bin-hadoop2.7.tgz -C spark-2.3.0-bin-hadoop2.7 --strip-components 1 && \
+    rm -rf spark-2.3.0-bin-hadoop2.7.tgz
+
+RUN cd /home/jenkins && \
+    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.2.2/spark-2.2.2-bin-hadoop2.7.tgz  && \
+    mkdir -p spark-2.2.2-bin-hadoop2.7 &&  \
+    tar zxvf spark-2.2.2-bin-hadoop2.7.tgz -C spark-2.2.2-bin-hadoop2.7 --strip-components 1 && \
+    rm -rf spark-2.2.2-bin-hadoop2.7.tgz
+
+RUN cd /home/jenkins && \
+    wget http://archive.apache.org/dist/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz  && \
+    mkdir -p spark-2.2.1-bin-hadoop2.7 &&  \
+    tar zxvf spark-2.2.1-bin-hadoop2.7.tgz -C spark-2.2.1-bin-hadoop2.7 --strip-components 1 && \
+    rm -rf spark-2.2.1-bin-hadoop2.7.tgz
+
+RUN cd /home/jenkins && \
+    wget http://archive.apache.org/dist/spark/spark-2.2.0/spark-2.2.0-bin-hadoop2.7.tgz  && \
+    mkdir -p spark-2.2.0-bin-hadoop2.7 &&  \
+    tar zxvf spark-2.2.0-bin-hadoop2.7.tgz -C spark-2.2.0-bin-hadoop2.7 --strip-components 1 && \
+    rm -rf spark-2.2.0-bin-hadoop2.7.tgz
+
+RUN cd /home/jenkins && \
+    wget http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.1.3/spark-2.1.3-bin-hadoop2.7.tgz  && \
+    mkdir -p spark-2.1.3-bin-hadoop2.7 &&  \
+    tar zxvf spark-2.1.3-bin-hadoop2.7.tgz -C spark-2.1.3-bin-hadoop2.7 --strip-components 1 && \
+    rm -rf spark-2.1.3-bin-hadoop2.7.tgz
+
+RUN cd /home/jenkins && \
+    wget http://archive.apache.org/dist/spark/spark-2.1.2/spark-2.1.2-bin-hadoop2.7.tgz  && \
+    mkdir -p spark-2.1.2-bin-hadoop2.7 &&  \
+    tar zxvf spark-2.1.2-bin-hadoop2.7.tgz -C spark-2.1.2-bin-hadoop2.7 --strip-components 1 && \
+    rm -rf spark-2.1.2-bin-hadoop2.7.tgz
+
+RUN cd /home/jenkins && \
+    wget http://archive.apache.org/dist/spark/spark-2.1.1/spark-2.1.1-bin-hadoop2.7.tgz  && \
+    mkdir -p spark-2.1.1-bin-hadoop2.7 &&  \
+    tar zxvf spark-2.1.1-bin-hadoop2.7.tgz -C spark-2.1.1-bin-hadoop2.7 --strip-components 1 && \
+    rm -rf spark-2.1.1-bin-hadoop2.7.tgz
+
+RUN cd /home/jenkins && \
+    wget http://archive.apache.org/dist/spark/spark-2.1.0/spark-2.1.0-bin-hadoop2.7.tgz  && \
+    mkdir -p spark-2.1.0-bin-hadoop2.7 &&  \
+    tar zxvf spark-2.1.0-bin-hadoop2.7.tgz -C spark-2.1.0-bin-hadoop2.7 --strip-components 1 && \
+    rm -rf spark-2.1.0-bin-hadoop2.7.tgz
 
 ENV SPARK_HOME_2_4_0 /home/jenkins/spark-2.4.0-bin-hadoop2.7
 ENV SPARK_HOME_2_3_2 /home/jenkins/spark-2.3.2-bin-hadoop2.7
@@ -122,11 +122,11 @@ USER jenkins
 ###
 ### Warm up Gradle caches for Sparkling Water
 ###
-#RUN cd /home/jenkins && \
-#    git clone https://github.com/h2oai/sparkling-water.git && \
-#    cd sparkling-water && \
-#    ./gradlew build testClasses resolveTestRuntimeDependencies -PtestMojoPipeline=true -x check -x :sparkling-water-py:build && \
-#    cd ..
+RUN cd /home/jenkins && \
+    git clone https://github.com/h2oai/sparkling-water.git && \
+    cd sparkling-water && \
+    ./gradlew build testClasses resolveTestRuntimeDependencies -PtestMojoPipeline=true -x check -x :sparkling-water-py:build && \
+    cd ..
 
 USER root
 
@@ -153,5 +153,4 @@ RUN \
     conda update conda -y && \
     conda update conda-build -y
 
-USER root
 
