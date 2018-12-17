@@ -1,0 +1,33 @@
+package:
+  name: h2o_pysparkling_2.2
+  version: SUBST_PYSPARKLING_VERSION
+
+source:
+  path: ../../pkg
+
+requirements:
+  build:
+    - python
+    - pip >=9.0.1
+    - setuptools
+    - colorama >=0.3.7
+    - future >=0.15.2
+    - tabulate >=0.7.5
+    - requests >=2.10
+    - six
+    - pyspark >=2.4.0
+
+  run:
+    - python
+    - colorama >=0.3.7
+    - future >=0.15.2
+    - tabulate >=0.7.5
+    - requests >=2.10
+    - six
+    - pyspark >=2.4.0
+
+
+about:
+  home: https://github.com/h2oai/sparkling-water.git
+  license: Apache License Version 2.0
+  license_family: Apache

@@ -1,3 +1,5 @@
+import static groovy.io.FileType.FILES
+
 apply from: "$rootDir/gradle/utils.gradle"
 
 ext {
@@ -140,6 +142,26 @@ def copyPySetup() {
     }
 }
 
+def copyCondaMetaFiles() {
+    copy {
+        from ("$projectDir") {
+            include 'conda/**/*'
+        }
+        into buildDir
+    }
+}
+
+def setPySparklingVersionInCondaMetaFile() {
+    new File("$buildDir/conda/").eachFileRecurse(FILES) {
+        if (it.name == "meta.yaml") {
+            def contents = file(it).getText('UTF-8')
+            contents = contents
+                    .replaceAll("SUBST_PYSPARKLING_VERSION", version.replace("-SNAPSHOT",""))
+            file(it).write(contents, 'UTF-8')
+        }
+    }
+}
+
 def copyH2OFromH2OHome(String h2oHome) {
         copy {
             from "${h2oHome}/h2o-py/h2o"
@@ -177,7 +199,8 @@ task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.compile] )
         }
         // Copy basic python setup
         copyPySetup()
-
+        copyCondaMetaFiles()
+        setPySparklingVersionInCondaMetaFile()
         def replaceStr =
                 """
 import zipfile
