@@ -35,8 +35,6 @@ RUN \
     R -e 'install.packages("usethis", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
 
-
-
 ###
 ###  Prepare Spark
 ###
@@ -141,4 +139,18 @@ RUN chmod 777 /usr/local/lib/R/site-library
 USER jenkins
 
 ENV USER jenkins
+
+# Install Conda as we need to publish Sparkling Water as conda package
+RUN cd /home/jenkins && \
+    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /home/jenkins/miniconda.sh && \
+    bash /home/jenkins/miniconda.sh -b -p /home/jenkins/miniconda && \
+    rm /home/jenkins/miniconda.sh
+
+ENV PATH "/home/jenkins/miniconda/bin:${PATH}"
+
+RUN \
+    conda install conda-build -y && \
+    conda update conda -y && \
+    conda update conda-build -y
+
 
