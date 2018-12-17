@@ -165,7 +165,7 @@ def setPySparklingVersionInCondaMetaFile() {
         if (it.name == "meta.yaml") {
             def contents = file(it).getText('UTF-8')
             contents = contents
-                    .replaceAll("SUBST_PYSPARKLING_VERSION", version)
+                    .replaceAll("SUBST_PYSPARKLING_VERSION", version.replace("-SNAPSHOT",""))
             file(it).write(contents, 'UTF-8')
         }
     }
