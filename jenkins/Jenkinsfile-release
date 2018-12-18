@@ -125,6 +125,8 @@ pipeline {
 
 
                                  sh """
+                                    . /envs/h2o_env_python2.7/bin/activate
+
                                     sed -i.backup -E "s/\\.([0-9]+)-SNAPSHOT/.\\1/" gradle.properties
                                     REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
 

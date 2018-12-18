@@ -35,7 +35,7 @@ next_from_existing_table <- function(release_table, spark_version, h2o_version, 
     print(nrow(release_table))
     if (nrow(release_table) == 1) { # Just header
         first <- data.frame( Spark_Version = spark_version,
-        Sparkling_Water_Version = paste(spark_version, ".", "0", collapse="", sep=""),
+        Sparkling_Water_Version = paste(spark_version, ".", "1", collapse="", sep=""),
         H2O_Version = c(h2o_version),
         H2O_Release_Name = c(h2o_name),
         H2O_Release_Patch_Number = c(h2o_build), stringsAsFactors=FALSE)
