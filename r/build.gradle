@@ -121,9 +121,11 @@ task installH2ORPackage(type: Exec){
     commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"h2o\", type = \"source\", repos = \"http://h2o-release.s3.amazonaws.com/h2o/${majorName}/${h2oBuild}/R\")"])
 }
 
-task installRSparklingPackage(type: Exec, dependsOn: buildR){
-    workingDir project.buildDir
-    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_${getCurrentVersion("${rootDir}/r")}.tar.gz\", type=\"source\", repos=NULL)"])
+task installRSparklingPackage(type: Exec, dependsOn: buildR) {
+    doLast {
+        workingDir project.buildDir
+        commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_${getCurrentVersion("${rootDir}/r")}.tar.gz\", type=\"source\", repos=NULL)"])
+    }
 }
 
 
