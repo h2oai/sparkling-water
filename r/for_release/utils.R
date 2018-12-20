@@ -74,11 +74,29 @@ update_release_tables <- function(tables_dir, h2o_version, h2o_name, h2o_build){
     }
 }
 
+read_rel_table <- function(tables_dir, spark_version) {
+    out_file <- paste("table_", spark_version, ".txt", collapse="", sep="")
+    table <- read.table(file=paste(tables_dir, out_file, sep="", collapse=""))
+    if (nrow(table) == 1){ # Just header, create row so tests can run
+        dummy <- data.frame( Spark_Version = spark_version,
+        Sparkling_Water_Version = "42",
+        H2O_Version = c(1),
+        H2O_Release_Name = c(2),
+        H2O_Release_Patch_Number = c(3), stringsAsFactors=FALSE)
+
+        return(dummy)
+    } else{
+      return(table)
+    }
+    return(table)
+}
+
 h2o_release_table <- function(tables_dir){
-    table_2_4 <- read.table(file=paste(tables_dir, "table_2_4.txt", sep="", collapse=""))
-    table_2_3 <- read.table(file=paste(tables_dir, "table_2_3.txt", sep="", collapse=""))
-    table_2_2 <- read.table(file=paste(tables_dir, "table_2_2.txt", sep="", collapse=""))
-    table_2_1 <- read.table(file=paste(tables_dir, "table_2_1.txt", sep="", collapse=""))
+
+    table_2_4 <- read_rel_table(tables_dir, "2_4")
+    table_2_3 <- read_rel_table(tables_dir, "2_3")
+    table_2_2 <- read_rel_table(tables_dir, "2_2")
+    table_2_1 <- read_rel_table(tables_dir, "2_1")
 
     return(rbind(table_2_4, table_2_3, table_2_2, table_2_1))
 }
