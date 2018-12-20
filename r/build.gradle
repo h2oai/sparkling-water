@@ -122,10 +122,8 @@ task installH2ORPackage(type: Exec){
 }
 
 task installRSparklingPackage(type: Exec, dependsOn: buildR) {
-    doLast {
         workingDir project.buildDir
-        commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_${getCurrentVersion("${rootDir}/r")}.tar.gz\", type=\"source\", repos=NULL)"])
-    }
+        commandLine getOsSpecificCommandLine(["R", "-e", "source('../for_release/utils.R'); install.packages(paste(\"rsparkling_\", \"0.2.\", getCurrentVersion(\"src\"), \".tar.gz\", collapse=\"\", sep=\"\"), type=\"source\", repos=NULL)"])
 }
 
 
