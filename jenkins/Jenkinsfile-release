@@ -295,7 +295,7 @@ pipeline {
                             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 
                                 // Upload Conda packages of PySparkling
-                                def PYTHON_VERSIONS = ['2.7, 3.6']
+                                def PYTHON_VERSIONS = ['2.7', '3.6']
                                 for (pyVersion in PYTHON_VERSIONS) {
                                          sh """
                                             REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
@@ -453,7 +453,7 @@ EOF
                             dir("py/build/conda") {
                                 withCredentials([usernamePassword(credentialsId: 'anaconda-credentials', usernameVariable: 'ANACONDA_USERNAME', passwordVariable: 'ANACONDA_PASSWORD')]) {
                                      // Upload Conda packages of PySparkling
-                                    def PYTHON_VERSIONS = ['2.7, 3.6']
+                                    def PYTHON_VERSIONS = ['2.7', '3.6']
                                     for (pyVersion in PYTHON_VERSIONS) {
                                              sh """
                                                 REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
