@@ -88,7 +88,6 @@ read_rel_table <- function(tables_dir, spark_version) {
     } else{
       return(table)
     }
-    return(table)
 }
 
 h2o_release_table <- function(tables_dir){
