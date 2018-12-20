@@ -16,7 +16,6 @@ env:
     - SPARK_HOME="$HOME/spark22/"
   matrix:
     - SCALA_BASE_VERSION="2.11"
-    - SCALA_BASE_VERSION="2.10"
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
