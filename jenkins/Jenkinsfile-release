@@ -460,7 +460,7 @@ EOF
                                                 PKG_NAME=\$(basename \$CONDA_PKG_CURRENT_ARCH_PATH)
 
                                                 # Upload Conda packages of PySparkling
-                                                anaconda login --username ${ANACONDA_USERNAME} --password ${ANACONDA_PASSWORD}
+                                                yes | anaconda login --username ${ANACONDA_USERNAME} --password ${ANACONDA_PASSWORD}
 
                                                 echo osx-64/\${PKG_NAME}
                                                 echo linux-32/\${PKG_NAME}
