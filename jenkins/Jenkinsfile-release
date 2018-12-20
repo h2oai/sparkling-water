@@ -456,9 +456,6 @@ EOF
                                     def PYTHON_VERSIONS = ['2.7', '3.6']
                                     for (pyVersion in PYTHON_VERSIONS) {
                                              sh """
-                                                REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                                                PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
-
                                                 CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_2.4 --py ${pyVersion} --output-folder "." --output | tail -1)
                                                 PKG_NAME=\$(basename \$CONDA_PKG_CURRENT_ARCH_PATH)
 
