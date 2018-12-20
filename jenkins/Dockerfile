@@ -149,8 +149,8 @@ RUN cd /home/jenkins && \
 ENV PATH "/home/jenkins/miniconda/bin:${PATH}"
 
 RUN \
-    conda install conda-build -y && \
+    conda install anaconda-client conda-build -y && \
     conda update conda -y && \
-    conda update conda-build -y
+    conda update anaconda-client conda-build -y
 
 
