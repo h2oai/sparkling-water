@@ -22,6 +22,3 @@ rootProject.children.each { project ->
     }
     project.name = rootProject.name + "-" + project.name 
 }
-
-// Make publish task behave in the same way the other tasks in Gradle
-enableFeaturePreview('STABLE_PUBLISHING')
