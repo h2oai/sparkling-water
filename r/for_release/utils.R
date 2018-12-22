@@ -33,7 +33,7 @@ get_release_table_for <- function(spark_major_minor_version) {
 
 next_from_existing_table <- function(release_table, spark_version, h2o_version, h2o_name, h2o_build){
     print(nrow(release_table))
-    if (nrow(release_table) == 1) { # Just header
+    if (nrow(release_table) == 0) { # Just header
         first <- data.frame( Spark_Version = spark_version,
         Sparkling_Water_Version = paste(spark_version, ".", "1", collapse="", sep=""),
         H2O_Version = c(h2o_version),
@@ -53,7 +53,7 @@ next_from_existing_table <- function(release_table, spark_version, h2o_version, 
 }
 
 rbind_with_previous_table <- function(new_table, old_table) {
-    if (nrow(old_table) == 1){ # Just header
+    if (nrow(old_table) == 0){ # Just header
         return(new_table)
     } else {
         return(rbind(new_table, old_table))
@@ -62,7 +62,7 @@ rbind_with_previous_table <- function(new_table, old_table) {
 
 update_release_table <- function(tables_dir, spark_version, h2o_version, h2o_name, h2o_build){
     out_file <- paste("table_", spark_version, ".txt", collapse="", sep="")
-    table <- read.table(file=paste(tables_dir, out_file, sep="", collapse=""))
+    table <- read.table(file=paste(tables_dir, out_file, sep="", collapse=""), header=TRUE)
     next_version <- next_from_existing_table(table, gsub("_", ".", spark_version), h2o_version, h2o_name, h2o_build)
     final <- rbind_with_previous_table(next_version, table)
     write.table(final, file=paste(tables_dir, out_file, sep="", collapse=""))
@@ -76,8 +76,8 @@ update_release_tables <- function(tables_dir, h2o_version, h2o_name, h2o_build){
 
 read_rel_table <- function(tables_dir, spark_version) {
     out_file <- paste("table_", spark_version, ".txt", collapse="", sep="")
-    table <- read.table(file=paste(tables_dir, out_file, sep="", collapse=""))
-    if (nrow(table) == 1){ # Just header, create row so tests can run
+    table <- read.table(file=paste(tables_dir, out_file, sep="", collapse=""), header=TRUE)
+    if (nrow(table) == 0){ # Just header, create row so tests can run
         dummy <- data.frame( Spark_Version = spark_version,
         Sparkling_Water_Version = "42",
         H2O_Version = c(1),
