@@ -9,7 +9,7 @@ pipeline {
         booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3')
         booleanParam(name: 'updateDocLinks', defaultValue: true, description: 'Update documentation links')
         booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy')
-        booleanParam(name: 'publishConda', defaultValue: true, description: 'Publish to Conda')
+        booleanParam(name: 'publishConda', defaultValue: false, description: 'Publish to Conda')
         booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
     }
 
@@ -191,35 +191,35 @@ pipeline {
             }
         }
 
-        stage('Build Conda Packages'){
-              steps {
-                    script {
-                        docker.withRegistry("http://harbor.h2o.ai") {
-                            docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
-                                dir("py/build/conda") {
-                                    def PYTHON_VERSIONS = ['2.7', '3.6']
-                                    for (pyVersion in PYTHON_VERSIONS) {
-
-                                        sh """
-                                            . /envs/h2o_env_python3.6/bin/activate
-
-                                            conda build h2o_pysparkling_2.1 --output-folder "." --no-anaconda-upload --py ${pyVersion}
-
-                                            # Get name of the package
-                                            CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_2.1 --py ${pyVersion} --output-folder "." --output | tail -1)
-                                            PKG_NAME=\$(basename \$CONDA_PKG_CURRENT_ARCH_PATH)
-
-
-                                            # Convert conda package for all other platforms
-                                            conda convert \$CONDA_PKG_CURRENT_ARCH_PATH -p all
-                                           """
-                                    }
-                                }
-                            }
-                        }
-                    }
-              }
-        }
+//        stage('Build Conda Packages'){
+//              steps {
+//                    script {
+//                        docker.withRegistry("http://harbor.h2o.ai") {
+//                            docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+//                                dir("py/build/conda") {
+//                                    def PYTHON_VERSIONS = ['2.7', '3.6']
+//                                    for (pyVersion in PYTHON_VERSIONS) {
+//
+//                                        sh """
+//                                            . /envs/h2o_env_python3.6/bin/activate
+//
+//                                            conda build h2o_pysparkling_2.1 --output-folder "." --no-anaconda-upload --py ${pyVersion}
+//
+//                                            # Get name of the package
+//                                            CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_2.1 --py ${pyVersion} --output-folder "." --output | tail -1)
+//                                            PKG_NAME=\$(basename \$CONDA_PKG_CURRENT_ARCH_PATH)
+//
+//
+//                                            # Convert conda package for all other platforms
+//                                            conda convert \$CONDA_PKG_CURRENT_ARCH_PATH -p all
+//                                           """
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//              }
+//        }
 
         stage('Publish to Nexus'){
             when {
@@ -278,26 +278,26 @@ pipeline {
 
                             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 
-                                // Upload Conda packages of PySparkling
-                                def PYTHON_VERSIONS = ['2.7', '3.6']
-                                for (pyVersion in PYTHON_VERSIONS) {
-                                         sh """
-                                            REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                                            PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
-
-                                            cd py/build/conda
-                                            CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_2.1 --py ${pyVersion} --output-folder "." --output | tail -1)
-                                            cd ../../..
-                                            PKG_NAME=\$(basename \$CONDA_PKG_CURRENT_ARCH_PATH)
-
-                                            # Upload Conda packages of PySparkling to S3
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/osx-64/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/osx-64/\${PKG_NAME}
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/linux-32/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/linux-32/\${PKG_NAME}
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/linux-64/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/linux-64/\${PKG_NAME}
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/win-32/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/win-32/\${PKG_NAME}
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/win-64/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/win-64/\${PKG_NAME}
-                                            """
-                                }
+                            //    // Upload Conda packages of PySparkling
+                            //    def PYTHON_VERSIONS = ['2.7', '3.6']
+                            //    for (pyVersion in PYTHON_VERSIONS) {
+                            //             sh """
+                            //                REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                            //                PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
+                            //
+                            //                cd py/build/conda
+                            //                CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_2.1 --py ${pyVersion} --output-folder "." --output | tail -1)
+                            //                cd ../../..
+                            //                PKG_NAME=\$(basename \$CONDA_PKG_CURRENT_ARCH_PATH)
+                            //
+                            //                # Upload Conda packages of PySparkling to S3
+                            //                s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/osx-64/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/osx-64/\${PKG_NAME}
+                            //                s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/linux-32/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/linux-32/\${PKG_NAME}
+                            //                s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/linux-64/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/linux-64/\${PKG_NAME}
+                            //                s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/win-32/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/win-32/\${PKG_NAME}
+                            //                s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/win-64/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/win-64/\${PKG_NAME}
+                            //                """
+                            //    }
 
 
                                 sh """
