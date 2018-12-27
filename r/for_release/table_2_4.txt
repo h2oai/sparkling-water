@@ -1,1 +1,2 @@
 "Spark_Version" "Sparkling_Water_Version" "H2O_Version" "H2O_Release_Name" "H2O_Release_Patch_Number"
+"1" "2.4" "2.4.1" "3.22.0.3" "rel-xia" "3"
