@@ -15,7 +15,7 @@ requirements:
     - tabulate >=0.7.5
     - requests >=2.10
     - six
-    - pyspark >=2.4.0
+    - pyspark >=2.2.0
 
   run:
     - python
