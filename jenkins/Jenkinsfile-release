@@ -197,9 +197,6 @@ pipeline {
                             docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
                                 dir("py/build/conda") {
                                     def PYTHON_VERSIONS = ['2.7', '3.6']
-                                    sh """
-                                        conda config --add channels conda-forge
-                                       """
                                     for (pyVersion in PYTHON_VERSIONS) {
 
                                         sh """
