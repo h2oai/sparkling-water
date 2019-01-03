@@ -70,10 +70,11 @@ private[converters] object MLLibVectorConverter extends Logging {
     */
   private[this]
   def perMLlibVectorPartition(maxNumFeatures: Int)
-                             (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int)
+                             (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
+                              writeTimeout: Int, driverTimeStamp: Short)
                              (context: TaskContext, it: Iterator[mllib.linalg.Vector]): (Int, Long) = {
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
-    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
+    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout, driverTimeStamp)
     // Creates array of H2O NewChunks; A place to record all the data in this partition
     con.createChunks(keyName, expectedTypes, context.partitionId(), Array(maxNumFeatures))
 
