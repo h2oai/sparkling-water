@@ -10,21 +10,21 @@ requirements:
     - python
     - pip >=9.0.1
     - setuptools
-    - colorama >=0.3.7
+    - colorama >=0.3.8
     - future >=0.15.2
     - tabulate >=0.7.5
     - requests >=2.10
     - six
-    - pyspark >=2.4.0
+    - pyspark >=2.4.0,<=2.4.0
 
   run:
     - python
-    - colorama >=0.3.7
+    - colorama >=0.3.8
     - future >=0.15.2
     - tabulate >=0.7.5
     - requests >=2.10
     - six
-    - pyspark >=2.4.0
+    - pyspark >=2.4.0,<=2.4.0
 
 
 about:
