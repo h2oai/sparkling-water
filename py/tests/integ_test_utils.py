@@ -72,9 +72,6 @@ def launch(test_env, script_name, param=None):
     # See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
     cmd_line.extend(["--conf", 'spark.hadoop.yarn.timeline-service.enabled=false'])
     cmd_line.extend(["--py-files", test_env.sdist])
-    for k, v in test_env.spark_conf.items():
-        cmd_line.extend(["--conf", k+'='+str(v)])
-
     if generic_test_utils.tests_in_external_mode():
         cloud_ip = generic_test_utils.local_ip()
         test_env.conf("spark.ext.h2o.client.ip", cloud_ip)
@@ -82,6 +79,9 @@ def launch(test_env, script_name, param=None):
         test_env.conf("spark.ext.h2o.external.cluster.num.h2o.nodes", "1")
     else:
         test_env.conf("spark.ext.h2o.backend.cluster.mode", "internal")
+
+    for k, v in test_env.spark_conf.items():
+        cmd_line.extend(["--conf", k+'='+str(v)])
 
     # Add python script
     cmd_line.append(script_name)
