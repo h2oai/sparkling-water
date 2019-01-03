@@ -82,8 +82,6 @@ trait IntegTestHelper extends BeforeAndAfterEach {
     if (isExternalClusterUsed() && isManualClusterStartModeUsed()) {
       testEnv.sparkConf += SharedBackendConf.PROP_BACKEND_CLUSTER_MODE._1 -> "external"
       startExternalH2OCloud(cloudSize, cloudName, testEnv.sparkConf("spark.ext.h2o.client.ip"), testEnv.assemblyJar)
-    } else {
-      testEnv.sparkConf += SharedBackendConf.PROP_BACKEND_CLUSTER_MODE._1 -> "internal"
     }
   }
 
