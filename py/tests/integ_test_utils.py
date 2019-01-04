@@ -71,6 +71,7 @@ def launch(test_env, script_name, param=None):
     # Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
     # See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
     cmd_line.extend(["--conf", 'spark.hadoop.yarn.timeline-service.enabled=false'])
+    cmd_line.extend(["--conf", 'spark.ext.h2o.hadoop.memory=2G'])
     cmd_line.extend(["--py-files", test_env.sdist])
     if generic_test_utils.tests_in_external_mode():
         cloud_ip = generic_test_utils.local_ip()
