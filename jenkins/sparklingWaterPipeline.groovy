@@ -443,7 +443,6 @@ def pysparklingIntegTest() {
                 if (config.runPySparklingIntegTests.toBoolean()) {
                     try {
                         sh """
-                         sed -i.backup -E "s?24960?30000?" /etc/hadoop/conf/yarn-site.xml
                          sudo -E /usr/sbin/startup.sh
                          . /envs/h2o_env_python2.7/bin/activate
                          PYSPARK_DRIVER_PYTHON=\$(which python) PYSPARK_PYTHON=\$(which python) ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
