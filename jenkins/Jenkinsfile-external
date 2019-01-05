@@ -16,7 +16,7 @@ properties(
                                 booleanParam(name: 'runLocalIntegTests', defaultValue: true, description: 'Run local integration tests'),
                                 booleanParam(name: 'runLocalPyIntegTests', defaultValue: true, description: 'Run local Python integration tests'),
                                 booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests'),
-                                booleanParam(name: 'runIntegTests', defaultValue: false, description: 'Run integration tests'),
+                                booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run integration tests'),
                                 booleanParam(name: 'runPySparklingIntegTests', defaultValue: true, description: 'Run pySparkling integration tests'),
 
 
