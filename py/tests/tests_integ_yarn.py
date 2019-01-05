@@ -28,7 +28,7 @@ class YarnIntegTestSuite(unittest.TestCase):
     def test_xgboost_medium(self):
         env = IntegTestEnv()
 
-        env.set_spark_master("yarn-client")
+        env.set_spark_master("local[*]")
         # Configure YARN environment
         env.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
         env.conf("spark.executor.instances", 1)
@@ -42,7 +42,7 @@ class YarnIntegTestSuite(unittest.TestCase):
     def test_chicago_crime(self):
         env = IntegTestEnv()
 
-        env.set_spark_master("yarn-client")
+        env.set_spark_master("local[*]")
         # Configure YARN environment
         env.conf("spark.yarn.max.executor.failures", 1) # In fail of executor, fail the test
         env.conf("spark.executor.instances", 1)
