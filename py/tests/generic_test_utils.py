@@ -23,7 +23,7 @@ from random import randrange
 import socket
 
 def unique_cloud_name(script_name):
-    return str(script_name[:-3])+str(randrange(65536))
+    return str(script_name[:-3].replace("/", "_"))+str(randrange(65536))
 
 def locate(file_name):
     if os.path.isfile("/home/0xdiag/" + file_name):
