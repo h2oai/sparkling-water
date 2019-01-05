@@ -47,6 +47,7 @@ trait IntegTestHelper extends BeforeAndAfterEach {
       // See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
       Seq("--conf", "spark.hadoop.yarn.timeline-service.enabled=false") ++
       Seq("--conf", s"spark.ext.h2o.external.start.mode=${sys.props.getOrElse("spark.ext.h2o.external.start.mode", "manual")}") ++
+      Seq("--conf", s"spark.ext.h2o.backend.cluster.mode=${sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal")}") ++
       env.sparkConf.flatMap(p => Seq("--conf", s"${p._1}=${p._2}")) ++
       Seq[String](env.itestJar)
 
@@ -81,8 +82,6 @@ trait IntegTestHelper extends BeforeAndAfterEach {
     if (isExternalClusterUsed() && isManualClusterStartModeUsed()) {
       testEnv.sparkConf += SharedBackendConf.PROP_BACKEND_CLUSTER_MODE._1 -> "external"
       startExternalH2OCloud(cloudSize, cloudName, testEnv.sparkConf("spark.ext.h2o.client.ip"), testEnv.assemblyJar)
-    } else {
-      testEnv.sparkConf += SharedBackendConf.PROP_BACKEND_CLUSTER_MODE._1 -> "internal"
     }
   }
 
