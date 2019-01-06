@@ -30,7 +30,8 @@ object ReadConverterCtxUtils {
              readTimeout: Int,
              driverTimestamp: Short): ReadConverterCtx = {
 
-    chksLocation.map(loc => new ExternalReadConverterCtx(keyName, chunkIdx, loc(chunkIdx), expectedTypes.get, selectedColumnIndices, readTimeout, driverTimestamp))
+    chksLocation.map(loc => new ExternalReadConverterCtx(keyName, chunkIdx, loc(chunkIdx),
+      expectedTypes.get, selectedColumnIndices, readTimeout, driverTimestamp))
       .getOrElse(new InternalReadConverterCtx(keyName, chunkIdx))
 
   }
