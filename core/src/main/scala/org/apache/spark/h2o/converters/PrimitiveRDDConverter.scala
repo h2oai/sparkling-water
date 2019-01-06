@@ -64,11 +64,12 @@ private[converters] object PrimitiveRDDConverter extends Logging {
     */
   private[this]
   def perPrimitiveRDDPartition[T]() // extra arguments for this transformation
-                                 (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int) // general arguments
+                                 (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
+                                  writeTimeout: Int, driverTimeStamp: Short) // general arguments
                                  (context: TaskContext, it: Iterator[T]): (Int, Long) = { // arguments and return types needed for spark's runJob input
 
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
-    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
+    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout, driverTimeStamp)
 
     con.createChunks(keyName, expectedTypes, context.partitionId(), Array.empty[Int])
     iterator.foreach {
