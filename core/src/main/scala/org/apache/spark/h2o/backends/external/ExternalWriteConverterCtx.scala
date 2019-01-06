@@ -26,9 +26,9 @@ import org.apache.spark.mllib.linalg.{DenseVector, SparseVector}
 import org.apache.spark.sql.types._
 import water.{ExternalFrameConfirmationException, ExternalFrameUtils, ExternalFrameWriterClient}
 
-class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTimeout: Int) extends WriteConverterCtx {
+class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTimeout: Int, driverTimeStamp: Short) extends WriteConverterCtx {
 
-  val socketChannel = ExternalFrameUtils.getConnection(nodeDesc.hostname, nodeDesc.port)
+  val socketChannel = ExternalFrameUtils.getConnection(nodeDesc.hostname, nodeDesc.port, driverTimeStamp)
   val externalFrameWriter = new ExternalFrameWriterClient(socketChannel)
 
   /**
