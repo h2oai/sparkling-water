@@ -26,6 +26,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.{Partition, TaskContext}
+import water.H2O
 
 import scala.language.postfixOps
 
@@ -43,6 +44,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
   extends {
     override val isExternalBackend = hc.getConf.runsInExternalClusterMode
     override val readTimeout = hc.getConf.externalReadConfirmationTimeout
+    override val driverTimeStamp = H2O.SELF._timestamp
   } with RDD[InternalRow](hc.sparkContext, Nil) with H2ORDDLike[T] {
 
   def this(@transient frame: T)

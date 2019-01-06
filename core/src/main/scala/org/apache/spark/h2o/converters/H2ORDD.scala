@@ -25,7 +25,7 @@ import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalRea
 import org.apache.spark.h2o.utils.ProductType
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, TaskContext}
-import water.ExternalFrameUtils
+import water.{ExternalFrameUtils, H2O}
 import water.fvec.Frame
 
 import scala.annotation.meta.{field, getter, param}
@@ -49,6 +49,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
   extends {
     override val isExternalBackend = hc.getConf.runsInExternalClusterMode
     override val readTimeout = hc.getConf.externalReadConfirmationTimeout
+    override val driverTimeStamp = H2O.SELF._timestamp
   } with RDD[A](hc.sparkContext, Nil) with H2ORDDLike[T] {
 
   // Get product type before building an RDD

@@ -17,14 +17,13 @@
 
 package org.apache.spark.h2o.converters
 
+import org.apache.spark.TaskContext
 import org.apache.spark.h2o.backends.external.ExternalWriteConverterCtx
 import org.apache.spark.h2o.backends.internal.InternalWriteConverterCtx
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OContext, _}
-import org.apache.spark.TaskContext
-import org.apache.spark.h2o.utils.LogUtil.setLogLevel
-import water.fvec.{Chunk, H2OFrame}
 import water._
+import water.fvec.{Chunk, H2OFrame}
 import water.util.Log
 
 import scala.collection.{immutable, mutable}
@@ -33,13 +32,13 @@ import scala.collection.{immutable, mutable}
 object WriteConverterCtxUtils {
 
   type SparkJob[T] = (TaskContext, Iterator[T]) => (Int, Long)
-  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int) => SparkJob[T]
+  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int, Short) => SparkJob[T]
   type UploadPlan = immutable.Map[Int, NodeDesc]
 
   def create(uploadPlan: Option[UploadPlan],
-             partitionId: Int, totalNumOfRows: Option[Int], writeTimeout: Int): WriteConverterCtx = {
+             partitionId: Int, totalNumOfRows: Option[Int], writeTimeout: Int, driverTimeStamp: Short): WriteConverterCtx = {
     uploadPlan
-      .map { _ => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), totalNumOfRows.get, writeTimeout) }
+      .map { _ => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), totalNumOfRows.get, writeTimeout, driverTimeStamp) }
       .getOrElse(new InternalWriteConverterCtx())
   }
 
@@ -82,7 +81,7 @@ object WriteConverterCtxUtils {
       None
     }
 
-    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout)
+    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout, H2O.SELF._timestamp)
 
     val rows = hc.sparkContext.runJob(rdd, operation) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)

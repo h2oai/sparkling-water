@@ -28,11 +28,12 @@ import water.{ExternalFrameConfirmationException, ExternalFrameReaderClient, Ext
   * @param nodeDesc the h2o node which has data for chunk with the chunkIdx
   */
 class ExternalReadConverterCtx(override val keyName: String, override val chunkIdx: Int,
-                               val nodeDesc: NodeDesc, expectedTypes: Array[Byte], selectedColumnIndices: Array[Int], val readTimeout: Int)
+                               val nodeDesc: NodeDesc, expectedTypes: Array[Byte], selectedColumnIndices: Array[Int],
+                               val readTimeout: Int, val driverTimeStamp: Short)
   extends ReadConverterCtx {
   override type DataSource = ExternalFrameReaderClient
 
-  private val socketChannel = ExternalFrameUtils.getConnection(nodeDesc.hostname, nodeDesc.port)
+  private val socketChannel = ExternalFrameUtils.getConnection(nodeDesc.hostname, nodeDesc.port, driverTimeStamp)
   val externalFrameReader = new ExternalFrameReaderClient(socketChannel, keyName, chunkIdx, selectedColumnIndices, expectedTypes)
 
   override def numRows: Int = externalFrameReader.getNumRows
