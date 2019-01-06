@@ -21,11 +21,11 @@ import org.apache.spark.h2o.backends.external.ExternalReadConverterCtx
 import org.apache.spark.h2o.backends.internal.InternalReadConverterCtx
 import org.apache.spark.h2o.utils.NodeDesc
 
-object ReadConverterCtxUtils{
+object ReadConverterCtxUtils {
 
   def create(keyName: String, chunkIdx: Int,
              chksLocation: Option[Array[NodeDesc]],
-             expectedTypes : Option[Array[Byte]],
+             expectedTypes: Option[Array[Byte]],
              selectedColumnIndices: Array[Int],
              readTimeout: Int,
              driverTimestamp: Short): ReadConverterCtx = {
