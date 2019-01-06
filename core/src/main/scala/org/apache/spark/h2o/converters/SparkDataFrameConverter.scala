@@ -25,7 +25,7 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types.{BinaryType, BooleanType, ByteType, DateType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType, _}
 import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
 import org.apache.spark.{mllib, _}
-import water.Key
+import water.{H2O, Key}
 import water.fvec.{Frame, H2OFrame}
 
 
@@ -95,11 +95,12 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     */
   private[this]
   def perSQLPartition(elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
-                     (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], writeTimeout: Int)
+                     (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
+                      writeTimeout: Int, driverTimeStamp: Short)
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
 
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
-    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout)
+    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout, driverTimeStamp)
     // Collect mapping start position of vector and its size
     val vecStartSize = (for (vecIdx <- vecIndices) yield {
       (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))
