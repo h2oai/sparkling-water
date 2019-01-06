@@ -35,6 +35,9 @@ private[converters] trait H2ORDDLike[T <: Frame] {
   /** Timeout for read confirmation */
   val readTimeout: Int
 
+  /** Timestamp of the H2O Driver node */
+  val driverTimeStamp: Short
+
   /** Cache frame key to get H2OFrame from the K/V store */
   val frameKeyName: String = frame._key.toString
 
@@ -72,7 +75,7 @@ private[converters] trait H2ORDDLike[T <: Frame] {
         partIndex,
         // we need to send list of all expected types, not only the list filtered for expected columns
         // because on the h2o side we get the expected type using index from selectedColumnIndices array
-        chksLocation, expectedTypes, selectedColumnIndices, readTimeout
+        chksLocation, expectedTypes, selectedColumnIndices, readTimeout, driverTimeStamp
       )
 
     override def hasNext: Boolean = converterCtx.hasNext
