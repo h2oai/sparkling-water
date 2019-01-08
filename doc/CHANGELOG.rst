@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+v2.1.45 (2019-01-08)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/45/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/45/index.html>`__
+
+-  Bug
+        
+   -  `SW-1107 <https://0xdata.atlassian.net/browse/SW-1107>`__ - NullPointerException at water.H2ONode.openChan(H2ONode.java:417) after upgrade to H2O 3.22.0.3
+   -  `SW-1110 <https://0xdata.atlassian.net/browse/SW-1110>`__ - Fix test suite to test PySparkling YARN integration tests on external backend as well
+                
+-  Task
+        
+   -  `SW-1109 <https://0xdata.atlassian.net/browse/SW-1109>`__ - Docs: Change copyright year in docs to include 2019
+                
+-  Improvement
+        
+   -  `SW-464 <https://0xdata.atlassian.net/browse/SW-464>`__ - Publish PySparkling as conda package
+   -  `SW-1111 <https://0xdata.atlassian.net/browse/SW-1111>`__ - Update H2O to 3.22.0.4
+                
+                                                                
 v2.1.44 (2018-12-27)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/44/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/44/index.html>`__
