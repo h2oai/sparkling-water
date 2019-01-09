@@ -26,6 +26,7 @@ class ChicagoCrimeTestSuite extends FunSuite with IntegTestHelper {
         conf("spark.executor.memory", "8g")
         conf("spark.ext.h2o.port.base", 63331)
         conf("spark.driver.memory", "8g")
+        conf("spark.ext.h2o.hadoop.memory", "20G")
         isYarnIntegTest()
       }
     )
