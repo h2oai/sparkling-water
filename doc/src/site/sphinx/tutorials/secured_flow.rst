@@ -15,63 +15,71 @@ In order to use https correctly, the following two options need to be specified:
 - ``spark.ext.h2o.jks`` - path to Java keystore file
 - ``spark.ext.h2o.jks.pass`` - keystore file password
 
-Sparkling Water
-~~~~~~~~~~~~~~~
 
-To enable https on Sparkling Water, you can either start Sparkling Water as:
+.. content-tabs::
 
-.. code:: shell
+    .. tab-container:: Scala
+        :title: Scala
 
-    bin/sparkling-shell --conf "spark.ext.h2o.jks=/path/to/keystore" --conf "spark.ext.h2o.jks.pass=password"
+        To enable https in Sparkling Water, you can start Sparkling Water as:
 
-and when you have the shell running, start ``H2OContext`` as:
+        .. code:: shell
 
-.. code:: scala
+            bin/sparkling-shell --conf "spark.ext.h2o.jks=/path/to/keystore" --conf "spark.ext.h2o.jks.pass=password"
 
-    import org.apache.spark.h2o._
-    val hc = H2OContext.getOrCreate(spark)
+        and when you have the shell running, start ``H2OContext`` as:
 
-You can also start Sparkling shell without the configuration and specify it using the setters on ``H2OConf`` as:
+        .. code:: scala
 
-.. code:: scala
+            import org.apache.spark.h2o._
+            val hc = H2OContext.getOrCreate(spark)
 
-    import org.apache.spark.h2o._
-    val conf = new H2OConf(spark).setJks("/path/to/keystore").setJksPass("password)
-    val hc = H2OContext.getOrCreate(spark, conf)
+        You can also start Sparkling shell without the configuration and specify it using the setters on ``H2OConf`` as:
 
-PySparkling
-~~~~~~~~~~~
+        .. code:: scala
 
-To enable https in Pysparkling, you can start PySparkling as:
+            import org.apache.spark.h2o._
+            val conf = new H2OConf(spark).setJks("/path/to/keystore").setJksPass("password)
+            val hc = H2OContext.getOrCreate(spark, conf)
 
-.. code:: shell
 
-    bin/pysparkling --conf "spark.ext.h2o.jks=/path/to/keystore" --conf "spark.ext.h2o.jks.pass=password"
+    .. tab-container:: Python
+        :title: Python
 
-and when you have the shell running, start ``H2OContext`` as:
+        To enable https in Pysparkling, you can start PySparkling as:
 
-.. code:: python
+        .. code:: shell
 
-    from pysparkling import *
-    hc = H2OContext.getOrCreate(spark)
+            bin/pysparkling --conf "spark.ext.h2o.jks=/path/to/keystore" --conf "spark.ext.h2o.jks.pass=password"
 
-You can also start PySparkling shell without the configuration and specify it using the setters on ``H2OConf`` as:
+        and when you have the shell running, start ``H2OContext`` as:
 
-.. code:: python
+        .. code:: python
 
-    from pysparkling import *
-    conf = H2OConf(spark).set_jks("/path/to/keystore").set_jks_pass("password)
-    hc = H2OContext.getOrCreate(spark, conf)
+            from pysparkling import *
+            hc = H2OContext.getOrCreate(spark)
 
-In case your certificates are self-signed, the connection of the Python client to the backend cluster will
-fail due to the security limitations.
-In this case, you can skip the certificates verification using ``verify_ssl_certificates=False`` and connect as:
+        You can also start PySparkling shell without the configuration
+        and specify it using the setters on ``H2OConf`` as:
 
-.. code:: python
+        .. code:: python
 
-    from pysparkling import *
-    conf = H2OConf(spark).set_jks("/path/to/keystore").set_jks_pass("password)
-    hc = H2OContext.getOrCreate(spark, conf, verify_ssl_certificates=False)
+            from pysparkling import *
+            conf = H2OConf(spark).set_jks("/path/to/keystore").set_jks_pass("password)
+            hc = H2OContext.getOrCreate(spark, conf)
+
+        In case your certificates are self-signed, the connection of the
+        Python client to the backend cluster will fail due to the security
+        limitations. In this case, you can skip the certificates verification
+        using ``verify_ssl_certificates=False`` and connect as:
+
+        .. code:: python
+
+            from pysparkling import *
+            conf = H2OConf(spark).set_jks("/path/to/keystore").set_jks_pass("password)
+            hc = H2OContext.getOrCreate(spark, conf, verify_ssl_certificates=False)
+
+
 
 Generate the files automatically
 --------------------------------
@@ -80,50 +88,56 @@ Sparkling Water can generate the necessary key store and password automatically.
 generation, the ``spark.ext.h2o.auto.flow.ssl`` option needs to be set to ``true``. In this mode only self-signed
 certificates are created.
 
-Sparkling Water
----------------
+.. content-tabs::
 
-To enable the security using this mode in Sparkling Water, start Sparkling Shell as:
+    .. tab-container:: Scala
+        :title: Scala
 
-.. code:: shell
 
-    bin/sparkling-shell --conf "spark.ext.h2o.auto.flow.ssl=true"
+        To enable the security using this mode in Sparkling Water, start Sparkling Shell as:
 
-and when you have the shell running, start ``H2OContext`` as:
+        .. code:: shell
 
-.. code:: scala
+            bin/sparkling-shell --conf "spark.ext.h2o.auto.flow.ssl=true"
 
-    import org.apache.spark.h2o._
-    val hc = H2OContext.getOrCreate(spark)
+        and when you have the shell running, start ``H2OContext`` as:
 
-You can also start Sparkling shell without the configuration and specify it using the setters on ``H2OConf`` as:
+        .. code:: scala
 
-.. code:: scala
+            import org.apache.spark.h2o._
+            val hc = H2OContext.getOrCreate(spark)
 
-    import org.apache.spark.h2o._
-    val conf = new H2OConf(spark).setAutoFlowSslEnabled()
-    val hc = H2OContext.getOrCreate(spark, conf)
+        You can also start Sparkling shell without the configuration
+        and specify it using the setters on ``H2OConf`` as:
 
-PySparkling
------------
+        .. code:: scala
 
-To enable https in Pysparkling using this mode, you can start PySparkling as:
+            import org.apache.spark.h2o._
+            val conf = new H2OConf(spark).setAutoFlowSslEnabled()
+            val hc = H2OContext.getOrCreate(spark, conf)
 
-.. code:: shell
 
-    bin/pysparkling --conf "spark.ext.h2o.auto.flow.ssl=true"
+    .. tab-container:: Python
+        :title: Python
 
-and when you have the shell running, start ``H2OContext`` as:
+        To enable https in Pysparkling using this mode, you can start PySparkling as:
 
-.. code:: python
+        .. code:: shell
 
-    from pysparkling import *
-    hc = H2OContext.getOrCreate(spark, verify_ssl_certificates=False)
+            bin/pysparkling --conf "spark.ext.h2o.auto.flow.ssl=true"
 
-You can also start PySparkling shell without the configuration and specify it using the setters on ``H2OConf`` as:
+        and when you have the shell running, start ``H2OContext`` as:
 
-.. code:: python
+        .. code:: scala
 
-    from pysparkling import *
-    conf = H2OConf(spark).set_auto_flow_ssl_enabled()
-    hc = H2OContext.getOrCreate(spark, conf, verify_ssl_certificates=False)
+            from pysparkling import *
+            hc = H2OContext.getOrCreate(spark, verify_ssl_certificates=False)
+
+        You can also start PySparkling shell without the configuration
+        and specify it using the setters on ``H2OConf`` as:
+
+        .. code:: scala
+
+            from pysparkling import *
+            conf = H2OConf(spark).set_auto_flow_ssl_enabled()
+            hc = H2OContext.getOrCreate(spark, conf, verify_ssl_certificates=False)
