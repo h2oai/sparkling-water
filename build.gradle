@@ -15,17 +15,14 @@ buildscript {
     dependencies {
         classpath 'org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.11:1.0.1'
         classpath "com.bmuschko:gradle-docker-plugin:3.6.1"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.3'
+        classpath 'net.researchgate:gradle-release:2.6.0'
+        classpath 'com.netflix.nebula:gradle-lint-plugin:10.4.2'
+        classpath 'kr.motd.gradle:sphinx-gradle-plugin:2.2.3'
     }
 }
 
-plugins {
-    id 'base'
-    id 'net.researchgate.release' version '2.6.0'
-    id "com.github.johnrengelman.shadow" version "4.0.3"
-    id 'nebula.lint' version '9.3.2'
-    id "kr.motd.sphinx" version "2.2.3"
-}
-
+apply plugin: 'base'
 
 // For multiproject setup we have to apply release plugin here (we share same release number cross all modules)
 if (project.hasProperty("doRelease")) {
