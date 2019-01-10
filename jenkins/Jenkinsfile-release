@@ -163,6 +163,9 @@ pipeline {
                         docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
 
                             withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
+
+                                sh "activate_java_8"
+
                                 sh """
                                 sed -i.backup -E "s/\\.([0-9]+)-SNAPSHOT/.\\1/" gradle.properties
                                 REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
@@ -170,11 +173,6 @@ pipeline {
                                 echo
                                 echo "RELEASE VERSION: \${REL_VERSION}"
                                 echo
-
-                                activate_java_8
-                                ./gradlew :sparkling-water-doc:sphinx
-
-                                activate_java_7
 
                                 # Fetch H2O python package
                                 mkdir -p private/
