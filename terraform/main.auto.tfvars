@@ -8,5 +8,5 @@ aws_security_group_slave_id		= "sg-b636d6ce"
 
 aws_core_instance_count = "3"
 aws_instance_type		= "m3.xlarge"
-sw_major_version		= "2.3"
-sw_patch_version		= "14"
+sw_major_version		= "2.4"
+sw_patch_version		= "2"
