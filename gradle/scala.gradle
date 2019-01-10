@@ -21,6 +21,11 @@ tasks.withType(ScalaCompile) {
             ]
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+}
+
 project.archivesBaseName = "${project.name}_${scalaBaseVersion}"
 
 project.tasks.withType(AbstractArchiveTask) { AbstractArchiveTask task ->

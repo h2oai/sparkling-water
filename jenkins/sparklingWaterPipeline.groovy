@@ -86,7 +86,7 @@ def withDocker(config, code) {
         }
     })
     docker.image(image).inside("--init --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
-        sh "activate_java_7"
+        sh "activate_java_8"
         code()
     }
 }
@@ -501,9 +501,7 @@ def publishNightly() {
 
                     sh  """
                         # echo 'Making distribution'
-                        activate_java_8
                         ./gradlew :sparkling-water-doc:sphinx
-                        activate_java_7
 
                         ${getGradleCommand(config)} buildSparklingWaterDist
 
