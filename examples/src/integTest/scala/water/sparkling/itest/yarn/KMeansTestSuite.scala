@@ -15,7 +15,7 @@ import water.util.Timer
 @RunWith(classOf[JUnitRunner])
 class KMeansITestSuite extends FunSuite with IntegTestHelper {
 
-  test("MLlib KMeans on airlines_all data", YarnTest) {
+  ignore("MLlib KMeans on airlines_all data", YarnTest) {
     launch("water.sparkling.itest.yarn.KMeansITest",
       env {
         sparkMaster("yarn-client")
