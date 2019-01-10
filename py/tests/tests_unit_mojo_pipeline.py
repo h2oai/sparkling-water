@@ -87,7 +87,7 @@ class H2OMojoPipelineTest(unittest.TestCase):
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
         mojo.write().overwrite().save("build/test_dai_pipeline")
-        loaded_mojo = Pipeline.load("build/test_dai_pipeline")
+        loaded_mojo = H2OMOJOPipelineModel.load("build/test_dai_pipeline")
 
         preds = loaded_mojo.predict(prostate_frame).repartition(1).select(mojo.select_prediction_udf("AGE")).take(5)
 
