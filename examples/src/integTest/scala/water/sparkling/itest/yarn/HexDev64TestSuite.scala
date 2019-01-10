@@ -11,7 +11,7 @@ import water.sparkling.itest.{IntegTestHelper, IntegTestStopper}
 @RunWith(classOf[JUnitRunner])
 class HexDev64TestSuite extends FunSuite with IntegTestHelper {
 
-  test("HEX-DEV 64 test - airlines on big data") {
+  ignore("HEX-DEV 64 test - airlines on big data") {
     launch("water.sparkling.itest.yarn.HexDev64Test",
       env {
         sparkMaster("yarn-client")
