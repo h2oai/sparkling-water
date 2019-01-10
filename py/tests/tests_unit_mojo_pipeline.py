@@ -28,6 +28,7 @@ import unit_test_utils
 from pyspark.sql import SparkSession
 
 from pysparkling.ml import H2OMOJOPipelineModel
+from pyspark.ml import Pipeline, PipelineModel
 
 
 class H2OMojoPipelineTest(unittest.TestCase):
@@ -80,6 +81,21 @@ class H2OMojoPipelineTest(unittest.TestCase):
         assert preds[3][0] == 65.78772654671035
         assert preds[4][0] == 66.11327967814829
 
+    def test_mojo_serialize(self):
+        mojo = H2OMOJOPipelineModel.create_from_mojo(
+            "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
+        prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
+                                              header=True)
+        mojo.write().overwrite().save("py/build/test_dai_pipeline")
+        loaded_mojo = Pipeline.load("py/build/test_dai_pipeline")
+
+        preds = loaded_mojo.predict(prostate_frame).repartition(1).select(mojo.select_prediction_udf("AGE")).take(5)
+
+        assert preds[0][0] == 65.36320409515132
+        assert preds[1][0] == 64.96902128114817
+        assert preds[2][0] == 64.96721023747583
+        assert preds[3][0] == 65.78772654671035
+        assert preds[4][0] == 66.11327967814829
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([H2OMojoPipelineTest], file_name="py_unit_tests_mojo_pipeline_report")
