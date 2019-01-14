@@ -26,7 +26,6 @@ import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.utils.H2OSchemaUtils
-import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel.createFromMojo
 import org.apache.spark.ml.h2o.param.H2OMOJOPipelineModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
@@ -34,7 +33,6 @@ import org.apache.spark.ml.{Model => SparkModel}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types._
-import water.support.ModelSerializationSupport
 
 import scala.collection.mutable
 import scala.reflect.{ClassTag, classTag}
@@ -253,11 +251,9 @@ private[models] class H2OMOJOPipelineModelWriter(instance: H2OMOJOPipelineModel)
 private[models] class H2OMOJOPipelineModelReader[T <: H2OMOJOPipelineModel : ClassTag]
 (val defaultFileName: String) extends MLReader[T] {
 
-  private val className = implicitly[ClassTag[H2OMOJOPipelineModel]].runtimeClass.getName
-
   @org.apache.spark.annotation.Since("1.6.0")
   override def load(path: String): T = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
+    val metadata = DefaultParamsReader.loadMetadata(path, sc)
 
     val inputPath = new Path(path, defaultFileName)
     val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
