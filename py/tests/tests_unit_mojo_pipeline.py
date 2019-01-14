@@ -45,14 +45,14 @@ class H2OMojoPipelineTest(unittest.TestCase):
                                               header=True)
         # Create Spark pipeline of single step - mojo pipeline
         pipeline = Pipeline(stages=[mojo])
-        pipeline.write().overwrite().save("build/test_dai_pipeline_as_spark_pipeline")
-        loaded_pipeline = Pipeline.load("build/test_dai_pipeline_as_spark_pipeline")
+        pipeline.write().overwrite().save( "file://" + os.path.abspath("build/test_dai_pipeline_as_spark_pipeline"))
+        loaded_pipeline = Pipeline.load( "file://" + os.path.abspath("build/test_dai_pipeline_as_spark_pipeline"))
 
         ## Train the pipeline model
         model = loaded_pipeline.fit(prostate_frame)
 
-        model.write().overwrite().save("build/test_dai_pipeline_as_spark_pipeline_model")
-        loaded_model = PipelineModel.load("build/test_dai_pipeline_as_spark_pipeline_model")
+        model.write().overwrite().save( "file://" + os.path.abspath("build/test_dai_pipeline_as_spark_pipeline_model"))
+        loaded_model = PipelineModel.load( "file://" + os.path.abspath("build/test_dai_pipeline_as_spark_pipeline_model"))
 
         preds = loaded_model.transform(prostate_frame).repartition(1).select(mojo.select_prediction_udf("AGE")).take(5)
 
