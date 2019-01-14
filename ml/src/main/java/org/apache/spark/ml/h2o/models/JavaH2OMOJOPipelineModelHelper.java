@@ -22,7 +22,7 @@ package org.apache.spark.ml.h2o.models;
 public class JavaH2OMOJOPipelineModelHelper {
 
   public static H2OMOJOPipelineModel createFromMojo(String path){
-    return H2OMOJOPipelineModel$.MODULE$.createFromMojo(path);
+    return py_sparkling.ml.models.H2OMOJOPipelineModel$.MODULE$.createFromMojo(path);
   }
 
 }

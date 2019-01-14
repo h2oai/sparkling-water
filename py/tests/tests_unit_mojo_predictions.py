@@ -28,6 +28,7 @@ from pysparkling.ml import H2OMOJOModel, H2OMOJOPipelineModel
 
 import unit_test_utils
 import generic_test_utils
+from pyspark.ml import Pipeline, PipelineModel
 
 
 class H2OMojoPredictionsTest(unittest.TestCase):
@@ -55,12 +56,35 @@ class H2OMojoPredictionsTest(unittest.TestCase):
                                          parallelize([(5.1, 3.5, 1.4, 0.2, "Missing_categorical")]).
                                          map(lambda r: row_for_scoring(*r)))
         data = mojo.transform(df).collect()[0]
+
+        model = Pipeline(stages=[mojo])
+
+        model.write().overwrite().save("build/test_dai_pipeline_as_spark_pipeline_model_mojo")
+        loaded_model = Pipeline.load("build/test_dai_pipeline_as_spark_pipeline_model_mojo")
+
+
         assert data["class"] == "Missing_categorical"
         assert data["petal_len"] == 1.4
         assert data["petal_wid"] == 0.2
         assert data["sepal_len"] == 5.1
         assert data["sepal_wid"] == 3.5
         assert data["prediction_output"][0] == 5.240174068202646
+
+    def test_h2o_mojo_model_serialization_in_pipeline(self):
+        mojo = H2OMOJOModel.create_from_mojo(
+            "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
+        prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
+                                              header=True)
+
+        pipeline = Pipeline(stages=[mojo])
+
+        pipeline.write().overwrite().save("build/test_spark_pipeline_model_mojo")
+        loaded_pipeline = Pipeline.load("build/test_spark_pipeline_model_mojo")
+
+        model = loaded_pipeline.fit(prostate_frame)
+
+        model.write().overwrite().save("build/test_spark_pipeline_model_mojo_model")
+        PipelineModel.load("build/test_spark_pipeline_model_mojo_model")
 
 
 if __name__ == '__main__':
