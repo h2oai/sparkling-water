@@ -6,7 +6,7 @@ package org.apache.spark.ml.h2o.models;
 public class JavaH2OMOJOModelHelper {
 
     public static H2OMOJOModel createFromMojo(String path){
-        return H2OMOJOModel$.MODULE$.createFromMojo(path);
+        return py_sparkling.ml.models.H2OMOJOModel$.MODULE$.createFromMojo(path);
     }
 
 }
