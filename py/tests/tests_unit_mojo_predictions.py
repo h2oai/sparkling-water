@@ -57,12 +57,6 @@ class H2OMojoPredictionsTest(unittest.TestCase):
                                          map(lambda r: row_for_scoring(*r)))
         data = mojo.transform(df).collect()[0]
 
-        model = Pipeline(stages=[mojo])
-
-        model.write().overwrite().save("build/test_dai_pipeline_as_spark_pipeline_model_mojo")
-        loaded_model = Pipeline.load("build/test_dai_pipeline_as_spark_pipeline_model_mojo")
-
-
         assert data["class"] == "Missing_categorical"
         assert data["petal_len"] == 1.4
         assert data["petal_wid"] == 0.2
@@ -78,13 +72,13 @@ class H2OMojoPredictionsTest(unittest.TestCase):
 
         pipeline = Pipeline(stages=[mojo])
 
-        pipeline.write().overwrite().save("build/test_spark_pipeline_model_mojo")
-        loaded_pipeline = Pipeline.load("build/test_spark_pipeline_model_mojo")
+        pipeline.write().overwrite().save( "file://" + os.path.abspath("build/test_spark_pipeline_model_mojo"))
+        loaded_pipeline = Pipeline.load( "file://" + os.path.abspath("build/test_spark_pipeline_model_mojo"))
 
         model = loaded_pipeline.fit(prostate_frame)
 
-        model.write().overwrite().save("build/test_spark_pipeline_model_mojo_model")
-        PipelineModel.load("build/test_spark_pipeline_model_mojo_model")
+        model.write().overwrite().save( "file://" + os.path.abspath("build/test_spark_pipeline_model_mojo_model"))
+        PipelineModel.load( "file://" + os.path.abspath("build/test_spark_pipeline_model_mojo_model"))
 
 
 if __name__ == '__main__':
