@@ -4,6 +4,7 @@ from pysparkling.initializer import *
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf
 from pyspark.sql.types import DoubleType
+from .util import JavaH2OMLReadable
 
 class H2OGBMModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
@@ -19,7 +20,7 @@ class H2OAutoMLModel(JavaModel, JavaMLWritable, JavaMLReadable):
 class H2OXGBoostModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
-class H2OMOJOModel(JavaModel, JavaMLWritable, JavaMLReadable):
+class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
     def create_from_mojo(path_to_mojo):
@@ -39,7 +40,7 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaMLReadable):
         return self
 
 
-class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaMLReadable):
+class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
     def create_from_mojo(path_to_mojo):

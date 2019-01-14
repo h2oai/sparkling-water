@@ -27,7 +27,7 @@ trait H2OMOJOPipelineModelParams extends Params {
   //
   // Param definitions
   //
-  final val namedMojoOutputColumns: Param[Boolean] = new Param[Boolean](this, "namedMojoOutputColumns", "Mojo Output is not stored" +
+  final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
     " in the array but in the properly named columns")
 
   //
