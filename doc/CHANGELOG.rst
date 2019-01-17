@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+v2.1.46 (2019-01-17)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/46/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/46/index.html>`__
+
+-  Bug
+        
+   -  `SW-1116 <https://0xdata.atlassian.net/browse/SW-1116>`__ - Cannot serialize DAI model
+                
+-  Improvement
+        
+   -  `SW-1113 <https://0xdata.atlassian.net/browse/SW-1113>`__ - Update to H2O 3.22.0.5
+   -  `SW-1115 <https://0xdata.atlassian.net/browse/SW-1115>`__ - Enable tabs in the documentation based on the language
+   -  `SW-1120 <https://0xdata.atlassian.net/browse/SW-1120>`__ - Prepare Terraform scripts for Sparkling Water on EMR
+   -  `SW-1121 <https://0xdata.atlassian.net/browse/SW-1121>`__ - Use getTimestamp method instead of _timestamp directly
+                
+                                                                        
 v2.1.45 (2019-01-08)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/45/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/45/index.html>`__
