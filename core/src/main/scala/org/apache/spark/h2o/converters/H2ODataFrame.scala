@@ -44,7 +44,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
   extends {
     override val isExternalBackend = hc.getConf.runsInExternalClusterMode
     override val readTimeout = hc.getConf.externalReadConfirmationTimeout
-    override val driverTimeStamp = H2O.SELF._timestamp
+    override val driverTimeStamp = H2O.SELF.getTimestamp()
   } with RDD[InternalRow](hc.sparkContext, Nil) with H2ORDDLike[T] {
 
   def this(@transient frame: T)
