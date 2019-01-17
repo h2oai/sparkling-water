@@ -25,7 +25,7 @@ node('docker && micro') {
 
         // Execute the pipeline
         pipeline(params) { p ->
-            sparkVersion = "2.2.2"
+            sparkVersion = "2.2.3"
             runUnitTests = "true"
             runPyUnitTests = "true"
             runRUnitTests = "true"
