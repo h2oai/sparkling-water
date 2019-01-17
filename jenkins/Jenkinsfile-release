@@ -31,7 +31,7 @@ pipeline {
             steps{
                 script {
                     docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
                             checkout scm
                         }
                     }
@@ -46,7 +46,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
                             withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
                                 sh """
                                    # Copy keys
@@ -115,7 +115,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
                             withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
                                 sh """
                                    # Copy keys
@@ -160,7 +160,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
 
                             withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
 
@@ -194,7 +194,7 @@ pipeline {
               steps {
                     script {
                         docker.withRegistry("http://harbor.h2o.ai") {
-                            docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                            docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
                                 dir("py/build/conda") {
                                     def PYTHON_VERSIONS = ['2.7', '3.6']
                                     for (pyVersion in PYTHON_VERSIONS) {
@@ -227,7 +227,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
 
                             withCredentials([usernamePassword(credentialsId: "PUBLIC_NEXUS", usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD'),
                                              usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
@@ -249,7 +249,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
                             sh """
                                     # Create extended H2O jar for all supported hadoop distributions
                                     HADOOP_DISTRIBUTIONS=`./gradlew -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false -q :sparkling-water-assembly-h2o:printHadoopDistributions)`
@@ -273,7 +273,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
 
                             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 
@@ -360,7 +360,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
                             withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN'), sshUserPrivateKey(credentialsId: 'h2oOpsGitPrivateKey', keyFileVariable: 'SSH_KEY_GITHUB')]){
 
                             sh """
@@ -406,7 +406,7 @@ EOF
             steps {
                 script {
                     docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
 
                             dir("py/build/pkg") {
                                 withCredentials([usernamePassword(credentialsId: "pypi-credentials", usernameVariable: 'PIPY_USERNAME', passwordVariable: 'PIPY_PASSWORD')]) {
@@ -430,7 +430,7 @@ EOF
             steps {
                 script {
                     docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
 
                             dir("py/build/conda") {
                                 withCredentials([usernamePassword(credentialsId: 'anaconda-credentials', usernameVariable: 'ANACONDA_USERNAME', passwordVariable: 'ANACONDA_PASSWORD')]) {
@@ -467,7 +467,7 @@ EOF
             steps {
                 script {
                     docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:9').inside("--init --dns 172.16.0.200") {
+                        docker.image('opsh2oai/sparkling_water_tests:10').inside("--init --dns 172.16.0.200") {
                             withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
                             sh """
                                # Copy keys
