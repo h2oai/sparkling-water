@@ -81,7 +81,7 @@ object WriteConverterCtxUtils {
       None
     }
 
-    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout, H2O.SELF._timestamp)
+    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout, H2O.SELF.getTimestamp())
 
     val rows = hc.sparkContext.runJob(rdd, operation) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
