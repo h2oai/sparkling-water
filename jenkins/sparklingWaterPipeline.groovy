@@ -17,7 +17,7 @@ def call(params, body) {
             // Properties used in case we are building against specific H2O version
             "BUILD_HADOOP=true",
             "H2O_TARGET=${config.driverHadoopVersion}",
-            "H2O_ORIGINAL_JAR=${env.WORKSPACE}/h2o-3/h2o-hadoop/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
+            "H2O_ORIGINAL_JAR=${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
     ]
 
     ansiColor('xterm') {
