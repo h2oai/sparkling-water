@@ -72,10 +72,15 @@ dependencies {
   compile("ai.h2o:h2o-persist-s3:${h2oVersion}") {
       exclude(group: "com.fasterxml.jackson.core")
   }
-
+    
   compile("ai.h2o:h2o-persist-gcs:${h2oVersion}")
 
-        // H2O AutoML
+
+  // H2O Jetty support
+  compile("ai.h2o:h2o-jetty-8:${h2oVersion}")
+  compile("ai.h2o:h2o-webserver-iface:${h2oVersion}")
+    
+  // H2O AutoML
   compile "ai.h2o:h2o-automl:${h2oVersion}"
 
   // Sparkling Water REPL
