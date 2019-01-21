@@ -29,8 +29,8 @@ Select right version
 ~~~~~~~~~~~~~~~~~~~~
 
 The Sparkling Water is developed in multiple parallel branches. Each
-branch corresponds to a Spark major release (e.g., branch **rel-2.3**
-provides implementation of Sparkling Water for Spark **2.3**).
+branch corresponds to a Spark major release (e.g., branch **rel-2.4**
+provides implementation of Sparkling Water for Spark **2.4**).
 
 Please, switch to the right branch:
 
@@ -61,6 +61,7 @@ Download Binaries
 For each Sparkling Water you can download binaries here:
 
 - `Sparkling Water - Latest version <http://h2o-release.s3.amazonaws.com/sparkling-water/master/latest.html>`__
+- `Sparkling Water - Latest 2.4 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/latest.html>`__
 - `Sparkling Water - Latest 2.3 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/latest.html>`__
 - `Sparkling Water - Latest 2.2 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/latest.html>`__
 - `Sparkling Water - Latest 2.1 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/latest.html>`__
@@ -71,6 +72,7 @@ Maven
 Each Sparkling Water release is published into Maven central. Published artifacts are provided with the following Scala
 versions:
 
+- Sparkling Water 2.4.x - Scala 2.11
 - Sparkling Water 2.3.x - Scala 2.11
 - Sparkling Water 2.2.x - Scala 2.11
 - Sparkling Water 2.1.x - Scala 2.11
@@ -84,7 +86,7 @@ The artifacts coordinates are:
 - ``ai.h2o:sparkling-water-package_{{scala_version}}:{{version}}`` - Uber Sparkling Water package referencing all available Sparkling Water modules. This is designed to use as Spark package via ``--packages`` option
 
    **Note:** The ``{{version}}`` references to a release version of Sparkling Water, the ``{{scala_version}}``
-   references to Scala base version (For Sparkling Water 2.3 only ``2.11``). For example:
+   references to Scala base version. For example:
    ``ai.h2o:sparkling-water-examples_2.11:2.3.2``
 
 The full list of published packages is available
