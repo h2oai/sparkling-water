@@ -80,6 +80,17 @@ class H2OMojoPredictionsTest(unittest.TestCase):
         model.write().overwrite().save( "file://" + os.path.abspath("build/test_spark_pipeline_model_mojo_model"))
         PipelineModel.load( "file://" + os.path.abspath("build/test_spark_pipeline_model_mojo_model"))
 
+    def test_h2o_mojo_unsupervised(self):
+        mojo = H2OMOJOModel.create_from_mojo(
+            "file://" + os.path.abspath("../ml/src/test/resources/isolation_forest.mojo"))
+
+        row_for_scoring = Row("V1")
+
+        df = self._spark.createDataFrame(self._spark.sparkContext.
+                                     parallelize([(5.1,)]).
+                                     map(lambda r: row_for_scoring(*r)))
+        mojo.predict(df).repartition(1).collect()
+
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([H2OMojoPredictionsTest], file_name="py_unit_tests_mojo_predictions_report")
