@@ -7,7 +7,6 @@ RUN rm -rf /etc/hadoop/conf/yarn-site.xml
 COPY conf/yarn-site.xml /etc/hadoop/conf/yarn-site.xml
 
 RUN \
-    rm /etc/startup/50_hive_start && \
     rm /etc/startup/70_start_slapd
 
 RUN \
@@ -136,6 +135,8 @@ RUN cd /home/jenkins && \
     cd ..
 
 USER root
+
+RUN sudo sh -c "echo \"jenkins ALL=(ALL) NOPASSWD:ALL\" >> /etc/sudoers"
 
 ### Remove Sparkling Water
 RUN cd /home/jenkins && rm -rf sparkling-water
