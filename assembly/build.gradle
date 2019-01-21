@@ -80,7 +80,8 @@ shadowJar {
     include(dependency("ai.h2o:deepwater-backend-api"))
     include(dependency("ai.h2o:h2o-ext-xgboost"))
     include(dependency("ai.h2o:h2o-genmodel-ext-xgboost"))
-
+    include(dependency("ai.h2o:h2o-jetty-8"))
+    include(dependency("ai.h2o:h2o-webserver-iface"))
     include(dependency("joda-time:joda-time"))
     include(dependency("org.joda:joda-convert"))
     include(dependency("org.javassist:javassist"))
@@ -91,9 +92,10 @@ shadowJar {
     include(dependency("com.amazonaws:aws-java-sdk-kms"))
     include(dependency("com.amazonaws:aws-java-sdk-core"))
     include(dependency("no.priv.garshol.duke:duke"))
-    include(dependency("org.eclipse.jetty.aggregate:jetty-servlet"))
-    include(dependency("org.eclipse.jetty:jetty-server"))
-    include(dependency("org.eclipse.jetty:jetty-plus:8.1.17.v20150415"))
+
+
+    include(dependency("org.eclipse.jetty:.*"))
+
     baseName = "${baseName}_${scalaBaseVersion}"
   }
 }
