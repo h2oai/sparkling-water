@@ -37,6 +37,7 @@ import org.apache.spark.{ml, mllib}
 import water.support.ModelSerializationSupport
 
 import scala.reflect.{ClassTag, classTag}
+
 class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable {
 
@@ -58,6 +59,8 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   case class DimReductionPrediction(dimensions: Array[Double])
 
   case class WordEmbeddingPrediction(wordEmbeddings: util.HashMap[String, Array[Float]])
+
+  case class AnomalyPrediction(score: Double, normalizedScore: Double)
 
   def predictionSchema(): Seq[StructField] = {
     val fields = getOrCreateEasyModelWrapper().getModelCategory match {
@@ -98,6 +101,10 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   implicit def toWordEmbeddingPrediction(pred: AbstractPrediction) = WordEmbeddingPrediction(
     pred.asInstanceOf[Word2VecPrediction].wordEmbeddings)
 
+  implicit def toAnomalyPrediction(pred: AbstractPrediction) = AnomalyPrediction(
+    pred.asInstanceOf[AnomalyDetectionPrediction].score,
+    pred.asInstanceOf[AnomalyDetectionPrediction].normalizedScore
+  )
   def getModelUdf() = {
     val modelUdf = {
       getOrCreateEasyModelWrapper().getModelCategory match {
@@ -122,7 +129,10 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
         case ModelCategory.WordEmbedding => udf[WordEmbeddingPrediction, Row] { r: Row =>
           getOrCreateEasyModelWrapper().predict(rowToRowData(r))
         }
-        case _ => throw new RuntimeException("Unknown model category")
+        case ModelCategory.AnomalyDetection => udf[AnomalyPrediction, Row] { r: Row =>
+          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+        }
+        case _ => throw new RuntimeException("Unknown model category " + getOrCreateEasyModelWrapper().getModelCategory)
       }
     }
     modelUdf
@@ -232,7 +242,7 @@ private[models] class H2OMOJOModelReader[T <: H2OMOJOModel : ClassTag]
   override def load(path: String): T = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc)
 
-    val inputPath =  new Path(path, defaultFileName)
+    val inputPath = new Path(path, defaultFileName)
     val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val is = fs.open(qualifiedInputPath)
@@ -250,7 +260,7 @@ private[models] class H2OMOJOModelReader[T <: H2OMOJOModel : ClassTag]
   }
 }
 
-class H2OMOJOModelHelper[T<: H2OMOJOModel](implicit m: ClassTag[T]) extends MLReadable[T]{
+class H2OMOJOModelHelper[T <: H2OMOJOModel](implicit m: ClassTag[T]) extends MLReadable[T] {
   val defaultFileName = "mojo_model"
 
   @Since("1.6.0")
@@ -260,7 +270,7 @@ class H2OMOJOModelHelper[T<: H2OMOJOModel](implicit m: ClassTag[T]) extends MLRe
   override def load(path: String): T = super.load(path)
 
   def createFromMojo(path: String): T = {
-    val inputPath =  new Path(path)
+    val inputPath = new Path(path)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val is = fs.open(qualifiedInputPath)
@@ -274,8 +284,12 @@ class H2OMOJOModelHelper[T<: H2OMOJOModel](implicit m: ClassTag[T]) extends MLRe
     val sparkMojoModel = m.runtimeClass.getConstructor(classOf[Array[Byte]], classOf[String]).
       newInstance(mojoData, uid).asInstanceOf[T]
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
-    sparkMojoModel.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))
-    sparkMojoModel.setPredictionCol(mojoModel.getResponseName)
+    if (mojoModel.isSupervised) {
+      sparkMojoModel.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))
+      sparkMojoModel.setPredictionCol(mojoModel.getResponseName)
+    } else {
+      sparkMojoModel.setFeaturesCols(mojoModel.getNames)
+    }
     sparkMojoModel
   }
 }
