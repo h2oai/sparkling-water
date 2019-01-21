@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+v2.3.22 (2019-01-21)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/22/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/22/index.html>`__
+
+-  Bug
+        
+   -  `SW-1129 <https://0xdata.atlassian.net/browse/SW-1129>`__ - Fix support for unsupervised mojo models
+                
+-  Improvement
+        
+   -  `SW-1101 <https://0xdata.atlassian.net/browse/SW-1101>`__ - Update code to work with latest jetty changes
+   -  `SW-1127 <https://0xdata.atlassian.net/browse/SW-1127>`__ - Upgrade H2O to 3.22.1.2
+                
+                                                                        
 v2.3.21 (2019-01-17)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/21/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/21/index.html>`__
