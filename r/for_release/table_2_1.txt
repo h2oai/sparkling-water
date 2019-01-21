@@ -1,5 +1,6 @@
 "Spark_Version" "Sparkling_Water_Version" "H2O_Version" "H2O_Release_Name" "H2O_Release_Patch_Number"
-"1" "2.1" "2.1.46" "3.22.0.5" "rel-xia" "5"
+"1" "2.1" "2.1.47" "3.22.1.2" "rel-xu" "2"
+"121" "2.1" "2.1.46" "3.22.0.5" "rel-xia" "5"
 "120" "2.1" "2.1.45" "3.22.0.4" "rel-xia" "4"
 "119" "2.1" "2.1.44" "3.22.0.3" "rel-xia" "3"
 "118" "2.1" "2.1.43" "3.22.0.2" "rel-xia" "2"
