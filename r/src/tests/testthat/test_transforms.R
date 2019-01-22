@@ -8,7 +8,10 @@ config=c(config, list(
                 "spark.hadoop.yarn.timeline-service.enabled"="false",
                 "spark.ext.h2o.external.cluster.num.h2o.nodes"="1",
                 "spark.ext.h2o.backend.cluster.mode"=Sys.getenv("spark.ext.h2o.backend.cluster.mode"),
-                "spark.ext.h2o.client.ip"=Sys.getenv("H2O_CLIENT_IP")
+                "spark.ext.h2o.client.ip"=Sys.getenv("H2O_CLIENT_IP"),
+                "sparklyr.gateway.connect.timeout"=120,
+                "sparklyr.gateway.start.timeout"=120,
+                "sparklyr.backend.timeout"=120
         ))
 
 test_that("Test transformation from h2o frame to data frame", {
