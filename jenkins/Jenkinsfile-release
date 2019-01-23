@@ -1,3 +1,5 @@
+@Library('test-shared-library') _
+
 pipeline {
     agent {label 'master'}
     
@@ -393,8 +395,16 @@ EOF
                                 sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/\$PATCH_VERSION/?" 000-default.conf
                                 git add 000-default.conf
                                 git commit -m "Update links of Sparkling Water 2.1 version to \$PATCH_VERSION"
-                                git push --set-upstream origin master
+                                rm -rf 000-default.conf.backup
                                 """
+                             
+                             retryWithDelay(3, 120, {
+                                sh """
+                                    cd docs.h2o.ai/sites-available/
+                                    git pull origin master --rebase
+                                    git push --set-upstream origin master
+                                   """
+                               })
                             }
                         }
                     }
