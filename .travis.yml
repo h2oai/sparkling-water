@@ -1,11 +1,10 @@
 language: scala
 sudo: true
-dist: precise
+dist: trusty
 
 jdk:
-  - oraclejdk7
   - oraclejdk8
-  - openjdk7
+  - openjdk8
 
 install:
     - ( test -d "$SPARK_HOME" && test "$(ls -A "$SPARK_HOME")" ) || ( wget -O spark.tgz "http://archive.apache.org/dist/spark/spark-2.1.3/spark-2.1.3-bin-hadoop2.7.tgz" && mkdir -p "$SPARK_HOME" && tar xvf "spark.tgz" -C "$SPARK_HOME" --strip-components 1 )
@@ -28,14 +27,4 @@ cache:
         - $SPARK_HOME
 
 script: travis_wait 30 ./gradlew clean build -x integTest -x :sparkling-water-r:build -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME -PscalaBaseVersion=$SCALA_BASE_VERSION
-
-# To solve BufferOverflow on OpenJDK7 we setup short hostname (<64characters)
-# See:
-#   - ISSUE-5227: https://github.com/travis-ci/travis-ci/issues/5227
-#   - https://docs.travis-ci.com/user/hostname
-#   - https://github.com/mockito/mockito/blob/master/.travis.yml
-addons:
-    hosts:
-        - sw-test-host
-    hostname: sw-test-host
 
