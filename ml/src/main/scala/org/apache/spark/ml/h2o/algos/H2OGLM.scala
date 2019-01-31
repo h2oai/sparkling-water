@@ -94,7 +94,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   final val tweedieVariancePower = doubleParam("tweedieVariancePower")
   final val tweedieLinkPower = doubleParam("tweedieLinkPower")
   final val alpha = nullableDoubleArrayParam("alpha")
-  final val lambda = nullableDoubleArrayParam("lambda")
+  final val lambda_ = nullableDoubleArrayParam("lambda")
   final val missingValuesHandling = new H2OGLMMissingValuesHandlingParam(this, "missingValuesHandling", "missingValuesHandling")
   final val prior = doubleParam("prior")
   final val lambdaSearch = booleanParam("lambdaSearch")
@@ -125,7 +125,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
     tweedieVariancePower -> 0,
     tweedieLinkPower -> 0,
     alpha -> null,
-    lambda -> null,
+    lambda_ -> null,
     missingValuesHandling -> MissingValuesHandling.MeanImputation,
     prior -> -1,
     lambdaSearch -> false,
@@ -171,7 +171,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   def getAlpha() = $(alpha)
 
   /** @group getParam */
-  def getLambda() = $(lambda)
+  def getLambda() = $(lambda_)
 
   /** @group getParam */
   def getMissingValuesHandling() = $(missingValuesHandling)
@@ -253,7 +253,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   def setAlpha(value: Array[Double]): this.type = set(alpha, value)
 
   /** @group setParam */
-  def setLambda(value: Array[Double]): this.type = set(lambda, value)
+  def setLambda(value: Array[Double]): this.type = set(lambda_, value)
 
   /** @group setParam */
   def setMissingValuesHandling(value: MissingValuesHandling): this.type = set(missingValuesHandling, value)
@@ -319,7 +319,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
     parameters._tweedie_variance_power = $(tweedieVariancePower)
     parameters._tweedie_link_power = $(tweedieLinkPower)
     parameters._alpha = $(alpha)
-    parameters._lambda = $(lambda)
+    parameters._lambda = $(lambda_)
     parameters._missing_values_handling = $(missingValuesHandling)
     parameters._prior = $(prior)
     parameters._lambda_search = $(lambdaSearch)
