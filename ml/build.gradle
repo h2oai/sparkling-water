@@ -30,6 +30,9 @@ dependencies {
   testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
   testCompile(project(":sparkling-water-extension-stack-trace"))
 
+  // to reuse some utils test classes defined in the core
+  testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
+  
   // For test purposes, force newer client as the tests are modifying classpath and we get errors which
   // we do not get during normal production usage
   testCompile('org.apache.hadoop:hadoop-mapreduce-client-core:2.7.2') {force = true}
