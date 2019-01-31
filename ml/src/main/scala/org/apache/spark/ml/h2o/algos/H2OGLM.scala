@@ -26,13 +26,13 @@ import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.h2o.models._
-import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams, H2OSharedTreeParams}
+import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
 import org.apache.spark.ml.param.{Param, Params}
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 import org.apache.spark.sql.SQLContext
-import org.json4s.{JNull, JValue}
 import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
+import org.json4s.{JNull, JValue}
 import water.AutoBuffer
 import water.support.ModelSerializationSupport
 
@@ -118,145 +118,197 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   // Default values
   //
   setDefault(
-  standardize -> true,
-  family -> Family.gaussian,
-  link -> Link.family_default,
-  solver -> Solver.AUTO,
-  tweedieVariancePower -> 0,
-  tweedieLinkPower -> 0,
-  alpha -> null,
-  lambda -> null,
-  missingValuesHandling -> MissingValuesHandling.MeanImputation,
-  prior -> -1,
-  lambdaSearch -> false,
-  nlambdas -> -1,
-  nonNegative -> false,
-  exactLambdas -> false,
-  lambdaMinRatio -> -1,
-  maxIterations -> -1,
-  intercept -> true,
-  betaEpsilon -> 1e-4,
-  objectiveEpsilon -> -1,
-  gradientEpsilon -> -1,
-  objReg -> -1,
-  computePValues -> false,
-  remoteCollinearColumns -> false,
-  interactions -> null,
-  interactionPairs -> null,
-  earlyStopping -> true
+    standardize -> true,
+    family -> Family.gaussian,
+    link -> Link.family_default,
+    solver -> Solver.AUTO,
+    tweedieVariancePower -> 0,
+    tweedieLinkPower -> 0,
+    alpha -> null,
+    lambda -> null,
+    missingValuesHandling -> MissingValuesHandling.MeanImputation,
+    prior -> -1,
+    lambdaSearch -> false,
+    nlambdas -> -1,
+    nonNegative -> false,
+    exactLambdas -> false,
+    lambdaMinRatio -> -1,
+    maxIterations -> -1,
+    intercept -> true,
+    betaEpsilon -> 1e-4,
+    objectiveEpsilon -> -1,
+    gradientEpsilon -> -1,
+    objReg -> -1,
+    computePValues -> false,
+    remoteCollinearColumns -> false,
+    interactions -> null,
+    interactionPairs -> null,
+    earlyStopping -> true
   )
 
   //
   // Getters
   //
   /** @group getParam */
-  def setStandardize(value: Boolean): this.type = set(standardize, value)
-  /** @group setParam */
-  def setFamily(value: Family): this.type = set(family, value)
-  /** @group setParam */
-  def setLink(value: Link): this.type = set(link, value)
-  /** @group setParam */
-  def setSolver(value: Solver): this.type = set(solver, value)
-  /** @group setParam */
-  def setTweedieVariancePower(value: Double): this.type = set(tweedieVariancePower, value)
-  /** @group setParam */
-  def setTweedieLinkPower(value: Double): this.type = set(tweedieLinkPower, value)
-  /** @group setParam */
-  def setAlpha(value: Array[Double]): this.type = set(alpha, value)
-  /** @group setParam */
-  def setLambda(value: Array[Double]): this.type = set(lambda, value)
-  /** @group setParam */
-  def setMissingValuesHandling(value: MissingValuesHandling): this.type  = set(missingValuesHandling, value)
-  /** @group setParam */
-  def setPrior(value: Double): this.type  = set(prior, value)
-  /** @group setParam */
-  def setLambdaSearch(value: Boolean): this.type = set(lambdaSearch, value)
-  /** @group setParam */
-  def setNlambdas(value: Int): this.type  = set(nlambdas, value)
-  /** @group setParam */
-  def setNonNegative(value: Boolean): this.type = set(nonNegative, value)
-  /** @group setParam */
-  def setExactLambdas(value: Boolean): this.type = set(exactLambdas, value)
-  /** @group setParam */
-  def setLambdaMinRatio(value: Double): this.type = set(lambdaMinRatio, value)
-  /** @group setParam */
-  def setMaxIterations(value: Int): this.type = set(maxIterations, value)
-  /** @group setParam */
-  def setIntercept(value: Boolean): this.type = set(intercept, value)
-  /** @group setParam */
-  def setBetaEpsilon(value: Double): this.type = set(betaEpsilon, value)
-  /** @group setParam */
-  def setObjectiveEpsilon(value: Double): this.type = set(objectiveEpsilon, value)
-  /** @group setParam */
-  def setGradientEpsilon(value: Double): this.type = set(gradientEpsilon, value)
-  /** @group setParam */
-  def setObjReg(value: Double): this.type  = set(objReg, value)
-  /** @group setParam */
-  def setComputePValues(value: Boolean): this.type = set(computePValues, value)
-  /** @group setParam */
-  def setRemoteCollinearColumns(value: Boolean): this.type = set(remoteCollinearColumns, value)
-  /** @group setParam */
-  def setInteractions(value: Array[String]): this.type = set(interactions, value)
-  /** @group setParam */
-  def setInteractionPairs(value: Array[StringPair]): this.type = set(interactionPairs, value)
-  /** @group setParam */
-  def setEarlyStopping(value: Boolean): this.type = set(earlyStopping, value)
-  
+  def getStandardize() = $(standardize)
+
+  /** @group getParam */
+  def getFamily() = $(family)
+
+  /** @group getParam */
+  def getLink() = $(link)
+
+  /** @group getParam */
+  def getSolver() = $(solver)
+
+  /** @group getParam */
+  def getTweedieVariancePower() = $(tweedieVariancePower)
+
+  /** @group getParam */
+  def getTweedieLinkPower() = $(tweedieLinkPower)
+
+  /** @group getParam */
+  def getAlpha() = $(alpha)
+
+  /** @group getParam */
+  def getLambda() = $(lambda)
+
+  /** @group getParam */
+  def getMissingValuesHandling() = $(missingValuesHandling)
+
+  /** @group getParam */
+  def getPrior() = $(prior)
+
+  /** @group getParam */
+  def getLambdaSearch() = $(lambdaSearch)
+
+  /** @group getParam */
+  def getNlambdas() = $(nlambdas)
+
+  /** @group getParam */
+  def getNonNegative() = $(nonNegative)
+
+  /** @group getParam */
+  def getExactLambdas() = $(exactLambdas)
+
+  /** @group getParam */
+  def getLambdaMinRatio() = $(lambdaMinRatio)
+
+  /** @group getParam */
+  def getMaxIterations() = $(maxIterations)
+
+  /** @group getParam */
+  def getIntercept() = $(intercept)
+
+  /** @group getParam */
+  def getBetaEpsilon() = $(betaEpsilon)
+
+  /** @group getParam */
+  def getObjectiveEpsilon() = $(objectiveEpsilon)
+
+  /** @group getParam */
+  def getGradientEpsilon() = $(gradientEpsilon)
+
+  /** @group getParam */
+  def getObjReg() = $(objReg)
+
+  /** @group getParam */
+  def getComputePValues() = $(computePValues)
+
+  /** @group getParam */
+  def getRemoteCollinearColumns() = $(remoteCollinearColumns)
+
+  /** @group getParam */
+  def getInteractions() = $(interactions)
+
+  /** @group getParam */
+  def getInteractionPairs() = $(interactionPairs)
+
+  /** @group getParam */
+  def getEarlyStopping() = $(earlyStopping)
+
+
   //
   // Setters
   //
-  /** @group getParam */
-  def getStandardize()= $(standardize)
-  /** @group getParam */
-  def getFamily()= $(family)
-  /** @group getParam */
-  def getLink()= $(link)
-  /** @group getParam */
-  def getSolver()= $(solver)
-  /** @group getParam */
-  def getTweedieVariancePower()= $(tweedieVariancePower)
-  /** @group getParam */
-  def getTweedieLinkPower()= $(tweedieLinkPower)
-  /** @group getParam */
-  def getAlpha()= $(alpha)
-  /** @group getParam */
-  def getLambda()= $(lambda)
-  /** @group getParam */
-  def getMissingValuesHandling() = $(missingValuesHandling)
-  /** @group getParam */
-  def getPrior() = $(prior)
-  /** @group getParam */
-  def getLambdaSearch()= $(lambdaSearch)
-  /** @group getParam */
-  def getNlambdas() = $(nlambdas)
-  /** @group getParam */
-  def getNonNegative()= $(nonNegative)
-  /** @group getParam */
-  def getExactLambdas()= $(exactLambdas)
-  /** @group getParam */
-  def getLambdaMinRatio()= $(lambdaMinRatio)
-  /** @group getParam */
-  def getMaxIterations()= $(maxIterations)
-  /** @group getParam */
-  def getIntercept()= $(intercept)
-  /** @group getParam */
-  def getBetaEpsilon()= $(betaEpsilon)
-  /** @group getParam */
-  def getObjectiveEpsilon()= $(objectiveEpsilon)
-  /** @group getParam */
-  def getGradientEpsilon()= $(gradientEpsilon)
-  /** @group getParam */
-  def getObjReg() = $(objReg)
-  /** @group getParam */
-  def getComputePValues()= $(computePValues)
-  /** @group getParam */
-  def getRemoteCollinearColumns()= $(remoteCollinearColumns)
-  /** @group getParam */
-  def getInteractions()= $(interactions)
-  /** @group getParam */
-  def getInteractionPairs()= $(interactionPairs)
-  /** @group getParam */
-  def getEarlyStopping()= $(earlyStopping)
+  /** @group setParam */
+  def setStandardize(value: Boolean): this.type = set(standardize, value)
+
+  /** @group setParam */
+  def setFamily(value: Family): this.type = set(family, value)
+
+  /** @group setParam */
+  def setLink(value: Link): this.type = set(link, value)
+
+  /** @group setParam */
+  def setSolver(value: Solver): this.type = set(solver, value)
+
+  /** @group setParam */
+  def setTweedieVariancePower(value: Double): this.type = set(tweedieVariancePower, value)
+
+  /** @group setParam */
+  def setTweedieLinkPower(value: Double): this.type = set(tweedieLinkPower, value)
+
+  /** @group setParam */
+  def setAlpha(value: Array[Double]): this.type = set(alpha, value)
+
+  /** @group setParam */
+  def setLambda(value: Array[Double]): this.type = set(lambda, value)
+
+  /** @group setParam */
+  def setMissingValuesHandling(value: MissingValuesHandling): this.type = set(missingValuesHandling, value)
+
+  /** @group setParam */
+  def setPrior(value: Double): this.type = set(prior, value)
+
+  /** @group setParam */
+  def setLambdaSearch(value: Boolean): this.type = set(lambdaSearch, value)
+
+  /** @group setParam */
+  def setNlambdas(value: Int): this.type = set(nlambdas, value)
+
+  /** @group setParam */
+  def setNonNegative(value: Boolean): this.type = set(nonNegative, value)
+
+  /** @group setParam */
+  def setExactLambdas(value: Boolean): this.type = set(exactLambdas, value)
+
+  /** @group setParam */
+  def setLambdaMinRatio(value: Double): this.type = set(lambdaMinRatio, value)
+
+  /** @group setParam */
+  def setMaxIterations(value: Int): this.type = set(maxIterations, value)
+
+  /** @group setParam */
+  def setIntercept(value: Boolean): this.type = set(intercept, value)
+
+  /** @group setParam */
+  def setBetaEpsilon(value: Double): this.type = set(betaEpsilon, value)
+
+  /** @group setParam */
+  def setObjectiveEpsilon(value: Double): this.type = set(objectiveEpsilon, value)
+
+  /** @group setParam */
+  def setGradientEpsilon(value: Double): this.type = set(gradientEpsilon, value)
+
+  /** @group setParam */
+  def setObjReg(value: Double): this.type = set(objReg, value)
+
+  /** @group setParam */
+  def setComputePValues(value: Boolean): this.type = set(computePValues, value)
+
+  /** @group setParam */
+  def setRemoteCollinearColumns(value: Boolean): this.type = set(remoteCollinearColumns, value)
+
+  /** @group setParam */
+  def setInteractions(value: Array[String]): this.type = set(interactions, value)
+
+  /** @group setParam */
+  def setInteractionPairs(value: Array[(String, String)]): this.type = set(interactionPairs, value)
+
+  /** @group setParam */
+  def setEarlyStopping(value: Boolean): this.type = set(earlyStopping, value)
+
 
   override def updateH2OParams(): Unit = {
     super.updateH2OParams()
@@ -284,20 +336,29 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
     parameters._compute_p_values = $(computePValues)
     parameters._remove_collinear_columns = $(remoteCollinearColumns)
     parameters._interactions = $(interactions)
-    parameters._interaction_pairs = $(interactionPairs)
+    parameters._interaction_pairs = {
+      val pairs = $ {
+        interactionPairs
+      }
+      if (pairs == null) {
+        null
+      } else {
+        pairs.map(v => new StringPair(v._1, v._2))
+      }
+    }
     parameters._early_stopping = $(earlyStopping)
   }
 }
 
 class H2OGLMFamilyParam private[h2o](parent: Params, name: String, doc: String,
-                                                isValid: Family => Boolean)
+                                     isValid: Family => Boolean)
   extends EnumParam[Family](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
 
 class H2OGLMLinkParam private[h2o](parent: Params, name: String, doc: String,
-                                     isValid: Link => Boolean)
+                                   isValid: Link => Boolean)
   extends EnumParam[Link](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
@@ -311,31 +372,31 @@ class H2OGLMSolverParam private[h2o](parent: Params, name: String, doc: String,
 }
 
 class H2OGLMMissingValuesHandlingParam private[h2o](parent: Params, name: String, doc: String,
-                                     isValid: MissingValuesHandling => Boolean)
+                                                    isValid: MissingValuesHandling => Boolean)
   extends EnumParam[MissingValuesHandling](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
 
-class H2OGLMStringPairArrayParam(parent: Params, name: String, doc: String, isValid: Array[StringPair] => Boolean)
-  extends Param[Array[StringPair]](parent, name, doc, isValid) {
+class H2OGLMStringPairArrayParam(parent: Params, name: String, doc: String, isValid: Array[(String, String)] => Boolean)
+  extends Param[Array[(String, String)]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)
 
-  override def jsonEncode(value: Array[StringPair]): String = {
+  override def jsonEncode(value: Array[(String, String)]): String = {
     val encoded: JValue = if (value == null) {
       JNull
     } else {
       val ab = new AutoBuffer()
       ab.putASer(value.asInstanceOf[Array[AnyRef]])
       val bytes = ab.buf()
-      JArray(bytes.toSeq.map(JInt( _)).toList)
+      JArray(bytes.toSeq.map(JInt(_)).toList)
     }
     compact(render(encoded))
   }
 
-  override def jsonDecode(json: String): Array[StringPair] = {
+  override def jsonDecode(json: String): Array[(String, String)] = {
     parse(json) match {
       case JNull =>
         null
@@ -347,9 +408,9 @@ class H2OGLMStringPairArrayParam(parent: Params, name: String, doc: String, isVa
             throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
         }.toArray
         val ab = new AutoBuffer(bytes)
-        ab.getASer[StringPair](classOf[StringPair])
+        ab.getASer[(String, String)](classOf[(String, String)])
       case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to Array[StringPair].")
+        throw new IllegalArgumentException(s"Cannot decode $json to Array[(String, String)].")
     }
   }
 }
