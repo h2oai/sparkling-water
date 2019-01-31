@@ -267,7 +267,13 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     @keyword_only
     def __init__(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[], nfolds=0,
                  keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                 seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False):
+                 seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False,
+                 standardize=True, family="gaussian", link="family_default", solver="AUTO", tweedieVariancePower=0.0,
+                 tweedieLinkPower=0.0, alpha=None, lambda_=None, missingValuesHandling="MeanImputation",
+                 prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
+                 lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
+                 gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
+                 interactions=None, interactionPairs=None, earlyStopping=True):
         super(H2OGLM, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGLM",
@@ -278,25 +284,58 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
         self._setDefault(ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
-                         convertUnknownCategoricalLevelsToNa=False)
+                         convertUnknownCategoricalLevelsToNa=False,
+                         standardize=True, family=self._hc._jvm.hex.glm.GLMModel.GLMParameters.Family.valueOf("gaussian"),
+                         link=self._hc._jvm.hex.glm.GLMModel.GLMParameters.Link.valueOf("family_default"),
+                         solver=self._hc._jvm.hex.glm.GLMModel.GLMParameters.Solver.valueOf("AUTO"), tweedieVariancePower=0.0,
+                         tweedieLinkPower=0.0, alpha=None, lambda_=None,
+                         missingValuesHandling=self._hc._jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf("MeanImputation"),
+                         prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
+                         lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
+                         gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
+                         interactions=None, interactionPairs=None, earlyStopping=True)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
     @keyword_only
     def setParams(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                   nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,parallelizeCrossValidation=True,
-                  seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False):
+                  seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False,
+                  standardize=True, family="gaussian", link="family_default", solver="AUTO", tweedieVariancePower=0.0,
+                  tweedieLinkPower=0.0, alpha=None, lambda_=None, missingValuesHandling="MeanImputation",
+                  prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
+                  lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
+                  gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
+                  interactions=None, interactionPairs=None, earlyStopping=True):
         kwargs = self._input_kwargs
 
         if "distribution" in kwargs:
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
 
+        if "family" in kwargs:
+            kwargs["family"] = self._hc._jvm.hex.glm.GLMModel.GLMParameters.Family.valueOf(kwargs["family"])
+
+        if "link" in kwargs:
+            kwargs["link"] = self._hc._jvm.hex.glm.GLMModel.GLMParameters.Link.valueOf(kwargs["link"])
+
+        if "solver" in kwargs:
+            kwargs["solver"] = self._hc._jvm.hex.glm.GLMModel.GLMParameters.Solver.valueOf(kwargs["solver"])
+
+        if "missingValuesHandling" in kwargs:
+            kwargs["missingValuesHandling"] = self._hc._jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(kwargs["missingValuesHandling"])
+
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
-        double_types = ["ratio"]
+        double_types = ["ratio", "tweedieVariancePower", "tweedieLinkPower", "prior", "lambdaMinRatio",
+                        "betaEpsilon", "objectiveEpsilon", "gradientEpsilon", "objReg"]
         set_double_values(kwargs, double_types)
 
         # We need to also map all doubles in the arrays
+        if "alpha" in kwargs:
+            kwargs["alpha"] = map(float, kwargs["alpha"])
+
+        if "lambda_" in kwargs:
+            kwargs["lambda_"] = map(float, kwargs["lambda_"])
 
         return self._set(**kwargs)
 

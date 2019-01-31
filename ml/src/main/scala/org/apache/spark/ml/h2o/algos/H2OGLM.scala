@@ -94,7 +94,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   final val tweedieVariancePower = doubleParam("tweedieVariancePower")
   final val tweedieLinkPower = doubleParam("tweedieLinkPower")
   final val alpha = nullableDoubleArrayParam("alpha")
-  final val lambda_ = nullableDoubleArrayParam("lambda")
+  final val lambda_ = nullableDoubleArrayParam("lambda_", "lambda")
   final val missingValuesHandling = new H2OGLMMissingValuesHandlingParam(this, "missingValuesHandling", "missingValuesHandling")
   final val prior = doubleParam("prior")
   final val lambdaSearch = booleanParam("lambdaSearch")
@@ -109,7 +109,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   final val gradientEpsilon = doubleParam("gradientEpsilon")
   final val objReg = doubleParam("objReg")
   final val computePValues = booleanParam("computePValues")
-  final val remoteCollinearColumns = booleanParam("removeCollinearColumns")
+  final val removeCollinearColumns = booleanParam("removeCollinearColumns")
   final val interactions = nullableStringArrayParam("interactions")
   final val interactionPairs = new H2OGLMStringPairArrayParam(this, "interactionPairs", "interactionPairs")
   final val earlyStopping = booleanParam("earlyStopping")
@@ -140,7 +140,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
     gradientEpsilon -> -1,
     objReg -> -1,
     computePValues -> false,
-    remoteCollinearColumns -> false,
+    removeCollinearColumns -> false,
     interactions -> null,
     interactionPairs -> null,
     earlyStopping -> true
@@ -216,7 +216,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   def getComputePValues() = $(computePValues)
 
   /** @group getParam */
-  def getRemoteCollinearColumns() = $(remoteCollinearColumns)
+  def getRemoteCollinearColumns() = $(removeCollinearColumns)
 
   /** @group getParam */
   def getInteractions() = $(interactions)
@@ -298,7 +298,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   def setComputePValues(value: Boolean): this.type = set(computePValues, value)
 
   /** @group setParam */
-  def setRemoteCollinearColumns(value: Boolean): this.type = set(remoteCollinearColumns, value)
+  def setRemoteCollinearColumns(value: Boolean): this.type = set(removeCollinearColumns, value)
 
   /** @group setParam */
   def setInteractions(value: Array[String]): this.type = set(interactions, value)
@@ -334,7 +334,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
     parameters._gradient_epsilon = $(gradientEpsilon)
     parameters._obj_reg = $(objReg)
     parameters._compute_p_values = $(computePValues)
-    parameters._remove_collinear_columns = $(remoteCollinearColumns)
+    parameters._remove_collinear_columns = $(removeCollinearColumns)
     parameters._interactions = $(interactions)
     parameters._interaction_pairs = {
       val pairs = $ {
