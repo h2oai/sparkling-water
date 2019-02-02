@@ -102,12 +102,12 @@ class H2OMojoPredictionsTest(unittest.TestCase):
                       ratio=0.8)
 
         pipeline = Pipeline(stages=[algo])
-        pipeline.write().overwrite().save("ml/build/glm_pipeline")
-        loaded_pipeline = Pipeline.load("ml/build/glm_pipeline")
+        pipeline.write().overwrite().save("file://" + os.path.abspath("build/glm_pipeline"))
+        loaded_pipeline = Pipeline.load("file://" + os.path.abspath("build/glm_pipeline"))
         model = loaded_pipeline.fit(prostate_frame)
 
-        model.write().overwrite().save("ml/build/glm_pipeline_model")
-        loaded_model = PipelineModel.load("ml/build/glm_pipeline_model")
+        model.write().overwrite().save("file://" + os.path.abspath("build/glm_pipeline_model"))
+        loaded_model = PipelineModel.load("file://" + os.path.abspath("build/glm_pipeline_model"))
 
         loaded_model.transform(prostate_frame).count()
 
