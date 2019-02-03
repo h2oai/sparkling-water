@@ -260,7 +260,7 @@ private[models] class H2OMOJOModelReader[T <: H2OMOJOModel : ClassTag]
   }
 }
 
-class H2OMOJOModelHelper[T <: H2OMOJOModel](implicit m: ClassTag[T]) extends MLReadable[T] {
+class H2OMOJOModelHelper[T <: py_sparkling.ml.models.H2OMOJOModel](implicit m: ClassTag[T]) extends MLReadable[T] {
   val defaultFileName = "mojo_model"
 
   @Since("1.6.0")
@@ -294,4 +294,4 @@ class H2OMOJOModelHelper[T <: H2OMOJOModel](implicit m: ClassTag[T]) extends MLR
   }
 }
 
-object H2OMOJOModel extends H2OMOJOModelHelper[H2OMOJOModel] {}
+object H2OMOJOModel extends H2OMOJOModelHelper[py_sparkling.ml.models.H2OMOJOModel] {}
