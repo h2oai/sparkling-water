@@ -24,7 +24,8 @@ import unittest
 from pyspark.sql import SparkSession
 from pyspark.sql import Row
 import os
-from pysparkling.ml import H2OMOJOModel, H2OMOJOPipelineModel
+from pysparkling.ml import H2OMOJOModel
+from py_sparkling.ml.algos import H2OGLM
 
 import unit_test_utils
 import generic_test_utils
@@ -91,6 +92,24 @@ class H2OMojoPredictionsTest(unittest.TestCase):
                                      map(lambda r: row_for_scoring(*r)))
         mojo.predict(df).repartition(1).collect()
 
+    def test_glm_in_spark_pipeline(self):
+        prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
+                                              header=True, inferSchema=True)
+
+        algo = H2OGLM(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON"],
+                      predictionCol="AGE",
+                      seed=1,
+                      ratio=0.8)
+
+        pipeline = Pipeline(stages=[algo])
+        pipeline.write().overwrite().save("file://" + os.path.abspath("build/glm_pipeline"))
+        loaded_pipeline = Pipeline.load("file://" + os.path.abspath("build/glm_pipeline"))
+        model = loaded_pipeline.fit(prostate_frame)
+
+        model.write().overwrite().save("file://" + os.path.abspath("build/glm_pipeline_model"))
+        loaded_model = PipelineModel.load("file://" + os.path.abspath("build/glm_pipeline_model"))
+
+        loaded_model.transform(prostate_frame).count()
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([H2OMojoPredictionsTest], file_name="py_unit_tests_mojo_predictions_report")

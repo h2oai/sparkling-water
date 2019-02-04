@@ -968,3 +968,231 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.values(), value)
         return self._set(backend=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf(correct_case_value))
 
+class H2OGLMParams(H2OAlgorithmParams):
+
+    ##
+    # Param definitions
+    ##
+    standardize = Param(Params._dummy(), "standardize", "standardize")
+    family = Param(Params._dummy(), "family", "family")
+    link = Param(Params._dummy(), "link", "link")
+    solver = Param(Params._dummy(), "solver", "solver")
+    tweedieVariancePower = Param(Params._dummy(), "tweedieVariancePower", "Tweedie variance power")
+    tweedieLinkPower = Param(Params._dummy(), "tweedieLinkPower", "Tweedie link power")
+    alpha = Param(Params._dummy(), "alpha", "alpha")
+    lambda_ = Param(Params._dummy(), "lambda_", "lambda")
+    missingValuesHandling = Param(Params._dummy(), "missingValuesHandling", "missingValuesHandling")
+    prior = Param(Params._dummy(), "prior", "prior")
+    lambdaSearch = Param(Params._dummy(), "lambdaSearch", "lambda search")
+    nlambdas = Param(Params._dummy(), "nlambdas", "nlambdas")
+    nonNegative = Param(Params._dummy(), "nonNegative", "nonNegative")
+    exactLambdas = Param(Params._dummy(), "exactLambdas", "exact lambdas")
+    lambdaMinRatio = Param(Params._dummy(), "lambdaMinRatio", "lambdaMinRatio")
+    maxIterations = Param(Params._dummy(), "maxIterations", "maxIterations")
+    intercept = Param(Params._dummy(), "intercept", "intercept")
+    betaEpsilon = Param(Params._dummy(), "betaEpsilon", "betaEpsilon")
+    objectiveEpsilon = Param(Params._dummy(), "objectiveEpsilon", "objectiveEpsilon")
+    gradientEpsilon = Param(Params._dummy(), "gradientEpsilon", "gradientEpsilon")
+    objReg = Param(Params._dummy(), "objReg", "objReg")
+    computePValues = Param(Params._dummy(), "computePValues", "computePValues")
+    removeCollinearColumns = Param(Params._dummy(), "removeCollinearColumns", "removeCollinearColumns")
+    interactions = Param(Params._dummy(), "interactions", "interactions")
+    interactionPairs = Param(Params._dummy(), "interactionPairs", "interactionPairs")
+    earlyStopping = Param(Params._dummy(), "earlyStopping", "earlyStopping")
+
+    ##
+    # Getters
+    ##
+    def getStandardize(self):
+        return self.getOrDefault(self.standardize)
+
+    def getFamily(self):
+        return self.getOrDefault(self.family).toString()
+
+    def getLink(self):
+        return self.getOrDefault(self.link).toString()
+
+    def getSolver(self):
+        return self.getOrDefault(self.solver).toString()
+
+    def getTweedieVariancePower(self):
+        return self.getOrDefault(self.tweedieVariancePower)
+
+    def getTweedieLinkPower(self):
+        return self.getOrDefault(self.tweedieLinkPower)
+
+    def getAlpha(self):
+        return self.getOrDefault(self.alpha)
+
+    def getLambda(self):
+        return self.getOrDefault(self.lambda_)
+
+    def getMissingValuesHandling(self):
+        return self.getOrDefault(self.missingValuesHandling).toString()
+
+    def getPrior(self):
+        return self.getOrDefault(self.prior)
+
+    def getLambdaSearch(self):
+        return self.getOrDefault(self.lambdaSearch)
+
+    def getNlambdas(self):
+        return self.getOrDefault(self.nlambdas)
+
+    def getNonNegative(self):
+        return self.getOrDefault(self.nonNegative)
+
+    def getExactLambdas(self):
+        return self.getOrDefault(self.exactLambdas)
+
+    def getLambdaMinRatio(self):
+        return self.getOrDefault(self.lambdaMinRatio)
+
+    def getMaxIterations(self):
+        return self.getOrDefault(self.maxIterations)
+
+    def getIntercept(self):
+        return self.getOrDefault(self.intercept)
+
+    def getBetaEpsilon(self):
+        return self.getOrDefault(self.betaEpsilon)
+
+    def getObjectiveEpsilon(self):
+        return self.getOrDefault(self.objectiveEpsilon)
+
+    def getGradientEpsilon(self):
+        return self.getOrDefault(self.gradientEpsilon)
+
+    def getObjReg(self):
+        return self.getOrDefault(self.objReg)
+
+    def getComputePValues(self):
+        return self.getOrDefault(self.computePValues)
+
+    def getRemoteCollinearColumns(self):
+        return self.getOrDefault(self.remoteCollinearColumns)
+
+    def getInteractions(self):
+        return self.getOrDefault(self.interactions)
+
+    def getInteractionPairs(self):
+        return self.getOrDefault(self.interactionPairs)
+
+    def getEarlyStopping(self):
+        return self.getOrDefault(self.earlyStopping)
+
+
+    ##
+    # Setters
+    ##
+    def setStandardize(self, value):
+        assert_is_type(value, bool)
+        return self._set(standardize=value)
+
+    def setFamily(self, value):
+        assert_is_type(value, Enum("gaussian", "binomial", "quasibinomial", "poisson", "gamma", "multinomial", "tweedie", "ordinal"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.glm.GLMModel.GLMParameters.Family.values(), value)
+        return self._set(family=jvm.hex.glm.GLMModel.GLMParameters.Family.valueOf(correct_case_value))
+
+    def setLink(self, value):
+        assert_is_type(value, Enum("family_default", "identity", "logit", "log", "inverse", "tweedie", "multinomial", "ologit", "oprobit", "ologlog"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.glm.GLMModel.GLMParameters.Link.values(), value)
+        return self._set(link=jvm.hex.glm.GLMModel.GLMParameters.Link.valueOf(correct_case_value))
+
+    def setSolver(self, value):
+        assert_is_type(value, Enum("AUTO", "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.glm.GLMModel.GLMParameters.Solver.values(), value)
+        return self._set(solver=jvm.hex.glm.GLMModel.GLMParameters.Solver.valueOf(correct_case_value))
+
+    def setTweedieVariancePower(self, value):
+        assert_is_type(value, int, float)
+        return self._set(tweedieVariancePower=value)
+
+    def setTweedieLinkPower(self, value):
+        assert_is_type(value, int, float)
+        return self._set(tweedieLinkPower=value)
+
+    def setAlpha(self, value):
+        assert_is_type(value, None, [int, float])
+        return self._set(alpha=value)
+
+    def setLambda(self, value):
+        assert_is_type(value, None, [int, float])
+        return self._set(lambda_=value)
+
+    def setMissingValuesHandling(self, value):
+        assert_is_type(value, Enum("MeanImputation", "Skip"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.values(), value)
+        return self._set(missingValuesHandling=jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(correct_case_value))
+
+    def setPrior(self, value):
+        assert_is_type(value, int, float)
+        return self._set(prior=value)
+
+    def setLambdaSearch(self, value):
+        assert_is_type(value, bool)
+        return self._set(lambdaSearch=value)
+
+    def setNlambdas(self, value):
+        assert_is_type(value, int)
+        return self._set(nlambdas=value)
+
+    def setNonNegative(self, value):
+        assert_is_type(value, bool)
+        return self._set(nonNegative=value)
+
+    def setExactLambdas(self, value):
+        assert_is_type(value, bool)
+        return self._set(exactLambdas=value)
+
+    def setLambdaMinRatio(self, value):
+        assert_is_type(value, int, float)
+        return self._set(lambdaMinRatio=value)
+
+    def setMaxIterations(self, value):
+        assert_is_type(value, int)
+        return self._set(maxIterations=value)
+
+    def setIntercept(self, value):
+        assert_is_type(value, bool)
+        return self._set(intercept=value)
+
+    def setBetaEpsilon(self, value):
+        assert_is_type(value, int, float)
+        return self._set(betaEpsilon=value)
+
+    def setObjectiveEpsilon(self, value):
+        assert_is_type(value, int, float)
+        return self._set(objectiveEpsilon=value)
+
+    def setGradientEpsilon(self, value):
+        assert_is_type(value, int, float)
+        return self._set(gradientEpsilon=value)
+
+    def setObjReg(self, value):
+        assert_is_type(value, int, float)
+        return self._set(objReg=value)
+
+    def setComputePValues(self, value):
+        assert_is_type(value, bool)
+        return self._set(computePValues=value)
+
+    def setRemoteCollinearColumns(self, value):
+        assert_is_type(value, bool)
+        return self._set(remoteCollinearColumns=value)
+
+    def setInteractions(self, value):
+        assert_is_type(value, None, [str])
+        return self._set(interactions=value)
+
+    def setInteractionPairs(self, value):
+        assert_is_type(value, None, [(str, str)])
+        return self._set(interactionPairs=value)
+
+    def setEarlyStopping(self, value):
+        assert_is_type(value, bool)
+        return self._set(earlyStopping=value)
