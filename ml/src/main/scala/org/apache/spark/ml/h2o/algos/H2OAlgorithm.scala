@@ -85,7 +85,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
         trainFrame.vec(getPredictionCol()).toCategoricalVec).remove()
     }
     water.DKV.put(trainFrame)
-
+    
     // Train
     val model: M with H2OModelParams = trainModel(getParams)
 

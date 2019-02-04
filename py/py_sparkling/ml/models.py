@@ -20,6 +20,9 @@ class H2OAutoMLModel(JavaModel, JavaMLWritable, JavaMLReadable):
 class H2OXGBoostModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
+class H2OGLMModel(JavaModel, JavaMLWritable, JavaMLReadable):
+    pass
+
 class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod

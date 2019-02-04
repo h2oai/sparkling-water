@@ -15,3 +15,6 @@ class H2OAutoML(py_sparkling.ml.algos.H2OAutoML):
 
 class H2OXGBoost(py_sparkling.ml.algos.H2OXGBoost):
     pass
+
+class H2OGLM(py_sparkling.ml.algos.H2OGLM):
+    pass
