@@ -270,7 +270,6 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
       // Using == since int should be mapped strictly to shorts
       assert(row1 == value, "The H2OFrame values should match row numbers+1")
     })
-    // TODO(vlad): this makes no sense, cleanup only happen on success; move it.
     // Clean up
     h2oFrame.delete()
     rdd.unpersist()
@@ -471,14 +470,25 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     val rdd = sc.parallelize(Seq(p1, p2), 10)
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
     assert(rdd.count() == h2oFrame.numRows(), "Number of rows should match")
+    assertVectorDoubleValues(h2oFrame.vec(0), Seq(0, 1))
+    assertVectorDoubleValues(h2oFrame.vec(1), Seq(1, 5))
+    assertVectorDoubleValues(h2oFrame.vec(2), Seq(2, 6))
+    assertVectorDoubleValues(h2oFrame.vec(3), Seq(3, 7))
+    assertVectorDoubleValues(h2oFrame.vec(4), Seq(4, 8))
+
+
   }
 
   test("RDD[LabeledPoint] ( Dense Vector, different size ) to H2OFrame[LabeledPoint]") {
-    val p1 = LabeledPoint(0, Vectors.dense(1, 2, 3, 4, 5, 6))
-    val p2 = LabeledPoint(1, Vectors.dense(7, 8))
+    val p1 = LabeledPoint(0, Vectors.dense(1, 2, 3))
+    val p2 = LabeledPoint(1, Vectors.dense(4, 5))
     val rdd = sc.parallelize(Seq(p1, p2))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
     assert(rdd.count() == h2oFrame.numRows(), "Number of rows should match")
+    assertVectorDoubleValues(h2oFrame.vec(0), Seq(0, 1))
+    assertVectorDoubleValues(h2oFrame.vec(1), Seq(1, 4))
+    assertVectorDoubleValues(h2oFrame.vec(2), Seq(2, 5))
+    assertVectorDoubleValues(h2oFrame.vec(3), Seq(3, Double.NaN))
   }
 
   test("RDD[LabeledPoint] ( Sparse Vector, same size ) to H2OFrame[LabeledPoint]") {
@@ -487,17 +497,27 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     val rdd = sc.parallelize(Seq(p1, p2), 10)
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
     assert(rdd.count() == h2oFrame.numRows(), "Number of rows should match")
+    assertVectorDoubleValues(h2oFrame.vec(0), Seq(0, 1))
+    assertVectorDoubleValues(h2oFrame.vec(1), Seq(0, 3.14))
+    assertVectorDoubleValues(h2oFrame.vec(2), Seq(3.0, 0))
+    assertVectorDoubleValues(h2oFrame.vec(3), Seq(0, 0))
+    assertVectorDoubleValues(h2oFrame.vec(4), Seq(8.1, 0))
+
   }
 
   test("RDD[LabeledPoint] ( Sparse Vector, different size ) to H2OFrame[LabeledPoint]") {
-    val p1 = LabeledPoint(0, Vectors.sparse(4, Array(1, 3), Array(3.0, 8.1)))
-    val p2 = LabeledPoint(1, Vectors.sparse(7, Array(0, 5, 6), Array(1.0, 11, 8)))
+    val p1 = LabeledPoint(0, Vectors.sparse(1, Array(0), Array(3.0)))
+    val p2 = LabeledPoint(1, Vectors.sparse(3, Array(0, 1), Array(1.0, 8)))
     val rdd = sc.parallelize(Seq(p1, p2))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
     assert(rdd.count() == h2oFrame.numRows(), "Number of rows should match")
+    assertVectorDoubleValues(h2oFrame.vec(0), Seq(0, 1))
+    assertVectorDoubleValues(h2oFrame.vec(1), Seq(3.0, 1.0))
+    assertVectorDoubleValues(h2oFrame.vec(2), Seq(Double.NaN, 8))
+    assertVectorDoubleValues(h2oFrame.vec(3), Seq(Double.NaN, 0))
   }
 
-  test("RDD[ml.linalg.Vector] to H2OFrame") {
+  test("RDD[ml.linalg.Vector](dense - same length) to H2OFrame") {
     val dataDef = 1 to 10
     val data = dataDef.map(v => org.apache.spark.ml.linalg.Vectors.dense(v, 0, 0))
     val rdd = sc.parallelize(data)
@@ -508,7 +528,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assertVectorDoubleValues(h2oFrame.vec(2), dataDef.map(_ => 0.0))
   }
 
-  test("RDD[mllib.linalg.Vector] to H2OFrame") {
+  test("RDD[mllib.linalg.Vector](dense - same length) to H2OFrame") {
     val dataDef = 1 to 10
     val data = dataDef.map(v => org.apache.spark.mllib.linalg.Vectors.dense(v, 0, 0))
     val rdd = sc.parallelize(data)
@@ -517,6 +537,60 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assertVectorDoubleValues(h2oFrame.vec(0), dataDef.map(_.toDouble))
     assertVectorDoubleValues(h2oFrame.vec(1), dataDef.map(_ => 0.0))
     assertVectorDoubleValues(h2oFrame.vec(2), dataDef.map(_ => 0.0))
+  }
+
+  test("RDD[mllib.linalg.Vector](dense - different length) to H2OFrame") {
+    val data = Seq(
+      org.apache.spark.mllib.linalg.Vectors.dense(1),
+      org.apache.spark.mllib.linalg.Vectors.dense(1, 2),
+      org.apache.spark.mllib.linalg.Vectors.dense(1, 2, 3)
+    )
+    val rdd = sc.parallelize(data)
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assertRDDH2OFrameInvariants(rdd, h2oFrame)
+    assertVectorDoubleValues(h2oFrame.vec(0), Seq(1, 1, 1))
+    assertVectorDoubleValues(h2oFrame.vec(1), Seq(0, 2, 2))
+    assertVectorDoubleValues(h2oFrame.vec(2), Seq(0, 0, 3))
+  }
+
+  test("RDD[mllib.linalg.Vector](Sparse - same length, one vector empty) to H2OFrame") {
+    val data = Seq(
+      Vectors.sparse(2, Array(0), Array(1)),
+      Vectors.sparse(2, Array(1), Array(0))
+    )
+    val rdd = sc.parallelize(data, 1)
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assertRDDH2OFrameInvariants(rdd, h2oFrame)
+
+    assertVectorDoubleValues(h2oFrame.vec(0), Seq(1, 0))
+    assertVectorDoubleValues(h2oFrame.vec(1), Seq(0, 0))
+  }
+
+
+  test("RDD[mllib.linalg.Vector](Sparse - same length) to H2OFrame") {
+    val data = Seq(
+      Vectors.sparse(2, Array(0), Array(1)),
+      Vectors.sparse(2, Array(1), Array(2))
+    )
+    val rdd = sc.parallelize(data, 1)
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assertRDDH2OFrameInvariants(rdd, h2oFrame)
+
+    assertVectorDoubleValues(h2oFrame.vec(0), Seq(1, 0))
+    assertVectorDoubleValues(h2oFrame.vec(1), Seq(0, 2))
+  }
+
+  test("RDD[mllib.linalg.Vector](Sparse - different length) to H2OFrame") {
+    val dataDef = 1 to 3
+    val data = dataDef.map(v => Vectors.sparse(v, Array(v - 1), Array(42)))
+
+    val rdd = sc.parallelize(data)
+    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    assertRDDH2OFrameInvariants(rdd, h2oFrame)
+
+    assertVectorDoubleValues(h2oFrame.vec(0), Seq(42, 0, 0))
+    assertVectorDoubleValues(h2oFrame.vec(1), Seq(0, 42, 0))
+    assertVectorDoubleValues(h2oFrame.vec(2), Seq(0, 0, 42))
   }
 
   test("H2OFrame with categorical column into RDD") {
@@ -578,12 +652,13 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
       case x if x.take(1)(0).isInstanceOf[DoubleField] =>
         assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[DoubleField].productArity, "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[org.apache.spark.ml.linalg.Vector] =>
-        assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[org.apache.spark.ml.linalg.Vector].size, "Number columns should match")
+        assert(df.numCols() == inputRDD.asInstanceOf[RDD[org.apache.spark.ml.linalg.Vector]].map(v => v.size).max(), "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[org.apache.spark.mllib.linalg.Vector] =>
-        assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[org.apache.spark.mllib.linalg.Vector].size, "Number columns should match")
+        assert(df.numCols() == inputRDD.asInstanceOf[RDD[org.apache.spark.mllib.linalg.Vector]].map(v => v.size).max(), "Number columns should match")
       case x => fail(s"Bad data $x")
     }
   }
+
 }
 
 object StaticStorage {
