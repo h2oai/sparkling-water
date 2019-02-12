@@ -29,7 +29,7 @@ object H2OAsserts {
 
   def assertVectorDoubleValues(vec: water.fvec.Vec, values: Seq[Double]): Unit = {
     (0 until vec.length().toInt).foreach { rIdx =>
-      assert(if (vec.isNA(rIdx)) values(rIdx) == Double.NaN // this is Scala i can do NaN comparision
+      assert(if (vec.isNA(rIdx)) values(rIdx).equals(Double.NaN) // this is Scala i can do NaN comparision
              else vec.at(rIdx) == values(rIdx), "Values stored in H2OFrame has to match specified values")
     }
   }
