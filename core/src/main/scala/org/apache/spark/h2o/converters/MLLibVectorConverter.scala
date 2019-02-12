@@ -41,7 +41,7 @@ private[converters] object MLLibVectorConverter extends Logging {
     val minNumFeatures = numFeatures.min()
     if (minNumFeatures < maxNumFeatures) {
       // Features vectors of different sizes, filling missing with n/a
-      logWarning("WARNING: Converting RDD[LabeledPoint] to H2OFrame where features vectors have different size, filling missing with n/a")
+      logWarning("WARNING: Converting RDD[Vector] to H2OFrame where vectors have different size, filling missing with zeros")
     }
 
     val fnames = 0.until(maxNumFeatures).map("v_" +).toArray[String]
@@ -76,12 +76,18 @@ private[converters] object MLLibVectorConverter extends Logging {
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout, driverTimeStamp)
     // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunks(keyName, expectedTypes, context.partitionId(), Array(maxNumFeatures))
+    con.createChunks(keyName, expectedTypes, context.partitionId(), Array(maxNumFeatures), Map(0 -> maxNumFeatures))
 
-    iterator.foreach(vec => con.putVector(0, vec, maxNumFeatures))
+    var localRowIdx = 0
+    iterator.foreach { vec =>
+      con.startRow(localRowIdx)
+      con.putVector(0, vec, maxNumFeatures)
+      localRowIdx += 1
+      con.finishRow()
+    }
 
     //Compress & write data in partitions to H2O Chunks
-    con.closeChunks()
+    con.closeChunks(localRowIdx)
 
     // Return Partition number and number of rows in this partition
     (context.partitionId, con.numOfRows())
