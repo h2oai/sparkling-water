@@ -48,7 +48,7 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTi
   /**
     * Initialize the communication before the chunks are created
     */
-  override def createChunks(keystr: String, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int], vecStartSize: Map[Int, Int]): Unit = {
+  override def createChunks(keystr: String, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int], sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
     externalFrameWriter.createChunks(keystr, expectedTypes, chunkId, totalNumOfRows, maxVecSizes)
   }
 

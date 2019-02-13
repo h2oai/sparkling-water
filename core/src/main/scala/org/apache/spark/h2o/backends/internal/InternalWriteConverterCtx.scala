@@ -33,8 +33,8 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
 
   private var rowIdx: Int = _
 
-  override def createChunks(keyName: String, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int], vecStartSize: Map[Int, Int]): Unit = {
-    chunks = FrameUtils.createNewChunks(keyName, expectedTypes, chunkId)
+  override def createChunks(keyName: String, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int], sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
+    chunks = FrameUtils.createNewChunks(keyName, expectedTypes, chunkId, sparse)
     sparseVectorPts = collection.mutable.Map(vecStartSize.mapValues(size => new Array[Int](size)).toSeq: _*)
     sparseVectorInUse = collection.mutable.Map(vecStartSize.mapValues(_ => false).toSeq: _*)
   }

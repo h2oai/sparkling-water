@@ -59,7 +59,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     val elemMaxSizes = collectMaxElementSizes(hc.sparkContext, flatDataFrame)
     val elemStartIndices = collectElemStartPositions(elemMaxSizes)
     val vecIndices = collectVectorLikeTypes(flatDataFrame.schema).toArray
-
+    val sparseInfo = collectSparseInfo(hc.sparkContext, flatDataFrame, elemMaxSizes)
     // Expands RDD's schema ( Arrays and Vectors)
     val flatRddSchema = expandedSchema(hc.sparkContext, flatDataFrame.schema, elemMaxSizes)
     // Patch the flat schema based on information about types
@@ -77,7 +77,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       ExternalBackendUtils.prepareExpectedTypes(internalJavaClasses)
     }
 
-    WriteConverterCtxUtils.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)),
+    WriteConverterCtxUtils.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)), sparse = sparseInfo,
       perSQLPartition(elemMaxSizes, elemStartIndices, vecIndices))
   }
 
@@ -95,7 +95,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   private[this]
   def perSQLPartition(elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
                      (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
-                      writeTimeout: Int, driverTimeStamp: Short)
+                      writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean])
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
 
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
@@ -105,7 +105,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))
     }).toMap
     // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunks(keyName, expectedTypes, context.partitionId(), vecIndices.map(elemMaxSizes(_)), vecStartSize)
+    con.createChunks(keyName, expectedTypes, context.partitionId(), vecIndices.map(elemMaxSizes(_)), sparse, vecStartSize)
 
     var localRowIdx = 0
     iterator.foreach { row =>

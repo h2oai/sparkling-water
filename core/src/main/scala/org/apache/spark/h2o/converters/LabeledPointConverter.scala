@@ -50,7 +50,7 @@ private[converters] object LabeledPointConverter extends Logging {
     val typeToUse = if (hc.getConf.runsInInternalClusterMode) Vec.T_NUM else ExternalFrameUtils.EXPECTED_DOUBLE
     val expectedTypes = Array.fill(maxNumFeatures + 1)(typeToUse)
 
-    WriteConverterCtxUtils.convert[LabeledPoint](hc, rdd, keyName, fnames, expectedTypes, Array.empty[Int], perLabeledPointRDDPartition(maxNumFeatures))
+    WriteConverterCtxUtils.convert[LabeledPoint](hc, rdd, keyName, fnames, expectedTypes, Array.empty[Int], sparse = Array.fill[Boolean](expectedTypes.length)(false), perLabeledPointRDDPartition(maxNumFeatures))
   }
 
   /**
@@ -66,12 +66,12 @@ private[converters] object LabeledPointConverter extends Logging {
   private[this]
   def perLabeledPointRDDPartition(maxNumFeatures: Int)
                                  (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
-                                  writeTimeout: Int, driverTimeStamp: Short)
+                                  writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean])
                                  (context: TaskContext, it: Iterator[LabeledPoint]): (Int, Long) = {
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout, driverTimeStamp)
     // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunks(keyName, expectedTypes, context.partitionId(), Array.empty[Int])
+    con.createChunks(keyName, expectedTypes, context.partitionId(), Array.empty[Int], sparse)
 
     iterator.foreach(labeledPoint => {
       // For all LabeledPoints in RDD

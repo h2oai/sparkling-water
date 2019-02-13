@@ -58,7 +58,7 @@ private[h2o] object ProductRDDConverter extends Logging {
       ExternalBackendUtils.prepareExpectedTypes(ftypes)
     }
 
-    WriteConverterCtxUtils.convert[T](hc, rdd, keyName, fnames, expectedTypes, Array.empty[Int], H2OFrameFromRDDProductBuilder.perTypedDataPartition())
+    WriteConverterCtxUtils.convert[T](hc, rdd, keyName, fnames, expectedTypes, Array.empty[Int], sparse=Array.fill[Boolean](expectedTypes.length)(false), H2OFrameFromRDDProductBuilder.perTypedDataPartition())
   }
 }
 
