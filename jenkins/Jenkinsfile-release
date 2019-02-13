@@ -386,7 +386,9 @@ EOF
                                """
 
                             // Update the links
-                            sh  """
+                            retryWithDelay(3, 120, {
+                            sh """
+
                                 REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
                                 PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
 
@@ -395,16 +397,10 @@ EOF
                                 sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/\$PATCH_VERSION/?" 000-default.conf
                                 git add 000-default.conf
                                 git commit -m "Update links of Sparkling Water 2.2 version to \$PATCH_VERSION"
-                                rm -rf 000-default.conf.backup
-                                """
-                             
-                             retryWithDelay(3, 120, {
-                                sh """
-                                    cd docs.h2o.ai/sites-available/
-                                    git pull origin master --rebase
-                                    git push --set-upstream origin master
-                                   """
-                               })
+                                cd ../..
+                                rm -rf docs.h2o.ai
+                            """ })
+
                             }
                         }
                     }
