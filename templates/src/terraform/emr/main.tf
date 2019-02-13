@@ -7,25 +7,6 @@ provider "aws" {
   secret_key = "${var.aws_secret_key}"
 }
 
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
-  enable_dns_hostnames = true
-
-  tags = {
-    name = "SparklingWaterDeployment"
-  }
-}
-
-resource "aws_subnet" "main" {
-  vpc_id     = "${aws_vpc.main.id}"
-  cidr_block = "10.0.0.0/24"
-
-  tags = {
-    name = "SparklingWaterDeployment"
-  }
-}
-
-
 resource "aws_emr_cluster" "sparkling-water-cluster" {
   name          = "Sparkling-Water"
   release_label = "${var.aws_emr_version}"
