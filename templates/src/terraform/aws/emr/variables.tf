@@ -3,10 +3,13 @@
 ##
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
+variable "aws_vpc_id" {}
+variable "aws_subnet_id" {}
 
 variable "aws_region" {
     default = "us-east-1"    
 }
+
 variable "aws_emr_version" {
     default = "emr-5.20.0"
 }
@@ -22,4 +25,5 @@ variable "sw_major_version" {
 variable "sw_patch_version" {
     default = "5"
 }
+
 

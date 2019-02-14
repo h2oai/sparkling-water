@@ -1,0 +1,94 @@
+##
+## VPC - if user did not specify aws_vpc_id
+##
+resource "aws_vpc" "main" {
+     count = "${var.aws_vpc_id == "" ? 1 : 0}"
+     cidr_block = "10.0.0.0/16"
+     enable_dns_hostnames = true
+     enable_dns_support = true
+     enable_classiclink = false
+     enable_classiclink_dns_support = false
+     tags = {
+         Name = "SparklingWaterDeployment"
+     }
+ }
+
+
+##
+## VPC Subnet
+##
+## We create default subnet if the user does not specify it. If the default VPC was also created by us, we create the subnet in the cidr we know we can use.
+## If the user provided us with existing VPC, we created
+##
+resource "aws_subnet" "main" {
+  count = "${var.aws_vpc_subnet_id == "" ? 1 : 0}"
+  vpc_id = "${var.aws_vpc_id == "" ? element(concat(aws_vpc.main.*.id, list("")), 0) : element(concat(data.aws_vpc.custom.*.id, list("")), 0) }"
+  cidr_block = "${var_aws_vpc_id == "" ? 10.0.0.0/24 : element(concat(data.aws_vpc.custom.*.cidr_block, list("")), 0)"
+
+  tags = {
+    name = "SparklingWaterDeploymentSubnet"
+  }
+}
+
+##
+## Gateway
+##
+resource "aws_internet_gateway" "gw" {
+   count = "${var.aws_vpc_id == "" ? 1 : 0}" 
+   vpc_id = "${aws_vpc.main.id}"
+   
+    tags = {
+        Name = "SparklingWaterDeploymentGateway"
+    }
+}
+
+##
+## Route table (mainly for gataway)
+## 
+resource "aws_route_table" "r" {
+      count = "${var.aws_vpc_id == "" ? 1 : 0}"  
+      vpc_id = "${aws_vpc.main.id}"
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = "${aws_internet_gateway.gw.id}"
+  }
+}
+
+##
+## Associate the route table with the VPC
+##
+resource "aws_main_route_table_association" "a" {
+    count = "${var.aws_vpc_id == "" ? 1 : 0}"
+    vpc_id         = "${aws_vpc.main.id}"
+    route_table_id = "${aws_route_table.r.id}"
+}
+
+##
+## Create DHCP Options
+##
+resource "aws_vpc_dhcp_options" "main" {
+  count = "${var.aws_vpc_id == "" ? 1 : 0}"
+  domain_name          = "ec2.internal"
+  domain_name_servers  = ["AmazonProvidedDNS"]
+  tags = {
+    Name = "SparklingWaterDeploymentDHCPOptions"
+  }
+}
+
+resource "aws_vpc_dhcp_options_association" "dns_resolver" {
+  count = "${var.aws_vpc_id == "" ? 1 : 0}"
+  vpc_id          = "${aws_vpc.main.id}"
+  dhcp_options_id = "${aws_vpc_dhcp_options.main.id}"
+}
+
+
+ ##
+ ## VPC - if user specified aws_vpc_id
+ ##
+ data "aws_vpc" "custom" {
+     count = "${var.aws_vpc_id == "" ? 0 : 1}"
+      id = "${var.aws_vpc_id}"
+ }
+
+data "aws_subnet

@@ -54,8 +54,14 @@ spark-tfidf-data/
 rsparkling.Rproj
 
 # Terraform
-templates/src/terraform/emr/.terraform/
-templates/src/terraform/emr/.terraform.tfstate.lock.info
-templates/src/terraform/emr/terraform.tfstate
-templates/src/terraform/emr/main.auto.tfvars
-templates/src/terraform/emr/terraform.tfstate.backup
+templates/src/terraform/aws/emr/.terraform/
+templates/src/terraform/aws/emr/.terraform.tfstate.lock.info
+templates/src/terraform/aws/emr/terraform.tfstate
+templates/src/terraform/aws/emr/main.auto.tfvars
+templates/src/terraform/aws/emr/terraform.tfstate.backup
+
+templates/src/terraform/aws/network/.terraform/
+templates/src/terraform/aws/network/.terraform.tfstate.lock.info
+templates/src/terraform/aws/network/terraform.tfstate
+templates/src/terraform/aws/network/main.auto.tfvars
+templates/src/terraform/aws/network/terraform.tfstate.backup
