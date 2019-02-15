@@ -27,7 +27,7 @@ cd /home/hadoop/h2o
 
 echo -e "\n Installing sparkling water version SUBST_MAJOR_VERSION.SUBST_MINOR_VERSION "
 
-wget http://h2o-release.s3.amazonaws.com/sparkling-water/SUBST_BRANCH_NAME/SUBST_MINOR_VERSION/sparkling-water-SUBST_MAJOR_VERSION.SUBST_MINOR_VERSION.zip &
+wget http://h2o-release.s3.amazonaws.com/sparkling-water/SUBST_S3_PATH/sparkling-water-SUBST_MAJOR_VERSION.SUBST_MINOR_VERSION.zip &
 wait
 
 unzip -o sparkling-water-SUBST_MAJOR_VERSION.SUBST_MINOR_VERSION.zip 1> /dev/null &
