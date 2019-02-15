@@ -18,7 +18,7 @@ task substituteAWS(){
 
         def s3path = isNightly ? "${branchName}/nightly" : "${branchName}"
         if (isNightly){
-            def edited = minorVersion.toString().replaceAll("[0-9]-SNAPSHOT", "")
+            def edited = minorVersion.toString().replaceAll("\\d+-SNAPSHOT", "")
             edited = edited.replaceAll("-", "")
             s3path = "${s3path}/${edited}"
         } else {
