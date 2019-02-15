@@ -8,14 +8,24 @@ description = "Templates for Sparkling Water deployment"
  */
 task substituteAWS(){
     doLast {
-        def aws_script = "${project.buildDir.toString()}/aws/install_sparkling_water_${version.replace('-SNAPSHOT', '')}.sh"
+        def aws_script = "${project.buildDir.toString()}/aws/install_sparkling_water_${version}.sh"
         def contents = file(aws_script).getText('UTF-8')
-        def (first, second, third) = version.replace("-SNAPSHOT", "").tokenize(".")
+        def (first, second, third) = version.tokenize(".")
         def majorVersion = "${first}.${second}"
         def minorVersion = third
-        def branchName = version.toString().endsWith("nightly") ? "master" : "rel-${majorVersion}"
+        def branchName = version.toString().contains("99999-SNAPSHOT") ? "master" : "rel-${majorVersion}"
+        def isNightly = version.toString().contains("SNAPSHOT")
+
+        def s3path = isNightly ? "${branchName}/nightly" : "${branchName}"
+        if (isNightly){
+            def edited = minorVersion.toString().replaceAll("\\d+-SNAPSHOT", "")
+            edited = edited.replaceAll("-", "")
+            s3path = "${s3path}/${edited}"
+        } else {
+            s3path = "${s3path}/${minorVersion}"
+        }
         contents = contents
-                .replaceAll("SUBST_BRANCH_NAME", branchName)
+                .replaceAll("SUBST_S3_PATH", s3path)
                 .replaceAll("SUBST_MAJOR_VERSION", majorVersion)
                 .replaceAll("SUBST_MINOR_VERSION", minorVersion)
 
@@ -27,7 +37,7 @@ task substituteAWS(){
 task copyAWS(type: Copy) {
     from 'src/aws'
     into "build/aws"
-    rename "install_sparkling_water.sh", "install_sparkling_water_${version.replace('-SNAPSHOT', '')}.sh"
+    rename "install_sparkling_water.sh", "install_sparkling_water_${version}.sh"
 }
 
 substituteAWS.dependsOn copyAWS
