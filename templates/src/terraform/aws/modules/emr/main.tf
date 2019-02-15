@@ -2,7 +2,7 @@
 ## Provider Definition
 ##
 provider "aws" {
-  region = "${var.aws_region}" 
+  region = "${var.aws_region}"
   access_key = "${var.aws_access_key}"
   secret_key = "${var.aws_secret_key}"
 }
@@ -16,20 +16,22 @@ data "aws_subnet" "main" {
 }
 
 resource "aws_emr_cluster" "sparkling-water-cluster" {
-  name          = "Sparkling-Water"
+  name = "Sparkling-Water"
   release_label = "${var.aws_emr_version}"
-  applications  = ["Spark", "Hadoop"]
+  applications = [
+    "Spark",
+    "Hadoop"]
 
   ec2_attributes {
-    subnet_id                         = "${data.aws_subnet.main.id}"
+    subnet_id = "${data.aws_subnet.main.id}"
     emr_managed_master_security_group = "${aws_security_group.slave.id}"
-    emr_managed_slave_security_group  = "${aws_security_group.master.id}"
-    instance_profile                  = "${aws_iam_instance_profile.emr_ec2_instance_profile.arn}"
+    emr_managed_slave_security_group = "${aws_security_group.master.id}"
+    instance_profile = "${aws_iam_instance_profile.emr_ec2_instance_profile.arn}"
   }
 
   master_instance_type = "${var.aws_instance_type}"
-  core_instance_type   = "${var.aws_instance_type}"
-  core_instance_count  = "${var.aws_core_instance_count}"
+  core_instance_type = "${var.aws_instance_type}"
+  core_instance_count = "${var.aws_core_instance_count}"
 
   tags {
     name = "SparklingWater"

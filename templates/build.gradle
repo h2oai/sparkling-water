@@ -33,6 +33,25 @@ task substituteAWS(){
     }
 }
 
+task substituteTerraform(){
+    doLast {
+        def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
+        def tfScripts = ["${tfBaseDir}/variables.tf", "${tfBaseDir}/modules/emr/variables.tf"]
+        tfScripts.each { path ->
+            def contents = file(path).getText('UTF-8')
+            def (first, second, third) = version.replace("-SNAPSHOT", "").tokenize(".")
+            def majorVersion = "${first}.${second}"
+            def minorVersion = third
+            def branchName = version.toString().endsWith("nightly") ? "master" : "rel-${majorVersion}"
+            contents = contents
+                    .replaceAll("SUBST_MAJOR_VERSION", majorVersion)
+                    .replaceAll("SUBST_MINOR_VERSION", minorVersion)
+
+            file(path).write(contents, 'UTF-8')
+        }
+
+    }
+}
 
 task copyAWS(type: Copy) {
     from 'src/aws'
@@ -40,5 +59,12 @@ task copyAWS(type: Copy) {
     rename "install_sparkling_water.sh", "install_sparkling_water_${version}.sh"
 }
 
+task copyTerraform(type: Copy) {
+    from 'src/terraform'
+    include "**/*.tf"
+    into "build/terraform"
+}
+
 substituteAWS.dependsOn copyAWS
-build.dependsOn substituteAWS
+substituteTerraform.dependsOn copyTerraform
+build.dependsOn substituteAWS, substituteTerraform
