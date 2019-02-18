@@ -1,6 +1,23 @@
 Change Log
 ==========
 
+v2.2.35 (2019-02-18)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/35/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/35/index.html>`__
+
+-  Bug
+        
+   -  `SW-1136 <https://0xdata.atlassian.net/browse/SW-1136>`__ - Fix bug affecting loading pipeline in python when stored in scala
+   -  `SW-1138 <https://0xdata.atlassian.net/browse/SW-1138>`__ - Fix several cases in spark vector -&gt; h2o conversion
+                
+-  Improvement
+        
+   -  `SW-1134 <https://0xdata.atlassian.net/browse/SW-1134>`__ - Add H2OGLM Wrapper to Sparkling Water
+   -  `SW-1139 <https://0xdata.atlassian.net/browse/SW-1139>`__ - Update mojo2 to 0.3.16
+   -  `SW-1143 <https://0xdata.atlassian.net/browse/SW-1143>`__ - Fix s3 bootstrap templates for nightly builds
+   -  `SW-1144 <https://0xdata.atlassian.net/browse/SW-1144>`__ - Upgrade to H2O 3.22.1.4
+                
+                                                                        
 v2.2.34 (2019-01-29)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/34/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/34/index.html>`__
