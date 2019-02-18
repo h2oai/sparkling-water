@@ -50,7 +50,8 @@ private[converters] object LabeledPointConverter extends Logging {
     val typeToUse = if (hc.getConf.runsInInternalClusterMode) Vec.T_NUM else ExternalFrameUtils.EXPECTED_DOUBLE
     val expectedTypes = Array.fill(maxNumFeatures + 1)(typeToUse)
 
-    WriteConverterCtxUtils.convert[LabeledPoint](hc, rdd, keyName, fnames, expectedTypes, Array.empty[Int], sparse = Array.fill[Boolean](expectedTypes.length)(false), perLabeledPointRDDPartition(maxNumFeatures))
+    WriteConverterCtxUtils.convert[LabeledPoint](hc, rdd, keyName, fnames, expectedTypes, Array.empty[Int],
+      sparse = Array.fill[Boolean](expectedTypes.length)(false), perLabeledPointRDDPartition(maxNumFeatures))
   }
 
   /**

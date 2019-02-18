@@ -23,9 +23,9 @@ import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, ReflectionUtils}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types.{BinaryType, BooleanType, ByteType, DateType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType, _}
-import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
+import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row}
 import org.apache.spark.{mllib, _}
-import water.{H2O, Key}
+import water.Key
 import water.fvec.{Frame, H2OFrame}
 
 
@@ -77,19 +77,19 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       ExternalBackendUtils.prepareExpectedTypes(internalJavaClasses)
     }
 
-    WriteConverterCtxUtils.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)), sparse = sparseInfo,
-      perSQLPartition(elemMaxSizes, elemStartIndices, vecIndices))
+    WriteConverterCtxUtils.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)),
+      sparse = sparseInfo, perSQLPartition(elemMaxSizes, elemStartIndices, vecIndices))
   }
 
   /**
     *
-    * @param keyName        key of the frame
-    * @param expectedTypes  expected types of H2O vectors after the corresponding data are converted from Spark
-    * @param elemMaxSizes   array containing max size of each element in the dataframe
+    * @param keyName          key of the frame
+    * @param expectedTypes    expected types of H2O vectors after the corresponding data are converted from Spark
+    * @param elemMaxSizes     array containing max size of each element in the dataframe
     * @param elemStartIndices array containing positions in h2o frame corresponding to spark frame
-    * @param uploadPlan     plan which assigns each partition h2o node where the data from that partition will be uploaded
-    * @param context        spark task context
-    * @param it             iterator over data in the partition
+    * @param uploadPlan       plan which assigns each partition h2o node where the data from that partition will be uploaded
+    * @param context          spark task context
+    * @param it               iterator over data in the partition
     * @return pair (partition ID, number of rows in this partition)
     */
   private[this]

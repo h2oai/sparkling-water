@@ -74,7 +74,8 @@ case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], fram
       ExternalBackendUtils.prepareExpectedTypes(javaClasses)
     }
 
-    WriteConverterCtxUtils.convert[Product](hc, rdd, kn, meta.names, expectedTypes, Array.empty[Int], sparse=Array.fill[Boolean](expectedTypes.length)(false), H2OFrameFromRDDProductBuilder.perTypedDataPartition())
+    WriteConverterCtxUtils.convert[Product](hc, rdd, kn, meta.names, expectedTypes, Array.empty[Int],
+      sparse=Array.fill[Boolean](expectedTypes.length)(false), H2OFrameFromRDDProductBuilder.perTypedDataPartition())
   }
 
 

@@ -58,7 +58,8 @@ private[converters] object MLLibVectorConverter extends Logging {
     val sparseExist = !rdd.filter( v => v.isInstanceOf[SparseVector]).isEmpty()
     val sparse = Array.fill[Boolean](expectedTypes.length)(sparseExist)
 
-    WriteConverterCtxUtils.convert[mllib.linalg.Vector](hc, rdd, keyName, fnames, expectedTypes, Array(maxNumFeatures), sparse = sparse, perMLlibVectorPartition(maxNumFeatures))
+    WriteConverterCtxUtils.convert[mllib.linalg.Vector](hc, rdd, keyName, fnames, expectedTypes,
+      Array(maxNumFeatures), sparse = sparse, perMLlibVectorPartition(maxNumFeatures))
   }
 
 
