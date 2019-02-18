@@ -39,10 +39,9 @@ task substituteTerraform(){
         def tfScripts = ["${tfBaseDir}/variables.tf", "${tfBaseDir}/modules/emr/variables.tf"]
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
-            def (first, second, third) = version.replace("-SNAPSHOT", "").tokenize(".")
+            def (first, second, third) = version.tokenize(".")
             def majorVersion = "${first}.${second}"
             def minorVersion = third
-            def branchName = version.toString().endsWith("nightly") ? "master" : "rel-${majorVersion}"
             contents = contents
                     .replaceAll("SUBST_MAJOR_VERSION", majorVersion)
                     .replaceAll("SUBST_MINOR_VERSION", minorVersion)
