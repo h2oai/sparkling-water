@@ -88,6 +88,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     * @param elemMaxSizes     array containing max size of each element in the dataframe
     * @param elemStartIndices array containing positions in h2o frame corresponding to spark frame
     * @param uploadPlan       plan which assigns each partition h2o node where the data from that partition will be uploaded
+    * @param sparse           identifies which columns are sparse
     * @param context          spark task context
     * @param it               iterator over data in the partition
     * @return pair (partition ID, number of rows in this partition)
