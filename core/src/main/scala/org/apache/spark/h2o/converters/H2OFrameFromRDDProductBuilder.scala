@@ -74,7 +74,8 @@ case class H2OFrameFromRDDProductBuilder(hc: H2OContext, rdd: RDD[Product], fram
       ExternalBackendUtils.prepareExpectedTypes(javaClasses)
     }
 
-    WriteConverterCtxUtils.convert[Product](hc, rdd, kn, meta.names, expectedTypes, Array.empty[Int], H2OFrameFromRDDProductBuilder.perTypedDataPartition())
+    WriteConverterCtxUtils.convert[Product](hc, rdd, kn, meta.names, expectedTypes, Array.empty[Int],
+      sparse=Array.fill[Boolean](expectedTypes.length)(false), H2OFrameFromRDDProductBuilder.perTypedDataPartition())
   }
 
 
@@ -110,13 +111,13 @@ object H2OFrameFromRDDProductBuilder{
     */
   private[converters] def perTypedDataPartition[T<:Product]()
                                                            (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
-                                                            writeTimeout: Int, driverTimeStamp: Short)
+                                                            writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean])
                                                            (context: TaskContext, it: Iterator[T]): (Int, Long) = {
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     // An array of H2O NewChunks; A place to record all the data in this partition
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout, driverTimeStamp)
 
-    con.createChunks(keyName, expectedTypes, context.partitionId(), Array.empty[Int])
+    con.createChunks(keyName, expectedTypes, context.partitionId(), Array.empty[Int], sparse)
     iterator.foreach(prod => { // For all rows which are subtype of Product
       for ( i <- 0 until prod.productArity ) { // For all fields...
       val fld = prod.productElement(i)
