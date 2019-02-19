@@ -16,7 +16,7 @@ pipeline {
     }
 
     environment {
-        SPARK_HOME="/home/jenkins/spark-2.3.1-bin-hadoop2.7"
+        SPARK_HOME="/home/jenkins/spark-2.3.3-bin-hadoop2.7"
     }
 
     stages {
