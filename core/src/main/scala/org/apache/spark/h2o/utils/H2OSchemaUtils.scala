@@ -19,6 +19,7 @@ package org.apache.spark.h2o.utils
 
 import org.apache.spark.h2o._
 import org.apache.spark.ml.attribute.AttributeGroup
+import org.apache.spark.mllib.linalg.SparseVector
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types._
@@ -123,6 +124,49 @@ object H2OSchemaUtils {
     expandedSchema
   }
 
+  /** Returns array for all expanded elements with values true/false based on the fact whether the value is sparse
+    * vector or not
+    *  - schema is represented as list of types
+    *  - all arrays are expanded into columns based on the longest one
+    *  - all vectors are expanded into columns based on the longest one
+    *
+    * @param sc            Spark context
+    * @param flatDataFrame flat data frame
+    * @param elemMaxSizes  max sizes of each element in the dataframe
+    * @return list of types with their positions
+    */
+  def collectSparseInfo(sc: SparkContext, flatDataFrame: DataFrame, elemMaxSizes: Array[Int]): Array[Boolean] = {
+
+    val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
+    val sparseInfoForVec = {
+      if (flatDataFrame.isEmpty) {
+        vectorIndices.zip(Array.fill(vectorIndices.length)(false)).toMap
+      } else {
+        val head = flatDataFrame.head()
+        val sparseOrNot = vectorIndices.map { idx =>
+          head.getAs[org.apache.spark.mllib.linalg.Vector](idx).isInstanceOf[SparseVector]
+        }
+        vectorIndices.zip(sparseOrNot).toMap
+      }
+    }
+    
+
+    flatDataFrame.schema.fields.zipWithIndex.flatMap { case (field, idx) =>
+
+      field.dataType match {
+        case ArrayType(_, _) =>
+          Array.fill(elemMaxSizes(idx))(false).toSeq // not a vector, we do not want do sparse
+        case BinaryType =>
+          Array.fill(elemMaxSizes(idx))(false).toSeq // not a vector, we do not want do sparse
+        case t if t.isInstanceOf[UserDefinedType[_]] =>
+          // t.isInstanceOf[UserDefinedType[mllib.linalg.Vector]]
+          Array.fill(elemMaxSizes(idx))(sparseInfoForVec(idx)).toSeq
+        case _ => Seq(false) // not a vector, we do not want do sparse
+      }
+    }
+  }
+
+
   def expandWithoutVectors(sc: SparkContext, flatSchema: StructType, elemMaxSizes: Array[Int]): Seq[StructField] = {
     val expandedSchema = flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
@@ -147,9 +191,9 @@ object H2OSchemaUtils {
   def collectElemStartPositions(maxElemSizes: Array[Int]): Array[Int] = {
     // empty array filled with zeros
     val startPositions = Array.ofDim[Int](maxElemSizes.length)
-    if(maxElemSizes.length == 0){
+    if (maxElemSizes.length == 0) {
       startPositions
-    }else {
+    } else {
       startPositions(0) = 0
       (1 until maxElemSizes.length).foreach { idx =>
         startPositions(idx) = startPositions(idx - 1) + maxElemSizes(idx - 1)

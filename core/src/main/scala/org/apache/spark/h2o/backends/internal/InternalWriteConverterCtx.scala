@@ -20,7 +20,6 @@ package org.apache.spark.h2o.backends.internal
 import java.sql.{Date, Timestamp}
 
 import org.apache.spark.h2o.converters.WriteConverterCtx
-import org.apache.spark.mllib
 import org.apache.spark.mllib.linalg.{DenseVector, SparseVector}
 import water.fvec.{FrameUtils, NewChunk}
 
@@ -33,8 +32,9 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
 
   private var rowIdx: Int = _
 
-  override def createChunks(keyName: String, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int], vecStartSize: Map[Int, Int]): Unit = {
-    chunks = FrameUtils.createNewChunks(keyName, expectedTypes, chunkId)
+  override def createChunks(keyName: String, expectedTypes: Array[Byte], chunkId: Int,
+                            maxVecSizes: Array[Int], sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
+    chunks = FrameUtils.createNewChunks(keyName, expectedTypes, chunkId, sparse)
     sparseVectorPts = collection.mutable.Map(vecStartSize.mapValues(size => new Array[Int](size)).toSeq: _*)
     sparseVectorInUse = collection.mutable.Map(vecStartSize.mapValues(_ => false).toSeq: _*)
   }
@@ -55,17 +55,28 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
     FrameUtils.closeNewChunks(chunks)
   }
 
-  override def put(columnNum: Int, data: Boolean): Unit =  chunks(columnNum).addNum(if (data) 1 else 0)
+  override def put(columnNum: Int, data: Boolean): Unit = chunks(columnNum).addNum(if (data) 1 else 0)
+
   override def put(columnNum: Int, data: Byte): Unit = chunks(columnNum).addNum(data)
+
   override def put(columnNum: Int, data: Char): Unit = chunks(columnNum).addNum(data)
+
   override def put(columnNum: Int, data: Short): Unit = chunks(columnNum).addNum(data)
+
   override def put(columnNum: Int, data: Int): Unit = chunks(columnNum).addNum(data)
+
   override def put(columnNum: Int, data: Long): Unit = chunks(columnNum).addNum(data)
+
   override def put(columnNum: Int, data: Float): Unit = chunks(columnNum).addNum(data)
+
   override def put(columnNum: Int, data: Double): Unit = chunks(columnNum).addNum(data)
+
   override def put(columnNum: Int, data: Timestamp): Unit = chunks(columnNum).addNum(data.getTime)
+
   override def put(columnNum: Int, data: Date): Unit = chunks(columnNum).addNum(data.getTime)
+
   override def put(columnNum: Int, data: String): Unit = chunks(columnNum).addStr(data)
+
   override def putNA(columnNum: Int): Unit = chunks(columnNum).addNA()
 
   override def numOfRows(): Int = chunks(0).len()
@@ -91,11 +102,12 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
   override def startRow(rowIdx: Int): Unit = {
     this.rowIdx = rowIdx
   }
+
   override def finishRow(): Unit = {}
 
   override def putDenseVector(startIdx: Int, vector: DenseVector, maxVecSize: Int): Unit = {
-    (0 until vector.size).foreach{ idx => put(startIdx + idx, vector(idx))}
+    (0 until vector.size).foreach { idx => put(startIdx + idx, vector(idx)) }
 
-    (vector.size until maxVecSize).foreach( idx => put(startIdx + idx, 0.0))
+    (vector.size until maxVecSize).foreach(idx => put(startIdx + idx, 0.0))
   }
 }
