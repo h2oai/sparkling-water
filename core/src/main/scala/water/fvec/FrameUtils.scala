@@ -41,6 +41,9 @@ trait FrameUtils {
   def createNewChunks(name: String, vecTypes: Array[Byte], cidx: Int): Array[NewChunk] =
     Frame.createNewChunks(name, vecTypes, cidx)
 
+  def createNewChunks(name: String, vecTypes: Array[Byte], cidx: Int, sparse: Array[Boolean]) =
+    Frame.createNewChunks(name, vecTypes, cidx, sparse)
+
   /** @see Frame#closeNewChunks */
   def closeNewChunks(nchks: Array[NewChunk]): Unit = Frame.closeNewChunks(nchks)
 

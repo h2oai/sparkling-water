@@ -23,9 +23,9 @@ import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, ReflectionUtils}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types.{BinaryType, BooleanType, ByteType, DateType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType, _}
-import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
+import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row}
 import org.apache.spark.{mllib, _}
-import water.{H2O, Key}
+import water.Key
 import water.fvec.{Frame, H2OFrame}
 
 
@@ -60,7 +60,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     val elemMaxSizes = collectMaxElementSizes(hc.sparkContext, flatDataFrame)
     val elemStartIndices = collectElemStartPositions(elemMaxSizes)
     val vecIndices = collectVectorLikeTypes(flatDataFrame.schema).toArray
-
+    val sparseInfo = collectSparseInfo(hc.sparkContext, flatDataFrame, elemMaxSizes)
     // Expands RDD's schema ( Arrays and Vectors)
     val flatRddSchema = expandedSchema(hc.sparkContext, flatDataFrame.schema, elemMaxSizes)
     // Patch the flat schema based on information about types
@@ -79,24 +79,25 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     }
 
     WriteConverterCtxUtils.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)),
-      perSQLPartition(elemMaxSizes, elemStartIndices, vecIndices))
+      sparse = sparseInfo, perSQLPartition(elemMaxSizes, elemStartIndices, vecIndices))
   }
 
   /**
     *
-    * @param keyName        key of the frame
-    * @param expectedTypes  expected types of H2O vectors after the corresponding data are converted from Spark
-    * @param elemMaxSizes   array containing max size of each element in the dataframe
+    * @param keyName          key of the frame
+    * @param expectedTypes    expected types of H2O vectors after the corresponding data are converted from Spark
+    * @param elemMaxSizes     array containing max size of each element in the dataframe
     * @param elemStartIndices array containing positions in h2o frame corresponding to spark frame
-    * @param uploadPlan     plan which assigns each partition h2o node where the data from that partition will be uploaded
-    * @param context        spark task context
-    * @param it             iterator over data in the partition
+    * @param uploadPlan       plan which assigns each partition h2o node where the data from that partition will be uploaded
+    * @param sparse           identifies which columns are sparse
+    * @param context          spark task context
+    * @param it               iterator over data in the partition
     * @return pair (partition ID, number of rows in this partition)
     */
   private[this]
   def perSQLPartition(elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
                      (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
-                      writeTimeout: Int, driverTimeStamp: Short)
+                      writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean])
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
 
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
@@ -106,7 +107,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))
     }).toMap
     // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunks(keyName, expectedTypes, context.partitionId(), vecIndices.map(elemMaxSizes(_)), vecStartSize)
+    con.createChunks(keyName, expectedTypes, context.partitionId(), vecIndices.map(elemMaxSizes(_)), sparse, vecStartSize)
 
     var localRowIdx = 0
     iterator.foreach { row =>
