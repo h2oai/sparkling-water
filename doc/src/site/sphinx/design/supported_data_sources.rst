@@ -9,3 +9,5 @@ Currently, Sparkling Water can use the following data source types:
   - local file(s)
   - HDFS file(s)
   - S3 file(s)
+  - Amazon S3
+  - Google Cloud Storage(GCS)   
