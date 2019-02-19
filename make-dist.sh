@@ -67,7 +67,7 @@ SCALADOC_DST_DIR="$DIST_BUILD_DIR/scaladoc/"
 USERDOC_SRC_DIR="$TOPDIR/doc/build/site/"
 USERDOC_DST_DIR="$DIST_BUILD_DIR/doc/"
 
-# Source and destination folders for deployement templates
+# Source and destination folders for deployment templates
 TEMPLATES_SRC_DIR="$TOPDIR/templates/build/"
 TEMPLATES_DST_DIR="$DIST_BUILD_DIR/templates/"
 
