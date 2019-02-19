@@ -139,7 +139,7 @@ object H2OSchemaUtils {
 
     val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
     val sparseInfoForVec = {
-      if (flatDataFrame.isEmpty) {
+      if (flatDataFrame.rdd.isEmpty()) {
         vectorIndices.zip(Array.fill(vectorIndices.length)(false)).toMap
       } else {
         val head = flatDataFrame.head()
