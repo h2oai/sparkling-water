@@ -32,7 +32,7 @@ import scala.collection.{immutable, mutable}
 object WriteConverterCtxUtils {
 
   type SparkJob[T] = (TaskContext, Iterator[T]) => (Int, Long)
-  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int, Short) => SparkJob[T]
+  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int, Short, Array[Boolean]) => SparkJob[T]
   type UploadPlan = immutable.Map[Int, NodeDesc]
 
   def create(uploadPlan: Option[UploadPlan],
@@ -63,6 +63,7 @@ object WriteConverterCtxUtils {
     * @param keyName       key of the resulting frame
     * @param colNames      names of the columns in the H2O Frame
     * @param expectedTypes expected types of the vectors in the H2O Frame
+    * @param sparse        if at least one column in the dataset is sparse
     * @param func          conversion function - the function takes parameters needed extra by specific transformations
     *                      and returns function which does the general transformation
     * @tparam T type of RDD to convert
@@ -70,7 +71,7 @@ object WriteConverterCtxUtils {
     */
 
   def convert[T](hc: H2OContext, rdd: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
-                 maxVecSizes: Array[Int], func: ConversionFunction[T]) = {
+                 maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]) = {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, colNames)
 
@@ -81,7 +82,7 @@ object WriteConverterCtxUtils {
       None
     }
 
-    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout, H2O.SELF.getTimestamp())
+    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout, H2O.SELF.getTimestamp(), sparse)
 
     val rows = hc.sparkContext.runJob(rdd, operation) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
