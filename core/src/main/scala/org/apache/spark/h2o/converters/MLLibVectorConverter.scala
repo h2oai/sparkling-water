@@ -20,6 +20,7 @@ package org.apache.spark.h2o.converters
 import org.apache.spark.h2o._
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.internal.Logging
+import org.apache.spark.mllib.linalg.SparseVector
 import org.apache.spark.{TaskContext, mllib}
 import water.fvec.{H2OFrame, Vec}
 import water.{ExternalFrameUtils, Key}
@@ -54,7 +55,11 @@ private[converters] object MLLibVectorConverter extends Logging {
       Array(ExternalFrameUtils.EXPECTED_VECTOR)
     }
 
-    WriteConverterCtxUtils.convert[mllib.linalg.Vector](hc, rdd, keyName, fnames, expectedTypes, Array(maxNumFeatures), perMLlibVectorPartition(maxNumFeatures))
+    val sparseExist = !rdd.filter( v => v.isInstanceOf[SparseVector]).isEmpty()
+    val sparse = Array.fill[Boolean](expectedTypes.length)(sparseExist)
+
+    WriteConverterCtxUtils.convert[mllib.linalg.Vector](hc, rdd, keyName, fnames, expectedTypes,
+      Array(maxNumFeatures), sparse = sparse, perMLlibVectorPartition(maxNumFeatures))
   }
 
 
@@ -71,12 +76,12 @@ private[converters] object MLLibVectorConverter extends Logging {
   private[this]
   def perMLlibVectorPartition(maxNumFeatures: Int)
                              (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
-                              writeTimeout: Int, driverTimeStamp: Short)
+                              writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean])
                              (context: TaskContext, it: Iterator[mllib.linalg.Vector]): (Int, Long) = {
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout, driverTimeStamp)
     // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunks(keyName, expectedTypes, context.partitionId(), Array(maxNumFeatures), Map(0 -> maxNumFeatures))
+    con.createChunks(keyName, expectedTypes, context.partitionId(), Array(maxNumFeatures), sparse, Map(0 -> maxNumFeatures))
 
     var localRowIdx = 0
     iterator.foreach { vec =>

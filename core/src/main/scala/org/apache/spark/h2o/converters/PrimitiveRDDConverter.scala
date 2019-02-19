@@ -47,7 +47,7 @@ private[converters] object PrimitiveRDDConverter extends Logging {
       ExternalBackendUtils.prepareExpectedTypes(Array[Class[_]](clazz))
     }
 
-    WriteConverterCtxUtils.convert[T](hc, rdd, keyName, fnames, expectedTypes, Array.empty[Int], perPrimitiveRDDPartition())
+    WriteConverterCtxUtils.convert[T](hc, rdd, keyName, fnames, expectedTypes, Array.empty[Int], sparse = Array[Boolean](false), perPrimitiveRDDPartition())
   }
 
 
@@ -65,13 +65,13 @@ private[converters] object PrimitiveRDDConverter extends Logging {
   private[this]
   def perPrimitiveRDDPartition[T]() // extra arguments for this transformation
                                  (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
-                                  writeTimeout: Int, driverTimeStamp: Short) // general arguments
+                                  writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean]) // general arguments
                                  (context: TaskContext, it: Iterator[T]): (Int, Long) = { // arguments and return types needed for spark's runJob input
 
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout, driverTimeStamp)
 
-    con.createChunks(keyName, expectedTypes, context.partitionId(), Array.empty[Int])
+    con.createChunks(keyName, expectedTypes, context.partitionId(), Array.empty[Int], sparse)
     iterator.foreach {
       con.putAnySupportedType(0, _)
     }
