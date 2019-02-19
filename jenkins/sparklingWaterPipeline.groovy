@@ -108,7 +108,11 @@ def prepareSparkEnvironment() {
                     cp -r ./dist/ ${env.SPARK_HOME}
                     """
                 } else {
-                    if (config.sparkVersion == "2.3.2"){
+                    if (config.sparkVersion == "2.3.3"){
+                        sh  """
+                            cp -R \${SPARK_HOME_2_3_3} ${env.SPARK_HOME}
+                            """
+                    } else if (config.sparkVersion == "2.3.2"){
                         sh  """
                             cp -R \${SPARK_HOME_2_3_2} ${env.SPARK_HOME}
                             """
