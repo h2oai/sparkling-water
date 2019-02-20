@@ -13,7 +13,7 @@ release.
 
 We provide 3 templates:
 
- - ``network`` module (``/templates/build/terraform/aws/network``). This module is used to set up network infrastructure on your AWS.
+ - ``network`` module (``/templates/build/terraform/aws/modules/network``). This module is used to set up network infrastructure on your AWS.
    It sets up VPC, internet gateway, subnet, routing tables and default DHCP settings.
    This module accepts the following arguments:
 
@@ -24,7 +24,7 @@ We provide 3 templates:
    - ``aws_vpc_cidr_block`` (optional) - VPC CIDR block. Defaults to ``10.0.0.0/16``
    - ``aws_subnet_cidr_block`` (optional) - VPC subnet CIDR block. Defaults to ``10.0.0.0/24``
 
- - ``emr`` module  (``/templates/build/terraform/aws/emr``). This module is used to start EMR cluster on already existing AWS network infrastructure.
+ - ``emr`` module  (``/templates/build/terraform/aws/modules/emr``). This module is used to start EMR cluster on already existing AWS network infrastructure.
   It sets up right roles, instance profiles, security groups and starts EMR with correct dependencies to run Sparkling
   Water.
   This module accepts the following arguments:
