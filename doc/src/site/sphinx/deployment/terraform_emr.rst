@@ -57,7 +57,7 @@ Sparkling Water provide 3 templates/modules:
 We provide these 3 templates as we realize some users already have some network infrastructure on their
 AWS clusters available, and they don't want to use a template that creates it again.
 
-To start any template you want, please run the following in the corresponding **/templates/build/terraform/aws/modules/** directory:
+To start any template you want, please run the following in the corresponding module directory:
 
 .. code:: bash
 
