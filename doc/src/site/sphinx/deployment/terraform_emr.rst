@@ -1,17 +1,17 @@
-Start Sparkling Water on Amazon EMR using our Terraform template
+Start Sparkling Water on Amazon EMR using our Terraform Template
 ----------------------------------------------------------------
 
 Sparkling Water comes with the pre-defined Terraform templates which can be used to
 deploy Sparkling Water to Amazon EMR.
 
 Before we start, we need to have Terraform installed on our machine.
-If you are not familiar with Terraform, we suggest reading `Terraform documentation https://www.terraform.io/intro/index.html`__.
+If you are not familiar with Terraform, we suggest reading `Terraform documentation <https://www.terraform.io/intro/index.html>`__.
 
 The Terraform scripts for EMR are available in the release distribution at
-``/templates/build/terraform/aws`` directory or on-line in S3 as part of each Sparkling Water
+``templates/build/terraform/aws`` directory or on-line in S3 as part of each Sparkling Water
 release.
 
-All together, we provide 3 templates:
+We provide 3 templates:
 
  - ``network`` module (``/templates/build/terraform/aws/network``). This module is used to set up network infrastructure on your AWS.
    It sets up VPC, internet gateway, subnet, routing tables and default DHCP settings.
@@ -65,4 +65,6 @@ To start any template you want, please run
     terraform init
     terraform apply
 
-in the corresponding template directory.
+in the corresponding template directory. You will be asked for mandatory variables. Please see
+`Terraform documentation <https://www.terraform.io/intro/index.html>`__ for more information how to set up
+variables.
