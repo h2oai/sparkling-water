@@ -77,7 +77,7 @@ If you would like to connect to the master machine via SSH, please run:
 
 .. code:: bash
 
-    ssh -i path/to/private.key public_master_dns
+    ssh -i path/to/private.key hadoop@public_master_dns
 
 where ``private.key`` is the private key for the public key we specified as an input and ``public_master_dns``
 is public DNS name of the master node. This dns name is printed as output after ``terraform apply`` finishes.
