@@ -57,18 +57,18 @@ rsparkling.Rproj
 templates/src/terraform/aws/.terraform/
 templates/src/terraform/aws/.terraform.tfstate.lock.info
 templates/src/terraform/aws/terraform.tfstate
-templates/src/terraform/aws/main.auto.tfvars
+templates/src/terraform/aws/*.tfvars
 templates/src/terraform/aws/terraform.tfstate.backup
 
 
 templates/src/terraform/aws/modules/emr/.terraform/
 templates/src/terraform/aws/modules/emr/.terraform.tfstate.lock.info
 templates/src/terraform/aws/modules/emr/terraform.tfstate
-templates/src/terraform/aws/modules/emr/main.auto.tfvars
+templates/src/terraform/aws/modules/emr/*.tfvars
 templates/src/terraform/aws/modules/emr/terraform.tfstate.backup
 
 templates/src/terraform/aws/modules/network/.terraform/
 templates/src/terraform/aws/modules/network/.terraform.tfstate.lock.info
 templates/src/terraform/aws/modules/network/terraform.tfstate
-templates/src/terraform/aws/modules/network/main.auto.tfvars
+templates/src/terraform/aws/modules/network/*.tfvars
 templates/src/terraform/aws/modules/network/terraform.tfstate.backup

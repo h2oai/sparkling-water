@@ -15,6 +15,11 @@ data "aws_subnet" "main" {
   id = "${var.aws_subnet_id}"
 }
 
+resource "aws_key_pair" "key" {
+  public_key = "ssh-rsa ${var.aws_ssh_public_key}"
+}
+
+
 resource "aws_emr_cluster" "sparkling-water-cluster" {
   name = "Sparkling-Water"
   release_label = "${var.aws_emr_version}"
@@ -24,6 +29,7 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
 
   ec2_attributes {
     subnet_id = "${data.aws_subnet.main.id}"
+    key_name = "${aws_key_pair.key.key_name}"
     emr_managed_master_security_group = "${aws_security_group.slave.id}"
     emr_managed_slave_security_group = "${aws_security_group.master.id}"
     instance_profile = "${aws_iam_instance_profile.emr_ec2_instance_profile.arn}"
