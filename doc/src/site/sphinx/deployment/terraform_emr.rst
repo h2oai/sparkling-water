@@ -30,6 +30,7 @@ Sparkling Water provide 3 templates/modules:
 
    - ``aws_access_key`` (mandatory) - access key to access AWS
    - ``aws_secret_key`` (mandatory) - secret key to access AWS
+   - ``aws_ssh_public_key`` (mandatory) - public key (to be able to access EC2 instances via ssh later)
    - ``aws_vpc_id`` (mandatory) - ID of existing VPC
    - ``aws_subnet_id`` (mandatory) - ID of existing VPC subnet
    - ``aws_region`` (optional) - AWS region. Defaults to ``us-east-1``.
@@ -46,6 +47,7 @@ Sparkling Water provide 3 templates/modules:
 
    - ``aws_access_key`` (mandatory) - access key to access AWS
    - ``aws_secret_key`` (mandatory) - secret key to access AWS
+   - ``aws_ssh_public_key`` (mandatory) - public key (to be able to access EC2 instances via ssh later)
    - ``aws_region`` (optional) - AWS region. Defaults to ``us-east-1``.
    - ``aws_emr_version`` (optional) - EMR version. Defaults to ``emr-2.20.0``.
    - ``aws_core_instance_count`` (optional) - Number of worker nodes. Defaults to ``2``.
@@ -57,6 +59,9 @@ Sparkling Water provide 3 templates/modules:
 We provide these 3 templates as we realize some users already have some network infrastructure on their
 AWS clusters available, and they don't want to use a template that creates it again.
 
+You can see that one of the mandatory arguments is a public key. This public key is associated with
+EC2 machines so you can actually log in via ssh. You can create yourself a key-pair using ``ssh-keygen -t rsa`` tool.
+
 To start any template you want, please run the following in the corresponding module directory:
 
 .. code:: bash
@@ -67,3 +72,15 @@ To start any template you want, please run the following in the corresponding mo
 You will be asked to provide mandatory variables. Please see
 `Terraform documentation <https://www.terraform.io/intro/index.html>`__ for more information how to set up
 variables.
+
+If you would like to connect to the master machine via SSH, please run:
+
+.. code:: bash
+
+    ssh -i path/to/private.key public_master_dns
+
+where ``private.key`` is the private key for the public key we specified as an input and ``public_master_dns``
+is public DNS name of the master node. This dns name is printed as output after ``terraform apply`` finishes.
+
+
+
