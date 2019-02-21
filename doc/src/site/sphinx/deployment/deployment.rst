@@ -16,6 +16,7 @@ Deployment
 
    aws_emr
    aws_emr_edge_node
+   terraform_emr
 
 **Databricks**
 
