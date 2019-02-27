@@ -145,6 +145,7 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
       sprintf("ai.h2o:sparkling-water-ml_%s:%s", scala_version, sw_version),
       sprintf("ai.h2o:sparkling-water-repl_%s:%s", scala_version, sw_version),
       sprintf("no.priv.garshol.duke:duke:1.2")
+      sprintf("net.sourceforge.f2j:arpack_combined_all:0.1")
     ))
   }
 }
