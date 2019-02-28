@@ -240,8 +240,22 @@ class ScriptPipelineHamOrSpamXGBoost extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  test("Ham or Spam DeepLearning Pipeline") {
+  test("Ham or Spam XGBoost Pipeline") {
     HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "xgboost")
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class ScriptPipelineHamOrSpamGridSearch extends ScriptsTestHelper {
+  override protected def beforeAll(): Unit = {
+    sparkConf = defaultConf.setMaster("local[*]")
+      .set("spark.driver.memory", "2G")
+      .set("spark.executor.memory", "2G")
+    super.beforeAll()
+  }
+
+  test("Ham or Spam Grid Search Pipeline") {
+    HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "grid_gbm")
   }
 }
 
