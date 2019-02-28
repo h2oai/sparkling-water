@@ -10,12 +10,19 @@ Add the data to Spark:
 
 .. code:: scala
 
+    import org.apache.spark.SparkFiles
+    import water.support.SparkContextSupport
     SparkContextSupport.addFiles(sc, "/path/to/smsData.txt")
 
 
 Prepare the method for loading the data:
 
 .. code:: scala
+
+    import org.apache.spark.sql.types.{StringType, StructField, StructType}
+    import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+
+    implicit val sqlContext = spark.sqlContext
 
     def load(dataFile: String)(implicit sqlContext: SQLContext): DataFrame = {
       val smsSchema = StructType(Array(
@@ -32,7 +39,6 @@ Make sure ``H2OContext`` is available:
 
     import org.apache.spark.h2o._
     implicit val h2oContext = H2OContext.getOrCreate(spark)
-    implicit val sqlContext = spark.sqlContext
 
 
 Define the Pipeline Stages
@@ -98,13 +104,16 @@ We can also set regular arguments using the ``setParameters`` call. In this case
 
 .. code:: scala
 
+    import scala.collection.mutable.HashMap
+    import org.apache.spark.ml.h2o.algos.{H2OGBM, H2OGridSearch}
+
     val hyperParams: HashMap[String, Array[AnyRef]] = HashMap()
     hyperParams += ("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
 
     val grid = new H2OGridSearch().
       setPredictionCol("label").
       setHyperParameters(hyperParams).
-      setParameters(new H2OGBM().setMaxDepth(30))
+      setParameters(new H2OGBM().setMaxDepth(30).getParams())
 
 Remove Temporary Columns
 ########################

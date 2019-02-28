@@ -19,6 +19,8 @@ package org.apache.spark.ml.h2o.algos
 import java.io._
 
 import hex.Model
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.glm.GLMModel.GLMParameters
 import hex.grid.{Grid, GridSearch}
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.hadoop.fs.Path
@@ -26,16 +28,13 @@ import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
-import org.apache.spark.ml.h2o.param.NullableStringParam
+import org.apache.spark.ml.h2o.param.{HyperParamsParam, NullableStringParam, ParametersParam}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, SQLContext}
-import org.json4s.JsonAST.{JArray, JInt}
-import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import org.json4s.{JNull, JValue}
+import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
-import water.{AutoBuffer, Key}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -55,6 +54,8 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   // Currently, we support only GBM in grid search, we can safely return H2OMojoModel
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val params = gridSearchParams.map(_.getParameters()).getOrElse(getParameters())
+    validateInput(params)
+
     val hyperParams = gridSearchParams.map(_.getHyperParameters()).getOrElse(getHyperParameters())
     val input = hc.asH2OFrame(dataset.toDF())
     // check if we need to do any splitting
@@ -93,6 +94,36 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     model
   }
 
+  private def validateInput(params: Model.Parameters): Unit ={
+    if (getAlgo() == null) {
+      throw new IllegalArgumentException(s"Algorithm has to be specified. Available algorithms are " +
+        s"${H2OGridSearch.SupportedAlgos.allAsString}")
+    }
+    if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(getAlgo())) {
+      throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '${getAlgo()}'. Supported " +
+        s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
+    }
+    H2OGridSearch.SupportedAlgos.fromString(getAlgo()).get match {
+      case H2OGridSearch.SupportedAlgos.deeplearning => if(!params.isInstanceOf[DeepLearningParameters]) {
+        throw new IllegalArgumentException(s"You specified algorithm '${getAlgo()}', but specified parameters for different algorithm." +
+          s" Please make sure to use DeepLearningParameters")
+      }
+      case H2OGridSearch.SupportedAlgos.glm => if(!params.isInstanceOf[GLMParameters]) {
+        throw new IllegalArgumentException(s"You specified algorithm '${getAlgo()}', but specified parameters for different algorithm." +
+          s" Please make sure to use GLMParameters")
+      }
+      case H2OGridSearch.SupportedAlgos.gbm => if(!params.isInstanceOf[GBMParameters]) {
+        throw new IllegalArgumentException(s"You specified algorithm '${getAlgo()}', but specified parameters for different algorithm." +
+          s" Please make sure to use GBMParameters")
+      }
+    }
+
+    if (params == null) {
+      throw new IllegalArgumentException("Parameters for the Grid Search job have to be specified")
+    }
+
+  }
+
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
     schema
@@ -100,7 +131,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
 
   private var modelSelectionClosure: Option[Grid[_] => Model[_, _, _]] = None
 
-  def setModelSelectionClosure(cl: (Grid[_]) => Model[_, _, _]) = {
+  def setModelSelectionClosure(cl: Grid[_] => Model[_, _, _]) = {
     modelSelectionClosure = Some(cl)
   }
 
@@ -114,6 +145,16 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
 
 
 object H2OGridSearch extends MLReadable[H2OGridSearch] {
+
+  object SupportedAlgos extends Enumeration {
+    val gbm, glm, deeplearning = Value // still missing pipeline wrappers for KMeans & drf
+
+    def isSupportedAlgo(s: String) = values.exists(_.toString == s.toLowerCase())
+
+    def allAsString = values.mkString(", ")
+
+    def fromString(value: String) = values.find(_.toString == value)
+  }
 
   private final val defaultFileName = "gridsearch_params"
 
@@ -148,7 +189,7 @@ private[algos] class H2OGridSearchReader(val defaultFileName: String) extends ML
   override def load(path: String): H2OGridSearch = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
 
-    val inputPath =  new Path(path, defaultFileName)
+    val inputPath = new Path(path, defaultFileName)
     val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val ois = new ObjectInputStream(fs.open(qualifiedInputPath))
@@ -162,13 +203,15 @@ private[algos] class H2OGridSearchReader(val defaultFileName: String) extends ML
 }
 
 trait H2OGridSearchParams extends Params {
+  private final val parametersGLM = new ParametersParam[GLMParameters](this, "parametersGLM", "Parameters for the GLM algorithm")
+  private final val parametersGBM = new ParametersParam[GBMParameters](this, "parametersGBM", "Parameters for the GBM algorithm")
+  private final val parametersDL = new ParametersParam[DeepLearningParameters](this, "parametersDL", "Parameters for the DL algorithm")
 
   //
   // Param definitions
   //
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   private final val algo = new NullableStringParam(this, "algo", "Specifies the algorithm for the GridSearch")
-  private final val parameters = new GBMParametersParam(this, "parameters", "Parameters for the algorithm")
   private final val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
   private final val predictionCol = new NullableStringParam(this, "predictionCol", "Prediction column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
@@ -177,9 +220,11 @@ trait H2OGridSearchParams extends Params {
   // Default values
   //
   setDefault(
+    algo -> null,
     ratio -> 1.0, // 1.0 means use whole frame as training frame
-    algo -> "GBM",
-    parameters -> new GBMParameters(),
+    parametersGBM -> null,
+    parametersDL -> null,
+    parametersGLM -> null,
     hyperParameters -> Map.empty[String, Array[AnyRef]],
     predictionCol -> "prediction",
     allStringColumnsToCategorical -> true,
@@ -196,7 +241,9 @@ trait H2OGridSearchParams extends Params {
   def getAlgo() = $(algo)
 
   /** @group getParam */
-  def getParameters() = $(parameters)
+  def getParameters() = {
+    Seq($(parametersGLM), $(parametersGBM), $(parametersDL)).find(_ != null).get
+  }
 
   /** @group getParam */
   def getHyperParameters() = $(hyperParameters)
@@ -217,13 +264,39 @@ trait H2OGridSearchParams extends Params {
   def setRatio(value: Double): this.type = set(ratio, value)
 
   /** @group setParam */
-  def setAlgo(value: String): this.type = set(algo, value)
+  def setAlgo(value: String): this.type = {
+    if (value == null) {
+      throw new IllegalArgumentException(s"Algorithm value can't be null. " +
+        s"Supported algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
+    }
+
+    if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(value)) {
+      throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '$value'. Supported " +
+        s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
+    }
+    set(algo, value)
+  }
 
   /** @group setParam */
-  def setParameters(value: GBMParameters): this.type = set(parameters, value)
+  def setParameters[P <: Model.Parameters](value: P)(implicit tag: ClassTag[P]): this.type = {
+    value match {
+      case _: GLMParameters =>
+        set(parametersGBM, null)
+        set(parametersDL, null)
+        set(parametersGLM, value.asInstanceOf[GLMParameters])
+      case _: GBMParameters =>
+        set(parametersGLM, null)
+        set(parametersDL, null)
+        set(parametersGBM, value.asInstanceOf[GBMParameters])
+      case _: DeepLearningParameters =>
+        set(parametersGBM, null)
+        set(parametersGLM, null)
+        set(parametersDL, value.asInstanceOf[DeepLearningParameters])
+      case _ => throw new IllegalArgumentException("Grid Search is not supported for the specified algorithm. Supported" +
+        s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
+    }
+  }
 
-  /** @group setParam */
-  def setParameters(value: H2OGBM): this.type = set(parameters, value.getParams)
 
   /** @group getParam */
   def setHyperParameters(value: Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
@@ -231,95 +304,17 @@ trait H2OGridSearchParams extends Params {
   /** @group getParam */
   def setHyperParameters(value: mutable.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.toMap)
 
-      /** @group setParam */
+  /** @group setParam */
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   /** @group setParam */
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
 
   /** @group setParam */
-  def setColumnsToCategorical(first: String, others: String*): this.type  = set(columnsToCategorical, Array(first) ++ others)
+  def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
 
   /** @group setParam */
-  def setColumnsToCategorical(columns: Array[String]): this.type  = set(columnsToCategorical, columns)
+  def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
 }
 
-class HyperParamsParam(parent: Params, name: String, doc: String, isValid: Map[String, Array[AnyRef]] => Boolean)
-  extends Param[Map[String, Array[AnyRef]]](parent, name, doc, isValid) {
 
-  def this(parent: Params, name: String, doc: String) =
-    this(parent, name, doc, _ => true)
-
-  override def jsonEncode(value: Map[String, Array[AnyRef]]): String = {
-    val encoded: JValue = if (value == null) {
-      JNull
-    } else {
-      val ab = new AutoBuffer()
-      ab.put1(value.size)
-      value.foreach{ case (k, v) =>
-        ab.putStr(k)
-        ab.putASer(v)
-      }
-      val bytes = ab.buf()
-      JArray(bytes.toSeq.map(JInt(_)).toList)
-    }
-    compact(render(encoded))
-  }
-
-  override def jsonDecode(json: String): Map[String, Array[AnyRef]] = {
-    parse(json) match {
-      case JNull =>
-        null
-      case JArray(values) =>
-        val bytes = values.map {
-          case JInt(x) =>
-            x.byteValue()
-          case _ =>
-            throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
-        }.toArray
-        val ab = new AutoBuffer(bytes)
-        val numParams = ab.get1()
-        (0 until numParams).map{ _ => (ab.getStr, ab.getASer[AnyRef](classOf[AnyRef]))}.toMap
-      case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to Map[String, Array[AnyRef]].")
-    }
-  }
-}
-
-class GBMParametersParam(parent: Params, name: String, doc: String, isValid: GBMParameters => Boolean)
-  extends Param[GBMParameters](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) =
-    this(parent, name, doc, _ => true)
-
-  override def jsonEncode(value: GBMParameters): String = {
-    val encoded: JValue = if (value == null) {
-      JNull
-    } else {
-      val ab = new AutoBuffer()
-      value.write(ab)
-      val bytes = ab.buf()
-      JArray(bytes.toSeq.map(JInt(_)).toList)
-    }
-    compact(render(encoded))
-  }
-
-  override def jsonDecode(json: String): GBMParameters = {
-    parse(json) match {
-      case JNull =>
-        null
-      case JArray(values) =>
-        val bytes = values.map {
-          case JInt(x) =>
-            x.byteValue()
-          case _ =>
-            throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
-        }.toArray
-        val params = new GBMParameters()
-        params.read(new AutoBuffer(bytes))
-        params
-      case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to GBMParameters.")
-    }
-  }
-}
