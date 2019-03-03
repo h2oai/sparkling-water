@@ -191,7 +191,7 @@ class H2OContext(object):
 
     def stop(self):
         self.__stop()
-        exit()
+        sys.exit()
 
     def download_h2o_logs(self, destination):
         return self._jhc.h2oContext().downloadH2OLogs(destination)
