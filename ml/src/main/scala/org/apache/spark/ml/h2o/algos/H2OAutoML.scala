@@ -35,6 +35,7 @@ import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
 import scala.reflect.ClassTag
+import scala.util.Random
 
 /**
   * H2O AutoML pipeline step
@@ -53,7 +54,10 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     val spec = automlBuildSpec.getOrElse(new AutoMLBuildSpec)
 
     // override the buildSpec with the configuration specified directly on the estimator
-
+    if( getProjectName() == null){
+      // generate random name to generate fresh leaderboard (the default behaviour)
+      setProjectName(Random.alphanumeric.take(30).toString())
+    }
     val input = hc.asH2OFrame(dataset.toDF())
     // check if we need to do any splitting
     if (getRatio() < 1.0) {
