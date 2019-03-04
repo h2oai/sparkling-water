@@ -94,7 +94,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     model
   }
 
-  private def validateInput(params: Model.Parameters): Unit ={
+  private def validateInput(params: Model.Parameters): Unit = {
     if (getAlgo() == null) {
       throw new IllegalArgumentException(s"Algorithm has to be specified. Available algorithms are " +
         s"${H2OGridSearch.SupportedAlgos.allAsString}")
@@ -104,15 +104,15 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
         s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
     }
     H2OGridSearch.SupportedAlgos.fromString(getAlgo()).get match {
-      case H2OGridSearch.SupportedAlgos.deeplearning => if(!params.isInstanceOf[DeepLearningParameters]) {
+      case H2OGridSearch.SupportedAlgos.deeplearning => if (!params.isInstanceOf[DeepLearningParameters]) {
         throw new IllegalArgumentException(s"You specified algorithm '${getAlgo()}', but specified parameters for different algorithm." +
           s" Please make sure to use DeepLearningParameters")
       }
-      case H2OGridSearch.SupportedAlgos.glm => if(!params.isInstanceOf[GLMParameters]) {
+      case H2OGridSearch.SupportedAlgos.glm => if (!params.isInstanceOf[GLMParameters]) {
         throw new IllegalArgumentException(s"You specified algorithm '${getAlgo()}', but specified parameters for different algorithm." +
           s" Please make sure to use GLMParameters")
       }
-      case H2OGridSearch.SupportedAlgos.gbm => if(!params.isInstanceOf[GBMParameters]) {
+      case H2OGridSearch.SupportedAlgos.gbm => if (!params.isInstanceOf[GBMParameters]) {
         throw new IllegalArgumentException(s"You specified algorithm '${getAlgo()}', but specified parameters for different algorithm." +
           s" Please make sure to use GBMParameters")
       }
