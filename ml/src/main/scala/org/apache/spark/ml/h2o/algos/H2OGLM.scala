@@ -44,11 +44,11 @@ class H2OGLM(parameters: Option[GLMParameters], override val uid: String)
   extends H2OAlgorithm[GLMParameters, H2OMOJOModel](parameters)
     with H2OGLMParams {
 
-  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gbm"))
+  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("glm"))
 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
 
-  def this(parameters: GLMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("gbm"))
+  def this(parameters: GLMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("glm"))
 
   def this(parameters: GLMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
 
