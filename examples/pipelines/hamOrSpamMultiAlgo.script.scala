@@ -112,7 +112,7 @@ val algoStage = algo match {
     new H2OGridSearch().
       setPredictionCol("label").
       setHyperParameters(hyperParams).
-      setParameters(new H2OGBM().setMaxDepth(30).setSeed(1))
+      setParameters(new H2OGBM().setMaxDepth(30).setSeed(1).getParams())
 }
 
 
