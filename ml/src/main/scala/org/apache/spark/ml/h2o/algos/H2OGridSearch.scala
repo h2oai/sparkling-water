@@ -17,18 +17,17 @@
 package org.apache.spark.ml.h2o.algos
 
 import java.io._
+import java.lang.reflect.Field
+import java.util
 
 import hex.Model
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.glm.GLMModel.GLMParameters
 import hex.grid.{Grid, GridSearch}
-import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
-import org.apache.spark.ml.h2o.param.{HyperParamsParam, NullableStringParam, ParametersParam}
+import org.apache.spark.ml.h2o.param.{AlgoParams, HyperParamsParam, NullableStringParam}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.StructType
@@ -51,77 +50,108 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
 
-  // Currently, we support only GBM in grid search, we can safely return H2OMojoModel
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val params = gridSearchParams.map(_.getParameters()).getOrElse(getParameters())
-    validateInput(params)
+    val algoParams = gridSearchParams.map(_.getAlgoParams()).getOrElse(getAlgoParams())
 
-    val hyperParams = gridSearchParams.map(_.getHyperParameters()).getOrElse(getHyperParameters())
+    if (algoParams == null) {
+      throw new IllegalArgumentException(s"Algorithm has to be specified. Available algorithms are " +
+        s"${H2OGridSearch.SupportedAlgos.allAsString}")
+    }
+
+    if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(algoParams.algoName())) {
+      throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '${algoParams.algoName()}'. Supported " +
+        s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
+    }
+
+    val hyperParams = processHyperParams(algoParams, gridSearchParams.map(_.getHyperParameters()).getOrElse(getHyperParameters()))
+
     val input = hc.asH2OFrame(dataset.toDF())
     // check if we need to do any splitting
     if (getRatio() < 1.0) {
       // need to do splitting
       val keys = H2OFrameSupport.split(input, Seq(Key.rand(), Key.rand()), Seq(getRatio()))
-      params._train = keys(0)._key
+      algoParams._train = keys(0)._key
       if (keys.length > 1) {
-        params._valid = keys(1)._key
+        algoParams._valid = keys(1)._key
       }
     } else {
-      params._train = input._key
+      algoParams._train = input._key
     }
 
-    params._response_column = getPredictionCol()
-    val trainFrame = params._train.get()
+    algoParams._response_column = getPredictionCol()
+    val trainFrame = algoParams._train.get()
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(trainFrame)
     }
     H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
     water.DKV.put(trainFrame)
-    val job = GridSearch.startGridSearch(Key.make(), params, hyperParams.asJava)
+    val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams)
     val grid = job.get()
-    if (grid.getModels.length == 0) {
-      throw new IllegalArgumentException("No Model returned.")
-    }
-    val modelFromGrid = if (modelSelectionClosure.isEmpty) {
-      grid.getModels()(0)
-    } else {
-      modelSelectionClosure.get.apply(grid)
-    }
+
     // Block until GridSearch finishes
-    val model = new H2OMOJOModel(ModelSerializationSupport.getMojoData(modelFromGrid))
+    val model = trainModel(grid)
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
   }
 
-  private def validateInput(params: Model.Parameters): Unit = {
-    if (getAlgo() == null) {
-      throw new IllegalArgumentException(s"Algorithm has to be specified. Available algorithms are " +
-        s"${H2OGridSearch.SupportedAlgos.allAsString}")
-    }
-    if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(getAlgo())) {
-      throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '${getAlgo()}'. Supported " +
-        s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
-    }
-    H2OGridSearch.SupportedAlgos.fromString(getAlgo()).get match {
-      case H2OGridSearch.SupportedAlgos.deeplearning => if (!params.isInstanceOf[DeepLearningParameters]) {
-        throw new IllegalArgumentException(s"You specified algorithm '${getAlgo()}', but specified parameters for different algorithm." +
-          s" Please make sure to use DeepLearningParameters")
-      }
-      case H2OGridSearch.SupportedAlgos.glm => if (!params.isInstanceOf[GLMParameters]) {
-        throw new IllegalArgumentException(s"You specified algorithm '${getAlgo()}', but specified parameters for different algorithm." +
-          s" Please make sure to use GLMParameters")
-      }
-      case H2OGridSearch.SupportedAlgos.gbm => if (!params.isInstanceOf[GBMParameters]) {
-        throw new IllegalArgumentException(s"You specified algorithm '${getAlgo()}', but specified parameters for different algorithm." +
-          s" Please make sure to use GBMParameters")
-      }
-    }
+  //noinspection ComparingUnrelatedTypes
+  private def processHyperParams(params: Model.Parameters, hyperParams: java.util.Map[String, Array[AnyRef]]) = {
+    // If we use PySparkling, we don't have information whether the type is long or int and to set the hyper parameters
+    // correctly, we need this information. We therefore check the type of the hyper parameter at run-time and try to set it
 
-    if (params == null) {
-      throw new IllegalArgumentException("Parameters for the Grid Search job have to be specified")
-    }
+    // we only need to worry about distinguishing between int and long
+    val checkedHyperParams = new java.util.HashMap[String, Array[AnyRef]]()
 
+    val it = hyperParams.entrySet().iterator()
+    while (it.hasNext) {
+      val entry = it.next()
+      val hyperParamName = entry.getKey
+
+      val hyperParamValues = if (entry.getValue.isInstanceOf[util.ArrayList[Object]]) {
+        val length = entry.getValue.asInstanceOf[util.ArrayList[_]].size()
+        val arrayList = entry.getValue.asInstanceOf[util.ArrayList[_]]
+        (0 until length).map(idx => arrayList.get(idx).asInstanceOf[AnyRef]).toArray
+      } else {
+        entry.getValue
+      }
+
+      // get automatically box the java primitives so we can work with them
+      val convertedValue = findField(params, hyperParamName).get(params) match {
+        case v if v.isInstanceOf[java.lang.Long] =>
+          hyperParamValues.map {
+            case arrVal: java.lang.Long => arrVal.asInstanceOf[Long].longValue().asInstanceOf[AnyRef]
+            case arrVal: java.lang.Integer => arrVal.asInstanceOf[Integer].longValue().asInstanceOf[AnyRef]
+          }
+        case _ => hyperParamValues
+      }
+
+      checkedHyperParams.put(hyperParamName, convertedValue)
+    }
+    checkedHyperParams
+  }
+
+  private def findField(params: Model.Parameters, hyperParamName: String): Field = {
+    try {
+      params.getClass.getField(hyperParamName)
+    } catch {
+      case _: NoSuchElementException => throw new IllegalArgumentException(s"No such parameter: '$hyperParamName'")
+    }
+  }
+
+  def trainModel(grid: Grid[_]) = {
+    new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)))
+  }
+
+  def selectModelFromGrid(grid: Grid[_]) = {
+    if (grid.getModels.length == 0) {
+      throw new IllegalArgumentException("No Model returned.")
+    }
+    if (modelSelectionClosure.isEmpty) {
+      grid.getModels()(0)
+    } else {
+      modelSelectionClosure.get.apply(grid)
+    }
   }
 
   @DeveloperApi
@@ -153,13 +183,13 @@ object H2OGridSearch extends MLReadable[H2OGridSearch] {
 
     def allAsString = values.mkString(", ")
 
-    def fromString(value: String) = values.find(_.toString == value)
+    def fromString(value: String) = values.find(_.toString == value.toLowerCase())
   }
 
-  private final val defaultFileName = "gridsearch_params"
+  final val defaultFileName = "grid_search_params"
 
   @Since("1.6.0")
-  override def read: MLReader[H2OGridSearch] = new H2OGridSearchReader(defaultFileName)
+  override def read: MLReader[H2OGridSearch] = H2OGridSearchReader.create[H2OGridSearch](defaultFileName)
 
   @Since("1.6.0")
   override def load(path: String): H2OGridSearch = super.load(path)
@@ -170,6 +200,7 @@ private[algos] class H2OGridSearchWriter(instance: H2OGridSearch) extends MLWrit
 
   @Since("1.6.0") override protected def saveImpl(path: String): Unit = {
     val hadoopConf = sc.hadoopConfiguration
+
     DefaultParamsWriter.saveMetadata(instance, path, sc)
     val outputPath = new Path(path, instance.defaultFileName)
     val fs = outputPath.getFileSystem(hadoopConf)
@@ -182,12 +213,10 @@ private[algos] class H2OGridSearchWriter(instance: H2OGridSearch) extends MLWrit
   }
 }
 
-private[algos] class H2OGridSearchReader(val defaultFileName: String) extends MLReader[H2OGridSearch] {
+private[algos] class H2OGridSearchReader[A <: H2OGridSearch : ClassTag](val defaultFileName: String) extends MLReader[A] {
 
-  private val className = implicitly[ClassTag[H2OGridSearch]].runtimeClass.getName
-
-  override def load(path: String): H2OGridSearch = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
+  override def load(path: String): A = {
+    val metadata = DefaultParamsReader.loadMetadata(path, sc)
 
     val inputPath = new Path(path, defaultFileName)
     val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
@@ -196,22 +225,32 @@ private[algos] class H2OGridSearchReader(val defaultFileName: String) extends ML
 
     val gridSearchParams = ois.readObject().asInstanceOf[H2OGridSearchParams]
     implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
-    val algo = new H2OGridSearch(Option(gridSearchParams), metadata.uid)(h2oContext, sqlContext)
+    val algo = make[A](Option(gridSearchParams), metadata.uid, h2oContext, sqlContext)
     metadata.getAndSetParams(algo)
     algo
   }
+
+  private def make[CT: ClassTag]
+  (gridSearchParams: Option[H2OGridSearchParams], uid: String, h2oContext: H2OContext, sqlContext: SQLContext): CT = {
+    val aClass = implicitly[ClassTag[CT]].runtimeClass
+    val ctor = aClass.getConstructor(classOf[Option[H2OGridSearchParams]], classOf[String], classOf[H2OContext], classOf[SQLContext])
+    ctor.newInstance(gridSearchParams, uid, h2oContext, sqlContext).asInstanceOf[CT]
+  }
+}
+
+
+object H2OGridSearchReader {
+  def create[A <: H2OGridSearch : ClassTag](defaultFileName: String) = new H2OGridSearchReader[A](defaultFileName)
 }
 
 trait H2OGridSearchParams extends Params {
-  private final val parametersGLM = new ParametersParam[GLMParameters](this, "parametersGLM", "Parameters for the GLM algorithm")
-  private final val parametersGBM = new ParametersParam[GBMParameters](this, "parametersGBM", "Parameters for the GBM algorithm")
-  private final val parametersDL = new ParametersParam[DeepLearningParameters](this, "parametersDL", "Parameters for the DL algorithm")
+
 
   //
   // Param definitions
   //
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
-  private final val algo = new NullableStringParam(this, "algo", "Specifies the algorithm for the GridSearch")
+  private final val algo = new AlgoParams(this, "algo", "Specifies the algorithm for grid search")
   private final val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
   private final val predictionCol = new NullableStringParam(this, "predictionCol", "Prediction column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
@@ -222,10 +261,7 @@ trait H2OGridSearchParams extends Params {
   setDefault(
     algo -> null,
     ratio -> 1.0, // 1.0 means use whole frame as training frame
-    parametersGBM -> null,
-    parametersDL -> null,
-    parametersGLM -> null,
-    hyperParameters -> Map.empty[String, Array[AnyRef]],
+    hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
     predictionCol -> "prediction",
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String]
@@ -238,12 +274,7 @@ trait H2OGridSearchParams extends Params {
   def getRatio() = $(ratio)
 
   /** @group getParam */
-  def getAlgo() = $(algo)
-
-  /** @group getParam */
-  def getParameters() = {
-    Seq($(parametersGLM), $(parametersGBM), $(parametersDL)).find(_ != null).get
-  }
+  def getAlgoParams() = $(algo)
 
   /** @group getParam */
   def getHyperParameters() = $(hyperParameters)
@@ -264,45 +295,22 @@ trait H2OGridSearchParams extends Params {
   def setRatio(value: Double): this.type = set(ratio, value)
 
   /** @group setParam */
-  def setAlgo(value: String): this.type = {
-    if (value == null) {
-      throw new IllegalArgumentException(s"Algorithm value can't be null. " +
-        s"Supported algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
-    }
-
-    if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(value)) {
+  def setAlgo(value: H2OAlgorithm[_ <: Model.Parameters, _]): this.type = {
+    if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(value.getParams.algoName())) {
       throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '$value'. Supported " +
         s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
     }
-    set(algo, value)
+    set(algo, value.getParams)
   }
 
-  /** @group setParam */
-  def setParameters[P <: Model.Parameters](value: P)(implicit tag: ClassTag[P]): this.type = {
-    value match {
-      case _: GLMParameters =>
-        set(parametersGBM, null)
-        set(parametersDL, null)
-        set(parametersGLM, value.asInstanceOf[GLMParameters])
-      case _: GBMParameters =>
-        set(parametersGLM, null)
-        set(parametersDL, null)
-        set(parametersGBM, value.asInstanceOf[GBMParameters])
-      case _: DeepLearningParameters =>
-        set(parametersGBM, null)
-        set(parametersGLM, null)
-        set(parametersDL, value.asInstanceOf[DeepLearningParameters])
-      case _ => throw new IllegalArgumentException("Grid Search is not supported for the specified algorithm. Supported" +
-        s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
-    }
-  }
-
+  /** @group getParam */
+  def setHyperParameters(value: Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.asJava)
 
   /** @group getParam */
-  def setHyperParameters(value: Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
+  def setHyperParameters(value: mutable.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.toMap.asJava)
 
   /** @group getParam */
-  def setHyperParameters(value: mutable.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.toMap)
+  def setHyperParameters(value: java.util.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
 
   /** @group setParam */
   def setPredictionCol(value: String): this.type = set(predictionCol, value)

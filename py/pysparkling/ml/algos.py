@@ -18,3 +18,6 @@ class H2OXGBoost(py_sparkling.ml.algos.H2OXGBoost):
 
 class H2OGLM(py_sparkling.ml.algos.H2OGLM):
     pass
+
+class H2OGridSearch(py_sparkling.ml.algos.H2OGridSearch):
+    pass

@@ -5,8 +5,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
 from pysparkling import *
-from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams
-from .models import H2OGBMModel, H2ODeepLearningModel, H2OAutoMLModel, H2OXGBoostModel, H2OGLMModel
+from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams
+from .models import H2OGBMModel, H2ODeepLearningModel, H2OAutoMLModel, H2OXGBoostModel, H2OGLMModel, H2OGridSearchModel
 from .util import JavaH2OMLReadable
 java_max_double_value = (2-2**(-52))*(2**1023)
 
@@ -342,3 +342,32 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     def _create_model(self, java_model):
         return H2OGLMModel(java_model)
 
+class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
+    @keyword_only
+    def __init__(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
+                 columnsToCategorical=[]):
+        super(H2OGridSearch, self).__init__()
+        self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
+        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch",
+                                            self.uid,
+                                            self._hc._jhc.h2oContext(),
+                                            self._hc._jsql_context)
+
+        self._setDefault(algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
+                         columnsToCategorical=[])
+        kwargs = self._input_kwargs
+        self.setParams(**kwargs)
+
+    @keyword_only
+    def setParams(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
+                  columnsToCategorical=[]):
+        kwargs = self._input_kwargs
+
+        # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
+        # the whole type is actually int and we get class cast exception
+        double_types = ["ratio"]
+        set_double_values(kwargs, double_types)
+        return self._set(**kwargs)
+
+    def _create_model(self, java_model):
+        return H2OGridSearchModel(java_model)
