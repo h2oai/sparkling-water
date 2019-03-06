@@ -367,6 +367,12 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
         # the whole type is actually int and we get class cast exception
         double_types = ["ratio"]
         set_double_values(kwargs, double_types)
+        if "algo" in kwargs and kwargs["algo"] is not None:
+            tmp = kwargs["algo"]
+            del kwargs['algo']
+            self._java_obj.setAlgo(tmp._java_obj)
+
+
         return self._set(**kwargs)
 
     def _create_model(self, java_model):
