@@ -25,7 +25,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql import Row
 import os
 from pysparkling.ml import H2OMOJOModel
-from py_sparkling.ml.algos import H2OGLM
+from py_sparkling.ml.algos import H2OGLM, H2OGridSearch, H2OGBM
 
 import unit_test_utils
 import generic_test_utils
@@ -108,6 +108,22 @@ class H2OMojoPredictionsTest(unittest.TestCase):
 
         model.write().overwrite().save("file://" + os.path.abspath("build/glm_pipeline_model"))
         loaded_model = PipelineModel.load("file://" + os.path.abspath("build/glm_pipeline_model"))
+
+        loaded_model.transform(prostate_frame).count()
+
+    def test_grid_gbm_in_spark_pipeline(self):
+        prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
+                                              header=True, inferSchema=True)
+
+        algo = H2OGridSearch(predictionCol="AGE", hyperParameters={"_seed": [1,2,3]}, ratio=0.8, algo=H2OGBM())
+
+        pipeline = Pipeline(stages=[algo])
+        pipeline.write().overwrite().save("file://" + os.path.abspath("build/grid_gbm_pipeline"))
+        loaded_pipeline = Pipeline.load("file://" + os.path.abspath("build/grid_gbm_pipeline"))
+        model = loaded_pipeline.fit(prostate_frame)
+
+        model.write().overwrite().save("file://" + os.path.abspath("build/grid_gbm_pipeline_model"))
+        loaded_model = PipelineModel.load("file://" + os.path.abspath("build/grid_gbm_pipeline_model"))
 
         loaded_model.transform(prostate_frame).count()
 

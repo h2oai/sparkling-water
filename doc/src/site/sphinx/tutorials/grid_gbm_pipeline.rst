@@ -100,7 +100,7 @@ Create a Grid Search GBM Model
 
 First, we need to define the hyper parameters. Hyper parameters are stored in the map where key is the name of the parameter and value is an array of possible values.
 
-We can also set regular arguments using the ``setParameters`` call. In this case, we are doing Grid Search on GBM, so we can reuse ``H2OGBM`` for the parameter specification.
+We also need to specify the algorithm on which we want to run Grid Search together with its arguments. For this, we can use ``setAlgo`` method.
 
 .. code:: scala
 
@@ -113,7 +113,7 @@ We can also set regular arguments using the ``setParameters`` call. In this case
     val grid = new H2OGridSearch().
       setPredictionCol("label").
       setHyperParameters(hyperParams).
-      setParameters(new H2OGBM().setMaxDepth(30).getParams())
+      setAlgo(new H2OGBM().setMaxDepth(30))
 
 Remove Temporary Columns
 ########################
