@@ -2,7 +2,7 @@ from pyspark.ml.param import *
 from h2o.utils.typechecks import assert_is_type, Enum
 from pysparkling.context import H2OContext
 from pyspark.sql import SparkSession
-
+from py4j.java_gateway import JavaObject
 
 def get_correct_case_enum(enum_values, enum_single_value):
     for a in enum_values:
@@ -1196,3 +1196,65 @@ class H2OGLMParams(H2OAlgorithmParams):
     def setEarlyStopping(self, value):
         assert_is_type(value, bool)
         return self._set(earlyStopping=value)
+
+class H2OGridSearchParams(Params):
+
+    ##
+    # Param definitions
+    ##
+    algo = Param(Params._dummy(), "algo", "Algo to run grid search on")
+    ratio = Param(Params._dummy(), "ratio", "ratio")
+    hyperParameters = Param(Params._dummy(), "hyperParameters", "Grid Search Hyper Params map")
+    predictionCol = Param(Params._dummy(), "predictionCol", "Prediction col")
+    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "allStringColumnsToCategorical")
+    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "columnsToCategorical")
+
+    ##
+    # Getters
+    ##
+    def getAlgoParams(self):
+        return self._java_obj.getAlgoParams()
+
+    def getRatio(self):
+        return self.getOrDefault(self.ratio)
+
+    def getHyperParameters(self):
+        params = self.getOrDefault(self.hyperParameters)
+        if isinstance(params, JavaObject):
+            keys = [k for k in params.keySet().toArray()]
+            map = {}
+            for k in keys:
+                map[k] = [v for v in params.get(k)]
+            return map
+        else:
+            return params
+
+    def getAllStringColumnsToCategorical(self):
+        return self.getOrDefault(self.allStringColumnsToCategorical)
+
+    def getColumnsToCategorial(self):
+        return self.getOrDefault(self.columnsToCategorical)
+
+    ##
+    # Setters
+    ##
+    def setAlgo(self, value):
+        assert_is_type(value, object)
+        self._java_obj.setAlgo(value._java_obj)
+        return self
+
+    def setRatio(self, value):
+        assert_is_type(value, int, float)
+        return self._set(ratio=value)
+
+    def setHyperParameters(self, value):
+        assert_is_type(value, None, {str : [object]})
+        return self._set(hyperParameters=value)
+
+    def setAllStringColumnsToCategorical(self, value):
+        assert_is_type(value, bool)
+        return self._set(allStringColumnsToCategorical=value)
+
+    def setColumnsToCategorial(self, value):
+        assert_is_type(value, bool)
+        return self._set(columnsToCategorical=value)
