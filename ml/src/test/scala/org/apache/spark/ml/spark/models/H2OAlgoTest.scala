@@ -20,14 +20,14 @@ package org.apache.spark.ml.spark.models
 import hex.Model
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.h2o.algos._
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
 
-import scala.collection.mutable.HashMap
+import scala.collection.mutable
 
 @RunWith(classOf[JUnitRunner])
 class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
@@ -60,38 +60,37 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
 
   test("H2O Grid Search GLM Pipeline"){
     val glm = new H2OGLM()(hc, spark.sqlContext)
-    val hyperParams: HashMap[String, Array[AnyRef]] = HashMap()
+    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
-    testGridSearch("glm", glm, hyperParams)
+    testGridSearch(glm, hyperParams)
   }
 
   test("H2O Grid Search GBM Pipeline"){
     val gbm = new H2OGBM()(hc, spark.sqlContext)
-    val hyperParams: HashMap[String, Array[AnyRef]] = HashMap()
-    hyperParams += ("_ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef]))
+    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
+    hyperParams += ("_ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef]), "_seed" -> Array(1, 2).map(_.asInstanceOf[AnyRef]))
 
-    testGridSearch("gbm", gbm, hyperParams)
+    testGridSearch(gbm, hyperParams)
   }
 
   test("H2O Grid Search DeepLearning Pipeline"){
     val deeplearning = new H2ODeepLearning()(hc, spark.sqlContext)
-    val hyperParams: HashMap[String, Array[AnyRef]] = HashMap()
+    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
-    testGridSearch("deeplearning", deeplearning, hyperParams)
+    testGridSearch(deeplearning, hyperParams)
   }
 
 
-  private def testGridSearch(algoName: String, algo: H2OAlgorithm[_ <: Model.Parameters, _], hyperParams: HashMap[String, Array[AnyRef]]): Unit = {
+  private def testGridSearch(algo: H2OAlgorithm[_ <: Model.Parameters, _], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
       val dataset = spark.read
         .option("header", "true")
         .option("inferSchema", "true")
         .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
       val stage = new H2OGridSearch()(hc, spark.sqlContext).
-        setAlgo(algoName).
         setPredictionCol("AGE").
         setHyperParameters(hyperParams).
-        setParameters(algo.getParams)
+        setAlgo(algo)
 
       val pipeline = new Pipeline().setStages(Array(stage))
       pipeline.write.overwrite().save("ml/build/grid_glm_pipeline")

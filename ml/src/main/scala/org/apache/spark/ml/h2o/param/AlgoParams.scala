@@ -17,26 +17,29 @@
 package org.apache.spark.ml.h2o.param
 
 import hex.Model
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.glm.GLMModel.GLMParameters
+import hex.tree.gbm.GBMModel.GBMParameters
+import org.apache.spark.ml.h2o.algos.H2OGridSearch
 import org.apache.spark.ml.param.{Param, Params}
 import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JValue}
 import water.AutoBuffer
 
-import scala.reflect.ClassTag
 
+class AlgoParams(parent: Params, name: String, doc: String, isValid: Model.Parameters => Boolean)
+  extends Param[Model.Parameters](parent, name, doc, isValid) {
 
-class ParametersParam[T <: Model.Parameters](parent: Params, name: String, doc: String, isValid: T => Boolean)(implicit tag: ClassTag[T])
-  extends Param[T](parent, name, doc, isValid) {
+  def this(parent: Params, name: String, doc: String) =
+    this(parent, name, doc, _ => true)
 
-  def this(parent: Params, name: String, doc: String)(implicit tag: ClassTag[T]) =
-    this(parent, name, doc, _ => true)(tag)
-
-  override def jsonEncode(value: T): String = {
+  override def jsonEncode(value: Model.Parameters): String = {
     val encoded: JValue = if (value == null) {
       JNull
     } else {
       val ab = new AutoBuffer()
+      ab.putStr(value.algoName())
       value.write(ab)
       val bytes = ab.buf()
       JArray(bytes.toSeq.map(JInt(_)).toList)
@@ -44,10 +47,10 @@ class ParametersParam[T <: Model.Parameters](parent: Params, name: String, doc: 
     compact(render(encoded))
   }
 
-  override def jsonDecode(json: String): T = {
+  override def jsonDecode(json: String): Model.Parameters = {
     parse(json) match {
       case JNull =>
-        null.asInstanceOf[T]
+        null.asInstanceOf[Model.Parameters]
       case JArray(values) =>
         val bytes = values.map {
           case JInt(x) =>
@@ -55,12 +58,19 @@ class ParametersParam[T <: Model.Parameters](parent: Params, name: String, doc: 
           case _ =>
             throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
         }.toArray
+        val ab = new AutoBuffer(bytes)
+        val algoName = ab.getStr
+        val params = H2OGridSearch.SupportedAlgos.fromString(algoName).get  match {
+          case H2OGridSearch.SupportedAlgos.glm => new GLMParameters()
+          case H2OGridSearch.SupportedAlgos.gbm => new GBMParameters()
+          case H2OGridSearch.SupportedAlgos.deeplearning => new DeepLearningParameters()
+          case _ => throw new RuntimeException("Not supported algorithm")
 
-        val params = tag.runtimeClass.newInstance().asInstanceOf[T]
-        params.read(new AutoBuffer(bytes))
-        params
+        }
+        params.read(ab)
+        params.asInstanceOf[Model.Parameters]
       case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to ${tag.runtimeClass}.")
+        throw new IllegalArgumentException(s"Cannot decode $json to a class for desired algo.")
     }
   }
 }
