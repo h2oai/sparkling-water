@@ -23,6 +23,9 @@ class H2OXGBoostModel(JavaModel, JavaMLWritable, JavaMLReadable):
 class H2OGLMModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
+class H2OGridSearchModel(JavaModel, JavaMLWritable, JavaMLReadable):
+    pass
+
 class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
