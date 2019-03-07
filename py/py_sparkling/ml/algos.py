@@ -372,7 +372,6 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
             del kwargs['algo']
             self._java_obj.setAlgo(tmp._java_obj)
 
-
         return self._set(**kwargs)
 
     def _create_model(self, java_model):

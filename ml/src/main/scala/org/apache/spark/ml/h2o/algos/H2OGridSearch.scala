@@ -249,8 +249,9 @@ trait H2OGridSearchParams extends Params {
   //
   // Param definitions
   //
+  private final val algo = new DoubleParam(this, "algo", "dummy argument for pysparkling")
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
-  private final val algo = new AlgoParams(this, "algo", "Specifies the algorithm for grid search")
+  private final val algoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
   private final val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
   private final val predictionCol = new NullableStringParam(this, "predictionCol", "Prediction column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
@@ -259,7 +260,7 @@ trait H2OGridSearchParams extends Params {
   // Default values
   //
   setDefault(
-    algo -> null,
+    algoParams -> null,
     ratio -> 1.0, // 1.0 means use whole frame as training frame
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
     predictionCol -> "prediction",
@@ -274,7 +275,7 @@ trait H2OGridSearchParams extends Params {
   def getRatio() = $(ratio)
 
   /** @group getParam */
-  def getAlgoParams() = $(algo)
+  def getAlgoParams() = $(algoParams)
 
   /** @group getParam */
   def getHyperParameters() = $(hyperParameters)
@@ -300,7 +301,7 @@ trait H2OGridSearchParams extends Params {
       throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '$value'. Supported " +
         s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
     }
-    set(algo, value.getParams)
+    set(algoParams, value.getParams)
   }
 
   /** @group getParam */
