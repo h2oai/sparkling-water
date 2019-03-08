@@ -450,11 +450,11 @@ EOF
                                                 # Upload Conda packages of PySparkling
                                                 yes | anaconda login --username ${ANACONDA_USERNAME} --password ${ANACONDA_PASSWORD}
 
-                                                anaconda upload osx-64/\${PKG_NAME}
-                                                anaconda upload linux-32/\${PKG_NAME}
-                                                anaconda upload linux-64/\${PKG_NAME}
-                                                anaconda upload win-32/\${PKG_NAME}
-                                                anaconda upload win-64/\${PKG_NAME}
+                                                anaconda upload --force osx-64/\${PKG_NAME}
+                                                anaconda upload --force linux-32/\${PKG_NAME}
+                                                anaconda upload --force linux-64/\${PKG_NAME}
+                                                anaconda upload --force win-32/\${PKG_NAME}
+                                                anaconda upload --force win-64/\${PKG_NAME}
                                                 """
                                     }
                                 }
