@@ -73,6 +73,9 @@ You will be asked to provide mandatory variables. Please see
 `Terraform documentation <https://www.terraform.io/intro/index.html>`__ for more information how to set up
 variables.
 
+To access the Jupyter Notebook, please go to https://master_public_dns:9443. The correct address is printed out as one
+of the templates output. You need to approve the security exception (self-signed certificate) in your browser.
+
 If you would like to connect to the master machine via SSH, please run:
 
 .. code:: bash
