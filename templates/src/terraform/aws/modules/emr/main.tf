@@ -19,13 +19,48 @@ resource "aws_key_pair" "key" {
   public_key = "ssh-rsa ${var.aws_ssh_public_key}"
 }
 
+resource "aws_s3_bucket" "sw_bucket" {
+  acl = "private"
+  force_destroy = true
+  tags = {
+    Name        = "SparklingWaterDeploymentBucket"
+  }
+}
+
+resource "aws_s3_bucket_object" "juputer_init_script" {
+  bucket = "${aws_s3_bucket.sw_bucket.id}"
+  key    = "setup_jupyter.sh"
+  acl = "private"
+  content = <<EOF
+
+  #!/bin/bash
+  set -x -e
+
+  IS_MASTER=false
+  if [ -f /mnt/var/lib/info/instance.json ]
+  then
+   IS_MASTER=`cat /mnt/var/lib/info/instance.json | grep "isMaster" | cut -f2 -d: | tr -d " "`
+  fi
+
+  if [ "$IS_MASTER" = true ]; then
+   sudo docker exec jupyterhub useradd -m -s /bin/bash -N $1
+   sudo docker exec jupyterhub bash -c "echo $1:$2 | chpasswd"
+   ADMIN_TOKEN=$(sudo docker exec jupyterhub /opt/conda/bin/jupyterhub token jovyan | tail -1)
+   curl -XPOST --silent -k https://$(hostname):9443/hub/api/users/$1 -H "Authorization: token $ADMIN_TOKEN" | jq .
+  fi
+
+EOF
+}
+
 
 resource "aws_emr_cluster" "sparkling-water-cluster" {
   name = "Sparkling-Water"
   release_label = "${var.aws_emr_version}"
+  log_uri = "s3://${aws_s3_bucket.sw_bucket.bucket}/"
   applications = [
     "Spark",
-    "Hadoop"]
+    "Hadoop",
+    "JupyterHub"]
 
   ec2_attributes {
     subnet_id = "${data.aws_subnet.main.id}"
@@ -43,10 +78,22 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
     name = "SparklingWater"
   }
 
-  bootstrap_action {
-    path = "${format("s3://h2o-release/sparkling-water/rel-%s/%s/templates/aws/install_sparkling_water_%s.%s.sh",
+  bootstrap_action = [
+    {
+      path = "${format("s3://h2o-release/sparkling-water/rel-%s/%s/templates/aws/install_sparkling_water_%s.%s.sh",
           var.sw_major_version, var.sw_patch_version, var.sw_major_version, var.sw_patch_version)}"
-    name = "Custom action"
+      name = "Custom action"
+    }
+  ]
+
+  step {
+    action_on_failure = "TERMINATE_CLUSTER"
+    name   = "Add Jupyter Notebook User"
+
+    hadoop_jar_step {
+      jar  = "${format("s3://%s.elasticmapreduce/libs/script-runner/script-runner.jar", var.aws_region)}"
+      args = ["${format("s3://%s/setup_jupyter.sh", aws_s3_bucket.sw_bucket.bucket)}", "${var.jupyter_name}", "${var.jupyter_pass}"]
+    }
   }
 
 
