@@ -25,5 +25,9 @@ variable "sw_major_version" {
 variable "sw_patch_version" {
   default = "SUBST_MINOR_VERSION"
 }
-
-
+variable "jupyter_name" {
+  default = "admin"
+}
+variable "jupyter_pass" {
+  default = "admin"
+}
