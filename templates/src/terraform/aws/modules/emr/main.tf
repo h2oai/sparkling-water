@@ -27,6 +27,44 @@ resource "aws_s3_bucket" "sw_bucket" {
   }
 }
 
+resource "aws_s3_bucket_object" "install_pysparkling" {
+  bucket = "${aws_s3_bucket.sw_bucket.id}"
+  key = "install_sw.sh"
+  acl = "private"
+  content = <<EOF
+
+#!/bin/bash
+set -x -e
+
+sudo python3 -m pip install --upgrade colorama==0.3.9
+sudo python3 -m pip install -U requests
+sudo python3 -m pip install -U tabulate
+sudo python3 -m pip install -U future
+sudo python3 -m pip install -U six
+sudo python3 -m pip install -U scikit-learn
+
+sudo python2.7 -m pip install --upgrade colorama==0.3.9
+sudo python2.7 -m pip install -U requests
+sudo python2.7 -m pip install -U tabulate
+sudo python2.7 -m pip install -U future
+sudo python2.7 -m pip install -U six
+sudo python2.7 -m pip install -U scikit-learn
+
+mkdir -p /home/hadoop/h2o
+cd /home/hadoop/h2o
+
+wget https://s3.amazonaws.com/h2o-release/sparkling-water/rel-${var.sw_major_version}/${var.sw_patch_version}/sparkling-water-${var.sw_major_version}.${var.sw_patch_version}.zip
+
+unzip -o sparkling-water-${var.sw_major_version}.${var.sw_patch_version}.zip 1> /dev/null & wait
+
+PYSPARKLING_ZIP=$(find /home/hadoop/h2o/ -name h2o_pysparkling_*.zip)
+sudo python3 -m pip install $PYSPARKLING_ZIP
+sudo python2.7 -m pip install $PYSPARKLING_ZIP
+
+export MASTER="yarn-client"
+EOF
+}
+
 resource "aws_s3_bucket_object" "juputer_init_script" {
   bucket = "${aws_s3_bucket.sw_bucket.id}"
   key    = "setup_jupyter.sh"
@@ -47,6 +85,14 @@ resource "aws_s3_bucket_object" "juputer_init_script" {
    sudo docker exec jupyterhub bash -c "echo $1:$2 | chpasswd"
    ADMIN_TOKEN=$(sudo docker exec jupyterhub /opt/conda/bin/jupyterhub token jovyan | tail -1)
    curl -XPOST --silent -k https://$(hostname):9443/hub/api/users/$1 -H "Authorization: token $ADMIN_TOKEN" | jq .
+
+    PYSPARKLING_ZIP=$(find /home/hadoop/h2o/ -name h2o_pysparkling_*.zip)
+    SPARKLING_WATER_JAR=$(find /home/hadoop/h2o/ -name sparkling-water-assembly_2.11*-all.jar)
+    # Disable Dynamic Allocation
+    sudo -E sh -c "echo spark.dynamicAllocation.enabled false >> /etc/spark/conf/spark-defaults.conf"
+    sudo -E sh -c "echo spark.jars   $SPARKLING_WATER_JAR >> /etc/spark/conf/spark-defaults.conf"
+    sudo -E sh -c "echo spark.submit.pyFiles  $PYSPARKLING_ZIP >> /etc/spark/conf/spark-defaults.conf"
+    sudo cp $SPARKLING_WATER_JAR /usr/lib/spark/jars/
   fi
 
 EOF
@@ -80,15 +126,14 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
 
   bootstrap_action = [
     {
-      path = "${format("s3://h2o-release/sparkling-water/rel-%s/%s/templates/aws/install_sparkling_water_%s.%s.sh",
-          var.sw_major_version, var.sw_patch_version, var.sw_major_version, var.sw_patch_version)}"
+      path = "${format("s3://%s/install_sw.sh", aws_s3_bucket.sw_bucket.bucket)}"
       name = "Custom action"
     }
   ]
 
   step {
     action_on_failure = "TERMINATE_CLUSTER"
-    name   = "Add Jupyter Notebook User"
+    name   = "Set up Jupyter and Spark Env"
 
     hadoop_jar_step {
       jar  = "${format("s3://%s.elasticmapreduce/libs/script-runner/script-runner.jar", var.aws_region)}"
