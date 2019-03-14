@@ -86,6 +86,8 @@ resource "aws_s3_bucket_object" "juputer_init_script" {
    ADMIN_TOKEN=$(sudo docker exec jupyterhub /opt/conda/bin/jupyterhub token jovyan | tail -1)
    curl -XPOST --silent -k https://$(hostname):9443/hub/api/users/$1 -H "Authorization: token $ADMIN_TOKEN" | jq .
 
+   echo $ADMIN_TOKEN | aws s3 cp - ${format("s3://%s/admin.token", aws_s3_bucket.sw_bucket.bucket)} --acl private --content-type "text/plain"
+
     PYSPARKLING_ZIP=$(find /home/hadoop/h2o/ -name h2o_pysparkling_*.zip)
     SPARKLING_WATER_JAR=$(find /home/hadoop/h2o/ -name sparkling-water-assembly_2.11*-all.jar)
     # Disable Dynamic Allocation
@@ -98,6 +100,11 @@ resource "aws_s3_bucket_object" "juputer_init_script" {
 EOF
 }
 
+data "aws_s3_bucket_object" "admin_token" {
+  depends_on = ["aws_s3_bucket_object.juputer_init_script"]
+  bucket = "${aws_s3_bucket.sw_bucket.bucket}"
+  key    = "admin.token"
+}
 
 resource "aws_emr_cluster" "sparkling-water-cluster" {
   name = "Sparkling-Water"
