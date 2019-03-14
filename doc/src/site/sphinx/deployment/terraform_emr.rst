@@ -39,9 +39,10 @@ Sparkling Water provide 3 templates/modules:
    - ``aws_instance_type`` (optional) - type of EC2 instances. Defaults to ``m3.xlarge``.
    - ``sw_major_version`` (optional) - Sparkling Water major version. Defaults to SUBST_SW_MAJOR_VERSION.
    - ``sw_patch_version`` (optional) - Sparkling Water minor version. Defaults to SUBST_SW_MINOR_VERSION.
+   - ``jupyter_name`` (optional) - User name for Jupyter Notebook. Defaults to ``admin``.
+   - ``jupyter_pass`` (optional) - Password for Jupyter Notebook. Defaults to ``admin``.
 
-
- - ``default`` module  (**/templates/build/terraform/aws**). This module is a combination of the two previous modules. It starts the network infrastructure and starts EMR with Sparkling Water on top of it. 
+ - ``default`` module  (**/templates/build/terraform/aws**). This module is a combination of the two previous modules. It starts the network infrastructure and starts EMR with Sparkling Water on top of it.
 
   This module accepts the following arguments:
 
@@ -54,6 +55,8 @@ Sparkling Water provide 3 templates/modules:
    - ``aws_instance_type`` (optional) - type of EC2 instances. Defaults to ``m3.xlarge``.
    - ``sw_major_version`` (optional) - Sparkling Water major version. Defaults to SUBST_SW_MAJOR_VERSION.
    - ``sw_patch_version`` (optional) - Sparkling Water minor version. Defaults to SUBST_SW_MINOR_VERSION.
+   - ``jupyter_name`` (optional) - User name for Jupyter Notebook. Defaults to ``admin``.
+   - ``jupyter_pass`` (optional) - Password for Jupyter Notebook. Defaults to ``admin``.
 
 
 We provide these 3 templates as we realize some users already have some network infrastructure on their
