@@ -40,7 +40,6 @@ Sparkling Water provide 3 templates/modules:
    - ``sw_major_version`` (optional) - Sparkling Water major version. Defaults to SUBST_SW_MAJOR_VERSION.
    - ``sw_patch_version`` (optional) - Sparkling Water minor version. Defaults to SUBST_SW_MINOR_VERSION.
    - ``jupyter_name`` (optional) - User name for Jupyter Notebook. Defaults to ``admin``.
-   - ``jupyter_pass`` (optional) - Password for Jupyter Notebook. Defaults to ``admin``.
 
  - ``default`` module  (**/templates/build/terraform/aws**). This module is a combination of the two previous modules. It starts the network infrastructure and starts EMR with Sparkling Water on top of it.
 
@@ -56,7 +55,6 @@ Sparkling Water provide 3 templates/modules:
    - ``sw_major_version`` (optional) - Sparkling Water major version. Defaults to SUBST_SW_MAJOR_VERSION.
    - ``sw_patch_version`` (optional) - Sparkling Water minor version. Defaults to SUBST_SW_MINOR_VERSION.
    - ``jupyter_name`` (optional) - User name for Jupyter Notebook. Defaults to ``admin``.
-   - ``jupyter_pass`` (optional) - Password for Jupyter Notebook. Defaults to ``admin``.
 
 
 We provide these 3 templates as we realize some users already have some network infrastructure on their
@@ -76,8 +74,9 @@ You will be asked to provide mandatory variables. Please see
 `Terraform documentation <https://www.terraform.io/intro/index.html>`__ for more information how to set up
 variables.
 
-To access the Jupyter Notebook, please go to https://master_public_dns:9443. The correct address is printed out as one
-of the templates output. You need to approve the security exception (self-signed certificate) in your browser.
+To access the Jupyter Notebook, please go to the url returned by ``jupyter_notebook_url`` Terraform output.
+You need to approve the security exception (self-signed certificate) in your browser. The only way how to access the
+notebook is using the link above (with token). Password login is not enabled.
 
 If you would like to connect to the master machine via SSH, please run:
 

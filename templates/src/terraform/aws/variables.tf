@@ -25,6 +25,3 @@ variable "sw_patch_version" {
 variable "jupyter_name" {
   default = "admin"
 }
-variable "jupyter_pass" {
-  default = "admin"
-}

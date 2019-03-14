@@ -82,11 +82,11 @@ resource "aws_s3_bucket_object" "juputer_init_script" {
 
   if [ "$IS_MASTER" = true ]; then
    sudo docker exec jupyterhub useradd -m -s /bin/bash -N $1
-   sudo docker exec jupyterhub bash -c "echo $1:$2 | chpasswd"
+   sudo docker exec jupyterhub bash -c "echo $1:$(date +%s | sha256sum | base64 | head -c 32) | chpasswd"
    ADMIN_TOKEN=$(sudo docker exec jupyterhub /opt/conda/bin/jupyterhub token jovyan | tail -1)
    curl -XPOST --silent -k https://$(hostname):9443/hub/api/users/$1 -H "Authorization: token $ADMIN_TOKEN" | jq .
-
-   echo $ADMIN_TOKEN | aws s3 cp - ${format("s3://%s/admin.token", aws_s3_bucket.sw_bucket.bucket)} --acl private --content-type "text/plain"
+   curl -XPOST --silent -k https://$(hostname):9443/hub/api/users/$1/server -H "Authorization: token $ADMIN_TOKEN"
+   echo $ADMIN_TOKEN | aws s3 cp - ${format("s3://%s/user.token", aws_s3_bucket.sw_bucket.bucket)} --acl private --content-type "text/plain"
 
     PYSPARKLING_ZIP=$(find /home/hadoop/h2o/ -name h2o_pysparkling_*.zip)
     SPARKLING_WATER_JAR=$(find /home/hadoop/h2o/ -name sparkling-water-assembly_2.11*-all.jar)
@@ -100,11 +100,11 @@ resource "aws_s3_bucket_object" "juputer_init_script" {
 EOF
 }
 
-data "aws_s3_bucket_object" "admin_token" {
-  depends_on = ["aws_s3_bucket_object.juputer_init_script"]
+data "aws_s3_bucket_object" "user_token" {
   bucket = "${aws_s3_bucket.sw_bucket.bucket}"
-  key    = "admin.token"
+  key    = "user.token"
 }
+
 
 resource "aws_emr_cluster" "sparkling-water-cluster" {
   name = "Sparkling-Water"
@@ -144,7 +144,7 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
 
     hadoop_jar_step {
       jar  = "${format("s3://%s.elasticmapreduce/libs/script-runner/script-runner.jar", var.aws_region)}"
-      args = ["${format("s3://%s/setup_jupyter.sh", aws_s3_bucket.sw_bucket.bucket)}", "${var.jupyter_name}", "${var.jupyter_pass}"]
+      args = ["${format("s3://%s/setup_jupyter.sh", aws_s3_bucket.sw_bucket.bucket)}", "${var.jupyter_name}"]
     }
   }
 
