@@ -177,6 +177,8 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
     }
   ]
 EOF
-
+  provisioner "local-exec" {
+    command = "sleep 20"
+  }
   service_role = "${aws_iam_role.emr_role.arn}"
 }
