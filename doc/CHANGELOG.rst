@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+v2.4.8 (2019-03-15)
+-------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/8/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/8/index.html>`__
+
+-  Bug
+        
+   -  `SW-1163 <https://0xdata.atlassian.net/browse/SW-1163>`__ - Expose missing variables in shared TF EMR SW tamplate
+                
+-  Improvement
+        
+   -  `SW-1145 <https://0xdata.atlassian.net/browse/SW-1145>`__ - Start jupyter notebook with Scala &amp; Python Spark in AWS EMR Terraform template
+   -  `SW-1165 <https://0xdata.atlassian.net/browse/SW-1165>`__ - Upgrade to H2O 3.22.1.6
+                
+                                                                                
 v2.4.7 (2019-03-07)
 -------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/7/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/7/index.html>`__
