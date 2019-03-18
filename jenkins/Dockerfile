@@ -9,7 +9,7 @@ COPY conf/yarn-site.xml /etc/hadoop/conf/yarn-site.xml
 RUN \
     rm /etc/startup/70_start_slapd
 
-RUN apt-get update && apt-get install -y git npm curl zip s3cmd vim libxml2-dev libssl-dev libcurl4-openssl-dev
+RUN apt-get update && apt-get install -y git npm curl zip s3cmd r-base r-base-dev libxml2-dev libssl-dev libcurl4-openssl-dev
 
 RUN \
     curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash - && \
