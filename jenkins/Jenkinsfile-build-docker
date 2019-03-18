@@ -12,7 +12,7 @@ node('docker && !mr-0xc8') {
         sh  """
             docker pull harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:58
             cd jenkins
-            docker build -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${BUILD_NUMBER} -f Dockerfile .
+            docker build --privileged -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${BUILD_NUMBER} -f Dockerfile .
             """
     }
 
