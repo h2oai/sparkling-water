@@ -9,6 +9,12 @@ COPY conf/yarn-site.xml /etc/hadoop/conf/yarn-site.xml
 RUN \
     rm /etc/startup/70_start_slapd
 
+RUN \
+    apt-get update && apt-get install apt-transport-https && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
+    add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
+
+
 RUN apt-get update && apt-get install -y git npm curl zip s3cmd r-base r-base-dev libxml2-dev libssl-dev libcurl4-openssl-dev
 
 RUN \
@@ -20,6 +26,12 @@ RUN \
     R -e 'install.packages("openssl", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("bitops", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("jsonlite", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("dplyr", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")' && \
+    R -e 'install.packages("usethis", repos = "http://cran.us.r-project.org")' && \
     R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
 
 ###
