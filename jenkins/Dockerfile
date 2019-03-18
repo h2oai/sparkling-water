@@ -1,4 +1,4 @@
-FROM harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:47
+FROM harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:58
 
 ENV LANG 'C.UTF-8'
 RUN locale
