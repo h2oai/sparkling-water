@@ -168,4 +168,4 @@ RUN \
     conda update conda -y && \
     conda update anaconda anaconda-client conda-build -y
 
-
+ENV HIVE_HOME /usr/hdp/2.2.9.0-3393/hive
