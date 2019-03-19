@@ -118,6 +118,7 @@ def prepareSparkEnvironment() {
 
                 sh """
                 # Setup Spark
+                cp \${HIVE_HOME}/conf/hive-site.xml ${env.SPARK_HOME}/conf
                 echo "spark.driver.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                 echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                 echo "spark.executor.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
