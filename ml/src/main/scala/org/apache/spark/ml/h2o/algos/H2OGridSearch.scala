@@ -114,7 +114,8 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
       case _ : XGBoostParameters => new SimpleParametersBuilderFactory[XGBoostParameters]
       case algo => throw new IllegalArgumentException("Unsupported Algorithm " + algo.algoName())
     }
-    val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams, paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria)
+    val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams,
+      paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria)
     val grid = job.get()
 
     // Block until GridSearch finishes
