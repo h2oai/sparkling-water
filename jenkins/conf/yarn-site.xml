@@ -19,7 +19,7 @@
     <property>
         <description>List of directories to store localized files in.</description>
         <name>yarn.nodemanager.local-dirs</name>
-        <value>/var/lib/hadoop-yarn/cache/\${user.name}/nm-local-dir</value>
+        <value>/var/lib/hadoop-yarn/cache/${user.name}/nm-local-dir</value>
     </property>
     <property>
         <description>Where to store container logs.</description>
