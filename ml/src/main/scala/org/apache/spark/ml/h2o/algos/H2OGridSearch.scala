@@ -20,14 +20,20 @@ import java.io._
 import java.lang.reflect.Field
 import java.util
 
-import hex.Model
-import hex.grid.{Grid, GridSearch}
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.glm.GLMModel.GLMParameters
+import hex.grid.GridSearch.SimpleParametersBuilderFactory
+import hex.grid.HyperSpaceSearchCriteria.{CartesianSearchCriteria, RandomDiscreteValueSearchCriteria}
+import hex.{Model, ScoreKeeper}
+import hex.grid.{Grid, GridSearch, HyperSpaceSearchCriteria}
+import hex.tree.gbm.GBMModel.GBMParameters
+import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
-import org.apache.spark.ml.h2o.param.{AlgoParams, HyperParamsParam, NullableStringParam}
+import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.StructType
@@ -86,7 +92,29 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
     water.DKV.put(trainFrame)
-    val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams)
+    val criteria = getStrategy() match {
+      case HyperSpaceSearchCriteria.Strategy.Cartesian => new CartesianSearchCriteria
+      case HyperSpaceSearchCriteria.Strategy.RandomDiscrete =>
+        val c = new RandomDiscreteValueSearchCriteria
+        c.set_stopping_tolerance(getStoppingTolerance)
+        c.set_stopping_rounds(getStoppingRounds)
+        c.set_stopping_metric(getStoppingMetric)
+        c.set_seed(getSeed)
+        c.set_max_models(getMaxModels)
+        c.set_max_runtime_secs(getMaxRuntimeSecs())
+        c
+      case _ => new CartesianSearchCriteria
+    }
+
+    val paramsBuilder = algoParams match {
+
+      case _ : GBMParameters => new SimpleParametersBuilderFactory[GBMParameters]
+      case _ : DeepLearningParameters => new SimpleParametersBuilderFactory[DeepLearningParameters]
+      case _ : GLMParameters => new SimpleParametersBuilderFactory[GLMParameters]
+      case _ : XGBoostParameters => new SimpleParametersBuilderFactory[XGBoostParameters]
+      case algo => throw new IllegalArgumentException("Unsupported Algorithm " + algo.algoName())
+    }
+    val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams, paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria)
     val grid = job.get()
 
     // Block until GridSearch finishes
@@ -256,6 +284,16 @@ trait H2OGridSearchParams extends Params {
   private final val predictionCol = new NullableStringParam(this, "predictionCol", "Prediction column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
   private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
+  private final val strategy = new GridSearchStrategyParam(this, "strategy", "Search criteria strategy")
+  private final val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "maxRuntimeSecs")
+  private final val maxModels = new IntParam(this, "maxModels", "maxModels")
+  private final val seed = new LongParam(this, "seed", "seed for hyper params search")
+  private final val stoppingRounds = new IntParam(this, "stoppingRounds", "Early stopping based on convergence of stoppingMetric")
+  private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Relative tolerance for metric-based" +
+    " stopping criterion: stop if relative improvement is not at least this much.")
+  private final val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping Metric")
+
+
   //
   // Default values
   //
@@ -265,7 +303,14 @@ trait H2OGridSearchParams extends Params {
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
     predictionCol -> "prediction",
     allStringColumnsToCategorical -> true,
-    columnsToCategorical -> Array.empty[String]
+    columnsToCategorical -> Array.empty[String],
+    strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian,
+    maxRuntimeSecs -> 0,
+    maxModels -> 0,
+    seed -> -1,
+    stoppingRounds -> 0,
+    stoppingTolerance -> 0.001,
+    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO
   )
 
   //
@@ -288,6 +333,27 @@ trait H2OGridSearchParams extends Params {
 
   /** @group getParam */
   def getColumnsToCategorical() = $(columnsToCategorical)
+
+  /** @group getParam */
+  def getStrategy() = $(strategy)
+
+  /** @group getParam */
+  def getMaxRuntimeSecs() = $(maxRuntimeSecs)
+
+  /** @group getParam */
+  def getMaxModels = $(maxModels)
+
+  /** @group getParam */
+  def getSeed = $(seed)
+
+  /** @group getParam */
+  def getStoppingRounds = $(stoppingRounds)
+
+  /** @group getParam */
+  def getStoppingTolerance = $(stoppingTolerance)
+
+  /** @group getParam */
+  def getStoppingMetric = $(stoppingMetric)
 
   //
   // Setters
@@ -324,6 +390,33 @@ trait H2OGridSearchParams extends Params {
 
   /** @group setParam */
   def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
+
+  /** @group setParam */
+  def setStrategy(value: HyperSpaceSearchCriteria.Strategy) = set(strategy, value)
+
+  /** @group setParam */
+  def setMaxRuntimeSecs(value: Double) = set(maxRuntimeSecs, value)
+
+  /** @group setParam */
+  def setMaxModels(value: Int) = set(maxModels, value)
+
+  /** @group setParam */
+  def setSeed(value: Long) = set(seed, value)
+
+  /** @group setParam */
+  def setStoppingRounds(value: Int) = set(stoppingRounds, value)
+
+  /** @group setParam */
+  def setStoppingTolerance(value: Double) = set(stoppingTolerance, value)
+
+  /** @group getParam */
+  def setStoppingMetric(value: ScoreKeeper.StoppingMetric) = set(stoppingMetric, value)
 }
 
+class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: String,
+                                           isValid: HyperSpaceSearchCriteria.Strategy => Boolean)
+  extends EnumParam[HyperSpaceSearchCriteria.Strategy](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
+}
 
