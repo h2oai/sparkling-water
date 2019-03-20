@@ -11,6 +11,7 @@ How to...
    calling_h2o_algos
    run_sparkling_water
    change_default_port
+   hive_support
 
 **Security**
 
