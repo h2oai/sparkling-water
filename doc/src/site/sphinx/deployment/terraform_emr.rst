@@ -30,7 +30,7 @@ Sparkling Water provide 3 templates/modules:
 
    - ``aws_access_key`` (mandatory) - access key to access AWS
    - ``aws_secret_key`` (mandatory) - secret key to access AWS
-   - ``aws_ssh_public_key`` (mandatory) - public key (to be able to access EC2 instances via ssh later)
+   - ``aws_ssh_public_key`` (optional) - public key (to be able to access EC2 instances via ssh later)
    - ``aws_vpc_id`` (mandatory) - ID of existing VPC
    - ``aws_subnet_id`` (mandatory) - ID of existing VPC subnet
    - ``aws_region`` (optional) - AWS region. Defaults to ``us-east-1``.
@@ -39,21 +39,22 @@ Sparkling Water provide 3 templates/modules:
    - ``aws_instance_type`` (optional) - type of EC2 instances. Defaults to ``m3.xlarge``.
    - ``sw_major_version`` (optional) - Sparkling Water major version. Defaults to SUBST_SW_MAJOR_VERSION.
    - ``sw_patch_version`` (optional) - Sparkling Water minor version. Defaults to SUBST_SW_MINOR_VERSION.
+   - ``jupyter_name`` (optional) - User name for Jupyter Notebook. Defaults to ``admin``.
 
-
- - ``default`` module  (**/templates/build/terraform/aws**). This module is a combination of the two previous modules. It starts the network infrastructure and starts EMR with Sparkling Water on top of it. 
+ - ``default`` module  (**/templates/build/terraform/aws**). This module is a combination of the two previous modules. It starts the network infrastructure and starts EMR with Sparkling Water on top of it.
 
   This module accepts the following arguments:
 
    - ``aws_access_key`` (mandatory) - access key to access AWS
    - ``aws_secret_key`` (mandatory) - secret key to access AWS
-   - ``aws_ssh_public_key`` (mandatory) - public key (to be able to access EC2 instances via ssh later)
+   - ``aws_ssh_public_key`` (optional) - public key (to be able to access EC2 instances via ssh later)
    - ``aws_region`` (optional) - AWS region. Defaults to ``us-east-1``.
    - ``aws_emr_version`` (optional) - EMR version. Defaults to ``emr-2.20.0``.
    - ``aws_core_instance_count`` (optional) - Number of worker nodes. Defaults to ``2``.
    - ``aws_instance_type`` (optional) - type of EC2 instances. Defaults to ``m3.xlarge``.
    - ``sw_major_version`` (optional) - Sparkling Water major version. Defaults to SUBST_SW_MAJOR_VERSION.
    - ``sw_patch_version`` (optional) - Sparkling Water minor version. Defaults to SUBST_SW_MINOR_VERSION.
+   - ``jupyter_name`` (optional) - User name for Jupyter Notebook. Defaults to ``admin``.
 
 
 We provide these 3 templates as we realize some users already have some network infrastructure on their
@@ -73,10 +74,12 @@ You will be asked to provide mandatory variables. Please see
 `Terraform documentation <https://www.terraform.io/intro/index.html>`__ for more information how to set up
 variables.
 
-To access the Jupyter Notebook, please go to https://master_public_dns:9443. The correct address is printed out as one
-of the templates output. You need to approve the security exception (self-signed certificate) in your browser.
+To access the Jupyter Notebook, please go to the url returned by ``jupyter_notebook_url`` Terraform output.
+You need to approve the security exception (self-signed certificate) in your browser. The only way how to access the
+notebook is using the link above (with token). Password login is not enabled.
 
-If you would like to connect to the master machine via SSH, please run:
+If you would like to connect to the master machine via SSH, make sure you have filled ``aws_ssh_public_key`` argument
+and please run:
 
 .. code:: bash
 
