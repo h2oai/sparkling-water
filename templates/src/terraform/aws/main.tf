@@ -23,5 +23,4 @@ module "emr" {
   aws_instance_type = "${var.aws_instance_type}"
   aws_emr_version = "${var.aws_emr_version}"
   jupyter_name = "${var.jupyter_name}"
-  jupyter_pass = "${var.jupyter_pass}"
 }
