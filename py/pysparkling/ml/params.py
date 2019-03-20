@@ -1208,6 +1208,13 @@ class H2OGridSearchParams(Params):
     predictionCol = Param(Params._dummy(), "predictionCol", "Prediction col")
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "allStringColumnsToCategorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "columnsToCategorical")
+    strategy = Param(Params._dummy(), "strategy", "strategy")
+    maxRuntimeSecs = Param(Params._dummy(), "maxRuntimeSecs", "maxRuntimeSecs")
+    maxModels = Param(Params._dummy(), "maxModels", "maxModels")
+    seed = Param(Params._dummy(), "seed", "seed")
+    stoppingRounds = Param(Params._dummy(), "stoppingRounds", "stoppingRounds")
+    stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "stoppingTolerance")
+    stoppingMetric = Param(Params._dummy(), "stoppingMetric", "stoppingMetric")
 
     ##
     # Getters
@@ -1235,6 +1242,29 @@ class H2OGridSearchParams(Params):
     def getColumnsToCategorial(self):
         return self.getOrDefault(self.columnsToCategorical)
 
+    def getStrategy(self):
+        # Convert Java Enum to String so we can represent it in Python
+        return self.getOrDefault(self.strategy).toString()
+
+    def getMaxRuntimeSecs(self):
+        return self.getOrDefault(self.maxRuntimeSecs)
+
+    def getMaxModels(self):
+        return self.getOrDefault(self.maxModels)
+
+    def getSeed(self):
+        return self.getOrDefault(self.seed)
+
+    def getStoppingRounds(self):
+        return self.getOrDefault(self.stoppingRounds)
+
+    def getStoppingTolerance(self):
+        return self.getOrDefault(self.stoppingTolerance)
+
+    def getStoppingMetric(self):
+        # Convert Java Enum to String so we can represent it in Python
+        return self.getOrDefault(self.stoppingMetric).toString()
+
     ##
     # Setters
     ##
@@ -1258,3 +1288,36 @@ class H2OGridSearchParams(Params):
     def setColumnsToCategorial(self, value):
         assert_is_type(value, bool)
         return self._set(columnsToCategorical=value)
+
+    def setStrategy(self, value):
+        assert_is_type(value, Enum("Cartesian", "RandomDiscrete"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.values(), value)
+        return self._set(link=jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf(correct_case_value))
+
+    def setMaxRuntimeSecs(self, value):
+        assert_is_type(value, int, float)
+        return self._set(maxRuntimeSecs=value)
+
+    def setMaxModels(self, value):
+        assert_is_type(value, int)
+        return self._set(maxModels=value)
+
+    def setSeed(self, value):
+        assert_is_type(value, int)
+        return self._set(seed=value)
+
+    def setStoppingRounds(self, value):
+        assert_is_type(value, int)
+        return self._set(stoppingRounds=value)
+
+    def setStoppingTolerance(self, value):
+        assert_is_type(value, int, float)
+        return self._set(stoppingTolerance=value)
+
+    def setStoppingMetric(self, value):
+        # H2O typechecks does not check for case sensitivity
+        assert_is_type(value, Enum("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "lift_top_group", "misclassification", "mean_per_class_error", "custom"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.ScoreKeeper.StoppingMetric.values(), value)
+        return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
