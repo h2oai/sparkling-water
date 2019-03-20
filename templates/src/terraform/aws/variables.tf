@@ -3,7 +3,10 @@
 ##
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
-variable "aws_ssh_public_key" {}
+
+variable "aws_ssh_public_key" {
+  default = ""
+}
 variable "aws_region" {
   default = "us-east-1"
 }
@@ -23,8 +26,5 @@ variable "sw_patch_version" {
   default = "SUBST_MINOR_VERSION"
 }
 variable "jupyter_name" {
-  default = "admin"
-}
-variable "jupyter_pass" {
   default = "admin"
 }
