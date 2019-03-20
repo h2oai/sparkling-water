@@ -3,10 +3,12 @@
 ##
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
-
-variable "aws_ssh_public_key" {}
 variable "aws_vpc_id" {}
 variable "aws_subnet_id" {}
+
+variable "aws_ssh_public_key" {
+  default = "aws_s3_bucket_object.user_token"
+}
 variable "aws_region" {
   default = "us-east-1"
 }

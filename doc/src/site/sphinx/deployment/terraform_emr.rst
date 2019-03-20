@@ -30,7 +30,7 @@ Sparkling Water provide 3 templates/modules:
 
    - ``aws_access_key`` (mandatory) - access key to access AWS
    - ``aws_secret_key`` (mandatory) - secret key to access AWS
-   - ``aws_ssh_public_key`` (mandatory) - public key (to be able to access EC2 instances via ssh later)
+   - ``aws_ssh_public_key`` (optional) - public key (to be able to access EC2 instances via ssh later)
    - ``aws_vpc_id`` (mandatory) - ID of existing VPC
    - ``aws_subnet_id`` (mandatory) - ID of existing VPC subnet
    - ``aws_region`` (optional) - AWS region. Defaults to ``us-east-1``.
@@ -47,7 +47,7 @@ Sparkling Water provide 3 templates/modules:
 
    - ``aws_access_key`` (mandatory) - access key to access AWS
    - ``aws_secret_key`` (mandatory) - secret key to access AWS
-   - ``aws_ssh_public_key`` (mandatory) - public key (to be able to access EC2 instances via ssh later)
+   - ``aws_ssh_public_key`` (optional) - public key (to be able to access EC2 instances via ssh later)
    - ``aws_region`` (optional) - AWS region. Defaults to ``us-east-1``.
    - ``aws_emr_version`` (optional) - EMR version. Defaults to ``emr-2.20.0``.
    - ``aws_core_instance_count`` (optional) - Number of worker nodes. Defaults to ``2``.
@@ -78,7 +78,8 @@ To access the Jupyter Notebook, please go to the url returned by ``jupyter_noteb
 You need to approve the security exception (self-signed certificate) in your browser. The only way how to access the
 notebook is using the link above (with token). Password login is not enabled.
 
-If you would like to connect to the master machine via SSH, please run:
+If you would like to connect to the master machine via SSH, make sure you have filled ``aws_ssh_public_key`` argument
+and please run:
 
 .. code:: bash
 
