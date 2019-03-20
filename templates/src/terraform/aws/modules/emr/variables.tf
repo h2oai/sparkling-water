@@ -7,13 +7,13 @@ variable "aws_vpc_id" {}
 variable "aws_subnet_id" {}
 
 variable "aws_ssh_public_key" {
-  default = "aws_s3_bucket_object.user_token"
+  default = ""
 }
 variable "aws_region" {
   default = "us-east-1"
 }
 variable "aws_emr_version" {
-  default = "emr-5.21.0"
+  default = "emr-5.19.0"
 }
 variable "aws_core_instance_count" {
   default = "2"
