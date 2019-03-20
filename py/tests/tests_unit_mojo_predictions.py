@@ -115,7 +115,8 @@ class H2OMojoPredictionsTest(unittest.TestCase):
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True, inferSchema=True)
 
-        algo = H2OGridSearch(predictionCol="AGE", hyperParameters={"_seed": [1,2,3]}, ratio=0.8, algo=H2OGBM())
+        algo = H2OGridSearch(predictionCol="AGE", hyperParameters={"_seed": [1,2,3]}, ratio=0.8, algo=H2OGBM(),
+                             strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60)
 
         pipeline = Pipeline(stages=[algo])
         pipeline.write().overwrite().save("file://" + os.path.abspath("build/grid_gbm_pipeline"))

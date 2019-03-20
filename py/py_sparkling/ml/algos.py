@@ -361,7 +361,8 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     @keyword_only
     def __init__(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
-                 columnsToCategorical=[]):
+                 columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
+                 stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO"):
         super(H2OGridSearch, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch",
@@ -370,18 +371,29 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                                             self._hc._jsql_context)
 
         self._setDefault(algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
-                         columnsToCategorical=[])
+                         columnsToCategorical=[], strategy=self._hc._jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf("Cartesian"),
+                         maxRuntimeSecs=0.0, maxModels=0, seed=-1,
+                         stoppingRounds=0, stoppingTolerance=0.001,
+                         stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"))
         kwargs = get_input_kwargs(self, self._hc._sc)
         self.setParams(**kwargs)
 
     @keyword_only
     def setParams(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
-                  columnsToCategorical=[]):
+                  columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
+                  stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO"):
         kwargs = get_input_kwargs(self, self._hc._sc)
+
+
+        if "stoppingMetric" in kwargs:
+            kwargs["stoppingMetric"] = self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf(kwargs["stoppingMetric"])
+
+        if "strategy" in kwargs:
+            kwargs["strategy"] = self._hc._jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf(kwargs["strategy"])
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
-        double_types = ["ratio"]
+        double_types = ["ratio", "stoppingTolerance", "maxRuntimeSecs"]
         set_double_values(kwargs, double_types)
         if "algo" in kwargs and kwargs["algo"] is not None:
             tmp = kwargs["algo"]

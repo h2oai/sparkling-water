@@ -26,7 +26,7 @@ import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
-import org.apache.spark.ml.h2o.param.{EnumArrayParam, EnumParam, NullableFloatArrayParam, NullableStringParam}
+import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -216,7 +216,7 @@ trait H2OAutoMLParams extends Params {
   private final val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
   private final val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
   private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
-  private final val stoppingMetric = new H2OAutoMLStoppingMetricParam(this, "stoppingMetric", "Stopping metric")
+  private final val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping metric")
   private final val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
   private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
     " categorical levels to NA during predictions")
@@ -423,9 +423,4 @@ class H2OAutoMLAlgosParam private[h2o](parent: Params, name: String, doc: String
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
 
-class H2OAutoMLStoppingMetricParam private[h2o](parent: Params, name: String, doc: String,
-                                                isValid: ScoreKeeper.StoppingMetric => Boolean)
-  extends EnumParam[ScoreKeeper.StoppingMetric](parent, name, doc, isValid) {
 
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
