@@ -8,6 +8,7 @@ from pysparkling import *
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams
 from .models import H2OGBMModel, H2ODeepLearningModel, H2OAutoMLModel, H2OXGBoostModel, H2OGLMModel, H2OGridSearchModel
 from .util import JavaH2OMLReadable
+from py_sparkling.ml.models import H2OMOJOModel
 java_max_double_value = (2-2**(-52))*(2**1023)
 
 
@@ -385,6 +386,9 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
             self._java_obj.setAlgo(tmp._java_obj)
 
         return self._set(**kwargs)
+
+    def get_grid_models(self):
+         return [ H2OMOJOModel(m) for m in self._java_obj.getGridModels()]
 
     def _create_model(self, java_model):
         return H2OGridSearchModel(java_model)

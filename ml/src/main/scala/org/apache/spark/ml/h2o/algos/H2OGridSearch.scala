@@ -55,7 +55,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   def this()(implicit hc: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gridsearch"))
 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
-
+  private var grid: Grid[_] = _
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val algoParams = gridSearchParams.map(_.getAlgoParams()).getOrElse(getAlgoParams())
 
@@ -116,7 +116,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
     val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams,
       paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria)
-    val grid = job.get()
+    grid = job.get()
 
     // Block until GridSearch finishes
     val model = trainModel(grid)
@@ -169,7 +169,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   }
 
   def trainModel(grid: Grid[_]) = {
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)))
+    new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)), Identifiable.randomUID("gridSearch_mojoModel"))
   }
 
   def selectModelFromGrid(grid: Grid[_]) = {
@@ -180,6 +180,16 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
       grid.getModels()(0)
     } else {
       modelSelectionClosure.get.apply(grid)
+    }
+  }
+
+  def getGridModels() = {
+    if(grid == null){
+      throw new IllegalArgumentException("The model must be first fit to be able to obtain list of grid search algorithms")
+    }
+    grid.getModels.map { m =>
+      val data = ModelSerializationSupport.getMojoData(m)
+      new H2OMOJOModel(data, Identifiable.randomUID( s"${getAlgoParams().algoName()}_mojoModel"))
     }
   }
 
