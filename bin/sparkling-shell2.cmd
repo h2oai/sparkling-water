@@ -23,8 +23,9 @@ SET MASTER=%DEFAULT_MASTER%
 call %LIBSW% :banner
 
 call %SPARK_HOME%/bin/spark-shell2.cmd ^
---driver-memory %DRIVER_MEMORY% ^
---jars %FAT_JAR_FILE% %*
+ --driver-memory %DRIVER_MEMORY% ^
+ --jars %FAT_JAR_FILE% ^
+ %*
 
 
 exit /b %ERRORLEVEL%
