@@ -12,13 +12,12 @@ rem end of checking Sparkling environment
 
 call %LIBSW% :banner
 
-rem Setup pysparkling command line
+rem setup pysparkling command line
+rem Because of SPARK-18648 we need to put assembly also on driver/executor class paths
+SET SPARK_OPT_JARS=--jars !FAT_JAR_FILE! --conf spark.driver.extraClassPath=!FAT_JAR_FILE! --conf spark.executor.extraClassPath=!FAT_JAR_FILE!
+SET SPARK_OPT_PYFILES=--py-files !PY_ZIP_FILE!
 SET PYTHONPATH=%PY_ZIP_FILE%:%PYTHONPATH%
-call %SPARK_HOME%/bin/pyspark2.cmd ^
- --py-files %PY_ZIP_FILE% ^
- --driver-class-path "%TOPDIR%/jars/httpclient-4.5.2.jar" ^
- --conf "spark.executor.extraClassPath=%TOPDIR%/jars/httpclient-4.5.2.jar" ^
- %*
+call !SPARK_HOME!/bin/pyspark2.cmd !SPARK_OPT_PYFILES! %SPARK_OPT_JARS% %*
 
 exit /b %ERRORLEVEL%
 rem end of main script

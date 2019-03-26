@@ -19,7 +19,7 @@ DIST_BUILD_DIR="${DIST_DIR}build/"
 [ -d "$DIST_BUILD_DIR" ] || mkdir "$DIST_BUILD_DIR" 
 [ -d "private" ] || mkdir private 
 
-cat > "$TOPDIR/content.list" <<EOF
+cat > "$TOPDIR/demofiles.list" <<EOF
 bin/
 $(find bin -type f)
 assembly/build/libs/sparkling-water-assembly_$SCALA_VERSION-$VERSION-all.jar
@@ -40,8 +40,6 @@ examples/smalldata/prostate/prostate.csv
 examples/smalldata/smsData.txt
 examples/smalldata/craigslistJobTitles.csv
 examples/smalldata/bcwd.csv
-
-jars/httpclient-4.5.2.jar
 
 $(find examples/flows/ -type f)
 $(find docker/ -type f | grep -v iml$)
@@ -77,7 +75,7 @@ ZIP_FILE="$DIST_BUILD_DIR/$ZIP_NAME"
 [ -f "$ZIP_FILE" ] && rm "$ZIP_FILE"
 
 # Make distribution package and put it into dist directory
-rsync -rtvW --files-from "$TOPDIR/content.list" "$TOPDIR/" "$DEST_DIR/"
+rsync -rtvW --files-from "$TOPDIR/demofiles.list" "$TOPDIR/" "$DEST_DIR/"
 
 # Bundle RSparkling
 cp "$TOPDIR/r/build/rsparkling_$(./gradlew -q :sparkling-water-r:printCurrentVersion).tar.gz" "$DEST_DIR"
