@@ -25,7 +25,8 @@ import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.h2o.algos.{H2ODeepLearning, H2OGBM}
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -81,11 +82,69 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
     assertEqual(mojoModel, model, inputDf)
   }
 
+  test("BooleanColumn as String for mojo predictions") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
+      "airlines_boolean.mojo")
+    val data = Seq(
+      Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, "true", "true"),
+      Row(1987, 10, 4, "PS", 1451, "SAN", "SFO", 447, "false", "true"),
+      Row(1987, 10, 6, "PS", 1451, "SAN", "SFO", 447, "true", "true")
+    )
+
+
+    val schema = StructType(List(
+      StructField("Year", IntegerType, true),
+      StructField("Month", IntegerType, true),
+      StructField("DayOfWeek", IntegerType, true),
+      StructField("UniqueCarrier", StringType, true),
+      StructField("FlightNum", IntegerType, true),
+      StructField("Origin", StringType, true),
+      StructField("Dest", StringType, true),
+      StructField("Distance", IntegerType, true),
+      StructField("IsDepDelayed", StringType, true),
+      StructField("IsArrDelayed", StringType, true))
+    )
+
+    val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
+
+    mojo.transform(df).show(3, false)
+  }
+
+  test("BooleanColumn for mojo predictions") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
+      "airlines_boolean.mojo")
+    val data = Seq(
+      Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, true, true),
+      Row(1987, 10, 4, "PS", 1451, "SAN", "SFO", 447, false, true),
+      Row(1987, 10, 6, "PS", 1451, "SAN", "SFO", 447, true, true)
+    )
+
+
+    val schema = StructType(List(
+      StructField("Year", IntegerType, true),
+      StructField("Month", IntegerType, true),
+      StructField("DayOfWeek", IntegerType, true),
+      StructField("UniqueCarrier", StringType, true),
+      StructField("FlightNum", IntegerType, true),
+      StructField("Origin", StringType, true),
+      StructField("Dest", StringType, true),
+      StructField("Distance", IntegerType, true),
+      StructField("IsDepDelayed", BooleanType, true),
+      StructField("IsArrDelayed", BooleanType, true))
+    )
+
+    val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
+
+    mojo.transform(df).show(3, false)
+  }
+
   def testModelReload(name: String, df: DataFrame, model: H2OMOJOModel): Unit = {
     val predBeforeSave = model.transform(df)
     val modelFolder = tempFolder(name)
     model.write.overwrite.save(modelFolder)
-    val reloadedModel  = H2OMOJOModel.load(modelFolder)
+    val reloadedModel = H2OMOJOModel.load(modelFolder)
     val predAfterReload = reloadedModel.transform(df)
     // Check if predictions are same
     TestUtils.assertEqual(predBeforeSave, predAfterReload)
@@ -117,10 +176,10 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
   def binomialModelFixture() = {
     val inputDf = prostateDataFrame
     val gbm = new H2OGBM()(hc, sqlContext)
-        .setNtrees(2)
-        .setSeed(42)
-        .setDistribution(DistributionFamily.bernoulli)
-        .setPredictionCol("capsule")
+      .setNtrees(2)
+      .setSeed(42)
+      .setDistribution(DistributionFamily.bernoulli)
+      .setPredictionCol("capsule")
 
     (inputDf, gbm.fit(inputDf))
   }
@@ -128,10 +187,10 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
   def multinomialModelFixture() = {
     val inputDf = irisDataFrame
     val gbm = new H2OGBM()(hc, sqlContext)
-        .setNtrees(2)
-        .setSeed(42)
-        .setDistribution(DistributionFamily.multinomial)
-        .setPredictionCol("class")
+      .setNtrees(2)
+      .setSeed(42)
+      .setDistribution(DistributionFamily.multinomial)
+      .setPredictionCol("class")
 
     (inputDf, gbm.fit(inputDf))
   }
@@ -183,4 +242,5 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
       "deep_learning_prostate.mojo")
     (prostateDataFrame, mojo)
   }
+
 }
