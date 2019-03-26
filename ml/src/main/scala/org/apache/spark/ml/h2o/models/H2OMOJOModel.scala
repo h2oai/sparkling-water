@@ -105,6 +105,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     pred.asInstanceOf[AnomalyDetectionPrediction].score,
     pred.asInstanceOf[AnomalyDetectionPrediction].normalizedScore
   )
+
   def getModelUdf() = {
     val modelUdf = {
       getOrCreateEasyModelWrapper().getModelCategory match {
@@ -166,7 +167,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
       if (row.get(idxRow) != null) {
         f.dataType match {
           case BooleanType =>
-            if (row.getBoolean(idxRow)) put(f.name, 1.toString) else put(f.name, 0.toString)
+            put(f.name, row.getBoolean(idxRow).toString)
           case BinaryType =>
             row.getAs[Array[Byte]](idxRow).zipWithIndex.foreach { case (v, idx) =>
               put(f.name + idx, v.toString)
