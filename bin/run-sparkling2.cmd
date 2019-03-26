@@ -30,14 +30,13 @@ echo   Driver memory   (DRIVER_MEMORY): %DRIVER_MEMORY%
 echo   H2O JVM options (H2O_SYS_OPS)  : %H2O_SYS_OPS%
 echo ---------
 
-cd %TOPDIR%
 call %SPARK_HOME%/bin/spark-submit2.cmd ^
  --class %DRIVER_CLASS% ^
  --master %MASTER% ^
  --driver-memory %DRIVER_MEMORY% ^
  --driver-java-options "%H2O_SYS_OPS%" ^
  %VERBOSE% ^
- %TOPDIR%/assembly/build/libs/%FAT_JAR% ^
+ %FAT_JAR_FILE% ^
  %*
 exit /b %ERRORLEVEL%
 
