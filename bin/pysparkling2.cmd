@@ -12,7 +12,7 @@ rem end of checking Sparkling environment
 
 call %LIBSW% :banner
 
-rem setup pysparkling command line
+rem Setup pysparkling command line
 SET PYTHONPATH=%PY_ZIP_FILE%:%PYTHONPATH%
 call %SPARK_HOME%/bin/pyspark2.cmd ^
  --py-files %PY_ZIP_FILE% ^
