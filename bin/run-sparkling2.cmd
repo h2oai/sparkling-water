@@ -35,8 +35,6 @@ call %SPARK_HOME%/bin/spark-submit2.cmd ^
  --master %MASTER% ^
  --driver-memory %DRIVER_MEMORY% ^
  --driver-java-options "%H2O_SYS_OPS%" ^
- --driver-class-path "%TOPDIR%/jars/httpclient-4.5.2.jar" ^
- --conf "spark.executor.extraClassPath=%TOPDIR%/jars/httpclient-4.5.2.jar" ^
  %VERBOSE% ^
  %FAT_JAR_FILE% ^
  %*

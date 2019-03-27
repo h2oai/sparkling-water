@@ -25,9 +25,8 @@ call %LIBSW% :banner
 call %SPARK_HOME%/bin/spark-shell2.cmd ^
  --driver-memory %DRIVER_MEMORY% ^
  --jars %FAT_JAR_FILE% ^
- --driver-class-path "%TOPDIR%/jars/httpclient-4.5.2.jar" ^
- --conf "spark.executor.extraClassPath=%TOPDIR%/jars/httpclient-4.5.2.jar" ^
  %*
+
 
 exit /b %ERRORLEVEL%
 rem end of main script
