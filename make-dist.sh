@@ -41,8 +41,6 @@ examples/smalldata/smsData.txt
 examples/smalldata/craigslistJobTitles.csv
 examples/smalldata/bcwd.csv
 
-jars/httpclient-4.5.2.jar
-
 $(find examples/flows/ -type f)
 $(find docker/ -type f | grep -v iml$)
 $(find py/build/dist/ -type f -name '*.zip')
