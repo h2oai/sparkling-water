@@ -17,7 +17,6 @@ SET PYTHONPATH=%PY_ZIP_FILE%:%PYTHONPATH%
 call %SPARK_HOME%/bin/pyspark2.cmd ^
  --py-files %PY_ZIP_FILE% ^
  %*
-call !SPARK_HOME!/bin/pyspark2.cmd !SPARK_OPT_PYFILES! %SPARK_OPT_JARS% %*
 
 exit /b %ERRORLEVEL%
 rem end of main script
