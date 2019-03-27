@@ -16,5 +16,5 @@ checkPyZipExists
 checkPythonPackages
 
 PYTHONPATH=$PY_ZIP_FILE:$PYTHONPATH \
-pyspark --py-files "$PY_ZIP_FILE" --driver-class-path "$TOPDIR/jars/httpclient-4.5.2.jar" --conf "spark.executor.extraClassPath=$TOPDIR/jars/httpclient-4.5.2.jar" "$@"
+pyspark --py-files "$PY_ZIP_FILE" "$@"
 
