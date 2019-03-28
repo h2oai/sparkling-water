@@ -59,6 +59,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
 
   private var grid: Grid[_] = _
   private var gridModels: Array[H2OMOJOModel] = _
+
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val algoParams = gridSearchParams.map(_.getAlgoParams()).getOrElse(getAlgoParams())
 
@@ -122,7 +123,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     grid = job.get()
     gridModels = grid.getModels.map { m =>
       val data = ModelSerializationSupport.getMojoData(m)
-      new H2OMOJOModel(data, Identifiable.randomUID( s"${getAlgoParams().algoName()}_mojoModel"))
+      new H2OMOJOModel(data, Identifiable.randomUID(s"${getAlgoParams().algoName()}_mojoModel"))
     }
 
     // Block until GridSearch finishes
@@ -251,7 +252,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
         PojoUtils.getFieldEvenInherited(m._parms, param).get(m._parms).toString
       }
 
-      Row(paramValues:_*)
+      Row(paramValues: _*)
     }
 
     val paramNames = hyperParamNames.map(StructField(_, StringType, nullable = false)).toList
@@ -273,7 +274,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
       val metricValues = Seq(id) ++ metrics.map(_._2)
 
       val values = metricValues
-      Row(values:_*)
+      Row(values: _*)
     }
 
     val metricNames = getMetrics(grid.getModels()(0)._output._training_metrics).
@@ -284,7 +285,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   }
 
   def getGridModels() = {
-    if(gridModels == null){
+    if (gridModels == null) {
       throw new IllegalArgumentException("The model must be first fit to be able to obtain list of grid search algorithms")
     }
     gridModels
