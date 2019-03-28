@@ -1215,6 +1215,7 @@ class H2OGridSearchParams(Params):
     stoppingRounds = Param(Params._dummy(), "stoppingRounds", "stoppingRounds")
     stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "stoppingTolerance")
     stoppingMetric = Param(Params._dummy(), "stoppingMetric", "stoppingMetric")
+    nfolds = Param(Params._dummy(), "nfolds", "nfolds")
 
     ##
     # Getters
@@ -1264,6 +1265,9 @@ class H2OGridSearchParams(Params):
     def getStoppingMetric(self):
         # Convert Java Enum to String so we can represent it in Python
         return self.getOrDefault(self.stoppingMetric).toString()
+
+    def getNfolds(self):
+        return self.getOrDefault(self.nfolds)
 
     ##
     # Setters
@@ -1321,3 +1325,7 @@ class H2OGridSearchParams(Params):
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.ScoreKeeper.StoppingMetric.values(), value)
         return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
+
+    def setNfolds(self, value):
+        assert_is_type(value, int)
+        return self._set(nfolds=value)

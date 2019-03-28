@@ -87,7 +87,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     } else {
       algoParams._train = input._key
     }
-
+    algoParams._nfolds = getNfolds()
     algoParams._response_column = getPredictionCol()
     val trainFrame = algoParams._train.get()
     if (getAllStringColumnsToCategorical()) {
@@ -191,23 +191,38 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
   }
 
-  def getMetrics(mm: ModelMetrics) = {
+  private def getMetrics(mm: ModelMetrics) = {
     // Supervised metrics
     val metricPairs = mm match {
       case regressionGLM: ModelMetricsRegressionGLM =>
         Seq(
+          ("MeanResidualDeviance", regressionGLM._mean_residual_deviance),
           ("ResidualDeviance", regressionGLM._resDev),
           ("ResidualDegreesOfFreedom", regressionGLM._residualDegressOfFreedom.toDouble),
           ("NullDeviance", regressionGLM._nullDev),
           ("NullDegreesOfFreedom", regressionGLM._nullDegressOfFreedom.toDouble),
-          ("AIC", regressionGLM._AIC)
+          ("AIC", regressionGLM._AIC),
+          ("R2", regressionGLM.r2())
         )
       case regression: ModelMetricsRegression =>
         Seq(
-          ("MeanResidualDeviance", regression._mean_residual_deviance)
+          ("MeanResidualDeviance", regression._mean_residual_deviance),
+          ("R2", regression.r2())
         )
       case binomialGLM: ModelMetricsBinomialGLM =>
         Seq(
+          ("AUC", binomialGLM.auc),
+          ("Gini", binomialGLM._auc._gini),
+          ("Logloss", binomialGLM.logloss),
+          ("F1", binomialGLM.cm.f1),
+          ("F2", binomialGLM.cm.f2),
+          ("F0point5", binomialGLM.cm.f0point5),
+          ("Accuracy", binomialGLM.cm.accuracy),
+          ("Error", binomialGLM.cm.err),
+          ("Precision", binomialGLM.cm.precision),
+          ("Recall", binomialGLM.cm.recall),
+          ("MCC", binomialGLM.cm.mcc),
+          ("MaxPerClassError", binomialGLM.cm.max_per_class_error),
           ("ResidualDeviance", binomialGLM._resDev),
           ("ResidualDegreesOfFreedom", binomialGLM._residualDegressOfFreedom.toDouble),
           ("NullDeviance", binomialGLM._nullDev),
@@ -240,7 +255,10 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
       case _ => Seq()
     }
 
-    Seq(("MSE", mm.mse)) ++ metricPairs
+    Seq(
+      ("MSE", mm.mse),
+      ("RMSE", mm.rmse())
+    ) ++ metricPairs
   }
 
 
@@ -401,7 +419,7 @@ trait H2OGridSearchParams extends Params {
   private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Relative tolerance for metric-based" +
     " stopping criterion: stop if relative improvement is not at least this much.")
   private final val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping Metric")
-
+  private final val nfolds = new IntParam(this, "nfolds", "nfolds")
   //
   // Default values
   //
@@ -418,7 +436,8 @@ trait H2OGridSearchParams extends Params {
     seed -> -1,
     stoppingRounds -> 0,
     stoppingTolerance -> 0.001,
-    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO
+    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
+    nfolds -> 0
   )
 
   //
@@ -449,19 +468,22 @@ trait H2OGridSearchParams extends Params {
   def getMaxRuntimeSecs() = $(maxRuntimeSecs)
 
   /** @group getParam */
-  def getMaxModels = $(maxModels)
+  def getMaxModels() = $(maxModels)
 
   /** @group getParam */
-  def getSeed = $(seed)
+  def getSeed() = $(seed)
 
   /** @group getParam */
-  def getStoppingRounds = $(stoppingRounds)
+  def getStoppingRounds() = $(stoppingRounds)
 
   /** @group getParam */
-  def getStoppingTolerance = $(stoppingTolerance)
+  def getStoppingTolerance() = $(stoppingTolerance)
 
   /** @group getParam */
-  def getStoppingMetric = $(stoppingMetric)
+  def getStoppingMetric() = $(stoppingMetric)
+
+  /** @group getParam */
+  def getNfolds() = $(nfolds)
 
   //
   // Setters
@@ -517,8 +539,11 @@ trait H2OGridSearchParams extends Params {
   /** @group setParam */
   def setStoppingTolerance(value: Double) = set(stoppingTolerance, value)
 
-  /** @group getParam */
+  /** @group setParam */
   def setStoppingMetric(value: ScoreKeeper.StoppingMetric) = set(stoppingMetric, value)
+
+  /** @group setParam */
+  def setNfolds(value: Int) = set(nfolds, value)
 }
 
 class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: String,
@@ -528,3 +553,7 @@ class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: St
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
 
+private object MetricOrder extends Enumeration {
+  type WeekDay = Value
+  val Asc, Desc = Value
+}
