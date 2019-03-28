@@ -32,6 +32,8 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
+import org.apache.spark.ml.h2o.algos.H2OGridSearch.Metric
+import org.apache.spark.ml.h2o.algos.H2OGridSearch.Metric.Metric
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
@@ -58,7 +60,8 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
 
   private var grid: Grid[_] = _
-  private var gridModels: Array[H2OMOJOModel] = _
+  private var gridModels: Array[Model[_, _ <: Model.Parameters, _ <: Model.Output]] = _
+  private var gridMojoModels: Array[H2OMOJOModel] = _
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val algoParams = gridSearchParams.map(_.getAlgoParams()).getOrElse(getAlgoParams())
@@ -121,7 +124,8 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams,
       paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria)
     grid = job.get()
-    gridModels = grid.getModels.map { m =>
+    gridModels = sortGrid(grid)
+    gridMojoModels = gridModels.map { m =>
       val data = ModelSerializationSupport.getMojoData(m)
       new H2OMOJOModel(data, Identifiable.randomUID(s"${getAlgoParams().algoName()}_mojoModel"))
     }
@@ -180,91 +184,107 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)), Identifiable.randomUID("gridSearch_mojoModel"))
   }
 
-  def selectModelFromGrid(grid: Grid[_]) = {
-    if (grid.getModels.length == 0) {
-      throw new IllegalArgumentException("No Model returned.")
-    }
-    if (modelSelectionClosure.isEmpty) {
-      grid.getModels()(0)
+  private def sortGrid(grid: Grid[_]) = {
+    if (getSelectBestModelBy() == null) { // don't sort
+      grid.getModels
     } else {
-      modelSelectionClosure.get.apply(grid)
+      val metric = getSelectBestModelBy()
+      val modelMetricPair = grid.getModels.map { m =>
+        (m, getMetrics(m._output._training_metrics).find(_._1 == metric).get._2)
+      }
+
+      val sorted = if (getSelectBestModelDecreasing()) {
+        modelMetricPair.sortBy(_._2)(Ordering.Double.reverse)
+      } else {
+        modelMetricPair.sortBy(_._2)(Ordering.Double)
+      }
+
+      sorted.map(_._1)
     }
   }
+
+  def selectModelFromGrid(grid: Grid[_]) = {
+    if (gridModels.isEmpty) {
+      throw new IllegalArgumentException("No Model returned.")
+    }
+    grid.getModels()(0)
+  }
+
 
   private def getMetrics(mm: ModelMetrics) = {
     // Supervised metrics
     val metricPairs = mm match {
       case regressionGLM: ModelMetricsRegressionGLM =>
         Seq(
-          ("MeanResidualDeviance", regressionGLM._mean_residual_deviance),
-          ("ResidualDeviance", regressionGLM._resDev),
-          ("ResidualDegreesOfFreedom", regressionGLM._residualDegressOfFreedom.toDouble),
-          ("NullDeviance", regressionGLM._nullDev),
-          ("NullDegreesOfFreedom", regressionGLM._nullDegressOfFreedom.toDouble),
-          ("AIC", regressionGLM._AIC),
-          ("R2", regressionGLM.r2())
+          (Metric.MeanResidualDeviance, regressionGLM._mean_residual_deviance),
+          (Metric.NullDeviance, regressionGLM._resDev),
+          (Metric.ResidualDegreesOfFreedom, regressionGLM._residualDegressOfFreedom.toDouble),
+          (Metric.NullDeviance, regressionGLM._nullDev),
+          (Metric.NullDegreesOfFreedom, regressionGLM._nullDegressOfFreedom.toDouble),
+          (Metric.AIC, regressionGLM._AIC),
+          (Metric.R2, regressionGLM.r2())
         )
       case regression: ModelMetricsRegression =>
         Seq(
-          ("MeanResidualDeviance", regression._mean_residual_deviance),
-          ("R2", regression.r2())
+          (Metric.MeanResidualDeviance, regression._mean_residual_deviance),
+          (Metric.R2, regression.r2())
         )
       case binomialGLM: ModelMetricsBinomialGLM =>
         Seq(
-          ("AUC", binomialGLM.auc),
-          ("Gini", binomialGLM._auc._gini),
-          ("Logloss", binomialGLM.logloss),
-          ("F1", binomialGLM.cm.f1),
-          ("F2", binomialGLM.cm.f2),
-          ("F0point5", binomialGLM.cm.f0point5),
-          ("Accuracy", binomialGLM.cm.accuracy),
-          ("Error", binomialGLM.cm.err),
-          ("Precision", binomialGLM.cm.precision),
-          ("Recall", binomialGLM.cm.recall),
-          ("MCC", binomialGLM.cm.mcc),
-          ("MaxPerClassError", binomialGLM.cm.max_per_class_error),
-          ("ResidualDeviance", binomialGLM._resDev),
-          ("ResidualDegreesOfFreedom", binomialGLM._residualDegressOfFreedom.toDouble),
-          ("NullDeviance", binomialGLM._nullDev),
-          ("NullDegreesOfFreedom", binomialGLM._nullDegressOfFreedom.toDouble),
-          ("AIC", binomialGLM._AIC)
+          (Metric.AUC, binomialGLM.auc),
+          (Metric.Gini, binomialGLM._auc._gini),
+          (Metric.Logloss, binomialGLM.logloss),
+          (Metric.F1, binomialGLM.cm.f1),
+          (Metric.F2, binomialGLM.cm.f2),
+          (Metric.F0point5, binomialGLM.cm.f0point5),
+          (Metric.Accuracy, binomialGLM.cm.accuracy),
+          (Metric.Error, binomialGLM.cm.err),
+          (Metric.Precision, binomialGLM.cm.precision),
+          (Metric.Recall, binomialGLM.cm.recall),
+          (Metric.MCC, binomialGLM.cm.mcc),
+          (Metric.MaxPerClassError, binomialGLM.cm.max_per_class_error),
+          (Metric.ResidualDeviance, binomialGLM._resDev),
+          (Metric.ResidualDegreesOfFreedom, binomialGLM._residualDegressOfFreedom.toDouble),
+          (Metric.NullDeviance, binomialGLM._nullDev),
+          (Metric.NullDegreesOfFreedom, binomialGLM._nullDegressOfFreedom.toDouble),
+          (Metric.AIC, binomialGLM._AIC)
         )
       case binomial: ModelMetricsBinomial =>
         Seq(
-          ("AUC", binomial.auc),
-          ("Gini", binomial._auc._gini),
-          ("Logloss", binomial.logloss),
-          ("F1", binomial.cm.f1),
-          ("F2", binomial.cm.f2),
-          ("F0point5", binomial.cm.f0point5),
-          ("Accuracy", binomial.cm.accuracy),
-          ("Error", binomial.cm.err),
-          ("Precision", binomial.cm.precision),
-          ("Recall", binomial.cm.recall),
-          ("MCC", binomial.cm.mcc),
-          ("MaxPerClassError", binomial.cm.max_per_class_error)
+          (Metric.AUC, binomial.auc),
+          (Metric.Gini, binomial._auc._gini),
+          (Metric.Logloss, binomial.logloss),
+          (Metric.F1, binomial.cm.f1),
+          (Metric.F2, binomial.cm.f2),
+          (Metric.F0point5, binomial.cm.f0point5),
+          (Metric.Accuracy, binomial.cm.accuracy),
+          (Metric.Error, binomial.cm.err),
+          (Metric.Precision, binomial.cm.precision),
+          (Metric.Recall, binomial.cm.recall),
+          (Metric.MCC, binomial.cm.mcc),
+          (Metric.MaxPerClassError, binomial.cm.max_per_class_error)
         )
 
       case multinomial: ModelMetricsMultinomial =>
         Seq(
-          ("Logloss", multinomial.logloss),
-          ("Error", multinomial.cm.err),
-          ("MaxPerClassError", multinomial.cm.max_per_class_error),
-          ("Accuracy", multinomial.cm.accuracy)
+          (Metric.Logloss, multinomial.logloss),
+          (Metric.Error, multinomial.cm.err),
+          (Metric.MaxPerClassError, multinomial.cm.max_per_class_error),
+          (Metric.Accuracy, multinomial.cm.accuracy)
         )
       case _ => Seq()
     }
 
     Seq(
-      ("MSE", mm.mse),
-      ("RMSE", mm.rmse())
+      (Metric.MSE, mm.mse),
+      (Metric.RMSE, mm.rmse())
     ) ++ metricPairs
   }
 
 
   def getGridModelsParams() = {
     val hyperParamNames = getHyperParameters().keySet().asScala.toSeq
-    val rows = grid.getModels.zip(gridModels.map(_.uid)).map { case (m, id) =>
+    val rows = gridModels.zip(gridMojoModels.map(_.uid)).map { case (m, id) =>
 
       val paramValues = Seq(id) ++ hyperParamNames.map { param =>
         PojoUtils.getFieldEvenInherited(m._parms, param).get(m._parms).toString
@@ -287,7 +307,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
       throw new IllegalArgumentException("No model returned.")
     }
 
-    val rows = grid.getModels.zip(gridModels.map(_.uid)).map { case (m, id) =>
+    val rows = gridModels.zip(gridMojoModels.map(_.uid)).map { case (m, id) =>
       val metrics = getMetrics(m._output._training_metrics)
       val metricValues = Seq(id) ++ metrics.map(_._2)
 
@@ -296,28 +316,22 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
 
     val metricNames = getMetrics(grid.getModels()(0)._output._training_metrics).
-      map(_._1).map(StructField(_, DoubleType, nullable = false)).toList
+      map(_._1.toString).map(StructField(_, DoubleType, nullable = false)).toList
     val schema = StructType(List(StructField("Model ID", StringType, nullable = false)) ++ metricNames)
     val fr = hc.sparkSession.createDataFrame(hc.sparkContext.parallelize(rows), schema)
     fr
   }
 
   def getGridModels() = {
-    if (gridModels == null) {
+    if (gridMojoModels == null) {
       throw new IllegalArgumentException("The model must be first fit to be able to obtain list of grid search algorithms")
     }
-    gridModels
+    gridMojoModels
   }
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
     schema
-  }
-
-  private var modelSelectionClosure: Option[Grid[_] => Model[_, _, _]] = None
-
-  def setModelSelectionClosure(cl: Grid[_] => Model[_, _, _]) = {
-    modelSelectionClosure = Some(cl)
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
@@ -348,6 +362,19 @@ object H2OGridSearch extends MLReadable[H2OGridSearch] {
 
   @Since("1.6.0")
   override def load(path: String): H2OGridSearch = super.load(path)
+
+  object MetricOrder extends Enumeration {
+    type MetricOrder = Value
+    val Asc, Desc = Value
+  }
+
+  object Metric extends Enumeration {
+    type Metric = Value
+    val MeanResidualDeviance, R2, ResidualDeviance, ResidualDegreesOfFreedom, NullDeviance,
+    NullDegreesOfFreedom, AIC, AUC, Gini, F1, F2,
+    F0point5, Precision, Recall, MCC, Logloss, Error, MaxPerClassError, Accuracy, MSE, RMSE = Value
+  }
+
 }
 
 // FIXME: H2O Params are iced objects!
@@ -420,6 +447,9 @@ trait H2OGridSearchParams extends Params {
     " stopping criterion: stop if relative improvement is not at least this much.")
   private final val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping Metric")
   private final val nfolds = new IntParam(this, "nfolds", "nfolds")
+  private final val selectBestModelBy = new MetricParam(this, "selectBestModelBy", "Select best model by specific metric." +
+    "If this value is not specified that the first model os taken.")
+  private final val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing", "True if sort in decreasing order accordingto selected metrics")
   //
   // Default values
   //
@@ -437,7 +467,9 @@ trait H2OGridSearchParams extends Params {
     stoppingRounds -> 0,
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
-    nfolds -> 0
+    nfolds -> 0,
+    selectBestModelBy -> null,
+    selectBestModelDecreasing -> true
   )
 
   //
@@ -485,6 +517,12 @@ trait H2OGridSearchParams extends Params {
   /** @group getParam */
   def getNfolds() = $(nfolds)
 
+  /** @group getParam */
+  def getSelectBestModelBy() = $(selectBestModelBy)
+
+  /** @group getParam */
+  def getSelectBestModelDecreasing() = $(selectBestModelDecreasing)
+
   //
   // Setters
   //
@@ -522,28 +560,35 @@ trait H2OGridSearchParams extends Params {
   def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
 
   /** @group setParam */
-  def setStrategy(value: HyperSpaceSearchCriteria.Strategy) = set(strategy, value)
+  def setStrategy(value: HyperSpaceSearchCriteria.Strategy): this.type = set(strategy, value)
 
   /** @group setParam */
-  def setMaxRuntimeSecs(value: Double) = set(maxRuntimeSecs, value)
+  def setMaxRuntimeSecs(value: Double): this.type = set(maxRuntimeSecs, value)
 
   /** @group setParam */
-  def setMaxModels(value: Int) = set(maxModels, value)
+  def setMaxModels(value: Int): this.type = set(maxModels, value)
 
   /** @group setParam */
-  def setSeed(value: Long) = set(seed, value)
+  def setSeed(value: Long): this.type = set(seed, value)
 
   /** @group setParam */
-  def setStoppingRounds(value: Int) = set(stoppingRounds, value)
+  def setStoppingRounds(value: Int): this.type = set(stoppingRounds, value)
 
   /** @group setParam */
-  def setStoppingTolerance(value: Double) = set(stoppingTolerance, value)
+  def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
 
   /** @group setParam */
-  def setStoppingMetric(value: ScoreKeeper.StoppingMetric) = set(stoppingMetric, value)
+  def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = set(stoppingMetric, value)
 
   /** @group setParam */
-  def setNfolds(value: Int) = set(nfolds, value)
+  def setNfolds(value: Int): this.type = set(nfolds, value)
+
+  /** @group setParam */
+  def setSelectBestModelBy(value: Metric): this.type = set(selectBestModelBy, value)
+
+  /** @group setParam */
+  def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
+
 }
 
 class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: String,
@@ -553,7 +598,9 @@ class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: St
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
 
-private object MetricOrder extends Enumeration {
-  type WeekDay = Value
-  val Asc, Desc = Value
+class MetricParam private[h2o](parent: Params, name: String, doc: String,
+                               isValid: Metric => Boolean)
+  extends EnumParam[Metric](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
