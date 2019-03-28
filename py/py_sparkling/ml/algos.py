@@ -390,5 +390,11 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
     def get_grid_models(self):
          return [ H2OMOJOModel(m) for m in self._java_obj.getGridModels()]
 
+    def get_grid_models_params(self):
+        return DataFrame(self._java_obj.getGridModelsParams(),  self._hc._sql_context)
+
+    def get_grid_models_metrics(self):
+        return DataFrame(self._java_obj.getGridModelsMetrics(),  self._hc._sql_context)
+
     def _create_model(self, java_model):
         return H2OGridSearchModel(java_model)

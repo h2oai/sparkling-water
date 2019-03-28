@@ -24,10 +24,10 @@ import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.grid.GridSearch.SimpleParametersBuilderFactory
 import hex.grid.HyperSpaceSearchCriteria.{CartesianSearchCriteria, RandomDiscreteValueSearchCriteria}
-import hex.{Model, ScoreKeeper}
 import hex.grid.{Grid, GridSearch, HyperSpaceSearchCriteria}
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
+import hex.{Model, ModelMetrics, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMultinomial, ModelMetricsRegression, ModelMetricsRegressionGLM, ScoreKeeper}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
@@ -36,10 +36,11 @@ import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{Dataset, SQLContext}
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{Dataset, Row, SQLContext}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
+import water.util.PojoUtils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -55,7 +56,9 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   def this()(implicit hc: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gridsearch"))
 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
+
   private var grid: Grid[_] = _
+  private var gridModels: Array[H2OMOJOModel] = _
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val algoParams = gridSearchParams.map(_.getAlgoParams()).getOrElse(getAlgoParams())
 
@@ -108,15 +111,19 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
 
     val paramsBuilder = algoParams match {
 
-      case _ : GBMParameters => new SimpleParametersBuilderFactory[GBMParameters]
-      case _ : DeepLearningParameters => new SimpleParametersBuilderFactory[DeepLearningParameters]
-      case _ : GLMParameters => new SimpleParametersBuilderFactory[GLMParameters]
-      case _ : XGBoostParameters => new SimpleParametersBuilderFactory[XGBoostParameters]
+      case _: GBMParameters => new SimpleParametersBuilderFactory[GBMParameters]
+      case _: DeepLearningParameters => new SimpleParametersBuilderFactory[DeepLearningParameters]
+      case _: GLMParameters => new SimpleParametersBuilderFactory[GLMParameters]
+      case _: XGBoostParameters => new SimpleParametersBuilderFactory[XGBoostParameters]
       case algo => throw new IllegalArgumentException("Unsupported Algorithm " + algo.algoName())
     }
     val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams,
       paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria)
     grid = job.get()
+    gridModels = grid.getModels.map { m =>
+      val data = ModelSerializationSupport.getMojoData(m)
+      new H2OMOJOModel(data, Identifiable.randomUID( s"${getAlgoParams().algoName()}_mojoModel"))
+    }
 
     // Block until GridSearch finishes
     val model = trainModel(grid)
@@ -183,14 +190,104 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
   }
 
-  def getGridModels() = {
-    if(grid == null){
+  def getMetrics(mm: ModelMetrics) = {
+    // Supervised metrics
+    val metricPairs = mm match {
+      case regressionGLM: ModelMetricsRegressionGLM =>
+        Seq(
+          ("ResidualDeviance", regressionGLM._resDev),
+          ("ResidualDegreesOfFreedom", regressionGLM._residualDegressOfFreedom.toDouble),
+          ("NullDeviance", regressionGLM._nullDev),
+          ("NullDegreesOfFreedom", regressionGLM._nullDegressOfFreedom.toDouble),
+          ("AIC", regressionGLM._AIC)
+        )
+      case regression: ModelMetricsRegression =>
+        Seq(
+          ("MeanResidualDeviance", regression._mean_residual_deviance)
+        )
+      case binomialGLM: ModelMetricsBinomialGLM =>
+        Seq(
+          ("ResidualDeviance", binomialGLM._resDev),
+          ("ResidualDegreesOfFreedom", binomialGLM._residualDegressOfFreedom.toDouble),
+          ("NullDeviance", binomialGLM._nullDev),
+          ("NullDegreesOfFreedom", binomialGLM._nullDegressOfFreedom.toDouble),
+          ("AIC", binomialGLM._AIC)
+        )
+      case binomial: ModelMetricsBinomial =>
+        Seq(
+          ("AUC", binomial.auc),
+          ("Gini", binomial._auc._gini),
+          ("Logloss", binomial.logloss),
+          ("F1", binomial.cm.f1),
+          ("F2", binomial.cm.f2),
+          ("F0point5", binomial.cm.f0point5),
+          ("Accuracy", binomial.cm.accuracy),
+          ("Error", binomial.cm.err),
+          ("Precision", binomial.cm.precision),
+          ("Recall", binomial.cm.recall),
+          ("MCC", binomial.cm.mcc),
+          ("MaxPerClassError", binomial.cm.max_per_class_error)
+        )
+
+      case multinomial: ModelMetricsMultinomial =>
+        Seq(
+          ("Logloss", multinomial.logloss),
+          ("Error", multinomial.cm.err),
+          ("MaxPerClassError", multinomial.cm.max_per_class_error),
+          ("Accuracy", multinomial.cm.accuracy)
+        )
+      case _ => Seq()
+    }
+
+    Seq(("MSE", mm.mse)) ++ metricPairs
+  }
+
+
+  def getGridModelsParams() = {
+    val hyperParamNames = getHyperParameters().keySet().asScala.toSeq
+    val rows = grid.getModels.zip(gridModels.map(_.uid)).map { case (m, id) =>
+
+      val paramValues = Seq(id) ++ hyperParamNames.map { param =>
+        PojoUtils.getFieldEvenInherited(m._parms, param).get(m._parms).toString
+      }
+
+      Row(paramValues:_*)
+    }
+
+    val paramNames = hyperParamNames.map(StructField(_, StringType, nullable = false)).toList
+    val schema = StructType(List(StructField("Mojo Model ID", StringType, nullable = false)) ++ paramNames)
+    val fr = hc.sparkSession.createDataFrame(hc.sparkContext.parallelize(rows), schema)
+    fr
+  }
+
+  def getGridModelsMetrics() = {
+    if (grid == null) {
       throw new IllegalArgumentException("The model must be first fit to be able to obtain list of grid search algorithms")
     }
-    grid.getModels.map { m =>
-      val data = ModelSerializationSupport.getMojoData(m)
-      new H2OMOJOModel(data, Identifiable.randomUID( s"${getAlgoParams().algoName()}_mojoModel"))
+    if (gridModels.isEmpty) {
+      throw new IllegalArgumentException("No model returned.")
     }
+
+    val rows = grid.getModels.zip(gridModels.map(_.uid)).map { case (m, id) =>
+      val metrics = getMetrics(m._output._training_metrics)
+      val metricValues = Seq(id) ++ metrics.map(_._2)
+
+      val values = metricValues
+      Row(values:_*)
+    }
+
+    val metricNames = getMetrics(grid.getModels()(0)._output._training_metrics).
+      map(_._1).map(StructField(_, DoubleType, nullable = false)).toList
+    val schema = StructType(List(StructField("Model ID", StringType, nullable = false)) ++ metricNames)
+    val fr = hc.sparkSession.createDataFrame(hc.sparkContext.parallelize(rows), schema)
+    fr
+  }
+
+  def getGridModels() = {
+    if(gridModels == null){
+      throw new IllegalArgumentException("The model must be first fit to be able to obtain list of grid search algorithms")
+    }
+    gridModels
   }
 
   @DeveloperApi
