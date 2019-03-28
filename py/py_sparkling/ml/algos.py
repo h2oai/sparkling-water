@@ -347,7 +347,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
     @keyword_only
     def __init__(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
                  columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
-                 stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO"):
+                 stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0):
         super(H2OGridSearch, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch",
@@ -359,14 +359,14 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                          columnsToCategorical=[], strategy=self._hc._jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf("Cartesian"),
                          maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                          stoppingRounds=0, stoppingTolerance=0.001,
-                         stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"))
+                         stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=0)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
     @keyword_only
     def setParams(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
                   columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
-                  stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO"):
+                  stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0):
         kwargs = self._input_kwargs
 
 
