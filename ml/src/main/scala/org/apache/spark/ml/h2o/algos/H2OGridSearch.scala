@@ -401,8 +401,6 @@ trait H2OGridSearchParams extends Params {
   private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Relative tolerance for metric-based" +
     " stopping criterion: stop if relative improvement is not at least this much.")
   private final val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping Metric")
-  private final val sortBy = new Param[String](this, "sortBy", "Sort by specific metric")
-  private final val decreasing = new BooleanParam(this, "orderByMetric", "True if sort in decreasing order")
 
   //
   // Default values
@@ -420,9 +418,7 @@ trait H2OGridSearchParams extends Params {
     seed -> -1,
     stoppingRounds -> 0,
     stoppingTolerance -> 0.001,
-    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
-    sortBy -> null,
-    decreasing -> false
+    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO
   )
 
   //
@@ -466,12 +462,6 @@ trait H2OGridSearchParams extends Params {
 
   /** @group getParam */
   def getStoppingMetric = $(stoppingMetric)
-
-  /** @group getParam */
-  def getSortBy = $(sortBy)
-
-  /** @group getParam */
-  def getDecreasing = $(decreasing)
 
   //
   // Setters
@@ -529,12 +519,6 @@ trait H2OGridSearchParams extends Params {
 
   /** @group getParam */
   def setStoppingMetric(value: ScoreKeeper.StoppingMetric) = set(stoppingMetric, value)
-
-  /** @group setParam */
-  def setSortBy(value: String) = set(sortBy, value)
-
-  /** @group setParam */
-  def setDecreasing(value: Boolean) = set(decreasing, value)
 }
 
 class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: String,
