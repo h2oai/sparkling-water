@@ -32,8 +32,6 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
-import org.apache.spark.ml.h2o.algos.H2OGridSearch.Metric
-import org.apache.spark.ml.h2o.algos.H2OGridSearch.Metric.Metric
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
@@ -185,7 +183,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   }
 
   private def sortGrid(grid: Grid[_]) = {
-    if (getSelectBestModelBy() == null) { // don't sort
+    if (getSelectBestModelBy() == null) {
       grid.getModels
     } else {
       val metric = getSelectBestModelBy()
@@ -216,68 +214,68 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     val metricPairs = mm match {
       case regressionGLM: ModelMetricsRegressionGLM =>
         Seq(
-          (Metric.MeanResidualDeviance, regressionGLM._mean_residual_deviance),
-          (Metric.NullDeviance, regressionGLM._resDev),
-          (Metric.ResidualDegreesOfFreedom, regressionGLM._residualDegressOfFreedom.toDouble),
-          (Metric.NullDeviance, regressionGLM._nullDev),
-          (Metric.NullDegreesOfFreedom, regressionGLM._nullDegressOfFreedom.toDouble),
-          (Metric.AIC, regressionGLM._AIC),
-          (Metric.R2, regressionGLM.r2())
+          (H2OGridSearchMetric.MeanResidualDeviance, regressionGLM._mean_residual_deviance),
+          (H2OGridSearchMetric.NullDeviance, regressionGLM._resDev),
+          (H2OGridSearchMetric.ResidualDegreesOfFreedom, regressionGLM._residualDegressOfFreedom.toDouble),
+          (H2OGridSearchMetric.NullDeviance, regressionGLM._nullDev),
+          (H2OGridSearchMetric.NullDegreesOfFreedom, regressionGLM._nullDegressOfFreedom.toDouble),
+          (H2OGridSearchMetric.AIC, regressionGLM._AIC),
+          (H2OGridSearchMetric.R2, regressionGLM.r2())
         )
       case regression: ModelMetricsRegression =>
         Seq(
-          (Metric.MeanResidualDeviance, regression._mean_residual_deviance),
-          (Metric.R2, regression.r2())
+          (H2OGridSearchMetric.MeanResidualDeviance, regression._mean_residual_deviance),
+          (H2OGridSearchMetric.R2, regression.r2())
         )
       case binomialGLM: ModelMetricsBinomialGLM =>
         Seq(
-          (Metric.AUC, binomialGLM.auc),
-          (Metric.Gini, binomialGLM._auc._gini),
-          (Metric.Logloss, binomialGLM.logloss),
-          (Metric.F1, binomialGLM.cm.f1),
-          (Metric.F2, binomialGLM.cm.f2),
-          (Metric.F0point5, binomialGLM.cm.f0point5),
-          (Metric.Accuracy, binomialGLM.cm.accuracy),
-          (Metric.Error, binomialGLM.cm.err),
-          (Metric.Precision, binomialGLM.cm.precision),
-          (Metric.Recall, binomialGLM.cm.recall),
-          (Metric.MCC, binomialGLM.cm.mcc),
-          (Metric.MaxPerClassError, binomialGLM.cm.max_per_class_error),
-          (Metric.ResidualDeviance, binomialGLM._resDev),
-          (Metric.ResidualDegreesOfFreedom, binomialGLM._residualDegressOfFreedom.toDouble),
-          (Metric.NullDeviance, binomialGLM._nullDev),
-          (Metric.NullDegreesOfFreedom, binomialGLM._nullDegressOfFreedom.toDouble),
-          (Metric.AIC, binomialGLM._AIC)
+          (H2OGridSearchMetric.AUC, binomialGLM.auc),
+          (H2OGridSearchMetric.Gini, binomialGLM._auc._gini),
+          (H2OGridSearchMetric.Logloss, binomialGLM.logloss),
+          (H2OGridSearchMetric.F1, binomialGLM.cm.f1),
+          (H2OGridSearchMetric.F2, binomialGLM.cm.f2),
+          (H2OGridSearchMetric.F0point5, binomialGLM.cm.f0point5),
+          (H2OGridSearchMetric.Accuracy, binomialGLM.cm.accuracy),
+          (H2OGridSearchMetric.Error, binomialGLM.cm.err),
+          (H2OGridSearchMetric.Precision, binomialGLM.cm.precision),
+          (H2OGridSearchMetric.Recall, binomialGLM.cm.recall),
+          (H2OGridSearchMetric.MCC, binomialGLM.cm.mcc),
+          (H2OGridSearchMetric.MaxPerClassError, binomialGLM.cm.max_per_class_error),
+          (H2OGridSearchMetric.ResidualDeviance, binomialGLM._resDev),
+          (H2OGridSearchMetric.ResidualDegreesOfFreedom, binomialGLM._residualDegressOfFreedom.toDouble),
+          (H2OGridSearchMetric.NullDeviance, binomialGLM._nullDev),
+          (H2OGridSearchMetric.NullDegreesOfFreedom, binomialGLM._nullDegressOfFreedom.toDouble),
+          (H2OGridSearchMetric.AIC, binomialGLM._AIC)
         )
       case binomial: ModelMetricsBinomial =>
         Seq(
-          (Metric.AUC, binomial.auc),
-          (Metric.Gini, binomial._auc._gini),
-          (Metric.Logloss, binomial.logloss),
-          (Metric.F1, binomial.cm.f1),
-          (Metric.F2, binomial.cm.f2),
-          (Metric.F0point5, binomial.cm.f0point5),
-          (Metric.Accuracy, binomial.cm.accuracy),
-          (Metric.Error, binomial.cm.err),
-          (Metric.Precision, binomial.cm.precision),
-          (Metric.Recall, binomial.cm.recall),
-          (Metric.MCC, binomial.cm.mcc),
-          (Metric.MaxPerClassError, binomial.cm.max_per_class_error)
+          (H2OGridSearchMetric.AUC, binomial.auc),
+          (H2OGridSearchMetric.Gini, binomial._auc._gini),
+          (H2OGridSearchMetric.Logloss, binomial.logloss),
+          (H2OGridSearchMetric.F1, binomial.cm.f1),
+          (H2OGridSearchMetric.F2, binomial.cm.f2),
+          (H2OGridSearchMetric.F0point5, binomial.cm.f0point5),
+          (H2OGridSearchMetric.Accuracy, binomial.cm.accuracy),
+          (H2OGridSearchMetric.Error, binomial.cm.err),
+          (H2OGridSearchMetric.Precision, binomial.cm.precision),
+          (H2OGridSearchMetric.Recall, binomial.cm.recall),
+          (H2OGridSearchMetric.MCC, binomial.cm.mcc),
+          (H2OGridSearchMetric.MaxPerClassError, binomial.cm.max_per_class_error)
         )
 
       case multinomial: ModelMetricsMultinomial =>
         Seq(
-          (Metric.Logloss, multinomial.logloss),
-          (Metric.Error, multinomial.cm.err),
-          (Metric.MaxPerClassError, multinomial.cm.max_per_class_error),
-          (Metric.Accuracy, multinomial.cm.accuracy)
+          (H2OGridSearchMetric.Logloss, multinomial.logloss),
+          (H2OGridSearchMetric.Error, multinomial.cm.err),
+          (H2OGridSearchMetric.MaxPerClassError, multinomial.cm.max_per_class_error),
+          (H2OGridSearchMetric.Accuracy, multinomial.cm.accuracy)
         )
       case _ => Seq()
     }
 
     Seq(
-      (Metric.MSE, mm.mse),
-      (Metric.RMSE, mm.rmse())
+      (H2OGridSearchMetric.MSE, mm.mse),
+      (H2OGridSearchMetric.RMSE, mm.rmse())
     ) ++ metricPairs
   }
 
@@ -366,13 +364,6 @@ object H2OGridSearch extends MLReadable[H2OGridSearch] {
   object MetricOrder extends Enumeration {
     type MetricOrder = Value
     val Asc, Desc = Value
-  }
-
-  object Metric extends Enumeration {
-    type Metric = Value
-    val MeanResidualDeviance, R2, ResidualDeviance, ResidualDegreesOfFreedom, NullDeviance,
-    NullDegreesOfFreedom, AIC, AUC, Gini, F1, F2,
-    F0point5, Precision, Recall, MCC, Logloss, Error, MaxPerClassError, Accuracy, MSE, RMSE = Value
   }
 
 }
@@ -584,7 +575,7 @@ trait H2OGridSearchParams extends Params {
   def setNfolds(value: Int): this.type = set(nfolds, value)
 
   /** @group setParam */
-  def setSelectBestModelBy(value: Metric): this.type = set(selectBestModelBy, value)
+  def setSelectBestModelBy(value: H2OGridSearchMetric): this.type = set(selectBestModelBy, value)
 
   /** @group setParam */
   def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
@@ -599,8 +590,8 @@ class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: St
 }
 
 class MetricParam private[h2o](parent: Params, name: String, doc: String,
-                               isValid: Metric => Boolean)
-  extends EnumParam[Metric](parent, name, doc, isValid) {
+                               isValid: H2OGridSearchMetric => Boolean)
+  extends EnumParam[H2OGridSearchMetric](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
