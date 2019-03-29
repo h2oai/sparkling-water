@@ -183,22 +183,46 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   }
 
   private def sortGrid(grid: Grid[_]) = {
-    if (getSelectBestModelBy() == null) {
-      grid.getModels
-    } else {
-      val metric = getSelectBestModelBy()
-      val modelMetricPair = grid.getModels.map { m =>
-        (m, getMetrics(m._output._training_metrics).find(_._1 == metric).get._2)
-      }
-
-      val sorted = if (getSelectBestModelDecreasing()) {
-        modelMetricPair.sortBy(_._2)(Ordering.Double.reverse)
-      } else {
-        modelMetricPair.sortBy(_._2)(Ordering.Double)
-      }
-
-      sorted.map(_._1)
+    if (grid.getModels.isEmpty) {
+      throw new IllegalArgumentException("No Model returned.")
     }
+
+    val metric = if (getSelectBestModelBy() == null) {
+      grid.getModels()(0)._output._training_metrics match {
+        case _: ModelMetricsRegression => H2OGridSearchMetric.RMSE
+        case _: ModelMetricsBinomial => H2OGridSearchMetric.AUC
+        case _: ModelMetricsMultinomial => H2OGridSearchMetric.Logloss
+      }
+    } else {
+      getSelectBestModelBy()
+    }
+
+    val modelMetricPair = grid.getModels.map { m =>
+      (m, getMetrics(m._output._training_metrics).find(_._1 == metric).get._2)
+    }
+
+    val ordering = if (getSelectBestModelBy() == null) {
+      logWarning("You did not specify 'selectBestModelBy' parameter, but specified 'selectBestModelDecreasing'." +
+        " In the case 'selectBestModelBy' is not specified, we sort the grid models by default metric and ignore the ordering" +
+        " specified by 'selectBestModelDecreasing'." +
+        " If you still wish to use the specific ordering, please make sure to explicitly select the metric which you want to" +
+        " order.")
+      // in case the user did not specified the metric, override the ordering to ensure we return the best model first
+      grid.getModels()(0)._output._training_metrics match {
+        case _: ModelMetricsRegression => Ordering.Double
+        case _: ModelMetricsBinomial => Ordering.Double.reverse
+        case _: ModelMetricsMultinomial => Ordering.Double
+      }
+    } else {
+      if (getSelectBestModelDecreasing()) {
+        Ordering.Double.reverse
+      } else {
+        Ordering.Double
+      }
+    }
+
+
+    modelMetricPair.sortBy(_._2)(ordering).map(_._1)
   }
 
   def selectModelFromGrid(grid: Grid[_]) = {
@@ -440,7 +464,8 @@ trait H2OGridSearchParams extends Params {
   private final val nfolds = new IntParam(this, "nfolds", "nfolds")
   private final val selectBestModelBy = new MetricParam(this, "selectBestModelBy", "Select best model by specific metric." +
     "If this value is not specified that the first model os taken.")
-  private final val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing", "True if sort in decreasing order accordingto selected metrics")
+  private final val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
+    "True if sort in decreasing order accordingto selected metrics")
   //
   // Default values
   //
