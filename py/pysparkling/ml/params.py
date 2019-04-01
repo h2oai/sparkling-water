@@ -1215,6 +1215,9 @@ class H2OGridSearchParams(Params):
     stoppingRounds = Param(Params._dummy(), "stoppingRounds", "stoppingRounds")
     stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "stoppingTolerance")
     stoppingMetric = Param(Params._dummy(), "stoppingMetric", "stoppingMetric")
+    nfolds = Param(Params._dummy(), "nfolds", "nfolds")
+    selectBestModelBy = Param(Params._dummy(), "selectBestModelBy", "selectBestModelBy")
+    selectBestModelDecreasing = Param(Params._dummy(), "selectBestModelDecreasing", "selectBestModelDecreasing")
 
     ##
     # Getters
@@ -1264,6 +1267,17 @@ class H2OGridSearchParams(Params):
     def getStoppingMetric(self):
         # Convert Java Enum to String so we can represent it in Python
         return self.getOrDefault(self.stoppingMetric).toString()
+
+    def getNfolds(self):
+        return self.getOrDefault(self.nfolds)
+
+    def getSelectBestModelBy(self):
+        # Convert Java Enum to String so we can represent it in Python
+        return self.getOrDefault(self.selectBestModelBy).toString()
+
+    def getSelectBestModelDecreasing(self):
+        return self.getOrDefault(self.selectBestModelDecreasing)
+
 
     ##
     # Setters
@@ -1321,3 +1335,21 @@ class H2OGridSearchParams(Params):
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.ScoreKeeper.StoppingMetric.values(), value)
         return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
+
+    def setNfolds(self, value):
+        assert_is_type(value, int)
+        return self._set(nfolds=value)
+
+    def setSelectBestModelBy(self, value):
+        # H2O typechecks does not check for case sensitivity
+        assert_is_type(value, None, Enum("MeanResidualDeviance", "R2", "ResidualDeviance", "ResidualDegreesOfFreedom", "NullDeviance",
+                                   "NullDegreesOfFreedom", "AIC", "AUC", "Gini", "F1", "F2",
+                                   "F0point5", "Precision", "Recall", "MCC", "Logloss", "Error", "MaxPerClassError", "Accuracy", "MSE", "RMSE"))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.values(), value)
+        return self._set(selectBestModelBy=jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.valueOf(correct_case_value))
+
+    def setSelectBestModelDecreasing(self, value):
+        assert_is_type(value, bool)
+        return self._set(selectBestModelDecreasing=value)
+
