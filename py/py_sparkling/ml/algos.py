@@ -8,6 +8,7 @@ from pysparkling import *
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams
 from .models import H2OGBMModel, H2ODeepLearningModel, H2OAutoMLModel, H2OXGBoostModel, H2OGLMModel, H2OGridSearchModel
 from .util import JavaH2OMLReadable
+<<<<<<< HEAD
 
 def get_input_kwargs(self, spark_context):
     if spark_context.version == "2.1.0":
@@ -17,6 +18,9 @@ def get_input_kwargs(self, spark_context):
         return self._input_kwargs
 
 
+=======
+from py_sparkling.ml.models import H2OMOJOModel
+>>>>>>> d5e0884d... [SW-1174] Expose grid models as H2OMojoModels in the pipeline (#1107)
 java_max_double_value = (2-2**(-52))*(2**1023)
 
 
@@ -362,7 +366,8 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
     @keyword_only
     def __init__(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
                  columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
-                 stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO"):
+                 stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy=None,
+                 selectBestModelDecreasing=True):
         super(H2OGridSearch, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch",
@@ -374,14 +379,16 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                          columnsToCategorical=[], strategy=self._hc._jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf("Cartesian"),
                          maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                          stoppingRounds=0, stoppingTolerance=0.001,
-                         stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"))
+                         stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=0,
+                         selectBestModelBy=None, selectBestModelDecreasing=True)
         kwargs = get_input_kwargs(self, self._hc._sc)
         self.setParams(**kwargs)
 
     @keyword_only
     def setParams(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
                   columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
-                  stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO"):
+                  stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy=None,
+                  selectBestModelDecreasing=True):
         kwargs = get_input_kwargs(self, self._hc._sc)
 
 
@@ -390,6 +397,9 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
 
         if "strategy" in kwargs:
             kwargs["strategy"] = self._hc._jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf(kwargs["strategy"])
+
+        if "selectBestModelBy" in kwargs and kwargs["selectBestModelBy"] is not None:
+            kwargs["selectBestModelBy"] = self._hc._jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.valueOf(kwargs["selectBestModelBy"])
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -401,6 +411,15 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
             self._java_obj.setAlgo(tmp._java_obj)
 
         return self._set(**kwargs)
+
+    def get_grid_models(self):
+         return [ H2OMOJOModel(m) for m in self._java_obj.getGridModels()]
+
+    def get_grid_models_params(self):
+        return DataFrame(self._java_obj.getGridModelsParams(),  self._hc._sql_context)
+
+    def get_grid_models_metrics(self):
+        return DataFrame(self._java_obj.getGridModelsMetrics(),  self._hc._sql_context)
 
     def _create_model(self, java_model):
         return H2OGridSearchModel(java_model)
