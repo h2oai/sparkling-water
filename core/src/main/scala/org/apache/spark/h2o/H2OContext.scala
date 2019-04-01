@@ -32,6 +32,9 @@ import org.apache.spark.sql.execution.ui.{SQLAppStatusListener, SQLAppStatusStor
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.status.ElementTrackingStore
 import water._
+import water.api.ImportHiveTableHandler
+import water.api.ImportHiveTableHandler.HiveTableImporter
+import water.api.schemas3.ImportHiveTableV3
 import water.util.{Log, LogBridge, PrettyPrint}
 
 import scala.collection.mutable
@@ -360,6 +363,16 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     protected override def _h2oContext: H2OContext = self
   }
 
+
+  def importHiveTable(table: String, partitions: Array[Array[String]], database: String = HiveTableImporter.DEFAULT_DATABASE, allowMultiFormat: Boolean = false)= {
+    val hiveTableHandler = new ImportHiveTableHandler
+    val request = new ImportHiveTableV3
+    request.table = table
+    request.database = database
+    request.allow_multi_format = allowMultiFormat
+    request.partitions = partitions
+    hiveTableHandler.importHiveTable(3, request)
+  }
   // scalastyle:on
 }
 
