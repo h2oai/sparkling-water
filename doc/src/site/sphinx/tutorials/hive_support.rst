@@ -11,7 +11,7 @@ Preparation
 - Make sure ``$SPARK_HOME/conf`` contains the hive-site.xml with your Hive configuration.
 - In YARN client mode or any local mode, please copy the required connector jars for your Metastore to ``$SPARK_HOME/jars``.
   You can find these jars in ``$HIVE_HOME/lib directory``. For example, if you are using MySQL as a Metastore for Hive,
-  copy metastore jdbc connector. This is not required in YARN cluster mode.
+  copy MySQL metastore jdbc connector. This is not required in YARN cluster mode.
 
 
 
