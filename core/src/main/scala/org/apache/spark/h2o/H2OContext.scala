@@ -120,7 +120,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     if (_conf.isInternalSecureConnectionsEnabled) {
       Security.enableSSL(sparkSession, _conf)
     }
-    if(conf.autoFlowSsl) {
+    if (conf.autoFlowSsl) {
       Security.enableFlowSSL(sparkSession, conf)
     }
 

@@ -32,6 +32,8 @@ dependencies {
       exclude(group: "net.java.dev.jets3t", module: "jets3t")
       exclude(group: "commons-collections", module: "commons-collections")
   }
+  // H2O Native Hive Support
+  compile "ai.h2o:h2o-hive:${h2oVersion}"  
   // H2O algorithms
   compile "ai.h2o:h2o-algos:${h2oVersion}"
   // H2O web
