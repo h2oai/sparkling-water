@@ -196,7 +196,7 @@ private[spark] trait H2OContextUtils extends Logging {
     }
   }
 
-  def importHiveTable(table: String, partitions: Array[Array[String]] = null, database: String = HiveTableImporter.DEFAULT_DATABASE, allowMultiFormat: Boolean = false): Frame = {
+  def importHiveTable(database: String = HiveTableImporter.DEFAULT_DATABASE, table: String, partitions: Array[Array[String]] = null, allowMultiFormat: Boolean = false): Frame = {
     val hiveTableHandler = new ImportHiveTableHandler
     val method = hiveTableHandler.getClass.getDeclaredMethod("getImporter")
     method.setAccessible(true)
