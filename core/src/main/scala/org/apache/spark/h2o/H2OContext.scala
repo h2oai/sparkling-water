@@ -364,14 +364,15 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   }
 
 
-  def importHiveTable(table: String, partitions: Array[Array[String]], database: String = HiveTableImporter.DEFAULT_DATABASE, allowMultiFormat: Boolean = false)= {
+  def importHiveTable(table: String, partitions: Array[Array[String]] = null, database: String = HiveTableImporter.DEFAULT_DATABASE, allowMultiFormat: Boolean = false)= {
     val hiveTableHandler = new ImportHiveTableHandler
     val request = new ImportHiveTableV3
     request.table = table
     request.database = database
     request.allow_multi_format = allowMultiFormat
     request.partitions = partitions
-    hiveTableHandler.importHiveTable(3, request)
+    val job = hiveTableHandler.importHiveTable(3, request)
+    new H2OFrame(DKV.getGet[Job[Frame]](job.key.toString).get())
   }
   // scalastyle:on
 }
