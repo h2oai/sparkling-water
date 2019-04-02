@@ -15,24 +15,18 @@ Preparation
 
 
 
-This is all preparation we need to do.
-
-Running
-~~~~~~~
-
-Currently, only PySparkling and RSparkling is supported. Scala API is yet to be implemented.
-
+This is all preparation we need to do. The following code shows how to import the table.
 
 .. content-tabs::
 
     .. tab-container:: Scala
         :title: Scala
 
-         To read data from Hive in Sparkling Water, you can use the method:
+        To read data from Hive in Sparkling Water, you can use the method:
 
-         .. code:: Scala
+        .. code:: Scala
 
-             val airlinesTable =  h2oContext.importHiveTable("default", "airlines")
+            val airlinesTable = h2oContext.importHiveTable("default", "airlines")
 
     .. tab-container:: Python
         :title: Python
@@ -52,5 +46,5 @@ Currently, only PySparkling and RSparkling is supported. Scala API is yet to be 
 
             airlines_frame = h2o.import_hive_table("default", "airlines")
 
-This call will read airlines table from default database. Similar method exists in RSparkling.
+This call reads airlines table from default database.
 
