@@ -182,13 +182,26 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)), Identifiable.randomUID("gridSearch_mojoModel"))
   }
 
+  private def selectMetric(model: Model[_, _ <: Model.Parameters, _ <: Model.Output]) = {
+    if (getNfolds() > 1) {
+      // use cross validation metrics
+      model._output._cross_validation_metrics
+    } else if (getRatio() < 1) {
+      // some portion of data is reserved for validation, use validation metrics
+      model._output._validation_metrics
+    } else {
+      // use training metrics
+      model._output._training_metrics
+    }
+  }
+
   private def sortGrid(grid: Grid[_]) = {
     if (grid.getModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
 
     val metric = if (getSelectBestModelBy() == null) {
-      grid.getModels()(0)._output._training_metrics match {
+      selectMetric(grid.getModels()(0)) match {
         case _: ModelMetricsRegression => H2OGridSearchMetric.RMSE
         case _: ModelMetricsBinomial => H2OGridSearchMetric.AUC
         case _: ModelMetricsMultinomial => H2OGridSearchMetric.Logloss
@@ -198,7 +211,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
 
     val modelMetricPair = grid.getModels.map { m =>
-      (m, getMetrics(m._output._training_metrics).find(_._1 == metric).get._2)
+      (m, extractMetrics(m).find(_._1 == metric).get._2)
     }
 
     val ordering = if (getSelectBestModelBy() == null) {
@@ -233,8 +246,9 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   }
 
 
-  private def getMetrics(mm: ModelMetrics) = {
+  private def extractMetrics(model: Model[_, _ <: Model.Parameters, _ <: Model.Output]) = {
     // Supervised metrics
+    val mm = selectMetric(model)
     val metricPairs = mm match {
       case regressionGLM: ModelMetricsRegressionGLM =>
         Seq(
@@ -330,14 +344,14 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
 
     val rows = gridModels.zip(gridMojoModels.map(_.uid)).map { case (m, id) =>
-      val metrics = getMetrics(m._output._training_metrics)
+      val metrics = extractMetrics(m)
       val metricValues = Seq(id) ++ metrics.map(_._2)
 
       val values = metricValues
       Row(values: _*)
     }
 
-    val metricNames = getMetrics(grid.getModels()(0)._output._training_metrics).
+    val metricNames = extractMetrics(grid.getModels()(0)).
       map(_._1.toString).map(StructField(_, DoubleType, nullable = false)).toList
     val schema = StructType(List(StructField("Model ID", StringType, nullable = false)) ++ metricNames)
     val fr = hc.sparkSession.createDataFrame(hc.sparkContext.parallelize(rows), schema)
