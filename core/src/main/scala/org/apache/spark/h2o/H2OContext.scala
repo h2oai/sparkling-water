@@ -124,7 +124,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     if (_conf.isInternalSecureConnectionsEnabled) {
       Security.enableSSL(sparkSession, _conf)
     }
-    if(conf.autoFlowSsl) {
+    if (conf.autoFlowSsl) {
       Security.enableFlowSSL(sparkSession, conf)
     }
 
@@ -364,15 +364,25 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   }
 
 
-  def importHiveTable(table: String, partitions: Array[Array[String]] = null, database: String = HiveTableImporter.DEFAULT_DATABASE, allowMultiFormat: Boolean = false)= {
+  def importHiveTable(table: String, partitions: Array[Array[String]] = null, database: String = HiveTableImporter.DEFAULT_DATABASE, allowMultiFormat: Boolean = false): Frame = {
     val hiveTableHandler = new ImportHiveTableHandler
-    val request = new ImportHiveTableV3
-    request.table = table
-    request.database = database
-    request.allow_multi_format = allowMultiFormat
-    request.partitions = partitions
-    hiveTableHandler.importHiveTable(3, request)
+    val method = hiveTableHandler.getClass.getMethod("getImporter")
+    method.setAccessible(true)
+    val importer = method.invoke(hiveTableHandler).asInstanceOf[ImportHiveTableHandler.HiveTableImporter]
+
+    if (importer != null) {
+      try {
+        importer.loadHiveTable(database, table, partitions, allowMultiFormat).get()
+      }
+      catch {
+        case e: NoClassDefFoundError =>
+          throw new IllegalStateException("Hive Metastore client classes not available on classpath.", e)
+      }
+    } else {
+      throw new IllegalStateException("HiveTableImporter extension not enabled.")
+    }
   }
+
   // scalastyle:on
 }
 
