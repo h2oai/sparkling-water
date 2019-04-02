@@ -371,8 +371,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     request.database = database
     request.allow_multi_format = allowMultiFormat
     request.partitions = partitions
-    val job = hiveTableHandler.importHiveTable(3, request)
-    new H2OFrame(DKV.getGet[Job[Frame]](job.key.toString).get())
+    hiveTableHandler.importHiveTable(3, request)
   }
   // scalastyle:on
 }
