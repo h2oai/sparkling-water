@@ -363,26 +363,6 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     protected override def _h2oContext: H2OContext = self
   }
 
-
-  def importHiveTable(table: String, partitions: Array[Array[String]] = null, database: String = HiveTableImporter.DEFAULT_DATABASE, allowMultiFormat: Boolean = false): Frame = {
-    val hiveTableHandler = new ImportHiveTableHandler
-    val method = hiveTableHandler.getClass.getMethod("getImporter")
-    method.setAccessible(true)
-    val importer = method.invoke(hiveTableHandler).asInstanceOf[ImportHiveTableHandler.HiveTableImporter]
-
-    if (importer != null) {
-      try {
-        importer.loadHiveTable(database, table, partitions, allowMultiFormat).get()
-      }
-      catch {
-        case e: NoClassDefFoundError =>
-          throw new IllegalStateException("Hive Metastore client classes not available on classpath.", e)
-      }
-    } else {
-      throw new IllegalStateException("HiveTableImporter extension not enabled.")
-    }
-  }
-
   // scalastyle:on
 }
 
