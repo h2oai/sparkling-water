@@ -8,7 +8,7 @@ from pysparkling import *
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams
 from .models import H2OGBMModel, H2ODeepLearningModel, H2OAutoMLModel, H2OXGBoostModel, H2OGLMModel, H2OGridSearchModel
 from .util import JavaH2OMLReadable
-<<<<<<< HEAD
+from py_sparkling.ml.models import H2OMOJOModel
 
 def get_input_kwargs(self, spark_context):
     if spark_context.version == "2.1.0":
@@ -18,11 +18,7 @@ def get_input_kwargs(self, spark_context):
         return self._input_kwargs
 
 
-=======
-from py_sparkling.ml.models import H2OMOJOModel
->>>>>>> d5e0884d... [SW-1174] Expose grid models as H2OMojoModels in the pipeline (#1107)
 java_max_double_value = (2-2**(-52))*(2**1023)
-
 
 def set_double_values(kwargs, values):
     for v in values:
