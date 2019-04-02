@@ -184,11 +184,11 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
 
   private def selectMetric(model: Model[_, _ <: Model.Parameters, _ <: Model.Output]) = {
     if (getNfolds() > 1) {
-      model._output._cross_validation_metrics
       // use cross validation metrics
+      model._output._cross_validation_metrics
     } else if (getRatio() < 1) {
+      // some portion of data is reserved for validation, use validation metrics
       model._output._validation_metrics
-      // some portion of data is reserved for validation, use
     } else {
       // use training metrics
       model._output._training_metrics
