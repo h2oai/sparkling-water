@@ -24,9 +24,11 @@ import java.util.Date
 import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{BuildInfo, H2OConf}
+import org.apache.spark.h2o.{BuildInfo, Frame, H2OConf}
 import org.apache.spark.internal.Logging
 import water.H2O
+import water.api.ImportHiveTableHandler
+import water.api.ImportHiveTableHandler.HiveTableImporter
 import water.fvec.Frame
 import water.util.{GetLogsFromNode, Log, StringUtils}
 
@@ -191,6 +193,26 @@ private[spark] trait H2OContextUtils extends Logging {
       true
     } catch {
       case _: ClassNotFoundException => false
+    }
+  }
+
+  def importHiveTable(database: String = HiveTableImporter.DEFAULT_DATABASE, table: String,
+                      partitions: Array[Array[String]] = null, allowMultiFormat: Boolean = false): Frame = {
+    val hiveTableHandler = new ImportHiveTableHandler
+    val method = hiveTableHandler.getClass.getDeclaredMethod("getImporter")
+    method.setAccessible(true)
+    val importer = method.invoke(hiveTableHandler).asInstanceOf[ImportHiveTableHandler.HiveTableImporter]
+
+    if (importer != null) {
+      try {
+        importer.loadHiveTable(database, table, partitions, allowMultiFormat).get()
+      }
+      catch {
+        case e: NoClassDefFoundError =>
+          throw new IllegalStateException("Hive Metastore client classes not available on classpath.", e)
+      }
+    } else {
+      throw new IllegalStateException("HiveTableImporter extension not enabled.")
     }
   }
 
