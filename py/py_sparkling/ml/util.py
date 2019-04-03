@@ -1,5 +1,16 @@
 from pyspark.ml.util import JavaMLReader, MLReadable
 
+def get_correct_case_enum(enum_values, enum_single_value):
+    for a in enum_values:
+        if a.toString().lower() == enum_single_value.lower():
+            return a.toString()
+
+def get_enum_array_from_str_array(str_array, java_enum_class):
+    enum_array = []
+    if str_array is not None:
+        for algo in str_array:
+            enum_array.append(java_enum_class.valueOf(get_correct_case_enum(java_enum_class.values(), algo)))
+        return enum_array
 
 class JavaH2OMLReadable(MLReadable):
     """
@@ -37,4 +48,3 @@ class JavaH2OMLReader(JavaMLReader):
             # Remove the last package name "pipeline" for Pipeline and PipelineModel.
             java_package = ".".join(java_package.split(".")[0:-1])
         return java_package + "." + clazz.__name__
-
