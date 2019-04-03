@@ -383,7 +383,7 @@ class H2OAutoMLParams(Params):
     weightsColumn = Param(Params._dummy(), "weightsColumn", "Weights column name")
     ignoredColumns = Param(Params._dummy(), "ignoredColumns", "Ignored columns names")
     excludeAlgos = Param(Params._dummy(), "excludeAlgos", "Algorithms to exclude when using automl")
-    projectName = Param(Params._dummy(), "projectName", "dentifier for models that should be grouped together in the leaderboard" +
+    projectName = Param(Params._dummy(), "projectName", "identifier for models that should be grouped together in the leaderboard" +
                         " (e.g., airlines and iris)")
     maxRuntimeSecs = Param(Params._dummy(), "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
     stoppingRounds = Param(Params._dummy(), "stoppingRounds", "Stopping rounds")

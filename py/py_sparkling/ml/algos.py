@@ -3,6 +3,8 @@ from pyspark.ml.util import JavaMLWritable, JavaMLReader, MLReadable
 from pyspark.ml.wrapper import JavaEstimator
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
+import random
+import string
 
 from pysparkling import *
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams
@@ -154,9 +156,8 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
         if "stoppingMetric" in kwargs:
             kwargs["stoppingMetric"] = self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf(kwargs["stoppingMetric"])
 
-        if "sortMetric" in kwargs:
-            kwargs["sortMetric"] = None
-
+        if "projectName" in kwargs and kwargs["projectName"] is None:
+            kwargs["projectName"] = ''.join(random.choice(string.ascii_letters) for i in range(30))
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
         double_types = ["maxRuntimeSecs", "stoppingTolerance", "ratio", "maxAfterBalanceSize"]
