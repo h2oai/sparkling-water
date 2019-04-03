@@ -19,7 +19,7 @@ package org.apache.spark.ml.h2o.algos
 import java.io._
 import java.util.Date
 
-import ai.h2o.automl.{AutoML, AutoMLBuildSpec, Leaderboard}
+import ai.h2o.automl.{AutoML, AutoMLBuildSpec}
 import hex.ScoreKeeper
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
@@ -56,7 +56,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     // override the buildSpec with the configuration specified directly on the estimator
     if( getProjectName() == null){
       // generate random name to generate fresh leaderboard (the default behaviour)
-      setProjectName(Random.alphanumeric.take(30).toString())
+      setProjectName(Random.alphanumeric.take(30).mkString)
     }
     val input = hc.asH2OFrame(dataset.toDF())
     // check if we need to do any splitting
