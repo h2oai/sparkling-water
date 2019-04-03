@@ -36,6 +36,7 @@ import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
 import scala.reflect.ClassTag
 import scala.util.Random
+import scala.util.control.NoStackTrace
 
 /**
   * H2O AutoML pipeline step
@@ -84,6 +85,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     spec.input_spec.ignored_columns = getIgnoredColumns()
     spec.input_spec.sort_metric = getSortMetric()
     spec.build_models.exclude_algos = if (getExcludeAlgos() == null) null else Array(getExcludeAlgos(): _*)
+    spec.build_models.include_algos = if (getIncludeAlgos() == null) null else Array(getIncludeAlgos(): _*)
     spec.build_control.project_name = getProjectName()
     spec.build_control.stopping_criteria.set_seed(getSeed())
     spec.build_control.stopping_criteria.set_max_runtime_secs(getMaxRuntimeSecs())
@@ -104,6 +106,9 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     aml.get()
 
     leaderboard = leaderboardAsSparkFrame(aml)
+    if( aml.leader() == null){
+      throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
+    }
     val model = trainModel(aml)
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
@@ -210,6 +215,7 @@ trait H2OAutoMLParams extends Params {
   private final val foldColumn = new NullableStringParam(this, "foldColumn", "Fold column name")
   private final val weightsColumn = new NullableStringParam(this, "weightsColumn", "Weights column name")
   private final val ignoredColumns = new StringArrayParam(this, "ignoredColumns", "Ignored columns names")
+  private final val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
   private final val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
   private final val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
     " (e.g., airlines and iris)")
@@ -240,6 +246,7 @@ trait H2OAutoMLParams extends Params {
     foldColumn -> null,
     weightsColumn -> null,
     ignoredColumns -> Array.empty[String],
+    includeAlgos -> null,
     excludeAlgos -> null,
     projectName -> null, // will be automatically generated
     maxRuntimeSecs -> 3600,
@@ -281,6 +288,9 @@ trait H2OAutoMLParams extends Params {
 
   /** @group getParam */
   def getIgnoredColumns() = $(ignoredColumns)
+
+  /** @group getParam */
+  def getIncludeAlgos() = $(includeAlgos)
 
   /** @group getParam */
   def getExcludeAlgos() = $(excludeAlgos)
@@ -356,6 +366,9 @@ trait H2OAutoMLParams extends Params {
 
   /** @group setParam */
   def setIgnoredColumns(value: Array[String]): this.type = set(ignoredColumns, value)
+
+  /** @group setParam */
+  def setIncludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(includeAlgos, value)
 
   /** @group setParam */
   def setExcludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(excludeAlgos, value)
