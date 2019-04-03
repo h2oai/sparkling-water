@@ -55,7 +55,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     val spec = automlBuildSpec.getOrElse(new AutoMLBuildSpec)
 
     // override the buildSpec with the configuration specified directly on the estimator
-    if( getProjectName() == null){
+    if (getProjectName() == null) {
       // generate random name to generate fresh leaderboard (the default behaviour)
       setProjectName(Random.alphanumeric.take(30).mkString)
     }
@@ -106,8 +106,9 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     aml.get()
 
     leaderboard = leaderboardAsSparkFrame(aml)
-    if( aml.leader() == null){
-      throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
+    if (aml.leader() == null) {
+      throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease" +
+        " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
     }
     val model = trainModel(aml)
     model.setConvertUnknownCategoricalLevelsToNa(true)
