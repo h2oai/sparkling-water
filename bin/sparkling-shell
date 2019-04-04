@@ -31,6 +31,5 @@ ARGS="$@"
 ARGS=$(removeArgWithParam "--jars" "$ARGS")
 ARGS=$(removeArgWithParam "--master" "$ARGS")
 
-echo $ARGS
 # If extra java properties are defined use them and append our property
 spark-shell --jars "$JARS" --driver-memory "$DRIVER_MEMORY" $ARGS
