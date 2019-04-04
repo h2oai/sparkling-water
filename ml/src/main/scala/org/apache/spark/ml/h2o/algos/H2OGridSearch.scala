@@ -57,7 +57,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
 
-  private var grid: Grid[_] = _
+  private var grid: Grid[_ <: Model.Parameters] = _
   private var gridModels: Array[Model[_, _ <: Model.Parameters, _ <: Model.Output]] = _
   private var gridMojoModels: Array[H2OMOJOModel] = _
 
@@ -195,7 +195,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
   }
 
-  private def sortGrid(grid: Grid[_]) = {
+  private def sortGrid(grid: Grid[ _ <: Model.Parameters]): Array[hex.Model[_, _ <: hex.Model.Parameters, _ <: hex.Model.Output]] = {
     if (grid.getModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
