@@ -68,10 +68,11 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     }
 
     if (conf.getInt("spark.sql.autoBroadcastJoinThreshold", 0) != -1) {
-      logWarning("Due to non-deterministic behavior of Spark broadcast-based joins\n" +
-        "We recommend to disable them by\n" +
-        "configuring `spark.sql.autoBroadcastJoinThreshold` variable to value `-1`:\n" +
-        "sqlContext.sql(\"SET spark.sql.autoBroadcastJoinThreshold=-1\")")
+      logWarning(
+        """To avoid non-deterministic behavior of Spark broadcast-based joins,
+          |we recommend to set `spark.sql.autoBroadcastJoinThreshold` property of SparkSession to -1.
+          |E.g. spark.conf.set("spark.sql.autoBroadcastJoinThreshold", -1)
+          |We also recommend to avoid using broadcast hints in your Spark SQL code.""".stripMargin)
     }
 
     if (conf.contextPath.isDefined) {
