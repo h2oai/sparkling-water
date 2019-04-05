@@ -2,13 +2,15 @@
 #'
 #' @param x Object of type \code{spark_connection} or \code{spark_jobj}.
 #' @param strict_version_check (Optional) Setting this to FALSE does not cross check version of H2O and attempts to connect.
+#' @param username username
+#' @param password password
 #' @export
-h2o_context <- function(x, strict_version_check = TRUE) {
+h2o_context <- function(x, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
   UseMethod("h2o_context")
 }
 
 #' @export
-h2o_context.spark_connection <- function(x, strict_version_check = TRUE) {
+h2o_context.spark_connection <- function(x, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
   hc <- invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x))
   conf = invoke(hc, "getConf")
   # Because of checks in Sparkling Water, we are sure context path starts with one slash
@@ -17,17 +19,17 @@ h2o_context.spark_connection <- function(x, strict_version_check = TRUE) {
   ip <- invoke(hc, "h2oLocalClientIp")
   port <- invoke(hc, "h2oLocalClientPort")
   if (context_path == "") {
-    invisible(capture.output(h2o.init(ip = ip, port = port, strict_version_check = strict_version_check, startH2O=F)))
+    invisible(capture.output(h2o.init(ip = ip, port = port, strict_version_check = strict_version_check, startH2O=F, username = username, password = password)))
   } else {
-    invisible(capture.output(h2o.init(ip = ip, port = port, context_path = context_path, strict_version_check = strict_version_check, startH2O=F)))
+    invisible(capture.output(h2o.init(ip = ip, port = port, context_path = context_path, strict_version_check = strict_version_check, startH2O=F, username = username, password = password)))
 
   }
   hc
 }
 
 #' @export
-h2o_context.spark_jobj <- function(x, strict_version_check = TRUE) {
-  h2o_context.spark_connection(spark_connection(x), strict_version_check=strict_version_check)
+h2o_context.spark_jobj <- function(x, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
+  h2o_context.spark_connection(spark_connection(x), strict_version_check=strict_version_check, username = username, password = password)
 }
 
 #' Open the H2O Flow UI in a browser

@@ -99,3 +99,9 @@ properties might be set
 
 On YARN, the container size is determined by ``application_memory * memory_overhead``. Therefore, by specifying the
 overhead, we are also allocating some additional off-heap memory which XGBoost can use.
+
+In Spark Standalone Mode or IBM Conductor environment, please make sure to configure the following configurations:
+
+
+- ``spark.memory.offHeap.enabled=true``
+- ``spark.memory.offHeap.size=4G`` - example of setting this property to 4G of off-heap memory

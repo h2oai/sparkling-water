@@ -3,12 +3,7 @@ from h2o.utils.typechecks import assert_is_type, Enum
 from pysparkling.context import H2OContext
 from pyspark.sql import SparkSession
 from py4j.java_gateway import JavaObject
-
-def get_correct_case_enum(enum_values, enum_single_value):
-    for a in enum_values:
-        if a.toString().lower() == enum_single_value.lower():
-            return a.toString()
-
+from py_sparkling.ml.util import get_correct_case_enum, get_enum_array_from_str_array
 
 class H2OAlgorithmParams(Params):
     ##
@@ -382,8 +377,9 @@ class H2OAutoMLParams(Params):
     foldColumn = Param(Params._dummy(), "foldColumn", "Fold column name")
     weightsColumn = Param(Params._dummy(), "weightsColumn", "Weights column name")
     ignoredColumns = Param(Params._dummy(), "ignoredColumns", "Ignored columns names")
+    includeAlgos = Param(Params._dummy(), "includeAlgos", "Algorithms to include when using automl")
     excludeAlgos = Param(Params._dummy(), "excludeAlgos", "Algorithms to exclude when using automl")
-    projectName = Param(Params._dummy(), "projectName", "dentifier for models that should be grouped together in the leaderboard" +
+    projectName = Param(Params._dummy(), "projectName", "identifier for models that should be grouped together in the leaderboard" +
                         " (e.g., airlines and iris)")
     maxRuntimeSecs = Param(Params._dummy(), "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
     stoppingRounds = Param(Params._dummy(), "stoppingRounds", "Stopping rounds")
@@ -429,6 +425,15 @@ class H2OAutoMLParams(Params):
     def getExcludeAlgos(self):
         # Convert Java Enum to String so we can represent it in Python
         algos = self.getOrDefault(self.excludeAlgos)
+        algos_str = []
+        if algos is not None:
+            for a in algos:
+                algos_str.append(a)
+        return algos_str
+
+    def getIncludeAlgos(self):
+        # Convert Java Enum to String so we can represent it in Python
+        algos = self.getOrDefault(self.includeAlgos)
         algos_str = []
         if algos is not None:
             for a in algos:
@@ -523,14 +528,18 @@ class H2OAutoMLParams(Params):
         assert_is_type(value, bool)
         return self._set(tryMutations=value)
 
-    def setExcludeAlgos(self, value):
-        assert_is_type(value, None, [Enum("GLM", "DRF", "GBM", "DeepLearning", "StackedEnsemble")])
+    def setIncludeAlgos(self, value):
+        assert_is_type(value, None, [Enum("XGBoost", "GLM", "DRF", "GBM", "DeepLearning", "StackedEnsemble")])
         # H2O typechecks does not check for case sensitivity
-        java_enums = []
-        if value is not None:
-            for algo in value:
-                jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-                java_enums.append(get_correct_case_enum(jvm.ai.h2o.automl.Algo.values(), algo))
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        java_enums = get_enum_array_from_str_array(value, jvm.ai.h2o.automl.Algo)
+        return self._set(includeAlgos=java_enums)
+
+    def setExcludeAlgos(self, value):
+        assert_is_type(value, None, [Enum("XGBoost", "GLM", "DRF", "GBM", "DeepLearning", "StackedEnsemble")])
+        # H2O typechecks does not check for case sensitivity
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        java_enums = get_enum_array_from_str_array(value, jvm.ai.h2o.automl.Algo)
         return self._set(excludeAlgos=java_enums)
 
     def setProjectName(self, value):
