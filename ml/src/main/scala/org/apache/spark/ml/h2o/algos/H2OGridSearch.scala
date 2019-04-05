@@ -53,12 +53,14 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
                    (implicit hc: H2OContext, sqlContext: SQLContext)
   extends Estimator[H2OMOJOModel] with MLWritable with H2OGridSearchParams {
 
+  type H2OModel = hex.Model[_, _ <: hex.Model.Parameters, _ <: hex.Model.Output]
+
   def this()(implicit hc: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gridsearch"))
 
   def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
 
-  private var grid: Grid[_] = _
-  private var gridModels: Array[Model[_, _ <: Model.Parameters, _ <: Model.Output]] = _
+  private var grid: Grid[_ <: Model.Parameters] = _
+  private var gridModels: Array[H2OModel] = _
   private var gridMojoModels: Array[H2OMOJOModel] = _
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
@@ -182,7 +184,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)), Identifiable.randomUID("gridSearch_mojoModel"))
   }
 
-  private def selectMetric(model: Model[_, _ <: Model.Parameters, _ <: Model.Output]) = {
+  private def selectMetric(model: H2OModel) = {
     if (getNfolds() > 1) {
       // use cross validation metrics
       model._output._cross_validation_metrics
@@ -195,7 +197,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
   }
 
-  private def sortGrid(grid: Grid[_]) = {
+  private def sortGrid(grid: Grid[ _ <: Model.Parameters]): Array[H2OModel] = {
     if (grid.getModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
@@ -246,7 +248,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   }
 
 
-  private def extractMetrics(model: Model[_, _ <: Model.Parameters, _ <: Model.Output]) = {
+  private def extractMetrics(model: H2OModel) = {
     // Supervised metrics
     val mm = selectMetric(model)
     val metricPairs = mm match {
