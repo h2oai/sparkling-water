@@ -74,7 +74,7 @@ verify_h2o_version <- function(spark_version, sw_version) {
 #' @export
 check_spark_version_for_any_sw <- function(spark_version) {
   spark_major_minor <- get_spark_major_minor_version(spark_version)
-  supported_spark_versions <- c("2.3", "2.2", "2.1", "2.0", "1.6")
+  supported_spark_versions <- c("2.4", "2.3", "2.2", "2.1")
   if (!(spark_major_minor %in% supported_spark_versions)){
     stop(sprintf("Supported Spark for Sparkling Water not detected. Please install Spark %s", paste(supported_spark_versions, collapse=", ")))
   }
