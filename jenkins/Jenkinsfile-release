@@ -252,7 +252,7 @@ pipeline {
                                              usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
                                              file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
                                 sh  """
-                                    ./gradlew -PdoRelease -Porg.gradle.daemon=false -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password= publishToNexus -x check
+                                    ./gradlew -PdoRelease -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password= publishToNexus -x check
                                     """
                             }
                         }
@@ -513,7 +513,7 @@ EOF
 
                                 # Restore before releasing
                                 git checkout -- gradle.properties
-                                ./gradlew -Porg.gradle.daemon=false -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\${REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -PdoRelease release -x check
+                                ./gradlew -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\${REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -PdoRelease release -x check
 
                                 # Note:
                                 # After this step, gradle.properties has the new future version ending with "-SNAPSHOT" so
