@@ -1,3 +1,6 @@
+.rsparklingenv <- new.env(parent = emptyenv())
+.rsparklingenv$is_initialized <- FALSE
+
 #' Get the H2OContext. Will create the context if it has not been previously created.
 #'
 #' @param x Object of type \code{spark_connection} or \code{spark_jobj}.
@@ -9,6 +12,8 @@ h2o_context <- function(x, strict_version_check = TRUE, username = NA_character_
   UseMethod("h2o_context")
 }
 
+
+
 #' @export
 h2o_context.spark_connection <- function(x, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
   hc <- invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x))
@@ -18,11 +23,13 @@ h2o_context.spark_connection <- function(x, strict_version_check = TRUE, usernam
   context_path <- substring(context_path_with_slash, 2, nchar(context_path_with_slash))
   ip <- invoke(hc, "h2oLocalClientIp")
   port <- invoke(hc, "h2oLocalClientPort")
-  if (context_path == "") {
-    invisible(capture.output(h2o.init(ip = ip, port = port, strict_version_check = strict_version_check, startH2O=F, username = username, password = password)))
-  } else {
-    invisible(capture.output(h2o.init(ip = ip, port = port, context_path = context_path, strict_version_check = strict_version_check, startH2O=F, username = username, password = password)))
-
+  if (!.rsparklingenv$is_initialized){
+    if (context_path == "") {
+      invisible(capture.output(h2o.init(ip = ip, port = port, strict_version_check = strict_version_check, startH2O=F, username = username, password = password)))
+    } else {
+      invisible(capture.output(h2o.init(ip = ip, port = port, context_path = context_path, strict_version_check = strict_version_check, startH2O=F, username = username, password = password)))
+    }
+    .rsparklingenv$is_initialized <- TRUE
   }
   hc
 }
