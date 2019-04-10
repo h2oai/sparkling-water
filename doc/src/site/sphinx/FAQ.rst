@@ -154,3 +154,12 @@ Frequently Asked Questions
 
     h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION package now correctly requires PySpark package. If you want to use PySparkling from
     installation from ``pip``, please also make sure to install `PySpark package <https://pypi.org/project/pyspark/>`__.
+
+- I'm getting ``java.lang.reflect.InvocationTargetException`` via ``java.lang.IllegalArgumentException`` saying that
+  "*YOUR_SPARK_ML_STAGE* parameter locale given invalid value *YOUR_LOCALE*." when using a Spark stage in my ML pipeline.
+
+    Set the default locale for JVM of Spark driver to a valid combination of a language and country.
+
+    .. code:: bash
+
+        --conf spark.driver.extraJavaOptions="-Duser.language=en -Duser.country=US"
