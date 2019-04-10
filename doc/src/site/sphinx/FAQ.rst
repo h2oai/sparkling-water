@@ -158,7 +158,7 @@ Frequently Asked Questions
 - I'm getting ``java.lang.reflect.InvocationTargetException`` via ``java.lang.IllegalArgumentException`` saying that
   "*YOUR_SPARK_ML_STAGE* parameter locale given invalid value *YOUR_LOCALE*." when using a Spark stage in my ML pipeline.
 
-    Set the default locale for JVM of Spark driver to a valid combination of a language and country.
+    Set the default locale for JVM of Spark driver to a valid combination of a language and country:
 
     .. code:: bash
 
