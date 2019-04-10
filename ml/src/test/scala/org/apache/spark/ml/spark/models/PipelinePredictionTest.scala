@@ -18,7 +18,9 @@
 package org.apache.spark.ml.spark.models
 
 import java.io.{File, PrintWriter}
+import java.util.Locale
 
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.{H2OContextTestHelper, SparkTestContext}
 import org.apache.spark.ml.feature._
 import org.apache.spark.ml.h2o.algos.H2OGBM
@@ -34,7 +36,21 @@ import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
 import water.support.SparkContextSupport
 
-object TestPipelineUtils {
+abstract class PipelinePredictionTestBase extends FunSuite with SparkTestContext {
+
+  override def beforeAll(): Unit = {
+    sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+    sc.setLogLevel("WARN")
+
+    // Remove country specification from the default locale settings, if the language is not native for the country.
+    val currentLocale = Locale.getDefault
+    if (!Locale.getAvailableLocales.contains(currentLocale)) {
+      val newLocale = new Locale(currentLocale.getLanguage)
+      Locale.setDefault(newLocale)
+    }
+
+    super.beforeAll()
+  }
 
   // This method loads the data, perform some basic filtering and create Spark's dataframe
   def load(sc: SparkContext, dataFile: String)(implicit sqlContext: SQLContext): DataFrame = {
@@ -45,9 +61,9 @@ object TestPipelineUtils {
     sqlContext.createDataFrame(rowRDD, smsSchema)
   }
 
-  def trainedPipelineModel(spark: SparkSession) = {
-    implicit val hc = H2OContextTestHelper.createH2OContext(spark.sparkContext, 1)
-    implicit val sqlContext = spark.sqlContext
+  def trainedPipelineModel(spark: SparkSession): PipelineModel = {
+    implicit val hc: H2OContext = H2OContextTestHelper.createH2OContext(spark.sparkContext, 1)
+    implicit val sqlContext: SQLContext = spark.sqlContext
     /**
       * Define the pipeline stages
       */
@@ -101,17 +117,10 @@ object TestPipelineUtils {
     // return the trained model
     model
   }
-
 }
 
 @RunWith(classOf[JUnitRunner])
-class PipelinePredictionTest extends FunSuite with SparkTestContext {
-
-  override def beforeAll(): Unit = {
-    sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-    sc.setLogLevel("WARN")
-    super.beforeAll()
-  }
+class PipelinePredictionTest extends PipelinePredictionTestBase {
 
   /**
     * This test is not using H2O runtime since we are testing deployment of the pipeline
@@ -131,7 +140,7 @@ class PipelinePredictionTest extends FunSuite with SparkTestContext {
     val smsDataFilePath = TestUtils.locate(s"smalldata/$smsDataFileName")
     SparkContextSupport.addFiles(sc, smsDataFilePath)
 
-    val inputDataStream = TestPipelineUtils.load(sc, "smsData.txt")
+    val inputDataStream = load(sc, "smsData.txt")
 
     //
     // Run predictions on the loaded model which was trained in PySparkling pipeline
@@ -142,20 +151,14 @@ class PipelinePredictionTest extends FunSuite with SparkTestContext {
     // UNTIL NOW, RUNTIME WAS NOT AVAILABLE
     //
     // Run predictions on the trained model right now in Scala
-    val predictions2 = TestPipelineUtils.trainedPipelineModel(spark).transform(inputDataStream)
+    val predictions2 = trainedPipelineModel(spark).transform(inputDataStream)
 
     TestUtils.assertEqual(predictions1, predictions2)
   }
 }
 
 @RunWith(classOf[JUnitRunner])
-class StreamingPipelinePredictionTest extends FunSuite with SparkTestContext {
-
-  override def beforeAll(): Unit = {
-    sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-    sc.setLogLevel("WARN")
-    super.beforeAll()
-  }
+class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
 
   test("Test streaming pipeline with H2O MOJO") {
     //
@@ -172,7 +175,7 @@ class StreamingPipelinePredictionTest extends FunSuite with SparkTestContext {
     // This directory is automatically deleted when the JVM shuts down
     val streamingDataDir = Utils.createTempDir()
 
-    val data = TestPipelineUtils.load(sc, "smsData.txt")
+    val data = load(sc, "smsData.txt")
     // Create data for streaming input
     data.select("text").collect().zipWithIndex.foreach { case (r, idx) =>
       val printer = new PrintWriter(new File(streamingDataDir, s"$idx.txt"))
@@ -199,7 +202,7 @@ class StreamingPipelinePredictionTest extends FunSuite with SparkTestContext {
     // UNTIL NOW, RUNTIME WAS NOT AVAILABLE
     //
     // Run predictions on the trained model right now in Scala
-    val predictions2 = TestPipelineUtils.trainedPipelineModel(spark).transform(data)
+    val predictions2 = trainedPipelineModel(spark).transform(data)
 
     TestUtils.assertEqual(predictions1, predictions2)
   }
