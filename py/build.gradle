@@ -15,6 +15,7 @@ ext {
     FPS = File.pathSeparator
     pkgDir = file("$buildDir/pkg")
     distDir = file("$buildDir/dist")
+    condaDir = file("$buildDir/conda/h2o_pysparkling_${sparkMajorVersion}")
 }
 
 // Define the environment required to run tests
@@ -123,55 +124,54 @@ export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
 }
 
 def copyPySetup() {
+    def fullVersion = version.replace("-SNAPSHOT", "")
+    def (first, second, third) = fullVersion.tokenize(".")
+    def majorVersion = "${first}.${second}"
+
+    copy {
+        from("$projectDir") {
+            include 'setup.py'
+        }
+        filter {
+            it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+                    .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+                    .replaceAll("SUBST_PYSPARKLING_VERSION", fullVersion)
+                    .replaceAll("SUBST_PYSPARKLING_MAJOR_VERSION", majorVersion)
+        }
+        into pkgDir
+    }
+
     copy {
         from("$projectDir") {
             include 'README.rst'
             include 'MANIFEST.in'
             include 'setup.cfg'
-            include 'setup.py'
             include 'pysparkling/**/*'
             include 'py_sparkling/**/*'
             exclude '**/*.pyc'
         }
         into pkgDir
     }
+
     copy {
-        from("$projectDir") {
-            include 'conda/**/*'
+        from("$projectDir/conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION") {
+            include 'bld.bat'
+            include 'build.sh'
         }
-        into buildDir
+        into condaDir
     }
-}
 
-
-def substituteVersionsInConda() {
-    def condaDir = new File(buildDir, "conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION")
-    def renamedCondaDir = new File(buildDir, "conda/h2o_pysparkling_${sparkMajorVersion}")
-    condaDir.renameTo(renamedCondaDir)
-
-    def yamlConf = new File(renamedCondaDir, "meta.yaml")
-    def contents = yamlConf.getText('UTF-8')
-    contents = contents
-            .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-            .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-            .replaceAll("SUBST_PYSPARKLING_VERSION", version.replace("-SNAPSHOT", ""))
-    yamlConf.write(contents, 'UTF-8')
-}
-
-
-def substituteInSetup() {
-    def setup = new File(pkgDir, "setup.py")
-
-    def (first, second, third) = version.replace("-SNAPSHOT", "").tokenize(".")
-    def majorVersion = "${first}.${second}"
-
-    def contents = setup.getText('UTF-8')
-    contents = contents
-            .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-            .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-            .replaceAll("SUBST_PYSPARKLING_VERSION", version.replace("-SNAPSHOT", ""))
-            .replaceAll("SUBST_PYSPARKLING_MAJOR_VERSION", majorVersion)
-    setup.write(contents, 'UTF-8')
+    copy {
+        from("$projectDir/conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION") {
+            include 'meta.yaml'
+        }
+        filter {
+            it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+                    .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+                    .replaceAll("SUBST_PYSPARKLING_VERSION", fullVersion)
+        }
+        into condaDir
+    }
 }
 
 
@@ -199,7 +199,6 @@ def copyH2OFromH2OWheel(String h2oPythonWheel) {
 //
 task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.sparklingWaterAssemblyJar]) {
     doFirst {
-
         def H2O_HOME = System.getenv("H2O_HOME")
         def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
 
@@ -213,8 +212,6 @@ task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.sparklingW
         }
         // Copy basic python setup
         copyPySetup()
-        substituteVersionsInConda()
-        substituteInSetup()
         def replaceStr =
                 """
 import zipfile
@@ -258,12 +255,8 @@ else:
             initFile.write(full)
         }
 
-
-        // Copy sparkling water fatjar
-        def fatJarName = "sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar"
-        def fatJar = configurations.sparklingWaterAssemblyJar.filter {
-            it.absoluteFile.getName() == fatJarName
-        }.singleFile
+        // Copy sparkling water assembly jar
+        def fatJar = configurations.sparklingWaterAssemblyJar.singleFile
         copy {
             from fatJar
             into file("${project.pkgDir}/sparkling_water")
@@ -274,7 +267,7 @@ else:
         file("${project.pkgDir}/sparkling_water/__init__.py").write("# Sparkling-water JAR holder for pySparkling module.")
     }
     // Configure proper name
-    baseName = "h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}"
+    archiveBaseName = "h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}"
 
     from pkgDir
     destinationDir distDir
@@ -289,7 +282,6 @@ artifacts {
 }
 
 def createTestArgs() {
-
     def args = []
     args.add("${distPython.archiveFile.get()}")
     args.add("spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}")
