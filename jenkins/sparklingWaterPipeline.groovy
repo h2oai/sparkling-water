@@ -243,25 +243,6 @@ def unitTests() {
 
 def pyUnitTests() {
     return { config ->
-        stage('QA: Python Unit Tests 2.7 - ' + config.backendMode) {
-            withDocker(config) {
-                if (config.runPyUnitTests.toBoolean()) {
-                    try {
-                        withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
-                            if(config.backendMode == "external"){
-                                sh "sudo -E /usr/sbin/startup.sh"
-                            }
-                            sh """
-                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/home/jenkins/miniconda/lib/python2.7 -x integTest -PbackendMode=${config.backendMode}
-                            """
-                        }
-                    } finally {
-                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
-                    }
-
-                }
-            }
-        }
 
         stage('QA: Python Unit Tests 3.6 - ' + config.backendMode) {
             withDocker(config) {
@@ -273,6 +254,26 @@ def pyUnitTests() {
                             }
                             sh """
                             ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/home/jenkins/miniconda/lib/python3.7 -x integTest -PbackendMode=${config.backendMode}
+                            """
+                        }
+                    } finally {
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    }
+
+                }
+            }
+        }
+        
+        stage('QA: Python Unit Tests 2.7 - ' + config.backendMode) {
+            withDocker(config) {
+                if (config.runPyUnitTests.toBoolean()) {
+                    try {
+                        withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
+                            if(config.backendMode == "external"){
+                                sh "sudo -E /usr/sbin/startup.sh"
+                            }
+                            sh """
+                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/home/jenkins/miniconda/lib/python2.7 -x integTest -PbackendMode=${config.backendMode}
                             """
                         }
                     } finally {
