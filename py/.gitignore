@@ -7,10 +7,7 @@ examples/notebooks/.ipynb_checkpoints
 __pycache__/
 *.py[cod]
 
-# Distribution / packaging
+# Build directory
 build/
-dist/
-*.egg-info/
-version.txt
-sparkling_water
-h2o
+
+

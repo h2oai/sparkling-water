@@ -1,7 +1,9 @@
 import static groovy.io.FileType.FILES
+import ru.vyarus.gradle.plugin.python.cmd.Python
 
 apply from: "$rootDir/gradle/utils.gradle"
 
+apply plugin: 'ru.vyarus.use-python'
 ext {
     FS = File.separator
     FPS = File.pathSeparator
@@ -9,6 +11,29 @@ ext {
     pkgDir = file("$buildDir/pkg")
     distDir = file("$buildDir/dist")
 }
+
+def getPythonVersion() {
+    Python p = new Python(project, python.getPythonPath(), python.getPythonBinary())
+    return p.version
+}
+
+def getPythonMajorVersion() {
+    Python p = new Python(project, python.getPythonPath(), python.getPythonBinary())
+    String[] split = p.version.split("\\.")
+    return split[0] + "." + split[1]
+}
+
+python {
+    pip "tabulate:0.8.3"
+    pip "requests:2.21.0"
+    pip "future:0.17.1"
+    pip "colorama:0.3.8"
+    pip "six:1.12.0"
+    pip "numpy:1.16.2"
+    pip "pyspark:${sparkVersion}"
+    envPath "${rootDir.toString()}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
+}
+
 
 description = "PySparkling - Sparkling-Water Python Package"
 
@@ -54,24 +79,14 @@ task createVersionFile {
 //
 def h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"}/${h2oBuild}/Python/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl"
 
-//
-// Prepare Python environment to execute python commands
-//
-def preparePythonEnv(environment) {
-    def SPARK_HOME = ext.sparkHome
-    def py4jDir = "${SPARK_HOME}${FS}python${FS}lib"
-    def py4jFile = fileTree(dir: py4jDir, include: 'py4j-*-src.zip').singleFile
-    if (SPARK_HOME != null) {
-        environment['PYTHONPATH'] = "${SPARK_HOME}${FS}python${FPS}${py4jFile}${FPS}${environment['PYTHONPATH']}"
-    }
-}
 
 //
 // Prepare Python environment to run python tests
 //
 def preparePythonTestEnv(environment) {
-    // Add PySparkling zip on PYTHONPATH so unittests can access all the PySparkling packages
-    environment['PYTHONPATH'] = "${distPython.archivePath}${FPS}${environment['PYTHONPATH']}"
+
+    // Add PySparkling zip on PYTHONPATH so unittests can access PySparkling package
+    environment['PYTHONPATH'] = "${distPython.archiveFile.get()}:${python.getEnvPath()}/lib/python${getPythonMajorVersion()}/site-packages"
     environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
     environment["spark.ext.h2o.external.start.mode"] = detectExternalBackendStartMode()
     // sparkling assembly jar is here because of external h2o tests
@@ -95,12 +110,10 @@ def preparePythonTestEnv(environment) {
 //
 task checkPythonEnv {
     doLast {
-        def SPARK_HOME = sparkHome
         def H2O_HOME = System.getenv("H2O_HOME")
         def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
         def H2O_EXTENDED_JAR = System.getenv("H2O_EXTENDED_JAR")
 
-        if (SPARK_HOME == null) throw new InvalidUserDataException("SPARK_HOME needs to be defined!")
 
         if (H2O_HOME == null && H2O_PYTHON_WHEEL == null) {
             throw new InvalidUserDataException("""
@@ -149,27 +162,46 @@ def copyPySetup() {
         }
         into pkgDir
     }
-}
-
-def copyCondaMetaFiles() {
     copy {
-        from ("$projectDir") {
+        from("$projectDir") {
             include 'conda/**/*'
         }
         into buildDir
     }
 }
 
-def setPySparklingVersionInCondaMetaFile() {
-    new File("$buildDir/conda/").eachFileRecurse(FILES) {
-        if (it.name == "meta.yaml") {
-            def contents = file(it).getText('UTF-8')
-            contents = contents
-                    .replaceAll("SUBST_PYSPARKLING_VERSION", version.replace("-SNAPSHOT",""))
-            file(it).write(contents, 'UTF-8')
-        }
-    }
+
+def substituteVersionsInConda() {
+        def condaDir = new File("${buildDir}/conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION")
+        def renamedCondaDir = new File("${buildDir}/conda/h2o_pysparkling_${sparkMajorVersion}")
+        condaDir.renameTo(renamedCondaDir)
+
+        def yamlConf = new File("${renamedCondaDir.toString()}/meta.yaml")
+        def contents = yamlConf.getText('UTF-8')
+        contents = contents
+                .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+                .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+                .replaceAll("SUBST_PYSPARKLING_VERSION", version.replace("-SNAPSHOT",""))
+        yamlConf.write(contents, 'UTF-8')
 }
+
+
+def substituteInSetup() {
+    def setup = new File("${pkgDir}/setup.py")
+
+    def (first, second, third) = version.replace("-SNAPSHOT","").tokenize(".")
+    def majorVersion = "${first}.${second}"
+
+    def contents = setup.getText('UTF-8')
+    contents = contents
+            .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+            .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+            .replaceAll("SUBST_PYSPARKLING_VERSION", version.replace("-SNAPSHOT",""))
+            .replaceAll("SUBST_PYSPARKLING_MAJOR_VERSION", majorVersion)
+    setup.write(contents, 'UTF-8')
+}
+
+
 
 def copyH2OFromH2OHome(String h2oHome) {
         copy {
@@ -193,7 +225,7 @@ def copyH2OFromH2OWheel(String h2oPythonWheel) {
 //
 // Make PySparkling distribution zip package
 //
-task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.compile] ) {
+task distPython(type: Zip, dependsOn: [clean, checkPythonEnv, configurations.compile] ) {
     doFirst {
         def H2O_HOME = System.getenv("H2O_HOME")
         def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
@@ -208,8 +240,8 @@ task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.compile] )
         }
         // Copy basic python setup
         copyPySetup()
-        copyCondaMetaFiles()
-        setPySparklingVersionInCondaMetaFile()
+        substituteVersionsInConda()
+        substituteInSetup()
         def replaceStr =
                 """
 import zipfile
@@ -282,43 +314,28 @@ artifacts {
     sdist distPython
 }
 
-task testPythonConf(type: Exec, dependsOn: distPython){
-    doFirst {
-        preparePythonEnv(environment)
-    }
+task testPythonConf(type: Exec, dependsOn: [distPython, pipInstall]){
     preparePythonTestEnv(environment)
     commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_unit_conf.py"])
 }
 
-task testPythonConversions(type: Exec, dependsOn: distPython){
-    doFirst {
-        preparePythonEnv(environment)
-    }
+task testPythonConversions(type: Exec, dependsOn: [distPython, pipInstall]){
     preparePythonTestEnv(environment)
     commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_unit_conversions.py"])
 }
 
-task testPythonMojoPredictions(type: Exec, dependsOn: distPython){
-    doFirst {
-        preparePythonEnv(environment)
-    }
+task testPythonMojoPredictions(type: Exec, dependsOn: [distPython, pipInstall]){
     preparePythonTestEnv(environment)
     commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_unit_mojo_predictions.py"])
 }
 
 
-task testPythonMojoPipeline(type: Exec, dependsOn: distPython) {
-    doFirst {
-        preparePythonEnv(environment)
-    }
+task testPythonMojoPipeline(type: Exec, dependsOn: [distPython, pipInstall]) {
     preparePythonTestEnv(environment)
     commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_unit_mojo_pipeline.py"])
 }
 
-task hadoopSmokeTests(type: Exec, dependsOn: distPython){
-    doFirst {
-        preparePythonEnv(environment)
-    }
+task hadoopSmokeTests(type: Exec, dependsOn: [distPython, pipInstall]){
     preparePythonTestEnv(environment)
     commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_hadoop_smoke.py"])
 }
@@ -335,11 +352,8 @@ if (project.property("testMojoPipeline") == "true") {
 //
 // Run python integration tests
 //
-task integTestPython(type: Exec, dependsOn: distPython) {
-    doFirst {
-        preparePythonEnv(environment)
-    }
-    def testEnv = detectEnvironment()
+task integTestPython(type: Exec, dependsOn: [distPython, pipInstall]) {
+    def testEnv = detectTestEnvironment()
 
     // Pass references to libraries to test launcher
     environment["sparkling.pysparkling.sdist"] = configurations.sdist.artifacts.files.singleFile.absolutePath
@@ -417,12 +431,8 @@ task buildPython(dependsOn: distPython)
 build.dependsOn buildPython
 
 test.dependsOn testPython
-def detectEnvironment(defaultEnv = "local") {
-    def denv = [ project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
-                    System.properties["sparklingTestEnv"],
-                    defaultEnv
-    ].find { h -> h!=null } // first match
-    // Return env
-    logger.info("* Detected '$denv' Sparkling test environment (configure via property 'sparklingTestEnv')")
-    denv
-}
+
+
+
+
+

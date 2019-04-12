@@ -129,7 +129,7 @@ ext.checkSparkVersion = this.&checkSparkVersion
 
 task checkSparkVersionTask {
     doLast {
-        checkSparkVersion()
+        //checkSparkVersion()
     }
 }
 

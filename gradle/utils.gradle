@@ -36,6 +36,17 @@ def h2oJarLocation() {
    return "http://h2o-release.s3.amazonaws.com/h2o/${h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"}/${h2oBuild}/h2o-${h2oMajorVersion}.${h2oBuild}.zip"
 }
 
+def detectTestEnvironment(defaultEnv = "local") {
+    def denv = [ project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
+                 System.properties["sparklingTestEnv"],
+                 defaultEnv
+    ].find { h -> h!=null } // first match
+    // Return env
+    logger.info("* Detected '$denv' Sparkling test environment (configure via property 'sparklingTestEnv')")
+    denv
+}
+
+
 // Export methods by turning them into closures
 ext{
     getOsSpecificCommandLine = this.&getOsSpecificCommandLine
@@ -43,4 +54,5 @@ ext{
     detectBackendClusterMode = this.&detectBackendClusterMode
     detectExternalBackendStartMode = this.&detectExternalBackendStartMode
     h2oJarLocation = this.&h2oJarLocation
+    detectTestEnvironment = this.&detectTestEnvironment
 }
