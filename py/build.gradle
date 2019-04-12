@@ -20,7 +20,7 @@ ext {
 // Define the environment required to run tests
 python {
     if (project.hasProperty("pythonExec")) {
-        pythonBinary project.findProject("pythonExec")
+        pythonBinary project.findProperty("pythonExec").toString()
     }
     pip "tabulate:0.8.3"
     pip "requests:2.21.0"
@@ -66,7 +66,7 @@ task createVersionFile {
             versionFileDir.mkdirs()
         }
         File version_file = new File(versionFileDir, "version.txt")
-        def version_txt = version.replace("-SNAPSHOT","")
+        def version_txt = version.replace("-SNAPSHOT", "")
         version_file.write(version_txt)
     }
 }
@@ -145,65 +145,59 @@ def copyPySetup() {
 
 
 def substituteVersionsInConda() {
-        def condaDir = new File("${buildDir}/conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION")
-        def renamedCondaDir = new File("${buildDir}/conda/h2o_pysparkling_${sparkMajorVersion}")
-        condaDir.renameTo(renamedCondaDir)
+    def condaDir = new File(buildDir, "conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION")
+    def renamedCondaDir = new File(buildDir, "conda/h2o_pysparkling_${sparkMajorVersion}")
+    condaDir.renameTo(renamedCondaDir)
 
-        def yamlConf = new File("${renamedCondaDir.toString()}/meta.yaml")
-        def contents = yamlConf.getText('UTF-8')
-        contents = contents
-                .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-                .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-                .replaceAll("SUBST_PYSPARKLING_VERSION", version.replace("-SNAPSHOT",""))
-        yamlConf.write(contents, 'UTF-8')
+    def yamlConf = new File(renamedCondaDir, "meta.yaml")
+    def contents = yamlConf.getText('UTF-8')
+    contents = contents
+            .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+            .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+            .replaceAll("SUBST_PYSPARKLING_VERSION", version.replace("-SNAPSHOT", ""))
+    yamlConf.write(contents, 'UTF-8')
 }
 
 
 def substituteInSetup() {
-    def setup = new File("${pkgDir}/setup.py")
+    def setup = new File(pkgDir, "setup.py")
 
-    def (first, second, third) = version.replace("-SNAPSHOT","").tokenize(".")
+    def (first, second, third) = version.replace("-SNAPSHOT", "").tokenize(".")
     def majorVersion = "${first}.${second}"
 
     def contents = setup.getText('UTF-8')
     contents = contents
             .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
             .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-            .replaceAll("SUBST_PYSPARKLING_VERSION", version.replace("-SNAPSHOT",""))
+            .replaceAll("SUBST_PYSPARKLING_VERSION", version.replace("-SNAPSHOT", ""))
             .replaceAll("SUBST_PYSPARKLING_MAJOR_VERSION", majorVersion)
     setup.write(contents, 'UTF-8')
 }
 
 
-
 def copyH2OFromH2OHome(String h2oHome) {
-        copy {
-            from "${h2oHome}/h2o-py/h2o"
-            into file("${project.pkgDir}/h2o")
-            exclude '**/*.pyc'
-            exclude '**/h2o.jar'
-        }
+    copy {
+        from "${h2oHome}/h2o-py/h2o"
+        into file("${project.pkgDir}/h2o")
+        exclude '**/*.pyc'
+        exclude '**/h2o.jar'
+    }
 }
 
 def copyH2OFromH2OWheel(String h2oPythonWheel) {
-        copy {
-            from zipTree(h2oPythonWheel)
-            into file("${project.pkgDir}")
-            include 'h2o/**'
-            exclude '**/*.pyc'
-            exclude '**/h2o.jar'
-        }
-}
-
-task prepare{
-    doLast{
-        
+    copy {
+        from zipTree(h2oPythonWheel)
+        into file("${project.pkgDir}")
+        include 'h2o/**'
+        exclude '**/*.pyc'
+        exclude '**/h2o.jar'
     }
 }
+
 //
 // Make PySparkling distribution zip package
 //
-task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.sparklingWaterAssemblyJar] ) {
+task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.sparklingWaterAssemblyJar]) {
     doFirst {
 
         def H2O_HOME = System.getenv("H2O_HOME")
@@ -279,14 +273,14 @@ else:
         file("${project.pkgDir}/sparkling_water/").mkdir()
         file("${project.pkgDir}/sparkling_water/__init__.py").write("# Sparkling-water JAR holder for pySparkling module.")
     }
-        // Configure proper name
+    // Configure proper name
     baseName = "h2o_pysparkling_${version.substring(0, version.lastIndexOf('.'))}"
 
     from pkgDir
     destinationDir distDir
 }
 
-configurations{
+configurations {
     sdist
 }
 
@@ -294,7 +288,7 @@ artifacts {
     sdist distPython
 }
 
-def createTestArgs(){
+def createTestArgs() {
 
     def args = []
     args.add("${distPython.archiveFile.get()}")
@@ -303,7 +297,7 @@ def createTestArgs(){
     args.add("sparkling.assembly.jar=${configurations.sparklingWaterAssemblyJar.join(',')}")
 
     if (project.property("testMojoPipeline") == "true") {
-       args.add("sparkling.mojo.pipeline.jar=${configurations.mojopipeline.resolve().join(",")}")
+        args.add("sparkling.mojo.pipeline.jar=${configurations.mojopipeline.resolve().join(",")}")
     }
 
     gradle.taskGraph.whenReady {
@@ -341,13 +335,10 @@ task hadoopSmokeTests(type: PythonTask, dependsOn: distPython) {
     command = "tests/tests_hadoop_smoke.py"
 }
 
-//
-// Test python against Spark cloud
-//
 task testPython(dependsOn: [testPythonConf, testPythonConversions, testPythonMojoPredictions]) {}
 
 if (project.property("testMojoPipeline") == "true") {
- testPython.dependsOn testPythonMojoPipeline
+    testPython.dependsOn testPythonMojoPipeline
 }
 
 //
@@ -375,7 +366,7 @@ task integTestPython(type: Exec, dependsOn: [distPython, pipInstall]) {
         case "yarn":
             environment["sparkling.test.environment"] = "${testEnv}"
             environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}/nodes"
-            environment["spark.ext.h2o.client.log.dir"] =  "h2ologs-itest-${testEnv}/client"
+            environment["spark.ext.h2o.client.log.dir"] = "h2ologs-itest-${testEnv}/client"
 
             commandLine getOsSpecificCommandLine(["tests/tests_integ_yarn.py"])
             break
@@ -427,7 +418,7 @@ task cleanPython(type: Delete) {
 clean.dependsOn cleanPython
 createVersionFile.dependsOn cleanPython
 distPython.dependsOn createVersionFile
- 
+
 // Build tasks
 task buildPython(dependsOn: distPython)
 build.dependsOn buildPython
