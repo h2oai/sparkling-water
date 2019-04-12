@@ -252,9 +252,7 @@ def pyUnitTests() {
                                 sh "sudo -E /usr/sbin/startup.sh"
                             }
                             sh """
-                            # Run unit tests on Py 2.7
-                            . /envs/h2o_env_python2.7/bin/activate
-                            ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/home/jenkins/miniconda/lib/python2.7 -x integTest -PbackendMode=${config.backendMode}
                             """
                         }
                     } finally {
@@ -274,9 +272,7 @@ def pyUnitTests() {
                                 sh "sudo -E /usr/sbin/startup.sh"
                             }
                             sh """
-                            # Run unit tests on Py 3.6
-                            . /envs/h2o_env_python3.6/bin/activate
-                            ${getGradleCommand(config)} :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/home/jenkins/miniconda/lib/python3.7 -x integTest -PbackendMode=${config.backendMode}
                             """
                         }
                     } finally {
