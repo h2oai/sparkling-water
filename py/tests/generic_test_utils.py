@@ -15,12 +15,12 @@
 # limitations under the License.
 #
 
-import unittest
 import os
-from pyspark import SparkConf
-import sys
-from random import randrange
 import socket
+import sys
+import unittest
+from random import randrange
+
 
 def unique_cloud_name(script_name):
     return str(script_name[:-3].replace("/", "_"))+str(randrange(65536))
@@ -49,9 +49,20 @@ def is_auto_cluster_start_mode_used():
 def is_manual_cluster_start_mode_used():
     return os.getenv("spark.ext.h2o.external.start.mode", "manual") == "manual"
 
+def parse_spark_options_to_map(args):
+    m = {}
+
+    for arg in args:
+        split = arg.split("=")
+        m[split[0]] = split[1]
+    return m
+
 # Runs python tests and by default reports to console.
 # If filename is specified it additionally reports output to file with that name into py/build directory
 def run_tests(cases, file_name=None):
+    for case in cases:
+        case._spark_options_from_params = parse_spark_options_to_map(sys.argv[2:])
+
     alltests = [unittest.TestLoader().loadTestsFromTestCase(case) for case in cases]
     testsuite = unittest.TestSuite(alltests)
 

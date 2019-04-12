@@ -19,7 +19,10 @@
 Unit tests for MOJO pipelines functionality in PySparkling. We don't start H2O context for these tests to actually tests
 that mojo can run without H2O runtime in PySparkling environment
 """
-
+import sys
+import os
+sys.path.insert(0, sys.argv[1])
+os.environ['PYSPARK_PYTHON'] = sys.executable
 import os
 import unittest
 
@@ -34,8 +37,8 @@ from pyspark.ml import Pipeline, PipelineModel
 class H2OMojoPipelineTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._cloud_name = generic_test_utils.unique_cloud_name("h2o_mojo_predictions_test")
-        cls._spark = SparkSession.builder.config(conf=unit_test_utils.get_default_spark_conf()).getOrCreate()
+        cls._conf = unit_test_utils.get_default_spark_conf(cls._spark_options_from_params)
+        cls._spark = SparkSession.builder.config(conf=cls._conf).getOrCreate()
 
     # test predictions on H2O Pipeline MOJO
     def test_h2o_mojo_pipeline_predictions(self):

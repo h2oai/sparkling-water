@@ -19,7 +19,9 @@
 Unit tests for PySparkling H2O Configuration
 """
 import sys
+import os
 sys.path.insert(0, sys.argv[1])
+os.environ['PYSPARK_PYTHON'] = sys.executable
 print(sys.path)
 import unittest
 from pysparkling.context import H2OContext
@@ -34,9 +36,9 @@ class H2OConfTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._cloud_name = generic_test_utils.unique_cloud_name("h2o_conf_test")
-        cls._spark = SparkSession.builder.config(
-            conf=unit_test_utils.get_default_spark_conf().set("spark.ext.h2o.cloud.name",
-                                                              cls._cloud_name)).getOrCreate()
+        cls._conf = unit_test_utils.get_default_spark_conf(cls._spark_options_from_params).\
+            set("spark.ext.h2o.cloud.name", cls._cloud_name)
+        cls._spark = SparkSession.builder.config(conf=cls._conf).getOrCreate()
         unit_test_utils.set_up_class(cls)
         h2o_conf = H2OConf(cls._spark).set_num_of_external_h2o_nodes(1)
         cls._hc = H2OContext.getOrCreate(cls._spark, h2o_conf)

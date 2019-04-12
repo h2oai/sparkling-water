@@ -18,7 +18,10 @@
 """
 Unit tests for PySparkling Data Conversions;
 """
-
+import sys
+import os
+sys.path.insert(0, sys.argv[1])
+os.environ['PYSPARK_PYTHON'] = sys.executable
 import unittest
 from pysparkling.context import H2OContext
 from pysparkling.conf import H2OConf
@@ -38,7 +41,8 @@ class FrameTransformationsTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._spark = SparkSession.builder.config(conf = unit_test_utils.get_default_spark_conf()).getOrCreate()
+        cls._conf = unit_test_utils.get_default_spark_conf(cls._spark_options_from_params)
+        cls._spark = SparkSession.builder.config(conf=cls._conf).getOrCreate()
         unit_test_utils.set_up_class(cls)
         cls._hc = H2OContext.getOrCreate(cls._spark, H2OConf(cls._spark).set_num_of_external_h2o_nodes(1))
 
