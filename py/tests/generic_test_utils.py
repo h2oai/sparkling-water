@@ -43,11 +43,6 @@ def tests_in_external_mode(spark_conf = None):
 def tests_in_internal_mode(spark_conf = None):
     return not tests_in_external_mode(spark_conf)
 
-def is_auto_cluster_start_mode_used():
-    return os.getenv("spark.ext.h2o.external.start.mode", "manual") == "auto"
-
-def is_manual_cluster_start_mode_used():
-    return os.getenv("spark.ext.h2o.external.start.mode", "manual") == "manual"
 
 def parse_spark_options_to_map(args):
     m = {}

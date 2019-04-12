@@ -43,13 +43,7 @@ class FrameTransformationsTest(unittest.TestCase):
     def setUpClass(cls):
         cls._conf = unit_test_utils.get_default_spark_conf(cls._spark_options_from_params)
         cls._spark = SparkSession.builder.config(conf=cls._conf).getOrCreate()
-        unit_test_utils.set_up_class(cls)
         cls._hc = H2OContext.getOrCreate(cls._spark, H2OConf(cls._spark).set_num_of_external_h2o_nodes(1))
-
-    @classmethod
-    def tearDownClass(cls):
-        h2o.cluster().shutdown()
-        unit_test_utils.tear_down_class(cls)
 
 
     # test transformation from dataframe to h2o frame

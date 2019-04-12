@@ -28,7 +28,6 @@ from pysparkling.context import H2OContext
 from pysparkling.conf import H2OConf
 from pyspark.sql import SparkSession
 
-import h2o
 import unit_test_utils
 import generic_test_utils
 
@@ -39,14 +38,7 @@ class H2OConfTest(unittest.TestCase):
         cls._conf = unit_test_utils.get_default_spark_conf(cls._spark_options_from_params).\
             set("spark.ext.h2o.cloud.name", cls._cloud_name)
         cls._spark = SparkSession.builder.config(conf=cls._conf).getOrCreate()
-        unit_test_utils.set_up_class(cls)
-        h2o_conf = H2OConf(cls._spark).set_num_of_external_h2o_nodes(1)
-        cls._hc = H2OContext.getOrCreate(cls._spark, h2o_conf)
-
-    @classmethod
-    def tearDownClass(cls):
-        h2o.cluster().shutdown()
-        unit_test_utils.tear_down_class(cls)
+        cls._hc = H2OContext.getOrCreate(cls._spark, H2OConf(cls._spark).set_num_of_external_h2o_nodes(1))
 
     # test passing h2o_conf to H2OContext
     def test_h2o_conf(self):

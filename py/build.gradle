@@ -33,7 +33,6 @@ python {
     envPath "${rootDir.toString()}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
 }
 
-
 configurations {
     mojopipeline
     s3deps
@@ -285,16 +284,14 @@ def createTestArgs() {
     def args = []
     args.add("${distPython.archiveFile.get()}")
     args.add("spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}")
-    args.add("spark.ext.h2o.external.start.mode=${detectExternalBackendStartMode()}")
-    args.add("sparkling.assembly.jar=${configurations.sparklingWaterAssemblyJar.join(',')}")
-
+    
     if (project.property("testMojoPipeline") == "true") {
-        args.add("sparkling.mojo.pipeline.jar=${configurations.mojopipeline.resolve().join(",")}")
+        args.add("spark.jars=${configurations.mojopipeline.resolve().join(",")}")
     }
 
     gradle.taskGraph.whenReady {
         if (gradle.taskGraph.hasTask(":${project.name}:hadoopSmokeTests")) {
-            args.add("sparkling.s3.jars=${configurations.s3deps.resolve().join(",")}")
+            args.add("spark.jars=${configurations.s3deps.resolve().join(",")}")
         }
     }
 
@@ -334,9 +331,10 @@ if (project.property("testMojoPipeline") == "true") {
 }
 
 //
-// Run python integration tests
-//f
-task integTestPython(type: Exec, dependsOn: [distPython, pipInstall]) {
+// Run python integration tests. On Purpose, don't use PythonTask as we want to test the real user
+// use case of submitting apps via ./spark-submit
+//
+task integTestPython(type: Exec, dependsOn: [distPython]) {
     def testEnv = detectTestEnvironment()
 
     // Pass references to libraries to test launcher
