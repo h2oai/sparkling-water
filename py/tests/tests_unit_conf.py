@@ -18,7 +18,9 @@
 """
 Unit tests for PySparkling H2O Configuration
 """
-
+import sys
+sys.path.insert(0, sys.argv[1])
+print(sys.path)
 import unittest
 from pysparkling.context import H2OContext
 from pysparkling.conf import H2OConf
@@ -27,7 +29,6 @@ from pyspark.sql import SparkSession
 import h2o
 import unit_test_utils
 import generic_test_utils
-
 
 class H2OConfTest(unittest.TestCase):
     @classmethod
