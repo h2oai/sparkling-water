@@ -352,13 +352,13 @@ task integTestPython(type: Exec, dependsOn: [distPython]) {
     // Decide which tests should be launch here based on environment
     switch (testEnv) {
         case "yarn":
-            
+
             environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}/nodes"
             environment["spark.ext.h2o.client.log.dir"] = "h2ologs-itest-${testEnv}/client"
 
             commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_integ_yarn.py"])
             break
-        
+
         case "local":
             environment["spark.ext.h2o.node.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/nodes").getAbsolutePath()
             environment["spark.ext.h2o.client.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client").getAbsolutePath()
