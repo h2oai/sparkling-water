@@ -344,7 +344,7 @@ task integTestPython(type: Exec, dependsOn: [distPython]) {
     environment["spark.testing"] = "true"
     environment["spark.test.home"] = "${sparkHome}"
     environment["sparkling.test.hdp.version"] = "${hdpVersion}"
-
+    environment["sparkling.test.environment"] = "${testEnv}"
 
     if (sparkMaster != null)
         environment["spark.master"] = "${sparkMaster}"
@@ -352,23 +352,14 @@ task integTestPython(type: Exec, dependsOn: [distPython]) {
     // Decide which tests should be launch here based on environment
     switch (testEnv) {
         case "yarn":
-            environment["sparkling.test.environment"] = "${testEnv}"
+            
             environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}/nodes"
             environment["spark.ext.h2o.client.log.dir"] = "h2ologs-itest-${testEnv}/client"
 
             commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_integ_yarn.py"])
             break
-
-        case "standalone":
-            environment["sparkling.test.environment"] = "${testEnv}"
-            environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}/nodes"
-            environment["spark.ext.h2o.client.log.dir"] = "h2ologs-itest-${testEnv}/client"
-
-            commandLine getOsSpecificCommandLine([pythonexec, "tests/tests_integ_standalone.py"])
-            break
-
+        
         case "local":
-            environment["sparkling.test.environment"] = "${testEnv}"
             environment["spark.ext.h2o.node.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/nodes").getAbsolutePath()
             environment["spark.ext.h2o.client.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client").getAbsolutePath()
 
