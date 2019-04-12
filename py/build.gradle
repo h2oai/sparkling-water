@@ -340,9 +340,8 @@ task integTestPython(type: Exec, dependsOn: [distPython]) {
     // Pass references to libraries to test launcher
     environment["sparkling.pysparkling.sdist"] = configurations.sdist.artifacts.files.singleFile.absolutePath
     environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
-    environment["spark.ext.h2o.external.start.mode"] = detectExternalBackendStartMode()
     // sparkling assembly jar is here because of external h2o tests
-    environment["sparkling.assembly.jar"] = configurations.sparklingWaterAssemblyJar.join(',')
+    environment["sparkling.assembly.jar"] = configurations.sparklingWaterAssemblyJar.singleFile
     environment["spark.testing"] = "true"
     environment["spark.test.home"] = "${sparkHome}"
     environment["sparkling.test.hdp.version"] = "${hdpVersion}"
