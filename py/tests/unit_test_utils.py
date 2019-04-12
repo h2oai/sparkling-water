@@ -41,7 +41,9 @@ def get_default_spark_conf(additional_conf={}):
         set("spark.worker.timeout", "360"). \
         set("spark.ext.h2o.backend.cluster.mode", cluster_mode()). \
         set("spark.ext.h2o.cloud.name", unique_cloud_name("test")). \
-        set("spark.ext.h2o.external.start.mode", "auto")
+        set("spark.ext.h2o.external.start.mode", "auto"). \
+        set("spark.ext.h2o.node.log.dir", "build/h2ologs-pyunit/workers"). \
+        set("spark.ext.h2o.client.log.dir", "build/h2ologs-pyunit/client")
 
     if tests_in_external_mode():
         conf.set("spark.ext.h2o.client.ip", local_ip())
