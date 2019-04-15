@@ -31,7 +31,7 @@ class LocalIntegTestSuite(unittest.TestCase):
         env.conf("spark.ext.h2o.port.base", 63331)
 
         return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "gbm")
-        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code "+str(return_code))
+        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
     def test_pipeline_deep_learning(self):
         env = IntegTestEnv()
@@ -39,7 +39,7 @@ class LocalIntegTestSuite(unittest.TestCase):
         env.conf("spark.ext.h2o.port.base", 63331)
 
         return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "dl")
-        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code "+str(return_code))
+        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
     def test_pipeline_xgboost(self):
         env = IntegTestEnv()
@@ -47,7 +47,7 @@ class LocalIntegTestSuite(unittest.TestCase):
         env.conf("spark.ext.h2o.port.base", 63331)
 
         return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "xgboost")
-        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code "+str(return_code))
+        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
     def test_pipeline_automl(self):
         env = IntegTestEnv()
@@ -55,7 +55,7 @@ class LocalIntegTestSuite(unittest.TestCase):
         env.conf("spark.ext.h2o.port.base", 63331)
 
         return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "automl")
-        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code "+str(return_code))
+        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
     def test_import_pysparkling_standalone_app(self):
         env = IntegTestEnv()
@@ -63,7 +63,7 @@ class LocalIntegTestSuite(unittest.TestCase):
         env.conf("spark.ext.h2o.port.base", 63331)
 
         return_code = launch(env, "examples/scripts/tests/pysparkling_ml_import_overrides_spark_test.py")
-        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code "+str(return_code))
+        self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
 
 if __name__ == '__main__':
