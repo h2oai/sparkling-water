@@ -15,12 +15,11 @@
 * limitations under the License.
 */
 
-package water.api
+package water.util
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.util.DeprecatedMethod
 
 import scala.language.experimental.macros
 
@@ -60,7 +59,7 @@ class DeprecatedMethodMacroSuite extends FunSuite {
     def method3[T](parameter: T): T = parameter
 
     @DeprecatedMethod(replacement = "replacing method")
-    private[DeprecateMacroSuite] def method4: Unit = println("mehtod4")
+    private[DeprecatedMethodMacroSuite] def method4: Unit = println("mehtod4")
   }
 
   test("Various annotated methods") {
