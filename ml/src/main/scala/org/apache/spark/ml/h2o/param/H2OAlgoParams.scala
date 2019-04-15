@@ -39,6 +39,10 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
     "predictionCol",
     "Prediction column name")
 
+  final val weightCol = stringParam(
+    "weightCol",
+    "Weight column name")
+
   final val featuresCols = stringArrayParam(
     "featuresCols",
     "Name of feature columns")
@@ -66,6 +70,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   setDefault(
     ratio -> 1.0, // 1.0 means use whole frame as training frame
     predictionCol -> "prediction",
+    weightCol -> null,
     featuresCols -> Array.empty[String],
     nfolds -> parameters._nfolds,
     allStringColumnsToCategorical -> true,
@@ -82,13 +87,16 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   // Getters
   //
   /** @group getParam */
-  def getTrainRatio() = $(ratio)
+  def getTrainRatio(): Double = $(ratio)
 
   /** @group getParam */
-  def getPredictionCol() = $(predictionCol)
+  def getPredictionCol(): String = $(predictionCol)
 
   /** @group getParam */
-  def getFeaturesCols() = {
+  def getWeightCol(): String = $(weightCol)
+
+  /** @group getParam */
+  def getFeaturesCols(): Array[String] = {
     if ($(featuresCols).contains($(predictionCol))) {
       logDebug("Prediction col '" + $(predictionCol) + "' removed from the list of features.")
       $(featuresCols).filter(_ != $(predictionCol))
@@ -98,31 +106,31 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   }
 
   /** @group getParam */
-  def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
+  def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
 
   /** @group getParam */
-  def getColumnsToCategorical() = $(columnsToCategorical)
+  def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
   /** @group getParam */
-  def getNfolds() = $(nfolds)
+  def getNfolds(): Int = $(nfolds)
 
   /** @group getParam */
-  def getKeepCrossValidationPredictions() = $(keepCrossValidationPredictions)
+  def getKeepCrossValidationPredictions(): Boolean = $(keepCrossValidationPredictions)
 
   /** @group getParam */
-  def getKeepCrossValidationFoldAssignment() = $(keepCrossValidationFoldAssignment)
+  def getKeepCrossValidationFoldAssignment(): Boolean = $(keepCrossValidationFoldAssignment)
 
   /** @group getParam */
-  def getParallelizeCrossValidation() = $(parallelizeCrossValidation)
+  def getParallelizeCrossValidation(): Boolean = $(parallelizeCrossValidation)
 
   /** @group getParam */
-  def getSeed() = $(seed)
+  def getSeed(): Long = $(seed)
 
   /** @group getParam */
-  def getDistribution() = $(distribution)
+  def getDistribution(): DistributionFamily = $(distribution)
 
   /** @group getParam */
-  def getConvertUnknownCategoricalLevelsToNa() = $(convertUnknownCategoricalLevelsToNa)
+  def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
   //
   // Setters
@@ -132,6 +140,9 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
 
   /** @group setParam */
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
+
+  /** @group setParam */
+  def setWeightCol(value: String): this.type = set(weightCol, value)
 
   /** @group setParam */
   def setFeaturesCols(first: String, others: String*): this.type = set(featuresCols, Array(first) ++ others)
@@ -185,6 +196,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
   protected def updateH2OParams(): Unit = {
     parameters._response_column = $(predictionCol)
+    parameters._weights_column = $(weightCol)
     parameters._nfolds = $(nfolds)
     parameters._keep_cross_validation_predictions = $(keepCrossValidationPredictions)
     parameters._keep_cross_validation_fold_assignment = $(keepCrossValidationFoldAssignment)
