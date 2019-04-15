@@ -209,7 +209,7 @@ class FrameTransformationsTest(unittest.TestCase):
         t0 = time.time()
         self._hc.as_h2o_frame(df)
         total = time.time() - t0
-        assert total < 20 # The conversion should not take longer then 20 seconds
+        self.assertTrue(total < 20) # The conversion should not take longer then 20 seconds
 
     def test_load_mojo_gbm(self):
         from pysparkling.ml import H2OMOJOModel, H2OGBM
@@ -223,9 +223,9 @@ class FrameTransformationsTest(unittest.TestCase):
         pred_mojo = mojo.predict(prostate_frame).repartition(1).collect()
         pred_model = model.transform(prostate_frame).repartition(1).collect()
 
-        assert len(pred_mojo)==len(pred_model)
+        self.assertEquals(len(pred_mojo), len(pred_model))
         for i in range(0, len(pred_mojo)):
-            assert pred_mojo[i]==pred_model[i]
+            self.assertEquals(pred_mojo[i], pred_model[i])
 
     def test_load_mojo_deeplearning(self):
         from pysparkling.ml import H2OMOJOModel, H2ODeepLearning
@@ -239,9 +239,9 @@ class FrameTransformationsTest(unittest.TestCase):
         pred_mojo = mojo.predict(prostate_frame).repartition(1).collect()
         pred_model = model.transform(prostate_frame).repartition(1).collect()
 
-        assert len(pred_mojo)==len(pred_model)
+        self.assertEquals(len(pred_mojo), len(pred_model))
         for i in range(0, len(pred_mojo)):
-            assert pred_mojo[i]==pred_model[i]
+            self.assertEquals(pred_mojo[i], pred_model[i])
 
     def test_simple_parquet_import(self):
         df = self._spark.sparkContext.parallelize([(num, "text") for num in range(0,100)]).toDF().coalesce(1)
@@ -254,10 +254,10 @@ class FrameTransformationsTest(unittest.TestCase):
                 # it is always set
                 parquet_file = file
         frame = h2o.upload_file(path=os.path.abspath("build/tests_tmp/test.parquet/" + parquet_file))
-        assert frame.ncols == len(df.columns)
-        assert frame.nrows == df.count()
-        assert frame[0, 0] == 0.0
-        assert frame[0, 1] == "text"
+        self.assertEquals(frame.ncols, len(df.columns))
+        self.assertEquals(frame.nrows, df.count())
+        self.assertEquals(frame[0, 0], 0.0)
+        self.assertEquals(frame[0, 1], "text")
 
     def test_unknown_type_conversion(self):
         with self.assertRaises(ValueError):
@@ -268,24 +268,24 @@ class FrameTransformationsTest(unittest.TestCase):
         empty = self._spark.createDataFrame(self._spark.sparkContext.emptyRDD(), schema)
         hc = H2OContext.getOrCreate(self._spark)
         fr = hc.as_h2o_frame(empty)
-        assert fr.nrows == 0
-        assert fr.ncols == 0
+        self.assertEquals(fr.nrows, 0)
+        self.assertEquals(fr.ncols, 0)
 
     def test_convert_empty_dataframe_non_empty_schema(self):
         schema = StructType([StructField("name", StringType()), StructField("age", IntegerType())])
         empty = self._spark.createDataFrame(self._spark.sparkContext.emptyRDD(), schema)
         hc = H2OContext.getOrCreate(self._spark)
         fr = hc.as_h2o_frame(empty)
-        assert fr.nrows == 0
-        assert fr.ncols == 2
+        self.assertEquals(fr.nrows, 0)
+        self.assertEquals(fr.ncols, 2)
 
     def test_convert_empty_rdd(self):
         schema = StructType([])
         empty = self._spark.createDataFrame(self._spark.sparkContext.emptyRDD(), schema)
         hc = H2OContext.getOrCreate(self._spark)
         fr = hc.as_h2o_frame(empty)
-        assert fr.nrows == 0
-        assert fr.ncols == 0
+        self.assertEquals(fr.nrows, 0)
+        self.assertEquals(fr.ncols, 0)
 
     def test_import_gcs(self):
         fr = h2o.import_file("gs://gcp-public-data-nexrad-l2/2018/01/01/KABR/NWS_NEXRAD_NXL2DPBL_KABR_20180101050000_20180101055959.tar")
