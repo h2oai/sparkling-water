@@ -18,9 +18,9 @@
 """
 Integration tests for pySparkling for Spark running in local
 """
-import generic_test_utils
-from integ_test_utils import *
 import unittest
+
+from integ_test_utils import *
 
 
 class LocalIntegTestSuite(unittest.TestCase):

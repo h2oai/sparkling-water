@@ -16,11 +16,9 @@
 #
 
 
-import os
 import sys
 import subprocess
 import generic_test_utils
-from external_backend_manual_test_starter import ExternalBackendManualTestStarter
 
 
 class IntegTestEnv:
@@ -50,11 +48,6 @@ class IntegTestEnv:
 
 def launch(test_env, script_name, param=None):
     cloud_name = generic_test_utils.unique_cloud_name(script_name)
-    client_ip = generic_test_utils.local_ip()
-    if generic_test_utils.tests_in_external_mode() and generic_test_utils.is_manual_cluster_start_mode_used():
-        external_cluster_test_helper = ExternalBackendManualTestStarter()
-        external_cluster_test_helper.start_cloud(1, cloud_name, client_ip)
-
 
     cmd_line = [get_submit_script(test_env.spark_home), "--verbose"]
     cmd_line.extend(["--master", test_env.spark_master])
@@ -67,7 +60,7 @@ def launch(test_env, script_name, param=None):
     cmd_line.extend(["--conf", 'spark.test.home=' + test_env.spark_home])
     cmd_line.extend(["--conf", 'spark.scheduler.minRegisteredResourcesRatio=1'])
     cmd_line.extend(["--conf", 'spark.ext.h2o.repl.enabled=false']) #  disable repl in tests
-    cmd_line.extend(["--conf", "spark.ext.h2o.external.start.mode=" + os.getenv("spark.ext.h2o.external.start.mode", "manual")])
+    cmd_line.extend(["--conf", "spark.ext.h2o.external.start.mode=auto"])
     # Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
     # See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
     cmd_line.extend(["--conf", 'spark.hadoop.yarn.timeline-service.enabled=false'])
@@ -92,9 +85,6 @@ def launch(test_env, script_name, param=None):
 
     # Launch it via command line
     return_code = subprocess.call(cmd_line)
-
-    if generic_test_utils.tests_in_external_mode() and generic_test_utils.is_manual_cluster_start_mode_used():
-        external_cluster_test_helper.stop_cloud()
 
     return return_code
 

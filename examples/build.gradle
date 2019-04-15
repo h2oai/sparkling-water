@@ -100,3 +100,6 @@ scriptsTest {
   // Show standard out and standard error of the test JVM(s) on the console
   testLogging.showStandardStreams = true
 }
+
+integTest.dependsOn checkSparkVersionTask
+scriptsTest.dependsOn checkSparkVersionTask
