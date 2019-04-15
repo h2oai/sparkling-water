@@ -35,7 +35,7 @@ import time
 import os
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from py_sparkling.ml.algos import H2OGLM, H2OGridSearch, H2OGBM
+from pysparkling.ml.algos import H2OGLM, H2OGridSearch, H2OGBM
 
 # Test of transformations from dataframe/rdd to h2o frame and from h2o frame back to dataframe
 class FrameTransformationsTest(unittest.TestCase):
