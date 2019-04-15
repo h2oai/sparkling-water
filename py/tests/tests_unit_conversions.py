@@ -35,6 +35,7 @@ import time
 import os
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
+from py_sparkling.ml.algos import H2OGLM, H2OGridSearch, H2OGBM
 
 # Test of transformations from dataframe/rdd to h2o frame and from h2o frame back to dataframe
 class FrameTransformationsTest(unittest.TestCase):
@@ -289,6 +290,42 @@ class FrameTransformationsTest(unittest.TestCase):
 
     def test_import_gcs(self):
         fr = h2o.import_file("gs://gcp-public-data-nexrad-l2/2018/01/01/KABR/NWS_NEXRAD_NXL2DPBL_KABR_20180101050000_20180101055959.tar")
+
+    def test_glm_in_spark_pipeline(self):
+        prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
+                                              header=True, inferSchema=True)
+
+        algo = H2OGLM(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON"],
+                      predictionCol="AGE",
+                      seed=1,
+                      ratio=0.8)
+
+        pipeline = Pipeline(stages=[algo])
+        pipeline.write().overwrite().save("file://" + os.path.abspath("build/glm_pipeline"))
+        loaded_pipeline = Pipeline.load("file://" + os.path.abspath("build/glm_pipeline"))
+        model = loaded_pipeline.fit(prostate_frame)
+
+        model.write().overwrite().save("file://" + os.path.abspath("build/glm_pipeline_model"))
+        loaded_model = PipelineModel.load("file://" + os.path.abspath("build/glm_pipeline_model"))
+
+        loaded_model.transform(prostate_frame).count()
+
+    def test_grid_gbm_in_spark_pipeline(self):
+        prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
+                                              header=True, inferSchema=True)
+
+        algo = H2OGridSearch(predictionCol="AGE", hyperParameters={"_seed": [1,2,3]}, ratio=0.8, algo=H2OGBM(),
+                             strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60)
+
+        pipeline = Pipeline(stages=[algo])
+        pipeline.write().overwrite().save("file://" + os.path.abspath("build/grid_gbm_pipeline"))
+        loaded_pipeline = Pipeline.load("file://" + os.path.abspath("build/grid_gbm_pipeline"))
+        model = loaded_pipeline.fit(prostate_frame)
+
+        model.write().overwrite().save("file://" + os.path.abspath("build/grid_gbm_pipeline_model"))
+        loaded_model = PipelineModel.load("file://" + os.path.abspath("build/grid_gbm_pipeline_model"))
+
+        loaded_model.transform(prostate_frame).count()
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_conversions_report")
