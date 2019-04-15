@@ -8,6 +8,15 @@ ScalaCompileOptions.metaClass.fork = true
 ScalaCompileOptions.metaClass.useAnt = false
 ScalaCompileOptions.metaClass.useCompileDaemon = false
 
+configurations {
+    scalaCompilerPlugin
+}
+
+dependencies {
+    scalaCompilerPlugin "org.scalamacros:paradise_${scalaVersion}:2.1.1"
+}
+
+
 // Activate Zinc compiler and configure scalac
 tasks.withType(ScalaCompile) {
     scalaCompileOptions.additionalParameters = [
@@ -18,9 +27,9 @@ tasks.withType(ScalaCompile) {
             "-language:postfixOps",
             "-language:existentials",
             "-language:implicitConversions",
+            "-Xplugin:" + configurations.scalaCompilerPlugin.asPath
             ]
 }
-
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
