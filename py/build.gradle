@@ -286,9 +286,10 @@ artifacts {
 }
 
 def createTestArgs() {
-    def args = []
-    args.add("${distPython.archiveFile.get()}")
-    args.add("spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}")
+    def args = [
+            "${distPython.archiveFile.get()}",
+            "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}"
+    ]
 
     if (project.property("testMojoPipeline") == "true") {
         args.add("spark.jars=${configurations.mojopipeline.resolve().join(",")}")
