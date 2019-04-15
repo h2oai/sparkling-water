@@ -101,5 +101,5 @@ scriptsTest {
   testLogging.showStandardStreams = true
 }
 
-integTest.dependsOn checkSparkVersion
-scriptsTest.dependsOn checkSparkVersion
+integTest.dependsOn checkSparkVersionTask
+scriptsTest.dependsOn checkSparkVersionTask

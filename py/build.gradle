@@ -377,7 +377,7 @@ task integTestPython(type: Exec, dependsOn: distPython) {
 task integTest
 integTest.dependsOn integTestPython
 check.dependsOn integTest
-integTestPython.dependsOn checkSparkVersion
+integTestPython.dependsOn checkSparkVersionTask
 
 
 //
