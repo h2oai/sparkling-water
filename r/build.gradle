@@ -1,5 +1,3 @@
-import java.net.InetAddress
-
 apply from: "$rootDir/gradle/utils.gradle"
 
 description = "RSparkling - Sparkling-Water R Package"
@@ -158,3 +156,5 @@ task printRSparklingCranLink(){
 clean.dependsOn cleanR
 
 check.dependsOn test
+
+test.dependsOn checkSparkVersionTask

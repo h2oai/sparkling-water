@@ -19,24 +19,30 @@
 Unit tests for PySparkling Mojo. We don't start H2O context for these tests to actually tests
 that mojo can run without H2O runtime in PySparkling environment
 """
+import sys
+import os
 
+sys.path.insert(0, sys.argv[1])
+os.environ['PYSPARK_PYTHON'] = sys.executable
 import unittest
 from pyspark.sql import SparkSession
 from pyspark.sql import Row
 import os
 from pysparkling.ml import H2OMOJOModel
-from py_sparkling.ml.algos import H2OGLM, H2OGridSearch, H2OGBM
 
 import unit_test_utils
 import generic_test_utils
 from pyspark.ml import Pipeline, PipelineModel
 
-
+##
+## These tests does not start H2O Context on purpose to test running predictions
+## in Spark environment without run-time H2O
+##
 class H2OMojoPredictionsTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._cloud_name = generic_test_utils.unique_cloud_name("h2o_mojo_predictions_test")
-        cls._spark = SparkSession.builder.config(conf=unit_test_utils.get_default_spark_conf()).getOrCreate()
+        cls._conf = unit_test_utils.get_default_spark_conf(cls._spark_options_from_params)
+        cls._spark = SparkSession.builder.config(conf=cls._conf).getOrCreate()
 
     # test predictions on H2O Mojo
     def test_h2o_mojo_predictions(self):
@@ -73,13 +79,13 @@ class H2OMojoPredictionsTest(unittest.TestCase):
 
         pipeline = Pipeline(stages=[mojo])
 
-        pipeline.write().overwrite().save( "file://" + os.path.abspath("build/test_spark_pipeline_model_mojo"))
-        loaded_pipeline = Pipeline.load( "file://" + os.path.abspath("build/test_spark_pipeline_model_mojo"))
+        pipeline.write().overwrite().save("file://" + os.path.abspath("build/test_spark_pipeline_model_mojo"))
+        loaded_pipeline = Pipeline.load("file://" + os.path.abspath("build/test_spark_pipeline_model_mojo"))
 
         model = loaded_pipeline.fit(prostate_frame)
 
-        model.write().overwrite().save( "file://" + os.path.abspath("build/test_spark_pipeline_model_mojo_model"))
-        PipelineModel.load( "file://" + os.path.abspath("build/test_spark_pipeline_model_mojo_model"))
+        model.write().overwrite().save("file://" + os.path.abspath("build/test_spark_pipeline_model_mojo_model"))
+        PipelineModel.load("file://" + os.path.abspath("build/test_spark_pipeline_model_mojo_model"))
 
     def test_h2o_mojo_unsupervised(self):
         mojo = H2OMOJOModel.create_from_mojo(
@@ -88,45 +94,10 @@ class H2OMojoPredictionsTest(unittest.TestCase):
         row_for_scoring = Row("V1")
 
         df = self._spark.createDataFrame(self._spark.sparkContext.
-                                     parallelize([(5.1,)]).
-                                     map(lambda r: row_for_scoring(*r)))
+                                         parallelize([(5.1,)]).
+                                         map(lambda r: row_for_scoring(*r)))
         mojo.predict(df).repartition(1).collect()
 
-    def test_glm_in_spark_pipeline(self):
-        prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
-                                              header=True, inferSchema=True)
-
-        algo = H2OGLM(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON"],
-                      predictionCol="AGE",
-                      seed=1,
-                      ratio=0.8)
-
-        pipeline = Pipeline(stages=[algo])
-        pipeline.write().overwrite().save("file://" + os.path.abspath("build/glm_pipeline"))
-        loaded_pipeline = Pipeline.load("file://" + os.path.abspath("build/glm_pipeline"))
-        model = loaded_pipeline.fit(prostate_frame)
-
-        model.write().overwrite().save("file://" + os.path.abspath("build/glm_pipeline_model"))
-        loaded_model = PipelineModel.load("file://" + os.path.abspath("build/glm_pipeline_model"))
-
-        loaded_model.transform(prostate_frame).count()
-
-    def test_grid_gbm_in_spark_pipeline(self):
-        prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
-                                              header=True, inferSchema=True)
-
-        algo = H2OGridSearch(predictionCol="AGE", hyperParameters={"_seed": [1,2,3]}, ratio=0.8, algo=H2OGBM(),
-                             strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60)
-
-        pipeline = Pipeline(stages=[algo])
-        pipeline.write().overwrite().save("file://" + os.path.abspath("build/grid_gbm_pipeline"))
-        loaded_pipeline = Pipeline.load("file://" + os.path.abspath("build/grid_gbm_pipeline"))
-        model = loaded_pipeline.fit(prostate_frame)
-
-        model.write().overwrite().save("file://" + os.path.abspath("build/grid_gbm_pipeline_model"))
-        loaded_model = PipelineModel.load("file://" + os.path.abspath("build/grid_gbm_pipeline_model"))
-
-        loaded_model.transform(prostate_frame).count()
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([H2OMojoPredictionsTest], file_name="py_unit_tests_mojo_predictions_report")

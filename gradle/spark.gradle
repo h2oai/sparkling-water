@@ -125,10 +125,3 @@ task checkSparkVersionTask {
         checkSparkVersion()
     }
 }
-
-afterEvaluate { project ->
-    Task task = project.tasks.findByName("check")
-    if (task != null) {
-        task.dependsOn checkSparkVersionTask
-    }
-}
