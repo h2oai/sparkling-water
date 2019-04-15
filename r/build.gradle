@@ -158,3 +158,5 @@ task printRSparklingCranLink(){
 clean.dependsOn cleanR
 
 check.dependsOn test
+
+test.dependsOn checkSparkVersion

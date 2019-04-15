@@ -2,15 +2,4 @@ apply plugin: 'base'
 
 task test(group: "Verification", description: "Test this project")
 
-task uploadArchives(group: "Release", description: "Upload all archives")
-
-build.dependsOn check
-
 check.dependsOn test
-
-//
-// Setup idea project
-//
-if (!project.plugins.hasPlugin('idea')) {
-  apply plugin: 'idea'
-}
