@@ -340,7 +340,7 @@ if (project.property("testMojoPipeline") == "true") {
 // Run python integration tests. On Purpose, don't use PythonTask as we want to test the real user
 // use case of submitting apps via ./spark-submit
 //
-task integTestPython(type: Exec, dependsOn: [distPython]) {
+task integTestPython(type: Exec, dependsOn: distPython) {
     def testEnv = detectTestEnvironment()
 
     // Pass references to libraries to test launcher
