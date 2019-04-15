@@ -22,7 +22,6 @@ import sys
 import os
 sys.path.insert(0, sys.argv[1])
 os.environ['PYSPARK_PYTHON'] = sys.executable
-print(sys.path)
 import unittest
 from pysparkling.context import H2OContext
 from pysparkling.conf import H2OConf
