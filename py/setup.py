@@ -9,17 +9,14 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-# Get the version from the relevant file
-with open(path.join(here, 'pysparkling/version.txt'), encoding='utf-8') as f:
-    version = f.read()
 
 setup(
-    name = 'h2o_pysparkling_' + version[:version.rindex(".")],
+    name = 'h2o_pysparkling_SUBST_PYSPARKLING_MAJOR_VERSION',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version = version,
+    version = "SUBST_PYSPARKLING_VERSION",
     description = 'Sparkling Water integrates H2O\'s Fast Scalable Machine Learning with Spark',
     long_description = long_description,
 
@@ -46,7 +43,7 @@ setup(
     packages = find_packages(),
 
     # run-time dependencies
-    install_requires=['requests', 'tabulate', 'future', 'colorama>=0.3.8', 'six', 'pyspark>=2.4.0,<=2.4.0'],
+    install_requires=['requests', 'tabulate', 'future', 'colorama>=0.3.8', 'six', 'pyspark>=SUBST_SPARK_MAJOR_VERSION.0,<=SUBST_SPARK_VERSION'],
 
     # bundled binary packages
     package_data={'sparkling_water': ['*.jar'],
