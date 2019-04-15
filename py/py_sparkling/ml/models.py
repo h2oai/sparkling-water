@@ -1,3 +1,20 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 from pyspark.ml.util import JavaMLReadable, JavaMLWritable
 from pyspark.ml.wrapper import JavaModel
 from pysparkling.initializer import *
@@ -5,6 +22,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf
 from pyspark.sql.types import DoubleType
 from .util import JavaH2OMLReadable
+
 
 class H2OGBMModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
@@ -17,14 +35,18 @@ class H2ODeepLearningModel(JavaModel, JavaMLWritable, JavaMLReadable):
 class H2OAutoMLModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
+
 class H2OXGBoostModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
+
 
 class H2OGLMModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
+
 class H2OGridSearchModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
+
 
 class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
@@ -33,7 +55,8 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         spark_session = SparkSession.builder.getOrCreate()
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
-        return H2OMOJOModel(spark_session._jvm.org.apache.spark.ml.h2o.models.JavaH2OMOJOModelHelper.createFromMojo(path_to_mojo))
+        return H2OMOJOModel(
+            spark_session._jvm.org.apache.spark.ml.h2o.models.JavaH2OMOJOModelHelper.createFromMojo(path_to_mojo))
 
     def predict(self, dataframe):
         return self.transform(dataframe)
@@ -53,7 +76,9 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         spark_session = SparkSession.builder.getOrCreate()
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
-        return H2OMOJOPipelineModel(spark_session._jvm.org.apache.spark.ml.h2o.models.JavaH2OMOJOPipelineModelHelper.createFromMojo(path_to_mojo))
+        return H2OMOJOPipelineModel(
+            spark_session._jvm.org.apache.spark.ml.h2o.models.JavaH2OMOJOPipelineModelHelper.createFromMojo(
+                path_to_mojo))
 
     def predict(self, dataframe):
         return self.transform(dataframe)

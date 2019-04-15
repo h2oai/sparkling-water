@@ -1,3 +1,20 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 from pyspark import keyword_only
 from pyspark.ml.util import JavaMLWritable, JavaMLReader, MLReadable
 from pyspark.ml.wrapper import JavaEstimator
@@ -7,12 +24,14 @@ import random
 import string
 
 from pysparkling import *
-from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams
+from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, \
+    H2OGridSearchParams
 from .models import H2OGBMModel, H2ODeepLearningModel, H2OAutoMLModel, H2OXGBoostModel, H2OGLMModel, H2OGridSearchModel
 from .util import JavaH2OMLReadable
 from py_sparkling.ml.models import H2OMOJOModel
 from py_sparkling.ml.util import get_enum_array_from_str_array
-java_max_double_value = (2-2**(-52))*(2**1023)
+
+java_max_double_value = (2 - 2 ** (-52)) * (2 ** 1023)
 
 
 def set_double_values(kwargs, values):
@@ -20,13 +39,17 @@ def set_double_values(kwargs, values):
         if v in kwargs:
             kwargs[v] = float(kwargs[v])
 
+
 class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     @keyword_only
-    def __init__(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[], nfolds=0,
-                 keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                 seed=-1, distribution="AUTO", ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024, minSplitImprovement=1e-5,
+    def __init__(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                 columnsToCategorical=[], nfolds=0,
+                 keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                 parallelizeCrossValidation=True,
+                 seed=-1, distribution="AUTO", ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024,
+                 minSplitImprovement=1e-5,
                  histogramType="AUTO", r2Stopping=java_max_double_value,
-                 nbinsTopLevel=1<<10, buildTreeOneNode=False, scoreTreeInterval=0,
+                 nbinsTopLevel=1 << 10, buildTreeOneNode=False, scoreTreeInterval=0,
                  sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                  learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=java_max_double_value,
                  predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False):
@@ -37,24 +60,33 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
-                         nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
+        self._setDefault(ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                         columnsToCategorical=[],
+                         nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                         parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
                          ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024, minSplitImprovement=1e-5,
-                         histogramType=self._hc._jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf("AUTO"),
-                         r2Stopping=self._hc._jvm.Double.MAX_VALUE, nbinsTopLevel=1<<10, buildTreeOneNode=False, scoreTreeInterval=0,
-                         sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
-                         learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=self._hc._jvm.Double.MAX_VALUE,
+                         histogramType=self._hc._jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(
+                             "AUTO"),
+                         r2Stopping=self._hc._jvm.Double.MAX_VALUE, nbinsTopLevel=1 << 10, buildTreeOneNode=False,
+                         scoreTreeInterval=0,
+                         sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0,
+                         colSampleRatePerTree=1.0,
+                         learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0,
+                         maxAbsLeafnodePred=self._hc._jvm.Double.MAX_VALUE,
                          predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
-                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,parallelizeCrossValidation=True,
-                  seed=-1, distribution="AUTO", ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024, minSplitImprovement=1e-5,
+    def setParams(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                  columnsToCategorical=[],
+                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                  parallelizeCrossValidation=True,
+                  seed=-1, distribution="AUTO", ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024,
+                  minSplitImprovement=1e-5,
                   histogramType="AUTO", r2Stopping=java_max_double_value,
-                  nbinsTopLevel=1<<10, buildTreeOneNode=False, scoreTreeInterval=0,
+                  nbinsTopLevel=1 << 10, buildTreeOneNode=False, scoreTreeInterval=0,
                   sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                   learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=java_max_double_value,
                   predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False):
@@ -63,12 +95,15 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
         if "distribution" in kwargs:
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
         if "histogramType" in kwargs:
-            kwargs["histogramType"] = self._hc._jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(kwargs["histogramType"])
+            kwargs["histogramType"] = self._hc._jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(
+                kwargs["histogramType"])
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
-        double_types = ["minRows", "predNoiseBandwidth", "ratio", "learnRate", "colSampleRate", "learnRateAnnealing", "maxAbsLeafnodePred"
-                        "minSplitImprovement", "r2Stopping", "sampleRate", "colSampleRateChangePerLevel", "colSampleRatePerTree"]
+        double_types = ["minRows", "predNoiseBandwidth", "ratio", "learnRate", "colSampleRate", "learnRateAnnealing",
+                        "maxAbsLeafnodePred"
+                        "minSplitImprovement", "r2Stopping", "sampleRate", "colSampleRateChangePerLevel",
+                        "colSampleRatePerTree"]
         set_double_values(kwargs, double_types)
 
         # We need to also map all doubles in the arrays
@@ -84,9 +119,11 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
     @keyword_only
-    def __init__(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
-                 nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                 seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False,
+    def __init__(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                 columnsToCategorical=[],
+                 nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                 parallelizeCrossValidation=True,
+                 seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200, 200], reproducible=False,
                  convertUnknownCategoricalLevelsToNa=False):
         super(H2ODeepLearning, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
@@ -95,17 +132,23 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
-                         nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
+        self._setDefault(ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                         columnsToCategorical=[],
+                         nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                         parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
-                         epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False)
+                         epochs=10.0, l1=0.0, l2=0.0, hidden=[200, 200], reproducible=False,
+                         convertUnknownCategoricalLevelsToNa=False)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
-                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                  seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False):
+    def setParams(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                  columnsToCategorical=[],
+                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                  parallelizeCrossValidation=True,
+                  seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200, 200], reproducible=False,
+                  convertUnknownCategoricalLevelsToNa=False):
         kwargs = self._input_kwargs
 
         if "distribution" in kwargs:
@@ -125,9 +168,12 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
 class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
     @keyword_only
-    def __init__(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightsColumn=None,
-                 ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
-                 stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
+    def __init__(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[],
+                 ratio=1.0, foldColumn=None, weightsColumn=None,
+                 ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0,
+                 stoppingRounds=3,
+                 stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False,
+                 seed=-1,
                  sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
                  keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0):
         super(H2OAutoML, self).__init__()
@@ -137,9 +183,12 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightsColumn=None,
-                         ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
-                         stoppingTolerance=0.001, stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5,
+        self._setDefault(predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[],
+                         ratio=1.0, foldColumn=None, weightsColumn=None,
+                         ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None,
+                         maxRuntimeSecs=3600.0, stoppingRounds=3,
+                         stoppingTolerance=0.001,
+                         stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5,
                          convertUnknownCategoricalLevelsToNa=False, seed=-1, sortMetric=None, balanceClasses=False,
                          classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
                          keepCrossValidationModels=True, maxModels=0)
@@ -147,10 +196,14 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightsColumn=None,
-                  ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
-                  stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
-                  sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
+    def setParams(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[],
+                  ratio=1.0, foldColumn=None, weightsColumn=None,
+                  ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0,
+                  stoppingRounds=3,
+                  stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False,
+                  seed=-1,
+                  sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
+                  keepCrossValidationPredictions=True,
                   keepCrossValidationModels=True, maxModels=0):
         kwargs = self._input_kwargs
 
@@ -168,7 +221,6 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
             jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
             kwargs["includeAlgos"] = get_enum_array_from_str_array(kwargs["includeAlgos"], jvm.ai.h2o.automl.Algo)
 
-
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
         double_types = ["maxRuntimeSecs", "stoppingTolerance", "ratio", "maxAfterBalanceSize"]
@@ -185,15 +237,22 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
         else:
             return None
 
+
 class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
     @keyword_only
-    def __init__(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
-                 nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                 seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False, quietMode=True, missingValuesHandling=None,
-                 ntrees=50, nEstimators=0, maxDepth=6, minRows=1.0, minChildWeight=1.0, learnRate=0.3, eta=0.3, learnRateAnnealing=1.0,
-                 sampleRate=1.0, subsample=1.0, colSampleRate=1.0, colSampleByLevel=1.0, colSampleRatePerTree=1.0, colsampleBytree=1.0,
-                 maxAbsLeafnodePred=0.0, maxDeltaStep=0.0, scoreTreeInterval=0, initialScoreInterval=4000, scoreInterval=4000,
+    def __init__(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                 columnsToCategorical=[],
+                 nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                 parallelizeCrossValidation=True,
+                 seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False, quietMode=True,
+                 missingValuesHandling=None,
+                 ntrees=50, nEstimators=0, maxDepth=6, minRows=1.0, minChildWeight=1.0, learnRate=0.3, eta=0.3,
+                 learnRateAnnealing=1.0,
+                 sampleRate=1.0, subsample=1.0, colSampleRate=1.0, colSampleByLevel=1.0, colSampleRatePerTree=1.0,
+                 colsampleBytree=1.0,
+                 maxAbsLeafnodePred=0.0, maxDeltaStep=0.0, scoreTreeInterval=0, initialScoreInterval=4000,
+                 scoreInterval=4000,
                  minSplitImprovement=0.0, gamma=0.0, nthread=-1, maxBins=256, maxLeaves=0,
                  minSumHessianInLeaf=100.0, minDataInLeaf=0.0, treeMethod="auto", growPolicy="depthwise",
                  booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0, sampleType="uniform",
@@ -205,21 +264,34 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
-                         nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                         seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"), convertUnknownCategoricalLevelsToNa=False,
-                         quietMode=True, missingValuesHandling=None, ntrees=50, nEstimators=0, maxDepth=6, minRows=1.0, minChildWeight=1.0,
-                         learnRate=0.3, eta=0.3, learnRateAnnealing=1.0, sampleRate=1.0, subsample=1.0, colSampleRate=1.0, colSampleByLevel=1.0,
-                         colSampleRatePerTree=1.0, colsampleBytree=1.0, maxAbsLeafnodePred=0.0, maxDeltaStep=0.0, scoreTreeInterval=0,
-                         initialScoreInterval=4000, scoreInterval=4000, minSplitImprovement=0.0, gamma=0.0, nthread=-1, maxBins=256, maxLeaves=0,
+        self._setDefault(ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                         columnsToCategorical=[],
+                         nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                         parallelizeCrossValidation=True,
+                         seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
+                         convertUnknownCategoricalLevelsToNa=False,
+                         quietMode=True, missingValuesHandling=None, ntrees=50, nEstimators=0, maxDepth=6, minRows=1.0,
+                         minChildWeight=1.0,
+                         learnRate=0.3, eta=0.3, learnRateAnnealing=1.0, sampleRate=1.0, subsample=1.0,
+                         colSampleRate=1.0, colSampleByLevel=1.0,
+                         colSampleRatePerTree=1.0, colsampleBytree=1.0, maxAbsLeafnodePred=0.0, maxDeltaStep=0.0,
+                         scoreTreeInterval=0,
+                         initialScoreInterval=4000, scoreInterval=4000, minSplitImprovement=0.0, gamma=0.0, nthread=-1,
+                         maxBins=256, maxLeaves=0,
                          minSumHessianInLeaf=100.0, minDataInLeaf=0.0,
-                         treeMethod=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.valueOf("auto"),
-                         growPolicy=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.valueOf("depthwise"),
-                         booster=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.valueOf("gbtree"),
-                         dmatrixType=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.valueOf("auto"),
+                         treeMethod=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.valueOf(
+                             "auto"),
+                         growPolicy=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.valueOf(
+                             "depthwise"),
+                         booster=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.valueOf(
+                             "gbtree"),
+                         dmatrixType=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.valueOf(
+                             "auto"),
                          regLambda=0.0, regAlpha=0.0,
-                         sampleType=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.valueOf("uniform"),
-                         normalizeType=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.valueOf("tree"),
+                         sampleType=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.valueOf(
+                             "uniform"),
+                         normalizeType=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.valueOf(
+                             "tree"),
                          rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0,
                          backend=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf("auto"))
 
@@ -227,12 +299,18 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
-                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                  seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False, quietMode=True, missingValuesHandling=None,
-                  ntrees=50, nEstimators=0, maxDepth=6, minRows=1.0, minChildWeight=1.0, learnRate=0.3, eta=0.3, learnRateAnnealing=1.0,
-                  sampleRate=1.0, subsample=1.0, colSampleRate=1.0, colSampleByLevel=1.0, colSampleRatePerTree=1.0, colsampleBytree=1.0,
-                  maxAbsLeafnodePred=0.0, maxDeltaStep=0.0, scoreTreeInterval=0, initialScoreInterval=4000, scoreInterval=4000,
+    def setParams(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                  columnsToCategorical=[],
+                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                  parallelizeCrossValidation=True,
+                  seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False, quietMode=True,
+                  missingValuesHandling=None,
+                  ntrees=50, nEstimators=0, maxDepth=6, minRows=1.0, minChildWeight=1.0, learnRate=0.3, eta=0.3,
+                  learnRateAnnealing=1.0,
+                  sampleRate=1.0, subsample=1.0, colSampleRate=1.0, colSampleByLevel=1.0, colSampleRatePerTree=1.0,
+                  colsampleBytree=1.0,
+                  maxAbsLeafnodePred=0.0, maxDeltaStep=0.0, scoreTreeInterval=0, initialScoreInterval=4000,
+                  scoreInterval=4000,
                   minSplitImprovement=0.0, gamma=0.0, nthread=-1, maxBins=256, maxLeaves=0,
                   minSumHessianInLeaf=100.0, minDataInLeaf=0.0, treeMethod="auto", growPolicy="depthwise",
                   booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0, sampleType="uniform",
@@ -243,30 +321,39 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
 
         if "treeMethod" in kwargs:
-            kwargs["treeMethod"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.valueOf(kwargs["treeMethod"])
+            kwargs["treeMethod"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.valueOf(
+                kwargs["treeMethod"])
 
         if "growPolicy" in kwargs:
-            kwargs["growPolicy"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.valueOf(kwargs["growPolicy"])
+            kwargs["growPolicy"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.valueOf(
+                kwargs["growPolicy"])
 
         if "booster" in kwargs:
-            kwargs["booster"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.valueOf(kwargs["booster"])
+            kwargs["booster"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.valueOf(
+                kwargs["booster"])
 
         if "dmatrixType" in kwargs:
-            kwargs["dmatrixType"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.valueOf(kwargs["dmatrixType"])
+            kwargs["dmatrixType"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.valueOf(
+                kwargs["dmatrixType"])
 
         if "sampleType" in kwargs:
-            kwargs["sampleType"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.valueOf(kwargs["sampleType"])
+            kwargs["sampleType"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.valueOf(
+                kwargs["sampleType"])
 
         if "normalizeType" in kwargs:
-            kwargs["normalizeType"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.valueOf(kwargs["normalizeType"])
+            kwargs[
+                "normalizeType"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.valueOf(
+                kwargs["normalizeType"])
 
         if "backend" in kwargs:
-            kwargs["backend"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf(kwargs["backend"])
+            kwargs["backend"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf(
+                kwargs["backend"])
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
         double_types = ["ratio", "minRows", "minChildWeight", "learnRate", "eta", "learnRateAnnealing"
-                        "sampleRate", "subsample", "colSampleRate", "colSampleByLevel", "colSampleRatePerTree",
+                                                                                  "sampleRate", "subsample",
+                        "colSampleRate", "colSampleByLevel", "colSampleRatePerTree",
                         "colsampleBytree", "maxAbsLeafnodePred", "maxDeltaStep", "minSplitImprovement", "gamma",
                         "minSumHessianInLeaf", "minDataInLeaf", "regLambda", "regAlpha", "rateDrop", "skipDrop"]
         set_double_values(kwargs, double_types)
@@ -278,13 +365,15 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
 
 class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     @keyword_only
-    def __init__(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[], nfolds=0,
-                 keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
+    def __init__(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                 columnsToCategorical=[], nfolds=0,
+                 keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                 parallelizeCrossValidation=True,
                  seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False,
                  standardize=True, family="gaussian", link="family_default", solver="AUTO", tweedieVariancePower=0.0,
                  tweedieLinkPower=0.0, alpha=None, lambda_=None, missingValuesHandling="MeanImputation",
                  prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
-                 lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
+                 lambdaMinRatio=-1.0, maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                  gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
                  interactions=None, interactionPairs=None, earlyStopping=True):
         super(H2OGLM, self).__init__()
@@ -294,30 +383,37 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
-                         nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
+        self._setDefault(ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                         columnsToCategorical=[],
+                         nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                         parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
                          convertUnknownCategoricalLevelsToNa=False,
-                         standardize=True, family=self._hc._jvm.hex.glm.GLMModel.GLMParameters.Family.valueOf("gaussian"),
+                         standardize=True,
+                         family=self._hc._jvm.hex.glm.GLMModel.GLMParameters.Family.valueOf("gaussian"),
                          link=self._hc._jvm.hex.glm.GLMModel.GLMParameters.Link.valueOf("family_default"),
-                         solver=self._hc._jvm.hex.glm.GLMModel.GLMParameters.Solver.valueOf("AUTO"), tweedieVariancePower=0.0,
+                         solver=self._hc._jvm.hex.glm.GLMModel.GLMParameters.Solver.valueOf("AUTO"),
+                         tweedieVariancePower=0.0,
                          tweedieLinkPower=0.0, alpha=None, lambda_=None,
-                         missingValuesHandling=self._hc._jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf("MeanImputation"),
+                         missingValuesHandling=self._hc._jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(
+                             "MeanImputation"),
                          prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
-                         lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
+                         lambdaMinRatio=-1.0, maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                          gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
                          interactions=None, interactionPairs=None, earlyStopping=True)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
-                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,parallelizeCrossValidation=True,
+    def setParams(self, ratio=1.0, predictionCol="predictionCol", featuresCols=[], allStringColumnsToCategorical=True,
+                  columnsToCategorical=[],
+                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,
+                  parallelizeCrossValidation=True,
                   seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False,
                   standardize=True, family="gaussian", link="family_default", solver="AUTO", tweedieVariancePower=0.0,
                   tweedieLinkPower=0.0, alpha=None, lambda_=None, missingValuesHandling="MeanImputation",
                   prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
-                  lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
+                  lambdaMinRatio=-1.0, maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                   gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
                   interactions=None, interactionPairs=None, earlyStopping=True):
         kwargs = self._input_kwargs
@@ -335,7 +431,9 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
             kwargs["solver"] = self._hc._jvm.hex.glm.GLMModel.GLMParameters.Solver.valueOf(kwargs["solver"])
 
         if "missingValuesHandling" in kwargs:
-            kwargs["missingValuesHandling"] = self._hc._jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(kwargs["missingValuesHandling"])
+            kwargs[
+                "missingValuesHandling"] = self._hc._jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(
+                kwargs["missingValuesHandling"])
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -355,9 +453,11 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     def _create_model(self, java_model):
         return H2OGLMModel(java_model)
 
+
 class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     @keyword_only
-    def __init__(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
+    def __init__(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction",
+                 allStringColumnsToCategorical=True,
                  columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                  stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy=None,
                  selectBestModelDecreasing=True):
@@ -368,8 +468,10 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
-                         columnsToCategorical=[], strategy=self._hc._jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf("Cartesian"),
+        self._setDefault(algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction",
+                         allStringColumnsToCategorical=True,
+                         columnsToCategorical=[],
+                         strategy=self._hc._jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf("Cartesian"),
                          maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                          stoppingRounds=0, stoppingTolerance=0.001,
                          stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=0,
@@ -378,12 +480,12 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
+    def setParams(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction",
+                  allStringColumnsToCategorical=True,
                   columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                   stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy=None,
                   selectBestModelDecreasing=True):
         kwargs = self._input_kwargs
-
 
         if "stoppingMetric" in kwargs:
             kwargs["stoppingMetric"] = self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf(kwargs["stoppingMetric"])
@@ -392,7 +494,8 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
             kwargs["strategy"] = self._hc._jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf(kwargs["strategy"])
 
         if "selectBestModelBy" in kwargs and kwargs["selectBestModelBy"] is not None:
-            kwargs["selectBestModelBy"] = self._hc._jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.valueOf(kwargs["selectBestModelBy"])
+            kwargs["selectBestModelBy"] = self._hc._jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.valueOf(
+                kwargs["selectBestModelBy"])
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -406,13 +509,13 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
         return self._set(**kwargs)
 
     def get_grid_models(self):
-         return [ H2OMOJOModel(m) for m in self._java_obj.getGridModels()]
+        return [H2OMOJOModel(m) for m in self._java_obj.getGridModels()]
 
     def get_grid_models_params(self):
-        return DataFrame(self._java_obj.getGridModelsParams(),  self._hc._sql_context)
+        return DataFrame(self._java_obj.getGridModelsParams(), self._hc._sql_context)
 
     def get_grid_models_metrics(self):
-        return DataFrame(self._java_obj.getGridModelsMetrics(),  self._hc._sql_context)
+        return DataFrame(self._java_obj.getGridModelsMetrics(), self._hc._sql_context)
 
     def _create_model(self, java_model):
         return H2OGridSearchModel(java_model)

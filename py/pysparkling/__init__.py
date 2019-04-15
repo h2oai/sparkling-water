@@ -24,18 +24,19 @@ else:
 pyspark_version = pyspark.__version__.split(".")
 pysparkling_version = __version__.split(".")
 
+
 def custom_formatwarning(msg, *args, **kwargs):
     # ignore everything except the message
     return str(msg) + '\n'
 
-warnings.formatwarning = custom_formatwarning
 
+warnings.formatwarning = custom_formatwarning
 
 if not (pyspark_version[0] == pysparkling_version[0] and pyspark_version[1] == pysparkling_version[1]):
     warnings.warn("""
     You are using PySparkling of version {pysparkling_version}, but your PySpark is of
-    version {pyspark_version}. Please make sure Spark and PySparkling versions are compatible. """.format(pysparkling_version=__version__, pyspark_version=pyspark.__version__))
-
+    version {pyspark_version}. Please make sure Spark and PySparkling versions are compatible. """.format(
+        pysparkling_version=__version__, pyspark_version=pyspark.__version__))
 
 # set imports from this project which will be available when the module is imported
 from pysparkling.context import H2OContext

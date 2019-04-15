@@ -1,9 +1,27 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 from pyspark.ml.param import *
 from h2o.utils.typechecks import assert_is_type, Enum
 from pysparkling.context import H2OContext
 from pyspark.sql import SparkSession
 from py4j.java_gateway import JavaObject
 from py_sparkling.ml.util import get_correct_case_enum, get_enum_array_from_str_array
+
 
 class H2OAlgorithmParams(Params):
     ##
@@ -12,15 +30,22 @@ class H2OAlgorithmParams(Params):
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     predictionCol = Param(Params._dummy(), "predictionCol", "label")
     featuresCols = Param(Params._dummy(), "featuresCols", "columns used as features")
-    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
+    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical",
+                                          "Transform all strings columns to categorical")
+    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical",
+                                 "List of columns to convert to categoricals before modelling")
     nfolds = Param(Params._dummy(), "nfolds", "Number of folds for K-fold cross-validation (0 to disable or >= 2)")
-    keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Whether to keep the predictions of the cross-validation models", )
-    keepCrossValidationFoldAssignment = Param(Params._dummy(), "keepCrossValidationFoldAssignment", "Whether to keep the cross-validation fold assignment", )
-    parallelizeCrossValidation = Param(Params._dummy(), "parallelizeCrossValidation", "Allow parallel training of cross-validation models", )
-    seed = Param(Params._dummy(), "seed", "Seed for random numbers (affects sampling) - Note: only reproducible when running single threaded.")
+    keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions",
+                                           "Whether to keep the predictions of the cross-validation models", )
+    keepCrossValidationFoldAssignment = Param(Params._dummy(), "keepCrossValidationFoldAssignment",
+                                              "Whether to keep the cross-validation fold assignment", )
+    parallelizeCrossValidation = Param(Params._dummy(), "parallelizeCrossValidation",
+                                       "Allow parallel training of cross-validation models", )
+    seed = Param(Params._dummy(), "seed",
+                 "Seed for random numbers (affects sampling) - Note: only reproducible when running single threaded.")
     distribution = Param(Params._dummy(), "distribution", "Distribution function")
-    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
+    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa",
+                                                "Convert unknown categorical levels to NA during predictions")
 
     ##
     # Getters
@@ -106,7 +131,9 @@ class H2OAlgorithmParams(Params):
         return self._set(seed=value)
 
     def setDistribution(self, value):
-        assert_is_type(value, None, Enum("AUTO", "bernoulli", "quasibinomial", "modified_huber", "multinomial", "ordinal", "gaussian", "poisson", "gamma", "tweedie", "huber", "laplace", "quantile"))
+        assert_is_type(value, None,
+                       Enum("AUTO", "bernoulli", "quasibinomial", "modified_huber", "multinomial", "ordinal",
+                            "gaussian", "poisson", "gamma", "tweedie", "huber", "laplace", "quantile"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.genmodel.utils.DistributionFamily.values(), value)
         return self._set(distribution=jvm.hex.genmodel.utils.DistributionFamily.valueOf(correct_case_value))
@@ -117,51 +144,61 @@ class H2OAlgorithmParams(Params):
 
 
 class H2OSharedTreeParams(H2OAlgorithmParams):
-
     ##
     # Param definitions
     ##
     ntrees = Param(Params._dummy(), "ntrees", "Number of trees")
     maxDepth = Param(Params._dummy(), "maxDepth", "Maximum tree depth")
     minRows = Param(Params._dummy(), "minRows", "Fewest allowed (weighted) observations in a leaf")
-    nbins = Param(Params._dummy(), "nbins", "For numerical columns (real/int), build a histogram of (at least) this many bins, then split at the best point")
-    nbinsCats = Param(Params._dummy(), "nbinsCats", "For categorical columns (factors), build a histogram of this many bins, then split at the best point. Higher values can lead to more overfitting")
-    minSplitImprovement = Param(Params._dummy(), "minSplitImprovement", "Minimum relative improvement in squared error reduction for a split to happen")
-    histogramType = Param(Params._dummy(), "histogramType", "What type of histogram to use for finding optimal split points")
-    r2Stopping = Param(Params._dummy(), "r2Stopping", "r2_stopping is no longer supported and will be ignored if set - please use stopping_rounds, stopping_metric and stopping_tolerance instead. Previous version of H2O would stop making trees when the R^2 metric equals or exceeds this")
-    nbinsTopLevel = Param(Params._dummy(), "nbinsTopLevel", "For numerical columns (real/int), build a histogram of (at most) this many bins at the root level, then decrease by factor of two per level")
-    buildTreeOneNode = Param(Params._dummy(), "buildTreeOneNode", "Run on one node only; no network overhead but fewer cpus used.  Suitable for small datasets.")
-    scoreTreeInterval = Param(Params._dummy(), "scoreTreeInterval", "Score the model after every so many trees. Disabled if set to 0.")
+    nbins = Param(Params._dummy(), "nbins",
+                  "For numerical columns (real/int), build a histogram of (at least) this many bins, then split at the best point")
+    nbinsCats = Param(Params._dummy(), "nbinsCats",
+                      "For categorical columns (factors), build a histogram of this many bins, then split at the best point. Higher values can lead to more overfitting")
+    minSplitImprovement = Param(Params._dummy(), "minSplitImprovement",
+                                "Minimum relative improvement in squared error reduction for a split to happen")
+    histogramType = Param(Params._dummy(), "histogramType",
+                          "What type of histogram to use for finding optimal split points")
+    r2Stopping = Param(Params._dummy(), "r2Stopping",
+                       "r2_stopping is no longer supported and will be ignored if set - please use stopping_rounds, stopping_metric and stopping_tolerance instead. Previous version of H2O would stop making trees when the R^2 metric equals or exceeds this")
+    nbinsTopLevel = Param(Params._dummy(), "nbinsTopLevel",
+                          "For numerical columns (real/int), build a histogram of (at most) this many bins at the root level, then decrease by factor of two per level")
+    buildTreeOneNode = Param(Params._dummy(), "buildTreeOneNode",
+                             "Run on one node only; no network overhead but fewer cpus used.  Suitable for small datasets.")
+    scoreTreeInterval = Param(Params._dummy(), "scoreTreeInterval",
+                              "Score the model after every so many trees. Disabled if set to 0.")
     sampleRate = Param(Params._dummy(), "sampleRate", "Row sample rate per tree (from 0.0 to 1.0)")
-    sampleRatePerClass = Param(Params._dummy(), "sampleRatePerClass", "A list of row sample rates per class (relative fraction for each class, from 0.0 to 1.0), for each tree")
-    colSampleRateChangePerLevel = Param(Params._dummy(), "colSampleRateChangePerLevel", "Relative change of the column sampling rate for every level (from 0.0 to 2.0)")
-    colSampleRatePerTree = Param(Params._dummy(), "colSampleRatePerTree", "Column sample rate per tree (from 0.0 to 1.0)")
+    sampleRatePerClass = Param(Params._dummy(), "sampleRatePerClass",
+                               "A list of row sample rates per class (relative fraction for each class, from 0.0 to 1.0), for each tree")
+    colSampleRateChangePerLevel = Param(Params._dummy(), "colSampleRateChangePerLevel",
+                                        "Relative change of the column sampling rate for every level (from 0.0 to 2.0)")
+    colSampleRatePerTree = Param(Params._dummy(), "colSampleRatePerTree",
+                                 "Column sample rate per tree (from 0.0 to 1.0)")
 
     ##
     # Getters
     ##
     def getNtrees(self):
         return self.getOrDefault(self.ntrees)
-    
+
     def getMaxDepth(self):
         return self.getOrDefault(self.maxDepth)
-    
+
     def getMinRows(self):
         return self.getOrDefault(self.minRows)
-    
+
     def getNbins(self):
         return self.getOrDefault(self.nbins)
-    
+
     def getNbinsCats(self):
         return self.getOrDefault(self.nbinsCats)
-    
+
     def getMinSplitImprovement(self):
         return self.getOrDefault(self.minSplitImprovement)
-    
+
     def getHistogramType(self):
         # Convert Java Enum to String so we can represent it in Python
         return self.getOrDefault(self.histogramType).toString()
-    
+
     def getR2Stopping(self):
         return self.getOrDefault(self.r2Stopping)
 
@@ -216,8 +253,10 @@ class H2OSharedTreeParams(H2OAlgorithmParams):
     def setHistogramType(self, value):
         assert_is_type(value, None, Enum("AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.values(), value)
-        return self._set(histogramType=jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(correct_case_value))
+        correct_case_value = get_correct_case_enum(
+            jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.values(), value)
+        return self._set(
+            histogramType=jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(correct_case_value))
 
     def setR2Stopping(self, value):
         assert_is_type(value, int, float)
@@ -253,15 +292,17 @@ class H2OSharedTreeParams(H2OAlgorithmParams):
 
 
 class H2OGBMParams(H2OSharedTreeParams):
-
     ##
     # Param definitions
     ##
     learnRate = Param(Params._dummy(), "learnRate", "Learning rate (from 0.0 to 1.0)")
-    learnRateAnnealing = Param(Params._dummy(), "learnRateAnnealing", "Scale the learning rate by this factor after each tree (e.g., 0.99 or 0.999)")
+    learnRateAnnealing = Param(Params._dummy(), "learnRateAnnealing",
+                               "Scale the learning rate by this factor after each tree (e.g., 0.99 or 0.999)")
     colSampleRate = Param(Params._dummy(), "colSampleRate", "Column sample rate (from 0.0 to 1.0)")
-    maxAbsLeafnodePred = Param(Params._dummy(), "maxAbsLeafnodePred", "Maximum absolute value of a leaf node prediction")
-    predNoiseBandwidth = Param(Params._dummy(), "predNoiseBandwidth", "Bandwidth (sigma) of Gaussian multiplicative noise ~N(1,sigma) for tree node predictions")
+    maxAbsLeafnodePred = Param(Params._dummy(), "maxAbsLeafnodePred",
+                               "Maximum absolute value of a leaf node prediction")
+    predNoiseBandwidth = Param(Params._dummy(), "predNoiseBandwidth",
+                               "Bandwidth (sigma) of Gaussian multiplicative noise ~N(1,sigma) for tree node predictions")
 
     ##
     # Getters
@@ -306,7 +347,6 @@ class H2OGBMParams(H2OSharedTreeParams):
 
 
 class H2ODeepLearningParams(H2OAlgorithmParams):
-
     ##
     # Param definitions
     ##
@@ -321,7 +361,8 @@ class H2ODeepLearningParams(H2OAlgorithmParams):
                                       " produces substantial gains in modeling as estimate variance is reduced.")
 
     hidden = Param(Params._dummy(), "hidden", "The number and size of each hidden layer in the model")
-    reproducible = Param(Params._dummy(), "reproducible", "Force reproducibility on small data (will be slow - only uses 1 thread)")
+    reproducible = Param(Params._dummy(), "reproducible",
+                         "Force reproducibility on small data (will be slow - only uses 1 thread)")
 
     ##
     # Getters
@@ -366,35 +407,40 @@ class H2ODeepLearningParams(H2OAlgorithmParams):
 
 
 class H2OAutoMLParams(Params):
-
     ##
     # Param definitions
     ##
     predictionCol = Param(Params._dummy(), "predictionCol", "label")
-    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
+    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical",
+                                          "Transform all strings columns to categorical")
+    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical",
+                                 "List of columns to convert to categoricals before modelling")
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     foldColumn = Param(Params._dummy(), "foldColumn", "Fold column name")
     weightsColumn = Param(Params._dummy(), "weightsColumn", "Weights column name")
     ignoredColumns = Param(Params._dummy(), "ignoredColumns", "Ignored columns names")
     includeAlgos = Param(Params._dummy(), "includeAlgos", "Algorithms to include when using automl")
     excludeAlgos = Param(Params._dummy(), "excludeAlgos", "Algorithms to exclude when using automl")
-    projectName = Param(Params._dummy(), "projectName", "identifier for models that should be grouped together in the leaderboard" +
+    projectName = Param(Params._dummy(), "projectName",
+                        "identifier for models that should be grouped together in the leaderboard" +
                         " (e.g., airlines and iris)")
     maxRuntimeSecs = Param(Params._dummy(), "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
     stoppingRounds = Param(Params._dummy(), "stoppingRounds", "Stopping rounds")
     stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "Stopping tolerance")
     stoppingMetric = Param(Params._dummy(), "stoppingMetric", "Stopping metric")
     nfolds = Param(Params._dummy(), "nfolds", "Cross-validation fold construction")
-    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
+    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa",
+                                                "Convert unknown categorical levels to NA during predictions")
     seed = Param(Params._dummy(), "seed", "Seed for random numbers")
     sortMetric = Param(Params._dummy(), "sortMetric", "Sort metric for the AutoML leaderboard")
     balanceClasses = Param(Params._dummy(), "balanceClasses", "Balance classes")
     classSamplingFactors = Param(Params._dummy(), "classSamplingFactors", "Class sampling factors")
     maxAfterBalanceSize = Param(Params._dummy(), "maxAfterBalanceSize", "Max after balance size")
-    keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Keep cross validation predictions")
+    keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions",
+                                           "Keep cross validation predictions")
     keepCrossValidationModels = Param(Params._dummy(), "keepCrossValidationModels", "Keep cross validation models")
     maxModels = Param(Params._dummy(), "maxModels", "Max models to train in AutoML")
+
     ##
     # Getters
     ##
@@ -564,7 +610,9 @@ class H2OAutoMLParams(Params):
 
     def setStoppingMetric(self, value):
         # H2O typechecks does not check for case sensitivity
-        assert_is_type(value, Enum("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "lift_top_group", "misclassification", "mean_per_class_error", "custom"))
+        assert_is_type(value,
+                       Enum("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "lift_top_group",
+                            "misclassification", "mean_per_class_error", "custom"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.ScoreKeeper.StoppingMetric.values(), value)
         return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
@@ -582,7 +630,8 @@ class H2OAutoMLParams(Params):
         return self._set(seed=value)
 
     def setSortMetric(self, value):
-        assert_is_type(value, None, "AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC" "mean_per_class_error")
+        assert_is_type(value, None, "AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE",
+                       "AUC" "mean_per_class_error")
         if value is "AUTO":
             return self._set(sortMetric=None)
         else:
@@ -614,7 +663,6 @@ class H2OAutoMLParams(Params):
 
 
 class H2OXGBoostParams(H2OAlgorithmParams):
-
     ##
     # Param definitions
     ##
@@ -790,7 +838,6 @@ class H2OXGBoostParams(H2OAlgorithmParams):
     def getBackend(self):
         return self.getOrDefault(self.backend).toString()
 
-
     ##
     # Setters
     ##
@@ -802,8 +849,11 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         if value is not None:
             assert_is_type(value, None, Enum("MeanImputation", "Skip"))
             jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-            correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling.values(), value)
-            return self._set(missingValuesHandling=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling.valueOf(correct_case_value))
+            correct_case_value = get_correct_case_enum(
+                jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling.values(), value)
+            return self._set(
+                missingValuesHandling=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling.valueOf(
+                    correct_case_value))
         else:
             return self._set(missingValuesHandling=None)
 
@@ -914,26 +964,34 @@ class H2OXGBoostParams(H2OAlgorithmParams):
     def setTreeMethod(self, value):
         assert_is_type(value, Enum("auto", "exact", "approx", "hist"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.values(), value)
-        return self._set(treeMethod=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.valueOf(correct_case_value))
+        correct_case_value = get_correct_case_enum(
+            jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.values(), value)
+        return self._set(
+            treeMethod=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.valueOf(correct_case_value))
 
     def setGrowPolicy(self, value):
         assert_is_type(value, Enum("depthwise", "lossguide"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.values(), value)
-        return self._set(growPolicy=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.valueOf(correct_case_value))
+        correct_case_value = get_correct_case_enum(
+            jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.values(), value)
+        return self._set(
+            growPolicy=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.valueOf(correct_case_value))
 
     def setBooster(self, value):
         assert_is_type(value, Enum("gbtree", "gblinear", "dart"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.values(), value)
-        return self._set(booster=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.valueOf(correct_case_value))
+        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.values(),
+                                                   value)
+        return self._set(
+            booster=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.valueOf(correct_case_value))
 
     def setDmatrixType(self, value):
         assert_is_type(value, Enum("auto", "dense", "sparse"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.values(), value)
-        return self._set(dmatrixType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.valueOf(correct_case_value))
+        correct_case_value = get_correct_case_enum(
+            jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.values(), value)
+        return self._set(
+            dmatrixType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.valueOf(correct_case_value))
 
     def setRegLambda(self, value):
         assert_is_type(value, int, float)
@@ -946,14 +1004,18 @@ class H2OXGBoostParams(H2OAlgorithmParams):
     def setSampleType(self, value):
         assert_is_type(value, Enum("uniform", "weighted"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.values(), value)
-        return self._set(sampleType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.valueOf(correct_case_value))
+        correct_case_value = get_correct_case_enum(
+            jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.values(), value)
+        return self._set(
+            sampleType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.valueOf(correct_case_value))
 
     def setNormalizeType(self, value):
         assert_is_type(value, Enum("tree", "forest"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.values(), value)
-        return self._set(normalizeType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.valueOf(correct_case_value))
+        correct_case_value = get_correct_case_enum(
+            jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.values(), value)
+        return self._set(normalizeType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.valueOf(
+            correct_case_value))
 
     def setRateDrop(self, value):
         assert_is_type(value, int, float)
@@ -974,11 +1036,13 @@ class H2OXGBoostParams(H2OAlgorithmParams):
     def setBackend(self, value):
         assert_is_type(value, Enum("auto", "gpu", "cpu"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.values(), value)
-        return self._set(backend=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf(correct_case_value))
+        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.values(),
+                                                   value)
+        return self._set(
+            backend=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf(correct_case_value))
+
 
 class H2OGLMParams(H2OAlgorithmParams):
-
     ##
     # Param definitions
     ##
@@ -1090,7 +1154,6 @@ class H2OGLMParams(H2OAlgorithmParams):
     def getEarlyStopping(self):
         return self.getOrDefault(self.earlyStopping)
 
-
     ##
     # Setters
     ##
@@ -1099,19 +1162,24 @@ class H2OGLMParams(H2OAlgorithmParams):
         return self._set(standardize=value)
 
     def setFamily(self, value):
-        assert_is_type(value, Enum("gaussian", "binomial", "quasibinomial", "poisson", "gamma", "multinomial", "tweedie", "ordinal"))
+        assert_is_type(value,
+                       Enum("gaussian", "binomial", "quasibinomial", "poisson", "gamma", "multinomial", "tweedie",
+                            "ordinal"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.glm.GLMModel.GLMParameters.Family.values(), value)
         return self._set(family=jvm.hex.glm.GLMModel.GLMParameters.Family.valueOf(correct_case_value))
 
     def setLink(self, value):
-        assert_is_type(value, Enum("family_default", "identity", "logit", "log", "inverse", "tweedie", "multinomial", "ologit", "oprobit", "ologlog"))
+        assert_is_type(value,
+                       Enum("family_default", "identity", "logit", "log", "inverse", "tweedie", "multinomial", "ologit",
+                            "oprobit", "ologlog"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.glm.GLMModel.GLMParameters.Link.values(), value)
         return self._set(link=jvm.hex.glm.GLMModel.GLMParameters.Link.valueOf(correct_case_value))
 
     def setSolver(self, value):
-        assert_is_type(value, Enum("AUTO", "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"))
+        assert_is_type(value, Enum("AUTO", "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT",
+                                   "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.glm.GLMModel.GLMParameters.Solver.values(), value)
         return self._set(solver=jvm.hex.glm.GLMModel.GLMParameters.Solver.valueOf(correct_case_value))
@@ -1135,8 +1203,11 @@ class H2OGLMParams(H2OAlgorithmParams):
     def setMissingValuesHandling(self, value):
         assert_is_type(value, Enum("MeanImputation", "Skip"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.values(), value)
-        return self._set(missingValuesHandling=jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(correct_case_value))
+        correct_case_value = get_correct_case_enum(
+            jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.values(), value)
+        return self._set(
+            missingValuesHandling=jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(
+                correct_case_value))
 
     def setPrior(self, value):
         assert_is_type(value, int, float)
@@ -1206,8 +1277,8 @@ class H2OGLMParams(H2OAlgorithmParams):
         assert_is_type(value, bool)
         return self._set(earlyStopping=value)
 
-class H2OGridSearchParams(Params):
 
+class H2OGridSearchParams(Params):
     ##
     # Param definitions
     ##
@@ -1215,7 +1286,8 @@ class H2OGridSearchParams(Params):
     ratio = Param(Params._dummy(), "ratio", "ratio")
     hyperParameters = Param(Params._dummy(), "hyperParameters", "Grid Search Hyper Params map")
     predictionCol = Param(Params._dummy(), "predictionCol", "Prediction col")
-    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "allStringColumnsToCategorical")
+    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical",
+                                          "allStringColumnsToCategorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "columnsToCategorical")
     strategy = Param(Params._dummy(), "strategy", "strategy")
     maxRuntimeSecs = Param(Params._dummy(), "maxRuntimeSecs", "maxRuntimeSecs")
@@ -1287,7 +1359,6 @@ class H2OGridSearchParams(Params):
     def getSelectBestModelDecreasing(self):
         return self.getOrDefault(self.selectBestModelDecreasing)
 
-
     ##
     # Setters
     ##
@@ -1301,7 +1372,7 @@ class H2OGridSearchParams(Params):
         return self._set(ratio=value)
 
     def setHyperParameters(self, value):
-        assert_is_type(value, None, {str : [object]})
+        assert_is_type(value, None, {str: [object]})
         return self._set(hyperParameters=value)
 
     def setAllStringColumnsToCategorical(self, value):
@@ -1340,7 +1411,9 @@ class H2OGridSearchParams(Params):
 
     def setStoppingMetric(self, value):
         # H2O typechecks does not check for case sensitivity
-        assert_is_type(value, Enum("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "lift_top_group", "misclassification", "mean_per_class_error", "custom"))
+        assert_is_type(value,
+                       Enum("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "lift_top_group",
+                            "misclassification", "mean_per_class_error", "custom"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.ScoreKeeper.StoppingMetric.values(), value)
         return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
@@ -1351,14 +1424,17 @@ class H2OGridSearchParams(Params):
 
     def setSelectBestModelBy(self, value):
         # H2O typechecks does not check for case sensitivity
-        assert_is_type(value, None, Enum("MeanResidualDeviance", "R2", "ResidualDeviance", "ResidualDegreesOfFreedom", "NullDeviance",
-                                   "NullDegreesOfFreedom", "AIC", "AUC", "Gini", "F1", "F2",
-                                   "F0point5", "Precision", "Recall", "MCC", "Logloss", "Error", "MaxPerClassError", "Accuracy", "MSE", "RMSE"))
+        assert_is_type(value, None, Enum("MeanResidualDeviance", "R2", "ResidualDeviance", "ResidualDegreesOfFreedom",
+                                         "NullDeviance",
+                                         "NullDegreesOfFreedom", "AIC", "AUC", "Gini", "F1", "F2",
+                                         "F0point5", "Precision", "Recall", "MCC", "Logloss", "Error",
+                                         "MaxPerClassError", "Accuracy", "MSE", "RMSE"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.values(), value)
-        return self._set(selectBestModelBy=jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.valueOf(correct_case_value))
+        correct_case_value = get_correct_case_enum(jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.values(),
+                                                   value)
+        return self._set(
+            selectBestModelBy=jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.valueOf(correct_case_value))
 
     def setSelectBestModelDecreasing(self, value):
         assert_is_type(value, bool)
         return self._set(selectBestModelDecreasing=value)
-

@@ -1,3 +1,20 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 from pyspark.context import SparkContext
 from pyspark.sql.dataframe import DataFrame
 from pyspark.rdd import RDD
@@ -11,6 +28,7 @@ from pysparkling.conversions import FrameConversions as fc
 import warnings
 import atexit
 import sys
+
 
 def _monkey_patch_H2OFrame(hc):
     @staticmethod
@@ -33,8 +51,8 @@ def _monkey_patch_H2OFrame(hc):
         # Can we use cached H2O frame?
         # Only if we cached it before and cache was not invalidated by rapids expression
         if not hasattr(self, '_java_frame') or self._java_frame is None \
-           or self._ex._cache._id is None or self._ex._cache.is_empty() \
-           or not self._ex._cache._id == self._java_frame_sid:
+                or self._ex._cache._id is None or self._ex._cache.is_empty() \
+                or not self._ex._cache._id == self._java_frame_sid:
             # Note: self.frame_id will trigger frame evaluation
             self._java_frame = hc._jhc.asH2OFrame(self.frame_id)
             self._java_frame_sid = self._java_frame.key().toString()
@@ -51,6 +69,7 @@ def _monkey_patch_H2OFrame(hc):
         fr._java_frame_sid = sid
         fr._backed_by_java_obj = True
         return fr
+
     H2OFrame.determine_java_vec_type = determine_java_vec_type
     H2OFrame.from_java_h2o_frame = from_java_h2o_frame
     H2OFrame.get_java_h2o_frame = get_java_h2o_frame
@@ -81,8 +100,8 @@ def _get_first(rdd):
 
 
 class H2OContext(object):
-
     is_initialized = False
+
     def __init__(self, spark_session):
         """
          This constructor is used just to initialize the environment. It does not start H2OContext.
@@ -104,7 +123,6 @@ class H2OContext(object):
         self._jspark_session = self._spark_session._jsparkSession
         self._jvm = self._spark_session._jvm
 
-
     def __default_h2o_connect(h2o_context, **kwargs):
         if "https" in kwargs:
             warnings.warn("https argument is automatically set up and the specified value will be ignored.")
@@ -113,14 +131,15 @@ class H2OContext(object):
         if schema == "https":
             kwargs["https"] = True
         if h2o_context._conf.context_path() is not None:
-            url = "{}://{}:{}/{}".format(schema, h2o_context._client_ip, h2o_context._client_port, h2o_context._conf.context_path())
+            url = "{}://{}:{}/{}".format(schema, h2o_context._client_ip, h2o_context._client_port,
+                                         h2o_context._conf.context_path())
             return h2o.connect(url=url, **kwargs)
         else:
             return h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port, **kwargs)
 
-
     @staticmethod
-    def getOrCreate(spark, conf=None, verbose=True, pre_create_hook=None, h2o_connect_hook=__default_h2o_connect, **kwargs):
+    def getOrCreate(spark, conf=None, verbose=True, pre_create_hook=None, h2o_connect_hook=__default_h2o_connect,
+                    **kwargs):
         """
         Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
         configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
@@ -175,7 +194,7 @@ class H2OContext(object):
             print(h2o_context)
 
         # Stop h2o when running standalone pysparkling scripts, only in client deploy mode
-        #, so the user does not need explicitly close h2o.
+        # , so the user does not need explicitly close h2o.
         # In driver mode the application would call exit which is handled by Spark AM as failure
         deploy_mode = spark_session.sparkContext._conf.get("spark.submit.deployMode")
         if deploy_mode != "cluster":
@@ -195,7 +214,7 @@ class H2OContext(object):
 
     def download_h2o_logs(self, destination):
         return self._jhc.h2oContext().downloadH2OLogs(destination)
-    
+
     def __str__(self):
         if H2OContext.is_initialized:
             return self._jhc.toString()
@@ -271,7 +290,8 @@ class H2OContext(object):
                     return fc._as_h2o_frame_from_RDD_String(self, dataframe, framename, full_cols)
                 elif isinstance(first, bool):
                     return fc._as_h2o_frame_from_RDD_Bool(self, dataframe, framename, full_cols)
-                elif (isinstance(dataframe.min(), int) and isinstance(dataframe.max(), int)) or (isinstance(dataframe.min(), long) and isinstance(dataframe.max(), long)):
+                elif (isinstance(dataframe.min(), int) and isinstance(dataframe.max(), int)) or (
+                        isinstance(dataframe.min(), long) and isinstance(dataframe.max(), long)):
                     if dataframe.min() >= self._jvm.Integer.MIN_VALUE and dataframe.max() <= self._jvm.Integer.MAX_VALUE:
                         return fc._as_h2o_frame_from_RDD_Int(self, dataframe, framename, full_cols)
                     elif dataframe.min() >= self._jvm.Long.MIN_VALUE and dataframe.max() <= self._jvm.Long.MAX_VALUE:
@@ -284,4 +304,3 @@ class H2OContext(object):
                 return fc._as_h2o_frame_from_complex_type(self, dataframe, framename, full_cols)
         else:
             raise ValueError('The as_h2o_frame method expects Spark DataFrame or RDD as the input only!')
-

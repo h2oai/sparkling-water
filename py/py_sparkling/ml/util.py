@@ -1,9 +1,28 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 from pyspark.ml.util import JavaMLReader, MLReadable
+
 
 def get_correct_case_enum(enum_values, enum_single_value):
     for a in enum_values:
         if a.toString().lower() == enum_single_value.lower():
             return a.toString()
+
 
 def get_enum_array_from_str_array(str_array, java_enum_class):
     enum_array = []
@@ -12,10 +31,12 @@ def get_enum_array_from_str_array(str_array, java_enum_class):
             enum_array.append(java_enum_class.valueOf(get_correct_case_enum(java_enum_class.values(), algo)))
         return enum_array
 
+
 class JavaH2OMLReadable(MLReadable):
     """
     Special version of JavaMLReadable to be able to load pipelines exported together with H2O pipeline stages
     """
+
     def __init__(self):
         super(JavaH2OMLReadable, self).__init__()
 

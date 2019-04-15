@@ -1,3 +1,20 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 from pyspark.context import SparkContext
 from pyspark.sql import SparkSession
 from pysparkling.initializer import Initializer
@@ -18,7 +35,6 @@ class H2OConf(object):
         except:
             raise
 
-
     def _do_init(self, spark_session):
         self._spark_session = spark_session
         self._sc = self._spark_session._sc
@@ -32,7 +48,6 @@ class H2OConf(object):
             return option.get()
         else:
             return None
-
 
     # setters independent on selected backend
 
@@ -306,7 +321,6 @@ class H2OConf(object):
         self._jconf.setInternalSecureConnectionsDisabled()
         return self
 
-
     # setters for external backend
 
     def set_h2o_cluster(self, ip, port):
@@ -356,7 +370,6 @@ class H2OConf(object):
         """
         self._jconf.setClusterStartTimeout(timeout)
         return self
-
 
     def set_cluster_config_file(self, path):
         self._jconf.setClusterConfigFile(path)
@@ -418,7 +431,7 @@ class H2OConf(object):
         self._jconf.setRunAsUser(user)
         return self
 
-# getters independent on backend
+    # getters independent on backend
 
     def backend_cluster_mode(self):
         return self._jconf.backendClusterMode()
@@ -681,7 +694,7 @@ class H2OConf(object):
         python_conf = []
         all = self._jconf.getAll()
         for conf in all:
-            python_conf.append((conf._1(),conf._2()))
+            python_conf.append((conf._1(), conf._2()))
         return python_conf
 
     def set_all(self, list_of_configurations):
