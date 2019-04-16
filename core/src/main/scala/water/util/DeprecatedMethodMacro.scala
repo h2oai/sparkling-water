@@ -63,7 +63,7 @@ object DeprecatedMethodMacro {
           val warnMessage = s"The method '$methodName' is deprecated. $daMessage"
 
           q"""${Modifiers(f, p, da :: a)} def $methodName[..$tpes](...$args): $returnType =  {
-            water.util.Log.warn($warnMessage)
+            logWarning($warnMessage)
             ..$body
           }"""
         }

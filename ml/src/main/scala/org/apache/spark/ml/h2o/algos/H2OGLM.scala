@@ -150,82 +150,82 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   // Getters
   //
   /** @group getParam */
-  def getStandardize() = $(standardize)
+  def getStandardize(): Boolean = $(standardize)
 
   /** @group getParam */
-  def getFamily() = $(family)
+  def getFamily(): Family = $(family)
 
   /** @group getParam */
-  def getLink() = $(link)
+  def getLink(): Link = $(link)
 
   /** @group getParam */
-  def getSolver() = $(solver)
+  def getSolver(): Solver = $(solver)
 
   /** @group getParam */
-  def getTweedieVariancePower() = $(tweedieVariancePower)
+  def getTweedieVariancePower(): Double = $(tweedieVariancePower)
 
   /** @group getParam */
-  def getTweedieLinkPower() = $(tweedieLinkPower)
+  def getTweedieLinkPower(): Double = $(tweedieLinkPower)
 
   /** @group getParam */
-  def getAlpha() = $(alpha)
+  def getAlpha(): Array[Double] = $(alpha)
 
   /** @group getParam */
-  def getLambda() = $(lambda_)
+  def getLambda(): Array[Double] = $(lambda_)
 
   /** @group getParam */
-  def getMissingValuesHandling() = $(missingValuesHandling)
+  def getMissingValuesHandling(): MissingValuesHandling = $(missingValuesHandling)
 
   /** @group getParam */
-  def getPrior() = $(prior)
+  def getPrior(): Double = $(prior)
 
   /** @group getParam */
-  def getLambdaSearch() = $(lambdaSearch)
+  def getLambdaSearch(): Boolean = $(lambdaSearch)
 
   /** @group getParam */
-  def getNlambdas() = $(nlambdas)
+  def getNlambdas(): Int = $(nlambdas)
 
   /** @group getParam */
-  def getNonNegative() = $(nonNegative)
+  def getNonNegative(): Boolean = $(nonNegative)
 
   /** @group getParam */
-  def getExactLambdas() = $(exactLambdas)
+  def getExactLambdas(): Boolean = $(exactLambdas)
 
   /** @group getParam */
-  def getLambdaMinRatio() = $(lambdaMinRatio)
+  def getLambdaMinRatio(): Double = $(lambdaMinRatio)
 
   /** @group getParam */
-  def getMaxIterations() = $(maxIterations)
+  def getMaxIterations(): Int = $(maxIterations)
 
   /** @group getParam */
-  def getIntercept() = $(intercept)
+  def getIntercept(): Boolean = $(intercept)
 
   /** @group getParam */
-  def getBetaEpsilon() = $(betaEpsilon)
+  def getBetaEpsilon(): Double = $(betaEpsilon)
 
   /** @group getParam */
-  def getObjectiveEpsilon() = $(objectiveEpsilon)
+  def getObjectiveEpsilon(): Double = $(objectiveEpsilon)
 
   /** @group getParam */
-  def getGradientEpsilon() = $(gradientEpsilon)
+  def getGradientEpsilon(): Double = $(gradientEpsilon)
 
   /** @group getParam */
-  def getObjReg() = $(objReg)
+  def getObjReg(): Double = $(objReg)
 
   /** @group getParam */
-  def getComputePValues() = $(computePValues)
+  def getComputePValues(): Boolean = $(computePValues)
 
   /** @group getParam */
-  def getRemoteCollinearColumns() = $(removeCollinearColumns)
+  def getRemoteCollinearColumns(): Boolean = $(removeCollinearColumns)
 
   /** @group getParam */
-  def getInteractions() = $(interactions)
+  def getInteractions(): Array[String] = $(interactions)
 
   /** @group getParam */
-  def getInteractionPairs() = $(interactionPairs)
+  def getInteractionPairs(): Array[(String, String)] = $(interactionPairs)
 
   /** @group getParam */
-  def getEarlyStopping() = $(earlyStopping)
+  def getEarlyStopping(): Boolean = $(earlyStopping)
 
 
   //
