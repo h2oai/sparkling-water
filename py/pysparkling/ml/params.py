@@ -4,7 +4,7 @@ from pysparkling.context import H2OContext
 from pyspark.sql import SparkSession
 from py4j.java_gateway import JavaObject
 from py_sparkling.ml.util import get_correct_case_enum, get_enum_array_from_str_array
-from deprecated import deprecated
+import warnings
 
 class H2OAlgorithmParams(Params):
     ##
@@ -425,8 +425,8 @@ class H2OAutoMLParams(Params):
     def getWeightCol(self):
         return self.getOrDefault(self.weightCol)
 
-    @deprecated(reason = "Use 'getWeightCol' instead!")
     def getWeightsColumn(self):
+        warnings.warn("The method 'getWeightsColumn' is deprecated. Use 'getWeightCol' instead!")
         return self.getOrDefault(self.weightCol)
 
     def getIgnoredColumns(self):
@@ -534,8 +534,8 @@ class H2OAutoMLParams(Params):
         assert_is_type(value, None, str)
         return self._set(weightCol=value)
 
-    @deprecated(reason = "Use 'setWeightCol' instead!")
     def setWeightsColumn(self, value):
+        warnings.warn("The method 'setWeightsColumn' is deprecated. Use 'setWeightCol' instead!")
         assert_is_type(value, None, str)
         return self._set(weightCol=value)
 

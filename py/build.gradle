@@ -34,7 +34,6 @@ python {
     pip "colorama:0.3.8"
     pip "six:1.12.0"
     pip "numpy:1.16.2"
-    pip "deprecated:1.2.5"
     pip "pyspark:${sparkVersion}"
     envPath "${rootDir.toString()}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
 }
