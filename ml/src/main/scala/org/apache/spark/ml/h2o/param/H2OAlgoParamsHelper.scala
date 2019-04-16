@@ -91,6 +91,10 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
     new Param[String](this, name, getDoc(doc, name))
   }
 
+  def nullableStringParam(name: String, doc: String): NullableStringParam = {
+    new NullableStringParam(this, name, getDoc(Some(doc), name))
+  }
+
   def stringArrayParam(name: String, doc: String): StringArrayParam = stringArrayParam(name, Some(doc))
 
   def stringArrayParam(name: String, doc: Option[String] = None): StringArrayParam = {

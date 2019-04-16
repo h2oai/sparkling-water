@@ -171,87 +171,87 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
   //
   // Getters
   //
-  def getQuietMode() = $(quietMode)
+  def getQuietMode(): Boolean = $(quietMode)
 
-  def getMissingValuesHandling() = $(missingValuesHandling)
+  def getMissingValuesHandling(): MissingValuesHandling = $(missingValuesHandling)
 
-  def getNtrees() = $(ntrees)
+  def getNtrees(): Int = $(ntrees)
 
-  def getNEstimators() = $(nEstimators)
+  def getNEstimators(): Int = $(nEstimators)
 
-  def getMaxDepth() = $(maxDepth)
+  def getMaxDepth(): Int = $(maxDepth)
 
-  def getMinRows() = $(minRows)
+  def getMinRows(): Double = $(minRows)
 
-  def getMinChildWeight() = $(minChildWeight)
+  def getMinChildWeight(): Double = $(minChildWeight)
 
-  def getLearnRate() = $(learnRate)
+  def getLearnRate(): Double = $(learnRate)
 
-  def getEta() = $(eta)
+  def getEta(): Double = $(eta)
 
-  def getLearnRateAnnealing() = $(learnRateAnnealing)
+  def getLearnRateAnnealing(): Double = $(learnRateAnnealing)
 
-  def getSampleRate() = $(sampleRate)
+  def getSampleRate(): Double = $(sampleRate)
 
-  def getSubsample() = $(subsample)
+  def getSubsample(): Double = $(subsample)
 
-  def getColSampleRate() = $(colSampleRate)
+  def getColSampleRate(): Double = $(colSampleRate)
 
-  def getColSampleByLevel() = $(colSampleByLevel)
+  def getColSampleByLevel(): Double = $(colSampleByLevel)
 
-  def getColSampleRatePerTree() = $(colSampleRatePerTree)
+  def getColSampleRatePerTree(): Double = $(colSampleRatePerTree)
 
-  def getColsampleBytree() = $(colsampleBytree)
+  def getColsampleBytree(): Double = $(colsampleBytree)
 
-  def getMaxAbsLeafnodePred() = $(maxAbsLeafnodePred)
+  def getMaxAbsLeafnodePred(): Float = $(maxAbsLeafnodePred)
 
-  def getMaxDeltaStep() = $(maxDeltaStep)
+  def getMaxDeltaStep(): Float = $(maxDeltaStep)
 
-  def getScoreTreeInterval() = $(scoreTreeInterval)
+  def getScoreTreeInterval(): Int = $(scoreTreeInterval)
 
-  def getInitialScoreInterval() = $(initialScoreInterval)
+  def getInitialScoreInterval(): Int = $(initialScoreInterval)
 
-  def getScoreInterval() = $(scoreInterval)
+  def getScoreInterval(): Int = $(scoreInterval)
 
-  def getMinSplitImprovement() = $(minSplitImprovement)
+  def getMinSplitImprovement(): Float = $(minSplitImprovement)
 
-  def getGamma() = $(gamma)
+  def getGamma(): Float = $(gamma)
 
-  def getNthread() = $(nthread)
+  def getNthread(): Int = $(nthread)
 
-  def getMaxBins() = $(maxBins)
+  def getMaxBins(): Int = $(maxBins)
 
-  def getMaxLeaves() = $(maxLeaves)
+  def getMaxLeaves(): Int = $(maxLeaves)
 
-  def getMinSumHessianInLeaf() = $(minSumHessianInLeaf)
+  def getMinSumHessianInLeaf(): Float = $(minSumHessianInLeaf)
 
-  def getMinDataInLeaf() = $(minDataInLeaf)
+  def getMinDataInLeaf(): Float = $(minDataInLeaf)
 
-  def getTreeMethod() = $(treeMethod)
+  def getTreeMethod(): TreeMethod = $(treeMethod)
 
-  def getGrowPolicy() = $(growPolicy)
+  def getGrowPolicy(): GrowPolicy = $(growPolicy)
 
-  def getBooster() = $(booster)
+  def getBooster(): Booster = $(booster)
 
-  def getDmatrixType() = $(dmatrixType)
+  def getDmatrixType(): DMatrixType = $(dmatrixType)
 
-  def getRegLambda() = $(regLambda)
+  def getRegLambda(): Float = $(regLambda)
 
-  def getRegAlpha() = $(regAlpha)
+  def getRegAlpha(): Float = $(regAlpha)
 
-  def getSampleType() = $(sampleType)
+  def getSampleType(): DartSampleType = $(sampleType)
 
-  def getNormalizeType() = $(normalizeType)
+  def getNormalizeType(): DartNormalizeType = $(normalizeType)
 
-  def getRateDrop() = $(rateDrop)
+  def getRateDrop(): Float = $(rateDrop)
 
-  def getOneDrop() = $(oneDrop)
+  def getOneDrop(): Boolean = $(oneDrop)
 
-  def getSkipDrop() = $(skipDrop)
+  def getSkipDrop(): Float = $(skipDrop)
 
-  def getGpuId() = $(gpuId)
+  def getGpuId(): Int = $(gpuId)
 
-  def getBackend() = $(backend)
+  def getBackend(): Backend = $(backend)
 
   //
   // Setters

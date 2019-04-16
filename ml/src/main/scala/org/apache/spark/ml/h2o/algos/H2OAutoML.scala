@@ -19,11 +19,12 @@ package org.apache.spark.ml.h2o.algos
 import java.io._
 import java.util.Date
 
-import ai.h2o.automl.{AutoML, AutoMLBuildSpec}
+import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import hex.ScoreKeeper
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
+import org.apache.spark.internal.Logging
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param._
@@ -33,6 +34,7 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, SQLContext, _}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
+import water.util.DeprecatedMethod
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -72,7 +74,6 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
       spec.input_spec.training_frame = input._key
     }
 
-
     val trainFrame = spec.input_spec.training_frame.get()
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(trainFrame)
@@ -81,7 +82,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
 
     spec.input_spec.response_column = getPredictionCol()
     spec.input_spec.fold_column = getFoldColumn()
-    spec.input_spec.weights_column = getWeightsColumn()
+    spec.input_spec.weights_column = getWeightCol()
     spec.input_spec.ignored_columns = getIgnoredColumns()
     spec.input_spec.sort_metric = getSortMetric()
     spec.build_models.exclude_algos = if (getExcludeAlgos() == null) null else Array(getExcludeAlgos(): _*)
@@ -204,17 +205,17 @@ object H2OAutoMLReader {
   def create[A <: H2OAutoML : ClassTag](defaultFileName: String) = new H2OAutoMLReader[A](defaultFileName)
 }
 
-trait H2OAutoMLParams extends Params {
+trait H2OAutoMLParams extends Params with Logging {
 
   //
   // Param definitions
   //
-  private final val predictionCol = new NullableStringParam(this, "predictionCol", "Prediction column name")
+  private final val predictionCol = new Param[String](this, "predictionCol", "Prediction column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
   private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   private final val foldColumn = new NullableStringParam(this, "foldColumn", "Fold column name")
-  private final val weightsColumn = new NullableStringParam(this, "weightsColumn", "Weights column name")
+  private final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
   private final val ignoredColumns = new StringArrayParam(this, "ignoredColumns", "Ignored columns names")
   private final val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
   private final val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
@@ -245,7 +246,7 @@ trait H2OAutoMLParams extends Params {
     columnsToCategorical -> Array.empty[String],
     ratio -> 1.0, // 1.0 means use whole frame as training frame,
     foldColumn -> null,
-    weightsColumn -> null,
+    weightCol -> null,
     ignoredColumns -> Array.empty[String],
     includeAlgos -> null,
     excludeAlgos -> null,
@@ -270,76 +271,80 @@ trait H2OAutoMLParams extends Params {
   // Getters
   //
   /** @group getParam */
-  def getPredictionCol() = $(predictionCol)
+  def getPredictionCol(): String = $(predictionCol)
 
   /** @group getParam */
-  def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
+  def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
 
   /** @group getParam */
-  def getColumnsToCategorical() = $(columnsToCategorical)
+  def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
   /** @group getParam */
-  def getRatio() = $(ratio)
+  def getRatio(): Double = $(ratio)
 
   /** @group getParam */
-  def getFoldColumn() = $(foldColumn)
+  def getFoldColumn(): String = $(foldColumn)
 
   /** @group getParam */
-  def getWeightsColumn() = $(weightsColumn)
+  def getWeightCol(): String = $(weightCol)
 
   /** @group getParam */
-  def getIgnoredColumns() = $(ignoredColumns)
+  @DeprecatedMethod("getWeightCol")
+  def getWeightsColumn(): String = getWeightCol()
 
   /** @group getParam */
-  def getIncludeAlgos() = $(includeAlgos)
+  def getIgnoredColumns(): Array[String] = $(ignoredColumns)
 
   /** @group getParam */
-  def getExcludeAlgos() = $(excludeAlgos)
+  def getIncludeAlgos(): Array[Algo] = $(includeAlgos)
 
   /** @group getParam */
-  def getProjectName() = $(projectName)
+  def getExcludeAlgos(): Array[Algo] = $(excludeAlgos)
 
   /** @group getParam */
-  def getMaxRuntimeSecs() = $(maxRuntimeSecs)
+  def getProjectName(): String = $(projectName)
 
   /** @group getParam */
-  def getStoppingRounds() = $(stoppingRounds)
+  def getMaxRuntimeSecs(): Double = $(maxRuntimeSecs)
 
   /** @group getParam */
-  def getStoppingTolerance() = $(stoppingTolerance)
+  def getStoppingRounds(): Int = $(stoppingRounds)
 
   /** @group getParam */
-  def getStoppingMetric() = $(stoppingMetric)
+  def getStoppingTolerance(): Double = $(stoppingTolerance)
 
   /** @group getParam */
-  def getNfolds() = $(nfolds)
+  def getStoppingMetric(): ScoreKeeper.StoppingMetric = $(stoppingMetric)
 
   /** @group getParam */
-  def getConvertUnknownCategoricalLevelsToNa() = $(convertUnknownCategoricalLevelsToNa)
+  def getNfolds(): Int = $(nfolds)
 
   /** @group getParam */
-  def getSeed() = $(seed)
+  def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
   /** @group getParam */
-  def getSortMetric() = $(sortMetric)
+  def getSeed(): Int = $(seed)
 
   /** @group getParam */
-  def getBalanceClasses() = $(balanceClasses)
+  def getSortMetric(): String = $(sortMetric)
 
   /** @group getParam */
-  def getClassSamplingFactors() = $(classSamplingFactors)
+  def getBalanceClasses(): Boolean = $(balanceClasses)
 
   /** @group getParam */
-  def getMaxAfterBalanceSize() = $(maxAfterBalanceSize)
+  def getClassSamplingFactors(): Array[Float] = $(classSamplingFactors)
 
   /** @group getParam */
-  def getKeepCrossValidationPredictions() = $(keepCrossValidationPredictions)
+  def getMaxAfterBalanceSize(): Float = $(maxAfterBalanceSize)
 
   /** @group getParam */
-  def getKeepCrossValidationModels() = $(keepCrossValidationModels)
+  def getKeepCrossValidationPredictions(): Boolean = $(keepCrossValidationPredictions)
 
   /** @group getParam */
-  def getMaxModels() = $(maxModels)
+  def getKeepCrossValidationModels(): Boolean = $(keepCrossValidationModels)
+
+  /** @group getParam */
+  def getMaxModels(): Int = $(maxModels)
 
   //
   // Setters
@@ -363,7 +368,11 @@ trait H2OAutoMLParams extends Params {
   def setFoldColumn(value: String): this.type = set(foldColumn, value)
 
   /** @group setParam */
-  def setWeightsColumn(value: String): this.type = set(weightsColumn, value)
+  def setWeightCol(value: String): this.type = set(weightCol, value)
+
+  /** @group setParam */
+  @DeprecatedMethod("setWeightCol")
+  def setWeightsColumn(value: String): this.type = setWeightCol(value)
 
   /** @group setParam */
   def setIgnoredColumns(value: Array[String]): this.type = set(ignoredColumns, value)

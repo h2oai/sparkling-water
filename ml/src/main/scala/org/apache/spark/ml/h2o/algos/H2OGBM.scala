@@ -99,15 +99,15 @@ trait H2OGBMParams extends H2OSharedTreeParams[GBMParameters] {
   // Getters
   //
   /** @group getParam */
-  def getLearnRate() = $(learnRate)
+  def getLearnRate(): Double = $(learnRate)
   /** @group getParam */
-  def getLearnRateAnnealing() = $(learnRateAnnealing)
+  def getLearnRateAnnealing(): Double = $(learnRateAnnealing)
   /** @group getParam */
-  def getColSampleRate() = $(colSampleRate)
+  def getColSampleRate(): Double = $(colSampleRate)
   /** @group getParam */
-  def getMaxAbsLeafnodePred() = $(maxAbsLeafnodePred)
+  def getMaxAbsLeafnodePred(): Double = $(maxAbsLeafnodePred)
   /** @group getParam */
-  def getPredNoiseBandwidth() = $(predNoiseBandwidth)
+  def getPredNoiseBandwidth(): Double = $(predNoiseBandwidth)
 
   //
   // Setters
