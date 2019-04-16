@@ -270,151 +270,105 @@ trait H2OAutoMLParams extends Params with Logging {
   //
   // Getters
   //
-  /** @group getParam */
   def getPredictionCol(): String = $(predictionCol)
 
-  /** @group getParam */
   def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
 
-  /** @group getParam */
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
-  /** @group getParam */
   def getRatio(): Double = $(ratio)
 
-  /** @group getParam */
   def getFoldCol() = $(foldCol)
 
   @DeprecatedMethod("getFoldCol")
   def getFoldColumn() = getFoldCol()
 
-  /** @group getParam */
   def getWeightCol(): String = $(weightCol)
 
-  /** @group getParam */
   @DeprecatedMethod("getWeightCol")
   def getWeightsColumn(): String = getWeightCol()
 
-  /** @group getParam */
   def getIgnoredColumns(): Array[String] = $(ignoredColumns)
 
-  /** @group getParam */
   def getIncludeAlgos(): Array[Algo] = $(includeAlgos)
 
-  /** @group getParam */
   def getExcludeAlgos(): Array[Algo] = $(excludeAlgos)
 
-  /** @group getParam */
   def getProjectName(): String = $(projectName)
 
-  /** @group getParam */
   def getMaxRuntimeSecs(): Double = $(maxRuntimeSecs)
 
-  /** @group getParam */
   def getStoppingRounds(): Int = $(stoppingRounds)
 
-  /** @group getParam */
   def getStoppingTolerance(): Double = $(stoppingTolerance)
 
-  /** @group getParam */
   def getStoppingMetric(): ScoreKeeper.StoppingMetric = $(stoppingMetric)
 
-  /** @group getParam */
   def getNfolds(): Int = $(nfolds)
 
-  /** @group getParam */
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
-  /** @group getParam */
   def getSeed(): Int = $(seed)
 
-  /** @group getParam */
   def getSortMetric(): String = $(sortMetric)
 
-  /** @group getParam */
   def getBalanceClasses(): Boolean = $(balanceClasses)
 
-  /** @group getParam */
   def getClassSamplingFactors(): Array[Float] = $(classSamplingFactors)
 
-  /** @group getParam */
   def getMaxAfterBalanceSize(): Float = $(maxAfterBalanceSize)
 
-  /** @group getParam */
   def getKeepCrossValidationPredictions(): Boolean = $(keepCrossValidationPredictions)
 
-  /** @group getParam */
   def getKeepCrossValidationModels(): Boolean = $(keepCrossValidationModels)
 
-  /** @group getParam */
   def getMaxModels(): Int = $(maxModels)
 
   //
   // Setters
   //
-  /** @group setParam */
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
-  /** @group setParam */
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
 
-  /** @group setParam */
   def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
 
-  /** @group setParam */
   def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
 
-  /** @group setParam */
   def setRatio(value: Double): this.type = set(ratio, value)
 
-  /** @group setParam */
   def setFoldCol(value: String): this.type = set(foldCol, value)
 
-  /** @group setParam */
   @DeprecatedMethod("setFoldCol")
   def setFoldColumn(value: String): this.type = setFoldCol(value)
 
-  /** @group setParam */
   def setWeightCol(value: String): this.type = set(weightCol, value)
 
-  /** @group setParam */
   @DeprecatedMethod("setWeightCol")
   def setWeightsColumn(value: String): this.type = setWeightCol(value)
 
-  /** @group setParam */
   def setIgnoredColumns(value: Array[String]): this.type = set(ignoredColumns, value)
 
-  /** @group setParam */
   def setIncludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(includeAlgos, value)
 
-  /** @group setParam */
   def setExcludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(excludeAlgos, value)
 
-  /** @group setParam */
   def setProjectName(value: String): this.type = set(projectName, value)
 
-  /** @group setParam */
   def setMaxRuntimeSecs(value: Double): this.type = set(maxRuntimeSecs, value)
 
-  /** @group setParam */
   def setStoppingRounds(value: Int): this.type = set(stoppingRounds, value)
 
-  /** @group setParam */
   def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
 
-  /** @group setParam */
   def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = set(stoppingMetric, value)
 
-  /** @group setParam */
   def setNfolds(value: Int): this.type = set(nfolds, value)
 
-  /** @group setParam */
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 
-  /** @group setParam */
   def setSeed(value: Int): this.type = set(seed, value)
 
-  /** @group setParam */
   def setSortMetric(value: String): this.type = {
     val allowedValues = Seq("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "mean_per_class_error")
     if (!allowedValues.contains(value)) {
@@ -427,22 +381,16 @@ trait H2OAutoMLParams extends Params with Logging {
     }
   }
 
-  /** @group setParam */
   def setBalanceClasses(value: Boolean): this.type = set(balanceClasses, value)
 
-  /** @group setParam */
   def setClassSamplingFactors(value: Array[Float]): this.type = set(classSamplingFactors, value)
 
-  /** @group setParam */
   def setMaxAfterBalanceSize(value: Float): this.type = set(maxAfterBalanceSize, value)
 
-  /** @group setParam */
   def setKeepCrossValidationPredictions(value: Boolean): this.type = set(keepCrossValidationPredictions, value)
 
-  /** @group setParam */
   def setKeepCrossValidationModels(value: Boolean): this.type = set(keepCrossValidationModels, value)
 
-  /** @group setParam */
   def setMaxModels(value: Int): this.type = set(maxModels, value)
 }
 
