@@ -24,17 +24,17 @@ import generic_test_utils
 class IntegTestEnv:
 
     def __init__(self):
-
-        self.spark_home = generic_test_utils.get_env_org_fail("SPARK_HOME", "The variable 'SPARK_HOME' should point to Spark home directory.")
+        self.spark_home = generic_test_utils.get_env_org_fail("SPARK_HOME",
+                                                              "The variable 'SPARK_HOME' should point to Spark home directory.")
 
         self.spark_master = generic_test_utils.get_env_org_fail("MASTER",
-                                                          "The variable 'MASTER' should contain Spark cluster mode.")
+                                                                "The variable 'MASTER' should contain Spark cluster mode.")
 
         self.hdp_version = generic_test_utils.get_env_org_fail("sparkling.test.hdp.version",
-                                                         "The variable 'sparkling.test.hdp.version' is not set! It should contain version of hdp used")
+                                                               "The variable 'sparkling.test.hdp.version' is not set! It should contain version of hdp used")
 
         self.sdist = generic_test_utils.get_env_org_fail("sparkling.pysparkling.sdist",
-                                                              "The variable 'sparkling.pysparkling.sdist' is not set! It should point to PySparkling sdist file")
+                                                         "The variable 'sparkling.pysparkling.sdist' is not set! It should point to PySparkling sdist file")
         self.spark_conf = {}
         self.verbose = True
 
@@ -55,11 +55,12 @@ def launch(test_env, script_name, param=None):
         cmd_line.extend(["--driver-memory", test_env.spark_conf.get("spark.driver.memory")])
     # remove ".py" from cloud name
     cmd_line.extend(["--conf", 'spark.ext.h2o.cloud.name=sparkling-water-' + cloud_name])
-    cmd_line.extend(["--conf", '"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=' + test_env.hdp_version+'"'])
-    cmd_line.extend(["--conf", '"spark.yarn.am.extraJavaOptions=-Dhdp.version=' + test_env.hdp_version+'"'])
+    cmd_line.extend(
+        ["--conf", '"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=' + test_env.hdp_version + '"'])
+    cmd_line.extend(["--conf", '"spark.yarn.am.extraJavaOptions=-Dhdp.version=' + test_env.hdp_version + '"'])
     cmd_line.extend(["--conf", 'spark.test.home=' + test_env.spark_home])
     cmd_line.extend(["--conf", 'spark.scheduler.minRegisteredResourcesRatio=1'])
-    cmd_line.extend(["--conf", 'spark.ext.h2o.repl.enabled=false']) #  disable repl in tests
+    cmd_line.extend(["--conf", 'spark.ext.h2o.repl.enabled=false'])  # disable repl in tests
     cmd_line.extend(["--conf", "spark.ext.h2o.external.start.mode=auto"])
     # Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
     # See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
@@ -75,7 +76,7 @@ def launch(test_env, script_name, param=None):
         test_env.conf("spark.ext.h2o.backend.cluster.mode", "internal")
 
     for k, v in test_env.spark_conf.items():
-        cmd_line.extend(["--conf", k+'='+str(v)])
+        cmd_line.extend(["--conf", k + '=' + str(v)])
 
     # Add python script
     cmd_line.append(script_name)
@@ -88,11 +89,10 @@ def launch(test_env, script_name, param=None):
 
     return return_code
 
+
 # Determines whether we run on Windows or Unix and return correct spark-submit script location
 def get_submit_script(spark_home):
     if sys.platform.startswith('win'):
-        return spark_home+"\\bin\\spark-submit.cmd"
+        return spark_home + "\\bin\\spark-submit.cmd"
     else:
-        return spark_home+"/bin/spark-submit"
-
-
+        return spark_home + "/bin/spark-submit"

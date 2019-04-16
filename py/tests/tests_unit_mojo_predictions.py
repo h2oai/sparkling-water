@@ -34,6 +34,7 @@ import unit_test_utils
 import generic_test_utils
 from pyspark.ml import Pipeline, PipelineModel
 
+
 ##
 ## These tests does not start H2O Context on purpose to test running predictions
 ## in Spark environment without run-time H2O

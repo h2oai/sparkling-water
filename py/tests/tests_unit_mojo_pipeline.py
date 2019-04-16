@@ -34,6 +34,7 @@ from pyspark.sql import SparkSession
 from pysparkling.ml import H2OMOJOPipelineModel
 from pyspark.ml import Pipeline, PipelineModel
 
+
 ##
 ## These tests does not start H2O Context on purpose to test running predictions
 ## in Spark environment without run-time H2O
