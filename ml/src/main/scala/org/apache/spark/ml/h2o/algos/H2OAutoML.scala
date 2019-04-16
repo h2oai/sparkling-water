@@ -24,6 +24,7 @@ import hex.ScoreKeeper
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
+import org.apache.spark.internal.Logging
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param._
@@ -72,7 +73,6 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     } else {
       spec.input_spec.training_frame = input._key
     }
-
 
     val trainFrame = spec.input_spec.training_frame.get()
     if (getAllStringColumnsToCategorical()) {
@@ -205,7 +205,7 @@ object H2OAutoMLReader {
   def create[A <: H2OAutoML : ClassTag](defaultFileName: String) = new H2OAutoMLReader[A](defaultFileName)
 }
 
-trait H2OAutoMLParams extends Params {
+trait H2OAutoMLParams extends Params with Logging {
 
   //
   // Param definitions
