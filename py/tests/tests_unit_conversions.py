@@ -355,7 +355,7 @@ class FrameTransformationsTest(unittest.TestCase):
 
         perf = gbm.model_performance()
         self.assertEquals(perf.custom_metric_name(), "WeightedFalseNegativeLoss")
-        self.assertEquals(perf.custom_metric_value(), 0.32855717264501133)
+        self.assertEquals(perf.custom_metric_value(), 0.24579011595430142)
 
 
 if __name__ == '__main__':
