@@ -39,7 +39,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
     "predictionCol",
     "Prediction column name")
 
-  final val weightCol = stringParam(
+  final val weightCol = nullableStringParam(
     "weightCol",
     "Weight column name")
 
