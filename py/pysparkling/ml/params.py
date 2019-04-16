@@ -385,7 +385,6 @@ class H2OAutoMLParams(Params):
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     foldColumn = Param(Params._dummy(), "foldColumn", "Fold column name")
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
-    weightsColumn = Param(Params._dummy(), "weightsColumn", "Weights column name")
     ignoredColumns = Param(Params._dummy(), "ignoredColumns", "Ignored columns names")
     includeAlgos = Param(Params._dummy(), "includeAlgos", "Algorithms to include when using automl")
     excludeAlgos = Param(Params._dummy(), "excludeAlgos", "Algorithms to exclude when using automl")
@@ -428,7 +427,7 @@ class H2OAutoMLParams(Params):
 
     @deprecated(reason = "Use 'getWeightCol' instead!")
     def getWeightsColumn(self):
-        return self.getOrDefault(self.weightsColumn)
+        return self.getOrDefault(self.weightCol)
 
     def getIgnoredColumns(self):
         return self.getOrDefault(self.ignoredColumns)
@@ -538,7 +537,7 @@ class H2OAutoMLParams(Params):
     @deprecated(reason = "Use 'setWeightCol' instead!")
     def setWeightsColumn(self, value):
         assert_is_type(value, None, str)
-        return self._set(weightsColumn=value)
+        return self._set(weightCol=value)
 
     def setIgnoredColumns(self, value):
         assert_is_type(value, [str])

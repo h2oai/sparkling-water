@@ -5,6 +5,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 import random
 import string
+import warnings
 
 from pysparkling import *
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams
@@ -19,6 +20,14 @@ def set_double_values(kwargs, values):
     for v in values:
         if v in kwargs:
             kwargs[v] = float(kwargs[v])
+
+
+def propagate_value_from_deprecated_property(kwargs, from_deprecated, to_replacing):
+    if from_deprecated in kwargs:
+        warnings.warn("The parameter '{}' is deprecated and its usage will override value specified via '{}'!".format(from_deprecated, to_replacing))
+        kwargs[to_replacing] = kwargs[from_deprecated]
+        del kwargs[from_deprecated]
+
 
 class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     @keyword_only
@@ -125,11 +134,11 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
 class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
     @keyword_only
-    def __init__(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightCol=None,
-                 weightsColumn=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
+    def __init__(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None,
+                 weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                  stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
                  sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
-                 keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0):
+                 keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0, **deprecatedArgs):
         super(H2OAutoML, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OAutoML",
@@ -137,21 +146,21 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightCol=None,
-                         weightsColumn=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
+        self._setDefault(predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None,
+                         weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                          stoppingTolerance=0.001, stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5,
                          convertUnknownCategoricalLevelsToNa=False, seed=-1, sortMetric=None, balanceClasses=False,
                          classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
                          keepCrossValidationModels=True, maxModels=0)
-        kwargs = self._input_kwargs
-        self.setParams(**kwargs)
+        spark_kwargs = self._input_kwargs
+        self.setParams(**spark_kwargs)
 
     @keyword_only
-    def setParams(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None, weightCol=None,
-                  weightsColumn=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
+    def setParams(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None,
+                  weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                   stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
                   sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
-                  keepCrossValidationModels=True, maxModels=0):
+                  keepCrossValidationModels=True, maxModels=0, **deprecatedArgs):
         kwargs = self._input_kwargs
 
         if "stoppingMetric" in kwargs:
@@ -168,6 +177,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
             jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
             kwargs["includeAlgos"] = get_enum_array_from_str_array(kwargs["includeAlgos"], jvm.ai.h2o.automl.Algo)
 
+        propagate_value_from_deprecated_property(kwargs, "weightsColumn", "weightCol")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception

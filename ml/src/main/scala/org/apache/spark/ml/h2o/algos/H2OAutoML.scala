@@ -82,7 +82,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
 
     spec.input_spec.response_column = getPredictionCol()
     spec.input_spec.fold_column = getFoldColumn()
-    spec.input_spec.weights_column = getWeightsColumn()
+    spec.input_spec.weights_column = getWeightCol()
     spec.input_spec.ignored_columns = getIgnoredColumns()
     spec.input_spec.sort_metric = getSortMetric()
     spec.build_models.exclude_algos = if (getExcludeAlgos() == null) null else Array(getExcludeAlgos(): _*)
@@ -290,7 +290,7 @@ trait H2OAutoMLParams extends Params with Logging {
 
   /** @group getParam */
   @DeprecatedMethod("getWeightCol")
-  def getWeightsColumn(): String = $(weightCol)
+  def getWeightsColumn(): String = getWeightCol()
 
   /** @group getParam */
   def getIgnoredColumns(): Array[String] = $(ignoredColumns)
@@ -372,7 +372,7 @@ trait H2OAutoMLParams extends Params with Logging {
 
   /** @group setParam */
   @DeprecatedMethod("setWeightCol")
-  def setWeightsColumn(value: String): this.type = set(weightCol, value)
+  def setWeightsColumn(value: String): this.type = setWeightCol(value)
 
   /** @group setParam */
   def setIgnoredColumns(value: Array[String]): this.type = set(ignoredColumns, value)
