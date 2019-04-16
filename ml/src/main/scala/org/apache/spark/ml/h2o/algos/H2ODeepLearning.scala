@@ -101,19 +101,19 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
   // Getters
   //
   /** @group getParam */
-  def getEpochs() = $(epochs)
+  def getEpochs(): Double = $(epochs)
 
   /** @group getParam */
-  def getL1() = $(l1)
+  def getL1(): Double = $(l1)
 
   /** @group getParam */
-  def getL2() = $(l2)
+  def getL2(): Double = $(l2)
 
   /** @group getParam */
-  def getHidden() = $(hidden)
+  def getHidden(): Array[Int] = $(hidden)
 
   /** @group getParam */
-  def getReproducible() = $(reproducible)
+  def getReproducible(): Boolean = $(reproducible)
 
   //
   // Setters
