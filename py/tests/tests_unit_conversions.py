@@ -272,24 +272,21 @@ class FrameTransformationsTest(unittest.TestCase):
     def test_convert_empty_dataframe_empty_schema(self):
         schema = StructType([])
         empty = self._spark.createDataFrame(self._spark.sparkContext.emptyRDD(), schema)
-        hc = H2OContext.getOrCreate(self._spark)
-        fr = hc.as_h2o_frame(empty)
+        fr = self._hc.as_h2o_frame(empty)
         self.assertEquals(fr.nrows, 0)
         self.assertEquals(fr.ncols, 0)
 
     def test_convert_empty_dataframe_non_empty_schema(self):
         schema = StructType([StructField("name", StringType()), StructField("age", IntegerType())])
         empty = self._spark.createDataFrame(self._spark.sparkContext.emptyRDD(), schema)
-        hc = H2OContext.getOrCreate(self._spark)
-        fr = hc.as_h2o_frame(empty)
+        fr = self._hc.as_h2o_frame(empty)
         self.assertEquals(fr.nrows, 0)
         self.assertEquals(fr.ncols, 2)
 
     def test_convert_empty_rdd(self):
         schema = StructType([])
         empty = self._spark.createDataFrame(self._spark.sparkContext.emptyRDD(), schema)
-        hc = H2OContext.getOrCreate(self._spark)
-        fr = hc.as_h2o_frame(empty)
+        fr = self._hc.as_h2o_frame(empty)
         self.assertEquals(fr.nrows, 0)
         self.assertEquals(fr.ncols, 0)
 
@@ -321,7 +318,7 @@ class FrameTransformationsTest(unittest.TestCase):
                                               header=True, inferSchema=True)
 
         algo = H2OGridSearch(predictionCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, ratio=0.8, algo=H2OGBM(),
-                             strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60)
+                             strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
 
         pipeline = Pipeline(stages=[algo])
         pipeline.write().overwrite().save("file://" + os.path.abspath("build/grid_gbm_pipeline"))
