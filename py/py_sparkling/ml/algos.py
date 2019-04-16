@@ -136,7 +136,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
 class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
     @keyword_only
-    def __init__(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None,
+    def __init__(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
                  weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                  stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
                  sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
@@ -148,7 +148,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None,
+        self._setDefault(predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
                          weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                          stoppingTolerance=0.001, stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5,
                          convertUnknownCategoricalLevelsToNa=False, seed=-1, sortMetric=None, balanceClasses=False,
@@ -158,7 +158,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
         self.setParams(**spark_kwargs)
 
     @keyword_only
-    def setParams(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None,
+    def setParams(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
                   weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                   stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
                   sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,

@@ -593,7 +593,7 @@ trait H2OGridSearchParams extends Params {
   def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
 
   def setFoldCol(value: String): this.type = set(foldCol, value)
-
+  
 }
 
 class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: String,
