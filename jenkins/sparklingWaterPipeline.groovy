@@ -12,7 +12,6 @@ def call(params, body) {
             "SPARK_HOME=${env.WORKSPACE}/spark",
             "HADOOP_CONF_DIR=/etc/hadoop/conf",
             "MASTER=yarn-client",
-            "H2O_PYTHON_WHEEL=${env.WORKSPACE}/private/h2o.whl",
             "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
             // Properties used in case we are building against specific H2O version
             "BUILD_HADOOP=true",
@@ -41,7 +40,6 @@ def call(params, body) {
                                     "SPARK_HOME=${env.WORKSPACE}/spark",
                                     "HADOOP_CONF_DIR=/etc/hadoop/conf",
                                     "MASTER=yarn-client",
-                                    "H2O_PYTHON_WHEEL=${env.WORKSPACE}/private/h2o.whl",
                                     "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
                                     "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
                                     "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}",
