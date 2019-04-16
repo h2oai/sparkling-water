@@ -17,7 +17,7 @@
 
 package water.util
 
-import org.apache.spark.internal.Logging
+import org.apache.spark.h2o.utils.Logging
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
