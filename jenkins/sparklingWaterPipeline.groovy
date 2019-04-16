@@ -176,10 +176,6 @@ def prepareSparklingWaterEnvironment() {
                         ${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
                     fi
                 else
-                    # Download h2o-python client, save it in private directory
-                    # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
-                    mkdir -p ${env.WORKSPACE}/private/
-                    curl -s `${env.WORKSPACE}/gradlew -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
                     if [ ${config.backendMode} = external ]; then
                         cp `${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
                     fi
