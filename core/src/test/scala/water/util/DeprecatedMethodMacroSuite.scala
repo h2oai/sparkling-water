@@ -17,6 +17,7 @@
 
 package water.util
 
+import org.apache.spark.internal.Logging
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -24,7 +25,7 @@ import org.scalatest.junit.JUnitRunner
 import scala.language.experimental.macros
 
 @RunWith(classOf[JUnitRunner])
-class DeprecatedMethodMacroSuite extends FunSuite {
+class DeprecatedMethodMacroSuite extends FunSuite with Logging {
 
   class VariousAnnotationUsages {
     @DeprecatedMethod(replacement = "replacing method")
