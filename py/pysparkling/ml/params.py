@@ -4,6 +4,7 @@ from pysparkling.context import H2OContext
 from pyspark.sql import SparkSession
 from py4j.java_gateway import JavaObject
 from py_sparkling.ml.util import get_correct_case_enum, get_enum_array_from_str_array
+import warnings
 
 class H2OAlgorithmParams(Params):
     ##
@@ -11,6 +12,7 @@ class H2OAlgorithmParams(Params):
     ##
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     predictionCol = Param(Params._dummy(), "predictionCol", "label")
+    weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
     featuresCols = Param(Params._dummy(), "featuresCols", "columns used as features")
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
@@ -30,6 +32,9 @@ class H2OAlgorithmParams(Params):
 
     def getPredictionCol(self):
         return self.getOrDefault(self.predictionCol)
+
+    def getWeightCol(self):
+        return self.getOrDefault(self.weightCol)
 
     def getFeaturesCols(self):
         return self.getOrDefault(self.featuresCols)
@@ -72,6 +77,10 @@ class H2OAlgorithmParams(Params):
     def setPredictionCol(self, value):
         assert_is_type(value, str)
         return self._set(predictionCol=value)
+
+    def setWeightCol(self, value):
+        assert_is_type(value, str)
+        return self._set(weightCol=value)
 
     def setFeaturesCols(self, value):
         assert_is_type(value, [str])
@@ -375,7 +384,7 @@ class H2OAutoMLParams(Params):
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     foldColumn = Param(Params._dummy(), "foldColumn", "Fold column name")
-    weightsColumn = Param(Params._dummy(), "weightsColumn", "Weights column name")
+    weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
     ignoredColumns = Param(Params._dummy(), "ignoredColumns", "Ignored columns names")
     includeAlgos = Param(Params._dummy(), "includeAlgos", "Algorithms to include when using automl")
     excludeAlgos = Param(Params._dummy(), "excludeAlgos", "Algorithms to exclude when using automl")
@@ -413,8 +422,12 @@ class H2OAutoMLParams(Params):
     def getFoldColumn(self):
         return self.getOrDefault(self.foldColumn)
 
+    def getWeightCol(self):
+        return self.getOrDefault(self.weightCol)
+
     def getWeightsColumn(self):
-        return self.getOrDefault(self.weightsColumn)
+        warnings.warn("The method 'getWeightsColumn' is deprecated. Use 'getWeightCol' instead!")
+        return self.getOrDefault(self.weightCol)
 
     def getIgnoredColumns(self):
         return self.getOrDefault(self.ignoredColumns)
@@ -516,9 +529,15 @@ class H2OAutoMLParams(Params):
         assert_is_type(value, None, str)
         return self._set(foldColumn=value)
 
-    def setWeightsColumn(self, value):
+
+    def setWeightCol(self, value):
         assert_is_type(value, None, str)
-        return self._set(weightsColumn=value)
+        return self._set(weightCol=value)
+
+    def setWeightsColumn(self, value):
+        warnings.warn("The method 'setWeightsColumn' is deprecated. Use 'setWeightCol' instead!")
+        assert_is_type(value, None, str)
+        return self._set(weightCol=value)
 
     def setIgnoredColumns(self, value):
         assert_is_type(value, [str])
