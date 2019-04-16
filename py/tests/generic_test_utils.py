@@ -69,7 +69,7 @@ def run_tests(cases, file_name=None):
     result = None
     if file_name is not None:
         reports_file = 'build' + os.sep + file_name + ".txt"
-        f = open(reports_file, "w")
+        f = open(os.path.abspath(reports_file), "w+")
         result = unittest.TextTestRunner(f, verbosity=2).run(testsuite)
         f.close()
 
