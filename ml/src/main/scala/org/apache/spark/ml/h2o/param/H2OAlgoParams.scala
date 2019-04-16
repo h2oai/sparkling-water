@@ -56,6 +56,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
     "List of columns to convert to categorical before modelling")
 
   final val nfolds = intParam("nfolds")
+  final val foldCol = stringParam("foldColumn")
   final val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
   final val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
   final val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
@@ -73,6 +74,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
     weightCol -> null,
     featuresCols -> Array.empty[String],
     nfolds -> parameters._nfolds,
+    foldCol -> null,
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
     keepCrossValidationPredictions -> parameters._keep_cross_validation_predictions,
@@ -132,6 +134,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   /** @group getParam */
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
+  /** @group getParam */
+  def getFoldCol(): String = $(foldCol)
   //
   // Setters
   //
@@ -193,11 +197,15 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
     new H2ODistributionParam(this, name, getDoc(None, name))
   }
 
+  /** @group setParam */
+  def setFoldCol(value: String): this.type = set(foldCol, value)
+
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
   protected def updateH2OParams(): Unit = {
     parameters._response_column = $(predictionCol)
     parameters._weights_column = $(weightCol)
     parameters._nfolds = $(nfolds)
+    parameters._fold_column = $(foldCol)
     parameters._keep_cross_validation_predictions = $(keepCrossValidationPredictions)
     parameters._keep_cross_validation_fold_assignment = $(keepCrossValidationFoldAssignment)
     parameters._parallelize_cross_validation = $(parallelizeCrossValidation)

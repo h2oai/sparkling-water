@@ -81,7 +81,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
     spec.input_spec.response_column = getPredictionCol()
-    spec.input_spec.fold_column = getFoldColumn()
+    spec.input_spec.fold_column = getFoldCol()
     spec.input_spec.weights_column = getWeightCol()
     spec.input_spec.ignored_columns = getIgnoredColumns()
     spec.input_spec.sort_metric = getSortMetric()
@@ -214,7 +214,7 @@ trait H2OAutoMLParams extends Params with Logging {
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
   private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
-  private final val foldColumn = new NullableStringParam(this, "foldColumn", "Fold column name")
+  private final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   private final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
   private final val ignoredColumns = new StringArrayParam(this, "ignoredColumns", "Ignored columns names")
   private final val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
@@ -245,7 +245,7 @@ trait H2OAutoMLParams extends Params with Logging {
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
     ratio -> 1.0, // 1.0 means use whole frame as training frame,
-    foldColumn -> null,
+    foldCol -> null,
     weightCol -> null,
     ignoredColumns -> Array.empty[String],
     includeAlgos -> null,
@@ -283,7 +283,10 @@ trait H2OAutoMLParams extends Params with Logging {
   def getRatio(): Double = $(ratio)
 
   /** @group getParam */
-  def getFoldColumn(): String = $(foldColumn)
+  def getFoldCol() = $(foldCol)
+
+  @DeprecatedMethod("getFoldCol")
+  def getFoldColumn() = getFoldCol()
 
   /** @group getParam */
   def getWeightCol(): String = $(weightCol)
@@ -365,7 +368,11 @@ trait H2OAutoMLParams extends Params with Logging {
   def setRatio(value: Double): this.type = set(ratio, value)
 
   /** @group setParam */
-  def setFoldColumn(value: String): this.type = set(foldColumn, value)
+  def setFoldCol(value: String): this.type = set(foldCol, value)
+
+  /** @group setParam */
+  @DeprecatedMethod("setFoldCol")
+  def setFoldColumn(value: String): this.type = setFoldCol(value)
 
   /** @group setParam */
   def setWeightCol(value: String): this.type = set(weightCol, value)

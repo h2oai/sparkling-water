@@ -91,6 +91,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
       algoParams._train = input._key
     }
     algoParams._nfolds = getNfolds()
+    algoParams._fold_column = getFoldCol()
     algoParams._response_column = getPredictionCol()
     val trainFrame = algoParams._train.get()
     if (getAllStringColumnsToCategorical()) {
@@ -197,7 +198,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
   }
 
-  private def sortGrid(grid: Grid[ _ <: Model.Parameters]): Array[H2OModel] = {
+  private def sortGrid(grid: Grid[_ <: Model.Parameters]): Array[H2OModel] = {
     if (grid.getModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
@@ -482,6 +483,8 @@ trait H2OGridSearchParams extends Params {
     "If this value is not specified that the first model os taken.")
   private final val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
     "True if sort in decreasing order accordingto selected metrics")
+  private final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
+
   //
   // Default values
   //
@@ -501,7 +504,8 @@ trait H2OGridSearchParams extends Params {
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
     nfolds -> 0,
     selectBestModelBy -> null,
-    selectBestModelDecreasing -> true
+    selectBestModelDecreasing -> true,
+    foldCol -> null
   )
 
   //
@@ -554,6 +558,9 @@ trait H2OGridSearchParams extends Params {
 
   /** @group getParam */
   def getSelectBestModelDecreasing() = $(selectBestModelDecreasing)
+
+  /** @group getParam */
+  def getFoldCol(): String = $(foldCol)
 
   //
   // Setters
@@ -620,6 +627,9 @@ trait H2OGridSearchParams extends Params {
 
   /** @group setParam */
   def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
+
+  /** @group setParam */
+  def setFoldCol(value: String): this.type = set(foldCol, value)
 
 }
 
