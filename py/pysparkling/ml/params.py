@@ -427,7 +427,7 @@ class H2OAutoMLParams(Params):
 
     def getWeightsColumn(self):
         warnings.warn("The method 'getWeightsColumn' is deprecated. Use 'getWeightCol' instead!")
-        return self.getOrDefault(self.weightCol)
+        return self.getWeightCol()
 
     def getIgnoredColumns(self):
         return self.getOrDefault(self.ignoredColumns)
@@ -536,8 +536,7 @@ class H2OAutoMLParams(Params):
 
     def setWeightsColumn(self, value):
         warnings.warn("The method 'setWeightsColumn' is deprecated. Use 'setWeightCol' instead!")
-        assert_is_type(value, None, str)
-        return self._set(weightCol=value)
+        return self.setWeightCol(value)
 
     def setIgnoredColumns(self, value):
         assert_is_type(value, [str])
