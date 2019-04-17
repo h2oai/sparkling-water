@@ -17,5 +17,5 @@ In order to build the whole project, including PySparkling, run:
 
 Sparkling Water SUBST_SW_VERSION is built with Scala 2.11.
 
-Note: If you would like to build against custom H2O Python package, specify H2O_HOME environment variable. The variable
-should point to root directory of H2O-3 repository. This is mainly used for integration testing with H2O-3.
+Note: If you would like to build against custom H2O Python package, specify ``H2O_HOME`` environment variable. The variable
+should point to the root directory of H2O-3 repository. This is mainly used for integration testing with H2O-3.

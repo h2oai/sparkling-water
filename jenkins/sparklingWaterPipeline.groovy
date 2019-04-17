@@ -175,10 +175,9 @@ def prepareSparklingWaterEnvironment() {
                         # When extending from specific jar the jar has already the desired name
                         ${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
                     fi
-                else
-                    if [ ${config.backendMode} = external ]; then
+                else if [ ${config.backendMode} = external ]; then
                         cp `${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
-                    fi
+                     fi
                 fi
     
                 """
@@ -257,7 +256,7 @@ def pyUnitTests() {
                 }
             }
         }
-        
+
         stage('QA: Python Unit Tests 2.7 - ' + config.backendMode) {
             withDocker(config) {
                 if (config.runPyUnitTests.toBoolean()) {
