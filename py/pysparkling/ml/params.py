@@ -17,9 +17,10 @@ class H2OAlgorithmParams(Params):
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
     nfolds = Param(Params._dummy(), "nfolds", "Number of folds for K-fold cross-validation (0 to disable or >= 2)")
-    keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Whether to keep the predictions of the cross-validation models", )
-    keepCrossValidationFoldAssignment = Param(Params._dummy(), "keepCrossValidationFoldAssignment", "Whether to keep the cross-validation fold assignment", )
-    parallelizeCrossValidation = Param(Params._dummy(), "parallelizeCrossValidation", "Allow parallel training of cross-validation models", )
+    foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
+    keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Whether to keep the predictions of the cross-validation models")
+    keepCrossValidationFoldAssignment = Param(Params._dummy(), "keepCrossValidationFoldAssignment", "Whether to keep the cross-validation fold assignment")
+    parallelizeCrossValidation = Param(Params._dummy(), "parallelizeCrossValidation", "Allow parallel training of cross-validation models")
     seed = Param(Params._dummy(), "seed", "Seed for random numbers (affects sampling) - Note: only reproducible when running single threaded.")
     distribution = Param(Params._dummy(), "distribution", "Distribution function")
     convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
@@ -47,6 +48,9 @@ class H2OAlgorithmParams(Params):
 
     def getNfolds(self):
         return self.getOrDefault(self.nfolds)
+
+    def getFoldCol(self):
+        return self.getOrDefault(self.foldCol)
 
     def getKeepCrossValidationPredictions(self):
         return self.getOrDefault(self.keepCrossValidationPredictions)
@@ -97,6 +101,10 @@ class H2OAlgorithmParams(Params):
     def setNfolds(self, value):
         assert_is_type(value, int)
         return self._set(nfolds=value)
+
+    def setFoldCol(self, value):
+        assert_is_type(value, str, None)
+        return self._set(foldCol=value)
 
     def setKeepCrossValidationPredictions(self, value):
         assert_is_type(value, bool)
@@ -383,7 +391,7 @@ class H2OAutoMLParams(Params):
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
-    foldColumn = Param(Params._dummy(), "foldColumn", "Fold column name")
+    foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
     ignoredColumns = Param(Params._dummy(), "ignoredColumns", "Ignored columns names")
     includeAlgos = Param(Params._dummy(), "includeAlgos", "Algorithms to include when using automl")
@@ -419,8 +427,12 @@ class H2OAutoMLParams(Params):
     def getRatio(self):
         return self.getOrDefault(self.ratio)
 
+    def getFoldCol(self):
+        return self.getOrDefault(self.foldCol)
+
     def getFoldColumn(self):
-        return self.getOrDefault(self.foldColumn)
+        warnings.warn("The method 'getFoldColumn' is deprecated. Use 'getFoldCol' instead!")
+        return self.getFoldCol()
 
     def getWeightCol(self):
         return self.getOrDefault(self.weightCol)
@@ -525,10 +537,13 @@ class H2OAutoMLParams(Params):
         assert_is_type(value, int, float)
         return self._set(ratio=value)
 
-    def setFoldColumn(self, value):
+    def setFoldCol(self, value):
         assert_is_type(value, None, str)
-        return self._set(foldColumn=value)
+        return self._set(foldCol=value)
 
+    def setFoldColumn(self, value):
+        warnings.warn("The method 'setFoldColumn' is deprecated. Use 'setFoldCol' instead!")
+        return self.setFoldCol(value)
 
     def setWeightCol(self, value):
         assert_is_type(value, None, str)
@@ -1244,6 +1259,7 @@ class H2OGridSearchParams(Params):
     stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "stoppingTolerance")
     stoppingMetric = Param(Params._dummy(), "stoppingMetric", "stoppingMetric")
     nfolds = Param(Params._dummy(), "nfolds", "nfolds")
+    foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     selectBestModelBy = Param(Params._dummy(), "selectBestModelBy", "selectBestModelBy")
     selectBestModelDecreasing = Param(Params._dummy(), "selectBestModelDecreasing", "selectBestModelDecreasing")
 
@@ -1298,6 +1314,9 @@ class H2OGridSearchParams(Params):
 
     def getNfolds(self):
         return self.getOrDefault(self.nfolds)
+
+    def getFoldCol(self):
+        return self.getOrDefault(self.foldCol)
 
     def getSelectBestModelBy(self):
         # Convert Java Enum to String so we can represent it in Python
@@ -1367,6 +1386,10 @@ class H2OGridSearchParams(Params):
     def setNfolds(self, value):
         assert_is_type(value, int)
         return self._set(nfolds=value)
+
+    def setFoldCol(self, value):
+        assert_is_type(value, None, str)
+        return self._set(foldCol=value)
 
     def setSelectBestModelBy(self, value):
         # H2O typechecks does not check for case sensitivity
