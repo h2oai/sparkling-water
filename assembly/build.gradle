@@ -55,7 +55,8 @@ shadowJar {
     include(dependency("ai.h2o:h2o-persist-hdfs"))
     include(dependency("ai.h2o:h2o-persist-s3"))
     include(dependency("ai.h2o:h2o-persist-gcs"))
-
+    include(dependency("ai.h2o:h2o-ext-jython-cfunc"))
+    include(dependency("org.python:jython:2.7.1b3"))
 
     include(dependency("com.google.cloud:.*"))
     include(dependency("com.google.auth:.*"))
