@@ -89,7 +89,7 @@ static def downloadH2OWheel(String url, File out) {
     }
 
     if (!out.exists()) {
-        new URL(url).withInputStream { i -> wheelFile.withOutputStream { it << i } }
+        new URL(url).withInputStream { i -> out.withOutputStream { it << i } }
     }
 }
 
@@ -106,8 +106,8 @@ task checkPythonEnv {
             downloadH2OWheel(h2oPythonWheelPackageLocation, wheelFile)
         } else {
             logger.info("Using \"H2O_HOME\" to specify H2O python package location!")
-
         }
+
         // if the spark.ext.h2o.backend.cluster.mode is set to external, then
         // we need to have also H2O_EXTENDED_JAR property set in order to be able to perform tests
         if (detectBackendClusterMode() == "external" && H2O_EXTENDED_JAR == null) {
