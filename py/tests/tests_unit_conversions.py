@@ -330,6 +330,30 @@ class FrameTransformationsTest(unittest.TestCase):
 
         loaded_model.transform(prostate_frame).count()
 
+    def test_custom_metric(self):
+        from custom_metric_class import WeightedFalseNegativeLossMetric
+        train_path = "file://" + unit_test_utils.locate("smalldata/loan.csv")
+        train = h2o.import_file(train_path, destination_frame="loan_train")
+        train["bad_loan"] = train["bad_loan"].asfactor()
+
+        y = "bad_loan"
+        x = train.col_names
+        x.remove(y)
+        x.remove("int_rate")
+
+        train["weight"] = train["loan_amnt"]
+
+        weighted_false_negative_loss_func = h2o.upload_custom_metric(WeightedFalseNegativeLossMetric,
+                                                                     func_name="WeightedFalseNegativeLoss",
+                                                                     func_file="weighted_false_negative_loss.py")
+        from h2o.estimators import H2OGradientBoostingEstimator
+        gbm = H2OGradientBoostingEstimator(model_id="gbm.hex", custom_metric_func=weighted_false_negative_loss_func)
+        gbm.train(y=y, x=x, training_frame=train, weights_column="weight")
+
+        perf = gbm.model_performance()
+        self.assertEquals(perf.custom_metric_name(), "WeightedFalseNegativeLoss")
+        self.assertEquals(perf.custom_metric_value(), 0.24579011595430142)
+
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([FrameTransformationsTest], file_name="py_unit_tests_conversions_report")
