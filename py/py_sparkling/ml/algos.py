@@ -329,7 +329,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                          prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
                          lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                          gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
-                         interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None, **deprecatedArgs)
+                         interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
