@@ -56,7 +56,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
     "List of columns to convert to categorical before modelling")
 
   final val nfolds = intParam("nfolds")
-  final val foldCol = nullableStringParam("foldColumn")
+  final val foldCol = nullableStringParam("foldCol", "Fold column name")
   final val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
   final val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
   final val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
