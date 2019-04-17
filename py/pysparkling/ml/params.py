@@ -17,7 +17,7 @@ class H2OAlgorithmParams(Params):
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
     nfolds = Param(Params._dummy(), "nfolds", "Number of folds for K-fold cross-validation (0 to disable or >= 2)")
-    foldCol = Param(Params._dummy(), "foldCol", "Fold column")
+    foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Whether to keep the predictions of the cross-validation models")
     keepCrossValidationFoldAssignment = Param(Params._dummy(), "keepCrossValidationFoldAssignment", "Whether to keep the cross-validation fold assignment")
     parallelizeCrossValidation = Param(Params._dummy(), "parallelizeCrossValidation", "Allow parallel training of cross-validation models")
@@ -1259,7 +1259,7 @@ class H2OGridSearchParams(Params):
     stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "stoppingTolerance")
     stoppingMetric = Param(Params._dummy(), "stoppingMetric", "stoppingMetric")
     nfolds = Param(Params._dummy(), "nfolds", "nfolds")
-    foldCol = Param(Params._dummy(), "foldCol", "Fold column")
+    foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     selectBestModelBy = Param(Params._dummy(), "selectBestModelBy", "selectBestModelBy")
     selectBestModelDecreasing = Param(Params._dummy(), "selectBestModelDecreasing", "selectBestModelDecreasing")
 
