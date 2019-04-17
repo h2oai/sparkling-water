@@ -92,17 +92,17 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   def getTrainRatio(): Double = $(ratio)
 
   @DeprecatedMethod("getLabelCol")
-  def getPredictionCol(): String = getLabelCol
+  def getPredictionCol(): String = getLabelCol()
 
   def getLabelCol(): String = $(labelCol)
 
   def getWeightCol(): String = $(weightCol)
 
   def getFeaturesCols(): Array[String] = {
-    val lblCol = getLabelCol()
-    if ($(featuresCols).contains(lblCol)) {
-      logDebug(s"The label col '$lblCol' removed from the list of features.")
-      $(featuresCols).filter(_ != lblCol)
+    val labelCol = getLabelCol()
+    if ($(featuresCols).contains(labelCol)) {
+      logDebug(s"The label col '$labelCol' removed from the list of features.")
+      $(featuresCols).filter(_ != labelCol)
     } else {
       $(featuresCols)
     }

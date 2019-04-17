@@ -241,7 +241,7 @@ trait H2OAutoMLParams extends Params with Logging {
   // Default values
   //
   setDefault(
-    labelCol -> "labelCol",
+    labelCol -> "label",
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
     ratio -> 1.0, // 1.0 means use whole frame as training frame,
