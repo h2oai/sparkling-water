@@ -38,7 +38,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                  nbinsTopLevel=1<<10, buildTreeOneNode=False, scoreTreeInterval=0,
                  sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                  learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=java_max_double_value,
-                 predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False):
+                 predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None):
         super(H2OGBM, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGBM",
@@ -54,7 +54,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                          r2Stopping=self._hc._jvm.Double.MAX_VALUE, nbinsTopLevel=1<<10, buildTreeOneNode=False, scoreTreeInterval=0,
                          sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                          learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=self._hc._jvm.Double.MAX_VALUE,
-                         predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False)
+                         predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
@@ -66,7 +66,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   nbinsTopLevel=1<<10, buildTreeOneNode=False, scoreTreeInterval=0,
                   sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                   learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=java_max_double_value,
-                  predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False):
+                  predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None):
         kwargs = self._input_kwargs
 
         if "distribution" in kwargs:
@@ -96,7 +96,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
     def __init__(self, ratio=1.0, predictionCol="predictionCol", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                  seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False,
-                 convertUnknownCategoricalLevelsToNa=False):
+                 convertUnknownCategoricalLevelsToNa=False, foldCol=None):
         super(H2ODeepLearning, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2ODeepLearning",
@@ -107,14 +107,16 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
         self._setDefault(ratio=1.0, predictionCol="predictionCol", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
-                         epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False)
+                         epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False,
+                         foldCol=None)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
     @keyword_only
     def setParams(self, ratio=1.0, predictionCol="predictionCol", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                   nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                  seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False):
+                  seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False,
+                  foldCol=None):
         kwargs = self._input_kwargs
 
         if "distribution" in kwargs:
@@ -134,7 +136,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
 class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
     @keyword_only
-    def __init__(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None,
+    def __init__(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
                  weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                  stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
                  sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
@@ -146,7 +148,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None,
+        self._setDefault(predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
                          weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                          stoppingTolerance=0.001, stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5,
                          convertUnknownCategoricalLevelsToNa=False, seed=-1, sortMetric=None, balanceClasses=False,
@@ -156,7 +158,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
         self.setParams(**spark_kwargs)
 
     @keyword_only
-    def setParams(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldColumn=None,
+    def setParams(self, predictionCol="predictionCol", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
                   weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                   stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
                   sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
@@ -178,6 +180,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
             kwargs["includeAlgos"] = get_enum_array_from_str_array(kwargs["includeAlgos"], jvm.ai.h2o.automl.Algo)
 
         propagate_value_from_deprecated_property(kwargs, "weightsColumn", "weightCol")
+        propagate_value_from_deprecated_property(kwargs, "foldColumn", "foldCol")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -207,7 +210,8 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                  minSplitImprovement=0.0, gamma=0.0, nthread=-1, maxBins=256, maxLeaves=0,
                  minSumHessianInLeaf=100.0, minDataInLeaf=0.0, treeMethod="auto", growPolicy="depthwise",
                  booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0, sampleType="uniform",
-                 normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto"):
+                 normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
+                 foldCol=None):
         super(H2OXGBoost, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OXGBoost",
@@ -231,7 +235,8 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                          sampleType=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.valueOf("uniform"),
                          normalizeType=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.valueOf("tree"),
                          rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0,
-                         backend=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf("auto"))
+                         backend=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf("auto"),
+                         foldCol=None)
 
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
@@ -246,7 +251,8 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                   minSplitImprovement=0.0, gamma=0.0, nthread=-1, maxBins=256, maxLeaves=0,
                   minSumHessianInLeaf=100.0, minDataInLeaf=0.0, treeMethod="auto", growPolicy="depthwise",
                   booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0, sampleType="uniform",
-                  normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto"):
+                  normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
+                  foldCol=None):
         kwargs = self._input_kwargs
 
         if "distribution" in kwargs:
@@ -296,7 +302,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                  prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
                  lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                  gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
-                 interactions=None, interactionPairs=None, earlyStopping=True):
+                 interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None):
         super(H2OGLM, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGLM",
@@ -316,7 +322,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                          prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
                          lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                          gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
-                         interactions=None, interactionPairs=None, earlyStopping=True)
+                         interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
@@ -329,7 +335,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
                   lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                   gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
-                  interactions=None, interactionPairs=None, earlyStopping=True):
+                  interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None):
         kwargs = self._input_kwargs
 
         if "distribution" in kwargs:
@@ -370,7 +376,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
     def __init__(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
                  columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                  stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy=None,
-                 selectBestModelDecreasing=True):
+                 selectBestModelDecreasing=True, foldCol=None):
         super(H2OGridSearch, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch",
@@ -383,7 +389,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                          maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                          stoppingRounds=0, stoppingTolerance=0.001,
                          stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=0,
-                         selectBestModelBy=None, selectBestModelDecreasing=True)
+                         selectBestModelBy=None, selectBestModelDecreasing=True, foldCol=None)
         kwargs = self._input_kwargs
         self.setParams(**kwargs)
 
@@ -391,7 +397,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
     def setParams(self, algo=None, ratio=1.0, hyperParameters={}, predictionCol="prediction", allStringColumnsToCategorical=True,
                   columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                   stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy=None,
-                  selectBestModelDecreasing=True):
+                  selectBestModelDecreasing=True, foldCol=None):
         kwargs = self._input_kwargs
 
 
