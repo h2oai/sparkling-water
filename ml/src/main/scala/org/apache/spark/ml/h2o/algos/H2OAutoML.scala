@@ -80,7 +80,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     }
     H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
-    spec.input_spec.response_column = getPredictionCol()
+    spec.input_spec.response_column = getLabelCol()
     spec.input_spec.fold_column = getFoldCol()
     spec.input_spec.weights_column = getWeightCol()
     spec.input_spec.ignored_columns = getIgnoredColumns()
@@ -210,7 +210,7 @@ trait H2OAutoMLParams extends Params with Logging {
   //
   // Param definitions
   //
-  private final val predictionCol = new Param[String](this, "predictionCol", "Prediction column name")
+  private final val labelCol = new Param[String](this, "labelCol", "Label column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
   private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
@@ -241,7 +241,7 @@ trait H2OAutoMLParams extends Params with Logging {
   // Default values
   //
   setDefault(
-    predictionCol -> "predictionCol",
+    labelCol -> "labelCol",
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
     ratio -> 1.0, // 1.0 means use whole frame as training frame,
@@ -270,7 +270,10 @@ trait H2OAutoMLParams extends Params with Logging {
   //
   // Getters
   //
-  def getPredictionCol(): String = $(predictionCol)
+  @DeprecatedMethod("getLabelCol")
+  def getPredictionCol(): String = getLabelCol()
+
+  def getLabelCol(): String = $(labelCol)
 
   def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
 
@@ -327,7 +330,10 @@ trait H2OAutoMLParams extends Params with Logging {
   //
   // Setters
   //
-  def setPredictionCol(value: String): this.type = set(predictionCol, value)
+  @DeprecatedMethod("setLabelCol")
+  def setPredictionCol(value: String): this.type = setLabelCol(value)
+
+  def setLabelCol(value: String): this.type = set(labelCol, value)
 
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
 

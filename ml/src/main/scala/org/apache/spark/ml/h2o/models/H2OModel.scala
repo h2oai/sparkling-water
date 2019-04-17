@@ -16,8 +16,6 @@
 */
 package org.apache.spark.ml.h2o.models
 
-import java.io.File
-
 import hex.Model
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
@@ -57,7 +55,7 @@ M <: Model[_, _, _ <: Model.Output]]
 
 
     import org.apache.spark.sql.functions.col
-    val cols = ($(featuresCols) ++ Array(tempId)).map(col)
+    val cols = (getFeaturesCols() ++ Array(tempId)).map(col)
 
 
     val frame: H2OFrame = h2oContext.asH2OFrame(datasetWithId.select(cols: _*).toDF())
