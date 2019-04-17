@@ -56,6 +56,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
     "List of columns to convert to categorical before modelling")
 
   final val nfolds = intParam("nfolds")
+  final val foldCol = nullableStringParam("foldCol", "Fold column name")
   final val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
   final val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
   final val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
@@ -73,6 +74,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
     weightCol -> null,
     featuresCols -> Array.empty[String],
     nfolds -> parameters._nfolds,
+    foldCol -> null,
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
     keepCrossValidationPredictions -> parameters._keep_cross_validation_predictions,
@@ -86,16 +88,12 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   //
   // Getters
   //
-  /** @group getParam */
   def getTrainRatio(): Double = $(ratio)
 
-  /** @group getParam */
   def getPredictionCol(): String = $(predictionCol)
 
-  /** @group getParam */
   def getWeightCol(): String = $(weightCol)
 
-  /** @group getParam */
   def getFeaturesCols(): Array[String] = {
     if ($(featuresCols).contains($(predictionCol))) {
       logDebug("Prediction col '" + $(predictionCol) + "' removed from the list of features.")
@@ -105,49 +103,37 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
     }
   }
 
-  /** @group getParam */
   def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
 
-  /** @group getParam */
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
-  /** @group getParam */
   def getNfolds(): Int = $(nfolds)
 
-  /** @group getParam */
   def getKeepCrossValidationPredictions(): Boolean = $(keepCrossValidationPredictions)
 
-  /** @group getParam */
   def getKeepCrossValidationFoldAssignment(): Boolean = $(keepCrossValidationFoldAssignment)
 
-  /** @group getParam */
   def getParallelizeCrossValidation(): Boolean = $(parallelizeCrossValidation)
 
-  /** @group getParam */
   def getSeed(): Long = $(seed)
 
-  /** @group getParam */
   def getDistribution(): DistributionFamily = $(distribution)
 
-  /** @group getParam */
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
+
+  def getFoldCol(): String = $(foldCol)
 
   //
   // Setters
   //
-  /** @group setParam */
   def setTrainRatio(value: Double): this.type = set(ratio, value)
 
-  /** @group setParam */
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
-  /** @group setParam */
   def setWeightCol(value: String): this.type = set(weightCol, value)
 
-  /** @group setParam */
   def setFeaturesCols(first: String, others: String*): this.type = set(featuresCols, Array(first) ++ others)
 
-  /** @group setParam */
   def setFeaturesCols(cols: Array[String]): this.type = {
     if (cols.length == 0) {
       throw new IllegalArgumentException("Array with feature columns must contain at least one column.")
@@ -155,49 +141,41 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
     set(featuresCols, cols)
   }
 
-  /** @group setParam */
   def setFeaturesCol(first: String): this.type = setFeaturesCols(first)
 
-  /** @group setParam */
   def setAllStringColumnsToCategorical(transform: Boolean): this.type = set(allStringColumnsToCategorical, transform)
 
-  /** @group setParam */
   def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
 
-  /** @group setParam */
   def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
 
 
-  /** @group setParam */
   def setNfolds(value: Int): this.type = set(nfolds, value)
 
-  /** @group setParam */
   def setKeepCrossValidationPredictions(value: Boolean): this.type = set(keepCrossValidationPredictions, value)
 
-  /** @group setParam */
   def setKeepCrossValidationFoldAssignment(value: Boolean): this.type = set(keepCrossValidationFoldAssignment, value)
 
-  /** @group setParam */
   def setParallelizeCrossValidation(value: Boolean): this.type = set(parallelizeCrossValidation, value)
 
-  /** @group setParam */
   def setSeed(value: Long): this.type = set(seed, value)
 
-  /** @group setParam */
   def setDistribution(value: DistributionFamily): this.type = set(distribution, value)
 
-  /** @group setParam */
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 
   def H2ODistributionParam(name: String): H2ODistributionParam = {
     new H2ODistributionParam(this, name, getDoc(None, name))
   }
 
+  def setFoldCol(value: String): this.type = set(foldCol, value)
+
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
   protected def updateH2OParams(): Unit = {
     parameters._response_column = $(predictionCol)
     parameters._weights_column = $(weightCol)
     parameters._nfolds = $(nfolds)
+    parameters._fold_column = $(foldCol)
     parameters._keep_cross_validation_predictions = $(keepCrossValidationPredictions)
     parameters._keep_cross_validation_fold_assignment = $(keepCrossValidationFoldAssignment)
     parameters._parallelize_cross_validation = $(parallelizeCrossValidation)

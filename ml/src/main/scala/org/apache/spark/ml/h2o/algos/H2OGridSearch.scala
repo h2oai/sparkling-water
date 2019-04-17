@@ -91,6 +91,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
       algoParams._train = input._key
     }
     algoParams._nfolds = getNfolds()
+    algoParams._fold_column = getFoldCol()
     algoParams._response_column = getPredictionCol()
     val trainFrame = algoParams._train.get()
     if (getAllStringColumnsToCategorical()) {
@@ -197,7 +198,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
   }
 
-  private def sortGrid(grid: Grid[ _ <: Model.Parameters]): Array[H2OModel] = {
+  private def sortGrid(grid: Grid[_ <: Model.Parameters]): Array[H2OModel] = {
     if (grid.getModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
@@ -482,6 +483,8 @@ trait H2OGridSearchParams extends Params {
     "If this value is not specified that the first model os taken.")
   private final val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
     "True if sort in decreasing order accordingto selected metrics")
+  private final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
+
   //
   // Default values
   //
@@ -501,67 +504,52 @@ trait H2OGridSearchParams extends Params {
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
     nfolds -> 0,
     selectBestModelBy -> null,
-    selectBestModelDecreasing -> true
+    selectBestModelDecreasing -> true,
+    foldCol -> null
   )
 
   //
   // Getters
   //
-  /** @group getParam */
   def getRatio() = $(ratio)
 
-  /** @group getParam */
   def getAlgoParams() = $(algoParams)
 
-  /** @group getParam */
   def getHyperParameters() = $(hyperParameters)
 
-  /** @group getParam */
   def getPredictionCol() = $(predictionCol)
 
-  /** @group getParam */
   def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
 
-  /** @group getParam */
   def getColumnsToCategorical() = $(columnsToCategorical)
 
-  /** @group getParam */
   def getStrategy() = $(strategy)
 
-  /** @group getParam */
   def getMaxRuntimeSecs() = $(maxRuntimeSecs)
 
-  /** @group getParam */
   def getMaxModels() = $(maxModels)
 
-  /** @group getParam */
   def getSeed() = $(seed)
 
-  /** @group getParam */
   def getStoppingRounds() = $(stoppingRounds)
 
-  /** @group getParam */
   def getStoppingTolerance() = $(stoppingTolerance)
 
-  /** @group getParam */
   def getStoppingMetric() = $(stoppingMetric)
 
-  /** @group getParam */
   def getNfolds() = $(nfolds)
 
-  /** @group getParam */
   def getSelectBestModelBy() = $(selectBestModelBy)
 
-  /** @group getParam */
   def getSelectBestModelDecreasing() = $(selectBestModelDecreasing)
+
+  def getFoldCol(): String = $(foldCol)
 
   //
   // Setters
   //
-  /** @group setParam */
   def setRatio(value: Double): this.type = set(ratio, value)
 
-  /** @group setParam */
   def setAlgo(value: H2OAlgorithm[_ <: Model.Parameters, _]): this.type = {
     if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(value.getParams.algoName())) {
       throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '$value'. Supported " +
@@ -570,57 +558,42 @@ trait H2OGridSearchParams extends Params {
     set(algoParams, value.getParams)
   }
 
-  /** @group getParam */
   def setHyperParameters(value: Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.asJava)
 
-  /** @group getParam */
   def setHyperParameters(value: mutable.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.toMap.asJava)
 
-  /** @group getParam */
   def setHyperParameters(value: java.util.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
 
-  /** @group setParam */
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
-  /** @group setParam */
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
 
-  /** @group setParam */
   def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
 
-  /** @group setParam */
   def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
 
-  /** @group setParam */
   def setStrategy(value: HyperSpaceSearchCriteria.Strategy): this.type = set(strategy, value)
 
-  /** @group setParam */
   def setMaxRuntimeSecs(value: Double): this.type = set(maxRuntimeSecs, value)
 
-  /** @group setParam */
   def setMaxModels(value: Int): this.type = set(maxModels, value)
 
-  /** @group setParam */
   def setSeed(value: Long): this.type = set(seed, value)
 
-  /** @group setParam */
   def setStoppingRounds(value: Int): this.type = set(stoppingRounds, value)
 
-  /** @group setParam */
   def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
 
-  /** @group setParam */
   def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = set(stoppingMetric, value)
 
-  /** @group setParam */
   def setNfolds(value: Int): this.type = set(nfolds, value)
 
-  /** @group setParam */
   def setSelectBestModelBy(value: H2OGridSearchMetric): this.type = set(selectBestModelBy, value)
 
-  /** @group setParam */
   def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
 
+  def setFoldCol(value: String): this.type = set(foldCol, value)
+  
 }
 
 class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: String,
