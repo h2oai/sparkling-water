@@ -32,7 +32,6 @@ python {
     pip "requests:2.21.0"
     pip "future:0.17.1"
     pip "colorama:0.3.8"
-    pip "six:1.12.0"
     pip "numpy:1.16.2"
     pip "pyspark:${sparkVersion}"
     envPath "${rootDir.toString()}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
