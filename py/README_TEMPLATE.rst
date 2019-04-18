@@ -54,16 +54,13 @@ PySparkling and Spark Version
 
 There are multiple PySparkling packages, each is intended to be used with different Spark version.
 
- - h2o_pysparkling_2.1 - for Spark 2.1.x
- - h2o_pysparkling_2.2 - for Spark 2.2.x
- - h2o_pysparkling_2.3 - for Spark 2.3.x
- - h2o_pysparkling_2.4 - for Spark 2.4.x
+SUBST_VERSIONS_TABLE
 
-So for example, to install PySparkling for Spark 2.1, the command would look like:
+So for example, to install PySparkling for Spark SUBST_SPARK_MAJOR_VERSION, the command would look like:
 
 .. code-block:: bash
 
-    pip install h2o_pysparkling_2.1
+    pip install h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION
 
 Dependencies
 ------------
