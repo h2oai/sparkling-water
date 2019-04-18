@@ -22,7 +22,7 @@ dependencies {
 
 jar {
   enabled = false // we do not need to generate jar file in this case
-  baseName = "${jar.baseName}_${scalaBaseVersion}"
+  archiveBaseName = "${jar.archiveBaseName}_${scalaBaseVersion}"
 }
 
 
@@ -98,7 +98,7 @@ shadowJar {
 
     include(dependency("org.eclipse.jetty:.*"))
 
-    baseName = "${baseName}_${scalaBaseVersion}"
+    archiveBaseName = "${archiveBaseName}_${scalaBaseVersion}"
   }
 }
 
