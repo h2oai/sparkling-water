@@ -12,7 +12,6 @@ def call(params, body) {
             "SPARK_HOME=${env.WORKSPACE}/spark",
             "HADOOP_CONF_DIR=/etc/hadoop/conf",
             "MASTER=yarn-client",
-            "H2O_PYTHON_WHEEL=${env.WORKSPACE}/private/h2o.whl",
             "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
             // Properties used in case we are building against specific H2O version
             "BUILD_HADOOP=true",
@@ -41,7 +40,6 @@ def call(params, body) {
                                     "SPARK_HOME=${env.WORKSPACE}/spark",
                                     "HADOOP_CONF_DIR=/etc/hadoop/conf",
                                     "MASTER=yarn-client",
-                                    "H2O_PYTHON_WHEEL=${env.WORKSPACE}/private/h2o.whl",
                                     "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
                                     "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
                                     "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}",
@@ -188,14 +186,9 @@ def prepareSparklingWaterEnvironment() {
                         # When extending from specific jar the jar has already the desired name
                         ${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
                     fi
-                else
-                    # Download h2o-python client, save it in private directory
-                    # and export variable H2O_PYTHON_WHEEL driving building of pysparkling package
-                    mkdir -p ${env.WORKSPACE}/private/
-                    curl -s `${env.WORKSPACE}/gradlew -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false -q printH2OWheelPackage` > ${env.WORKSPACE}/private/h2o.whl
-                    if [ ${config.backendMode} = external ]; then
+                else if [ ${config.backendMode} = external ]; then
                         cp `${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
-                    fi
+                     fi
                 fi
     
                 """
@@ -274,7 +267,7 @@ def pyUnitTests() {
                 }
             }
         }
-        
+
         stage('QA: Python Unit Tests 2.7 - ' + config.backendMode) {
             withDocker(config) {
                 if (config.runPyUnitTests.toBoolean()) {
