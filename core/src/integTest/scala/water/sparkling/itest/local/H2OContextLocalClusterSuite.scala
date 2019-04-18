@@ -17,7 +17,8 @@
 package water.sparkling.itest.local
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{H2OContextTestHelper, SparkTestContext}
+import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -37,10 +38,10 @@ class H2OContextLocalClusterSuite extends FunSuite
     val conf = defaultSparkConf.setJars(swassembly :: Nil)
     sc = new SparkContext("local", "test-local-cluster", conf)
 
-    val hc = H2OContextTestHelper.createH2OContext(sc, 1)
+    val hc = H2OContext.getOrCreate(sc, new H2OConf(spark).setNumOfExternalH2ONodes(1))
     assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 member")
 
-    H2OContextTestHelper.stopH2OContext(sc, hc)
+    hc.stop()
     // Does not reset
     resetSparkContext()
   }
