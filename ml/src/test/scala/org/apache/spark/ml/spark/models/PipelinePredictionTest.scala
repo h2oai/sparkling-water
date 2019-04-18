@@ -20,8 +20,8 @@ package org.apache.spark.ml.spark.models
 import java.io.{File, PrintWriter}
 import java.util.Locale
 
-import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.utils.{H2OContextTestHelper, SparkTestContext}
+import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.ml.feature._
 import org.apache.spark.ml.h2o.algos.H2OGBM
 import org.apache.spark.ml.h2o.features.ColumnPruner
@@ -62,7 +62,8 @@ abstract class PipelinePredictionTestBase extends FunSuite with SparkTestContext
   }
 
   def trainedPipelineModel(spark: SparkSession): PipelineModel = {
-    implicit val hc: H2OContext = H2OContextTestHelper.createH2OContext(spark.sparkContext, 1)
+    implicit val hc: H2OContext = H2OContext.getOrCreate(sc, new H2OConf(spark).setNumOfExternalH2ONodes(1))
+
     implicit val sqlContext: SQLContext = spark.sqlContext
     /**
       * Define the pipeline stages
@@ -113,7 +114,7 @@ abstract class PipelinePredictionTestBase extends FunSuite with SparkTestContext
     val data = load(spark.sparkContext, "smsData.txt")
     val model = pipeline.fit(data)
 
-    H2OContextTestHelper.stopH2OContext(spark.sparkContext, hc)
+    hc.stop()
     // return the trained model
     model
   }
