@@ -15,8 +15,7 @@ In order to build the whole project, including PySparkling, run:
 
 - To build and test a specific module, use, for example, ``./gradlew :sparkling-water-examples:check``.
 
-
-Sparkling Water SUBST_SW_VERSION can be be built with Scala 2.10 or Scala 2.11. To build Sparkling Water with non-default Scala version, use, for example, ``./gradlew build -x check -PscalaBaseVersion=2.10``.
+Sparkling Water SUBST_SW_VERSION is built with Scala 2.11.
 
 Note: If you would like to build against custom H2O Python package, specify ``H2O_HOME`` environment variable. The variable
 should point to the root directory of H2O-3 repository. This is mainly used for integration testing with H2O-3.
