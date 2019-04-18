@@ -6,7 +6,6 @@ import org.apache.spark.h2o.FunSuiteWithLogging
 import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.h2o.backends.SharedBackendConf._
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
-import org.apache.spark.h2o.utils.H2OContextTestHelper._
 import org.apache.spark.repl.h2o.{CodeResults, H2OInterpreter}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, Suite}
@@ -26,10 +25,7 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll{
     fail("The variable 'sparkling.assembly.jar' is not set! It should point to assembly jar file."))
 
   override protected def beforeAll(): Unit = {
-    val cloudName = uniqueCloudName("scripts-tests")
-    sparkConf.set(PROP_CLOUD_NAME._1, cloudName)
     sparkConf.set(PROP_CLIENT_IP._1, sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress))
-
 
     sparkConf.set(SharedBackendConf.PROP_CLIENT_IP._1,
       sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress))
@@ -37,17 +33,11 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll{
     val cloudSize = 1
     sparkConf.set(ExternalBackendConf.PROP_EXTERNAL_H2O_NODES._1, cloudSize.toString)
 
-    if(isExternalClusterUsed(sparkConf) && isManualClusterStartModeUsed(sparkConf)){
-      startExternalH2OCloud(cloudSize, cloudName, sparkConf.get("spark.ext.h2o.client.ip"), assemblyJar)
-    }
     sc = new SparkContext(org.apache.spark.h2o.H2OConf.checkSparkConf(sparkConf))
     super.beforeAll()
   }
 
   override protected def afterAll(): Unit = {
-    if(isExternalClusterUsed(sparkConf) && isManualClusterStartModeUsed(sparkConf)) {
-      stopExternalH2OCloud()
-    }
 
     if (sc != null){
       sc.stop()
@@ -68,7 +58,7 @@ trait ScriptsTestHelper extends FunSuiteWithLogging with BeforeAndAfterAll{
       .set("spark.network.timeout", "360s") // Increase network timeout if jenkins machines are busy
       .set("spark.worker.timeout", "360") // Increase worker timeout if jenkins machines are busy
       .set("spark.ext.h2o.backend.cluster.mode", sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
-      .set("spark.ext.h2o.external.start.mode", sys.props.getOrElse("spark.ext.h2o.external.start.mode", "manual"))
+      .set("spark.ext.h2o.external.start.mode", "auto")
       .set("spark.ext.h2o.hadoop.memory", "3G")
       .setJars(Array(assemblyJar))
     conf

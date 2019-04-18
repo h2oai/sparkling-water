@@ -2,8 +2,6 @@ package water.sparkling.itest
 
 import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
-import org.apache.spark.h2o.utils.H2OContextTestHelper
-import org.apache.spark.h2o.utils.H2OContextTestHelper._
 import org.scalatest.{BeforeAndAfterEach, Suite, Tag}
 import water.init.NetworkInit
 
@@ -46,7 +44,7 @@ trait IntegTestHelper extends BeforeAndAfterEach {
       // Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
       // See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
       Seq("--conf", "spark.hadoop.yarn.timeline-service.enabled=false") ++
-      Seq("--conf", s"spark.ext.h2o.external.start.mode=${sys.props.getOrElse("spark.ext.h2o.external.start.mode", "manual")}") ++
+      Seq("--conf", s"spark.ext.h2o.external.start.mode=auto") ++
       Seq("--conf", s"spark.ext.h2o.backend.cluster.mode=${sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal")}") ++
       env.sparkConf.flatMap(p => Seq("--conf", s"${p._1}=${p._2}")) ++
       Seq[String](env.itestJar)
@@ -71,25 +69,16 @@ trait IntegTestHelper extends BeforeAndAfterEach {
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     testEnv = new TestEnvironment
-    val cloudName = H2OContextTestHelper.uniqueCloudName("integ-tests")
-    testEnv.sparkConf += SharedBackendConf.PROP_CLOUD_NAME._1 -> cloudName
 
     testEnv.sparkConf += SharedBackendConf.PROP_CLIENT_IP._1 ->
       sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress)
 
     val cloudSize = 1
     testEnv.sparkConf += ExternalBackendConf.PROP_EXTERNAL_H2O_NODES._1 -> cloudSize.toString
-    if (isExternalClusterUsed() && isManualClusterStartModeUsed()) {
-      testEnv.sparkConf += SharedBackendConf.PROP_BACKEND_CLUSTER_MODE._1 -> "external"
-      startExternalH2OCloud(cloudSize, cloudName, testEnv.sparkConf("spark.ext.h2o.client.ip"), testEnv.assemblyJar)
-    }
   }
 
   override protected def afterEach(): Unit = {
     testEnv = null
-    if (isExternalClusterUsed() && isManualClusterStartModeUsed()) {
-      stopExternalH2OCloud()
-    }
     super.afterEach()
   }
 
