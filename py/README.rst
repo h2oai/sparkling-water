@@ -73,7 +73,7 @@ Prerequisites:
 
 For Windows users, please grab a .whl from http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy.
 
-In order to use PySparkling, it requires the following runtime python dependencies to be available on the system: *requests*, *tabulate*, *six* and *future* modules, all of which are available on PyPI:
+In order to use PySparkling, it requires the following runtime python dependencies to be available on the system, all of which are available on PyPI:
 
 .. code-block:: bash
 
@@ -81,8 +81,7 @@ In order to use PySparkling, it requires the following runtime python dependenci
   $ pip install tabulate
   $ pip install future
   $ pip install colorama>=0.3.8
-  $ pip install six
-  
+
 The required packages are installed automatically in case when PySparkling is installed from PyPI.
 
 
