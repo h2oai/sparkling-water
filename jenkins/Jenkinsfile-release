@@ -193,12 +193,6 @@ pipeline {
                                 echo "RELEASE VERSION: \${REL_VERSION}"
                                 echo
 
-
-                                # Fetch H2O python package
-                                mkdir -p private/
-                                curl \$(./gradlew -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false -q printH2OWheelPackage ) > private/h2o.whl
-                                export H2O_PYTHON_WHEEL="\$(pwd)/private/h2o.whl"
-
                                 # Perform a build
                                 ./gradlew buildSparklingWaterDist -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
                                 """
