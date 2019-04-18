@@ -24,7 +24,6 @@ import hex.ScoreKeeper
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
-import org.apache.spark.internal.Logging
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param._
@@ -205,7 +204,12 @@ object H2OAutoMLReader {
   def create[A <: H2OAutoML : ClassTag](defaultFileName: String) = new H2OAutoMLReader[A](defaultFileName)
 }
 
-trait H2OAutoMLParams extends Params with Logging {
+trait H2OAutoMLParams extends DeprecatableParams {
+
+  override protected def renamingMap: Map[String, String] = Map(
+    "predictionCol" -> "labelCol",
+    "foldColumn" -> "foldCol"
+  )
 
   //
   // Param definitions
