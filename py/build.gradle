@@ -17,6 +17,7 @@ ext {
     pkgDir = file("$buildDir/pkg")
     distDir = file("$buildDir/dist")
     condaDir = file("$buildDir/conda/h2o_pysparkling_${sparkMajorVersion}")
+    wheelFile = file("${rootDir}/.gradle/wheels/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl")
 }
 
 // Define the environment required to run tests
@@ -34,7 +35,7 @@ python {
     pip "colorama:0.3.8"
     pip "numpy:1.16.2"
     pip "pyspark:${sparkVersion}"
-    envPath "${rootDir.toString()}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
+    envPath "${rootDir}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
 }
 
 configurations {
@@ -78,8 +79,18 @@ task createVersionFile {
 //
 // Represents a location of H2O Wheel Package
 //
-def h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"}/${h2oBuild}/Python/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl"
+final String h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"}/${h2oBuild}/Python/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl"
 
+
+static def downloadH2OWheel(String url, File out) {
+    if (!out.parentFile.exists()) {
+        out.parentFile.mkdirs()
+    }
+
+    if (!out.exists()) {
+        new URL(url).withInputStream { i -> out.withOutputStream { it << i } }
+    }
+}
 
 //
 // Initial task checking setup of all properties required
@@ -88,24 +99,12 @@ def h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h
 task checkPythonEnv {
     doLast {
         def H2O_HOME = System.getenv("H2O_HOME")
-        def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
         def H2O_EXTENDED_JAR = System.getenv("H2O_EXTENDED_JAR")
 
-
-        if (H2O_HOME == null && H2O_PYTHON_WHEEL == null) {
-            throw new InvalidUserDataException("""
-    Both properties H2O_HOME and H2O_PYTHON_WHEEL were not found!
-
-    Please specify:
-     - H2O_HOME to point to H2O Git repo version ${h2oMajorVersion}.${h2oBuild}
-    or
-     - H2O_PYTHON_WHEEL to point to downloaded H2O Python Wheel package version ${h2oMajorVersion}.${h2oBuild}
-       For example:
-
-        mkdir -p \$(pwd)/private/
-        curl -s ${h2oPythonWheelPackageLocation} > \$(pwd)/private/h2o.whl
-        export H2O_PYTHON_WHEEL=\$(pwd)/private/h2o.whl
-    """)
+        if (H2O_HOME == null) {
+            downloadH2OWheel(h2oPythonWheelPackageLocation, wheelFile)
+        } else {
+            logger.info("Using \"H2O_HOME\" to specify H2O python package location!")
         }
 
         // if the spark.ext.h2o.backend.cluster.mode is set to external, then
@@ -119,10 +118,6 @@ export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
                                   """)
         }
 
-
-        if (H2O_HOME != null && H2O_PYTHON_WHEEL != null) {
-            logger.info("Both \"H2O_HOME\" and \"H2O_PYTHON_WHEEL\" properties are set. Using \"H2O_HOME\"!")
-        }
     }
 }
 
@@ -187,7 +182,7 @@ def copyH2OFromH2OHome(String h2oHome) {
     }
 }
 
-def copyH2OFromH2OWheel(String h2oPythonWheel) {
+def copyH2OFromH2OWheel(File h2oPythonWheel) {
     copy {
         from zipTree(h2oPythonWheel)
         into file("${project.pkgDir}")
@@ -203,15 +198,12 @@ def copyH2OFromH2OWheel(String h2oPythonWheel) {
 task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.sparklingWaterAssemblyJar]) {
     doFirst {
         def H2O_HOME = System.getenv("H2O_HOME")
-        def H2O_PYTHON_WHEEL = System.getenv("H2O_PYTHON_WHEEL")
 
         // if both properties are set, give precedence to H2O_HOME
-        if (H2O_HOME != null && H2O_PYTHON_WHEEL != null) {
+        if (H2O_HOME != null) {
             copyH2OFromH2OHome(H2O_HOME)
-        } else if (H2O_HOME != null) {
-            copyH2OFromH2OHome(H2O_HOME)
-        } else if (H2O_PYTHON_WHEEL != null) {
-            copyH2OFromH2OWheel(H2O_PYTHON_WHEEL)
+        } else {
+            copyH2OFromH2OWheel(wheelFile)
         }
         // Copy basic python setup
         copyPySetup()
