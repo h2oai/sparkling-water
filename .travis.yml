@@ -6,15 +6,6 @@ jdk:
   - oraclejdk8
   - openjdk8
 
-install:
-    - ( test -d "$SPARK_HOME" && test "$(ls -A "$SPARK_HOME")" ) || ( wget -O spark.tgz "http://archive.apache.org/dist/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz" && mkdir -p "$SPARK_HOME" && tar xvf "spark.tgz" -C "$SPARK_HOME" --strip-components 1 )
-
-env:
-  global:    
-    - SPARK_HOME="$HOME/spark24/"
-  matrix:
-    - SCALA_BASE_VERSION="2.11"
-
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 
@@ -25,4 +16,4 @@ cache:
         - $HOME/.gradle/wrapper/
         - $SPARK_HOME
 
-script: travis_wait 30 ./gradlew clean build -x integTest -x :sparkling-water-r:build -x :sparkling-water-py:build -PsparklingTestEnv=local -PsparkHome=$SPARK_HOME -PscalaBaseVersion=$SCALA_BASE_VERSION
+script: travis_wait 30 ./gradlew clean build -x integTest -x :sparkling-water-r:build -x :sparkling-water-py:build
