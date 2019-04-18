@@ -17,7 +17,8 @@
 package water.sparkling.itest.local
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{H2OContextTestHelper, SparkTestContext}
+import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -33,8 +34,8 @@ class H2OContextLocalSuite extends FunSuite
 
   test("verify H2O cloud building on local JVM") {
     sc = new SparkContext("local[*]", "test-local", defaultSparkConf)
-    
-    val hc = H2OContextTestHelper.createH2OContext(sc, 1)
+
+    val hc = H2OContext.getOrCreate(sc, new H2OConf(spark).setNumOfExternalH2ONodes(1))
 
     // Number of nodes should be on
     assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 members")
@@ -45,8 +46,7 @@ class H2OContextLocalSuite extends FunSuite
     DKV.put(Key.make(), icedInt)
     assert(water.H2O.store_size() == 1)
 
-    // stop h2o cloud in case of external cluster mode
-    H2OContextTestHelper.stopH2OContext(sc, hc)
+    hc.stop()
     // Reset this context
     resetSparkContext()
   }
