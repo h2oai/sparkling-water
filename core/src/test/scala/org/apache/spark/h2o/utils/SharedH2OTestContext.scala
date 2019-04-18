@@ -20,7 +20,7 @@ package org.apache.spark.h2o.utils
 import java.security.Permission
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.scalatest.Suite
 
 /**
@@ -37,7 +37,7 @@ trait SharedH2OTestContext extends SparkTestContext {
   override def beforeAll() {
     super.beforeAll()
     sc = createSparkContext
-    hc = H2OContextTestHelper.createH2OContext(sc, 1)
+    hc = H2OContext.getOrCreate(sc, new H2OConf(spark).setNumOfExternalH2ONodes(1))
   }
 
   override def afterAll() {
@@ -49,7 +49,7 @@ trait SharedH2OTestContext extends SparkTestContext {
     try {
       val securityManager = new NoExitCheckSecurityManager
       System.setSecurityManager(securityManager)
-      H2OContextTestHelper.stopH2OContext(sc, hc)
+      hc.stop()
       hc = null
       resetSparkContext()
       super.afterAll()
