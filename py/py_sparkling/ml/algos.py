@@ -141,7 +141,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
 
     @keyword_only
     def __init__(self, labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
-                 weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
+                 weightCol=None, ignoredCols=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                  stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
                  sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
                  keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0, **deprecatedArgs):
@@ -153,7 +153,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                                             self._hc._jsql_context)
 
         self._setDefault(labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
-                         weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
+                         weightCol=None, ignoredCols=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                          stoppingTolerance=0.001, stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5,
                          convertUnknownCategoricalLevelsToNa=False, seed=-1, sortMetric=None, balanceClasses=False,
                          classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
@@ -163,7 +163,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
 
     @keyword_only
     def setParams(self, labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
-                  weightCol=None, ignoredColumns=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
+                  weightCol=None, ignoredCols=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                   stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
                   sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
                   keepCrossValidationModels=True, maxModels=0, **deprecatedArgs):
@@ -186,6 +186,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
         propagate_value_from_deprecated_property(kwargs, "weightsColumn", "weightCol")
         propagate_value_from_deprecated_property(kwargs, "foldColumn", "foldCol")
         propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
+        propagate_value_from_deprecated_property(kwargs, "ignoredColumns", "ignoredCols")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
