@@ -1061,7 +1061,7 @@ class H2OGLMParams(H2OAlgorithmParams):
     gradientEpsilon = Param(Params._dummy(), "gradientEpsilon", "gradientEpsilon")
     objReg = Param(Params._dummy(), "objReg", "objReg")
     computePValues = Param(Params._dummy(), "computePValues", "computePValues")
-    removeCollinearColumns = Param(Params._dummy(), "removeCollinearColumns", "removeCollinearColumns")
+    removeCollinearCols = Param(Params._dummy(), "removeCollinearCols", "removeCollinearCols")
     interactions = Param(Params._dummy(), "interactions", "interactions")
     interactionPairs = Param(Params._dummy(), "interactionPairs", "interactionPairs")
     earlyStopping = Param(Params._dummy(), "earlyStopping", "earlyStopping")
@@ -1135,8 +1135,8 @@ class H2OGLMParams(H2OAlgorithmParams):
     def getComputePValues(self):
         return self.getOrDefault(self.computePValues)
 
-    def getRemoteCollinearColumns(self):
-        return self.getOrDefault(self.remoteCollinearColumns)
+    def getRemoveCollinearCols(self):
+        return self.getOrDefault(self.removeCollinearCols)
 
     def getInteractions(self):
         return self.getOrDefault(self.interactions)
@@ -1247,9 +1247,9 @@ class H2OGLMParams(H2OAlgorithmParams):
         assert_is_type(value, bool)
         return self._set(computePValues=value)
 
-    def setRemoteCollinearColumns(self, value):
+    def setRemoveCollinearCols(self, value):
         assert_is_type(value, bool)
-        return self._set(remoteCollinearColumns=value)
+        return self._set(removeCollinearCols=value)
 
     def setInteractions(self, value):
         assert_is_type(value, None, [str])
