@@ -153,7 +153,7 @@ export SPARK_LOG_DIR="${tmpdir}spark/logs"
 export SPARK_WORKER_DIR="${tmpdir}spark/work"
 export SPARK_LOCAL_DIRS="${tmpdir}spark/work"
 
-export S3_RELEASE_BUCKET="http://h2o-release.s3.amazonaws.com/sparkling-water"
+export S3_RELEASE_BUCKET="https://h2o-release.s3.amazonaws.com/sparkling-water"
 
 function checkFatJarExists() {
 if [ ! -f "$FAT_JAR_FILE" ]; then
