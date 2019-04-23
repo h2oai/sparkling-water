@@ -47,7 +47,7 @@
     },
     {
       "type": "sca",
-      "input": "// Create H2ODeepLearning model\nval dl = new H2ODeepLearning().\n  setEpochs(10).\n  setL1(0.001).\n  setL2(0.0).\n  setHidden(Array[Int](200, 200)).\n  setFeaturesCols(idf.getOutputCol).\n  setPredictionCol(\"label\")"
+      "input": "// Create H2ODeepLearning model\nval dl = new H2ODeepLearning().\n  setEpochs(10).\n  setL1(0.001).\n  setL2(0.0).\n  setHidden(Array[Int](200, 200)).\n  setFeaturesCols(idf.getOutputCol).\n  setLabelCol(\"label\")"
     },
     {
       "type": "sca",
