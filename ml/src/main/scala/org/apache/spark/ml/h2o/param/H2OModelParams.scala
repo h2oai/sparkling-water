@@ -16,27 +16,29 @@
 */
 package org.apache.spark.ml.h2o.param
 
+import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param._
+import water.util.DeprecatedMethod
 
 /**
   * Parameters which need to be available on the model itself for prediction purposes. This can't be backed
   * byt H2OAlgoParamsHelper as at the time of prediction we might be using mojo and binary parameters are not available.
   */
-trait H2OModelParams extends Params {
+trait H2OModelParams extends Params with Logging {
 
   //
   // Param definitions
   //
-  final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
-  final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
-  final val outputCol: Param[String] = new Param[String](this, "outputCol", "Column where predictions are created")
-  final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
+  private final val labelCol: Param[String] = new Param[String](this, "labelCol", "Label column name")
+  private final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
+  private final val outputCol: Param[String] = new Param[String](this, "outputCol", "Column where predictions are created")
+  private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
          "convertUnknownCategoricalLevelsToNa",
          "Convert unknown categorical levels to NA during predictions")
   //
   // Default values
   //
-  setDefault(predictionCol -> "prediction")
+  setDefault(labelCol -> "label")
   setDefault(featuresCols -> Array.empty[String])
   setDefault(outputCol -> "prediction_output")
   setDefault(convertUnknownCategoricalLevelsToNa -> false)
@@ -45,16 +47,20 @@ trait H2OModelParams extends Params {
   // Getters
   //
   /** @group getParam */
-  def getPredictionsCol() = $(predictionCol)
+  @DeprecatedMethod("getLabelCol")
+  def getPredictionsCol(): String = getLabelCol()
 
   /** @group getParam */
-  def getFeaturesCols() = $(featuresCols)
+  def getLabelCol(): String = $(labelCol)
 
   /** @group getParam */
-  def getOutputCol() = $(outputCol)
+  def getFeaturesCols(): Array[String] = $(featuresCols)
 
   /** @group getParam */
-  def getConvertUnknownCategoricalLevelsToNa() = $(convertUnknownCategoricalLevelsToNa)
+  def getOutputCol(): String = $(outputCol)
+
+  /** @group getParam */
+  def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
 
   //
@@ -64,7 +70,11 @@ trait H2OModelParams extends Params {
   def setFeaturesCols(cols: Array[String]): this.type = set(featuresCols, cols)
 
   /** @group setParam */
-  def setPredictionCol(value: String): this.type = set(predictionCol, value)
+  @DeprecatedMethod("setLabelCol")
+  def setPredictionCol(value: String): this.type = setLabelCol(value)
+
+  /** @group setParam */
+  def setLabelCol(value: String): this.type = set(labelCol, value)
 
   /** @group setParam */
   def setOutputCol(value: String): this.type = set(outputCol, value)
