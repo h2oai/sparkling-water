@@ -362,6 +362,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
             kwargs["missingValuesHandling"] = self._hc._jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(kwargs["missingValuesHandling"])
 
         propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
+        propagate_value_from_deprecated_property(kwargs, "removeCollinearColumns", "removeCollinearCols")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
