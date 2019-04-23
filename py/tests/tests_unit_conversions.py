@@ -221,7 +221,7 @@ class FrameTransformationsTest(unittest.TestCase):
         prostate_frame = self._hc.as_spark_frame(
             h2o.upload_file(unit_test_utils.locate("smalldata/prostate/prostate.csv")))
 
-        gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", predictionCol="capsule")
+        gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule")
 
         model = gbm.fit(prostate_frame)
 
@@ -239,7 +239,7 @@ class FrameTransformationsTest(unittest.TestCase):
         prostate_frame = self._hc.as_spark_frame(
             h2o.upload_file(unit_test_utils.locate("smalldata/prostate/prostate.csv")))
 
-        dl = H2ODeepLearning(seed=42, reproducible=True, predictionCol="CAPSULE")
+        dl = H2ODeepLearning(seed=42, reproducible=True, labelCol="CAPSULE")
 
         model = dl.fit(prostate_frame)
 
@@ -299,7 +299,7 @@ class FrameTransformationsTest(unittest.TestCase):
                                               header=True, inferSchema=True)
 
         algo = H2OGLM(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
-                      predictionCol="AGE",
+                      labelCol="AGE",
                       seed=1,
                       ratio=0.8)
 
@@ -317,7 +317,7 @@ class FrameTransformationsTest(unittest.TestCase):
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True, inferSchema=True)
 
-        algo = H2OGridSearch(predictionCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, ratio=0.8, algo=H2OGBM(),
+        algo = H2OGridSearch(labelCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, ratio=0.8, algo=H2OGBM(),
                              strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
 
         pipeline = Pipeline(stages=[algo])
