@@ -74,7 +74,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
       case _ => throw new RuntimeException("Unknown model category")
     }
 
-    Seq(StructField($(outputCol), StructType(fields), nullable = false))
+    Seq(StructField(getOutputCol(), StructType(fields), nullable = false))
   }
 
 
@@ -148,7 +148,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     if (easyPredictModelWrapper == null) {
       val config = new EasyPredictModelWrapper.Config()
       config.setModel(ModelSerializationSupport.getMojoModel(mojoData))
-      config.setConvertUnknownCategoricalLevelsToNa($(convertUnknownCategoricalLevelsToNa))
+      config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
       easyPredictModelWrapper = new EasyPredictModelWrapper(config)
     }
     easyPredictModelWrapper
@@ -158,7 +158,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   override def transform(dataset: Dataset[_]): DataFrame = {
     val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
     val args = flatten.schema.fields.map(f => flatten(f.name))
-    flatten.select(col("*"), getModelUdf()(struct(args: _*)).as($(outputCol)))
+    flatten.select(col("*"), getModelUdf()(struct(args: _*)).as(getOutputCol()))
   }
 
 
@@ -287,7 +287,7 @@ class H2OMOJOModelHelper[T <: py_sparkling.ml.models.H2OMOJOModel](implicit m: C
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     if (mojoModel.isSupervised) {
       sparkMojoModel.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))
-      sparkMojoModel.setPredictionCol(mojoModel.getResponseName)
+      sparkMojoModel.setLabelCol(mojoModel.getResponseName)
     } else {
       sparkMojoModel.setFeaturesCols(mojoModel.getNames)
     }
