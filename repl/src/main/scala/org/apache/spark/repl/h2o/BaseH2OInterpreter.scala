@@ -35,8 +35,7 @@ import scala.tools.nsc._
 import scala.tools.nsc.interpreter.{Results => IR, _}
 
 /**
-  * H2O Interpreter which is use to interpret scala code. This class is base class for H2O Interpreter in scala
-  * 2.10 and 2.11
+  * H2O Interpreter which is use to interpret scala code. This class is base class for H2O Interpreter in Scala 2.11
   *
   * @param sparkContext spark context
   * @param sessionId session ID for interpreter
