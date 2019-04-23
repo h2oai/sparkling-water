@@ -24,7 +24,7 @@ def set_double_values(kwargs, values):
 
 def propagate_value_from_deprecated_property(kwargs, from_deprecated, to_replacing):
     if from_deprecated in kwargs:
-        warnings.warn("The parameter '{}' is deprecated and its usage will override value specified via '{}'!".format(from_deprecated, to_replacing))
+        warnings.warn("The parameter '{}' is deprecated and its usage will override a value specified via '{}'!".format(from_deprecated, to_replacing))
         kwargs[to_replacing] = kwargs[from_deprecated]
         del kwargs[from_deprecated]
 
