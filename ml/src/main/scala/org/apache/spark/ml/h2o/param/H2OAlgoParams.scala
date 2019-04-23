@@ -20,6 +20,7 @@ import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param.Params
+import water.util.DeprecatedMethod
 
 /**
   * A trait extracting a shared parameters among all models.
@@ -35,9 +36,9 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
     "ratio",
     "Determines in which ratios split the dataset")
 
-  final val predictionCol = stringParam(
-    "predictionCol",
-    "Prediction column name")
+  final val labelCol = stringParam(
+    "labelCol",
+    "Label column name")
 
   final val weightCol = nullableStringParam(
     "weightCol",
@@ -70,7 +71,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   //
   setDefault(
     ratio -> 1.0, // 1.0 means use whole frame as training frame
-    predictionCol -> "prediction",
+    labelCol -> "label",
     weightCol -> null,
     featuresCols -> Array.empty[String],
     nfolds -> parameters._nfolds,
@@ -90,14 +91,18 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   //
   def getTrainRatio(): Double = $(ratio)
 
-  def getPredictionCol(): String = $(predictionCol)
+  @DeprecatedMethod("getLabelCol")
+  def getPredictionCol(): String = getLabelCol()
+
+  def getLabelCol(): String = $(labelCol)
 
   def getWeightCol(): String = $(weightCol)
 
   def getFeaturesCols(): Array[String] = {
-    if ($(featuresCols).contains($(predictionCol))) {
-      logDebug("Prediction col '" + $(predictionCol) + "' removed from the list of features.")
-      $(featuresCols).filter(_ != $(predictionCol))
+    val labelCol = getLabelCol()
+    if ($(featuresCols).contains(labelCol)) {
+      logDebug(s"The label col '$labelCol' removed from the list of features.")
+      $(featuresCols).filter(_ != labelCol)
     } else {
       $(featuresCols)
     }
@@ -128,7 +133,10 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   //
   def setTrainRatio(value: Double): this.type = set(ratio, value)
 
-  def setPredictionCol(value: String): this.type = set(predictionCol, value)
+  @DeprecatedMethod("setLabelCol")
+  def setPredictionCol(value: String): this.type = setLabelCol(value)
+
+  def setLabelCol(value: String): this.type = set(labelCol, value)
 
   def setWeightCol(value: String): this.type = set(weightCol, value)
 
@@ -172,7 +180,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
 
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
   protected def updateH2OParams(): Unit = {
-    parameters._response_column = $(predictionCol)
+    parameters._response_column = $(labelCol)
     parameters._weights_column = $(weightCol)
     parameters._nfolds = $(nfolds)
     parameters._fold_column = $(foldCol)

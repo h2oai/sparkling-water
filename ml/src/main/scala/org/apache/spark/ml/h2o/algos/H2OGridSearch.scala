@@ -31,6 +31,7 @@ import hex.{Model, ModelMetrics, ModelMetricsBinomial, ModelMetricsBinomialGLM, 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
+import org.apache.spark.internal.Logging
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param._
@@ -40,7 +41,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Dataset, Row, SQLContext}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
-import water.util.PojoUtils
+import water.util.{DeprecatedMethod, PojoUtils}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -92,7 +93,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     }
     algoParams._nfolds = getNfolds()
     algoParams._fold_column = getFoldCol()
-    algoParams._response_column = getPredictionCol()
+    algoParams._response_column = getLabelCol()
     val trainFrame = algoParams._train.get()
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(trainFrame)
@@ -457,7 +458,7 @@ object H2OGridSearchReader {
   def create[A <: H2OGridSearch : ClassTag](defaultFileName: String) = new H2OGridSearchReader[A](defaultFileName)
 }
 
-trait H2OGridSearchParams extends Params {
+trait H2OGridSearchParams extends Params with Logging {
 
 
   //
@@ -467,7 +468,7 @@ trait H2OGridSearchParams extends Params {
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   private final val algoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
   private final val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
-  private final val predictionCol = new NullableStringParam(this, "predictionCol", "Prediction column name")
+  private final val labelCol = new Param[String](this, "labelCol", "Label column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
   private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
   private final val strategy = new GridSearchStrategyParam(this, "strategy", "Search criteria strategy")
@@ -492,7 +493,7 @@ trait H2OGridSearchParams extends Params {
     algoParams -> null,
     ratio -> 1.0, // 1.0 means use whole frame as training frame
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
-    predictionCol -> "prediction",
+    labelCol -> "label",
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
     strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian,
@@ -511,37 +512,40 @@ trait H2OGridSearchParams extends Params {
   //
   // Getters
   //
-  def getRatio() = $(ratio)
+  def getRatio(): Double = $(ratio)
 
-  def getAlgoParams() = $(algoParams)
+  def getAlgoParams(): Model.Parameters = $(algoParams)
 
-  def getHyperParameters() = $(hyperParameters)
+  def getHyperParameters(): util.Map[String, Array[AnyRef]] = $(hyperParameters)
 
-  def getPredictionCol() = $(predictionCol)
+  @DeprecatedMethod("getLabelCol")
+  def getPredictionCol(): String = getLabelCol()
 
-  def getAllStringColumnsToCategorical() = $(allStringColumnsToCategorical)
+  def getLabelCol(): String = $(labelCol)
 
-  def getColumnsToCategorical() = $(columnsToCategorical)
+  def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
 
-  def getStrategy() = $(strategy)
+  def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
-  def getMaxRuntimeSecs() = $(maxRuntimeSecs)
+  def getStrategy(): HyperSpaceSearchCriteria.Strategy = $(strategy)
 
-  def getMaxModels() = $(maxModels)
+  def getMaxRuntimeSecs(): Double = $(maxRuntimeSecs)
 
-  def getSeed() = $(seed)
+  def getMaxModels(): Int = $(maxModels)
 
-  def getStoppingRounds() = $(stoppingRounds)
+  def getSeed(): Long = $(seed)
 
-  def getStoppingTolerance() = $(stoppingTolerance)
+  def getStoppingRounds(): Int = $(stoppingRounds)
 
-  def getStoppingMetric() = $(stoppingMetric)
+  def getStoppingTolerance(): Double = $(stoppingTolerance)
 
-  def getNfolds() = $(nfolds)
+  def getStoppingMetric(): ScoreKeeper.StoppingMetric = $(stoppingMetric)
 
-  def getSelectBestModelBy() = $(selectBestModelBy)
+  def getNfolds(): Int = $(nfolds)
 
-  def getSelectBestModelDecreasing() = $(selectBestModelDecreasing)
+  def getSelectBestModelBy(): H2OGridSearchMetric = $(selectBestModelBy)
+
+  def getSelectBestModelDecreasing(): Boolean = $(selectBestModelDecreasing)
 
   def getFoldCol(): String = $(foldCol)
 
@@ -564,7 +568,10 @@ trait H2OGridSearchParams extends Params {
 
   def setHyperParameters(value: java.util.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
 
-  def setPredictionCol(value: String): this.type = set(predictionCol, value)
+  @DeprecatedMethod("setLabelCol")
+  def setPredictionCol(value: String): this.type = setLabelCol(value)
+
+  def setLabelCol(value: String): this.type = set(labelCol, value)
 
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
 
@@ -593,7 +600,7 @@ trait H2OGridSearchParams extends Params {
   def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
 
   def setFoldCol(value: String): this.type = set(foldCol, value)
-  
+
 }
 
 class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: String,

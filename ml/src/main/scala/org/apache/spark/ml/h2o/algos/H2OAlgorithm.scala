@@ -54,10 +54,10 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 
     // if this is left empty select
     if (getFeaturesCols().isEmpty) {
-      setFeaturesCols(dataset.columns.filter(n => n.compareToIgnoreCase(getPredictionCol()) != 0))
+      setFeaturesCols(dataset.columns.filter(n => n.compareToIgnoreCase(getLabelCol()) != 0))
     }
 
-    val cols = getFeaturesCols().map(col) ++ Array(col(getPredictionCol()))
+    val cols = getFeaturesCols().map(col) ++ Array(col(getLabelCol()))
     val input = hc.asH2OFrame(dataset.select(cols: _*).toDF())
 
     // check if we need to do any splitting
@@ -80,9 +80,9 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 
     if ((getParams._distribution == DistributionFamily.bernoulli
       || getParams._distribution == DistributionFamily.multinomial)
-      && !trainFrame.vec(getPredictionCol()).isCategorical) {
-      trainFrame.replace(trainFrame.find(getPredictionCol()),
-        trainFrame.vec(getPredictionCol()).toCategoricalVec).remove()
+      && !trainFrame.vec(getLabelCol()).isCategorical) {
+      trainFrame.replace(trainFrame.find(getLabelCol()),
+        trainFrame.vec(getLabelCol()).toCategoricalVec).remove()
     }
     water.DKV.put(trainFrame)
     
@@ -91,7 +91,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 
     // pass some parameters set on algo to model
     model.setFeaturesCols($(featuresCols))
-    model.setPredictionCol($(predictionCol))
+    model.setLabelCol($(labelCol))
     model.setConvertUnknownCategoricalLevelsToNa($(convertUnknownCategoricalLevelsToNa))
     model
   }
@@ -100,10 +100,10 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    require(schema.fields.exists(f => f.name.compareToIgnoreCase(getPredictionCol()) == 0),
-      s"Specified prediction columns '${getPredictionCol()} was not found in input dataset!")
-    require(!getFeaturesCols().exists(n => n.compareToIgnoreCase(getPredictionCol()) == 0),
-      s"Specified input features cannot contain prediction column!")
+    require(schema.fields.exists(f => f.name.compareToIgnoreCase(getLabelCol()) == 0),
+      s"Specified label column '${getLabelCol()} was not found in input dataset!")
+    require(!getFeaturesCols().exists(n => n.compareToIgnoreCase(getLabelCol()) == 0),
+      s"Specified input features cannot contain the label column!")
     schema
   }
 
