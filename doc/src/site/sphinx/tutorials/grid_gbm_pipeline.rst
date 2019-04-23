@@ -111,7 +111,7 @@ We also need to specify the algorithm on which we want to run Grid Search togeth
     hyperParams += ("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
 
     val grid = new H2OGridSearch().
-      setPredictionCol("label").
+      setLabelCol("label").
       setHyperParameters(hyperParams).
       setAlgo(new H2OGBM().setMaxDepth(30))
 
