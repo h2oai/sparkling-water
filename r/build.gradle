@@ -2,9 +2,14 @@ apply from: "$rootDir/gradle/utils.gradle"
 
 description = "RSparkling - Sparkling-Water R Package"
 
-dependencies {
-    compile project(path: ':sparkling-water-assembly')
+configurations {
+    sparklingWaterAssemblyJar
 }
+
+dependencies {
+    sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
+}
+
 
 /**
  * Copy R sources to output directory
@@ -45,9 +50,9 @@ task cleanR(type: Delete) {
 }
 
 
-task test(type: Exec, dependsOn: [configurations.compile]) {
+task test(type: Exec, dependsOn: [configurations.sparklingWaterAssemblyJar]) {
     environment["spark.version"] = sparkVersion
-    environment["sparkling.assembly.jar"] =  configurations.compile.find {it.name.endsWith("sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar")}.toString()
+    environment["sparkling.assembly.jar"] = configurations.sparklingWaterAssemblyJar.singleFile.absolutePath
     environment["sparkling.water.version"] = version.toString().replace("_nightly", "-SNAPSHOT") // ensure that nightly tests can be run
     environment["NOT_CRAN"] = "true"
     environment["SPARK_HOME"] = sparkHome

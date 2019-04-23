@@ -209,6 +209,7 @@ def copyH2OFromH2OWheel(File h2oPythonWheel) {
 // Make PySparkling distribution zip package
 //
 task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.sparklingWaterAssemblyJar]) {
+    
     doFirst {
         def H2O_HOME = System.getenv("H2O_HOME")
 
