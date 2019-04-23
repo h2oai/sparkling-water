@@ -25,6 +25,7 @@ import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{BuildInfo, Frame, H2OConf}
+import org.apache.spark.internal.Logging
 import water.H2O
 import water.api.ImportHiveTableHandler
 import water.api.ImportHiveTableHandler.HiveTableImporter
