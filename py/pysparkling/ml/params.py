@@ -401,7 +401,7 @@ class H2OAutoMLParams(Params):
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
-    ignoredColumns = Param(Params._dummy(), "ignoredColumns", "Ignored columns names")
+    ignoredCols = Param(Params._dummy(), "ignoredCols", "Ignored column names")
     includeAlgos = Param(Params._dummy(), "includeAlgos", "Algorithms to include when using automl")
     excludeAlgos = Param(Params._dummy(), "excludeAlgos", "Algorithms to exclude when using automl")
     projectName = Param(Params._dummy(), "projectName", "identifier for models that should be grouped together in the leaderboard" +
@@ -453,8 +453,12 @@ class H2OAutoMLParams(Params):
         warnings.warn("The method 'getWeightsColumn' is deprecated. Use 'getWeightCol' instead!")
         return self.getWeightCol()
 
+    def getIgnoredCols(self):
+        return self.getOrDefault(self.ignoredCols)
+
     def getIgnoredColumns(self):
-        return self.getOrDefault(self.ignoredColumns)
+        warnings.warn("The method 'getIgnoredColumns' is deprecated. Use 'getIgnoredCols' instead!")
+        return self.getIgnoredCols()
 
     def getTryMutations(self):
         return self.getOrDefault(self.tryMutations)
@@ -569,9 +573,13 @@ class H2OAutoMLParams(Params):
         warnings.warn("The method 'setWeightsColumn' is deprecated. Use 'setWeightCol' instead!")
         return self.setWeightCol(value)
 
-    def setIgnoredColumns(self, value):
+    def setIgnoredCols(self, value):
         assert_is_type(value, [str])
-        return self._set(ignoredColumns=value)
+        return self._set(ignoredCols=value)
+
+    def setIgnoredColumns(self, value):
+        warnings.warn("The method 'setIgnoredColumns' is deprecated. Use 'setIgnoredCols' instead!")
+        return self.setIgnoredCols(value)
 
     def setTryMutations(self, value):
         assert_is_type(value, bool)
