@@ -109,7 +109,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   final val gradientEpsilon = doubleParam("gradientEpsilon")
   final val objReg = doubleParam("objReg")
   final val computePValues = booleanParam("computePValues")
-  final val removeCollinearColumns = booleanParam("removeCollinearColumns")
+  final val removeCollinearCols = booleanParam("removeCollinearCols", "A flag indicating whether collinear columns should be removed or not")
   final val interactions = nullableStringArrayParam("interactions")
   final val interactionPairs = new H2OGLMStringPairArrayParam(this, "interactionPairs", "interactionPairs")
   final val earlyStopping = booleanParam("earlyStopping")
@@ -140,7 +140,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
     gradientEpsilon -> -1,
     objReg -> -1,
     computePValues -> false,
-    removeCollinearColumns -> false,
+    removeCollinearCols -> false,
     interactions -> null,
     interactionPairs -> null,
     earlyStopping -> true
@@ -216,7 +216,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   def getComputePValues(): Boolean = $(computePValues)
 
   /** @group getParam */
-  def getRemoteCollinearColumns(): Boolean = $(removeCollinearColumns)
+  def getRemoveCollinearCols(): Boolean = $(removeCollinearCols)
 
   /** @group getParam */
   def getInteractions(): Array[String] = $(interactions)
@@ -298,7 +298,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   def setComputePValues(value: Boolean): this.type = set(computePValues, value)
 
   /** @group setParam */
-  def setRemoteCollinearColumns(value: Boolean): this.type = set(removeCollinearColumns, value)
+  def setRemoveCollinearCols(value: Boolean): this.type = set(removeCollinearCols, value)
 
   /** @group setParam */
   def setInteractions(value: Array[String]): this.type = set(interactions, value)
@@ -334,7 +334,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
     parameters._gradient_epsilon = $(gradientEpsilon)
     parameters._obj_reg = $(objReg)
     parameters._compute_p_values = $(computePValues)
-    parameters._remove_collinear_columns = $(removeCollinearColumns)
+    parameters._remove_collinear_columns = $(removeCollinearCols)
     parameters._interactions = $(interactions)
     parameters._interaction_pairs = {
       val pairs = $ {
