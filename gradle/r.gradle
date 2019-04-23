@@ -1,18 +1,1 @@
 apply plugin: 'base'
-
-configurations {
-    compile {
-    }
-
-    runtime {
-        extendsFrom compile
-    }
-
-    test {
-        extendsFrom compile
-    }
-
-    testRuntime {
-        extendsFrom test
-    }
-}
