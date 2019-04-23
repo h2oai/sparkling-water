@@ -4,106 +4,106 @@ apply plugin: 'java'
 description = "Sparkling Water Assembly"
 
 dependencies {
-  // Sparkling Water Core
-  compile( project(":sparkling-water-core") ) { 
-    exclude group: "javax.servlet", module: "servlet-api"
-  }
+    // Sparkling Water Core
+    compile(project(":sparkling-water-core")) {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
 
-  compile (project(":sparkling-water-examples") )
+    compile(project(":sparkling-water-examples"))
 
-  compile (project(":sparkling-water-ml"))
+    compile(project(":sparkling-water-ml"))
 
-  compile (project(":sparkling-water-extension-stack-trace"))
+    compile(project(":sparkling-water-extension-stack-trace"))
 
-  // And Scala library
-  compile "org.scala-lang:scala-library:${scalaVersion}"
+    // And Scala library
+    compile "org.scala-lang:scala-library:${scalaVersion}"
 
 }
 
 jar {
-  enabled = false // we do not need to generate jar file in this case
-  archiveBaseName = "${jar.archiveBaseName.get()}_${scalaBaseVersion}"
+    enabled = false // we do not need to generate jar file in this case
+    archiveBaseName = "${jar.archiveBaseName.get()}_${scalaBaseVersion}"
 }
 
 
 // Shadow jar settings
 shadowJar {
-  mergeServiceFiles()
-  relocate 'javassist', 'ai.h2o.javassist'
-  // Relocate Eclipse Jetty to avoid collisions with Spark Jetty (newer version)
-  relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
-  relocate 'com.google.common', 'ai.h2o.com.google.common'
-  dependencies {
-    // This has to be specific list of dependencies
-    // Do not forget that Sparkling Water is intended 
-    // to run inside Spark environment providing some jars 
-    // (like hadoop, aws) on classpath
-    //
-    include(project(":sparkling-water-core"))
-    include(project(":sparkling-water-examples"))
-    include(project(":sparkling-water-repl"))
-    include(project(":sparkling-water-ml"))
-    include(project(":sparkling-water-extension-stack-trace"))
-    include(dependency("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"))
-    include(dependency("ai.h2o:h2o-genmodel"))
-    include(dependency("ai.h2o:h2o-core"))
-    include(dependency("ai.h2o:h2o-hive"))
-    include(dependency("ai.h2o:h2o-scala_${scalaBaseVersion}"))
-    include(dependency("ai.h2o:h2o-web"))
-    include(dependency("ai.h2o:h2o-algos"))
-    include(dependency("ai.h2o:h2o-automl"))
-    include(dependency("ai.h2o:h2o-persist-hdfs"))
-    include(dependency("ai.h2o:h2o-persist-s3"))
-    include(dependency("ai.h2o:h2o-persist-gcs"))
-    include(dependency("ai.h2o:h2o-ext-jython-cfunc"))
-    include(dependency("org.python:jython:2.7.1b3"))
+    mergeServiceFiles()
+    relocate 'javassist', 'ai.h2o.javassist'
+    // Relocate Eclipse Jetty to avoid collisions with Spark Jetty (newer version)
+    relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
+    relocate 'com.google.common', 'ai.h2o.com.google.common'
+    dependencies {
+        // This has to be specific list of dependencies
+        // Do not forget that Sparkling Water is intended 
+        // to run inside Spark environment providing some jars 
+        // (like hadoop, aws) on classpath
+        //
+        include(project(":sparkling-water-core"))
+        include(project(":sparkling-water-examples"))
+        include(project(":sparkling-water-repl"))
+        include(project(":sparkling-water-ml"))
+        include(project(":sparkling-water-extension-stack-trace"))
+        include(dependency("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"))
+        include(dependency("ai.h2o:h2o-genmodel"))
+        include(dependency("ai.h2o:h2o-core"))
+        include(dependency("ai.h2o:h2o-hive"))
+        include(dependency("ai.h2o:h2o-scala_${scalaBaseVersion}"))
+        include(dependency("ai.h2o:h2o-web"))
+        include(dependency("ai.h2o:h2o-algos"))
+        include(dependency("ai.h2o:h2o-automl"))
+        include(dependency("ai.h2o:h2o-persist-hdfs"))
+        include(dependency("ai.h2o:h2o-persist-s3"))
+        include(dependency("ai.h2o:h2o-persist-gcs"))
+        include(dependency("ai.h2o:h2o-ext-jython-cfunc"))
+        include(dependency("org.python:jython:2.7.1b3"))
 
-    include(dependency("com.google.cloud:.*"))
-    include(dependency("com.google.auth:.*"))
-    include(dependency("com.google.api:.*"))
-    include(dependency("com.google.api-client:.*"))
-    include(dependency("com.google.http-client:.*"))
-    include(dependency("com.google.oauth-client:.*"))
-    include(dependency("com.google.api:.*"))
-    include(dependency("com.google.apis:.*"))
-    include(dependency("org.threeten:threetenbp"))
-    include(dependency("io.opencensus:.*"))
-    include(dependency("io.grpc:grpc-context"))
+        include(dependency("com.google.cloud:.*"))
+        include(dependency("com.google.auth:.*"))
+        include(dependency("com.google.api:.*"))
+        include(dependency("com.google.api-client:.*"))
+        include(dependency("com.google.http-client:.*"))
+        include(dependency("com.google.oauth-client:.*"))
+        include(dependency("com.google.api:.*"))
+        include(dependency("com.google.apis:.*"))
+        include(dependency("org.threeten:threetenbp"))
+        include(dependency("io.opencensus:.*"))
+        include(dependency("io.grpc:grpc-context"))
 
-    include(dependency("com.google.guava:guava"))
-    include(dependency("com.google.guava:guava-concurrent"))
-
-
-    include(dependency("ai.h2o:h2o-avro-parser"))
-    include(dependency("ai.h2o:h2o-orc-parser"))
-    include(dependency("ai.h2o:h2o-parquet-parser"))
-    include(dependency("ai.h2o:reflections"))
-    include(dependency("ai.h2o:google-analytics-java"))
-    include(dependency("ai.h2o:deepwater-backend-api"))
-    include(dependency("ai.h2o:h2o-ext-xgboost"))
-    include(dependency("ai.h2o:h2o-genmodel-ext-xgboost"))
-    include(dependency("ai.h2o:h2o-jetty-8"))
-    include(dependency("ai.h2o:h2o-webserver-iface"))
-    include(dependency("joda-time:joda-time"))
-    include(dependency("org.joda:joda-convert"))
-    include(dependency("org.javassist:javassist"))
-    include(dependency("gov.nist.math:jama"))
-    include(dependency("com.google.code.gson:gson"))
-    include(dependency("com.github.tony19:named-regexp"))
-    include(dependency("com.amazonaws:aws-java-sdk-s3"))
-    include(dependency("com.amazonaws:aws-java-sdk-kms"))
-    include(dependency("com.amazonaws:aws-java-sdk-core"))
-    include(dependency("no.priv.garshol.duke:duke"))
+        include(dependency("com.google.guava:guava"))
+        include(dependency("com.google.guava:guava-concurrent"))
 
 
-    include(dependency("org.eclipse.jetty:.*"))
+        include(dependency("ai.h2o:h2o-avro-parser"))
+        include(dependency("ai.h2o:h2o-orc-parser"))
+        include(dependency("ai.h2o:h2o-parquet-parser"))
+        include(dependency("ai.h2o:reflections"))
+        include(dependency("ai.h2o:google-analytics-java"))
+        include(dependency("ai.h2o:deepwater-backend-api"))
+        include(dependency("ai.h2o:h2o-ext-xgboost"))
+        include(dependency("ai.h2o:h2o-genmodel-ext-xgboost"))
+        include(dependency("ai.h2o:h2o-jetty-8"))
+        include(dependency("ai.h2o:h2o-webserver-iface"))
+        include(dependency("joda-time:joda-time"))
+        include(dependency("org.joda:joda-convert"))
+        include(dependency("org.javassist:javassist"))
+        include(dependency("gov.nist.math:jama"))
+        include(dependency("com.google.code.gson:gson"))
+        include(dependency("com.github.tony19:named-regexp"))
+        include(dependency("com.amazonaws:aws-java-sdk-s3"))
+        include(dependency("com.amazonaws:aws-java-sdk-kms"))
+        include(dependency("com.amazonaws:aws-java-sdk-core"))
+        include(dependency("no.priv.garshol.duke:duke"))
 
-    archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
-  }
+
+        include(dependency("org.eclipse.jetty:.*"))
+
+        archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
+    }
 }
 
 artifacts {
-  compile shadowJar
+    compile shadowJar
 }
 
 build.dependsOn shadowJar
