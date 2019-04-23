@@ -319,7 +319,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                  tweedieLinkPower=0.0, alpha=None, lambda_=None, missingValuesHandling="MeanImputation",
                  prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
                  lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
-                 gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
+                 gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearCols=False,
                  interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None, **deprecatedArgs):
         super(H2OGLM, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
@@ -339,7 +339,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                          missingValuesHandling=self._hc._jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf("MeanImputation"),
                          prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
                          lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
-                         gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
+                         gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearCols=False,
                          interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None)
         kwargs = get_input_kwargs(self, self._hc._sc)
         self.setParams(**kwargs)
@@ -352,7 +352,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   tweedieLinkPower=0.0, alpha=None, lambda_=None, missingValuesHandling="MeanImputation",
                   prior=-1.0, lambdaSearch=False, nlambdas=-1, nonNegative=False, exactLambdas=False,
                   lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
-                  gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearColumns=False,
+                  gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearCols=False,
                   interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self, self._hc._sc)
 
@@ -372,6 +372,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
             kwargs["missingValuesHandling"] = self._hc._jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(kwargs["missingValuesHandling"])
 
         propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
+        propagate_value_from_deprecated_property(kwargs, "removeCollinearColumns", "removeCollinearCols")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
