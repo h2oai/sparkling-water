@@ -72,7 +72,8 @@ ext {
     ]
 
     defaultScalaBaseVersion = '2.11'
-    supportedScalaBaseVersions = ['2.11' : '2.11.12']
+    supportedScalaBaseVersions = ['2.10' : '2.10.7',
+                                  '2.11' : '2.11.12']
 }
 
 //
