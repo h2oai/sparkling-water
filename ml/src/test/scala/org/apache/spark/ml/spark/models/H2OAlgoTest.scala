@@ -41,11 +41,11 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
       .option("inferSchema", "true")
       .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
       // Create GBM model
-     val algo = new H2OGLM()(hc, spark.sqlContext).
-        setTrainRatio(0.8).
-        setSeed(1).
-        setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON").
-        setPredictionCol("AGE")
+     val algo = new H2OGLM()(hc, spark.sqlContext)
+        .setTrainRatio(0.8)
+        .setSeed(1)
+        .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON")
+        .setLabelCol("AGE")
 
     val pipeline = new Pipeline().setStages(Array(algo))
     pipeline.write.overwrite().save("ml/build/glm_pipeline")
@@ -87,10 +87,10 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
         .option("inferSchema", "true")
         .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
-      val stage = new H2OGridSearch()(hc, spark.sqlContext).
-        setPredictionCol("AGE").
-        setHyperParameters(hyperParams).
-        setAlgo(algo)
+      val stage = new H2OGridSearch()(hc, spark.sqlContext)
+        .setLabelCol("AGE")
+        .setHyperParameters(hyperParams)
+        .setAlgo(algo)
 
       val pipeline = new Pipeline().setStages(Array(stage))
       pipeline.write.overwrite().save("ml/build/grid_glm_pipeline")
