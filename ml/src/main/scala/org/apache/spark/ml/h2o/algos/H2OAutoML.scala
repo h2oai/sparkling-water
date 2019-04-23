@@ -208,7 +208,8 @@ trait H2OAutoMLParams extends DeprecatableParams {
 
   override protected def renamingMap: Map[String, String] = Map(
     "predictionCol" -> "labelCol",
-    "foldColumn" -> "foldCol"
+    "foldColumn" -> "foldCol",
+    "ignoredColumns" -> "ignoredCols"
   )
 
   //
