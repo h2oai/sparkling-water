@@ -109,7 +109,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   final val gradientEpsilon = doubleParam("gradientEpsilon")
   final val objReg = doubleParam("objReg")
   final val computePValues = booleanParam("computePValues")
-  final val removeCollinearCols = booleanParam("removeCollinearCols")
+  final val removeCollinearCols = booleanParam("removeCollinearCols", "A flag indicating whether collinear columns should be removed or not")
   final val interactions = nullableStringArrayParam("interactions")
   final val interactionPairs = new H2OGLMStringPairArrayParam(this, "interactionPairs", "interactionPairs")
   final val earlyStopping = booleanParam("earlyStopping")
