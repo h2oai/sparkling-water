@@ -22,7 +22,6 @@
 
 package org.apache.spark.repl.h2o
 
-
 import java.io.File
 
 import org.apache.spark.{SparkConf, SparkContext}
