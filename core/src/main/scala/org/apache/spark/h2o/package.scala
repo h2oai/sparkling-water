@@ -17,10 +17,11 @@
 
 package org.apache.spark
 
+import org.apache.spark.internal.Logging
 import org.apache.spark.sql._
 
 /** Type shortcuts to simplify work in Sparkling REPL */
-package object h2o {
+package object h2o extends Logging {
   type Frame = water.fvec.Frame
   //type Key = water.Key
   type H2O = water.H2O
@@ -59,6 +60,13 @@ package object h2o {
   implicit class H2ODataFrameReader(reader: DataFrameReader) {
     def h2o(key: String): DataFrame = reader.format("org.apache.spark.h2o").load(key)
     def h2o(key: water.Key[_]): DataFrame = h2o(key.toString)
+  }
+
+  implicit class WithSQLContext(dataFrame: DataFrame) {
+    def apply(sqlContext: SQLContext): DataFrame = {
+      logWarning("The method 'asDataFrame' with implicit SQLContext argument is deprecated. Use 'asDataFrame' without implicit SQLContext parameter instead!")
+      dataFrame
+    }
   }
 
 }
