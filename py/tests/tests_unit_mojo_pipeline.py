@@ -50,6 +50,7 @@ class H2OMojoPipelineTest(unittest.TestCase):
         # Try loading the Mojo and prediction on it without starting H2O Context
         mojo = H2OMOJOPipelineModel.create_from_mojo(
             "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
+        mojo.set_named_mojo_output_columns(False)
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
         preds = mojo.predict(prostate_frame).repartition(1)
@@ -78,7 +79,6 @@ class H2OMojoPipelineTest(unittest.TestCase):
         # Try loading the Mojo and prediction on it without starting H2O Context
         mojo = H2OMOJOPipelineModel.create_from_mojo(
             "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
-        mojo.set_named_mojo_output_columns(True)
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
         preds = mojo.predict(prostate_frame).repartition(1).select(mojo.select_prediction_udf("AGE")).take(5)
