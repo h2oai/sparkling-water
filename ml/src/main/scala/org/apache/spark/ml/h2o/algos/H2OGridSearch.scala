@@ -458,8 +458,11 @@ object H2OGridSearchReader {
   def create[A <: H2OGridSearch : ClassTag](defaultFileName: String) = new H2OGridSearchReader[A](defaultFileName)
 }
 
-trait H2OGridSearchParams extends Params with Logging {
+trait H2OGridSearchParams extends DeprecatableParams {
 
+  override protected def renamingMap: Map[String, String] = Map(
+    "predictionCol" -> "labelCol"
+  )
 
   //
   // Param definitions
