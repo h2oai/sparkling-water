@@ -18,8 +18,8 @@
 package water.util
 
 import scala.annotation.{StaticAnnotation, compileTimeOnly}
-import scala.reflect.macros.whitebox.Context
 import scala.language.experimental.macros
+import scala.reflect.macros.whitebox.Context
 
 /**
   * The class represents an annotation specifying deprecated methods of Sparkling Water API
