@@ -30,7 +30,7 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import water._
-import water.util.{Log, LogBridge, PrettyPrint}
+import water.util.{DeprecatedMethod, Log, LogBridge, PrettyPrint}
 
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
@@ -268,7 +268,6 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   }
 
   /** Convert given H2O frame into DataFrame type */
-
   def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
     SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
   }
