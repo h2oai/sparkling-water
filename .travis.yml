@@ -15,4 +15,4 @@ cache:
         - $HOME/.gradle/caches/
         - $HOME/.gradle/wrapper/
 
-script: travis_wait 30 ./gradlew clean build -x integTest -x :sparkling-water-r:build -x :sparkling-water-py:build
+script: travis_wait 40 ./gradlew clean build -x integTest -x :sparkling-water-r:build -x :sparkling-water-py:build
