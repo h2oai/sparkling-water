@@ -18,7 +18,6 @@ package org.apache.spark.ml.h2o.param
 
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
-import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param.Params
 import water.util.DeprecatedMethod
 
@@ -27,7 +26,11 @@ import water.util.DeprecatedMethod
   *
   * TODO: There are still bunch of parameters defined Model.ModelParameters which need to be ported here
   */
-trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging {
+trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with DeprecatableParams {
+
+  override protected def renamingMap: Map[String, String] = Map(
+    "predictionCol" -> "labelCol"
+  )
 
   //
   // Param definitions
@@ -156,7 +159,6 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Logging
   def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
 
   def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
-
 
   def setNfolds(value: Int): this.type = set(nfolds, value)
 
