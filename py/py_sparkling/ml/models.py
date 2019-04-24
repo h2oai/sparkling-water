@@ -6,6 +6,7 @@ from pyspark.sql.functions import udf
 from pyspark.sql.types import DoubleType
 from .util import JavaH2OMLReadable
 
+
 class H2OGBMModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
@@ -17,14 +18,18 @@ class H2ODeepLearningModel(JavaModel, JavaMLWritable, JavaMLReadable):
 class H2OAutoMLModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
+
 class H2OXGBoostModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
+
 
 class H2OGLMModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
 
+
 class H2OGridSearchModel(JavaModel, JavaMLWritable, JavaMLReadable):
     pass
+
 
 class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
@@ -33,7 +38,8 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         spark_session = SparkSession.builder.getOrCreate()
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
-        return H2OMOJOModel(spark_session._jvm.org.apache.spark.ml.h2o.models.JavaH2OMOJOModelHelper.createFromMojo(path_to_mojo))
+        return H2OMOJOModel(
+            spark_session._jvm.org.apache.spark.ml.h2o.models.JavaH2OMOJOModelHelper.createFromMojo(path_to_mojo))
 
     def predict(self, dataframe):
         return self.transform(dataframe)
@@ -53,7 +59,9 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         spark_session = SparkSession.builder.getOrCreate()
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
-        return H2OMOJOPipelineModel(spark_session._jvm.org.apache.spark.ml.h2o.models.JavaH2OMOJOPipelineModelHelper.createFromMojo(path_to_mojo))
+        return H2OMOJOPipelineModel(
+            spark_session._jvm.org.apache.spark.ml.h2o.models.JavaH2OMOJOPipelineModelHelper.createFromMojo(
+                path_to_mojo))
 
     def predict(self, dataframe):
         return self.transform(dataframe)
