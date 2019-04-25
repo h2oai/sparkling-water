@@ -41,7 +41,7 @@ task substitute() {
                         .replaceAll("SUBST_H2O_VERSION", h2oVersion)
                         .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
                         .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
-                        .replaceAll("SUBST_MIN_SUPPORTED_JAVA", minSupportedJava)
+                        .replaceAll("SUBST_MIN_SUPPORTED_JAVA", minSupportedJavaVersion)
                 file(it).write(contents, 'UTF-8')
             }
         }
