@@ -102,6 +102,8 @@ RUN chmod 777 /usr/local/lib/R/site-library
 
 USER jenkins
 
+ENV USER jenkins
+
 # Install Conda as we need to publish Sparkling Water as conda package
 RUN cd /home/jenkins && \
     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /home/jenkins/miniconda.sh && \
