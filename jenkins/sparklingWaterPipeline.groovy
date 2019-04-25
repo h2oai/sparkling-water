@@ -243,7 +243,7 @@ def pyUnitTests() {
                                 sh "sudo -E /usr/sbin/startup.sh"
                             }
                             sh """
-                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -x integTest -PbackendMode=${config.backendMode}
+                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
                             """
                         }
                     } finally {
@@ -263,7 +263,7 @@ def pyUnitTests() {
                                 sh "sudo -E /usr/sbin/startup.sh"
                             }
                             sh """
-                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -x integTest -PbackendMode=${config.backendMode}
+                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
                             """
                         }
                     } finally {

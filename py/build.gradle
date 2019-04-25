@@ -35,7 +35,12 @@ python {
     pip "colorama:0.3.8"
     pip "numpy:1.16.2"
     pip "pyspark:${sparkVersion}"
-    envPath "${rootDir}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
+    if (project.hasProperty("pythonEnvBasePath")) {
+        // for CI as we use pre-cached environment
+        envPath "${project.findProperty("pythonEnvBasePath")}/${getPythonVersion()}/${sparkVersion}" 
+    } else {
+        envPath "${rootDir}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
+    }
 }
 
 configurations {
