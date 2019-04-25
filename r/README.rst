@@ -73,6 +73,7 @@ versions must match specific Spark and H2O versions).
 ============= ======================= =========== ================ ======================== 
 Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_Patch_Number 
 ============= ======================= =========== ================ ======================== 
+2.4           2.4.11                  3.24.0.2    rel-yates        2                        
 2.4           2.4.10                  3.24.0.2    rel-yates        2                        
 2.4           2.4.9                   3.24.0.1    rel-yates        1                        
 2.4           2.4.8                   3.22.1.6    rel-xu           6                        
@@ -83,6 +84,7 @@ Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_P
 2.4           2.4.3                   3.22.0.5    rel-xia          5                        
 2.4           2.4.2                   3.22.0.4    rel-xia          4                        
 2.4           2.4.1                   3.22.0.3    rel-xia          3                        
+2.3           2.3.29                  3.24.0.2    rel-yates        2                        
 2.3           2.3.28                  3.24.0.2    rel-yates        2                        
 2.3           2.3.27                  3.24.0.1    rel-yates        1                        
 2.3           2.3.26                  3.22.1.6    rel-xu           6                        
@@ -112,6 +114,7 @@ Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_P
 2.3           2.3.2                   3.18.0.8    rel-wolpert      8                        
 2.3           2.3.1                   3.18.0.7    rel-wolpert      7                        
 2.3           2.3.0                   3.18.0.5    rel-wolpert      5                        
+2.2           2.2.40                  3.24.0.2    rel-yates        2                        
 2.2           2.2.39                  3.24.0.2    rel-yates        2                        
 2.2           2.2.38                  3.24.0.1    rel-yates        1                        
 2.2           2.2.37                  3.22.1.6    rel-xu           6                        
@@ -152,6 +155,7 @@ Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_P
 2.2           2.2.2                   3.14.0.7    rel-weierstrass  7                        
 2.2           2.2.1                   3.14.0.6    rel-weierstrass  6                        
 2.2           2.2.0                   3.14.0.2    rel-weierstrass  2                        
+2.1           2.1.54                  3.24.0.2    rel-yates        2                        
 2.1           2.1.53                  3.24.0.2    rel-yates        2                        
 2.1           2.1.52                  3.24.0.1    rel-yates        1                        
 2.1           2.1.51                  3.22.1.6    rel-xu           6                        
