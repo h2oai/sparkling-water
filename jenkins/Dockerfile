@@ -63,7 +63,6 @@ RUN cd /home/jenkins && \
 
 ENV SPARK_HOME_2_4 /home/jenkins/spark-2.4.1-bin-hadoop2.7
 ENV SPARK_HOME_2_3 /home/jenkins/spark-2.3.3-bin-hadoop2.7
-ENV SPARK_HOME_2_3 /home/jenkins/spark-2.3.0-bin-hadoop2.7
 ENV SPARK_HOME_2_2 /home/jenkins/spark-2.2.3-bin-hadoop2.7
 ENV SPARK_HOME_2_1 /home/jenkins/spark-2.1.3-bin-hadoop2.7
 
