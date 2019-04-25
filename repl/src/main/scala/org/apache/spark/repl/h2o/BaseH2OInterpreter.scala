@@ -16,7 +16,7 @@
 */
 /**
   * This code is based on code org.apache.spark.repl.SparkILoop released under Apache 2.0"
-  * Link on Github: https://github.com/apache/spark/blob/master/repl/scala-2.10/src/main/scala/org/apache/spark/repl/SparkILoop.scala
+  * Link on Github: https://github.com/apache/spark/blob/master/repl/scala-2.11/src/main/scala/org/apache/spark/repl/SparkILoop.scala
   * Author: Alexander Spoon
   */
 
@@ -34,7 +34,7 @@ import scala.tools.nsc._
 import scala.tools.nsc.interpreter.{Results => IR, _}
 
 /**
-  * H2O Interpreter which is use to interpret scala code. This class is base class for H2O Interpreter in Scala 2.11
+  * H2O Interpreter which is use to interpret scala code. This class is base class for H2O Interpreter
   *
   * @param sparkContext spark context
   * @param sessionId session ID for interpreter
