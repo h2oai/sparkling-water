@@ -26,7 +26,7 @@ node('docker && micro') {
         checkout scm
 
         def customEnv = [
-                "SPARK=spark-2.4.0-bin-hadoop2.7",
+                "SPARK=spark-2.4.2-bin-hadoop2.7",
                 "SPARK_HOME=${env.WORKSPACE}/spark",
                 "HADOOP_CONF_DIR=/etc/hadoop/conf",
                 "MASTER=yarn-client",
