@@ -38,10 +38,10 @@ RUN \
 ###  Prepare Spark
 ###
 RUN cd /home/jenkins && \
-    wget http://archive.apache.org/dist/spark/spark-2.4.2/spark-2.4.2-bin-hadoop2.7.tgz  && \
-    mkdir -p spark-2.4.2-bin-hadoop2.7 &&  \
-    tar zxvf spark-2.4.2-bin-hadoop2.7.tgz -C spark-2.4.2-bin-hadoop2.7 --strip-components 1 && \
-    rm -rf spark-2.4.2-bin-hadoop2.7.tgz
+    wget http://archive.apache.org/dist/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz  && \
+    mkdir -p spark-2.4.0-bin-hadoop2.7 &&  \
+    tar zxvf spark-2.4.0-bin-hadoop2.7.tgz -C spark-2.4.0-bin-hadoop2.7 --strip-components 1 && \
+    rm -rf spark-2.4.0-bin-hadoop2.7.tgz
 
 RUN cd /home/jenkins && \
     wget http://archive.apache.org/dist/spark/spark-2.3.3/spark-2.3.3-bin-hadoop2.7.tgz  && \
@@ -61,7 +61,7 @@ RUN cd /home/jenkins && \
     tar zxvf spark-2.1.3-bin-hadoop2.7.tgz -C spark-2.1.3-bin-hadoop2.7 --strip-components 1 && \
     rm -rf spark-2.1.3-bin-hadoop2.7.tgz
 
-ENV SPARK_HOME_2_4 /home/jenkins/spark-2.4.2-bin-hadoop2.7
+ENV SPARK_HOME_2_4 /home/jenkins/spark-2.4.0-bin-hadoop2.7
 ENV SPARK_HOME_2_3 /home/jenkins/spark-2.3.3-bin-hadoop2.7
 ENV SPARK_HOME_2_2 /home/jenkins/spark-2.2.3-bin-hadoop2.7
 ENV SPARK_HOME_2_1 /home/jenkins/spark-2.1.3-bin-hadoop2.7
