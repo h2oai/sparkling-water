@@ -80,14 +80,14 @@ RUN cd /home/jenkins && \
 
 ### Create VirtualEnvs for each Spark & Python combination
 RUN cd /home/jenkins/sparkling-water && \
-    git checkout rel-2.4 && ./gradlew :sparkling-water-py:build -PpythonPath=/envs/h2o_env_python2.7/bin && \
-    git checkout rel-2.3 && ./gradlew :sparkling-water-py:build -PpythonPath=/envs/h2o_env_python2.7/bin && \
-    git checkout rel-2.2 && ./gradlew :sparkling-water-py:build -PpythonPath=/envs/h2o_env_python2.7/bin && \
-    git checkout rel-2.1 && ./gradlew :sparkling-water-py:build -PpythonPath=/envs/h2o_env_python2.7/bin && \
-    git checkout rel-2.4 && ./gradlew :sparkling-water-py:build -PpythonPath=/envs/h2o_env_python3.6/bin && \
-    git checkout rel-2.3 && ./gradlew :sparkling-water-py:build -PpythonPath=/envs/h2o_env_python3.6/bin && \
-    git checkout rel-2.2 && ./gradlew :sparkling-water-py:build -PpythonPath=/envs/h2o_env_python3.6/bin && \
-    git checkout rel-2.1 && ./gradlew :sparkling-water-py:build -PpythonPath=/envs/h2o_env_python3.6/bin && \
+    git checkout rel-2.4 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
+    git checkout rel-2.3 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
+    git checkout rel-2.2 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
+    git checkout rel-2.1 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
+    git checkout rel-2.4 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
+    git checkout rel-2.3 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
+    git checkout rel-2.2 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
+    git checkout rel-2.1 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
 
 
 USER root
