@@ -126,7 +126,6 @@ def prepareSparkEnvironment() {
                     echo "spark.ext.h2o.spark.version.check.enabled false" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                     """
                 }
-            }
         }
     }
 }
