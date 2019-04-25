@@ -129,7 +129,6 @@ def prepareSparkEnvironment() {
         }
     }
 }
-}
 
 
 def prepareSparklingWaterEnvironment() {
