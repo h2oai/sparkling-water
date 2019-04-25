@@ -111,9 +111,7 @@ def prepareSparkEnvironment() {
                     """
                 }
 
-            }
-
-            sh """
+                sh """
                 # Setup Spark
                 echo "spark.driver.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                 echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
@@ -121,10 +119,11 @@ def prepareSparkEnvironment() {
                 
                 echo "-Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/java-opts
                 """
-            if (config.buildAgainstSparkBranch.toBoolean()) {
-                sh """
+                if (config.buildAgainstSparkBranch.toBoolean()) {
+                    sh """
                     echo "spark.ext.h2o.spark.version.check.enabled false" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                     """
+                }
             }
         }
     }
