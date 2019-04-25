@@ -135,6 +135,12 @@ configure(subprojects) { project ->
                 password project.findProperty("localNexusPassword") ?: "<NA>"
             }
         }
+
+        if (sparkVersion.endsWith("-SNAPSHOT")) {
+            maven {
+                url "https://repository.apache.org/content/repositories/snapshots/"
+            }
+        }
     }
 
     if (project in scalaProjects) {
