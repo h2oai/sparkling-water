@@ -108,7 +108,7 @@ def prepareSparkEnvironment() {
                 } else {
                     if (config.sparkVersion == "2.4.0"){
                         sh  """
-                            cp -R \${SPARK_HOME_2_4_0} ${env.SPARK_HOME}
+                            cp -R \${SPARK_HOME_2_4} ${env.SPARK_HOME}
                             """
                     }
 
