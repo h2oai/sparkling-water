@@ -299,4 +299,5 @@ object BaseH2OInterpreter {
     }
     finally Thread.currentThread().setContextClassLoader(classloader)
   }
+
 }
