@@ -64,7 +64,7 @@ private[repl] object PatchUtils {
 
   // Manages all runtime patches in the system
   // Note: if necessary it should accept environment configuration and
-  // apply patch only if it is applicable for given environment (e.g., Scala 2.11 + Spark2.1)
+  // apply patch only if it is applicable for given environment (e.g., Specific Scala + Specific Spark)
   object PatchManager {
 
     private val patches = Map(
