@@ -109,8 +109,6 @@ def prepareSparkEnvironment() {
                     """
                     cp -R \${SPARK_HOME_2_4} ${env.SPARK_HOME}
                     """
-                    }
-
                 }
 
                 sh """
@@ -126,6 +124,7 @@ def prepareSparkEnvironment() {
                     echo "spark.ext.h2o.spark.version.check.enabled false" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                     """
                 }
+            }
         }
     }
 }
