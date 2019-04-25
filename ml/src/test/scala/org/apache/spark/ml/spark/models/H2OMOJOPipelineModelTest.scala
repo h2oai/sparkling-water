@@ -23,7 +23,7 @@ import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
-import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel
+import org.apache.spark.ml.h2o.models.{H2OMOJOModelCache, H2OMOJOPipelineModel}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
@@ -45,7 +45,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
     mojo.setNamedMojoOutputColumns(false)
-    val rawMojo = mojo.getOrCreateModel()
+    val rawMojo = H2OMOJOModelCache.getOrCreateModel(mojo.uid, mojo.mojoData)
 
     val mojoInputCols = (0 until rawMojo.getInputMeta.size()).map(rawMojo.getInputMeta.getColumnName(_))
     val mojoInputTypes = (0 until rawMojo.getInputMeta.size()).map(rawMojo.getInputMeta.getColumnType(_))
@@ -76,7 +76,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
     mojo.setNamedMojoOutputColumns(false)
-    val rawMojo = mojo.getOrCreateModel()
+    val rawMojo = H2OMOJOModelCache.getOrCreateModel(mojo.uid, mojo.mojoData)
 
     val icolNames = (0 until rawMojo.getInputMeta.size()).map(i => rawMojo.getInputMeta.getColumnName(i))
     val icolTypes = (0 until rawMojo.getInputMeta.size()).map(i => rawMojo.getInputMeta.getColumnType(i))
