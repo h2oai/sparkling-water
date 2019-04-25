@@ -32,6 +32,7 @@ tasks.withType(ScalaCompile) {
 }
 
 java {
+    disableAutoTargetJvm()
     sourceCompatibility = JavaVersion.valueOf("VERSION_${minSupportedJavaVersion.replace(".", "_")}")
     targetCompatibility = JavaVersion.valueOf("VERSION_${minSupportedJavaVersion.replace(".", "_")}")
 }
