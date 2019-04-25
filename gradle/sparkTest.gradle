@@ -20,7 +20,7 @@ test {
     maxHeapSize = "4g"
 
     if(!extraTestJVMArgs.isEmpty()) {
-        jvmArgs extraTestJVMArgs
+        jvmArgs extraTestJVMArgs.split(" ")
     }
 
     // Working dir will be root project
