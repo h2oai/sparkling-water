@@ -20,7 +20,7 @@ dependencies {
 // Activate Zinc compiler and configure scalac
 tasks.withType(ScalaCompile) {
     scalaCompileOptions.additionalParameters = [
-            "-target:jvm-1.7",
+            "-target:jvm-${minSupportedJavaVersion}".toString(),
             "-feature",
             // enable several optional scala features so Scala knows we use them on purpose
             "-language:reflectiveCalls",
@@ -32,8 +32,8 @@ tasks.withType(ScalaCompile) {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_7
-    targetCompatibility = JavaVersion.VERSION_1_7
+    sourceCompatibility = JavaVersion.valueOf("VERSION_${minSupportedJavaVersion.replace(".", "_")}")
+    targetCompatibility = JavaVersion.valueOf("VERSION_${minSupportedJavaVersion.replace(".", "_")}")
 }
 
 project.archivesBaseName = "${project.name}_${scalaBaseVersion}"
