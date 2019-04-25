@@ -85,7 +85,7 @@ def getGradleCommand(config) {
     }
 
     if (config.buildAgainstSparkBranch.toBoolean()) {
-        "${gradleStr} -x checkSparkVersionTask -PtestMojoPipeline=true"
+        "${gradleStr} -x checkSparkVersionTask -PtestMojoPipeline=true -PsparkVersion=${config.sparkVersion}"
     } else {
         "${gradleStr} -PtestMojoPipeline=true"
     }
@@ -102,31 +102,18 @@ def prepareSparkEnvironment() {
                     git clone https://github.com/apache/spark.git spark_repo
                     cd spark_repo
                     git checkout ${config.sparkBranch}
-                    ./dev/make-distribution.sh --name custom-spark --pip -Phadoop-${config.hadoopVersion} -Pyarn
+                    ./dev/make-distribution.sh --name custom-spark --pip -Phadoop-${config.hadoopVersion} -Pyarn -Phive
                     cp -r ./dist/ ${env.SPARK_HOME}
                     """
                 } else {
-                    if(config.sparkVersion == "2.2.3"){
-                        sh  """
-                            cp -R \${SPARK_HOME_2_2_3} ${env.SPARK_HOME}
-                            """
-                    } else if(config.sparkVersion == "2.2.2"){
-                        sh  """
-                            cp -R \${SPARK_HOME_2_2_2} ${env.SPARK_HOME}
-                            """
-                    } else if(config.sparkVersion == "2.2.1"){
-                        sh  """
-                            cp -R \${SPARK_HOME_2_2_1} ${env.SPARK_HOME}
-                            """
-                    }else{
-                        sh  """
-                            cp -R \${SPARK_HOME_2_2_0} ${env.SPARK_HOME}
-                            """
-                    }
-                    
+                    """
+                    cp -R \${SPARK_HOME_2_2} ${env.SPARK_HOME}
+                    """
                 }
 
-                sh """
+            }
+
+            sh """
                 # Setup Spark
                 echo "spark.driver.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                 echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
@@ -134,14 +121,14 @@ def prepareSparkEnvironment() {
                 
                 echo "-Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/java-opts
                 """
-                if (config.buildAgainstSparkBranch.toBoolean()) {
-                    sh """
+            if (config.buildAgainstSparkBranch.toBoolean()) {
+                sh """
                     echo "spark.ext.h2o.spark.version.check.enabled false" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
                     """
-                }
             }
         }
     }
+}
 }
 
 
@@ -152,6 +139,7 @@ def prepareSparklingWaterEnvironment() {
                 // In case of building against nightly build, modify gradle.properties
                 // We can however can do nightly based on specific H2O branch, in that case this needs to be skipped
                 if (config.buildNightly.toBoolean() && !config.buildAgainstH2OBranch.toBoolean()) {
+
                     def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
 
                     def h2oNightlyMajorVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/${h2oNightlyBuildVersion}/project_version").getText().trim()
@@ -297,8 +285,8 @@ def rUnitTests() {
             withDocker(config) {
                 if (config.runRUnitTests.toBoolean()) {
                     try {
-                          sh "sudo -E /usr/sbin/startup.sh"
-                          sh """
+                        sh "sudo -E /usr/sbin/startup.sh"
+                        sh """
                              ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage :sparkling-water-r:installRSparklingPackage
                              ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                              """
@@ -477,7 +465,7 @@ def publishNightly() {
 
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 
-                    sh  """
+                        sh  """
                         # echo 'Making distribution'
                         ${getGradleCommand(config)} buildSparklingWaterDist
 
@@ -560,7 +548,7 @@ EOF
                                """
                             // Update the links
                             retryWithDelay(3, 120, {
-                            sh """
+                                sh """
 
                                 # S3 Already containes incremented version
                                 BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
