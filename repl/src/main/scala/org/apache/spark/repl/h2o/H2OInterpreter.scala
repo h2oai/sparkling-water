@@ -16,10 +16,12 @@
 */
 /**
   * This code is based on code org.apache.spark.repl.SparkILoop released under Apache 2.0"
+  * Link on Github: https://github.com/apache/spark/blob/master/repl/scala-2.11/src/main/scala/org/apache/spark/repl/SparkILoop.scala
   * Author: Alexander Spoon
   */
 
 package org.apache.spark.repl.h2o
+
 
 import java.io.File
 
@@ -35,7 +37,7 @@ import scala.tools.nsc._
   * H2O Interpreter which is use to interpret scala code
   *
   * @param sparkContext spark context
-  * @param sessionId session ID for interpreter
+  * @param sessionId    session ID for interpreter
   */
 class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2OInterpreter(sparkContext, sessionId) {
 
@@ -77,7 +79,9 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 
 
   override def valueOfTerm(term: String): Option[Any] = {
-    try Some(intp.eval(term))  catch { case _ : Exception => None }
+    try Some(intp.eval(term)) catch {
+      case _: Exception => None
+    }
   }
 }
 
