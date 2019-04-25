@@ -43,6 +43,7 @@ task substituteTerraform(){
             def majorVersion = "${first}.${second}"
             def minorVersion = third
             contents = contents
+                    .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
                     .replaceAll("SUBST_MAJOR_VERSION", majorVersion)
                     .replaceAll("SUBST_MINOR_VERSION", minorVersion)
 

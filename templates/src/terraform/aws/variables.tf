@@ -11,7 +11,7 @@ variable "aws_region" {
   default = "us-east-1"
 }
 variable "aws_emr_version" {
-  default = "emr-5.19.0"
+  default = "SUBST_EMR_VERSION"
 }
 variable "aws_core_instance_count" {
   default = "2"
