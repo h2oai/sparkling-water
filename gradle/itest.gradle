@@ -37,6 +37,9 @@ task integTest(type: Test) {
     workingDir = rootDir
     // Increase test runner memory
     maxHeapSize = "4g"
+    if(!extraTestJVMArgs.isEmpty()) {
+        jvmArgs extraTestJVMArgs
+    }
 
     def testEnv = detectEnvironment()
     // Decide which tests should be launch here based on environment
