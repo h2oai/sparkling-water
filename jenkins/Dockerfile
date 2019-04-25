@@ -100,7 +100,7 @@ RUN cd /home/jenkins && rm -rf sparkling-water
 # Change permissions so we can install R packages
 RUN chmod 777 /usr/local/lib/R/site-library
 
-ENV USER jenkins
+USER jenkins
 
 # Install Conda as we need to publish Sparkling Water as conda package
 RUN cd /home/jenkins && \
