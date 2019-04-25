@@ -158,7 +158,6 @@ configure(subprojects) { project ->
     if (project in javaProjects) {
         apply plugin: 'java'
 
-
         sourceCompatibility = "1.${minSupportedJava}"
         targetCompatibility = "1.${minSupportedJava}"
     }
