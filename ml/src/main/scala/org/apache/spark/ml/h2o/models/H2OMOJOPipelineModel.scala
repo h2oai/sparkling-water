@@ -26,6 +26,7 @@ import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.utils.H2OSchemaUtils
+import org.apache.spark.internal.Logging
 import org.apache.spark.ml.h2o.param.H2OMOJOPipelineModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
@@ -42,15 +43,10 @@ import scala.util.Random
 class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
   extends SparkModel[H2OMOJOPipelineModel] with H2OMOJOPipelineModelParams with MLWritable {
 
-  @transient private var model: MojoPipeline = _
-
-  def getOrCreateModel() = {
-    if (model == null) {
-      val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
-      model = MojoPipeline.loadFrom(reader)
-    }
-    model
-  }
+  private val outputColumnNames = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getOutputMeta.getColumnNames
+  private val outputColumnTypes = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getOutputMeta.getColumnTypes
+  private val inputColumnNames = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getInputMeta.getColumnNames
+  private val inputColumnTypes = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getInputMeta.getColumnTypes
 
   def this(mojoData: Array[Byte]) = this(mojoData, Identifiable.randomUID("mojoPipelineModel"))
 
@@ -78,7 +74,7 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
   private val modelUdf = (names: Array[String]) =>
     udf[Mojo2Prediction, Row] {
       r: Row =>
-        val m = getOrCreateModel()
+        val m = H2OMOJOModelCache.getOrCreateModel(uid, mojoData)
         val builder = m.getInputFrameBuilder
         val rowBuilder = builder.getMojoRowBuilder
         val filtered = r.getValuesMap[Any](names).filter { case (n, _) => m.getInputMeta.contains(n) }
@@ -150,7 +146,7 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
 
     // This behaviour is turned off by default, it can be enabled manually and will be default
     // in the next Major Sparkling Water releases.
-    if ($(namedMojoOutputColumns)) {
+    val fr = if ($(namedMojoOutputColumns)) {
 
       def uniqueRandomName(colName: String, r: Random) = {
         var randName = r.nextString(30)
@@ -191,6 +187,10 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
 
       frameWithPredictions
     }
+
+    H2OMOJOModelCache.removeModel(uid)
+
+    fr
   }
 
   def predictionSchema(): Seq[StructField] = {
@@ -202,17 +202,13 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
     StructType(schema ++ predictionSchema())
   }
 
-  def getInputNames(): Array[String] = getOrCreateModel().getInputMeta.getColumnNames
+  def getInputNames(): Array[String] = inputColumnNames
 
-  def getInputTypes(): Array[MojoColumn.Type] = {
-    getOrCreateModel().getInputMeta.getColumnTypes
-  }
+  def getInputTypes(): Array[MojoColumn.Type] = inputColumnTypes
 
-  def getOutputNames(): Array[String] = getOrCreateModel().getOutputMeta.getColumnNames
+  def getOutputNames(): Array[String] = outputColumnNames
 
-  def getOutputTypes(): Array[MojoColumn.Type] = {
-    getOrCreateModel().getOutputMeta.getColumnTypes
-  }
+  def getOutputTypes(): Array[MojoColumn.Type] = outputColumnTypes
 
   def selectPredictionUDF(column: String) = {
     if (!getOutputNames().contains(column)) {
@@ -275,7 +271,7 @@ private[models] class H2OMOJOPipelineModelReader[T <: H2OMOJOPipelineModel : Cla
 }
 
 
-class H2OMOJOPipelineModelHelper[T<: py_sparkling.ml.models.H2OMOJOPipelineModel](implicit m: ClassTag[T]) extends MLReadable[T]{
+class H2OMOJOPipelineModelHelper[T <: py_sparkling.ml.models.H2OMOJOPipelineModel](implicit m: ClassTag[T]) extends MLReadable[T] {
   val defaultFileName = "mojo_pipeline_model"
 
   @Since("1.6.0")
@@ -302,4 +298,22 @@ class H2OMOJOPipelineModelHelper[T<: py_sparkling.ml.models.H2OMOJOPipelineModel
   }
 }
 
-object H2OMOJOPipelineModel extends H2OMOJOPipelineModelHelper[py_sparkling.ml.models.H2OMOJOPipelineModel] {}
+object H2OMOJOPipelineModel extends H2OMOJOPipelineModelHelper[py_sparkling.ml.models.H2OMOJOPipelineModel]
+
+object H2OMOJOModelCache extends Logging {
+  private var modelCache = scala.collection.mutable.Map[String, MojoPipeline]()
+
+  def getOrCreateModel(uid: String, mojoData: Array[Byte]): MojoPipeline = synchronized {
+    if (!modelCache.exists(_._1 == uid)) {
+      logDebug("Creating new instance of MOJO model '" + uid + "'")
+      val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
+      modelCache += (uid -> MojoPipeline.loadFrom(reader))
+    }
+    modelCache(uid)
+  }
+
+  def removeModel(uid: String): Option[MojoPipeline] = synchronized {
+    logDebug("Removing instance of MOJO model '" + uid + "' from model cache.")
+    modelCache.remove(uid)
+  }
+}
