@@ -38,7 +38,7 @@ private[repl] class H2OIMain private(initialSettings: Settings,
 }
 
 object H2OIMain extends H2OIMainHelper {
-  
+
   val existingInterpreters = mutable.HashMap.empty[Int, H2OIMain]
 
   def createInterpreter(sc: SparkContext, settings: Settings, interpreterWriter: IntpResponseWriter, sessionId: Int): H2OIMain = synchronized {
