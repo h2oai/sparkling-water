@@ -158,8 +158,9 @@ configure(subprojects) { project ->
     if(project in javaProjects) {
         apply plugin: 'java'
 
-        sourceCompatibility = 1.7
-        targetCompatibility = 1.7
+
+        sourceCompatibility = "1.${minSupportedJava}"
+        targetCompatibility = "1.${minSupportedJava}"
     }
     // All subprojects needs Spark support
     apply from: "$rootDir/gradle/spark.gradle"
