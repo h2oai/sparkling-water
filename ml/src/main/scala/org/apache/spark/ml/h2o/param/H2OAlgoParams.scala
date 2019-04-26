@@ -19,7 +19,6 @@ package org.apache.spark.ml.h2o.param
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.ml.param.Params
-import water.util.DeprecatedMethod
 
 /**
   * A trait extracting a shared parameters among all models.

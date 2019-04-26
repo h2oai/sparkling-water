@@ -40,7 +40,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Dataset, Row, SQLContext}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
-import water.util.{DeprecatedMethod, PojoUtils}
+import water.util.PojoUtils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
