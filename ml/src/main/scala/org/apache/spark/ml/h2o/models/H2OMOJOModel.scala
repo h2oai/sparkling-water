@@ -158,7 +158,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   override def transform(dataset: Dataset[_]): DataFrame = {
     val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
     val args = flatten.schema.fields.map(f => flatten(f.name))
-    flatten.select(col("*"), getModelUdf()(struct(args: _*)).as(getOutputCol()))
+    flatten.select(col("*"), getModelUdf()(struct(args: _*)).as(getPredictionCol()))
   }
 
 

@@ -23,6 +23,9 @@ import org.apache.spark.ml.param._
   */
 trait H2OModelParams extends DeprecatableParams {
 
+  override protected def renamingMap: Map[String, String] = Map(
+  )
+
   //
   // Param definitions
   //

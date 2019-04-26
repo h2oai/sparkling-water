@@ -55,7 +55,7 @@ M <: Model[_, _, _ <: Model.Output]]
 
 
     import org.apache.spark.sql.functions.col
-    val cols = (getFeaturesCols() ++ Array(tempId)).map(col)
+    val cols = (Array("we will get columns using model._output.features()") ++ Array(tempId)).map(col)
 
 
     val frame: H2OFrame = h2oContext.asH2OFrame(datasetWithId.select(cols: _*).toDF())
