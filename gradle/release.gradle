@@ -12,4 +12,8 @@ release {
     failOnUnversionedFiles = false
     failOnCommitNeeded = false
     preCommitText = ":tada: "
+
+    git {
+        requireBranch = null
+    }
 }
