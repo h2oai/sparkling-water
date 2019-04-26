@@ -460,7 +460,6 @@ object H2OGridSearchReader {
 trait H2OGridSearchParams extends DeprecatableParams {
 
   override protected def renamingMap: Map[String, String] = Map(
-    "predictionCol" -> "labelCol"
   )
 
   //

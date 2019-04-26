@@ -29,7 +29,6 @@ import water.util.DeprecatedMethod
 trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with DeprecatableParams {
 
   override protected def renamingMap: Map[String, String] = Map(
-    "predictionCol" -> "labelCol"
   )
 
   //
@@ -110,7 +109,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
   // Setters
   //
   def setTrainRatio(value: Double): this.type = set(ratio, value)
-  
+
   def setLabelCol(value: String): this.type = set(labelCol, value)
 
   def setWeightCol(value: String): this.type = set(weightCol, value)

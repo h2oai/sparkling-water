@@ -34,7 +34,6 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, SQLContext, _}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
-import water.util.DeprecatedMethod
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -216,9 +215,6 @@ object H2OAutoMLReader {
 trait H2OAutoMLParams extends DeprecatableParams {
 
   override protected def renamingMap: Map[String, String] = Map(
-    "predictionCol" -> "labelCol",
-    "foldColumn" -> "foldCol",
-    "ignoredColumns" -> "ignoredCols"
   )
 
   //
