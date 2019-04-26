@@ -100,7 +100,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   override def transformSchema(schema: StructType): StructType = {
     require(schema.fields.exists(f => f.name.compareToIgnoreCase(getLabelCol()) == 0),
       s"Specified label column '${getLabelCol()} was not found in input dataset!")
-    require(getFeaturesCol() == getLabelCol(),
+    require(getFeaturesCol() != getLabelCol(),
       s"Features column can not be the same as label column!")
     schema
   }
