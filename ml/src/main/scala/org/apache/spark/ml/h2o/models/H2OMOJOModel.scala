@@ -74,7 +74,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
       case _ => throw new RuntimeException("Unknown model category")
     }
 
-    Seq(StructField(getOutputCol(), StructType(fields), nullable = false))
+    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
   }
 
 
@@ -281,7 +281,6 @@ class H2OMOJOModelHelper[T <: py_sparkling.ml.models.H2OMOJOModel](implicit m: C
 
   def createFromMojo(is: InputStream, uid: String = Identifiable.randomUID("mojoModel")): T = {
     val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
-    val mojoModel = ModelSerializationSupport.getMojoModel(mojoData)
     val sparkMojoModel = m.runtimeClass.getConstructor(classOf[Array[Byte]], classOf[String]).
       newInstance(mojoData, uid).asInstanceOf[T]
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo

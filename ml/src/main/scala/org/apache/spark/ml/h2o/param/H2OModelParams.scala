@@ -16,9 +16,7 @@
 */
 package org.apache.spark.ml.h2o.param
 
-import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param._
-import water.util.DeprecatedMethod
 
 /**
   * Parameters which need to be available on the model itself for prediction purposes. This can't be backed
@@ -33,32 +31,28 @@ trait H2OModelParams extends DeprecatableParams {
   //
   // Param definitions
   //
-  private final val outputCol: Param[String] = new Param[String](this, "outputCol", "Column where predictions are created")
+  private final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
   private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
          "convertUnknownCategoricalLevelsToNa",
          "Convert unknown categorical levels to NA during predictions")
   //
   // Default values
   //
-  setDefault(outputCol -> "prediction_output")
+  setDefault(predictionCol -> "prediction")
   setDefault(convertUnknownCategoricalLevelsToNa -> false)
 
   //
   // Getters
   //
-  /** @group getParam */
-  def getOutputCol(): String = $(outputCol)
+  def getPredictionCol(): String = $(predictionCol)
 
-  /** @group getParam */
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
 
   //
   // Setters
   //
-  /** @group setParam */
-  def setOutputCol(value: String): this.type = set(outputCol, value)
+  def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
-  /** @group setParam */
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 }
