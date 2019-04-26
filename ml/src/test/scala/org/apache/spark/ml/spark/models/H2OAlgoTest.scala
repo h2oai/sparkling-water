@@ -50,7 +50,7 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
      val algo = new H2OGLM()(hc, spark.sqlContext)
         .setTrainRatio(0.8)
         .setSeed(1)
-        .setFeaturesCols(assembler.getOutputCol)
+        .setFeaturesCol(assembler.getOutputCol)
         .setLabelCol("AGE")
 
     val pipeline = new Pipeline().setStages(Array(assembler, algo))
@@ -93,12 +93,17 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
         .option("inferSchema", "true")
         .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
+    val assembler = new VectorAssembler()
+      .setInputCols(Array("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON"))
+      .setOutputCol("features")
+
       val stage = new H2OGridSearch()(hc, spark.sqlContext)
         .setLabelCol("AGE")
+        .setFeaturesCol(assembler.getOutputCol)
         .setHyperParameters(hyperParams)
         .setAlgo(algo)
 
-      val pipeline = new Pipeline().setStages(Array(stage))
+      val pipeline = new Pipeline().setStages(Array(assembler, stage))
       pipeline.write.overwrite().save("ml/build/grid_glm_pipeline")
       val loadedPipeline = Pipeline.load("ml/build/grid_glm_pipeline")
       val model = loadedPipeline.fit(dataset)

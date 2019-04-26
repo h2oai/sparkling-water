@@ -121,7 +121,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
 
   def setWeightCol(value: String): this.type = set(weightCol, value)
 
-  def setFeaturesCols(value: String): this.type = set(featuresCol, value)
+  def setFeaturesCol(value: String): this.type = set(featuresCol, value)
 
   def setNfolds(value: Int): this.type = set(nfolds, value)
 
