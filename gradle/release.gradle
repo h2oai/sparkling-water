@@ -14,6 +14,6 @@ release {
     preCommitText = ":tada: "
 
     git {
-        requireBranch = '"'
+        requireBranch = null
     }
 }
