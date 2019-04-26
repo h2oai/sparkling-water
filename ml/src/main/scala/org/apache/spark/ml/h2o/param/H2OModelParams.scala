@@ -19,22 +19,17 @@ package org.apache.spark.ml.h2o.param
 import org.apache.spark.ml.param._
 
 /**
-  * Parameters which need to be available on the model itself for prediction purposes. This can't be backed
-  * byt H2OAlgoParamsHelper as at the time of prediction we might be using mojo and binary parameters are not available.
+  * Parameters on the model itself for prediction purposes.
   */
 trait H2OModelParams extends DeprecatableParams {
-
-  override protected def renamingMap: Map[String, String] = Map(
-    "predictionCol" -> "labelCol"
-  )
 
   //
   // Param definitions
   //
   private final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
   private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
-         "convertUnknownCategoricalLevelsToNa",
-         "Convert unknown categorical levels to NA during predictions")
+    "convertUnknownCategoricalLevelsToNa",
+    "Convert unknown categorical levels to NA during predictions")
   //
   // Default values
   //
