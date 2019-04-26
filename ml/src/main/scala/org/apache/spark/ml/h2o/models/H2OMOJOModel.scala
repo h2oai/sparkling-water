@@ -46,7 +46,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient var easyPredictModelWrapper: EasyPredictModelWrapper = _
 
-  case class BinomialPrediction(p0: Double, p1: Double)
+  case class BinomialPrediction(p0: Double, p1: Double, p0_calibrated: Double, p1_calibrated: Double)
 
   case class RegressionPrediction(value: Double)
 
@@ -64,7 +64,8 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   def predictionSchema(): Seq[StructField] = {
     val fields = getOrCreateEasyModelWrapper().getModelCategory match {
-      case ModelCategory.Binomial => StructField("p0", DoubleType) :: StructField("p1", DoubleType) :: Nil
+      case ModelCategory.Binomial => StructField("p0", DoubleType) :: StructField("p1", DoubleType) ::
+        StructField("p0_calibrated", DoubleType) :: StructField("p1_calibrated", DoubleType):: Nil
       case ModelCategory.Regression => StructField("value", DoubleType) :: Nil
       case ModelCategory.Multinomial => StructField("probabilities", ArrayType(DoubleType)) :: Nil
       case ModelCategory.Clustering => StructField("cluster", DoubleType) :: Nil
@@ -80,7 +81,9 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   implicit def toBinomialPrediction(pred: AbstractPrediction) = BinomialPrediction(
     pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
-    pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1))
+    pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1),
+    pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities(0),
+    pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities(1))
 
   implicit def toRegressionPrediction(pred: AbstractPrediction) = RegressionPrediction(
     pred.asInstanceOf[RegressionModelPrediction].value)
