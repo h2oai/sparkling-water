@@ -84,9 +84,6 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
   //
   def getTrainRatio(): Double = $(ratio)
 
-  @DeprecatedMethod("getLabelCol")
-  def getPredictionCol(): String = getLabelCol()
-
   def getLabelCol(): String = $(labelCol)
 
   def getWeightCol(): String = $(weightCol)
@@ -113,10 +110,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
   // Setters
   //
   def setTrainRatio(value: Double): this.type = set(ratio, value)
-
-  @DeprecatedMethod("setLabelCol")
-  def setPredictionCol(value: String): this.type = setLabelCol(value)
-
+  
   def setLabelCol(value: String): this.type = set(labelCol, value)
 
   def setWeightCol(value: String): this.type = set(weightCol, value)

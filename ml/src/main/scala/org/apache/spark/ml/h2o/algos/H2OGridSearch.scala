@@ -27,11 +27,10 @@ import hex.grid.HyperSpaceSearchCriteria.{CartesianSearchCriteria, RandomDiscret
 import hex.grid.{Grid, GridSearch, HyperSpaceSearchCriteria}
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
-import hex.{Model, ModelMetrics, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMultinomial, ModelMetricsRegression, ModelMetricsRegressionGLM, ScoreKeeper}
+import hex.{Model, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMultinomial, ModelMetricsRegression, ModelMetricsRegressionGLM, ScoreKeeper}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
-import org.apache.spark.internal.Logging
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param._
@@ -519,9 +518,6 @@ trait H2OGridSearchParams extends DeprecatableParams {
 
   def getHyperParameters(): util.Map[String, Array[AnyRef]] = $(hyperParameters)
 
-  @DeprecatedMethod("getLabelCol")
-  def getPredictionCol(): String = getLabelCol()
-
   def getLabelCol(): String = $(labelCol)
 
   def getFeaturesCol(): String = $(featuresCol)
@@ -566,9 +562,6 @@ trait H2OGridSearchParams extends DeprecatableParams {
   def setHyperParameters(value: mutable.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.toMap.asJava)
 
   def setHyperParameters(value: java.util.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
-
-  @DeprecatedMethod("setLabelCol")
-  def setPredictionCol(value: String): this.type = setLabelCol(value)
 
   def setLabelCol(value: String): this.type = set(labelCol, value)
 

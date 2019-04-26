@@ -282,9 +282,6 @@ trait H2OAutoMLParams extends DeprecatableParams {
   //
   // Getters
   //
-  @DeprecatedMethod("getLabelCol")
-  def getPredictionCol(): String = getLabelCol()
-
   def getLabelCol(): String = $(labelCol)
 
   def getFeaturesCol(): String = $(featuresCol)
@@ -293,18 +290,9 @@ trait H2OAutoMLParams extends DeprecatableParams {
 
   def getFoldCol() = $(foldCol)
 
-  @DeprecatedMethod("getFoldCol")
-  def getFoldColumn() = getFoldCol()
-
   def getWeightCol(): String = $(weightCol)
 
-  @DeprecatedMethod("getWeightCol")
-  def getWeightsColumn(): String = getWeightCol()
-
   def getIgnoredCols(): Array[String] = $(ignoredCols)
-
-  @DeprecatedMethod("getIgnoredCols")
-  def getIgnoredColumns(): Array[String] = getIgnoredCols()
 
   def getIncludeAlgos(): Array[Algo] = $(includeAlgos)
 
@@ -343,9 +331,6 @@ trait H2OAutoMLParams extends DeprecatableParams {
   //
   // Setters
   //
-  @DeprecatedMethod("setLabelCol")
-  def setPredictionCol(value: String): this.type = setLabelCol(value)
-
   def setLabelCol(value: String): this.type = set(labelCol, value)
 
   def setFeaturesCol(value: String): this.type = set(featuresCol, value)
@@ -354,18 +339,9 @@ trait H2OAutoMLParams extends DeprecatableParams {
 
   def setFoldCol(value: String): this.type = set(foldCol, value)
 
-  @DeprecatedMethod("setFoldCol")
-  def setFoldColumn(value: String): this.type = setFoldCol(value)
-
   def setWeightCol(value: String): this.type = set(weightCol, value)
 
-  @DeprecatedMethod("setWeightCol")
-  def setWeightsColumn(value: String): this.type = setWeightCol(value)
-
   def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
-
-  @DeprecatedMethod("setIgnoredCols")
-  def setIgnoredColumns(value: Array[String]): this.type = setIgnoredCols(value)
 
   def setIncludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(includeAlgos, value)
 
