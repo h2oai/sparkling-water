@@ -29,10 +29,6 @@ class H2OAlgorithmParams(Params):
     def getRatio(self):
         return self.getOrDefault(self.ratio)
 
-    def getPredictionCol(self):
-        warnings.warn("The method 'getPredictionCol' is deprecated. Use 'getLabelCol' instead!")
-        return self.getLabelCol()
-
     def getLabelCol(self):
         return self.getOrDefault(self.labelCol)
 
@@ -73,10 +69,6 @@ class H2OAlgorithmParams(Params):
     def setRatio(self, value):
         assert_is_type(value, int, float)
         return self._set(ratio=value)
-
-    def setPredictionCol(self, value):
-        warnings.warn("The method 'setPredictionCol' is deprecated. Use 'setLabelCol' instead!")
-        return self.setLabelCol(value)
 
     def setLabelCol(self, value):
         assert_is_type(value, str)
@@ -406,10 +398,6 @@ class H2OAutoMLParams(Params):
     ##
     # Getters
     ##
-    def getPredictionCol(self):
-        warnings.warn("The method 'getPredictionCol' is deprecated. Use 'getLabelCol' instead!")
-        return self.getLabelCol()
-
     def getLabelCol(self):
         return self.getOrDefault(self.labelCol)
 
@@ -523,10 +511,6 @@ class H2OAutoMLParams(Params):
     ##
     # Setters
     ##
-    def setPredictionCol(self, value):
-        warnings.warn("The method 'setPredictionCol' is deprecated. Use 'setLabelCol' instead!")
-        return self.setLabelCol(value)
-
     def setLabelCol(self, value):
         assert_is_type(value, str)
         return self._set(labelCol=value)
@@ -1262,6 +1246,7 @@ class H2OGridSearchParams(Params):
     ratio = Param(Params._dummy(), "ratio", "ratio")
     hyperParameters = Param(Params._dummy(), "hyperParameters", "Grid Search Hyper Params map")
     labelCol = Param(Params._dummy(), "labelCol", "Label column name")
+    featuresCol = Param(Params._dummy(), "featuresCol", "Features column name")
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "allStringColumnsToCategorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "columnsToCategorical")
     strategy = Param(Params._dummy(), "strategy", "strategy")
@@ -1281,6 +1266,9 @@ class H2OGridSearchParams(Params):
     ##
     def getLabelCol(self):
         return self.getOrDefault(self.labelCol)
+
+    def getFeaturesCol(self):
+        return self.getOrDefault(self.featuresCol)
 
     def getAlgoParams(self):
         return self._java_obj.getAlgoParams()
@@ -1348,6 +1336,10 @@ class H2OGridSearchParams(Params):
     def setLabelCol(self, value):
         assert_is_type(value, str)
         return self._set(labelCol=value)
+
+    def setFeaturesCol(self, value):
+        assert_is_type(value, str)
+        return self._set(featuresCol=value)
 
     def setAlgo(self, value):
         assert_is_type(value, object)

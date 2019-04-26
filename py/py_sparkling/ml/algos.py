@@ -31,7 +31,7 @@ def propagate_value_from_deprecated_property(kwargs, from_deprecated, to_replaci
 
 class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     @keyword_only
-    def __init__(self, ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+    def __init__(self, ratio=1.0, labelCol="label", weightCol=None, featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                  seed=-1, distribution="AUTO", ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024, minSplitImprovement=1e-5,
                  histogramType="AUTO", r2Stopping=java_max_double_value,
@@ -46,7 +46,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+        self._setDefault(ratio=1.0, labelCol="label", weightCol=None, featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
                          ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024, minSplitImprovement=1e-5,
@@ -59,7 +59,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+    def setParams(self, ratio=1.0, labelCol="label", weightCol=None, featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                   nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,parallelizeCrossValidation=True,
                   seed=-1, distribution="AUTO", ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024, minSplitImprovement=1e-5,
                   histogramType="AUTO", r2Stopping=java_max_double_value,
@@ -73,8 +73,6 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
         if "histogramType" in kwargs:
             kwargs["histogramType"] = self._hc._jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(kwargs["histogramType"])
-
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -95,7 +93,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
     @keyword_only
-    def __init__(self, ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+    def __init__(self, ratio=1.0, labelCol="label", weightCol=None, featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                  seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False,
                  convertUnknownCategoricalLevelsToNa=False, foldCol=None, **deprecatedArgs):
@@ -106,7 +104,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+        self._setDefault(ratio=1.0, labelCol="label", weightCol=None, featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
                          epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False,
@@ -115,7 +113,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+    def setParams(self, ratio=1.0, labelCol="label", weightCol=None, featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                   nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                   seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False,
                   foldCol=None, **deprecatedArgs):
@@ -123,8 +121,6 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
 
         if "distribution" in kwargs:
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
-
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -185,11 +181,6 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
             jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
             kwargs["includeAlgos"] = get_enum_array_from_str_array(kwargs["includeAlgos"], jvm.ai.h2o.automl.Algo)
 
-        propagate_value_from_deprecated_property(kwargs, "weightsColumn", "weightCol")
-        propagate_value_from_deprecated_property(kwargs, "foldColumn", "foldCol")
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
-        propagate_value_from_deprecated_property(kwargs, "ignoredColumns", "ignoredCols")
-
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
         double_types = ["maxRuntimeSecs", "stoppingTolerance", "ratio", "maxAfterBalanceSize"]
@@ -209,7 +200,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
 class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
     @keyword_only
-    def __init__(self, ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+    def __init__(self, ratio=1.0, labelCol="label", weightCol=None, featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                  seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False, quietMode=True, missingValuesHandling=None,
                  ntrees=50, nEstimators=0, maxDepth=6, minRows=1.0, minChildWeight=1.0, learnRate=0.3, eta=0.3, learnRateAnnealing=1.0,
@@ -227,7 +218,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+        self._setDefault(ratio=1.0, labelCol="label", weightCol=None, featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"), convertUnknownCategoricalLevelsToNa=False,
                          quietMode=True, missingValuesHandling=None, ntrees=50, nEstimators=0, maxDepth=6, minRows=1.0, minChildWeight=1.0,
@@ -250,7 +241,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+    def setParams(self, ratio=1.0, labelCol="label", weightCol=None, featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                   nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                   seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False, quietMode=True, missingValuesHandling=None,
                   ntrees=50, nEstimators=0, maxDepth=6, minRows=1.0, minChildWeight=1.0, learnRate=0.3, eta=0.3, learnRateAnnealing=1.0,
@@ -287,8 +278,6 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
         if "backend" in kwargs:
             kwargs["backend"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf(kwargs["backend"])
 
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
-
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
         double_types = ["ratio", "minRows", "minChildWeight", "learnRate", "eta", "learnRateAnnealing"
@@ -304,7 +293,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
 
 class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     @keyword_only
-    def __init__(self, ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+    def __init__(self, ratio=1.0, labelCol="label", weightCol=None, featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                  seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False,
                  standardize=True, family="gaussian", link="family_default", solver="AUTO", tweedieVariancePower=0.0,
@@ -320,7 +309,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                                             self._hc._jhc.h2oContext(),
                                             self._hc._jsql_context)
 
-        self._setDefault(ratio=1.0, labelCol="label", weightCol=None,  featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+        self._setDefault(ratio=1.0, labelCol="label", weightCol=None,  featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
                          convertUnknownCategoricalLevelsToNa=False,
@@ -337,7 +326,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
+    def setParams(self, ratio=1.0, labelCol="label", weightCol=None, featuresCol="features", allStringColumnsToCategorical=True, columnsToCategorical=[],
                   nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False,parallelizeCrossValidation=True,
                   seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False,
                   standardize=True, family="gaussian", link="family_default", solver="AUTO", tweedieVariancePower=0.0,
@@ -362,9 +351,6 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
         if "missingValuesHandling" in kwargs:
             kwargs["missingValuesHandling"] = self._hc._jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(kwargs["missingValuesHandling"])
-
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
-        propagate_value_from_deprecated_property(kwargs, "removeCollinearColumns", "removeCollinearCols")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -422,8 +408,6 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
 
         if "selectBestModelBy" in kwargs and kwargs["selectBestModelBy"] is not None:
             kwargs["selectBestModelBy"] = self._hc._jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.valueOf(kwargs["selectBestModelBy"])
-
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
