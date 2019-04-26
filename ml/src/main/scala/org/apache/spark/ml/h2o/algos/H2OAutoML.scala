@@ -90,7 +90,6 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     spec.input_spec.response_column = getLabelCol()
     spec.input_spec.fold_column = getFoldCol()
     spec.input_spec.weights_column = getWeightCol()
-    spec.input_spec.ignored_columns = getIgnoredCols()
     spec.input_spec.sort_metric = getSortMetric()
     spec.build_models.exclude_algos = if (getExcludeAlgos() == null) null else Array(getExcludeAlgos(): _*)
     spec.build_models.include_algos = if (getIncludeAlgos() == null) null else Array(getIncludeAlgos(): _*)
@@ -225,7 +224,6 @@ trait H2OAutoMLParams extends DeprecatableParams {
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   private final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   private final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
-  private final val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
   private final val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
   private final val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
   private final val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
@@ -255,7 +253,6 @@ trait H2OAutoMLParams extends DeprecatableParams {
     ratio -> 1.0, // 1.0 means use whole frame as training frame,
     foldCol -> null,
     weightCol -> null,
-    ignoredCols -> Array.empty[String],
     includeAlgos -> null,
     excludeAlgos -> null,
     projectName -> null, // will be automatically generated
@@ -287,8 +284,6 @@ trait H2OAutoMLParams extends DeprecatableParams {
   def getFoldCol() = $(foldCol)
 
   def getWeightCol(): String = $(weightCol)
-
-  def getIgnoredCols(): Array[String] = $(ignoredCols)
 
   def getIncludeAlgos(): Array[Algo] = $(includeAlgos)
 
@@ -336,8 +331,6 @@ trait H2OAutoMLParams extends DeprecatableParams {
   def setFoldCol(value: String): this.type = set(foldCol, value)
 
   def setWeightCol(value: String): this.type = set(weightCol, value)
-
-  def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
 
   def setIncludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(includeAlgos, value)
 
