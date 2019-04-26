@@ -76,7 +76,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
         s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
     }
 
-    if(dataset.columns.contains(getFeaturesCol())){
+    if(!dataset.columns.contains(getFeaturesCol())){
       throw new IllegalArgumentException(s"Can not find features column '${getFeaturesCol()}' in the dataset")
     }
 

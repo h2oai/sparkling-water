@@ -51,7 +51,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     // Update H2O params based on provided configuration
     updateH2OParams()
 
-    if(dataset.columns.contains(getFeaturesCol())){
+    if(!dataset.columns.contains(getFeaturesCol())){
       throw new IllegalArgumentException(s"Can not find features column '${getFeaturesCol()}' in the dataset")
     }
 

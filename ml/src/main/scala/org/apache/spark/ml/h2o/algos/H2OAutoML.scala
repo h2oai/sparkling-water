@@ -55,7 +55,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val spec = automlBuildSpec.getOrElse(new AutoMLBuildSpec)
 
-    if(dataset.columns.contains(getFeaturesCol())){
+    if(!dataset.columns.contains(getFeaturesCol())){
       throw new IllegalArgumentException(s"Can not find features column '${getFeaturesCol()}' in the dataset")
     }
 
