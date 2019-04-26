@@ -99,7 +99,7 @@ abstract class PipelinePredictionTestBase extends FunSuite with SparkTestContext
     val gbm = new H2OGBM()
       .setTrainRatio(0.8)
       .setSeed(42)
-      .setFeaturesCols("tf_idf")
+      .setFeaturesCol("tf_idf")
       .setLabelCol("label")
 
     // Remove all intermediate columns
