@@ -13,9 +13,7 @@ class H2OAlgorithmParams(Params):
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     labelCol = Param(Params._dummy(), "labelCol", "Label column name")
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
-    featuresCols = Param(Params._dummy(), "featuresCols", "columns used as features")
-    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
+    featuresCol = Param(Params._dummy(), "featuresCol", "Features column name")
     nfolds = Param(Params._dummy(), "nfolds", "Number of folds for K-fold cross-validation (0 to disable or >= 2)")
     foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Whether to keep the predictions of the cross-validation models")
@@ -41,14 +39,8 @@ class H2OAlgorithmParams(Params):
     def getWeightCol(self):
         return self.getOrDefault(self.weightCol)
 
-    def getFeaturesCols(self):
-        return self.getOrDefault(self.featuresCols)
-
-    def getAllStringColumnsToCategorical(self):
-        return self.getOrDefault(self.allStringColumnsToCategorical)
-
-    def getColumnsToCategorical(self):
-        return self.getOrDefault(self.columnsToCategorical)
+    def getFeaturesCol(self):
+        return self.getOrDefault(self.featuresCol)
 
     def getNfolds(self):
         return self.getOrDefault(self.nfolds)
@@ -94,17 +86,9 @@ class H2OAlgorithmParams(Params):
         assert_is_type(value, str)
         return self._set(weightCol=value)
 
-    def setFeaturesCols(self, value):
+    def setFeaturesCol(self, value):
         assert_is_type(value, [str])
-        return self._set(featuresCols=value)
-
-    def setAllStringColumnsToCategorical(self, value):
-        assert_is_type(value, bool)
-        return self._set(allStringColumnsToCategorical=value)
-
-    def setColumnsToCategorical(self, value):
-        assert_is_type(value, [str])
-        return self._set(columnsToCategorical=value)
+        return self._set(featuresCol=value)
 
     def setNfolds(self, value):
         assert_is_type(value, int)
@@ -396,8 +380,7 @@ class H2OAutoMLParams(Params):
     # Param definitions
     ##
     labelCol = Param(Params._dummy(), "labelCol", "Label column name")
-    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
+    featuresCol = Param(Params._dummy(), "featuresCol", "Features column name")
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
@@ -429,6 +412,9 @@ class H2OAutoMLParams(Params):
 
     def getLabelCol(self):
         return self.getOrDefault(self.labelCol)
+
+    def getFeaturesCol(self):
+        return self.getOrDefault(self.featuresCol)
 
     def getAllStringColumnsToCategorical(self):
         return self.getOrDefault(self.allStringColumnsToCategorical)
@@ -544,6 +530,10 @@ class H2OAutoMLParams(Params):
     def setLabelCol(self, value):
         assert_is_type(value, str)
         return self._set(labelCol=value)
+
+    def setFeaturesCol(self, value):
+        assert_is_type(value, str)
+        return self._set(featuresCol=value)
 
     def setAllStringColumnsToCategorical(self, value):
         assert_is_type(value, bool)
