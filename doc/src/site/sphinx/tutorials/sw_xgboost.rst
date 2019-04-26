@@ -31,10 +31,22 @@ Parse the data using H2O and convert them to Spark Frame
 Train the model. You can configure all the available XGBoost arguments using provided setters, such as the predictions column.
 
 .. code:: scala
-
+    import org.apache.spark.ml.feature.VectorAssembler
+    import org.apache.spark.ml.{Pipeline, PipelineModel}
     import org.apache.spark.ml.h2o.algos.H2OXGBoost
-    val estimator = new H2OXGBoost()(hc, spark.sqlContext).setLabelCol("AGE")
-    val model = estimator.fit(sparkFrame)
+
+    val assembler = new VectorAssembler()
+      .setInputCols(Array("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON"))
+      .setOutputCol("features")
+
+
+    val estimator = new H2OXGBoost()(hc, spark.sqlContext)
+      .setLabelCol("AGE")
+      .setFeaturesCol(assembler.getOutputCol())
+
+    val pipeline = new Pipeline().setStages(Array(assembler, estimator))
+
+    val model = pipeline.fit(sparkFrame)
 
 
 Run Predictions
@@ -72,8 +84,20 @@ Train the model. You can configure all the available XGBoost arguments using pro
 
 .. code:: python
 
+    from pyspark.ml import Pipeline, PipelineModel
+    from pyspark.ml.feature import VectorAssembler
     from pysparkling.ml import H2OXGBoost
-    estimator = H2OXGBoost(predictionCol="AGE")
+
+    assembler = VectorAssembler(
+       inputCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON"],
+       outputCol="features"
+    )
+
+    estimator = H2OXGBoost(predictionCol="AGE", featuresCol=assembler.getOutputCol())
+
+
+    pipeline = Pipeline(stages=[assembler, estimator]
+
     model = estimator.fit(spark_frame)
 
 
