@@ -20,6 +20,7 @@ package org.apache.spark.ml.spark.models
 import hex.Model
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.h2o.algos._
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.junit.runner.RunWith
@@ -41,13 +42,18 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
       .option("inferSchema", "true")
       .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
       // Create GBM model
+
+    val assembler = new VectorAssembler()
+      .setInputCols(Array("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON"))
+      .setOutputCol("features")
+
      val algo = new H2OGLM()(hc, spark.sqlContext)
         .setTrainRatio(0.8)
         .setSeed(1)
-        .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON")
+        .setFeaturesCols(assembler.getOutputCol)
         .setLabelCol("AGE")
 
-    val pipeline = new Pipeline().setStages(Array(algo))
+    val pipeline = new Pipeline().setStages(Array(assembler, algo))
     pipeline.write.overwrite().save("ml/build/glm_pipeline")
     val loadedPipeline = Pipeline.load("ml/build/glm_pipeline")
     val model = loadedPipeline.fit(dataset)

@@ -47,17 +47,9 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
     "weightCol",
     "Weight column name")
 
-  final val featuresCols = stringArrayParam(
-    "featuresCols",
-    "Name of feature columns")
-
-  final val allStringColumnsToCategorical = booleanParam(
-    "allStringColumnsToCategorical",
-    "Transform all strings columns to categorical")
-
-  final val columnsToCategorical = stringArrayParam(
-    "columnsToCategorical",
-    "List of columns to convert to categorical before modelling")
+  final val featuresCol = stringParam(
+    "featuresCol",
+    "Feature column name")
 
   final val nfolds = intParam("nfolds")
   final val foldCol = nullableStringParam("foldCol", "Fold column name")
@@ -76,11 +68,9 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
     ratio -> 1.0, // 1.0 means use whole frame as training frame
     labelCol -> "label",
     weightCol -> null,
-    featuresCols -> Array.empty[String],
+    featuresCol -> "features",
     nfolds -> parameters._nfolds,
     foldCol -> null,
-    allStringColumnsToCategorical -> true,
-    columnsToCategorical -> Array.empty[String],
     keepCrossValidationPredictions -> parameters._keep_cross_validation_predictions,
     keepCrossValidationFoldAssignment -> parameters._keep_cross_validation_fold_assignment,
     parallelizeCrossValidation -> parameters._parallelize_cross_validation,
@@ -101,19 +91,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
 
   def getWeightCol(): String = $(weightCol)
 
-  def getFeaturesCols(): Array[String] = {
-    val labelCol = getLabelCol()
-    if ($(featuresCols).contains(labelCol)) {
-      logDebug(s"The label col '$labelCol' removed from the list of features.")
-      $(featuresCols).filter(_ != labelCol)
-    } else {
-      $(featuresCols)
-    }
-  }
-
-  def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
-
-  def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
+  def getFeaturesCol(): String = ${featuresCol}
 
   def getNfolds(): Int = $(nfolds)
 
@@ -143,22 +121,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
 
   def setWeightCol(value: String): this.type = set(weightCol, value)
 
-  def setFeaturesCols(first: String, others: String*): this.type = set(featuresCols, Array(first) ++ others)
-
-  def setFeaturesCols(cols: Array[String]): this.type = {
-    if (cols.length == 0) {
-      throw new IllegalArgumentException("Array with feature columns must contain at least one column.")
-    }
-    set(featuresCols, cols)
-  }
-
-  def setFeaturesCol(first: String): this.type = setFeaturesCols(first)
-
-  def setAllStringColumnsToCategorical(transform: Boolean): this.type = set(allStringColumnsToCategorical, transform)
-
-  def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
-
-  def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
+  def setFeaturesCols(value: String): this.type = set(featuresCol, value)
 
   def setNfolds(value: Int): this.type = set(nfolds, value)
 

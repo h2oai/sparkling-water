@@ -55,12 +55,16 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val spec = automlBuildSpec.getOrElse(new AutoMLBuildSpec)
 
+    if(dataset.columns.contains(getFeaturesCol())){
+      throw new IllegalArgumentException(s"Can not find features column '${getFeaturesCol()}' in the dataset")
+    }
+
     // override the buildSpec with the configuration specified directly on the estimator
     if (getProjectName() == null) {
       // generate random name to generate fresh leaderboard (the default behaviour)
       setProjectName(Random.alphanumeric.take(30).mkString)
     }
-    val input = hc.asH2OFrame(dataset.toDF())
+    val input = hc.asH2OFrame(dataset.select(getLabelCol(), getFeaturesCol()).toDF())
     // check if we need to do any splitting
     if (getRatio() < 1.0) {
       // need to do splitting
@@ -74,10 +78,6 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     }
 
     val trainFrame = spec.input_spec.training_frame.get()
-    if (getAllStringColumnsToCategorical()) {
-      H2OFrameSupport.allStringVecToCategorical(trainFrame)
-    }
-    H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
     spec.input_spec.response_column = getLabelCol()
     spec.input_spec.fold_column = getFoldCol()
@@ -111,6 +111,8 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
         " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
     }
     val model = trainModel(aml)
+    model.setLabelCol(getLabelCol())
+    model.setFeaturesCols(Array(getFeaturesCol()))
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
   }
@@ -216,8 +218,7 @@ trait H2OAutoMLParams extends DeprecatableParams {
   // Param definitions
   //
   private final val labelCol = new Param[String](this, "labelCol", "Label column name")
-  private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-  private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
+  private final val featuresCol = new Param[String](this, "featuresCol", "Features column name")
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   private final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   private final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
@@ -247,8 +248,7 @@ trait H2OAutoMLParams extends DeprecatableParams {
   //
   setDefault(
     labelCol -> "label",
-    allStringColumnsToCategorical -> true,
-    columnsToCategorical -> Array.empty[String],
+    featuresCol -> "features",
     ratio -> 1.0, // 1.0 means use whole frame as training frame,
     foldCol -> null,
     weightCol -> null,
@@ -280,9 +280,7 @@ trait H2OAutoMLParams extends DeprecatableParams {
 
   def getLabelCol(): String = $(labelCol)
 
-  def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
-
-  def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
+  def getFeaturesCol(): String = $(featuresCol)
 
   def getRatio(): Double = $(ratio)
 
@@ -343,11 +341,7 @@ trait H2OAutoMLParams extends DeprecatableParams {
 
   def setLabelCol(value: String): this.type = set(labelCol, value)
 
-  def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
-
-  def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
-
-  def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
+  def setFeaturesCol(value: String): this.type = set(featuresCol, value)
 
   def setRatio(value: Double): this.type = set(ratio, value)
 

@@ -47,18 +47,17 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   }
 
   override def fit(dataset: Dataset[_]): M = {
-    import org.apache.spark.sql.functions.col
 
     // Update H2O params based on provided configuration
     updateH2OParams()
 
-    // if this is left empty select
-    if (getFeaturesCols().isEmpty) {
-      setFeaturesCols(dataset.columns.filter(n => n.compareToIgnoreCase(getLabelCol()) != 0))
+    if(dataset.columns.contains(getFeaturesCol())){
+      throw new IllegalArgumentException(s"Can not find features column '${getFeaturesCol()}' in the dataset")
     }
 
-    val cols = getFeaturesCols().map(col) ++ Array(col(getLabelCol()))
-    val input = hc.asH2OFrame(dataset.select(cols: _*).toDF())
+    // To find the model, we just need two columns, label & features
+    // We are sure that features column is array of doubles
+    val input = hc.asH2OFrame(dataset.select(getLabelCol(), getFeaturesCol()).toDF())
 
     // check if we need to do any splitting
     if ($(ratio) < 1.0) {
@@ -73,10 +72,6 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     }
 
     val trainFrame = getParams._train.get()
-    if (getAllStringColumnsToCategorical()) {
-      H2OFrameSupport.allStringVecToCategorical(trainFrame)
-    }
-    H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
     if ((getParams._distribution == DistributionFamily.bernoulli
       || getParams._distribution == DistributionFamily.multinomial)
@@ -85,12 +80,12 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
         trainFrame.vec(getLabelCol()).toCategoricalVec).remove()
     }
     water.DKV.put(trainFrame)
-    
+
     // Train
     val model: M with H2OModelParams = trainModel(getParams)
 
     // pass some parameters set on algo to model
-    model.setFeaturesCols($(featuresCols))
+    model.setFeaturesCols(Array($(featuresCol)))
     model.setLabelCol($(labelCol))
     model.setConvertUnknownCategoricalLevelsToNa($(convertUnknownCategoricalLevelsToNa))
     model
@@ -102,8 +97,8 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   override def transformSchema(schema: StructType): StructType = {
     require(schema.fields.exists(f => f.name.compareToIgnoreCase(getLabelCol()) == 0),
       s"Specified label column '${getLabelCol()} was not found in input dataset!")
-    require(!getFeaturesCols().exists(n => n.compareToIgnoreCase(getLabelCol()) == 0),
-      s"Specified input features cannot contain the label column!")
+    require(getFeaturesCol() == getLabelCol(),
+      s"Features columnd can not be the same as label column!")
     schema
   }
 

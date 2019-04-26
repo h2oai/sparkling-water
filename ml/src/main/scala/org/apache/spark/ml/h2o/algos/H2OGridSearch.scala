@@ -77,9 +77,13 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
         s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
     }
 
+    if(dataset.columns.contains(getFeaturesCol())){
+      throw new IllegalArgumentException(s"Can not find features column '${getFeaturesCol()}' in the dataset")
+    }
+
     val hyperParams = processHyperParams(algoParams, gridSearchParams.map(_.getHyperParameters()).getOrElse(getHyperParameters()))
 
-    val input = hc.asH2OFrame(dataset.toDF())
+    val input = hc.asH2OFrame(dataset.select(getLabelCol(), getFeaturesCol()).toDF())
     // check if we need to do any splitting
     if (getRatio() < 1.0) {
       // need to do splitting
@@ -95,10 +99,6 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     algoParams._fold_column = getFoldCol()
     algoParams._response_column = getLabelCol()
     val trainFrame = algoParams._train.get()
-    if (getAllStringColumnsToCategorical()) {
-      H2OFrameSupport.allStringVecToCategorical(trainFrame)
-    }
-    H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
     water.DKV.put(trainFrame)
     val criteria = getStrategy() match {
@@ -134,6 +134,8 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
 
     // Block until GridSearch finishes
     val model = trainModel(grid)
+    model.setLabelCol(getLabelCol())
+    model.setFeaturesCols(Array(getFeaturesCol()))
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
   }
@@ -472,8 +474,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
   private final val algoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
   private final val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
   private final val labelCol = new Param[String](this, "labelCol", "Label column name")
-  private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-  private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
+  private final val featuresCol = new Param[String](this, "featuresCol", "Features column name")
   private final val strategy = new GridSearchStrategyParam(this, "strategy", "Search criteria strategy")
   private final val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "maxRuntimeSecs")
   private final val maxModels = new IntParam(this, "maxModels", "maxModels")
@@ -497,8 +498,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
     ratio -> 1.0, // 1.0 means use whole frame as training frame
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
     labelCol -> "label",
-    allStringColumnsToCategorical -> true,
-    columnsToCategorical -> Array.empty[String],
+    featuresCol -> "features",
     strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian,
     maxRuntimeSecs -> 0,
     maxModels -> 0,
@@ -526,9 +526,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
 
   def getLabelCol(): String = $(labelCol)
 
-  def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
-
-  def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
+  def getFeaturesCol(): String = $(featuresCol)
 
   def getStrategy(): HyperSpaceSearchCriteria.Strategy = $(strategy)
 
@@ -576,11 +574,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
 
   def setLabelCol(value: String): this.type = set(labelCol, value)
 
-  def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
-
-  def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
-
-  def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
+  def setFeaturesCol(value: String): this.type = set(featuresCol, value)
 
   def setStrategy(value: HyperSpaceSearchCriteria.Strategy): this.type = set(strategy, value)
 
