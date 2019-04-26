@@ -7,7 +7,6 @@
 apply plugin: 'net.researchgate.release'
 
 release {
-
     tagTemplate = 'RELEASE-$version'
     // Safe point - do releases only from release branch - can be deleted in future
     failOnUnversionedFiles = false
@@ -15,6 +14,6 @@ release {
     preCommitText = ":tada: "
 
     git {
-        requireBranch = 'ignore'
+        requireBranch = 'rel-*'
     }
 }
