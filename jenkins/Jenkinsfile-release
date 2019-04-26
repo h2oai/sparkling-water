@@ -301,7 +301,7 @@ pipeline {
                                                 """
                                     }
                                 }
-                                
+
                                 sh """
                                         REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
                                         PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
