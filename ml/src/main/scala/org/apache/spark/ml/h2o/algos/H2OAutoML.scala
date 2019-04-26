@@ -120,8 +120,6 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
         " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
     }
     val model = trainModel(aml)
-    model.setLabelCol(getLabelCol())
-    model.setFeaturesCols(Array(getFeaturesCol()))
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
   }

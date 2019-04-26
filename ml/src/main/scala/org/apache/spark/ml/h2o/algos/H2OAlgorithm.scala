@@ -90,8 +90,6 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     val model: M with H2OModelParams = trainModel(getParams)
 
     // pass some parameters set on algo to model
-    model.setFeaturesCols(Array($(featuresCol)))
-    model.setLabelCol($(labelCol))
     model.setConvertUnknownCategoricalLevelsToNa($(convertUnknownCategoricalLevelsToNa))
     model
   }

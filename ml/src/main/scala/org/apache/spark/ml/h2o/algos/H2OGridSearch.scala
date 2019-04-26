@@ -134,8 +134,6 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
 
     // Block until GridSearch finishes
     val model = trainModel(grid)
-    model.setLabelCol(getLabelCol())
-    model.setFeaturesCols(Array(getFeaturesCol()))
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
   }

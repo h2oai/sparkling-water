@@ -285,12 +285,6 @@ class H2OMOJOModelHelper[T <: py_sparkling.ml.models.H2OMOJOModel](implicit m: C
     val sparkMojoModel = m.runtimeClass.getConstructor(classOf[Array[Byte]], classOf[String]).
       newInstance(mojoData, uid).asInstanceOf[T]
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
-    if (mojoModel.isSupervised) {
-      sparkMojoModel.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))
-      sparkMojoModel.setLabelCol(mojoModel.getResponseName)
-    } else {
-      sparkMojoModel.setFeaturesCols(mojoModel.getNames)
-    }
     sparkMojoModel
   }
 }
