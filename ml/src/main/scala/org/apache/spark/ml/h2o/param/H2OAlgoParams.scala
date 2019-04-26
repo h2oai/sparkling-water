@@ -47,7 +47,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
 
   final val featuresCol = stringParam(
     "featuresCol",
-    "Feature column name")
+    "Features column name")
 
   final val nfolds = intParam("nfolds")
   final val foldCol = nullableStringParam("foldCol", "Fold column name")
