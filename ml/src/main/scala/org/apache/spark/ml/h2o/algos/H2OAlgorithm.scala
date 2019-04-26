@@ -47,7 +47,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   }
 
   override def fit(dataset: Dataset[_]): M = {
-
+    import org.apache.spark.sql.functions.col
     // Update H2O params based on provided configuration
     updateH2OParams()
 
@@ -55,9 +55,14 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
       throw new IllegalArgumentException(s"Can not find features column '${getFeaturesCol()}' in the dataset")
     }
 
-    // To find the model, we just need two columns, label & features
-    // We are sure that features column is array of doubles
-    val input = hc.asH2OFrame(dataset.select(getLabelCol(), getFeaturesCol()).toDF())
+    var cols = Array(getLabelCol(), getFeaturesCol())
+    if (getWeightCol() != null) {
+      cols = cols ++ Array(getWeightCol())
+    }
+    if (getFoldCol() != null) {
+      cols = cols ++ Array(getFoldCol())
+    }
+    val input = hc.asH2OFrame(dataset.select(cols.map(col): _*).toDF())
 
     // check if we need to do any splitting
     if ($(ratio) < 1.0) {

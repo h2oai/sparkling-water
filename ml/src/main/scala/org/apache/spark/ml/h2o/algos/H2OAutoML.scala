@@ -29,6 +29,7 @@ import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, SQLContext, _}
 import water.Key
@@ -64,7 +65,15 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
       // generate random name to generate fresh leaderboard (the default behaviour)
       setProjectName(Random.alphanumeric.take(30).mkString)
     }
-    val input = hc.asH2OFrame(dataset.select(getLabelCol(), getFeaturesCol()).toDF())
+    var cols = Array(getLabelCol(), getFeaturesCol())
+    if (getWeightCol() != null) {
+      cols = cols ++ Array(getWeightCol())
+    }
+    if (getFoldCol() != null) {
+      cols = cols ++ Array(getFoldCol())
+    }
+    val input = hc.asH2OFrame(dataset.select(cols.map(col): _*).toDF())
+
     // check if we need to do any splitting
     if (getRatio() < 1.0) {
       // need to do splitting
