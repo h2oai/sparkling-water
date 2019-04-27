@@ -331,9 +331,7 @@ def localPyIntegTest() {
             withDocker(config) {
                 if (config.runLocalPyIntegTests.toBoolean()) {
                     try {
-                        if(config.backendMode == "external"){
-                            sh "sudo -E /usr/sbin/startup.sh"
-                        }
+                        sh "sudo -E /usr/sbin/startup.sh"
                         sh """
                         # Run local integration tests
                         ${getGradleCommand(config)} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
@@ -349,9 +347,7 @@ def localPyIntegTest() {
             withDocker(config) {
                 if (config.runLocalPyIntegTests.toBoolean()) {
                     try {
-                        if(config.backendMode == "external"){
-                            sh "sudo -E /usr/sbin/startup.sh"
-                        }
+                        sh "sudo -E /usr/sbin/startup.sh"
                         sh """
                         # Run local integration tests
                         ${getGradleCommand(config)} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
