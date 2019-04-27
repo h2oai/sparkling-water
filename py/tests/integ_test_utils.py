@@ -18,68 +18,45 @@
 
 import sys
 import subprocess
-import generic_test_utils
+from generic_test_utils import *
 
 
-class IntegTestEnv:
+def get_default_spark_conf(additional_conf=None):
+    conf = {
+        "spark.master": "local[*]",
+        "spark.ext.h2o.external.start.mode": "auto",
+        # Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
+        # See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
+        "spark.hadoop.yarn.timeline-service.enabled": "false",
+        "spark.scheduler.minRegisteredResourcesRatio": "1",
+        "spark.ext.h2o.repl.enabled": "false",  # disable repl in tests
+        "spark.ext.h2o.hadoop.memory": "2G",
+        "spark.ext.h2o.port.base": "63331",
+        "spark.executor.memory": "2g",
+        "spark.driver.memory": "2g"
+    }
 
-    def __init__(self):
-        self.spark_home = generic_test_utils.get_env_org_fail("SPARK_HOME",
-                                                              "The variable 'SPARK_HOME' should point to Spark home directory.")
+    for key in additional_conf:
+        conf[key] = additional_conf[key]
 
-        self.spark_master = generic_test_utils.get_env_org_fail("MASTER",
-                                                                "The variable 'MASTER' should contain Spark cluster mode.")
+    if conf["spark.ext.h2o.backend.cluster.mode"] is "external":
+        conf["spark.ext.h2o.client.ip"] = local_ip()
+        conf["spark.ext.h2o.external.cluster.num.h2o.nodes"] = "1"
 
-        self.hdp_version = generic_test_utils.get_env_org_fail("sparkling.test.hdp.version",
-                                                               "The variable 'sparkling.test.hdp.version' is not set! It should contain version of hdp used")
-
-        self.sdist = generic_test_utils.get_env_org_fail("sparkling.pysparkling.sdist",
-                                                         "The variable 'sparkling.pysparkling.sdist' is not set! It should point to PySparkling sdist file")
-        self.spark_conf = {}
-        self.verbose = True
-
-    def conf(self, prop, val):
-        self.spark_conf.update()
-        self.spark_conf.update({prop: val})
-
-    def set_spark_master(self, master):
-        self.spark_master = master
+    return conf
 
 
-def launch(test_env, script_name, param=None):
-    cloud_name = generic_test_utils.unique_cloud_name(script_name)
+def launch(conf, script_name, param=None):
 
-    cmd_line = [get_submit_script(test_env.spark_home), "--verbose"]
-    cmd_line.extend(["--master", test_env.spark_master])
-    if "spark.driver.memory" in test_env.spark_conf:
-        cmd_line.extend(["--driver-memory", test_env.spark_conf.get("spark.driver.memory")])
-    # remove ".py" from cloud name
-    cmd_line.extend(["--conf", 'spark.ext.h2o.cloud.name=sparkling-water-' + cloud_name])
-    cmd_line.extend(["--conf", '"spark.driver.extraJavaOptions=-Dhdp.version=' + test_env.hdp_version + '"'])
-    cmd_line.extend(["--conf", '"spark.yarn.am.extraJavaOptions=-Dhdp.version=' + test_env.hdp_version + '"'])
-    cmd_line.extend(["--conf", 'spark.test.home=' + test_env.spark_home])
-    cmd_line.extend(["--conf", 'spark.scheduler.minRegisteredResourcesRatio=1'])
-    cmd_line.extend(["--conf", 'spark.ext.h2o.repl.enabled=false'])  # disable repl in tests
-    cmd_line.extend(["--conf", "spark.ext.h2o.external.start.mode=auto"])
-    # Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
-    # See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
-    cmd_line.extend(["--conf", 'spark.hadoop.yarn.timeline-service.enabled=false'])
-    cmd_line.extend(["--conf", 'spark.ext.h2o.hadoop.memory=2G'])
-    cmd_line.extend(["--py-files", test_env.sdist])
-    if generic_test_utils.tests_in_external_mode():
-        cloud_ip = generic_test_utils.local_ip()
-        test_env.conf("spark.ext.h2o.client.ip", cloud_ip)
-        test_env.conf("spark.ext.h2o.backend.cluster.mode", "external")
-        test_env.conf("spark.ext.h2o.external.cluster.num.h2o.nodes", "1")
-    else:
-        test_env.conf("spark.ext.h2o.backend.cluster.mode", "internal")
+    cmd_line = [get_submit_script(conf["spark.test.home"]), "--verbose"]
 
-    for k, v in test_env.spark_conf.items():
-        cmd_line.extend(["--conf", k + '=' + str(v)])
+    for key, value in conf.items():
+        cmd_line.extend(["--conf", key + '=' + str(value)])
 
-    # Add python script
+    # Add path to test script
     cmd_line.append(script_name)
 
+    # Add parameter to the test script, if any specified
     if param is not None:
         cmd_line.append(param)
 

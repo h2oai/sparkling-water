@@ -33,21 +33,6 @@ def locate(file_name):
         return os.path.abspath("../examples/" + file_name)
 
 
-def cluster_mode(spark_conf=None):
-    if spark_conf is not None:
-        return spark_conf.get("spark.ext.h2o.backend.cluster.mode", "internal")
-    else:
-        return os.getenv('spark.ext.h2o.backend.cluster.mode', "internal")
-
-
-def tests_in_external_mode(spark_conf=None):
-    return cluster_mode(spark_conf) == "external"
-
-
-def tests_in_internal_mode(spark_conf=None):
-    return not tests_in_external_mode(spark_conf)
-
-
 def parse_spark_options_to_map(args):
     m = {}
 
@@ -83,14 +68,6 @@ def run_tests(cases, file_name=None):
     if result is not None:
         if len(result.errors) > 0 or len(result.failures) > 0:
             raise Exception(result)
-
-
-def get_env_org_fail(prop_name, fail_msg):
-    try:
-        return os.environ[prop_name]
-    except KeyError:
-        print(fail_msg)
-        sys.exit(1)
 
 
 def local_ip():

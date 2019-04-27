@@ -326,15 +326,17 @@ def localIntegTest() {
 
 def localPyIntegTest() {
     return { config ->
-        stage('QA: Local Py Integration Tests 2.7 - ' + config.backendMode) {
+
+        stage('QA: Local Py Integration Tests 3.6 - ' + config.backendMode) {
             withDocker(config) {
                 if (config.runLocalPyIntegTests.toBoolean()) {
                     try {
-                        sh "sudo -E /usr/sbin/startup.sh"
+                        if(config.backendMode == "external"){
+                            sh "sudo -E /usr/sbin/startup.sh"
+                        }
                         sh """
                         # Run local integration tests
-                        . /envs/h2o_env_python2.7/bin/activate
-                        ${getGradleCommand(config)} sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        ${getGradleCommand(config)} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                         """
                     } finally {
                         arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -343,15 +345,16 @@ def localPyIntegTest() {
             }
         }
 
-        stage('QA: Local Py Integration Tests 3.6 - ' + config.backendMode) {
+        stage('QA: Local Py Integration Tests 2.7 - ' + config.backendMode) {
             withDocker(config) {
                 if (config.runLocalPyIntegTests.toBoolean()) {
                     try {
-                        sh "sudo -E /usr/sbin/startup.sh"
+                        if(config.backendMode == "external"){
+                            sh "sudo -E /usr/sbin/startup.sh"
+                        }
                         sh """
                         # Run local integration tests
-                        . /envs/h2o_env_python3.6/bin/activate
-                        ${getGradleCommand(config)} sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        ${getGradleCommand(config)} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                         """
                     } finally {
                         arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -359,6 +362,7 @@ def localPyIntegTest() {
                 }
             }
         }
+
     }
 }
 
@@ -411,14 +415,13 @@ def integTest() {
 
 def pysparklingIntegTest() {
     return { config ->
-        stage('QA: PySparkling Integration Tests 2.7 HDP 2.2 - ' + config.backendMode) {
+        stage('QA: PySparkling Integration Tests 3.6 HDP 2.2 - ' + config.backendMode) {
             withDocker(config) {
                 if (config.runPySparklingIntegTests.toBoolean()) {
                     try {
                         sh """
                          sudo -E /usr/sbin/startup.sh
-                         . /envs/h2o_env_python2.7/bin/activate
-                         PYSPARK_DRIVER_PYTHON=\$(which python) PYSPARK_PYTHON=\$(which python) ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                         ${getGradleCommand(config)} sparkling-water-py:yarnIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PbackendMode=${config.backendMode} -PsparkHome=${env.SPARK_HOME}
                          # echo 'Archiving artifacts after PySparkling Integration test'
                         """
                     } finally {
@@ -428,14 +431,13 @@ def pysparklingIntegTest() {
             }
         }
 
-        stage('QA: PySparkling Integration Tests 3.6 HDP 2.2 - ' + config.backendMode) {
+        stage('QA: PySparkling Integration Tests 2.7 HDP 2.2 - ' + config.backendMode) {
             withDocker(config) {
                 if (config.runPySparklingIntegTests.toBoolean()) {
                     try {
                         sh """
                          sudo -E /usr/sbin/startup.sh
-                         . /envs/h2o_env_python3.6/bin/activate
-                         PYSPARK_DRIVER_PYTHON=\$(which python) PYSPARK_PYTHON=\$(which python) ${getGradleCommand(config)} integTestPython -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check
+                         ${getGradleCommand(config)} sparkling-water-py:yarnIntegTestsPython -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PbackendMode=${config.backendMode} -PsparkHome=${env.SPARK_HOME}
                          # echo 'Archiving artifacts after PySparkling Integration test'
                         """
                     } finally {
@@ -444,6 +446,7 @@ def pysparklingIntegTest() {
                 }
             }
         }
+
     }
 }
 

@@ -29,6 +29,7 @@ python {
         pythonPath project.findProperty("pythonPath").toString()
     }
 
+    pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
     pip "tabulate:0.8.3"
     pip "requests:2.21.0"
     pip "future:0.17.1"
@@ -37,7 +38,7 @@ python {
     pip "pyspark:${sparkVersion}"
     if (project.hasProperty("pythonEnvBasePath")) {
         // for CI as we use pre-cached environment
-        envPath "${project.findProperty("pythonEnvBasePath")}/${getPythonVersion()}/${sparkVersion}" 
+        envPath "${project.findProperty("pythonEnvBasePath")}/${getPythonVersion()}/${sparkVersion}"
     } else {
         envPath "${rootDir}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
     }
@@ -214,7 +215,7 @@ def copyH2OFromH2OWheel(File h2oPythonWheel) {
 // Make PySparkling distribution zip package
 //
 task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.sparklingWaterAssemblyJar]) {
-    
+
     doFirst {
         def H2O_HOME = System.getenv("H2O_HOME")
 
@@ -295,7 +296,7 @@ artifacts {
     sdist distPython
 }
 
-def createTestArgs() {
+def createUnitTestArgs() {
     def args = [
             "${distPython.archiveFile.get()}",
             "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}"
@@ -310,33 +311,44 @@ def createTestArgs() {
             args.add("spark.jars=${configurations.s3deps.resolve().join(",")}")
         }
     }
-
     return args
 }
 
+def createIntegTestArgs(String integTestKind) {
+    return [
+            "${distPython.archiveFile.get()}",
+            "spark.testing=true",
+            "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}",
+            "spark.test.home=${sparkHome}",
+            "spark.ext.h2o.node.log.dir=${buildDir}/h2ologs-itest-${integTestKind}/nodes",
+            "spark.ext.h2o.client.log.dir=${buildDir}/h2ologs-itest-${integTestKind}/client",
+            "spark.driver.extraJavaOptions=-Dhdp.version=${hdpVersion}",
+            "spark.yarn.am.extraJavaOptions=-Dhdp.version=${hdpVersion}"
+    ]
+}
+
 task testPythonConf(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createTestArgs())
+    extraArgs(*createUnitTestArgs())
     command = "tests/tests_unit_conf.py"
 }
 
 task testPythonConversions(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createTestArgs())
+    extraArgs(*createUnitTestArgs())
     command = "tests/tests_unit_conversions.py"
 }
 
 task testPythonMojoPredictions(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createTestArgs())
+    extraArgs(*createUnitTestArgs())
     command = "tests/tests_unit_mojo_predictions.py"
 }
 
-
 task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createTestArgs())
+    extraArgs(*createUnitTestArgs())
     command = "tests/tests_unit_mojo_pipeline.py"
 }
 
 task hadoopSmokeTests(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createTestArgs())
+    extraArgs(*createUnitTestArgs())
     command = "tests/tests_hadoop_smoke.py"
 }
 
@@ -346,48 +358,16 @@ if (project.property("testMojoPipeline") == "true") {
     testPython.dependsOn testPythonMojoPipeline
 }
 
-//
-// Run python integration tests. On Purpose, don't use PythonTask as we want to test the real user
-// use case of submitting apps via ./spark-submit
-//
-task integTestPython(type: Exec, dependsOn: distPython) {
-    def testEnv = detectTestEnvironment()
-
-    // Pass references to libraries to test launcher
-    environment["sparkling.pysparkling.sdist"] = configurations.sdist.artifacts.files.singleFile.absolutePath
-    environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
-    environment["spark.testing"] = "true"
-    environment["spark.test.home"] = "${sparkHome}"
-    environment["sparkling.test.hdp.version"] = "${hdpVersion}"
-    environment["sparkling.test.environment"] = "${testEnv}"
-
-    if (sparkMaster != null)
-        environment["spark.master"] = "${sparkMaster}"
-
-    // Decide which tests should be launch here based on environment
-    switch (testEnv) {
-        case "yarn":
-
-            environment["spark.ext.h2o.node.log.dir"] = "h2ologs-itest-${testEnv}/nodes"
-            environment["spark.ext.h2o.client.log.dir"] = "h2ologs-itest-${testEnv}/client"
-
-            commandLine getOsSpecificCommandLine([pythonBinary, "tests/tests_integ_yarn.py"])
-            break
-
-        case "local":
-            environment["spark.ext.h2o.node.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/nodes").getAbsolutePath()
-            environment["spark.ext.h2o.client.log.dir"] = new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client").getAbsolutePath()
-
-            commandLine getOsSpecificCommandLine([pythonBinary, "tests/tests_integ_local.py"])
-            break
-    }
+task localIntegTestsPython(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
+    extraArgs(*createIntegTestArgs("local"))
+    command = "tests/tests_integ_local.py"
 }
 
-// Run integration tests as part of build
-task integTest
-integTest.dependsOn integTestPython
-check.dependsOn integTest
-integTestPython.dependsOn checkSparkVersionTask
+
+task yarnIntegTestsPython(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
+    extraArgs(*createIntegTestArgs("yarn"))
+    command = "tests/tests_integ_yarn.py"
+}
 
 
 //
@@ -411,12 +391,10 @@ task cleanPython(type: Delete) {
 // Setup execution graph
 //
 clean.dependsOn cleanPython
-updateReadme.dependsOn cleanPython
+updateReadme.dependsOn clean
 createVersionFile.dependsOn updateReadme
 distPython.dependsOn createVersionFile
 
-// Build tasks
-task buildPython(dependsOn: distPython)
-build.dependsOn buildPython
-
+build.dependsOn distPython
 test.dependsOn testPython
+//integTest.depensOn localIntegTestsPython

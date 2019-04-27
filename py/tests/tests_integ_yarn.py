@@ -19,40 +19,35 @@
 Integration tests for pySparkling for Spark running in YARN mode
 """
 import unittest
+import sys
+import os
 
+os.environ['PYSPARK_PYTHON'] = sys.executable
+os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 from integ_test_utils import *
+from generic_test_utils import run_tests
 
 
 class YarnIntegTestSuite(unittest.TestCase):
 
-    def test_xgboost_medium(self):
-        env = IntegTestEnv()
-
-        env.set_spark_master("local[*]")
+    @classmethod
+    def setUpClass(cls):
+        conf = get_default_spark_conf(cls._spark_options_from_params)
+        conf["spark.master"] = "local[*]"
+        conf["spark.submit.pyFiles"] = sys.argv[1]
         # Configure YARN environment
-        env.conf("spark.yarn.max.executor.failures", 1)  # In fail of executor, fail the test
-        env.conf("spark.executor.instances", 1)
-        env.conf("spark.executor.memory", "2g")
-        env.conf("spark.ext.h2o.port.base", 63331)
-        env.conf("spark.driver.memory", "2g")
+        conf["spark.yarn.max.executor.failures"] = "1"  # In fail of executor, fail the test
+        conf["spark.executor.instances"] = "1"
+        cls._conf = conf
 
-        return_code = launch(env, "examples/scripts/tests/xgboost_test_medium.py")
+    def test_xgboost_medium(self):
+        return_code = launch(self._conf, "examples/scripts/tests/xgboost_test_medium.py")
         self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
     def test_chicago_crime(self):
-        env = IntegTestEnv()
-
-        env.set_spark_master("local[*]")
-        # Configure YARN environment
-        env.conf("spark.yarn.max.executor.failures", 1)  # In fail of executor, fail the test
-        env.conf("spark.executor.instances", 1)
-        env.conf("spark.executor.memory", "2g")
-        env.conf("spark.ext.h2o.port.base", 63331)
-        env.conf("spark.driver.memory", "2g")
-
-        return_code = launch(env, "examples/scripts/ChicagoCrimeDemo.py")
+        return_code = launch(self._conf, "examples/scripts/ChicagoCrimeDemo.py")
         self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
 
 if __name__ == '__main__':
-    generic_test_utils.run_tests([YarnIntegTestSuite], file_name="py_integ_yarn_tests_report")
+    run_tests([YarnIntegTestSuite], file_name="py_integ_yarn_tests_report")
