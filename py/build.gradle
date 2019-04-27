@@ -369,7 +369,7 @@ task yarnIntegTestsPython(type: PythonTask, dependsOn: [distPython, checkSparkVe
     command = "tests/tests_integ_yarn.py"
 }
 
-
+task integTestPython(dependsOn: localIntegTestsPython)
 //
 // Just print location of H2O Python Wheel package with respect to a configured version of H2O dependency
 //
@@ -397,4 +397,5 @@ distPython.dependsOn createVersionFile
 
 build.dependsOn distPython
 test.dependsOn testPython
-//integTest.depensOn localIntegTestsPython
+integTest.dependsOn integTestPython
+
