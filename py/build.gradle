@@ -323,6 +323,7 @@ def createIntegTestArgs(String integTestKind) {
             "spark.ext.h2o.node.log.dir=${buildDir}/h2ologs-itest-${integTestKind}/nodes",
             "spark.ext.h2o.client.log.dir=${buildDir}/h2ologs-itest-${integTestKind}/client",
             "spark.driver.extraJavaOptions=-Dhdp.version=${hdpVersion} ${extraTestJVMArgs}",
+            "spark.executor.extraJavaOptions=-Dhdp.version=${hdpVersion}",
             "spark.yarn.am.extraJavaOptions=-Dhdp.version=${hdpVersion}"
     ]
 }
