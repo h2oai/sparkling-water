@@ -33,8 +33,7 @@ class YarnIntegTestSuite(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         conf = get_default_spark_conf(cls._spark_options_from_params)
-        conf["spark.master"] = "yarn"
-        conf["spark.submit.deployMode"] = "cluster"
+        conf["spark.master"] = "local[*]"
         conf["spark.submit.pyFiles"] = sys.argv[1]
         # Configure YARN environment
         conf["spark.yarn.max.executor.failures"] = "1"  # In fail of executor, fail the test
