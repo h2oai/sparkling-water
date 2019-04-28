@@ -39,7 +39,7 @@ def get_default_spark_conf(additional_conf=None):
     for key in additional_conf:
         conf[key] = additional_conf[key]
 
-    if conf["spark.ext.h2o.backend.cluster.mode"] is "external":
+    if conf["spark.ext.h2o.backend.cluster.mode"] == "external":
         conf["spark.ext.h2o.client.ip"] = local_ip()
         conf["spark.ext.h2o.external.cluster.num.h2o.nodes"] = "1"
 
