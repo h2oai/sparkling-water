@@ -37,7 +37,7 @@ def parse_spark_options_to_map(args):
     m = {}
 
     for arg in args:
-        split = arg.split("=")
+        split = arg.split("=", 1)
         m[split[0]] = split[1]
     return m
 
