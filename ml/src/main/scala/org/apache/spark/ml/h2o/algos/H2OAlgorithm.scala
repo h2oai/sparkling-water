@@ -20,14 +20,15 @@ import hex.Model
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
-import org.apache.spark.ml.h2o.param.{H2OAlgoParams, H2OModelParams}
+import org.apache.spark.ml.h2o.models.H2OMOJOModel
+import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Estimator, Model => SparkModel}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, SparkSession}
 import water.Key
-import water.support.H2OFrameSupport
+import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
 import scala.reflect.ClassTag
 /**
@@ -42,12 +43,16 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     // Update H2O params based on provided configuration
     updateH2OParams()
 
+    val excludedCols = Set(getLabelCol(), getFoldCol(), getWeightCol())
+      .flatMap(Option(_)) // Remove nulls
+
     // if this is left empty select
     if (getFeaturesCols().isEmpty) {
-      setFeaturesCols(dataset.columns.filter(n => n.compareToIgnoreCase(getLabelCol()) != 0))
+      val features = dataset.columns.filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
+      setFeaturesCols(features)
     }
 
-    val cols = getFeaturesCols().map(col) ++ Array(col(getLabelCol()))
+    val cols = (getFeaturesCols() ++ excludedCols).map(col)
     val input = H2OContext.getOrCreate(SparkSession.builder().getOrCreate()).asH2OFrame(dataset.select(cols: _*).toDF())
 
     // check if we need to do any splitting
@@ -77,7 +82,9 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     water.DKV.put(trainFrame)
     
     // Train
-    val model: M with H2OModelParams = trainModel(parameters)
+
+    val binaryModel = trainModel(parameters)
+    val model = new H2OMOJOModel(ModelSerializationSupport.getMojoData(binaryModel))
 
     // pass some parameters set on algo to model
     model.setFeaturesCols(getFeaturesCols())
@@ -86,7 +93,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     model
   }
 
-  def trainModel(params: P): M with H2OModelParams
+  def trainModel(params: P): H2OBaseModel
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {

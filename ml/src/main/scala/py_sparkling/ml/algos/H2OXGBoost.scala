@@ -17,22 +17,19 @@
 
 package py_sparkling.ml.algos
 
-import hex.tree.xgboost.XGBoost
+import hex.tree.xgboost.{XGBoost, XGBoostModel}
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import org.apache.spark.ml.h2o.algos.H2OAlgorithmReader
 import org.apache.spark.ml.util.{MLReadable, MLReader}
 import py_sparkling.ml.models.H2OMOJOModel
-import water.support.ModelSerializationSupport
+
 
 /**
   * H2O XGBoost Wrapper for PySparkling
   */
 class H2OXGBoost(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OXGBoost(uid) {
 
-  override def trainModel(params: XGBoostParameters): H2OMOJOModel = {
-    val model = new XGBoost(params).trainModel().get()
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
-  }
+  override def trainModel(params: XGBoostParameters): XGBoostModel = new XGBoost(params).trainModel().get()
 }
 
 private[algos] object H2OXGBoost extends MLReadable[H2OXGBoost] {

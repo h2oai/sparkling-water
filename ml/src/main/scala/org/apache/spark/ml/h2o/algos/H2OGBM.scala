@@ -17,7 +17,7 @@
 package org.apache.spark.ml.h2o.algos
 
 import hex.schemas.GBMV3.GBMParametersV3
-import hex.tree.gbm.GBM
+import hex.tree.gbm.{GBM, GBMModel}
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.annotation.Since
 import org.apache.spark.ml.h2o.models._
@@ -35,10 +35,7 @@ class H2OGBM(override val uid: String) extends H2OAlgorithm[GBMParameters, H2OMO
 
   override def defaultFileName: String = H2OGBM.defaultFileName
 
-  override def trainModel(params: GBMParameters): H2OMOJOModel = {
-    val model = new GBM(params).trainModel().get()
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
-  }
+  override def trainModel(params: GBMParameters): GBMModel = new GBM(params).trainModel().get()
 
 }
 

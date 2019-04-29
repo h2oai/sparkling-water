@@ -17,7 +17,7 @@
 package org.apache.spark.ml.h2o.algos
 
 import hex.schemas.XGBoostV3.XGBoostParametersV3
-import hex.tree.xgboost.XGBoost
+import hex.tree.xgboost.{XGBoost, XGBoostModel}
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
 import org.apache.spark.annotation.Since
@@ -25,7 +25,7 @@ import org.apache.spark.ml.h2o.models._
 import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
 import org.apache.spark.ml.param.Params
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
-import water.support.ModelSerializationSupport
+
 
 /**
   * H2O XGBoost algorithm exposed via Spark ML pipelines.
@@ -37,11 +37,7 @@ class H2OXGBoost(override val uid: String) extends H2OAlgorithm[XGBoostParameter
 
   override def defaultFileName: String = H2OXGBoost.defaultFileName
 
-  override def trainModel(params: XGBoostParameters): H2OMOJOModel = {
-    val model = new XGBoost(params).trainModel().get()
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
-  }
-
+  override def trainModel(params: XGBoostParameters): XGBoostModel = new XGBoost(params).trainModel().get()
 }
 
 object H2OXGBoost extends MLReadable[H2OXGBoost] {

@@ -17,22 +17,17 @@
 
 package py_sparkling.ml.algos
 
-import hex.tree.gbm.GBM
+import hex.tree.gbm.{GBM, GBMModel}
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.ml.h2o.algos.H2OAlgorithmReader
 import org.apache.spark.ml.util.{MLReadable, MLReader}
-import py_sparkling.ml.models.H2OMOJOModel
-import water.support.ModelSerializationSupport
 
 /**
   * H2O GBM Wrapper for PySparkling
   */
 class H2OGBM(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OGBM(uid) {
 
-  override def trainModel(params: GBMParameters): H2OMOJOModel = {
-    val model = new GBM(params).trainModel().get()
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
-  }
+  override def trainModel(params: GBMParameters): GBMModel = new GBM(params).trainModel().get()
 }
 
 private[algos] object H2OGBM extends MLReadable[H2OGBM] {

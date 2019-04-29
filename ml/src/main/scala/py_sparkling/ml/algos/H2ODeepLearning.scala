@@ -17,22 +17,17 @@
 
 package py_sparkling.ml.algos
 
-import hex.deeplearning.DeepLearning
+import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.ml.h2o.algos.H2OAlgorithmReader
 import org.apache.spark.ml.util.{MLReadable, MLReader}
-import py_sparkling.ml.models.H2OMOJOModel
-import water.support.ModelSerializationSupport
 
 /**
   * H2O DeepLearning Wrapper for PySparkling
   */
 class H2ODeepLearning(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2ODeepLearning(uid) {
 
-  override def trainModel(params: DeepLearningParameters): H2OMOJOModel = {
-    val model = new DeepLearning(params).trainModel().get()
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
-  }
+  override def trainModel(params: DeepLearningParameters): DeepLearningModel = new DeepLearning(params).trainModel().get()
 }
 
 private[algos] object H2ODeepLearning extends MLReadable[H2ODeepLearning] {

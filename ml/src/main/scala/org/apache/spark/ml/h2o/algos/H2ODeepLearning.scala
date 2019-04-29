@@ -17,14 +17,14 @@
 
 package org.apache.spark.ml.h2o.algos
 
-import hex.deeplearning.DeepLearning
+import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 import org.apache.spark.annotation.Since
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.util._
-import water.support.ModelSerializationSupport
+
 
 
 /**
@@ -39,11 +39,7 @@ class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearnin
 
   override def defaultFileName: String = H2ODeepLearning.defaultFileName
 
-  override def trainModel(params: DeepLearningParameters): H2OMOJOModel = {
-    val model = new DeepLearning(params).trainModel().get()
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
-  }
-
+  override def trainModel(params: DeepLearningParameters): DeepLearningModel = new DeepLearning(params).trainModel().get()
 }
 
 object H2ODeepLearning extends MLReadable[H2ODeepLearning] {
