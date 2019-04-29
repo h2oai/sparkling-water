@@ -16,7 +16,7 @@ cache:
         - $HOME/.gradle/wrapper/
 
 script:
- - ./gradlew sparkling-water-core:test -i
+ - ./gradlew sparkling-water-core:test
  - ./gradlew sparkling-water-ml:test
  - ./gradlew sparkling-water-repl:test
 
