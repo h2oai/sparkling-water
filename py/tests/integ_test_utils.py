@@ -47,8 +47,10 @@ def get_default_spark_conf(additional_conf=None):
 
 
 def launch(conf, script_name, param=None):
-
-    cmd_line = [get_submit_script(conf["spark.test.home"]), "--verbose"]
+    cmd_line = [
+        get_submit_script(conf["spark.test.home"]),
+        "--verbose",
+        "--py-files", conf["spark.submit.pyFiles"]]
 
     for key, value in conf.items():
         cmd_line.extend(["--conf", key + '=' + str(value)])
