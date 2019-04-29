@@ -14,7 +14,7 @@ from .util import JavaH2OMLReadable
 from py_sparkling.ml.models import H2OMOJOModel
 from py_sparkling.ml.util import get_enum_array_from_str_array
 java_max_double_value = (2-2**(-52))*(2**1023)
-
+from pysparkling.spark_specifics import get_input_kwargs
 
 def set_double_values(kwargs, values):
     for v in values:
@@ -55,7 +55,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                          sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                          learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=self._hc._jvm.Double.MAX_VALUE,
                          predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None)
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
     @keyword_only
@@ -67,7 +67,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                   learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=java_max_double_value,
                   predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None, **deprecatedArgs):
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self)
 
         if "distribution" in kwargs:
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
@@ -111,7 +111,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                          seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
                          epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False,
                          foldCol=None)
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
     @keyword_only
@@ -119,7 +119,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                   nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                   seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False,
                   foldCol=None, **deprecatedArgs):
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self)
 
         if "distribution" in kwargs:
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
@@ -158,7 +158,8 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                          convertUnknownCategoricalLevelsToNa=False, seed=-1, sortMetric=None, balanceClasses=False,
                          classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
                          keepCrossValidationModels=True, maxModels=0)
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self)
+
         self.setParams(**kwargs)
 
     @keyword_only
@@ -167,7 +168,8 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                   stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=False, seed=-1,
                   sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
                   keepCrossValidationModels=True, maxModels=0, **deprecatedArgs):
-        kwargs = self._input_kwargs
+
+        kwargs = get_input_kwargs(self)
 
         if "stoppingMetric" in kwargs:
             kwargs["stoppingMetric"] = self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf(kwargs["stoppingMetric"])
@@ -244,7 +246,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                          backend=self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf("auto"),
                          foldCol=None)
 
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
     @keyword_only
@@ -259,7 +261,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                   booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0, sampleType="uniform",
                   normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
                   foldCol=None, **deprecatedArgs):
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self)
 
         if "distribution" in kwargs:
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
@@ -331,7 +333,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                          lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                          gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearCols=False,
                          interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None)
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
     @keyword_only
@@ -344,7 +346,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                   gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearCols=False,
                   interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None, **deprecatedArgs):
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self)
 
         if "distribution" in kwargs:
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
@@ -401,7 +403,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                          stoppingRounds=0, stoppingTolerance=0.001,
                          stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=0,
                          selectBestModelBy=None, selectBestModelDecreasing=True, foldCol=None)
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
     @keyword_only
@@ -409,7 +411,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                   columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                   stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy=None,
                   selectBestModelDecreasing=True, foldCol=None, **deprecatedArgs):
-        kwargs = self._input_kwargs
+        kwargs = get_input_kwargs(self)
 
 
         if "stoppingMetric" in kwargs:
