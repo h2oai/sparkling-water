@@ -20,7 +20,7 @@ def detectBackendClusterMode(defaultBackendMode = "internal") {
     return mode
 }
 
-def detectExternalBackendStartMode(defaultMode = "manual") {
+def detectExternalBackendStartMode(defaultMode = "auto") {
     String mode = [project.hasProperty("externalBackendStartMode") ? project["externalBackendStartMode"] : null,
                    System.properties["spark.ext.h2o.external.start.mode"],
                    defaultMode
