@@ -21,7 +21,7 @@ Integration tests for pySparkling for Spark running in YARN mode
 import unittest
 import sys
 import os
-
+sys.path.insert(0, sys.argv[1])
 os.environ['PYSPARK_PYTHON'] = sys.executable
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 from integ_test_utils import *
