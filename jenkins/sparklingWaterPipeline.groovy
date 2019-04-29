@@ -358,7 +358,6 @@ def localPyIntegTest() {
                 }
             }
         }
-
     }
 }
 
@@ -442,7 +441,6 @@ def pysparklingIntegTest() {
                 }
             }
         }
-
     }
 }
 
