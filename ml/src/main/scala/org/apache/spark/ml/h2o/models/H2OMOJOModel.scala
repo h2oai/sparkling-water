@@ -26,7 +26,6 @@ import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o.utils.H2OSchemaUtils
-import org.apache.spark.ml.h2o.param.H2OModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
@@ -38,10 +37,11 @@ import water.support.ModelSerializationSupport
 
 import scala.reflect.{ClassTag, classTag}
 
-class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
-  extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable {
-
-  def this(mojoData: Array[Byte]) = this(mojoData, Identifiable.randomUID("mojoModel"))
+class H2OMOJOModel(val mojoData: Array[Byte], private val predictionCol: String, private val convertUnknownCategoricalLevelsToNa: Boolean, override val uid: String)
+  extends SparkModel[H2OMOJOModel] with MLWritable {
+  def this(mojoData: Array[Byte], predictionCol: String, convertUnknownCategoricalLevelsToNa: Boolean) {
+    this(mojoData, predictionCol, convertUnknownCategoricalLevelsToNa, Identifiable.randomUID("mojoModel"))
+  }
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient var easyPredictModelWrapper: EasyPredictModelWrapper = _
@@ -74,7 +74,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
       case _ => throw new RuntimeException("Unknown model category")
     }
 
-    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(predictionCol, StructType(fields), nullable = false))
   }
 
 
@@ -148,7 +148,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     if (easyPredictModelWrapper == null) {
       val config = new EasyPredictModelWrapper.Config()
       config.setModel(ModelSerializationSupport.getMojoModel(mojoData))
-      config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
+      config.setConvertUnknownCategoricalLevelsToNa(convertUnknownCategoricalLevelsToNa)
       easyPredictModelWrapper = new EasyPredictModelWrapper(config)
     }
     easyPredictModelWrapper
@@ -158,7 +158,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   override def transform(dataset: Dataset[_]): DataFrame = {
     val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
     val args = flatten.schema.fields.map(f => flatten(f.name))
-    flatten.select(col("*"), getModelUdf()(struct(args: _*)).as(getPredictionCol()))
+    flatten.select(col("*"), getModelUdf()(struct(args: _*)).as(predictionCol))
   }
 
 

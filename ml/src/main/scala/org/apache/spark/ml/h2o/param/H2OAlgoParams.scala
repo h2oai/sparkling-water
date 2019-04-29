@@ -41,6 +41,11 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
     "labelCol",
     "Label column name")
 
+  final val predictionCol = stringParam(
+    name = "predictionCol",
+    doc = "Prediction column name"
+  )
+
   final val weightCol = nullableStringParam(
     "weightCol",
     "Weight column name")
@@ -65,6 +70,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
   setDefault(
     ratio -> 1.0, // 1.0 means use whole frame as training frame
     labelCol -> "label",
+    predictionCol -> "prediction",
     weightCol -> null,
     featuresCol -> "features",
     nfolds -> parameters._nfolds,
@@ -83,6 +89,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
   def getTrainRatio(): Double = $(ratio)
 
   def getLabelCol(): String = $(labelCol)
+
+  def getPredictionCol(): String = $(predictionCol)
 
   def getWeightCol(): String = $(weightCol)
 
@@ -110,6 +118,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
   def setTrainRatio(value: Double): this.type = set(ratio, value)
 
   def setLabelCol(value: String): this.type = set(labelCol, value)
+
+  def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   def setWeightCol(value: String): this.type = set(weightCol, value)
 

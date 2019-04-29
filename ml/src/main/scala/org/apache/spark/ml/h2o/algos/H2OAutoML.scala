@@ -117,9 +117,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
       throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease" +
         " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
     }
-    val model = trainModel(aml)
-    model.setConvertUnknownCategoricalLevelsToNa(true)
-    model
+    trainModel(aml)
   }
 
   private def leaderboardAsSparkFrame(aml: AutoML): Option[DataFrame] = {
@@ -135,8 +133,8 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
     Some(hc.sparkSession.createDataFrame(rdd, schema))
   }
 
-  def trainModel(aml: AutoML) = {
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()))
+  def trainModel(aml: AutoML): H2OMOJOModel = {
+    new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()), getPredictionCol(), getConvertUnknownCategoricalLevelsToNa())
   }
 
   @DeveloperApi
@@ -220,6 +218,7 @@ trait H2OAutoMLParams extends DeprecatableParams {
   // Param definitions
   //
   private final val labelCol = new Param[String](this, "labelCol", "Label column name")
+  private final val predictionCol = new Param[String](this, "predictionCol", "Prediction colum name")
   private final val featuresCol = new Param[String](this, "featuresCol", "Features column name")
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   private final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
@@ -249,6 +248,7 @@ trait H2OAutoMLParams extends DeprecatableParams {
   //
   setDefault(
     labelCol -> "label",
+    predictionCol -> "prediction",
     featuresCol -> "features",
     ratio -> 1.0, // 1.0 means use whole frame as training frame,
     foldCol -> null,
@@ -276,6 +276,8 @@ trait H2OAutoMLParams extends DeprecatableParams {
   // Getters
   //
   def getLabelCol(): String = $(labelCol)
+
+  def getPredictionCol(): String = $(predictionCol)
 
   def getFeaturesCol(): String = $(featuresCol)
 
@@ -323,6 +325,8 @@ trait H2OAutoMLParams extends DeprecatableParams {
   // Setters
   //
   def setLabelCol(value: String): this.type = set(labelCol, value)
+
+  def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   def setFeaturesCol(value: String): this.type = set(featuresCol, value)
 

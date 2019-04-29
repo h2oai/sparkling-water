@@ -20,7 +20,6 @@ import hex.Model
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
-import org.apache.spark.ml.h2o.param.H2OModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
@@ -37,7 +36,7 @@ import scala.util.Random
 abstract class H2OModel[S <: H2OModel[S, M],
 M <: Model[_, _, _ <: Model.Output]]
 (val model: M, h2oContext: H2OContext, sqlContext: SQLContext)
-  extends SparkModel[S] with H2OModelParams with MLWritable {
+  extends SparkModel[S] with MLWritable {
 
 
   override def copy(extra: ParamMap): S = defaultCopy(extra)

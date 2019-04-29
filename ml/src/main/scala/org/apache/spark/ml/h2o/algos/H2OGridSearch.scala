@@ -128,13 +128,10 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     gridModels = sortGrid(grid)
     gridMojoModels = gridModels.map { m =>
       val data = ModelSerializationSupport.getMojoData(m)
-      new H2OMOJOModel(data, Identifiable.randomUID(s"${getAlgoParams().algoName()}_mojoModel"))
+      new H2OMOJOModel(data, getPredictionCol(), getConvertUnknownCategoricalLevelsToNa(), Identifiable.randomUID(s"${getAlgoParams().algoName()}_mojoModel"))
     }
 
-    // Block until GridSearch finishes
-    val model = trainModel(grid)
-    model.setConvertUnknownCategoricalLevelsToNa(true)
-    model
+    trainModel(grid)
   }
 
   //noinspection ComparingUnrelatedTypes
@@ -182,7 +179,8 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   }
 
   def trainModel(grid: Grid[_]) = {
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)), Identifiable.randomUID("gridSearch_mojoModel"))
+    new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)), getPredictionCol(),
+      getConvertUnknownCategoricalLevelsToNa(), Identifiable.randomUID("gridSearch_mojoModel"))
   }
 
   private def selectMetric(model: H2OModel) = {
@@ -470,6 +468,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
   private final val algoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
   private final val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
   private final val labelCol = new Param[String](this, "labelCol", "Label column name")
+  private final val predictionCol = new Param[String](this, "predictionCol", "Prediction colum name")
   private final val featuresCol = new Param[String](this, "featuresCol", "Features column name")
   private final val strategy = new GridSearchStrategyParam(this, "strategy", "Search criteria strategy")
   private final val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "maxRuntimeSecs")
@@ -485,6 +484,8 @@ trait H2OGridSearchParams extends DeprecatableParams {
   private final val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
     "True if sort in decreasing order accordingto selected metrics")
   private final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
+  private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
+    " categorical levels to NA during predictions")
 
   //
   // Default values
@@ -494,6 +495,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
     ratio -> 1.0, // 1.0 means use whole frame as training frame
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
     labelCol -> "label",
+    predictionCol -> "prediction",
     featuresCol -> "features",
     strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian,
     maxRuntimeSecs -> 0,
@@ -505,7 +507,8 @@ trait H2OGridSearchParams extends DeprecatableParams {
     nfolds -> 0,
     selectBestModelBy -> null,
     selectBestModelDecreasing -> true,
-    foldCol -> null
+    foldCol -> null,
+    convertUnknownCategoricalLevelsToNa -> false
   )
 
   //
@@ -518,6 +521,8 @@ trait H2OGridSearchParams extends DeprecatableParams {
   def getHyperParameters(): util.Map[String, Array[AnyRef]] = $(hyperParameters)
 
   def getLabelCol(): String = $(labelCol)
+
+  def getPredictionCol(): String = $(predictionCol)
 
   def getFeaturesCol(): String = $(featuresCol)
 
@@ -543,6 +548,8 @@ trait H2OGridSearchParams extends DeprecatableParams {
 
   def getFoldCol(): String = $(foldCol)
 
+  def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
+
   //
   // Setters
   //
@@ -563,6 +570,8 @@ trait H2OGridSearchParams extends DeprecatableParams {
   def setHyperParameters(value: java.util.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
 
   def setLabelCol(value: String): this.type = set(labelCol, value)
+
+  def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   def setFeaturesCol(value: String): this.type = set(featuresCol, value)
 
@@ -587,6 +596,8 @@ trait H2OGridSearchParams extends DeprecatableParams {
   def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
 
   def setFoldCol(value: String): this.type = set(foldCol, value)
+
+  def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 
 }
 
