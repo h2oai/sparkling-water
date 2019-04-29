@@ -20,15 +20,6 @@ def detectBackendClusterMode(defaultBackendMode = "internal") {
     return mode
 }
 
-def detectExternalBackendStartMode(defaultMode = "manual") {
-    String mode = [project.hasProperty("externalBackendStartMode") ? project["externalBackendStartMode"] : null,
-                   System.properties["spark.ext.h2o.external.start.mode"],
-                   defaultMode
-    ].find { h -> h != null } // first match
-
-    logger.info("* Test on external backend will be running in '$mode' cluster mode (configure via property 'externalBackendStartMode')")
-    return mode
-}
 //
 // Represents location of H2O jar
 //
@@ -51,7 +42,6 @@ ext {
     getOsSpecificCommandLine = this.&getOsSpecificCommandLine
     isWindowsBased = this.&isWindowsBased
     detectBackendClusterMode = this.&detectBackendClusterMode
-    detectExternalBackendStartMode = this.&detectExternalBackendStartMode
     h2oJarLocation = this.&h2oJarLocation
     detectTestEnvironment = this.&detectTestEnvironment
 }

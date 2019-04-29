@@ -59,7 +59,6 @@ task test(type: Exec, dependsOn: [configurations.sparklingWaterAssemblyJar]) {
     environment["SPARK_HOME"] = sparkHome
     environment["H2O_CLIENT_IP"] = InetAddress.getLocalHost().hostAddress
     environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
-    environment["spark.ext.h2o.external.start.mode"] = detectExternalBackendStartMode()
 
     workingDir file("src/tests")
     commandLine getOsSpecificCommandLine(['R', '-f', 'testthat.R'])
