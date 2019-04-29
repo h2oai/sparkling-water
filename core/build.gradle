@@ -159,6 +159,9 @@ task createSparklingWaterVersionFile {
         version_file.write(version)
     }
 }
+test {
+    testLogging.showStandardStreams = true
+}
 test.dependsOn testJar
 processResources.dependsOn createSparkVersionFile
 processResources.dependsOn createH2OVersionFile
