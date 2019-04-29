@@ -29,11 +29,8 @@ trait IntegTestHelper extends BeforeAndAfterEach {
       "--verbose",
       "--master", env.sparkMaster) ++
       env.sparkConf.get("spark.driver.memory").map(m => Seq("--driver-memory", m)).getOrElse(Nil) ++
-      Seq("--conf", s"spark.driver.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
-      Seq("--conf", s"spark.yarn.am.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
-      Seq("--conf", s"spark.executor.extraJavaOptions=-XX:MaxPermSize=384m -Dhdp.version=${env.hdpVersion}") ++
-      Seq("--conf",  "spark.scheduler.minRegisteredResourcesRatio=1") ++
-      Seq("--conf",  "spark.ext.h2o.repl.enabled=false") ++ // disable repl in tests
+      Seq("--conf", "spark.scheduler.minRegisteredResourcesRatio=1") ++
+      Seq("--conf", "spark.ext.h2o.repl.enabled=false") ++ // disable repl in tests
       Seq("--conf", s"spark.test.home=${env.sparkHome}") ++
       Seq("--conf", s"spark.driver.extraClassPath=${env.assemblyJar}") ++
       Seq("--conf", "spark.task.maxFailures=1") ++ // Any task failures are suspicious
@@ -107,9 +104,6 @@ trait IntegTestHelper extends BeforeAndAfterEach {
       sys.props.getOrElse("spark.master",
         fail("None of both 'MASTER' and 'spark.master' variables is not set! It should specify Spark mode.")))
 
-    lazy val hdpVersion = sys.props.getOrElse("sparkling.test.hdp.version",
-      fail("The variable 'sparkling.test.hdp.version' is not set! It should contain version of hdp used."))
-
     def verbose: Boolean = true
 
     def sparkConf: mutable.Map[String, String]
@@ -138,8 +132,6 @@ trait IntegTestHelper extends BeforeAndAfterEach {
 object YarnTest extends Tag("water.sparkling.itest.YarnTest")
 
 object LocalTest extends Tag("water.sparkling.itest.LocalTest")
-
-object StandaloneTest extends Tag("water.sparkling.itest.StandaloneTest")
 
 
 trait IntegTestStopper {
