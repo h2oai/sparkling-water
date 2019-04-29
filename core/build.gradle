@@ -167,7 +167,6 @@ processResources.dependsOn createSparklingWaterVersionFile
 integTest {
     // Pass references to libraries to test launcher
     systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
-    systemProperty "spark.ext.h2o.external.start.mode", detectExternalBackendStartMode()
 
     systemProperty "spark.testing",   "true"
     systemProperty "spark.test.home", "${sparkHome}"
