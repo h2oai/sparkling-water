@@ -27,6 +27,7 @@ call %SPARK_HOME%/bin/spark-shell2.cmd ^
  --jars %FAT_JAR_FILE% ^
  %*
 
+
 exit /b %ERRORLEVEL%
 rem end of main script
 
