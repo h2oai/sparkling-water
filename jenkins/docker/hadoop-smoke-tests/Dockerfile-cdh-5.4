@@ -1,10 +1,10 @@
-FROM harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.4:58
+FROM harbor.h2o.ai/opsh2oai/h2o-3-hadoop-cdh-5.4:58
 
 ENV LANG 'C.UTF-8'
 RUN locale
 
 RUN rm -rf /etc/hadoop/conf/yarn-site.xml
-COPY conf/yarn-site.xml /etc/hadoop/conf/yarn-site.xml
+COPY ../conf/yarn-site.xml /etc/hadoop/conf/yarn-site.xml
 
 RUN \
     rm /etc/startup/70_start_slapd
