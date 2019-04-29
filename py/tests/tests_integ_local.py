@@ -19,52 +19,41 @@
 Integration tests for pySparkling for Spark running in local
 """
 import unittest
-
+import sys
+import os
 from integ_test_utils import *
-
+from generic_test_utils import run_tests
+os.environ['PYSPARK_PYTHON'] = sys.executable
 
 class LocalIntegTestSuite(unittest.TestCase):
 
-    def test_pipeline_gbm_mojo(self):
-        env = IntegTestEnv()
-        env.set_spark_master("local[*]")
-        env.conf("spark.ext.h2o.port.base", 63331)
+    @classmethod
+    def setUpClass(cls):
+        conf = get_default_spark_conf(cls._spark_options_from_params)
+        conf["spark.master"] = "local[*]"
+        conf["spark.submit.pyFiles"] = sys.argv[1]
+        cls._conf = conf
 
-        return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "gbm")
+    def test_pipeline_gbm_mojo(self):
+        return_code = launch(self._conf, "examples/pipelines/ham_or_spam_multi_algo.py", param="gbm")
         self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
     def test_pipeline_deep_learning(self):
-        env = IntegTestEnv()
-        env.set_spark_master("local[*]")
-        env.conf("spark.ext.h2o.port.base", 63331)
-
-        return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "dl")
+        return_code = launch(self._conf, "examples/pipelines/ham_or_spam_multi_algo.py", param="dl")
         self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
     def test_pipeline_xgboost(self):
-        env = IntegTestEnv()
-        env.set_spark_master("local[*]")
-        env.conf("spark.ext.h2o.port.base", 63331)
-
-        return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "xgboost")
+        return_code = launch(self._conf, "examples/pipelines/ham_or_spam_multi_algo.py", param="xgboost")
         self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
     def test_pipeline_automl(self):
-        env = IntegTestEnv()
-        env.set_spark_master("local[*]")
-        env.conf("spark.ext.h2o.port.base", 63331)
-
-        return_code = launch(env, "examples/pipelines/ham_or_spam_multi_algo.py", "automl")
+        return_code = launch(self._conf, "examples/pipelines/ham_or_spam_multi_algo.py", param="automl")
         self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
     def test_import_pysparkling_standalone_app(self):
-        env = IntegTestEnv()
-        env.set_spark_master("local[*]")
-        env.conf("spark.ext.h2o.port.base", 63331)
-
-        return_code = launch(env, "examples/scripts/tests/pysparkling_ml_import_overrides_spark_test.py")
+        return_code = launch(self._conf, "examples/scripts/tests/pysparkling_ml_import_overrides_spark_test.py")
         self.assertTrue(return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code))
 
 
 if __name__ == '__main__':
-    generic_test_utils.run_tests([LocalIntegTestSuite], file_name="py_integ_local_tests_report")
+    run_tests([LocalIntegTestSuite], file_name="py_integ_local_tests_report")

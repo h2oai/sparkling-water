@@ -1,5 +1,7 @@
 apply plugin: 'base'
 
-task test(group: "Verification", description: "Test this project")
+task test(group: "Verification", description: "Unit Tests")
+
+task integTest(group: "Verification", description: "Integration Tests")
 
 check.dependsOn test
