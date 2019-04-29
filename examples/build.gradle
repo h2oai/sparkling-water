@@ -70,6 +70,9 @@ integTest {
   // Pass list of jars required for testing
   systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
   systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
+  systemProperty "spark.driver.extraJavaOptions", "-Dhdp.version=${hdpVersion} ${extraTestJVMArgs}"
+  systemProperty "spark.yarn.am.extraJavaOptions", "-Dhdp.version=${hdpVersion} ${extraTestJVMArgs}"
+  systemProperty "spark.executor.extraJavaOptions","-Dhdp.version=${hdpVersion} ${extraTestJVMArgs}"
 
   // Show standard out and standard error of the test JVM(s) on the console
   testLogging.showStandardStreams = true
@@ -83,6 +86,8 @@ scriptsTest {
   systemProperty "sparkling.test.log.dir", new File(project.getBuildDir(), "h2ologs-test")
   systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-stest/nodes")
   systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-stest/client")
+  systemProperty "spark.driver.extraJavaOptions", "${extraTestJVMArgs}"
+  systemProperty "spark.executor.extraJavaOptions", "${extraTestJVMArgs}"
 
   // Set sparkling water assembly jar location
   systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
@@ -90,6 +95,9 @@ scriptsTest {
   enableAssertions = true
   // For a new JVM for each test class
   forkEvery = 1
+
+  jvmArgs extraTestJVMArgs.split(" ")
+
   // Increase test runner memory
   maxHeapSize = "4g"
   // Working dir will be root project
