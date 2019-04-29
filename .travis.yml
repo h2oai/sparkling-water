@@ -15,4 +15,4 @@ cache:
         - $HOME/.gradle/caches/
         - $HOME/.gradle/wrapper/
 
-script: travis_wait 30 ./gradlew sparkling-water-ml:test sparkling-water-repl:test
+script: travis_wait 30 ./gradlew sparkling-water-core:test sparkling-water-ml:test sparkling-water-repl:test
