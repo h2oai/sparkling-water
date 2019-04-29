@@ -30,6 +30,10 @@ echo "---------"
 export SPARK_PRINT_LAUNCH_COMMAND=1
 VERBOSE=--verbose
 
+if [ -f "$SPARK_HOME/conf/spark-defaults.conf" ]; then
+    EXTRA_DRIVER_PROPS=$(grep "^spark.driver.extraJavaOptions" "$SPARK_HOME"/conf/spark-defaults.conf 2>/dev/null | sed -e 's/spark.driver.extraJavaOptions//' )
+fi
+
 VERBOSE=
 spark-submit \
 --master "$SCRIPT_MASTER" \
@@ -37,6 +41,7 @@ spark-submit \
 --driver-java-options "$SCRIPT_H2O_SYS_OPS" \
 --deploy-mode "$SCRIPT_DEPLOY_MODE" \
 --py-files "$PY_ZIP_FILE" \
+--conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS $EXTRA_JVM_ARGS" \
 $VERBOSE \
 "$@"
 
