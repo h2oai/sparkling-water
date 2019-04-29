@@ -19,5 +19,3 @@ script:
  - ./gradlew sparkling-water-core:test
  - ./gradlew sparkling-water-ml:test
  - ./gradlew sparkling-water-repl:test
-
-
