@@ -11,7 +11,8 @@ config=c(config, list(
                 "spark.ext.h2o.client.ip"=Sys.getenv("H2O_CLIENT_IP"),
                 "sparklyr.gateway.connect.timeout"=240,
                 "sparklyr.gateway.start.timeout"=240,
-                "sparklyr.backend.timeout"=240
+                "sparklyr.backend.timeout"=240,
+                "spark.ext.h2o.external.start.mode"="auto"
 ))
 
 test_that("Test transformation from h2o frame to data frame", {
