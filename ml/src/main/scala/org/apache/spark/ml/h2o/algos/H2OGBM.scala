@@ -23,12 +23,11 @@ import org.apache.spark.annotation.Since
 import org.apache.spark.ml.h2o.models._
 import org.apache.spark.ml.h2o.param.H2OSharedTreeParams
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
-import water.support.ModelSerializationSupport
 
 /**
   * H2O GBM algorithm exposed via Spark ML pipelines.
   */
-class H2OGBM(override val uid: String) extends H2OAlgorithm[GBMParameters, H2OMOJOModel]
+class H2OGBM(override val uid: String) extends H2OAlgorithm[GBMParameters]
   with H2OGBMParams {
 
   def this() = this(Identifiable.randomUID("gbm"))

@@ -24,7 +24,6 @@ import hex.glm.GLMModel.GLMParameters
 import hex.glm.GLMModel.GLMParameters.{Family, Link, Solver}
 import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.annotation.Since
-import org.apache.spark.ml.h2o.models._
 import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
 import org.apache.spark.ml.param.{Param, Params}
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
@@ -36,7 +35,7 @@ import water.AutoBuffer
 /**
   * H2O GLM algorithm exposed via Spark ML pipelines.
   */
-class H2OGLM(override val uid: String) extends H2OAlgorithm[GLMParameters, H2OMOJOModel]
+class H2OGLM(override val uid: String) extends H2OAlgorithm[GLMParameters]
   with H2OGLMParams {
 
   def this() = this(Identifiable.randomUID("glm"))

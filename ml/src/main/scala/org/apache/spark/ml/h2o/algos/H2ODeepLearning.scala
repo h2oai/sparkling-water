@@ -21,7 +21,6 @@ import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 import org.apache.spark.annotation.Since
-import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.util._
 
@@ -32,7 +31,7 @@ import org.apache.spark.ml.util._
   *
   * TODO: There are still bunch of parameters defined DeepLearningParameters which need to be ported here
   */
-class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearningParameters, H2OMOJOModel]
+class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearningParameters]
   with H2ODeepLearningParams {
 
   def this() = this(Identifiable.randomUID("deeplearning"))

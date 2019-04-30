@@ -30,7 +30,7 @@ import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 /**
   * H2O XGBoost algorithm exposed via Spark ML pipelines.
   */
-class H2OXGBoost(override val uid: String) extends H2OAlgorithm[XGBoostParameters, H2OMOJOModel]
+class H2OXGBoost(override val uid: String) extends H2OAlgorithm[XGBoostParameters]
     with H2OXGBoostParams {
 
   def this() = this(Identifiable.randomUID("xgboost"))

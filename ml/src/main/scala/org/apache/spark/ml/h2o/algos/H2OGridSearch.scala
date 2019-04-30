@@ -520,7 +520,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
   //
   def setRatio(value: Double): this.type = set(ratio, value)
 
-  def setAlgo(value: H2OAlgorithm[_ <: Model.Parameters, _]): this.type = {
+  def setAlgo(value: H2OAlgorithm[_ <: Model.Parameters]): this.type = {
     val field = PojoUtils.getFieldEvenInherited(value, "parameters")
     field.setAccessible(true)
     val algoParams = field.get(value).asInstanceOf[Model.Parameters]

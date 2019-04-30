@@ -24,7 +24,7 @@ import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
-import org.apache.spark.ml.{Estimator, Model => SparkModel}
+import org.apache.spark.ml.Estimator
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, SparkSession}
 import water.Key
@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
-abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M] : ClassTag]
+abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
   extends Estimator[M] with DefaultParamsWritable with H2OAlgoParams[P] {
 
   override def fit(dataset: Dataset[_]): M = {
@@ -83,7 +83,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     
     // Train
 
-    val binaryModel = trainModel(parameters)
+    val binaryModel: H2OBaseModel = trainModel(parameters)
     val model = new H2OMOJOModel(ModelSerializationSupport.getMojoData(binaryModel))
 
     // pass some parameters set on algo to model
@@ -110,10 +110,10 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 }
 
 object H2OAlgorithmReader {
-  def create[A <: H2OAlgorithm[_, _] : ClassTag](defaultFileName: String) = new H2OAlgorithmReader[A](defaultFileName)
+  def create[A <: H2OAlgorithm[_] : ClassTag](defaultFileName: String) = new H2OAlgorithmReader[A](defaultFileName)
 }
 
-private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[_, _] : ClassTag]
+private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[_] : ClassTag]
 (val defaultFileName: String) extends MLReader[A] {
 
   override def load(path: String): A = {
