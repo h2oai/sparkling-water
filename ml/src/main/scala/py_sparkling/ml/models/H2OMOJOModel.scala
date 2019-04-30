@@ -22,7 +22,7 @@ import org.apache.spark.ml.h2o.models.H2OMOJOModelHelper
 import org.apache.spark.ml.util._
 
 class H2OMOJOModel(override val mojoData: Array[Byte], override val uid: String)
-  extends org.apache.spark.ml.h2o.models.H2OMOJOModel(mojoData) {
+  extends org.apache.spark.ml.h2o.models.H2OMOJOModel(mojoData, uid) {
 
   def this(mojoData: Array[Byte]) = this(mojoData, Identifiable.randomUID("mojoModel"))
 }
