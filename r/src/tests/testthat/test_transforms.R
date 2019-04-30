@@ -12,7 +12,7 @@ config=c(config, list(
                 "sparklyr.gateway.connect.timeout"=240,
                 "sparklyr.gateway.start.timeout"=240,
                 "sparklyr.backend.timeout"=240,
-                "spark.ext.h2o.backend.cluster.mode"="auto"
+                "spark.ext.h2o.external.start.mode"="auto"
 ))
 
 test_that("Test transformation from h2o frame to data frame", {
