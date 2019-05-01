@@ -79,11 +79,23 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   }
 
 
-  implicit def toBinomialPrediction(pred: AbstractPrediction) = BinomialPrediction(
-    pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
-    pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1),
-    pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities(0),
-    pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities(1))
+  implicit def toBinomialPrediction(pred: AbstractPrediction): BinomialPrediction = {
+    if(pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities != null) {
+      BinomialPrediction(
+        pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
+        pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1),
+        pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities(0),
+        pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities(1))
+    }else{
+      BinomialPrediction(
+        pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
+        pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1),
+        Double.NaN,
+        Double.NaN
+      )
+    }
+
+  }
 
   implicit def toRegressionPrediction(pred: AbstractPrediction) = RegressionPrediction(
     pred.asInstanceOf[RegressionModelPrediction].value)
