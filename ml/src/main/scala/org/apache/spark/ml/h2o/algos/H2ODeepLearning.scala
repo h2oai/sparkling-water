@@ -21,11 +21,9 @@ import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 import org.apache.spark.annotation.Since
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.util._
-import org.apache.spark.sql.SQLContext
 import water.support.ModelSerializationSupport
 
 
@@ -34,19 +32,10 @@ import water.support.ModelSerializationSupport
   *
   * TODO: There are still bunch of parameters defined DeepLearningParameters which need to be ported here
   */
-class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val uid: String)
-                     (implicit h2oContext: H2OContext, sqlContext: SQLContext)
-  extends H2OAlgorithm[DeepLearningParameters, H2OMOJOModel](parameters)
+class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearningParameters, H2OMOJOModel]
     with H2ODeepLearningParams {
 
-  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("deeplearning"))
-
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
-
-  def this(parameters: DeepLearningParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters),
-    Identifiable.randomUID("deeplearning"))
-
-  def this(parameters: DeepLearningParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
+  def this() = this(Identifiable.randomUID("deeplearning"))
 
   override def defaultFileName: String = H2ODeepLearning.defaultFileName
 

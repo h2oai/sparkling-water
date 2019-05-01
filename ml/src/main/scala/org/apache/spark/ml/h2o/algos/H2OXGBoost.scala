@@ -21,29 +21,19 @@ import hex.tree.xgboost.XGBoost
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
 import org.apache.spark.annotation.Since
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.h2o.models._
 import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
 import org.apache.spark.ml.param.Params
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
-import org.apache.spark.sql.SQLContext
 import water.support.ModelSerializationSupport
 
 /**
   * H2O XGBoost algorithm exposed via Spark ML pipelines.
   */
-class H2OXGBoost(parameters: Option[XGBoostParameters], override val uid: String)
-                (implicit h2oContext: H2OContext, sqlContext: SQLContext)
-  extends H2OAlgorithm[XGBoostParameters, H2OMOJOModel](parameters)
+class H2OXGBoost(override val uid: String) extends H2OAlgorithm[XGBoostParameters, H2OMOJOModel]
     with H2OXGBoostParams {
 
-  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("xgboost"))
-
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
-
-  def this(parameters: XGBoostParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("gbm"))
-
-  def this(parameters: XGBoostParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
+  def this() = this(Identifiable.randomUID("xgboost"))
 
   override def defaultFileName: String = H2OXGBoost.defaultFileName
 

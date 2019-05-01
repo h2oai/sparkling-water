@@ -16,7 +16,6 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-import java.io._
 import java.lang.reflect.Field
 import java.util
 
@@ -27,18 +26,16 @@ import hex.grid.HyperSpaceSearchCriteria.{CartesianSearchCriteria, RandomDiscret
 import hex.grid.{Grid, GridSearch, HyperSpaceSearchCriteria}
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
-import hex.{Model, ModelMetrics, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMultinomial, ModelMetricsRegression, ModelMetricsRegressionGLM, ScoreKeeper}
-import org.apache.hadoop.fs.Path
+import hex.{Model, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMultinomial, ModelMetricsRegression, ModelMetricsRegressionGLM, ScoreKeeper}
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
-import org.apache.spark.internal.Logging
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{Dataset, Row, SQLContext}
+import org.apache.spark.sql.{Dataset, Row, SparkSession}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 import water.util.{DeprecatedMethod, PojoUtils}
@@ -48,24 +45,23 @@ import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
-  * H2O Grid Search, currently available just for GBM
+  * H2O Grid Search
   */
-class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override val uid: String)
-                   (implicit hc: H2OContext, sqlContext: SQLContext)
-  extends Estimator[H2OMOJOModel] with MLWritable with H2OGridSearchParams {
+class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
+  with MLWritable with H2OGridSearchParams {
+
+  private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
   type H2OModel = hex.Model[_, _ <: hex.Model.Parameters, _ <: hex.Model.Output]
 
-  def this()(implicit hc: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gridsearch"))
-
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
+  def this() = this(Identifiable.randomUID("gridsearch"))
 
   private var grid: Grid[_ <: Model.Parameters] = _
   private var gridModels: Array[H2OModel] = _
   private var gridMojoModels: Array[H2OMOJOModel] = _
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val algoParams = gridSearchParams.map(_.getAlgoParams()).getOrElse(getAlgoParams())
+    val algoParams = ${gridAlgoParams}
 
     if (algoParams == null) {
       throw new IllegalArgumentException(s"Algorithm has to be specified. Available algorithms are " +
@@ -77,7 +73,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
         s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
     }
 
-    val hyperParams = processHyperParams(algoParams, gridSearchParams.map(_.getHyperParameters()).getOrElse(getHyperParameters()))
+    val hyperParams = processHyperParams(algoParams, getHyperParameters())
 
     val input = hc.asH2OFrame(dataset.toDF())
     // check if we need to do any splitting
@@ -105,11 +101,11 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
       case HyperSpaceSearchCriteria.Strategy.Cartesian => new CartesianSearchCriteria
       case HyperSpaceSearchCriteria.Strategy.RandomDiscrete =>
         val c = new RandomDiscreteValueSearchCriteria
-        c.set_stopping_tolerance(getStoppingTolerance)
-        c.set_stopping_rounds(getStoppingRounds)
-        c.set_stopping_metric(getStoppingMetric)
-        c.set_seed(getSeed)
-        c.set_max_models(getMaxModels)
+        c.set_stopping_tolerance(getStoppingTolerance())
+        c.set_stopping_rounds(getStoppingRounds())
+        c.set_stopping_metric(getStoppingMetric())
+        c.set_seed(getSeed())
+        c.set_max_models(getMaxModels())
         c.set_max_runtime_secs(getMaxRuntimeSecs())
         c
       case _ => new CartesianSearchCriteria
@@ -129,7 +125,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
     gridModels = sortGrid(grid)
     gridMojoModels = gridModels.map { m =>
       val data = ModelSerializationSupport.getMojoData(m)
-      new H2OMOJOModel(data, Identifiable.randomUID(s"${getAlgoParams().algoName()}_mojoModel"))
+      new H2OMOJOModel(data, Identifiable.randomUID(s"${$(gridAlgoParams).algoName()}_mojoModel"))
     }
 
     // Block until GridSearch finishes
@@ -377,7 +373,7 @@ class H2OGridSearch(val gridSearchParams: Option[H2OGridSearchParams], override 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 
   @Since("1.6.0")
-  override def write: MLWriter = new H2OGridSearchWriter(this)
+  override def write: MLWriter = new DefaultParamsWriter(this)
 
   def defaultFileName: String = H2OGridSearch.defaultFileName
 }
@@ -410,46 +406,20 @@ object H2OGridSearch extends MLReadable[H2OGridSearch] {
 
 }
 
-// FIXME: H2O Params are iced objects!
-private[algos] class H2OGridSearchWriter(instance: H2OGridSearch) extends MLWriter {
-
-  @Since("1.6.0") override protected def saveImpl(path: String): Unit = {
-    val hadoopConf = sc.hadoopConfiguration
-
-    DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val outputPath = new Path(path, instance.defaultFileName)
-    val fs = outputPath.getFileSystem(hadoopConf)
-    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val out = fs.create(qualifiedOutputPath)
-    val oos = new ObjectOutputStream(out)
-    oos.writeObject(instance.gridSearchParams.orNull)
-    out.close()
-    logInfo(s"Saved to: $qualifiedOutputPath")
-  }
-}
-
 private[algos] class H2OGridSearchReader[A <: H2OGridSearch : ClassTag](val defaultFileName: String) extends MLReader[A] {
 
   override def load(path: String): A = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc)
 
-    val inputPath = new Path(path, defaultFileName)
-    val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
-    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val ois = new ObjectInputStream(fs.open(qualifiedInputPath))
-
-    val gridSearchParams = ois.readObject().asInstanceOf[H2OGridSearchParams]
-    implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
-    val algo = make[A](Option(gridSearchParams), metadata.uid, h2oContext, sqlContext)
+    val algo = make[A](metadata.uid)
     metadata.getAndSetParams(algo)
     algo
   }
 
-  private def make[CT: ClassTag]
-  (gridSearchParams: Option[H2OGridSearchParams], uid: String, h2oContext: H2OContext, sqlContext: SQLContext): CT = {
+  private def make[CT: ClassTag](uid: String): CT = {
     val aClass = implicitly[ClassTag[CT]].runtimeClass
-    val ctor = aClass.getConstructor(classOf[Option[H2OGridSearchParams]], classOf[String], classOf[H2OContext], classOf[SQLContext])
-    ctor.newInstance(gridSearchParams, uid, h2oContext, sqlContext).asInstanceOf[CT]
+    val ctor = aClass.getConstructor(classOf[String])
+    ctor.newInstance(uid).asInstanceOf[CT]
   }
 }
 
@@ -469,7 +439,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
   //
   private final val algo = new DoubleParam(this, "algo", "dummy argument for pysparkling")
   private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
-  private final val algoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
+  protected final val gridAlgoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
   private final val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
   private final val labelCol = new Param[String](this, "labelCol", "Label column name")
   private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
@@ -493,7 +463,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
   // Default values
   //
   setDefault(
-    algoParams -> null,
+    gridAlgoParams -> null,
     ratio -> 1.0, // 1.0 means use whole frame as training frame
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
     labelCol -> "label",
@@ -516,8 +486,6 @@ trait H2OGridSearchParams extends DeprecatableParams {
   // Getters
   //
   def getRatio(): Double = $(ratio)
-
-  def getAlgoParams(): Model.Parameters = $(algoParams)
 
   def getHyperParameters(): util.Map[String, Array[AnyRef]] = $(hyperParameters)
 
@@ -558,11 +526,14 @@ trait H2OGridSearchParams extends DeprecatableParams {
   def setRatio(value: Double): this.type = set(ratio, value)
 
   def setAlgo(value: H2OAlgorithm[_ <: Model.Parameters, _]): this.type = {
-    if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(value.getParams.algoName())) {
+    val field = PojoUtils.getFieldEvenInherited(value, "parameters")
+    field.setAccessible(true)
+    val algoParams = field.get(value).asInstanceOf[Model.Parameters]
+    if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(algoParams.algoName())) {
       throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '$value'. Supported " +
         s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
     }
-    set(algoParams, value.getParams)
+    set(gridAlgoParams, algoParams)
   }
 
   def setHyperParameters(value: Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.asJava)

@@ -16,12 +16,10 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-import java.io._
 import java.util.Date
 
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import hex.ScoreKeeper
-import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
@@ -30,7 +28,7 @@ import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{Dataset, SQLContext, _}
+import org.apache.spark.sql.{Dataset, _}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 import water.util.DeprecatedMethod
@@ -42,18 +40,17 @@ import scala.util.control.NoStackTrace
 /**
   * H2O AutoML pipeline step
   */
-class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: String)
-               (implicit hc: H2OContext, sqlContext: SQLContext)
-  extends Estimator[H2OMOJOModel] with MLWritable with H2OAutoMLParams {
+class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
+  with MLWritable with H2OAutoMLParams {
 
-  def this()(implicit hc: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("automl"))
+  private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
+  def this() = this(Identifiable.randomUID("automl"))
 
   var leaderboard: Option[DataFrame] = None
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val spec = automlBuildSpec.getOrElse(new AutoMLBuildSpec)
+    val spec = new AutoMLBuildSpec
 
     // override the buildSpec with the configuration specified directly on the estimator
     if (getProjectName() == null) {
@@ -140,7 +137,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 
   @Since("1.6.0")
-  override def write: MLWriter = new H2OAutoMLWriter(this)
+  override def write: MLWriter = new DefaultParamsWriter(this)
 
   def defaultFileName: String = H2OAutoML.defaultFileName
 }
@@ -157,45 +154,20 @@ object H2OAutoML extends MLReadable[H2OAutoML] {
   override def load(path: String): H2OAutoML = super.load(path)
 }
 
-// FIXME: H2O Params are iced objects!
-private[algos] class H2OAutoMLWriter(instance: H2OAutoML) extends MLWriter {
-
-  @Since("1.6.0") override protected def saveImpl(path: String): Unit = {
-    val hadoopConf = sc.hadoopConfiguration
-    DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val outputPath = new Path(path, instance.defaultFileName)
-    val fs = outputPath.getFileSystem(hadoopConf)
-    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val out = fs.create(qualifiedOutputPath)
-    val oos = new ObjectOutputStream(out)
-    oos.writeObject(instance.automlBuildSpec.orNull)
-    out.close()
-    logInfo(s"Saved to: $qualifiedOutputPath")
-  }
-}
-
 private[algos] class H2OAutoMLReader[A <: H2OAutoML : ClassTag](val defaultFileName: String) extends MLReader[A] {
 
   override def load(path: String): A = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc)
 
-    val inputPath = new Path(path, defaultFileName)
-    val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
-    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val ois = new ObjectInputStream(fs.open(qualifiedInputPath))
-
-    val buildSpec = ois.readObject().asInstanceOf[AutoMLBuildSpec]
-    implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
-    val algo = make[A](Option(buildSpec), metadata.uid, h2oContext, sqlContext)
+    val algo = make[A](metadata.uid)
     metadata.getAndSetParams(algo)
     algo
   }
 
-  private def make[CT: ClassTag]
-  (autoMLBuildSpec: Option[AutoMLBuildSpec], uid: String, h2oContext: H2OContext, sqlContext: SQLContext): CT = {
+  private def make[CT: ClassTag](uid: String): CT = {
     val aClass = implicitly[ClassTag[CT]].runtimeClass
-    val ctor = aClass.getConstructor(classOf[Option[AutoMLBuildSpec]], classOf[String], classOf[H2OContext], classOf[SQLContext])
-    ctor.newInstance(autoMLBuildSpec, uid, h2oContext, sqlContext).asInstanceOf[CT]
+    val ctor = aClass.getConstructor(classOf[String])
+    ctor.newInstance(uid).asInstanceOf[CT]
   }
 }
 

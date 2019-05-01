@@ -19,29 +19,15 @@ package py_sparkling.ml.algos
 
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.h2o.algos.{H2OAlgorithmReader, H2ODeepLearningParams}
-import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.ml.h2o.algos.H2OAlgorithmReader
+import org.apache.spark.ml.util.{MLReadable, MLReader}
 import py_sparkling.ml.models.H2OMOJOModel
 import water.support.ModelSerializationSupport
 
 /**
   * H2O DeepLearning Wrapper for PySparkling
   */
-class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val uid: String)
-            (implicit h2oContext: H2OContext, sqlContext: SQLContext)
-  extends org.apache.spark.ml.h2o.algos.H2ODeepLearning(parameters, uid)(h2oContext, sqlContext)
-    with H2ODeepLearningParams {
-
-  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("deeplearning"))
-
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
-
-  def this(parameters: DeepLearningParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) =
-    this(Option(parameters), Identifiable.randomUID("deeplearning"))
-
-  def this(parameters: DeepLearningParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
+class H2ODeepLearning(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2ODeepLearning(uid) {
 
   override def trainModel(params: DeepLearningParameters): H2OMOJOModel = {
     val model = new DeepLearning(params).trainModel().get()
@@ -49,7 +35,7 @@ class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val u
   }
 }
 
-object H2ODeepLearning extends MLReadable[H2ODeepLearning] {
+private[algos] object H2ODeepLearning extends MLReadable[H2ODeepLearning] {
 
   private final val defaultFileName = "deeplearning_params"
 

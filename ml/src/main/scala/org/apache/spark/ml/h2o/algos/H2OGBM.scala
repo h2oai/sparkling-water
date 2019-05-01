@@ -20,28 +20,18 @@ import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.annotation.Since
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.h2o.models._
 import org.apache.spark.ml.h2o.param.H2OSharedTreeParams
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
-import org.apache.spark.sql.SQLContext
 import water.support.ModelSerializationSupport
 
 /**
   * H2O GBM algorithm exposed via Spark ML pipelines.
   */
-class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
-            (implicit h2oContext: H2OContext, sqlContext: SQLContext)
-  extends H2OAlgorithm[GBMParameters, H2OMOJOModel](parameters)
+class H2OGBM(override val uid: String) extends H2OAlgorithm[GBMParameters, H2OMOJOModel]
     with H2OGBMParams {
 
-  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gbm"))
-
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
-
-  def this(parameters: GBMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("gbm"))
-
-  def this(parameters: GBMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
+  def this() = this(Identifiable.randomUID("gbm"))
 
   override def defaultFileName: String = H2OGBM.defaultFileName
 
@@ -78,11 +68,11 @@ trait H2OGBMParams extends H2OSharedTreeParams[GBMParameters] {
   //
   // Param definitions
   //
-  final val learnRate = doubleParam("learnRate")
-  final val learnRateAnnealing = doubleParam("learnRateAnnealing")
-  final val colSampleRate = doubleParam("colSampleRate")
-  final val maxAbsLeafnodePred = doubleParam("maxAbsLeafnodePred")
-  final val predNoiseBandwidth = doubleParam("predNoiseBandwidth")
+  private final val learnRate = doubleParam("learnRate")
+  private final val learnRateAnnealing = doubleParam("learnRateAnnealing")
+  private final val colSampleRate = doubleParam("colSampleRate")
+  private final val maxAbsLeafnodePred = doubleParam("maxAbsLeafnodePred")
+  private final val predNoiseBandwidth = doubleParam("predNoiseBandwidth")
 
   //
   // Default values

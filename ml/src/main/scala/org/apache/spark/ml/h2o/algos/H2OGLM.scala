@@ -24,12 +24,10 @@ import hex.glm.GLMModel.GLMParameters
 import hex.glm.GLMModel.GLMParameters.{Family, Link, Solver}
 import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.annotation.Since
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.h2o.models._
 import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
 import org.apache.spark.ml.param.{Param, Params}
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
-import org.apache.spark.sql.SQLContext
 import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JValue}
@@ -39,18 +37,10 @@ import water.support.ModelSerializationSupport
 /**
   * H2O GLM algorithm exposed via Spark ML pipelines.
   */
-class H2OGLM(parameters: Option[GLMParameters], override val uid: String)
-            (implicit h2oContext: H2OContext, sqlContext: SQLContext)
-  extends H2OAlgorithm[GLMParameters, H2OMOJOModel](parameters)
+class H2OGLM(override val uid: String) extends H2OAlgorithm[GLMParameters, H2OMOJOModel]
     with H2OGLMParams {
 
-  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("glm"))
-
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
-
-  def this(parameters: GLMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("glm"))
-
-  def this(parameters: GLMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
+  def this() = this(Identifiable.randomUID("glm"))
 
   override def defaultFileName: String = H2OGLM.defaultFileName
 
@@ -87,32 +77,32 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   //
   // Param definitions
   //
-  final val standardize = booleanParam("standardize")
-  final val family = new H2OGLMFamilyParam(this, "family", "family")
-  final val link = new H2OGLMLinkParam(this, "link", "link")
-  final val solver = new H2OGLMSolverParam(this, "solver", "solver")
-  final val tweedieVariancePower = doubleParam("tweedieVariancePower")
-  final val tweedieLinkPower = doubleParam("tweedieLinkPower")
-  final val alpha = nullableDoubleArrayParam("alpha")
-  final val lambda_ = nullableDoubleArrayParam("lambda_", "lambda")
-  final val missingValuesHandling = new H2OGLMMissingValuesHandlingParam(this, "missingValuesHandling", "missingValuesHandling")
-  final val prior = doubleParam("prior")
-  final val lambdaSearch = booleanParam("lambdaSearch")
-  final val nlambdas = intParam("nlambdas")
-  final val nonNegative = booleanParam("nonNegative")
-  final val exactLambdas = booleanParam("exactLambdas", "exact lambdas")
-  final val lambdaMinRatio = doubleParam("lambdaMinRatio")
-  final val maxIterations = intParam("maxIterations")
-  final val intercept = booleanParam("intercept")
-  final val betaEpsilon = doubleParam("betaEpsilon")
-  final val objectiveEpsilon = doubleParam("objectiveEpsilon")
-  final val gradientEpsilon = doubleParam("gradientEpsilon")
-  final val objReg = doubleParam("objReg")
-  final val computePValues = booleanParam("computePValues")
-  final val removeCollinearCols = booleanParam("removeCollinearCols", "A flag indicating whether collinear columns should be removed or not")
-  final val interactions = nullableStringArrayParam("interactions")
-  final val interactionPairs = new H2OGLMStringPairArrayParam(this, "interactionPairs", "interactionPairs")
-  final val earlyStopping = booleanParam("earlyStopping")
+  private final val standardize = booleanParam("standardize")
+  private final val family = new H2OGLMFamilyParam(this, "family", "family")
+  private final val link = new H2OGLMLinkParam(this, "link", "link")
+  private final val solver = new H2OGLMSolverParam(this, "solver", "solver")
+  private final val tweedieVariancePower = doubleParam("tweedieVariancePower")
+  private final val tweedieLinkPower = doubleParam("tweedieLinkPower")
+  private final val alpha = nullableDoubleArrayParam("alpha")
+  private final val lambda_ = nullableDoubleArrayParam("lambda_", "lambda")
+  private final val missingValuesHandling = new H2OGLMMissingValuesHandlingParam(this, "missingValuesHandling", "missingValuesHandling")
+  private final val prior = doubleParam("prior")
+  private final val lambdaSearch = booleanParam("lambdaSearch")
+  private final val nlambdas = intParam("nlambdas")
+  private final val nonNegative = booleanParam("nonNegative")
+  private final val exactLambdas = booleanParam("exactLambdas", "exact lambdas")
+  private final val lambdaMinRatio = doubleParam("lambdaMinRatio")
+  private final val maxIterations = intParam("maxIterations")
+  private final val intercept = booleanParam("intercept")
+  private final val betaEpsilon = doubleParam("betaEpsilon")
+  private final val objectiveEpsilon = doubleParam("objectiveEpsilon")
+  private final val gradientEpsilon = doubleParam("gradientEpsilon")
+  private final val objReg = doubleParam("objReg")
+  private final val computePValues = booleanParam("computePValues")
+  private final val removeCollinearCols = booleanParam("removeCollinearCols", "A flag indicating whether collinear columns should be removed or not")
+  private final val interactions = nullableStringArrayParam("interactions")
+  private final val interactionPairs = new H2OGLMStringPairArrayParam(this, "interactionPairs", "interactionPairs")
+  private final val earlyStopping = booleanParam("earlyStopping")
 
   //
   // Default values
