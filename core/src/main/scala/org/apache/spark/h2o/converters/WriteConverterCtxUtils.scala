@@ -62,7 +62,7 @@ object WriteConverterCtxUtils {
     * Converts the RDD to H2O Frame using specified conversion function
     *
     * @param hc            H2O context
-    * @param rddInput           rdd to convert
+    * @param rddInput      rdd to convert
     * @param keyName       key of the resulting frame
     * @param colNames      names of the columns in the H2O Frame
     * @param expectedTypes expected types of the vectors in the H2O Frame
@@ -72,7 +72,6 @@ object WriteConverterCtxUtils {
     * @tparam T type of RDD to convert
     * @return H2O Frame
     */
-  
   def convert[T: ClassTag: TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                  maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]) = {
     // Make an H2O data Frame - but with no backing data (yet)
@@ -86,7 +85,7 @@ object WriteConverterCtxUtils {
     }
     val rdd = if (hc.getConf.runsInInternalClusterMode) {
       // this is only required in internal cluster mode
-      val prefs = hc.h2oNodes.map{ nodeDesc =>
+      val prefs = hc.h2oNodes.map { nodeDesc =>
         s"executor_${nodeDesc.hostname}_${nodeDesc.nodeId}"
       }
       new H2OAwareRDD(prefs, rddInput)

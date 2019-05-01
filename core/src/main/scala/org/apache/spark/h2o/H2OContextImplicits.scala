@@ -58,7 +58,6 @@ abstract class H2OContextImplicits {
   implicit def toH2OFrameKeyfromRDDMlVector(rdd: RDD[ml.linalg.Vector]): Key[_] = _h2oContext.toH2OFrameKey(rdd, None)
 
 
-
   /** Implicit conversion from Spark DataFrame to H2OFrame */
   implicit def asH2OFrameFromDataFrame(df : DataFrame) : H2OFrame = _h2oContext.asH2OFrame(df, None)
 

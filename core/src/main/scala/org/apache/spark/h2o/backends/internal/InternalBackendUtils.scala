@@ -59,7 +59,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
     *
     * @param conf H2O Configuration to check
     * @return checked and updated configuration
-    * */
+    **/
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
     if (conf.clientIp.isEmpty) {
@@ -193,7 +193,6 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
         }
       }
     }.collect()
-
 
     // The accumulable should contain all IP:PORTs from all exeuctors
     if (bc.value.size != numOfExecutors ||

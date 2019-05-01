@@ -21,14 +21,11 @@ import org.apache.spark.{Partition, TaskContext}
 
 import scala.reflect.ClassTag
 
-
 class H2OAwareRDD[U: ClassTag](nodes: Seq[String], prev: RDD[U]) extends RDD[U](prev: RDD[U]) {
 
   override def getPreferredLocations(split: Partition): Seq[String] = nodes
 
   override def compute(split: Partition, context: TaskContext): Iterator[U] = prev.compute(split, context)
 
-  override protected def getPartitions: Array[Partition] = {
-    prev.partitions
-  }
+  override protected def getPartitions: Array[Partition] = prev.partitions
 }
