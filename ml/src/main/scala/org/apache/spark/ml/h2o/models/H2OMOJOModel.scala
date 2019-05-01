@@ -65,7 +65,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   def predictionSchema(): Seq[StructField] = {
     val fields = getOrCreateEasyModelWrapper().getModelCategory match {
       case ModelCategory.Binomial => StructField("p0", DoubleType) :: StructField("p1", DoubleType) ::
-        StructField("p0_calibrated", DoubleType) :: StructField("p1_calibrated", DoubleType):: Nil
+        StructField("p0_calibrated", DoubleType) :: StructField("p1_calibrated", DoubleType) :: Nil
       case ModelCategory.Regression => StructField("value", DoubleType) :: Nil
       case ModelCategory.Multinomial => StructField("probabilities", ArrayType(DoubleType)) :: Nil
       case ModelCategory.Clustering => StructField("cluster", DoubleType) :: Nil
@@ -80,13 +80,13 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
 
   implicit def toBinomialPrediction(pred: AbstractPrediction): BinomialPrediction = {
-    if(pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities != null) {
+    if (pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities != null) {
       BinomialPrediction(
         pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
         pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1),
         pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities(0),
         pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities(1))
-    }else{
+    } else {
       BinomialPrediction(
         pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
         pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1),
