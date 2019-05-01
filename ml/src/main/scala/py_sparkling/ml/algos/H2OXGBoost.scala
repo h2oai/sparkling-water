@@ -39,7 +39,7 @@ private[algos] object H2OXGBoost extends MLReadable[H2OXGBoost] {
 
   private final val defaultFileName = "xgboost_params"
 
-  override def read: MLReader[H2OXGBoost] = H2OAlgorithmReader.create[H2OXGBoost, XGBoostParameters](defaultFileName)
+  override def read: MLReader[H2OXGBoost] = H2OAlgorithmReader.create[H2OXGBoost](defaultFileName)
 
   override def load(path: String): H2OXGBoost = super.load(path)
 }

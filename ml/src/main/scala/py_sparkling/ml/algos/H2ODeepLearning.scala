@@ -39,7 +39,7 @@ private[algos] object H2ODeepLearning extends MLReadable[H2ODeepLearning] {
 
   private final val defaultFileName = "deeplearning_params"
 
-  override def read: MLReader[H2ODeepLearning] = H2OAlgorithmReader.create[H2ODeepLearning, DeepLearningParameters](defaultFileName)
+  override def read: MLReader[H2ODeepLearning] = H2OAlgorithmReader.create[H2ODeepLearning](defaultFileName)
 
   override def load(path: String): H2ODeepLearning = super.load(path)
 }

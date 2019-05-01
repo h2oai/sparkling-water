@@ -56,7 +56,7 @@ object H2OGLM extends MLReadable[H2OGLM] {
   private final val defaultFileName = "glm_params"
 
   @Since("1.6.0")
-  override def read: MLReader[H2OGLM] = H2OAlgorithmReader.create[H2OGLM, GLMParameters](defaultFileName)
+  override def read: MLReader[H2OGLM] = H2OAlgorithmReader.create[H2OGLM](defaultFileName)
 
   @Since("1.6.0")
   override def load(path: String): H2OGLM = super.load(path)
