@@ -22,7 +22,7 @@ import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
-import org.apache.spark.listeners.ExecutorAddNotSupportedListener
+import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import water.api.RestAPIManager
 import water.{H2O, H2OStarter}
 
@@ -105,11 +105,12 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
     // H2O is already started on the nodes, make sure that we kill the cloud when a new executor joins
     if (!(hc.sparkContext.isLocal || hc.sparkContext.master.startsWith("local-cluster[")) && hc.getConf.isClusterTopologyListenerEnabled) {
-      // Attach listener which kills H2O cluster when new Spark executor has been launched ( which means
-      // that this executors hasn't been discovered during the spreadRDD phase)
-      hc.sparkContext.addSparkListener(new ExecutorAddNotSupportedListener())
+      hc.sparkContext.addSparkListener(new SparkListener {
+        override def onExecutorAdded(executorAdded: SparkListenerExecutorAdded): Unit = {
+          log.warn("New spark executor joined the cloud, however it won't be used for the H2O computations.")
+        }
+      })
     }
-
 
     // Connect to a cluster via H2O client, but only in non-local case
     if (!hc.sparkContext.isLocal) {

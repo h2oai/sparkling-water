@@ -49,13 +49,6 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     * */
   def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
-
-    // Increase locality timeout since h2o-specific tasks can be long computing
-    if (conf.getInt("spark.locality.wait", 3000) <= 3000) {
-      logWarning(s"Increasing 'spark.locality.wait' to value 30000")
-      conf.set("spark.locality.wait", "30000")
-    }
-
     if (conf.h2oClientLogDir.isEmpty) {
       conf.setH2OClientLogDir(defaultLogDir(conf.sparkConf.getAppId))
     }
