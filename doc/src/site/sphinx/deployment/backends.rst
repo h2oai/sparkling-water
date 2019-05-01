@@ -6,7 +6,7 @@ Sparkling Water Backends
 Internal Backend
 ~~~~~~~~~~~~~~~~
 
-In the internal backend, an H2O cloud is created automatically during the ``H2OContext.getOrCreate`` call. Because it's not technically possible to get the number of executors in Spark, we try to discover all executors at the initiation of ``H2OContext``, and we start the H2O instance inside of each discovered executor. This solution is easiest to deploy; however when Spark or YARN kills the executor - which is not an unusual case - the entire H2O cluster goes down because H2O does not support high availability.
+In the internal backend, an H2O cloud is created automatically during the ``H2OContext.getOrCreate`` call. Because it's not technically possible to get the number of executors in Spark, we try to discover all executors at the initiation of ``H2OContext``, and we start the H2O instance inside of each discovered executor. This solution is easiest to deploy; however when Spark or YARN kills the executor the whole H2O cluster goes down since h2o does not support high availability.
 
 The internal backend is the default for behavior for Sparkling Water. It can be changed via the Spark configuration property ``spark.ext.h2o.backend.cluster.mode`` and specifying either ``external`` or ``internal``. Another way to change type of backend is by calling the ``setExternalClusterMode()`` or ``setInternalClusterMode()`` method on the ``H2OConf`` class. ``H2OConf`` is simple wrapper around ``SparkConf`` and inherits all properties in the Spark configuration.
 

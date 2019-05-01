@@ -22,11 +22,14 @@ import org.apache.spark.h2o.backends.external.ExternalWriteConverterCtx
 import org.apache.spark.h2o.backends.internal.InternalWriteConverterCtx
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OContext, _}
-import water._
+import org.apache.spark.rdd.h2o.H2OAwareRDD
 import water.fvec.{Chunk, H2OFrame}
 import water.util.Log
+import water.{DKV, ExternalFrameUtils, Key, _}
 
 import scala.collection.{immutable, mutable}
+import scala.reflect.ClassTag
+import scala.reflect.runtime.universe._
 
 
 object WriteConverterCtxUtils {
@@ -59,7 +62,7 @@ object WriteConverterCtxUtils {
     * Converts the RDD to H2O Frame using specified conversion function
     *
     * @param hc            H2O context
-    * @param rdd           rdd to convert
+    * @param rddInput      rdd to convert
     * @param keyName       key of the resulting frame
     * @param colNames      names of the columns in the H2O Frame
     * @param expectedTypes expected types of the vectors in the H2O Frame
@@ -69,17 +72,25 @@ object WriteConverterCtxUtils {
     * @tparam T type of RDD to convert
     * @return H2O Frame
     */
-
-  def convert[T](hc: H2OContext, rdd: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
+  def convert[T: ClassTag: TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                  maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]) = {
     // Make an H2O data Frame - but with no backing data (yet)
     initFrame(keyName, colNames)
 
     // prepare required metadata based on the used backend
     val uploadPlan = if (hc.getConf.runsInExternalClusterMode) {
-      Some(ExternalWriteConverterCtx.scheduleUpload(rdd.getNumPartitions))
+      Some(ExternalWriteConverterCtx.scheduleUpload(rddInput.getNumPartitions))
     } else {
       None
+    }
+    val rdd = if (hc.getConf.runsInInternalClusterMode) {
+      // this is only required in internal cluster mode
+      val prefs = hc.h2oNodes.map { nodeDesc =>
+        s"executor_${nodeDesc.hostname}_${nodeDesc.nodeId}"
+      }
+      new H2OAwareRDD(prefs, rddInput)
+    } else {
+      rddInput
     }
 
     val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout, H2O.SELF.getTimestamp(), sparse)

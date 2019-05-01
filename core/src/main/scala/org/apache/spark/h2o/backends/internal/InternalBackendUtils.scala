@@ -59,9 +59,14 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
     *
     * @param conf H2O Configuration to check
     * @return checked and updated configuration
-    * */
+    **/
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
+
+    // Always wait for the local node - H2O node
+    logWarning(s"Increasing 'spark.locality.wait' to value 0 (Infinitive) as we need to ensure we run on the nodes with H2O")
+    conf.set("spark.locality.wait", "0")
+    
     if (conf.clientIp.isEmpty) {
       conf.setClientIp(getHostname(SparkEnv.get))
     }
@@ -134,7 +139,6 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
     // Create global accumulator for list of nodes IP:PORT
     val bc = sc.collectionAccumulator[NodeDesc]
     val isLocal = sc.isLocal
-    val userSpecifiedCloudSize = sc.getConf.getOption("spark.executor.instances").map(_.toInt)
 
     // Try to launch H2O
     val executorStatus = spreadRDD.map { nodeDesc => // RDD partition index
@@ -194,6 +198,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
         }
       }
     }.collect()
+
     // The accumulable should contain all IP:PORTs from all exeuctors
     if (bc.value.size != numOfExecutors ||
       executorStatus.groupBy(_._1).flatMap(x => x._2.find(_._2)).size != numOfExecutors) {
