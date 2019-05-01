@@ -56,6 +56,13 @@ private[external] trait ExternalBackendUtils extends SharedBackendUtils {
     * */
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
+
+    // Increase locality timeout since h2o-specific tasks can be long computing
+    if (conf.getInt("spark.locality.wait", 3000) <= 3000) {
+      logWarning(s"Increasing 'spark.locality.wait' to value 30000")
+      conf.set("spark.locality.wait", "30000")
+    }
+
     // to mimic the previous behaviour, set the client ip like this only in manual cluster mode when using multi-cast
     if (conf.clientIp.isEmpty && conf.isManualClusterStartUsed && conf.h2oCluster.isEmpty) {
       conf.setClientIp(getHostname(SparkEnv.get))

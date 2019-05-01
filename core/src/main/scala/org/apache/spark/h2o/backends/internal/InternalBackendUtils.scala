@@ -61,9 +61,12 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
     * @return checked and updated configuration
     **/
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
-    // Always wait for the local node - H2O node
-    conf.set("spark.locality.wait", "0")
     super.checkAndUpdateConf(conf)
+
+    // Always wait for the local node - H2O node
+    logWarning(s"Increasing 'spark.locality.wait' to value 0 (Infinitive) as we need to ensure we run on the nodes with H2O")
+    conf.set("spark.locality.wait", "0")
+    
     if (conf.clientIp.isEmpty) {
       conf.setClientIp(getHostname(SparkEnv.get))
     }
