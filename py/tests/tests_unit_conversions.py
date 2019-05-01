@@ -229,8 +229,12 @@ class FrameTransformationsTest(unittest.TestCase):
         pred_model = model.transform(prostate_frame).repartition(1).collect()
 
         self.assertEquals(len(pred_mojo), len(pred_model))
+        num_cols = len(pred_mojo[0])
         for i in range(0, len(pred_mojo)):
-            self.assertEquals(pred_mojo[i], pred_model[i])
+            for k in range(0, num_cols - 2):
+                self.assertEquals(pred_mojo[i][k], pred_model[i][k])
+            self.assertEquals(pred_mojo[i][num_cols - 1][0], pred_model[i][num_cols - 1][0])
+            self.assertEquals(pred_mojo[i][num_cols - 1][1], pred_model[i][num_cols - 1][1])
 
     def test_load_mojo_deeplearning(self):
         from pysparkling.ml import H2OMOJOModel, H2ODeepLearning
