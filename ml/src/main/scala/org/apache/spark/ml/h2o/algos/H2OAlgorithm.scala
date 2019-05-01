@@ -106,10 +106,10 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
 }
 
 object H2OAlgorithmReader {
-  def create[A <: H2OAlgorithm[P, _] : ClassTag, P <: Model.Parameters : ClassTag](defaultFileName: String) = new H2OAlgorithmReader[A, P](defaultFileName)
+  def create[A <: H2OAlgorithm[_, _] : ClassTag](defaultFileName: String) = new H2OAlgorithmReader[A](defaultFileName)
 }
 
-private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <: Model.Parameters : ClassTag]
+private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[_, _] : ClassTag]
 (val defaultFileName: String) extends MLReader[A] {
 
   override def load(path: String): A = {

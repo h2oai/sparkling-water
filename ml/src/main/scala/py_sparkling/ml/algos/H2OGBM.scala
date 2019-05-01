@@ -35,7 +35,7 @@ class H2OGBM(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2O
   }
 }
 
-object H2OGBM extends MLReadable[H2OGBM] {
+private[algos] object H2OGBM extends MLReadable[H2OGBM] {
 
   private final val defaultFileName = "gbm_params"
 
