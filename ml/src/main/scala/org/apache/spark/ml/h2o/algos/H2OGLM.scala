@@ -16,15 +16,13 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-
 import hex.StringPair
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling
-import hex.glm.GLM
+import hex.glm.{GLM, GLMModel}
 import hex.glm.GLMModel.GLMParameters
 import hex.glm.GLMModel.GLMParameters.{Family, Link, Solver}
 import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.annotation.Since
-import org.apache.spark.ml.h2o.models._
 import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
 import org.apache.spark.ml.param.{Param, Params}
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
@@ -32,23 +30,18 @@ import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JValue}
 import water.AutoBuffer
-import water.support.ModelSerializationSupport
 
 /**
   * H2O GLM algorithm exposed via Spark ML pipelines.
   */
-class H2OGLM(override val uid: String) extends H2OAlgorithm[GLMParameters, H2OMOJOModel]
+class H2OGLM(override val uid: String) extends H2OAlgorithm[GLMParameters]
   with H2OGLMParams {
 
   def this() = this(Identifiable.randomUID("glm"))
 
   override def defaultFileName: String = H2OGLM.defaultFileName
 
-  override def trainModel(params: GLMParameters): H2OMOJOModel = {
-    val model = new GLM(params).trainModel().get()
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
-  }
-
+  override def trainModel(params: GLMParameters): GLMModel = new GLM(params).trainModel().get()
 }
 
 object H2OGLM extends MLReadable[H2OGLM] {

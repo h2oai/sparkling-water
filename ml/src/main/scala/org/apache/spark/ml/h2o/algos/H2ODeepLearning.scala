@@ -14,36 +14,28 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package org.apache.spark.ml.h2o.algos
 
-import hex.deeplearning.DeepLearning
+import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 import org.apache.spark.annotation.Since
-import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.util._
-import water.support.ModelSerializationSupport
-
 
 /**
   * H2O Deep learning algorithm exposed via Spark ML pipelines.
   *
   * TODO: There are still bunch of parameters defined DeepLearningParameters which need to be ported here
   */
-class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearningParameters, H2OMOJOModel]
+class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearningParameters]
   with H2ODeepLearningParams {
 
   def this() = this(Identifiable.randomUID("deeplearning"))
 
   override def defaultFileName: String = H2ODeepLearning.defaultFileName
 
-  override def trainModel(params: DeepLearningParameters): H2OMOJOModel = {
-    val model = new DeepLearning(params).trainModel().get()
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
-  }
-
+  override def trainModel(params: DeepLearningParameters): DeepLearningModel = new DeepLearning(params).trainModel().get()
 }
 
 object H2ODeepLearning extends MLReadable[H2ODeepLearning] {

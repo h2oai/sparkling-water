@@ -52,12 +52,10 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 
   private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
-  type H2OModel = hex.Model[_, _ <: hex.Model.Parameters, _ <: hex.Model.Output]
-
   def this() = this(Identifiable.randomUID("gridsearch"))
 
   private var grid: Grid[_ <: Model.Parameters] = _
-  private var gridModels: Array[H2OModel] = _
+  private var gridModels: Array[H2OBaseModel] = _
   private var gridMojoModels: Array[H2OMOJOModel] = _
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
@@ -182,7 +180,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)), Identifiable.randomUID("gridSearch_mojoModel"))
   }
 
-  private def selectMetric(model: H2OModel) = {
+  private def selectMetric(model: H2OBaseModel) = {
     if (getNfolds() > 1) {
       // use cross validation metrics
       model._output._cross_validation_metrics
@@ -195,7 +193,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }
   }
 
-  private def sortGrid(grid: Grid[_ <: Model.Parameters]): Array[H2OModel] = {
+  private def sortGrid(grid: Grid[_ <: Model.Parameters]): Array[H2OBaseModel] = {
     if (grid.getModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
@@ -246,7 +244,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
 
-  private def extractMetrics(model: H2OModel) = {
+  private def extractMetrics(model: H2OBaseModel) = {
     // Supervised metrics
     val mm = selectMetric(model)
     val metricPairs = mm match {
@@ -522,7 +520,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
   //
   def setRatio(value: Double): this.type = set(ratio, value)
 
-  def setAlgo(value: H2OAlgorithm[_ <: Model.Parameters, _]): this.type = {
+  def setAlgo(value: H2OAlgorithm[_ <: Model.Parameters]): this.type = {
     val field = PojoUtils.getFieldEvenInherited(value, "parameters")
     field.setAccessible(true)
     val algoParams = field.get(value).asInstanceOf[Model.Parameters]
