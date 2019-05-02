@@ -41,7 +41,7 @@ import scala.util.control.NoStackTrace
   * H2O AutoML pipeline step
   */
 class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
-  with MLWritable with H2OAutoMLParams {
+  with DefaultParamsWritable with H2OAutoMLParams {
 
   private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
@@ -135,9 +135,6 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
-
-  @Since("1.6.0")
-  override def write: MLWriter = new DefaultParamsWriter(this)
 
   def defaultFileName: String = H2OAutoML.defaultFileName
 }
