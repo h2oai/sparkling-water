@@ -84,8 +84,8 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     BinomialPrediction(
       pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
       pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1),
-      if (calibratedProps == null) null else calibratedProps(0),
-      if (calibratedProps == null) null else calibratedProps(1)
+      Option(calibratedProps).map(p => p(0)).getOrElse(null),
+      Option(calibratedProps).map(p => p(1)).getOrElse(null)
     )
   }
 
