@@ -16,16 +16,11 @@
 */
 package py_sparkling.ml.algos
 
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import org.apache.spark.ml.util.DefaultParamsReadable
 
 /**
   * H2O DeepLearning Wrapper for PySparkling
   */
-class H2ODeepLearning(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2ODeepLearning(uid) {
-
-  override def trainModel(params: DeepLearningParameters): DeepLearningModel = new DeepLearning(params).trainModel().get()
-}
+class H2ODeepLearning(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2ODeepLearning(uid)
 
 private[algos] object H2ODeepLearning extends DefaultParamsReadable[H2ODeepLearning]

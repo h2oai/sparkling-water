@@ -16,16 +16,11 @@
 */
 package py_sparkling.ml.algos
 
-import hex.tree.xgboost.XGBoostModel.XGBoostParameters
-import hex.tree.xgboost.{XGBoost, XGBoostModel}
 import org.apache.spark.ml.util.DefaultParamsReadable
 
 /**
   * H2O XGBoost Wrapper for PySparkling
   */
-class H2OXGBoost(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OXGBoost(uid) {
-
-  override def trainModel(params: XGBoostParameters): XGBoostModel = new XGBoost(params).trainModel().get()
-}
+class H2OXGBoost(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OXGBoost(uid)
 
 private[algos] object H2OXGBoost extends DefaultParamsReadable[H2OXGBoost]

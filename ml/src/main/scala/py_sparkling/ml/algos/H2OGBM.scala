@@ -16,16 +16,11 @@
 */
 package py_sparkling.ml.algos
 
-import hex.tree.gbm.GBMModel.GBMParameters
-import hex.tree.gbm.{GBM, GBMModel}
 import org.apache.spark.ml.util.DefaultParamsReadable
 
 /**
   * H2O GBM Wrapper for PySparkling
   */
-class H2OGBM(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OGBM(uid) {
-
-  override def trainModel(params: GBMParameters): GBMModel = new GBM(params).trainModel().get()
-}
+class H2OGBM(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OGBM(uid)
 
 private[algos] object H2OGBM extends DefaultParamsReadable[H2OGBM]

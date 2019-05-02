@@ -16,19 +16,11 @@
 */
 package py_sparkling.ml.algos
 
-import ai.h2o.automl.AutoML
 import org.apache.spark.ml.util.DefaultParamsReadable
-import py_sparkling.ml.models.H2OMOJOModel
-import water.support.ModelSerializationSupport
 
 /**
   * H2O AutoML Wrapper for PySparkling
   */
-class H2OAutoML(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OAutoML(uid) {
-
-  override def trainModel(aml: AutoML): H2OMOJOModel = {
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()))
-  }
-}
+class H2OAutoML(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OAutoML(uid)
 
 private[algos] object H2OAutoML extends DefaultParamsReadable[H2OXGBoost]
