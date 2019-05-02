@@ -16,12 +16,10 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-import java.io._
 import java.util.Date
 
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import hex.ScoreKeeper
-import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
@@ -30,7 +28,7 @@ import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{Dataset, SQLContext, _}
+import org.apache.spark.sql.{Dataset, _}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 import water.util.DeprecatedMethod
@@ -42,18 +40,17 @@ import scala.util.control.NoStackTrace
 /**
   * H2O AutoML pipeline step
   */
-class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: String)
-               (implicit hc: H2OContext, sqlContext: SQLContext)
-  extends Estimator[H2OMOJOModel] with MLWritable with H2OAutoMLParams {
+class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
+  with MLWritable with H2OAutoMLParams {
 
-  def this()(implicit hc: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("automl"))
+  private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
+  def this() = this(Identifiable.randomUID("automl"))
 
   var leaderboard: Option[DataFrame] = None
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val spec = automlBuildSpec.getOrElse(new AutoMLBuildSpec)
+    val spec = new AutoMLBuildSpec
 
     // override the buildSpec with the configuration specified directly on the estimator
     if (getProjectName() == null) {
@@ -140,7 +137,7 @@ class H2OAutoML(val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 
   @Since("1.6.0")
-  override def write: MLWriter = new H2OAutoMLWriter(this)
+  override def write: MLWriter = new DefaultParamsWriter(this)
 
   def defaultFileName: String = H2OAutoML.defaultFileName
 }
@@ -157,45 +154,20 @@ object H2OAutoML extends MLReadable[H2OAutoML] {
   override def load(path: String): H2OAutoML = super.load(path)
 }
 
-// FIXME: H2O Params are iced objects!
-private[algos] class H2OAutoMLWriter(instance: H2OAutoML) extends MLWriter {
-
-  @Since("1.6.0") override protected def saveImpl(path: String): Unit = {
-    val hadoopConf = sc.hadoopConfiguration
-    DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val outputPath = new Path(path, instance.defaultFileName)
-    val fs = outputPath.getFileSystem(hadoopConf)
-    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val out = fs.create(qualifiedOutputPath)
-    val oos = new ObjectOutputStream(out)
-    oos.writeObject(instance.automlBuildSpec.orNull)
-    out.close()
-    logInfo(s"Saved to: $qualifiedOutputPath")
-  }
-}
-
 private[algos] class H2OAutoMLReader[A <: H2OAutoML : ClassTag](val defaultFileName: String) extends MLReader[A] {
 
   override def load(path: String): A = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc)
 
-    val inputPath = new Path(path, defaultFileName)
-    val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
-    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val ois = new ObjectInputStream(fs.open(qualifiedInputPath))
-
-    val buildSpec = ois.readObject().asInstanceOf[AutoMLBuildSpec]
-    implicit val h2oContext: H2OContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
-    val algo = make[A](Option(buildSpec), metadata.uid, h2oContext, sqlContext)
+    val algo = make[A](metadata.uid)
     metadata.getAndSetParams(algo)
     algo
   }
 
-  private def make[CT: ClassTag]
-  (autoMLBuildSpec: Option[AutoMLBuildSpec], uid: String, h2oContext: H2OContext, sqlContext: SQLContext): CT = {
+  private def make[CT: ClassTag](uid: String): CT = {
     val aClass = implicitly[ClassTag[CT]].runtimeClass
-    val ctor = aClass.getConstructor(classOf[Option[AutoMLBuildSpec]], classOf[String], classOf[H2OContext], classOf[SQLContext])
-    ctor.newInstance(autoMLBuildSpec, uid, h2oContext, sqlContext).asInstanceOf[CT]
+    val ctor = aClass.getConstructor(classOf[String])
+    ctor.newInstance(uid).asInstanceOf[CT]
   }
 }
 
@@ -215,32 +187,32 @@ trait H2OAutoMLParams extends DeprecatableParams {
   //
   // Param definitions
   //
-  private final val labelCol = new Param[String](this, "labelCol", "Label column name")
-  private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-  private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
-  private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
-  private final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
-  private final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
-  private final val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
-  private final val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
-  private final val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
-  private final val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
+  private val labelCol = new Param[String](this, "labelCol", "Label column name")
+  private val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
+  private val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
+  private val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
+  private val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
+  private val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
+  private val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
+  private val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
+  private val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
+  private val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
     " (e.g., airlines and iris)")
-  private final val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
-  private final val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
-  private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
-  private final val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping metric")
-  private final val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
-  private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
+  private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
+  private val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
+  private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
+  private val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping metric")
+  private val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
+  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
     " categorical levels to NA during predictions")
-  private final val seed = new IntParam(this, "seed", "seed")
-  private final val sortMetric = new NullableStringParam(this, "sortMetric", "Sort metric for the AutoML leaderboard")
-  private final val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
-  private final val classSamplingFactors = new NullableFloatArrayParam(this, "classSamplingFactors", "Class sampling factors")
-  private final val maxAfterBalanceSize = new FloatParam(this, "maxAfterBalanceSize", "Max after balance size")
-  private final val keepCrossValidationPredictions = new BooleanParam(this, "keepCrossValidationPredictions", "Keep cross Validation predictions")
-  private final val keepCrossValidationModels = new BooleanParam(this, "keepCrossValidationModels", "Keep cross validation models")
-  private final val maxModels = new IntParam(this, "maxModels", "Maximal number of models to be trained in AutoML")
+  private val seed = new IntParam(this, "seed", "seed")
+  private val sortMetric = new NullableStringParam(this, "sortMetric", "Sort metric for the AutoML leaderboard")
+  private val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
+  private val classSamplingFactors = new NullableFloatArrayParam(this, "classSamplingFactors", "Class sampling factors")
+  private val maxAfterBalanceSize = new FloatParam(this, "maxAfterBalanceSize", "Max after balance size")
+  private val keepCrossValidationPredictions = new BooleanParam(this, "keepCrossValidationPredictions", "Keep cross Validation predictions")
+  private val keepCrossValidationModels = new BooleanParam(this, "keepCrossValidationModels", "Keep cross validation models")
+  private val maxModels = new IntParam(this, "maxModels", "Maximal number of models to be trained in AutoML")
 
   //
   // Default values

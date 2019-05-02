@@ -33,7 +33,7 @@ Train the model. You can configure all the available XGBoost arguments using pro
 .. code:: scala
 
     import org.apache.spark.ml.h2o.algos.H2OXGBoost
-    val estimator = new H2OXGBoost()(hc, spark.sqlContext).setLabelCol("AGE")
+    val estimator = new H2OXGBoost().setLabelCol("AGE")
     val model = estimator.fit(sparkFrame)
 
 

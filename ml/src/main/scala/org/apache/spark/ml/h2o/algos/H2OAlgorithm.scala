@@ -16,11 +16,8 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-import java.io._
-
 import hex.Model
 import hex.genmodel.utils.DistributionFamily
-import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o._
 import org.apache.spark.ml.h2o.param.{H2OAlgoParams, H2OModelParams}
@@ -28,23 +25,16 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Estimator, Model => SparkModel}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{Dataset, SQLContext}
+import org.apache.spark.sql.{Dataset, SparkSession}
 import water.Key
 import water.support.H2OFrameSupport
 
 import scala.reflect.ClassTag
-
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
 abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M] : ClassTag]
-(parameters: Option[P])
-(implicit hc: H2OContext, sqlContext: SQLContext)
   extends Estimator[M] with MLWritable with H2OAlgoParams[P] {
-
-  if (parameters.isDefined) {
-    setParams(parameters.get)
-  }
 
   override def fit(dataset: Dataset[_]): M = {
     import org.apache.spark.sql.functions.col
@@ -58,28 +48,28 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     }
 
     val cols = getFeaturesCols().map(col) ++ Array(col(getLabelCol()))
-    val input = hc.asH2OFrame(dataset.select(cols: _*).toDF())
+    val input = H2OContext.getOrCreate(SparkSession.builder().getOrCreate()).asH2OFrame(dataset.select(cols: _*).toDF())
 
     // check if we need to do any splitting
-    if ($(ratio) < 1.0) {
+    if (getTrainRatio() < 1.0) {
       // need to do splitting
-      val keys = H2OFrameSupport.split(input, Seq(Key.rand(), Key.rand()), Seq($(ratio)))
-      getParams._train = keys(0)._key
+      val keys = H2OFrameSupport.split(input, Seq(Key.rand(), Key.rand()), Seq(getTrainRatio()))
+      parameters._train = keys(0)._key
       if (keys.length > 1) {
-        getParams._valid = keys(1)._key
+        parameters._valid = keys(1)._key
       }
     } else {
-      getParams._train = input._key
+      parameters._train = input._key
     }
 
-    val trainFrame = getParams._train.get()
+    val trainFrame = parameters._train.get()
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(trainFrame)
     }
     H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
-    if ((getParams._distribution == DistributionFamily.bernoulli
-      || getParams._distribution == DistributionFamily.multinomial)
+    if ((parameters._distribution == DistributionFamily.bernoulli
+      || parameters._distribution == DistributionFamily.multinomial)
       && !trainFrame.vec(getLabelCol()).isCategorical) {
       trainFrame.replace(trainFrame.find(getLabelCol()),
         trainFrame.vec(getLabelCol()).toCategoricalVec).remove()
@@ -87,12 +77,12 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
     water.DKV.put(trainFrame)
     
     // Train
-    val model: M with H2OModelParams = trainModel(getParams)
+    val model: M with H2OModelParams = trainModel(parameters)
 
     // pass some parameters set on algo to model
-    model.setFeaturesCols($(featuresCols))
-    model.setLabelCol($(labelCol))
-    model.setConvertUnknownCategoricalLevelsToNa($(convertUnknownCategoricalLevelsToNa))
+    model.setFeaturesCols(getFeaturesCols())
+    model.setLabelCol(getLabelCol())
+    model.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     model
   }
 
@@ -110,57 +100,30 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 
   @Since("1.6.0")
-  override def write: MLWriter = new H2OAlgorithmWriter(this)
+  override def write: MLWriter = new DefaultParamsWriter(this)
 
   def defaultFileName: String
 }
 
-// FIXME: H2O Params are iced objects!
-private[algos] class H2OAlgorithmWriter[T <: H2OAlgorithm[_, _]](instance: T) extends MLWriter {
-
-  @Since("1.6.0") override protected def saveImpl(path: String): Unit = {
-    val hadoopConf = sc.hadoopConfiguration
-    DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val outputPath = new Path(path, instance.defaultFileName)
-    val fs = outputPath.getFileSystem(hadoopConf)
-    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val out = fs.create(qualifiedOutputPath)
-    val oos = new ObjectOutputStream(out)
-    oos.writeObject(instance.getParams)
-    out.close()
-    logInfo(s"Saved to: $qualifiedOutputPath")
-  }
-}
-
 object H2OAlgorithmReader {
-  def create[A <: H2OAlgorithm[P, _] : ClassTag, P <: Model.Parameters : ClassTag](defaultFileName: String) = new H2OAlgorithmReader[A, P](defaultFileName)
+  def create[A <: H2OAlgorithm[_, _] : ClassTag](defaultFileName: String) = new H2OAlgorithmReader[A](defaultFileName)
 }
 
-private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[P, _] : ClassTag, P <: Model.Parameters : ClassTag]
+private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[_, _] : ClassTag]
 (val defaultFileName: String) extends MLReader[A] {
 
   override def load(path: String): A = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc)
 
-    val inputPath = new Path(path, defaultFileName)
-    val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
-    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val ois = new ObjectInputStream(fs.open(qualifiedInputPath))
-
-    val parameters = ois.readObject().asInstanceOf[P]
-    implicit val h2oContext = H2OContext.ensure("H2OContext has to be started in order to use H2O pipelines elements.")
-    val h2oAlgo = make[A, P](parameters, metadata.uid, h2oContext, sqlContext)
-
+    val h2oAlgo = make[A](metadata.uid)
     metadata.getAndSetParams(h2oAlgo)
     h2oAlgo
   }
 
-  private def make[CT: ClassTag, X <: Object : ClassTag]
-  (p: X, uid: String, h2oContext: H2OContext, sqlContext: SQLContext): CT = {
-    val pClass = implicitly[ClassTag[X]].runtimeClass
+  private def make[CT: ClassTag](uid: String): CT = {
     val aClass = implicitly[ClassTag[CT]].runtimeClass
-    val ctor = aClass.getConstructor(pClass, classOf[String], classOf[H2OContext], classOf[SQLContext])
-    ctor.newInstance(p, uid, h2oContext, sqlContext).asInstanceOf[CT]
+    val ctor = aClass.getConstructor(classOf[String])
+    ctor.newInstance(uid).asInstanceOf[CT]
   }
 }
 

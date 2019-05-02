@@ -41,10 +41,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                  predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None, **deprecatedArgs):
         super(H2OGBM, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
-        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGBM",
-                                            self.uid,
-                                            self._hc._jhc.h2oContext(),
-                                            self._hc._jsql_context)
+        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGBM", self.uid)
 
         self._setDefault(ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
@@ -101,10 +98,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                  convertUnknownCategoricalLevelsToNa=False, foldCol=None, **deprecatedArgs):
         super(H2ODeepLearning, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
-        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2ODeepLearning",
-                                            self.uid,
-                                            self._hc._jhc.h2oContext(),
-                                            self._hc._jsql_context)
+        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2ODeepLearning", self.uid)
 
         self._setDefault(ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
@@ -147,10 +141,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                  keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0, **deprecatedArgs):
         super(H2OAutoML, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
-        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OAutoML",
-                                            self.uid,
-                                            self._hc._jhc.h2oContext(),
-                                            self._hc._jsql_context)
+        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OAutoML", self.uid)
 
         self._setDefault(labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
                          weightCol=None, ignoredCols=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
@@ -222,10 +213,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                  foldCol=None, **deprecatedArgs):
         super(H2OXGBoost, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
-        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OXGBoost",
-                                            self.uid,
-                                            self._hc._jhc.h2oContext(),
-                                            self._hc._jsql_context)
+        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OXGBoost", self.uid)
 
         self._setDefault(ratio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
@@ -315,10 +303,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                  interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None, **deprecatedArgs):
         super(H2OGLM, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
-        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGLM",
-                                            self.uid,
-                                            self._hc._jhc.h2oContext(),
-                                            self._hc._jsql_context)
+        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGLM", self.uid)
 
         self._setDefault(ratio=1.0, labelCol="label", weightCol=None,  featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
@@ -392,10 +377,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                  selectBestModelDecreasing=True, foldCol=None, **deprecatedArgs):
         super(H2OGridSearch, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
-        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch",
-                                            self.uid,
-                                            self._hc._jhc.h2oContext(),
-                                            self._hc._jsql_context)
+        self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch", self.uid)
 
         self._setDefault(algo=None, ratio=1.0, hyperParameters={}, labelCol="label", allStringColumnsToCategorical=True,
                          columnsToCategorical=[], strategy=self._hc._jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf("Cartesian"),
