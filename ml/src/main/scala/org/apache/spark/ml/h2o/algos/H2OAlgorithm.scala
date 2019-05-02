@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
 abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M] : ClassTag]
-  extends Estimator[M] with MLWritable with H2OAlgoParams[P] {
+  extends Estimator[M] with DefaultParamsWritable with H2OAlgoParams[P] {
 
   override def fit(dataset: Dataset[_]): M = {
     import org.apache.spark.sql.functions.col
@@ -98,9 +98,6 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag, M <: SparkModel[M]
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
-
-  @Since("1.6.0")
-  override def write: MLWriter = new DefaultParamsWriter(this)
 
   def defaultFileName: String
 }
