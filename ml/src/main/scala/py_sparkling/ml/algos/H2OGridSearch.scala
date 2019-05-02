@@ -18,31 +18,22 @@
 package py_sparkling.ml.algos
 
 import hex.grid.Grid
-import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.h2o.algos.{H2OGridSearchParams, H2OGridSearchReader}
-import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.ml.h2o.algos.H2OGridSearchReader
+import org.apache.spark.ml.util.{MLReadable, MLReader}
 import py_sparkling.ml.models.H2OMOJOModel
 import water.support.ModelSerializationSupport
 
 /**
   * H2O Grid Search Wrapper for PySparkling
   */
-class H2OGridSearch(override val gridSearchParams: Option[H2OGridSearchParams], override val uid: String)
-               (implicit hc: H2OContext, sqlContext: SQLContext)
-  extends org.apache.spark.ml.h2o.algos.H2OGridSearch {
+class H2OGridSearch(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OGridSearch(uid) {
 
-  def this()(implicit hc: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("grid_search"))
-
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
-
-  override def trainModel(grid: Grid[_]) = {
+  override def trainModel(grid: Grid[_]): H2OMOJOModel = {
     new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)))
   }
 }
 
-
-object H2OGridSearch extends MLReadable[H2OGridSearch] {
+private[algos] object H2OGridSearch extends MLReadable[H2OGridSearch] {
 
   private final val defaultFileName = org.apache.spark.ml.h2o.algos.H2OGridSearch.defaultFileName
 

@@ -24,12 +24,10 @@ import hex.glm.GLMModel.GLMParameters
 import hex.glm.GLMModel.GLMParameters.{Family, Link, Solver}
 import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.annotation.Since
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.h2o.models._
 import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
 import org.apache.spark.ml.param.{Param, Params}
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
-import org.apache.spark.sql.SQLContext
 import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JValue}
@@ -39,18 +37,10 @@ import water.support.ModelSerializationSupport
 /**
   * H2O GLM algorithm exposed via Spark ML pipelines.
   */
-class H2OGLM(parameters: Option[GLMParameters], override val uid: String)
-            (implicit h2oContext: H2OContext, sqlContext: SQLContext)
-  extends H2OAlgorithm[GLMParameters, H2OMOJOModel](parameters)
-    with H2OGLMParams {
+class H2OGLM(override val uid: String) extends H2OAlgorithm[GLMParameters, H2OMOJOModel]
+  with H2OGLMParams {
 
-  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("glm"))
-
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
-
-  def this(parameters: GLMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("glm"))
-
-  def this(parameters: GLMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
+  def this() = this(Identifiable.randomUID("glm"))
 
   override def defaultFileName: String = H2OGLM.defaultFileName
 
@@ -66,7 +56,7 @@ object H2OGLM extends MLReadable[H2OGLM] {
   private final val defaultFileName = "glm_params"
 
   @Since("1.6.0")
-  override def read: MLReader[H2OGLM] = H2OAlgorithmReader.create[H2OGLM, GLMParameters](defaultFileName)
+  override def read: MLReader[H2OGLM] = H2OAlgorithmReader.create[H2OGLM](defaultFileName)
 
   @Since("1.6.0")
   override def load(path: String): H2OGLM = super.load(path)
@@ -87,32 +77,32 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   //
   // Param definitions
   //
-  final val standardize = booleanParam("standardize")
-  final val family = new H2OGLMFamilyParam(this, "family", "family")
-  final val link = new H2OGLMLinkParam(this, "link", "link")
-  final val solver = new H2OGLMSolverParam(this, "solver", "solver")
-  final val tweedieVariancePower = doubleParam("tweedieVariancePower")
-  final val tweedieLinkPower = doubleParam("tweedieLinkPower")
-  final val alpha = nullableDoubleArrayParam("alpha")
-  final val lambda_ = nullableDoubleArrayParam("lambda_", "lambda")
-  final val missingValuesHandling = new H2OGLMMissingValuesHandlingParam(this, "missingValuesHandling", "missingValuesHandling")
-  final val prior = doubleParam("prior")
-  final val lambdaSearch = booleanParam("lambdaSearch")
-  final val nlambdas = intParam("nlambdas")
-  final val nonNegative = booleanParam("nonNegative")
-  final val exactLambdas = booleanParam("exactLambdas", "exact lambdas")
-  final val lambdaMinRatio = doubleParam("lambdaMinRatio")
-  final val maxIterations = intParam("maxIterations")
-  final val intercept = booleanParam("intercept")
-  final val betaEpsilon = doubleParam("betaEpsilon")
-  final val objectiveEpsilon = doubleParam("objectiveEpsilon")
-  final val gradientEpsilon = doubleParam("gradientEpsilon")
-  final val objReg = doubleParam("objReg")
-  final val computePValues = booleanParam("computePValues")
-  final val removeCollinearCols = booleanParam("removeCollinearCols", "A flag indicating whether collinear columns should be removed or not")
-  final val interactions = nullableStringArrayParam("interactions")
-  final val interactionPairs = new H2OGLMStringPairArrayParam(this, "interactionPairs", "interactionPairs")
-  final val earlyStopping = booleanParam("earlyStopping")
+  private val standardize = booleanParam("standardize")
+  private val family = new H2OGLMFamilyParam(this, "family", "family")
+  private val link = new H2OGLMLinkParam(this, "link", "link")
+  private val solver = new H2OGLMSolverParam(this, "solver", "solver")
+  private val tweedieVariancePower = doubleParam("tweedieVariancePower")
+  private val tweedieLinkPower = doubleParam("tweedieLinkPower")
+  private val alpha = nullableDoubleArrayParam("alpha")
+  private val lambda_ = nullableDoubleArrayParam("lambda_", "lambda")
+  private val missingValuesHandling = new H2OGLMMissingValuesHandlingParam(this, "missingValuesHandling", "missingValuesHandling")
+  private val prior = doubleParam("prior")
+  private val lambdaSearch = booleanParam("lambdaSearch")
+  private val nlambdas = intParam("nlambdas")
+  private val nonNegative = booleanParam("nonNegative")
+  private val exactLambdas = booleanParam("exactLambdas", "exact lambdas")
+  private val lambdaMinRatio = doubleParam("lambdaMinRatio")
+  private val maxIterations = intParam("maxIterations")
+  private val intercept = booleanParam("intercept")
+  private val betaEpsilon = doubleParam("betaEpsilon")
+  private val objectiveEpsilon = doubleParam("objectiveEpsilon")
+  private val gradientEpsilon = doubleParam("gradientEpsilon")
+  private val objReg = doubleParam("objReg")
+  private val computePValues = booleanParam("computePValues")
+  private val removeCollinearCols = booleanParam("removeCollinearCols", "A flag indicating whether collinear columns should be removed or not")
+  private val interactions = nullableStringArrayParam("interactions")
+  private val interactionPairs = new H2OGLMStringPairArrayParam(this, "interactionPairs", "interactionPairs")
+  private val earlyStopping = booleanParam("earlyStopping")
 
   //
   // Default values
@@ -149,164 +139,112 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   //
   // Getters
   //
-  /** @group getParam */
   def getStandardize(): Boolean = $(standardize)
 
-  /** @group getParam */
   def getFamily(): Family = $(family)
 
-  /** @group getParam */
   def getLink(): Link = $(link)
 
-  /** @group getParam */
   def getSolver(): Solver = $(solver)
 
-  /** @group getParam */
   def getTweedieVariancePower(): Double = $(tweedieVariancePower)
 
-  /** @group getParam */
   def getTweedieLinkPower(): Double = $(tweedieLinkPower)
 
-  /** @group getParam */
   def getAlpha(): Array[Double] = $(alpha)
 
-  /** @group getParam */
   def getLambda(): Array[Double] = $(lambda_)
 
-  /** @group getParam */
   def getMissingValuesHandling(): MissingValuesHandling = $(missingValuesHandling)
 
-  /** @group getParam */
   def getPrior(): Double = $(prior)
 
-  /** @group getParam */
   def getLambdaSearch(): Boolean = $(lambdaSearch)
 
-  /** @group getParam */
   def getNlambdas(): Int = $(nlambdas)
 
-  /** @group getParam */
   def getNonNegative(): Boolean = $(nonNegative)
 
-  /** @group getParam */
   def getExactLambdas(): Boolean = $(exactLambdas)
 
-  /** @group getParam */
   def getLambdaMinRatio(): Double = $(lambdaMinRatio)
 
-  /** @group getParam */
   def getMaxIterations(): Int = $(maxIterations)
 
-  /** @group getParam */
   def getIntercept(): Boolean = $(intercept)
 
-  /** @group getParam */
   def getBetaEpsilon(): Double = $(betaEpsilon)
 
-  /** @group getParam */
   def getObjectiveEpsilon(): Double = $(objectiveEpsilon)
 
-  /** @group getParam */
   def getGradientEpsilon(): Double = $(gradientEpsilon)
 
-  /** @group getParam */
   def getObjReg(): Double = $(objReg)
 
-  /** @group getParam */
   def getComputePValues(): Boolean = $(computePValues)
 
-  /** @group getParam */
   def getRemoveCollinearCols(): Boolean = $(removeCollinearCols)
 
-  /** @group getParam */
   def getInteractions(): Array[String] = $(interactions)
 
-  /** @group getParam */
   def getInteractionPairs(): Array[(String, String)] = $(interactionPairs)
 
-  /** @group getParam */
   def getEarlyStopping(): Boolean = $(earlyStopping)
 
 
   //
   // Setters
   //
-  /** @group setParam */
   def setStandardize(value: Boolean): this.type = set(standardize, value)
 
-  /** @group setParam */
   def setFamily(value: Family): this.type = set(family, value)
 
-  /** @group setParam */
   def setLink(value: Link): this.type = set(link, value)
 
-  /** @group setParam */
   def setSolver(value: Solver): this.type = set(solver, value)
 
-  /** @group setParam */
   def setTweedieVariancePower(value: Double): this.type = set(tweedieVariancePower, value)
 
-  /** @group setParam */
   def setTweedieLinkPower(value: Double): this.type = set(tweedieLinkPower, value)
 
-  /** @group setParam */
   def setAlpha(value: Array[Double]): this.type = set(alpha, value)
 
-  /** @group setParam */
   def setLambda(value: Array[Double]): this.type = set(lambda_, value)
 
-  /** @group setParam */
   def setMissingValuesHandling(value: MissingValuesHandling): this.type = set(missingValuesHandling, value)
 
-  /** @group setParam */
   def setPrior(value: Double): this.type = set(prior, value)
 
-  /** @group setParam */
   def setLambdaSearch(value: Boolean): this.type = set(lambdaSearch, value)
 
-  /** @group setParam */
   def setNlambdas(value: Int): this.type = set(nlambdas, value)
 
-  /** @group setParam */
   def setNonNegative(value: Boolean): this.type = set(nonNegative, value)
 
-  /** @group setParam */
   def setExactLambdas(value: Boolean): this.type = set(exactLambdas, value)
 
-  /** @group setParam */
   def setLambdaMinRatio(value: Double): this.type = set(lambdaMinRatio, value)
 
-  /** @group setParam */
   def setMaxIterations(value: Int): this.type = set(maxIterations, value)
 
-  /** @group setParam */
   def setIntercept(value: Boolean): this.type = set(intercept, value)
 
-  /** @group setParam */
   def setBetaEpsilon(value: Double): this.type = set(betaEpsilon, value)
 
-  /** @group setParam */
   def setObjectiveEpsilon(value: Double): this.type = set(objectiveEpsilon, value)
 
-  /** @group setParam */
   def setGradientEpsilon(value: Double): this.type = set(gradientEpsilon, value)
 
-  /** @group setParam */
   def setObjReg(value: Double): this.type = set(objReg, value)
 
-  /** @group setParam */
   def setComputePValues(value: Boolean): this.type = set(computePValues, value)
 
-  /** @group setParam */
   def setRemoveCollinearCols(value: Boolean): this.type = set(removeCollinearCols, value)
 
-  /** @group setParam */
   def setInteractions(value: Array[String]): this.type = set(interactions, value)
 
-  /** @group setParam */
   def setInteractionPairs(value: Array[(String, String)]): this.type = set(interactionPairs, value)
 
-  /** @group setParam */
   def setEarlyStopping(value: Boolean): this.type = set(earlyStopping, value)
 
 

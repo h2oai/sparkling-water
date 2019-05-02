@@ -35,38 +35,38 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
   //
   // Param definitions
   //
-  final val ratio = doubleParam(
+  private final val ratio = doubleParam(
     "ratio",
     "Determines in which ratios split the dataset")
 
-  final val labelCol = stringParam(
+  private final val labelCol = stringParam(
     "labelCol",
     "Label column name")
 
-  final val weightCol = nullableStringParam(
+  private final val weightCol = nullableStringParam(
     "weightCol",
     "Weight column name")
 
-  final val featuresCols = stringArrayParam(
+  private final val featuresCols = stringArrayParam(
     "featuresCols",
     "Name of feature columns")
 
-  final val allStringColumnsToCategorical = booleanParam(
+  private final val allStringColumnsToCategorical = booleanParam(
     "allStringColumnsToCategorical",
     "Transform all strings columns to categorical")
 
-  final val columnsToCategorical = stringArrayParam(
+  private final val columnsToCategorical = stringArrayParam(
     "columnsToCategorical",
     "List of columns to convert to categorical before modelling")
 
-  final val nfolds = intParam("nfolds")
-  final val foldCol = nullableStringParam("foldCol", "Fold column name")
-  final val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
-  final val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
-  final val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
-  final val seed = longParam("seed")
-  final val distribution = H2ODistributionParam("distribution")
-  final val convertUnknownCategoricalLevelsToNa = booleanParam(
+  private final val nfolds = intParam("nfolds")
+  private final val foldCol = nullableStringParam("foldCol", "Fold column name")
+  private final val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
+  private final val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
+  private final val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
+  private final val seed = longParam("seed")
+  private final val distribution = H2ODistributionParam("distribution")
+  private final val convertUnknownCategoricalLevelsToNa = booleanParam(
     "convertUnknownCategoricalLevelsToNa",
     "Convert unknown categorical levels to NA during predictions")
   //

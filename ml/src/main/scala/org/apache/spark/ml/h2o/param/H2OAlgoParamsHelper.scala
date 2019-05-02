@@ -42,78 +42,74 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
   // The same for schema
   protected def schemaTag: ClassTag[H2O_SCHEMA]
 
-  protected var parameters = paramTag.runtimeClass.newInstance().asInstanceOf[P]
+  protected var parameters: P = paramTag.runtimeClass.newInstance().asInstanceOf[P]
 
-  def getParams: P = parameters
+  protected def booleanParam(name: String, doc: String): BooleanParam = booleanParam(name, Some(doc))
 
-  def setParams(params: P): Unit = this.parameters = params
-
-  def booleanParam(name: String, doc: String): BooleanParam = booleanParam(name, Some(doc))
-
-  def booleanParam(name: String, doc: Option[String] = None): BooleanParam = {
+  protected def booleanParam(name: String, doc: Option[String] = None): BooleanParam = {
     new BooleanParam(this, name, getDoc(doc, name))
   }
 
 
-  def intParam(name: String, doc: String): IntParam = intParam(name, Some(doc))
+  protected def intParam(name: String, doc: String): IntParam = intParam(name, Some(doc))
 
-  def intParam(name: String, doc: Option[String] = None): IntParam = {
+  protected def intParam(name: String, doc: Option[String] = None): IntParam = {
     new IntParam(this, name, getDoc(doc, name))
   }
 
-  def longParam(name: String, doc: String): LongParam = longParam(name, Some(doc))
+  protected def longParam(name: String, doc: String): LongParam = longParam(name, Some(doc))
 
-  def longParam(name: String, doc: Option[String] = None): LongParam = {
+  protected def longParam(name: String, doc: Option[String] = None): LongParam = {
     new LongParam(this, name, getDoc(doc, name))
   }
 
-  def floatParam(name: String, doc: String): FloatParam = floatParam(name, Some(doc))
+  protected def floatParam(name: String, doc: String): FloatParam = floatParam(name, Some(doc))
 
-  def floatParam(name: String, doc: Option[String] = None): FloatParam = {
+  protected def floatParam(name: String, doc: Option[String] = None): FloatParam = {
     new FloatParam(this, name, getDoc(doc, name))
   }
 
-  def doubleParam(name: String, doc: String): DoubleParam = doubleParam(name, Some(doc))
+  protected def doubleParam(name: String, doc: String): DoubleParam = doubleParam(name, Some(doc))
 
-  def doubleParam(name: String, doc: Option[String] = None): DoubleParam = {
+  protected def doubleParam(name: String, doc: Option[String] = None): DoubleParam = {
     new DoubleParam(this, name, getDoc(doc, name))
   }
 
-  def param[T](name: String, doc: String): Param[T] = param[T](name, Some(doc))
+  protected def param[T](name: String, doc: String): Param[T] = param[T](name, Some(doc))
 
-  def param[T](name: String, doc: Option[String] = None): Param[T] = {
+  protected def param[T](name: String, doc: Option[String] = None): Param[T] = {
     new Param[T](this, name, getDoc(doc, name))
   }
 
-  def stringParam(name: String, doc: String): Param[String] = stringParam(name, Some(doc))
+  protected def stringParam(name: String, doc: String): Param[String] = stringParam(name, Some(doc))
 
-  def stringParam(name: String, doc: Option[String] = None): Param[String] = {
+  protected def stringParam(name: String, doc: Option[String] = None): Param[String] = {
     new Param[String](this, name, getDoc(doc, name))
   }
 
-  def nullableStringParam(name: String, doc: String): NullableStringParam = {
+  protected def nullableStringParam(name: String, doc: String): NullableStringParam = {
     nullableStringParam(name, Some(doc))
   }
 
-  def nullableStringParam(name: String, doc: Option[String] = None): NullableStringParam = {
+  protected def nullableStringParam(name: String, doc: Option[String] = None): NullableStringParam = {
     new NullableStringParam(this, name, getDoc(doc, name))
   }
 
-  def stringArrayParam(name: String, doc: String): StringArrayParam = stringArrayParam(name, Some(doc))
+  protected def stringArrayParam(name: String, doc: String): StringArrayParam = stringArrayParam(name, Some(doc))
 
-  def stringArrayParam(name: String, doc: Option[String] = None): StringArrayParam = {
+  protected def stringArrayParam(name: String, doc: Option[String] = None): StringArrayParam = {
     new StringArrayParam(this, name, getDoc(doc, name))
   }
 
-  def intArrayParam(name: String, doc: String): IntArrayParam = intArrayParam(name, Some(doc))
+  protected def intArrayParam(name: String, doc: String): IntArrayParam = intArrayParam(name, Some(doc))
 
-  def intArrayParam(name: String, doc: Option[String] = None): IntArrayParam = {
+  protected def intArrayParam(name: String, doc: Option[String] = None): IntArrayParam = {
     new IntArrayParam(this, name, getDoc(doc, name))
   }
 
-  def doubleArrayParam(name: String, doc: String): DoubleArrayParam = doubleArrayParam(name, Some(doc))
+  protected def doubleArrayParam(name: String, doc: String): DoubleArrayParam = doubleArrayParam(name, Some(doc))
 
-  def doubleArrayParam(name: String, doc: Option[String] = None): DoubleArrayParam = {
+  protected def doubleArrayParam(name: String, doc: Option[String] = None): DoubleArrayParam = {
     new DoubleArrayParam(this, name, getDoc(doc, name))
   }
 
@@ -126,15 +122,15 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
     }
   }
 
-  def nullableDoubleArrayParam(name: String, doc: String): NullableDoubleArrayParam = nullableDoubleArrayParam(name, Some(doc))
+  protected def nullableDoubleArrayParam(name: String, doc: String): NullableDoubleArrayParam = nullableDoubleArrayParam(name, Some(doc))
 
-  def nullableDoubleArrayParam(name: String, doc: Option[String] = None): NullableDoubleArrayParam = {
+  protected def nullableDoubleArrayParam(name: String, doc: Option[String] = None): NullableDoubleArrayParam = {
     new NullableDoubleArrayParam(this, name, getDoc(doc, name))
   }
 
-  def nullableStringArrayParam(name: String, doc: String): NullableStringArrayParam = nullableStringArrayParam(name, Some(doc))
+  protected def nullableStringArrayParam(name: String, doc: String): NullableStringArrayParam = nullableStringArrayParam(name, Some(doc))
 
-  def nullableStringArrayParam(name: String, doc: Option[String] = None): NullableStringArrayParam = {
+  protected def nullableStringArrayParam(name: String, doc: Option[String] = None): NullableStringArrayParam = {
     new NullableStringArrayParam(this, name, getDoc(doc, name))
   }
 }
