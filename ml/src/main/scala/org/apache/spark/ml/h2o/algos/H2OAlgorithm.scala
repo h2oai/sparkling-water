@@ -18,7 +18,7 @@ package org.apache.spark.ml.h2o.algos
 
 import hex.Model
 import hex.genmodel.utils.DistributionFamily
-import org.apache.spark.annotation.{DeveloperApi, Since}
+import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param.H2OAlgoParams
