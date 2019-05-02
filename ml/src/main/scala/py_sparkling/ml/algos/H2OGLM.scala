@@ -14,25 +14,19 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package py_sparkling.ml.algos
 
-import hex.glm.GLM
+import hex.glm.{GLM, GLMModel}
 import hex.glm.GLMModel.GLMParameters
 import org.apache.spark.ml.h2o.algos.H2OAlgorithmReader
 import org.apache.spark.ml.util.{MLReadable, MLReader}
-import py_sparkling.ml.models.H2OMOJOModel
-import water.support.ModelSerializationSupport
 
 /**
   * H2O GLM Wrapper for PySparkling
   */
 class H2OGLM(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OGLM(uid) {
 
-  override def trainModel(params: GLMParameters): H2OMOJOModel = {
-    val model = new GLM(params).trainModel().get()
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(model))
-  }
+  override def trainModel(params: GLMParameters): GLMModel = new GLM(params).trainModel().get()
 }
 
 private[algos] object H2OGLM extends MLReadable[H2OGLM] {

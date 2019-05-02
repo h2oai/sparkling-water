@@ -33,6 +33,8 @@ package object h2o extends Logging {
 
   type Dataset[X] = org.apache.spark.sql.Dataset[X]
 
+  type H2OBaseModel = hex.Model[_, _ <: hex.Model.Parameters, _ <: hex.Model.Output]
+
   trait Holder[T] {
     def result: Option[T]
   }

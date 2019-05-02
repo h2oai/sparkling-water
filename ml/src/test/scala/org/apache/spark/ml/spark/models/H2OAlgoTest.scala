@@ -81,7 +81,7 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
   }
 
 
-  private def testGridSearch(algo: H2OAlgorithm[_ <: Model.Parameters, _], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
+  private def testGridSearch(algo: H2OAlgorithm[_ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
       val dataset = spark.read
         .option("header", "true")
         .option("inferSchema", "true")
