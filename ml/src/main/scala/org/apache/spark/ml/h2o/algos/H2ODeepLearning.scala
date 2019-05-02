@@ -16,10 +16,9 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
-import org.apache.spark.annotation.Since
 import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.util._
 
@@ -33,21 +32,10 @@ class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearnin
 
   def this() = this(Identifiable.randomUID("deeplearning"))
 
-  override def defaultFileName: String = H2ODeepLearning.defaultFileName
-
   override def trainModel(params: DeepLearningParameters): DeepLearningModel = new DeepLearning(params).trainModel().get()
 }
 
-object H2ODeepLearning extends MLReadable[H2ODeepLearning] {
-
-  private final val defaultFileName = "deeplearning_params"
-
-  @Since("1.6.0")
-  override def read: MLReader[H2ODeepLearning] = new H2OAlgorithmReader[H2ODeepLearning](defaultFileName)
-
-  @Since("1.6.0")
-  override def load(path: String): H2ODeepLearning = super.load(path)
-}
+object H2ODeepLearning extends DefaultParamsReadable[py_sparkling.ml.algos.H2ODeepLearning]
 
 /**
   * Parameters here can be set as normal and are duplicated to DeepLearningParameters H2O object

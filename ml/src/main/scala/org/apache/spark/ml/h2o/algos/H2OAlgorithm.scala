@@ -106,29 +106,4 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
-
-  def defaultFileName: String
 }
-
-object H2OAlgorithmReader {
-  def create[A <: H2OAlgorithm[_] : ClassTag](defaultFileName: String) = new H2OAlgorithmReader[A](defaultFileName)
-}
-
-private[algos] class H2OAlgorithmReader[A <: H2OAlgorithm[_] : ClassTag]
-(val defaultFileName: String) extends MLReader[A] {
-
-  override def load(path: String): A = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc)
-
-    val h2oAlgo = make[A](metadata.uid)
-    metadata.getAndSetParams(h2oAlgo)
-    h2oAlgo
-  }
-
-  private def make[CT: ClassTag](uid: String): CT = {
-    val aClass = implicitly[ClassTag[CT]].runtimeClass
-    val ctor = aClass.getConstructor(classOf[String])
-    ctor.newInstance(uid).asInstanceOf[CT]
-  }
-}
-

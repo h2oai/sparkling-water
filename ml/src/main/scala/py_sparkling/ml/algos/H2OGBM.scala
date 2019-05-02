@@ -16,10 +16,9 @@
 */
 package py_sparkling.ml.algos
 
-import hex.tree.gbm.{GBM, GBMModel}
 import hex.tree.gbm.GBMModel.GBMParameters
-import org.apache.spark.ml.h2o.algos.H2OAlgorithmReader
-import org.apache.spark.ml.util.{MLReadable, MLReader}
+import hex.tree.gbm.{GBM, GBMModel}
+import org.apache.spark.ml.util.DefaultParamsReadable
 
 /**
   * H2O GBM Wrapper for PySparkling
@@ -29,11 +28,4 @@ class H2OGBM(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2O
   override def trainModel(params: GBMParameters): GBMModel = new GBM(params).trainModel().get()
 }
 
-private[algos] object H2OGBM extends MLReadable[H2OGBM] {
-
-  private final val defaultFileName = "gbm_params"
-
-  override def read: MLReader[H2OGBM] = H2OAlgorithmReader.create[H2OGBM](defaultFileName)
-
-  override def load(path: String): H2OGBM = super.load(path)
-}
+private[algos] object H2OGBM extends DefaultParamsReadable[H2OGBM]

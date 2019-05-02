@@ -16,10 +16,9 @@
 */
 package py_sparkling.ml.algos
 
-import hex.glm.{GLM, GLMModel}
 import hex.glm.GLMModel.GLMParameters
-import org.apache.spark.ml.h2o.algos.H2OAlgorithmReader
-import org.apache.spark.ml.util.{MLReadable, MLReader}
+import hex.glm.{GLM, GLMModel}
+import org.apache.spark.ml.util.DefaultParamsReadable
 
 /**
   * H2O GLM Wrapper for PySparkling
@@ -29,11 +28,4 @@ class H2OGLM(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2O
   override def trainModel(params: GLMParameters): GLMModel = new GLM(params).trainModel().get()
 }
 
-private[algos] object H2OGLM extends MLReadable[H2OGLM] {
-
-  private final val defaultFileName = "glm_params"
-
-  override def read: MLReader[H2OGLM] = H2OAlgorithmReader.create[H2OGLM](defaultFileName)
-
-  override def load(path: String): H2OGLM = super.load(path)
-}
+private[algos] object H2OGLM extends DefaultParamsReadable[H2OGLM]
