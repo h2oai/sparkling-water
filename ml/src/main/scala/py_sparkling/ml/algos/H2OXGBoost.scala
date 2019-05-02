@@ -14,15 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package py_sparkling.ml.algos
 
 import hex.tree.xgboost.{XGBoost, XGBoostModel}
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import org.apache.spark.ml.h2o.algos.H2OAlgorithmReader
 import org.apache.spark.ml.util.{MLReadable, MLReader}
-import py_sparkling.ml.models.H2OMOJOModel
-
 
 /**
   * H2O XGBoost Wrapper for PySparkling

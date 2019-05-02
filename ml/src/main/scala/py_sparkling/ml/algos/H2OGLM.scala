@@ -14,14 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package py_sparkling.ml.algos
 
 import hex.glm.{GLM, GLMModel}
 import hex.glm.GLMModel.GLMParameters
 import org.apache.spark.ml.h2o.algos.H2OAlgorithmReader
 import org.apache.spark.ml.util.{MLReadable, MLReader}
-import py_sparkling.ml.models.H2OMOJOModel
 
 /**
   * H2O GLM Wrapper for PySparkling
