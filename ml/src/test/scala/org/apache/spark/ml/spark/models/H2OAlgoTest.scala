@@ -41,7 +41,7 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
       .option("inferSchema", "true")
       .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
       // Create GBM model
-     val algo = new H2OGLM()(hc, spark.sqlContext)
+     val algo = new H2OGLM()
         .setTrainRatio(0.8)
         .setSeed(1)
         .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON")
@@ -59,14 +59,14 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("H2O Grid Search GLM Pipeline"){
-    val glm = new H2OGLM()(hc, spark.sqlContext)
+    val glm = new H2OGLM()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
     testGridSearch(glm, hyperParams)
   }
 
   test("H2O Grid Search GBM Pipeline"){
-    val gbm = new H2OGBM()(hc, spark.sqlContext)
+    val gbm = new H2OGBM()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
     hyperParams += ("_ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef]), "_seed" -> Array(1, 2).map(_.asInstanceOf[AnyRef]))
 
@@ -74,7 +74,7 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("H2O Grid Search DeepLearning Pipeline"){
-    val deeplearning = new H2ODeepLearning()(hc, spark.sqlContext)
+    val deeplearning = new H2ODeepLearning()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
     testGridSearch(deeplearning, hyperParams)
@@ -87,7 +87,7 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
         .option("inferSchema", "true")
         .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
-      val stage = new H2OGridSearch()(hc, spark.sqlContext)
+      val stage = new H2OGridSearch()
         .setLabelCol("AGE")
         .setHyperParameters(hyperParams)
         .setAlgo(algo)

@@ -17,32 +17,23 @@
 
 package py_sparkling.ml.algos
 
-import ai.h2o.automl.{AutoML, AutoMLBuildSpec}
-import org.apache.spark.h2o.H2OContext
+import ai.h2o.automl.AutoML
 import org.apache.spark.ml.h2o.algos.H2OAutoMLReader
-import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.ml.util.{MLReadable, MLReader}
 import py_sparkling.ml.models.H2OMOJOModel
 import water.support.ModelSerializationSupport
 
 /**
   * H2O AutoML Wrapper for PySparkling
   */
-class H2OAutoML(override val automlBuildSpec: Option[AutoMLBuildSpec], override val uid: String)
-               (implicit hc: H2OContext, sqlContext: SQLContext)
-  extends org.apache.spark.ml.h2o.algos.H2OAutoML {
+class H2OAutoML(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OAutoML(uid) {
 
-  def this()(implicit hc: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("automl"))
-
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
-
-  override def trainModel(aml: AutoML) = {
+  override def trainModel(aml: AutoML): H2OMOJOModel = {
     new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()))
   }
 }
 
-
-object H2OAutoML extends MLReadable[H2OAutoML] {
+private[algos] object H2OAutoML extends MLReadable[H2OAutoML] {
 
   private final val defaultFileName = "automl_params"
 
