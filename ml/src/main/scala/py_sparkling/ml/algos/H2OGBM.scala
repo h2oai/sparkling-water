@@ -19,28 +19,15 @@ package py_sparkling.ml.algos
 
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
-import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.h2o.algos.{H2OAlgorithmReader, H2OGBMParams}
-import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.ml.h2o.algos.H2OAlgorithmReader
+import org.apache.spark.ml.util.{MLReadable, MLReader}
 import py_sparkling.ml.models.H2OMOJOModel
 import water.support.ModelSerializationSupport
 
 /**
   * H2O GBM Wrapper for PySparkling
   */
-class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
-            (implicit h2oContext: H2OContext, sqlContext: SQLContext)
-  extends org.apache.spark.ml.h2o.algos.H2OGBM(parameters, uid)(h2oContext, sqlContext)
-    with H2OGBMParams {
-
-  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("gbm"))
-
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
-
-  def this(parameters: GBMParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), Identifiable.randomUID("gbm"))
-
-  def this(parameters: GBMParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
+class H2OGBM(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OGBM(uid) {
 
   override def trainModel(params: GBMParameters): H2OMOJOModel = {
     val model = new GBM(params).trainModel().get()
@@ -48,11 +35,11 @@ class H2OGBM(parameters: Option[GBMParameters], override val uid: String)
   }
 }
 
-object H2OGBM extends MLReadable[H2OGBM] {
+private[algos] object H2OGBM extends MLReadable[H2OGBM] {
 
   private final val defaultFileName = "gbm_params"
 
-  override def read: MLReader[H2OGBM] = H2OAlgorithmReader.create[H2OGBM, GBMParameters](defaultFileName)
+  override def read: MLReader[H2OGBM] = H2OAlgorithmReader.create[H2OGBM](defaultFileName)
 
   override def load(path: String): H2OGBM = super.load(path)
 }

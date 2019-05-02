@@ -33,10 +33,10 @@ class ColumnPruner(override val uid: String) extends Transformer with ColumnPrun
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    val columnsToLeft = if ($(keep)) {
-      schema.fieldNames.filter($(columns).contains(_))
+    val columnsToLeft = if (getKeep()) {
+      schema.fieldNames.filter(getColumns().contains(_))
     } else {
-      schema.fieldNames.filter(!$(columns).contains(_))
+      schema.fieldNames.filter(!getColumns().contains(_))
     }
 
     StructType(columnsToLeft.map {
@@ -45,10 +45,10 @@ class ColumnPruner(override val uid: String) extends Transformer with ColumnPrun
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val columnsToRemove = if ($(keep)) {
-      dataset.columns.filter(!$(columns).contains(_))
+    val columnsToRemove = if (getKeep()) {
+      dataset.columns.filter(!getColumns().contains(_))
     } else {
-      dataset.columns.filter($(columns).contains(_))
+      dataset.columns.filter(getColumns().contains(_))
     }
     var resultDataset = dataset
     columnsToRemove.foreach {
@@ -67,8 +67,8 @@ trait ColumnPrunerParams extends Params {
   //
   // Param definitions
   //
-  final val keep = new BooleanParam(this, "keep", "Determines if the column specified in the 'columns' parameter should be kept or removed")
-  final val columns = new StringArrayParam(this, "columns", "List of columns to be kept or removed")
+  private final val keep = new BooleanParam(this, "keep", "Determines if the column specified in the 'columns' parameter should be kept or removed")
+  private final val columns = new StringArrayParam(this, "columns", "List of columns to be kept or removed")
 
   //
   // Default values

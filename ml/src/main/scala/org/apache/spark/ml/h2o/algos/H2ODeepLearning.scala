@@ -21,11 +21,9 @@ import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 import org.apache.spark.annotation.Since
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.util._
-import org.apache.spark.sql.SQLContext
 import water.support.ModelSerializationSupport
 
 
@@ -34,19 +32,10 @@ import water.support.ModelSerializationSupport
   *
   * TODO: There are still bunch of parameters defined DeepLearningParameters which need to be ported here
   */
-class H2ODeepLearning(parameters: Option[DeepLearningParameters], override val uid: String)
-                     (implicit h2oContext: H2OContext, sqlContext: SQLContext)
-  extends H2OAlgorithm[DeepLearningParameters, H2OMOJOModel](parameters)
-    with H2ODeepLearningParams {
+class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearningParameters, H2OMOJOModel]
+  with H2ODeepLearningParams {
 
-  def this()(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(None, Identifiable.randomUID("deeplearning"))
-
-  def this(uid: String, hc: H2OContext, sqlContext: SQLContext) = this(None, uid)(hc, sqlContext)
-
-  def this(parameters: DeepLearningParameters)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters),
-    Identifiable.randomUID("deeplearning"))
-
-  def this(parameters: DeepLearningParameters, uid: String)(implicit h2oContext: H2OContext, sqlContext: SQLContext) = this(Option(parameters), uid)
+  def this() = this(Identifiable.randomUID("deeplearning"))
 
   override def defaultFileName: String = H2ODeepLearning.defaultFileName
 
@@ -62,7 +51,7 @@ object H2ODeepLearning extends MLReadable[H2ODeepLearning] {
   private final val defaultFileName = "deeplearning_params"
 
   @Since("1.6.0")
-  override def read: MLReader[H2ODeepLearning] = new H2OAlgorithmReader[H2ODeepLearning, DeepLearningParameters](defaultFileName)
+  override def read: MLReader[H2ODeepLearning] = new H2OAlgorithmReader[H2ODeepLearning](defaultFileName)
 
   @Since("1.6.0")
   override def load(path: String): H2ODeepLearning = super.load(path)
@@ -82,11 +71,11 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
   //
   // Param definitions
   //
-  private final val epochs = doubleParam("epochs")
-  private final val l1 = doubleParam("l1")
-  private final val l2 = doubleParam("l2")
-  private final val hidden = intArrayParam("hidden")
-  private final val reproducible = booleanParam("reproducible")
+  private val epochs = doubleParam("epochs")
+  private val l1 = doubleParam("l1")
+  private val l2 = doubleParam("l2")
+  private val hidden = intArrayParam("hidden")
+  private val reproducible = booleanParam("reproducible")
   //
   // Default values
   //
@@ -100,37 +89,27 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
   //
   // Getters
   //
-  /** @group getParam */
   def getEpochs(): Double = $(epochs)
 
-  /** @group getParam */
   def getL1(): Double = $(l1)
 
-  /** @group getParam */
   def getL2(): Double = $(l2)
 
-  /** @group getParam */
   def getHidden(): Array[Int] = $(hidden)
 
-  /** @group getParam */
   def getReproducible(): Boolean = $(reproducible)
 
   //
   // Setters
   //
-  /** @group setParam */
   def setEpochs(value: Double): this.type = set(epochs, value)
 
-  /** @group setParam */
   def setL1(value: Double): this.type = set(l1, value)
 
-  /** @group setParam */
   def setL2(value: Double): this.type = set(l2, value)
 
-  /** @group setParam */
   def setHidden(value: Array[Int]): this.type = set(hidden, value)
 
-  /** @group setParam */
   def setReproducible(value: Boolean): this.type = set(reproducible, value)
 
 
@@ -142,6 +121,4 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
     parameters._hidden = $(hidden)
     parameters._reproducible = $(reproducible)
   }
-
-
 }
