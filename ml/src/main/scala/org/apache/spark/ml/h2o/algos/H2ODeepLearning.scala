@@ -14,7 +14,6 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package org.apache.spark.ml.h2o.algos
 
 import hex.deeplearning.{DeepLearning, DeepLearningModel}
@@ -23,8 +22,6 @@ import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 import org.apache.spark.annotation.Since
 import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.util._
-
-
 
 /**
   * H2O Deep learning algorithm exposed via Spark ML pipelines.

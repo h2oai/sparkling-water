@@ -20,7 +20,6 @@ import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.{GBM, GBMModel}
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.annotation.Since
-import org.apache.spark.ml.h2o.models._
 import org.apache.spark.ml.h2o.param.H2OSharedTreeParams
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 

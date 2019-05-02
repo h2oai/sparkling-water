@@ -16,7 +16,6 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-
 import hex.StringPair
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling
 import hex.glm.{GLM, GLMModel}

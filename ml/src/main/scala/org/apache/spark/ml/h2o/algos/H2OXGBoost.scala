@@ -21,11 +21,9 @@ import hex.tree.xgboost.{XGBoost, XGBoostModel}
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
 import org.apache.spark.annotation.Since
-import org.apache.spark.ml.h2o.models._
 import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
 import org.apache.spark.ml.param.Params
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
-
 
 /**
   * H2O XGBoost algorithm exposed via Spark ML pipelines.

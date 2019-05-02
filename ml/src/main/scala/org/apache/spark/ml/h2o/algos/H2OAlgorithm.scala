@@ -31,6 +31,7 @@ import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
 import scala.reflect.ClassTag
+
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
