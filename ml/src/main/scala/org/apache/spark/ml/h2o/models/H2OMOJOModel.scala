@@ -64,8 +64,8 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   def predictionSchema(): Seq[StructField] = {
     val fields = getOrCreateEasyModelWrapper().getModelCategory match {
-      case ModelCategory.Binomial => StructField("p0", DoubleType) :: StructField("p1", DoubleType) ::
-        StructField("p0_calibrated", DoubleType) :: StructField("p1_calibrated", DoubleType) :: Nil
+      case ModelCategory.Binomial => Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false)) ++
+        Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = true))
       case ModelCategory.Regression => StructField("value", DoubleType) :: Nil
       case ModelCategory.Multinomial => StructField("probabilities", ArrayType(DoubleType)) :: Nil
       case ModelCategory.Clustering => StructField("cluster", DoubleType) :: Nil
@@ -80,21 +80,13 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
 
   implicit def toBinomialPrediction(pred: AbstractPrediction): BinomialPrediction = {
-    if (pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities != null) {
-      BinomialPrediction(
-        pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
-        pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1),
-        pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities(0),
-        pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities(1))
-    } else {
-      BinomialPrediction(
-        pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
-        pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1),
-        Double.NaN,
-        Double.NaN
-      )
-    }
-
+    val calibratedProps = pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities
+    BinomialPrediction(
+      pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
+      pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1),
+      if (calibratedProps == null) null else calibratedProps(0),
+      if (calibratedProps == null) null else calibratedProps(1)
+    )
   }
 
   implicit def toRegressionPrediction(pred: AbstractPrediction) = RegressionPrediction(
