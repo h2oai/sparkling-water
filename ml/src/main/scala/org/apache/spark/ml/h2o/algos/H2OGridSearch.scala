@@ -437,27 +437,27 @@ trait H2OGridSearchParams extends DeprecatableParams {
   //
   // Param definitions
   //
-  private final val algo = new DoubleParam(this, "algo", "dummy argument for pysparkling")
-  private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
+  private val algo = new DoubleParam(this, "algo", "dummy argument for pysparkling")
+  private val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   protected final val gridAlgoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
-  private final val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
-  private final val labelCol = new Param[String](this, "labelCol", "Label column name")
-  private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-  private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
-  private final val strategy = new GridSearchStrategyParam(this, "strategy", "Search criteria strategy")
-  private final val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "maxRuntimeSecs")
-  private final val maxModels = new IntParam(this, "maxModels", "maxModels")
-  private final val seed = new LongParam(this, "seed", "seed for hyper params search")
-  private final val stoppingRounds = new IntParam(this, "stoppingRounds", "Early stopping based on convergence of stoppingMetric")
-  private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Relative tolerance for metric-based" +
+  private val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
+  private val labelCol = new Param[String](this, "labelCol", "Label column name")
+  private val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
+  private val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
+  private val strategy = new GridSearchStrategyParam(this, "strategy", "Search criteria strategy")
+  private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "maxRuntimeSecs")
+  private val maxModels = new IntParam(this, "maxModels", "maxModels")
+  private val seed = new LongParam(this, "seed", "seed for hyper params search")
+  private val stoppingRounds = new IntParam(this, "stoppingRounds", "Early stopping based on convergence of stoppingMetric")
+  private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Relative tolerance for metric-based" +
     " stopping criterion: stop if relative improvement is not at least this much.")
-  private final val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping Metric")
-  private final val nfolds = new IntParam(this, "nfolds", "nfolds")
-  private final val selectBestModelBy = new MetricParam(this, "selectBestModelBy", "Select best model by specific metric." +
+  private val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping Metric")
+  private val nfolds = new IntParam(this, "nfolds", "nfolds")
+  private val selectBestModelBy = new MetricParam(this, "selectBestModelBy", "Select best model by specific metric." +
     "If this value is not specified that the first model os taken.")
-  private final val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
+  private val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
     "True if sort in decreasing order accordingto selected metrics")
-  private final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
+  private val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
 
   //
   // Default values

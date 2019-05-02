@@ -33,7 +33,7 @@ import water.support.ModelSerializationSupport
   * TODO: There are still bunch of parameters defined DeepLearningParameters which need to be ported here
   */
 class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearningParameters, H2OMOJOModel]
-    with H2ODeepLearningParams {
+  with H2ODeepLearningParams {
 
   def this() = this(Identifiable.randomUID("deeplearning"))
 
@@ -71,11 +71,11 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
   //
   // Param definitions
   //
-  private final val epochs = doubleParam("epochs")
-  private final val l1 = doubleParam("l1")
-  private final val l2 = doubleParam("l2")
-  private final val hidden = intArrayParam("hidden")
-  private final val reproducible = booleanParam("reproducible")
+  private val epochs = doubleParam("epochs")
+  private val l1 = doubleParam("l1")
+  private val l2 = doubleParam("l2")
+  private val hidden = intArrayParam("hidden")
+  private val reproducible = booleanParam("reproducible")
   //
   // Default values
   //
@@ -89,37 +89,27 @@ trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
   //
   // Getters
   //
-  /** @group getParam */
   def getEpochs(): Double = $(epochs)
 
-  /** @group getParam */
   def getL1(): Double = $(l1)
 
-  /** @group getParam */
   def getL2(): Double = $(l2)
 
-  /** @group getParam */
   def getHidden(): Array[Int] = $(hidden)
 
-  /** @group getParam */
   def getReproducible(): Boolean = $(reproducible)
 
   //
   // Setters
   //
-  /** @group setParam */
   def setEpochs(value: Double): this.type = set(epochs, value)
 
-  /** @group setParam */
   def setL1(value: Double): this.type = set(l1, value)
 
-  /** @group setParam */
   def setL2(value: Double): this.type = set(l2, value)
 
-  /** @group setParam */
   def setHidden(value: Array[Int]): this.type = set(hidden, value)
 
-  /** @group setParam */
   def setReproducible(value: Boolean): this.type = set(reproducible, value)
 
 

@@ -187,32 +187,32 @@ trait H2OAutoMLParams extends DeprecatableParams {
   //
   // Param definitions
   //
-  private final val labelCol = new Param[String](this, "labelCol", "Label column name")
-  private final val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-  private final val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
-  private final val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
-  private final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
-  private final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
-  private final val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
-  private final val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
-  private final val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
-  private final val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
+  private val labelCol = new Param[String](this, "labelCol", "Label column name")
+  private val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
+  private val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
+  private val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
+  private val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
+  private val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
+  private val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
+  private val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
+  private val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
+  private val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
     " (e.g., airlines and iris)")
-  private final val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
-  private final val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
-  private final val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
-  private final val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping metric")
-  private final val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
-  private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
+  private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
+  private val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
+  private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
+  private val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping metric")
+  private val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
+  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
     " categorical levels to NA during predictions")
-  private final val seed = new IntParam(this, "seed", "seed")
-  private final val sortMetric = new NullableStringParam(this, "sortMetric", "Sort metric for the AutoML leaderboard")
-  private final val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
-  private final val classSamplingFactors = new NullableFloatArrayParam(this, "classSamplingFactors", "Class sampling factors")
-  private final val maxAfterBalanceSize = new FloatParam(this, "maxAfterBalanceSize", "Max after balance size")
-  private final val keepCrossValidationPredictions = new BooleanParam(this, "keepCrossValidationPredictions", "Keep cross Validation predictions")
-  private final val keepCrossValidationModels = new BooleanParam(this, "keepCrossValidationModels", "Keep cross validation models")
-  private final val maxModels = new IntParam(this, "maxModels", "Maximal number of models to be trained in AutoML")
+  private val seed = new IntParam(this, "seed", "seed")
+  private val sortMetric = new NullableStringParam(this, "sortMetric", "Sort metric for the AutoML leaderboard")
+  private val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
+  private val classSamplingFactors = new NullableFloatArrayParam(this, "classSamplingFactors", "Class sampling factors")
+  private val maxAfterBalanceSize = new FloatParam(this, "maxAfterBalanceSize", "Max after balance size")
+  private val keepCrossValidationPredictions = new BooleanParam(this, "keepCrossValidationPredictions", "Keep cross Validation predictions")
+  private val keepCrossValidationModels = new BooleanParam(this, "keepCrossValidationModels", "Keep cross validation models")
+  private val maxModels = new IntParam(this, "maxModels", "Maximal number of models to be trained in AutoML")
 
   //
   // Default values

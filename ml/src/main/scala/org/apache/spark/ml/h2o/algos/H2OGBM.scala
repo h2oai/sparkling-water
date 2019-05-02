@@ -29,7 +29,7 @@ import water.support.ModelSerializationSupport
   * H2O GBM algorithm exposed via Spark ML pipelines.
   */
 class H2OGBM(override val uid: String) extends H2OAlgorithm[GBMParameters, H2OMOJOModel]
-    with H2OGBMParams {
+  with H2OGBMParams {
 
   def this() = this(Identifiable.randomUID("gbm"))
 
@@ -68,11 +68,11 @@ trait H2OGBMParams extends H2OSharedTreeParams[GBMParameters] {
   //
   // Param definitions
   //
-  private final val learnRate = doubleParam("learnRate")
-  private final val learnRateAnnealing = doubleParam("learnRateAnnealing")
-  private final val colSampleRate = doubleParam("colSampleRate")
-  private final val maxAbsLeafnodePred = doubleParam("maxAbsLeafnodePred")
-  private final val predNoiseBandwidth = doubleParam("predNoiseBandwidth")
+  private val learnRate = doubleParam("learnRate")
+  private val learnRateAnnealing = doubleParam("learnRateAnnealing")
+  private val colSampleRate = doubleParam("colSampleRate")
+  private val maxAbsLeafnodePred = doubleParam("maxAbsLeafnodePred")
+  private val predNoiseBandwidth = doubleParam("predNoiseBandwidth")
 
   //
   // Default values
@@ -88,29 +88,27 @@ trait H2OGBMParams extends H2OSharedTreeParams[GBMParameters] {
   //
   // Getters
   //
-  /** @group getParam */
   def getLearnRate(): Double = $(learnRate)
-  /** @group getParam */
+
   def getLearnRateAnnealing(): Double = $(learnRateAnnealing)
-  /** @group getParam */
+
   def getColSampleRate(): Double = $(colSampleRate)
-  /** @group getParam */
+
   def getMaxAbsLeafnodePred(): Double = $(maxAbsLeafnodePred)
-  /** @group getParam */
+
   def getPredNoiseBandwidth(): Double = $(predNoiseBandwidth)
 
   //
   // Setters
   //
-  /** @group setParam */
   def setLearnRate(value: Double): this.type = set(learnRate, value)
-  /** @group setParam */
+
   def setLearnRateAnnealing(value: Double): this.type = set(learnRateAnnealing, value)
-  /** @group setParam */
+
   def setColSampleRate(value: Double): this.type = set(colSampleRate, value)
-  /** @group setParam */
+
   def setMaxAbsLeafnodePred(value: Double): this.type = set(maxAbsLeafnodePred, value)
-  /** @group setParam */
+
   def setPredNoiseBandwidth(value: Double): this.type = set(predNoiseBandwidth, value)
 
 
