@@ -48,7 +48,7 @@ import scala.reflect.ClassTag
   * H2O Grid Search
   */
 class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
-  with MLWritable with H2OGridSearchParams {
+  with DefaultParamsWritable with H2OGridSearchParams {
 
   private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
@@ -371,9 +371,6 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
-
-  @Since("1.6.0")
-  override def write: MLWriter = new DefaultParamsWriter(this)
 
   def defaultFileName: String = H2OGridSearch.defaultFileName
 }
