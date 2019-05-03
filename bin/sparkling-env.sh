@@ -88,9 +88,21 @@ function checkPythonPackage() {
             minor_curr=$(echo $current_version | cut -f2 -d.)
             patch_curr=$(echo $current_version | cut -f3 -d.)
 
-            [ $major_curr -lt $major_min ] && echo "Please upgrade $2 to version at least $3 as: pip install --upgrade $2==$3" && exit
-            [ $minor_curr -lt $minor_min ] && echo "Please upgrade $2 to version at least $3 as: pip install --upgrade $2==$3" && exit
-            [ $patch_curr -lt $patch_min ] && echo "Please upgrade $2 to version at least $3 as: pip install --upgrade $2==$3" && exit
+            if [ $major_curr -lt $major_min ]; then
+                echo "Please upgrade $2 to version at least $3 as: pip install --upgrade $2==$3" && exit
+            elif [ $major_curr -gt $major_min ]; then
+                return 0
+            fi
+
+            if [ $minor_curr -lt $minor_min ]; then
+                echo "Please upgrade $2 to version at least $3 as: pip install --upgrade $2==$3" && exit
+            elif [ $minor_curr -gt $minor_min ]; then
+                return 0
+            fi
+
+            if [ $patch_curr -lt $patch_min ]; then
+                echo "Please upgrade $2 to version at least $3 as: pip install --upgrade $2==$3" && exit
+            fi
 
         fi
 
