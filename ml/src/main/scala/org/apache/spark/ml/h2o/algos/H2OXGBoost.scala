@@ -17,13 +17,12 @@
 package org.apache.spark.ml.h2o.algos
 
 import hex.schemas.XGBoostV3.XGBoostParametersV3
-import hex.tree.xgboost.{XGBoost, XGBoostModel}
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
-import org.apache.spark.annotation.Since
+import hex.tree.xgboost.{XGBoost, XGBoostModel}
 import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
 import org.apache.spark.ml.param.Params
-import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
+import org.apache.spark.ml.util.{DefaultParamsReader, Identifiable}
 
 /**
   * H2O XGBoost algorithm exposed via Spark ML pipelines.
@@ -33,21 +32,10 @@ class H2OXGBoost(override val uid: String) extends H2OAlgorithm[XGBoostParameter
 
   def this() = this(Identifiable.randomUID("xgboost"))
 
-  override def defaultFileName: String = H2OXGBoost.defaultFileName
-
   override def trainModel(params: XGBoostParameters): XGBoostModel = new XGBoost(params).trainModel().get()
 }
 
-object H2OXGBoost extends MLReadable[H2OXGBoost] {
-
-  private final val defaultFileName = "xgboost_params"
-
-  @Since("1.6.0")
-  override def read: MLReader[H2OXGBoost] = H2OAlgorithmReader.create[H2OXGBoost](defaultFileName)
-
-  @Since("1.6.0")
-  override def load(path: String): H2OXGBoost = super.load(path)
-}
+object H2OXGBoost extends DefaultParamsReader[py_sparkling.ml.algos.H2OXGBoost]
 
 
 /**
