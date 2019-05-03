@@ -44,6 +44,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
+    mojo.setNamedMojoOutputColumns(false)
     val rawMojo = H2OMOJOModelCache.getOrCreateModel(mojo.uid, mojo.mojoData)
 
     val mojoInputCols = (0 until rawMojo.getInputMeta.size()).map(rawMojo.getInputMeta.getColumnName(_))
@@ -74,6 +75,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
+    mojo.setNamedMojoOutputColumns(false)
     val rawMojo = H2OMOJOModelCache.getOrCreateModel(mojo.uid, mojo.mojoData)
 
     val icolNames = (0 until rawMojo.getInputMeta.size()).map(i => rawMojo.getInputMeta.getColumnName(i))
@@ -135,7 +137,6 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2_multiple_outputs/pipeline.mojo"),
       "iris_pipeline.mojo")
-    mojo.setNamedMojoOutputColumns(true)
     assert(mojo.getOutputNames().length == 3)
 
     val transDf = mojo.transform(df)
@@ -155,7 +156,6 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
-    mojo.setNamedMojoOutputColumns(true)
 
     val transDf = mojo.transform(df)
     intercept[IllegalArgumentException] {
