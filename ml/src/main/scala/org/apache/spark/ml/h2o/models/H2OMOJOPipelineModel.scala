@@ -144,8 +144,6 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
     // get the altered frame
     val frameWithPredictions = flatten.select(col("*"), modelUdf(flatten.columns)(struct(names: _*)).as(outputCol))
 
-    // This behaviour is turned off by default, it can be enabled manually and will be default
-    // in the next Major Sparkling Water releases.
     val fr = if ($(namedMojoOutputColumns)) {
 
       def uniqueRandomName(colName: String, r: Random) = {
@@ -164,7 +162,7 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
       // Transform the resulted Array of predictions into own but temporary columns
       // Temporary columns are created as we can't create the columns directly as nested ones
       var frameWithExtractedPredictions: DataFrame = frameWithPredictions
-      getOutputNames().indices.foreach{ idx =>
+      getOutputNames().indices.foreach { idx =>
         frameWithExtractedPredictions = frameWithExtractedPredictions.withColumn(tempColNames(idx),
           selectFromArray(idx)(frameWithExtractedPredictions.col(outputCol + ".preds")))
       }
@@ -178,16 +176,6 @@ class H2OMOJOPipelineModel(val mojoData: Array[Byte], override val uid: String)
 
       frameWithoutTempCols
     } else {
-      logWarning(
-        """
-          | You are using Mojo Pipeline with the old-style output without properly named output columns.
-          | This behaviour is now default, however since the next major release of Sparkling Water, the default will
-          | be set to the variant currently enabled by calling mojo.set_named_mojo_output_columns(True) in PySparkling
-          | and mojo.setNamedMojoOutputColumns(true) in Sparkling Water. This means that the output columns are added
-          | separately and are named correctly.
-          |
-        """.stripMargin)
-
       frameWithPredictions
     }
 
