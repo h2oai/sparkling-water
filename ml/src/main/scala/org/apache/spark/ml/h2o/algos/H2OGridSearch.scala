@@ -27,7 +27,7 @@ import hex.grid.{Grid, GridSearch, HyperSpaceSearchCriteria}
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.{Model, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMultinomial, ModelMetricsRegression, ModelMetricsRegressionGLM, ScoreKeeper}
-import org.apache.spark.annotation.{DeveloperApi, Since}
+import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
@@ -42,7 +42,6 @@ import water.util.{DeprecatedMethod, PojoUtils}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.reflect.ClassTag
 
 /**
   * H2O Grid Search
@@ -369,13 +368,9 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
-
-  def defaultFileName: String = H2OGridSearch.defaultFileName
 }
 
-
-object H2OGridSearch extends MLReadable[H2OGridSearch] {
-
+object H2OGridSearch extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGridSearch] {
   object SupportedAlgos extends Enumeration {
     val gbm, glm, deeplearning = Value // still missing pipeline wrappers for KMeans & drf
 
@@ -386,41 +381,10 @@ object H2OGridSearch extends MLReadable[H2OGridSearch] {
     def fromString(value: String) = values.find(_.toString == value.toLowerCase())
   }
 
-  final val defaultFileName = "grid_search_params"
-
-  @Since("1.6.0")
-  override def read: MLReader[H2OGridSearch] = H2OGridSearchReader.create[H2OGridSearch](defaultFileName)
-
-  @Since("1.6.0")
-  override def load(path: String): H2OGridSearch = super.load(path)
-
   object MetricOrder extends Enumeration {
     type MetricOrder = Value
     val Asc, Desc = Value
   }
-
-}
-
-private[algos] class H2OGridSearchReader[A <: H2OGridSearch : ClassTag](val defaultFileName: String) extends MLReader[A] {
-
-  override def load(path: String): A = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc)
-
-    val algo = make[A](metadata.uid)
-    DefaultParamsReader.getAndSetParams(algo, metadata)
-    algo
-  }
-
-  private def make[CT: ClassTag](uid: String): CT = {
-    val aClass = implicitly[ClassTag[CT]].runtimeClass
-    val ctor = aClass.getConstructor(classOf[String])
-    ctor.newInstance(uid).asInstanceOf[CT]
-  }
-}
-
-
-object H2OGridSearchReader {
-  def create[A <: H2OGridSearch : ClassTag](defaultFileName: String) = new H2OGridSearchReader[A](defaultFileName)
 }
 
 trait H2OGridSearchParams extends DeprecatableParams {

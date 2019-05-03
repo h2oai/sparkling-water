@@ -20,7 +20,7 @@ import java.util.Date
 
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import hex.ScoreKeeper
-import org.apache.spark.annotation.{DeveloperApi, Since}
+import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
@@ -33,7 +33,6 @@ import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 import water.util.DeprecatedMethod
 
-import scala.reflect.ClassTag
 import scala.util.Random
 import scala.util.control.NoStackTrace
 
@@ -135,43 +134,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
-
-  def defaultFileName: String = H2OAutoML.defaultFileName
 }
 
-
-object H2OAutoML extends MLReadable[H2OAutoML] {
-
-  private final val defaultFileName = "automl_params"
-
-  @Since("1.6.0")
-  override def read: MLReader[H2OAutoML] = H2OAutoMLReader.create[H2OAutoML](defaultFileName)
-
-  @Since("1.6.0")
-  override def load(path: String): H2OAutoML = super.load(path)
-}
-
-private[algos] class H2OAutoMLReader[A <: H2OAutoML : ClassTag](val defaultFileName: String) extends MLReader[A] {
-
-  override def load(path: String): A = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc)
-
-    val algo = make[A](metadata.uid)
-    DefaultParamsReader.getAndSetParams(algo, metadata)
-    algo
-  }
-
-  private def make[CT: ClassTag](uid: String): CT = {
-    val aClass = implicitly[ClassTag[CT]].runtimeClass
-    val ctor = aClass.getConstructor(classOf[String])
-    ctor.newInstance(uid).asInstanceOf[CT]
-  }
-}
-
-
-object H2OAutoMLReader {
-  def create[A <: H2OAutoML : ClassTag](defaultFileName: String) = new H2OAutoMLReader[A](defaultFileName)
-}
+object H2OAutoML extends DefaultParamsReadable[py_sparkling.ml.algos.H2OAutoML]
 
 trait H2OAutoMLParams extends DeprecatableParams {
 
