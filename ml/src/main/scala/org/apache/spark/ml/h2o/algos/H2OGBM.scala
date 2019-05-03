@@ -17,11 +17,10 @@
 package org.apache.spark.ml.h2o.algos
 
 import hex.schemas.GBMV3.GBMParametersV3
-import hex.tree.gbm.{GBM, GBMModel}
 import hex.tree.gbm.GBMModel.GBMParameters
-import org.apache.spark.annotation.Since
+import hex.tree.gbm.{GBM, GBMModel}
 import org.apache.spark.ml.h2o.param.H2OSharedTreeParams
-import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
+import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 
 /**
   * H2O GBM algorithm exposed via Spark ML pipelines.
@@ -31,23 +30,10 @@ class H2OGBM(override val uid: String) extends H2OAlgorithm[GBMParameters]
 
   def this() = this(Identifiable.randomUID("gbm"))
 
-  override def defaultFileName: String = H2OGBM.defaultFileName
-
   override def trainModel(params: GBMParameters): GBMModel = new GBM(params).trainModel().get()
-
 }
 
-object H2OGBM extends MLReadable[H2OGBM] {
-
-  private final val defaultFileName = "gbm_params"
-
-  @Since("1.6.0")
-  override def read: MLReader[H2OGBM] = H2OAlgorithmReader.create[H2OGBM](defaultFileName)
-
-  @Since("1.6.0")
-  override def load(path: String): H2OGBM = super.load(path)
-}
-
+object H2OGBM extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGBM]
 
 /**
   * Parameters for Spark's API exposing underlying H2O model.
