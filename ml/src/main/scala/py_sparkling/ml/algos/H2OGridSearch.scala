@@ -16,27 +16,11 @@
 */
 package py_sparkling.ml.algos
 
-import hex.grid.Grid
-import org.apache.spark.ml.h2o.algos.H2OGridSearchReader
-import org.apache.spark.ml.util.{MLReadable, MLReader}
-import py_sparkling.ml.models.H2OMOJOModel
-import water.support.ModelSerializationSupport
+import org.apache.spark.ml.util.DefaultParamsReadable
 
 /**
   * H2O Grid Search Wrapper for PySparkling
   */
-class H2OGridSearch(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OGridSearch(uid) {
+class H2OGridSearch(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OGridSearch(uid)
 
-  override def trainModel(grid: Grid[_]): H2OMOJOModel = {
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)))
-  }
-}
-
-private[algos] object H2OGridSearch extends MLReadable[H2OGridSearch] {
-
-  private final val defaultFileName = org.apache.spark.ml.h2o.algos.H2OGridSearch.defaultFileName
-
-  override def read: MLReader[H2OGridSearch] = H2OGridSearchReader.create[H2OGridSearch](defaultFileName)
-
-  override def load(path: String): H2OGridSearch = super.load(path)
-}
+private[algos] object H2OGridSearch extends DefaultParamsReadable[H2OGridSearch]
