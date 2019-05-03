@@ -18,14 +18,13 @@ package org.apache.spark.ml.h2o.algos
 
 import hex.StringPair
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling
-import hex.glm.{GLM, GLMModel}
 import hex.glm.GLMModel.GLMParameters
 import hex.glm.GLMModel.GLMParameters.{Family, Link, Solver}
+import hex.glm.{GLM, GLMModel}
 import hex.schemas.GLMV3.GLMParametersV3
-import org.apache.spark.annotation.Since
 import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
 import org.apache.spark.ml.param.{Param, Params}
-import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
+import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JValue}
@@ -39,21 +38,10 @@ class H2OGLM(override val uid: String) extends H2OAlgorithm[GLMParameters]
 
   def this() = this(Identifiable.randomUID("glm"))
 
-  override def defaultFileName: String = H2OGLM.defaultFileName
-
   override def trainModel(params: GLMParameters): GLMModel = new GLM(params).trainModel().get()
 }
 
-object H2OGLM extends MLReadable[H2OGLM] {
-
-  private final val defaultFileName = "glm_params"
-
-  @Since("1.6.0")
-  override def read: MLReader[H2OGLM] = H2OAlgorithmReader.create[H2OGLM](defaultFileName)
-
-  @Since("1.6.0")
-  override def load(path: String): H2OGLM = super.load(path)
-}
+object H2OGLM extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGLM]
 
 
 /**

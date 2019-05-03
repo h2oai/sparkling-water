@@ -16,24 +16,11 @@
 */
 package py_sparkling.ml.algos
 
-import hex.tree.xgboost.{XGBoost, XGBoostModel}
-import hex.tree.xgboost.XGBoostModel.XGBoostParameters
-import org.apache.spark.ml.h2o.algos.H2OAlgorithmReader
-import org.apache.spark.ml.util.{MLReadable, MLReader}
+import org.apache.spark.ml.util.DefaultParamsReadable
 
 /**
   * H2O XGBoost Wrapper for PySparkling
   */
-class H2OXGBoost(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OXGBoost(uid) {
+class H2OXGBoost(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OXGBoost(uid)
 
-  override def trainModel(params: XGBoostParameters): XGBoostModel = new XGBoost(params).trainModel().get()
-}
-
-private[algos] object H2OXGBoost extends MLReadable[H2OXGBoost] {
-
-  private final val defaultFileName = "xgboost_params"
-
-  override def read: MLReader[H2OXGBoost] = H2OAlgorithmReader.create[H2OXGBoost](defaultFileName)
-
-  override def load(path: String): H2OXGBoost = super.load(path)
-}
+private[algos] object H2OXGBoost extends DefaultParamsReadable[H2OXGBoost]
