@@ -80,10 +80,11 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
 
   implicit def toBinomialPrediction(pred: AbstractPrediction): BinomialPrediction = {
-    val calibratedProps = pred.asInstanceOf[BinomialModelPrediction].calibratedClassProbabilities
+    val binomialPred = pred.asInstanceOf[BinomialModelPrediction]
+    val calibratedProps = binomialPred.calibratedClassProbabilities
     BinomialPrediction(
-      pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
-      pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1),
+      binomialPred.classProbabilities(0),
+      binomialPred.classProbabilities(1),
       Option(calibratedProps).map(p => p(0)).getOrElse(null),
       Option(calibratedProps).map(p => p(1)).getOrElse(null)
     )
