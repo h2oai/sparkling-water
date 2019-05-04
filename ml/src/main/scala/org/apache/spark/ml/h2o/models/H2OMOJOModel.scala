@@ -46,7 +46,9 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient var easyPredictModelWrapper: EasyPredictModelWrapper = _
 
-  case class BinomialPrediction(p0: Double, p1: Double, p0_calibrated: Double, p1_calibrated: Double)
+  case class BinomialPrediction(p0: Double, p1: Double)
+
+  case class BinomialPredictionExtended(p0: Double, p1: Double, p0_calibrated: Double, p1_calibrated: Double)
 
   case class RegressionPrediction(value: Double)
 
@@ -79,67 +81,58 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   }
 
 
-  implicit def toBinomialPrediction(pred: AbstractPrediction): BinomialPrediction = {
-    val binomialPred = pred.asInstanceOf[BinomialModelPrediction]
-    val calibratedProps = binomialPred.calibratedClassProbabilities
-    BinomialPrediction(
-      binomialPred.classProbabilities(0),
-      binomialPred.classProbabilities(1),
-      Option(calibratedProps).map(p => p(0)).getOrElse(null),
-      Option(calibratedProps).map(p => p(1)).getOrElse(null)
-    )
-  }
-
-  implicit def toRegressionPrediction(pred: AbstractPrediction) = RegressionPrediction(
-    pred.asInstanceOf[RegressionModelPrediction].value)
-
-  implicit def toMultinomialPrediction(pred: AbstractPrediction) = MultinomialPrediction(
-    pred.asInstanceOf[MultinomialModelPrediction].classProbabilities)
-
-  implicit def toClusteringPrediction(pred: AbstractPrediction) = ClusteringPrediction(
-    pred.asInstanceOf[ClusteringModelPrediction].cluster)
-
-  implicit def toAutoEncoderPrediction(pred: AbstractPrediction) = AutoEncoderPrediction(
-    pred.asInstanceOf[AutoEncoderModelPrediction].original,
-    pred.asInstanceOf[AutoEncoderModelPrediction].reconstructed)
-
-  implicit def toDimReductionPrediction(pred: AbstractPrediction) = DimReductionPrediction(
-    pred.asInstanceOf[DimReductionModelPrediction].dimensions)
-
-  implicit def toWordEmbeddingPrediction(pred: AbstractPrediction) = WordEmbeddingPrediction(
-    pred.asInstanceOf[Word2VecPrediction].wordEmbeddings)
-
-  implicit def toAnomalyPrediction(pred: AbstractPrediction) = AnomalyPrediction(
-    pred.asInstanceOf[AnomalyDetectionPrediction].score,
-    pred.asInstanceOf[AnomalyDetectionPrediction].normalizedScore
-  )
-
-  def getModelUdf() = {
+  def getModelUdf(schema: StructType) = {
     val modelUdf = {
       getOrCreateEasyModelWrapper().getModelCategory match {
-        case ModelCategory.Binomial => udf[BinomialPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
-        }
+        case ModelCategory.Binomial =>
+          //calibrateClassProbabilities returns false if model does not support calibrated probabilities
+          if (getOrCreateEasyModelWrapper().m.calibrateClassProbabilities(Array(0, 0))) {
+            udf[BinomialPredictionExtended, Row] { r: Row =>
+              val pred = getOrCreateEasyModelWrapper().predictBinomial(rowToRowData(r))
+              BinomialPredictionExtended(
+                pred.classProbabilities(0),
+                pred.classProbabilities(1),
+                pred.calibratedClassProbabilities(0),
+                pred.calibratedClassProbabilities(1)
+              )
+            }
+          } else {
+            udf[BinomialPrediction, Row] { r: Row =>
+              val pred = getOrCreateEasyModelWrapper().predictBinomial(rowToRowData(r))
+              BinomialPrediction(
+                pred.classProbabilities(0),
+                pred.classProbabilities(1),
+              )
+            }
+          }
+
         case ModelCategory.Regression => udf[RegressionPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictRegression(rowToRowData(r))
+          RegressionPrediction(pred.value)
         }
         case ModelCategory.Multinomial => udf[MultinomialPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictMultinomial(rowToRowData(r))
+          MultinomialPrediction(pred.classProbabilities)
         }
         case ModelCategory.Clustering => udf[ClusteringPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictClustering(rowToRowData(r))
+          ClusteringPrediction(pred.cluster)
         }
         case ModelCategory.AutoEncoder => udf[AutoEncoderPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictAutoEncoder(rowToRowData(r))
+          AutoEncoderPrediction(pred.original, pred.reconstructed)
         }
         case ModelCategory.DimReduction => udf[DimReductionPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictDimReduction(rowToRowData(r))
+          DimReductionPrediction(pred.dimensions)
         }
         case ModelCategory.WordEmbedding => udf[WordEmbeddingPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictWord2Vec(rowToRowData(r))
+          WordEmbeddingPrediction(pred.wordEmbeddings)
         }
         case ModelCategory.AnomalyDetection => udf[AnomalyPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictAnomalyDetection(rowToRowData(r))
+          AnomalyPrediction(pred.score, pred.normalizedScore)
         }
         case _ => throw new RuntimeException("Unknown model category " + getOrCreateEasyModelWrapper().getModelCategory)
       }
@@ -166,7 +159,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   override def transform(dataset: Dataset[_]): DataFrame = {
     val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
     val args = flatten.schema.fields.map(f => flatten(f.name))
-    flatten.select(col("*"), getModelUdf()(struct(args: _*)).as(getOutputCol()))
+    flatten.select(col("*"), getModelUdf(flatten.schema)(struct(args: _*)).as(getOutputCol()))
   }
 
 
