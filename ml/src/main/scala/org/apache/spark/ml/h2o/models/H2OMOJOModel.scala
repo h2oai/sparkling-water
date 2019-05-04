@@ -20,7 +20,6 @@ package org.apache.spark.ml.h2o.models
 import java.io._
 import java.util
 
-import _root_.hex.genmodel.easy.prediction._
 import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.hadoop.fs.Path
@@ -81,12 +80,12 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   }
 
 
-  def getModelUdf(schema: StructType) = {
+  def getModelUdf() = {
     val modelUdf = {
       getOrCreateEasyModelWrapper().getModelCategory match {
         case ModelCategory.Binomial =>
           //calibrateClassProbabilities returns false if model does not support calibrated probabilities
-          if (getOrCreateEasyModelWrapper().m.calibrateClassProbabilities(Array(0, 0))) {
+          if (getOrCreateEasyModelWrapper().m.calibrateClassProbabilities(Array.fill[Double](2)(0))) {
             udf[BinomialPredictionExtended, Row] { r: Row =>
               val pred = getOrCreateEasyModelWrapper().predictBinomial(rowToRowData(r))
               BinomialPredictionExtended(
@@ -101,7 +100,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
               val pred = getOrCreateEasyModelWrapper().predictBinomial(rowToRowData(r))
               BinomialPrediction(
                 pred.classProbabilities(0),
-                pred.classProbabilities(1),
+                pred.classProbabilities(1)
               )
             }
           }
@@ -159,7 +158,7 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   override def transform(dataset: Dataset[_]): DataFrame = {
     val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
     val args = flatten.schema.fields.map(f => flatten(f.name))
-    flatten.select(col("*"), getModelUdf(flatten.schema)(struct(args: _*)).as(getOutputCol()))
+    flatten.select(col("*"), getModelUdf()(struct(args: _*)).as(getOutputCol()))
   }
 
 
