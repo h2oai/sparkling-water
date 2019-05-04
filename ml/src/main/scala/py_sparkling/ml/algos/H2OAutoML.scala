@@ -23,4 +23,4 @@ import org.apache.spark.ml.util.DefaultParamsReadable
   */
 class H2OAutoML(override val uid: String) extends org.apache.spark.ml.h2o.algos.H2OAutoML(uid)
 
-private[algos] object H2OAutoML extends DefaultParamsReadable[H2OXGBoost]
+private[algos] object H2OAutoML extends DefaultParamsReadable[H2OAutoML]
