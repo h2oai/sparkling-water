@@ -23,7 +23,7 @@ import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
-import org.apache.spark.ml.h2o.models.{H2OMOJOModelCache, H2OMOJOPipelineModel}
+import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
@@ -45,19 +45,13 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
     mojo.setNamedMojoOutputColumns(false)
-    val rawMojo = H2OMOJOModelCache.getOrCreateModel(mojo.uid, mojo.mojoData)
 
-    val mojoInputCols = (0 until rawMojo.getInputMeta.size()).map(rawMojo.getInputMeta.getColumnName(_))
-    val mojoInputTypes = (0 until rawMojo.getInputMeta.size()).map(rawMojo.getInputMeta.getColumnType(_))
     val dfTypes = df.dtypes.filter(_._1 != "AGE").map{case (_, typ) => sparkTypeToMojoType(typ)}.toSeq
 
-    assert(rawMojo.getInputMeta.size() == df.columns.length -1) // response column is not on the input
-    assert(mojoInputCols == df.columns.filter(_ != "AGE").toSeq)
-    assert(mojoInputTypes == dfTypes)
-
-    assert(rawMojo.getOutputMeta.size() == 1)
-    assert(rawMojo.getOutputMeta.getColumnName(0) == "AGE")
-    assert(rawMojo.getOutputMeta.getColumnType(0) == MojoColumn.Type.Float64) // Spark type is int, byt the prediction can be decimal
+    assert(8 == df.columns.length -1) // response column is not on the input
+    assert(Seq("ID", "CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON") == df.columns.filter(_ != "AGE").toSeq)
+    assert(Seq(MojoColumn.Type.Int32,  MojoColumn.Type.Int32,  MojoColumn.Type.Int32,  MojoColumn.Type.Int32,  MojoColumn.Type.Int32,
+      MojoColumn.Type.Float64,  MojoColumn.Type.Float64,  MojoColumn.Type.Int32) == dfTypes)
   }
 
 
@@ -68,7 +62,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     }
   }
 
-  test("Prediction on Mojo Pipeline using internal API") {
+  test("Basic prediction on Mojo Pipeline") {
     // Test data
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
@@ -76,17 +70,6 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
     mojo.setNamedMojoOutputColumns(false)
-    val rawMojo = H2OMOJOModelCache.getOrCreateModel(mojo.uid, mojo.mojoData)
-
-    val icolNames = (0 until rawMojo.getInputMeta.size()).map(i => rawMojo.getInputMeta.getColumnName(i))
-    val icolTypes = (0 until rawMojo.getInputMeta.size()).map(i => rawMojo.getInputMeta.getColumnType(i))
-    val ocolNames = (0 until rawMojo.getOutputMeta.size()).map(i => rawMojo.getOutputMeta.getColumnName(i))
-    val ocolTypes = (0 until rawMojo.getOutputMeta.size()).map(i => rawMojo.getOutputMeta.getColumnType(i))
-    println("\nMOJO Inputs:")
-    println(icolNames.zip(icolTypes).map { case (n, t) => s"${n}[${t}]" }.mkString(", "))
-    println("\nMOJO Outputs:")
-    println(ocolNames.zip(ocolTypes).map { case (n, t) => s"${n}[${t}]" }.mkString(", "))
-
 
     val transDf = mojo.transform(df)
     val udfSelection = transDf.select(mojo.selectPredictionUDF("AGE"))

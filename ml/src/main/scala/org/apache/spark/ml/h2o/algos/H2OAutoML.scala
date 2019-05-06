@@ -124,8 +124,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     Some(hc.sparkSession.createDataFrame(rdd, schema))
   }
 
-  def trainModel(aml: AutoML) = {
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()))
+  def trainModel(aml: AutoML): H2OMOJOModel = {
+    H2OMOJOModel.createFromMojo(ModelSerializationSupport.getMojoData(aml.leader()), Identifiable.randomUID("automl_mojoModel"))
   }
 
   @DeveloperApi

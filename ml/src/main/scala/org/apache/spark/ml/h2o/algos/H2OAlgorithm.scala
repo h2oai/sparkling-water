@@ -85,11 +85,10 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
     // Train
 
     val binaryModel: H2OBaseModel = trainModel(parameters)
-    val model = new H2OMOJOModel(ModelSerializationSupport.getMojoData(binaryModel))
+    val model = H2OMOJOModel.createFromMojo(ModelSerializationSupport.getMojoData(binaryModel),
+      Identifiable.randomUID(parameters.algoName() + "_mojoModel"))
 
     // pass some parameters set on algo to model
-    model.setFeaturesCols(getFeaturesCols())
-    model.setLabelCol(getLabelCol())
     model.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     model
   }

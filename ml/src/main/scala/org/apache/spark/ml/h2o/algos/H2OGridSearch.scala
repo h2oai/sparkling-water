@@ -122,7 +122,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     gridModels = sortGrid(grid)
     gridMojoModels = gridModels.map { m =>
       val data = ModelSerializationSupport.getMojoData(m)
-      new H2OMOJOModel(data, Identifiable.randomUID(s"${$(gridAlgoParams).algoName()}_mojoModel"))
+      H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${$(gridAlgoParams).algoName()}_mojoModel"))
     }
 
     // Block until GridSearch finishes
@@ -175,8 +175,8 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }
   }
 
-  def trainModel(grid: Grid[_]) = {
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)), Identifiable.randomUID("gridSearch_mojoModel"))
+  def trainModel(grid: Grid[_]): H2OMOJOModel = {
+    H2OMOJOModel.createFromMojo(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)), Identifiable.randomUID("gridSearch_mojoModel"))
   }
 
   private def selectMetric(model: H2OBaseModel) = {
