@@ -66,12 +66,13 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   def predictionSchema(): Seq[StructField] = {
     val fields = getOrCreateEasyModelWrapper().getModelCategory match {
       case ModelCategory.Binomial =>
-        val binomialSchemaBase = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
-        if (supportsCalibratedProbabilities()) {
-          binomialSchemaBase ++ Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
+        val binomialSchemaBase = Seq("p0", "p1")
+        val binomialSchema = if (supportsCalibratedProbabilities()) {
+          binomialSchemaBase ++ Seq("p0_calibrated", "p1_calibrated")
         } else {
           binomialSchemaBase
         }
+        binomialSchema.map(StructField(_, DoubleType, nullable = false))
       case ModelCategory.Regression => StructField("value", DoubleType) :: Nil
       case ModelCategory.Multinomial => StructField("probabilities", ArrayType(DoubleType)) :: Nil
       case ModelCategory.Clustering => StructField("cluster", DoubleType) :: Nil
@@ -84,16 +85,10 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     Seq(StructField(getOutputCol(), StructType(fields), nullable = false))
   }
 
-  /**
-    * This method checks weath
-    *
-    * @return
-    */
   private def supportsCalibratedProbabilities(): Boolean = {
     // calibrateClassProbabilities returns false if model does not support calibrated probabilities,
-    // however it accepts at the same moment array for probabilities to calibrate. Since we are doing
-    // calibration for binomial model, we are passing dummy array of size 2 with default values to 0, but
-    // we are not interested in calibrated values
+    // however it also accepts array of probabilities to calibrate. We are not interested in calibration,
+    // but to call this method, we need to pass dummy array of size 2 with default values to 0.
     getOrCreateEasyModelWrapper().m.calibrateClassProbabilities(Array.fill[Double](2)(0))
   }
 
