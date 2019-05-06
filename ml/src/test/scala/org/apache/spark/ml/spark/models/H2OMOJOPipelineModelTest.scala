@@ -23,6 +23,7 @@ import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
@@ -38,7 +39,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     super.beforeAll()
   }
 
-  test("Test columns names and numbers") {
+  ignore("Test columns names and numbers") {
     val df = spark.read.option("header", "true").option("inferSchema", true).csv("examples/smalldata/prostate/prostate.csv")
 
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -88,6 +89,17 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val valuesUdfSelection = udfSelection.take(5)
     assertPredictedValuesForNamedCols(valuesUdfSelection)
     println(valuesUdfSelection.mkString("\n"))
+
+    // Test also writing and loading the pipeline
+    val pipeline = new Pipeline().setStages(Array(mojo))
+    pipeline.write.overwrite().save("ml/build/pipeline")
+    val loadedPipeline = Pipeline.load("ml/build/pipeline")
+    val model = loadedPipeline.fit(df)
+
+    model.write.overwrite().save("ml/build/pipeline_model")
+    val loadedModel = PipelineModel.load("ml/build/pipeline_model")
+
+    loadedModel.transform(df).take(1)
   }
 
   test("Verify that output columns are correct when using the named columns") {
@@ -120,7 +132,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2_multiple_outputs/pipeline.mojo"),
       "iris_pipeline.mojo")
-    assert(mojo.getOutputNames().length == 3)
+    assert(mojo.getOutputCols.length == 3)
 
     val transDf = mojo.transform(df)
     val udfSelection = transDf.select(mojo.selectPredictionUDF("class.Iris-setosa"))

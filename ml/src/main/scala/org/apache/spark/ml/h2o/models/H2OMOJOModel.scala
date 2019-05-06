@@ -24,8 +24,9 @@ import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.h2o.utils.H2OSchemaUtils
-import org.apache.spark.ml.h2o.param.{ByteArrayParam, ByteArrayWrapper, H2OMOJOModelParams}
+import org.apache.spark.ml.h2o.param.H2OMOJOModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
@@ -39,9 +40,9 @@ import water.support.ModelSerializationSupport
 class H2OMOJOModel(override val uid: String)
   extends SparkModel[H2OMOJOModel] with H2OMOJOModelParams with DefaultParamsWritable {
 
-  def this() = this(Identifiable.randomUID("mojoModel"))
+  @transient protected var mojoData: Array[Byte] = _
 
-  protected final val mojoData = new ByteArrayParam(this, "mojoData", "MOJO backing data")
+  protected var broadcastMojo: Broadcast[Array[Byte]] = _
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient var easyPredictModelWrapper: EasyPredictModelWrapper = _
@@ -157,7 +158,7 @@ class H2OMOJOModel(override val uid: String)
   private def getOrCreateEasyModelWrapper() = {
     if (easyPredictModelWrapper == null) {
       val config = new EasyPredictModelWrapper.Config()
-      config.setModel(ModelSerializationSupport.getMojoModel($(mojoData).arr))
+      config.setModel(ModelSerializationSupport.getMojoModel(broadcastMojo.value))
       config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
       easyPredictModelWrapper = new EasyPredictModelWrapper(config)
     }
@@ -227,6 +228,19 @@ class H2OMOJOModel(override val uid: String)
 
 object H2OMOJOModel extends DefaultParamsReadable[py_sparkling.ml.models.H2OMOJOModel] {
 
+  val serializedFileName = "mojo_model"
+  override def load(path: String): py_sparkling.ml.models.H2OMOJOModel = {
+    val model = super.load(path)
+
+    val inputPath = new Path(path, serializedFileName)
+    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val is = fs.open(qualifiedInputPath)
+
+    val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
+    model.mojoData = mojoData
+    model
+  }
   def createFromMojo(path: String): py_sparkling.ml.models.H2OMOJOModel = {
     val inputPath = new Path(path)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
@@ -242,10 +256,8 @@ object H2OMOJOModel extends DefaultParamsReadable[py_sparkling.ml.models.H2OMOJO
   }
 
   def createFromMojo(mojoData: Array[Byte], uid: String): py_sparkling.ml.models.H2OMOJOModel = {
-    val mojoModel = new py_sparkling.ml.models.H2OMOJOModel(uid)
-    val broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(mojoData)
-    mojoModel.set(mojoModel.mojoData -> broadcastMojo)
-    mojoModel
+    val model = new py_sparkling.ml.models.H2OMOJOModel(uid)
+    model.mojoData = mojoData
+    model
   }
-
 }

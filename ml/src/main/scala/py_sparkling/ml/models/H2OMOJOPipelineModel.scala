@@ -19,6 +19,10 @@ package py_sparkling.ml.models
 
 import org.apache.spark.ml.util._
 
-class H2OMOJOPipelineModel(override val uid: String) extends org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel(uid)
+class H2OMOJOPipelineModel(override val uid: String, mojoData: Option[Array[Byte]])
+  extends org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel(uid, mojoData) {
+
+  def this(uid: String) = this(uid, None)
+}
 
 object H2OMOJOPipelineModel extends DefaultParamsReadable[H2OMOJOPipelineModel]

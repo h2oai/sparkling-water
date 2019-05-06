@@ -65,19 +65,11 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
     def predict(self, dataframe):
         return self.transform(dataframe)
 
-    def get_input_names(self):
-        return list(self._java_obj.getInputNames())
+    def getInputCols(self):
+        return list(self._java_obj.getInputCols())
 
-    def get_input_types(self):
-        enum_list = list(self._java_obj.getInputTypes())
-        return [enum.name() for enum in enum_list]
-
-    def get_output_names(self):
-        return list(self._java_obj.getOutputNames())
-
-    def get_output_types(self):
-        enum_list = list(self._java_obj.getOutputTypes())
-        return [enum.name() for enum in enum_list]
+    def getOutputCols(self):
+        return list(self._java_obj.getOutputCols())
 
     def get_named_mojo_output_columns(self):
         return self._java_obj.getNamedMojoOutputColumns()
@@ -87,13 +79,13 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         return self
 
     def select_prediction_udf(self, column):
-        if column not in self.get_output_names():
+        if column not in self.getOutputCols():
             raise ValueError("Column '" + column + "' is not defined as the output column in MOJO Pipeline.")
 
         if self.get_named_mojo_output_columns():
             func = udf(lambda d: d, DoubleType())
             return func("prediction." + column).alias(column)
         else:
-            idx = self.get_output_names().index(column)
+            idx = self.getOutputCols().index(column)
             func = udf(lambda arr: arr[idx], DoubleType())
             return func("prediction.preds").alias(column)

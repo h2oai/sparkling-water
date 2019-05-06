@@ -22,4 +22,4 @@ import org.apache.spark.ml.util._
 
 class H2OMOJOModel(override val uid: String) extends org.apache.spark.ml.h2o.models.H2OMOJOModel(uid)
 
-object H2OMOJOModel extends DefaultParamsReadable[H2OMOJOModel] {}
+object H2OMOJOModel extends DefaultParamsReadable[H2OMOJOModel]

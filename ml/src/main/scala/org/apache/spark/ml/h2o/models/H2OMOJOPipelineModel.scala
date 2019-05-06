@@ -20,35 +20,51 @@ package org.apache.spark.ml.h2o.models
 import java.io._
 
 import ai.h2o.mojos.runtime.MojoPipeline
-import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.hadoop.fs.Path
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.internal.Logging
-import org.apache.spark.ml.h2o.param.{ByteArrayParam, ByteArrayWrapper, H2OMOJOPipelineModelParams}
+import org.apache.spark.ml.h2o.param.H2OMOJOPipelineModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types._
+import py_sparkling.ml.models
 
 import scala.collection.mutable
 import scala.util.Random
 
 
-class H2OMOJOPipelineModel(override val uid: String)
-  extends SparkModel[H2OMOJOPipelineModel] with H2OMOJOPipelineModelParams with DefaultParamsWritable {
+class H2OMOJOPipelineModel(override val uid: String, @transient var mojoData: Option[Array[Byte]])
+  extends SparkModel[H2OMOJOPipelineModel] with H2OMOJOPipelineModelParams with MLWritable {
 
-  def this() = this(Identifiable.randomUID("mojoPipelineModel"))
+  def this(uid: String) = this(uid, None)
 
-  protected final val mojoData = new ByteArrayParam(this, "mojoData", "MOJO backing data")
+  override def write: MLWriter = new MLWriter {
 
-  private lazy val outputColumnNames = H2OMOJOModelCache.getOrCreateModel(uid, $(mojoData).arr).getOutputMeta.getColumnNames
-  private lazy val outputColumnTypes = H2OMOJOModelCache.getOrCreateModel(uid, $(mojoData).arr).getOutputMeta.getColumnTypes
-  private lazy val inputColumnNames = H2OMOJOModelCache.getOrCreateModel(uid, $(mojoData).arr).getInputMeta.getColumnNames
-  private lazy val inputColumnTypes = H2OMOJOModelCache.getOrCreateModel(uid, $(mojoData).arr).getInputMeta.getColumnTypes
+    override protected def saveImpl(path: String): Unit = {
+      DefaultParamsWriter.saveMetadata(H2OMOJOPipelineModel.this, path, sc)
+
+      val outputPath = new Path(path, "mojo_pipeline_model")
+      val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
+      val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+      val out = fs.create(qualifiedOutputPath)
+      try {
+        out.write(mojoData.get)
+      } finally {
+        out.close()
+      }
+      logInfo(s"Saved to: $qualifiedOutputPath")
+    }
+
+  }
+
+
+  protected var broadcastMojo: Broadcast[Array[Byte]] = _
 
   val outputCol = "prediction"
 
@@ -74,7 +90,7 @@ class H2OMOJOPipelineModel(override val uid: String)
   private val modelUdf = (names: Array[String]) =>
     udf[Mojo2Prediction, Row] {
       r: Row =>
-        val m = H2OMOJOModelCache.getOrCreateModel(uid, $(mojoData).arr)
+        val m = H2OMOJOModelCache.getOrCreateModel(uid, broadcastMojo.value)
         val builder = m.getInputFrameBuilder
         val rowBuilder = builder.getMojoRowBuilder
         val filtered = r.getValuesMap[Any](names).filter { case (n, _) => m.getInputMeta.contains(n) }
@@ -134,6 +150,7 @@ class H2OMOJOPipelineModel(override val uid: String)
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
+    broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(mojoData.get)
     val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
     val names = flatten.schema.fields.map(f => flatten(f.name))
 
@@ -151,17 +168,17 @@ class H2OMOJOPipelineModel(override val uid: String)
       }
 
       val r = new scala.util.Random(31)
-      val tempColNames = getOutputNames().map(uniqueRandomName(_, r))
+      val tempColNames = getOutputCols.map(uniqueRandomName(_, r))
       val tempCols = tempColNames.map(col)
 
 
       // Transform the resulted Array of predictions into own but temporary columns
       // Temporary columns are created as we can't create the columns directly as nested ones
-      val predictionCols = getOutputNames().indices.map(idx => selectFromArray(idx)(frameWithPredictions.col(outputCol + ".preds")))
+      val predictionCols = getOutputCols.indices.map(idx => selectFromArray(idx)(frameWithPredictions.col(outputCol + ".preds")))
       val frameWithExtractedPredictions = frameWithPredictions.withColumns(tempColNames, predictionCols)
 
       // Transform the columns at the top level under "output" column
-      val nestedPredictionCols = tempColNames.indices.map { idx => tempCols(idx).alias(getOutputNames()(idx)) }
+      val nestedPredictionCols = tempColNames.indices.map { idx => tempCols(idx).alias(getOutputCols(idx)) }
       val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(outputCol, struct(nestedPredictionCols: _*))
 
       // Remove the temporary columns at the top level and return
@@ -173,7 +190,6 @@ class H2OMOJOPipelineModel(override val uid: String)
     }
 
     H2OMOJOModelCache.removeModel(uid)
-
     fr
   }
 
@@ -186,16 +202,8 @@ class H2OMOJOPipelineModel(override val uid: String)
     StructType(schema ++ predictionSchema())
   }
 
-  def getInputNames(): Array[String] = inputColumnNames
-
-  def getInputTypes(): Array[MojoColumn.Type] = inputColumnTypes
-
-  def getOutputNames(): Array[String] = outputColumnNames
-
-  def getOutputTypes(): Array[MojoColumn.Type] = outputColumnTypes
-
   def selectPredictionUDF(column: String) = {
-    if (!getOutputNames().contains(column)) {
+    if (!getOutputCols.contains(column)) {
       throw new IllegalArgumentException(s"Column '$column' is not defined as the output column in MOJO Pipeline.")
     }
     if ($(namedMojoOutputColumns)) {
@@ -204,7 +212,7 @@ class H2OMOJOPipelineModel(override val uid: String)
       }
       func(col(s"$outputCol.`$column`")).alias(column)
     } else {
-      val func = selectFromArray(getOutputNames().indexOf(column))
+      val func = selectFromArray(getOutputCols.indexOf(column))
       func(col(s"$outputCol.preds")).alias(column)
     }
   }
@@ -231,13 +239,26 @@ object H2OMOJOModelCache extends Logging {
 
 object H2OMOJOPipelineModel extends DefaultParamsReadable[py_sparkling.ml.models.H2OMOJOPipelineModel] {
 
+  override def load(path: String): models.H2OMOJOPipelineModel = {
+    val model = super.load(path)
+
+    val inputPath = new Path(path, "mojo_pipeline_model")
+    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val is = fs.open(qualifiedInputPath)
+
+    val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
+    //model.mojoData = Option(mojoData)
+    model
+  }
+
   def createFromMojo(path: String): py_sparkling.ml.models.H2OMOJOPipelineModel = {
     val inputPath = new Path(path)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val is = fs.open(qualifiedInputPath)
 
-    createFromMojo(is,  Identifiable.randomUID(inputPath.getName))
+    createFromMojo(is, Identifiable.randomUID(inputPath.getName))
   }
 
   def createFromMojo(is: InputStream, uid: String):
@@ -246,8 +267,11 @@ object H2OMOJOPipelineModel extends DefaultParamsReadable[py_sparkling.ml.models
   }
 
   def createFromMojo(mojoData: Array[Byte], uid: String): py_sparkling.ml.models.H2OMOJOPipelineModel = {
-    val mojoModel = new py_sparkling.ml.models.H2OMOJOPipelineModel(uid)
-    mojoModel.set(mojoModel.mojoData -> new ByteArrayWrapper(mojoData))
-    mojoModel
+    val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
+    val mojoPipeline = MojoPipeline.loadFrom(reader)
+    val model = new py_sparkling.ml.models.H2OMOJOPipelineModel(uid, Option(mojoData))
+    model.set(model.inputCols -> mojoPipeline.getInputMeta.getColumnNames)
+    model.set(model.outputCols -> mojoPipeline.getOutputMeta.getColumnNames)
+    model
   }
 }
