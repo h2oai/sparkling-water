@@ -65,8 +65,13 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   def predictionSchema(): Seq[StructField] = {
     val fields = getOrCreateEasyModelWrapper().getModelCategory match {
-      case ModelCategory.Binomial => Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false)) ++
-        Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = true))
+      case ModelCategory.Binomial =>
+        val binomialSchemaBase = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
+        if (supportsCalibratedProbabilities()) {
+          binomialSchemaBase ++ Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
+        } else {
+          binomialSchemaBase
+        }
       case ModelCategory.Regression => StructField("value", DoubleType) :: Nil
       case ModelCategory.Multinomial => StructField("probabilities", ArrayType(DoubleType)) :: Nil
       case ModelCategory.Clustering => StructField("cluster", DoubleType) :: Nil
@@ -79,13 +84,25 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     Seq(StructField(getOutputCol(), StructType(fields), nullable = false))
   }
 
+  /**
+    * This method checks weath
+    *
+    * @return
+    */
+  private def supportsCalibratedProbabilities(): Boolean = {
+    // calibrateClassProbabilities returns false if model does not support calibrated probabilities,
+    // however it accepts at the same moment array for probabilities to calibrate. Since we are doing
+    // calibration for binomial model, we are passing dummy array of size 2 with default values to 0, but
+    // we are not interested in calibrated values
+    getOrCreateEasyModelWrapper().m.calibrateClassProbabilities(Array.fill[Double](2)(0))
+  }
 
   def getModelUdf() = {
     val modelUdf = {
       getOrCreateEasyModelWrapper().getModelCategory match {
         case ModelCategory.Binomial =>
           //calibrateClassProbabilities returns false if model does not support calibrated probabilities
-          if (getOrCreateEasyModelWrapper().m.calibrateClassProbabilities(Array.fill[Double](2)(0))) {
+          if (supportsCalibratedProbabilities()) {
             udf[BinomialPredictionExtended, Row] { r: Row =>
               val pred = getOrCreateEasyModelWrapper().predictBinomial(rowToRowData(r))
               BinomialPredictionExtended(
