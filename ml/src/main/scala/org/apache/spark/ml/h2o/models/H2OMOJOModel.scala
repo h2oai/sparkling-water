@@ -20,7 +20,6 @@ package org.apache.spark.ml.h2o.models
 import java.io._
 import java.util
 
-import _root_.hex.genmodel.easy.prediction._
 import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.hadoop.fs.Path
@@ -48,6 +47,8 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   case class BinomialPrediction(p0: Double, p1: Double)
 
+  case class BinomialPredictionExtended(p0: Double, p1: Double, p0_calibrated: Double, p1_calibrated: Double)
+
   case class RegressionPrediction(value: Double)
 
   case class MultinomialPrediction(probabilities: Array[Double])
@@ -64,7 +65,14 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   def predictionSchema(): Seq[StructField] = {
     val fields = getOrCreateEasyModelWrapper().getModelCategory match {
-      case ModelCategory.Binomial => StructField("p0", DoubleType) :: StructField("p1", DoubleType) :: Nil
+      case ModelCategory.Binomial =>
+        val binomialSchemaBase = Seq("p0", "p1")
+        val binomialSchema = if (supportsCalibratedProbabilities()) {
+          binomialSchemaBase ++ Seq("p0_calibrated", "p1_calibrated")
+        } else {
+          binomialSchemaBase
+        }
+        binomialSchema.map(StructField(_, DoubleType, nullable = false))
       case ModelCategory.Regression => StructField("value", DoubleType) :: Nil
       case ModelCategory.Multinomial => StructField("probabilities", ArrayType(DoubleType)) :: Nil
       case ModelCategory.Clustering => StructField("cluster", DoubleType) :: Nil
@@ -77,61 +85,64 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     Seq(StructField(getOutputCol(), StructType(fields), nullable = false))
   }
 
-
-  implicit def toBinomialPrediction(pred: AbstractPrediction) = BinomialPrediction(
-    pred.asInstanceOf[BinomialModelPrediction].classProbabilities(0),
-    pred.asInstanceOf[BinomialModelPrediction].classProbabilities(1))
-
-  implicit def toRegressionPrediction(pred: AbstractPrediction) = RegressionPrediction(
-    pred.asInstanceOf[RegressionModelPrediction].value)
-
-  implicit def toMultinomialPrediction(pred: AbstractPrediction) = MultinomialPrediction(
-    pred.asInstanceOf[MultinomialModelPrediction].classProbabilities)
-
-  implicit def toClusteringPrediction(pred: AbstractPrediction) = ClusteringPrediction(
-    pred.asInstanceOf[ClusteringModelPrediction].cluster)
-
-  implicit def toAutoEncoderPrediction(pred: AbstractPrediction) = AutoEncoderPrediction(
-    pred.asInstanceOf[AutoEncoderModelPrediction].original,
-    pred.asInstanceOf[AutoEncoderModelPrediction].reconstructed)
-
-  implicit def toDimReductionPrediction(pred: AbstractPrediction) = DimReductionPrediction(
-    pred.asInstanceOf[DimReductionModelPrediction].dimensions)
-
-  implicit def toWordEmbeddingPrediction(pred: AbstractPrediction) = WordEmbeddingPrediction(
-    pred.asInstanceOf[Word2VecPrediction].wordEmbeddings)
-
-  implicit def toAnomalyPrediction(pred: AbstractPrediction) = AnomalyPrediction(
-    pred.asInstanceOf[AnomalyDetectionPrediction].score,
-    pred.asInstanceOf[AnomalyDetectionPrediction].normalizedScore
-  )
+  private def supportsCalibratedProbabilities(): Boolean = {
+    // calibrateClassProbabilities returns false if model does not support calibrated probabilities,
+    // however it also accepts array of probabilities to calibrate. We are not interested in calibration,
+    // but to call this method, we need to pass dummy array of size 2 with default values to 0.
+    getOrCreateEasyModelWrapper().m.calibrateClassProbabilities(Array.fill[Double](2)(0))
+  }
 
   def getModelUdf() = {
     val modelUdf = {
       getOrCreateEasyModelWrapper().getModelCategory match {
-        case ModelCategory.Binomial => udf[BinomialPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
-        }
+        case ModelCategory.Binomial =>
+          if (supportsCalibratedProbabilities()) {
+            udf[BinomialPredictionExtended, Row] { r: Row =>
+              val pred = getOrCreateEasyModelWrapper().predictBinomial(rowToRowData(r))
+              BinomialPredictionExtended(
+                pred.classProbabilities(0),
+                pred.classProbabilities(1),
+                pred.calibratedClassProbabilities(0),
+                pred.calibratedClassProbabilities(1)
+              )
+            }
+          } else {
+            udf[BinomialPrediction, Row] { r: Row =>
+              val pred = getOrCreateEasyModelWrapper().predictBinomial(rowToRowData(r))
+              BinomialPrediction(
+                pred.classProbabilities(0),
+                pred.classProbabilities(1)
+              )
+            }
+          }
+
         case ModelCategory.Regression => udf[RegressionPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictRegression(rowToRowData(r))
+          RegressionPrediction(pred.value)
         }
         case ModelCategory.Multinomial => udf[MultinomialPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictMultinomial(rowToRowData(r))
+          MultinomialPrediction(pred.classProbabilities)
         }
         case ModelCategory.Clustering => udf[ClusteringPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictClustering(rowToRowData(r))
+          ClusteringPrediction(pred.cluster)
         }
         case ModelCategory.AutoEncoder => udf[AutoEncoderPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictAutoEncoder(rowToRowData(r))
+          AutoEncoderPrediction(pred.original, pred.reconstructed)
         }
         case ModelCategory.DimReduction => udf[DimReductionPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictDimReduction(rowToRowData(r))
+          DimReductionPrediction(pred.dimensions)
         }
         case ModelCategory.WordEmbedding => udf[WordEmbeddingPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictWord2Vec(rowToRowData(r))
+          WordEmbeddingPrediction(pred.wordEmbeddings)
         }
         case ModelCategory.AnomalyDetection => udf[AnomalyPrediction, Row] { r: Row =>
-          getOrCreateEasyModelWrapper().predict(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictAnomalyDetection(rowToRowData(r))
+          AnomalyPrediction(pred.score, pred.normalizedScore)
         }
         case _ => throw new RuntimeException("Unknown model category " + getOrCreateEasyModelWrapper().getModelCategory)
       }
