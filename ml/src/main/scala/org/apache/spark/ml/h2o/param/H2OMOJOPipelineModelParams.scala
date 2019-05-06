@@ -17,18 +17,18 @@
 package org.apache.spark.ml.h2o.param
 
 import org.apache.spark.ml.param._
-import org.apache.spark.ml.param.shared.{HasInputCols, HasOutputCols}
+import org.apache.spark.ml.param.shared.{HasInputCols, HasPredictionCol}
 
 /**
   * Parameters which need to be available on the model itself for prediction purposes. This can't be backed
   * byt H2OAlgoParamsHelper as at the time of prediction we might be using mojo and binary parameters are not available.
   */
-trait H2OMOJOPipelineModelParams extends Params with HasInputCols with HasOutputCols {
+trait H2OMOJOPipelineModelParams extends Params with HasInputCols with HasPredictionCol {
 
   //
   // Param definitions
   //
-  final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
+  private val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
     " in the array but in the properly named columns")
 
   //
@@ -39,12 +39,10 @@ trait H2OMOJOPipelineModelParams extends Params with HasInputCols with HasOutput
   //
   // Getters
   //
-  /** @group getParam */
   def getNamedMojoOutputColumns() = $(namedMojoOutputColumns)
 
   //
   // Setters
   //
-  /** @group setParam */
   def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
 }

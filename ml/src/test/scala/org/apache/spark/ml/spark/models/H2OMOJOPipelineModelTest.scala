@@ -39,7 +39,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     super.beforeAll()
   }
 
-  ignore("Test columns names and numbers") {
+  test("Test columns names and numbers") {
     val df = spark.read.option("header", "true").option("inferSchema", true).csv("examples/smalldata/prostate/prostate.csv")
 
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -132,7 +132,6 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2_multiple_outputs/pipeline.mojo"),
       "iris_pipeline.mojo")
-    assert(mojo.getOutputCols.length == 3)
 
     val transDf = mojo.transform(df)
     val udfSelection = transDf.select(mojo.selectPredictionUDF("class.Iris-setosa"))

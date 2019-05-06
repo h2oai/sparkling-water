@@ -34,13 +34,14 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, _}
 import org.apache.spark.{ml, mllib}
+import py_sparkling.ml.models
 import water.support.ModelSerializationSupport
 
 
-class H2OMOJOModel(override val uid: String)
+class H2OMOJOModel(override val uid: String, @transient var mojoData: Option[Array[Byte]])
   extends SparkModel[H2OMOJOModel] with H2OMOJOModelParams with DefaultParamsWritable {
 
-  @transient protected var mojoData: Array[Byte] = _
+  def this(uid: String) = this(uid, None)
 
   protected var broadcastMojo: Broadcast[Array[Byte]] = _
 
@@ -225,10 +226,27 @@ class H2OMOJOModel(override val uid: String)
   }
 }
 
+class H2OMOJOReader extends DefaultParamsReader[py_sparkling.ml.models.H2OMOJOModel] {
+  override def load(path: String): models.H2OMOJOModel = {
+    super.load(path)
+    val model = super.load(path)
+
+    val inputPath = new Path(path, H2OMOJOModel.serializedFileName)
+    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val is = fs.open(qualifiedInputPath)
+
+    val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
+    model.mojoData = Option(mojoData)
+    model
+  }
+}
+
 
 object H2OMOJOModel extends DefaultParamsReadable[py_sparkling.ml.models.H2OMOJOModel] {
 
   val serializedFileName = "mojo_model"
+
   override def load(path: String): py_sparkling.ml.models.H2OMOJOModel = {
     val model = super.load(path)
 
@@ -238,16 +256,17 @@ object H2OMOJOModel extends DefaultParamsReadable[py_sparkling.ml.models.H2OMOJO
     val is = fs.open(qualifiedInputPath)
 
     val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
-    model.mojoData = mojoData
+    model.mojoData = Some(mojoData)
     model
   }
+
   def createFromMojo(path: String): py_sparkling.ml.models.H2OMOJOModel = {
     val inputPath = new Path(path)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val is = fs.open(qualifiedInputPath)
 
-    createFromMojo(is,  Identifiable.randomUID(inputPath.getName))
+    createFromMojo(is, Identifiable.randomUID(inputPath.getName))
   }
 
   def createFromMojo(is: InputStream, uid: String):
@@ -256,8 +275,6 @@ object H2OMOJOModel extends DefaultParamsReadable[py_sparkling.ml.models.H2OMOJO
   }
 
   def createFromMojo(mojoData: Array[Byte], uid: String): py_sparkling.ml.models.H2OMOJOModel = {
-    val model = new py_sparkling.ml.models.H2OMOJOModel(uid)
-    model.mojoData = mojoData
-    model
+    new py_sparkling.ml.models.H2OMOJOModel(uid, Some(mojoData))
   }
 }
