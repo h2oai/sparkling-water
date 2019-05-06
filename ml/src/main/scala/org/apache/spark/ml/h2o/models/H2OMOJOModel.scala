@@ -101,7 +101,6 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
     val modelUdf = {
       getOrCreateEasyModelWrapper().getModelCategory match {
         case ModelCategory.Binomial =>
-          //calibrateClassProbabilities returns false if model does not support calibrated probabilities
           if (supportsCalibratedProbabilities()) {
             udf[BinomialPredictionExtended, Row] { r: Row =>
               val pred = getOrCreateEasyModelWrapper().predictBinomial(rowToRowData(r))
