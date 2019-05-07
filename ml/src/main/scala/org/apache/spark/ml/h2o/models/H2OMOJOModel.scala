@@ -228,62 +228,13 @@ class H2OMOJOModel(override val uid: String, @transient var mojoData: Option[Arr
     StructType(schema.fields ++ predictionSchema)
   }
 
-  override def write: MLWriter = new MLWriter {
-
-    override protected def saveImpl(path: String): Unit = {
-      DefaultParamsWriter.saveMetadata(H2OMOJOModel.this, path, sc)
-
-      val outputPath = new Path(path, H2OMOJOModel.serializedFileName)
-      val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
-      val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-      val out = fs.create(qualifiedOutputPath)
-      try {
-        out.write(mojoData.get)
-      } finally {
-        out.close()
-      }
-      logInfo(s"Saved to: $qualifiedOutputPath")
-    }
-
-  }
-
-}
-
-class H2OMOJOModelReader extends DefaultParamsReader[py_sparkling.ml.models.H2OMOJOModel] {
-  override def load(path: String): models.H2OMOJOModel = {
-    super.load(path)
-    val model = super.load(path)
-
-    val inputPath = new Path(path, H2OMOJOModel.serializedFileName)
-    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
-    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val is = fs.open(qualifiedInputPath)
-
-    val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
-    model.mojoData = Some(mojoData)
-    model
-  }
+  override def write: MLWriter = new H2OMOJOModelWriter[H2OMOJOModel](this, mojoData.get)
 }
 
 
-object H2OMOJOModel extends MLReadable[py_sparkling.ml.models.H2OMOJOModel] {
+object H2OMOJOModel extends H2OMOJOModelReadable[py_sparkling.ml.models.H2OMOJOModel] {
 
   val serializedFileName = "mojo_model"
-
-  override def read: MLReader[models.H2OMOJOModel] = new H2OMOJOModelReader
-
-  override def load(path: String): py_sparkling.ml.models.H2OMOJOModel = {
-    val model = super.load(path)
-
-    val inputPath = new Path(path, serializedFileName)
-    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
-    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val is = fs.open(qualifiedInputPath)
-
-    val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
-    model.mojoData = Some(mojoData)
-    model
-  }
 
   def createFromMojo(path: String): py_sparkling.ml.models.H2OMOJOModel = {
     val inputPath = new Path(path)
