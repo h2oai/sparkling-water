@@ -68,7 +68,7 @@ class H2OMOJOPipelineModel(override val uid: String, @transient var mojoData: Op
   private val modelUdf = (names: Array[String]) =>
     udf[Mojo2Prediction, Row] {
       r: Row =>
-        val m = H2OMOJOModelCache.getOrCreateModel(uid, broadcastMojo.value)
+        val m = getMojoPipeline()
         val builder = m.getInputFrameBuilder
         val rowBuilder = builder.getMojoRowBuilder
         val filtered = r.getValuesMap[Any](names).filter { case (n, _) => m.getInputMeta.contains(n) }
@@ -128,7 +128,9 @@ class H2OMOJOPipelineModel(override val uid: String, @transient var mojoData: Op
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(mojoData.get)
+    if (broadcastMojo == null) {
+      broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(mojoData.get)
+    }
     val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
     val names = flatten.schema.fields.map(f => flatten(f.name))
 
@@ -145,8 +147,7 @@ class H2OMOJOPipelineModel(override val uid: String, @transient var mojoData: Op
         randName
       }
 
-      val mojoOutputCols = H2OMOJOModelCache.getOrCreateModel(uid, broadcastMojo.value)
-        .getOutputMeta.getColumnNames
+      val mojoOutputCols = getMojoPipeline().getOutputMeta.getColumnNames
 
       val r = new scala.util.Random(31)
       val tempColNames = mojoOutputCols.map(uniqueRandomName(_, r))
@@ -169,7 +170,6 @@ class H2OMOJOPipelineModel(override val uid: String, @transient var mojoData: Op
     } else {
       frameWithPredictions
     }
-
     H2OMOJOModelCache.removeModel(uid)
     fr
   }
@@ -183,9 +183,15 @@ class H2OMOJOPipelineModel(override val uid: String, @transient var mojoData: Op
     StructType(schema ++ predictionSchema())
   }
 
+  def getMojoPipeline(): MojoPipeline = {
+    if (broadcastMojo == null) {
+      broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(mojoData.get)
+    }
+    H2OMOJOModelCache.getOrCreateModel(uid, broadcastMojo.value)
+  }
+
   def selectPredictionUDF(column: String) = {
-    val mojoOutputCols = H2OMOJOModelCache.getOrCreateModel(uid, broadcastMojo.value)
-      .getOutputMeta.getColumnNames
+    val mojoOutputCols = getMojoPipeline().getOutputMeta.getColumnNames
 
     if (!mojoOutputCols.contains(column)) {
       throw new IllegalArgumentException(s"Column '$column' is not defined as the output column in MOJO Pipeline.")

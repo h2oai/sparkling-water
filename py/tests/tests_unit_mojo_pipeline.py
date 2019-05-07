@@ -71,8 +71,6 @@ class H2OMojoPipelineTest(unittest.TestCase):
         assert udfSelection[3][0] == 65.78772654671035
         assert udfSelection[4][0] == 66.11327967814829
 
-        assert mojo.getOutputCols()[0] == "AGE"
-
     # test predictions on H2O Pipeline MOJO
     def test_h2o_mojo_pipeline_predictions_with_named_cols(self):
         # Try loading the Mojo and prediction on it without starting H2O Context

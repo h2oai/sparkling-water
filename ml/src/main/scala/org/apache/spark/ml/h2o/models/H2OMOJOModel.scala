@@ -39,7 +39,7 @@ import water.support.ModelSerializationSupport
 
 
 class H2OMOJOModel(override val uid: String, @transient var mojoData: Option[Array[Byte]])
-  extends SparkModel[H2OMOJOModel] with H2OMOJOModelParams with DefaultParamsWritable {
+  extends SparkModel[H2OMOJOModel] with H2OMOJOModelParams with MLWritable {
 
   def this(uid: String) = this(uid, None)
 
@@ -157,6 +157,9 @@ class H2OMOJOModel(override val uid: String, @transient var mojoData: Option[Arr
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
   private def getOrCreateEasyModelWrapper() = {
+    if (broadcastMojo == null) {
+      broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(mojoData.get)
+    }
     if (easyPredictModelWrapper == null) {
       val config = new EasyPredictModelWrapper.Config()
       config.setModel(ModelSerializationSupport.getMojoModel(broadcastMojo.value))
@@ -224,6 +227,26 @@ class H2OMOJOModel(override val uid: String, @transient var mojoData: Option[Arr
     // and model will be able to still provide a prediction
     StructType(schema.fields ++ predictionSchema)
   }
+
+  override def write: MLWriter = new MLWriter {
+
+    override protected def saveImpl(path: String): Unit = {
+      DefaultParamsWriter.saveMetadata(H2OMOJOModel.this, path, sc)
+
+      val outputPath = new Path(path, H2OMOJOModel.serializedFileName)
+      val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
+      val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+      val out = fs.create(qualifiedOutputPath)
+      try {
+        out.write(mojoData.get)
+      } finally {
+        out.close()
+      }
+      logInfo(s"Saved to: $qualifiedOutputPath")
+    }
+
+  }
+
 }
 
 class H2OMOJOModelReader extends DefaultParamsReader[py_sparkling.ml.models.H2OMOJOModel] {
@@ -231,7 +254,7 @@ class H2OMOJOModelReader extends DefaultParamsReader[py_sparkling.ml.models.H2OM
     super.load(path)
     val model = super.load(path)
 
-    val inputPath = new Path(path, H2OMOJOPipelineModel.serializedFileName)
+    val inputPath = new Path(path, H2OMOJOModel.serializedFileName)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val is = fs.open(qualifiedInputPath)

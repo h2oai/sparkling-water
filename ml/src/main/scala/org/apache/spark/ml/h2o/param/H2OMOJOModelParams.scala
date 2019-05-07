@@ -52,5 +52,4 @@ trait H2OMOJOModelParams extends Params {
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 
   def setOutputCol(value: String): this.type = set(outputCol, value)
-
 }

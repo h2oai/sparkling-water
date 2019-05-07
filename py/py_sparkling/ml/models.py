@@ -5,6 +5,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf
 from pyspark.sql.types import DoubleType
 from .util import JavaH2OMLReadable
+from pyspark.ml.param.shared import HasInputCols, HasPredictionCol
 
 
 class H2OGBMModel(JavaModel, JavaMLWritable, JavaMLReadable):
@@ -52,7 +53,7 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         return self
 
 
-class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
+class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable, HasPredictionCol, HasInputCols):
 
     @staticmethod
     def create_from_mojo(path_to_mojo):
@@ -65,12 +66,6 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
     def predict(self, dataframe):
         return self.transform(dataframe)
 
-    def getInputCols(self):
-        return list(self._java_obj.getInputCols())
-
-    def getOutputCols(self):
-        return list(self._java_obj.getOutputCols())
-
     def get_named_mojo_output_columns(self):
         return self._java_obj.getNamedMojoOutputColumns()
 
@@ -79,13 +74,15 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         return self
 
     def select_prediction_udf(self, column):
-        if column not in self.getOutputCols():
+        output_cols = [el for el in self._java_obj.getMojoPipeline().getOutputMeta().getColumnNames()]
+
+        if column not in output_cols:
             raise ValueError("Column '" + column + "' is not defined as the output column in MOJO Pipeline.")
 
         if self.get_named_mojo_output_columns():
             func = udf(lambda d: d, DoubleType())
-            return func("prediction." + column).alias(column)
+            return func(self.getPredictionCol() + "." + column).alias(column)
         else:
-            idx = self.getOutputCols().index(column)
+            idx = output_cols.index(column)
             func = udf(lambda arr: arr[idx], DoubleType())
-            return func("prediction.preds").alias(column)
+            return func(self.getPredictionCol() + ".preds").alias(column)
