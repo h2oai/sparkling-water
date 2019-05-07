@@ -463,8 +463,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val expectObjectsNullableByDefault = true
 
     val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
-    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
-    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
+    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(flattenDF)
+    val expandedSchema = H2OSchemaUtils.expandedSchema(H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
     val expected: Vector[StructField] = Vector(
       StructField("a.n", IntegerType),
       StructField("a.name", StringType),
@@ -807,8 +807,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
   def getSchemaInfo(df: DataFrame): (DataFrame, Array[Int], Seq[StructField]) = {
     val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
-    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(sc, flattenDF)
-    val expandedSchema = H2OSchemaUtils.expandedSchema(sc, H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
+    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(flattenDF)
+    val expandedSchema = H2OSchemaUtils.expandedSchema(H2OSchemaUtils.flattenSchema(df.schema), maxElementSizes)
     (flattenDF, maxElementSizes, expandedSchema)
   }
 }
