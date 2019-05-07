@@ -226,26 +226,28 @@ class H2OMOJOModel(override val uid: String, @transient var mojoData: Option[Arr
   }
 }
 
-class H2OMOJOReader extends DefaultParamsReader[py_sparkling.ml.models.H2OMOJOModel] {
+class H2OMOJOModelReader extends DefaultParamsReader[py_sparkling.ml.models.H2OMOJOModel] {
   override def load(path: String): models.H2OMOJOModel = {
     super.load(path)
     val model = super.load(path)
 
-    val inputPath = new Path(path, H2OMOJOModel.serializedFileName)
+    val inputPath = new Path(path, H2OMOJOPipelineModel.serializedFileName)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val is = fs.open(qualifiedInputPath)
 
     val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
-    model.mojoData = Option(mojoData)
+    model.mojoData = Some(mojoData)
     model
   }
 }
 
 
-object H2OMOJOModel extends DefaultParamsReadable[py_sparkling.ml.models.H2OMOJOModel] {
+object H2OMOJOModel extends MLReadable[py_sparkling.ml.models.H2OMOJOModel] {
 
   val serializedFileName = "mojo_model"
+
+  override def read: MLReader[models.H2OMOJOModel] = new H2OMOJOModelReader
 
   override def load(path: String): py_sparkling.ml.models.H2OMOJOModel = {
     val model = super.load(path)
