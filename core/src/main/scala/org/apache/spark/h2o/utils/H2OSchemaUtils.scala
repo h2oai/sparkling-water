@@ -97,11 +97,10 @@ object H2OSchemaUtils {
     *  - all arrays are expanded into columns based on the longest one
     *  - all vectors are expanded into columns based on the longest one
     *
-    * @param sc         Spark context
     * @param flatSchema flat schema of spark data frame
     * @return list of types with their positions
     */
-  def expandedSchema(sc: SparkContext, flatSchema: StructType, elemMaxSizes: Array[Int]): Seq[StructField] = {
+  def expandedSchema(flatSchema: StructType, elemMaxSizes: Array[Int]): Seq[StructField] = {
 
     val expandedSchema = flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
@@ -130,12 +129,11 @@ object H2OSchemaUtils {
     *  - all arrays are expanded into columns based on the longest one
     *  - all vectors are expanded into columns based on the longest one
     *
-    * @param sc            Spark context
     * @param flatDataFrame flat data frame
     * @param elemMaxSizes  max sizes of each element in the dataframe
     * @return list of types with their positions
     */
-  def collectSparseInfo(sc: SparkContext, flatDataFrame: DataFrame, elemMaxSizes: Array[Int]): Array[Boolean] = {
+  def collectSparseInfo(flatDataFrame: DataFrame, elemMaxSizes: Array[Int]): Array[Boolean] = {
 
     val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
     val sparseInfoForVec = {
@@ -167,7 +165,7 @@ object H2OSchemaUtils {
   }
 
 
-  def expandWithoutVectors(sc: SparkContext, flatSchema: StructType, elemMaxSizes: Array[Int]): Seq[StructField] = {
+  def expandWithoutVectors(flatSchema: StructType, elemMaxSizes: Array[Int]): Seq[StructField] = {
     val expandedSchema = flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
         case ArrayType(arrType, nullable) =>
@@ -210,7 +208,7 @@ object H2OSchemaUtils {
     *
     * @return array containing size of each element
     */
-  def collectMaxElementSizes(sc: SparkContext, flatDataFrame: DataFrame): Array[Int] = {
+  def collectMaxElementSizes(flatDataFrame: DataFrame): Array[Int] = {
     val arrayIndices = collectArrayLikeTypes(flatDataFrame.schema)
     val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
     val simpleIndices = collectSimpleLikeTypes(flatDataFrame.schema)

@@ -56,12 +56,12 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     val dfRdd = flatDataFrame.rdd
     val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
 
-    val elemMaxSizes = collectMaxElementSizes(hc.sparkContext, flatDataFrame)
+    val elemMaxSizes = collectMaxElementSizes(flatDataFrame)
     val elemStartIndices = collectElemStartPositions(elemMaxSizes)
     val vecIndices = collectVectorLikeTypes(flatDataFrame.schema).toArray
-    val sparseInfo = collectSparseInfo(hc.sparkContext, flatDataFrame, elemMaxSizes)
+    val sparseInfo = collectSparseInfo(flatDataFrame, elemMaxSizes)
     // Expands RDD's schema ( Arrays and Vectors)
-    val flatRddSchema = expandedSchema(hc.sparkContext, flatDataFrame.schema, elemMaxSizes)
+    val flatRddSchema = expandedSchema(flatDataFrame.schema, elemMaxSizes)
     // Patch the flat schema based on information about types
     val fnames = flatRddSchema.map(_.name).toArray
 
@@ -71,7 +71,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       // Transform datatype into h2o types
       flatRddSchema.map(f => ReflectionUtils.vecTypeFor(f.dataType)).toArray
     } else {
-      val internalJavaClasses = H2OSchemaUtils.expandWithoutVectors(hc.sparkContext, flatDataFrame.schema, elemMaxSizes).map { f =>
+      val internalJavaClasses = H2OSchemaUtils.expandWithoutVectors(flatDataFrame.schema, elemMaxSizes).map { f =>
         ExternalWriteConverterCtx.internalJavaClassOf(f.dataType)
       }.toArray
       ExternalBackendUtils.prepareExpectedTypes(internalJavaClasses)
