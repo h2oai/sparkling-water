@@ -207,7 +207,7 @@ class H2OMOJOPipelineModel(override val uid: String, @transient var mojoData: Op
     }
   }
 
-  override def write: MLWriter = new H2OMOJOModelWriter[H2OMOJOPipelineModel](this, mojoData.get)
+  override def write: MLWriter = new H2OMOJOModelWriter(this, mojoData.get)
 }
 
 object H2OMOJOModelCache extends Logging {
@@ -231,7 +231,7 @@ object H2OMOJOModelCache extends Logging {
 object H2OMOJOPipelineModel extends H2OMOJOModelReadable[py_sparkling.ml.models.H2OMOJOPipelineModel] {
 
   val serializedFileName = "pipeline_model"
-  
+
   def createFromMojo(path: String): py_sparkling.ml.models.H2OMOJOPipelineModel = {
     val inputPath = new Path(path)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)

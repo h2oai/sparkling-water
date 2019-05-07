@@ -34,14 +34,15 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, _}
 import org.apache.spark.{ml, mllib}
-import py_sparkling.ml.models
 import water.support.ModelSerializationSupport
 
 
-class H2OMOJOModel(override val uid: String, @transient var mojoData: Option[Array[Byte]])
-  extends SparkModel[H2OMOJOModel] with H2OMOJOModelParams with MLWritable {
+class H2OMOJOModel(override val uid: String) extends SparkModel[H2OMOJOModel]
+  with H2OMOJOModelParams with MLWritable {
 
-  def this(uid: String) = this(uid, None)
+  @transient private var mojoData: Array[Byte] = _
+
+  protected def setMojoData(mojoData: Array[Byte]): Unit = this.mojoData = mojoData
 
   protected var broadcastMojo: Broadcast[Array[Byte]] = _
 
@@ -158,7 +159,7 @@ class H2OMOJOModel(override val uid: String, @transient var mojoData: Option[Arr
 
   private def getOrCreateEasyModelWrapper() = {
     if (broadcastMojo == null) {
-      broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(mojoData.get)
+      broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(mojoData)
     }
     if (easyPredictModelWrapper == null) {
       val config = new EasyPredictModelWrapper.Config()
@@ -228,13 +229,11 @@ class H2OMOJOModel(override val uid: String, @transient var mojoData: Option[Arr
     StructType(schema.fields ++ predictionSchema)
   }
 
-  override def write: MLWriter = new H2OMOJOModelWriter[H2OMOJOModel](this, mojoData.get)
+  override def write: MLWriter = new H2OMOJOModelWriter(this, mojoData)
 }
 
 
 object H2OMOJOModel extends H2OMOJOModelReadable[py_sparkling.ml.models.H2OMOJOModel] {
-
-  val serializedFileName = "mojo_model"
 
   def createFromMojo(path: String): py_sparkling.ml.models.H2OMOJOModel = {
     val inputPath = new Path(path)
@@ -251,6 +250,8 @@ object H2OMOJOModel extends H2OMOJOModelReadable[py_sparkling.ml.models.H2OMOJOM
   }
 
   def createFromMojo(mojoData: Array[Byte], uid: String): py_sparkling.ml.models.H2OMOJOModel = {
-    new py_sparkling.ml.models.H2OMOJOModel(uid, Some(mojoData))
+    val model = new py_sparkling.ml.models.H2OMOJOModel(uid)
+    model.setMojoData(mojoData)
+    model
   }
 }

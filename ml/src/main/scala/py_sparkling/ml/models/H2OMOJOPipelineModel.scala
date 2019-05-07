@@ -17,8 +17,7 @@
 
 package py_sparkling.ml.models
 
-import org.apache.spark.ml.h2o.models.H2OMOJOPipelineReader
-import org.apache.spark.ml.util._
+import org.apache.spark.ml.h2o.models.H2OMOJOModelReadable
 
 class H2OMOJOPipelineModel(override val uid: String, mojoData: Option[Array[Byte]])
   extends org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel(uid, mojoData) {
@@ -26,6 +25,4 @@ class H2OMOJOPipelineModel(override val uid: String, mojoData: Option[Array[Byte
   def this(uid: String) = this(uid, None)
 }
 
-object H2OMOJOPipelineModel extends MLReadable[H2OMOJOPipelineModel] {
-  override def read: MLReader[H2OMOJOPipelineModel] = new H2OMOJOPipelineReader
-}
+object H2OMOJOPipelineModel extends H2OMOJOModelReadable[H2OMOJOPipelineModel]
