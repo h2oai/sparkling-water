@@ -15,14 +15,21 @@
 * limitations under the License.
 */
 
-package py_sparkling.ml.models
+package org.apache.spark.ml.h2o.models
 
-import org.apache.spark.ml.h2o.models.{H2OMOJOLoader, H2OMOJOReadable}
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.sql.SparkSession
 
-class H2OMOJOModel(override val uid: String) extends org.apache.spark.ml.h2o.models.H2OMOJOModel(uid)
+private[models] trait HasMojoData {
 
-object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2OMOJOModel] {
-  override def createFromMojo(mojoData: Array[Byte], uid: String): H2OMOJOModel = {
-    org.apache.spark.ml.h2o.models.H2OMOJOModel.createFromMojo(mojoData, uid)
+  // Called during init of the model
+   def setMojoData(mojoData : Array[Byte]): Unit = {
+    this.mojoData = mojoData
+    broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(this.mojoData)
   }
+
+  protected def getMojoData: Array[Byte] = broadcastMojo.value
+
+  @transient private var mojoData: Array[Byte] = _
+  private var broadcastMojo: Broadcast[Array[Byte]] = _
 }

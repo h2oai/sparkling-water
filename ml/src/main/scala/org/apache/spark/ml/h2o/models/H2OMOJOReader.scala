@@ -15,14 +15,24 @@
 * limitations under the License.
 */
 
-package py_sparkling.ml.models
+package org.apache.spark.ml.h2o.models
 
-import org.apache.spark.ml.h2o.models.{H2OMOJOLoader, H2OMOJOReadable}
+import org.apache.hadoop.fs.Path
+import org.apache.spark.ml.util._
+import org.apache.spark.sql._
 
-class H2OMOJOModel(override val uid: String) extends org.apache.spark.ml.h2o.models.H2OMOJOModel(uid)
+private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReader[T] {
 
-object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2OMOJOModel] {
-  override def createFromMojo(mojoData: Array[Byte], uid: String): H2OMOJOModel = {
-    org.apache.spark.ml.h2o.models.H2OMOJOModel.createFromMojo(mojoData, uid)
+  override def load(path: String): T  = {
+    val model = super.load(path)
+
+    val inputPath = new Path(path, H2OMOJOProps.serializedFileName)
+    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val is = fs.open(qualifiedInputPath)
+    val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
+    model.setMojoData(mojoData)
+    model
   }
+
 }
