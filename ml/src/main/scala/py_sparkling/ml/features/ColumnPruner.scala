@@ -17,9 +17,4 @@
 
 package py_sparkling.ml.features
 
-import org.apache.spark.ml.util.Identifiable
-
-class ColumnPruner(override val uid: String) extends org.apache.spark.ml.h2o.features.ColumnPruner(uid){
-
-  def this() = this(Identifiable.randomUID("h2oColRemover"))
-}
+class ColumnPruner(override val uid: String) extends org.apache.spark.ml.h2o.features.ColumnPruner(uid)
