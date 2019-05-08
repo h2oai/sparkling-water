@@ -44,11 +44,6 @@ class H2OMOJOPipelineModel(override val uid: String)
   // Set during init of the model
   protected var mojoData: Array[Byte] = _
 
-  private val outputColumnNames = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getOutputMeta.getColumnNames
-  private val outputColumnTypes = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getOutputMeta.getColumnTypes
-  private val inputColumnNames = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getInputMeta.getColumnNames
-  private val inputColumnTypes = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getInputMeta.getColumnTypes
-
   val outputCol = "prediction"
 
   case class Mojo2Prediction(preds: List[Double])
@@ -185,13 +180,9 @@ class H2OMOJOPipelineModel(override val uid: String)
     StructType(schema ++ predictionSchema())
   }
 
-  def getInputNames(): Array[String] = inputColumnNames
+  def getInputNames(): Array[String] = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getInputMeta.getColumnNames
 
-  def getInputTypes(): Array[MojoColumn.Type] = inputColumnTypes
-
-  def getOutputNames(): Array[String] = outputColumnNames
-
-  def getOutputTypes(): Array[MojoColumn.Type] = outputColumnTypes
+  def getOutputNames(): Array[String] = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getOutputMeta.getColumnNames
 
   def selectPredictionUDF(column: String) = {
     if (!getOutputNames().contains(column)) {

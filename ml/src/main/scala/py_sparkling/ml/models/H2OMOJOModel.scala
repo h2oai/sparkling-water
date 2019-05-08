@@ -17,7 +17,7 @@
 
 package py_sparkling.ml.models
 
-import org.apache.spark.ml.h2o.models.H2OMOJOReadable
+import org.apache.spark.ml.h2o.models.{H2OMOJOLoader, H2OMOJOReadable}
 
 class H2OMOJOModel(override val uid: String) extends org.apache.spark.ml.h2o.models.H2OMOJOModel(uid)
 

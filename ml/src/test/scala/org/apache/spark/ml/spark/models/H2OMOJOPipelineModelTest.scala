@@ -23,8 +23,8 @@ import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.ml.h2o.models.{H2OMOJOModelCache, H2OMOJOPipelineModel}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
