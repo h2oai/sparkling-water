@@ -106,7 +106,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease" +
         " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
     }
-    val model = trainModel(aml)
+
+    val mojoData = ModelSerializationSupport.getMojoData(aml.leader())
+    val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID(aml.leader()._parms.algoName()))
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
   }
@@ -122,10 +124,6 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     val schema = StructType(colNames.map { name => StructField(name, StringType) })
     val rdd = hc.sparkContext.parallelize(rows)
     Some(hc.sparkSession.createDataFrame(rdd, schema))
-  }
-
-  def trainModel(aml: AutoML) = {
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(aml.leader()))
   }
 
   @DeveloperApi
