@@ -39,7 +39,7 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
         return H2OMOJOModel(
-            spark_session._jvm.org.apache.spark.ml.h2o.models.H2OMOJOModel.createFromMojo(path_to_mojo))
+            spark_session._jvm.py_sparkling.ml.models.H2OMOJOModel.createFromMojo(path_to_mojo))
 
     def predict(self, dataframe):
         return self.transform(dataframe)
@@ -60,7 +60,7 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
         return H2OMOJOPipelineModel(
-            spark_session._jvm.org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel.createFromMojo(path_to_mojo))
+            spark_session._jvm.py_sparkling.ml.models.H2OMOJOPipelineModel.createFromMojo(path_to_mojo))
 
     def predict(self, dataframe):
         return self.transform(dataframe)
