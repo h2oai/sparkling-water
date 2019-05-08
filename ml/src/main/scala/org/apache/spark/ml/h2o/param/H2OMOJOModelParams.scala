@@ -16,7 +16,6 @@
 */
 package org.apache.spark.ml.h2o.param
 
-import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param._
 import water.util.DeprecatedMethod
 

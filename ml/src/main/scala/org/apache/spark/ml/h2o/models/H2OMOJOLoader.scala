@@ -15,14 +15,28 @@
 * limitations under the License.
 */
 
-package py_sparkling.ml.models
+package org.apache.spark.ml.h2o.models
 
-import org.apache.spark.ml.h2o.models.{H2OMOJOLoader, H2OMOJOReadable}
+import java.io.InputStream
 
-class H2OMOJOModel(override val uid: String) extends org.apache.spark.ml.h2o.models.H2OMOJOModel(uid)
+import org.apache.hadoop.fs.Path
+import org.apache.spark.ml.util._
+import org.apache.spark.sql._
 
-object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2OMOJOModel] {
-  override def createFromMojo(mojoData: Array[Byte], uid: String): H2OMOJOModel = {
-    org.apache.spark.ml.h2o.models.H2OMOJOModel.createFromMojo(mojoData, uid)
+trait H2OMOJOLoader[T] {
+
+  def createFromMojo(path: String): T = {
+    val inputPath = new Path(path)
+    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val is = fs.open(qualifiedInputPath)
+
+    createFromMojo(is, Identifiable.randomUID(inputPath.getName))
   }
+
+  def createFromMojo(is: InputStream, uid: String): T = {
+    createFromMojo(Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray, uid)
+  }
+
+  def createFromMojo(mojoData: Array[Byte], uid: String): T
 }

@@ -15,14 +15,27 @@
 * limitations under the License.
 */
 
-package py_sparkling.ml.models
+package org.apache.spark.ml.h2o.models
 
-import org.apache.spark.ml.h2o.models.{H2OMOJOLoader, H2OMOJOReadable}
+import org.apache.hadoop.fs.Path
+import org.apache.spark.ml.param.Params
+import org.apache.spark.ml.util.{DefaultParamsWriter, MLWriter}
 
-class H2OMOJOModel(override val uid: String) extends org.apache.spark.ml.h2o.models.H2OMOJOModel(uid)
+private[models] class H2OMOJOWriter(instance: Params, val mojoData: Array[Byte]) extends MLWriter {
 
-object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2OMOJOModel] {
-  override def createFromMojo(mojoData: Array[Byte], uid: String): H2OMOJOModel = {
-    org.apache.spark.ml.h2o.models.H2OMOJOModel.createFromMojo(mojoData, uid)
+  override protected def saveImpl(path: String): Unit = {
+    DefaultParamsWriter.saveMetadata(instance, path, sc)
+
+    val outputPath = new Path(path, H2OMOJOProps.serializedFileName)
+    val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
+    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    val out = fs.create(qualifiedOutputPath)
+    try {
+      out.write(mojoData)
+    } finally {
+      out.close()
+    }
+    logInfo(s"Saved to: $qualifiedOutputPath")
   }
+
 }
