@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-package py_sparkling.ml.models
+package org.apache.spark.ml.h2o.models
 
-import org.apache.spark.ml.h2o.models.H2OMOJOReadable
+import org.apache.spark.ml.util.{MLReadable, MLReader}
 
-class H2OMOJOModel(override val uid: String) extends org.apache.spark.ml.h2o.models.H2OMOJOModel(uid)
-
-object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel]
+trait H2OMOJOReadable[T] extends MLReadable[T] {
+  override def read: MLReader[T] = new H2OMOJOReader[T]
+}
