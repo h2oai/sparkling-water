@@ -35,10 +35,7 @@ import py_sparkling.ml.models.{H2OMOJOModel => PyH2OMOJOModel}
 import water.support.ModelSerializationSupport
 
 class H2OMOJOModel(override val uid: String)
-  extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable {
-
-  // Set during init of the model
-  protected var mojoData: Array[Byte] = _
+  extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable with HasMojoData {
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient var easyPredictModelWrapper: EasyPredictModelWrapper = _
@@ -154,7 +151,7 @@ class H2OMOJOModel(override val uid: String)
   private def getOrCreateEasyModelWrapper() = {
     if (easyPredictModelWrapper == null) {
       val config = new EasyPredictModelWrapper.Config()
-      config.setModel(ModelSerializationSupport.getMojoModel(mojoData))
+      config.setModel(ModelSerializationSupport.getMojoModel(getMojoData))
       config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
       easyPredictModelWrapper = new EasyPredictModelWrapper(config)
     }
@@ -221,7 +218,7 @@ class H2OMOJOModel(override val uid: String)
   }
 
   @Since("1.6.0")
-  override def write: MLWriter = new H2OMOJOWriter(this, mojoData)
+  override def write: MLWriter = new H2OMOJOWriter(this, getMojoData)
 }
 
 
@@ -230,7 +227,7 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
   override def createFromMojo(mojoData: Array[Byte], uid: String): PyH2OMOJOModel = {
     val mojoModel = ModelSerializationSupport.getMojoModel(mojoData)
     val model = new PyH2OMOJOModel(uid)
-    model.mojoData = mojoData
+    model.setMojoData(mojoData)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     if (mojoModel.isSupervised) {
       model.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))

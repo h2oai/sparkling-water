@@ -20,7 +20,6 @@ package org.apache.spark.ml.h2o.models
 import java.io._
 
 import ai.h2o.mojos.runtime.MojoPipeline
-import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.spark.h2o.utils.H2OSchemaUtils
@@ -39,11 +38,8 @@ import scala.util.Random
 
 
 class H2OMOJOPipelineModel(override val uid: String)
-  extends SparkModel[H2OMOJOPipelineModel] with H2OMOJOPipelineModelParams with MLWritable {
-
-  // Set during init of the model
-  protected var mojoData: Array[Byte] = _
-
+  extends SparkModel[H2OMOJOPipelineModel] with H2OMOJOPipelineModelParams with MLWritable with HasMojoData {
+  
   val outputCol = "prediction"
 
   case class Mojo2Prediction(preds: List[Double])
@@ -68,7 +64,7 @@ class H2OMOJOPipelineModel(override val uid: String)
   private val modelUdf = (names: Array[String]) =>
     udf[Mojo2Prediction, Row] {
       r: Row =>
-        val m = H2OMOJOModelCache.getOrCreateModel(uid, mojoData)
+        val m = H2OMOJOModelCache.getOrCreateModel(uid, getMojoData)
         val builder = m.getInputFrameBuilder
         val rowBuilder = builder.getMojoRowBuilder
         val filtered = r.getValuesMap[Any](names).filter { case (n, _) => m.getInputMeta.contains(n) }
@@ -180,9 +176,9 @@ class H2OMOJOPipelineModel(override val uid: String)
     StructType(schema ++ predictionSchema())
   }
 
-  def getInputNames(): Array[String] = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getInputMeta.getColumnNames
+  def getInputNames(): Array[String] = H2OMOJOModelCache.getOrCreateModel(uid, getMojoData).getInputMeta.getColumnNames
 
-  def getOutputNames(): Array[String] = H2OMOJOModelCache.getOrCreateModel(uid, mojoData).getOutputMeta.getColumnNames
+  def getOutputNames(): Array[String] = H2OMOJOModelCache.getOrCreateModel(uid, getMojoData).getOutputMeta.getColumnNames
 
   def selectPredictionUDF(column: String) = {
     if (!getOutputNames().contains(column)) {
@@ -199,14 +195,14 @@ class H2OMOJOPipelineModel(override val uid: String)
     }
   }
 
-  override def write: MLWriter = new H2OMOJOWriter(this, mojoData)
+  override def write: MLWriter = new H2OMOJOWriter(this, getMojoData)
 }
 
 object H2OMOJOPipelineModel extends H2OMOJOReadable[PyH2OMOJOPipelineModel] with H2OMOJOLoader[PyH2OMOJOPipelineModel] {
 
   override def createFromMojo(mojoData: Array[Byte], uid: String): PyH2OMOJOPipelineModel = {
     val model = new PyH2OMOJOPipelineModel(uid)
-    model.mojoData = mojoData
+    model.setMojoData(mojoData)
     model
   }
 }

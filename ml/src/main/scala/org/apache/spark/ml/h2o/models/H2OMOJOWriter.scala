@@ -21,7 +21,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.ml.param.Params
 import org.apache.spark.ml.util.{DefaultParamsWriter, MLWriter}
 
-class H2OMOJOWriter(instance: Params, val mojoData: Array[Byte]) extends MLWriter {
+private[models] class H2OMOJOWriter(instance: Params, val mojoData: Array[Byte]) extends MLWriter {
 
   val serializedFileName = "mojo_model"
 
