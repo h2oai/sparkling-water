@@ -127,7 +127,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }
 
     val mojoData = ModelSerializationSupport.getMojoData(selectModelFromGrid(grid))
-    val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID("gridSearch_mojoModel"))
+    val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID(s"${$(gridAlgoParams).algoName()}_mojoModel"))
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
   }
