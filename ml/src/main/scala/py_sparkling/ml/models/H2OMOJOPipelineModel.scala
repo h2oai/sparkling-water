@@ -17,13 +17,13 @@
 
 package py_sparkling.ml.models
 
-import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModelHelper
-import org.apache.spark.ml.util._
 
-class H2OMOJOPipelineModel(override val mojoData: Array[Byte], override val uid: String)
-  extends org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel(mojoData) {
+import org.apache.spark.ml.h2o.models.{H2OMOJOLoader, H2OMOJOReadable}
 
-  def this(mojoData: Array[Byte]) = this(mojoData, Identifiable.randomUID("mojoModel"))
+class H2OMOJOPipelineModel(override val uid: String) extends org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel(uid)
+
+object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H2OMOJOLoader[H2OMOJOPipelineModel] {
+  override def createFromMojo(mojoData: Array[Byte], uid: String): H2OMOJOPipelineModel = {
+    org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel.createFromMojo(mojoData, uid)
+  }
 }
-
-object H2OMOJOPipelineModel extends H2OMOJOPipelineModelHelper[H2OMOJOPipelineModel] {}

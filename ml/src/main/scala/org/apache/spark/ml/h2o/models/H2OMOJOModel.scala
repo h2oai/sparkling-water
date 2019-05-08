@@ -17,12 +17,10 @@
 
 package org.apache.spark.ml.h2o.models
 
-import java.io._
 import java.util
 
 import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import org.apache.hadoop.fs.Path
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.h2o.param.H2OModelParams
@@ -33,14 +31,11 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, _}
 import org.apache.spark.{ml, mllib}
+import py_sparkling.ml.models.{H2OMOJOModel => PyH2OMOJOModel}
 import water.support.ModelSerializationSupport
 
-import scala.reflect.{ClassTag, classTag}
-
-class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
-  extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable {
-
-  def this(mojoData: Array[Byte]) = this(mojoData, Identifiable.randomUID("mojoModel"))
+class H2OMOJOModel(override val uid: String)
+  extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable with HasMojoData {
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient var easyPredictModelWrapper: EasyPredictModelWrapper = _
@@ -153,12 +148,10 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
-  def defaultFileName: String = H2OMOJOModel.defaultFileName
-
   private def getOrCreateEasyModelWrapper() = {
     if (easyPredictModelWrapper == null) {
       val config = new EasyPredictModelWrapper.Config()
-      config.setModel(ModelSerializationSupport.getMojoModel(mojoData))
+      config.setModel(ModelSerializationSupport.getMojoModel(getMojoData))
       config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
       easyPredictModelWrapper = new EasyPredictModelWrapper(config)
     }
@@ -225,85 +218,23 @@ class H2OMOJOModel(val mojoData: Array[Byte], override val uid: String)
   }
 
   @Since("1.6.0")
-  override def write: MLWriter = new H2OMOJOModelWriter(this)
-
+  override def write: MLWriter = new H2OMOJOWriter(this, getMojoData)
 }
 
-private[models] class H2OMOJOModelWriter(instance: H2OMOJOModel) extends MLWriter {
 
-  @org.apache.spark.annotation.Since("1.6.0")
-  override protected def saveImpl(path: String): Unit = {
-    DefaultParamsWriter.saveMetadata(instance, path, sc)
-    val outputPath = new Path(path, instance.defaultFileName)
-    val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
-    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val out = fs.create(qualifiedOutputPath)
-    try {
-      out.write(instance.mojoData)
-    } finally {
-      out.close()
-    }
-    logInfo(s"Saved to: $qualifiedOutputPath")
-  }
-}
+object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[PyH2OMOJOModel] {
 
-private[models] class H2OMOJOModelReader[T <: H2OMOJOModel : ClassTag]
-(val defaultFileName: String) extends MLReader[T] {
-
-  @org.apache.spark.annotation.Since("1.6.0")
-  override def load(path: String): T = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc)
-
-    val inputPath = new Path(path, defaultFileName)
-    val fs = inputPath.getFileSystem(sc.hadoopConfiguration)
-    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val is = fs.open(qualifiedInputPath)
-
-    val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
-
-    val h2oModel = make(mojoData, metadata.uid)(sqlContext)
-    DefaultParamsReader.getAndSetParams(h2oModel, metadata)
-    h2oModel
-  }
-
-  def make(mojoData: Array[Byte], uid: String)(sqLContext: SQLContext): T = {
-    classTag[T].runtimeClass.getConstructor(classOf[Array[Byte]], classOf[String]).
-      newInstance(mojoData, uid).asInstanceOf[T]
-  }
-}
-
-class H2OMOJOModelHelper[T <: py_sparkling.ml.models.H2OMOJOModel](implicit m: ClassTag[T]) extends MLReadable[T] {
-  val defaultFileName = "mojo_model"
-
-  @Since("1.6.0")
-  override def read: MLReader[T] = new H2OMOJOModelReader[T](defaultFileName)
-
-  @Since("1.6.0")
-  override def load(path: String): T = super.load(path)
-
-  def createFromMojo(path: String): T = {
-    val inputPath = new Path(path)
-    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
-    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val is = fs.open(qualifiedInputPath)
-
-    createFromMojo(is, new File(path).getName)
-  }
-
-  def createFromMojo(is: InputStream, uid: String = Identifiable.randomUID("mojoModel")): T = {
-    val mojoData = Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray
+  override def createFromMojo(mojoData: Array[Byte], uid: String): PyH2OMOJOModel = {
     val mojoModel = ModelSerializationSupport.getMojoModel(mojoData)
-    val sparkMojoModel = m.runtimeClass.getConstructor(classOf[Array[Byte]], classOf[String]).
-      newInstance(mojoData, uid).asInstanceOf[T]
+    val model = new PyH2OMOJOModel(uid)
+    model.setMojoData(mojoData)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     if (mojoModel.isSupervised) {
-      sparkMojoModel.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))
-      sparkMojoModel.setLabelCol(mojoModel.getResponseName)
+      model.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))
+      model.setLabelCol(mojoModel.getResponseName)
     } else {
-      sparkMojoModel.setFeaturesCols(mojoModel.getNames)
+      model.setFeaturesCols(mojoModel.getNames)
     }
-    sparkMojoModel
+    model
   }
 }
-
-object H2OMOJOModel extends H2OMOJOModelHelper[py_sparkling.ml.models.H2OMOJOModel] {}
