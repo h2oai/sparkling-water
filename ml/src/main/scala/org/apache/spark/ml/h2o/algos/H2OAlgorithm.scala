@@ -85,7 +85,8 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
     // Train
 
     val binaryModel: H2OBaseModel = trainModel(parameters)
-    val model = new H2OMOJOModel(ModelSerializationSupport.getMojoData(binaryModel))
+    val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
+    val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID(binaryModel._parms.algoName()))
 
     // pass some parameters set on algo to model
     model.setFeaturesCols(binaryModel.modelDescriptor().features())

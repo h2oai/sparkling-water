@@ -118,15 +118,16 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }
     val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams,
       paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria)
+    // Block until GridSearch finishes
     grid = job.get()
     gridModels = sortGrid(grid)
     gridMojoModels = gridModels.map { m =>
       val data = ModelSerializationSupport.getMojoData(m)
-      new H2OMOJOModel(data, Identifiable.randomUID(s"${$(gridAlgoParams).algoName()}_mojoModel"))
+      H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${$(gridAlgoParams).algoName()}_mojoModel"))
     }
 
-    // Block until GridSearch finishes
-    val model = trainModel(grid)
+    val mojoData = ModelSerializationSupport.getMojoData(selectModelFromGrid(grid))
+    val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID("gridSearch_mojoModel"))
     model.setConvertUnknownCategoricalLevelsToNa(true)
     model
   }
@@ -173,10 +174,6 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     } catch {
       case _: NoSuchElementException => throw new IllegalArgumentException(s"No such parameter: '$hyperParamName'")
     }
-  }
-
-  def trainModel(grid: Grid[_]) = {
-    new H2OMOJOModel(ModelSerializationSupport.getMojoData(selectModelFromGrid(grid)), Identifiable.randomUID("gridSearch_mojoModel"))
   }
 
   private def selectMetric(model: H2OBaseModel) = {
