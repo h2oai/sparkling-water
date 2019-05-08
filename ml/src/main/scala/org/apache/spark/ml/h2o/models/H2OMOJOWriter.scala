@@ -23,12 +23,10 @@ import org.apache.spark.ml.util.{DefaultParamsWriter, MLWriter}
 
 private[models] class H2OMOJOWriter(instance: Params, val mojoData: Array[Byte]) extends MLWriter {
 
-  val serializedFileName = "mojo_model"
-
   override protected def saveImpl(path: String): Unit = {
     DefaultParamsWriter.saveMetadata(instance, path, sc)
 
-    val outputPath = new Path(path, serializedFileName)
+    val outputPath = new Path(path, H2OMOJOProps.serializedFileName)
     val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
     val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val out = fs.create(qualifiedOutputPath)

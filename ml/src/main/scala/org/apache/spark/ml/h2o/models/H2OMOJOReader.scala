@@ -20,16 +20,13 @@ package org.apache.spark.ml.h2o.models
 import org.apache.hadoop.fs.Path
 import org.apache.spark.ml.util._
 import org.apache.spark.sql._
-import water.util.PojoUtils
 
 private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReader[T] {
-
-  val serializedFileName = "mojo_model"
 
   override def load(path: String): T  = {
     val model = super.load(path)
 
-    val inputPath = new Path(path, serializedFileName)
+    val inputPath = new Path(path, H2OMOJOProps.serializedFileName)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val is = fs.open(qualifiedInputPath)
