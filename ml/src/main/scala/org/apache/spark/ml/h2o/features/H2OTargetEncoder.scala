@@ -21,6 +21,7 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.{H2OTargetEncoderModel, H2OTargetEncoderTrainingModel}
 import org.apache.spark.ml.h2o.param.H2OTargetEncoderParams
+import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
@@ -29,7 +30,7 @@ class H2OTargetEncoder(override val uid: String)
   with H2OTargetEncoderParams
   with DefaultParamsWritable {
 
-  def this() = this(Identifiable.randomUID(this.getClass.getSimpleName))
+  def this() = this(Identifiable.randomUID("H2OTargetEncoder"))
 
   override def fit(dataset: Dataset[_]): H2OTargetEncoderModel = {
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
@@ -39,6 +40,8 @@ class H2OTargetEncoder(override val uid: String)
     val model = new H2OTargetEncoderTrainingModel(uid, targetEncoder, encodingMap, dataset).setParent(this)
     copyValues(model)
   }
+
+  override def copy(extra: ParamMap): H2OTargetEncoder = defaultCopy(extra)
 }
 
 object H2OTargetEncoder extends DefaultParamsReadable[H2OTargetEncoder]

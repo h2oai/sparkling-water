@@ -18,6 +18,7 @@ package org.apache.spark.ml.h2o.models
 
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.h2o.param.H2OTargetEncoderParams
+import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.functions._
 
@@ -31,5 +32,8 @@ class H2OTargetEncoderModel(
     getInputCols().zip(getOutputCols()).foldLeft(dataset.toDF()){
       case (df, (in, out)) => df.withColumn(out, col(in))
     }
+
   }
+
+  override def copy(extra: ParamMap): H2OTargetEncoderModel = defaultCopy(extra)
 }

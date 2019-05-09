@@ -41,8 +41,6 @@ trait H2OTargetEncoderParams extends PipelineStage with Params {
     StructType(flatSchema.fields ++ getOutputCols().map(StructField(_, DoubleType, nullable = false)))
   }
 
-  override def copy(extra: ParamMap): Estimator[H2OTargetEncoderModel] = defaultCopy(extra)
-
   //
   // List of Parameters
   //
