@@ -144,7 +144,7 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers 
   test("Testing dataset is missing one of feature columns") {
     val Array(trainingDF, rawTestingDF) = prostateDataFrame.randomSplit(Array(0.9, 0.1))
     val testingDF = rawTestingDF
-      .drop("CAPSULE","AGE") // Remove label and one of feature columns
+      .drop("CAPSULE", "AGE") // Remove label and one of feature columns
       .cache()
     val gbm = configureGBMforProstateDF()
 
