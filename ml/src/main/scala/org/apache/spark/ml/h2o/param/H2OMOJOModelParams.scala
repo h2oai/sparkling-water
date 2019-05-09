@@ -23,7 +23,7 @@ import water.util.DeprecatedMethod
   * Parameters which need to be available on the model itself for prediction purposes. This can't be backed
   * byt H2OAlgoParamsHelper as at the time of prediction we might be using mojo and binary parameters are not available.
   */
-trait H2OModelParams extends DeprecatableParams {
+trait H2OMOJOModelParams extends DeprecatableParams {
 
   override protected def renamingMap: Map[String, String] = Map(
     "predictionCol" -> "labelCol"
