@@ -160,9 +160,10 @@ class H2OMOJOModel(override val uid: String)
 
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
-    val args = flatten.schema.fields.map(f => flatten(f.name)).intersect(getFeaturesCols())
-    flatten.select(col("*"), getModelUdf()(struct(args: _*)).as(getOutputCol()))
+    val flattenedDF = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
+    val relevantColumnNames = flattenedDF.columns.intersect(getFeaturesCols())
+    val args = relevantColumnNames.map(flattenedDF(_))
+    flattenedDF.select(col("*"), getModelUdf()(struct(args: _*)).as(getOutputCol()))
   }
 
 
