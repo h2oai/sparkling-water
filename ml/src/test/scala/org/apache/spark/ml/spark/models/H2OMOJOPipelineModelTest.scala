@@ -27,6 +27,7 @@ import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions._
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -155,6 +156,43 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     intercept[IllegalArgumentException] {
       transDf.select(mojo.selectPredictionUDF("I_DO_NOT_EXIST")).first()
     }
+  }
+
+
+  test("Testing dataset is missing one of feature columns") {
+    val schema = spark.read
+      .option("header", "true")
+      .csv("examples/smalldata/prostate/prostate.csv")
+      .drop("AGE")
+      .schema
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
+      "prostate_pipeline.mojo")
+    val rdd = sc.parallelize(Seq(Row("1", "0", "1", "2", "1", "1.4", "0", "6")))
+    val testingDF = spark.createDataFrame(rdd, schema)
+
+    val predictionsDF = mojo.transform(testingDF)
+
+    // materialize the frame to see that it is passing
+    predictionsDF.collect()
+  }
+
+  test("Testing dataset has an extra feature column") {
+    val schema = spark.read
+      .option("header", "true")
+      .csv("examples/smalldata/prostate/prostate.csv")
+      .withColumn("EXTRA", lit("extra"))
+      .schema
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
+      "prostate_pipeline.mojo")
+    val rdd = sc.parallelize(Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6", "8")))
+    val testingDF = spark.createDataFrame(rdd, schema)
+
+    val predictionsDF = mojo.transform(testingDF)
+
+    // materialize the frame to see that it is passing
+    predictionsDF.collect()
   }
 
 

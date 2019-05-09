@@ -124,11 +124,12 @@ class H2OMOJOPipelineModel(override val uid: String)
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
-    val names = flatten.schema.fields.map(f => flatten(f.name))
+    val flattenedDF = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
+    val relevantColumnNames = flattenedDF.columns.intersect(getInputNames())
+    val args = relevantColumnNames.map(flattenedDF(_))
 
     // get the altered frame
-    val frameWithPredictions = flatten.select(col("*"), modelUdf(flatten.columns)(struct(names: _*)).as(outputCol))
+    val frameWithPredictions = flattenedDF.select(col("*"), modelUdf(relevantColumnNames)(struct(args: _*)).as(outputCol))
 
     val fr = if ($(namedMojoOutputColumns)) {
 
