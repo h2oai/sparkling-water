@@ -23,7 +23,7 @@ import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.h2o.utils.H2OSchemaUtils
-import org.apache.spark.ml.h2o.param.H2OModelParams
+import org.apache.spark.ml.h2o.param.H2OMOJOModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.{Model => SparkModel}
@@ -35,7 +35,7 @@ import py_sparkling.ml.models.{H2OMOJOModel => PyH2OMOJOModel}
 import water.support.ModelSerializationSupport
 
 class H2OMOJOModel(override val uid: String)
-  extends SparkModel[H2OMOJOModel] with H2OModelParams with MLWritable with HasMojoData {
+  extends SparkModel[H2OMOJOModel] with H2OMOJOModelParams with MLWritable with HasMojoData {
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient var easyPredictModelWrapper: EasyPredictModelWrapper = _
