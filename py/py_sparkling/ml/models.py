@@ -5,6 +5,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf
 from pyspark.sql.types import DoubleType
 from .util import JavaH2OMLReadable
+import warnings
 
 
 class H2OGBMModel(JavaModel, JavaMLWritable, JavaMLReadable):
@@ -66,9 +67,18 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         return self.transform(dataframe)
 
     def get_input_names(self):
+        warnings.warn("The method 'get_input_names' is deprecated. Use 'get_features_colssss' instead!")
         return list(self._java_obj.getInputNames())
 
+    def get_features_cols(self):
+        return list(self._java_obj.getFeaturesCols())
+
+    def set_features_cols(self, value):
+        self._java_obj.setFeaturesCols(value)
+        return self
+
     def get_output_names(self):
+        warnings.warn("The method 'get_input_names' is deprecated.")
         return list(self._java_obj.getOutputNames())
 
     def get_named_mojo_output_columns(self):

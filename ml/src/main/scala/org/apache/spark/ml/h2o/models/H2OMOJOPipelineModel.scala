@@ -32,6 +32,7 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types._
 import py_sparkling.ml.models.{H2OMOJOPipelineModel => PyH2OMOJOPipelineModel}
+import water.util.DeprecatedMethod
 
 import scala.collection.mutable
 import scala.util.Random
@@ -125,13 +126,13 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     val flattenedDF = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
-    val relevantColumnNames = flattenedDF.columns.intersect(getInputNames())
+    val relevantColumnNames = flattenedDF.columns.intersect(getFeaturesCols())
     val args = relevantColumnNames.map(flattenedDF(_))
 
     // get the altered frame
     val frameWithPredictions = flattenedDF.select(col("*"), modelUdf(relevantColumnNames)(struct(args: _*)).as(outputCol))
 
-    val fr = if ($(namedMojoOutputColumns)) {
+    val fr = if (getNamedMojoOutputColumns()) {
 
       def uniqueRandomName(colName: String, r: Random) = {
         var randName = r.nextString(30)
@@ -177,15 +178,17 @@ class H2OMOJOPipelineModel(override val uid: String)
     StructType(schema ++ predictionSchema())
   }
 
-  def getInputNames(): Array[String] = H2OMOJOModelCache.getOrCreateModel(uid, getMojoData).getInputMeta.getColumnNames
+  @DeprecatedMethod("getFeaturesCols")
+  def getInputNames(): Array[String] = getFeaturesCols()
 
+  @DeprecatedMethod
   def getOutputNames(): Array[String] = H2OMOJOModelCache.getOrCreateModel(uid, getMojoData).getOutputMeta.getColumnNames
 
   def selectPredictionUDF(column: String) = {
     if (!getOutputNames().contains(column)) {
       throw new IllegalArgumentException(s"Column '$column' is not defined as the output column in MOJO Pipeline.")
     }
-    if ($(namedMojoOutputColumns)) {
+    if (getNamedMojoOutputColumns()) {
       val func = udf[Double, Double] {
         identity
       }
@@ -203,6 +206,9 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[PyH2OMOJOPipelineModel] with
 
   override def createFromMojo(mojoData: Array[Byte], uid: String): PyH2OMOJOPipelineModel = {
     val model = new PyH2OMOJOPipelineModel(uid)
+    val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
+    val featureCols = MojoPipeline.loadFrom(reader).getInputMeta.getColumnNames
+    model.setFeaturesCols(featureCols)
     model.setMojoData(mojoData)
     model
   }
