@@ -195,7 +195,6 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     predictionsDF.collect()
   }
 
-
   /**
     * The purpose of this test is to simply pass and don't throw NullPointerException
     */

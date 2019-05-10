@@ -67,7 +67,7 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         return self.transform(dataframe)
 
     def get_input_names(self):
-        warnings.warn("The method 'get_input_names' is deprecated. Use 'get_features_colssss' instead!")
+        warnings.warn("The method 'get_input_names' is deprecated. Use 'get_features_cols' instead!")
         return list(self._java_obj.getInputNames())
 
     def get_features_cols(self):
@@ -78,7 +78,7 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         return self
 
     def get_output_names(self):
-        warnings.warn("The method 'get_input_names' is deprecated.")
+        warnings.warn("The method 'get_output_names' is deprecated.")
         return list(self._java_obj.getOutputNames())
 
     def get_named_mojo_output_columns(self):
