@@ -1,29 +1,33 @@
 PySparkling
 ===========
 
-This section provides an introduction to PySparkling. To understand more about PySparkling, it's best to first understand H2O, Spark, and Sparkling Water. 
+This section provides an introduction to PySparkling. To understand more about PySparkling, it's better to understand H2O, Spark, and Sparkling Water first.
 
 What is H2O?
 ------------
 
-H2O is an open-source, in-memory, distributed, fast and scalable machine learning and predictive analytics platform that provides capability to build machine learning models on big data and allow easy productionalization of them in an enterprise environment. 
+H2O is an open-source, in-memory, distributed, fast and scalable machine learning and predictive analytics platform that provides capability to build machine learning models on big data and enable easy productionalization of them in an enterprise environment.
 
-H2O core code is in Java. Inside H2O, a Distributed Key/Value (DKV) store is used to access and reference data, models, objects, etc., across all nodes/machines, has a non blocking hashmap and a memory manager. The algoritms are implemented in a map reduce style and utilize the Java Fork/Join framework.
+H2O core code is written in Java. Inside H2O, a Distributed Key/Value (DKV) store is used to access and reference data, models, objects, etc., across all nodes/machines, has a non blocking hashmap and a memory manager. The algoritms are implemented in the map-reduce style and utilize the Java Fork/Join framework.
 
-The data is read in parallel and is distributed across the cluster, stored in memory in a columnar format in a compressed way. H2O's data parser has built-in intelligence to guess the schema of the incoming dataset and supports data ingest from multiple sources in various formats.
+The data is read in parallel and distributed across the cluster, stored in memory in a columnar format in a compressed way. H2O's data parser has built-in intelligence to guess the schema of the incoming dataset and supports data ingestion from multiple sources in various formats.
 
-H2O's REST API allows access to all the capabilities of H2O from an external program or script, via JSON over HTTP. The REST API is used by H2O's web interface (Flow UI), the R binding (H2O-R) and the Python binding (H2O-Python).
+H2O's REST API enables to access all the capabilities of H2O from an external program or script, via JSON over HTTP. The REST API is used by H2O's web interface (Flow UI), the R binding (H2O-R) and the Python binding (H2O-Python).
 
-The speed, quality and ease of use and model-deployment, for the various cutting-edge supervised and unsupervised algorithms like Deep Learning, Tree Ensembles and Generalized Low Rank Models, makes H2O a highly sought after API for big data analytics.
+The speed, quality, ease of use and model deployment, for the various cutting-edge supervised and unsupervised algorithms like Deep Learning, Tree Ensembles and Generalized Low Rank Models, makes H2O a highly sought after API for big data analytics.
 
 What is Spark?
 --------------
 
-Spark is an open-source, in-memory, distributed cluster computing framework that provides a comprehensive capability of building efficient big data pipelines.
+Apache Spark is an open-source, in-memory, distributed cluster computing framework that provides a comprehensive capability of building efficient big data pipelines.
 
-Spark core implements a distributed memory abstraction, called Resilient Distributed Datasets (RDDs) and manages distributed task dispatching and scheduling. An RDD is a logical collection of data. The actual data sits on disk. RDDs can be cashed for interactive data analysis. Operations on an RDD are lazy and are only executed when a user calls an action on an RDD. 
+Spark core implements a distributed memory abstraction, called Resilient Distributed Datasets (RDDs) and manages distributed task dispatching and scheduling. RDDs represents the first API for transforming data with Apache Spark and became essential building blocks for higher abstractions like Datasets and Dataframes (Datasets of Row objects).
 
-Spark provides APIs in Java, Python, Scala, and R for building and manipulating RDDs. It also supports SQL queries, streaming data, MLlib and graph data processing.
+Datasets/Dataframes in contrast to RDDs track the schema of transformed data and offer faster execution in most cases due to the Tungsten memory representation and utilization of the Catalyst optimizer. Furthermore, Dataset/Dataframe API is very similar SQL of standard database engines, thus data engineers and scientists can learn the API very fast.
+
+RDDs and Datasets/Dataframes represents distributed data that sits on disk. Any transformation applied on RDDs and Datasets/Dataframes is lazy and nothing is executed until a user calls an action on a given abstraction. RDDs and Datasets/Dataframes can be cashed in order to avoid multiple execution of the same sequence of transformations.
+
+Spark provides APIs in Java, Python, Scala, and R for building and manipulating RDDs and Datasets/Dataframes. Spark also comes with libraries having capabilities to process streamed data, graph data and to apply basic ML algorithms.
 
 The fast and unified framework to manage data processing, makes Spark a preferred solution for big data analysis.
 
@@ -36,7 +40,7 @@ A Spark cluster is composed of one Driver JVM and one or many Executor JVMs. A S
 
 The driver program in Sparkling Water, creates a ``SparkSession`` (spark) which in turn is used to create an ``H2OContext`` (hc) that is used to start H2O services on the spark executors. An H2O Context is a connection to H2O cluster and  also facilitates communication between H2O and Spark. When an H2O cluster starts, it has the same topology as the Spark cluster and H2O nodes shares the same JVMs as the Spark Executors.
 
-To leverage H2O's algorithms, data in Spark cluster, stored as an RDD, needs to be converted to an H2OFrame (H2O's distributed data frame). This requires a data copy because of the difference in data layout in Spark (blocks/rows) and H2O (columns). But as data is stored in H2O in a highly compressed format, the overhead of making a data copy is low. When converting an H2OFrame to RDD, Sparkling Water creates a wrapper around the H2OFrame to provide an RDD-like API. In this case, no data is duplicated and data is served directly from the underlying H2OFrame. As H2O runs in the same JVMs as the Spark Executors, moving data from Spark to H2O or vice-versa requires a simple in memory, in process call.
+To leverage H2O's algorithms, data in Spark cluster, stored as an RDD or Dataset/Dataframe, needs to be converted to an H2OFrame (H2O's distributed data frame). This requires a data copy because of the difference in data layout in Spark (blocks/rows) and H2O (columns). But as data is stored in H2O in a highly compressed format, the overhead of making a data copy is low. When converting an H2OFrame to a RDD or Dataframe, Sparkling Water creates a wrapper around the H2OFrame to provide a given Spark API. In this case, no data is duplicated and data is served directly from the underlying H2OFrame. As H2O runs in the same JVMs as the Spark Executors, moving data from Spark to H2O or vice-versa requires a simple in memory, in process call.
 
 
 What is PySparkling?
