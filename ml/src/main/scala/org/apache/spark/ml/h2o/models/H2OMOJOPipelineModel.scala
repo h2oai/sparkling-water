@@ -208,7 +208,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[PyH2OMOJOPipelineModel] with
     val model = new PyH2OMOJOPipelineModel(uid)
     val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
     val featureCols = MojoPipeline.loadFrom(reader).getInputMeta.getColumnNames
-    model.setFeaturesCols(featureCols)
+    model.set(model.featuresCols, featureCols)
     model.setMojoData(mojoData)
     model
   }
