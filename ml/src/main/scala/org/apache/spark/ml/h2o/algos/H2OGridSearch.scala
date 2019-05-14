@@ -441,7 +441,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
     selectBestModelBy -> null,
     selectBestModelDecreasing -> true,
     foldCol -> null,
-    convertUnknownCategoricalLevelsToNa -> false
+    convertUnknownCategoricalLevelsToNa -> true
   )
 
   //

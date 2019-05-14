@@ -196,7 +196,7 @@ trait H2OAutoMLParams extends DeprecatableParams {
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
     nfolds -> 5,
-    convertUnknownCategoricalLevelsToNa -> false,
+    convertUnknownCategoricalLevelsToNa -> true,
     seed -> -1, // true random
     sortMetric -> null,
     balanceClasses -> false,
