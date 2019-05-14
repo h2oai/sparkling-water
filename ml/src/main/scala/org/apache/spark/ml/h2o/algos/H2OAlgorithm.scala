@@ -90,7 +90,6 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
 
     // pass some parameters set on algo to model
     model.setFeaturesCols(binaryModel.modelDescriptor().features())
-    model.setLabelCol(getLabelCol())
     model.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     model
   }
