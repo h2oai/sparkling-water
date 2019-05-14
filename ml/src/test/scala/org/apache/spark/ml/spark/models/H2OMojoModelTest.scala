@@ -26,14 +26,15 @@ import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.h2o.algos.{H2ODeepLearning, H2OGBM}
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
-class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
+class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers {
 
   override def createSparkContext = new SparkContext("local[*]", "mojo-test-local", conf = defaultSparkConf)
 
@@ -138,6 +139,53 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext {
     val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
 
     mojo.transform(df).show(3, false)
+  }
+
+  test("Testing dataset is missing one of feature columns") {
+    val Array(trainingDF, rawTestingDF) = prostateDataFrame.randomSplit(Array(0.9, 0.1))
+    val testingDF = rawTestingDF
+      .drop("CAPSULE", "AGE") // Remove label and one of feature columns
+      .cache()
+    val gbm = configureGBMforProstateDF()
+
+    val model = gbm.fit(trainingDF)
+    val predictionDF = model.transform(testingDF)
+
+    assertPredictions(testingDF, predictionDF)
+  }
+
+  test("Testing dataset has an extra feature column") {
+    val Array(trainingDF, rawTestingDF) = prostateDataFrame.randomSplit(Array(0.9, 0.1))
+    val testingDF = rawTestingDF
+      .drop("CAPSULE") // Remove label column
+      .withColumn("EXTRA", rand()) // Add an extra column
+      .cache()
+    val gbm = configureGBMforProstateDF()
+
+    val model = gbm.fit(trainingDF)
+    val predictionDF = model.transform(testingDF)
+
+    assertPredictions(testingDF, predictionDF)
+  }
+
+  def configureGBMforProstateDF(): H2OGBM = {
+    new H2OGBM()
+      .setNtrees(2)
+      .setSeed(42)
+      .setDistribution(DistributionFamily.bernoulli)
+      .setLabelCol("CAPSULE")
+  }
+
+  def assertPredictions(originalDF: DataFrame, predictionDF: DataFrame): Unit ={
+    val records = predictionDF.select("prediction_output").collect()
+    val expectedNumberOfRecords = originalDF.count()
+    records should have size expectedNumberOfRecords
+    records.foreach { row =>
+      val value = row.getAs[Row](0).toSeq.asInstanceOf[Seq[Double]]
+      value should not be null
+      value(0) should (be >= 0.0 and be <= 1.0)
+      value(1) should (be >= 0.0 and be <= 1.0)
+    }
   }
 
   def testModelReload(name: String, df: DataFrame, model: H2OMOJOModel): Unit = {
