@@ -390,6 +390,7 @@ def scriptsTest() {
 def integTest() {
     return { config ->
         stage('QA: Integration Tests - ' + config.backendMode) {
+            cleanWs()
             unstash 'sw-build'
             if (config.runIntegTests.toBoolean()) {
                 try {
