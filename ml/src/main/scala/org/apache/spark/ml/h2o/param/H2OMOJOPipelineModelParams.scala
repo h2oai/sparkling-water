@@ -27,13 +27,17 @@ trait H2OMOJOPipelineModelParams extends Params {
   //
   // Param definitions
   //
-  final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
+  private val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
     " in the array but in the properly named columns")
+  protected final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
 
   //
   // Default values
   //
-  setDefault(namedMojoOutputColumns -> true)
+  setDefault(
+    namedMojoOutputColumns -> true,
+    featuresCols -> Array.empty[String]
+  )
 
   //
   // Getters
@@ -41,10 +45,12 @@ trait H2OMOJOPipelineModelParams extends Params {
   /** @group getParam */
   def getNamedMojoOutputColumns() = $(namedMojoOutputColumns)
 
+  /** @group getParam */
+  def getFeaturesCols(): Array[String] = $(featuresCols)
+
   //
   // Setters
   //
   /** @group setParam */
   def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
-
 }
