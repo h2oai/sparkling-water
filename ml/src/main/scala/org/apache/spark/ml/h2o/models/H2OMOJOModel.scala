@@ -160,9 +160,10 @@ class H2OMOJOModel(override val uid: String)
 
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val flatten = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
-    val args = flatten.schema.fields.map(f => flatten(f.name))
-    flatten.select(col("*"), getModelUdf()(struct(args: _*)).as(getOutputCol()))
+    val flattenedDF = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
+    val relevantColumnNames = flattenedDF.columns.intersect(getFeaturesCols())
+    val args = relevantColumnNames.map(flattenedDF(_))
+    flattenedDF.select(col("*"), getModelUdf()(struct(args: _*)).as(getOutputCol()))
   }
 
 
@@ -229,12 +230,6 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
     val model = new PyH2OMOJOModel(uid)
     model.setMojoData(mojoData)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
-    if (mojoModel.isSupervised) {
-      model.setFeaturesCols(mojoModel.getNames.filter(_ != mojoModel.getResponseName))
-      model.setLabelCol(mojoModel.getResponseName)
-    } else {
-      model.setFeaturesCols(mojoModel.getNames)
-    }
-    model
+    model.setFeaturesCols(mojoModel.features())
   }
 }
