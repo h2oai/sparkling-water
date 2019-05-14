@@ -131,7 +131,6 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID("gridSearch_mojoModel"))
 
     // pass some parameters set on algo to model
-    model.setFeaturesCols(binaryModel.modelDescriptor().features())
     model.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     model
   }
