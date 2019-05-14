@@ -1285,6 +1285,7 @@ class H2OGridSearchParams(Params):
     foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     selectBestModelBy = Param(Params._dummy(), "selectBestModelBy", "selectBestModelBy")
     selectBestModelDecreasing = Param(Params._dummy(), "selectBestModelDecreasing", "selectBestModelDecreasing")
+    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
 
     ##
     # Getters
@@ -1351,6 +1352,8 @@ class H2OGridSearchParams(Params):
     def getSelectBestModelDecreasing(self):
         return self.getOrDefault(self.selectBestModelDecreasing)
 
+    def getConvertUnknownCategoricalLevelsToNa(self):
+        return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
 
     ##
     # Setters
@@ -1434,3 +1437,6 @@ class H2OGridSearchParams(Params):
         assert_is_type(value, bool)
         return self._set(selectBestModelDecreasing=value)
 
+    def setConvertUnknownCategoricalLevelsToNa(self, value):
+        assert_is_type(value, bool)
+        return self._set(convertUnknownCategoricalLevelsToNa=value)

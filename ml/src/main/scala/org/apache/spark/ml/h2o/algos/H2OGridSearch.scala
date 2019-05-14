@@ -126,9 +126,14 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${$(gridAlgoParams).algoName()}_mojoModel"))
     }
 
-    val mojoData = ModelSerializationSupport.getMojoData(selectModelFromGrid(grid))
+    val binaryModel = selectModelFromGrid(grid)
+    val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
     val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID("gridSearch_mojoModel"))
-    model.setConvertUnknownCategoricalLevelsToNa(true)
+
+    // pass some parameters set on algo to model
+    model.setFeaturesCols(binaryModel.modelDescriptor().features())
+    model.setLabelCol(getLabelCol())
+    model.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     model
   }
 
@@ -414,6 +419,8 @@ trait H2OGridSearchParams extends DeprecatableParams {
   private val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
     "True if sort in decreasing order accordingto selected metrics")
   private val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
+  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
+    " categorical levels to NA during predictions")
 
   //
   // Default values
@@ -435,7 +442,8 @@ trait H2OGridSearchParams extends DeprecatableParams {
     nfolds -> 0,
     selectBestModelBy -> null,
     selectBestModelDecreasing -> true,
-    foldCol -> null
+    foldCol -> null,
+    convertUnknownCategoricalLevelsToNa -> false
   )
 
   //
@@ -475,6 +483,8 @@ trait H2OGridSearchParams extends DeprecatableParams {
   def getSelectBestModelDecreasing(): Boolean = $(selectBestModelDecreasing)
 
   def getFoldCol(): String = $(foldCol)
+
+  def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
   //
   // Setters
@@ -531,6 +541,7 @@ trait H2OGridSearchParams extends DeprecatableParams {
 
   def setFoldCol(value: String): this.type = set(foldCol, value)
 
+  def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 }
 
 class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: String,

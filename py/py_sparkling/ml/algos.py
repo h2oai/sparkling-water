@@ -374,7 +374,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
     def __init__(self, algo=None, ratio=1.0, hyperParameters={}, labelCol="label", allStringColumnsToCategorical=True,
                  columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                  stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy=None,
-                 selectBestModelDecreasing=True, foldCol=None, **deprecatedArgs):
+                 selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=False, **deprecatedArgs):
         super(H2OGridSearch, self).__init__()
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch", self.uid)
@@ -384,7 +384,8 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                          maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                          stoppingRounds=0, stoppingTolerance=0.001,
                          stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=0,
-                         selectBestModelBy=None, selectBestModelDecreasing=True, foldCol=None)
+                         selectBestModelBy=None, selectBestModelDecreasing=True, foldCol=None,
+                         convertUnknownCategoricalLevelsToNa=False)
         kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
@@ -392,7 +393,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
     def setParams(self, algo=None, ratio=1.0, hyperParameters={}, labelCol="label", allStringColumnsToCategorical=True,
                   columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                   stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy=None,
-                  selectBestModelDecreasing=True, foldCol=None, **deprecatedArgs):
+                  selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=False, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
 
