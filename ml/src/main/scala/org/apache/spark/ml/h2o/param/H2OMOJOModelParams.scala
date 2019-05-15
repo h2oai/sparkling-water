@@ -49,7 +49,6 @@ trait H2OMOJOModelParams extends DeprecatableParams {
   //
   // Getters
   //
-  /** @group getParam */
   @DeprecatedMethod
   def getPredictionsCol(): String = getLabelCol()
 
