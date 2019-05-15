@@ -17,17 +17,17 @@
 package org.apache.spark.ml.h2o.param
 
 import org.apache.spark.ml.param._
-import org.apache.spark.ml.param.shared.HasPredictionCol
 
 /**
   * Parameters which need to be available on the model itself for prediction purposes. This can't be backed
   * byt H2OAlgoParamsHelper as at the time of prediction we might be using mojo and binary parameters are not available.
   */
-trait H2OMOJOPipelineModelParams extends Params with HasPredictionCol {
+trait H2OMOJOPipelineModelParams extends Params {
 
   //
   // Param definitions
   //
+  private val predictionCol: Param[String] = new Param[String](this, "predictionCol", "prediction column name")
   private val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
     " in the array but in the properly named columns")
   protected final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
@@ -36,13 +36,18 @@ trait H2OMOJOPipelineModelParams extends Params with HasPredictionCol {
   // Default values
   //
   setDefault(
+    predictionCol -> "prediction",
     namedMojoOutputColumns -> true,
     featuresCols -> Array.empty[String]
   )
 
+
   //
   // Getters
   //
+
+  def getPredictionCol(): String = $(predictionCol)
+
   def getNamedMojoOutputColumns() = $(namedMojoOutputColumns)
 
   def getFeaturesCols(): Array[String] = $(featuresCols)
