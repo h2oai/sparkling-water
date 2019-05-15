@@ -190,10 +190,10 @@ class H2OMOJOPipelineModel(override val uid: String)
       val func = udf[Double, Double] {
         identity
       }
-      func(col(s"$getPredictionCol().`$column`")).alias(column)
+      func(col(s"${getPredictionCol()}.`$column`")).alias(column)
     } else {
       val func = selectFromArray(getOutputNames().indexOf(column))
-      func(col(s"$getPredictionCol().preds")).alias(column)
+      func(col(s"${getPredictionCol()}.preds")).alias(column)
     }
   }
 
