@@ -34,8 +34,9 @@ private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReade
 
     val parsedParams = metadata.params.asInstanceOf[JsonAST.JObject].obj.map(_._1)
     val allowedParams = instance.params.map(_.name)
-    val filteredParams = parsedParams.filter(!allowedParams.contains(_))
-    metadata.getAndSetParams(instance, Option(filteredParams))
+    val filteredParams = parsedParams.diff(allowedParams)
+
+    metadata.getAndSetParams(instance, Some(filteredParams))
     val model = instance.asInstanceOf[T]
 
     val inputPath = new Path(path, H2OMOJOProps.serializedFileName)

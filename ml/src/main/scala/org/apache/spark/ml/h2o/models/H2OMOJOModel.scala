@@ -77,7 +77,7 @@ class H2OMOJOModel(override val uid: String)
       case _ => throw new RuntimeException("Unknown model category")
     }
 
-    Seq(StructField(getPredictionCol, StructType(fields), nullable = false))
+    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
   }
 
   private def supportsCalibratedProbabilities(): Boolean = {
@@ -163,7 +163,7 @@ class H2OMOJOModel(override val uid: String)
     val flattenedDF = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
     val relevantColumnNames = flattenedDF.columns.intersect(getFeaturesCols())
     val args = relevantColumnNames.map(flattenedDF(_))
-    flattenedDF.select(col("*"), getModelUdf()(struct(args: _*)).as(getPredictionCol))
+    flattenedDF.select(col("*"), getModelUdf()(struct(args: _*)).as(getPredictionCol()))
   }
 
 

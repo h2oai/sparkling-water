@@ -23,11 +23,12 @@ import org.apache.spark.ml.param.shared.HasPredictionCol
   * Parameters which need to be available on the model itself for prediction purposes. This can't be backed
   * byt H2OAlgoParamsHelper as at the time of prediction we might be using mojo and binary parameters are not available.
   */
-trait H2OMOJOModelParams extends Params with HasPredictionCol {
+trait H2OMOJOModelParams extends Params {
 
   //
   // Param definitions
   //
+  private val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
   protected final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
   private val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
     "convertUnknownCategoricalLevelsToNa",
@@ -42,6 +43,9 @@ trait H2OMOJOModelParams extends Params with HasPredictionCol {
   //
   // Getters
   //
+
+  def getPredictionCol(): String = $(predictionCol)
+
   def getFeaturesCols(): Array[String] = $(featuresCols)
 
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
