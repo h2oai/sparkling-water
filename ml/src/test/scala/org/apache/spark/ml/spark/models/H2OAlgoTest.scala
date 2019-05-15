@@ -81,6 +81,14 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
   }
 
 
+  test("H2O Grid Search XGBoost Pipeline"){
+    val xgboost = new H2OXGBoost()
+    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
+
+    testGridSearch(xgboost, hyperParams)
+  }
+
+
   private def testGridSearch(algo: H2OAlgorithm[_ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
       val dataset = spark.read
         .option("header", "true")
