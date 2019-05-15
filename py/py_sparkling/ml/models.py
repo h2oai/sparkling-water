@@ -107,8 +107,8 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable, HasPred
 
         if self.getNamedMojoOutputColumns():
             func = udf(lambda d: d, DoubleType())
-            return func("prediction." + column).alias(column)
+            return func(self.getPredictionCol() + "." + column).alias(column)
         else:
             idx = list(self._java_obj.getOutputNames()).index(column)
             func = udf(lambda arr: arr[idx], DoubleType())
-            return func("prediction.preds").alias(column)
+            return func(self.getPredictionCol() + ".preds").alias(column)

@@ -169,7 +169,7 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   def predictionSchema(): Seq[StructField] = {
     val fields = StructField("original", ArrayType(DoubleType)) :: Nil
-    Seq(StructField(predictionCol, StructType(fields), nullable = false))
+    Seq(StructField(getPredictionCol, StructType(fields), nullable = false))
   }
 
   override def transformSchema(schema: StructType): StructType = {
@@ -190,10 +190,10 @@ class H2OMOJOPipelineModel(override val uid: String)
       val func = udf[Double, Double] {
         identity
       }
-      func(col(s"$predictionCol.`$column`")).alias(column)
+      func(col(s"$getPredictionCol.`$column`")).alias(column)
     } else {
       val func = selectFromArray(getOutputNames().indexOf(column))
-      func(col(s"$predictionCol.preds")).alias(column)
+      func(col(s"$getPredictionCol.preds")).alias(column)
     }
   }
 
