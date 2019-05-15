@@ -417,8 +417,10 @@ trait H2OGridSearchParams extends DeprecatableParams {
   private val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
     "True if sort in decreasing order accordingto selected metrics")
   private val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
-  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
-    " categorical levels to NA during predictions")
+  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(
+    this,
+    "convertUnknownCategoricalLevelsToNa",
+    "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
 
   //
   // Default values

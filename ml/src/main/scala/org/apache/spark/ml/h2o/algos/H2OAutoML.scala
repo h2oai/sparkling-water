@@ -166,8 +166,10 @@ trait H2OAutoMLParams extends DeprecatableParams {
   private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
   private val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping metric")
   private val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
-  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
-    " categorical levels to NA during predictions")
+  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(
+    this,
+    "convertUnknownCategoricalLevelsToNa",
+    "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
   private val seed = new IntParam(this, "seed", "seed")
   private val sortMetric = new NullableStringParam(this, "sortMetric", "Sort metric for the AutoML leaderboard")
   private val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")

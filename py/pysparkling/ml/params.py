@@ -23,7 +23,7 @@ class H2OAlgorithmParams(Params):
     parallelizeCrossValidation = Param(Params._dummy(), "parallelizeCrossValidation", "Allow parallel training of cross-validation models")
     seed = Param(Params._dummy(), "seed", "Seed for random numbers (affects sampling) - Note: only reproducible when running single threaded.")
     distribution = Param(Params._dummy(), "distribution", "Distribution function")
-    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
+    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
 
     ##
     # Getters
@@ -411,7 +411,7 @@ class H2OAutoMLParams(Params):
     stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "Stopping tolerance")
     stoppingMetric = Param(Params._dummy(), "stoppingMetric", "Stopping metric")
     nfolds = Param(Params._dummy(), "nfolds", "Cross-validation fold construction")
-    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
+    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
     seed = Param(Params._dummy(), "seed", "Seed for random numbers")
     sortMetric = Param(Params._dummy(), "sortMetric", "Sort metric for the AutoML leaderboard")
     balanceClasses = Param(Params._dummy(), "balanceClasses", "Balance classes")
@@ -1285,7 +1285,7 @@ class H2OGridSearchParams(Params):
     foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     selectBestModelBy = Param(Params._dummy(), "selectBestModelBy", "selectBestModelBy")
     selectBestModelDecreasing = Param(Params._dummy(), "selectBestModelDecreasing", "selectBestModelDecreasing")
-    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "Convert unknown categorical levels to NA during predictions")
+    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
 
     ##
     # Getters
