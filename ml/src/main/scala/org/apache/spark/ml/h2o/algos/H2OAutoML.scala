@@ -107,9 +107,12 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
         " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
     }
 
-    val mojoData = ModelSerializationSupport.getMojoData(aml.leader())
+    val binaryModel = aml.leader()
+    val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
     val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID(aml.leader()._parms.algoName()))
-    model.setConvertUnknownCategoricalLevelsToNa(true)
+
+    // pass some parameters set on algo to model
+    model.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     model
   }
 
@@ -163,8 +166,10 @@ trait H2OAutoMLParams extends DeprecatableParams {
   private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
   private val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping metric")
   private val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
-  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(this, "convertUnknownCategoricalLevelsToNa", "Convert unknown" +
-    " categorical levels to NA during predictions")
+  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(
+    this,
+    "convertUnknownCategoricalLevelsToNa",
+    "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
   private val seed = new IntParam(this, "seed", "seed")
   private val sortMetric = new NullableStringParam(this, "sortMetric", "Sort metric for the AutoML leaderboard")
   private val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
@@ -193,7 +198,7 @@ trait H2OAutoMLParams extends DeprecatableParams {
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
     nfolds -> 5,
-    convertUnknownCategoricalLevelsToNa -> false,
+    convertUnknownCategoricalLevelsToNa -> true,
     seed -> -1, // true random
     sortMetric -> null,
     balanceClasses -> false,
