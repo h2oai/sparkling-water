@@ -18,13 +18,25 @@
 package org.apache.spark.ml.h2o.models
 
 import org.apache.hadoop.fs.Path
+import org.apache.spark.ml.param.Params
 import org.apache.spark.ml.util._
 import org.apache.spark.sql._
+import org.apache.spark.util.Utils
+import org.json4s.JsonAST
 
 private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReader[T] {
 
   override def load(path: String): T  = {
-    val model = super.load(path)
+    val metadata = DefaultParamsReader.loadMetadata(path, sc)
+    val cls = Utils.classForName(metadata.className)
+    val instance =
+      cls.getConstructor(classOf[String]).newInstance(metadata.uid).asInstanceOf[Params]
+
+    val parsedParams = metadata.params.asInstanceOf[JsonAST.JObject].obj.map(_._1)
+    val allowedParams = instance.params.map(_.name)
+    val filteredParams = parsedParams.filter(!allowedParams.contains(_))
+    metadata.getAndSetParams(instance, Option(filteredParams))
+    val model = instance.asInstanceOf[T]
 
     val inputPath = new Path(path, H2OMOJOProps.serializedFileName)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
