@@ -128,7 +128,7 @@ class H2OMOJOPipelineModel(override val uid: String)
     val args = relevantColumnNames.map(flattenedDF(_))
 
     // get the altered frame
-    val frameWithPredictions = flattenedDF.select(col("*"), modelUdf(relevantColumnNames)(struct(args: _*)).as(getPredictionCol))
+    val frameWithPredictions = flattenedDF.select(col("*"), modelUdf(relevantColumnNames)(struct(args: _*)).as(getPredictionCol()))
 
     val fr = if (getNamedMojoOutputColumns()) {
 
@@ -147,12 +147,12 @@ class H2OMOJOPipelineModel(override val uid: String)
 
       // Transform the resulted Array of predictions into own but temporary columns
       // Temporary columns are created as we can't create the columns directly as nested ones
-      val predictionCols = getOutputNames().indices.map(idx => selectFromArray(idx)(frameWithPredictions.col(getPredictionCol + ".preds")))
+      val predictionCols = getOutputNames().indices.map(idx => selectFromArray(idx)(frameWithPredictions.col(getPredictionCol() + ".preds")))
       val frameWithExtractedPredictions = frameWithPredictions.withColumns(tempColNames, predictionCols)
 
       // Transform the columns at the top level under "output" column
       val nestedPredictionCols = tempColNames.indices.map { idx => tempCols(idx).alias(getOutputNames()(idx)) }
-      val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(getPredictionCol, struct(nestedPredictionCols: _*))
+      val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(getPredictionCol(), struct(nestedPredictionCols: _*))
 
       // Remove the temporary columns at the top level and return
       val frameWithoutTempCols = frameWithNestedPredictions.drop(tempColNames: _*)
@@ -169,7 +169,7 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   def predictionSchema(): Seq[StructField] = {
     val fields = StructField("original", ArrayType(DoubleType)) :: Nil
-    Seq(StructField(getPredictionCol, StructType(fields), nullable = false))
+    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
   }
 
   override def transformSchema(schema: StructType): StructType = {
@@ -190,10 +190,10 @@ class H2OMOJOPipelineModel(override val uid: String)
       val func = udf[Double, Double] {
         identity
       }
-      func(col(s"$getPredictionCol.`$column`")).alias(column)
+      func(col(s"$getPredictionCol().`$column`")).alias(column)
     } else {
       val func = selectFromArray(getOutputNames().indexOf(column))
-      func(col(s"$getPredictionCol.preds")).alias(column)
+      func(col(s"$getPredictionCol().preds")).alias(column)
     }
   }
 
