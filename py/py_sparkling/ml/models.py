@@ -5,6 +5,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf
 from pyspark.sql.types import DoubleType
 from .util import JavaH2OMLReadable
+from pyspark.ml.param.shared import HasPredictionCol
 import warnings
 
 
@@ -43,6 +44,7 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
             spark_session._jvm.py_sparkling.ml.models.H2OMOJOModel.createFromMojo(path_to_mojo))
 
     def predict(self, dataframe):
+        warnings.warn("The method 'predict' is deprecated. Use 'transform' instead!")
         return self.transform(dataframe)
 
     def getConvertUnknownCategoricalLevelsToNa(self):
@@ -53,7 +55,7 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         return self
 
 
-class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
+class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable, HasPredictionCol):
 
     @staticmethod
     def create_from_mojo(path_to_mojo):
@@ -64,6 +66,7 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
             spark_session._jvm.py_sparkling.ml.models.H2OMOJOPipelineModel.createFromMojo(path_to_mojo))
 
     def predict(self, dataframe):
+        warnings.warn("The method 'predict' is deprecated. Use 'transform' instead!")
         return self.transform(dataframe)
 
     def get_input_names(self):
