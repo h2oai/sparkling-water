@@ -11,3 +11,10 @@ from .algos import H2OGBM, H2ODeepLearning, H2OAutoML, H2OXGBoost, H2OGLM, H2OGr
 from .models import H2OMOJOModel, H2OMOJOPipelineModel
 # set what is meant by * packages in statement from foo import *
 __all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost", "H2OGLM", "H2OMOJOModel", "H2OMOJOPipelineModel", "H2OGridSearch"]
+
+from pysparkling.initializer import Initializer
+
+# Load sparkling water jar only if Spark is already running
+sc = Initializer.active_spark_context()
+if sc is not None:
+    Initializer.load_sparkling_jar(sc)
