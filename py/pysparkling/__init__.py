@@ -45,3 +45,8 @@ from pysparkling.initializer import Initializer
 Initializer.check_different_h2o()
 # set what is meant by * packages in statement from foo import *
 __all__ = ["H2OContext", "H2OConf"]
+
+# Load sparkling water jar only if Spark is already running
+sc = Initializer.active_spark_context()
+if sc is not None:
+    Initializer.load_sparkling_jar(sc)
