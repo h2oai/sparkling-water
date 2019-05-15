@@ -228,8 +228,9 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
   override def createFromMojo(mojoData: Array[Byte], uid: String): PyH2OMOJOModel = {
     val mojoModel = ModelSerializationSupport.getMojoModel(mojoData)
     val model = new PyH2OMOJOModel(uid)
-    model.setMojoData(mojoData)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
-    model.setFeaturesCols(mojoModel.features())
+    model.set(model.featuresCols -> mojoModel.features())
+    model.setMojoData(mojoData)
+    model
   }
 }
