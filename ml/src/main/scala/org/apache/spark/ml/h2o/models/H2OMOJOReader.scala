@@ -18,13 +18,48 @@
 package org.apache.spark.ml.h2o.models
 
 import org.apache.hadoop.fs.Path
+import org.apache.spark.ml.param.Params
+import org.apache.spark.ml.util.DefaultParamsReader.Metadata
 import org.apache.spark.ml.util._
 import org.apache.spark.sql._
+import org.apache.spark.util.Utils
+import org.json4s.jackson.JsonMethods._
+import org.json4s.{DefaultFormats, JObject, JsonAST}
 
 private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReader[T] {
 
+  private def getAndSetParams(
+                       instance: Params,
+                       metadata: Metadata,
+                       skipParams: Option[List[String]] = None): Unit = {
+    implicit val format = DefaultFormats
+    metadata.params match {
+      case JObject(pairs) =>
+        pairs.foreach { case (paramName, jsonValue) =>
+          if (skipParams == None || !skipParams.get.contains(paramName)) {
+            val param = instance.getParam(paramName)
+            val value = param.jsonDecode(compact(render(jsonValue)))
+            instance.set(param, value)
+          }
+        }
+      case _ =>
+        throw new IllegalArgumentException(
+          s"Cannot recognize JSON metadata: ${metadata.metadataJson}.")
+    }
+  }
+
   override def load(path: String): T  = {
-    val model = super.load(path)
+    val metadata = DefaultParamsReader.loadMetadata(path, sc)
+    val cls = Utils.classForName(metadata.className)
+    val instance =
+      cls.getConstructor(classOf[String]).newInstance(metadata.uid).asInstanceOf[Params]
+
+    val parsedParams = metadata.params.asInstanceOf[JsonAST.JObject].obj.map(_._1)
+    val allowedParams = instance.params.map(_.name)
+    val filteredParams = parsedParams.diff(allowedParams)
+
+    getAndSetParams(instance, metadata, Some(filteredParams))
+    val model = instance.asInstanceOf[T]
 
     val inputPath = new Path(path, H2OMOJOProps.serializedFileName)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
