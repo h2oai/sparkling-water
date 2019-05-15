@@ -32,12 +32,12 @@ trait H2OMOJOModelParams extends DeprecatableParams {
   //
   // Param definitions
   //
-  private final val labelCol: Param[String] = new Param[String](this, "labelCol", "Label column name")
-  private final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
-  private final val outputCol: Param[String] = new Param[String](this, "outputCol", "Column where predictions are created")
-  private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
-         "convertUnknownCategoricalLevelsToNa",
-         "Convert unknown categorical levels to NA during predictions")
+  private val labelCol: Param[String] = new Param[String](this, "labelCol", "Label column name")
+  protected final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
+  private val outputCol: Param[String] = new Param[String](this, "outputCol", "Column where predictions are created")
+  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
+    "convertUnknownCategoricalLevelsToNa",
+    "Convert unknown categorical levels to NA during predictions")
   //
   // Default values
   //
@@ -49,39 +49,34 @@ trait H2OMOJOModelParams extends DeprecatableParams {
   //
   // Getters
   //
-  /** @group getParam */
-  @DeprecatedMethod("getLabelCol")
+  @DeprecatedMethod
   def getPredictionsCol(): String = getLabelCol()
 
-  /** @group getParam */
+  @DeprecatedMethod
   def getLabelCol(): String = $(labelCol)
 
-  /** @group getParam */
   def getFeaturesCols(): Array[String] = $(featuresCols)
 
-  /** @group getParam */
+  @DeprecatedMethod
   def getOutputCol(): String = $(outputCol)
 
-  /** @group getParam */
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
 
   //
   // Setters
   //
-  /** @group setParam */
+  @DeprecatedMethod
   def setFeaturesCols(cols: Array[String]): this.type = set(featuresCols, cols)
 
-  /** @group setParam */
-  @DeprecatedMethod("setLabelCol")
+  @DeprecatedMethod
   def setPredictionCol(value: String): this.type = setLabelCol(value)
 
-  /** @group setParam */
+  @DeprecatedMethod
   def setLabelCol(value: String): this.type = set(labelCol, value)
 
-  /** @group setParam */
+  @DeprecatedMethod
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
-  /** @group setParam */
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 }

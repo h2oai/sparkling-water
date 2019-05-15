@@ -42,15 +42,12 @@ trait H2OMOJOPipelineModelParams extends Params {
   //
   // Getters
   //
-  /** @group getParam */
   def getNamedMojoOutputColumns() = $(namedMojoOutputColumns)
 
-  /** @group getParam */
   def getFeaturesCols(): Array[String] = $(featuresCols)
 
   //
   // Setters
   //
-  /** @group setParam */
   def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
 }

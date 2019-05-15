@@ -66,9 +66,9 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
   private final val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
   private final val seed = longParam("seed")
   private final val distribution = H2ODistributionParam("distribution")
-  private final val convertUnknownCategoricalLevelsToNa = booleanParam(
+  private val convertUnknownCategoricalLevelsToNa = booleanParam(
     "convertUnknownCategoricalLevelsToNa",
-    "Convert unknown categorical levels to NA during predictions")
+    "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
   //
   // Default values
   //
