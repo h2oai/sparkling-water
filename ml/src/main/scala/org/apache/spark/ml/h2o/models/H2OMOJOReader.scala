@@ -36,7 +36,7 @@ private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReade
     val allowedParams = instance.params.map(_.name)
     val filteredParams = parsedParams.diff(allowedParams)
 
-    metadata.getAndSetParams(instance, Some(filteredParams))
+    DefaultParamsReader.getAndSetParams(instance, metadata, Some(filteredParams))
     val model = instance.asInstanceOf[T]
 
     val inputPath = new Path(path, H2OMOJOProps.serializedFileName)
