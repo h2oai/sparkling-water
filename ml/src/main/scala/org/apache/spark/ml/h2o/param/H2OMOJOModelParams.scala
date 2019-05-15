@@ -32,10 +32,10 @@ trait H2OMOJOModelParams extends DeprecatableParams {
   //
   // Param definitions
   //
-  private final val labelCol: Param[String] = new Param[String](this, "labelCol", "Label column name")
-  private final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
-  private final val outputCol: Param[String] = new Param[String](this, "outputCol", "Column where predictions are created")
-  private final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
+  private val labelCol: Param[String] = new Param[String](this, "labelCol", "Label column name")
+  protected final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
+  private val outputCol: Param[String] = new Param[String](this, "outputCol", "Column where predictions are created")
+  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
     "convertUnknownCategoricalLevelsToNa",
     "Convert unknown categorical levels to NA during predictions")
   //
