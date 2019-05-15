@@ -20,6 +20,7 @@ import hex.Model
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.tree.gbm.GBMModel.GBMParameters
+import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import org.apache.spark.ml.h2o.algos.H2OGridSearch
 import org.apache.spark.ml.param.{Param, Params}
 import org.json4s.JsonAST.{JArray, JInt}
@@ -64,6 +65,8 @@ class AlgoParams(parent: Params, name: String, doc: String, isValid: Model.Param
           case H2OGridSearch.SupportedAlgos.glm => new GLMParameters()
           case H2OGridSearch.SupportedAlgos.gbm => new GBMParameters()
           case H2OGridSearch.SupportedAlgos.deeplearning => new DeepLearningParameters()
+          case H2OGridSearch.SupportedAlgos.xgboost => new XGBoostParameters()
+
           case _ => throw new RuntimeException("Not supported algorithm")
 
         }

@@ -372,7 +372,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 
 object H2OGridSearch extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGridSearch] {
   object SupportedAlgos extends Enumeration {
-    val gbm, glm, deeplearning = Value // still missing pipeline wrappers for KMeans & drf
+    val gbm, glm, deeplearning, xgboost = Value // still missing pipeline wrappers for KMeans & drf
 
     def isSupportedAlgo(s: String) = values.exists(_.toString == s.toLowerCase())
 
