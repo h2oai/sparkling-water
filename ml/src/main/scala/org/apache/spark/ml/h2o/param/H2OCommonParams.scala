@@ -62,5 +62,4 @@ trait H2OCommonParams extends Params with Logging {
     Seq(getLabelCol(), getFoldCol(), getWeightCol())
       .flatMap(Option(_)) // Remove nulls
   }
-
 }

@@ -149,7 +149,6 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   //
   // Param definitions
   //
-
   private val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
   private val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
   private val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
