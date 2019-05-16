@@ -9,7 +9,6 @@ import warnings
 
 from pysparkling import *
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams
-from .models import H2OGBMModel, H2ODeepLearningModel, H2OAutoMLModel, H2OXGBoostModel, H2OGLMModel, H2OGridSearchModel
 from .util import JavaH2OMLReadable
 from py_sparkling.ml.models import H2OMOJOModel
 from py_sparkling.ml.util import get_enum_array_from_str_array
@@ -86,7 +85,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
         return self._set(**kwargs)
 
     def _create_model(self, java_model):
-        return H2OGBMModel(java_model)
+        return H2OMOJOModel(java_model)
 
 
 class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
@@ -128,7 +127,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
         return self._set(**kwargs)
 
     def _create_model(self, java_model):
-        return H2ODeepLearningModel(java_model)
+        return H2OMOJOModel(java_model)
 
 
 class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
@@ -188,7 +187,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
         return self._set(**kwargs)
 
     def _create_model(self, java_model):
-        return H2OAutoMLModel(java_model)
+        return H2OMOJOModel(java_model)
 
     def leaderboard(self):
         leaderboard_java = self._java_obj.leaderboard()
@@ -287,7 +286,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
         return self._set(**kwargs)
 
     def _create_model(self, java_model):
-        return H2OXGBoostModel(java_model)
+        return H2OMOJOModel(java_model)
 
 
 class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
@@ -367,7 +366,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
         return self._set(**kwargs)
 
     def _create_model(self, java_model):
-        return H2OGLMModel(java_model)
+        return H2OMOJOModel(java_model)
 
 class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     @keyword_only
@@ -429,4 +428,4 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
         return DataFrame(self._java_obj.getGridModelsMetrics(),  self._hc._sql_context)
 
     def _create_model(self, java_model):
-        return H2OGridSearchModel(java_model)
+        return H2OMOJOModel(java_model)

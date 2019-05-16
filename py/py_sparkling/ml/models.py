@@ -5,32 +5,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf
 from pyspark.sql.types import DoubleType
 from .util import JavaH2OMLReadable
-from pyspark.ml.param.shared import HasPredictionCol
+from pyspark.ml.param import *
 import warnings
-
-
-class H2OGBMModel(JavaModel, JavaMLWritable, JavaMLReadable):
-    pass
-
-
-class H2ODeepLearningModel(JavaModel, JavaMLWritable, JavaMLReadable):
-    pass
-
-
-class H2OAutoMLModel(JavaModel, JavaMLWritable, JavaMLReadable):
-    pass
-
-
-class H2OXGBoostModel(JavaModel, JavaMLWritable, JavaMLReadable):
-    pass
-
-
-class H2OGLMModel(JavaModel, JavaMLWritable, JavaMLReadable):
-    pass
-
-
-class H2OGridSearchModel(JavaModel, JavaMLWritable, JavaMLReadable):
-    pass
 
 
 class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
@@ -54,8 +30,13 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         self._java_obj.setConvertUnknownCategoricalLevelsToNa(value)
         return self
 
+    def getFeaturesCols(self):
+        return list(self._java_obj.getFeaturesCols())
 
-class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable, HasPredictionCol):
+    def getPredictionCol(self):
+        return self._java_obj.getPredictionCol()
+
+class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
     def create_from_mojo(path_to_mojo):
@@ -75,6 +56,9 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable, HasPred
 
     def getFeaturesCols(self):
         return list(self._java_obj.getFeaturesCols())
+
+    def getPredictionCol(self):
+        return self._java_obj.getPredictionCol()
 
     def get_output_names(self):
         warnings.warn("The method 'get_output_names' is deprecated.")
