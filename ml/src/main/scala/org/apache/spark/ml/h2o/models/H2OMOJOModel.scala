@@ -161,7 +161,8 @@ class H2OMOJOModel(override val uid: String)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     val flattenedDF = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
-    val relevantColumnNames = flattenedDF.columns.intersect(getFeaturesCols())
+    val featuresColsHack = ModelSerializationSupport.getMojoModel(getMojoData).features()
+    val relevantColumnNames = flattenedDF.columns.intersect(featuresColsHack)
     val args = relevantColumnNames.map(flattenedDF(_))
     flattenedDF.select(col("*"), getModelUdf()(struct(args: _*)).as(getPredictionCol()))
   }
