@@ -21,7 +21,6 @@ import java.util.Date
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import hex.ScoreKeeper
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.H2OMOJOModel
 import org.apache.spark.ml.h2o.param._
@@ -40,9 +39,9 @@ import scala.util.control.NoStackTrace
   * H2O AutoML pipeline step
   */
 class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
-  with DefaultParamsWritable with H2OAutoMLParams {
+  with H2OAlgorithmCommons with DefaultParamsWritable with H2OAutoMLParams {
 
-  private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
+  private lazy val spark = SparkSession.builder().getOrCreate()
 
   def this() = this(Identifiable.randomUID("automl"))
 
@@ -56,7 +55,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       // generate random name to generate fresh leaderboard (the default behaviour)
       setProjectName(Random.alphanumeric.take(30).mkString)
     }
-    val input = hc.asH2OFrame(dataset.toDF())
+    val input = prepareDatasetForFitting(dataset)
     // check if we need to do any splitting
     if (getRatio() < 1.0) {
       // need to do splitting
@@ -125,8 +124,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       Row.fromSeq(_)
     }
     val schema = StructType(colNames.map { name => StructField(name, StringType) })
-    val rdd = hc.sparkContext.parallelize(rows)
-    Some(hc.sparkSession.createDataFrame(rdd, schema))
+    val rdd = spark.sparkContext.parallelize(rows)
+    Some(spark.createDataFrame(rdd, schema))
   }
 
   @DeveloperApi
@@ -139,7 +138,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
 object H2OAutoML extends DefaultParamsReadable[py_sparkling.ml.algos.H2OAutoML]
 
-trait H2OAutoMLParams extends DeprecatableParams {
+trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
 
   override protected def renamingMap: Map[String, String] = Map(
     "predictionCol" -> "labelCol",
@@ -150,12 +149,10 @@ trait H2OAutoMLParams extends DeprecatableParams {
   //
   // Param definitions
   //
-  private val labelCol = new Param[String](this, "labelCol", "Label column name")
+
   private val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
   private val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
   private val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
-  private val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
-  private val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
   private val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
   private val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
   private val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
@@ -183,12 +180,9 @@ trait H2OAutoMLParams extends DeprecatableParams {
   // Default values
   //
   setDefault(
-    labelCol -> "label",
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
     ratio -> 1.0, // 1.0 means use whole frame as training frame,
-    foldCol -> null,
-    weightCol -> null,
     ignoredCols -> Array.empty[String],
     includeAlgos -> null,
     excludeAlgos -> null,
@@ -215,20 +209,14 @@ trait H2OAutoMLParams extends DeprecatableParams {
   @DeprecatedMethod("getLabelCol")
   def getPredictionCol(): String = getLabelCol()
 
-  def getLabelCol(): String = $(labelCol)
-
   def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
 
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
   def getRatio(): Double = $(ratio)
 
-  def getFoldCol() = $(foldCol)
-
   @DeprecatedMethod("getFoldCol")
   def getFoldColumn() = getFoldCol()
-
-  def getWeightCol(): String = $(weightCol)
 
   @DeprecatedMethod("getWeightCol")
   def getWeightsColumn(): String = getWeightCol()
@@ -278,8 +266,6 @@ trait H2OAutoMLParams extends DeprecatableParams {
   @DeprecatedMethod("setLabelCol")
   def setPredictionCol(value: String): this.type = setLabelCol(value)
 
-  def setLabelCol(value: String): this.type = set(labelCol, value)
-
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
 
   def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
@@ -288,12 +274,8 @@ trait H2OAutoMLParams extends DeprecatableParams {
 
   def setRatio(value: Double): this.type = set(ratio, value)
 
-  def setFoldCol(value: String): this.type = set(foldCol, value)
-
   @DeprecatedMethod("setFoldCol")
   def setFoldColumn(value: String): this.type = setFoldCol(value)
-
-  def setWeightCol(value: String): this.type = set(weightCol, value)
 
   @DeprecatedMethod("setWeightCol")
   def setWeightsColumn(value: String): this.type = setWeightCol(value)
