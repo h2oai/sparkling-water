@@ -26,7 +26,7 @@ import water.util.DeprecatedMethod
   *
   * TODO: There are still bunch of parameters defined Model.ModelParameters which need to be ported here
   */
-trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with DeprecatableParams {
+trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OCommonParams with DeprecatableParams {
 
   override protected def renamingMap: Map[String, String] = Map(
     "predictionCol" -> "labelCol"
@@ -35,37 +35,24 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
   //
   // Param definitions
   //
-  private final val ratio = doubleParam(
+  private val ratio = doubleParam(
     "ratio",
     "Determines in which ratios split the dataset")
 
-  private final val labelCol = stringParam(
-    "labelCol",
-    "Label column name")
-
-  private final val weightCol = nullableStringParam(
-    "weightCol",
-    "Weight column name")
-
-  private final val featuresCols = stringArrayParam(
-    "featuresCols",
-    "Name of feature columns")
-
-  private final val allStringColumnsToCategorical = booleanParam(
+  private val allStringColumnsToCategorical = booleanParam(
     "allStringColumnsToCategorical",
     "Transform all strings columns to categorical")
 
-  private final val columnsToCategorical = stringArrayParam(
+  private val columnsToCategorical = stringArrayParam(
     "columnsToCategorical",
     "List of columns to convert to categorical before modelling")
 
-  private final val nfolds = intParam("nfolds")
-  private final val foldCol = nullableStringParam("foldCol", "Fold column name")
-  private final val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
-  private final val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
-  private final val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
-  private final val seed = longParam("seed")
-  private final val distribution = H2ODistributionParam("distribution")
+  private val nfolds = intParam("nfolds")
+  private val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
+  private val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
+  private val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
+  private val seed = longParam("seed")
+  private val distribution = H2ODistributionParam("distribution")
   private val convertUnknownCategoricalLevelsToNa = booleanParam(
     "convertUnknownCategoricalLevelsToNa",
     "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
@@ -74,11 +61,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
   //
   setDefault(
     ratio -> 1.0, // 1.0 means use whole frame as training frame
-    labelCol -> "label",
-    weightCol -> null,
-    featuresCols -> Array.empty[String],
     nfolds -> parameters._nfolds,
-    foldCol -> null,
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
     keepCrossValidationPredictions -> parameters._keep_cross_validation_predictions,
@@ -96,20 +79,6 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
 
   @DeprecatedMethod("getLabelCol")
   def getPredictionCol(): String = getLabelCol()
-
-  def getLabelCol(): String = $(labelCol)
-
-  def getWeightCol(): String = $(weightCol)
-
-  def getFeaturesCols(): Array[String] = {
-    val labelCol = getLabelCol()
-    if ($(featuresCols).contains(labelCol)) {
-      logDebug(s"The label col '$labelCol' removed from the list of features.")
-      $(featuresCols).filter(_ != labelCol)
-    } else {
-      $(featuresCols)
-    }
-  }
 
   def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
 
@@ -129,8 +98,6 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
 
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
-  def getFoldCol(): String = $(foldCol)
-
   //
   // Setters
   //
@@ -138,21 +105,6 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
 
   @DeprecatedMethod("setLabelCol")
   def setPredictionCol(value: String): this.type = setLabelCol(value)
-
-  def setLabelCol(value: String): this.type = set(labelCol, value)
-
-  def setWeightCol(value: String): this.type = set(weightCol, value)
-
-  def setFeaturesCols(first: String, others: String*): this.type = set(featuresCols, Array(first) ++ others)
-
-  def setFeaturesCols(cols: Array[String]): this.type = {
-    if (cols.length == 0) {
-      throw new IllegalArgumentException("Array with feature columns must contain at least one column.")
-    }
-    set(featuresCols, cols)
-  }
-
-  def setFeaturesCol(first: String): this.type = setFeaturesCols(first)
 
   def setAllStringColumnsToCategorical(transform: Boolean): this.type = set(allStringColumnsToCategorical, transform)
 
@@ -178,14 +130,12 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with Depreca
     new H2ODistributionParam(this, name, getDoc(None, name))
   }
 
-  def setFoldCol(value: String): this.type = set(foldCol, value)
-
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
   protected def updateH2OParams(): Unit = {
-    parameters._response_column = $(labelCol)
-    parameters._weights_column = $(weightCol)
+    parameters._response_column = getLabelCol()
+    parameters._weights_column = getWeightCol()
     parameters._nfolds = $(nfolds)
-    parameters._fold_column = $(foldCol)
+    parameters._fold_column = getFoldCol()
     parameters._keep_cross_validation_predictions = $(keepCrossValidationPredictions)
     parameters._keep_cross_validation_fold_assignment = $(keepCrossValidationFoldAssignment)
     parameters._parallelize_cross_validation = $(parallelizeCrossValidation)
