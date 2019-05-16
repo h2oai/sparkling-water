@@ -26,7 +26,7 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.Dataset
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
@@ -35,26 +35,14 @@ import scala.reflect.ClassTag
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
-abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
-  extends Estimator[H2OMOJOModel] with DefaultParamsWritable with H2OAlgoParams[P] {
+abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag] extends Estimator[H2OMOJOModel]
+  with H2OAlgorithmCommons with DefaultParamsWritable with H2OAlgoParams[P] {
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    import org.apache.spark.sql.functions.col
-
     // Update H2O params based on provided configuration
     updateH2OParams()
 
-    val excludedCols = Set(getLabelCol(), getFoldCol(), getWeightCol())
-      .flatMap(Option(_)) // Remove nulls
-
-    // if this is left empty select
-    if (getFeaturesCols().isEmpty) {
-      val features = dataset.columns.filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
-      setFeaturesCols(features)
-    }
-
-    val cols = (getFeaturesCols() ++ excludedCols).map(col)
-    val input = H2OContext.getOrCreate(SparkSession.builder().getOrCreate()).asH2OFrame(dataset.select(cols: _*).toDF())
+    val input = prepareDatasetForFitting(dataset)
 
     // check if we need to do any splitting
     if (getTrainRatio() < 1.0) {
