@@ -47,7 +47,7 @@ import scala.collection.mutable
   * H2O Grid Search
   */
 class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
-  with DefaultParamsWritable with H2OGridSearchParams {
+  with H2OAlgorithmCommons with DefaultParamsWritable with H2OGridSearchParams {
 
   private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
@@ -72,7 +72,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 
     val hyperParams = processHyperParams(algoParams, getHyperParameters())
 
-    val input = hc.asH2OFrame(dataset.toDF())
+    val input = prepareDatasetForFitting(dataset)
     // check if we need to do any splitting
     if (getRatio() < 1.0) {
       // need to do splitting
@@ -87,6 +87,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     algoParams._nfolds = getNfolds()
     algoParams._fold_column = getFoldCol()
     algoParams._response_column = getLabelCol()
+    algoParams._weights_column = getWeightCol()
     val trainFrame = algoParams._train.get()
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(trainFrame)
@@ -387,7 +388,7 @@ object H2OGridSearch extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGrid
   }
 }
 
-trait H2OGridSearchParams extends DeprecatableParams {
+trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
 
   override protected def renamingMap: Map[String, String] = Map(
     "predictionCol" -> "labelCol"
@@ -400,7 +401,6 @@ trait H2OGridSearchParams extends DeprecatableParams {
   private val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   protected final val gridAlgoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
   private val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
-  private val labelCol = new Param[String](this, "labelCol", "Label column name")
   private val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
   private val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
   private val strategy = new GridSearchStrategyParam(this, "strategy", "Search criteria strategy")
@@ -416,7 +416,6 @@ trait H2OGridSearchParams extends DeprecatableParams {
     "If this value is not specified that the first model os taken.")
   private val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
     "True if sort in decreasing order accordingto selected metrics")
-  private val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   private val convertUnknownCategoricalLevelsToNa = new BooleanParam(
     this,
     "convertUnknownCategoricalLevelsToNa",
@@ -429,7 +428,6 @@ trait H2OGridSearchParams extends DeprecatableParams {
     gridAlgoParams -> null,
     ratio -> 1.0, // 1.0 means use whole frame as training frame
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
-    labelCol -> "label",
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
     strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian,
@@ -442,7 +440,6 @@ trait H2OGridSearchParams extends DeprecatableParams {
     nfolds -> 0,
     selectBestModelBy -> null,
     selectBestModelDecreasing -> true,
-    foldCol -> null,
     convertUnknownCategoricalLevelsToNa -> true
   )
 
@@ -455,8 +452,6 @@ trait H2OGridSearchParams extends DeprecatableParams {
 
   @DeprecatedMethod("getLabelCol")
   def getPredictionCol(): String = getLabelCol()
-
-  def getLabelCol(): String = $(labelCol)
 
   def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
 
@@ -481,8 +476,6 @@ trait H2OGridSearchParams extends DeprecatableParams {
   def getSelectBestModelBy(): H2OGridSearchMetric = $(selectBestModelBy)
 
   def getSelectBestModelDecreasing(): Boolean = $(selectBestModelDecreasing)
-
-  def getFoldCol(): String = $(foldCol)
 
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
@@ -511,8 +504,6 @@ trait H2OGridSearchParams extends DeprecatableParams {
   @DeprecatedMethod("setLabelCol")
   def setPredictionCol(value: String): this.type = setLabelCol(value)
 
-  def setLabelCol(value: String): this.type = set(labelCol, value)
-
   def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
 
   def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
@@ -538,8 +529,6 @@ trait H2OGridSearchParams extends DeprecatableParams {
   def setSelectBestModelBy(value: H2OGridSearchMetric): this.type = set(selectBestModelBy, value)
 
   def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
-
-  def setFoldCol(value: String): this.type = set(foldCol, value)
 
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 }

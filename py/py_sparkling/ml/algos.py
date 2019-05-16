@@ -133,7 +133,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
 class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
     @keyword_only
-    def __init__(self, labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
+    def __init__(self, featuresCols=[], labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
                  weightCol=None, ignoredCols=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                  stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=True, seed=-1,
                  sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
@@ -142,7 +142,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OAutoML", self.uid)
 
-        self._setDefault(labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
+        self._setDefault(featuresCols=[], labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
                          weightCol=None, ignoredCols=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                          stoppingTolerance=0.001, stoppingMetric=self._hc._jvm.hex.ScoreKeeper.StoppingMetric.valueOf("AUTO"), nfolds=5,
                          convertUnknownCategoricalLevelsToNa=True, seed=-1, sortMetric=None, balanceClasses=False,
@@ -153,7 +153,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
+    def setParams(self, featuresCols=[], labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], ratio=1.0, foldCol=None,
                   weightCol=None, ignoredCols=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                   stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=True, seed=-1,
                   sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
@@ -370,7 +370,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
 class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
     @keyword_only
-    def __init__(self, algo=None, ratio=1.0, hyperParameters={}, labelCol="label", allStringColumnsToCategorical=True,
+    def __init__(self, featuresCols=[], algo=None, ratio=1.0, hyperParameters={}, labelCol="label", weightCol=None, allStringColumnsToCategorical=True,
                  columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                  stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy=None,
                  selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True, **deprecatedArgs):
@@ -378,7 +378,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
         self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch", self.uid)
 
-        self._setDefault(algo=None, ratio=1.0, hyperParameters={}, labelCol="label", allStringColumnsToCategorical=True,
+        self._setDefault(featuresCols=[], algo=None, ratio=1.0, hyperParameters={}, labelCol="label", weightCol=None, allStringColumnsToCategorical=True,
                          columnsToCategorical=[], strategy=self._hc._jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf("Cartesian"),
                          maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                          stoppingRounds=0, stoppingTolerance=0.001,
@@ -389,7 +389,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
         self.setParams(**kwargs)
 
     @keyword_only
-    def setParams(self, algo=None, ratio=1.0, hyperParameters={}, labelCol="label", allStringColumnsToCategorical=True,
+    def setParams(self, featuresCols=[], algo=None, ratio=1.0, hyperParameters={}, labelCol="label", weightCol=None, allStringColumnsToCategorical=True,
                   columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                   stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy=None,
                   selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True, **deprecatedArgs):
