@@ -1,5 +1,6 @@
 "Spark_Version" "Sparkling_Water_Version" "H2O_Version" "H2O_Release_Name" "H2O_Release_Patch_Number"
-"1" "2.4" "2.4.10" "3.24.0.2" "rel-yates" "2"
+"1" "2.4" "2.4.11" "3.24.0.3" "rel-yates" "3"
+"110" "2.4" "2.4.10" "3.24.0.2" "rel-yates" "2"
 "19" "2.4" "2.4.9" "3.24.0.1" "rel-yates" "1"
 "18" "2.4" "2.4.8" "3.22.1.6" "rel-xu" "6"
 "17" "2.4" "2.4.7" "3.22.1.5" "rel-xu" "5"
