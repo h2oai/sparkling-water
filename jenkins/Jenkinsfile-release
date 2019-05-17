@@ -396,6 +396,7 @@ EOF
                                 sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/\$PATCH_VERSION/?" 000-default.conf
                                 git add 000-default.conf
                                 git commit -m "Update links of Sparkling Water 2.2 version to \$PATCH_VERSION"
+                                git push --set-upstream origin master
                                 cd ../..
                                 rm -rf docs.h2o.ai
                             """ })
