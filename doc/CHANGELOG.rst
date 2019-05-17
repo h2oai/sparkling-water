@@ -1,6 +1,44 @@
 Change Log
 ==========
 
+v2.2.40 (2019-05-17)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/40/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/40/index.html>`__
+
+-  Bug
+        
+   -  `SW-1256 <https://0xdata.atlassian.net/browse/SW-1256>`__ - Fix constructor of H2OMojoModel
+   -  `SW-1258 <https://0xdata.atlassian.net/browse/SW-1258>`__ - Remove internal constructors &amp; Deprecate implicit constructor parameters for H2O Algo Spark Estimators( to be the same as in PySparkling)
+   -  `SW-1270 <https://0xdata.atlassian.net/browse/SW-1270>`__ - Fix version check in PySpakrling shell
+   -  `SW-1278 <https://0xdata.atlassian.net/browse/SW-1278>`__ - Clean workspace on the hadoop node in integ tests
+   -  `SW-1279 <https://0xdata.atlassian.net/browse/SW-1279>`__ - Fix inconsistencies between H2OAutoML, H2OGridSearch &amp; H2OALgorithm
+   -  `SW-1281 <https://0xdata.atlassian.net/browse/SW-1281>`__ - Fix bad representation of predictionCol on H2OMOJOModel
+   -  `SW-1282 <https://0xdata.atlassian.net/browse/SW-1282>`__ - XGBoost can&#39;t be used in H2OGridSearch pipeline wrapper
+   -  `SW-1283 <https://0xdata.atlassian.net/browse/SW-1283>`__ - Correctly return mojo model in pysparkling after fit
+                
+-  Story
+        
+   -  `SW-1271 <https://0xdata.atlassian.net/browse/SW-1271>`__ - Remove SparkContext from H2OSchemaUtils
+   -  `SW-1273 <https://0xdata.atlassian.net/browse/SW-1273>`__ - Upgrade to H2O 3.24.0.3
+                
+-  New Feature
+        
+   -  `SW-1248 <https://0xdata.atlassian.net/browse/SW-1248>`__ - getFeaturesCols() should not return the fold column or weight column
+   -  `SW-1249 <https://0xdata.atlassian.net/browse/SW-1249>`__ - probability calibration does not work in Sparkling Water Dataframe API
+                
+-  Improvement
+        
+   -  `SW-369 <https://0xdata.atlassian.net/browse/SW-369>`__ - Override spark locality so we use only nodes on which h2o is running.
+   -  `SW-1216 <https://0xdata.atlassian.net/browse/SW-1216>`__ - Improve PySparkling README
+   -  `SW-1261 <https://0xdata.atlassian.net/browse/SW-1261>`__ - Remove binary H2O model from ML pipelines
+   -  `SW-1263 <https://0xdata.atlassian.net/browse/SW-1263>`__ - Don&#39;t require initializer call to be called during pysparkling pipelines
+   -  `SW-1264 <https://0xdata.atlassian.net/browse/SW-1264>`__ - Use default params reader in pipelines
+   -  `SW-1268 <https://0xdata.atlassian.net/browse/SW-1268>`__ - Non-named columns are long time deprecated. Switch to named columns by default 
+   -  `SW-1269 <https://0xdata.atlassian.net/browse/SW-1269>`__ - Remove six as dependency from PySparkling launcher ( six is no longer dependency)
+   -  `SW-1275 <https://0xdata.atlassian.net/browse/SW-1275>`__ - Remove unnecessary constructor in helper class
+   -  `SW-1280 <https://0xdata.atlassian.net/browse/SW-1280>`__ - Add predictionCol to mojo pipeline model
+                
+                                                                                        
 v2.2.39 (2019-05-17)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/39/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/39/index.html>`__
