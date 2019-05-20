@@ -36,6 +36,10 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
     def getPredictionCol(self):
         return self._java_obj.getPredictionCol()
 
+    # Overriding the method to avoid changes on the companion Java object
+    def _transfer_params_to_java(self):
+        pass
+
 class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
@@ -96,3 +100,7 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
             idx = list(self._java_obj.getOutputNames()).index(column)
             func = udf(lambda arr: arr[idx], DoubleType())
             return func(self.getPredictionCol() + ".preds").alias(column)
+
+    # Overriding the method to avoid changes on the companion Java object
+    def _transfer_params_to_java(self):
+        pass
