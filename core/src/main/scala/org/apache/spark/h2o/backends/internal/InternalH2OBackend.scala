@@ -17,12 +17,13 @@
 
 package org.apache.spark.h2o.backends.internal
 
-import org.apache.spark.SparkEnv
-import org.apache.spark.h2o.backends.SparklingBackend
+import org.apache.spark.h2o.backends.{SharedBackendUtils, SparklingBackend}
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
+import org.apache.spark.rpc.{RpcEndpointRef, RpcEnv}
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
+import org.apache.spark.{SparkConf, SparkEnv}
 import water.api.RestAPIManager
 import water.{H2O, H2OStarter}
 
@@ -37,7 +38,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     // Stop h2o when running standalone pysparkling scripts, only in client deploy mode
     //, so the user does not need explicitly close h2o.
     // In driver mode the application would call exit which is handled by Spark AM as failure
-    if(hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
+    if (hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
       H2O.exit(0)
     }
   }
@@ -68,42 +69,33 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
   /** Initialize Sparkling H2O and start H2O cloud. */
   override def init(): Array[NodeDesc] = {
-
     logInfo(s"Starting H2O services: " + hc.getConf)
-    // Create dummy RDD distributed over executors
-    val (spreadRDD, spreadRDDNodes) = new SpreadRDDBuilder(hc, InternalBackendUtils.guessTotalExecutorSize(hc.sparkContext)).build()
 
-    // Start H2O nodes
-    // Get executors to execute H2O
-    val allExecutorIds = spreadRDDNodes.map(_.nodeId).distinct
-    val executorIds = allExecutorIds
-    // The collected executors based on IDs should match
-    assert(spreadRDDNodes.length == executorIds.length,
-      s"Unexpected number of executors ${spreadRDDNodes.length}!=${executorIds.length}")
-    // H2O is executed only on the subset of Spark cluster - fail
-    if (executorIds.length < allExecutorIds.length) {
-      throw new IllegalArgumentException(
-        s"""Spark cluster contains ${allExecutorIds.length},
-               but H2O is running only on ${executorIds.length} nodes!""")
-    }
-    // Execute H2O on given nodes
-    logInfo(s"""Launching H2O on following ${spreadRDDNodes.length} nodes: ${spreadRDDNodes.mkString(",")}""")
+    val endpoints = InternalH2OBackend.registerEndpoints(hc)
+    val nodes = InternalH2OBackend.startH2OWorkers(endpoints, hc._conf, hc.sparkContext.getConf, hc.sparkContext.isLocal)
+    val clientNode = InternalH2OBackend.startH2OClient(hc.sparkContext.isLocal, hc._conf, nodes)
+    InternalH2OBackend.distributeFlatFile(endpoints, nodes, clientNode)
 
-    var h2oNodeArgs = InternalBackendUtils.getH2ONodeArgs(hc.getConf)
-    // Disable web on h2o nodes in non-local mode
-    if (!hc.sparkContext.isLocal) {
-      if (!hc.getConf.h2oNodeWebEnabled) {
-        h2oNodeArgs = h2oNodeArgs ++ Array("-disable_web")
-      }
-    } else {
-      // In local mode we don't start h2o client and use standalone h2o mode right away. We need to set login configuration
-      // in this case explicitly
-      h2oNodeArgs = getH2OClientArgsLocalNode(hc._conf)
-    }
-    logDebug(s"Arguments used for launching h2o nodes: ${h2oNodeArgs.mkString(" ")}")
-    val executors = InternalBackendUtils.startH2O(hc.sparkContext, spreadRDD, spreadRDDNodes.length, h2oNodeArgs, hc.getConf)
+    InternalH2OBackend.registerNewExecutorListener(hc)
 
-    // H2O is already started on the nodes, make sure that we kill the cloud when a new executor joins
+    H2O.waitForCloudSize(endpoints.length, hc.getConf.cloudTimeout)
+
+    // Register web API for client
+    RestAPIManager(hc).registerAll()
+    H2O.startServingRestApi()
+    nodes.map(a => NodeDesc("", a._1, a._2))
+  }
+
+  override def epilog = ""
+}
+
+object InternalH2OBackend extends Logging {
+
+  val UNSUPPORTED_SPARK_OPTIONS: Seq[(String, String)] = Seq(
+    ("spark.dynamicAllocation.enabled", "true"),
+    ("spark.speculation", "true"))
+
+  private def registerNewExecutorListener(hc: H2OContext): Unit ={
     if (!(hc.sparkContext.isLocal || hc.sparkContext.master.startsWith("local-cluster[")) && hc.getConf.isClusterTopologyListenerEnabled) {
       hc.sparkContext.addSparkListener(new SparkListener {
         override def onExecutorAdded(executorAdded: SparkListenerExecutorAdded): Unit = {
@@ -111,29 +103,78 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
         }
       })
     }
-
-    // Connect to a cluster via H2O client, but only in non-local case
-    if (!hc.sparkContext.isLocal) {
-      logTrace("Sparkling H2O - DISTRIBUTED mode: Waiting for " + executors.length)
-      // Get arguments for this launch including flatfile ( Do not use IP if network mask is specified)
-      val h2oClientArgs = InternalBackendUtils.toH2OArgs(InternalBackendUtils.getH2OClientArgs(hc.getConf), hc.getConf, executors)
-      logInfo(s"Starting H2O client on the Spark Driver (${getHostname(SparkEnv.get)}): ${h2oClientArgs.mkString(" ")}")
-      // Launch H2O
-      H2OStarter.start(h2oClientArgs, false)
-    }
-    // And wait for right cluster size
-    H2O.waitForCloudSize(executors.length, hc.getConf.cloudTimeout)
-    // Register web API for client
-    RestAPIManager(hc).registerAll()
-    H2O.startServingRestApi()
-    executors
   }
 
-  override def epilog = ""
-}
+  private def registerEndpoints(hc: H2OContext): Array[RpcEndpointRef] = {
+    val endpoints = new WorkersStarter(hc, InternalBackendUtils.guessTotalExecutorSize(hc.sparkContext)).start()
+    endpoints.map { ref =>
+      SparkEnv.get.rpcEnv.setupEndpointRef(ref.address, ref.name)
+    }
+  }
 
-object InternalH2OBackend {
-  val UNSUPPORTED_SPARK_OPTIONS = Seq(
-    ("spark.dynamicAllocation.enabled", "true"),
-    ("spark.speculation", "true"))
+  def startEndpointOnH2OWorker(conf: SparkConf): RpcEndpointRef = {
+    val securityMgr = SparkEnv.get.securityManager
+    val rpcEnv = RpcEnv.create("service", SharedBackendUtils.getHostname(SparkEnv.get), 0, conf, securityMgr)
+    val endpoint = new H2OStarterEndpoint(rpcEnv)
+    rpcEnv.setupEndpoint("endp", endpoint)
+  }
+
+  def startH2OWorkers(endpoints: Array[RpcEndpointRef], conf: H2OConf, sparkConf: SparkConf, isLocal: Boolean): Array[(String, Int)] = {
+    endpoints.map { ref =>
+      val ipPort = ref.askSync[WorkerIpPort](StartH2O(conf, sparkConf, isLocal))
+      (ipPort.ip, ipPort.port)
+    }.distinct
+  }
+
+  def startH2OClient(isLocal: Boolean, conf: H2OConf, nodes: Array[(String, Int)]): Option[(String, Int)] = {
+    if (!isLocal) {
+      val h2oClientArgs = InternalBackendUtils.toH2OArgs(InternalBackendUtils.getH2OClientArgs(conf), Some(nodes.map(n => s"${n._1}:${n._2}").mkString("\n")))
+      logInfo(s"Starting H2O client on the Spark Driver (${SharedBackendUtils.getHostname(SparkEnv.get)}): ${h2oClientArgs.mkString(" ")}")
+      H2OStarter.start(h2oClientArgs, false)
+      Some(H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
+    } else {
+      None
+    }
+  }
+
+  def distributeFlatFile(endpoints: Array[RpcEndpointRef], nodes: Array[(String, Int)], clientNode: Option[(String, Int)]): Unit = {
+    val fullList = if (clientNode.isDefined) {
+      nodes ++ Array(clientNode.get)
+    } else {
+      nodes
+    }
+    endpoints.foreach { ref =>
+      ref.send(DistributeNodesInfo(fullList))
+    }
+  }
+
+
+  def startH2OWorkerNode(conf: H2OConf, sparkConf: SparkConf, isLocal: Boolean): Unit = {
+    val logDir = identifyLogDir(conf, SparkEnv.get)
+    val ip = SharedBackendUtils.getHostname(SparkEnv.get)
+
+    val launcherArgs = InternalBackendUtils.toH2OArgs(
+      InternalBackendUtils.getH2ONodeArgs(conf, isLocal)
+        ++ conf.nodeNetworkMask.map(mask => Array("-network", mask)).getOrElse(Array("-ip", ip))
+        ++ Array("-log_dir", logDir), Some(""))
+
+    // Finalize REST API only if running in non-local mode.
+    // In local mode, we are not going to create H2O client
+    // but use executor's H2O instance directly.
+    H2OStarter.start(launcherArgs, !isLocal)
+  }
+
+  private def identifyLogDir(conf: H2OConf, sparkEnv: SparkEnv): String = {
+    val s = System.getProperty("spark.yarn.app.container.log.dir")
+    if (s != null) {
+      return s + java.io.File.separator
+    }
+    if (conf.h2oNodeLogDir.isDefined) {
+      conf.h2oNodeLogDir.get
+    } else {
+      // Needs to be executed at remote node!
+      SharedBackendUtils.defaultLogDir(sparkEnv.conf.getAppId)
+    }
+  }
+
 }

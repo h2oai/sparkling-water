@@ -167,19 +167,6 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     throw new IllegalStateException(s"Failed to create temporary directory ${baseDir} / ${baseName}")
   }
 
-  def saveAsFile(content: String): File = {
-    val tmpDir = createTempDir()
-    tmpDir.deleteOnExit()
-    val flatFile = new File(tmpDir, "flatfile.txt")
-    val p = new java.io.PrintWriter(flatFile)
-    try {
-      p.print(content)
-    } finally {
-      p.close()
-    }
-    flatFile
-  }
-
   /**
     * Increment log level to at least desired minimal log level.
     *
@@ -200,4 +187,19 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
   }
 }
 
-object SharedBackendUtils extends SharedBackendUtils
+object SharedBackendUtils extends SharedBackendUtils {
+
+  def saveAsFile(content: String): File = {
+    val tmpDir = createTempDir()
+    tmpDir.deleteOnExit()
+    val flatFile = new File(tmpDir, "flatfile.txt")
+    val p = new java.io.PrintWriter(flatFile)
+    try {
+      p.print(content)
+    } finally {
+      p.close()
+    }
+    flatFile
+  }
+
+}
