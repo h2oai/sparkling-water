@@ -138,7 +138,7 @@ object InternalH2OBackend extends Logging {
 
   private def distributeFlatFile(endpoints: Array[RpcEndpointRef], nodes: Array[NodeDesc], clientNode: NodeDesc): Unit = {
     endpoints.foreach { ref =>
-      ref.send(FlatFileMsg(nodes))
+      ref.send(FlatFileMsg(nodes ++ Array(clientNode)))
     }
   }
 
