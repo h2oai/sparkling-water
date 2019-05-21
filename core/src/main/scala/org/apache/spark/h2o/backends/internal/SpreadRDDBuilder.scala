@@ -20,22 +20,31 @@ package org.apache.spark.h2o.backends.internal
 
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.SharedBackendUtils
-import org.apache.spark.rpc.RpcEndpointRef
+import org.apache.spark.rpc.{RpcEndpointRef, RpcEnv}
 import org.apache.spark.scheduler.cluster.CoarseGrainedSchedulerBackend
 import org.apache.spark.scheduler.local.LocalSchedulerBackend
 import org.apache.spark.{SparkConf, SparkEnv}
 
 import scala.annotation.tailrec
 
-object RefModel {
+object RpcReferenceCache {
   private var ref: RpcEndpointRef = _
 
   def getRef(conf: SparkConf): RpcEndpointRef = synchronized {
     if (ref == null) {
-      ref = InternalH2OBackend.startEndpointOnH2OWorker(conf)
+      ref = startEndpointOnH2OWorker(conf)
     }
     ref
   }
+
+  private def startEndpointOnH2OWorker(conf: SparkConf): RpcEndpointRef = {
+    val securityMgr = SparkEnv.get.securityManager
+    val rpcEnv = RpcEnv.create("service", SharedBackendUtils.getHostname(SparkEnv.get), 0, conf, securityMgr)
+    val endpoint = new H2OStarterEndpoint(rpcEnv)
+    rpcEnv.setupEndpoint("endp", endpoint)
+  }
+
+
 }
 
 /**
@@ -50,13 +59,13 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
   val sparkConf: SparkConf = sc.conf
   private val numExecutors = conf.numH2OWorkers
 
-  def start(): Array[RpcEndpointRef] = {
+  def build(): Array[RpcEndpointRef] = {
     logDebug(s"Building SpreadRDD: numExecutors=${numExecutors}, numExecutorHint=${numExecutorHint}")
-    start(conf.numRddRetries, conf.drddMulFactor, 0)
+    build(conf.numRddRetries, conf.drddMulFactor, 0)
   }
 
   @tailrec
-  private def start(nretries: Int, mfactor: Int, numTriesSame: Int): Array[RpcEndpointRef] = {
+  private def build(nretries: Int, mfactor: Int, numTriesSame: Int): Array[RpcEndpointRef] = {
     logDebug(s"Creating RDD for launching H2O nodes (mretries=$nretries, mfactor=$mfactor, " +
       s"numTriesSame=$numTriesSame, backend#isReady=${isBackendReady()}")
     // Get number of available Spark executors, invoke distributed operation and compute
@@ -70,7 +79,7 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
 
 
     // Start RPC Endpoint on all worker nodes
-    val endpoints = spreadRDD.mapPartitions { _ => Iterator.single(RefModel.getRef(sparkConf)) }.distinct().collect()
+    val endpoints = spreadRDD.mapPartitions { _ => Iterator.single(RpcReferenceCache.getRef(sparkConf)) }.distinct().collect()
     // Delete RDD
     spreadRDD.unpersist()
 
@@ -92,7 +101,7 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
     } else if (nSparkExecAfter != nSparkExecBefore || nSparkExecAfter != currentWorkers) {
       // We detected change in number of executors
       logInfo(s"Detected $nSparkExecBefore before, and $nSparkExecAfter Spark executors after, backend#isReady=${isBackendReady()}! Retrying again...")
-      start(nretries - 1, 2 * mfactor, 0)
+      build(nretries - 1, 2 * mfactor, 0)
     } else if ((numTriesSame == conf.subseqTries)
       || (numExecutors.isEmpty && currentWorkers == expectedWorkers)
       || (numExecutors.isDefined && numExecutors.get == currentWorkers)) {
@@ -100,7 +109,7 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
       endpoints
     } else {
       logInfo(s"Detected $currentWorkers spark executors for $expectedWorkers H2O workers, backend#isReady=${isBackendReady()}! Retrying again...")
-      start(nretries - 1, mfactor, numTriesSame + 1)
+      build(nretries - 1, mfactor, numTriesSame + 1)
     }
   }
 
