@@ -77,7 +77,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
     val endpoints = InternalH2OBackend.registerEndpoints(hc)
     val nodes = InternalH2OBackend.startH2OWorkers(endpoints, hc._conf)
-    val clientNode = InternalH2OBackend.startH2OClient(hc.sparkContext.isLocal, hc._conf, nodes)
+    val clientNode = InternalH2OBackend.startH2OClient(hc._conf, nodes)
     InternalH2OBackend.distributeFlatFile(endpoints, nodes, clientNode)
     InternalH2OBackend.tearDownEndpoints(endpoints)
 
@@ -125,26 +125,17 @@ object InternalH2OBackend extends Logging {
     }.distinct
   }
 
-  private def startH2OClient(isLocal: Boolean, conf: H2OConf, nodes: Array[NodeDesc]): Option[NodeDesc] = {
-    if (!isLocal) {
-      val h2oClientArgs = InternalBackendUtils.toH2OArgs(InternalBackendUtils.getH2OClientArgs(conf), nodes)
-      logInfo(s"Starting H2O client on the Spark Driver (${SharedBackendUtils.getHostname(SparkEnv.get)}): ${h2oClientArgs.mkString(" ")}")
+  private def startH2OClient(conf: H2OConf, nodes: Array[NodeDesc]): NodeDesc = {
+    val h2oClientArgs = InternalBackendUtils.toH2OArgs(InternalBackendUtils.getH2OClientArgs(conf), nodes)
+    logInfo(s"Starting H2O client on the Spark Driver (${SharedBackendUtils.getHostname(SparkEnv.get)}): ${h2oClientArgs.mkString(" ")}")
 
-      H2OStarter.start(h2oClientArgs, false)
-      Some(NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT))
-    } else {
-      None
-    }
+    H2OStarter.start(h2oClientArgs, false)
+    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
 
-  private def distributeFlatFile(endpoints: Array[RpcEndpointRef], nodes: Array[NodeDesc], clientNode: Option[NodeDesc]): Unit = {
-    val fullList = if (clientNode.isDefined) {
-      nodes ++ Array(clientNode.get)
-    } else {
-      nodes
-    }
+  private def distributeFlatFile(endpoints: Array[RpcEndpointRef], nodes: Array[NodeDesc], clientNode: NodeDesc): Unit = {
     endpoints.foreach { ref =>
-      ref.send(FlatFileMsg(fullList))
+      ref.send(FlatFileMsg(nodes))
     }
   }
 
