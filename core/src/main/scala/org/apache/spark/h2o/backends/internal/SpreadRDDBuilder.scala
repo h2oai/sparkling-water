@@ -27,28 +27,9 @@ import org.apache.spark.{SparkConf, SparkEnv}
 
 import scala.annotation.tailrec
 
-object RpcReferenceCache {
-  private var ref: RpcEndpointRef = _
-
-  def getRef(conf: SparkConf): RpcEndpointRef = synchronized {
-    if (ref == null) {
-      ref = startEndpointOnH2OWorker(conf)
-    }
-    ref
-  }
-
-  private def startEndpointOnH2OWorker(conf: SparkConf): RpcEndpointRef = {
-    val securityMgr = SparkEnv.get.securityManager
-    val rpcEnv = RpcEnv.create("service", SharedBackendUtils.getHostname(SparkEnv.get), 0, conf, securityMgr)
-    val endpoint = new H2OStarterEndpoint(rpcEnv)
-    rpcEnv.setupEndpoint("endp", endpoint)
-  }
-
-
-}
-
 /**
-  * An H2O specific builder for InvokeOnNodesRDD.
+  * Start RPC endpoint on all discovered executors. These RPC endpoints are later used to start
+  * H2O on remote executors.
   */
 private[spark]
 class SpreadRDDBuilder(@transient private val hc: H2OContext,
@@ -113,7 +94,6 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
     }
   }
 
-
   /**
     * Return number of registered Spark executors
     */
@@ -127,4 +107,22 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
   }
 
   private def isBackendReady() = sc.schedulerBackend.isReady()
+}
+
+object RpcReferenceCache {
+  private var ref: RpcEndpointRef = _
+
+  def getRef(conf: SparkConf): RpcEndpointRef = synchronized {
+    if (ref == null) {
+      ref = startEndpointOnH2OWorker(conf)
+    }
+    ref
+  }
+
+  private def startEndpointOnH2OWorker(conf: SparkConf): RpcEndpointRef = {
+    val securityMgr = SparkEnv.get.securityManager
+    val rpcEnv = RpcEnv.create("service", SharedBackendUtils.getHostname(SparkEnv.get), 0, conf, securityMgr)
+    val endpoint = new H2OStarterEndpoint(rpcEnv)
+    rpcEnv.setupEndpoint("endp", endpoint)
+  }
 }
