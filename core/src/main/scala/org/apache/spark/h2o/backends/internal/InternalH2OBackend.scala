@@ -63,7 +63,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
       conf.setCloudName("sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + conf.sparkConf.getAppId)
     }
 
-    checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
+    InternalBackendUtils.checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
     conf
   }
 
@@ -152,48 +152,10 @@ object InternalH2OBackend extends Logging {
 
 
   def startH2OWorkerNode(conf: H2OConf): NodeDesc = {
-    val logDir = identifyLogDir(conf, SparkEnv.get)
-    val ip = {
-      val hostname = SharedBackendUtils.getHostname(SparkEnv.get)
-      if (conf.ipBasedFlatfile) {
-        translateHostnameToIp(hostname)
-      } else {
-        hostname
-      }
-    }
-
     var args = InternalBackendUtils.getH2ONodeArgs(conf)
-
-    // Disable web on h2o nodes in non-local mode
-    if (!conf.h2oNodeWebEnabled) {
-      args ++ Array("-disable_web")
-    }
-
-    val launcherArgs = InternalBackendUtils.toH2OArgs(
-      args
-        ++ conf.nodeNetworkMask.map(mask => Array("-network", mask)).getOrElse(Array("-ip", ip))
-        ++ Array("-log_dir", logDir))
+    val launcherArgs = InternalBackendUtils.toH2OArgs(args)
 
     H2OStarter.start(launcherArgs, true)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostName, H2O.API_PORT)
   }
-
-  private def identifyLogDir(conf: H2OConf, sparkEnv: SparkEnv): String = {
-    val s = System.getProperty("spark.yarn.app.container.log.dir")
-    if (s != null) {
-      return s + java.io.File.separator
-    }
-    if (conf.h2oNodeLogDir.isDefined) {
-      conf.h2oNodeLogDir.get
-    } else {
-      // Needs to be executed at remote node!
-      SharedBackendUtils.defaultLogDir(sparkEnv.conf.getAppId)
-    }
-  }
-
-  private def translateHostnameToIp(hostname: String): String = {
-    import java.net.InetAddress
-    InetAddress.getByName(hostname).getHostAddress
-  }
-
 }
