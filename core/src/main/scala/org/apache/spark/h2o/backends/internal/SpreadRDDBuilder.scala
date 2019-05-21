@@ -42,8 +42,8 @@ object RefModel {
   * An H2O specific builder for InvokeOnNodesRDD.
   */
 private[spark]
-class WorkersStarter(@transient private val hc: H2OContext,
-                     numExecutorHint: Option[Int] = None) extends SharedBackendUtils {
+class SpreadRDDBuilder(@transient private val hc: H2OContext,
+                       numExecutorHint: Option[Int] = None) extends SharedBackendUtils {
   @transient private val sc = hc.sparkContext
   private val conf = hc.getConf
   private val isLocal = sc.isLocal

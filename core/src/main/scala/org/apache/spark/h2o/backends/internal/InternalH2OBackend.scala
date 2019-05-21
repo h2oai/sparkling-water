@@ -106,7 +106,7 @@ object InternalH2OBackend extends Logging {
   }
 
   private def registerEndpoints(hc: H2OContext): Array[RpcEndpointRef] = {
-    val endpoints = new WorkersStarter(hc, InternalBackendUtils.guessTotalExecutorSize(hc.sparkContext)).start()
+    val endpoints = new SpreadRDDBuilder(hc, InternalBackendUtils.guessTotalExecutorSize(hc.sparkContext)).start()
     endpoints.map { ref =>
       SparkEnv.get.rpcEnv.setupEndpointRef(ref.address, ref.name)
     }
