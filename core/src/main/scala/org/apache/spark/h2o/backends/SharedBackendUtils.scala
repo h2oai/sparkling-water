@@ -127,7 +127,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     }
   }
 
-  def getH2OClientArgsLocalNode(conf: H2OConf): Array[String] = (
+  def getH2OWorkerAsClientArgs(conf: H2OConf): Array[String] = (
     getH2OCommonArgs(conf) ++ getLoginArgs(conf)
       ++ (if (!conf.clientVerboseOutput) Seq("-quiet") else Nil)
       ++ Seq("-log_level", if (conf.clientVerboseOutput) incLogLevel(conf.h2oClientLogLevel, "INFO") else conf.h2oClientLogLevel)
@@ -147,7 +147,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     *
     * @return array of H2O client arguments.
     */
-  def getH2OClientArgs(conf: H2OConf): Array[String] = getH2OClientArgsLocalNode(conf) ++ Seq("-client")
+  def getH2OClientArgs(conf: H2OConf): Array[String] = getH2OWorkerAsClientArgs(conf) ++ Seq("-client")
 
 
   val TEMP_DIR_ATTEMPTS = 1000

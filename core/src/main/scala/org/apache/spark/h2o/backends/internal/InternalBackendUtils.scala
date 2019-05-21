@@ -58,7 +58,7 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
 object InternalBackendUtils extends InternalBackendUtils {
 
   def checkUnsupportedSparkOptions(unsupportedSparkOptions: Seq[(String, String)], conf: H2OConf): Unit = {
-    unsupportedSparkOptions.foreach(opt => if (conf.contains(opt._1) && (opt._2 == None || conf.get(opt._1) == opt._2)) {
+    unsupportedSparkOptions.foreach(opt => if (conf.contains(opt._1) && (opt._2 == "" || conf.get(opt._1) == opt._2)) {
       logWarning(s"Unsupported options ${opt._1} detected!")
       if (conf.isFailOnUnsupportedSparkParamEnabled) {
         logWarning(
@@ -66,7 +66,7 @@ object InternalBackendUtils extends InternalBackendUtils {
              |The application is going down, since the parameter ${SharedBackendConf.PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM} is true!
              |If you would like to skip the fail call, please, specify the value of the parameter to false.
         """.stripMargin)
-        throw new IllegalArgumentException(s"Unsupported argument: ${opt}")
+        throw new IllegalArgumentException(s"Unsupported argument: $opt")
       }
     })
   }
@@ -78,7 +78,7 @@ object InternalBackendUtils extends InternalBackendUtils {
     *
     * @return array of H2O launcher command line arguments
     */
-  def getH2ONodeArgs(conf: H2OConf): Array[String] = {
+  def getH2OWorkerArgs(conf: H2OConf): Array[String] = {
     val ip = {
       val hostname = SharedBackendUtils.getHostname(SparkEnv.get)
       if (conf.ipBasedFlatfile) {
