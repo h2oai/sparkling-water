@@ -73,18 +73,9 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
     *
     * @return array of H2O launcher command line arguments
     */
-  def getH2ONodeArgs(conf: H2OConf, isLocal: Boolean): Array[String] = {
-    var args = (getH2OCommonArgs(conf) ++
+  def getH2ONodeArgs(conf: H2OConf): Array[String] = {
+    (getH2OCommonArgs(conf) ++
       Seq("-log_level", conf.h2oNodeLogLevel, "-baseport", conf.nodeBasePort.toString)).toArray
-
-    // Disable web on h2o nodes in non-local mode
-    if (!isLocal && !conf.h2oNodeWebEnabled) {
-        args ++ Array("-disable_web")
-    } else {
-      // In local mode we don't start h2o client and use standalone h2o mode right away. We need to set login configuration
-      // in this case explicitly
-      getH2OClientArgsLocalNode(conf)
-    }
   }
 
 
@@ -115,31 +106,18 @@ private[internal] trait InternalBackendUtils extends SharedBackendUtils {
 }
 
 object InternalBackendUtils extends InternalBackendUtils {
-  def toFlatFileString(conf: H2OConf, executors: Array[NodeDesc]): String = {
+
+  def toH2OArgs(h2oArgs: Array[String], executors: Array[NodeDesc] = Array()): Array[String] = {
+    toH2OArgs(h2oArgs, toFlatFileString(executors))
+  }
+
+  private def toH2OArgs(h2oArgs: Array[String], flatFileString: String): Array[String] = {
+    h2oArgs ++ Array("-flatfile", SharedBackendUtils.saveAsFile(flatFileString).getAbsolutePath)
+  }
+
+  private def toFlatFileString(executors: Array[NodeDesc]): String = {
     executors.map {
-      en => s"${if (conf.ipBasedFlatfile) translateHostnameToIp(en.hostname) else en.hostname}:${en.port}"
+      en => s"${en.hostname}:${en.port}"
     }.mkString("\n")
   }
-
-  def translateHostnameToIp(hostname: String): String = {
-    import java.net.InetAddress
-    InetAddress.getByName(hostname).getHostAddress
-  }
-
-
-  def toH2OArgs(h2oArgs: Array[String], conf: H2OConf, executors: Array[NodeDesc]): Array[String] = {
-    toH2OArgs(
-      h2oArgs,
-      if (conf.useFlatFile) Some(toFlatFileString(conf, executors))
-      else None)
-  }
-
-  def toH2OArgs(h2oArgs: Array[String], flatFileString: Option[String]): Array[String] = {
-    val launcherArgs = flatFileString
-      .map(f => SharedBackendUtils.saveAsFile(f))
-      .map(f => h2oArgs ++ Array("-flatfile", f.getAbsolutePath))
-      .getOrElse(h2oArgs)
-    launcherArgs
-  }
-
 }
