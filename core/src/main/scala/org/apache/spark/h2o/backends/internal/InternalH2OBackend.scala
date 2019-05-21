@@ -70,21 +70,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
   /** Initialize Sparkling H2O and start H2O cloud. */
   override def init(): Array[NodeDesc] = {
     logInfo(s"Starting H2O services: " + hc.getConf)
-
-    if (hc.sparkContext.isLocal) {
-      return Array(InternalH2OBackend.startH2OWorkerAsClient(hc._conf))
-    }
-
-    val endpoints = InternalH2OBackend.registerEndpoints(hc)
-    val nodes = InternalH2OBackend.startH2OWorkers(endpoints, hc._conf)
-    val clientNode = InternalH2OBackend.startH2OClient(hc._conf, nodes)
-    InternalH2OBackend.distributeFlatFile(endpoints, nodes, clientNode)
-    InternalH2OBackend.tearDownEndpoints(endpoints)
-
-    InternalH2OBackend.registerNewExecutorListener(hc)
-
-    H2O.waitForCloudSize(endpoints.length, hc.getConf.cloudTimeout)
-
+    val nodes = InternalH2OBackend.startH2OCluster(hc)
     // Register web API for client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
@@ -99,6 +85,23 @@ object InternalH2OBackend extends Logging {
   val UNSUPPORTED_SPARK_OPTIONS: Seq[(String, String)] = Seq(
     ("spark.dynamicAllocation.enabled", "true"),
     ("spark.speculation", "true"))
+
+  private def startH2OCluster(hc: H2OContext): Array[NodeDesc] ={
+    if (hc.sparkContext.isLocal) {
+      Array(InternalH2OBackend.startH2OWorkerAsClient(hc._conf))
+    } else {
+      val endpoints = InternalH2OBackend.registerEndpoints(hc)
+      val workerNodes = InternalH2OBackend.startH2OWorkers(endpoints, hc._conf)
+      val clientNode = InternalH2OBackend.startH2OClient(hc._conf, workerNodes)
+      InternalH2OBackend.distributeFlatFile(endpoints, workerNodes, clientNode)
+      InternalH2OBackend.tearDownEndpoints(endpoints)
+
+      InternalH2OBackend.registerNewExecutorListener(hc)
+
+      H2O.waitForCloudSize(endpoints.length, hc.getConf.cloudTimeout)
+      workerNodes
+    }
+  }
 
   private def registerNewExecutorListener(hc: H2OContext): Unit = {
     if (!hc.sparkContext.master.startsWith("local-cluster[") && hc.getConf.isClusterTopologyListenerEnabled) {
@@ -143,7 +146,7 @@ object InternalH2OBackend extends Logging {
     val args = InternalBackendUtils.getH2OClientArgsLocalNode(conf)
     val launcherArgs = InternalBackendUtils.toH2OArgs(args)
 
-    H2OStarter.start(launcherArgs, true)
+    H2OStarter.start(launcherArgs, false)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostName, H2O.API_PORT)
   }
 
