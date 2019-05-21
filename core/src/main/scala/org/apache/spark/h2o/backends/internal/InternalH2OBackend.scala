@@ -75,7 +75,8 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     val nodes = InternalH2OBackend.startH2OWorkers(endpoints, hc._conf, hc.sparkContext.getConf, hc.sparkContext.isLocal)
     val clientNode = InternalH2OBackend.startH2OClient(hc.sparkContext.isLocal, hc._conf, nodes)
     InternalH2OBackend.distributeFlatFile(endpoints, nodes, clientNode)
-
+    InternalH2OBackend.tearDownEndpoints(endpoints)
+    
     InternalH2OBackend.registerNewExecutorListener(hc)
 
     H2O.waitForCloudSize(endpoints.length, hc.getConf.cloudTimeout)
@@ -104,6 +105,8 @@ object InternalH2OBackend extends Logging {
       })
     }
   }
+
+  private def tearDownEndpoints(endpoints: Array[RpcEndpointRef]): Unit = endpoints.foreach(_.send(StopEndpoint))
 
   private def registerEndpoints(hc: H2OContext): Array[RpcEndpointRef] = {
     val endpoints = new SpreadRDDBuilder(hc, InternalBackendUtils.guessTotalExecutorSize(hc.sparkContext)).build()

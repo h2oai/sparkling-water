@@ -42,6 +42,8 @@ class H2OStarterEndpoint(override val rpcEnv: RpcEnv)
       val h2oNode = H2ONode.intern(InetAddress.getByName(ip), port)
         H2O.addNodeToFlatfile(h2oNode)
       }
+    case StopEndpoint =>
+      this.stop()
   }
 
   override def receiveAndReply(context: RpcCallContext): PartialFunction[Any, Unit] = {
@@ -80,6 +82,7 @@ object H2OStarterEndpoint {
   }
 }
 
+case class StopEndpoint()
 
 case class FlatFileMsg(nodes: Array[NodeDesc])
 
