@@ -86,7 +86,7 @@ object InternalH2OBackend extends Logging {
     ("spark.dynamicAllocation.enabled", "true"),
     ("spark.speculation", "true"))
 
-  private def startH2OCluster(hc: H2OContext): Array[NodeDesc] ={
+  private def startH2OCluster(hc: H2OContext): Array[NodeDesc] = {
     if (hc.sparkContext.isLocal) {
       Array(InternalH2OBackend.startH2OWorkerAsClient(hc._conf))
     } else {
@@ -137,8 +137,8 @@ object InternalH2OBackend extends Logging {
   }
 
   private def distributeFlatFile(endpoints: Array[RpcEndpointRef], nodes: Array[NodeDesc], clientNode: NodeDesc): Unit = {
-    endpoints.foreach { ref =>
-      ref.send(FlatFileMsg(nodes ++ Array(clientNode)))
+    endpoints.foreach {
+      _.send(FlatFileMsg(nodes ++ Array(clientNode)))
     }
   }
 
@@ -191,7 +191,7 @@ object InternalH2OBackend extends Logging {
     }
   }
 
-  private  def translateHostnameToIp(hostname: String): String = {
+  private def translateHostnameToIp(hostname: String): String = {
     import java.net.InetAddress
     InetAddress.getByName(hostname).getHostAddress
   }
