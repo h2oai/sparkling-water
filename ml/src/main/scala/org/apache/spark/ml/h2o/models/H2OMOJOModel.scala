@@ -21,10 +21,8 @@ import java.util
 
 import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.util._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, _}
