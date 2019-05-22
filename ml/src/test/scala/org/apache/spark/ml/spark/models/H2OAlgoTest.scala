@@ -42,7 +42,7 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
       .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
       // Create GBM model
      val algo = new H2OGLM()
-        .setTrainRatio(0.8)
+        .setSplitRatio(0.8)
         .setSeed(1)
         .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON")
         .setLabelCol("AGE")
