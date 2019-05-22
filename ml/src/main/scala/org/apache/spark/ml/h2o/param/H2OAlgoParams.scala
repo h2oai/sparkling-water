@@ -29,16 +29,13 @@ import water.util.DeprecatedMethod
 trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OCommonParams with DeprecatableParams {
 
   override protected def renamingMap: Map[String, String] = Map(
-    "predictionCol" -> "labelCol"
+    "predictionCol" -> "labelCol",
+    "splitRatio" -> "ratio"
   )
 
   //
   // Param definitions
   //
-  private val ratio = doubleParam(
-    "ratio",
-    "Determines in which ratios split the dataset")
-
   private val allStringColumnsToCategorical = booleanParam(
     "allStringColumnsToCategorical",
     "Transform all strings columns to categorical")
@@ -60,7 +57,6 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   // Default values
   //
   setDefault(
-    ratio -> 1.0, // 1.0 means use whole frame as training frame
     nfolds -> parameters._nfolds,
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
@@ -75,7 +71,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   //
   // Getters
   //
-  def getTrainRatio(): Double = $(ratio)
+  @DeprecatedMethod("getSplitRatio")
+  def getTrainRatio(): Double = getSplitRatio()
 
   @DeprecatedMethod("getLabelCol")
   def getPredictionCol(): String = getLabelCol()
@@ -101,7 +98,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   //
   // Setters
   //
-  def setTrainRatio(value: Double): this.type = set(ratio, value)
+  @DeprecatedMethod("setSplitRatio")
+  def setTrainRatio(value: Double): this.type = setSplitRatio(value)
 
   @DeprecatedMethod("setLabelCol")
   def setPredictionCol(value: String): this.type = setLabelCol(value)
