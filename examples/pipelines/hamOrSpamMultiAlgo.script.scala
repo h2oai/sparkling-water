@@ -78,7 +78,7 @@ val algoStage = algo match {
   case "gbm" =>
     // Create GBM model
     new H2OGBM().
-      setTrainRatio(0.8).
+      setSplitRatio(0.8).
       setSeed(1).
       setFeaturesCols("tf_idf").
       setLabelCol("label")
