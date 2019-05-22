@@ -36,7 +36,7 @@ The ``H2OContext`` class provides the explicit conversion, ``asDataFrame``, whic
 
 .. code:: scala
 
-    def asDataFrame(fr : H2OFrame)(implicit sqlContext: SQLContext) : DataFrame
+    def asDataFrame(fr : H2OFrame): DataFrame
 
 This call does not require any type of parameters, but because it creates ``DataFrame`` instances, it requires access to an instance of ``SQLContext``. In this case, the instance is provided as an implicit parameter of the call. The parameter can be passed in two ways: as an explicit parameter or by introducing an implicit variable into the current context.
 
@@ -50,7 +50,7 @@ Using an explicit parameter in the call to pass sqlContext:
 .. code:: scala
 
     val sqlContext = new SQLContext(sc)
-    val schemaRDD = asDataFrame(h2oFrame)(sqlContext)
+    val schemaRDD = asDataFrame(h2oFrame)
 
 or as an implicit variable provided by the actual environment:
 
