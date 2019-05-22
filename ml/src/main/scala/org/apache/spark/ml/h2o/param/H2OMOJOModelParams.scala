@@ -27,31 +27,41 @@ trait H2OMOJOModelParams extends Params {
   //
   // Param definitions
   //
-  private val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
+  protected final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
   protected final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
-  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
+
+  protected final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
     "convertUnknownCategoricalLevelsToNa",
     "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
+
+  protected final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
+    " in the array but in the properly named columns")
+
+  //
   //
   // Default values
   //
-  setDefault(featuresCols -> Array.empty[String])
-  setDefault(predictionCol -> "prediction_output")
-  setDefault(convertUnknownCategoricalLevelsToNa -> false)
+  setDefault(
+    featuresCols -> Array.empty[String],
+    predictionCol -> "prediction_output",
+    convertUnknownCategoricalLevelsToNa -> false,
+    namedMojoOutputColumns -> true)
 
   //
   // Getters
   //
-
   def getPredictionCol(): String = $(predictionCol)
 
   def getFeaturesCols(): Array[String] = $(featuresCols)
 
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
+  def getNamedMojoOutputColumns() = $(namedMojoOutputColumns)
 
   //
   // Setters
   //
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
+
+  def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
 }
