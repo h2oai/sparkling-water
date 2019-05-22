@@ -394,7 +394,6 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
   // Param definitions
   //
   private val algo = new DoubleParam(this, "algo", "dummy argument for pysparkling")
-  private val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   protected final val gridAlgoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
   private val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
   private val strategy = new GridSearchStrategyParam(this, "strategy", "Search criteria strategy")
@@ -414,10 +413,7 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
   //
   setDefault(
     gridAlgoParams -> null,
-    ratio -> 1.0, // 1.0 means use whole frame as training frame
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
-    allStringColumnsToCategorical -> true,
-    columnsToCategorical -> Array.empty[String],
     strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian,
     maxRuntimeSecs -> 0,
     maxModels -> 0,
@@ -431,7 +427,6 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
   //
   // Getters
   //
-  def getRatio(): Double = $(ratio)
 
   def getHyperParameters(): util.Map[String, Array[AnyRef]] = $(hyperParameters)
 
@@ -457,7 +452,6 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
   //
   // Setters
   //
-  def setRatio(value: Double): this.type = set(ratio, value)
 
   def setAlgo(value: H2OAlgorithm[_ <: Model.Parameters]): this.type = {
     val field = PojoUtils.getFieldEvenInherited(value, "parameters")
