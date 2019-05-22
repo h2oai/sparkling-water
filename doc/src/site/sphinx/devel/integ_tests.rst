@@ -151,7 +151,7 @@ The following code reflects the use cases listed above. The code is executed in 
     import spark.implicits._
     val df = spark.sparkContext.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v))).toDF
     val hf = h2oContext.asH2OFrame(df)
-    val newRdd = h2oContext.asDataFrame(hf)(spark.sqlContext)
+    val newRdd = h2oContext.asDataFrame(hf)
 
 7. Integrate with H2O Algorithms using RDD as algorithm input:
 

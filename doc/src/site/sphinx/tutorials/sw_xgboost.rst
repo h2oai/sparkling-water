@@ -26,7 +26,7 @@ Parse the data using H2O and convert them to Spark Frame
 .. code:: scala
 
     val frame = new H2OFrame(new URI("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv"))
-    val sparkFrame = hc.asDataFrame(frame)(spark.sqlContext)
+    val sparkFrame = hc.asDataFrame(frame)
 
 Train the model. You can configure all the available XGBoost arguments using provided setters, such as the predictions column.
 
