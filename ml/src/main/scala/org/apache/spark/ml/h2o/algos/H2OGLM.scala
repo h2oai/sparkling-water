@@ -33,8 +33,7 @@ import water.AutoBuffer
 /**
   * H2O GLM algorithm exposed via Spark ML pipelines.
   */
-class H2OGLM(override val uid: String) extends H2OAlgorithm[GLMParameters]
-  with H2OGLMParams {
+class H2OGLM(override val uid: String) extends H2OAlgorithm[GLMParameters] with H2OGLMParams {
 
   def this() = this(Identifiable.randomUID("glm"))
 
