@@ -49,6 +49,9 @@ import scala.collection.mutable
 class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgorithmCommons with DefaultParamsWritable with H2OGridSearchParams {
 
+  // Override default values
+  setDefault(convertUnknownCategoricalLevelsToNa, true)
+
   private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
   def this() = this(Identifiable.randomUID("gridsearch"))
@@ -394,25 +397,17 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
   private val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   protected final val gridAlgoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
   private val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
-  private val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-  private val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
   private val strategy = new GridSearchStrategyParam(this, "strategy", "Search criteria strategy")
   private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "maxRuntimeSecs")
   private val maxModels = new IntParam(this, "maxModels", "maxModels")
-  private val seed = new LongParam(this, "seed", "seed for hyper params search")
   private val stoppingRounds = new IntParam(this, "stoppingRounds", "Early stopping based on convergence of stoppingMetric")
   private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Relative tolerance for metric-based" +
     " stopping criterion: stop if relative improvement is not at least this much.")
   private val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping Metric")
-  private val nfolds = new IntParam(this, "nfolds", "nfolds")
   private val selectBestModelBy = new MetricParam(this, "selectBestModelBy", "Select best model by specific metric." +
     "If this value is not specified that the first model os taken.")
   private val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
     "True if sort in decreasing order accordingto selected metrics")
-  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(
-    this,
-    "convertUnknownCategoricalLevelsToNa",
-    "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
 
   //
   // Default values
@@ -426,14 +421,11 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
     strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian,
     maxRuntimeSecs -> 0,
     maxModels -> 0,
-    seed -> -1,
     stoppingRounds -> 0,
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
-    nfolds -> 0,
     selectBestModelBy -> null,
-    selectBestModelDecreasing -> true,
-    convertUnknownCategoricalLevelsToNa -> true
+    selectBestModelDecreasing -> true
   )
 
   //
@@ -446,17 +438,11 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
   @DeprecatedMethod("getLabelCol")
   def getPredictionCol(): String = getLabelCol()
 
-  def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
-
-  def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
-
   def getStrategy(): HyperSpaceSearchCriteria.Strategy = $(strategy)
 
   def getMaxRuntimeSecs(): Double = $(maxRuntimeSecs)
 
   def getMaxModels(): Int = $(maxModels)
-
-  def getSeed(): Long = $(seed)
 
   def getStoppingRounds(): Int = $(stoppingRounds)
 
@@ -464,13 +450,9 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
 
   def getStoppingMetric(): ScoreKeeper.StoppingMetric = $(stoppingMetric)
 
-  def getNfolds(): Int = $(nfolds)
-
   def getSelectBestModelBy(): H2OGridSearchMetric = $(selectBestModelBy)
 
   def getSelectBestModelDecreasing(): Boolean = $(selectBestModelDecreasing)
-
-  def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
   //
   // Setters
@@ -497,19 +479,11 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
   @DeprecatedMethod("setLabelCol")
   def setPredictionCol(value: String): this.type = setLabelCol(value)
 
-  def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
-
-  def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
-
-  def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
-
   def setStrategy(value: HyperSpaceSearchCriteria.Strategy): this.type = set(strategy, value)
 
   def setMaxRuntimeSecs(value: Double): this.type = set(maxRuntimeSecs, value)
 
   def setMaxModels(value: Int): this.type = set(maxModels, value)
-
-  def setSeed(value: Long): this.type = set(seed, value)
 
   def setStoppingRounds(value: Int): this.type = set(stoppingRounds, value)
 
@@ -517,13 +491,9 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
 
   def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = set(stoppingMetric, value)
 
-  def setNfolds(value: Int): this.type = set(nfolds, value)
-
   def setSelectBestModelBy(value: H2OGridSearchMetric): this.type = set(selectBestModelBy, value)
 
   def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
-
-  def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 }
 
 class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: String,
