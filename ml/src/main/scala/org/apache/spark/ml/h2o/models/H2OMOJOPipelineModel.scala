@@ -163,7 +163,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     fr
   }
 
-  override def getPredictionSchema(): Seq[StructField] = {
+  override protected def getPredictionSchema(): Seq[StructField] = {
     val fields = StructField("original", ArrayType(DoubleType)) :: Nil
     Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
   }

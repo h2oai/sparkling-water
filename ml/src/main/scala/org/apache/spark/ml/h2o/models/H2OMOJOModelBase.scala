@@ -26,7 +26,7 @@ import org.apache.spark.ml.{Model => SparkModel}
 abstract class H2OMOJOModelBase[T <: SparkModel[T]]
   extends SparkModel[T] with H2OMOJOModelParams with MLWritable with HasMojoData {
 
-  def getPredictionSchema(): Seq[StructField]
+  protected def getPredictionSchema(): Seq[StructField]
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {

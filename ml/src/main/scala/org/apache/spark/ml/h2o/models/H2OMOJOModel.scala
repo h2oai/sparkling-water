@@ -33,7 +33,7 @@ import water.support.ModelSerializationSupport
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
-  @transient var easyPredictModelWrapper: EasyPredictModelWrapper = _
+  @transient private var easyPredictModelWrapper: EasyPredictModelWrapper = _
 
   case class BinomialPrediction(p0: Double, p1: Double)
 
@@ -53,7 +53,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
 
   case class AnomalyPrediction(score: Double, normalizedScore: Double)
 
-  override def getPredictionSchema(): Seq[StructField] = {
+  override protected def getPredictionSchema(): Seq[StructField] = {
     val fields = getOrCreateEasyModelWrapper().getModelCategory match {
       case ModelCategory.Binomial =>
         val binomialSchemaBase = Seq("p0", "p1")
@@ -82,7 +82,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     getOrCreateEasyModelWrapper().m.calibrateClassProbabilities(Array.fill[Double](2)(0))
   }
 
-  def getModelUdf() = {
+  private def getModelUdf() = {
     val modelUdf = {
       getOrCreateEasyModelWrapper().getModelCategory match {
         case ModelCategory.Binomial =>
