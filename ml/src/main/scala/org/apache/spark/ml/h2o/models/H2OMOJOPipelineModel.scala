@@ -24,10 +24,7 @@ import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.internal.Logging
-import org.apache.spark.ml.h2o.param.H2OMOJOPipelineModelParams
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.util._
-import org.apache.spark.ml.{Model => SparkModel}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types._
@@ -38,8 +35,7 @@ import scala.collection.mutable
 import scala.util.Random
 
 
-class H2OMOJOPipelineModel(override val uid: String)
-  extends SparkModel[H2OMOJOPipelineModel] with H2OMOJOPipelineModelParams with MLWritable with HasMojoData {
+class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOPipelineModel] {
 
   case class Mojo2Prediction(preds: List[Double])
 
@@ -170,13 +166,9 @@ class H2OMOJOPipelineModel(override val uid: String)
     fr
   }
 
-  def predictionSchema(): Seq[StructField] = {
+  override protected def getPredictionSchema(): Seq[StructField] = {
     val fields = StructField("original", ArrayType(DoubleType)) :: Nil
     Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
-  }
-
-  override def transformSchema(schema: StructType): StructType = {
-    StructType(schema ++ predictionSchema())
   }
 
   @DeprecatedMethod("getFeaturesCols")
@@ -199,8 +191,6 @@ class H2OMOJOPipelineModel(override val uid: String)
       func(col(s"${getPredictionCol()}.preds")).alias(column)
     }
   }
-
-  override def write: MLWriter = new H2OMOJOWriter(this, getMojoData)
 }
 
 object H2OMOJOPipelineModel extends H2OMOJOReadable[PyH2OMOJOPipelineModel] with H2OMOJOLoader[PyH2OMOJOPipelineModel] {
