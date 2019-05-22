@@ -13,7 +13,8 @@ class H2OCommonParams(Params):
     labelCol = Param(Params._dummy(), "labelCol", "Label column name")
     foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
-
+    splitRatio = Param(Params._dummy(), "splitRatio",
+                       "Accepts value from 0 to 1.0 and determine how large part of dataset will be used for training and for validation")
     ##
     # Getters
     ##
@@ -28,6 +29,9 @@ class H2OCommonParams(Params):
 
     def getWeightCol(self):
         return self.getOrDefault(self.weightCol)
+
+    def getSplitRatio(self):
+        return self.getOrDefault(self.splitRatio)
 
     ##
     # Setters
@@ -48,12 +52,14 @@ class H2OCommonParams(Params):
         assert_is_type(value, str)
         return self._set(weightCol=value)
 
+    def setSplitRatio(self, value):
+        assert_is_type(value, int, float)
+        return self._set(splitRatio=value)
 
 class H2OAlgorithmParams(H2OCommonParams):
     ##
     # Param definitions
     ##
-    ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
     nfolds = Param(Params._dummy(), "nfolds", "Number of folds for K-fold cross-validation (0 to disable or >= 2)")
@@ -68,7 +74,8 @@ class H2OAlgorithmParams(H2OCommonParams):
     # Getters
     ##
     def getRatio(self):
-        return self.getOrDefault(self.ratio)
+        warnings.warn("The method 'getRatio' is deprecated. Use 'getSplitRatio' instead!")
+        return self.getSplitRatio()
 
     def getPredictionCol(self):
         warnings.warn("The method 'getPredictionCol' is deprecated. Use 'getLabelCol' instead!")
@@ -106,8 +113,8 @@ class H2OAlgorithmParams(H2OCommonParams):
     # Setters
     ##
     def setRatio(self, value):
-        assert_is_type(value, int, float)
-        return self._set(ratio=value)
+        warnings.warn("The method 'setRatio' is deprecated. Use 'setSplitRatio' instead!")
+        return self.setSplitRatio(value)
 
     def setPredictionCol(self, value):
         warnings.warn("The method 'setPredictionCol' is deprecated. Use 'setLabelCol' instead!")
@@ -408,7 +415,6 @@ class H2OAutoMLParams(H2OCommonParams):
     ##
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
-    ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
     ignoredCols = Param(Params._dummy(), "ignoredCols", "Ignored column names")
     includeAlgos = Param(Params._dummy(), "includeAlgos", "Algorithms to include when using automl")
     excludeAlgos = Param(Params._dummy(), "excludeAlgos", "Algorithms to exclude when using automl")
@@ -443,7 +449,8 @@ class H2OAutoMLParams(H2OCommonParams):
         return self.getOrDefault(self.columnsToCategorical)
 
     def getRatio(self):
-        return self.getOrDefault(self.ratio)
+        warnings.warn("The method 'getRatio' is deprecated. Use 'getSplitRatio' instead!")
+        return self.getSplitRatio()
 
     def getFoldColumn(self):
         warnings.warn("The method 'getFoldColumn' is deprecated. Use 'getFoldCol' instead!")
@@ -550,8 +557,8 @@ class H2OAutoMLParams(H2OCommonParams):
         return self._set(columnsToCategorical=value)
 
     def setRatio(self, value):
-        assert_is_type(value, int, float)
-        return self._set(ratio=value)
+        warnings.warn("The method 'setRatio' is deprecated. Use 'setSplitRatio' instead!")
+        return self.setSplitRatio(value)
 
     def setFoldColumn(self, value):
         warnings.warn("The method 'setFoldColumn' is deprecated. Use 'setFoldCol' instead!")
@@ -1259,7 +1266,6 @@ class H2OGridSearchParams(H2OCommonParams):
     # Param definitions
     ##
     algo = Param(Params._dummy(), "algo", "Algo to run grid search on")
-    ratio = Param(Params._dummy(), "ratio", "ratio")
     hyperParameters = Param(Params._dummy(), "hyperParameters", "Grid Search Hyper Params map")
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "allStringColumnsToCategorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "columnsToCategorical")
@@ -1282,7 +1288,8 @@ class H2OGridSearchParams(H2OCommonParams):
         return self._java_obj.getAlgoParams()
 
     def getRatio(self):
-        return self.getOrDefault(self.ratio)
+        warnings.warn("The method 'getRatio' is deprecated. Use 'getSplitRatio' instead!")
+        return self.getSplitRatio()
 
     def getHyperParameters(self):
         params = self.getOrDefault(self.hyperParameters)
@@ -1346,8 +1353,8 @@ class H2OGridSearchParams(H2OCommonParams):
         return self
 
     def setRatio(self, value):
-        assert_is_type(value, int, float)
-        return self._set(ratio=value)
+        warnings.warn("The method 'setRatio' is deprecated. Use 'setSplitRatio' instead!")
+        return self.setSplitRatio(value)
 
     def setHyperParameters(self, value):
         assert_is_type(value, None, {str : [object]})

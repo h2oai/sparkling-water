@@ -17,7 +17,7 @@
 package org.apache.spark.ml.h2o.param
 
 import org.apache.spark.internal.Logging
-import org.apache.spark.ml.param.{Param, Params, StringArrayParam}
+import org.apache.spark.ml.param.{DoubleParam, Param, Params, StringArrayParam}
 
 /**
   * This trait contains parameters that are shared across all algorithms.
@@ -28,6 +28,8 @@ trait H2OCommonParams extends Params with Logging {
   private val labelCol = new Param[String](this, "labelCol", "Label column name")
   private val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   private val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
+  private val splitRatio = new DoubleParam(this, "splitRatio",
+    "Accepts value from 0 to 1.0 and determine how large part of dataset will be used for training and for validation")
 
   //
   // Default values
@@ -36,7 +38,8 @@ trait H2OCommonParams extends Params with Logging {
     featuresCols -> Array.empty[String],
     labelCol -> "label",
     foldCol -> null,
-    weightCol -> null
+    weightCol -> null,
+    splitRatio -> 1.0 // Use whole frame as training frame
   )
 
   //
@@ -53,6 +56,7 @@ trait H2OCommonParams extends Params with Logging {
 
   def getWeightCol(): String = $(weightCol)
 
+  def getSplitRatio(): Double = $(splitRatio)
   //
   // Setters
   //
@@ -71,6 +75,7 @@ trait H2OCommonParams extends Params with Logging {
 
   def setWeightCol(columnName: String): this.type = set(weightCol, columnName)
 
+  def setSplitRatio(ratio: Double): this.type = set(splitRatio, ratio)
   //
   // Other methods
   //
