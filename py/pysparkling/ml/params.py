@@ -6,18 +6,57 @@ from py4j.java_gateway import JavaObject
 from py_sparkling.ml.util import get_correct_case_enum, get_enum_array_from_str_array
 import warnings
 
-class H2OAlgorithmParams(Params):
+
+class H2OCommonParams(Params):
+
+    featuresCols = Param(Params._dummy(), "featuresCols", "Name of feature columns")
+    labelCol = Param(Params._dummy(), "labelCol", "Label column name")
+    foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
+    weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
+
+    ##
+    # Getters
+    ##
+    def getFeaturesCols(self):
+        return self.getOrDefault(self.featuresCols)
+
+    def getLabelCol(self):
+        return self.getOrDefault(self.labelCol)
+
+    def getFoldCol(self):
+        return self.getOrDefault(self.foldCol)
+
+    def getWeightCol(self):
+        return self.getOrDefault(self.weightCol)
+
+    ##
+    # Setters
+    ##
+    def setFeaturesCols(self, value):
+        assert_is_type(value, [str])
+        return self._set(featuresCols=value)
+
+    def setLabelCol(self, value):
+        assert_is_type(value, str)
+        return self._set(labelCol=value)
+
+    def setFoldCol(self, value):
+        assert_is_type(value, str, None)
+        return self._set(foldCol=value)
+
+    def setWeightCol(self, value):
+        assert_is_type(value, str)
+        return self._set(weightCol=value)
+
+
+class H2OAlgorithmParams(H2OCommonParams):
     ##
     # Param definitions
     ##
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
-    labelCol = Param(Params._dummy(), "labelCol", "Label column name")
-    weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
-    featuresCols = Param(Params._dummy(), "featuresCols", "columns used as features")
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
     nfolds = Param(Params._dummy(), "nfolds", "Number of folds for K-fold cross-validation (0 to disable or >= 2)")
-    foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Whether to keep the predictions of the cross-validation models")
     keepCrossValidationFoldAssignment = Param(Params._dummy(), "keepCrossValidationFoldAssignment", "Whether to keep the cross-validation fold assignment")
     parallelizeCrossValidation = Param(Params._dummy(), "parallelizeCrossValidation", "Allow parallel training of cross-validation models")
@@ -35,15 +74,6 @@ class H2OAlgorithmParams(Params):
         warnings.warn("The method 'getPredictionCol' is deprecated. Use 'getLabelCol' instead!")
         return self.getLabelCol()
 
-    def getLabelCol(self):
-        return self.getOrDefault(self.labelCol)
-
-    def getWeightCol(self):
-        return self.getOrDefault(self.weightCol)
-
-    def getFeaturesCols(self):
-        return self.getOrDefault(self.featuresCols)
-
     def getAllStringColumnsToCategorical(self):
         return self.getOrDefault(self.allStringColumnsToCategorical)
 
@@ -52,9 +82,6 @@ class H2OAlgorithmParams(Params):
 
     def getNfolds(self):
         return self.getOrDefault(self.nfolds)
-
-    def getFoldCol(self):
-        return self.getOrDefault(self.foldCol)
 
     def getKeepCrossValidationPredictions(self):
         return self.getOrDefault(self.keepCrossValidationPredictions)
@@ -86,18 +113,6 @@ class H2OAlgorithmParams(Params):
         warnings.warn("The method 'setPredictionCol' is deprecated. Use 'setLabelCol' instead!")
         return self.setLabelCol(value)
 
-    def setLabelCol(self, value):
-        assert_is_type(value, str)
-        return self._set(labelCol=value)
-
-    def setWeightCol(self, value):
-        assert_is_type(value, str)
-        return self._set(weightCol=value)
-
-    def setFeaturesCols(self, value):
-        assert_is_type(value, [str])
-        return self._set(featuresCols=value)
-
     def setAllStringColumnsToCategorical(self, value):
         assert_is_type(value, bool)
         return self._set(allStringColumnsToCategorical=value)
@@ -109,10 +124,6 @@ class H2OAlgorithmParams(Params):
     def setNfolds(self, value):
         assert_is_type(value, int)
         return self._set(nfolds=value)
-
-    def setFoldCol(self, value):
-        assert_is_type(value, str, None)
-        return self._set(foldCol=value)
 
     def setKeepCrossValidationPredictions(self, value):
         assert_is_type(value, bool)
@@ -390,18 +401,14 @@ class H2ODeepLearningParams(H2OAlgorithmParams):
         return self._set(reproducible=value)
 
 
-class H2OAutoMLParams(Params):
+class H2OAutoMLParams(H2OCommonParams):
 
     ##
     # Param definitions
     ##
-    featuresCols = Param(Params._dummy(), "featuresCols", "columns used as features")
-    labelCol = Param(Params._dummy(), "labelCol", "Label column name")
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
     ratio = Param(Params._dummy(), "ratio", "Ration of frame which is used for training")
-    foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
-    weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
     ignoredCols = Param(Params._dummy(), "ignoredCols", "Ignored column names")
     includeAlgos = Param(Params._dummy(), "includeAlgos", "Algorithms to include when using automl")
     excludeAlgos = Param(Params._dummy(), "excludeAlgos", "Algorithms to exclude when using automl")
@@ -421,18 +428,13 @@ class H2OAutoMLParams(Params):
     keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Keep cross validation predictions")
     keepCrossValidationModels = Param(Params._dummy(), "keepCrossValidationModels", "Keep cross validation models")
     maxModels = Param(Params._dummy(), "maxModels", "Max models to train in AutoML")
+
     ##
     # Getters
     ##
-    def getFeaturesCols(self):
-        return self.getOrDefault(self.featuresCols)
-
     def getPredictionCol(self):
         warnings.warn("The method 'getPredictionCol' is deprecated. Use 'getLabelCol' instead!")
         return self.getLabelCol()
-
-    def getLabelCol(self):
-        return self.getOrDefault(self.labelCol)
 
     def getAllStringColumnsToCategorical(self):
         return self.getOrDefault(self.allStringColumnsToCategorical)
@@ -443,15 +445,9 @@ class H2OAutoMLParams(Params):
     def getRatio(self):
         return self.getOrDefault(self.ratio)
 
-    def getFoldCol(self):
-        return self.getOrDefault(self.foldCol)
-
     def getFoldColumn(self):
         warnings.warn("The method 'getFoldColumn' is deprecated. Use 'getFoldCol' instead!")
         return self.getFoldCol()
-
-    def getWeightCol(self):
-        return self.getOrDefault(self.weightCol)
 
     def getWeightsColumn(self):
         warnings.warn("The method 'getWeightsColumn' is deprecated. Use 'getWeightCol' instead!")
@@ -541,17 +537,9 @@ class H2OAutoMLParams(Params):
     ##
     # Setters
     ##
-    def setFeaturesCols(self, value):
-        assert_is_type(value, [str])
-        return self._set(featuresCols=value)
-
     def setPredictionCol(self, value):
         warnings.warn("The method 'setPredictionCol' is deprecated. Use 'setLabelCol' instead!")
         return self.setLabelCol(value)
-
-    def setLabelCol(self, value):
-        assert_is_type(value, str)
-        return self._set(labelCol=value)
 
     def setAllStringColumnsToCategorical(self, value):
         assert_is_type(value, bool)
@@ -565,17 +553,9 @@ class H2OAutoMLParams(Params):
         assert_is_type(value, int, float)
         return self._set(ratio=value)
 
-    def setFoldCol(self, value):
-        assert_is_type(value, None, str)
-        return self._set(foldCol=value)
-
     def setFoldColumn(self, value):
         warnings.warn("The method 'setFoldColumn' is deprecated. Use 'setFoldCol' instead!")
         return self.setFoldCol(value)
-
-    def setWeightCol(self, value):
-        assert_is_type(value, None, str)
-        return self._set(weightCol=value)
 
     def setWeightsColumn(self, value):
         warnings.warn("The method 'setWeightsColumn' is deprecated. Use 'setWeightCol' instead!")
@@ -1042,6 +1022,7 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.values(), value)
         return self._set(backend=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf(correct_case_value))
 
+
 class H2OGLMParams(H2OAlgorithmParams):
 
     ##
@@ -1271,17 +1252,15 @@ class H2OGLMParams(H2OAlgorithmParams):
         assert_is_type(value, bool)
         return self._set(earlyStopping=value)
 
-class H2OGridSearchParams(Params):
+
+class H2OGridSearchParams(H2OCommonParams):
 
     ##
     # Param definitions
     ##
-    featuresCols = Param(Params._dummy(), "featuresCols", "columns used as features")
     algo = Param(Params._dummy(), "algo", "Algo to run grid search on")
     ratio = Param(Params._dummy(), "ratio", "ratio")
     hyperParameters = Param(Params._dummy(), "hyperParameters", "Grid Search Hyper Params map")
-    labelCol = Param(Params._dummy(), "labelCol", "Label column name")
-    weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
     allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "allStringColumnsToCategorical")
     columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "columnsToCategorical")
     strategy = Param(Params._dummy(), "strategy", "strategy")
@@ -1292,7 +1271,6 @@ class H2OGridSearchParams(Params):
     stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "stoppingTolerance")
     stoppingMetric = Param(Params._dummy(), "stoppingMetric", "stoppingMetric")
     nfolds = Param(Params._dummy(), "nfolds", "nfolds")
-    foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     selectBestModelBy = Param(Params._dummy(), "selectBestModelBy", "selectBestModelBy")
     selectBestModelDecreasing = Param(Params._dummy(), "selectBestModelDecreasing", "selectBestModelDecreasing")
     convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
@@ -1300,15 +1278,6 @@ class H2OGridSearchParams(Params):
     ##
     # Getters
     ##
-    def getFeaturesCols(self):
-        return self.getOrDefault(self.featuresCols)
-
-    def getLabelCol(self):
-        return self.getOrDefault(self.labelCol)
-
-    def getWeightCol(self):
-        return self.getOrDefault(self.weightCol)
-
     def getAlgoParams(self):
         return self._java_obj.getAlgoParams()
 
@@ -1358,9 +1327,6 @@ class H2OGridSearchParams(Params):
     def getNfolds(self):
         return self.getOrDefault(self.nfolds)
 
-    def getFoldCol(self):
-        return self.getOrDefault(self.foldCol)
-
     def getSelectBestModelBy(self):
         # Convert Java Enum to String so we can represent it in Python
         return self.getOrDefault(self.selectBestModelBy).toString()
@@ -1374,18 +1340,6 @@ class H2OGridSearchParams(Params):
     ##
     # Setters
     ##
-    def setFeaturesCols(self, value):
-        assert_is_type(value, [str])
-        return self._set(featuresCols=value)
-
-    def setLabelCol(self, value):
-        assert_is_type(value, str)
-        return self._set(labelCol=value)
-
-    def setWeightCol(self, value):
-        assert_is_type(value, None, str)
-        return self._set(weightCol=value)
-
     def setAlgo(self, value):
         assert_is_type(value, object)
         self._java_obj.setAlgo(value._java_obj)
@@ -1443,10 +1397,6 @@ class H2OGridSearchParams(Params):
     def setNfolds(self, value):
         assert_is_type(value, int)
         return self._set(nfolds=value)
-
-    def setFoldCol(self, value):
-        assert_is_type(value, None, str)
-        return self._set(foldCol=value)
 
     def setSelectBestModelBy(self, value):
         # H2O typechecks does not check for case sensitivity
