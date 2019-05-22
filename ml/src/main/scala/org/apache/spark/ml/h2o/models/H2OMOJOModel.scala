@@ -21,12 +21,10 @@ import java.util
 
 import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import org.apache.spark.annotation.{DeveloperApi, Since}
+import org.apache.spark.annotation.Since
 import org.apache.spark.h2o.utils.H2OSchemaUtils
-import org.apache.spark.ml.h2o.param.H2OMOJOModelParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
-import org.apache.spark.ml.{Model => SparkModel}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, _}
@@ -34,8 +32,7 @@ import org.apache.spark.{ml, mllib}
 import py_sparkling.ml.models.{H2OMOJOModel => PyH2OMOJOModel}
 import water.support.ModelSerializationSupport
 
-class H2OMOJOModel(override val uid: String)
-  extends SparkModel[H2OMOJOModel] with H2OMOJOModelParams with MLWritable with HasMojoData {
+class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient var easyPredictModelWrapper: EasyPredictModelWrapper = _
@@ -58,7 +55,7 @@ class H2OMOJOModel(override val uid: String)
 
   case class AnomalyPrediction(score: Double, normalizedScore: Double)
 
-  def predictionSchema(): Seq[StructField] = {
+  override def getPredictionSchema(): Seq[StructField] = {
     val fields = getOrCreateEasyModelWrapper().getModelCategory match {
       case ModelCategory.Binomial =>
         val binomialSchemaBase = Seq("p0", "p1")
@@ -145,7 +142,6 @@ class H2OMOJOModel(override val uid: String)
     modelUdf
   }
 
-
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
   private def getOrCreateEasyModelWrapper() = {
@@ -209,17 +205,6 @@ class H2OMOJOModel(override val uid: String)
       }
     }
   }
-
-  @DeveloperApi
-  override def transformSchema(schema: StructType): StructType = {
-    // Here we should check validity of input schema however
-    // in theory user can pass invalid schema with missing columns
-    // and model will be able to still provide a prediction
-    StructType(schema.fields ++ predictionSchema)
-  }
-
-  @Since("1.6.0")
-  override def write: MLWriter = new H2OMOJOWriter(this, getMojoData)
 }
 
 
