@@ -36,10 +36,6 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   //
   // Param definitions
   //
-  private val ratio = doubleParam(
-    "ratio",
-    "Determines in which ratios split the dataset")
-
   private val allStringColumnsToCategorical = booleanParam(
     "allStringColumnsToCategorical",
     "Transform all strings columns to categorical")
