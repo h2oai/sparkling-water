@@ -154,7 +154,7 @@ object InternalH2OBackend extends Logging {
   private def startH2OWorkers(endpoints: Array[RpcEndpointRef], conf: H2OConf): Array[NodeDesc] = {
     endpoints.map {
       _.askSync[NodeDesc](StartH2OWorkersMsg(conf))
-    }.distinct
+    }
   }
 
 
