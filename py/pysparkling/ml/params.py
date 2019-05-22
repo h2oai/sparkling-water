@@ -14,7 +14,8 @@ class H2OCommonParams(Params):
     foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
     splitRatio = Param(Params._dummy(), "splitRatio",
-                       "Accepts value from 0 to 1.0 and determine how large part of dataset will be used for training and for validation")
+                       "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training and for validation. "
+                       "For example, 0.8 -> 80% training 20% validation.")
     ##
     # Getters
     ##

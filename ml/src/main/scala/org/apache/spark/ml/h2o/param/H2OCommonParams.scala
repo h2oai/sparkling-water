@@ -29,7 +29,8 @@ trait H2OCommonParams extends Params with Logging {
   private val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   private val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
   private val splitRatio = new DoubleParam(this, "splitRatio",
-    "Accepts value from 0 to 1.0 and determine how large part of dataset will be used for training and for validation")
+    "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training and for validation. " +
+      "For example, 0.8 -> 80% training 20% validation.")
 
   //
   // Default values
