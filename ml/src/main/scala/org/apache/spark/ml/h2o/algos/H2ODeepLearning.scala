@@ -27,8 +27,7 @@ import org.apache.spark.ml.util._
   *
   * TODO: There are still bunch of parameters defined DeepLearningParameters which need to be ported here
   */
-class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearningParameters]
-  with H2ODeepLearningParams {
+class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearningParameters] with H2ODeepLearningParams {
 
   def this() = this(Identifiable.randomUID("deeplearning"))
 

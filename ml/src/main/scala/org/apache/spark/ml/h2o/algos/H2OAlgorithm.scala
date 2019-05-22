@@ -42,19 +42,9 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag] extends Estimator[
     // Update H2O params based on provided configuration
     updateH2OParams()
 
-    val input = prepareDatasetForFitting(dataset)
-
-    // check if we need to do any splitting
-    if (getTrainRatio() < 1.0) {
-      // need to do splitting
-      val keys = H2OFrameSupport.split(input, Seq(Key.rand(), Key.rand()), Seq(getTrainRatio()))
-      parameters._train = keys(0)._key
-      if (keys.length > 1) {
-        parameters._valid = keys(1)._key
-      }
-    } else {
-      parameters._train = input._key
-    }
+    val (train, valid) = prepareDatasetForFitting(dataset)
+    parameters._train = train._key
+    parameters._valid = valid.map(_._key).orNull
 
     val trainFrame = parameters._train.get()
     if (getAllStringColumnsToCategorical()) {

@@ -30,7 +30,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
 
   override protected def renamingMap: Map[String, String] = Map(
     "predictionCol" -> "labelCol",
-    "splitRatio" -> "ratio"
+    "ratio" -> "splitRatio"
   )
 
   //

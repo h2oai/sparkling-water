@@ -25,10 +25,10 @@ import org.apache.spark.ml.param.{DoubleParam, Param, Params, StringArrayParam}
 trait H2OCommonParams extends Params with Logging {
 
   protected final val featuresCols = new StringArrayParam(this, "featuresCols", "Name of feature columns")
-  private val labelCol = new Param[String](this, "labelCol", "Label column name")
-  private val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
-  private val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
-  private val splitRatio = new DoubleParam(this, "splitRatio",
+  protected final val labelCol = new Param[String](this, "labelCol", "Label column name")
+  protected final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
+  protected final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
+  protected final val splitRatio = new DoubleParam(this, "splitRatio",
     "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training and for validation. " +
       "For example, 0.8 -> 80% training 20% validation.")
 
