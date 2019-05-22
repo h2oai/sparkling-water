@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.backends.internal
 
 import org.apache.spark.SparkEnv
-import org.apache.spark.h2o.backends.{SharedBackendUtils, SparklingBackend}
+import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
@@ -71,7 +71,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
   override def init(): Array[NodeDesc] = {
     logInfo(s"Starting H2O services: " + hc.getConf)
     val nodes = InternalH2OBackend.startH2OCluster(hc)
-    // Register web API for client
+    // Register H2O and Sparkling Water REST API for H2O client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
     nodes
@@ -93,7 +93,7 @@ object InternalH2OBackend extends Logging {
       val endpoints = InternalH2OBackend.registerEndpoints(hc)
       val workerNodes = InternalH2OBackend.startH2OWorkers(endpoints, hc._conf)
       val clientNode = InternalH2OBackend.startH2OClient(hc._conf, workerNodes)
-      InternalH2OBackend.distributeFlatFile(endpoints, workerNodes, clientNode)
+      InternalH2OBackend.distributeFlatFile(endpoints, hc._conf, workerNodes, clientNode)
       InternalH2OBackend.tearDownEndpoints(endpoints)
 
       InternalH2OBackend.registerNewExecutorListener(hc)
@@ -158,9 +158,9 @@ object InternalH2OBackend extends Logging {
   }
 
 
-  private def distributeFlatFile(endpoints: Array[RpcEndpointRef], nodes: Array[NodeDesc], clientNode: NodeDesc): Unit = {
+  private def distributeFlatFile(endpoints: Array[RpcEndpointRef], conf: H2OConf, nodes: Array[NodeDesc], clientNode: NodeDesc): Unit = {
     endpoints.foreach {
-      _.send(FlatFileMsg(nodes ++ Array(clientNode)))
+      _.send(FlatFileMsg(nodes ++ Array(clientNode), conf.internalPortOffset))
     }
   }
 

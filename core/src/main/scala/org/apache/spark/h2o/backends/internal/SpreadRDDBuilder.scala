@@ -41,7 +41,7 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
   private val numExecutors = conf.numH2OWorkers
 
   def build(): Array[RpcEndpointRef] = {
-    logDebug(s"Building SpreadRDD: numExecutors=${numExecutors}, numExecutorHint=${numExecutorHint}")
+    logDebug(s"Building SpreadRDD: numExecutors=$numExecutors, numExecutorHint=$numExecutorHint")
     build(conf.numRddRetries, conf.drddMulFactor, 0)
   }
 
@@ -122,7 +122,7 @@ object RpcReferenceCache {
   private def startEndpointOnH2OWorker(conf: SparkConf): RpcEndpointRef = {
     val securityMgr = SparkEnv.get.securityManager
     val rpcEnv = RpcEnv.create("service", SharedBackendUtils.getHostname(SparkEnv.get), 0, conf, securityMgr)
-    val endpoint = new H2OStarterEndpoint(rpcEnv)
+    val endpoint = new H2ORpcEndpoint(rpcEnv)
     rpcEnv.setupEndpoint("endp", endpoint)
   }
 }

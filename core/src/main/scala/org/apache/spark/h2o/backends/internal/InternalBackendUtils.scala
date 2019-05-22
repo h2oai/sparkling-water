@@ -99,7 +99,7 @@ object InternalBackendUtils extends InternalBackendUtils {
 
   def toH2OArgs(h2oArgs: Array[String], executors: Array[NodeDesc] = Array()): Array[String] = {
     val flatFileString = toFlatFileString(executors)
-    val flatFile = SharedBackendUtils.saveAsFile(flatFileString)
+    val flatFile = SharedBackendUtils.saveFlatFileAsFile(flatFileString)
     h2oArgs ++ Array("-flatfile", flatFile.getAbsolutePath)
   }
 

@@ -40,7 +40,7 @@ private[external] trait ExternalBackendUtils extends SharedBackendUtils {
   def cloudMembers = H2O.CLOUD.members().map(NodeDesc(_))
 
   private[this] def getH2OClientConnectionArgs(conf: H2OConf): Array[String] = {
-    conf.h2oCluster.map(clusterStr => Array("-flatfile", SharedBackendUtils.saveAsFile(clusterStr).getAbsolutePath)).getOrElse(Array())
+    conf.h2oCluster.map(clusterStr => Array("-flatfile", SharedBackendUtils.saveFlatFileAsFile(clusterStr).getAbsolutePath)).getOrElse(Array())
   }
 
   /** Check Spark and H2O environment, update it if necessary and and warn about possible problems.

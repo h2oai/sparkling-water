@@ -27,17 +27,20 @@ import org.apache.spark.rpc.{RpcCallContext, RpcEnv, ThreadSafeRpcEndpoint}
 import water.{H2O, H2ONode}
 
 /**
-  * An RpcEndpoint used to start H2O on remote executor
+  * An RpcEndpoint used for communication between H2O client and H2O worker nodes on remote executors.
+  * This endpoint is started on each Spark executor where H2O worker will be running.
   */
-class H2OStarterEndpoint(override val rpcEnv: RpcEnv)
+class H2ORpcEndpoint(override val rpcEnv: RpcEnv)
   extends ThreadSafeRpcEndpoint with Logging {
 
   override def receive: PartialFunction[Any, Unit] = {
-    case FlatFileMsg(nodes) =>
+    case FlatFileMsg(nodes, portOffset) =>
       nodes.map { pair =>
         val ip = pair.hostname
-        val port = pair.port + 1 // we send API ports, but to intern node, we need to use internal port
-      val h2oNode = H2ONode.intern(InetAddress.getByName(ip), port)
+        // FlatFile contains API ports, but to directly add a node, we need to use internal port which is formed as
+        // API_PORT  + PORT_OFFSET
+        val internalH2OPort = pair.port + portOffset
+        val h2oNode = H2ONode.intern(InetAddress.getByName(ip), internalH2OPort)
         H2O.addNodeToFlatfile(h2oNode)
       }
     case StopEndpointMsg =>
@@ -53,6 +56,6 @@ class H2OStarterEndpoint(override val rpcEnv: RpcEnv)
 
 case class StopEndpointMsg()
 
-case class FlatFileMsg(nodes: Array[NodeDesc])
+case class FlatFileMsg(nodes: Array[NodeDesc], portOffset: Int)
 
 case class StartH2OWorkersMsg(conf: H2OConf)

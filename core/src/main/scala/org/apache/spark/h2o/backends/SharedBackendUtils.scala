@@ -189,7 +189,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
 
 object SharedBackendUtils extends SharedBackendUtils {
 
-  def saveAsFile(content: String): File = {
+  def saveFlatFileAsFile(content: String): File = {
     val tmpDir = createTempDir()
     tmpDir.deleteOnExit()
     val flatFile = new File(tmpDir, "flatfile.txt")
