@@ -55,18 +55,10 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       // generate random name to generate fresh leaderboard (the default behaviour)
       setProjectName(Random.alphanumeric.take(30).mkString)
     }
-    val input = prepareDatasetForFitting(dataset)
-    // check if we need to do any splitting
-    if (getRatio() < 1.0) {
-      // need to do splitting
-      val keys = H2OFrameSupport.split(input, Seq(Key.rand(), Key.rand()), Seq(getRatio()))
-      spec.input_spec.training_frame = keys(0)._key
-      if (keys.length > 1) {
-        spec.input_spec.validation_frame = keys(1)._key
-      }
-    } else {
-      spec.input_spec.training_frame = input._key
-    }
+
+    val (train, valid) = prepareDatasetForFitting(dataset)
+    spec.input_spec.training_frame = train._key
+    spec.input_spec.validation_frame  = valid.map(_._key).orNull
 
     val trainFrame = spec.input_spec.training_frame.get()
     if (getAllStringColumnsToCategorical()) {
@@ -143,7 +135,8 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   override protected def renamingMap: Map[String, String] = Map(
     "predictionCol" -> "labelCol",
     "foldColumn" -> "foldCol",
-    "ignoredColumns" -> "ignoredCols"
+    "ignoredColumns" -> "ignoredCols",
+    "ratio" -> "splitRatio"
   )
 
   //
@@ -151,7 +144,6 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   //
   private val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
   private val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
-  private val ratio = new DoubleParam(this, "ratio", "Determines in which ratios split the dataset")
   private val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
   private val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
   private val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")

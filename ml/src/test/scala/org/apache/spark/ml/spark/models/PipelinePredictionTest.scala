@@ -97,7 +97,7 @@ abstract class PipelinePredictionTestBase extends FunSuite with SparkTestContext
 
     // Create GBM model
     val gbm = new H2OGBM()
-      .setTrainRatio(0.8)
+      .setSplitRatio(0.8)
       .setSeed(42)
       .setFeaturesCols("tf_idf")
       .setLabelCol("label")

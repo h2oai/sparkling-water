@@ -16,16 +16,19 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.h2o.param.H2OCommonParams
-import org.apache.spark.sql.{Dataset, SparkSession}
 import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.{Dataset, SparkSession}
+import water.Key
+import water.fvec.Frame
+import water.support.H2OFrameSupport
 
 /**
   * This trait contains methods that are shared across all algorithms.
   */
 trait H2OAlgorithmCommons extends H2OCommonParams {
-  protected def prepareDatasetForFitting(dataset: Dataset[_]): H2OFrame = {
+  protected def prepareDatasetForFitting(dataset: Dataset[_]): (Frame, Option[Frame]) = {
     val excludedCols = getExcludedCols()
 
     // if this is left empty select
@@ -36,6 +39,18 @@ trait H2OAlgorithmCommons extends H2OCommonParams {
 
     val cols = (getFeaturesCols() ++ excludedCols).map(col)
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
-    h2oContext.asH2OFrame(dataset.select(cols: _*).toDF())
+    val input = h2oContext.asH2OFrame(dataset.select(cols: _*).toDF())
+
+    if (getSplitRatio() < 1.0) {
+      // need to do splitting
+      val keys = H2OFrameSupport.split(input, Seq(Key.rand(), Key.rand()), Seq(getSplitRatio()))
+      if (keys.length > 1) {
+        (keys(0), Some(keys(1)))
+      } else {
+        (keys(0), None)
+      }
+    } else {
+      (input, None)
+    }
   }
 }

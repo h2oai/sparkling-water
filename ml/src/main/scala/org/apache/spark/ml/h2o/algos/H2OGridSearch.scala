@@ -72,18 +72,10 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 
     val hyperParams = processHyperParams(algoParams, getHyperParameters())
 
-    val input = prepareDatasetForFitting(dataset)
-    // check if we need to do any splitting
-    if (getRatio() < 1.0) {
-      // need to do splitting
-      val keys = H2OFrameSupport.split(input, Seq(Key.rand(), Key.rand()), Seq(getRatio()))
-      algoParams._train = keys(0)._key
-      if (keys.length > 1) {
-        algoParams._valid = keys(1)._key
-      }
-    } else {
-      algoParams._train = input._key
-    }
+    val (train, valid) = prepareDatasetForFitting(dataset)
+    algoParams._train = train._key
+    algoParams._valid = valid.map(_._key).orNull
+
     algoParams._nfolds = getNfolds()
     algoParams._fold_column = getFoldCol()
     algoParams._response_column = getLabelCol()
@@ -184,7 +176,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     if (getNfolds() > 1) {
       // use cross validation metrics
       model._output._cross_validation_metrics
-    } else if (getRatio() < 1) {
+    } else if (getSplitRatio() < 1) {
       // some portion of data is reserved for validation, use validation metrics
       model._output._validation_metrics
     } else {
@@ -391,7 +383,8 @@ object H2OGridSearch extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGrid
 trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
 
   override protected def renamingMap: Map[String, String] = Map(
-    "predictionCol" -> "labelCol"
+    "predictionCol" -> "labelCol",
+    "ratio" -> "splitRatio"
   )
 
   //
