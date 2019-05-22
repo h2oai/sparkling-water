@@ -181,7 +181,6 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   setDefault(
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
-    ratio -> 1.0, // 1.0 means use whole frame as training frame,
     ignoredCols -> Array.empty[String],
     includeAlgos -> null,
     excludeAlgos -> null,
@@ -212,7 +211,8 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
 
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
-  def getRatio(): Double = $(ratio)
+  @DeprecatedMethod("getSplitRatio")
+  def getRatio(): Double = getSplitRatio()
 
   @DeprecatedMethod("getFoldCol")
   def getFoldColumn() = getFoldCol()
@@ -271,7 +271,8 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
 
   def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
 
-  def setRatio(value: Double): this.type = set(ratio, value)
+  @DeprecatedMethod("setSplitRatio")
+  def setRatio(value: Double): this.type = setSplitRatio(value)
 
   @DeprecatedMethod("setFoldCol")
   def setFoldColumn(value: String): this.type = setFoldCol(value)
