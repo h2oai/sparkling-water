@@ -101,6 +101,7 @@ class H2OCommonParams(Params):
 
     def setColumnsToCategorical(self, value, *args):
         assert_is_type(value, [str], str)
+        
         if isinstance(value, str):
             prepared_array = [value]
         else:
