@@ -16,6 +16,21 @@ class H2OCommonParams(Params):
     splitRatio = Param(Params._dummy(), "splitRatio",
                        "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training and for validation. "
                        "For example, 0.8 -> 80% training 20% validation.")
+    seed = Param(Params._dummy(), "seed", "Used to specify seed to reproduce the model run")
+    nfolds = Param(Params._dummy(), "nfolds", "Number of fold columns")
+
+    allStringColumnsToCategorical = Param(Params._dummy(),
+                                          "allStringColumnsToCategorical",
+                                          "Transform all strings columns to categorical")
+
+    columnsToCategorical = Param(Params._dummy(),
+                                 "columnsToCategorical",
+                                 "List of columns to convert to categorical before modelling")
+
+    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(),
+                                                "convertUnknownCategoricalLevelsToNa",
+                                                "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
+
     ##
     # Getters
     ##
@@ -33,6 +48,21 @@ class H2OCommonParams(Params):
 
     def getSplitRatio(self):
         return self.getOrDefault(self.splitRatio)
+
+    def getSeed(self):
+        return self.getOrDefault(self.seed)
+
+    def getNfolds(self):
+        return self.getOrDefault(self.nfolds)
+
+    def getAllStringColumnsToCategorical(self):
+        return self.getOrDefault(self.allStringColumnsToCategorical)
+
+    def getColumnsToCategorical(self):
+        return self.getOrDefault(self.columnsToCategorical)
+
+    def getConvertUnknownCategoricalLevelsToNa(self):
+        return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
 
     ##
     # Setters
@@ -57,19 +87,44 @@ class H2OCommonParams(Params):
         assert_is_type(value, int, float)
         return self._set(splitRatio=value)
 
+    def setSeed(self, value):
+        assert_is_type(value, int)
+        return self._set(seed=value)
+
+    def setNfolds(self, value):
+        assert_is_type(value, int)
+        return self._set(nfolds=value)
+
+    def setAllStringColumnsToCategorical(self, value):
+        assert_is_type(value, bool)
+        return self._set(allStringColumnsToCategorical=value)
+
+    def setColumnsToCategorical(self, value, *args):
+        assert_is_type(value, [str], str)
+        
+        if isinstance(value, str):
+            prepared_array = [value]
+        else:
+            prepared_array = value
+
+        for arg in args:
+            prepared_array.append(arg)
+
+        return self._set(columnsToCategorical=value)
+
+    def setConvertUnknownCategoricalLevelsToNa(self, value):
+        assert_is_type(value, bool)
+        return self._set(convertUnknownCategoricalLevelsToNa=value)
+
+
 class H2OAlgorithmParams(H2OCommonParams):
     ##
     # Param definitions
     ##
-    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
-    nfolds = Param(Params._dummy(), "nfolds", "Number of folds for K-fold cross-validation (0 to disable or >= 2)")
     keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Whether to keep the predictions of the cross-validation models")
     keepCrossValidationFoldAssignment = Param(Params._dummy(), "keepCrossValidationFoldAssignment", "Whether to keep the cross-validation fold assignment")
     parallelizeCrossValidation = Param(Params._dummy(), "parallelizeCrossValidation", "Allow parallel training of cross-validation models")
-    seed = Param(Params._dummy(), "seed", "Seed for random numbers (affects sampling) - Note: only reproducible when running single threaded.")
     distribution = Param(Params._dummy(), "distribution", "Distribution function")
-    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
 
     ##
     # Getters
@@ -82,15 +137,6 @@ class H2OAlgorithmParams(H2OCommonParams):
         warnings.warn("The method 'getPredictionCol' is deprecated. Use 'getLabelCol' instead!")
         return self.getLabelCol()
 
-    def getAllStringColumnsToCategorical(self):
-        return self.getOrDefault(self.allStringColumnsToCategorical)
-
-    def getColumnsToCategorical(self):
-        return self.getOrDefault(self.columnsToCategorical)
-
-    def getNfolds(self):
-        return self.getOrDefault(self.nfolds)
-
     def getKeepCrossValidationPredictions(self):
         return self.getOrDefault(self.keepCrossValidationPredictions)
 
@@ -100,15 +146,9 @@ class H2OAlgorithmParams(H2OCommonParams):
     def getParallelizeCrossValidation(self):
         return self.getOrDefault(self.parallelizeCrossValidation)
 
-    def getSeed(self):
-        return self.getOrDefault(self.seed)
-
     def getDistribution(self):
         # Convert Java Enum to String so we can represent it in Python
         return self.getOrDefault(self.distribution).toString()
-
-    def getConvertUnknownCategoricalLevelsToNa(self):
-        return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
 
     ##
     # Setters
@@ -120,18 +160,6 @@ class H2OAlgorithmParams(H2OCommonParams):
     def setPredictionCol(self, value):
         warnings.warn("The method 'setPredictionCol' is deprecated. Use 'setLabelCol' instead!")
         return self.setLabelCol(value)
-
-    def setAllStringColumnsToCategorical(self, value):
-        assert_is_type(value, bool)
-        return self._set(allStringColumnsToCategorical=value)
-
-    def setColumnsToCategorical(self, value):
-        assert_is_type(value, [str])
-        return self._set(columnsToCategorical=value)
-
-    def setNfolds(self, value):
-        assert_is_type(value, int)
-        return self._set(nfolds=value)
 
     def setKeepCrossValidationPredictions(self, value):
         assert_is_type(value, bool)
@@ -145,19 +173,11 @@ class H2OAlgorithmParams(H2OCommonParams):
         assert_is_type(value, bool)
         return self._set(parallelizeCrossValidation=value)
 
-    def setSeed(self, value):
-        assert_is_type(value, int)
-        return self._set(seed=value)
-
     def setDistribution(self, value):
         assert_is_type(value, None, Enum("AUTO", "bernoulli", "quasibinomial", "modified_huber", "multinomial", "ordinal", "gaussian", "poisson", "gamma", "tweedie", "huber", "laplace", "quantile"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.genmodel.utils.DistributionFamily.values(), value)
         return self._set(distribution=jvm.hex.genmodel.utils.DistributionFamily.valueOf(correct_case_value))
-
-    def setConvertUnknownCategoricalLevelsToNa(self, value):
-        assert_is_type(value, bool)
-        return self._set(convertUnknownCategoricalLevelsToNa=value)
 
 
 class H2OSharedTreeParams(H2OAlgorithmParams):
@@ -414,8 +434,6 @@ class H2OAutoMLParams(H2OCommonParams):
     ##
     # Param definitions
     ##
-    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "List of columns to convert to categoricals before modelling")
     ignoredCols = Param(Params._dummy(), "ignoredCols", "Ignored column names")
     includeAlgos = Param(Params._dummy(), "includeAlgos", "Algorithms to include when using automl")
     excludeAlgos = Param(Params._dummy(), "excludeAlgos", "Algorithms to exclude when using automl")
@@ -425,9 +443,6 @@ class H2OAutoMLParams(H2OCommonParams):
     stoppingRounds = Param(Params._dummy(), "stoppingRounds", "Stopping rounds")
     stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "Stopping tolerance")
     stoppingMetric = Param(Params._dummy(), "stoppingMetric", "Stopping metric")
-    nfolds = Param(Params._dummy(), "nfolds", "Cross-validation fold construction")
-    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
-    seed = Param(Params._dummy(), "seed", "Seed for random numbers")
     sortMetric = Param(Params._dummy(), "sortMetric", "Sort metric for the AutoML leaderboard")
     balanceClasses = Param(Params._dummy(), "balanceClasses", "Balance classes")
     classSamplingFactors = Param(Params._dummy(), "classSamplingFactors", "Class sampling factors")
@@ -442,12 +457,6 @@ class H2OAutoMLParams(H2OCommonParams):
     def getPredictionCol(self):
         warnings.warn("The method 'getPredictionCol' is deprecated. Use 'getLabelCol' instead!")
         return self.getLabelCol()
-
-    def getAllStringColumnsToCategorical(self):
-        return self.getOrDefault(self.allStringColumnsToCategorical)
-
-    def getColumnsToCategorical(self):
-        return self.getOrDefault(self.columnsToCategorical)
 
     def getRatio(self):
         warnings.warn("The method 'getRatio' is deprecated. Use 'getSplitRatio' instead!")
@@ -508,15 +517,6 @@ class H2OAutoMLParams(H2OCommonParams):
         # Convert Java Enum to String so we can represent it in Python
         return self.getOrDefault(self.stoppingMetric).toString()
 
-    def getNfolds(self):
-        return self.getOrDefault(self.nfolds)
-
-    def getConvertUnknownCategoricalLevelsToNa(self):
-        return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
-
-    def getSeed(self):
-        return self.getOrDefault(self.seed)
-
     def getSortMetric(self):
         metric = self.getOrDefault(self.sortMetric)
         if metric is None:
@@ -548,14 +548,6 @@ class H2OAutoMLParams(H2OCommonParams):
     def setPredictionCol(self, value):
         warnings.warn("The method 'setPredictionCol' is deprecated. Use 'setLabelCol' instead!")
         return self.setLabelCol(value)
-
-    def setAllStringColumnsToCategorical(self, value):
-        assert_is_type(value, bool)
-        return self._set(allStringColumnsToCategorical=value)
-
-    def setColumnsToCategorical(self, value):
-        assert_is_type(value, [str])
-        return self._set(columnsToCategorical=value)
 
     def setRatio(self, value):
         warnings.warn("The method 'setRatio' is deprecated. Use 'setSplitRatio' instead!")
@@ -621,18 +613,6 @@ class H2OAutoMLParams(H2OCommonParams):
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
         correct_case_value = get_correct_case_enum(jvm.hex.ScoreKeeper.StoppingMetric.values(), value)
         return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
-
-    def setNfolds(self, value):
-        assert_is_type(value, int)
-        return self._set(nfolds=value)
-
-    def setConvertUnknownCategoricalLevelsToNa(self, value):
-        assert_is_type(value, bool)
-        return self._set(convertUnknownCategoricalLevelsToNa=value)
-
-    def setSeed(self, value):
-        assert_is_type(value, int)
-        return self._set(seed=value)
 
     def setSortMetric(self, value):
         assert_is_type(value, None, "AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC" "mean_per_class_error")
@@ -1268,19 +1248,14 @@ class H2OGridSearchParams(H2OCommonParams):
     ##
     algo = Param(Params._dummy(), "algo", "Algo to run grid search on")
     hyperParameters = Param(Params._dummy(), "hyperParameters", "Grid Search Hyper Params map")
-    allStringColumnsToCategorical = Param(Params._dummy(), "allStringColumnsToCategorical", "allStringColumnsToCategorical")
-    columnsToCategorical = Param(Params._dummy(), "columnsToCategorical", "columnsToCategorical")
     strategy = Param(Params._dummy(), "strategy", "strategy")
     maxRuntimeSecs = Param(Params._dummy(), "maxRuntimeSecs", "maxRuntimeSecs")
     maxModels = Param(Params._dummy(), "maxModels", "maxModels")
-    seed = Param(Params._dummy(), "seed", "seed")
     stoppingRounds = Param(Params._dummy(), "stoppingRounds", "stoppingRounds")
     stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "stoppingTolerance")
     stoppingMetric = Param(Params._dummy(), "stoppingMetric", "stoppingMetric")
-    nfolds = Param(Params._dummy(), "nfolds", "nfolds")
     selectBestModelBy = Param(Params._dummy(), "selectBestModelBy", "selectBestModelBy")
     selectBestModelDecreasing = Param(Params._dummy(), "selectBestModelDecreasing", "selectBestModelDecreasing")
-    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(), "convertUnknownCategoricalLevelsToNa", "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
 
     ##
     # Getters
@@ -1303,12 +1278,6 @@ class H2OGridSearchParams(H2OCommonParams):
         else:
             return params
 
-    def getAllStringColumnsToCategorical(self):
-        return self.getOrDefault(self.allStringColumnsToCategorical)
-
-    def getColumnsToCategorial(self):
-        return self.getOrDefault(self.columnsToCategorical)
-
     def getStrategy(self):
         # Convert Java Enum to String so we can represent it in Python
         return self.getOrDefault(self.strategy).toString()
@@ -1318,9 +1287,6 @@ class H2OGridSearchParams(H2OCommonParams):
 
     def getMaxModels(self):
         return self.getOrDefault(self.maxModels)
-
-    def getSeed(self):
-        return self.getOrDefault(self.seed)
 
     def getStoppingRounds(self):
         return self.getOrDefault(self.stoppingRounds)
@@ -1332,18 +1298,12 @@ class H2OGridSearchParams(H2OCommonParams):
         # Convert Java Enum to String so we can represent it in Python
         return self.getOrDefault(self.stoppingMetric).toString()
 
-    def getNfolds(self):
-        return self.getOrDefault(self.nfolds)
-
     def getSelectBestModelBy(self):
         # Convert Java Enum to String so we can represent it in Python
         return self.getOrDefault(self.selectBestModelBy).toString()
 
     def getSelectBestModelDecreasing(self):
         return self.getOrDefault(self.selectBestModelDecreasing)
-
-    def getConvertUnknownCategoricalLevelsToNa(self):
-        return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
 
     ##
     # Setters
@@ -1361,14 +1321,6 @@ class H2OGridSearchParams(H2OCommonParams):
         assert_is_type(value, None, {str : [object]})
         return self._set(hyperParameters=value)
 
-    def setAllStringColumnsToCategorical(self, value):
-        assert_is_type(value, bool)
-        return self._set(allStringColumnsToCategorical=value)
-
-    def setColumnsToCategorial(self, value):
-        assert_is_type(value, bool)
-        return self._set(columnsToCategorical=value)
-
     def setStrategy(self, value):
         assert_is_type(value, Enum("Cartesian", "RandomDiscrete"))
         jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
@@ -1382,10 +1334,6 @@ class H2OGridSearchParams(H2OCommonParams):
     def setMaxModels(self, value):
         assert_is_type(value, int)
         return self._set(maxModels=value)
-
-    def setSeed(self, value):
-        assert_is_type(value, int)
-        return self._set(seed=value)
 
     def setStoppingRounds(self, value):
         assert_is_type(value, int)
@@ -1402,10 +1350,6 @@ class H2OGridSearchParams(H2OCommonParams):
         correct_case_value = get_correct_case_enum(jvm.hex.ScoreKeeper.StoppingMetric.values(), value)
         return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
 
-    def setNfolds(self, value):
-        assert_is_type(value, int)
-        return self._set(nfolds=value)
-
     def setSelectBestModelBy(self, value):
         # H2O typechecks does not check for case sensitivity
         assert_is_type(value, None, Enum("MeanResidualDeviance", "R2", "ResidualDeviance", "ResidualDegreesOfFreedom", "NullDeviance",
@@ -1418,7 +1362,3 @@ class H2OGridSearchParams(H2OCommonParams):
     def setSelectBestModelDecreasing(self, value):
         assert_is_type(value, bool)
         return self._set(selectBestModelDecreasing=value)
-
-    def setConvertUnknownCategoricalLevelsToNa(self, value):
-        assert_is_type(value, bool)
-        return self._set(convertUnknownCategoricalLevelsToNa=value)
