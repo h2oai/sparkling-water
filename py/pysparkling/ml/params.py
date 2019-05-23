@@ -99,8 +99,16 @@ class H2OCommonParams(Params):
         assert_is_type(value, bool)
         return self._set(allStringColumnsToCategorical=value)
 
-    def setColumnsToCategorical(self, value):
-        assert_is_type(value, [str])
+    def setColumnsToCategorical(self, value, *args):
+        assert_is_type(value, [str], str)
+        if isinstance(value, str):
+            prepared_array = [value]
+        else:
+            prepared_array = value
+
+        for arg in args:
+            prepared_array.append(arg)
+
         return self._set(columnsToCategorical=value)
 
     def setConvertUnknownCategoricalLevelsToNa(self, value):
