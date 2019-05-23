@@ -36,36 +36,19 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   //
   // Param definitions
   //
-  private val allStringColumnsToCategorical = booleanParam(
-    "allStringColumnsToCategorical",
-    "Transform all strings columns to categorical")
-
-  private val columnsToCategorical = stringArrayParam(
-    "columnsToCategorical",
-    "List of columns to convert to categorical before modelling")
-
-  private val nfolds = intParam("nfolds")
   private val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
   private val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
   private val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
-  private val seed = longParam("seed")
   private val distribution = H2ODistributionParam("distribution")
-  private val convertUnknownCategoricalLevelsToNa = booleanParam(
-    "convertUnknownCategoricalLevelsToNa",
-    "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
+
   //
   // Default values
   //
   setDefault(
-    nfolds -> parameters._nfolds,
-    allStringColumnsToCategorical -> true,
-    columnsToCategorical -> Array.empty[String],
     keepCrossValidationPredictions -> parameters._keep_cross_validation_predictions,
     keepCrossValidationFoldAssignment -> parameters._keep_cross_validation_fold_assignment,
     parallelizeCrossValidation -> parameters._parallelize_cross_validation,
-    seed -> parameters._seed,
-    distribution -> parameters._distribution,
-    convertUnknownCategoricalLevelsToNa -> false
+    distribution -> parameters._distribution
   )
 
   //
@@ -77,23 +60,13 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   @DeprecatedMethod("getLabelCol")
   def getPredictionCol(): String = getLabelCol()
 
-  def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
-
-  def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
-
-  def getNfolds(): Int = $(nfolds)
-
   def getKeepCrossValidationPredictions(): Boolean = $(keepCrossValidationPredictions)
 
   def getKeepCrossValidationFoldAssignment(): Boolean = $(keepCrossValidationFoldAssignment)
 
   def getParallelizeCrossValidation(): Boolean = $(parallelizeCrossValidation)
 
-  def getSeed(): Long = $(seed)
-
   def getDistribution(): DistributionFamily = $(distribution)
-
-  def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
   //
   // Setters
@@ -104,25 +77,13 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   @DeprecatedMethod("setLabelCol")
   def setPredictionCol(value: String): this.type = setLabelCol(value)
 
-  def setAllStringColumnsToCategorical(transform: Boolean): this.type = set(allStringColumnsToCategorical, transform)
-
-  def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
-
-  def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
-
-  def setNfolds(value: Int): this.type = set(nfolds, value)
-
   def setKeepCrossValidationPredictions(value: Boolean): this.type = set(keepCrossValidationPredictions, value)
 
   def setKeepCrossValidationFoldAssignment(value: Boolean): this.type = set(keepCrossValidationFoldAssignment, value)
 
   def setParallelizeCrossValidation(value: Boolean): this.type = set(parallelizeCrossValidation, value)
 
-  def setSeed(value: Long): this.type = set(seed, value)
-
   def setDistribution(value: DistributionFamily): this.type = set(distribution, value)
-
-  def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 
   def H2ODistributionParam(name: String): H2ODistributionParam = {
     new H2ODistributionParam(this, name, getDoc(None, name))
@@ -137,7 +98,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
     parameters._keep_cross_validation_predictions = $(keepCrossValidationPredictions)
     parameters._keep_cross_validation_fold_assignment = $(keepCrossValidationFoldAssignment)
     parameters._parallelize_cross_validation = $(parallelizeCrossValidation)
-    parameters._seed = $(seed)
+    parameters._seed = getSeed()
     parameters._distribution = $(distribution)
   }
 }

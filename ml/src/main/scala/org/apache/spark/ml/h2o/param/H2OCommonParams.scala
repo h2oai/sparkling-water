@@ -17,7 +17,7 @@
 package org.apache.spark.ml.h2o.param
 
 import org.apache.spark.internal.Logging
-import org.apache.spark.ml.param.{DoubleParam, Param, Params, StringArrayParam}
+import org.apache.spark.ml.param._
 
 /**
   * This trait contains parameters that are shared across all algorithms.
@@ -32,6 +32,22 @@ trait H2OCommonParams extends Params with Logging {
     "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training and for validation. " +
       "For example, 0.8 -> 80% training 20% validation.")
 
+  protected final val seed = new LongParam(this, "seed", "Used to specify seed to reproduce the model run")
+  protected final val nfolds = new IntParam(this, "nfolds", "Number of fold columns")
+
+  protected final val allStringColumnsToCategorical = new BooleanParam(this,
+    "allStringColumnsToCategorical",
+    "Transform all strings columns to categorical")
+
+  protected final val columnsToCategorical = new StringArrayParam(this,
+    "columnsToCategorical",
+    "List of columns to convert to categorical before modelling")
+
+  protected final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
+    "convertUnknownCategoricalLevelsToNa",
+    "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
+
+
   //
   // Default values
   //
@@ -40,7 +56,12 @@ trait H2OCommonParams extends Params with Logging {
     labelCol -> "label",
     foldCol -> null,
     weightCol -> null,
-    splitRatio -> 1.0 // Use whole frame as training frame
+    splitRatio -> 1.0, // Use whole frame as training frame
+    seed -> -1,
+    nfolds -> 0,
+    allStringColumnsToCategorical -> true,
+    columnsToCategorical -> Array.empty[String],
+    convertUnknownCategoricalLevelsToNa -> false
   )
 
   //
@@ -58,6 +79,17 @@ trait H2OCommonParams extends Params with Logging {
   def getWeightCol(): String = $(weightCol)
 
   def getSplitRatio(): Double = $(splitRatio)
+
+  def getSeed(): Long = $(seed)
+
+  def getNfolds(): Int = $(nfolds)
+
+  def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
+
+  def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
+
+  def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
+
   //
   // Setters
   //
@@ -77,6 +109,19 @@ trait H2OCommonParams extends Params with Logging {
   def setWeightCol(columnName: String): this.type = set(weightCol, columnName)
 
   def setSplitRatio(ratio: Double): this.type = set(splitRatio, ratio)
+
+  def setSeed(value: Long): this.type = set(seed, value)
+
+  def setNfolds(value: Int): this.type = set(nfolds, value)
+
+  def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
+
+  def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
+
+  def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
+
+  def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
+
   //
   // Other methods
   //
