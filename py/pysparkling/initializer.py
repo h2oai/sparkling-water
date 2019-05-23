@@ -46,8 +46,7 @@ class Initializer(object):
 
         url = jvm.java.net.URL("file://{0}".format(sw_jar_file))
 
-        loader = Initializer.__find_spark_cl(jvm)
-        loader.addURL(url)
+        Initializer.__add(jvm, url)
 
         # Add Sparkling Water Assembly JAR to Spark's file server so executors can fetch it
         # when they need to use the dependency.
@@ -109,12 +108,11 @@ class Initializer(object):
             return os.path.abspath(resource_filename("sparkling_water", 'sparkling_water_assembly.jar'))
 
     @staticmethod
-    def __find_spark_cl(jvm):
+    def __add(jvm, url):
         cl = jvm.Thread.currentThread().getContextClassLoader()
         while cl:
             methods = [m.getName() for m in cl.getClass().getDeclaredMethods()]
             if "addURL" in methods:
-                return cl
+                cl.addURL(url)
             else:
                 cl = cl.getParent()
-        return None
