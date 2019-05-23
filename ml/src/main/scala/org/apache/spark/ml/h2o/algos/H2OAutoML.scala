@@ -41,6 +41,10 @@ import scala.util.control.NoStackTrace
 class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgorithmCommons with DefaultParamsWritable with H2OAutoMLParams {
 
+  // Override default values
+  setDefault(nfolds, 5)
+  setDefault(convertUnknownCategoricalLevelsToNa, true)
+
   private lazy val spark = SparkSession.builder().getOrCreate()
 
   def this() = this(Identifiable.randomUID("automl"))
@@ -142,8 +146,6 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   //
   // Param definitions
   //
-  private val allStringColumnsToCategorical = new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-  private val columnsToCategorical = new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categoricals before modelling")
   private val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
   private val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
   private val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
@@ -153,12 +155,6 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   private val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
   private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
   private val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping metric")
-  private val nfolds = new IntParam(this, "nfolds", "Cross-validation fold construction")
-  private val convertUnknownCategoricalLevelsToNa = new BooleanParam(
-    this,
-    "convertUnknownCategoricalLevelsToNa",
-    "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
-  private val seed = new IntParam(this, "seed", "seed")
   private val sortMetric = new NullableStringParam(this, "sortMetric", "Sort metric for the AutoML leaderboard")
   private val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
   private val classSamplingFactors = new NullableFloatArrayParam(this, "classSamplingFactors", "Class sampling factors")
@@ -171,8 +167,6 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   // Default values
   //
   setDefault(
-    allStringColumnsToCategorical -> true,
-    columnsToCategorical -> Array.empty[String],
     ignoredCols -> Array.empty[String],
     includeAlgos -> null,
     excludeAlgos -> null,
@@ -181,9 +175,6 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
     stoppingRounds -> 3,
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
-    nfolds -> 5,
-    convertUnknownCategoricalLevelsToNa -> true,
-    seed -> -1, // true random
     sortMetric -> null,
     balanceClasses -> false,
     classSamplingFactors -> null,
@@ -198,10 +189,6 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   //
   @DeprecatedMethod("getLabelCol")
   def getPredictionCol(): String = getLabelCol()
-
-  def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
-
-  def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
   @DeprecatedMethod("getSplitRatio")
   def getRatio(): Double = getSplitRatio()
@@ -231,12 +218,6 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
 
   def getStoppingMetric(): ScoreKeeper.StoppingMetric = $(stoppingMetric)
 
-  def getNfolds(): Int = $(nfolds)
-
-  def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
-
-  def getSeed(): Int = $(seed)
-
   def getSortMetric(): String = $(sortMetric)
 
   def getBalanceClasses(): Boolean = $(balanceClasses)
@@ -256,12 +237,6 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   //
   @DeprecatedMethod("setLabelCol")
   def setPredictionCol(value: String): this.type = setLabelCol(value)
-
-  def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
-
-  def setColumnsToCategorical(first: String, others: String*): this.type = set(columnsToCategorical, Array(first) ++ others)
-
-  def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
 
   @DeprecatedMethod("setSplitRatio")
   def setRatio(value: Double): this.type = setSplitRatio(value)
@@ -290,12 +265,6 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
 
   def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = set(stoppingMetric, value)
-
-  def setNfolds(value: Int): this.type = set(nfolds, value)
-
-  def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
-
-  def setSeed(value: Int): this.type = set(seed, value)
 
   def setSortMetric(value: String): this.type = {
     val allowedValues = Seq("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "mean_per_class_error")
