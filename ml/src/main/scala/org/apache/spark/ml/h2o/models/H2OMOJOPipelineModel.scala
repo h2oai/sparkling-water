@@ -24,7 +24,7 @@ import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.internal.Logging
-import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types._
@@ -36,6 +36,9 @@ import scala.util.Random
 
 
 class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOPipelineModel] {
+
+  // private parameter used to store MOJO output columns
+  protected final val outputCols: StringArrayParam =  new StringArrayParam(this, "outputCols", "OutputCols")
 
   case class Mojo2Prediction(preds: List[Double])
 
@@ -137,17 +140,17 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
       }
 
       val r = new scala.util.Random(31)
-      val tempColNames = getOutputNames().map(uniqueRandomName(_, r))
+      val tempColNames = $(outputCols).map(uniqueRandomName(_, r))
       val tempCols = tempColNames.map(col)
 
 
       // Transform the resulted Array of predictions into own but temporary columns
       // Temporary columns are created as we can't create the columns directly as nested ones
-      val predictionCols = getOutputNames().indices.map(idx => selectFromArray(idx)(frameWithPredictions.col(getPredictionCol() + ".preds")))
+      val predictionCols = $(outputCols).indices.map(idx => selectFromArray(idx)(frameWithPredictions.col(getPredictionCol() + ".preds")))
       val frameWithExtractedPredictions = frameWithPredictions.withColumns(tempColNames, predictionCols)
 
       // Transform the columns at the top level under "output" column
-      val nestedPredictionCols = tempColNames.indices.map { idx => tempCols(idx).alias(getOutputNames()(idx)) }
+      val nestedPredictionCols = tempColNames.indices.map { idx => tempCols(idx).alias($(outputCols)(idx)) }
       val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(getPredictionCol(), struct(nestedPredictionCols: _*))
 
       // Remove the temporary columns at the top level and return
@@ -171,23 +174,18 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   @DeprecatedMethod("getFeaturesCols")
   def getInputNames(): Array[String] = getFeaturesCols()
 
-  @DeprecatedMethod
-  def getOutputNames(): Array[String] = H2OMOJOModelCache.getOrCreateModel(uid, getMojoData).getOutputMeta.getColumnNames
-
-  def selectPredictionUDF(column: String) = {
-    if (!getOutputNames().contains(column)) {
-      throw new IllegalArgumentException(s"Column '$column' is not defined as the output column in MOJO Pipeline.")
-    }
+  def selectPredictionUDF(column: String): Column = {
     if (getNamedMojoOutputColumns()) {
       val func = udf[Double, Double] {
         identity
       }
       func(col(s"${getPredictionCol()}.`$column`")).alias(column)
     } else {
-      val func = selectFromArray(getOutputNames().indexOf(column))
+      val func = selectFromArray($(outputCols).indexOf(column))
       func(col(s"${getPredictionCol()}.preds")).alias(column)
     }
   }
+
 }
 
 object H2OMOJOPipelineModel extends H2OMOJOReadable[PyH2OMOJOPipelineModel] with H2OMOJOLoader[PyH2OMOJOPipelineModel] {
@@ -197,6 +195,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[PyH2OMOJOPipelineModel] with
     val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
     val featureCols = MojoPipeline.loadFrom(reader).getInputMeta.getColumnNames
     model.set(model.featuresCols, featureCols)
+    model.set(model.outputCols, MojoPipeline.loadFrom(reader).getOutputMeta.getColumnNames)
     model.setMojoData(mojoData)
     model
   }

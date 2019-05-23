@@ -132,9 +132,9 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2_multiple_outputs/pipeline.mojo"),
       "iris_pipeline.mojo")
-    assert(mojo.getOutputNames().length == 3)
 
     val transDf = mojo.transform(df)
+    assert(transDf.select("prediction.*").columns.length == 3)
     val udfSelection = transDf.select(mojo.selectPredictionUDF("class.Iris-setosa"))
     val normalSelection = transDf.select("prediction.`class.Iris-setosa`") // we need to use ` as the dot is
     // part of the column name, it does not represent the nested column
@@ -143,8 +143,8 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     assert(udfSelection.schema.head.name == normalSelection.schema.head.name)
     assert(udfSelection.schema.head.dataType == normalSelection.schema.head.dataType)
     assert(udfSelection.first() == normalSelection.first())
-
   }
+
   test("Selection using udf on non-existent column") {
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
@@ -153,7 +153,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
       "prostate_pipeline.mojo")
 
     val transDf = mojo.transform(df)
-    intercept[IllegalArgumentException] {
+    intercept[org.apache.spark.sql.AnalysisException] {
       transDf.select(mojo.selectPredictionUDF("I_DO_NOT_EXIST")).first()
     }
   }
