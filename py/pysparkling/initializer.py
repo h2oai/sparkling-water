@@ -117,5 +117,4 @@ class Initializer(object):
                 return cl
             else:
                 cl = cl.getParent()
-            cl = cl.getParent()
         return None
