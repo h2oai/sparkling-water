@@ -19,8 +19,7 @@ package org.apache.spark.ml.h2o.param
 import org.apache.spark.ml.param._
 
 /**
-  * Parameters which need to be available on the model itself for prediction purposes. This can't be backed
-  * byt H2OAlgoParamsHelper as at the time of prediction we might be using mojo and binary parameters are not available.
+  * Parameters available on the MOJO Model
   */
 trait H2OMOJOModelParams extends Params {
 
@@ -43,7 +42,7 @@ trait H2OMOJOModelParams extends Params {
   //
   setDefault(
     featuresCols -> Array.empty[String],
-    predictionCol -> "prediction_output",
+    predictionCol -> "prediction",
     convertUnknownCategoricalLevelsToNa -> false,
     namedMojoOutputColumns -> true)
 
@@ -56,7 +55,7 @@ trait H2OMOJOModelParams extends Params {
 
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
-  def getNamedMojoOutputColumns() = $(namedMojoOutputColumns)
+  def getNamedMojoOutputColumns(): Boolean = $(namedMojoOutputColumns)
 
   //
   // Setters
