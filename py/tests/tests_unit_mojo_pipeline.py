@@ -35,10 +35,10 @@ from pysparkling.ml import H2OMOJOPipelineModel
 from pyspark.ml import Pipeline, PipelineModel
 
 
-##
-## These tests does not start H2O Context on purpose to test running predictions
-## in Spark environment without run-time H2O
-##
+#
+# These tests does not start H2O Context on purpose to test running predictions
+# in Spark environment without run-time H2O
+#
 class H2OMojoPipelineTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -50,10 +50,10 @@ class H2OMojoPipelineTest(unittest.TestCase):
         # Try loading the Mojo and prediction on it without starting H2O Context
         mojo = H2OMOJOPipelineModel.create_from_mojo(
             "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
-        mojo.set_named_mojo_output_columns(False)
+        mojo.setNamedMojoOutputColumns(False)
         prostateFrame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
-        preds = mojo.predict(prostateFrame).repartition(1)
+        preds = mojo.transform(prostateFrame).repartition(1)
 
         normalSelection = preds.select("prediction.preds").take(5)
 
@@ -63,15 +63,13 @@ class H2OMojoPipelineTest(unittest.TestCase):
         assert normalSelection[3][0][0] == 65.78772654671035
         assert normalSelection[4][0][0] == 66.11327967814829
 
-        udfSelection = preds.select(mojo.selectPredictionUdf("AGE")).take(5)
+        udfSelection = preds.select(mojo.selectPredictionUDF("AGE")).take(5)
 
         assert udfSelection[0][0] == 65.36320409515132
         assert udfSelection[1][0] == 64.96902128114817
         assert udfSelection[2][0] == 64.96721023747583
         assert udfSelection[3][0] == 65.78772654671035
         assert udfSelection[4][0] == 66.11327967814829
-
-        assert mojo.get_output_names()[0] == "AGE"
 
     # test predictions on H2O Pipeline MOJO
     def test_h2o_mojo_pipeline_predictions_with_named_cols(self):
@@ -80,7 +78,7 @@ class H2OMojoPipelineTest(unittest.TestCase):
             "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
         prostateFrame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
-        preds = mojo.predict(prostateFrame).repartition(1).select(mojo.selectPredictionUdf("AGE")).take(5)
+        preds = mojo.transform(prostateFrame).repartition(1).select(mojo.selectPredictionUDF("AGE")).take(5)
 
         assert preds[0][0] == 65.36320409515132
         assert preds[1][0] == 64.96902128114817
@@ -98,14 +96,14 @@ class H2OMojoPipelineTest(unittest.TestCase):
         pipeline.write().overwrite().save("file://" + os.path.abspath("build/test_dai_pipeline_as_spark_pipeline"))
         loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/test_dai_pipeline_as_spark_pipeline"))
 
-        ## Train the pipeline model
+        # Train the pipeline model
         model = loadedPipeline.fit(prostateFrame)
 
         model.write().overwrite().save("file://" + os.path.abspath("build/test_dai_pipeline_as_spark_pipeline_model"))
         loadedModel = PipelineModel.load(
             "file://" + os.path.abspath("build/test_dai_pipeline_as_spark_pipeline_model"))
 
-        preds = loadedModel.transform(prostateFrame).repartition(1).select(mojo.selectPredictionUdf("AGE")).take(5)
+        preds = loadedModel.transform(prostateFrame).repartition(1).select(mojo.selectPredictionUDF("AGE")).take(5)
 
         assert preds[0][0] == 65.36320409515132
         assert preds[1][0] == 64.96902128114817

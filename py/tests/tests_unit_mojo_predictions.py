@@ -35,10 +35,10 @@ import generic_test_utils
 from pyspark.ml import Pipeline, PipelineModel
 
 
-##
-## These tests does not start H2O Context on purpose to test running predictions
-## in Spark environment without run-time H2O
-##
+#
+# These tests does not start H2O Context on purpose to test running predictions
+# in Spark environment without run-time H2O
+#
 class H2OMojoPredictionsTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -52,7 +52,7 @@ class H2OMojoPredictionsTest(unittest.TestCase):
             "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
-        mojo.predict(prostate_frame).repartition(1).collect()
+        mojo.transform(prostate_frame).repartition(1).collect()
 
     def test_h2o_mojo_predictions_unseen_categoricals(self):
         mojo = H2OMOJOModel.create_from_mojo(
@@ -97,7 +97,7 @@ class H2OMojoPredictionsTest(unittest.TestCase):
         df = self._spark.createDataFrame(self._spark.sparkContext.
                                          parallelize([(5.1,)]).
                                          map(lambda r: row_for_scoring(*r)))
-        mojo.predict(df).repartition(1).collect()
+        mojo.transform(df).repartition(1).collect()
 
 
 if __name__ == '__main__':
