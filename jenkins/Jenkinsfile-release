@@ -10,7 +10,9 @@ pipeline {
         booleanParam(name: 'buildExtendedH2OJars', defaultValue: true, description: 'Build extended H2O Jars')
         booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3')
         booleanParam(name: 'updateDocLinks', defaultValue: true, description: 'Update documentation links')
+        booleanParam(name: 'buildPySparkling', defaultValue: true, description: 'Build PySparkling')
         booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy')
+        booleanParam(name: 'buildConda', defaultValue: true, description: 'Build Conda')
         booleanParam(name: 'publishConda', defaultValue: true, description: 'Publish to Conda')
         booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
     }
@@ -186,9 +188,32 @@ pipeline {
             }
         }
 
+        stage('Build PySparkling') {
+            when {
+                expression { params.buildPySparkling == true }
+            }
+            steps {
+                script {
+                    docker.withRegistry("http://harbor.h2o.ai") {
+                        docker.image('opsh2oai/sparkling_water_tests:14').inside("--init --privileged --dns 172.16.0.200") {
+
+                            dir("py/build/pkg") {
+                                withCredentials([usernamePassword(credentialsId: "pypi-credentials", usernameVariable: 'PIPY_USERNAME', passwordVariable: 'PIPY_PASSWORD')]) {
+                                    sh  """
+                                        . /envs/h2o_env_python3.6/bin/activate
+                                        python setup.py sdist
+                                        """
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Build Conda Packages'){
                     when {
-                        expression { params.publishConda == true }
+                        expression { params.buildConda == true }
                     }
               steps {
                     script {
@@ -279,7 +304,7 @@ pipeline {
 
                             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 
-                                if(params.publishConda == true) {
+                                if(params.buildConda == true) {
                                     // Upload Conda packages of PySparkling
                                     def PYTHON_VERSIONS = ['2.7', '3.6']
                                     for (pyVersion in PYTHON_VERSIONS) {
@@ -300,6 +325,17 @@ pipeline {
                                                 s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/win-64/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/win-64/\${PKG_NAME}
                                                 """
                                     }
+                                }
+
+                                if(params.buildPySparkling == true) {
+                                    sh  """
+                                            REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                                            PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
+                                            
+                                            DIST_FILE_PATH=\$(ls py/build/pkg/dist/*)
+                                            DIST_FILE_NAME=\$(basename \$DIST_FILE_PATH)
+                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put \${DIST_FILE_PATH} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/\${DIST_FILE_NAME}/
+                                        """
                                 }
 
                                 sh """
@@ -410,7 +446,7 @@ EOF
 
         stage('Publish To PyPi') {
             when {
-                expression { params.publishToPiPy == true }
+                expression { params.buildPySparkling == true && params.publishToPiPy == true }
             }
             steps {
                 script {
@@ -421,7 +457,6 @@ EOF
                                 withCredentials([usernamePassword(credentialsId: "pypi-credentials", usernameVariable: 'PIPY_USERNAME', passwordVariable: 'PIPY_PASSWORD')]) {
                                     sh  """
                                         . /envs/h2o_env_python3.6/bin/activate
-                                        python setup.py sdist
                                         twine upload dist/* -u $PIPY_USERNAME -p $PIPY_PASSWORD
                                         """
                                 }
@@ -434,7 +469,7 @@ EOF
 
         stage('Publish To Conda') {
             when {
-                expression { params.publishConda == true }
+                expression { params.buildConda == true && params.publishConda == true }
             }
             steps {
                 script {
