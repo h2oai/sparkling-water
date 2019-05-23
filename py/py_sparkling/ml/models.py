@@ -2,8 +2,7 @@ from pyspark.ml.util import JavaMLReadable, JavaMLWritable
 from pyspark.ml.wrapper import JavaModel
 from pysparkling.initializer import *
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import udf
-from pyspark.sql.types import DoubleType
+from pyspark.sql.column import Column
 from .util import JavaH2OMLReadable
 from pyspark.ml.param import *
 import warnings
@@ -40,6 +39,7 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
     def _transfer_params_to_java(self):
         pass
 
+
 class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
@@ -64,10 +64,6 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
     def getPredictionCol(self):
         return self._java_obj.getPredictionCol()
 
-    def get_output_names(self):
-        warnings.warn("The method 'get_output_names' is deprecated.")
-        return list(self._java_obj.getOutputNames())
-
     def get_named_mojo_output_columns(self):
         warnings.warn(
             "The method 'get_named_mojo_output_columns' is deprecated. Use 'getNamedMojoOutputColumns' instead!")
@@ -86,20 +82,12 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         return self
 
     def select_prediction_udf(self, column):
-        warnings.warn("The method 'select_prediction_udf' is deprecated. Use 'selectPredictionUdf' instead!")
-        self.selectPredictionUdf(column)
+        warnings.warn("The method 'select_prediction_udf' is deprecated. Use 'selectPredictionUDF' instead!")
+        self.selectPredictionUDF(column)
 
-    def selectPredictionUdf(self, column):
-        if column not in self.get_output_names():
-            raise ValueError("Column '" + column + "' is not defined as the output column in MOJO Pipeline.")
-
-        if self.getNamedMojoOutputColumns():
-            func = udf(lambda d: d, DoubleType())
-            return func(self.getPredictionCol() + "." + column).alias(column)
-        else:
-            idx = list(self._java_obj.getOutputNames()).index(column)
-            func = udf(lambda arr: arr[idx], DoubleType())
-            return func(self.getPredictionCol() + ".preds").alias(column)
+    def selectPredictionUDF(self, column):
+        java_col = self._java_obj.selectPredictionUDF(column)
+        return Column(java_col)
 
     # Overriding the method to avoid changes on the companion Java object
     def _transfer_params_to_java(self):
