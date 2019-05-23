@@ -225,7 +225,7 @@ class FrameTransformationsTest(unittest.TestCase):
 
         model = gbm.fit(prostate_frame)
 
-        pred_mojo = mojo.predict(prostate_frame).repartition(1).collect()
+        pred_mojo = mojo.transform(prostate_frame).repartition(1).collect()
         pred_model = model.transform(prostate_frame).repartition(1).collect()
 
         self.assertEquals(len(pred_mojo), len(pred_model))
@@ -243,7 +243,7 @@ class FrameTransformationsTest(unittest.TestCase):
 
         model = dl.fit(prostate_frame)
 
-        pred_mojo = mojo.predict(prostate_frame).repartition(1).collect()
+        pred_mojo = mojo.transform(prostate_frame).repartition(1).collect()
         pred_model = model.transform(prostate_frame).repartition(1).collect()
 
         self.assertEquals(len(pred_mojo), len(pred_model))
