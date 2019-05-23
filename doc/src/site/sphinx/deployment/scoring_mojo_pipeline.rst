@@ -67,7 +67,7 @@ At this point, you should have available a PySpark interactive terminal where yo
 	predictions = mojo.predict(data_frame)
 
 	# You can easily get the predictions for a desired column using the helper function as
-	predictions.select(mojo.select_prediction_udf("AGE")).collect()
+	predictions.select(mojo.selectPredictionUDF("AGE")).collect()
 
 Sparkling Water
 '''''''''''''''
