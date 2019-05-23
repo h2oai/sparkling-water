@@ -32,6 +32,7 @@ import water.support.ModelSerializationSupport
 
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
 
+  setDefault(predictionCol, "prediction_output")
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient private var easyPredictModelWrapper: EasyPredictModelWrapper = _
 
