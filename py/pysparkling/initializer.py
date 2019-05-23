@@ -114,5 +114,4 @@ class Initializer(object):
             methods = [m.getName() for m in cl.getClass().getDeclaredMethods()]
             if "addURL" in methods:
                 cl.addURL(url)
-            else:
-                cl = cl.getParent()
+            cl = cl.getParent()
