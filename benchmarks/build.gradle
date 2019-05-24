@@ -1,0 +1,40 @@
+description = "Sparkling Water Benchmarks"
+
+apply from: "$rootDir/gradle/utils.gradle"
+
+dependencies {
+
+    // Sparkling Water libraries
+    compile project(":sparkling-water-ml")
+    compile project(":sparkling-water-repl")
+
+    // Spark libraries
+    compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
+    compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
+    compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+    compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+configurations {
+    shadowRuntime {
+        extendsFrom runtime
+        exclude group: 'org.apache.spark'
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowRuntime]
+    zip64 true
+
+    mergeServiceFiles()
+
+    relocate 'javassist', 'ai.h2o.javassist'
+    // Relocate Eclipse Jetty to avoid collisions with Spark Jetty (newer version)
+    relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
+    relocate 'com.google.common', 'ai.h2o.com.google.common'
+
+}
+
+build.dependsOn shadowJar
