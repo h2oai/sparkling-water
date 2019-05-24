@@ -119,7 +119,7 @@ class Initializer(object):
             methods = [m.getName() for m in cl.getClass().getDeclaredMethods()]
             if "addURL" in methods:
                 cl.addURL(url)
-                logger.info("Adding {} to classloader '{}'".format(url.toString(), cl.toString()))
+                logger.debug("Adding {} to classloader '{}'".format(url.toString(), cl.toString()))
             else:
-                logger.info("Skipping classloader '{}'".format(cl.toString()))
+                logger.debug("Skipping classloader '{}'".format(cl.toString()))
             cl = cl.getParent()
