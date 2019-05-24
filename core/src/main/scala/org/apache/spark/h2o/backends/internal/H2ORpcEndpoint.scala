@@ -38,7 +38,7 @@ class H2ORpcEndpoint(override val rpcEnv: RpcEnv)
       nodes.map { pair =>
         val ip = pair.hostname
         // FlatFile contains API ports, but to directly add a node, we need to use internal port which is formed as
-        // API_PORT  + PORT_OFFSET
+        // API_PORT + PORT_OFFSET
         val internalH2OPort = pair.port + portOffset
         val h2oNode = H2ONode.intern(InetAddress.getByName(ip), internalH2OPort)
         H2O.addNodeToFlatfile(h2oNode)

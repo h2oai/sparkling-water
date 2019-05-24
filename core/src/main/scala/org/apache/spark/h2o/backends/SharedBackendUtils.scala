@@ -83,6 +83,18 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       }
     }
 
+    if (!conf.clientWebEnabled) {
+      val f = new File(SharedBackendUtils.createTempDir(), "dummy")
+      f.createNewFile()
+      f.deleteOnExit()
+      conf.setHashLoginEnabled()
+      conf.setLoginConf(f.toString)
+    }
+
+    if (conf.clientVerboseOutput) {
+      conf.setH2OClientLogLevel(incLogLevel(conf.h2oClientLogLevel, "INFO"))
+    }
+
     conf
   }
 
@@ -90,64 +102,64 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
   }
 
-  def addIfNotNull(arg: String, value: String) = if (value != null) Seq(arg, value.toString) else Nil
-
-
   /**
     * Get H2O arguments which are passed to every node - regular node, client node
     *
     * @param conf H2O Configuration
     * @return sequence of arguments
     */
-  def getH2OCommonArgs(conf: H2OConf): Seq[String] = (
-    // Options in form key=value
-    Seq("-name", conf.cloudName.get, "-port_offset", conf.internalPortOffset.toString)
-      ++ addIfNotNull("-stacktrace_collector_interval", Some(conf.stacktraceCollectorInterval).filter(_ > 0).map(_.toString).orNull)
-      ++ addIfNotNull("-nthreads", Some(conf.nthreads).filter(_ > 0).map(_.toString).orElse(conf.sparkConf.getOption("spark.executor.cores")).orNull)
-      ++ addIfNotNull("-internal_security_conf", conf.sslConf.orNull)
-    )
-
-  def getLoginArgs(conf: H2OConf): Seq[String] = {
-    val base = (
-      (if (conf.hashLogin) Seq("-hash_login") else Nil)
-        ++ (if (conf.ldapLogin) Seq("-ldap_login") else Nil)
-        ++ (if (conf.kerberosLogin) Seq("-kerberos_login") else Nil)
-        ++ addIfNotNull("-user_name", conf.userName.orNull)
-        ++ addIfNotNull("-login_conf", conf.loginConf.orNull)
-      )
-
-    if (!conf.clientWebEnabled) {
-      val f = new File(SharedBackendUtils.createTempDir(), "dummy")
-      f.createNewFile()
-      f.deleteOnExit()
-      base ++ Seq("-hash_login", "-login_conf", f.toString)
-    }
-    else {
-      base
-    }
+  def getH2OCommonArgs(conf: H2OConf): Seq[String] = {
+    new ArgumentBuilder()
+      .add("-name", conf.cloudName.get)
+      .add("-port_offset", conf.internalPortOffset)
+      .add("-stacktrace_collector_interval", Some(conf.stacktraceCollectorInterval).filter(_ > 0))
+      .add("-nthreads", Some(conf.nthreads).filter(_ > 0).orElse(conf.sparkConf.getOption("spark.executor.cores")))
+      .add("-internal_security_conf", conf.sslConf)
+      .buildArgs()
   }
 
-  def getH2OWorkerAsClientArgs(conf: H2OConf): Array[String] = (
-    getH2OCommonArgs(conf) ++ getLoginArgs(conf)
-      ++ (if (!conf.clientVerboseOutput) Seq("-quiet") else Nil)
-      ++ Seq("-log_level", if (conf.clientVerboseOutput) incLogLevel(conf.h2oClientLogLevel, "INFO") else conf.h2oClientLogLevel)
-      ++ Seq("-log_dir", conf.h2oClientLogDir.get)
-      ++ Seq("-baseport", conf.clientBasePort.toString)
-      ++ addIfNotNull("-context_path", conf.contextPath.orNull)
-      ++ addIfNotNull("-flow_dir", conf.flowDir.orNull)
-      ++ addIfNotNull("-ice_root", conf.clientIcedDir.orNull)
-      ++ addIfNotNull("-port", Some(conf.clientWebPort).filter(_ > 0).map(_.toString).orNull)
-      ++ addIfNotNull("-jks", conf.jks.orNull)
-      ++ addIfNotNull("-jks_pass", conf.jksPass.orNull)
-      ++ conf.clientNetworkMask.map(mask => Seq("-network", mask)).getOrElse(Seq("-ip", conf.clientIp.get))
-    ).toArray
+
+  def getLoginArgs(conf: H2OConf): Seq[String] = {
+    new ArgumentBuilder()
+      .addIf("-hash_login", conf.hashLogin)
+      .addIf("-ldap_login", conf.ldapLogin)
+      .addIf("-kerberos_login", conf.kerberosLogin)
+      .add("-user_name", conf.userName)
+      .add("-login_conf", conf.loginConf)
+      .buildArgs()
+  }
+
+
+  def getH2OWorkerAsClientArgs(conf: H2OConf): Seq[String] = {
+    new ArgumentBuilder()
+      .add(getH2OCommonArgs(conf))
+      .add(getLoginArgs(conf))
+      .addIf("-quiet", !conf.clientVerboseOutput)
+      .add("-log_level", conf.h2oClientLogLevel)
+      .add("-log_dir", conf.h2oClientLogDir)
+      .add("-baseport", conf.clientBasePort)
+      .add("-context_path", conf.contextPath)
+      .add("-flow_dir", conf.flowDir)
+      .add("-ice_root", conf.clientIcedDir)
+      .add("-port", Some(conf.clientWebPort).filter(_ > 0))
+      .add("-jks", conf.jks)
+      .add("-jks_pass", conf.jksPass)
+      .add("-network", conf.clientNetworkMask)
+      .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty)
+      .buildArgs()
+  }
 
   /**
     * Get common arguments for H2O client.
     *
     * @return array of H2O client arguments.
     */
-  def getH2OClientArgs(conf: H2OConf): Array[String] = getH2OWorkerAsClientArgs(conf) ++ Seq("-client")
+  def getH2OClientArgs(conf: H2OConf): Seq[String] = {
+    new ArgumentBuilder()
+      .add(getH2OWorkerAsClientArgs(conf))
+      .add("-client")
+      .buildArgs()
+  }
 
 
   val TEMP_DIR_ATTEMPTS = 1000

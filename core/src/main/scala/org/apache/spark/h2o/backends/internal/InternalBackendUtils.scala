@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.backends.internal
 
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.backends.{SharedBackendConf, SharedBackendUtils}
+import org.apache.spark.h2o.backends.{ArgumentBuilder, SharedBackendConf, SharedBackendUtils}
 import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.scheduler.local.LocalSchedulerBackend
 import org.apache.spark.{SparkContext, SparkEnv}
@@ -78,7 +78,7 @@ object InternalBackendUtils extends InternalBackendUtils {
     *
     * @return array of H2O launcher command line arguments
     */
-  def getH2OWorkerArgs(conf: H2OConf): Array[String] = {
+  def getH2OWorkerArgs(conf: H2OConf): Seq[String] = {
     val ip = {
       val hostname = SharedBackendUtils.getHostname(SparkEnv.get)
       if (conf.ipBasedFlatfile) {
@@ -87,20 +87,21 @@ object InternalBackendUtils extends InternalBackendUtils {
         hostname
       }
     }
-    (
-      getH2OCommonArgs(conf)
-        ++ (if (!conf.h2oNodeWebEnabled) Seq("-disable_web") else Nil)
-        ++ Seq("-log_level", conf.h2oNodeLogLevel)
-        ++ Seq("-baseport", conf.nodeBasePort.toString)
-        ++ Seq("-log_dir", InternalBackendUtils.getH2ONodeLogDir(conf, SparkEnv.get))
-        ++ conf.nodeNetworkMask.map(mask => Seq("-network", mask)).getOrElse(Seq("-ip", ip))
-      ).toArray
+
+    new ArgumentBuilder()
+      .add(getH2OCommonArgs(conf))
+      .add("-log_level", conf.h2oNodeLogLevel)
+      .add("-baseport", conf.nodeBasePort)
+      .add("-log_dir", InternalBackendUtils.getH2ONodeLogDir(conf, SparkEnv.get))
+      .addIf("-network", conf.nodeNetworkMask, conf.nodeNetworkMask.isDefined)
+      .addIf("-ip", ip, conf.nodeNetworkMask.isEmpty)
+      .buildArgs()
   }
 
-  def toH2OArgs(h2oArgs: Array[String], executors: Array[NodeDesc] = Array()): Array[String] = {
+  def toH2OArgs(h2oArgs: Seq[String], executors: Array[NodeDesc] = Array()): Array[String] = {
     val flatFileString = toFlatFileString(executors)
     val flatFile = SharedBackendUtils.saveFlatFileAsFile(flatFileString)
-    h2oArgs ++ Array("-flatfile", flatFile.getAbsolutePath)
+    h2oArgs.toArray ++ Array("-flatfile", flatFile.getAbsolutePath)
   }
 
   private def getH2ONodeLogDir(conf: H2OConf, sparkEnv: SparkEnv): String = {
