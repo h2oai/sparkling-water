@@ -114,12 +114,12 @@ class Initializer(object):
     @staticmethod
     def __add_url_to_classloader(jvm, url):
         cl = jvm.Thread.currentThread().getContextClassLoader()
+        logger = Initializer.__get_logger(jvm)
         while cl:
             methods = [m.getName() for m in cl.getClass().getDeclaredMethods()]
             if "addURL" in methods:
                 cl.addURL(url)
-                Initializer.__get_logger(jvm).info("Adding " + url.toString() + " to classloader"
-                                                                                " '" + cl.toString() + "'")
+                logger.info("Adding {} to classloader '{}'".format(url.toString(), cl.toString()))
             else:
-                Initializer.__get_logger(jvm).info("Skipping classloader '" + cl.toString() + "'")
+                logger.info("Skipping classloader '{}'".format(cl.toString()))
             cl = cl.getParent()
