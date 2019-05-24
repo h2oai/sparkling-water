@@ -26,7 +26,6 @@ configurations {
 
 shadowJar {
     configurations = [project.configurations.shadowRuntime]
-    zip64 true
 
     mergeServiceFiles()
 
@@ -34,7 +33,6 @@ shadowJar {
     // Relocate Eclipse Jetty to avoid collisions with Spark Jetty (newer version)
     relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
     relocate 'com.google.common', 'ai.h2o.com.google.common'
-
 }
 
 build.dependsOn shadowJar
