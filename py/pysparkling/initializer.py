@@ -108,10 +108,16 @@ class Initializer(object):
             return os.path.abspath(resource_filename("sparkling_water", 'sparkling_water_assembly.jar'))
 
     @staticmethod
+    def __get_logger(jvm):
+        return jvm.org.apache.log4j.LogManager.getLogger("org")
+
+    @staticmethod
     def __add_url_to_classloader(jvm, url):
         cl = jvm.Thread.currentThread().getContextClassLoader()
         while cl:
             methods = [m.getName() for m in cl.getClass().getDeclaredMethods()]
             if "addURL" in methods:
                 cl.addURL(url)
+                Initializer.__get_logger(jvm).info("Adding " + url.toString() + " to classloader"
+                                                                                " '" + cl.toString() + "'")
             cl = cl.getParent()
