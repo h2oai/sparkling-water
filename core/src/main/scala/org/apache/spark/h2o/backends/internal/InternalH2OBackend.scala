@@ -27,7 +27,6 @@ import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import water.api.RestAPIManager
 import water.{H2O, H2OStarter}
 
-
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with InternalBackendUtils with Logging {
 
   override def backendUIInfo: Seq[(String, String)] = Seq()
@@ -88,15 +87,15 @@ object InternalH2OBackend extends Logging {
 
   private def startH2OCluster(hc: H2OContext): Array[NodeDesc] = {
     if (hc.sparkContext.isLocal) {
-      Array(InternalH2OBackend.startH2OWorkerAsClient(hc._conf))
+      Array(startH2OWorkerAsClient(hc._conf))
     } else {
-      val endpoints = InternalH2OBackend.registerEndpoints(hc)
-      val workerNodes = InternalH2OBackend.startH2OWorkers(endpoints, hc._conf)
-      val clientNode = InternalH2OBackend.startH2OClient(hc._conf, workerNodes)
-      InternalH2OBackend.distributeFlatFile(endpoints, hc._conf, workerNodes, clientNode)
-      InternalH2OBackend.tearDownEndpoints(endpoints)
+      val endpoints = registerEndpoints(hc)
+      val workerNodes = startH2OWorkers(endpoints, hc._conf)
+      val clientNode = startH2OClient(hc._conf, workerNodes)
+      distributeFlatFile(endpoints, hc._conf, workerNodes, clientNode)
+      tearDownEndpoints(endpoints)
 
-      InternalH2OBackend.registerNewExecutorListener(hc)
+      registerNewExecutorListener(hc)
 
       H2O.waitForCloudSize(endpoints.length, hc.getConf.cloudTimeout)
       workerNodes
