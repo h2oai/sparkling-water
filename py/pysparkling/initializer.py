@@ -120,4 +120,6 @@ class Initializer(object):
                 cl.addURL(url)
                 Initializer.__get_logger(jvm).info("Adding " + url.toString() + " to classloader"
                                                                                 " '" + cl.toString() + "'")
+            else:
+                Initializer.__get_logger(jvm).info("Skipping classloader '" + cl.toString() + "'")
             cl = cl.getParent()
