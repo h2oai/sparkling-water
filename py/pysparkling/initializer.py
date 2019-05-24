@@ -36,7 +36,6 @@ class Initializer(object):
 
     @staticmethod
     def __add_sparkling_jar_to_spark(sc):
-        jsc = sc._jsc
         jvm = sc._jvm
         # Add Sparkling water assembly JAR to driver
         sw_jar_file = Initializer.__get_sw_jar()
@@ -46,21 +45,12 @@ class Initializer(object):
             sw_jar_file = '/' + sw_jar_file
 
         url = jvm.java.net.URL("file://{0}".format(sw_jar_file))
-        # Assuming that context class loader is always instance of URLClassLoader
-        # ( which should be always true)
-        cl = jvm.Thread.currentThread().getContextClassLoader()
 
-        # Explicitly check if we run on databricks cloud since there we must add the jar to
-        # the parent of context class loader
-        if cl.getClass().getName() == 'com.databricks.backend.daemon.driver.DriverLocal$DriverLocalClassLoader':
-            cl.getParent().getParent().addURL(url)
-        else:
-            spark_cl = Initializer.__find_spark_cl(cl, 'org.apache.spark.util.MutableURLClassLoader')
-            spark_cl.addURL(url)
+        Initializer.__add_url_to_classloader(jvm, url)
 
         # Add Sparkling Water Assembly JAR to Spark's file server so executors can fetch it
         # when they need to use the dependency.
-        jsc.addJar(sw_jar_file)
+        sc._jsc.addJar(sw_jar_file)
 
     @staticmethod
     def __extracted_jar_path():
@@ -118,11 +108,18 @@ class Initializer(object):
             return os.path.abspath(resource_filename("sparkling_water", 'sparkling_water_assembly.jar'))
 
     @staticmethod
-    def __find_spark_cl(start_cl, cl_name):
-        cl = start_cl
+    def __get_logger(jvm):
+        return jvm.org.apache.log4j.LogManager.getLogger("org")
+
+    @staticmethod
+    def __add_url_to_classloader(jvm, url):
+        cl = jvm.Thread.currentThread().getContextClassLoader()
+        logger = Initializer.__get_logger(jvm)
         while cl:
-            name = cl.getClass().getName()
-            if (name == cl_name):
-                return cl
+            methods = [m.getName() for m in cl.getClass().getDeclaredMethods()]
+            if "addURL" in methods:
+                cl.addURL(url)
+                logger.debug("Adding {} to classloader '{}'".format(url.toString(), cl.toString()))
+            else:
+                logger.debug("Skipping classloader '{}'".format(cl.toString()))
             cl = cl.getParent()
-        return None
