@@ -254,14 +254,6 @@ class H2OConf(object):
 
     # setters for internal backend
 
-    def set_flatfile_enabled(self):
-        self._jconf.setFlatFileEnabled()
-        return self
-
-    def set_flatfile_disabled(self):
-        self._jconf.setFlatFileDisabled()
-        return self
-
     def set_ip_based_faltfile_enabled(self):
         self._jconf.setIpBasedFlatFileEnabled()
         return self
@@ -547,9 +539,6 @@ class H2OConf(object):
         return self._get_option(self._jconf.clientFlowBaseurlOverride())
 
     # Getters for internal backend
-
-    def use_flatfile(self):
-        return self._jconf.useFlatFile()
 
     def ip_based_flatfile(self):
         return self._jconf.ipBasedFlatfile()

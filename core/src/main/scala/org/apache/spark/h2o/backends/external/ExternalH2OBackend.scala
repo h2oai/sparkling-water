@@ -195,11 +195,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     logTrace("Starting H2O client node and connecting to external H2O cluster.")
 
-    val h2oClientArgs = if (hc.getConf.isAutoClusterStartUsed) {
-      getH2OClientArgs(hc.getConf) ++ Array("-watchdog_client")
-    } else {
-      getH2OClientArgs(hc.getConf)
-    }
+    val h2oClientArgs = getH2OClientArgs(hc.getConf).toArray
     logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
 
     H2OStarter.start(h2oClientArgs, false)

@@ -30,7 +30,6 @@ trait InternalBackendConf extends SharedBackendConf {
 
   /** Getters */
 
-  def useFlatFile = sparkConf.getBoolean(PROP_USE_FLATFILE._1, PROP_USE_FLATFILE._2)
   def ipBasedFlatfile = sparkConf.getBoolean(PROP_USE_IP_BASED_FLATFILE._1, PROP_USE_IP_BASED_FLATFILE._2)
   def numH2OWorkers = sparkConf.getOption(PROP_CLUSTER_SIZE._1).map(_.toInt)
   def drddMulFactor = sparkConf.getInt(PROP_DUMMY_RDD_MUL_FACTOR._1, PROP_DUMMY_RDD_MUL_FACTOR._2)
@@ -45,9 +44,6 @@ trait InternalBackendConf extends SharedBackendConf {
                                                                 PROP_INTERNAL_SECURE_CONNECTIONS._2)
 
   /** Setters */
-
-  def setFlatFileEnabled() = set(PROP_USE_FLATFILE._1, true)
-  def setFlatFileDisabled() = set(PROP_USE_FLATFILE._1, false)
 
   def setIpBasedFlatFileEnabled() = set(PROP_USE_IP_BASED_FLATFILE._1, true)
   def setIpBasedFlatFileDisabled() = set(PROP_USE_IP_BASED_FLATFILE._1, false)
@@ -70,7 +66,6 @@ trait InternalBackendConf extends SharedBackendConf {
         |  backend cluster mode : ${backendClusterMode}
         |  workers              : ${numH2OWorkers}
         |  cloudName            : ${cloudName.getOrElse("Not set yet, it will be set automatically before starting H2OContext.")}
-        |  flatfile             : ${useFlatFile}
         |  clientBasePort       : ${clientBasePort}
         |  nodeBasePort         : ${nodeBasePort}
         |  cloudTimeout         : ${cloudTimeout}
@@ -82,9 +77,6 @@ trait InternalBackendConf extends SharedBackendConf {
 }
 
 object InternalBackendConf {
-
-  /** Configuration property - use flatfile for H2O cloud formation. */
-  val PROP_USE_FLATFILE = ("spark.ext.h2o.flatfile", true)
 
   /** Translate hostnames of the worker nodes discovered by Spark to the IP address. The generated
     * flatfile will contain these IP address. Can be useful in certain restricted DNS environments.
