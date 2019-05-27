@@ -54,7 +54,11 @@ class ArgumentBuilder() {
   }
 
   def addIf(arg: String, value: Option[String], condition: Boolean): ArgumentBuilder = {
-    addIf(arg, value.get, condition)
+    if (condition) {
+      add(arg, value.get)
+    } else {
+      this
+    }
   }
 
   def addIf(arg: String, condition: Boolean): ArgumentBuilder = {
