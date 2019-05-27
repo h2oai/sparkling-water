@@ -18,106 +18,114 @@
 package org.apache.spark.h2o.backends.internal
 
 
-import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.SharedBackendUtils
-import org.apache.spark.h2o.utils.NodeDesc
-import org.apache.spark.rdd.RDD
+import org.apache.spark.rpc.{RpcEndpointRef, RpcEnv}
 import org.apache.spark.scheduler.cluster.CoarseGrainedSchedulerBackend
 import org.apache.spark.scheduler.local.LocalSchedulerBackend
+import org.apache.spark.{SparkConf, SparkEnv}
 
 import scala.annotation.tailrec
 
 /**
-  * An H2O specific builder for InvokeOnNodesRDD.
+  * Start RPC endpoint on all discovered executors. These RPC endpoints are later used to start
+  * H2O on remote executors.
   */
 private[spark]
-class SpreadRDDBuilder(hc: H2OContext,
+class SpreadRDDBuilder(@transient private val hc: H2OContext,
                        numExecutorHint: Option[Int] = None) extends SharedBackendUtils {
+  @transient private val sc = hc.sparkContext
   private val conf = hc.getConf
-  private val sc = hc.sparkContext
+  private val isLocal = sc.isLocal
+  val sparkConf: SparkConf = sc.conf
   private val numExecutors = conf.numH2OWorkers
 
-  def build(): (RDD[NodeDesc], Array[NodeDesc]) = {
-    logDebug(s"Building SpreadRDD: numExecutors=${numExecutors}, numExecutorHint=${numExecutorHint}")
+  def build(): Array[RpcEndpointRef] = {
+    logDebug(s"Building SpreadRDD: numExecutors=$numExecutors, numExecutorHint=$numExecutorHint")
     build(conf.numRddRetries, conf.drddMulFactor, 0)
   }
 
   @tailrec
-  private
-  def build(nretries: Int,
-            mfactor: Int,
-            numTriesSame: Int): (RDD[NodeDesc], Array[NodeDesc]) = {
-    logDebug(s"Creating RDD for launching H2O nodes (mretries=${nretries}, mfactor=${mfactor}, " +
-      s"numTriesSame=${numTriesSame}, backend#isReady=${isBackendReady()}")
+  private def build(nretries: Int, mfactor: Int, numTriesSame: Int): Array[RpcEndpointRef] = {
+    logDebug(s"Creating RDD for launching H2O nodes (mretries=$nretries, mfactor=$mfactor, " +
+      s"numTriesSame=$numTriesSame, backend#isReady=${isBackendReady()}")
     // Get number of available Spark executors, invoke distributed operation and compute
     // number of visible nodes again
     val nSparkExecBefore = numOfSparkExecutors
     // Number of expected workers
     val expectedWorkers = numExecutors.orElse(numExecutorHint).getOrElse(if (nSparkExecBefore > 0) nSparkExecBefore else conf.defaultCloudSize)
+
     // Create some distributed data
-    val spreadRDD = sc.parallelize(0 until mfactor*expectedWorkers, mfactor*expectedWorkers + 1).persist()
-    // Collect information about executors in Spark cluster
-    val visibleNodes = collectNodesInfo(spreadRDD)
-    val numVisibleNodes = visibleNodes.map(_.nodeId).distinct.length
-    // Number of Spark executors after distributed operation
-    val nSparkExecAfter = numOfSparkExecutors
+    val spreadRDD = sc.parallelize(0 until mfactor * expectedWorkers, mfactor * expectedWorkers + 1).persist()
+
+
+    // Start RPC Endpoint on all worker nodes
+    val endpoints = spreadRDD.mapPartitions { _ => Iterator.single(RpcReferenceCache.getRef(sparkConf)) }.distinct().collect()
     // Delete RDD
     spreadRDD.unpersist()
 
+    val currentWorkers = endpoints.length
+    // Number of Spark executors after distributed operation
+    val nSparkExecAfter = numOfSparkExecutors
+
     // Decide about visible state
-    if ((numVisibleNodes < expectedWorkers || nSparkExecAfter != nSparkExecBefore)
-      && nretries == 0) {
+    if ((currentWorkers < expectedWorkers || nSparkExecAfter != nSparkExecBefore) && nretries == 0) {
       // We tried many times, but we were not able to get right number of executors
       throw new IllegalArgumentException(
         s"""Cannot execute H2O on all Spark executors:
-            | Expected number of H2O workers is ${numExecutorHint}
-            | Detected number of Spark workers is ${numVisibleNodes}
-            | Num of Spark executors before is ${nSparkExecBefore}
-            | Num of Spark executors after is ${nSparkExecAfter}
-            |""".stripMargin
+           | Expected number of H2O workers is $numExecutorHint
+           | Detected number of Spark workers is $currentWorkers
+           | Num of Spark executors before is $nSparkExecBefore
+           | Num of Spark executors after is $nSparkExecAfter
+           |""".stripMargin
       )
-    } else if (nSparkExecAfter != nSparkExecBefore || nSparkExecAfter != numVisibleNodes) {
+    } else if (nSparkExecAfter != nSparkExecBefore || nSparkExecAfter != currentWorkers) {
       // We detected change in number of executors
-      logInfo(s"Detected ${nSparkExecBefore} before, and ${nSparkExecAfter} spark executors after, backend#isReady=${isBackendReady()}! Retrying again...")
-      build(nretries - 1, 2*mfactor, 0)
+      logInfo(s"Detected $nSparkExecBefore before, and $nSparkExecAfter Spark executors after, backend#isReady=${isBackendReady()}! Retrying again...")
+      build(nretries - 1, 2 * mfactor, 0)
     } else if ((numTriesSame == conf.subseqTries)
-      || (numExecutors.isEmpty && numVisibleNodes == expectedWorkers)
-      || (numExecutors.isDefined && numExecutors.get == numVisibleNodes)) {
-      logInfo(s"Detected ${numVisibleNodes} spark executors for ${expectedWorkers} H2O workers!")
-      (new InvokeOnNodesRDD(visibleNodes, sc), visibleNodes)
+      || (numExecutors.isEmpty && currentWorkers == expectedWorkers)
+      || (numExecutors.isDefined && numExecutors.get == currentWorkers)) {
+      logInfo(s"Detected $currentWorkers spark executors for $expectedWorkers H2O workers!")
+      endpoints
     } else {
-      logInfo(s"Detected ${numVisibleNodes} spark executors for ${expectedWorkers} H2O workers, backend#isReady=${isBackendReady()}! Retrying again...")
-      build(nretries-1, mfactor, numTriesSame + 1)
+      logInfo(s"Detected $currentWorkers spark executors for $expectedWorkers H2O workers, backend#isReady=${isBackendReady()}! Retrying again...")
+      build(nretries - 1, mfactor, numTriesSame + 1)
     }
-  }
-
-  /** Generates and distributes a flatfile around Spark cluster.
-    *
-    * @param distRDD simple RDD to fork execution on.
-    * @return list of node descriptions NodeDesc(executorId, executorHostName, -1)
-    */
-  def collectNodesInfo(distRDD: RDD[Int]): Array[NodeDesc] = {
-    // Collect flatfile - tuple of (executorId, IP, -1)
-    val nodes = distRDD.mapPartitionsWithIndex { (idx, it) =>
-      val env = SparkEnv.get
-      Iterator.single(NodeDesc(env.executorId, SharedBackendUtils.getHostname(env), -1))
-    }.collect()
-    // Take only unique executors
-    nodes.groupBy(_.nodeId).map(_._2.head).toArray.sortWith(_.nodeId < _.nodeId)
   }
 
   /**
     * Return number of registered Spark executors
     */
-  private def numOfSparkExecutors = if (sc.isLocal) 1 else {
+  private def numOfSparkExecutors = if (isLocal) 1 else {
     val sb = sc.schedulerBackend
     sb match {
-      case b: LocalSchedulerBackend => 1
+      case _: LocalSchedulerBackend => 1
       case b: CoarseGrainedSchedulerBackend => b.getExecutorIds.length
       case _ => sc.getExecutorStorageStatus.length - 1
     }
   }
 
   private def isBackendReady() = sc.schedulerBackend.isReady()
+}
+
+object RpcReferenceCache {
+  private object Lock
+  private val rpcServiceName = s"sparkling-water-h2o-start-${SparkEnv.get.executorId}"
+  private val rpcEndpointName = "h2o"
+  private var ref: RpcEndpointRef = _
+
+  def getRef(conf: SparkConf): RpcEndpointRef = Lock.synchronized {
+    if (ref == null) {
+      ref = startEndpointOnH2OWorker(conf)
+    }
+    ref
+  }
+
+  private def startEndpointOnH2OWorker(conf: SparkConf): RpcEndpointRef = {
+    val securityMgr = SparkEnv.get.securityManager
+    val rpcEnv = RpcEnv.create(rpcServiceName, SharedBackendUtils.getHostname(SparkEnv.get), 0, conf, securityMgr)
+    val endpoint = new H2ORpcEndpoint(rpcEnv)
+    rpcEnv.setupEndpoint(rpcEndpointName, endpoint)
+  }
 }

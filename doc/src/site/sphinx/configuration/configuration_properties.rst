@@ -186,9 +186,6 @@ Internal backend configuration properties
 +====================================================+================+========================================+
 | **Generic parameters**                             |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.flatfile``                         | ``true``       | Use flatfile instead of multicast      |
-|                                                    |                | approach for creating H2O cluster.     |
-+----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.ip.based.flatfile``                | ``false``      | Translate hostnames of the worker      |
 |                                                    |                | nodes discovered by Spark to the IP    |
 |                                                    |                | address. The generated flatfile will   |
