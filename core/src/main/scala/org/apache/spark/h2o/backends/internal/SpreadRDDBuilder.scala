@@ -110,11 +110,12 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
 }
 
 object RpcReferenceCache {
+  private object Lock
   private val rpcServiceName = s"sparkling-water-h2o-start-${SparkEnv.get.executorId}"
   private val rpcEndpointName = "h2o"
   private var ref: RpcEndpointRef = _
 
-  def getRef(conf: SparkConf): RpcEndpointRef = RpcReferenceCache.synchronized {
+  def getRef(conf: SparkConf): RpcEndpointRef = Lock.synchronized {
     if (ref == null) {
       ref = startEndpointOnH2OWorker(conf)
     }
