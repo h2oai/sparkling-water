@@ -19,7 +19,7 @@ package org.apache.spark.h2o.backends.external
 
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.backends.SharedBackendUtils
+import org.apache.spark.h2o.backends.{ArgumentBuilder, SharedBackendUtils}
 import org.apache.spark.h2o.utils.NodeDesc
 import water.{ExternalFrameUtils, H2O}
 
@@ -33,15 +33,15 @@ private[external] trait ExternalBackendUtils extends SharedBackendUtils {
     *
     * @return array of H2O client arguments.
     */
-  override def getH2OClientArgs(conf: H2OConf): Array[String] = {
-    getH2OClientConnectionArgs(conf) ++ super.getH2OClientArgs(conf)
+  override def getH2OClientArgs(conf: H2OConf): Seq[String] = {
+    new ArgumentBuilder()
+      .add("-flatfile", conf.h2oCluster.map(clusterStr => SharedBackendUtils.saveFlatFileAsFile(clusterStr).getAbsolutePath))
+      .add(super.getH2OClientArgs(conf))
+      .addIf("-watchdog_client", conf.isAutoClusterStartUsed)
+      .buildArgs()
   }
 
   def cloudMembers = H2O.CLOUD.members().map(NodeDesc(_))
-
-  private[this] def getH2OClientConnectionArgs(conf: H2OConf): Array[String] = {
-    conf.h2oCluster.map(clusterStr => Array("-flatfile", saveAsFile(clusterStr).getAbsolutePath)).getOrElse(Array())
-  }
 
   /** Check Spark and H2O environment, update it if necessary and and warn about possible problems.
     *

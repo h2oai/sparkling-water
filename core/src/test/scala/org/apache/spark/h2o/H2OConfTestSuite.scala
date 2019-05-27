@@ -32,7 +32,6 @@ class H2OConfTestSuite extends FunSuite
 
   test("test H2OConf parameters") {
     val sparkConf = new SparkConf()
-      .set("spark.ext.h2o.flatfile", "false")
       .set("spark.ext.h2o.cluster.size", "42")
       .set("spark.ext.h2o.client.ip", "10.0.0.100")
       .set("spark.ext.h2o.client.port.base", "1267")
@@ -59,7 +58,6 @@ class H2OConfTestSuite extends FunSuite
     val conf = hc.getConf
 
     // Test passed values
-    assert(!conf.useFlatFile)
     assert(conf.numH2OWorkers == Some(42))
     assert(conf.clientBasePort == 1267)
     assert(conf.nodeBasePort == 32333)
