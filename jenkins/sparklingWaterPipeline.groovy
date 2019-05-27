@@ -485,9 +485,9 @@ def publishNightly() {
                             #    
                             cd py/build/pkg
                             python setup.py sdist
-                            DIST_FILE_PATH=\$(ls py/build/pkg/dist/*)
+                            DIST_FILE_PATH=\$(ls dist/*)
                             DIST_FILE_NAME=\$(basename \$DIST_FILE_PATH)
-                            s3cmd --acl-public put \${DIST_FILE_PATH} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/py/\${DIST_FILE_NAME}/
+                            s3cmd --acl-public put py/build/pkg/dist\${DIST_FILE_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/py/\${DIST_FILE_NAME}/
                             cd ../../../
                             
                             # Publish the output to S3.
