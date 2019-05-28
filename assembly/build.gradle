@@ -32,6 +32,7 @@ shadowJar {
     relocate 'javassist', 'ai.h2o.javassist'
     // Relocate Eclipse Jetty to avoid collisions with Spark Jetty (newer version)
     relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
+    relocate 'org.eclipse.jetty.orbit', 'ai.h2o.org.eclipse.jetty.orbit'
     relocate 'com.google.common', 'ai.h2o.com.google.common'
     dependencies {
         // This has to be specific list of dependencies
@@ -47,6 +48,7 @@ shadowJar {
         include(dependency("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"))
         include(dependency("ai.h2o:h2o-genmodel"))
         include(dependency("ai.h2o:h2o-core"))
+        include(dependency("ai.h2o:h2o-jaas-pam"))
         include(dependency("ai.h2o:h2o-hive"))
         include(dependency("ai.h2o:h2o-scala_${scalaBaseVersion}"))
         include(dependency("ai.h2o:h2o-web"))
@@ -62,6 +64,7 @@ shadowJar {
         include(dependency("com.google.auth:.*"))
         include(dependency("com.google.api:.*"))
         include(dependency("com.google.api-client:.*"))
+        include(dependency("com.google.api.grpc:.*"))
         include(dependency("com.google.http-client:.*"))
         include(dependency("com.google.oauth-client:.*"))
         include(dependency("com.google.api:.*"))
@@ -97,6 +100,19 @@ shadowJar {
 
 
         include(dependency("org.eclipse.jetty:.*"))
+        include(dependency("org.eclipse.jetty.orbit:.*"))
+
+        include(dependency("net.java.dev.jets3t:jets3t"))
+        include(dependency("com.github.fommil:jniloader"))
+        include(dependency("com.github.fommil.netlib:.*"))
+        include(dependency("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor"))
+        include(dependency("com.google.errorprone:error_prone_annotations"))
+        include(dependency("org.eclipse.jetty.orbit:javax.mail.glassfish"))
+        include(dependency("com.jamesmurty.utils:java-xmlbuilder"))
+        include(dependency("org.kohsuke:libpam4j"))
+        include(dependency("net.java.dev.jna:jna"))
+        include(dependency("com.googlecode.matrix-toolkits-java:mtj"))
+        include(dependency("net.sourceforge.f2j:arpack_combined_all"))
 
         archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
     }
