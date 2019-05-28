@@ -2,7 +2,6 @@ rootProject.name = 'sparkling-water'
 
 include 'core'
 include 'examples'
-// Disable for now
 include 'ml'
 include 'assembly'
 include 'assembly-h2o'
@@ -15,6 +14,8 @@ include 'package'
 include 'doc'
 include 'extension-stack-trace'
 include 'templates'
+include 'benchmarks'
+
 // Prefix all projects with sparkling-water name
 rootProject.children.each { project ->
     if (project.name.startsWith("app-")) {
