@@ -47,7 +47,7 @@ def static getPatchVersionNumber(String swVersion) {
 def substituteIndexHtml(buildTimeLocal) {
 
     def sparkMajorWithExclude = "${sparkMajorVersion}.*"
-    sparkMajorWithExclude = unsupportedMinorSparkVersions.isEmpty() ? "${sparkMajorWithExclude})" : "${sparkMajorWithExclude} except ${unsupportedMinorSparkVersions}"
+    sparkMajorWithExclude = unsupportedMinorSparkVersions.isEmpty() ? "${sparkMajorWithExclude}" : "${sparkMajorWithExclude} except ${unsupportedMinorSparkVersions}"
     def content = file("src/index.html").getText('UTF-8')
             .replaceAll("SUBST_SPARK_MAJOR_VERSION_WITH_EXCLUDES", sparkMajorWithExclude)
             .replaceAll("SUBST_PROJECT_VERSION", version.toString())
