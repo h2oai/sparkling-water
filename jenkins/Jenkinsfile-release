@@ -179,7 +179,7 @@ pipeline {
                                 echo
 
                                 # Perform a build
-                                ./gradlew buildSparklingWaterDist -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
+                                ./gradlew dist -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
                                 """
                             }
                         }
@@ -339,28 +339,28 @@ pipeline {
                                         REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
                                         PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
 
-                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY}  --rexclude='target/classes/*' --acl-public sync dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/
+                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY}  --rexclude='target/classes/*' --acl-public sync dist/build/dist/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/
 
                                         echo EXPLICITLY SET MIME TYPES AS NEEDED
-                                        list_of_html_files=`find dist/build -name '*.html' | sed 's/dist\\/build\\///g'`
+                                        list_of_html_files=`find dist/build/dist -name '*.html' | sed 's/dist\\/build\\/dist\\///g'`
                                         echo \${list_of_html_files}
                                         for f in \${list_of_html_files}
                                         do
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
+                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/html put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
                                         done
 
-                                        list_of_js_files=`find dist/build -name '*.js' | sed 's/dist\\/build\\///g'`
+                                        list_of_js_files=`find dist/build/dist -name '*.js' | sed 's/dist\\/build\\/dist\\///g'`
                                         echo \${list_of_js_files}
                                         for f in \${list_of_js_files}
                                         do
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
+                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/javascript put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
                                         done
 
-                                        list_of_css_files=`find dist/build -name '*.css' | sed 's/dist\\/build\\///g'`
+                                        list_of_css_files=`find dist/build/dist -name '*.css' | sed 's/dist\\/build\\/dist\\///g'`
                                         echo \${list_of_css_files}
                                         for f in \${list_of_css_files}
                                         do
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
+                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/css put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
                                         done
 
                                         list_of_extended_jars=`find assembly-h2o/private -name '*-extended.jar' | sed 's/assembly-h2o\\\\/private\\\\///g'`
