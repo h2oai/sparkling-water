@@ -1,6 +1,6 @@
 description = "Sparkling Water Benchmarks"
 
-apply from: "$rootDir/gradle/utils.gradle"
+apply from: "$rootDir/gradle/shadowRuntime.gradle"
 
 dependencies {
 
@@ -20,28 +20,6 @@ dependencies {
 
 apply plugin: 'com.github.johnrengelman.shadow'
 
-configurations {
-    shadowRuntime {
-        extendsFrom runtime
-        exclude group: 'org.apache.spark'
-        exclude group: 'org.apache.hadoop'
-        exclude group: 'org.scala-lang'
-        exclude group: 'org.apache.commons', module: 'commons-math3' // a dependency of org.apache.spark:spark-core_2.11
-        exclude group: 'org.codehaus.jackson', module: 'jackson-core-asl' // a dependency of org.apache.spark:spark-core_2.11
-        exclude group: 'commons-codec', module: 'commons-codec' // a dependency of org.apache.spark:spark-sql_2.11
-        exclude group: 'commons-lang', module: 'commons-lang' // a dependency of org.apache.spark:spark-core_2.11
-        exclude group: 'commons-io', module: 'commons-io' // a dependency of org.apache.spark:spark-core_2.11
-        exclude group: 'commons-logging', module: 'commons-logging' // a dependency of org.apache.hadoop:hadoop-auth
-        exclude group: 'log4j', module: 'log4j' // a dependency of org.apache.hadoop:hadoop-auth
-        exclude group: 'com.google.protobuf' // a dependency of org.apache.hadoop:hadoop-common
-        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core' // a dependency of org.apache.spark:spark-sql_2.11
-        exclude group: 'org.apache.httpcomponents' // a dependency of org.apache.hadoop:hadoop-auth
-        exclude group: 'com.github.rwl', module: 'jtransforms' // a dependency of org.apache.spark:spark-mllib
-        exclude group: 'com.google.code.findbugs', module: 'jsr305' // a dependency of org.apache.hadoop:hadoop-common
-        exclude group: 'javax.xml.bind', module: 'jaxb-api' // a dependency of org.apache.hadoop:hadoop-yarn-common
-    }
-}
-
 shadowJar {
     configurations = [project.configurations.shadowRuntime]
 
@@ -52,6 +30,8 @@ shadowJar {
     relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
     relocate 'org.eclipse.jetty.orbit', 'ai.h2o.org.eclipse.jetty.orbit'
     relocate 'com.google.common', 'ai.h2o.com.google.common'
+
+    exclude 'www/flow/packs/test-*/**'
 }
 
 build.dependsOn shadowJar
