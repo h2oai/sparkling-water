@@ -45,7 +45,11 @@ def static getPatchVersionNumber(String swVersion) {
 }
 
 def substituteIndexHtml(buildTimeLocal) {
+
+    def sparkMajorWithExclude = "${sparkMajorVersion}.*"
+    sparkMajorWithExclude = unsupportedMinorSparkVersions.isEmpty() ? "${sparkMajorWithExclude})" : "${sparkMajorWithExclude} except ${unsupportedMinorSparkVersions}"
     def content = file("src/index.html").getText('UTF-8')
+            .replaceAll("SUBST_SPARK_MAJOR_VERSION_WITH_EXCLUDES", sparkMajorWithExclude)
             .replaceAll("SUBST_PROJECT_VERSION", version.toString())
             .replaceAll("SUBST_PROJECT_PATCH_VERSION", getPatchVersionNumber(version.toString()))
             .replaceAll("SUBST_PROJECT_GITHASH", getGitHash())
@@ -66,7 +70,7 @@ def substituteIndexHtml(buildTimeLocal) {
     indexHtmlFile.write(content, 'UTF-8')
 }
 
-def copyRecursive(String fromSuffix, String where, String filterRegex="**/*") {
+def copyRecursive(String fromSuffix, String where, String filterRegex = "**/*") {
     copy {
         from("$rootDir/$fromSuffix") {
             include filterRegex
@@ -136,12 +140,12 @@ task copyFilesForZipDistribution {
         copyAndKeepPath("LICENSE", "$zipDir")
         copyAndKeepPath("README.rst", "$zipDir")
         copyAndKeepPath("gradle.properties", "$zipDir")
-        
+
         copyRecursive("bin/", "$zipDir/bin")
         copyRecursive("examples/flows/", "$zipDir/examples/flows")
         copyRecursive("doc/build/site/", "$zipDir/doc/build/site")
         copyRecursive("docker/", "$zipDir/docker")
-        copyRecursive("py/examples/",  "$zipDir/py/examples/")
+        copyRecursive("py/examples/", "$zipDir/py/examples/")
     }
 }
 
