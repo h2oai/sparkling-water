@@ -5,10 +5,11 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
-import groovy.json.JsonSlurper
+
 
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java'
+apply from: "$rootDir/gradle/utils.gradle"
 
 description = """
 h2o and h2o Driver Assembly. This assembly extends provided jar by sparkling-water specific classes needed in external
@@ -219,18 +220,6 @@ static boolean isJarH2ODriver(String pathToH2OJar) {
     return Files.exists(driverClass)
 }
 
-/**
- * Return list of Hadoop distributions for this Sparkling Water
- */
-def static getSupportedHadoopDistributions(h2oMajorName, h2oBuild) {
-    def relName = h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"
-
-    def buildInfo = "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/buildinfo.json".toURL().text
-    def jsonResp = new JsonSlurper().parseText(buildInfo)
-    // we need to ensure that the distribution names does not contain minor versions
-    def distributions = jsonResp.hadoop_distributions.collect { it.distribution }
-    return distributions.join(" ")
-}
 
 /**
  * This method expects URL pointing to a zip file and it will save on disk only a file from that zip

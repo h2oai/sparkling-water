@@ -1,4 +1,6 @@
 // Common functions used by more sub-projects
+
+import groovy.json.JsonSlurper
 import org.apache.tools.ant.taskdefs.condition.Os
 
 def getOsSpecificCommandLine(args) {
@@ -37,6 +39,41 @@ def detectTestEnvironment(defaultEnv = "local") {
     denv
 }
 
+def getGitHash() {
+    def proc = ['git', 'rev-parse', '--verify', 'HEAD'].execute()
+    return proc.text.trim()
+}
+
+def getGitBranch() {
+    def proc = ['git', 'rev-parse', '--verify', '--abbrev-ref', 'HEAD'].execute()
+    return proc.text.trim()
+}
+
+def getH2OBranch(h2oMajorName) {
+    return h2oMajorName == "master" ? "master" : "rel-${h2oMajorName}"
+}
+
+/**
+ * Return list of Hadoop distributions for this Sparkling Water
+ */
+def getSupportedHadoopDistributions(h2oMajorName, h2oBuild) {
+    def relName = h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"
+
+    def buildInfo = "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/buildinfo.json".toURL().text
+    def jsonResp = new JsonSlurper().parseText(buildInfo)
+    // we need to ensure that the distribution names does not contain minor versions
+    def distributions = jsonResp.hadoop_distributions.collect { it.distribution }
+    return distributions.join(" ")
+}
+
+def getCurrentRSparklingVersion(def projectDir) {
+    def proc = ['R', '-e', "source('for_release/utils.R'); getCurrentVersion(\"src\");"].execute([], file(projectDir))
+    def lines = proc.text.readLines()
+    def idx = lines.findIndexOf { it.contains("[1]") }
+    def patchVersion = lines[idx].replace("[1] ", "").toString()
+    return "0.2." + patchVersion
+}
+
 // Export methods by turning them into closures
 ext {
     getOsSpecificCommandLine = this.&getOsSpecificCommandLine
@@ -44,4 +81,9 @@ ext {
     detectBackendClusterMode = this.&detectBackendClusterMode
     h2oJarLocation = this.&h2oJarLocation
     detectTestEnvironment = this.&detectTestEnvironment
+    getGitHash = this.&getGitHash
+    getGitBranch = this.&getGitBranch
+    getH2OBranch = this.&getH2OBranch
+    getSupportedHadoopDistributions = this.&getSupportedHadoopDistributions
+    getCurrentRSparklingVersion = this.&getCurrentRSparklingVersion
 }

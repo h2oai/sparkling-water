@@ -31,7 +31,6 @@ out/
 .idea
 metastore_db/
 derby.log
-content.list
 java_*.hprof
 
 # H2O stuff #
