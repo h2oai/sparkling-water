@@ -515,7 +515,7 @@ def publishNightly() {
                             echo \${list_of_css_files}
                             for f in \${list_of_css_files}
                             do
-                                s3cmd --acl-public --mime-type text/css put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
+                                s3cmd --acl-public --mime-type text/css put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
                             done
                             
                             if [ ${config.buildAgainstH2OBranch} = false ]; then
