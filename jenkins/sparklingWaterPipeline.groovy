@@ -463,7 +463,7 @@ def publishNightly() {
 
                         sh  """
                         # echo 'Making distribution'
-                        ${getGradleCommand(config)} buildSparklingWaterDist
+                        ${getGradleCommand(config)} dist
 
                         # Upload to S3
                         """
@@ -495,24 +495,24 @@ def publishNightly() {
                             echo
                             echo PUBLISH
                             echo
-                            s3cmd --rexclude='target/classes/*' --acl-public sync ${env.WORKSPACE}/dist/build/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/
+                            s3cmd --rexclude='target/classes/*' --acl-public sync ${env.WORKSPACE}/dist/build/dist/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/
                             
                             echo EXPLICITLY SET MIME TYPES AS NEEDED
-                            list_of_html_files=`find dist/build -name '*.html' | sed 's/dist\\/build\\///g'`
+                            list_of_html_files=`find dist/build/dist -name '*.html' | sed 's/dist\\/build\\/dist\\///g'`
                             echo \${list_of_html_files}
                             for f in \${list_of_html_files}
                             do
-                                s3cmd --acl-public --mime-type text/html put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
+                                s3cmd --acl-public --mime-type text/html put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
                             done
                             
-                            list_of_js_files=`find dist/build -name '*.js' | sed 's/dist\\/build\\///g'`
+                            list_of_js_files=`find dist/build/dist -name '*.js' | sed 's/dist\\/build\\/dist\\///g'`
                             echo \${list_of_js_files}
                             for f in \${list_of_js_files}
                             do
-                                s3cmd --acl-public --mime-type text/javascript put dist/build/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
+                                s3cmd --acl-public --mime-type text/javascript put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
                             done
                             
-                            list_of_css_files=`find dist/build -name '*.css' | sed 's/dist\\/build\\///g'`
+                            list_of_css_files=`find dist/build/dist -name '*.css' | sed 's/dist\\/build\\/dist\\///g'`
                             echo \${list_of_css_files}
                             for f in \${list_of_css_files}
                             do

@@ -129,18 +129,9 @@ task installRSparklingPackage(type: Exec, dependsOn: buildR) {
     commandLine getOsSpecificCommandLine(["R", "-e", "source('../for_release/utils.R'); install.packages(paste(\"rsparkling_\", \"0.2.\", getCurrentVersion(\"src\"), \".tar.gz\", collapse=\"\", sep=\"\"), type=\"source\", repos=NULL)"])
 }
 
-
-def getCurrentVersion(def projectDir) {
-    def proc = ['R', '-e', "source('for_release/utils.R'); getCurrentVersion(\"src\");"].execute([], file(projectDir))
-    def lines = proc.text.readLines()
-    def idx = lines.findIndexOf { it.contains("[1]") }
-    def patchVersion = lines[idx].replace("[1] ", "").toString()
-    return "0.2." + patchVersion
-}
-
 task printCurrentVersion() {
     doLast {
-        println(getCurrentVersion("${rootDir}/r"))
+        println(getCurrentRSparklingVersion("${rootDir}/r"))
     }
 
 }

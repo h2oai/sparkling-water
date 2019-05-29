@@ -184,29 +184,6 @@ configure(subprojects) { project ->
     }
 }
 
-task buildSparklingWaterDist(type: Exec, dependsOn:
-        ["sparkling-water-assembly:shadowJar"] + // Build Java/Scala
-                ["sparkling-water-templates:build"] + // Build templates
-                ["sparkling-water-py:distPython"] +
-                getTasksByName("javadoc", true) + // Build javadoc
-                getTasksByName("scaladoc", true) + // Build scaladoc
-                getTasksByName("site", true) +
-                ["sparkling-water-r:distR"]
-) {
-
-    def buildTimeMillis = System.currentTimeMillis();
-    def buildTimeIso8601 = new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("UTC"))
-    def buildTimeLocal = new Date()
-
-    environment['BUILD_TIME_MILLIS'] = buildTimeMillis
-    environment['BUILD_TIME_ISO8601'] = buildTimeIso8601
-    environment['BUILD_TIME_LOCAL'] = buildTimeLocal
-
-    commandLine './make-dist.sh'
-}
-
-task dist(dependsOn: buildSparklingWaterDist)
-
 clean.doFirst {
     delete file("build/")
     delete file("h2ologs/")
