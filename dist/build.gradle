@@ -1,0 +1,170 @@
+apply plugin: 'base'
+apply from: "$rootDir/gradle/utils.gradle"
+
+ext {
+    distDir = file("$buildDir/dist")
+    zipDir = file("$buildDir/zip")
+}
+
+def substituteBuildInfoFile(buildTimeMillis, buildTimeIso8601, buildTimeLocal) {
+    def content = file("src/buildinfo.json").getText('UTF-8')
+            .replaceAll("SUBST_BUILD_TIME_MILLIS", buildTimeMillis)
+            .replaceAll("SUBST_BUILD_TIME_ISO8601", buildTimeIso8601)
+            .replaceAll("SUBST_BUILD_TIME_LOCAL", buildTimeLocal)
+            .replaceAll("SUBST_PROJECT_VERSION", version.toString())
+            .replaceAll("SUBST_LAST_COMMIT_HASH", getGitHash())
+            .replaceAll("SUBST_H2O_NAME", h2oMajorName)
+            .replaceAll("SUBST_H2O_VERSION", h2oMajorVersion)
+            .replaceAll("SUBST_H2O_PROJECT_VERSION", h2oVersion)
+            .replaceAll("SUBST_H2O_BRANCH_NAME", getH2OBranch(h2oMajorName))
+            .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
+            .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+
+    def buildInfoFile = file("$distDir/buildinfo.json")
+    buildInfoFile.createNewFile()
+    buildInfoFile.write(content, 'UTF-8')
+}
+
+def getGithubURLPrefix(String swVersion) {
+    def gitBranch = getGitBranch()
+    if (swVersion.contains("SNAPSHOT-")) {
+        return "${gitBranch}/nightly"
+    } else {
+        return gitBranch
+    }
+}
+
+def static getPatchVersionNumber(String swVersion) {
+    def patchVersion = swVersion.split("\\.")[2]
+
+    if (swVersion.contains("SNAPSHOT-")) {
+        return patchVersion.split("-")[2]
+    } else {
+        return patchVersion
+    }
+}
+
+def substituteIndexHtml(buildTimeLocal) {
+    def content = file("src/index.html").getText('UTF-8')
+            .replaceAll("SUBST_PROJECT_VERSION", version.toString())
+            .replaceAll("SUBST_PROJECT_PATCH_VERSION", getPatchVersionNumber(version.toString()))
+            .replaceAll("SUBST_PROJECT_GITHASH", getGitHash())
+            .replaceAll("SUBST_PROJECT_GITBRANCH", getGithubURLPrefix(version.toString()))
+            .replaceAll("SUBST_H2O_VERSION", h2oMajorVersion)
+            .replaceAll("SUBST_H2O_BUILD", h2oBuild)
+            .replaceAll("SUBST_H2O_NAME", h2oMajorName)
+            .replaceAll("SUBST_H2O_DRIVERS_LIST", getSupportedHadoopDistributions(h2oMajorName, h2oBuild))
+            .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+            .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+            .replaceAll("SUBST_H2O_BRANCH_NAME", getH2OBranch(h2oMajorName))
+            .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
+            .replaceAll("SUBST_RSPARKLING_VERSION", getCurrentRSparklingVersion("${rootDir}/r"))
+            .replaceAll("SUBST_BUILD_TIME_LOCAL", buildTimeLocal)
+
+    def indexHtmlFile = file("$distDir/index.html")
+    indexHtmlFile.createNewFile()
+    indexHtmlFile.write(content, 'UTF-8')
+}
+
+def copyRecursive(String fromSuffix, String where, String filterRegex="**/*") {
+    copy {
+        from("$rootDir/$fromSuffix") {
+            include filterRegex
+        }
+        into "$where"
+    }
+}
+
+def copyAndKeepPath(String filePath, String targetDir) {
+    copy {
+        from("$rootDir/$filePath")
+        into "$targetDir/${filePath.contains("/") ? filePath.substring(0, filePath.lastIndexOf('/')) : ""}"
+    }
+}
+
+def copySingle(String sourceDir, String fileName, String targetDir) {
+    copy {
+        from("$rootDir/$sourceDir/$fileName")
+        into "$targetDir"
+    }
+}
+
+def createSupportedHadoopFile(String where) {
+    def versions = "standalone ${getSupportedHadoopDistributions(h2oMajorName, h2oBuild)}"
+    def versionsFile = file("$where/h2o_drivers.txt")
+    versionsFile.createNewFile()
+    versionsFile.write(versions, 'UTF-8')
+}
+
+def distTaskDependencies = [
+        ":sparkling-water-doc:site",
+        ":sparkling-water-r:distR",
+        ":sparkling-water-assembly:shadowJar",
+        ":sparkling-water-templates:build",
+        ":sparkling-water-py:distPython",
+] + getTasksByName("javadoc", true) + getTasksByName("scaladoc", true)
+
+
+task copyFilesForZipDistribution {
+    doLast {
+        if (buildDir.exists()) {
+            buildDir.deleteDir()
+        }
+
+        copySingle("r/build/", "rsparkling_${getCurrentRSparklingVersion("${rootDir}/r")}.tar.gz", "$zipDir")
+        createSupportedHadoopFile("$zipDir")
+
+        copyAndKeepPath("assembly/build/libs/sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar", "$zipDir")
+        copyAndKeepPath("py/build/dist/h2o_pysparkling_$sparkMajorVersion-${version}.zip", "$zipDir")
+        copyAndKeepPath("examples/README.rst", "$zipDir")
+        copyAndKeepPath("examples/scripts/chicagoCrimeSmall.script.scala", "$zipDir")
+        copyAndKeepPath("examples/scripts/chicagoCrimeSmallShell.script.scala", "$zipDir")
+        copyAndKeepPath("examples/scripts/hamOrSpam.script.scala", "$zipDir")
+        copyAndKeepPath("examples/scripts/StrataAirlines.script.scala", "$zipDir")
+        copyAndKeepPath("examples/scripts/craigslistJobTitles.script.scala", "$zipDir")
+        copyAndKeepPath("examples/smalldata/airlines/allyears2k_headers.zip", "$zipDir")
+        copyAndKeepPath("examples/smalldata/airlines/year2005.csv.gz", "$zipDir")
+        copyAndKeepPath("examples/smalldata/chicago/Chicago_Ohare_International_Airport.csv", "$zipDir")
+        copyAndKeepPath("examples/smalldata/chicago/chicagoAllWeather.csv", "$zipDir")
+        copyAndKeepPath("examples/smalldata/chicago/chicagoCensus.csv", "$zipDir")
+        copyAndKeepPath("examples/smalldata/chicago/chicagoCrimes10k.csv.zip", "$zipDir")
+        copyAndKeepPath("examples/smalldata/iris/iris_wheader.csv", "$zipDir")
+        copyAndKeepPath("examples/smalldata/prostate/prostate.csv", "$zipDir")
+        copyAndKeepPath("examples/smalldata/smsData.txt", "$zipDir")
+        copyAndKeepPath("examples/smalldata/craigslistJobTitles.csv", "$zipDir")
+        copyAndKeepPath("examples/smalldata/bcwd.csv", "$zipDir")
+        copyAndKeepPath("LICENSE", "$zipDir")
+        copyAndKeepPath("README.rst", "$zipDir")
+        copyAndKeepPath("gradle.properties", "$zipDir")
+        
+        copyRecursive("bin/", "$zipDir/bin")
+        copyRecursive("examples/flows/", "$zipDir/examples/flows")
+        copyRecursive("doc/build/site/", "$zipDir/doc/build/site")
+        copyRecursive("docker/", "$zipDir/docker")
+        copyRecursive("py/examples/",  "$zipDir/py/examples/")
+    }
+}
+
+copyFilesForZipDistribution.dependsOn(distTaskDependencies)
+
+task zipDistribution(type: Zip, dependsOn: copyFilesForZipDistribution) {
+    from "$zipDir"
+    include '**/*'
+    archiveName "sparkling-water-${version}.zip"
+    destinationDir distDir
+}
+
+task dist(dependsOn: zipDistribution) {
+    doLast {
+        def buildTimeMillis = System.currentTimeMillis().toString()
+        def buildTimeIso8601 = new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("UTC"))
+        def buildTimeLocal = new Date().toString()
+
+        // Prepare additional files which will be published
+        copyRecursive("core/build/docs/scaladoc/", "$distDir/scaladoc")
+        copyRecursive("doc/build/site/", "$distDir/doc")
+        copyRecursive("templates/build/", "$distDir/templates")
+        substituteBuildInfoFile(buildTimeMillis, buildTimeIso8601, buildTimeLocal)
+        substituteIndexHtml(buildTimeLocal)
+    }
+}

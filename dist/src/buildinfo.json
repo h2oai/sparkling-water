@@ -24,7 +24,7 @@
     "developer_documents" : [
         {
             "name" : "Demo Example from Git",
-            "path" : "https://github.com/h2oai/sparkling-water/blob/SUBST_LAST_COMMIT_HASH/examples/README.md"
+            "path" : "https://github.com/h2oai/sparkling-water/blob/SUBST_LAST_COMMIT_HASH/examples/README.rst"
         },
         {
             "name" : "Scala Developer Documentation (Scaladoc)",
