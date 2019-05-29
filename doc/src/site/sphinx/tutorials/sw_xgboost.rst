@@ -73,7 +73,7 @@ Train the model. You can configure all the available XGBoost arguments using pro
 .. code:: python
 
     from pysparkling.ml import H2OXGBoost
-    estimator = H2OXGBoost(predictionCol="AGE")
+    estimator = H2OXGBoost(labelCol="AGE")
     model = estimator.fit(spark_frame)
 
 
