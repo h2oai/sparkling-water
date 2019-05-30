@@ -50,7 +50,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgorithmCommons with DefaultParamsWritable with H2OGridSearchParams {
 
   // Override default values
-  logWarning("Default value of 'convertUnknownCategoricalLevelsToNa' parameter on H2OMOJOModel will be changed to 'false' from 'true' in the next" +
+  logWarning("Default value of 'convertUnknownCategoricalLevelsToNa' parameter on H2OGridSearch will be changed to 'false' from 'true' in the next" +
     " major release.")
   setDefault(convertUnknownCategoricalLevelsToNa, true)
 
