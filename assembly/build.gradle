@@ -1,3 +1,4 @@
+apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply from: "$rootDir/gradle/shadowRuntime.gradle"
 
@@ -16,6 +17,11 @@ dependencies {
     compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+}
+
+jar {
+    enabled = false // we do not need to generate jar file in this case
+    archiveBaseName = "${jar.archiveBaseName.get()}_${scalaBaseVersion}"
 }
 
 shadowJar {
