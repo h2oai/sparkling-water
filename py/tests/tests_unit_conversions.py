@@ -216,7 +216,7 @@ class FrameTransformationsTest(unittest.TestCase):
 
     def test_load_mojo_gbm(self):
         from pysparkling.ml import H2OMOJOModel, H2OGBM
-        mojo = H2OMOJOModel.create_from_mojo(
+        mojo = H2OMOJOModel.createFromMojo(
             "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
         prostate_frame = self._hc.as_spark_frame(
             h2o.upload_file(unit_test_utils.locate("smalldata/prostate/prostate.csv")))
@@ -234,7 +234,7 @@ class FrameTransformationsTest(unittest.TestCase):
 
     def test_load_mojo_deeplearning(self):
         from pysparkling.ml import H2OMOJOModel, H2ODeepLearning
-        mojo = H2OMOJOModel.create_from_mojo(
+        mojo = H2OMOJOModel.createFromMojo(
             "file://" + os.path.abspath("../ml/src/test/resources/deep_learning_prostate.mojo"))
         prostate_frame = self._hc.as_spark_frame(
             h2o.upload_file(unit_test_utils.locate("smalldata/prostate/prostate.csv")))
