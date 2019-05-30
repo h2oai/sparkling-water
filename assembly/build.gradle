@@ -1,4 +1,5 @@
-apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply from: "$rootDir/gradle/shadowRuntime.gradle"
 
 description = "Sparkling Water Assembly"
 
@@ -6,10 +7,9 @@ dependencies {
     // Sparkling Water libraries
     compile project(":sparkling-water-ml")
     compile project(":sparkling-water-repl")
-    compile(project(":sparkling-water-core")) {
-        exclude group: "javax.servlet", module: "servlet-api"
-    }
+    compile(project(":sparkling-water-core"))
     compile(project(":sparkling-water-extension-stack-trace"))
+    compile(project(":sparkling-water-examples"))
 
     // Spark libraries
     compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
@@ -17,14 +17,6 @@ dependencies {
     compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 }
-
-jar {
-    enabled = false // we do not need to generate jar file in this case
-    archiveBaseName = "${jar.archiveBaseName.get()}_${scalaBaseVersion}"
-}
-
-apply plugin: 'com.github.johnrengelman.shadow'
-apply from: "$rootDir/gradle/shadowRuntime.gradle"
 
 shadowJar {
     configurations = [project.configurations.shadowRuntime]

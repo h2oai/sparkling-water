@@ -1,5 +1,6 @@
 description = "Sparkling Water Benchmarks"
 
+apply plugin: 'com.github.johnrengelman.shadow'
 apply from: "$rootDir/gradle/shadowRuntime.gradle"
 
 dependencies {
@@ -17,8 +18,6 @@ dependencies {
     compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 }
-
-apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
     configurations = [project.configurations.shadowRuntime]
