@@ -43,6 +43,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   // Override default values
   setDefault(nfolds, 5)
+  logWarning("Default value of 'convertUnknownCategoricalLevelsToNa' parameter will be changed to 'false' in the next major release.")
   setDefault(convertUnknownCategoricalLevelsToNa, true)
 
   private lazy val spark = SparkSession.builder().getOrCreate()
@@ -62,7 +63,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
     val (train, valid) = prepareDatasetForFitting(dataset)
     spec.input_spec.training_frame = train._key
-    spec.input_spec.validation_frame  = valid.map(_._key).orNull
+    spec.input_spec.validation_frame = valid.map(_._key).orNull
 
     val trainFrame = spec.input_spec.training_frame.get()
     if (getAllStringColumnsToCategorical()) {
