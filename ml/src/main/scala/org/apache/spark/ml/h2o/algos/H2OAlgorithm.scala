@@ -61,9 +61,10 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag] extends Estimator[
     water.DKV.put(trainFrame)
     
     // Train
-    binaryModel = Some(trainModel(parameters))
-    val mojoData = ModelSerializationSupport.getMojoData(binaryModel.get)
-    val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID(binaryModel.get._parms.algoName()))
+    val binaryModel = trainModel(parameters)
+    binaryModelOption = Some(binaryModel)
+    val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
+    val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID(binaryModel._parms.algoName()))
     
     // pass some parameters set on algo to model
     model.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())

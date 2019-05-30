@@ -31,7 +31,7 @@ import scala.util.control.NoStackTrace
   */
 trait H2OAlgorithmCommons extends H2OCommonParams {
 
-  protected var binaryModel: Option[H2OBaseModel] = None
+  protected var binaryModelOption: Option[H2OBaseModel] = None
 
   protected def prepareDatasetForFitting(dataset: Dataset[_]): (Frame, Option[Frame]) = {
     val excludedCols = getExcludedCols()
@@ -60,7 +60,7 @@ trait H2OAlgorithmCommons extends H2OCommonParams {
   }
 
   def getBinaryModel(): H2OBaseModel = {
-    binaryModel.getOrElse(
+    binaryModelOption.getOrElse(
       throw new IllegalArgumentException("To get H2O's binary model, please run the 'fit' method first.") with NoStackTrace)
   }
 }
