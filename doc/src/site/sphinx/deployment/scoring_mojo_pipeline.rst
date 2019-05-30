@@ -48,7 +48,7 @@ At this point, you should have available a PySpark interactive terminal where yo
 .. code:: python
 
 	# Load the pipeline
-	mojo = H2OMOJOPipelineModel.create_from_mojo("file:///path/to/the/pipeline.mojo")
+	mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline.mojo")
 
 	# This option ensures that the output columns are named properly. If you want to use old behavior
 	# when all output columns were stored inside an array, don't specify this configuration option,
@@ -58,13 +58,13 @@ At this point, you should have available a PySpark interactive terminal where yo
 .. code:: python
 
 	# Load the data as Spark's Data Frame
-	data_frame = spark.read.csv("file:///path/to/the/data.csv", header=True)
+	dataFrame = spark.read.csv("file:///path/to/the/data.csv", header=True)
 
 .. code:: python
 
 	# Run the predictions. The predictions contain all the original columns plus the predictions
 	# added as new columns
-	predictions = mojo.predict(data_frame)
+	predictions = mojo.transform(dataFrame)
 
 	# You can easily get the predictions for a desired column using the helper function as
 	predictions.select(mojo.selectPredictionUDF("AGE")).collect()

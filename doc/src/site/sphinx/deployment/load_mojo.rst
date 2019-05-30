@@ -17,7 +17,7 @@ or in Python:
 .. code:: python
 
     from pysparkling.ml import *
-    model = H2OMOJOModel.create_from_mojo("prostate.mojo")
+    model = H2OMOJOModel.createFromMojo("prostate.mojo")
 
 attempts to load the mojo file with the specified name from the current working directory.
 You can also specify the full path such as, in Scala:
@@ -32,7 +32,7 @@ or in Python:
 .. code:: python
 
     from pysparkling.ml import *
-    model = H2OMOJOModel.create_from_mojo("/Users/peter/prostate.mojo")
+    model = H2OMOJOModel.createFromMojo("/Users/peter/prostate.mojo")
 
 
 In the case Spark is running on Hadoop and HDFS is available, then call, in Scala:
@@ -47,7 +47,7 @@ or in Python:
 .. code:: python
 
     from pysparkling.ml import *
-    model = H2OMOJOModel.create_from_mojo("prostate.mojo")
+    model = H2OMOJOModel.createFromMojo("prostate.mojo")
 
 
 attempts to load the mojo from the HDFS home directory of the current user.
@@ -63,7 +63,7 @@ or in Python:
 .. code:: python
 
     from pysparkling.ml import *
-    model = H2OMOJOModel.create_from_mojo("/user/peter/prostate.mojo")
+    model = H2OMOJOModel.createFromMojo("/user/peter/prostate.mojo")
 
 
 Both calls load the mojo file from the following location ``hdfs://{server}:{port}/user/peter/prostate.mojo``, where ``{server}`` and ``{port}`` is automatically filled in by Spark.
@@ -85,6 +85,6 @@ or in Python:
 
     from pysparkling.ml import *
     # HDFS
-    val model_hdfs = H2OMOJOModel.create_from_mojo("hdfs:///user/peter/prostate.mojo")
+    modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate.mojo")
     # Local file
-    val model_local = H2OMOJOModel.create_from_mojo("file:///Users/peter/prostate.mojo")
+    modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate.mojo")
