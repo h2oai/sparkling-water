@@ -1,7 +1,7 @@
 Importing H2O Mojo
 ------------------
 
-H2O Mojo can be imported to Sparkling Water from all data sources Spark supports such as local file, S3 or HDFS and the
+H2O Mojo can be imported to Sparkling Water from all data sources supported by Apache Spark such as local file, S3 or HDFS and the
 semantics of the import is the same as in the Spark API.
 
 
@@ -88,3 +88,21 @@ or in Python:
     modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate.mojo")
     # Local file
     modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate.mojo")
+
+
+The loaded model is an immutable instance, so it's not possible to change the configuration of the model during its existence.
+On the other hand, the model can be configured during its creation via ``H2OMOJOSettings``, in Scala:
+
+.. code:: scala
+
+    import org.apache.spark.ml.h2o.models._
+    val settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = true, convertInvalidNumbersToNa = true)
+    val model = H2OMOJOModel.createFromMojo("prostate.mojo", settings)
+
+or in Python:
+
+.. code:: python
+
+    from pysparkling.ml import *
+    settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = True, convertInvalidNumbersToNa = True)
+    model = H2OMOJOModel.create_from_mojo("prostate.mojo", settings)
