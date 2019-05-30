@@ -48,7 +48,7 @@ class H2OMojoPipelineTest(unittest.TestCase):
     # test predictions on H2O Pipeline MOJO
     def test_h2o_mojo_pipeline_predictions(self):
         # Try loading the Mojo and prediction on it without starting H2O Context
-        mojo = H2OMOJOPipelineModel.create_from_mojo(
+        mojo = H2OMOJOPipelineModel.createFromMojo(
             "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
         mojo.setNamedMojoOutputColumns(False)
         prostateFrame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
@@ -74,7 +74,7 @@ class H2OMojoPipelineTest(unittest.TestCase):
     # test predictions on H2O Pipeline MOJO
     def test_h2o_mojo_pipeline_predictions_with_named_cols(self):
         # Try loading the Mojo and prediction on it without starting H2O Context
-        mojo = H2OMOJOPipelineModel.create_from_mojo(
+        mojo = H2OMOJOPipelineModel.createFromMojo(
             "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
         prostateFrame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
@@ -87,7 +87,7 @@ class H2OMojoPipelineTest(unittest.TestCase):
         assert preds[4][0] == 66.11327967814829
 
     def test_mojo_dai_pipeline_serialize(self):
-        mojo = H2OMOJOPipelineModel.create_from_mojo(
+        mojo = H2OMOJOPipelineModel.createFromMojo(
             "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
         prostateFrame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
