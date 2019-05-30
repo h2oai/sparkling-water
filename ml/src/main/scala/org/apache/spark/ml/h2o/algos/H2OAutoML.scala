@@ -43,6 +43,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   // Override default values
   setDefault(nfolds, 5)
+  logWarning("Default value of 'convertUnknownCategoricalLevelsToNa' parameter on H2OMOJOModel will be changed to 'false' from 'true' in the next" +
+    " major release.")
   setDefault(convertUnknownCategoricalLevelsToNa, true)
 
   private lazy val spark = SparkSession.builder().getOrCreate()
