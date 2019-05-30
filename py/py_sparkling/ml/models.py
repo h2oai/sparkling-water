@@ -11,12 +11,17 @@ import warnings
 class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
-    def create_from_mojo(path_to_mojo):
+    def createFromMojo(pathToMojo):
         spark_session = SparkSession.builder.getOrCreate()
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
         return H2OMOJOModel(
-            spark_session._jvm.py_sparkling.ml.models.H2OMOJOModel.createFromMojo(path_to_mojo))
+            spark_session._jvm.py_sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo))
+
+    @staticmethod
+    def create_from_mojo(path_to_mojo):
+        warnings.warn("The method 'create_from_mojo' is deprecated. Use 'createFromMojo' instead!")
+        return H2OMOJOModel.createFromMojo(path_to_mojo)
 
     def predict(self, dataframe):
         warnings.warn("The method 'predict' is deprecated. Use 'transform' instead!")
@@ -43,12 +48,17 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
-    def create_from_mojo(path_to_mojo):
+    def createFromMojo(pathToMojo):
         spark_session = SparkSession.builder.getOrCreate()
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
         return H2OMOJOPipelineModel(
-            spark_session._jvm.py_sparkling.ml.models.H2OMOJOPipelineModel.createFromMojo(path_to_mojo))
+            spark_session._jvm.py_sparkling.ml.models.H2OMOJOPipelineModel.createFromMojo(pathToMojo))
+
+    @staticmethod
+    def create_from_mojo(path_to_mojo):
+        warnings.warn("The method 'create_from_mojo' is deprecated. Use 'createFromMojo' instead!")
+        return H2OMOJOPipelineModel.createFromMojo(path_to_mojo)
 
     def predict(self, dataframe):
         warnings.warn("The method 'predict' is deprecated. Use 'transform' instead!")

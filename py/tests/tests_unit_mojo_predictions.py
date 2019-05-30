@@ -48,14 +48,14 @@ class H2OMojoPredictionsTest(unittest.TestCase):
     # test predictions on H2O Mojo
     def test_h2o_mojo_predictions(self):
         # Try loading the Mojo and prediction on it without starting H2O Context
-        mojo = H2OMOJOModel.create_from_mojo(
+        mojo = H2OMOJOModel.createFromMojo(
             "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
         mojo.transform(prostate_frame).repartition(1).collect()
 
     def test_h2o_mojo_predictions_unseen_categoricals(self):
-        mojo = H2OMOJOModel.create_from_mojo(
+        mojo = H2OMOJOModel.createFromMojo(
             "file://" + os.path.abspath("../ml/src/test/resources/deep_learning_airlines_categoricals.zip"))
         mojo.setConvertUnknownCategoricalLevelsToNa(True)
         row_for_scoring = Row("sepal_len", "sepal_wid", "petal_len", "petal_wid", "class")
@@ -73,7 +73,7 @@ class H2OMojoPredictionsTest(unittest.TestCase):
         assert data["prediction_output"][0] == 5.240174068202646
 
     def test_h2o_mojo_model_serialization_in_pipeline(self):
-        mojo = H2OMOJOModel.create_from_mojo(
+        mojo = H2OMOJOModel.createFromMojo(
             "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
@@ -89,7 +89,7 @@ class H2OMojoPredictionsTest(unittest.TestCase):
         PipelineModel.load("file://" + os.path.abspath("build/test_spark_pipeline_model_mojo_model"))
 
     def test_h2o_mojo_unsupervised(self):
-        mojo = H2OMOJOModel.create_from_mojo(
+        mojo = H2OMOJOModel.createFromMojo(
             "file://" + os.path.abspath("../ml/src/test/resources/isolation_forest.mojo"))
 
         row_for_scoring = Row("V1")
