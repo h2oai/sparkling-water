@@ -36,6 +36,11 @@ Train the model. You can configure all the available XGBoost arguments using pro
     val estimator = new H2OXGBoost().setLabelCol("AGE")
     val model = estimator.fit(sparkFrame)
 
+You can also get H2O's binary model after calling *fit* method on the estimator as:
+
+.. code:: scala
+
+    estimator.getBinaryModel()
 
 Run Predictions
 
@@ -76,6 +81,12 @@ Train the model. You can configure all the available XGBoost arguments using pro
     estimator = H2OXGBoost(labelCol="AGE")
     model = estimator.fit(spark_frame)
 
+
+You can also get H2O's binary model after calling *fit* method on the estimator as:
+
+.. code:: python
+
+    estimator.getBinaryModel()
 
 Run Predictions
 

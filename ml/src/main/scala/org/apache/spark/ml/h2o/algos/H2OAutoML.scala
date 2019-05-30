@@ -102,9 +102,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
         " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
     }
 
-    val binaryModel = aml.leader()
-    val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
-    val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID(aml.leader()._parms.algoName()))
+    binaryModel = Some(aml.leader())
+    val mojoData = ModelSerializationSupport.getMojoData(binaryModel.get)
+    val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID(binaryModel.get._parms.algoName()))
 
     // pass some parameters set on algo to model
     model.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())

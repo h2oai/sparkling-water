@@ -16,7 +16,7 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{H2OBaseModel, H2OContext}
 import org.apache.spark.ml.h2o.param.H2OCommonParams
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{Dataset, SparkSession}
@@ -24,10 +24,15 @@ import water.Key
 import water.fvec.Frame
 import water.support.H2OFrameSupport
 
+import scala.util.control.NoStackTrace
+
 /**
   * This trait contains methods that are shared across all algorithms.
   */
 trait H2OAlgorithmCommons extends H2OCommonParams {
+
+  protected var binaryModel: Option[H2OBaseModel] = None
+
   protected def prepareDatasetForFitting(dataset: Dataset[_]): (Frame, Option[Frame]) = {
     val excludedCols = getExcludedCols()
 
@@ -52,5 +57,10 @@ trait H2OAlgorithmCommons extends H2OCommonParams {
     } else {
       (input, None)
     }
+  }
+
+  def getBinaryModel(): H2OBaseModel = {
+    binaryModel.getOrElse(
+      throw new IllegalArgumentException("To get H2O's binary model, please run the 'fit' method first.") with NoStackTrace)
   }
 }

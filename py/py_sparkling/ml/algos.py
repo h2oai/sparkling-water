@@ -8,13 +8,15 @@ import string
 import warnings
 
 from pysparkling import *
-from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams
+from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams, H2OCommonParams
 from .util import JavaH2OMLReadable
 from py_sparkling.ml.models import H2OMOJOModel
 from py_sparkling.ml.util import get_enum_array_from_str_array
 java_max_double_value = (2-2**(-52))*(2**1023)
 from pysparkling.spark_specifics import get_input_kwargs
-
+import py4j
+import h2o
+from h2o.estimators.estimator_base import H2OEstimator
 def set_double_values(kwargs, values):
     for v in values:
         if v in kwargs:
@@ -28,7 +30,42 @@ def propagate_value_from_deprecated_property(kwargs, from_deprecated, to_replaci
         del kwargs[from_deprecated]
 
 
-class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
+class H2OAlgorithmCommons(JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
+
+    def getBinaryModel(self):
+        model_id = py4j.java_gateway.get_field(self._java_obj.getBinaryModel(), "_key").toString()
+
+        model_json = h2o.api("GET /%d/Models/%s" % (3, model_id))["models"][0]
+        metrics_class, model_class = H2OEstimator._metrics_class(model_json)
+        m = model_class()
+        m._id = model_id
+        m._model_json = model_json
+        m._have_pojo = model_json.get('have_pojo', True)
+        m._have_mojo = model_json.get('have_mojo', True)
+        m._metrics_class = metrics_class
+        m._start_time = model_json.get('output', {}).get('start_time', None)
+        m._end_time = model_json.get('output', {}).get('end_time', None)
+        m._run_time = model_json.get('output', {}).get('run_time', None)
+    
+        if model_id is not None and model_json is not None and metrics_class is not None:
+            # build Metric objects out of each metrics
+            for metric in ["training_metrics", "validation_metrics", "cross_validation_metrics"]:
+                if metric in model_json["output"]:
+                    if model_json["output"][metric] is not None:
+                        if metric == "cross_validation_metrics":
+                            m._is_xvalidated = True
+                        model_json["output"][metric] = metrics_class(model_json["output"][metric], metric, model_json["algo"])
+    
+            if m._is_xvalidated and model_json["output"]["cross_validation_models"] is not None:
+                m._xval_keys = [i["name"] for i in model_json["output"]["cross_validation_models"]]
+    
+            # build a useful dict of the params
+            for p in m._model_json["parameters"]:
+                m.parms[p["name"]] = p
+        return m
+
+
+class H2OGBM(H2OGBMParams, H2OAlgorithmCommons):
     @keyword_only
     def __init__(self, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
@@ -89,7 +126,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
         return H2OMOJOModel(java_model)
 
 
-class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
+class H2ODeepLearning(H2ODeepLearningParams, H2OAlgorithmCommons):
 
     @keyword_only
     def __init__(self, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
@@ -132,7 +169,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
         return H2OMOJOModel(java_model)
 
 
-class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
+class H2OAutoML(H2OAutoMLParams, H2OAlgorithmCommons):
 
     @keyword_only
     def __init__(self, featuresCols=[], labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], splitRatio=1.0, foldCol=None,
@@ -200,7 +237,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
             return None
 
 
-class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
+class H2OXGBoost(H2OXGBoostParams, H2OAlgorithmCommons):
 
     @keyword_only
     def __init__(self, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
@@ -294,7 +331,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
         return H2OMOJOModel(java_model)
 
 
-class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
+class H2OGLM(H2OGLMParams, H2OAlgorithmCommons):
     @keyword_only
     def __init__(self, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
