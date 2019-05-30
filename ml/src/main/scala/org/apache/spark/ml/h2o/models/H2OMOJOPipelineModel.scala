@@ -185,17 +185,19 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
       func(col(s"${getPredictionCol()}.preds")).alias(column)
     }
   }
-
 }
 
 object H2OMOJOPipelineModel extends H2OMOJOReadable[PyH2OMOJOPipelineModel] with H2OMOJOLoader[PyH2OMOJOPipelineModel] {
 
-  override def createFromMojo(mojoData: Array[Byte], uid: String): PyH2OMOJOPipelineModel = {
+  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): PyH2OMOJOPipelineModel = {
     val model = new PyH2OMOJOPipelineModel(uid)
     val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
     val featureCols = MojoPipeline.loadFrom(reader).getInputMeta.getColumnNames
     model.set(model.featuresCols, featureCols)
     model.set(model.outputCols, MojoPipeline.loadFrom(reader).getOutputMeta.getColumnNames)
+    model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
+    model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
+    model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     model.setMojoData(mojoData)
     model
   }

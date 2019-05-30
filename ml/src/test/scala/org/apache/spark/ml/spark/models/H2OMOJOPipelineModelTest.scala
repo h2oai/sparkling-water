@@ -23,7 +23,7 @@ import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
-import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel
+import org.apache.spark.ml.h2o.models.{H2OMOJOPipelineModel, H2OMOJOSettings}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
@@ -43,10 +43,11 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
   test("Test columns names and numbers") {
     val df = spark.read.option("header", "true").option("inferSchema", true).csv("examples/smalldata/prostate/prostate.csv")
 
-    val mojo = H2OMOJOPipelineModel.createFromMojo(
+    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
+    H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo")
-    mojo.setNamedMojoOutputColumns(false)
+      "prostate_pipeline.mojo",
+      mojoSettings)
 
     val dfTypes = df.dtypes.filter(_._1 != "AGE").map { case (_, typ) => sparkTypeToMojoType(typ) }.toSeq
 
@@ -68,10 +69,11 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     // Test data
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
+    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo")
-    mojo.setNamedMojoOutputColumns(false)
+      "prostate_pipeline.mojo",
+      mojoSettings)
 
     val transDf = mojo.transform(df)
     val udfSelection = transDf.select(mojo.selectPredictionUDF("AGE"))
@@ -106,10 +108,11 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     // Test data
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
+    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo")
-    mojo.setNamedMojoOutputColumns(true)
+      "prostate_pipeline.mojo",
+      mojoSettings)
 
     val transDf = mojo.transform(df)
     val udfSelection = transDf.select(mojo.selectPredictionUDF("AGE"))
