@@ -50,6 +50,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgorithmCommons with DefaultParamsWritable with H2OGridSearchParams {
 
   // Override default values
+  logWarning("Default value of 'convertUnknownCategoricalLevelsToNa' parameter will be changed to 'false' in the next major release.")
   setDefault(convertUnknownCategoricalLevelsToNa, true)
 
   private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
