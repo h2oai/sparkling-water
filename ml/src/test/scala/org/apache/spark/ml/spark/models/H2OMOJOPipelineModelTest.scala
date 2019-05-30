@@ -108,7 +108,7 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
     // Test data
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
-    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
+    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = true)
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo",
