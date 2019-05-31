@@ -30,7 +30,7 @@ import hex.{Model, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMu
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
-import org.apache.spark.ml.h2o.models.H2OMOJOModel
+import org.apache.spark.ml.h2o.models.{H2OMOJOModel, H2OMOJOSettings}
 import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
@@ -125,11 +125,13 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 
     val binaryModel = selectModelFromGrid(grid)
     val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
-    val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID("gridSearch_mojoModel"))
-
-    // pass some parameters set on algo to model
-    model.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
-    model
+    val modelSettings = H2OMOJOSettings(
+      convertUnknownCategoricalLevelsToNa = getConvertUnknownCategoricalLevelsToNa(),
+      convertInvalidNumbersToNa = getConvertInvalidNumbersToNa())
+    H2OMOJOModel.createFromMojo(
+      mojoData,
+      Identifiable.randomUID("gridSearch_mojoModel"),
+      modelSettings)
   }
 
   //noinspection ComparingUnrelatedTypes
