@@ -15,14 +15,14 @@
 * limitations under the License.
 */
 
-package py_sparkling.ml.models
+package org.apache.spark.ml.h2o.models
 
-import org.apache.spark.ml.h2o.models.{H2OMOJOLoader, H2OMOJOReadable, H2OMOJOSettings}
+case class H2OMOJOSettings(
+  convertUnknownCategoricalLevelsToNa: Boolean = false,
+  convertInvalidNumbersToNa: Boolean = false,
+  namedMojoOutputColumns: Boolean = true
+)
 
-class H2OMOJOModel(override val uid: String) extends org.apache.spark.ml.h2o.models.H2OMOJOModel(uid)
-
-object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2OMOJOModel] {
-  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
-    org.apache.spark.ml.h2o.models.H2OMOJOModel.createFromMojo(mojoData, uid, settings)
-  }
+object H2OMOJOSettings{
+  def default = H2OMOJOSettings()
 }

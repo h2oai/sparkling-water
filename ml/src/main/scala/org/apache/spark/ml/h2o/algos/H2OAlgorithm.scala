@@ -20,7 +20,7 @@ import hex.Model
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
-import org.apache.spark.ml.h2o.models.H2OMOJOModel
+import org.apache.spark.ml.h2o.models.{H2OMOJOModel, H2OMOJOSettings}
 import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
@@ -64,11 +64,13 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag] extends Estimator[
 
     val binaryModel: H2OBaseModel = trainModel(parameters)
     val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
-    val model = H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID(binaryModel._parms.algoName()))
-    
-    // pass some parameters set on algo to model
-    model.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
-    model
+    val modelSettings = H2OMOJOSettings(
+      convertUnknownCategoricalLevelsToNa = getConvertUnknownCategoricalLevelsToNa(),
+      convertInvalidNumbersToNa = getConvertInvalidNumbersToNa())
+    H2OMOJOModel.createFromMojo(
+      mojoData,
+      Identifiable.randomUID(binaryModel._parms.algoName()),
+      modelSettings)
   }
 
   def trainModel(params: P): H2OBaseModel

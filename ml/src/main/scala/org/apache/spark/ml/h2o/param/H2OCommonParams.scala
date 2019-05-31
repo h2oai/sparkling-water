@@ -47,6 +47,10 @@ trait H2OCommonParams extends Params with Logging {
     "convertUnknownCategoricalLevelsToNa",
     "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
 
+  protected final val convertInvalidNumbersToNa = new BooleanParam(this,
+    "convertInvalidNumbersToNa",
+    "If set to 'true', the model converts invalid numbers to NA during making predictions.")
+
 
   //
   // Default values
@@ -61,7 +65,8 @@ trait H2OCommonParams extends Params with Logging {
     nfolds -> 0,
     allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String],
-    convertUnknownCategoricalLevelsToNa -> false
+    convertUnknownCategoricalLevelsToNa -> false,
+    convertInvalidNumbersToNa -> false
   )
 
   //
@@ -89,6 +94,8 @@ trait H2OCommonParams extends Params with Logging {
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
+
+  def getConvertInvalidNumbersToNa(): Boolean = $(convertInvalidNumbersToNa)
 
   //
   // Setters
@@ -121,6 +128,8 @@ trait H2OCommonParams extends Params with Logging {
   def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
 
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
+
+  def setConvertInvalidNumbersToNa(value: Boolean): this.type = set(convertInvalidNumbersToNa, value)
 
   //
   // Other methods

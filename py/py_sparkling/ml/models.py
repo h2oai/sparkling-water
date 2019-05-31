@@ -1,22 +1,47 @@
 from pyspark.ml.util import JavaMLReadable, JavaMLWritable
-from pyspark.ml.wrapper import JavaModel
+from pyspark.ml.wrapper import JavaModel, JavaWrapper
 from pysparkling.initializer import *
 from pyspark.sql import SparkSession
 from pyspark.sql.column import Column
 from .util import JavaH2OMLReadable
+from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 import warnings
+
+
+class H2OMOJOSettings(JavaWrapper):
+
+    def __init__(self,
+                 convertUnknownCategoricalLevelsToNa = False,
+                 convertInvalidNumbersToNa = False,
+                 namedMojoOutputColumns = True):
+        assert_is_type(convertUnknownCategoricalLevelsToNa, bool)
+        assert_is_type(convertInvalidNumbersToNa, bool)
+        assert_is_type(namedMojoOutputColumns, bool)
+        self.convertUnknownCategoricalLevelsToNa = convertUnknownCategoricalLevelsToNa
+        self.convertInvalidNumbersToNa = convertInvalidNumbersToNa
+        self.namedMojoOutputColumns = namedMojoOutputColumns
+
+    def toJavaObject(self):
+        return self._new_java_obj("org.apache.spark.ml.h2o.models.H2OMOJOSettings",
+                           self.convertUnknownCategoricalLevelsToNa,
+                           self.convertInvalidNumbersToNa,
+                           self.namedMojoOutputColumns)
+
+    @staticmethod
+    def default():
+        return H2OMOJOSettings()
 
 
 class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
-    def createFromMojo(pathToMojo):
+    def createFromMojo(pathToMojo, settings = H2OMOJOSettings.default()):
         spark_session = SparkSession.builder.getOrCreate()
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
-        return H2OMOJOModel(
-            spark_session._jvm.py_sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo))
+        javaModel = spark_session._jvm.py_sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo, settings.toJavaObject())
+        return H2OMOJOModel(javaModel)
 
     @staticmethod
     def create_from_mojo(path_to_mojo):
@@ -31,6 +56,8 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         return self._java_obj.getConvertUnknownCategoricalLevelsToNa()
 
     def setConvertUnknownCategoricalLevelsToNa(self, value):
+        warnings.warn("The method 'setConvertUnknownCategoricalLevelsToNa' is deprecated." +
+                      " Use 'H2OMOJOSettings' passed to 'create_from_mojo' instead!")
         self._java_obj.setConvertUnknownCategoricalLevelsToNa(value)
         return self
 
@@ -48,12 +75,12 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
-    def createFromMojo(pathToMojo):
+    def createFromMojo(pathToMojo, settings = H2OMOJOSettings.default()):
         spark_session = SparkSession.builder.getOrCreate()
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
-        return H2OMOJOPipelineModel(
-            spark_session._jvm.py_sparkling.ml.models.H2OMOJOPipelineModel.createFromMojo(pathToMojo))
+        javaModel = spark_session._jvm.py_sparkling.ml.models.H2OMOJOPipelineModel.createFromMojo(pathToMojo, settings.toJavaObject())
+        return H2OMOJOPipelineModel(javaModel)
 
     @staticmethod
     def create_from_mojo(path_to_mojo):
@@ -83,11 +110,13 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
         return self._java_obj.getNamedMojoOutputColumns()
 
     def set_named_mojo_output_columns(self, value):
-        warnings.warn(
-            "The method 'set_named_mojo_output_columns' is deprecated. Use 'setNamedMojoOutputColumns' instead!")
+        warnings.warn("The method 'set_named_mojo_output_columns' is deprecated." +
+                      " Use 'H2OMOJOSettings' passed to 'create_from_mojo' instead!")
         return self.setNamedMojoOutputColumns(value)
 
     def setNamedMojoOutputColumns(self, value):
+        warnings.warn("The method 'setNamedMojoOutputColumns' is deprecated." +
+                      " Use 'H2OMOJOSettings' passed to 'create_from_mojo' instead!")
         self._java_obj.setNamedMojoOutputColumns(value)
         return self
 

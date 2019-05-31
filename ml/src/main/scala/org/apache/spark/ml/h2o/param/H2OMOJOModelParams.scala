@@ -16,12 +16,14 @@
 */
 package org.apache.spark.ml.h2o.param
 
+import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param._
+import water.util.DeprecatedMethod
 
 /**
   * Parameters available on the MOJO Model
   */
-trait H2OMOJOModelParams extends Params {
+trait H2OMOJOModelParams extends Params with Logging {
 
   //
   // Param definitions
@@ -32,6 +34,10 @@ trait H2OMOJOModelParams extends Params {
   protected final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
     "convertUnknownCategoricalLevelsToNa",
     "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
+
+  protected final val convertInvalidNumbersToNa = new BooleanParam(this,
+    "convertInvalidNumbersToNa",
+    "If set to 'true', the model converts invalid numbers to NA during making predictions.")
 
   protected final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
     " in the array but in the properly named columns")
@@ -44,6 +50,7 @@ trait H2OMOJOModelParams extends Params {
     featuresCols -> Array.empty[String],
     predictionCol -> "prediction",
     convertUnknownCategoricalLevelsToNa -> false,
+    convertInvalidNumbersToNa -> false,
     namedMojoOutputColumns -> true)
 
   //
@@ -55,12 +62,16 @@ trait H2OMOJOModelParams extends Params {
 
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
+  def getConvertInvalidNumbersToNa(): Boolean = $(convertInvalidNumbersToNa)
+
   def getNamedMojoOutputColumns(): Boolean = $(namedMojoOutputColumns)
 
   //
   // Setters
   //
+  @DeprecatedMethod("H2OMOJOSettings.convertUnknownCategoricalLevelsToNa")
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 
+  @DeprecatedMethod("H2OMOJOSettings.namedMojoOutputColumns")
   def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
 }

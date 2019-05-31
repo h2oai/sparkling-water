@@ -47,13 +47,13 @@ At this point, you should have available a PySpark interactive terminal where yo
 
 .. code:: python
 
-	# Load the pipeline
-	mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline.mojo")
+	# The 'namedMojoOutputColumns' option ensures that the output columns are named properly.
+	# If you want to use old behavior when all output columns were stored inside an array,
+	# set it to False. However we strongly encourage users to use True which is defined as a default value.
+	settings = H2OMOJOSettings(namedMojoOutputColumns = True)
 
-	# This option ensures that the output columns are named properly. If you want to use old behavior
-	# when all output columns were stored inside an array, don't specify this configuration option,
-	# or set it to False. We however strongly encourage users to set this to True as below.
-	mojo.set_named_mojo_output_columns(True)
+	# Load the pipeline. 'settings' is an optional argument. If it's not specified, the default values are used.
+	mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline.mojo", settings)
 
 .. code:: python
 
@@ -88,18 +88,18 @@ At this point, you should have available a Sparkling Water interactive terminal 
 
 .. code:: scala
 
-	// Load the pipeline
-	val mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline.mojo")
+	// The 'namedMojoOutputColumns' option ensures that the output columns are named properly.
+	// If you want to use old behavior when all output columns were stored inside an array,
+	// set it to false. However we strongly encourage users to use true which is defined as a default value.
+	val settings = H2OMOJOSettings(namedMojoOutputColumns = true)
 
-	// This option ensures that the output columns are named properly. If you want to use old behaviour
-	// when all output columns were stored inside and array, don't specify this configuration option
-	// or set it to False. We however strongly encourage users to set this to true as below.
-	mojo.setNamedMojoOutputColumns(true)
+	// Load the pipeline. 'settings' is an optional argument. If it's not specified, the default values are used.
+	val mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline.mojo", settings)
 
 .. code:: scala
 
-    // Load the data as Spark's Data Frame
-    val dataFrame = spark.read.option("header", "true").csv("file:///path/to/the/data.csv")
+	// Load the data as Spark's Data Frame
+	val dataFrame = spark.read.option("header", "true").csv("file:///path/to/the/data.csv")
 
 .. code:: scala
 

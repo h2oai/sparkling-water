@@ -150,6 +150,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
       val config = new EasyPredictModelWrapper.Config()
       config.setModel(ModelSerializationSupport.getMojoModel(getMojoData))
       config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
+      config.setConvertInvalidNumbersToNa(getConvertInvalidNumbersToNa())
       easyPredictModelWrapper = new EasyPredictModelWrapper(config)
     }
     easyPredictModelWrapper
@@ -211,11 +212,14 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
 
 object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[PyH2OMOJOModel] {
 
-  override def createFromMojo(mojoData: Array[Byte], uid: String): PyH2OMOJOModel = {
+  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): PyH2OMOJOModel = {
     val mojoModel = ModelSerializationSupport.getMojoModel(mojoData)
     val model = new PyH2OMOJOModel(uid)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
+    model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
+    model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
+    model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     model.setMojoData(mojoData)
     model
   }
