@@ -42,6 +42,8 @@ trait H2OMOJOModelParams extends Params with Logging {
   protected final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
     " in the array but in the properly named columns")
 
+  protected final val modelDetails: Param[String] = new Param[String](this, "modelDetails", "Optional details of this model.")
+
   //
   //
   // Default values
@@ -51,7 +53,9 @@ trait H2OMOJOModelParams extends Params with Logging {
     predictionCol -> "prediction",
     convertUnknownCategoricalLevelsToNa -> false,
     convertInvalidNumbersToNa -> false,
-    namedMojoOutputColumns -> true)
+    namedMojoOutputColumns -> true,
+    modelDetails -> null
+  )
 
   //
   // Getters
@@ -65,6 +69,8 @@ trait H2OMOJOModelParams extends Params with Logging {
   def getConvertInvalidNumbersToNa(): Boolean = $(convertInvalidNumbersToNa)
 
   def getNamedMojoOutputColumns(): Boolean = $(namedMojoOutputColumns)
+
+  def getModelDetails(): String = $(modelDetails)
 
   //
   // Setters
