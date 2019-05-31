@@ -42,7 +42,7 @@ trait H2OMOJOModelParams extends Params with Logging {
   protected final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
     " in the array but in the properly named columns")
 
-  protected final val modelDetails: Param[String] = new Param[String](this, "modelDetails", "Optional details of this model.")
+  protected final val modelDetails: Param[String] = new Param[String](this, "modelDetails", "Raw details of this model.")
 
   //
   //
