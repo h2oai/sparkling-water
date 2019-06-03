@@ -17,8 +17,12 @@
 
 package org.apache.spark.ml.h2o.models
 
+import java.io.ByteArrayInputStream
 import java.util
 
+import _root_.hex.genmodel.MojoReaderBackendFactory
+import _root_.hex.genmodel.descriptor.JsonModelDescriptorReader
+import com.google.gson.{GsonBuilder, JsonElement}
 import hex.ModelCategory
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.spark.h2o.utils.H2OSchemaUtils
@@ -29,6 +33,8 @@ import org.apache.spark.sql.{DataFrame, _}
 import org.apache.spark.{ml, mllib}
 import py_sparkling.ml.models.{H2OMOJOModel => PyH2OMOJOModel}
 import water.support.ModelSerializationSupport
+
+import scala.collection.JavaConverters._
 
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
 
@@ -212,14 +218,41 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
 
 object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[PyH2OMOJOModel] {
 
+  private def removeMetaField(json: JsonElement): JsonElement = {
+    if (json.isJsonObject) {
+      json.getAsJsonObject.remove("__meta")
+      json.getAsJsonObject.entrySet().asScala.foreach(entry => removeMetaField(entry.getValue))
+    }
+    if (json.isJsonArray) {
+      json.getAsJsonArray.asScala.foreach(removeMetaField)
+    }
+    json
+  }
+
+
+  private def getModelDetails(mojoData: Array[Byte]): String = {
+    val is = new ByteArrayInputStream(mojoData)
+    val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
+
+    val modelOutputJson = JsonModelDescriptorReader.parseModelJson(reader).getAsJsonObject("output")
+    removeMetaField(modelOutputJson)
+    modelOutputJson.remove("domains")
+    modelOutputJson.remove("help")
+    val gson = new GsonBuilder().setPrettyPrinting().create
+    val prettyJson = gson.toJson(modelOutputJson)
+    prettyJson
+  }
+
   override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): PyH2OMOJOModel = {
     val mojoModel = ModelSerializationSupport.getMojoModel(mojoData)
+
     val model = new PyH2OMOJOModel(uid)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
     model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
+    model.set(model.modelDetails -> getModelDetails(mojoData))
     model.setMojoData(mojoData)
     model
   }
