@@ -72,12 +72,7 @@ So for example, to install PySparkling for Spark 2.4, the command would look lik
 Dependencies
 ------------
 
-Prerequisites:
-    
-  - Python 2.7 or 3+
-  - Numpy 1.9.2
-
-For Windows users, please grab a .whl from http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy.
+Supported Python versions are Python 2.7 or Python 3+.
 
 In order to use PySparkling, it requires the following runtime python dependencies to be available on the system, all of which are available on PyPI:
 
@@ -87,6 +82,7 @@ In order to use PySparkling, it requires the following runtime python dependenci
   $ pip install tabulate
   $ pip install future
   $ pip install colorama>=0.3.8
+  $ pip install numpy>=1.9.2
 
 The required packages are installed automatically in case when PySparkling is installed from PyPI.
 
