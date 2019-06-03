@@ -28,7 +28,7 @@ tasks.withType(ScalaCompile) {
             "-language:existentials",
             "-language:implicitConversions",
             "-Xplugin:" + configurations.scalaCompilerPlugin.asPath
-            ]
+    ]
 }
 
 java {
@@ -59,7 +59,7 @@ task sourcesJar(type: Jar) {
 }
 
 // Javadoc Jar generation
-task javadocJar (type: Jar, dependsOn: javadoc) {
+task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
@@ -93,7 +93,7 @@ test {
 }
 
 def getSparkSpecificSourceDir(sparkMajorVersion) {
-    if(file("src/main/spark_$sparkMajorVersion").exists()) {
+    if (file("src/main/spark_$sparkMajorVersion").exists()) {
         return "src/main/spark_$sparkMajorVersion"
     } else {
         return "src/main/spark_current"
