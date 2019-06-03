@@ -1,6 +1,42 @@
 Change Log
 ==========
 
+v2.3.30 (2019-06-03)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/30/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/30/index.html>`__
+
+-  Bug
+        
+   -  `SW-1259 <https://0xdata.atlassian.net/browse/SW-1259>`__ - Unify ratio param across pipeline api
+   -  `SW-1287 <https://0xdata.atlassian.net/browse/SW-1287>`__ - Use RPC endpoints to orchestrate cloud in internal mode
+   -  `SW-1290 <https://0xdata.atlassian.net/browse/SW-1290>`__ - Fix doc
+   -  `SW-1301 <https://0xdata.atlassian.net/browse/SW-1301>`__ - Fix class-loading for Sparkling Water assembly JAR in PySparkling
+   -  `SW-1311 <https://0xdata.atlassian.net/browse/SW-1311>`__ - Add numpy as PySparkling dependency ( it is required because of Spark but missing from list of dependencies)
+   -  `SW-1312 <https://0xdata.atlassian.net/browse/SW-1312>`__ - Warn that default value of convertUnknownCategoricalLevelsToNa will be changed to false on GridSearch &amp; AutoML
+   -  `SW-1316 <https://0xdata.atlassian.net/browse/SW-1316>`__ - Fix wrong fat jar name
+                
+-  Task
+        
+   -  `SW-1292 <https://0xdata.atlassian.net/browse/SW-1292>`__ - Benchmarks: Subproject Skeleton
+                
+-  Improvement
+        
+   -  `SW-1212 <https://0xdata.atlassian.net/browse/SW-1212>`__ - Make sure python zip/wheel is downloadable from our release s3
+   -  `SW-1274 <https://0xdata.atlassian.net/browse/SW-1274>`__ - On download page -&gt; list all supported minor versions
+   -  `SW-1286 <https://0xdata.atlassian.net/browse/SW-1286>`__ - Remove Param propagation of MOJOModels from Python to Java 
+   -  `SW-1288 <https://0xdata.atlassian.net/browse/SW-1288>`__ - H2OCommonParams in pysparkling
+   -  `SW-1289 <https://0xdata.atlassian.net/browse/SW-1289>`__ - Move shared params to H2OCommonParams
+   -  `SW-1298 <https://0xdata.atlassian.net/browse/SW-1298>`__ - Don&#39;t use deprecated methods
+   -  `SW-1299 <https://0xdata.atlassian.net/browse/SW-1299>`__ - Warn user that default value of predictionCol on H2OMOJOModel will change in the next major release to  &#39;prediction&#39;
+   -  `SW-1300 <https://0xdata.atlassian.net/browse/SW-1300>`__ - Upgrade to H2O 3.24.0.4
+   -  `SW-1304 <https://0xdata.atlassian.net/browse/SW-1304>`__ - Definition of assembly jar via transitive exclusions
+   -  `SW-1305 <https://0xdata.atlassian.net/browse/SW-1305>`__ - Move ability to change behavior of MOJO models to MOJOLoader
+   -  `SW-1306 <https://0xdata.atlassian.net/browse/SW-1306>`__ - Move make-dist logic to gradle
+   -  `SW-1307 <https://0xdata.atlassian.net/browse/SW-1307>`__ - Expose binary model in spark pipeline stage
+   -  `SW-1309 <https://0xdata.atlassian.net/browse/SW-1309>`__ - Fix xgboost doc
+   -  `SW-1313 <https://0xdata.atlassian.net/browse/SW-1313>`__ - Rename the &#39;create_from_mojo&#39; method of H2OMOJOModel and H2OMOJOPipelineModel to &#39;createFromMojo&#39;
+                
+                                                                                        
 v2.3.29 (2019-05-17)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/29/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/29/index.html>`__
