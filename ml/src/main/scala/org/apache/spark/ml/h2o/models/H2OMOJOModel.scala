@@ -221,7 +221,7 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
   private def removeMetaField(json: JsonElement): JsonElement = {
     if (json.isJsonObject) {
       json.getAsJsonObject.remove("__meta")
-      json.getAsJsonObject.entrySet().asScala.map(_.getValue).foreach(removeMetaField)
+      json.getAsJsonObject.entrySet().asScala.foreach(entry => removeMetaField(entry.getValue))
     }
     if (json.isJsonArray) {
       json.getAsJsonArray.asScala.foreach(removeMetaField)

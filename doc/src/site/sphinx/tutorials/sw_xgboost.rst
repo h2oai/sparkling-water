@@ -86,7 +86,7 @@ You can also get raw model details by calling the *getModelDetails()* method ava
 
 .. code:: python
 
-    print(model.getModelDetails())
+    model.getModelDetails()
 
 Run Predictions
 
