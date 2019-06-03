@@ -67,6 +67,9 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
     def getPredictionCol(self):
         return self._java_obj.getPredictionCol()
 
+    def getModelDetails(self):
+        return self._java_obj.getModelDetails()
+
     # Overriding the method to avoid changes on the companion Java object
     def _transfer_params_to_java(self):
         pass
