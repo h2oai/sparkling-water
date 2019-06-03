@@ -36,6 +36,8 @@ shadowJar {
     relocate 'com.google.common', 'ai.h2o.com.google.common'
 
     exclude 'www/flow/packs/test-*/**'
+
+    archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
 }
 
 artifacts {
