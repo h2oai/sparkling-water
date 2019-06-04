@@ -25,14 +25,16 @@ import org.apache.spark.util.Utils
 object SparkSpecificUtils extends CrossSparkUtils {
   override def getJars(conf: SparkConf): String = {
 
+    // Spark 2.2.0 behaves differently then Spark versions 2.2.1+. First try to handle Spark 2.2.1+ and fallback
+    // to Spark 2.2.0
     import scala.reflect.runtime.{universe => ru}
     val instanceMirror = ru.runtimeMirror(this.getClass.getClassLoader).reflect(Utils)
     val methodSymbol = ru.typeOf[Utils.type].decl(ru.TermName("getLocalUserJarsForShell"))
+
     val jars = if (methodSymbol.isMethod) {
       val method = instanceMirror.reflectMethod(methodSymbol.asMethod)
       method(conf).asInstanceOf[Seq[String]]
     } else {
-      // Fallback to Spark 2.2.0
       val m = ru.runtimeMirror(this.getClass.getClassLoader)
       val instanceMirror = m.reflect(Utils)
       val methodSymbol = ru.typeOf[Utils.type].decl(ru.TermName("getUserJars")).asMethod
@@ -42,5 +44,5 @@ object SparkSpecificUtils extends CrossSparkUtils {
 
     jars.mkString(File.pathSeparator)
   }
-  
+
 }
