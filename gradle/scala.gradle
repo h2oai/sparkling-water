@@ -28,7 +28,7 @@ tasks.withType(ScalaCompile) {
             "-language:existentials",
             "-language:implicitConversions",
             "-Xplugin:" + configurations.scalaCompilerPlugin.asPath
-            ]
+    ]
 }
 
 java {
@@ -59,7 +59,7 @@ task sourcesJar(type: Jar) {
 }
 
 // Javadoc Jar generation
-task javadocJar (type: Jar, dependsOn: javadoc) {
+task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
@@ -92,11 +92,19 @@ test {
     environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
 }
 
+def getSparkSpecificSourceDir(sparkMajorVersion) {
+    if (file("src/main/spark_$sparkMajorVersion").exists()) {
+        return "src/main/spark_$sparkMajorVersion"
+    } else {
+        return "src/main/spark_current"
+    }
+}
+
 // Add additional source sets for Java
 sourceSets {
     main {
         scala {
-            srcDirs += ["src/main/java"]
+            srcDirs += [getSparkSpecificSourceDir(sparkMajorVersion), "src/main/java"]
         }
         java {
             srcDirs = []
@@ -104,7 +112,7 @@ sourceSets {
     }
     test {
         scala {
-            srcDirs += ["src/test/java"]
+            srcDirs += [getSparkSpecificSourceDir(sparkMajorVersion), "src/test/java"]
         }
         java {
             srcDirs = []

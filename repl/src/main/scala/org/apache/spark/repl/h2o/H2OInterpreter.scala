@@ -22,11 +22,7 @@
 
 package org.apache.spark.repl.h2o
 
-
-import java.io.File
-
 import org.apache.spark.SparkContext
-import org.apache.spark.util.Utils
 
 import scala.language.{existentials, implicitConversions, postfixOps}
 import scala.reflect._
@@ -63,7 +59,8 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
     }
 
     val conf = sparkContext.getConf
-    val jars = Utils.getUserJars(conf, isShell = true).mkString(File.pathSeparator)
+    val jars = SparkSpecificUtils.getJars(conf)
+
     val interpArguments = List(
       "-Yrepl-class-based", // ensure that lines in REPL are wrapped in the classes instead of objects
       "-Yrepl-outdir", s"${H2OInterpreter.classOutputDirectory.getAbsolutePath}",
