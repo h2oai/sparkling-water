@@ -1,7 +1,7 @@
 Enabling SSL
 ------------
 
-Both Spark and H2O support basic node authentication and data encryption. In H2O's case, we encrypt all the data sent between server nodes and between client and server nodes. This feature does not support H2O's UDP feature; only data sent via TCP is encrypted.
+Both Spark and H2O support basic node authentication and data encryption. In H2O's case, we encrypt all the data sent between server nodes and between client and server nodes.
 
 Currently only encryption based on Java's key pair is supported (more in-depth explanation can be found in H2O's documentation linked below).
 
