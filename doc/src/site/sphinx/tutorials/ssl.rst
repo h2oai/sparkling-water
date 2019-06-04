@@ -26,7 +26,7 @@ This can be also achieved in programmatic way in Scala using the utility class `
     import org.apache.spark.network.Security
     import org.apache.spark.h2o._
     Security.enableSSL(spark) // generate properties file, key pairs and set appropriate H2O parameters
-    val hc = H2OContext.getOrCreate(spark) // start the H2O cloud
+    val hc = H2OContext.getOrCreate(spark) // start the H2O cluster
 
 Or if you plan on passing your own H2OConf, then please use:
 
@@ -34,8 +34,8 @@ Or if you plan on passing your own H2OConf, then please use:
 
     import org.apache.spark.network.Security
     import org.apache.spark.h2o._
-    val conf: H2OConf = // generate H2OConf file
+    val conf: H2OConf = new H2OConf(spark)
     Security.enableSSL(spark, conf) // generate properties file, key pairs and set appropriate H2O parameters
-    val hc = H2OContext.getOrCreate(spark, conf) // start the H2O cloud
+    val hc = H2OContext.getOrCreate(spark, conf) // start the H2O cluster
 
 This method generates all files and distributes them via YARN or Spark methods to all worker nodes. This communication is secure in the case of configured YARN/Spark security.
