@@ -25,9 +25,6 @@ shadowJar {
     mergeServiceFiles()
 
     relocate 'javassist', 'ai.h2o.javassist'
-    // Relocate Eclipse Jetty to avoid collisions with Spark Jetty (newer version)
-    relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
-    relocate 'org.eclipse.jetty.orbit', 'ai.h2o.org.eclipse.jetty.orbit'
     relocate 'com.google.common', 'ai.h2o.com.google.common'
 
     exclude 'www/flow/packs/test-*/**'
