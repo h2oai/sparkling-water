@@ -83,7 +83,7 @@ dependencies {
 
 
   // H2O Jetty support
-  compile("ai.h2o:h2o-jetty-8:${h2oVersion}")
+  compile("ai.h2o:h2o-jetty-9:${h2oVersion}")
   compile("ai.h2o:h2o-webserver-iface:${h2oVersion}")
     
   // H2O AutoML

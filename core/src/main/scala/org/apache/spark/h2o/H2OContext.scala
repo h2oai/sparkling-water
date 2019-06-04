@@ -137,11 +137,9 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     }
 
     localClientPort = H2O.API_PORT
-    // Register UI, but not in Databricks as Databricks is not using standard Spark UI API
-    if (_conf.getBoolean("spark.ui.enabled", true) && !isRunningOnDatabricks()) {
-      new SparklingWaterUITab(sparklingWaterListener, sparkContext.ui.get)
-    }
 
+    new SparklingWaterUITab(sparklingWaterListener, sparkContext.ui.get)
+    
     // Force initialization of H2O logs so flow and other dependant tools have logs available from the start
     val level = LogBridge.getH2OLogLevel()
     LogBridge.setH2OLogLevel(Log.TRACE) // just temporarily, set Trace Level so we can
