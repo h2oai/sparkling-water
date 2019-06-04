@@ -186,16 +186,6 @@ private[spark] trait H2OContextUtils extends Logging {
     destination
   }
 
-
-  def isRunningOnDatabricks(): Boolean = {
-    try {
-      Class.forName("com.databricks.backend.daemon.driver.DriverLocal")
-      true
-    } catch {
-      case _: ClassNotFoundException => false
-    }
-  }
-
   def importHiveTable(database: String = HiveTableImporter.DEFAULT_DATABASE, table: String,
                       partitions: Array[Array[String]] = null, allowMultiFormat: Boolean = false): Frame = {
     val hiveTableHandler = new ImportHiveTableHandler
