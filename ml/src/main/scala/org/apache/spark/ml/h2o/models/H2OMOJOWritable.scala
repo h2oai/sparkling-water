@@ -14,23 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package org.apache.spark.ml.h2o.models
 
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.ml.param.Params
+import org.apache.spark.ml.util.{MLWritable, MLWriter}
 
-private[models] trait HasMojoData {
-
-  // Called during init of the model
-   def setMojoData(mojoData : Array[Byte]): this.type = {
-    this.mojoData = mojoData
-    broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(this.mojoData)
-    this
-  }
-
-  protected def getMojoData(): Array[Byte] = broadcastMojo.value
-
-  @transient private var mojoData: Array[Byte] = _
-  private var broadcastMojo: Broadcast[Array[Byte]] = _
+trait H2OMOJOWritable extends MLWritable with Params with HasMojoData {
+  override def write: MLWriter = new H2OMOJOWriter(this, getMojoData())
 }

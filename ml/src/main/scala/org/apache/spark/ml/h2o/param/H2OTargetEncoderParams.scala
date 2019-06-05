@@ -17,10 +17,11 @@
 package org.apache.spark.ml.h2o.param
 
 import org.apache.spark.h2o.utils.H2OSchemaUtils
-import org.apache.spark.ml.{Estimator, PipelineStage}
-import org.apache.spark.ml.h2o.models.H2OTargetEncoderModel
-import org.apache.spark.ml.param.{Param, ParamMap, Params, StringArrayParam}
+import org.apache.spark.ml.h2o.features._
+import org.apache.spark.ml.PipelineStage
+import org.apache.spark.ml.param.{Param, Params, StringArrayParam}
 import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
+import org.apache.spark.h2o.Frame
 
 trait H2OTargetEncoderParams extends PipelineStage with Params {
 
@@ -30,23 +31,50 @@ trait H2OTargetEncoderParams extends PipelineStage with Params {
   override def transformSchema(schema: StructType): StructType = {
     val flatSchema = H2OSchemaUtils.flattenSchema(schema)
     require(getLabelCol() != null, "Label column can't be null!")
-    require(getInputCols() != null && getLabelCol().isEmpty, "The list of input columns can't be null or empty!")
+    require(getInputCols() != null && getInputCols().nonEmpty, "The list of input columns can't be null or empty!")
     val fields = flatSchema.fields
-    require(fields.contains(getLabelCol()),
+    val fieldNames = fields.map(_.name)
+    require(fieldNames.contains(getLabelCol()),
       s"The specified label column '${getLabelCol()}' was not found in the input dataset!")
     for(inputCol <- getInputCols()) {
-      require(fields.contains(inputCol),
+      require(fieldNames.contains(inputCol),
         s"The specified input column '$inputCol' was not found in the input dataset!")
     }
-    StructType(flatSchema.fields ++ getOutputCols().map(StructField(_, DoubleType, nullable = false)))
+    val ioIntersection = getInputCols().intersect(getOutputCols())
+    require(ioIntersection.isEmpty,
+      s"""The columns [${ioIntersection.map(i => s"'$i'").mkString(", ")}] are specified
+         |as input columns and also as output columns. There can't be an overlap.""".stripMargin)
+    StructType(flatSchema.fields ++ getOutputCols().map(StructField(_, DoubleType, nullable = true)))
   }
 
   //
   // List of Parameters
   //
-  private val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
-  private val labelCol = new Param[String](this, "labelCol", "Label column name")
-  private val inputCols = new StringArrayParam(this, "inputCols", "Names of columns that will be transformed")
+  protected final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
+  protected final val labelCol = new Param[String](this, "labelCol", "Label column name")
+  protected final val inputCols = new StringArrayParam(this, "inputCols", "Names of columns that will be transformed")
+  protected final val holdoutStrategy = new H2OTargetEncoderHoldoutStrategyParam(this,
+    "holdoutStrategy",
+    """A strategy deciding what records will be excluded when calculating the target average on the training dataset.
+      |Options:
+      | None        - All rows are considered for the calculation
+      | LeaveOneOut - All rows except the row the colculation is made for
+      | KMeans      - Only out-of-fold data is considered (The option requires foldCol to be set.)
+    """.stripMargin)
+  protected final val blending = new CaseClassParam[H2OTargetEncoderBlendingSettings](this,
+    "blending",
+    """If set, the target average becomes a weighted average of the group target value and the global target value of a given row.
+      |The weight is determined by the size of the given group that the row belongs to.
+      |Attributes:
+      | InflectionPoint - The bigger number it's, the bigger groups will consider the global target value as a component in the weighted average.
+      | Smoothing       - Controls the rate of transition between group target values and global target values.""".stripMargin)
+  protected final val noise = new CaseClassParam[H2OTargetEncoderNoiseSettings](this,
+    "noise",
+    """The settings affecting how much of noise will be added to the target average.
+      |Attributes:
+      | Amount - amount of random noise
+      | Seed   - a seed of the generator producing the random noise
+    """.stripMargin)
 
   //
   // Default values
@@ -54,7 +82,10 @@ trait H2OTargetEncoderParams extends PipelineStage with Params {
   setDefault(
     foldCol -> null,
     labelCol -> "label",
-    inputCols -> Array[String]()
+    inputCols -> Array[String](),
+    holdoutStrategy -> H2OTargetEncoderHoldoutStrategy.None,
+    blending -> null,
+    noise -> H2OTargetEncoderNoiseSettings(0.01, -1)
   )
 
   //
@@ -68,12 +99,27 @@ trait H2OTargetEncoderParams extends PipelineStage with Params {
 
   def getOutputCols(): Array[String] = getInputCols().map(_ + "_te")
 
-  //
-  // Setter
-  //
-  def setFoldCol(value: String): this.type = set(foldCol, value)
+  def getHoldoutStrategy(): H2OTargetEncoderHoldoutStrategy = $(holdoutStrategy)
 
-  def setLabelCol(value: String): this.type = set(labelCol, value)
+  def getBlending(): H2OTargetEncoderBlendingSettings = $(blending)
 
-  def setInputCols(values: Array[String]): this.type = set(inputCols, values)
+  def getNoise(): H2OTargetEncoderNoiseSettings = $(noise)
+
+  //
+  // Others
+  //
+  protected def changeRelevantColumnsToCategorical(frame: Frame) = {
+    val relevantColumns = getInputCols() ++ Array(getLabelCol())
+    relevantColumns.foreach(frame.toCategoricalCol(_))
+  }
+}
+
+class H2OTargetEncoderHoldoutStrategyParam private[h2o](
+    parent: Params,
+    name: String,
+    doc: String,
+    isValid: H2OTargetEncoderHoldoutStrategy => Boolean)
+  extends EnumParam[H2OTargetEncoderHoldoutStrategy](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }

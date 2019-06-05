@@ -16,24 +16,54 @@
 */
 package org.apache.spark.ml.h2o.models
 
+import ai.h2o.automl.targetencoding.TargetEncoderModel
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.h2o.param.H2OTargetEncoderParams
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.sql.{DataFrame, Dataset}
-import org.apache.spark.sql.functions._
+import org.apache.spark.ml.util.{MLWritable, MLWriter}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import water.support.ModelSerializationSupport
 
 class H2OTargetEncoderModel(
     override val uid: String,
-    encodingMap: Map[String, Map[String, Array[Int]]])
-  extends Model[H2OTargetEncoderModel] with H2OTargetEncoderParams {
+    targetEncoderModel: TargetEncoderModel)
+  extends Model[H2OTargetEncoderModel] with H2OTargetEncoderParams with MLWritable {
+
+  lazy val mojoModel: H2OTargetEncoderMojoModel = {
+    val mojoData = ModelSerializationSupport.getMojoData(targetEncoderModel)
+    val model = new H2OTargetEncoderMojoModel()
+    copyValues(model).setMojoData(mojoData)
+  }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    // TODO The way how to apply encoding table for individual records should be defined in H2O-3 and exposed out.
-    getInputCols().zip(getOutputCols()).foldLeft(dataset.toDF()){
-      case (df, (in, out)) => df.withColumn(out, col(in))
+    if(inTrainingMode) {
+      transformTrainingDataset(dataset)
+    } else {
+      mojoModel.transform(dataset)
     }
+  }
 
+  def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
+    val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
+    val input = h2oContext.asH2OFrame(dataset.toDF())
+    changeRelevantColumnsToCategorical(input)
+    val noise = getNoise()
+    val holdoutStrategyId = getHoldoutStrategy().ordinal().asInstanceOf[Byte]
+    val output = if (noise == null) {
+      targetEncoderModel.transform(input, holdoutStrategyId, 0L)
+    } else {
+      targetEncoderModel.transform(input, holdoutStrategyId, noise.amount, 0L)
+    }
+    h2oContext.asDataFrame(output)
+  }
+
+  private def inTrainingMode: Boolean = {
+    val stackTrace = Thread.currentThread().getStackTrace()
+    stackTrace.exists(e => e.getMethodName == "fit" && e.getClassName == "org.apache.spark.ml.Pipeline")
   }
 
   override def copy(extra: ParamMap): H2OTargetEncoderModel = defaultCopy(extra)
+
+  override def write: MLWriter = mojoModel.write
 }

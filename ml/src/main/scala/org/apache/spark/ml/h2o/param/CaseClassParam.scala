@@ -15,22 +15,22 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package org.apache.spark.ml.h2o.param
 
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.ml.param.{Param, Params}
+import org.json4s._
+import org.json4s.jackson.Serialization.{read, write}
 
-private[models] trait HasMojoData {
+class CaseClassParam[T <: AnyRef with Product : Manifest](parent: Params, name: String, doc: String, isValid: T => Boolean)
+  extends Param[T](parent, name, doc, isValid) {
 
-  // Called during init of the model
-   def setMojoData(mojoData : Array[Byte]): this.type = {
-    this.mojoData = mojoData
-    broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(this.mojoData)
-    this
+  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
+
+  @transient private implicit val formats = DefaultFormats
+
+  override def jsonEncode(value: T): String = write[T](value)
+
+  override def jsonDecode(json: String): T = {
+    if (json == null) null.asInstanceOf[T] else read[T](json)
   }
-
-  protected def getMojoData(): Array[Byte] = broadcastMojo.value
-
-  @transient private var mojoData: Array[Byte] = _
-  private var broadcastMojo: Broadcast[Array[Byte]] = _
 }

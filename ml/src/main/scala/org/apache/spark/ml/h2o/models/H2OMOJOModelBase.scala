@@ -21,15 +21,14 @@ import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.converters.RowConverter
 import org.apache.spark.h2o.utils.{DatasetShape, H2OSchemaUtils}
 import org.apache.spark.ml.h2o.param.H2OMOJOModelParams
-import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.types.{StructField, StructType}
 import org.apache.spark.ml.{Model => SparkModel}
 import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 
-abstract class H2OMOJOModelBase[T <: SparkModel[T]]
-  extends SparkModel[T] with H2OMOJOModelParams with MLWritable with HasMojoData {
+abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]] extends SparkModel[T]
+  with H2OMOJOModelParams with HasMojoData with H2OMOJOWritable {
 
   protected def getPredictionSchema(): Seq[StructField]
 
@@ -40,8 +39,6 @@ abstract class H2OMOJOModelBase[T <: SparkModel[T]]
     // and model will be able to still provide a prediction
     StructType(schema.fields ++ getPredictionSchema())
   }
-
-  override def write: MLWriter = new H2OMOJOWriter(this, getMojoData)
 
   protected def applyPredictionUdf(
       predictionCol: String,
