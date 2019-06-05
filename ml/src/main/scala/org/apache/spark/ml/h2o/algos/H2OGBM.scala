@@ -31,7 +31,7 @@ class H2OGBM(override val uid: String) extends H2OAlgorithm[GBMParameters] with 
 
   override def trainModel(params: GBMParameters): GBMModel = {
     val modelId = getModelId()
-    val builder = if(modelId == null || modelId.isEmpty) new GBM(params) else new GBM(params, createKey(modelId))
+    val builder = if (modelId == null || modelId.isEmpty) new GBM(params) else new GBM(params, createKey(modelId))
     builder.trainModel().get()
   }
 }

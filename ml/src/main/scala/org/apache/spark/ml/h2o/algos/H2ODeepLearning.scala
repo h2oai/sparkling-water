@@ -33,7 +33,7 @@ class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearnin
 
   override def trainModel(params: DeepLearningParameters): DeepLearningModel = {
     val modelId = getModelId()
-    val builder = if(modelId == null || modelId.isEmpty) new DeepLearning(params) else new DeepLearning(params, createKey(modelId))
+    val builder = if (modelId == null || modelId.isEmpty) new DeepLearning(params) else new DeepLearning(params, createKey(modelId))
     builder.trainModel().get()
   }
 }

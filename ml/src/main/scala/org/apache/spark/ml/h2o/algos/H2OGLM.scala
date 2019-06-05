@@ -39,7 +39,7 @@ class H2OGLM(override val uid: String) extends H2OAlgorithm[GLMParameters] with 
 
   override def trainModel(params: GLMParameters): GLMModel = {
     val modelId = getModelId()
-    val builder = if(modelId == null || modelId.isEmpty) new GLM(params) else new GLM(params, createKey(modelId))
+    val builder = if (modelId == null || modelId.isEmpty) new GLM(params) else new GLM(params, createKey(modelId))
     builder.trainModel().get()
   }
 }
