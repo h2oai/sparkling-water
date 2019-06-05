@@ -36,6 +36,9 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   //
   // Param definitions
   //
+  protected final val modelId = new NullableStringParam(this,
+    "modelId",
+    "An unique identifier of a trained model. If the id already exists, a number will be appended to ensure uniqueness.")
   private val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
   private val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
   private val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
@@ -45,6 +48,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   // Default values
   //
   setDefault(
+    modelId -> null,
     keepCrossValidationPredictions -> parameters._keep_cross_validation_predictions,
     keepCrossValidationFoldAssignment -> parameters._keep_cross_validation_fold_assignment,
     parallelizeCrossValidation -> parameters._parallelize_cross_validation,
@@ -54,6 +58,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   //
   // Getters
   //
+  def getModelId(): String = $(modelId)
+
   @DeprecatedMethod("getSplitRatio")
   def getTrainRatio(): Double = getSplitRatio()
 
@@ -71,6 +77,8 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   //
   // Setters
   //
+  def setModelId(id: String): this.type = set(modelId, id)
+
   @DeprecatedMethod("setSplitRatio")
   def setTrainRatio(value: Double): this.type = setSplitRatio(value)
 

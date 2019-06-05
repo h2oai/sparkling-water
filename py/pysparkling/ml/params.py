@@ -121,6 +121,7 @@ class H2OAlgorithmParams(H2OCommonParams):
     ##
     # Param definitions
     ##
+    modelId = Param(Params._dummy(), "modelId", "An unique identifier of a trained model. If the id already exists, a number will be appended to ensure uniqueness.")
     keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Whether to keep the predictions of the cross-validation models")
     keepCrossValidationFoldAssignment = Param(Params._dummy(), "keepCrossValidationFoldAssignment", "Whether to keep the cross-validation fold assignment")
     parallelizeCrossValidation = Param(Params._dummy(), "parallelizeCrossValidation", "Allow parallel training of cross-validation models")
@@ -129,6 +130,9 @@ class H2OAlgorithmParams(H2OCommonParams):
     ##
     # Getters
     ##
+    def getModelId(self):
+        return self.getOrDefault(self.modelId)
+
     def getRatio(self):
         warnings.warn("The method 'getRatio' is deprecated. Use 'getSplitRatio' instead!")
         return self.getSplitRatio()
@@ -153,6 +157,10 @@ class H2OAlgorithmParams(H2OCommonParams):
     ##
     # Setters
     ##
+    def setModelId(self, value):
+        assert_is_type(value, None, str)
+        return self._set(modelId=value)
+
     def setRatio(self, value):
         warnings.warn("The method 'setRatio' is deprecated. Use 'setSplitRatio' instead!")
         return self.setSplitRatio(value)

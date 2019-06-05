@@ -29,7 +29,11 @@ class H2OGBM(override val uid: String) extends H2OAlgorithm[GBMParameters] with 
 
   def this() = this(Identifiable.randomUID("gbm"))
 
-  override def trainModel(params: GBMParameters): GBMModel = new GBM(params).trainModel().get()
+  override def trainModel(params: GBMParameters): GBMModel = {
+    val modelId = getModelId()
+    val builder = if(modelId == null || modelId.isEmpty) new GBM(params) else new GBM(params, createKey(modelId))
+    builder.trainModel().get()
+  }
 }
 
 object H2OGBM extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGBM]

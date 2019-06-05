@@ -27,7 +27,7 @@ import org.apache.spark.ml.util._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.Dataset
-import water.Key
+import water.{H2O, Key}
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
 import scala.reflect.ClassTag
@@ -85,4 +85,20 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag] extends Estimator[
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
+
+  protected def createKey[T](modelId: String): Key[T] = {
+    val key = Key.make[T](modelId)
+    if(H2O.containsKey(key)) {
+      var i = 0
+      var replacement = key
+      do {
+        i = i + 1
+        replacement = Key.make[T](s"${modelId}_$i")
+      } while (H2O.containsKey(replacement))
+      logWarning(s"Model id '$modelId' is already used by a different H2O model. Replacing the original id with '$replacement' ...")
+      replacement
+    } else {
+      key
+    }
+  }
 }

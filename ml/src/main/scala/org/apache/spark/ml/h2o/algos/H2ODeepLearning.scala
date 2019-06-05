@@ -31,7 +31,11 @@ class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearnin
 
   def this() = this(Identifiable.randomUID("deeplearning"))
 
-  override def trainModel(params: DeepLearningParameters): DeepLearningModel = new DeepLearning(params).trainModel().get()
+  override def trainModel(params: DeepLearningParameters): DeepLearningModel = {
+    val modelId = getModelId()
+    val builder = if(modelId == null || modelId.isEmpty) new DeepLearning(params) else new DeepLearning(params, createKey(modelId))
+    builder.trainModel().get()
+  }
 }
 
 object H2ODeepLearning extends DefaultParamsReadable[py_sparkling.ml.algos.H2ODeepLearning]

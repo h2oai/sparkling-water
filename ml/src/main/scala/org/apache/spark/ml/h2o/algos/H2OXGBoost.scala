@@ -31,7 +31,11 @@ class H2OXGBoost(override val uid: String) extends H2OAlgorithm[XGBoostParameter
 
   def this() = this(Identifiable.randomUID("xgboost"))
 
-  override def trainModel(params: XGBoostParameters): XGBoostModel = new XGBoost(params).trainModel().get()
+  override def trainModel(params: XGBoostParameters): XGBoostModel = {
+    val modelId = getModelId()
+    val builder = if (modelId == null || modelId.isEmpty) new XGBoost(params) else new XGBoost(params, createKey(modelId))
+    builder.trainModel().get()
+  }
 }
 
 object H2OXGBoost extends DefaultParamsReader[py_sparkling.ml.algos.H2OXGBoost]
