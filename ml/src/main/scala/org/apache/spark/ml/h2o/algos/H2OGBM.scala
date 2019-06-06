@@ -25,11 +25,9 @@ import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 /**
   * H2O GBM algorithm exposed via Spark ML pipelines.
   */
-class H2OGBM(override val uid: String) extends H2OAlgorithm[GBMParameters] with H2OGBMParams {
+class H2OGBM(override val uid: String) extends H2OAlgorithm[GBM, GBMModel, GBMParameters] with H2OGBMParams {
 
   def this() = this(Identifiable.randomUID("gbm"))
-
-  override def trainModel(params: GBMParameters): GBMModel = new GBM(params).trainModel().get()
 }
 
 object H2OGBM extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGBM]

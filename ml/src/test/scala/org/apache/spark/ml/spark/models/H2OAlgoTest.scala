@@ -23,14 +23,15 @@ import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.h2o.algos._
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
+import water.{H2O, Key}
 import water.api.TestUtils
 
 import scala.collection.mutable
 
 @RunWith(classOf[JUnitRunner])
-class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
+class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", "mojo-test-local", conf = defaultSparkConf)
 
@@ -40,7 +41,8 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
-      // Create GBM model
+
+      // Create GLM model
      val algo = new H2OGLM()
         .setSplitRatio(0.8)
         .setSeed(1)
@@ -58,14 +60,52 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
     loadedModel.transform(dataset).count()
   }
 
-  test("H2O Grid Search GLM Pipeline"){
+  test("H2OGLM with set modelId is trained mutliple times") {
+    val modelId = "testingH2OGLMModel"
+
+    val key1 = Key.make(modelId)
+    val key2 = Key.make(modelId + "_1")
+    val key3 = Key.make(modelId + "_2")
+
+    val dataset = spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+
+    // Create GLM model
+    val algo = new H2OGLM()
+      .setModelId(modelId)
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON")
+      .setLabelCol("AGE")
+
+    H2O.containsKey(Key.make(modelId)) shouldBe false
+
+    algo.fit(dataset)
+    H2O.containsKey(key1) shouldBe true
+    H2O.containsKey(key2) shouldBe false
+    H2O.containsKey(key3) shouldBe false
+
+    algo.fit(dataset)
+    H2O.containsKey(key1) shouldBe true
+    H2O.containsKey(key2) shouldBe true
+    H2O.containsKey(key3) shouldBe false
+
+    algo.fit(dataset)
+    H2O.containsKey(key1) shouldBe true
+    H2O.containsKey(key2) shouldBe true
+    H2O.containsKey(key3) shouldBe true
+  }
+
+  test("H2O Grid Search GLM Pipeline") {
     val glm = new H2OGLM()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
     testGridSearch(glm, hyperParams)
   }
 
-  test("H2O Grid Search GBM Pipeline"){
+  test("H2O Grid Search GBM Pipeline") {
     val gbm = new H2OGBM()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
     hyperParams += ("_ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef]), "_seed" -> Array(1, 2).map(_.asInstanceOf[AnyRef]))
@@ -73,7 +113,7 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
     testGridSearch(gbm, hyperParams)
   }
 
-  test("H2O Grid Search DeepLearning Pipeline"){
+  test("H2O Grid Search DeepLearning Pipeline") {
     val deeplearning = new H2ODeepLearning()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
@@ -81,7 +121,7 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
   }
 
 
-  test("H2O Grid Search XGBoost Pipeline"){
+  test("H2O Grid Search XGBoost Pipeline") {
     val xgboost = new H2OXGBoost()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
@@ -89,7 +129,7 @@ class H2OAlgoTest extends FunSuite with SharedH2OTestContext {
   }
 
 
-  private def testGridSearch(algo: H2OAlgorithm[_ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
+  private def testGridSearch(algo: H2OAlgorithm[_, _, _ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
       val dataset = spark.read
         .option("header", "true")
         .option("inferSchema", "true")
