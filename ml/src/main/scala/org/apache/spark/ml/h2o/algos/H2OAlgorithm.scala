@@ -16,7 +16,7 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-import hex.Model
+import hex.{Model, ModelBuilder}
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
@@ -27,15 +27,16 @@ import org.apache.spark.ml.util._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.Dataset
-import water.{H2O, Key, Keyed}
+import water.{H2O, Key}
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
-import scala.reflect.ClassTag
+import scala.reflect.{classTag, ClassTag}
 
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
-abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag] extends Estimator[H2OMOJOModel]
+abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseModel, P <: Model.Parameters : ClassTag]
+  extends Estimator[H2OMOJOModel]
   with H2OAlgorithmCommons with DefaultParamsWritable with H2OAlgoParams[P] {
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
@@ -61,7 +62,6 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag] extends Estimator[
     water.DKV.put(trainFrame)
     
     // Train
-
     val binaryModel: H2OBaseModel = trainModel(parameters)
     val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
     val modelSettings = H2OMOJOSettings(
@@ -73,7 +73,40 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag] extends Estimator[
       modelSettings)
   }
 
-  def trainModel(params: P): H2OBaseModel
+  private def trainModel(params: P): H2OBaseModel = {
+    val modelId = getModelId()
+    val algoClass = classTag[B].runtimeClass
+    val parameterClass = classTag[P].runtimeClass
+    val builder = if (modelId == null || modelId.isEmpty) {
+      val constructor = algoClass.getConstructor(parameterClass)
+      constructor.newInstance(params)
+    } else {
+      val constructor = algoClass.getConstructor(parameterClass, classOf[Key[M]])
+      constructor.newInstance(params, convertModelIdToKey(modelId))
+    }
+    builder.asInstanceOf[B].trainModel().get()
+  }
+
+  private def convertModelIdToKey(modelId: String): Key[M] = {
+    val key = Key.make[M](modelId)
+    if (H2O.containsKey(key)) {
+      val replacement = findAlternativeKey(modelId)
+      logWarning(s"Model id '$modelId' is already used by a different H2O model. Replacing the original id with '$replacement' ...")
+      replacement
+    } else {
+      key
+    }
+  }
+
+  private def findAlternativeKey(modelId: String): Key[M] = {
+    var suffixNumber = 0
+    var replacement: Key[M] = null
+    do {
+      suffixNumber = suffixNumber + 1
+      replacement = Key.make[M](s"${modelId}_$suffixNumber")
+    } while (H2O.containsKey(replacement))
+    replacement
+  }
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
@@ -85,20 +118,4 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag] extends Estimator[
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
-
-  protected def createKey[T <: Keyed[T]](modelId: String): Key[T] = {
-    val key = Key.make[T](modelId)
-    if(H2O.containsKey(key)) {
-      var i = 0
-      var replacement = key
-      do {
-        i = i + 1
-        replacement = Key.make[T](s"${modelId}_$i")
-      } while (H2O.containsKey(replacement))
-      logWarning(s"Model id '$modelId' is already used by a different H2O model. Replacing the original id with '$replacement' ...")
-      replacement
-    } else {
-      key
-    }
-  }
 }

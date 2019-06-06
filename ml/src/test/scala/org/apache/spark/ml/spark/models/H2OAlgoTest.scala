@@ -60,8 +60,7 @@ class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
     loadedModel.transform(dataset).count()
   }
 
-  test("H2OGLM with set modelId is trained mutliple times")
-  {
+  test("H2OGLM with set modelId is trained mutliple times") {
     val modelId = "testingH2OGLMModel"
 
     val key1 = Key.make(modelId)
@@ -99,14 +98,14 @@ class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
     H2O.containsKey(key3) shouldBe true
   }
 
-  test("H2O Grid Search GLM Pipeline"){
+  test("H2O Grid Search GLM Pipeline") {
     val glm = new H2OGLM()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
     testGridSearch(glm, hyperParams)
   }
 
-  test("H2O Grid Search GBM Pipeline"){
+  test("H2O Grid Search GBM Pipeline") {
     val gbm = new H2OGBM()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
     hyperParams += ("_ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef]), "_seed" -> Array(1, 2).map(_.asInstanceOf[AnyRef]))
@@ -114,7 +113,7 @@ class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
     testGridSearch(gbm, hyperParams)
   }
 
-  test("H2O Grid Search DeepLearning Pipeline"){
+  test("H2O Grid Search DeepLearning Pipeline") {
     val deeplearning = new H2ODeepLearning()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
@@ -122,7 +121,7 @@ class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
   }
 
 
-  test("H2O Grid Search XGBoost Pipeline"){
+  test("H2O Grid Search XGBoost Pipeline") {
     val xgboost = new H2OXGBoost()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
@@ -130,7 +129,7 @@ class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
   }
 
 
-  private def testGridSearch(algo: H2OAlgorithm[_ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
+  private def testGridSearch(algo: H2OAlgorithm[_, _, _ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
       val dataset = spark.read
         .option("header", "true")
         .option("inferSchema", "true")

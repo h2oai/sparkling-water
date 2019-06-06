@@ -27,15 +27,9 @@ import org.apache.spark.ml.util._
   *
   * TODO: There are still bunch of parameters defined DeepLearningParameters which need to be ported here
   */
-class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearningParameters] with H2ODeepLearningParams {
+class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearning, DeepLearningModel, DeepLearningParameters] with H2ODeepLearningParams {
 
   def this() = this(Identifiable.randomUID("deeplearning"))
-
-  override def trainModel(params: DeepLearningParameters): DeepLearningModel = {
-    val modelId = getModelId()
-    val builder = if (modelId == null || modelId.isEmpty) new DeepLearning(params) else new DeepLearning(params, createKey(modelId))
-    builder.trainModel().get()
-  }
 }
 
 object H2ODeepLearning extends DefaultParamsReadable[py_sparkling.ml.algos.H2ODeepLearning]
