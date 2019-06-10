@@ -482,6 +482,11 @@ def publishNightly() {
                             fi
                             
                             #
+                            # Upload RSparkling Repo
+                            #
+                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put --recursive r/build/repo/src s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/R/
+                            
+                            #
                             # Publish PySparkling to S3
                             #    
                             cd py/build/pkg
