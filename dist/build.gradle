@@ -115,7 +115,7 @@ task copyFilesForZipDistribution {
             buildDir.deleteDir()
         }
 
-        copySingle("r/build/", "rsparkling_$sparkMajorVersion-${version}.tar.gz", "$zipDir")
+        copySingle("r/build/", "rsparkling_${version}.tar.gz", "$zipDir")
         createSupportedHadoopFile("$zipDir")
 
         copyAndKeepPath("assembly/build/libs/sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar", "$zipDir")
