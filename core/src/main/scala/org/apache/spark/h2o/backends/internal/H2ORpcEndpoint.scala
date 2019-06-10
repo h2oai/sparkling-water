@@ -41,6 +41,7 @@ class H2ORpcEndpoint(override val rpcEnv: RpcEnv)
         // API_PORT + PORT_OFFSET
         val internalH2OPort = pair.port + portOffset
         val h2oNode = H2ONode.intern(InetAddress.getByName(ip), internalH2OPort)
+        logInfo(s"Adding $h2oNode to ${H2O.SELF}'s flatfile")
         H2O.addNodeToFlatfile(h2oNode)
       }
     case StopEndpointMsg =>
