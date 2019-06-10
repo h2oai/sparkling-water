@@ -26,6 +26,7 @@ import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.util.RpcUtils
 import water.api.RestAPIManager
+import water.util.Log
 import water.{H2O, H2OStarter}
 
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with InternalBackendUtils with Logging {
@@ -155,12 +156,16 @@ object InternalH2OBackend extends Logging {
     val askTimeout = RpcUtils.askRpcTimeout(conf.sparkConf)
     endpoints.map { ref =>
       val future = ref.ask[NodeDesc](StartH2OWorkersMsg(conf))
-      askTimeout.awaitResult(future)
+      val node = askTimeout.awaitResult(future)
+      Log.info(s"H2O's worker node $node started.")
+      node
     }
   }
 
 
   private def distributeFlatFile(endpoints: Array[RpcEndpointRef], conf: H2OConf, nodes: Array[NodeDesc], clientNode: NodeDesc): Unit = {
+    Log.info(s"Distributing worker nodes locations: ${nodes.mkString(",")}")
+    Log.info(s"Distributing client location: $clientNode")
     endpoints.foreach {
       _.send(FlatFileMsg(nodes ++ Array(clientNode), conf.internalPortOffset))
     }
