@@ -1,1 +1,0 @@
-The development documentation has been moved to a new location. Please go to the [Development](http://docs.h2o.ai/sparkling-water/2.1/latest-stable/doc/devel/devel.html) documentation section in the Sparkling Water online help.
