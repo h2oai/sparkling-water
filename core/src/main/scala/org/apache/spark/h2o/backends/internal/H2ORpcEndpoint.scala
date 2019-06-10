@@ -22,8 +22,8 @@ import java.net.InetAddress
 
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
-import org.apache.spark.internal.Logging
 import org.apache.spark.rpc.{RpcCallContext, RpcEnv, ThreadSafeRpcEndpoint}
+import water.util.Log
 import water.{H2O, H2ONode}
 
 /**
@@ -31,7 +31,7 @@ import water.{H2O, H2ONode}
   * This endpoint is started on each Spark executor where H2O worker will be running.
   */
 class H2ORpcEndpoint(override val rpcEnv: RpcEnv)
-  extends ThreadSafeRpcEndpoint with Logging {
+  extends ThreadSafeRpcEndpoint {
 
   override def receive: PartialFunction[Any, Unit] = {
     case FlatFileMsg(nodes, portOffset) =>
@@ -41,7 +41,7 @@ class H2ORpcEndpoint(override val rpcEnv: RpcEnv)
         // API_PORT + PORT_OFFSET
         val internalH2OPort = pair.port + portOffset
         val h2oNode = H2ONode.intern(InetAddress.getByName(ip), internalH2OPort)
-        logInfo(s"Adding $h2oNode to ${H2O.SELF}'s flatfile")
+        Log.info(s"Adding $h2oNode to ${H2O.SELF}'s flatfile")
         H2O.addNodeToFlatfile(h2oNode)
       }
     case StopEndpointMsg =>
