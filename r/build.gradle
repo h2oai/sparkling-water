@@ -11,6 +11,10 @@ dependencies {
 }
 
 
+ext {
+    contribDir = file("${project.buildDir}/repo/src/contrib")
+}
+
 /**
  * Copy R sources to output directory
  */
@@ -133,10 +137,23 @@ task printCurrentVersion() {
     doLast {
         println(getCurrentRSparklingVersion("${rootDir}/r"))
     }
-
 }
 
+task prepareRepoDir(dependsOn: distR) {
+    doLast {
+        contribDir.mkdirs()
+        copy {
+            from("${project.buildDir}/rsparkling_${getCurrentRSparklingVersion("${rootDir}/r")}.tar.gz")
+            into "$contribDir"
+        }
+    }
+}
 
+task createCranRepo(type: Exec, dependsOn: prepareRepoDir){
+    workingDir contribDir
+    commandLine getOsSpecificCommandLine(["R", "-e", "tools::write_PACKAGES()"])
+}
+    
 task printRSparklingCranLink() {
     doLast {
         def link = "https://CRAN.R-project.org/package=rsparkling"
@@ -154,3 +171,5 @@ clean.dependsOn cleanR
 check.dependsOn test
 
 test.dependsOn checkSparkVersionTask
+
+build.dependsOn createCranRepo
