@@ -300,7 +300,11 @@ pipeline {
                         docker.image('opsh2oai/sparkling_water_tests:15').inside("--init --privileged --dns 172.16.0.200") {
 
                             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-
+                                sh """
+                                    REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
+                                    PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
+                                    s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put --recursive r/build/repo/src s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/R/
+                                """
                                 if(params.buildConda == true) {
                                     // Upload Conda packages of PySparkling
                                     def PYTHON_VERSIONS = ['2.7', '3.6']
