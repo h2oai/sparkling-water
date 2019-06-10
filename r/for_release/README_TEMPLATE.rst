@@ -115,7 +115,7 @@ of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.co
 Install rsparkling
 ------------------
 
-Sparkling Water can be installed from hosted R repository in Sparkling Water's S3 buckets
+RSparkling can be installed from hosted R repository in Sparkling Water's S3 buckets
 from the link `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/R` as:
 
 .. code:: r
