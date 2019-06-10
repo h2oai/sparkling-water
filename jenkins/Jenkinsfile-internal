@@ -7,7 +7,7 @@ properties(
                 parameters(
                         [
                                 choice(name: 'sparkVersion',
-                                        choices: '2.4.0',
+                                        choices: '2.4.3',
                                         description: 'Version of Spark used for testing.'),
 
                                 booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit tests'),
