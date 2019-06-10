@@ -112,25 +112,16 @@ of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.co
    install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R")
 
 
-
-
 Install rsparkling
 ------------------
 
-The latest stable version of **rsparkling** on CRAN can be installed as follows:
+RSparkling can be installed from hosted R repository in Sparkling Water's S3 buckets
+from the link `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/R` as:
 
 .. code:: r
 
-   install.packages("rsparkling")
-
-You can also install the latest version available on Github as:
-
-.. code:: r
-
-   devtools::install_github("h2oai/sparkling-water", ref="master", subdir="r/src")
-
-Alternatively, you can also install nightly version of RSparkling. Please follow the information on the RSparkling tab
-on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/index.html>`__.
+   # Download, install, and initialize the RSparkling
+   install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/rel-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/R")
 
 
 RSparkling & SparklyR Configuration
