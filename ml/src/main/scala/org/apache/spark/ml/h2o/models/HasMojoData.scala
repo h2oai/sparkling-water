@@ -28,7 +28,7 @@ private[models] trait HasMojoData {
     broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(this.mojoData)
   }
 
-  protected def getMojoData: Array[Byte] = broadcastMojo.value
+  protected def getMojoData(): Array[Byte] = broadcastMojo.value
 
   @transient private var mojoData: Array[Byte] = _
   private var broadcastMojo: Broadcast[Array[Byte]] = _
