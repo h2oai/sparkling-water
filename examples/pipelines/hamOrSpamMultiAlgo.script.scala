@@ -97,7 +97,7 @@ val algoStage = algo match {
     new H2OAutoML().
       setLabelCol("label").
       setSeed(1).
-      setMaxRuntimeSecs(60). // 1 minutes
+      setMaxRuntimeSecs(60*100). // 100 minutes
       setConvertUnknownCategoricalLevelsToNa(true)
   case "xgboost" =>
     new H2OXGBoost().
