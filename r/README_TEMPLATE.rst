@@ -31,7 +31,7 @@ We recommend the latest stable version of `sparklyr <http://spark.rstudio.com/in
 
 Install Spark via sparklyr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-**RSparkling SUBST_PROJECT_VERSION** is built for SUBST_SPARK_MAJOR_VERSION.
+**RSparkling SUBST_SW_VERSION** is built for SUBST_SPARK_MAJOR_VERSION.
 
 The following command will install Spark SUBST_SPARK_VERSION:
 
