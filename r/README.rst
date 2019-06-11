@@ -31,10 +31,7 @@ We recommend the latest stable version of `sparklyr <http://spark.rstudio.com/in
 
 Install Spark via sparklyr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-The **sparklyr** package makes it easy to install any particular version of Spark.
-Prior to installing **h2o** and **rsparkling**, the user will need to decide which version of
-Spark they would like to work with, as the remaining installation revolve around a particular major
-version of Spark (2.1, 2.2, 2.3 or 2.4).
+**RSparkling SUBST_PROJECT_VERSION** is built for 2.1.
 
 The following command will install Spark 2.1.3:
 
@@ -44,10 +41,10 @@ The following command will install Spark 2.1.3:
    spark_install(version = "2.1.3")
 
 **NOTE**: The previous command requires access to the internet. If you are not connected to the
-internet/behind a firewall you would need to do the following:
+internet/behind a firewall you can do the following:
 
 
-1. Download `Spark <https://spark.apache.org/downloads.html>`__ (Pick the major version that corresponds to Sparkling Water)
+1. Download `Spark <https://spark.apache.org/downloads.html>`__ (Pick any supported minor version for Spark 2.1)
 2. Unzip Spark files
 3. Set the ``SPARK_HOME`` environment variable to the location of the downloaded Spark folder in R as follows:
 
@@ -58,171 +55,11 @@ internet/behind a firewall you would need to do the following:
 Install H2O
 -----------
 
-
-H2O & Sparkling Water Versions Mapping
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-**rsparkling** requires certain version of H2O to be used depending on desired Sparkling Water & Spark versions.
-This is because each release of Sparking Water is built from specific versions of H2O.
-
-By default, **rsparkling** automatically uses the latest Sparkling Water based on the major Spark version provided
-and advices the user which H2O version to install.
-
-Advanced users may want to choose a particular Sparking Water / H2O version (specific Sparkling Water
-versions must match specific Spark and H2O versions).
-
-============= ======================= =========== ================ ======================== 
-Spark_Version Sparkling_Water_Version H2O_Version H2O_Release_Name H2O_Release_Patch_Number 
-============= ======================= =========== ================ ======================== 
-2.4           2.4.12                  3.24.0.4    rel-yates        4                        
-2.4           2.4.11                  3.24.0.3    rel-yates        3                        
-2.4           2.4.10                  3.24.0.2    rel-yates        2                        
-2.4           2.4.9                   3.24.0.1    rel-yates        1                        
-2.4           2.4.8                   3.22.1.6    rel-xu           6                        
-2.4           2.4.7                   3.22.1.5    rel-xu           5                        
-2.4           2.4.6                   3.22.1.4    rel-xu           4                        
-2.4           2.4.5                   3.22.1.3    rel-xu           3                        
-2.4           2.4.4                   3.22.1.2    rel-xu           2                        
-2.4           2.4.3                   3.22.0.5    rel-xia          5                        
-2.4           2.4.2                   3.22.0.4    rel-xia          4                        
-2.4           2.4.1                   3.22.0.3    rel-xia          3                        
-2.3           2.3.30                  3.24.0.4    rel-yates        4                        
-2.3           2.3.29                  3.24.0.3    rel-yates        3                        
-2.3           2.3.28                  3.24.0.2    rel-yates        2                        
-2.3           2.3.27                  3.24.0.1    rel-yates        1                        
-2.3           2.3.26                  3.22.1.6    rel-xu           6                        
-2.3           2.3.25                  3.22.1.5    rel-xu           5                        
-2.3           2.3.24                  3.22.1.4    rel-xu           4                        
-2.3           2.3.23                  3.22.1.3    rel-xu           3                        
-2.3           2.3.22                  3.22.1.2    rel-xu           2                        
-2.3           2.3.21                  3.22.0.5    rel-xia          5                        
-2.3           2.3.20                  3.22.0.4    rel-xia          4                        
-2.3           2.3.19                  3.22.0.3    rel-xia          3                        
-2.3           2.3.18                  3.22.0.2    rel-xia          2                        
-2.3           2.3.17                  3.22.0.1    rel-xia          1                        
-2.3           2.3.16                  3.20.0.10   rel-wright       10                       
-2.3           2.3.15                  3.20.0.9    rel-wright       9                        
-2.3           2.3.14                  3.20.0.8    rel-wright       8                        
-2.3           2.3.13                  3.20.0.7    rel-wright       7                        
-2.3           2.3.12                  3.20.0.6    rel-wright       6                        
-2.3           2.3.11                  3.20.0.5    rel-wright       5                        
-2.3           2.3.10                  3.20.0.4    rel-wright       4                        
-2.3           2.3.9                   3.20.0.3    rel-wright       3                        
-2.3           2.3.8                   3.20.0.2    rel-wright       2                        
-2.3           2.3.7                   3.20.0.1    rel-wright       1                        
-2.3           2.3.6                   3.18.0.11   rel-wolpert      11                       
-2.3           2.3.5                   3.18.0.10   rel-wolpert      10                       
-2.3           2.3.4                   3.18.0.9    rel-wolpert      9                        
-2.3           2.3.3                   3.18.0.9    rel-wolpert      9                        
-2.3           2.3.2                   3.18.0.8    rel-wolpert      8                        
-2.3           2.3.1                   3.18.0.7    rel-wolpert      7                        
-2.3           2.3.0                   3.18.0.5    rel-wolpert      5                        
-2.2           2.2.41                  3.24.0.4    rel-yates        4                        
-2.2           2.2.40                  3.24.0.3    rel-yates        3                        
-2.2           2.2.39                  3.24.0.2    rel-yates        2                        
-2.2           2.2.38                  3.24.0.1    rel-yates        1                        
-2.2           2.2.37                  3.22.1.6    rel-xu           6                        
-2.2           2.2.36                  3.22.1.5    rel-xu           5                        
-2.2           2.2.35                  3.22.1.4    rel-xu           4                        
-2.2           2.2.34                  3.22.1.3    rel-xu           3                        
-2.2           2.2.33                  3.22.1.2    rel-xu           2                        
-2.2           2.2.32                  3.22.0.5    rel-xia          5                        
-2.2           2.2.31                  3.22.0.4    rel-xia          4                        
-2.2           2.2.30                  3.22.0.3    rel-xia          3                        
-2.2           2.2.29                  3.22.0.2    rel-xia          2                        
-2.2           2.2.28                  3.22.0.1    rel-xia          1                        
-2.2           2.2.27                  3.20.0.10   rel-wright       10                       
-2.2           2.2.26                  3.20.0.9    rel-wright       9                        
-2.2           2.2.25                  3.20.0.8    rel-wright       8                        
-2.2           2.2.24                  3.20.0.7    rel-wright       7                        
-2.2           2.2.23                  3.20.0.6    rel-wright       6                        
-2.2           2.2.22                  3.20.0.5    rel-wright       5                        
-2.2           2.2.21                  3.20.0.4    rel-wright       4                        
-2.2           2.2.20                  3.20.0.3    rel-wright       3                        
-2.2           2.2.19                  3.20.0.2    rel-wright       2                        
-2.2           2.2.18                  3.20.0.1    rel-wright       1                        
-2.2           2.2.17                  3.18.0.11   rel-wolpert      11                       
-2.2           2.2.16                  3.18.0.10   rel-wolpert      10                       
-2.2           2.2.15                  3.18.0.9    rel-wolpert      9                        
-2.2           2.2.14                  3.18.0.9    rel-wolpert      9                        
-2.2           2.2.13                  3.18.0.8    rel-wolpert      8                        
-2.2           2.2.12                  3.18.0.7    rel-wolpert      7                        
-2.2           2.2.11                  3.18.0.5    rel-wolpert      5                        
-2.2           2.2.10                  3.18.0.4    rel-wolpert      4                        
-2.2           2.2.9                   3.18.0.2    rel-wolpert      2                        
-2.2           2.2.8                   3.18.0.1    rel-wolpert      1                        
-2.2           2.2.7                   3.16.0.4    rel-wheeler      4                        
-2.2           2.2.6                   3.16.0.2    rel-wheeler      2                        
-2.2           2.2.5                   3.16.0.2    rel-wheeler      2                        
-2.2           2.2.4                   3.16.0.2    rel-wheeler      2                        
-2.2           2.2.3                   3.16.0.1    rel-wheeler      1                        
-2.2           2.2.2                   3.14.0.7    rel-weierstrass  7                        
-2.2           2.2.1                   3.14.0.6    rel-weierstrass  6                        
-2.2           2.2.0                   3.14.0.2    rel-weierstrass  2                        
-2.1           2.1.55                  3.24.0.4    rel-yates        4                        
-2.1           2.1.54                  3.24.0.3    rel-yates        3                        
-2.1           2.1.53                  3.24.0.2    rel-yates        2                        
-2.1           2.1.52                  3.24.0.1    rel-yates        1                        
-2.1           2.1.51                  3.22.1.6    rel-xu           6                        
-2.1           2.1.50                  3.22.1.5    rel-xu           5                        
-2.1           2.1.49                  3.22.1.4    rel-xu           4                        
-2.1           2.1.48                  3.22.1.3    rel-xu           3                        
-2.1           2.1.47                  3.22.1.2    rel-xu           2                        
-2.1           2.1.46                  3.22.0.5    rel-xia          5                        
-2.1           2.1.45                  3.22.0.4    rel-xia          4                        
-2.1           2.1.44                  3.22.0.3    rel-xia          3                        
-2.1           2.1.43                  3.22.0.2    rel-xia          2                        
-2.1           2.1.42                  3.22.0.1    rel-xia          1                        
-2.1           2.1.41                  3.20.0.10   rel-wright       10                       
-2.1           2.1.40                  3.20.0.9    rel-wright       9                        
-2.1           2.1.39                  3.20.0.8    rel-wright       8                        
-2.1           2.1.38                  3.20.0.7    rel-wright       7                        
-2.1           2.1.37                  3.20.0.6    rel-wright       6                        
-2.1           2.1.36                  3.20.0.5    rel-wright       5                        
-2.1           2.1.35                  3.20.0.4    rel-wright       4                        
-2.1           2.1.34                  3.20.0.3    rel-wright       3                        
-2.1           2.1.33                  3.20.0.2    rel-wright       2                        
-2.1           2.1.32                  3.20.0.1    rel-wright       1                        
-2.1           2.1.31                  3.18.0.11   rel-wolpert      11                       
-2.1           2.1.30                  3.18.0.10   rel-wolpert      10                       
-2.1           2.1.29                  3.18.0.9    rel-wolpert      9                        
-2.1           2.1.28                  3.18.0.9    rel-wolpert      9                        
-2.1           2.1.27                  3.18.0.8    rel-wolpert      8                        
-2.1           2.1.26                  3.18.0.7    rel-wolpert      7                        
-2.1           2.1.25                  3.18.0.5    rel-wolpert      5                        
-2.1           2.1.24                  3.18.0.4    rel-wolpert      4                        
-2.1           2.1.23                  3.18.0.2    rel-wolpert      2                        
-2.1           2.1.22                  3.18.0.1    rel-wolpert      1                        
-2.1           2.1.21                  3.16.0.4    rel-wheeler      4                        
-2.1           2.1.20                  3.16.0.2    rel-wheeler      2                        
-2.1           2.1.19                  3.16.0.2    rel-wheeler      2                        
-2.1           2.1.18                  3.16.0.2    rel-wheeler      2                        
-2.1           2.1.17                  3.16.0.1    rel-wheeler      1                        
-2.1           2.1.16                  3.14.0.7    rel-weierstrass  7                        
-2.1           2.1.15                  3.14.0.6    rel-weierstrass  6                        
-2.1           2.1.14                  3.14.0.2    rel-weierstrass  2                        
-2.1           2.1.13                  3.10.5.4    rel-vajda        4                        
-2.1           2.1.12                  3.10.5.4    rel-vajda        4                        
-2.1           2.1.11                  3.10.5.3    rel-vajda        3                        
-2.1           2.1.10                  3.10.5.2    rel-vajda        2                        
-2.1           2.1.9                   3.10.5.1    rel-vajda        1                        
-2.1           2.1.8                   3.10.4.8    rel-ueno         8                        
-2.1           2.1.7                   3.10.4.7    rel-ueno         7                        
-2.1           2.1.6                   3.10.4.7    rel-ueno         7                        
-2.1           2.1.5                   3.10.4.6    rel-ueno         6                        
-2.1           2.1.4                   3.10.4.5    rel-ueno         5                        
-2.1           2.1.3                   3.10.4.3    rel-ueno         3                        
-2.1           2.1.2                   3.10.4.2    rel-ueno         2                        
-2.1           2.1.1                   3.10.4.2    rel-ueno         2                        
-2.1           2.1.0                   3.10.3.2    rel-tverberg     2                        
-============= ======================= =========== ================ ======================== 
-
-
-
-**NOTE**: A call to ``rsparkling::h2o_release_table()`` displays the release table in your R console and returns
-a ``data.frame`` containing this information.
-
 Prepare Environment for H2O Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**RSparkling SUBST_PROJECT_VERSION** requires H2O of version 3.24.0.4.
+
 It is advised to remove previously installed H2O versions and install H2O dependencies. The command bellow
 can be used for this.
 
@@ -240,11 +77,13 @@ can be used for this.
 
 Install H2O from CRAN
 ~~~~~~~~~~~~~~~~~~~~~
+
 In case of installation from CRAN, the typical ``install.packages("h2o", "3.24.0.4")`` command can be used. Please note
 that the latest released version might not be available in CRAN. In that case, please install H2O from S3.
 
 Install H2O from S3
 ~~~~~~~~~~~~~~~~~~~
+
 H2O can be also installed from hosted R repository in H2O's S3 buckets.
 
 At present, you can install the **h2o** R package using a repository URL comprised
@@ -257,25 +96,16 @@ of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.co
    install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-yates/4/R")
 
 
-
-
 Install rsparkling
 ------------------
 
-The latest stable version of **rsparkling** on CRAN can be installed as follows:
+RSparkling can be installed from hosted R repository in Sparkling Water's S3 buckets
+from the link `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/56/R` as:
 
 .. code:: r
 
-   install.packages("rsparkling")
-
-You can also install the latest version available on Github as:
-
-.. code:: r
-
-   devtools::install_github("h2oai/sparkling-water", ref="master", subdir="r/src")
-
-Alternatively, you can also install nightly version of RSparkling. Please follow the information on the RSparkling tab
-on `Sparkling Water Nightly Download Page <http://h2o-release.s3.amazonaws.com/sparkling-water/master/index.html>`__.
+   # Download, install, and initialize the RSparkling
+   install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/56/R")
 
 
 RSparkling & SparklyR Configuration
@@ -306,7 +136,7 @@ central. If you don't have internet access or firewall is set up, you can specif
 This JAR file can be obtain in following steps:
 
 1. Download the Sparkling Water jar of your choice based on the integration table above.
-   To do this go to the following link where ``[SW Major Version]`` is the major version of Sparkling Water you wish to use, i.e., ``2.1`` and ``[SW Minor Version]`` is the minor version of Sparkling Water you wish to use, i.e., ``55``,
+   To do this go to the following link where ``[SW Major Version]`` is the major version of Sparkling Water you wish to use, i.e., ``2.1`` and ``[SW Minor Version]`` is the minor version of Sparkling Water you wish to use, i.e., ``56``,
    such as ``http://h2o-release.s3.amazonaws.com/sparkling-water/rel-[SW Major Version]/[SW Minor Version]/index.html``
 2. Click the ``DOWNLOAD SPARKLING WATER`` tab, which will download a ``.zip`` file of Sparkling Water.
 3. Run the following command to unzip the folder:
