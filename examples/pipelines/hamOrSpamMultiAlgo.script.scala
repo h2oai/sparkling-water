@@ -98,6 +98,7 @@ val algoStage = algo match {
       setLabelCol("label").
       setSeed(1).
       setMaxRuntimeSecs(60*100). // 100 minutes
+      setMaxModels(3).
       setConvertUnknownCategoricalLevelsToNa(true)
   case "xgboost" =>
     new H2OXGBoost().
