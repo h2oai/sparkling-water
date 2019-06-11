@@ -31,7 +31,7 @@ We recommend the latest stable version of `sparklyr <http://spark.rstudio.com/in
 
 Install Spark via sparklyr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-**RSparkling SUBST_PROJECT_VERSION** is built for 2.4.
+**RSparkling 2.4.99999** is built for 2.4.
 
 The following command will install Spark 2.4.3:
 
