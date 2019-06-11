@@ -1,6 +1,9 @@
 apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply from: "$rootDir/gradle/shadowRuntime.gradle"
+apply plugin: 'com.github.jk1.dependency-license-report'
+
+import com.github.jk1.license.filter.*
 
 description = "Sparkling Water Assembly"
 
@@ -17,6 +20,8 @@ dependencies {
     compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+
+
 }
 
 jar {
@@ -34,14 +39,22 @@ shadowJar {
     relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
     relocate 'org.eclipse.jetty.orbit', 'ai.h2o.org.eclipse.jetty.orbit'
 
+    from "$project.buildDir/reports/" include '**/*'
     exclude 'www/flow/packs/test-*/**'
 
     archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
+}
+
+licenseReport {
+    allowedLicensesFile = new File("$projectDir/allowed-licenses.json")
+    filters = new LicenseBundleNormalizer(bundlePath: "$projectDir/license-normalizer-bundle.json")
 }
 
 artifacts {
     compile shadowJar
 }
 
+shadowJar.dependsOn generateLicenseReport
+build.dependsOn checkLicense
 build.dependsOn shadowJar
 
