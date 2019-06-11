@@ -20,8 +20,6 @@ dependencies {
     compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
-
-
 }
 
 jar {
