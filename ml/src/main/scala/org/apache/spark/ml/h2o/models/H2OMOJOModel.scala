@@ -24,13 +24,13 @@ import _root_.hex.genmodel.MojoReaderBackendFactory
 import _root_.hex.genmodel.descriptor.JsonModelDescriptorReader
 import com.google.gson.{GsonBuilder, JsonElement}
 import hex.ModelCategory
-import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
+import hex.genmodel.easy.EasyPredictModelWrapper
+import org.apache.spark.h2o.converters.RowConverter
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, _}
-import org.apache.spark.{ml, mllib}
+import org.apache.spark.sql._
 import py_sparkling.ml.models.{H2OMOJOModel => PyH2OMOJOModel}
 import water.support.ModelSerializationSupport
 
@@ -97,7 +97,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
         case ModelCategory.Binomial =>
           if (supportsCalibratedProbabilities()) {
             udf[BinomialPredictionExtended, Row] { r: Row =>
-              val pred = getOrCreateEasyModelWrapper().predictBinomial(rowToRowData(r))
+              val pred = getOrCreateEasyModelWrapper().predictBinomial(RowConverter.toH2ORowData(r))
               BinomialPredictionExtended(
                 pred.classProbabilities(0),
                 pred.classProbabilities(1),
@@ -107,7 +107,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
             }
           } else {
             udf[BinomialPrediction, Row] { r: Row =>
-              val pred = getOrCreateEasyModelWrapper().predictBinomial(rowToRowData(r))
+              val pred = getOrCreateEasyModelWrapper().predictBinomial(RowConverter.toH2ORowData(r))
               BinomialPrediction(
                 pred.classProbabilities(0),
                 pred.classProbabilities(1)
@@ -116,31 +116,31 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
           }
 
         case ModelCategory.Regression => udf[RegressionPrediction, Row] { r: Row =>
-          val pred = getOrCreateEasyModelWrapper().predictRegression(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictRegression(RowConverter.toH2ORowData(r))
           RegressionPrediction(pred.value)
         }
         case ModelCategory.Multinomial => udf[MultinomialPrediction, Row] { r: Row =>
-          val pred = getOrCreateEasyModelWrapper().predictMultinomial(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictMultinomial(RowConverter.toH2ORowData(r))
           MultinomialPrediction(pred.classProbabilities)
         }
         case ModelCategory.Clustering => udf[ClusteringPrediction, Row] { r: Row =>
-          val pred = getOrCreateEasyModelWrapper().predictClustering(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictClustering(RowConverter.toH2ORowData(r))
           ClusteringPrediction(pred.cluster)
         }
         case ModelCategory.AutoEncoder => udf[AutoEncoderPrediction, Row] { r: Row =>
-          val pred = getOrCreateEasyModelWrapper().predictAutoEncoder(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictAutoEncoder(RowConverter.toH2ORowData(r))
           AutoEncoderPrediction(pred.original, pred.reconstructed)
         }
         case ModelCategory.DimReduction => udf[DimReductionPrediction, Row] { r: Row =>
-          val pred = getOrCreateEasyModelWrapper().predictDimReduction(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictDimReduction(RowConverter.toH2ORowData(r))
           DimReductionPrediction(pred.dimensions)
         }
         case ModelCategory.WordEmbedding => udf[WordEmbeddingPrediction, Row] { r: Row =>
-          val pred = getOrCreateEasyModelWrapper().predictWord2Vec(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictWord2Vec(RowConverter.toH2ORowData(r))
           WordEmbeddingPrediction(pred.wordEmbeddings)
         }
         case ModelCategory.AnomalyDetection => udf[AnomalyPrediction, Row] { r: Row =>
-          val pred = getOrCreateEasyModelWrapper().predictAnomalyDetection(rowToRowData(r))
+          val pred = getOrCreateEasyModelWrapper().predictAnomalyDetection(RowConverter.toH2ORowData(r))
           AnomalyPrediction(pred.score, pred.normalizedScore)
         }
         case _ => throw new RuntimeException("Unknown model category " + getOrCreateEasyModelWrapper().getModelCategory)
@@ -168,50 +168,6 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     val relevantColumnNames = flattenedDF.columns.intersect(getFeaturesCols())
     val args = relevantColumnNames.map(flattenedDF(_))
     flattenedDF.select(col("*"), getModelUdf()(struct(args: _*)).as(getPredictionCol()))
-  }
-
-
-  private def rowToRowData(row: Row): RowData = new RowData {
-    row.schema.fields.zipWithIndex.foreach { case (f, idxRow) =>
-      if (row.get(idxRow) != null) {
-        f.dataType match {
-          case BooleanType =>
-            put(f.name, row.getBoolean(idxRow).toString)
-          case BinaryType =>
-            row.getAs[Array[Byte]](idxRow).zipWithIndex.foreach { case (v, idx) =>
-              put(f.name + idx, v.toString)
-            }
-          case ByteType => put(f.name, row.getByte(idxRow).toString)
-          case ShortType => put(f.name, row.getShort(idxRow).toString)
-          case IntegerType => put(f.name, row.getInt(idxRow).toString)
-          case LongType => put(f.name, row.getLong(idxRow).toString)
-          case FloatType => put(f.name, row.getFloat(idxRow).toString)
-          case _: DecimalType => put(f.name, row.getDecimal(idxRow).doubleValue().toString)
-          case DoubleType => put(f.name, row.getDouble(idxRow).toString)
-          case StringType => put(f.name, row.getString(idxRow))
-          case TimestampType => put(f.name, row.getAs[java.sql.Timestamp](idxRow).getTime.toString)
-          case DateType => put(f.name, row.getAs[java.sql.Date](idxRow).getTime.toString)
-          case ArrayType(_, _) => // for now assume that all arrays and vecs have the same size - we can store max size as part of the model
-            row.getAs[Seq[_]](idxRow).zipWithIndex.foreach { case (v, idx) =>
-              put(f.name + idx, v.toString)
-            }
-          case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] =>
-            val value = row.get(idxRow)
-            value match {
-              case vector: mllib.linalg.Vector =>
-                (0 until vector.size).foreach { idx => // WRONG this patter needs to share the same code as in the data transformation
-                  put(f.name + idx, vector(idx).toString)
-                }
-              case vector: ml.linalg.Vector =>
-                (0 until vector.size).foreach { idx =>
-                  put(f.name + idx, vector(idx).toString)
-                }
-            }
-          case null => // no op
-          case _ => put(f.name, get(idxRow).toString)
-        }
-      }
-    }
   }
 }
 
