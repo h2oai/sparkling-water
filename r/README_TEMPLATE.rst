@@ -31,10 +31,7 @@ We recommend the latest stable version of `sparklyr <http://spark.rstudio.com/in
 
 Install Spark via sparklyr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-The **sparklyr** package makes it easy to install any particular version of Spark.
-Prior to installing **h2o** and **rsparkling**, the user will need to decide which version of
-Spark they would like to work with, as the remaining installation revolve around a particular major
-version of Spark (2.1, 2.2, 2.3 or 2.4).
+**RSparkling SUBST_PROJECT_VERSION** is built for SUBST_SPARK_MAJOR_VERSION.
 
 The following command will install Spark SUBST_SPARK_VERSION:
 
@@ -44,10 +41,10 @@ The following command will install Spark SUBST_SPARK_VERSION:
    spark_install(version = "SUBST_SPARK_VERSION")
 
 **NOTE**: The previous command requires access to the internet. If you are not connected to the
-internet/behind a firewall you would need to do the following:
+internet/behind a firewall you can do the following:
 
 
-1. Download `Spark <https://spark.apache.org/downloads.html>`__ (Pick the major version that corresponds to Sparkling Water)
+1. Download `Spark <https://spark.apache.org/downloads.html>`__ (Pick any supported minor version for Spark SUBST_SPARK_MAJOR_VERSION)
 2. Unzip Spark files
 3. Set the ``SPARK_HOME`` environment variable to the location of the downloaded Spark folder in R as follows:
 
@@ -58,26 +55,11 @@ internet/behind a firewall you would need to do the following:
 Install H2O
 -----------
 
-
-H2O & Sparkling Water Versions Mapping
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-**rsparkling** requires certain version of H2O to be used depending on desired Sparkling Water & Spark versions.
-This is because each release of Sparking Water is built from specific versions of H2O.
-
-By default, **rsparkling** automatically uses the latest Sparkling Water based on the major Spark version provided
-and advices the user which H2O version to install.
-
-Advanced users may want to choose a particular Sparking Water / H2O version (specific Sparkling Water
-versions must match specific Spark and H2O versions).
-
-SUBST_RSPARKLING_RELEASE_TABLE
-
-
-**NOTE**: A call to ``rsparkling::h2o_release_table()`` displays the release table in your R console and returns
-a ``data.frame`` containing this information.
-
 Prepare Environment for H2O Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**RSparkling SUBST_PROJECT_VERSION** requires H2O of version SUBST_H2O_VERSION.
+
 It is advised to remove previously installed H2O versions and install H2O dependencies. The command bellow
 can be used for this.
 
@@ -95,11 +77,13 @@ can be used for this.
 
 Install H2O from CRAN
 ~~~~~~~~~~~~~~~~~~~~~
+
 In case of installation from CRAN, the typical ``install.packages("h2o", "SUBST_H2O_VERSION")`` command can be used. Please note
 that the latest released version might not be available in CRAN. In that case, please install H2O from S3.
 
 Install H2O from S3
 ~~~~~~~~~~~~~~~~~~~
+
 H2O can be also installed from hosted R repository in H2O's S3 buckets.
 
 At present, you can install the **h2o** R package using a repository URL comprised

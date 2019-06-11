@@ -62,7 +62,6 @@ def substituteIndexHtml(buildTimeLocal) {
             .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
             .replaceAll("SUBST_H2O_BRANCH_NAME", getH2OBranch(h2oMajorName))
             .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
-            .replaceAll("SUBST_RSPARKLING_VERSION", getCurrentRSparklingVersion("${rootDir}/r"))
             .replaceAll("SUBST_BUILD_TIME_LOCAL", buildTimeLocal)
 
     def indexHtmlFile = file("$distDir/index.html")
@@ -116,7 +115,7 @@ task copyFilesForZipDistribution {
             buildDir.deleteDir()
         }
 
-        copySingle("r/build/", "rsparkling_${getCurrentRSparklingVersion("${rootDir}/r")}.tar.gz", "$zipDir")
+        copySingle("r/build/", "rsparkling_${version}.tar.gz", "$zipDir")
         createSupportedHadoopFile("$zipDir")
 
         copyAndKeepPath("assembly/build/libs/sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar", "$zipDir")
