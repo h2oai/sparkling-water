@@ -23,7 +23,6 @@ import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.spark.h2o.utils.H2OSchemaUtils
-import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{col, struct, udf}
@@ -36,6 +35,11 @@ import scala.util.Random
 
 
 class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOPipelineModel] {
+
+  @transient private lazy val mojoPipeline: MojoPipeline = {
+    val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(getMojoData()))
+    MojoPipeline.loadFrom(reader)
+  }
 
   // private parameter used to store MOJO output columns
   protected final val outputCols: StringArrayParam =  new StringArrayParam(this, "outputCols", "OutputCols")
@@ -62,14 +66,13 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   private val modelUdf = (names: Array[String]) =>
     udf[Mojo2Prediction, Row] {
       r: Row =>
-        val m = H2OMOJOModelCache.getOrCreateModel(uid, getMojoData)
-        val builder = m.getInputFrameBuilder
+        val builder = mojoPipeline.getInputFrameBuilder
         val rowBuilder = builder.getMojoRowBuilder
-        val filtered = r.getValuesMap[Any](names).filter { case (n, _) => m.getInputMeta.contains(n) }
+        val filtered = r.getValuesMap[Any](names).filter { case (n, _) => mojoPipeline.getInputMeta.contains(n) }
 
         filtered.foreach {
           case (colName, colData) =>
-            val prepared = prepareBooleans(m.getInputMeta.getColumnType(colName), colData)
+            val prepared = prepareBooleans(mojoPipeline.getInputMeta.getColumnType(colName), colData)
 
             prepared match {
               case v: Boolean => rowBuilder.setBool(colName, v)
@@ -80,14 +83,14 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
               case v: Long => rowBuilder.setLong(colName, v)
               case v: Float => rowBuilder.setFloat(colName, v)
               case v: Double => rowBuilder.setDouble(colName, v)
-              case v: String => if (m.getInputMeta.getColumnType(colName).isAssignableFrom(classOf[String])) {
+              case v: String => if (mojoPipeline.getInputMeta.getColumnType(colName).isAssignableFrom(classOf[String])) {
                 // if String is expected, no need to do the parse
                 rowBuilder.setString(colName, v)
               } else {
                 // some other type is expected, we need to perform the parse
                 rowBuilder.setValue(colName, v)
               }
-              case v: java.sql.Timestamp => if (m.getInputMeta.getColumnType(colName).isAssignableFrom(classOf[java.sql.Timestamp])) {
+              case v: java.sql.Timestamp => if (mojoPipeline.getInputMeta.getColumnType(colName).isAssignableFrom(classOf[java.sql.Timestamp])) {
                 rowBuilder.setTimestamp(colName, v)
               } else {
                 // parse
@@ -103,7 +106,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
         }
 
         builder.addRow(rowBuilder)
-        val output = m.transform(builder.toMojoFrame)
+        val output = mojoPipeline.transform(builder.toMojoFrame)
         val predictions = output.getColumnNames.zipWithIndex.map { case (_, i) =>
           val predictedVal = output.getColumnData(i).asInstanceOf[Array[Double]]
           if (predictedVal.length != 1) {
@@ -160,9 +163,6 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     } else {
       frameWithPredictions
     }
-
-    H2OMOJOModelCache.removeModel(uid)
-
     fr
   }
 
@@ -200,24 +200,5 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[PyH2OMOJOPipelineModel] with
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     model.setMojoData(mojoData)
     model
-  }
-}
-
-
-object H2OMOJOModelCache extends Logging {
-  private var modelCache = scala.collection.mutable.Map[String, MojoPipeline]()
-
-  def getOrCreateModel(uid: String, mojoData: Array[Byte]): MojoPipeline = synchronized {
-    if (!modelCache.exists(_._1 == uid)) {
-      logDebug("Creating new instance of MOJO model '" + uid + "'")
-      val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
-      modelCache += (uid -> MojoPipeline.loadFrom(reader))
-    }
-    modelCache(uid)
-  }
-
-  def removeModel(uid: String): Option[MojoPipeline] = synchronized {
-    logDebug("Removing instance of MOJO model '" + uid + "' from model cache.")
-    modelCache.remove(uid)
   }
 }
