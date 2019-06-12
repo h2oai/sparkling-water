@@ -58,7 +58,7 @@ Install H2O
 Prepare Environment for H2O Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**RSparkling SUBST_PROJECT_VERSION** requires H2O of version 3.24.0.4.
+**RSparkling 2.4.99999** requires H2O of version 3.24.0.4.
 
 It is advised to remove previously installed H2O versions and install H2O dependencies. The command bellow
 can be used for this.
@@ -108,49 +108,10 @@ from the link `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/99999
    install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/99999/R")
 
 
-RSparkling & SparklyR Configuration
------------------------------------
+Starting Spark
+--------------
 
-Configure Sparkling Water Version
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-With no configuration, the latest version of Sparkling Water will be used based on the version of
-Spark installed. All the additional `options` configurations needs to be called before `library(rsparkling)`
-in order for them to take affect.
-
-
-Particular version of Sparkling Water can be specified as:
-
-.. code:: r
-
-   options(rsparkling.sparklingwater.version = ...)
-
-
-In both cases, the internet access is required as correct Sparkling Water versions will be fetched from Maven
-central. If you don't have internet access or firewall is set up, you can specify Sparkling Water JAR directly as
-
-.. code:: r
-
-   options(rsparkling.sparklingwater.location = "/path/to/sparkling_water.jar")
-
-This JAR file can be obtain in following steps:
-
-1. Download the Sparkling Water jar of your choice based on the integration table above.
-   To do this go to the following link where ``[SW Major Version]`` is the major version of Sparkling Water you wish to use, i.e., ``2.4`` and ``[SW Minor Version]`` is the minor version of Sparkling Water you wish to use, i.e., ``99999``,
-   such as ``http://h2o-release.s3.amazonaws.com/sparkling-water/rel-[SW Major Version]/[SW Minor Version]/index.html``
-2. Click the ``DOWNLOAD SPARKLING WATER`` tab, which will download a ``.zip`` file of Sparkling Water.
-3. Run the following command to unzip the folder:
-
-.. code:: bash
-
-	unzip sparkling-water-[SW Major Version].[SW Minor Version].zip
-
-4. The path to the Sparkling Water jar file is: ``sparkling-water-[SW Major Version].[SW Minor Version]/assembly/build/libs/sparkling-water-assembly_*.jar``.
-
-
-Configure Spark Connection
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-Once we've installed **rsparkling** and it's dependencies, the first step would be to create a Spark connection as follows:
+Once we've installed **rsparkling** and its dependencies, the first step would be to create a Spark connection as follows:
 
 .. code:: r
 
@@ -203,7 +164,7 @@ Let's inspect the `H2OContext` for our Spark connection:
        ##   class org.apache.spark.h2o.H2OContext
        ##
        ## Sparkling Water Context:
-       ##  * H2O name: sparkling-water-jjallaire_-1482215501
+       ##  * H2O name: sparkling-water-demo-1482215501
        ##  * number of executors: 1
        ##  * list of used executors:
        ##   (executorId, host, port)
@@ -440,7 +401,7 @@ Additional Resources
 
 - `Main documentation site <http://docs.h2o.ai>`__
 - `H2O.ai website <http://h2o.ai>`__
-- `Example code <https://github.com/h2oai/rsparkling/blob/master/inst/examples/example_rsparkling.R>`__
+- `Example code <https://github.com/h2oai/sparkling-water/blob/master/r/src/inst/examples/example_rsparkling.R>`__
 - `Troubleshooting RSparkling on Windows <http://docs.h2o.ai/sparkling-water/master/bleeding-edge/doc/deployment/rsparkling_on_windows.html>`__
 
 If you are new to H2O for machine learning, we recommend you start with:
