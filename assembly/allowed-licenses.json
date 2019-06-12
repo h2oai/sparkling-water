@@ -6,7 +6,6 @@
     {"moduleLicense": "The 3-Clause BSD License"},
     {"moduleLicense": "The 2-Clause BSD License"},
 
-    {"moduleLicense": "BSD New license"},
     {"moduleLicense": "BSD"},
     {"moduleLicense": "New BSD License"},
     {"moduleLicense": "BSD New license"},
@@ -22,7 +21,6 @@
     {"moduleLicense": "COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0"},
     {"moduleLicense": "GPL2 w/ CPE"},
     {"moduleLicense": "CDDL 1.1"},
-    {"moduleLicense": "GPL2 w/ CPE"},
     {"moduleLicense": "LGPL"},
     {"moduleLicense": "Google Cloud Software License"},
     {"moduleLicense": "GNU Lesser General Public License"},
