@@ -26,6 +26,7 @@ Sparkling Water provide 3 templates/modules:
 
 
  - ``emr`` module  (**/templates/build/terraform/aws/modules/emr**). This module is used to start the EMR cluster on an already existing AWS network infrastructure. It sets up the correct roles, instance profiles, and security groups, and it starts EMR with the correct dependencies to run Sparkling Water.
+
   This module accepts the following arguments:
 
    - ``aws_access_key`` (mandatory) - access key to access AWS
