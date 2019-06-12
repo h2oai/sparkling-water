@@ -5,7 +5,6 @@ pipeline {
     
     parameters {
         booleanParam(name: 'prepareReleaseNotes', defaultValue: true, description: 'Prepare release notes')
-        booleanParam(name: 'updateReadme', defaultValue: true, description: 'Update Readme files')
         booleanParam(name: 'publishToNexus', defaultValue: true, description: 'Publish to Nexus')
         booleanParam(name: 'buildExtendedH2OJars', defaultValue: true, description: 'Build extended H2O Jars')
         booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3')
@@ -105,36 +104,6 @@ pipeline {
                                 git commit -m "Release notes for \$REL_VERSION"
                                 git push --set-upstream origin ${env.BRANCH_NAME}
                                 """
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Update README files') {
-            steps {
-               script {
-                    docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:15').inside("--init --privileged --dns 172.16.0.200") {
-                            withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
-                                sh """
-                                   # Copy keys
-                                   mkdir -p ~/.ssh
-                                   cp \${ID_RSA_PATH} ~/.ssh/id_rsa
-                                   cp \${GITCONFIG_PATH} ~/.gitconfig
-
-
-                                   ./gradlew updateReadme
-
-                                   git add r/README.rst
-                                   git add py/README.rst
-                                   git add README.rst
-
-                                   git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
-                                   git commit --allow-empty -m "[REL] Updating Readme Files"
-                                   git push --set-upstream origin ${env.BRANCH_NAME}
-                                   """
                             }
                         }
                     }
