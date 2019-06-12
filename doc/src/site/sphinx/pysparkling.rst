@@ -3,6 +3,8 @@
 PySparkling
 ===========
 
+|Join the chat at https://gitter.im/h2oai/sparkling-water| |License| |Powered by H2O.ai|
+
 This section provides an introduction to PySparkling. To understand more about PySparkling, it's better to understand H2O, Spark, and Sparkling Water first.
 
 What is H2O?
@@ -60,9 +62,7 @@ PySparkling and Spark Version
 
 There are multiple PySparkling packages, each is intended to be used with different Spark version.
 
-SUBST_VERSIONS_TABLE
-
-So for example, to install PySparkling for Spark SUBST_SPARK_MAJOR_VERSION, the command would look like:
+For example, to install PySparkling for Spark SUBST_SPARK_MAJOR_VERSION, the command would look like:
 
 .. code-block:: bash
 
@@ -170,5 +170,9 @@ PySparkling module from PyPI.
 If you choose to upload PySparkling zip file, don't forget to add PySparkling `Dependencies`_.
 The PySparkling zip file is available in *py/dist* directory in both built Sparkling Water project and downloaded Sparkling Water release.
 
-
-
+.. |Join the chat at https://gitter.im/h2oai/sparkling-water| image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: Join the chat at https://gitter.im/h2oai/sparkling-water?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+.. |License| image:: https://img.shields.io/badge/License-Apache%202-blue.svg
+   :target: LICENSE
+.. |Powered by H2O.ai| image:: https://img.shields.io/badge/powered%20by-h2oai-yellow.svg
+   :target: https://github.com/h2oai/

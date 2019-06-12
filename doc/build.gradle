@@ -29,10 +29,6 @@ task substitute() {
         def majorVersion = "${first}.${second}"
         def minorVersion = third.replace("-SNAPSHOT", "").replace("_nightly", ".99999")
 
-        def versionsTable = supportedSparkVersions.split(" ").collect {
-            version -> return " - h2o_pysparkling_${version} - for Spark ${version}.x"
-        }.join("\n")
-
         new File(siteDir).eachFileRecurse(FILES) {
             if (it.name.endsWith('.html')) {
                 def contents = file(it).getText('UTF-8')
@@ -46,7 +42,6 @@ task substitute() {
                         .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
                         .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
                         .replaceAll("SUBST_MIN_SUPPORTED_JAVA", minSupportedJavaVersion)
-                        .replaceAll("SUBST_VERSIONS_TABLE", versionsTable)
                 file(it).write(contents, 'UTF-8')
             }
         }

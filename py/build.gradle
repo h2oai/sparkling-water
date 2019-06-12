@@ -15,7 +15,7 @@ ext {
     FPS = File.pathSeparator
     pythonBinary = findProperty("pythonBinary") ?: "python"
     pkgDir = file("$buildDir/pkg")
-    distDir = file("$buildDir/dist")f
+    distDir = file("$buildDir/dist")
     condaDir = file("$buildDir/conda/h2o_pysparkling_${sparkMajorVersion}")
     wheelFile = file("${rootDir}/.gradle/wheels/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl")
 }
