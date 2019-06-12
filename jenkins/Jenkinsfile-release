@@ -5,7 +5,7 @@ pipeline {
     
     parameters {
         booleanParam(name: 'prepareReleaseNotes', defaultValue: true, description: 'Prepare release notes')
-        booleanParam(name: 'releaseRSparkling', defaultValue: true, description: 'Release RSparkling')
+        booleanParam(name: 'updateReadme', defaultValue: true, description: 'Update Readme files')
         booleanParam(name: 'publishToNexus', defaultValue: true, description: 'Publish to Nexus')
         booleanParam(name: 'buildExtendedH2OJars', defaultValue: true, description: 'Build extended H2O Jars')
         booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3')
@@ -112,12 +112,9 @@ pipeline {
             }
         }
 
-        stage('Release RSparkling'){
-            when {
-                expression { params.releaseRSparkling == true }
-            }
+        stage('Update README files') {
             steps {
-                script {
+               script {
                     docker.withRegistry("http://harbor.h2o.ai") {
                         docker.image('opsh2oai/sparkling_water_tests:15').inside("--init --privileged --dns 172.16.0.200") {
                             withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
@@ -126,50 +123,18 @@ pipeline {
                                    mkdir -p ~/.ssh
                                    cp \${ID_RSA_PATH} ~/.ssh/id_rsa
                                    cp \${GITCONFIG_PATH} ~/.gitconfig
+
+
+                                   ./gradlew updateReadme
+
+                                   git add r/README.rst
+                                   git add py/README.rst
+                                   git add README.rst
+
+                                   git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
+                                   git commit --allow-empty -m "[REL] Updating Readme Files"
+                                   git push --set-upstream origin ${env.BRANCH_NAME}
                                    """
-
-
-                                 sh """
-                                    . /envs/h2o_env_python2.7/bin/activate
-
-                                    sed -i.backup -E "s/\\.([0-9]+)-SNAPSHOT/.\\1/" gradle.properties
-                                    REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-
-                                    ./gradlew :sparkling-water-r:build -x check -PdoReleaseRSparkling
-                                    git checkout -- gradle.properties
-
-                                    git add r/README.rst
-                                    git add r/src/DESCRIPTION
-                                    git add r/for_release/table_2_1.txt
-                                    git add r/for_release/table_2_2.txt
-                                    git add r/for_release/table_2_3.txt
-                                    git add r/for_release/table_2_4.txt
-
-                                    cp r/build/src/R/sysdata.rda r/src/R/sysdata.rda
-                                    git add r/src/R/sysdata.rda
-
-                                    git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
-                                    RSPARKLING_VERSION=\$(./gradlew -q :sparkling-water-r:printCurrentVersion)
-                                    git commit -m "Release RSparkling \$RSPARKLING_VERSION on Sparkling Water branch ${env.BRANCH_NAME}"
-                                    git push --set-upstream origin ${env.BRANCH_NAME}
-
-
-                                    # Update RSparkling README on master as well
-                                    RSPARKLING_REL_COMMIT=`git rev-parse HEAD`
-                                    git config --add remote.origin.fetch +refs/heads/master:refs/remotes/origin/master
-                                    git fetch --no-tags
-                                    git checkout master
-                                    git pull
-                                    git checkout -b "master-rsparkling-\$RSPARKLING_VERSION"
-                                    git cherry-pick -n \$RSPARKLING_REL_COMMIT
-                                    git commit -m "Release RSparkling \$RSPARKLING_VERSION on Sparkling Water branch master"
-                                    git push --set-upstream origin master-rsparkling-\$RSPARKLING_VERSION
-
-                                    wget https://github.com/github/hub/releases/download/v2.5.1/hub-linux-amd64-2.5.1.tgz
-                                    tar -xvf hub-linux-amd64-2.5.1.tgz
-                                    ./hub-linux-amd64-2.5.1/bin/hub pull-request -m "Release RSparkling \$RSPARKLING_VERSION on Sparkling Water branch master"
-                                    git checkout ${env.BRANCH_NAME}
-                                    """
                             }
                         }
                     }
@@ -521,7 +486,8 @@ EOF
             }
         }
 
-        // Update the version on Github if all stages went fine correctly
+        // Update the version on Github
+        // Needs to run as the last stage
         stage('Release on Github'){
             when {
                 expression { params.releaseOnGithub == true }
@@ -553,14 +519,6 @@ EOF
                                 # Restore before releasing
                                 git checkout -- gradle.properties
                                 ./gradlew -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=\${REL_VERSION} -Prelease.newVersion=\${NEW_VERSION} -PdoRelease release -x check
-
-                                # Note:
-                                # After this step, gradle.properties has the new future version ending with "-SNAPSHOT" so
-                                # we change it back to the version of the current release in case the following stages
-                                # require to use the correct version
-
-                                git checkout -- gradle.properties
-                                sed -i.backup -E "s/\\.([0-9]+)-SNAPSHOT/.\\1/" gradle.properties
                                 """
                             }
                         }
