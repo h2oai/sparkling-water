@@ -53,6 +53,10 @@ task substituteTerraform(){
     }
 }
 
+task cleanTemplates(type: Delete) {
+    delete getBuildDir()
+}
+
 task copyAWS(type: Copy) {
     from 'src/aws'
     into "build/aws"
@@ -65,6 +69,8 @@ task copyTerraform(type: Copy) {
     into "build/terraform"
 }
 
+copyTerraform.dependsOn cleanTemplates
+copyAWS.dependsOn cleanTemplates
 substituteAWS.dependsOn copyAWS
 substituteTerraform.dependsOn copyTerraform
 build.dependsOn substituteAWS, substituteTerraform
