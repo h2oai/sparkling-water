@@ -69,31 +69,6 @@ task test(type: Exec, dependsOn: distR) {
     commandLine getOsSpecificCommandLine(['R', '-f', 'testthat.R'])
 }
 
-/**
- * Update Readme files.
- *
- * It is called only when RSparkling is Released
- */
-task updateReadme {
-    doLast {
-        def (first, second, third) = version.replace("-SNAPSHOT", "").tokenize(".")
-        def majorVersion = "${first}.${second}"
-        def minorVersion = third
-        def contents = file("README_TEMPLATE.rst").getText('UTF-8')
-        contents = contents
-                .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", "")).replace("_nightly", ".99999")
-                .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
-                .replaceAll("SUBST_SW_MINOR_VERSION", minorVersion)
-                .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-                .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-                .replaceAll("SUBST_H2O_VERSION", h2oVersion)
-                .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
-                .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
-
-        file("README.rst").write(contents, 'UTF-8')
-    }
-}
-
 task installH2ORPackage(type: Exec) {
     def majorName = (h2oMajorName == "master") ? "master" : "rel-${h2oMajorName}"
     commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"h2o\", type = \"source\", repos = \"http://h2o-release.s3.amazonaws.com/h2o/${majorName}/${h2oBuild}/R\")"])
@@ -127,6 +102,4 @@ test.dependsOn checkSparkVersionTask
 
 build.dependsOn createCranRepo
 
-updateReadme.dependsOn clean
-build.dependsOn updateReadme
 build.dependsOn distR

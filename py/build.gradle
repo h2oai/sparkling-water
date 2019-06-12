@@ -98,19 +98,6 @@ static def downloadH2OWheel(String url, File out) {
     }
 }
 
-task updateReadme {
-    doLast {
-        def versionsTable = supportedSparkVersions.split(" ").collect {
-            version -> return " - h2o_pysparkling_${version} - for Spark ${version}.x"
-        }.join("\n")
-        def contents = file("README_TEMPLATE.rst").getText('UTF-8')
-        contents = contents
-                .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-                .replaceAll("SUBST_VERSIONS_TABLE", versionsTable)
-        file("README.rst").write(contents, 'UTF-8')
-    }
-}
-
 //
 // Initial task checking setup of all properties required
 // by Python build
@@ -392,8 +379,7 @@ task cleanPython(type: Delete) {
 // Setup execution graph
 //
 clean.dependsOn cleanPython
-updateReadme.dependsOn clean
-createVersionFile.dependsOn updateReadme
+createVersionFile.dependsOn clean
 distPython.dependsOn createVersionFile
 
 build.dependsOn distPython
