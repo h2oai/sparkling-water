@@ -6,9 +6,9 @@ PySparkling
 PySparkling Documentation is hosted at our documentation page:
 
 - For Spark 2.4 - http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/pysparkling.html
-- For Spark 2.4 - http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/pysparkling.html
-- For Spark 2.4 - http://docs.h2o.ai/sparkling-water/2.2/latest-stable/doc/pysparkling.html
-- For Spark 2.4 - http://docs.h2o.ai/sparkling-water/2.1/latest-stable/doc/pysparkling.html
+- For Spark 2.3 - http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/pysparkling.html
+- For Spark 2.2 - http://docs.h2o.ai/sparkling-water/2.2/latest-stable/doc/pysparkling.html
+- For Spark 2.1 - http://docs.h2o.ai/sparkling-water/2.1/latest-stable/doc/pysparkling.html
 
 .. |Join the chat at https://gitter.im/h2oai/sparkling-water| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: Join the chat at https://gitter.im/h2oai/sparkling-water?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
