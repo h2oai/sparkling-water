@@ -3,7 +3,7 @@ apply from: "$rootDir/gradle/utils.gradle"
 
 ext {
     distDir = file("$buildDir/dist")
-    zipDir = file("$buildDir/zip")
+    zipDir = file("$buildDir/zip/sparkling-water-${version}")
 }
 
 def substituteBuildInfoFile(buildTimeMillis, buildTimeIso8601, buildTimeLocal) {
@@ -157,10 +157,9 @@ task copyFilesForZipDistribution {
 copyFilesForZipDistribution.dependsOn(distTaskDependencies)
 
 task zipDistribution(type: Zip, dependsOn: copyFilesForZipDistribution) {
-    from "$zipDir"
-    include '**/*'
-    archiveName "sparkling-water-${version}.zip"
-    destinationDir distDir
+    from "$buildDir/zip"
+    archiveFileName = "sparkling-water-${version}.zip"
+    destinationDirectory = file("$buildDir/dist")
 }
 
 task dist(dependsOn: zipDistribution) {
