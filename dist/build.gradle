@@ -111,8 +111,13 @@ def distTaskDependencies = [
 
 task copyFilesForZipDistribution {
     doLast {
+
         if (buildDir.exists()) {
             buildDir.deleteDir()
+        }
+        
+        if (!zipDir.exists()){
+            zipDir.mkdirs()
         }
 
         copySingle("r/build/", "rsparkling_${version}.tar.gz", "$zipDir")
