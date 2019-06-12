@@ -8,7 +8,7 @@ properties(
         ]
 )
 
-node('docker && micro') {
+node('master') {
     docker.withRegistry("http://harbor.h2o.ai") {
         // Clean workspace
         sh 'rm -rf *'
