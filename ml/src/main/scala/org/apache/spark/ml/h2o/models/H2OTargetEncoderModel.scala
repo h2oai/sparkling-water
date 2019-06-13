@@ -60,7 +60,9 @@ class H2OTargetEncoderModel(
     stackTrace.exists(e => e.getMethodName == "fit" && e.getClassName == "org.apache.spark.ml.Pipeline")
   }
 
-  override def copy(extra: ParamMap): H2OTargetEncoderModel = defaultCopy(extra)
+  override def copy(extra: ParamMap): H2OTargetEncoderModel = {
+    defaultCopy[H2OTargetEncoderModel](extra).setParent(parent)
+  }
 
   override def write: MLWriter = mojoModel.write
 }
