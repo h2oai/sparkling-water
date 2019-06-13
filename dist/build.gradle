@@ -105,9 +105,9 @@ def distTaskDependencies = [
         ":sparkling-water-assembly:shadowJar",
         ":sparkling-water-templates:build",
         ":sparkling-water-py:distPython",
-        ":sparkling-water-r:createCranRepo"
-] + getTasksByName("javadoc", true) + getTasksByName("scaladoc", true)
-
+        ":sparkling-water-r:createCranRepo",
+        ":sparkling-water-core:scaladoc"
+]
 
 task copyFilesForZipDistribution {
     doLast {
