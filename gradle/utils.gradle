@@ -45,8 +45,13 @@ def getGitHash() {
 }
 
 def getGitBranch() {
-    def proc = ['git', 'rev-parse', '--verify', '--abbrev-ref', 'HEAD'].execute()
-    return proc.text.trim()
+    def branchName = System.getenv("BRANCH_NAME")
+    if (branchName != null){
+        return branchName
+    } else {
+        def proc = ['git', 'rev-parse', '--verify', '--abbrev-ref', 'HEAD'].execute()
+        return proc.text.trim()
+    }
 }
 
 def getH2OBranch(h2oMajorName) {
