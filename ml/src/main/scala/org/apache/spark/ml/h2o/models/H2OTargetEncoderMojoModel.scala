@@ -60,7 +60,7 @@ case class H2OTargetEncoderMojoUdfWrapper(mojoData: Array[Byte], outputCols: Arr
   val mojoUdf = udf[Array[Option[Double]], Row] { r: Row =>
     val inputRowData = RowConverter.toH2ORowData(r)
     try {
-      val outputRawData = mojoModel.transform0(inputRowData)
+      val outputRawData = mojoModel.transform(inputRowData)
       outputCols.map(c => Option(outputRawData.get(c).asInstanceOf[Double]))
     } catch {
       case _: Throwable => outputCols.map(_ => None)
