@@ -56,13 +56,10 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
     val expectedWorkers = numExecutors.orElse(numExecutorHint).getOrElse(if (nSparkExecBefore > 0) nSparkExecBefore else conf.defaultCloudSize)
 
     // Create some distributed data
-    val spreadRDD = sc.parallelize(0 until mfactor * expectedWorkers, mfactor * expectedWorkers + 1).persist()
-
+    val spreadRDD = sc.parallelize(0 until mfactor * expectedWorkers, mfactor * expectedWorkers + 1)
 
     // Start RPC Endpoint on all worker nodes
     val endpoints = spreadRDD.mapPartitions { _ => Iterator.single(RpcReferenceCache.getRef(sparkConf)) }.distinct().collect()
-    // Delete RDD
-    spreadRDD.unpersist()
 
     val currentWorkers = endpoints.length
     // Number of Spark executors after distributed operation
