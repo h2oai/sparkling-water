@@ -92,6 +92,19 @@ def getGradleCommand(config) {
 }
 
 
+def getNextNightlyBuildNumber(config) {
+    if (config.buildAgainstH2OBranch.toBoolean()){
+        return new Date().format('Y_m_d_H_M_S').toString()
+    } else {
+        try {
+            def buildNumber = "https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest".toURL().getText().toInteger()
+            return buildNumber + 1
+        } catch(Exception ignored){
+            return 1
+        }
+    }
+}
+
 def prepareSparkEnvironment() {
     return { config ->
         stage('Prepare Spark Environment - ' + config.backendMode) {
@@ -129,7 +142,6 @@ def prepareSparkEnvironment() {
     }
 }
 
-
 def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
@@ -144,9 +156,8 @@ def prepareSparklingWaterEnvironment() {
 
                     sh """
                      REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                     BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
-
-                     NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
+                   
+                     NEW_BUILD_VERSION=${getNextNightlyBuildNumber(config)}
                      NEW_REL_VERSION=\${REL_VERSION}-\${NEW_BUILD_VERSION}
 
                      sed -i.backup -E "s/h2oMajorName=.*/h2oMajorName=master/" gradle.properties
@@ -282,8 +293,8 @@ def rUnitTests() {
             withDocker(config) {
                 if (config.runRUnitTests.toBoolean()) {
                     try {
-                          sh "sudo -E /usr/sbin/startup.sh"
-                          sh """
+                        sh "sudo -E /usr/sbin/startup.sh"
+                        sh """
                              ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage :sparkling-water-r:installRSparklingPackage
                              ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
                              """
@@ -460,79 +471,25 @@ def publishNightly() {
 
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 
-                    sh  """
-                        # echo 'Making distribution'
-                        ${getGradleCommand(config)} dist
-
-                        # Upload to S3
-                        """
-
-                        def tmpdir = "./buildsparklingwater.tmp"
                         sh  """
-                            
-                            
+                            ${getGradleCommand(config)} dist
 
-                            if [ ${config.buildAgainstH2OBranch} = false ]; then
-                                # Regular nightly build
-                                BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
-                                NEW_BUILD_VERSION=\$((\${BUILD_VERSION} + 1))
-                            else
-                                NEW_BUILD_VERSION=\$(date '+%Y_%m_%d_%H_%M_%S')
-                            fi
-                            
-                            #
-                            # Upload RSparkling Repo
-                            #
-                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put --recursive r/build/repo/src s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/R/
-                            
-                            #
-                            # Publish PySparkling to S3
-                            #    
-                            cd py/build/pkg
-                            python setup.py sdist
-                            DIST_FILE_PATH=\$(ls dist/*)
-                            DIST_FILE_NAME=\$(basename \$DIST_FILE_PATH)
-                            s3cmd --acl-public put dist/\${DIST_FILE_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/py/\${DIST_FILE_NAME}/
-                            cd ../../../
-                            
-                            # Publish the output to S3.
-                            echo
-                            echo PUBLISH
-                            echo
-                            s3cmd --rexclude='target/classes/*' --acl-public sync ${env.WORKSPACE}/dist/build/dist/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/
-                            
-                            echo EXPLICITLY SET MIME TYPES AS NEEDED
-                            list_of_html_files=`find dist/build/dist -name '*.html' | sed 's/dist\\/build\\/dist\\///g'`
-                            echo \${list_of_html_files}
-                            for f in \${list_of_html_files}
-                            do
-                                s3cmd --acl-public --mime-type text/html put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
-                            done
-                            
-                            list_of_js_files=`find dist/build/dist -name '*.js' | sed 's/dist\\/build\\/dist\\///g'`
-                            echo \${list_of_js_files}
-                            for f in \${list_of_js_files}
-                            do
-                                s3cmd --acl-public --mime-type text/javascript put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
-                            done
-                            
-                            list_of_css_files=`find dist/build/dist -name '*.css' | sed 's/dist\\/build\\/dist\\///g'`
-                            echo \${list_of_css_files}
-                            for f in \${list_of_css_files}
-                            do
-                                s3cmd --acl-public --mime-type text/css put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/\${f}
-                            done
+                            NEW_BUILD_VERSION=${getNextNightlyBuildNumber(config)}
+                                                
+                            pip install awscli --upgrade --user
+                            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                            ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/ --acl public-read
                             
                             if [ ${config.buildAgainstH2OBranch} = false ]; then
                                 echo UPDATE LATEST POINTER
-                                mkdir -p ${tmpdir} 
-                                echo \${NEW_BUILD_VERSION} > ${tmpdir}/latest
-                                echo "<head>" > ${tmpdir}/latest.html
-                                echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\${NEW_BUILD_VERSION}/index.html\\" />" >> ${tmpdir}/latest.html
-                                echo "</head>" >> ${tmpdir}/latest.html
-                                s3cmd --acl-public put ${tmpdir}/latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest
-                                s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest.html
-                                s3cmd --acl-public put ${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/index.html
+                                echo \${NEW_BUILD_VERSION} > latest
+                                echo "<head>" > latest.html
+                                echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\${NEW_BUILD_VERSION}/index.html\\" />" >> latest.html
+                                echo "</head>" >> latest.html
+                                ~/.local/bin/aws s3 cp latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest --acl public-read
+                                ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest.html --acl public-read
+                                ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/index.html --acl public-read
                             fi                    
                             """
                     }
@@ -559,7 +516,7 @@ EOF
                                """
                             // Update the links
                             retryWithDelay(3, 120, {
-                            sh """
+                                sh """
 
                                 # S3 Already containes incremented version
                                 BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
