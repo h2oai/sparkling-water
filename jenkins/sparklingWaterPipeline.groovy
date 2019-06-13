@@ -142,10 +142,6 @@ def prepareSparkEnvironment() {
     }
 }
 
-def getBuildVersion(branch){
-    def url = "https://h2o-release.s3.amazonaws.com/sparkling-water/${branch}/nightly/latest".toURL().getText()
-}
-
 def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
