@@ -19,6 +19,7 @@ package org.apache.spark.ml.h2o.models
 import ai.h2o.automl.targetencoding.TargetEncoderModel
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
+import org.apache.spark.ml.h2o.features.H2OTargetEncoderNoiseSettings
 import org.apache.spark.ml.h2o.param.H2OTargetEncoderParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
@@ -48,13 +49,9 @@ class H2OTargetEncoderModel(
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
     val input = h2oContext.asH2OFrame(dataset.toDF())
     changeRelevantColumnsToCategorical(input)
-    val noise = getNoise()
+    val noise = Option(getNoise()).getOrElse(H2OTargetEncoderNoiseSettings(amount = 0.0))
     val holdoutStrategyId = getHoldoutStrategy().ordinal().asInstanceOf[Byte]
-    val output = if (noise == null) {
-      targetEncoderModel.transform(input, holdoutStrategyId, 0L)
-    } else {
-      targetEncoderModel.transform(input, holdoutStrategyId, noise.amount, 0L)
-    }
+    val output = targetEncoderModel.transform(input, holdoutStrategyId, noise.amount, noise.seed)
     h2oContext.asDataFrame(output)
   }
 

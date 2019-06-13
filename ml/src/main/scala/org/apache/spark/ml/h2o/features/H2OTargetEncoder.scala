@@ -45,7 +45,7 @@ class H2OTargetEncoder(override val uid: String)
     val targetEncoderParameters = new TargetEncoderModel.TargetEncoderParameters()
     val blending = Option(getBlending())
     targetEncoderParameters._withBlending = blending.isDefined
-    targetEncoderParameters._blendingParams = blending.map(_.toBlendingParams()).getOrElse(null)
+    targetEncoderParameters._blendingParams = blending.map(_.toBlendingParams()).orNull
     targetEncoderParameters._response_column = getLabelCol()
     targetEncoderParameters._teFoldColumnName = getFoldCol()
     targetEncoderParameters._columnNamesToEncode = getInputCols()
