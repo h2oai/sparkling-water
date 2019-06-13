@@ -168,7 +168,9 @@ task dist(dependsOn: zipDistribution) {
         def buildTimeIso8601 = new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("UTC"))
         def buildTimeLocal = new Date().toString()
 
-        // Prepare additional files which will be published
+        // Prepare additional files which are accessible directly from the page
+        copySingle("py/build/dist/", "h2o_pysparkling_$sparkMajorVersion-${version}.zip", "$distDir/py")
+        copyRecursive("r/build/repo/", "$distDir/R")
         copyRecursive("core/build/docs/scaladoc/", "$distDir/scaladoc")
         copyRecursive("doc/build/site/", "$distDir/doc")
         copyRecursive("templates/build/", "$distDir/templates")
