@@ -21,9 +21,11 @@ import org.apache.spark.h2o._
 import org.apache.spark.ml.attribute.AttributeGroup
 import org.apache.spark.mllib.linalg.SparseVector
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.types._
-import org.apache.spark.{SparkContext, ml, mllib}
+import org.apache.spark.{ml, mllib}
+
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * Utilities for working with Spark SQL component.
@@ -70,23 +72,174 @@ object H2OSchemaUtils {
     StructType(types)
   }
 
-  def flattenSchema(schema: StructType, prefix: String = null, nullable: Boolean = false): StructType = {
+  def flattenDataFrame(df: DataFrame): DataFrame = {
+    val schema = flattenSchema(df)
+    flattenDataFrame(df, schema)
+  }
+
+  def flattenDataFrame(df: DataFrame, flatSchema: StructType): DataFrame = {
+    implicit val rowEncoder = RowEncoder(flatSchema)
+    val numberOfColumns = flatSchema.fields.length
+    val flatSchemaIndexes = flatSchema.fields.map(_.name).zipWithIndex.toMap
+    val originalSchema = df.schema
+    df.map[Row]{ r: Row =>
+      val result = ArrayBuffer.fill[Any](numberOfColumns)(null)
+      val fillMethod = fillBuffer(flatSchemaIndexes, result, r)(_, _, _)
+      originalSchema.fields.zipWithIndex.foreach{ case (f, i) => fillMethod(f, i, None)}
+      Row.fromSeq(result)
+    }
+  }
+
+  private def fillBuffer
+      (flatSchemaIndexes: Map[String, Int], buffer: ArrayBuffer[Any], row: Row)
+      (field: StructField, index: Int, prefix: Option[String] = None): Unit = {
+    val StructField(name, dataType, _, _) = field
+    val qualifiedName = getQualifiedName(prefix, name)
+    if(!row.isNullAt(index)) {
+      dataType match {
+        case BinaryType =>
+          fillArray(flatSchemaIndexes, buffer, row, ByteType, index, qualifiedName)
+        case MapType(_, valueType, containsNull) =>
+          val map = row.getMap[Any, Any](index)
+          val subRow = Row.fromSeq(map.values.toSeq)
+          val fillMethod = fillBuffer(flatSchemaIndexes, buffer, subRow)(_, _, _)
+          map.keys.zipWithIndex.foreach{ case (k, i) =>
+            val mapField = StructField(k.toString, valueType, containsNull)
+            fillMethod(mapField, i, Some(qualifiedName))
+          }
+        case ArrayType(elementType, _) =>
+          fillArray(flatSchemaIndexes, buffer, row, elementType, index, qualifiedName)
+        case StructType(fields) =>
+          val subRow = row.getStruct(index)
+          val fillMethod = fillBuffer(flatSchemaIndexes, buffer, subRow)(_, _, _)
+          fields.zipWithIndex.foreach { case (f, i) => fillMethod(f, i, Some(qualifiedName)) }
+        case dt => buffer(flatSchemaIndexes(qualifiedName)) = row.get(index)
+      }
+    }
+  }
+
+  private def fillArray(
+      flatSchemaIndexes: Map[String, Int],
+      buffer: ArrayBuffer[Any],
+      row: Row,
+      elementType: DataType,
+      index: Int,
+      qualifiedName: String){
+    val seq = row.getSeq[Any](index)
+    val subRow = Row.fromSeq(seq)
+    val fillMethod = fillBuffer(flatSchemaIndexes, buffer, subRow)(_, _, _)
+    (0 until seq.size).foreach{ i =>
+      val arrayField = StructField(i.toString, elementType)
+      fillMethod(arrayField, i, Some(qualifiedName))
+    }
+  }
+
+  def flattenSchema(df: DataFrame): StructType = {
+    val originalSchema = df.schema
+    val fields = df.rdd.map[Seq[FieldWithOrder]] { row: Row =>
+        originalSchema.fields.zipWithIndex.foldLeft(Seq.empty[FieldWithOrder]) {
+          case (acc, (field, index)) => acc ++ flattenField(field, row, index, index :: Nil)
+        }
+      }
+      .reduce { (first, second) =>
+        def convertToMap(collection: Seq[FieldWithOrder]) = collection.map(f => f.order -> f.field).toMap
+        val firstMap = convertToMap(first)
+        val secondMap = convertToMap(second)
+        val pathItemOrdering = new Ordering[Any] {
+          override def compare(x: Any, y: Any): Int = (x, y) match {
+            case (a: Int, b: Int) => a.compareTo(b)
+            case (a: String, b: String) => a.compareTo(b)
+            case (a, b) => a.toString.compareTo(b.toString)
+          }
+        }
+        val keys = (firstMap.keySet ++ secondMap.keySet).toSeq.sorted(Ordering.Iterable(pathItemOrdering))
+        keys.map { key =>
+          (firstMap.get(key), secondMap.get(key)) match {
+            case (None, Some(StructField(name, dataType, _, _))) =>
+              FieldWithOrder(StructField(name, dataType, true), key)
+            case (Some(StructField(name, dataType, _, _)), None) =>
+              FieldWithOrder(StructField(name, dataType, true), key)
+            case (Some(StructField(name, dataType, nullable1, _)), Some(StructField(_, _, nullable2, _))) =>
+              FieldWithOrder(StructField(name, dataType, nullable1 || nullable2), key)
+          }
+        }
+      }
+      StructType(fields.map(_.field))
+  }
+
+  private def getQualifiedName(prefix: Option[String], name: String) = prefix match {
+    case None => name
+    case Some(p) => s"${p}_$name"
+  }
+
+  private def flattenField(
+      originalField: StructField,
+      row: Row,
+      index: Int,
+      path: List[Any],
+      prefix: Option[String] = None,
+      isParentNullable: Boolean = false): Seq[FieldWithOrder] = {
+    val StructField(name, dataType, nullable, _) = originalField
+    val qualifiedName = getQualifiedName(prefix, name)
+    val nullableField = isParentNullable || nullable
+    if(!row.isNullAt(index)) {
+      dataType match {
+        case BinaryType =>
+          flattenArray(row, ByteType, false, index, path, qualifiedName, nullableField)
+        case MapType(_, valueType, containsNull) =>
+          val map = row.getMap[Any, Any](index)
+          val subRow = Row.fromSeq(map.values.toSeq)
+          map.keys.zipWithIndex.flatMap { case (k, i) =>
+            val mapField = StructField(k.toString, valueType, containsNull)
+            flattenField(mapField, subRow, i, k :: path, Some(qualifiedName), nullableField)
+          }.toSeq
+        case ArrayType(elementType, containsNull) =>
+          flattenArray(row, elementType, containsNull, index, path, qualifiedName, nullableField)
+        case StructType(fields) =>
+          val subRow = row.getStruct(index)
+          fields.zipWithIndex.flatMap { case (f, i) => flattenField(f, subRow, i, i :: path, Some(qualifiedName), nullableField) }
+        case dt => FieldWithOrder(StructField(qualifiedName, dt, nullableField), path.reverse) :: Nil
+      }
+    } else {
+      Nil
+    }
+  }
+
+  private case class FieldWithOrder(field: StructField, order: Seq[Any])
+
+  private def flattenArray(
+      row: Row,
+      elementType: DataType,
+      containsNull: Boolean,
+      index: Int,
+      path: List[Any],
+      qualifiedName: String,
+      nullableField: Boolean) = {
+    val values = row.getSeq[Any](index)
+    val subRow = Row.fromSeq(values)
+      (0 until values.size).flatMap{ i =>
+      val arrayField = StructField(i.toString(), elementType, containsNull)
+      flattenField(arrayField, subRow, i, i :: path, Some(qualifiedName), nullableField)
+    }
+  }
+
+  def flattenStructsInSchema(schema: StructType, prefix: String = null, nullable: Boolean = false): StructType = {
 
     val flattened = schema.fields.flatMap { f =>
       val escaped = if (f.name.contains(".")) "`" + f.name + "`" else f.name
       val colName = if (prefix == null) escaped else prefix + "." + escaped
 
       f.dataType match {
-        case st: StructType => flattenSchema(st, colName, nullable || f.nullable)
+        case st: StructType => flattenStructsInSchema(st, colName, nullable || f.nullable)
         case _ => Array[StructField](StructField(colName, f.dataType, nullable || f.nullable))
       }
     }
     StructType(flattened)
   }
 
-  def flattenDataFrame(df: DataFrame): DataFrame = {
+  def flattenStructsInDataFrame(df: DataFrame): DataFrame = {
     import org.apache.spark.sql.functions.col
-    val flatten = flattenSchema(df.schema)
+    val flatten = flattenStructsInSchema(df.schema)
     val cols = flatten.map(f => col(f.name).as(f.name.replaceAll("`", "")))
     df.select(cols: _*)
   }
