@@ -130,7 +130,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     val args = relevantColumnNames.map(flattenedDF(_))
 
     // get the altered frame
-    val frameWithPredictions = flattenedDF.select(col("*"), modelUdf(relevantColumnNames)(struct(args: _*)).as(getPredictionCol()))
+    val frameWithPredictions = flattenedDF.withColumn(getPredictionCol(), modelUdf(relevantColumnNames)(struct(args: _*)))
 
     val fr = if (getNamedMojoOutputColumns()) {
 
