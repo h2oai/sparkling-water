@@ -198,13 +198,13 @@ def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint - ' + config.backendMode) {
             withDocker(config) {
-                withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
-                    sh """
-                    # Build
-                    ${getGradleCommand(config)} clean build -x check scalaStyle -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
-                    """
+                try {
+                    withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
+                        sh "${getGradleCommand(config)} clean build -x check scalaStyle -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD"
+                        stash 'sw-build'
+                    }
+                } finally {
                     arch 'assembly/build/reports/dependency-license/**/*'
-                    stash 'sw-build'
                 }
             }
         }
