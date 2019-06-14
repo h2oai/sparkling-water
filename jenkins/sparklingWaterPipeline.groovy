@@ -204,7 +204,7 @@ def buildAndLint() {
                     # Build
                     ${getGradleCommand(config)} clean build -x check scalaStyle -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
                     """
-
+                    arch 'assembly/build/reports/dependency-license/**/*'
                     stash 'sw-build'
                 }
             }
