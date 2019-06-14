@@ -1,5 +1,51 @@
 #!/usr/bin/groovy
 
+def getSparkVersion(config) {
+    if (config.buildAgainstSparkBranch.toBoolean()) {
+        return config.sparkVersion
+    } else {
+        def jobName = "${JOB_NAME}".toString()
+        if(jobName.contains("2.4")) {
+            return "2.4.3"
+        } else if(jobName.contains("2.3")) {
+            return "2.3.3"
+        } else if (jobName.contains("2.2")) {
+            return "2.2.3"
+        } else if (jobName.contains("2.1")) {
+            return "2.1.3"
+        } else {
+            throw new RuntimeException("Can't determine Spark version based on job name!")
+        }
+    }
+}
+
+def getBranchName() {
+    def branchName = "${BRANCH_NAME}".toString()
+    if (!branchName.startsWith("rel-")){
+        return branchName
+    } else {
+        def jobName = "${JOB_NAME}".toString()
+        if(jobName.contains("2.4")) {
+            return "rel-2.4"
+        } else if(jobName.contains("2.3")) {
+            return "rel-2.3"
+        } else if (jobName.contains("2.2")) {
+            return "rel-2.2"
+        } else if (jobName.contains("2.1")) {
+            return "rel-2.1"
+        } else {
+            throw new RuntimeException("Can't determine branch name based on job name!")
+        }
+    }
+}
+
+def getSparkMajorVersion(config) {
+    def v = getSparkVersion(config)
+    def split = v.split("\\.")
+    return "${split[0]}_${split[1]}"
+}
+
+
 def call(params, body) {
     def config = [:]
     body.resolveStrategy = Closure.DELEGATE_FIRST
@@ -61,21 +107,6 @@ def call(params, body) {
     }
 }
 
-def getSparkVersion(config) {
-    if (config.buildAgainstSparkBranch.toBoolean()) {
-        return config.sparkVersion
-    } else {
-        def versionLine = file("gradle.properties").readLines().find() { line -> line.contains('sparkVersion') }
-        return versionLine.split("=")[1]
-    }
-}
-
-def getSparkMajorVersion(config) {
-    def v = getSparkVersion(config)
-    def split = v.split("\\.")
-    return "${split[0]}_${split[1]}"
-}
-
 def withDocker(config, code) {
     def image = 'opsh2oai/sparkling_water_tests:' + config.dockerVersion
     retryWithDelay(3, 120,{
@@ -92,19 +123,19 @@ def withDocker(config, code) {
 
 
 def getGradleCommand(config) {
-    def sharedOptions = "-PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
+    def sharedOptions = "-PsparkVersion=${getSparkVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
 
     def gradleStr
     if (config.buildAgainstH2OBranch.toBoolean()) {
-        gradleStr = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew  --include-build ${env.WORKSPACE}/h2o-3"
+        gradleStr = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew ${sharedOptions} --include-build ${env.WORKSPACE}/h2o-3"
     } else {
-        gradleStr = "${env.WORKSPACE}/gradlew"
+        gradleStr = "${env.WORKSPACE}/gradlew ${sharedOptions}"
     }
 
     if (config.buildAgainstSparkBranch.toBoolean()) {
         "${gradleStr} -x checkSparkVersionTask -PsparkVersion=${getSparkVersion(config)} ${sharedOptions}"
     } else {
-        "${gradleStr} ${sharedOptions}"
+        "${gradleStr}"
     }
 }
 
@@ -114,9 +145,9 @@ def getNextNightlyBuildNumber(config) {
         return new Date().format('Y_m_d_H_M_S').toString()
     } else {
         try {
-            def buildNumber = "https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest".toURL().getText().toInteger()
+            def buildNumber = "https://h2o-release.s3.amazonaws.com/sparkling-water/${getBranchName()}/nightly/latest".toURL().getText().toInteger()
             return buildNumber + 1
-        } catch(Exception ignored){
+        } catch(Exception ignored) {
             return 1
         }
     }
@@ -497,7 +528,7 @@ def publishNightly() {
                             pip install awscli --upgrade --user
                             export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                             export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                            ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/ --acl public-read
+                            ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/${getBranchName()}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/ --acl public-read
                             
                             if [ ${config.buildAgainstH2OBranch} = false ]; then
                                 echo UPDATE LATEST POINTER
@@ -505,9 +536,9 @@ def publishNightly() {
                                 echo "<head>" > latest.html
                                 echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\${NEW_BUILD_VERSION}/index.html\\" />" >> latest.html
                                 echo "</head>" >> latest.html
-                                ~/.local/bin/aws s3 cp latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest --acl public-read
-                                ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/latest.html --acl public-read
-                                ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/index.html --acl public-read
+                                ~/.local/bin/aws s3 cp latest s3://h2o-release/sparkling-water/${getBranchName()}/nightly/latest --acl public-read
+                                ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/${getBranchName()}/nightly/latest.html --acl public-read
+                                ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/${getBranchName()}/nightly/index.html --acl public-read
                             fi                    
                             """
                     }
@@ -537,13 +568,13 @@ EOF
                                 sh """
 
                                 # S3 Already containes incremented version
-                                BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
+                                BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${getBranchName()}/nightly/latest -q -O -)
 
                                 git clone git@github.com:h2oai/docs.h2o.ai.git
                                 cd docs.h2o.ai/sites-available/
-                                sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/\${BUILD_VERSION}/?" 000-default.conf
+                                sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/${getBranchName()}/nightly/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/${getBranchName()}/nightly/\${BUILD_VERSION}/?" 000-default.conf
                                 git add 000-default.conf
-                                git commit -m "Update links of Sparkling Water nighly version on ${BRANCH_NAME} to \${BUILD_VERSION}"
+                                git commit -m "Update links of Sparkling Water nighly version on ${getBranchName()} to \${BUILD_VERSION}"
                                 git push --set-upstream origin master
                                 cd ../..
                                 rm -rf docs.h2o.ai
