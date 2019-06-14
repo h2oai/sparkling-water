@@ -6,10 +6,6 @@ properties(
         [
                 parameters(
                         [
-                                choice(name: 'sparkVersion',
-                                        choices: '2.4.3',
-                                        description: 'Version of Spark used for testing.'),
-
                                 booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit tests'),
                                 booleanParam(name: 'runPyUnitTests', defaultValue: true, description: 'Run PyUnit tests'),
                                 booleanParam(name: 'runRUnitTests', defaultValue: true, description: 'Run PyRUnit tests'),
@@ -58,7 +54,6 @@ node('docker && micro') {
 
         // Execute the pipeline
         pipeline(params) { p ->
-            sparkVersion = "${p.sparkVersion}"
             runUnitTests = "${p.runUnitTests}"
             runPyUnitTests = "${p.runPyUnitTests}"
             runRUnitTests = "${p.runRUnitTests}"

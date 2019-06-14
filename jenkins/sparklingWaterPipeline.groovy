@@ -8,7 +8,7 @@ def call(params, body) {
     body(params)
 
     def customEnv = [
-            "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
+            "SPARK=spark-${getSparkVersion(config)}-bin-hadoop${config.hadoopVersion}",
             "SPARK_HOME=${env.WORKSPACE}/spark",
             "HADOOP_CONF_DIR=/etc/hadoop/conf",
             "MASTER=yarn-client",
@@ -36,7 +36,7 @@ def call(params, body) {
                         // Run Integration tests on YARN
                         node("dX-hadoop") {
                             def customEnvNew = [
-                                    "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
+                                    "SPARK=spark-${getSparkVersion(config)}-bin-hadoop${config.hadoopVersion}",
                                     "SPARK_HOME=${env.WORKSPACE}/spark",
                                     "HADOOP_CONF_DIR=/etc/hadoop/conf",
                                     "MASTER=yarn-client",
@@ -59,6 +59,21 @@ def call(params, body) {
             }
         }
     }
+}
+
+def getSparkVersion(config) {
+    if (config.buildAgainstSparkBranch.toBoolean()) {
+        return config.sparkVersion
+    } else {
+        def versionLine = file("gradle.properties").readLines().find() { line -> line.contains('sparkVersion') }
+        return versionLine.split("=")[1]
+    }
+}
+
+def getSparkMajorVersion(config) {
+    def v = getSparkVersion(config)
+    def split = v.split("\\.")
+    return "${split[0]}_${split[1]}"
 }
 
 def withDocker(config, code) {
@@ -87,7 +102,7 @@ def getGradleCommand(config) {
     }
 
     if (config.buildAgainstSparkBranch.toBoolean()) {
-        "${gradleStr} -x checkSparkVersionTask -PsparkVersion=${config.sparkVersion} ${sharedOptions}"
+        "${gradleStr} -x checkSparkVersionTask -PsparkVersion=${getSparkVersion(config)} ${sharedOptions}"
     } else {
         "${gradleStr} ${sharedOptions}"
     }
@@ -122,7 +137,7 @@ def prepareSparkEnvironment() {
                     """
                 } else {
                     sh  """
-                        cp -R \${SPARK_HOME_2_4} ${env.SPARK_HOME}
+                        cp -R \${SPARK_HOME_${getSparkMajorVersion(config)} ${env.SPARK_HOME}
                         """
                 }
 

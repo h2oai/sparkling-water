@@ -16,6 +16,11 @@ if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH != ''){
     cancelPreviousBuilds()
 }
 
+def getSparkVersion() {
+    def versionLine = file("gradle.properties").readLines().find() { line -> line.contains('sparkVersion') }
+    return versionLine.split("=")[1]
+}
+
 node('docker && micro') {
     docker.withRegistry("http://harbor.h2o.ai") {
 
@@ -26,7 +31,7 @@ node('docker && micro') {
         checkout scm
 
         def customEnv = [
-                "SPARK=spark-2.4.3-bin-hadoop2.7",
+                "SPARK=spark-${getSparkVersion()}-bin-hadoop2.7",
                 "SPARK_HOME=${env.WORKSPACE}/spark",
                 "HADOOP_CONF_DIR=/etc/hadoop/conf",
                 "MASTER=yarn-client",
