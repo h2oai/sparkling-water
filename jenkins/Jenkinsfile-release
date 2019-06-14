@@ -6,18 +6,13 @@ pipeline {
     parameters {
         booleanParam(name: 'prepareReleaseNotes', defaultValue: true, description: 'Prepare release notes')
         booleanParam(name: 'publishToNexus', defaultValue: true, description: 'Publish to Nexus')
+        booleanParam(name: 'buildConda', defaultValue: true, description: 'Build Conda')
         booleanParam(name: 'buildExtendedH2OJars', defaultValue: true, description: 'Build extended H2O Jars')
         booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3')
         booleanParam(name: 'updateDocLinks', defaultValue: true, description: 'Update documentation links')
-        booleanParam(name: 'buildPySparkling', defaultValue: true, description: 'Build PySparkling')
         booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy')
-        booleanParam(name: 'buildConda', defaultValue: true, description: 'Build Conda')
         booleanParam(name: 'publishConda', defaultValue: true, description: 'Publish to Conda')
         booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
-    }
-
-    environment {
-        SPARK_HOME="/home/jenkins/spark-2.1.3-bin-hadoop2.7"
     }
 
     stages {
@@ -139,29 +134,6 @@ pipeline {
             }
         }
 
-        stage('Build PySparkling') {
-            when {
-                expression { params.buildPySparkling == true }
-            }
-            steps {
-                script {
-                    docker.withRegistry("http://harbor.h2o.ai") {
-                        docker.image('opsh2oai/sparkling_water_tests:15').inside("--init --privileged --dns 172.16.0.200") {
-
-                            dir("py/build/pkg") {
-                                withCredentials([usernamePassword(credentialsId: "pypi-credentials", usernameVariable: 'PIPY_USERNAME', passwordVariable: 'PIPY_PASSWORD')]) {
-                                    sh  """
-                                        . /envs/h2o_env_python3.6/bin/activate
-                                        python setup.py sdist
-                                        """
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Build Conda Packages'){
                     when {
                         expression { params.buildConda == true }
@@ -182,13 +154,16 @@ pipeline {
 
                                             conda build h2o_pysparkling_2.1 --output-folder "." --no-anaconda-upload --py ${pyVersion}
 
-                                            # Get name of the package
-                                            CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_2.1 --py ${pyVersion} --output-folder "." --output | tail -1)
-                                            PKG_NAME=\$(basename \$CONDA_PKG_CURRENT_ARCH_PATH)
+                                            PACKAGE_PATH=\$(conda build h2o_pysparkling_2.1 --py ${pyVersion} --output-folder "." --output | tail -1)
+                                            CURRENT_PLATFORM=\$(basename \$(dirname \$PACKAGE_PATH))
+                                            mkdir -p ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM
+                                            cp \$PACKAGE_PATH ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM/
 
-
-                                            # Convert conda package for all other platforms
-                                            conda convert \$CONDA_PKG_CURRENT_ARCH_PATH -p all
+                                            conda convert \$PACKAGE_PATH -p linux-32 -o ../../../dist/build/dist/py/conda/
+                                            conda convert \$PACKAGE_PATH -p linux-64 -o ../../../dist/build/dist/py/conda/
+                                            conda convert \$PACKAGE_PATH -p win-32 -o ../../../dist/build/dist/py/conda/
+                                            conda convert \$PACKAGE_PATH -p win-64 -o ../../../dist/build/dist/py/conda/
+                                            conda convert \$PACKAGE_PATH -p osx-64 -o ../../../dist/build/dist/py/conda/
                                            """
                                     }
                                 }
@@ -237,6 +212,9 @@ pipeline {
                                     done
                                     # Create extended H2O jar also for the regular h2o (no H2O driver)
                                     ./gradlew -PdoExtend extendJar -PdownloadH2O
+
+                                    # Copy to directory which is uploaded to S3
+                                    cp -R assembly-h2o/private/extended dist/build/dist/
                                 """
                         }
                     }
@@ -257,89 +235,21 @@ pipeline {
                                 sh """
                                     REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
                                     PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
-                                    s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put --recursive r/build/repo/src s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/R/
-                                """
-                                if(params.buildConda == true) {
-                                    // Upload Conda packages of PySparkling
-                                    def PYTHON_VERSIONS = ['2.7', '3.6']
-                                    for (pyVersion in PYTHON_VERSIONS) {
-                                             sh """
-                                                REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                                                PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
 
-                                                cd py/build/conda
-                                                CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_2.1 --py ${pyVersion} --output-folder "." --output | tail -1)
-                                                cd ../../..
-                                                PKG_NAME=\$(basename \$CONDA_PKG_CURRENT_ARCH_PATH)
+                                    pip install awscli --upgrade --user
+                                    export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                                    export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                                    ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/ --acl public-read
 
-                                                # Upload Conda packages of PySparkling to S3
-                                                s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/osx-64/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/osx-64/\${PKG_NAME}
-                                                s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/linux-32/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/linux-32/\${PKG_NAME}
-                                                s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/linux-64/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/linux-64/\${PKG_NAME}
-                                                s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/win-32/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/win-32/\${PKG_NAME}
-                                                s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put py/build/conda/win-64/\${PKG_NAME} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/conda/win-64/\${PKG_NAME}
-                                                """
-                                    }
-                                }
+                                    echo UPDATE LATEST POINTER
+                                    echo \$PATCH_VERSION > latest
+                                    echo "<head>" > latest.html
+                                    echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\$PATCH_VERSION/index.html\\" />" >> latest.html
+                                    echo "</head>" >> latest.html
 
-                                if(params.buildPySparkling == true) {
-                                    sh  """
-                                            REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                                            PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
-                                            
-                                            DIST_FILE_PATH=\$(ls py/build/pkg/dist/*)
-                                            DIST_FILE_NAME=\$(basename \$DIST_FILE_PATH)
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put \${DIST_FILE_PATH} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/py/\${DIST_FILE_NAME}/
-                                        """
-                                }
-
-                                sh """
-                                        REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                                        PATCH_VERSION=`echo \$REL_VERSION | cut -f3 -d.`
-
-                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY}  --rexclude='target/classes/*' --acl-public sync dist/build/dist/ s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/
-
-                                        echo EXPLICITLY SET MIME TYPES AS NEEDED
-                                        list_of_html_files=`find dist/build/dist -name '*.html' | sed 's/dist\\/build\\/dist\\///g'`
-                                        echo \${list_of_html_files}
-                                        for f in \${list_of_html_files}
-                                        do
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/html put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
-                                        done
-
-                                        list_of_js_files=`find dist/build/dist -name '*.js' | sed 's/dist\\/build\\/dist\\///g'`
-                                        echo \${list_of_js_files}
-                                        for f in \${list_of_js_files}
-                                        do
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/javascript put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
-                                        done
-
-                                        list_of_css_files=`find dist/build/dist -name '*.css' | sed 's/dist\\/build\\/dist\\///g'`
-                                        echo \${list_of_css_files}
-                                        for f in \${list_of_css_files}
-                                        do
-                                            s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public --mime-type text/css put dist/build/dist/\${f} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${f}
-                                        done
-
-                                        list_of_extended_jars=`find assembly-h2o/private -name '*-extended.jar' | sed 's/assembly-h2o\\\\/private\\\\///g'`
-                                        echo \${list_of_extended_jars}
-                                        for jar in \${list_of_extended_jars}
-                                        do
-                                             s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put assembly-h2o/private/\${jar} s3://h2o-release/sparkling-water/${BRANCH_NAME}/\$PATCH_VERSION/\${jar}
-                                        done
-                                        ./gradlew :sparkling-water-assembly-h2o:clean
-                                        ./gradlew :sparkling-water-assembly-h2o:cleanH2OJars
-
-                                        echo UPDATE LATEST POINTER
-                                        tmpdir=./buildsparklingwater.tmp
-                                        mkdir -p \${tmpdir}
-                                        echo \$PATCH_VERSION > \${tmpdir}/latest
-                                        echo "<head>" > \${tmpdir}/latest.html
-                                        echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\$PATCH_VERSION/index.html\\" />" >> \${tmpdir}/latest.html
-                                        echo "</head>" >> \${tmpdir}/latest.html
-                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put \${tmpdir}/latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest
-                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest.html
-                                        s3cmd --access_key ${AWS_ACCESS_KEY_ID} --secret_key ${AWS_SECRET_ACCESS_KEY} --acl-public put \${tmpdir}/latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/index.html
+                                    ~/.local/bin/aws s3 cp latest s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest --acl public-read
+                                    ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/latest.html --acl public-read
+                                    ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/index.html --acl public-read
                                     """
                             }
                         }
@@ -412,6 +322,7 @@ EOF
                                 withCredentials([usernamePassword(credentialsId: "pypi-credentials", usernameVariable: 'PIPY_USERNAME', passwordVariable: 'PIPY_PASSWORD')]) {
                                     sh  """
                                         . /envs/h2o_env_python3.6/bin/activate
+                                        python setup.py sdist
                                         twine upload dist/* -u $PIPY_USERNAME -p $PIPY_PASSWORD
                                         """
                                 }
@@ -443,11 +354,11 @@ EOF
                                                 # Upload Conda packages of PySparkling
                                                 yes | anaconda login --username ${ANACONDA_USERNAME} --password ${ANACONDA_PASSWORD}
 
-                                                anaconda upload --force osx-64/\${PKG_NAME}
-                                                anaconda upload --force linux-32/\${PKG_NAME}
-                                                anaconda upload --force linux-64/\${PKG_NAME}
-                                                anaconda upload --force win-32/\${PKG_NAME}
-                                                anaconda upload --force win-64/\${PKG_NAME}
+                                                anaconda upload --force ../../../dist/build/dist/py/conda/osx-64/\${PKG_NAME}
+                                                anaconda upload --force ../../../dist/build/dist/py/conda/linux-32/\${PKG_NAME}
+                                                anaconda upload --force ../../../dist/build/dist/py/conda/linux-64/\${PKG_NAME}
+                                                anaconda upload --force ../../../dist/build/dist/py/conda/win-32/\${PKG_NAME}
+                                                anaconda upload --force ../../../dist/build/dist/py/conda/win-64/\${PKG_NAME}
                                                 """
                                     }
                                 }
