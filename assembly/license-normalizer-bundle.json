@@ -1,0 +1,32 @@
+{
+  "bundles" : [
+    { "bundleName" : "apache2.0", "licenseName" : "Apache License, Version 2.0", "licenseUrl" : "http://www.apache.org/licenses/LICENSE-2.0" },
+    { "bundleName" : "MIT", "licenseName" : "The MIT License", "licenseUrl" : "https://opensource.org/licenses/MIT"},
+    { "bundleName" : "apache1.1", "licenseName": "Apache Software License, version 1.1", "licenseUrl": "https://www.apache.org/licenses/LICENSE-1.1"},
+    { "bundleName" : "3clauseBSD", "licenseName": "The 3-Clause BSD License", "licenseUrl": "https://opensource.org/licenses/BSD-3-Clause"},
+    { "bundleName" : "2clauseBSD", "licenseName": "The 2-Clause BSD License", "licenseUrl": "https://opensource.org/licenses/BSD-2-Clause"}
+  ],
+  "transformationRules" : [
+    { "bundleName" : "apache2", "licenseNamePattern" : "The Apache Software License, Version 2.0"},
+    { "bundleName" : "apache2", "licenseNamePattern" : "Apache 2.0"},
+    { "bundleName" : "apache2", "licenseNamePattern" : "Apache 2"},
+    { "bundleName" : "apache2", "licenseNamePattern" : "Apache License 2.0"},
+    { "bundleName" : "apache2", "licenseNamePattern" : "The Apache License, Version 2.0"},
+    { "bundleName" : "apache2", "licenseNamePattern" : "Apache License, Version 2.0"},
+    { "bundleName" : "apache2", "licenseNamePattern" : "Apache 2.0"},
+    { "bundleName" : "apache2", "licenseNamePattern" : "Apache License, Version 2.0"},
+    { "bundleName" : "apache2", "licenseNamePattern" : "Apache 2.0 License"},
+    { "bundleName" : "apache2", "licenseNamePattern" : "Apache Software License - Version 2.0"},
+    { "bundleName" : "apache2", "licenseNamePattern" : "Apache License (v2.0)"},
+
+    { "bundleName" : "2clauseBSD", "licenseNamePattern" : "BSD 2-Clause License"},
+
+    { "bundleName" : "3clauseBSD", "licenseNamePattern" : "3-Clause BSD License"},
+    { "bundleName" : "3clauseBSD", "licenseNamePattern" : "BSD 3-clausee"},
+    { "bundleName" : "3clauseBSD", "licenseNamePattern" : "BSD 3 Clause"},
+
+    { "bundleName" : "MIT", "licenseNamePattern" : "MIT License"},
+    { "bundleName" : "MIT", "licenseNamePattern" : "MIT license"},
+    { "bundleName" : "MIT", "licenseNamePattern" : "MIT"}
+  ]
+}
