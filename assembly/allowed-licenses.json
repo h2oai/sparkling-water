@@ -1,6 +1,7 @@
 {
   "allowedLicenses": [
     {"moduleLicense": "Apache License, Version 2.0"},
+    {"moduleLicense": "Apache License"},
     {"moduleLicense": "Apache Software License, version 1.1"},
     {"moduleLicense": "The MIT License"},
     {"moduleLicense": "The 3-Clause BSD License"},
@@ -11,6 +12,8 @@
     {"moduleLicense": "BSD New license"},
     {"moduleLicense": "The New BSD License"},
     {"moduleLicense": "The BSD License"},
+    {"moduleLicense": "Revised BSD"},
+    {"moduleLicense": "BSD-style"},
 
     {"moduleLicense": "Public Domain"},
     {"moduleLicense": "PUBLIC DOMAIN"},
@@ -25,6 +28,8 @@
     {"moduleLicense": "Google Cloud Software License"},
     {"moduleLicense": "GNU Lesser General Public License"},
     {"moduleLicense": "CDDL+GPL License"},
-    {"moduleLicense": "COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1"}
+    {"moduleLicense": "ASL"},
+    {"moduleLicense": "COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1"},
+    {"moduleLicense": null}
   ]
 }
