@@ -150,7 +150,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     Log.trace("H2OContext initialized") // force creation of log files
     LogBridge.setH2OLogLevel(level) // set the level back on the level user want's to use
 
-    logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: ${this}")
+    logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this")
     // Announce Flow UI location
     announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, "http", localClientIp, localClientPort))
     updateUIAfterStart() // updates the spark UI
