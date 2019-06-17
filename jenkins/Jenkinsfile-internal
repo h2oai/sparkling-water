@@ -70,7 +70,7 @@ node('docker && micro') {
             sparkBranch = "${p.sparkBranch}"
             hadoopVersion = "2.7"
             backendMode = "internal"
-            buildNightly = "false"
+            buildAgainstNightlyH2O = "false"
             uploadNightly = "false"
             dockerVersion = "15"
         }
