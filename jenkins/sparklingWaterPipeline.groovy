@@ -218,7 +218,7 @@ def unitTests() {
                                 sh "sudo -E /usr/sbin/startup.sh"
                             }
                             sh """
-                            ${config.gradleCmd} test -x :sparkling-water-r:test -x :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                            ${config.gradleCmd} test -x :sparkling-water-r:test -x :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode}
                             """
                         }
                     } finally {
@@ -314,7 +314,7 @@ def localIntegTest() {
                             sh "sudo -E /usr/sbin/startup.sh"
                         }
                         sh """
-                        ${config.gradleCmd} integTest -x :sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        ${config.gradleCmd} integTest -x :sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                         """
                     } finally {
                         arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -375,7 +375,7 @@ def scriptsTest() {
                             sh "sudo -E /usr/sbin/startup.sh"
                         }
                         sh """
-                        ${config.gradleCmd} scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        ${config.gradleCmd} scriptTest -PbackendMode=${config.backendMode}
                         """
                     } finally {
                         arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, **/build/reports/'
@@ -397,7 +397,7 @@ def integTest() {
             if (config.runIntegTests.toBoolean()) {
                 try {
                     sh """
-                    ${config.gradleCmd} integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                    ${config.gradleCmd} integTest -PbackendMode=${config.backendMode} -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
                     """
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
