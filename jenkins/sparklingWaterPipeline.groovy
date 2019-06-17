@@ -24,7 +24,7 @@ String getVersion(config) {
 }
 
 def getGradleCommand(config) {
-    def cmd = "${env.WORKSPACE}/gradlew -P${getVersion()} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
+    def cmd = "${env.WORKSPACE}/gradlew -P${getVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
 
     if (config.buildAgainstH2OBranch.toBoolean()) {
         cmd = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} --include-build ${env.WORKSPACE}/h2o-3"
