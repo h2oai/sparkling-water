@@ -240,8 +240,6 @@ def publishToS3() {
                 def patchVersion = getPatchVersion()
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     sh """
-
-                        pip install awscli --upgrade --user
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
                         ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/${BRANCH_NAME}/${patchVersion} --acl public-read
