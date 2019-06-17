@@ -38,7 +38,7 @@ node('docker && micro') {
             backendMode = "external"
             hdpVersion = "2.2.6.3-1"
             driverHadoopVersion = "hdp2.2"
-            buildNightly = "true"
+            buildAgainstNightlyH2O = "false"
             // We have 2 nightly jobs - for external and internal cluster for testing purposes,
             // however it is sufficient to create nightly just after one of these jobs finish
             // We therefore don't publish nightly here, but in the internal nightly job.

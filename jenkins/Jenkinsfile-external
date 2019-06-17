@@ -76,7 +76,7 @@ node('docker && micro') {
             backendMode = "external"
             hdpVersion = "${p.hdpVersion}"
             driverHadoopVersion = "${p.driverHadoopVersion}"
-            buildNightly = "false"
+            buildAgainstNightlyH2O = "false"
             uploadNightly = "false"
             dockerVersion = "15"
         }
