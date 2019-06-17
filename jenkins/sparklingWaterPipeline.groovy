@@ -479,7 +479,6 @@ def publishNightly() {
 
                             NEW_BUILD_VERSION=${getNextNightlyBuildNumber(config)}
                                                 
-                            pip install awscli --upgrade --user
                             export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                             export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
                             ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/${BRANCH_NAME}/${getUploadPath(config)}/\${NEW_BUILD_VERSION}/ --acl public-read
