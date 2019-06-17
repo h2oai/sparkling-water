@@ -24,7 +24,7 @@ String getVersion(config) {
 }
 
 def getGradleCommand(config) {
-    def cmd = "${env.WORKSPACE}/gradlew -P${getVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
+    def cmd = "${env.WORKSPACE}/gradlew -Pversion=${getVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
 
     if (config.buildAgainstH2OBranch.toBoolean()) {
         cmd = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} --include-build ${env.WORKSPACE}/h2o-3"
@@ -174,10 +174,10 @@ def prepareSparklingWaterEnvironment() {
                     if [ ${config.backendMode} = external ]; then
                         # In this case, PySparkling build is driven by H2O_HOME property
                         # When extending from specific jar the jar has already the desired name
-                        ${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
+                        ${config.gradleCmd} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
                     fi
                 else if [ ${config.backendMode} = external ]; then
-                        cp `${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
+                        cp `${config.gradleCmd} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
                      fi
                 fi
     
