@@ -77,17 +77,19 @@ def withDocker(config, code) {
 
 
 def getGradleCommand(config) {
+    def sharedOptions = "-PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
+
     def gradleStr
     if (config.buildAgainstH2OBranch.toBoolean()) {
-        gradleStr = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false --include-build ${env.WORKSPACE}/h2o-3"
+        gradleStr = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew  --include-build ${env.WORKSPACE}/h2o-3"
     } else {
-        gradleStr = "${env.WORKSPACE}/gradlew -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
+        gradleStr = "${env.WORKSPACE}/gradlew"
     }
 
     if (config.buildAgainstSparkBranch.toBoolean()) {
-        "${gradleStr} -x checkSparkVersionTask -PtestMojoPipeline=true"
+        "${gradleStr} -x checkSparkVersionTask -PsparkVersion=${config.sparkVersion} ${sharedOptions}"
     } else {
-        "${gradleStr} -PtestMojoPipeline=true"
+        "${gradleStr} ${sharedOptions}"
     }
 }
 
@@ -148,7 +150,8 @@ def prepareSparklingWaterEnvironment() {
             withDocker(config) {
                 // In case of building against nightly build, modify gradle.properties
                 // We can however can do nightly based on specific H2O branch, in that case this needs to be skipped
-                if (config.buildNightly.toBoolean() && !config.buildAgainstH2OBranch.toBoolean()) {
+                if (config.buildAgainstNightlyH2O.toBoolean() && !config.buildAgainstH2OBranch.toBoolean()) {
+
                     def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
 
                     def h2oNightlyMajorVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/${h2oNightlyBuildVersion}/project_version").getText().trim()
@@ -467,7 +470,7 @@ def publishNightly() {
     return { config ->
         stage('Nightly: Publishing Artifacts to S3 - ' + config.backendMode) {
             withDocker(config) {
-                if (config.buildNightly.toBoolean() && config.uploadNightly.toBoolean()) {
+                if (config.uploadNightly.toBoolean()) {
 
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 
