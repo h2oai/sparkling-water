@@ -84,6 +84,7 @@ artifacts {
     publishArchives sourcesDocJar
 }
 
+publish.dependsOn site
 createVersionFile.dependsOn cleanDoc
 sphinx.dependsOn createVersionFile
 clean.dependsOn cleanDoc
@@ -91,3 +92,5 @@ substitute.dependsOn sphinx
 sourcesDocJar.dependsOn substitute
 docJar.dependsOn sourcesDocJar
 site.dependsOn docJar
+
+defineStandardPublication().call()
