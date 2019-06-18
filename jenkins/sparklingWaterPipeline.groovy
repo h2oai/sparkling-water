@@ -1,11 +1,54 @@
 #!/usr/bin/groovy
 
+def getNextNightlyBuildNumber(config) {
+    if (config.buildAgainstH2OBranch.toBoolean()){
+        return new Date().format('Y_m_d_H_M_S').toString()
+    } else {
+        try {
+            def buildNumber = "https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest".toURL().getText().toInteger()
+            return buildNumber + 1
+        } catch(Exception ignored){
+            return 1
+        }
+    }
+}
+
+String getVersion(config) {
+    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('version') }
+    def version = versionLine.split("=")[1]
+    if (config.uploadNightly.toBoolean() && !config.buildAgainstH2OBranch.toBoolean()) {
+        return "${version}-${getNextNightlyBuildNumber(config)}"
+    } else {
+        return version
+    }
+}
+
+def getGradleCommand(config) {
+    def cmd = "${env.WORKSPACE}/gradlew -Pversion=${getVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
+
+    if (config.buildAgainstH2OBranch.toBoolean()) {
+        cmd = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} --include-build ${env.WORKSPACE}/h2o-3"
+    } else if(config.buildAgainstNightlyH2O.toBoolean()) {
+        def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
+        def h2oNightlyMajorVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/${h2oNightlyBuildVersion}/project_version").getText().trim()
+        h2oNightlyMajorVersion = h2oNightlyMajorVersion.substring(0, h2oNightlyMajorVersion.lastIndexOf('.'))
+        cmd = "${cmd} -Ph2oMajorName=master -Ph2oMajorVersion=${h2oNightlyMajorVersion} -Ph2oBuild=${h2oNightlyBuildVersion}"
+    }
+
+    if (config.buildAgainstSparkBranch.toBoolean()) {
+        return "${cmd} -x checkSparkVersionTask -PsparkVersion=${config.sparkVersion}"
+    } else {
+        return "${cmd}"
+    }
+}
+
 def call(params, body) {
     def config = [:]
     body.resolveStrategy = Closure.DELEGATE_FIRST
 
     body.delegate = config
     body(params)
+    config.put("gradleCmd", getGradleCommand(config))
 
     def customEnv = [
             "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
@@ -76,36 +119,6 @@ def withDocker(config, code) {
 }
 
 
-def getGradleCommand(config) {
-    def sharedOptions = "-PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
-
-    def gradleStr
-    if (config.buildAgainstH2OBranch.toBoolean()) {
-        gradleStr = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${env.WORKSPACE}/gradlew  --include-build ${env.WORKSPACE}/h2o-3"
-    } else {
-        gradleStr = "${env.WORKSPACE}/gradlew"
-    }
-
-    if (config.buildAgainstSparkBranch.toBoolean()) {
-        "${gradleStr} -x checkSparkVersionTask -PsparkVersion=${config.sparkVersion} ${sharedOptions}"
-    } else {
-        "${gradleStr} ${sharedOptions}"
-    }
-}
-
-
-def getNextNightlyBuildNumber(config) {
-    if (config.buildAgainstH2OBranch.toBoolean()){
-        return new Date().format('Y_m_d_H_M_S').toString()
-    } else {
-        try {
-            def buildNumber = "https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest".toURL().getText().toInteger()
-            return buildNumber + 1
-        } catch(Exception ignored){
-            return 1
-        }
-    }
-}
 
 def prepareSparkEnvironment() {
     return { config ->
@@ -148,28 +161,6 @@ def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
             withDocker(config) {
-                // In case of building against nightly build, modify gradle.properties
-                // We can however can do nightly based on specific H2O branch, in that case this needs to be skipped
-                if (config.buildAgainstNightlyH2O.toBoolean() && !config.buildAgainstH2OBranch.toBoolean()) {
-
-                    def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
-
-                    def h2oNightlyMajorVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/${h2oNightlyBuildVersion}/project_version").getText().trim()
-                    h2oNightlyMajorVersion = h2oNightlyMajorVersion.substring(0, h2oNightlyMajorVersion.lastIndexOf('.'))
-
-                    sh """
-                     REL_VERSION=`cat gradle.properties | grep version | grep -v '#' | sed -e "s/.*=//"`
-                   
-                     NEW_BUILD_VERSION=${getNextNightlyBuildNumber(config)}
-                     NEW_REL_VERSION=\${REL_VERSION}-\${NEW_BUILD_VERSION}
-
-                     sed -i.backup -E "s/h2oMajorName=.*/h2oMajorName=master/" gradle.properties
-                     sed -i.backup -E "s/h2oMajorVersion=.*/h2oMajorVersion=${h2oNightlyMajorVersion}/" gradle.properties
-                     sed -i.backup -E "s/h2oBuild=.*/h2oBuild=${h2oNightlyBuildVersion}/" gradle.properties
-                     sed -i.backup -E "s/\${REL_VERSION}/\${NEW_REL_VERSION}/" gradle.properties
-                    """
-                }
-
                 sh """
                 # Check if we are bulding against specific H2O branch
                 if [ ${config.buildAgainstH2OBranch} = true ]; then
@@ -183,10 +174,10 @@ def prepareSparklingWaterEnvironment() {
                     if [ ${config.backendMode} = external ]; then
                         # In this case, PySparkling build is driven by H2O_HOME property
                         # When extending from specific jar the jar has already the desired name
-                        ${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
+                        ${config.gradleCmd} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
                     fi
                 else if [ ${config.backendMode} = external ]; then
-                        cp `${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
+                        cp `${config.gradleCmd} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
                      fi
                 fi
     
@@ -203,7 +194,9 @@ def buildAndLint() {
             withDocker(config) {
                 try {
                     withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
-                        sh "${getGradleCommand(config)} clean build -x check scalaStyle -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD"
+                        sh """
+                            ${config.gradleCmd} clean build -x check scalaStyle -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
+                           """
                         stash 'sw-build'
                     }
                 } finally {
@@ -225,8 +218,7 @@ def unitTests() {
                                 sh "sudo -E /usr/sbin/startup.sh"
                             }
                             sh """
-                            # Run unit tests
-                            ${getGradleCommand(config)} test -x :sparkling-water-r:test -x :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                            ${config.gradleCmd} test -x :sparkling-water-r:test -x :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode}
                             """
                         }
                     } finally {
@@ -256,7 +248,7 @@ def pyUnitTests() {
                                 sh "sudo -E /usr/sbin/startup.sh"
                             }
                             sh """
-                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
+                            ${config.gradleCmd} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
                             """
                         }
                     } finally {
@@ -276,7 +268,7 @@ def pyUnitTests() {
                                 sh "sudo -E /usr/sbin/startup.sh"
                             }
                             sh """
-                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
+                            ${config.gradleCmd} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
                             """
                         }
                     } finally {
@@ -298,11 +290,11 @@ def rUnitTests() {
                     try {
                         sh "sudo -E /usr/sbin/startup.sh"
                         sh """
-                             ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage :sparkling-water-r:installRSparklingPackage
-                             ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                             ${config.gradleCmd} :sparkling-water-r:installH2ORPackage :sparkling-water-r:installRSparklingPackage
+                             ${config.gradleCmd} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}
                              """
                     } finally {
-                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
                     }
 
                 }
@@ -322,8 +314,7 @@ def localIntegTest() {
                             sh "sudo -E /usr/sbin/startup.sh"
                         }
                         sh """
-                        # Run local integration tests
-                        ${getGradleCommand(config)} integTest -x :sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        ${config.gradleCmd} integTest -x :sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                         """
                     } finally {
                         arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -346,11 +337,10 @@ def localPyIntegTest() {
                     try {
                         sh "sudo -E /usr/sbin/startup.sh"
                         sh """
-                        # Run local integration tests
-                        ${getGradleCommand(config)} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
+                        ${config.gradleCmd} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                         """
                     } finally {
-                        arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                        arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     }
                 }
             }
@@ -362,11 +352,10 @@ def localPyIntegTest() {
                     try {
                         sh "sudo -E /usr/sbin/startup.sh"
                         sh """
-                        # Run local integration tests
-                        ${getGradleCommand(config)} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
+                        ${config.gradleCmd} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                         """
                     } finally {
-                        arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                        arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     }
                 }
             }
@@ -386,11 +375,10 @@ def scriptsTest() {
                             sh "sudo -E /usr/sbin/startup.sh"
                         }
                         sh """
-                        # Run scripts tests
-                        ${getGradleCommand(config)} scriptTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto
+                        ${config.gradleCmd} scriptTest -PbackendMode=${config.backendMode}
                         """
                     } finally {
-                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, **/build/reports/'
+                        arch '**/build/*tests.log,**/*.log, **/out.*, **/stdout, **/stderr,**/build/**/*log*, **/build/reports/'
                         junit 'examples/build/test-results/scriptsTest/*.xml'
                         testReport 'examples/build/reports/tests/scriptsTest', 'Script Tests'
                     }
@@ -409,11 +397,10 @@ def integTest() {
             if (config.runIntegTests.toBoolean()) {
                 try {
                     sh """
-                    ${getGradleCommand(config)} integTest -PbackendMode=${config.backendMode} -PexternalBackendStartMode=auto -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
-                    #  echo 'Archiving artifacts after Integration test'
+                    ${config.gradleCmd} integTest -PbackendMode=${config.backendMode} -PsparklingTestEnv=${config.sparklingTestEnv} -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
                     """
                 } finally {
-                    arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*,**/build/reports/'
                     junit 'examples/build/test-results/integTest/*.xml'
                     testReport 'examples/build/reports/tests/integTest', "Integration tests"
                 }
@@ -430,8 +417,7 @@ def pysparklingIntegTest() {
                     try {
                         sh """
                          sudo -E /usr/sbin/startup.sh
-                         ${getGradleCommand(config)} sparkling-water-py:yarnIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PbackendMode=${config.backendMode} -PsparkHome=${env.SPARK_HOME}
-                         # echo 'Archiving artifacts after PySparkling Integration test'
+                         ${config.gradleCmd} sparkling-water-py:yarnIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PbackendMode=${config.backendMode} -PsparkHome=${env.SPARK_HOME}
                         """
                     } finally {
                         arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
@@ -446,8 +432,7 @@ def pysparklingIntegTest() {
                     try {
                         sh """
                          sudo -E /usr/sbin/startup.sh
-                         ${getGradleCommand(config)} sparkling-water-py:yarnIntegTestsPython -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PbackendMode=${config.backendMode} -PsparkHome=${env.SPARK_HOME}
-                         # echo 'Archiving artifacts after PySparkling Integration test'
+                         ${config.gradleCmd} sparkling-water-py:yarnIntegTestsPython -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PbackendMode=${config.backendMode} -PsparkHome=${env.SPARK_HOME}
                         """
                     } finally {
                         arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
@@ -458,10 +443,10 @@ def pysparklingIntegTest() {
     }
 }
 
-def getUploadPath(config){
-    if (config.buildAgainstH2OBranch.toBoolean()){
+def getUploadPath(config) {
+    if (config.buildAgainstH2OBranch.toBoolean()) {
         config.h2oBranch.replace("/", "_")
-    }else{
+    } else {
         "nightly"
     }
 }
@@ -475,7 +460,7 @@ def publishNightly() {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                         
                         sh  """
-                            ${getGradleCommand(config)} dist
+                            ${config.gradleCmd} dist
 
                             NEW_BUILD_VERSION=${getNextNightlyBuildNumber(config)}
                                                 
