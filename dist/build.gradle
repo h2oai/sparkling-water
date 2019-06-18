@@ -109,6 +109,14 @@ def distTaskDependencies = [
         ":sparkling-water-core:scaladoc"
 ]
 
+def substituteGradleProperties() {
+    def gradlePropsFile = file("$zipDir/gradle.properties")
+    def content = gradlePropsFile.getText('UTF-8')
+            .replaceAll("version=.*", "version=${version.toString()}")
+    
+    gradlePropsFile.write(content, 'UTF-8')
+}
+
 task copyFilesForZipDistribution {
     doLast {
 
@@ -145,7 +153,8 @@ task copyFilesForZipDistribution {
         copyAndKeepPath("LICENSE", "$zipDir")
         copyAndKeepPath("README.rst", "$zipDir")
         copyAndKeepPath("gradle.properties", "$zipDir")
-
+        substituteGradleProperties()
+        
         copyRecursive("bin/", "$zipDir/bin")
         copyRecursive("examples/flows/", "$zipDir/examples/flows")
         copyRecursive("doc/build/site/", "$zipDir/doc/build/site")
