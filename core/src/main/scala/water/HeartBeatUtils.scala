@@ -18,9 +18,9 @@
 package water
 
 object HeartBeatUtils {
-  def broadcastHeartbeat(): Unit = {
+  def sendHeartbeatToAll(): Unit = {
     val ab = new AutoBuffer()
-    H2O.SELF._heartbeat.write(ab)._bb
+    H2O.SELF._heartbeat.write(ab)
     water.init.NetworkInit.multicast(ab._bb, UDP.udp.heartbeat._prior)
   }
 }
