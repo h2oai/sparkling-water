@@ -3,25 +3,15 @@ description = 'Sparkling Water Spark Package'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 dependencies {
-    // hack to go around Spark Ivy resolver
-    compile "no.priv.garshol.duke:duke:1.2"
-
-    compile project(':sparkling-water-core')
-    compile project(":sparkling-water-examples")
-    compile project(":sparkling-water-ml")
-    compile project(":sparkling-water-repl")
+    compile project(path: ':sparkling-water-assembly', configuration: 'shadow')
 }
 
 jar {
-    enabled = true
+    enabled = false
 }
 
 shadowJar {
-    archiveName = jar.archiveName
-    //classifier = ''
-    dependencies {
-        configurations = [project.configurations.compileOnly]
-    }
+    classifier = null
 }
 
-jar.finalizedBy shadowJar
+defineShadowPublication().call()

@@ -2,108 +2,96 @@ apply plugin: 'maven-publish'
 apply plugin: "signing"
 
 /**
- * This plugin works by naming convention.
- *
- * It publishes by default java jar package and it also
- * expects publishArchives configuration and publishes whatever is inside it.
+ * Define the repositories for the publishing plugin and the type of publications which subprojects can use
  */
 
+def getPomSpecification() {
+    return {
+        name = project.name + "_" + scalaBaseVersion
+        afterEvaluate {
+            description = project.description
+        }
+        url = 'https://github.com/h2oai/sparkling-water'
+        inceptionYear = '2013'
 
-// Container for generated POMs (by default added into archive configuration)
-configurations {
-    pom {
-        transitive = false
-    }
-}
-
-//
-// Record all generated POM files for given publishing task
-//
-project.tasks.whenTaskAdded({ t ->
-    // This is adhoc specific task for defined publication
-    if (t.name.contains('generatePomFileForMavenAll')) {
-        t.doLast({ tt ->
-            artifacts {
-                pom file(t.destination)
+        organization {
+            name = 'H2O.ai'
+            url = 'http://h2o.ai/'
+        }
+        licenses {
+            license {
+                name = 'The Apache Software License, Version 2.0'
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution = 'repo'
             }
-        })
-    }
-})
-
-if(project.name == "sparkling-water-doc") {
-    publish.dependsOn project.getTasksByName("site", false)
-}
-
-def getProjectDescription(){
-    switch (project.name){
-        case "sparkling-water-doc":
-            return "Sparkling Water Documentation"
-        case "sparkling-water-core":
-            return "Sparkling Water Core"
-        case "sparkling-water-examples":
-            return "Sparkling Water Examples"
-        case "sparkling-water-ml":
-            return "Sparkling Water ML Pipelines"
-        case "sparkling-water-repl":
-            return "Sparkling Water REPL"
-        case "sparkling-water-package":
-            return "Sparkling Water Spark Package"
-    }
-}
-
-publishing {
-    publications {
-
-        mavenAll(MavenPublication) {
-            artifactId project.name + "_" + scalaBaseVersion
-            // Publish all artifacts
-            // NOTE: needs to be here to create a POM file with correct dependencies
-            from components.java
-
-            // Publish additional artifacts as documentation or source code
-            configurations.publishArchives.allArtifacts.each { art ->
-                logger.debug("Publishing artifact for: " + art)
-                artifact art
+        }
+        scm {
+            url = 'https://github.com/h2oai/sparkling-water'
+            connection = 'scm:git:https://github.com/h2oai/sparkling-water.git'
+            developerConnection = 'scm:git:git@github.com:h2oai/sparkling-water.git'
+        }
+        issueManagement {
+            system = 'Jira'
+            url = 'http://jira.h2o.ai'
+        }
+        developers {
+            developer {
+                id = 'support'
+                name = 'H2O.ai Support'
+                email = 'support@h2o.ai'
             }
+        }
+    }
+}
 
+def defineShadowPublication() {
+    return {
+        publishing {
+            publications {
+                shadow(MavenPublication) { publication ->
+                    project.shadow.component(publication)
+                    artifactId project.name + "_" + scalaBaseVersion
 
-            pom {
-                name = project.name + "_" + scalaBaseVersion
-                description = getProjectDescription()
-                url = 'https://github.com/h2oai/sparkling-water'
-                inceptionYear = '2013'
-
-                organization {
-                    name = 'H2O.ai'
-                    url = 'http://h2o.ai/'
-                }
-                licenses {
-                    license {
-                        name = 'The Apache Software License, Version 2.0'
-                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution = 'repo'
+                    // Publish additional artifacts as documentation or source code
+                    configurations.publishArchives.allArtifacts.each { art ->
+                        logger.debug("Publishing artifact for: " + art)
+                        artifact art
                     }
-                }
-                scm {
-                    url = 'https://github.com/h2oai/sparkling-water'
-                    connection = 'scm:git:https://github.com/h2oai/sparkling-water.git'
-                    developerConnection = 'scm:git:git@github.com:h2oai/sparkling-water.git'
-                }
-                issueManagement {
-                    system = 'Jira'
-                    url = 'http://jira.h2o.ai'
-                }
-                developers {
-                    developer {
-                        id = 'support'
-                        name = 'H2O.ai Support'
-                        email = 'support@h2o.ai'
-                    }
+
+                    pom getPomSpecification()
                 }
             }
         }
     }
+}
 
+def defineStandardPublication() {
+    return {
+        publishing {
+            publications {
+                mavenAll(MavenPublication) {
+                    from components.java
+                    artifactId project.name + "_" + scalaBaseVersion
+
+                    // Publish additional artifacts as documentation or source code
+                    configurations.publishArchives.allArtifacts.each { art ->
+                        logger.debug("Publishing artifact for: " + art)
+                        artifact art
+                    }
+
+                    pom getPomSpecification()
+                }
+            }
+        }
+    }
+}
+
+ext {
+    defineStandardPublication = this.&defineStandardPublication
+    defineShadowPublication = this.&defineShadowPublication
+}
+
+publishing {
     repositories {
 
         maven {
@@ -137,5 +125,3 @@ signing {
     }
     sign publishing.publications
 }
-
-

@@ -110,3 +110,5 @@ scriptsTest {
 
 integTest.dependsOn checkSparkVersionTask
 scriptsTest.dependsOn checkSparkVersionTask
+
+defineStandardPublication().call()
