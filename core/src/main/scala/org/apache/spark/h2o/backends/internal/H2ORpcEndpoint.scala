@@ -46,7 +46,7 @@ class H2ORpcEndpoint(override val rpcEnv: RpcEnv)
         Log.info(s"Adding $h2oNode to ${H2O.SELF}'s flatfile")
         H2O.addNodeToFlatfile(h2oNode)
       }
-      HeartBeatUtils.sendHeartbeatToAll()
+      HeartBeatUtils.sendHeartBeatToAll()
       Log.info(s"Full flatfile: ${H2O.getFlatfile.asScala.mkString(", ")}")
 
     case StopEndpointMsg =>
