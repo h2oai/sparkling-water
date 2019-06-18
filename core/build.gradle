@@ -174,3 +174,5 @@ integTest {
 
     // testLogging.showStandardStreams = true
 }
+
+defineStandardPublication().call()
