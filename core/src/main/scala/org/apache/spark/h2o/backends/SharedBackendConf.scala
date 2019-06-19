@@ -44,6 +44,7 @@ trait SharedBackendConf {
   def isFailOnUnsupportedSparkParamEnabled = sparkConf.getBoolean(PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._1, PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._2)
   def jks = sparkConf.getOption(PROP_JKS._1)
   def jksPass = sparkConf.getOption(PROP_JKS_PASS._1)
+  def jksAlias = sparkConf.getOption(PROP_JKS_ALIAS._1)
   def hashLogin = sparkConf.getBoolean(PROP_HASH_LOGIN._1, PROP_HASH_LOGIN._2)
   def ldapLogin = sparkConf.getBoolean(PROP_LDAP_LOGIN._1, PROP_LDAP_LOGIN._2)
   def kerberosLogin = sparkConf.getBoolean(PROP_KERBEROS_LOGIN._1, PROP_KERBEROS_LOGIN._2)
@@ -116,6 +117,7 @@ trait SharedBackendConf {
 
   def setJks(path: String) = set(PROP_JKS._1, path)
   def setJksPass(password: String) = set(PROP_JKS_PASS._1, password)
+  def setJksAlias(alias: String) = set(PROP_JKS_ALIAS._1, alias)
 
   def setHashLoginEnabled() = set(PROP_HASH_LOGIN._1, true)
   def setHashLoginDisabled() = set(PROP_HASH_LOGIN._1, false)
@@ -221,6 +223,9 @@ object SharedBackendConf {
 
   /** Password for Java KeyStore file. */
   val PROP_JKS_PASS = ("spark.ext.h2o.jks.pass", None)
+
+  /** Alias for certificate in keystore to secure Flow */
+  val PROP_JKS_ALIAS = ("spark.ext.h2o.jks.alias", None)
 
   /** Enable hash login. */
   val PROP_HASH_LOGIN = ("spark.ext.h2o.hash.login", false)
