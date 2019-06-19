@@ -161,7 +161,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     val flattenedDF = H2OSchemaUtils.flattenStructsInDataFrame(dataset.toDF())
     val relevantColumnNames = flattenedDF.columns.intersect(getFeaturesCols())
     val args = relevantColumnNames.map(flattenedDF(_))
-    flattenedDF.select(col("*"), getModelUdf()(struct(args: _*)).as(getPredictionCol()))
+    flattenedDF.withColumn(getPredictionCol(), getModelUdf()(struct(args: _*)))
   }
 }
 

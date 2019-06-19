@@ -47,3 +47,5 @@ test {
     exclude 'org/apache/spark/ml/spark/models/H2OMOJOPipelineModelTest.class'
   }
 }
+
+defineStandardPublication().call()
