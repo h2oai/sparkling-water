@@ -60,6 +60,9 @@ Configuration properties independent of selected backend
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.jks.pass``                         | ``None``       | Password for Java KeyStore file.       |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.jks.alias``                        | ``None``       | Alias to certificate in keystore to    |
+|                                                    |                | secure H2O Flow.                       |
++----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.hash.login``                       | ``false``      | Enable hash login.                     |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.ldap.login``                       | ``false``      | Enable LDAP login.                     |
