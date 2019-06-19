@@ -26,9 +26,9 @@ import water.codegen.CodeGeneratorPipeline
 import water.util.{JCodeGen, SBPrintStream}
 import water.{H2O, Key}
 
-object SVMModel {
+object SparkSVMModel {
 
-  class SVMOutput(val b: SparkSVM) extends Model.Output(b) {
+  class SparkSVMOutput(val b: SparkSVM) extends Model.Output(b) {
     var interceptor: Double = .0
     var iterations: Int = 0
     var weights: Array[Double] = _
@@ -37,10 +37,10 @@ object SVMModel {
 
 }
 
-class SVMModel private[svm](val selfKey: Key[SVMModel],
-                            val parms: SparkSVMParameters,
-                            val output: SVMModel.SVMOutput)
-  extends Model[SVMModel, SparkSVMParameters, SVMModel.SVMOutput](selfKey, parms, output) {
+class SparkSVMModel private[svm](val selfKey: Key[SparkSVMModel],
+                                 val parms: SparkSVMParameters,
+                                 val output: SparkSVMModel.SparkSVMOutput)
+  extends Model[SparkSVMModel, SparkSVMParameters, SparkSVMModel.SparkSVMOutput](selfKey, parms, output) {
 
   override protected def toJavaCheckTooBig: Boolean = output.weights.length > 10000
 

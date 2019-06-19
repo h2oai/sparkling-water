@@ -19,15 +19,15 @@ package hex.schemas
 
 import SparkSVMV3.SparkSVMParametersV3
 import hex.schemas.SparkSVMModelV3.SparkSVMModelOutputV3
-import org.apache.spark.ml.spark.models.svm.{SVMModel, SparkSVMParameters}
+import org.apache.spark.ml.spark.models.svm.{SparkSVMModel, SparkSVMParameters}
 import water.api.schemas3.{ModelOutputSchemaV3, ModelSchemaV3}
 import water.api.API
 
-class SparkSVMModelV3 extends ModelSchemaV3[SVMModel,
+class SparkSVMModelV3 extends ModelSchemaV3[SparkSVMModel,
   SparkSVMModelV3,
   SparkSVMParameters,
   SparkSVMParametersV3,
-  SVMModel.SVMOutput,
+  SparkSVMModel.SparkSVMOutput,
   SparkSVMModelV3.SparkSVMModelOutputV3] {
 
   override def createParametersSchema(): SparkSVMParametersV3 = { new SparkSVMParametersV3() }
@@ -37,7 +37,7 @@ class SparkSVMModelV3 extends ModelSchemaV3[SVMModel,
 
 object SparkSVMModelV3 {
 
-  final class SparkSVMModelOutputV3 extends ModelOutputSchemaV3[SVMModel.SVMOutput, SparkSVMModelOutputV3] {
+  final class SparkSVMModelOutputV3 extends ModelOutputSchemaV3[SparkSVMModel.SparkSVMOutput, SparkSVMModelOutputV3] {
     // Output fields
     @API(help = "Iterations executed") var iterations: Int = 0
     @API(help = "Interceptor") var interceptor: Double = 0

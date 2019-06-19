@@ -29,7 +29,7 @@ import water.support.H2OFrameSupport
 import scala.util.Random
 
 @RunWith(classOf[JUnitRunner])
-class SVMModelTest extends FunSuite with SharedH2OTestContext {
+class SparkSVMModelTest extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
@@ -64,7 +64,7 @@ class SVMModelTest extends FunSuite with SharedH2OTestContext {
     val svm = new SparkSVM(parms, h2oContext)
 
     // Train model
-    val h2oSVMModel: SVMModel = svm.trainModel.get
+    val h2oSVMModel: SparkSVMModel = svm.trainModel.get
 
     val sparkSVMModel = new classification.SVMModel(
       Vectors.dense(h2oSVMModel.output.weights),

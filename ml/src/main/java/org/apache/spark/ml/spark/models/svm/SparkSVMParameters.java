@@ -13,7 +13,7 @@ public class SparkSVMParameters extends Model.Parameters {
     public String fullName() { return "Support Vector Machine (*Spark*)"; }
 
     @Override
-    public String javaName() { return SVMModel.class.getName(); }
+    public String javaName() { return SparkSVMModel.class.getName(); }
 
     @Override
     public long progressUnits() { return _max_iterations; }

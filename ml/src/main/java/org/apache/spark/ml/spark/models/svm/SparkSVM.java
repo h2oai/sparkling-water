@@ -23,7 +23,7 @@ import org.apache.spark.h2o.H2OContext;
 import org.apache.spark.ml.spark.ProgressListener;
 import org.apache.spark.ml.FrameMLUtils;
 import org.apache.spark.ml.spark.models.MissingValuesHandling;
-import org.apache.spark.ml.spark.models.svm.SVMModel.SVMOutput;
+import org.apache.spark.ml.spark.models.svm.SparkSVMModel.SparkSVMOutput;
 import org.apache.spark.mllib.classification.SVMWithSGD;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
@@ -45,7 +45,7 @@ import java.util.Set;
 
 import static scala.collection.JavaConversions.*;
 
-public class SparkSVM extends ModelBuilder<SVMModel, SparkSVMParameters, SVMOutput> {
+public class SparkSVM extends ModelBuilder<SparkSVMModel, SparkSVMParameters, SparkSVMOutput> {
 
     transient private final H2OContext hc;
 
@@ -172,7 +172,7 @@ public class SparkSVM extends ModelBuilder<SVMModel, SparkSVMParameters, SVMOutp
             init(true);
 
             // The model to be built
-            SVMModel model = new SVMModel(dest(), _parms, new SVMModel.SVMOutput(SparkSVM.this));
+            SparkSVMModel model = new SparkSVMModel(dest(), _parms, new SparkSVMModel.SparkSVMOutput(SparkSVM.this));
             try {
                 model.delete_and_lock(_job);
 
