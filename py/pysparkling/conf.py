@@ -96,6 +96,10 @@ class H2OConf(object):
         self._jconf.setJksPass(password)
         return self
 
+    def set_jks_alias(self, alias):
+        self._jconf.setJksAlias(alias)
+        return self
+
     def set_hash_login_enabled(self):
         self._jconf.setHashLoginEnabled()
         return self
@@ -447,6 +451,9 @@ class H2OConf(object):
 
     def jks_pass(self):
         return self._get_option(self._jconf.jksPass())
+
+    def jks_alias(self):
+        return self._get_option(self._jconf.jksAlias())
 
     def hash_login(self):
         return self._jconf.hashLogin()

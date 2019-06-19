@@ -144,6 +144,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-port", Some(conf.clientWebPort).filter(_ > 0))
       .add("-jks", conf.jks)
       .add("-jks_pass", conf.jksPass)
+      .add("-jks_alias", conf.jksAlias)
       .add("-network", conf.clientNetworkMask)
       .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty)
       .buildArgs()
