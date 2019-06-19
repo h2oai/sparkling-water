@@ -5,15 +5,15 @@ import org.apache.spark.ml.spark.models.MissingValuesHandling;
 import water.Key;
 import water.fvec.Frame;
 
-public class SVMParameters extends Model.Parameters {
+public class SparkSVMParameters extends Model.Parameters {
     @Override
-    public String algoName() { return "SVM"; }
+    public String algoName() { return "SparkSVM"; }
 
     @Override
     public String fullName() { return "Support Vector Machine (*Spark*)"; }
 
     @Override
-    public String javaName() { return SVMModel.class.getName(); }
+    public String javaName() { return SparkSVMModel.class.getName(); }
 
     @Override
     public long progressUnits() { return _max_iterations; }
@@ -38,7 +38,7 @@ public class SVMParameters extends Model.Parameters {
     public Key<Frame> _initial_weights = null;
     public MissingValuesHandling _missing_values_handling = MissingValuesHandling.MeanImputation;
 
-    public void validate(SVM svm) {
+    public void validate(SparkSVM svm) {
         if (_max_iterations < 0 || _max_iterations > 1e6) {
             svm.error("_max_iterations", " max_iterations must be between 0 and 1e6");
         }

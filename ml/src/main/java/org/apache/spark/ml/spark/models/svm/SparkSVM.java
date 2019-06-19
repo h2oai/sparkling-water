@@ -23,7 +23,7 @@ import org.apache.spark.h2o.H2OContext;
 import org.apache.spark.ml.spark.ProgressListener;
 import org.apache.spark.ml.FrameMLUtils;
 import org.apache.spark.ml.spark.models.MissingValuesHandling;
-import org.apache.spark.ml.spark.models.svm.SVMModel.SVMOutput;
+import org.apache.spark.ml.spark.models.svm.SparkSVMModel.SparkSVMOutput;
 import org.apache.spark.mllib.classification.SVMWithSGD;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
@@ -45,16 +45,16 @@ import java.util.Set;
 
 import static scala.collection.JavaConversions.*;
 
-public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
+public class SparkSVM extends ModelBuilder<SparkSVMModel, SparkSVMParameters, SparkSVMOutput> {
 
     transient private final H2OContext hc;
 
-    public SVM(boolean startup_once, H2OContext hc) {
-        super(new SVMParameters(), startup_once);
+    public SparkSVM(boolean startup_once, H2OContext hc) {
+        super(new SparkSVMParameters(), startup_once);
         this.hc = hc;
     }
 
-    public SVM(SVMParameters parms, H2OContext hc) {
+    public SparkSVM(SparkSVMParameters parms, H2OContext hc) {
         super(parms);
         init(false);
         this.hc = hc;
@@ -115,7 +115,7 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
         for (int i = 0; i < _train.vecs().length; i++) {
             Vec vec = _train.vec(i);
             if (!ignoredCols.contains(_train.name(i)) && !(vec.isNumeric() || vec.isCategorical())) {
-                error("_train", "SVM supports only frames with numeric/categorical values (except for result column). But a " + vec.get_type_str() + " was found.");
+                error("_train", "SparkSVM supports only frames with numeric/categorical values (except for result column). But a " + vec.get_type_str() + " was found.");
             }
         }
 
@@ -127,19 +127,19 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
             String[] responseDomains = responseDomains();
             if (null == responseDomains) {
                 if (!(Double.isNaN(_parms._threshold))) {
-                    error("_threshold", "Threshold cannot be set for regression SVM. Set the threshold to NaN or modify the response column to an enum.");
+                    error("_threshold", "Threshold cannot be set for regression SparkSVM. Set the threshold to NaN or modify the response column to an enum.");
                 }
 
                 if (!_train.vec(_parms._response_column).isNumeric()) {
-                    error("_response_column", "Regression SVM requires the response column type to be numeric.");
+                    error("_response_column", "Regression SparkSVM requires the response column type to be numeric.");
                 }
             } else {
                 if (Double.isNaN(_parms._threshold)) {
-                    error("_threshold", "Threshold has to be set for binomial SVM. Set the threshold to a numeric value or change the response column type.");
+                    error("_threshold", "Threshold has to be set for binomial SparkSVM. Set the threshold to a numeric value or change the response column type.");
                 }
 
                 if (responseDomains.length != 2) {
-                    error("_response_column", "SVM requires the response column's domain to be of size 2.");
+                    error("_response_column", "SparkSVM requires the response column's domain to be of size 2.");
                 }
             }
         }
@@ -172,7 +172,7 @@ public class SVM extends ModelBuilder<SVMModel, SVMParameters, SVMOutput> {
             init(true);
 
             // The model to be built
-            SVMModel model = new SVMModel(dest(), _parms, new SVMModel.SVMOutput(SVM.this));
+            SparkSVMModel model = new SparkSVMModel(dest(), _parms, new SparkSVMModel.SparkSVMOutput(SparkSVM.this));
             try {
                 model.delete_and_lock(_job);
 
