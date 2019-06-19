@@ -217,13 +217,13 @@ def buildExtendedH2OJars() {
             if (params.buildExtendedH2OJars.toBoolean()) {
                 sh """
                     # Create extended H2O jar for all supported hadoop distributions
-                    HADOOP_DISTRIBUTIONS=`./gradlew -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false -q :sparkling-water-assembly-h2o:printHadoopDistributions)`
+                    HADOOP_DISTRIBUTIONS=`./gradlew -Pversion=${getVersion()} -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false -q :sparkling-water-assembly-h2o:printHadoopDistributions)`
                     for distro in \${HADOOP_DISTRIBUTIONS}
                     do
-                      ./gradlew -PdoExtend extendJar -PdownloadH2O="\${distro}"
+                      ./gradlew -Pversion=${getVersion()} -PdoExtend extendJar -PdownloadH2O="\${distro}"
                     done
                     # Create extended H2O jar also for the regular h2o (no H2O driver)
-                    ./gradlew -PdoExtend extendJar -PdownloadH2O
+                    ./gradlew -Pversion=${getVersion()} -PdoExtend extendJar -PdownloadH2O
                     
                     # Copy to directory which is uploaded to S3
                     cp -R assembly-h2o/private/extended dist/build/dist/
