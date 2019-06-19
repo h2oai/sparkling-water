@@ -18,15 +18,15 @@
 package hex
 
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.spark.models.svm.SVM
+import org.apache.spark.ml.spark.models.svm.SparkSVM
 import water.api._
 
 class SVMModelRestAPI extends RestApi {
 
-  override def name: String = "SVM Model REST API"
+  override def name: String = "SparkSVM Model REST API"
 
   override def registerEndpoints(hc: H2OContext, context: RestApiContext): Unit = {
-    val models = Seq(new SVM(true, hc))
+    val models = Seq(new SparkSVM(true, hc))
 
     for (algo <- models) {
       val base: String = algo.getClass.getSimpleName

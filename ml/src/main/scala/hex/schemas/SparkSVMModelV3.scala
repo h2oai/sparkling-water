@@ -17,27 +17,27 @@
 
 package hex.schemas
 
-import SVMV3.SVMParametersV3
-import hex.schemas.SVMModelV3.SVMModelOutputV3
-import org.apache.spark.ml.spark.models.svm.{SVMModel, SVMParameters}
+import SparkSVMV3.SparkSVMParametersV3
+import hex.schemas.SparkSVMModelV3.SparkSVMModelOutputV3
+import org.apache.spark.ml.spark.models.svm.{SparkSVMModel, SparkSVMParameters}
 import water.api.schemas3.{ModelOutputSchemaV3, ModelSchemaV3}
 import water.api.API
 
-class SVMModelV3 extends ModelSchemaV3[SVMModel,
-  SVMModelV3,
-  SVMParameters,
-  SVMParametersV3,
-  SVMModel.SVMOutput,
-  SVMModelV3.SVMModelOutputV3] {
+class SparkSVMModelV3 extends ModelSchemaV3[SparkSVMModel,
+  SparkSVMModelV3,
+  SparkSVMParameters,
+  SparkSVMParametersV3,
+  SparkSVMModel.SparkSVMOutput,
+  SparkSVMModelV3.SparkSVMModelOutputV3] {
 
-  override def createParametersSchema(): SVMParametersV3 = { new SVMParametersV3() }
-  override def createOutputSchema(): SVMModelOutputV3 = { new SVMModelOutputV3() }
-  
+  override def createParametersSchema(): SparkSVMParametersV3 = { new SparkSVMParametersV3() }
+  override def createOutputSchema(): SparkSVMModelOutputV3 = { new SparkSVMModelOutputV3() }
+
 }
 
-object SVMModelV3 {
+object SparkSVMModelV3 {
 
-  final class SVMModelOutputV3 extends ModelOutputSchemaV3[SVMModel.SVMOutput, SVMModelOutputV3] {
+  final class SparkSVMModelOutputV3 extends ModelOutputSchemaV3[SparkSVMModel.SparkSVMOutput, SparkSVMModelOutputV3] {
     // Output fields
     @API(help = "Iterations executed") var iterations: Int = 0
     @API(help = "Interceptor") var interceptor: Double = 0

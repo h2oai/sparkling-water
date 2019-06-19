@@ -28,12 +28,12 @@ import water.api.schemas3.ModelParametersSchemaV3;
 import water.fvec.Frame;
 
 // Seems like this has to be in Java since H2O's frameworks uses reflection's getFields...
-// I probably could mix Java and Scala here, leave SVMParametersV3 with fields as Java
-// and then make the same Scala class SVMParametersV3 which extends it but not sure if it's worth it...
-public class SVMV3 extends ModelBuilderSchema<SVM, SVMV3, SVMV3.SVMParametersV3> {
+// I probably could mix Java and Scala here, leave SparkSVMParametersV3 with fields as Java
+// and then make the same Scala class SparkSVMParametersV3 which extends it but not sure if it's worth it...
+public class SparkSVMV3 extends ModelBuilderSchema<SparkSVM, SparkSVMV3, SparkSVMV3.SparkSVMParametersV3> {
 
-    public static final class SVMParametersV3 extends
-            ModelParametersSchemaV3<SVMParameters, SVMParametersV3> {
+    public static final class SparkSVMParametersV3 extends
+            ModelParametersSchemaV3<SparkSVMParameters, SparkSVMParametersV3> {
         public static String[] fields = new String[]{
                 "model_id",
                 "training_frame",
@@ -90,7 +90,7 @@ public class SVMV3 extends ModelBuilderSchema<SVM, SVMV3, SVMV3.SVMParametersV3>
         public MissingValuesHandling missing_values_handling;
 
         @Override
-        public SVMParametersV3 fillFromImpl(SVMParameters impl) {
+        public SparkSVMParametersV3 fillFromImpl(SparkSVMParameters impl) {
             super.fillFromImpl(impl);
 
             if (null != impl._initial_weights) {
@@ -104,7 +104,7 @@ public class SVMV3 extends ModelBuilderSchema<SVM, SVMV3, SVMV3.SVMParametersV3>
         }
 
         @Override
-        public SVMParameters fillImpl(SVMParameters impl) {
+        public SparkSVMParameters fillImpl(SparkSVMParameters impl) {
             super.fillImpl(impl);
             impl._initial_weights =
                     null == this.initial_weights_frame ? null : Key.<Frame>make(this.initial_weights_frame.name);
