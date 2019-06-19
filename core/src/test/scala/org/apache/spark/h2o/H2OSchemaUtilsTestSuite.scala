@@ -92,7 +92,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       Seq((1, 2), (3, 4), (5, 6))
     ).toDF("arr")
     val expected = Seq[(Integer, Integer, Integer, Integer, Integer, Integer)](
-      (1 ,2, 3, 4, null, null),
+      (1, 2, 3, 4, null, null),
       (1, 2, 3, 4, 5, 6)
     ).toDF("arr_0__1", "arr_0__2", "arr_1__1", "arr_1__2", "arr_2__1", "arr_2__2")
 
@@ -141,7 +141,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
   "flattenDataFrame" should "flatten a struct of structs" in {
     import spark.implicits._
 
-    val input = Seq[((Integer, Integer),(Integer, Integer))](
+    val input = Seq[((Integer, Integer), (Integer, Integer))](
       ((1, null), (3, 4)),
       ((1, 2), (null, 4))
     ).toDF("str1", "str2").select(struct('str1, 'str2) as "str")
@@ -164,7 +164,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       Seq(Map("b" -> 2, "c" -> 3), Map("a" -> 4))
     ).toDF("arr")
     val expected = Seq[(Integer, Integer, Integer, Integer)](
-      (1 ,2, null, null),
+      (1, 2, null, null),
       (null, 2, 3, 4)
     ).toDF("arr_0_a", "arr_0_b", "arr_0_c", "arr_1_a")
 
