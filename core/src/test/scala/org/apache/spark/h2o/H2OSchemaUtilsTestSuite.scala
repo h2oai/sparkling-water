@@ -19,7 +19,7 @@ package org.apache.spark.h2o
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, SparkTestContext, TestFrameUtils}
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{ArrayType, DoubleType, IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{ArrayType, DoubleType, IntegerType, MapType, StringType, StructField, StructType}
 import org.apache.spark.sql.functions._
 import org.junit.runner.RunWith
 import org.scalatest.{FlatSpec, Matchers}
@@ -247,6 +247,71 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       StructField("str_c_1", IntegerType, true) ::
       StructField("str_d_0", IntegerType, true) ::
       StructField("str_d_1", IntegerType, true) ::
+      Nil)
+
+    val result = H2OSchemaUtils.flattenSchema(df)
+
+    result shouldEqual expectedSchema
+  }
+
+  "flattenSchema" should "flatten a schema with a map of structs" in {
+    val rdd = sc.parallelize{
+      Seq(
+        Row(Map("a" -> Row(1, null), "b" -> Row(3, 4), "d" -> Row(7, 8))),
+        Row(Map("a" -> Row(1, 2), "b" -> Row(3, 4), "c" -> Row(5, 6)))
+      )
+    }
+    val structType = StructType(
+      StructField("a", IntegerType, false) ::
+      StructField("b", IntegerType, true) ::
+      Nil)
+    val schema = StructType(
+      StructField("map", MapType(StringType, structType, false), false) ::
+      Nil)
+    val df = spark.createDataFrame(rdd, schema)
+
+    val expectedSchema = StructType(
+      StructField("map_a_a", IntegerType, false) ::
+      StructField("map_a_b", IntegerType, true) ::
+      StructField("map_b_a", IntegerType, false) ::
+      StructField("map_b_b", IntegerType, true) ::
+      StructField("map_c_a", IntegerType, true) ::
+      StructField("map_c_b", IntegerType, true) ::
+      StructField("map_d_a", IntegerType, true) ::
+      StructField("map_d_b", IntegerType, true) ::
+      Nil)
+
+    val result = H2OSchemaUtils.flattenSchema(df)
+
+    result shouldEqual expectedSchema
+  }
+
+  "flattenSchema" should "flatten a schema with a struct of maps" in {
+    val rdd = sc.parallelize{
+      Seq(
+        Row(Row(Map("a" -> 1, "b" -> null, "c" -> 3), Map("d" -> 4, "e" -> 5), Map("f" -> 6), Map.empty[String, Integer])),
+        Row(Row(Map("b" -> 1, "c" -> 2), null, Map("f" -> 6, "g" -> 7), Map("h" -> 8, "i" -> 9)))
+      )
+    }
+    val structType = StructType(
+      StructField("a", MapType(StringType, IntegerType, true), false) ::
+      StructField("b", MapType(StringType, IntegerType, false), true) ::
+      StructField("c", MapType(StringType, IntegerType, false), false) ::
+      StructField("d", MapType(StringType, IntegerType, false), false) ::
+      Nil)
+    val schema = StructType(StructField("str", structType, false) :: Nil)
+    val df = spark.createDataFrame(rdd, schema)
+
+    val expectedSchema = StructType(
+      StructField("str_a_a", IntegerType, true) ::
+      StructField("str_a_b", IntegerType, true) ::
+      StructField("str_a_c", IntegerType, true) ::
+      StructField("str_b_d", IntegerType, true) ::
+      StructField("str_b_e", IntegerType, true) ::
+      StructField("str_c_f", IntegerType, false) ::
+      StructField("str_c_g", IntegerType, true) ::
+      StructField("str_d_h", IntegerType, true) ::
+      StructField("str_d_i", IntegerType, true) ::
       Nil)
 
     val result = H2OSchemaUtils.flattenSchema(df)
