@@ -20,7 +20,7 @@ import java.io.File
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.spark.models.svm.{SVM, SVMParameters}
+import org.apache.spark.ml.spark.models.svm.{SparkSVM, SparkSVMParameters}
 import org.apache.spark.sql.SparkSession
 import water.fvec.H2OFrame
 import water.support.SparkContextSupport
@@ -28,7 +28,7 @@ import water.support.SparkContextSupport
 object SparkSVMDemo extends SparkContextSupport {
 
   def main(args: Array[String]) {
-    val conf = configure("Sparkling Water: Spark SVM demo.")
+    val conf = configure("Sparkling Water: SparkSVM demo.")
     val sc = new SparkContext(conf)
 
     val h2oContext = H2OContext.getOrCreate(sc)
@@ -43,11 +43,11 @@ object SparkSVMDemo extends SparkContextSupport {
     breastCancerData.update()
 
     // Configure Deep Learning algorithm
-    val parms = new SVMParameters
+    val parms = new SparkSVMParameters
     parms._train = breastCancerData.key
     parms._response_column = "label"
 
-    val svm = new SVM(parms, h2oContext)
+    val svm = new SparkSVM(parms, h2oContext)
 
     val svmModel = svm.trainModel.get
 
