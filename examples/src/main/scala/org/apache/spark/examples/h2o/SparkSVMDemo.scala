@@ -28,7 +28,7 @@ import water.support.SparkContextSupport
 object SparkSVMDemo extends SparkContextSupport {
 
   def main(args: Array[String]) {
-    val conf = configure("Sparkling Water: Spark SparkSVM demo.")
+    val conf = configure("Sparkling Water: SparkSVM demo.")
     val sc = new SparkContext(conf)
 
     val h2oContext = H2OContext.getOrCreate(sc)
