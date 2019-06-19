@@ -56,12 +56,12 @@ class SVMModelTest extends FunSuite with SharedH2OTestContext {
     val weightsFrame = hc.asH2OFrame(weightsDF, "weights")
 
     // Learning parameters
-    val parms = new SVMParameters
+    val parms = new SparkSVMParameters
     parms._train = trainFrame
     parms._response_column = "Label"
     parms._initial_weights = weightsFrame
 
-    val svm = new SVM(parms, h2oContext)
+    val svm = new SparkSVM(parms, h2oContext)
 
     // Train model
     val h2oSVMModel: SVMModel = svm.trainModel.get

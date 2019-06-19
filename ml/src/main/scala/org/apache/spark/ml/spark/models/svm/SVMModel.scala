@@ -28,7 +28,7 @@ import water.{H2O, Key}
 
 object SVMModel {
 
-  class SVMOutput(val b: SVM) extends Model.Output(b) {
+  class SVMOutput(val b: SparkSVM) extends Model.Output(b) {
     var interceptor: Double = .0
     var iterations: Int = 0
     var weights: Array[Double] = _
@@ -38,9 +38,9 @@ object SVMModel {
 }
 
 class SVMModel private[svm](val selfKey: Key[SVMModel],
-                            val parms: SVMParameters,
+                            val parms: SparkSVMParameters,
                             val output: SVMModel.SVMOutput)
-  extends Model[SVMModel, SVMParameters, SVMModel.SVMOutput](selfKey, parms, output) {
+  extends Model[SVMModel, SparkSVMParameters, SVMModel.SVMOutput](selfKey, parms, output) {
 
   override protected def toJavaCheckTooBig: Boolean = output.weights.length > 10000
 
@@ -74,13 +74,13 @@ class SVMModel private[svm](val selfKey: Key[SVMModel],
       preds(0) = pred
     } else { // Binomial
       if (pred > _parms._threshold) {
-        // the probability of first and second class, since SVM does not give us probabilities, we assign
+        // the probability of first and second class, since SparkSVM does not give us probabilities, we assign
         // the probabilities to 0 or respectively to 1
         preds(2) = 1
         preds(1) = 0
         preds(0) = 1 // final class, either 1 or 0
       } else {
-        // the probability of first and second class, since SVM does not give us probabilities, we assign
+        // the probability of first and second class, since SparkSVM does not give us probabilities, we assign
         // the probabilities to 0 or respectively to 1
         preds(2) = 0
         preds(1) = 1

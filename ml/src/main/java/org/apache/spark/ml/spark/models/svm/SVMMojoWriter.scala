@@ -3,7 +3,7 @@ package org.apache.spark.ml.spark.models.svm
 import hex.ModelMojoWriter
 import org.apache.spark.ml.spark.models.MissingValuesHandling
 
-class SVMMojoWriter(svmModel: SVMModel) extends ModelMojoWriter[SVMModel, SVMParameters, SVMModel.SVMOutput](svmModel) {
+class SVMMojoWriter(svmModel: SVMModel) extends ModelMojoWriter[SVMModel, SparkSVMParameters, SVMModel.SVMOutput](svmModel) {
 
   def this() {
     this(null)
