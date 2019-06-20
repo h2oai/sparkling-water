@@ -504,18 +504,16 @@ EOF
                             // Update the links
                             retryWithDelay(3, 120, {
                                 sh """
-
                                 # S3 Already containes incremented version
                                 BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
 
+                                rm -rf docs.h2o.ai
                                 git clone git@github.com:h2oai/docs.h2o.ai.git
                                 cd docs.h2o.ai/sites-available/
                                 sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/\${BUILD_VERSION}/?" 000-default.conf
                                 git add 000-default.conf
                                 git commit -m "Update links of Sparkling Water nighly version on ${BRANCH_NAME} to \${BUILD_VERSION}"
                                 git push --set-upstream origin master
-                                cd ../..
-                                rm -rf docs.h2o.ai
                             """ })
 
                         }
