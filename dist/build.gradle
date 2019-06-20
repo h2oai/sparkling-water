@@ -149,7 +149,7 @@ def substituteGradleProperties() {
     gradlePropsFile.write(content, 'UTF-8')
 }
 
-task copyFilesForZipDistribution(dependsOn: clean){
+task copyFilesForZipDistribution {
     doLast {
 
         if (buildDir.exists()) {
