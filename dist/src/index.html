@@ -655,24 +655,29 @@
               install.packages("h2o", type = "source", repos = "https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/R")
             </p>
 
-            <p>5. Finally, install RSparkling for Sparkling Water SUBST_PROJECT_VERSION</p>
-            <p>Install latest version from Sparkling Water R repository:</p>
+            <p>5. Install RSparkling for Sparkling Water SUBST_PROJECT_VERSION:</p>
+            <p> From S3 repository:</p>
             <p class="terminal">
               install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/SUBST_PROJECT_GITBRANCH/SUBST_PROJECT_PATCH_VERSION/R")
             </p>
 
-            <p>Install latest version from the downloaded distribution. <br>
+            <p> From downloaded distribution: <br>
             <p class="terminal">
               # rsparkling_SUBST_PROJECT_VERSION.tar.gz is available at the downloaded distribution. <br>
               install.packages(repos=NULL, type="source", "rsparkling_SUBST_PROJECT_VERSION.tar.gz")
             </p>
 
-            <p>6. Connect to Spark</p>
+            <p>6. Initialize RSparkling</p>
+            <p class="terminal">
+              library(rsparkling)
+            </p>
+            
+            <p>7. Connect to Spark</p>
             <p class="terminal">
               sc <- spark_connect(master = "local", version = "SUBST_SPARK_VERSION")
             </p>
 
-            <p>7. Now, H2OContext is available and we can use any H2O features available in R.</p>
+            <p>8. Now, H2OContext is available and we can use any H2O features available in R.</p>
             <p class="terminal">
               h2o_context(sc)
             </p>
