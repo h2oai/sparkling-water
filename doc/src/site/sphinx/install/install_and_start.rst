@@ -179,7 +179,7 @@ See the `h2o-droplets GitHub repository <https://github.com/h2oai/h2o-droplets>`
   }
 
   dependencies {
-    compile "ai.h2o:sparkling-water-package_2.11|SUBST_SW_VERSION"
+    compile "ai.h2o:sparkling-water-package_2.11:SUBST_SW_VERSION"
   }
 
 See Maven Central for `artifact details <http://search.maven.org/#artifactdetails|ai.h2o|sparkling-water-package_2.11|SUBST_SW_VERSION|jar>`__.
@@ -195,7 +195,7 @@ This section describes how to start Spark with Sparkling Water enabled via Spark
 
 .. code:: bash
 
-   $SPARK_HOME/bin/spark-shell --packages ai.h2o:sparkling-water-package_2.11|SUBST_SW_VERSION
+   $SPARK_HOME/bin/spark-shell --packages ai.h2o:sparkling-water-package_2.11:SUBST_SW_VERSION
 
 3. Create an H2O cloud inside the Spark cluster:
 
