@@ -21,7 +21,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
     In order to create the Java library in Databricks, go to **Libraries**, select **Maven** as the library source and type the following into the coordinates field: ``sparkling-water-package_2.11:SUBST_SW_MINOR_VERSION``.
 
-    .. figure:: ../images/databricks_upload_jar.png
+    .. figure:: ../images/databricks_sw_maven.png
         :alt: Uploading Sparkling Water assembly JAR
 
     You can configure each cluster manually and select which libraries should be attached or you can configure the library to be attached to all future clusters. It is advised to restart the cluster in case you attached the library to already running cluster to ensure the clean environment.
