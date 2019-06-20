@@ -345,21 +345,6 @@ def localPyIntegTest() {
                 }
             }
         }
-
-        stage('QA: Local Py Integration Tests 2.7 - ' + config.backendMode) {
-            withDocker(config) {
-                if (config.runLocalPyIntegTests.toBoolean()) {
-                    try {
-                        sh "sudo -E /usr/sbin/startup.sh"
-                        sh """
-                        ${config.gradleCmd} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
-                        """
-                    } finally {
-                        arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -425,25 +410,10 @@ def pysparklingIntegTest() {
                 }
             }
         }
-
-        stage('QA: PySparkling Integration Tests 2.7 HDP 2.2 - ' + config.backendMode) {
-            withDocker(config) {
-                if (config.runPySparklingIntegTests.toBoolean()) {
-                    try {
-                        sh """
-                         sudo -E /usr/sbin/startup.sh
-                         ${config.gradleCmd} sparkling-water-py:yarnIntegTestsPython -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PbackendMode=${config.backendMode} -PsparkHome=${env.SPARK_HOME}
-                        """
-                    } finally {
-                        arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
-                    }
-                }
-            }
-        }
     }
 }
 
-def getUploadPath(config) {
+def static getUploadPath(config) {
     if (config.buildAgainstH2OBranch.toBoolean()) {
         config.h2oBranch.replace("/", "_")
     } else {
