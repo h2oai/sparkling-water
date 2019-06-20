@@ -44,6 +44,32 @@ def static getPatchVersionNumber(String swVersion) {
     }
 }
 
+def getMavenRepoLink() {
+    def urlPrefix = getGithubURLPrefix(version.toString())
+    def patchVersion = getPatchVersionNumber(version.toString())
+    return "https://h2o-release.s3.amazonaws.com/sparkling-water/${urlPrefix}/${patchVersion}/maven/repo/"
+}
+
+def getMavenRepoHtml() {
+    if (version.contains("SNAPSHOT")) {
+        return """
+                &nbsp;maven {</br>
+                &nbsp;&nbsp;url "${getMavenRepoLink()}"</br>
+                &nbsp;}</br>
+              """
+    } else {
+        return "&nbsp;mavenCentral()</br>"
+    }
+}
+
+def getExtraSparkRepo() {
+    if (version.contains("SNAPSHOT")) {
+        return "--repositories ${getMavenRepoLink()}"
+    } else {
+        return ""
+    }
+}
+
 def substituteIndexHtml(buildTimeLocal) {
 
     def sparkMajorWithExclude = "${sparkMajorVersion}.*"
@@ -63,7 +89,8 @@ def substituteIndexHtml(buildTimeLocal) {
             .replaceAll("SUBST_H2O_BRANCH_NAME", getH2OBranch(h2oMajorName))
             .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
             .replaceAll("SUBST_BUILD_TIME_LOCAL", buildTimeLocal)
-
+            .replaceAll("SUBST_MAVEN_REPO", getMavenRepoHtml())
+            .replaceAll("SUBST_EXTRA_REPO", getExtraSparkRepo())
     def indexHtmlFile = file("$distDir/index.html")
     indexHtmlFile.createNewFile()
     indexHtmlFile.write(content, 'UTF-8')
@@ -106,7 +133,12 @@ def distTaskDependencies = [
         ":sparkling-water-templates:build",
         ":sparkling-water-py:distPython",
         ":sparkling-water-r:createCranRepo",
-        ":sparkling-water-core:scaladoc"
+        ":sparkling-water-core:publish",
+        ":sparkling-water-doc:publish",
+        ":sparkling-water-repl:publish",
+        ":sparkling-water-ml:publish",
+        ":sparkling-water-examples:publish",
+        ":sparkling-water-package:publish"
 ]
 
 def substituteGradleProperties() {
@@ -163,6 +195,11 @@ task copyFilesForZipDistribution {
     }
 }
 
+task cleanRepo(type: Delete) {
+    delete rootProject.buildDir
+}
+
+copyFilesForZipDistribution.mustRunAfter cleanRepo
 copyFilesForZipDistribution.dependsOn(distTaskDependencies)
 
 task zipDistribution(type: Zip, dependsOn: copyFilesForZipDistribution) {
@@ -183,6 +220,7 @@ task dist(dependsOn: zipDistribution) {
         copyRecursive("core/build/docs/scaladoc/", "$distDir/scaladoc")
         copyRecursive("doc/build/site/", "$distDir/doc")
         copyRecursive("templates/build/", "$distDir/templates")
+        copyRecursive("build/repo", "${distDir}/maven/repo")
         substituteBuildInfoFile(buildTimeMillis, buildTimeIso8601, buildTimeLocal)
         substituteIndexHtml(buildTimeLocal)
     }
