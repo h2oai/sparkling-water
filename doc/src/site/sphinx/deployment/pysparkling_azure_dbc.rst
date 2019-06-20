@@ -1,11 +1,13 @@
+.. _pysparkling_azure:
+
 Running PySparkling on Databricks Azure Cluster
 -----------------------------------------------
 
 Sparkling Water, PySparkling and RSparkling can be used on top of Databricks Azure Cluster. This tutorial is
 the **PySparkling**.
 
-For Scala Sparkling Water, please visit `Sparkling Water on Databricks Azure Cluster <sw_azure_dbc.rst>`__ and
-for RSparkling, please visit `RSparkling on Databricks Azure Cluster <rsparkling_azure_dbc.rst>`__.
+For Scala Sparkling Water, please visit :ref:`sw_azure` and
+for RSparkling, please visit :ref:`rsparkling_azure`.
 
 To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
@@ -15,9 +17,9 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
     In order to connect to Databricks from Azure, please make sure you have created user inside Azure Active Directory and using that user for the Databricks Login.
 
-3.  Upload PySparkling Library as a library from PiPy
+3.  Add PySparkling dependency
 
-    In order to create the Python library in Databricks, go to **Libraries**, select **Upload Python Egg or Pipy** and insert ``h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION`` for the latest PySparkling for Spark SUBST_SPARK_MAJOR_VERSION.
+    In order to create the Python library in Databricks, go to **Libraries**, select **PiPy** as the library source and type in: ``h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION`` for the latest PySparkling for Spark SUBST_SPARK_MAJOR_VERSION.
 
     The advantage of adding the library from PiPy, instead of uploading manually, is that the latest version is always selected and also, the dependencies are automatically resolved.
 
