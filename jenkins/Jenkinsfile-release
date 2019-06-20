@@ -287,6 +287,7 @@ EOF
                     def patchVersion = getPatchVersion()
                     retryWithDelay(3, 120, {
                         sh """
+                                rm -rf docs.h2o.ai
                                 git clone git@github.com:h2oai/docs.h2o.ai.git
                                 cd docs.h2o.ai/sites-available/
                                 sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-${majorVersion}/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-${majorVersion}/${patchVersion}/?" 000-default.conf
@@ -294,7 +295,6 @@ EOF
                                 git commit -m "Update links of Sparkling Water ${majorVersion} version to ${patchVersion}"
                                 git push --set-upstream origin master
                                 cd ../..
-                                rm -rf docs.h2o.ai
                             """
                     })
                 }
