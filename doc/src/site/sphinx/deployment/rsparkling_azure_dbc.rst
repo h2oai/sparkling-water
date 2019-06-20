@@ -1,11 +1,13 @@
+.. _rsparkling_azure:
+
 Running RSparkling on Databricks Azure Cluster
 ----------------------------------------------
 
 Sparkling Water, PySparkling and RSparkling can be used on top of Databricks Azure Cluster. This tutorial is
 the **RSparkling**.
 
-For Scala Sparkling Water, please visit `Sparkling Water on Databricks Azure Cluster <sw_azure_dbc.rst>`__ and
-for PySparkling, please visit `PySparkling on Databricks Azure Cluster <pysparkling_azure_dbc.rst>`__.
+For Scala Sparkling Water, please visit :ref:`sw_azure` and
+for PySparkling, please visit :ref:`pysparkling_azure`.
 
 To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
@@ -28,11 +30,13 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
     .. code:: R
 
-        # Install R packages
+        # Install Sparklyr
         install.packages("sparklyr")
+
+        # Install RSparkling SUBST_SPARK_MAJOR_VERSION.SUBST_SW_MINOR_VERSION
         install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/rel-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/R")
 
-        # Install R package for H2O SUBST_H2O_VERSION (SUBST_H2O_RELEASE_NAME)
+        # Install H2O SUBST_H2O_VERSION (SUBST_H2O_RELEASE_NAME)
         install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R")
 
         # Connect to Spark on Databricks

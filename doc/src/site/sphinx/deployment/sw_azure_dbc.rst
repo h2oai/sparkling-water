@@ -1,11 +1,13 @@
+.. _sw_azure:
+
 Running Sparkling Water on Databricks Azure Cluster
 ---------------------------------------------------
 
 Sparkling Water, PySparkling and RSparkling can be used on top of Databricks Azure Cluster. This tutorial is
 the **Scala Sparkling Water**.
 
-For Pysparkling, please visit `PySparkling on Databricks Azure Cluster <pysparkling_azure_dbc.rst>`__ and
-for RSparkling, please visit `RSparkling on Databricks Azure Cluster <rsparkling_azure_dbc.rst>`__.
+For Pysparkling, please visit :ref:`pysparkling_azure` and
+for RSparkling, please visit :ref:`rsparkling_azure`.
 
 To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
