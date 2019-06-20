@@ -457,10 +457,12 @@ def publishNightly() {
             withDocker(config) {
                 if (config.uploadNightly.toBoolean()) {
 
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
+                                     usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
+                                     file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
 
                         sh  """
-                            ${config.gradleCmd} dist
+                            ${config.gradleCmd} dist -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
 
                             NEW_BUILD_VERSION=${getNextNightlyBuildNumber(config)}
                                                 
