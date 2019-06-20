@@ -210,7 +210,7 @@ def closeBucket(def username, def password, def stagingId) {
 task publishToNexus {
     doLast {
         def stagingId = createStagingId(project.findProperty('nexusUsername'), project.findProperty('nexusPassword')).replace('\n', '')
-        uploadFiles(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), "dist/build/dist/maven/repo", stagingId)
+        uploadFiles(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), "${rootDir}/dist/build/dist/maven/repo", stagingId)
         closeBucket(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), stagingId)
     }
 }
