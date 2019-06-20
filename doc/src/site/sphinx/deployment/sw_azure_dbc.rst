@@ -15,9 +15,9 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
     In order to connect to Databricks from Azure, please make sure you have created user inside Azure Active Directory and using that user for the Databricks Login.
 
-3.  Upload Sparkling Water assembly JAR as a library
+3.  Add Sparkling Water dependency
 
-    In order to create the library in Databricks, go to **Libraries**, select **Upload Java/Scala JAR** and upload the downloaded assembly jar. If you download the official distribution, the assembly jar is located in ``assembly/build/libs`` directory. The assembly Jar can be downloaded from our official `download page <https://www.h2o.ai/download/>`__.
+    In order to create the Java library in Databricks, go to **Libraries**, select **Maven** as the library source and type the following into the coordinates field: ``sparkling-water-package_2.11:SUBST_SW_MINOR_VERSION``.
 
     .. figure:: ../images/databricks_upload_jar.png
         :alt: Uploading Sparkling Water assembly JAR

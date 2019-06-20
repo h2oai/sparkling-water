@@ -15,17 +15,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
     In order to connect to Databricks from Azure, please make sure you have created user inside Azure Active Directory and using that user for the Databricks Login.
 
-3.  Upload Sparkling Water assembly JAR as a library
-    Even though we are using RSparkling, we need to explicitly upload the Sparkling Water assembly Jar as it is a required dependency. In order to create the library in Databricks, go to **Libraries**, select **Upload Java/Scala JAR** and upload the downloaded assembly jar. If you download the official distribution, the assembly jar is located in ``assembly/build/libs`` directory. The assembly Jar can be downloaded from our official `Download page <https://www.h2o.ai/download/>`__.
-
-    .. figure:: ../images/databricks_upload_jar.png
-        :alt: Uploading Sparkling Water assembly JAR
-
-    You can configure each cluster manually and select which libraries should be attached or you can configure the library to be attached to all future clusters. It is advised to restart the cluster in case you attached the library to already running cluster to ensure the clean environment.
-
-4.  Create the cluster
-
-    - Make sure the assembly JAR is attached to the cluster
+3.  Create the cluster
 
     - For Sparkling Water SUBST_SW_VERSION select Spark SUBST_SPARK_VERSION
 
@@ -34,13 +24,13 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
     .. figure:: ../images/databricks_cluster_creation.png
         :alt: Configured cluster ready to be started
 
-5.  Create Scala notebook and attach it to the created cluster. To start ``H2OContext``, the init part of the notebook should be:
+4.  Create R notebook and attach it to the created cluster. To start ``H2OContext``, the init part of the notebook should be:
 
     .. code:: R
 
         # Install R packages
         install.packages("sparklyr")
-        install.packages("rsparkling")
+        install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/rel-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/R")
 
         # Now we download, install, and initialize the H2O package for R.
         # Make sure to install H2O with the same version as its bundled inside Sparkling Water. The version table can be seen
