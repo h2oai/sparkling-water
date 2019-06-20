@@ -207,17 +207,10 @@ def closeBucket(def username, def password, def stagingId) {
     proc.waitFor()
 }
 
-task publishToNexus(dependsOn: [
-        "sparkling-water-doc:publish",
-        "sparkling-water-core:publish",
-        "sparkling-water-repl:publish",
-        "sparkling-water-ml:publish",
-        "sparkling-water-examples:publish",
-        "sparkling-water-package:publish"
-]) {
+task publishToNexus {
     doLast {
         def stagingId = createStagingId(project.findProperty('nexusUsername'), project.findProperty('nexusPassword')).replace('\n', '')
-        uploadFiles(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), "$rootDir/build/repo", stagingId)
+        uploadFiles(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), "${rootDir}/dist/build/dist/maven/repo", stagingId)
         closeBucket(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), stagingId)
     }
 }
