@@ -135,8 +135,9 @@ object H2OSchemaUtils {
   }
 
   def flattenSchema(df: DataFrame): StructType = {
+    implicit val encoder = org.apache.spark.sql.Encoders.kryo[Seq[FieldWithOrder]]
     val originalSchema = df.schema
-    val fields = df.rdd.map[Seq[FieldWithOrder]] { row: Row =>
+    val fields = df.map[Seq[FieldWithOrder]] { row: Row =>
         originalSchema.fields.zipWithIndex.foldLeft(Seq.empty[FieldWithOrder]) {
           case (acc, (field, index)) => acc ++ flattenField(field, row, index, index :: Nil)
         }
