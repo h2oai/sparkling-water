@@ -155,11 +155,13 @@ def publishReleaseNotes() {
 def build() {
     return {
         stage('Build') {
-            withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
+            withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD'),
+                             usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
+                             file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
 
                 sh """
                     activate_java_8
-                    ./gradlew dist -Pversion=${getVersion()} -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
+                    ./gradlew dist -Pversion=${getVersion()} -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
                     """
             }
         }
@@ -201,10 +203,8 @@ def publishToNexus() {
     return { params ->
         stage('Publish to Nexus') {
             if (params.publishToNexus.toBoolean()) {
-                withCredentials([usernamePassword(credentialsId: "PUBLIC_NEXUS", usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD'),
-                                 usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
-                                 file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
-                    sh "./gradlew -Pversion=${getVersion()} -PdoRelease -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password= publishToNexus -x check"
+                withCredentials([usernamePassword(credentialsId: "PUBLIC_NEXUS", usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
+                    sh "./gradlew -Pversion=${getVersion()} -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} publishToNexus -x check"
                 }
             }
         }
@@ -287,6 +287,7 @@ EOF
                     def patchVersion = getPatchVersion()
                     retryWithDelay(3, 120, {
                         sh """
+                                rm -rf docs.h2o.ai
                                 git clone git@github.com:h2oai/docs.h2o.ai.git
                                 cd docs.h2o.ai/sites-available/
                                 sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-${majorVersion}/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/rel-${majorVersion}/${patchVersion}/?" 000-default.conf
@@ -294,7 +295,6 @@ EOF
                                 git commit -m "Update links of Sparkling Water ${majorVersion} version to ${patchVersion}"
                                 git push --set-upstream origin master
                                 cd ../..
-                                rm -rf docs.h2o.ai
                             """
                     })
                 }
