@@ -20,7 +20,7 @@ package org.apache.spark.h2o.utils
 import org.apache.spark.h2o._
 import org.apache.spark.ml.attribute.AttributeGroup
 import org.apache.spark.mllib.linalg.SparseVector
-import org.apache.spark.sql._
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.types._
 import org.apache.spark.{ml, mllib}
@@ -80,126 +80,151 @@ object H2OSchemaUtils {
   def flattenDataFrame(df: DataFrame, flatSchema: StructType): DataFrame = {
     implicit val rowEncoder = RowEncoder(flatSchema)
     val numberOfColumns = flatSchema.fields.length
-    val flatSchemaIndexes = flatSchema.fields.map(_.name).zipWithIndex.toMap
+    val nameToIndexMap = flatSchema.fields.map(_.name).zipWithIndex.toMap
     val originalSchema = df.schema
-    df.map[Row]{ r: Row =>
+    df.map[Row] { row: Row =>
       val result = ArrayBuffer.fill[Any](numberOfColumns)(null)
-      val fillMethod = fillBuffer(flatSchemaIndexes, result, r)(_, _, _)
-      originalSchema.fields.zipWithIndex.foreach{ case (f, i) => fillMethod(f, i, None)}
+      val fillBufferPartiallyApplied = fillBuffer(nameToIndexMap, result) _
+      originalSchema.fields.zipWithIndex.foreach { case (field, idx) =>
+        fillBufferPartiallyApplied(field, row(idx), None)
+      }
       Row.fromSeq(result)
     }
   }
 
   private def fillBuffer
-      (flatSchemaIndexes: Map[String, Int], buffer: ArrayBuffer[Any], row: Row)
-      (field: StructField, index: Int, prefix: Option[String] = None): Unit = {
-    val StructField(name, dataType, _, _) = field
-    val qualifiedName = getQualifiedName(prefix, name)
-    if(!row.isNullAt(index)) {
+      (flatSchemaIndexes: Map[String, Int], buffer: ArrayBuffer[Any])
+      (field: StructField, data: Any, prefix: Option[String] = None): Unit = {
+    if (data != null) {
+      val StructField(name, dataType, _, _) = field
+      val qualifiedName = getQualifiedName(prefix, name)
       dataType match {
-        case BinaryType =>
-          fillArray(flatSchemaIndexes, buffer, row, ByteType, index, qualifiedName)
-        case MapType(_, valueType, containsNull) =>
-          val map = row.getMap[Any, Any](index)
-          val subRow = Row.fromSeq(map.values.toSeq)
-          val fillMethod = fillBuffer(flatSchemaIndexes, buffer, subRow)(_, _, _)
-          map.keys.zipWithIndex.foreach{ case (k, i) =>
-            val mapField = StructField(k.toString, valueType, containsNull)
-            fillMethod(mapField, i, Some(qualifiedName))
-          }
-        case ArrayType(elementType, _) =>
-          fillArray(flatSchemaIndexes, buffer, row, elementType, index, qualifiedName)
-        case StructType(fields) =>
-          val subRow = row.getStruct(index)
-          val fillMethod = fillBuffer(flatSchemaIndexes, buffer, subRow)(_, _, _)
-          fields.zipWithIndex.foreach { case (f, i) => fillMethod(f, i, Some(qualifiedName)) }
-        case dt => buffer(flatSchemaIndexes(qualifiedName)) = row.get(index)
+        case BinaryType => fillArray(ByteType, flatSchemaIndexes, buffer, data, qualifiedName)
+        case MapType(_, valueType, _) => fillMap(valueType, flatSchemaIndexes, buffer, data, qualifiedName)
+        case ArrayType(elementType, _) => fillArray(elementType, flatSchemaIndexes, buffer, data, qualifiedName)
+        case StructType(fields) => fillStruct(fields, flatSchemaIndexes, buffer, data, qualifiedName)
+        case _ => buffer(flatSchemaIndexes(qualifiedName)) = data
       }
     }
   }
 
   private def fillArray(
+      elementType: DataType,
       flatSchemaIndexes: Map[String, Int],
       buffer: ArrayBuffer[Any],
-      row: Row,
-      elementType: DataType,
-      index: Int,
-      qualifiedName: String){
-    val seq = row.getSeq[Any](index)
+      data: Any,
+      qualifiedName: String): Unit = {
+    val seq = data.asInstanceOf[Seq[Any]]
     val subRow = Row.fromSeq(seq)
-    val fillMethod = fillBuffer(flatSchemaIndexes, buffer, subRow)(_, _, _)
-    (0 until seq.size).foreach{ i =>
-      val arrayField = StructField(i.toString, elementType)
-      fillMethod(arrayField, i, Some(qualifiedName))
+    val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
+    (0 until seq.size).foreach { idx =>
+      val arrayField = StructField(idx.toString, elementType)
+      fillBufferPartiallyApplied(arrayField, subRow(idx), Some(qualifiedName))
+    }
+  }
+
+  private def fillMap(
+      valueType: DataType,
+      flatSchemaIndexes: Map[String, Int],
+      buffer: ArrayBuffer[Any],
+      data: Any,
+      qualifiedName: String): Unit = {
+    val map = data.asInstanceOf[Map[Any, Any]]
+    val subRow = Row.fromSeq(map.values.toSeq)
+    val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
+    map.keys.zipWithIndex.foreach { case (key, idx) =>
+      val mapField = StructField(key.toString, valueType)
+      fillBufferPartiallyApplied(mapField, subRow(idx), Some(qualifiedName))
+    }
+  }
+
+  private def fillStruct(
+      fields: Seq[StructField],
+      flatSchemaIndexes: Map[String, Int],
+      buffer: ArrayBuffer[Any],
+      data: Any,
+      qualifiedName: String): Unit = {
+    val subRow = data.asInstanceOf[Row]
+    val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
+    fields.zipWithIndex.foreach { case (subField, idx) =>
+      fillBufferPartiallyApplied(subField, subRow(idx), Some(qualifiedName))
     }
   }
 
   def flattenSchema(df: DataFrame): StructType = {
-    implicit val encoder = org.apache.spark.sql.Encoders.kryo[Seq[FieldWithOrder]]
-    val originalSchema = df.schema
-    val fields = df.map[Seq[FieldWithOrder]] { row: Row =>
-        originalSchema.fields.zipWithIndex.foldLeft(Seq.empty[FieldWithOrder]) {
-          case (acc, (field, index)) => acc ++ flattenField(field, row, index, index :: Nil)
-        }
-      }
-      .reduce { (first, second) =>
-        def convertToMap(collection: Seq[FieldWithOrder]) = collection.map(f => f.order -> f.field).toMap
-        val firstMap = convertToMap(first)
-        val secondMap = convertToMap(second)
-        val pathItemOrdering = new Ordering[Any] {
-          override def compare(x: Any, y: Any): Int = (x, y) match {
-            case (a: Int, b: Int) => a.compareTo(b)
-            case (a: String, b: String) => a.compareTo(b)
-            case (a, b) => a.toString.compareTo(b.toString)
-          }
-        }
-        val keys = (firstMap.keySet ++ secondMap.keySet).toSeq.sorted(Ordering.Iterable(pathItemOrdering))
-        keys.map { key =>
-          (firstMap.get(key), secondMap.get(key)) match {
-            case (None, Some(StructField(name, dataType, _, _))) =>
-              FieldWithOrder(StructField(name, dataType, true), key)
-            case (Some(StructField(name, dataType, _, _)), None) =>
-              FieldWithOrder(StructField(name, dataType, true), key)
-            case (Some(StructField(name, dataType, nullable1, _)), Some(StructField(_, _, nullable2, _))) =>
-              FieldWithOrder(StructField(name, dataType, nullable1 || nullable2), key)
-          }
-        }
-      }
-      StructType(fields.map(_.field))
+    val rowSchemas = rowsToRowSchemas(df)
+    val mergedSchema = mergeRowSchemas(rowSchemas)
+    StructType(mergedSchema.map(_.field))
   }
 
-  private def getQualifiedName(prefix: Option[String], name: String) = prefix match {
+  private def rowsToRowSchemas(df: DataFrame): Dataset[Seq[FieldWithOrder]] = {
+    implicit val encoder = org.apache.spark.sql.Encoders.kryo[Seq[FieldWithOrder]]
+    val originalSchema = df.schema
+    df.map[Seq[FieldWithOrder]] { row: Row =>
+      originalSchema.fields.zipWithIndex.foldLeft(Seq.empty[FieldWithOrder]) {
+        case (acc, (field, index)) => acc ++ flattenField(field, row(index), index :: Nil)
+      }
+    }
+  }
+
+  private def mergeRowSchemas(ds: Dataset[Seq[FieldWithOrder]]): Seq[FieldWithOrder] = ds.reduce {
+    (first, second) =>
+      val firstMap = convertRowSchemaToPathToFieldMap(first)
+      val secondMap = convertRowSchemaToPathToFieldMap(second)
+      val keys = (firstMap.keySet ++ secondMap.keySet).toSeq.sorted(fieldPathOrdering)
+      keys.map { key =>
+        (firstMap.get(key), secondMap.get(key)) match {
+          case (None, Some(StructField(name, dataType, _, _))) =>
+            FieldWithOrder(StructField(name, dataType, true), key)
+          case (Some(StructField(name, dataType, _, _)), None) =>
+            FieldWithOrder(StructField(name, dataType, true), key)
+          case (Some(StructField(name, dataType, nullable1, _)), Some(StructField(_, _, nullable2, _))) =>
+            FieldWithOrder(StructField(name, dataType, nullable1 || nullable2), key)
+        }
+      }
+  }
+
+  @transient private lazy val fieldPathOrdering = {
+    val segmentOrdering = new Ordering[Any] {
+      override def compare(x: Any, y: Any): Int = (x, y) match {
+        case (a: Int, b: Int) => a.compareTo(b)
+        case (a: String, b: String) => a.compareTo(b)
+        case (a, b) => a.toString.compareTo(b.toString)
+      }
+    }
+    Ordering.Iterable(segmentOrdering)
+  }
+
+  private def convertRowSchemaToPathToFieldMap(rowSchema: Seq[FieldWithOrder]): Map[Seq[Any], StructField] = {
+    rowSchema.map(f => f.order -> f.field).toMap
+  }
+
+  private def getQualifiedName(prefix: Option[String], name: String): String = prefix match {
     case None => name
     case Some(p) => s"${p}_$name"
   }
 
   private def flattenField(
       originalField: StructField,
-      row: Row,
-      index: Int,
+      data: Any,
       path: List[Any],
       prefix: Option[String] = None,
       isParentNullable: Boolean = false): Seq[FieldWithOrder] = {
-    val StructField(name, dataType, nullable, _) = originalField
-    val qualifiedName = getQualifiedName(prefix, name)
-    val nullableField = isParentNullable || nullable
-    if(!row.isNullAt(index)) {
+    if (data != null) {
+      val StructField(name, dataType, nullable, _) = originalField
+      val qualifiedName = getQualifiedName(prefix, name)
+      val nullableField = isParentNullable || nullable
       dataType match {
         case BinaryType =>
-          flattenArray(row, ByteType, false, index, path, qualifiedName, nullableField)
+          flattenArrayType(ByteType, false, data, path, qualifiedName, nullableField)
         case MapType(_, valueType, containsNull) =>
-          val map = row.getMap[Any, Any](index)
-          val subRow = Row.fromSeq(map.values.toSeq)
-          map.keys.zipWithIndex.flatMap { case (k, i) =>
-            val mapField = StructField(k.toString, valueType, containsNull)
-            flattenField(mapField, subRow, i, k :: path, Some(qualifiedName), nullableField)
-          }.toSeq
+          flattenMapType(valueType, containsNull, data, path, qualifiedName, nullableField)
         case ArrayType(elementType, containsNull) =>
-          flattenArray(row, elementType, containsNull, index, path, qualifiedName, nullableField)
+          flattenArrayType(elementType, containsNull, data, path, qualifiedName, nullableField)
         case StructType(fields) =>
-          val subRow = row.getStruct(index)
-          fields.zipWithIndex.flatMap { case (f, i) => flattenField(f, subRow, i, i :: path, Some(qualifiedName), nullableField) }
-        case dt => FieldWithOrder(StructField(qualifiedName, dt, nullableField), path.reverse) :: Nil
+          flattenStructType(fields, data, path, qualifiedName, nullableField)
+        case dt =>
+          FieldWithOrder(StructField(qualifiedName, dt, nullableField), path.reverse) :: Nil
       }
     } else {
       Nil
@@ -208,19 +233,45 @@ object H2OSchemaUtils {
 
   private case class FieldWithOrder(field: StructField, order: Seq[Any])
 
-  private def flattenArray(
-      row: Row,
+  private def flattenArrayType(
       elementType: DataType,
       containsNull: Boolean,
-      index: Int,
+      data: Any,
       path: List[Any],
       qualifiedName: String,
       nullableField: Boolean) = {
-    val values = row.getSeq[Any](index)
+    val values = data.asInstanceOf[Seq[Any]]
     val subRow = Row.fromSeq(values)
-      (0 until values.size).flatMap{ i =>
-      val arrayField = StructField(i.toString(), elementType, containsNull)
-      flattenField(arrayField, subRow, i, i :: path, Some(qualifiedName), nullableField)
+    (0 until values.size).flatMap { idx =>
+      val arrayField = StructField(idx.toString(), elementType, containsNull)
+      flattenField(arrayField, subRow(idx), idx :: path, Some(qualifiedName), nullableField)
+    }
+  }
+
+  private def flattenMapType(
+      valueType: DataType,
+      containsNull: Boolean,
+      data: Any,
+      path: List[Any],
+      qualifiedName: String,
+      nullableField: Boolean) = {
+    val map = data.asInstanceOf[Map[Any, Any]]
+    val subRow = Row.fromSeq(map.values.toSeq)
+    map.keys.zipWithIndex.flatMap { case (key, idx) =>
+      val mapField = StructField(key.toString, valueType, containsNull)
+      flattenField(mapField, subRow(idx), key :: path, Some(qualifiedName), nullableField)
+    }.toSeq
+  }
+
+  private def flattenStructType(
+      fields: Seq[StructField],
+      data: Any,
+      path: List[Any],
+      qualifiedName: String,
+      nullableField: Boolean) = {
+    val subRow = data.asInstanceOf[Row]
+    fields.zipWithIndex.flatMap { case (subField, idx) =>
+      flattenField(subField, subRow(idx), idx :: path, Some(qualifiedName), nullableField)
     }
   }
 

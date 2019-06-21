@@ -108,11 +108,11 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
     val input = Seq[(Seq[Integer], Seq[Integer], Seq[Integer])](
       (Seq[Integer](1, null), Seq[Integer](3, 4), Seq[Integer](5)),
       (Seq[Integer](1, 2), null, Seq[Integer](5, 6))
-    ).toDF("arr1", "arr2", "arr3").select(struct('arr1, 'arr2, 'arr3) as "str")
+    ).toDF("arr1", "arr2", "arr3").select(struct('arr1, 'arr2, 'arr3) as "struct")
     val expected = Seq[(Integer, Integer, Integer, Integer, Integer, Integer)](
       (1, null, 3, 4, 5, null),
       (1, 2, null, null, 5, 6)
-    ).toDF("str_arr1_0", "str_arr1_1", "str_arr2_0", "str_arr2_1", "str_arr3_0", "str_arr3_1")
+    ).toDF("struct_arr1_0", "struct_arr1_1", "struct_arr2_0", "struct_arr2_1", "struct_arr3_0", "struct_arr3_1")
 
     val result = H2OSchemaUtils.flattenDataFrame(input)
 
@@ -144,11 +144,11 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
     val input = Seq[((Integer, Integer), (Integer, Integer))](
       ((1, null), (3, 4)),
       ((1, 2), (null, 4))
-    ).toDF("str1", "str2").select(struct('str1, 'str2) as "str")
+    ).toDF("struct1", "struct2").select(struct('struct1, 'struct2) as "struct")
     val expected = Seq[(Integer, Integer, Integer, Integer)](
       (1, null, 3, 4),
       (1, 2, null, 4)
-    ).toDF("str_str1__1", "str_str1__2", "str_str2__1", "str_str2__2")
+    ).toDF("struct_struct1__1", "struct_struct1__2", "struct_struct2__1", "struct_struct2__2")
 
     val result = H2OSchemaUtils.flattenDataFrame(input)
 
@@ -235,18 +235,18 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       StructField("c", ArrayType(IntegerType, false), false) ::
       StructField("d", ArrayType(IntegerType, false), false) ::
       Nil)
-    val schema = StructType(StructField("str", structType, false) :: Nil)
+    val schema = StructType(StructField("struct", structType, false) :: Nil)
     val df = spark.createDataFrame(rdd, schema)
 
     val expectedSchema = StructType(
-      StructField("str_a_0", IntegerType, true) ::
-      StructField("str_a_1", IntegerType, true) ::
-      StructField("str_b_0", IntegerType, true) ::
-      StructField("str_b_1", IntegerType, true) ::
-      StructField("str_c_0", IntegerType, false) ::
-      StructField("str_c_1", IntegerType, true) ::
-      StructField("str_d_0", IntegerType, true) ::
-      StructField("str_d_1", IntegerType, true) ::
+      StructField("struct_a_0", IntegerType, true) ::
+      StructField("struct_a_1", IntegerType, true) ::
+      StructField("struct_b_0", IntegerType, true) ::
+      StructField("struct_b_1", IntegerType, true) ::
+      StructField("struct_c_0", IntegerType, false) ::
+      StructField("struct_c_1", IntegerType, true) ::
+      StructField("struct_d_0", IntegerType, true) ::
+      StructField("struct_d_1", IntegerType, true) ::
       Nil)
 
     val result = H2OSchemaUtils.flattenSchema(df)
@@ -299,19 +299,19 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       StructField("c", MapType(StringType, IntegerType, false), false) ::
       StructField("d", MapType(StringType, IntegerType, false), false) ::
       Nil)
-    val schema = StructType(StructField("str", structType, false) :: Nil)
+    val schema = StructType(StructField("struct", structType, false) :: Nil)
     val df = spark.createDataFrame(rdd, schema)
 
     val expectedSchema = StructType(
-      StructField("str_a_a", IntegerType, true) ::
-      StructField("str_a_b", IntegerType, true) ::
-      StructField("str_a_c", IntegerType, true) ::
-      StructField("str_b_d", IntegerType, true) ::
-      StructField("str_b_e", IntegerType, true) ::
-      StructField("str_c_f", IntegerType, false) ::
-      StructField("str_c_g", IntegerType, true) ::
-      StructField("str_d_h", IntegerType, true) ::
-      StructField("str_d_i", IntegerType, true) ::
+      StructField("struct_a_a", IntegerType, true) ::
+      StructField("struct_a_b", IntegerType, true) ::
+      StructField("struct_a_c", IntegerType, true) ::
+      StructField("struct_b_d", IntegerType, true) ::
+      StructField("struct_b_e", IntegerType, true) ::
+      StructField("struct_c_f", IntegerType, false) ::
+      StructField("struct_c_g", IntegerType, true) ::
+      StructField("struct_d_h", IntegerType, true) ::
+      StructField("struct_d_i", IntegerType, true) ::
       Nil)
 
     val result = H2OSchemaUtils.flattenSchema(df)
