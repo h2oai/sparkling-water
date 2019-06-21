@@ -79,7 +79,7 @@ class RDDsHandlerSuite extends FunSuite with SharedH2OTestContext {
     val h2oframe = hc.asH2OFrame(result.h2oframe_id)
     assert(h2oframe.key.toString == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
     assert(h2oframe.numCols() == 1, "Number of columns should match")
-    assert(h2oframe.names().sameElements(Seq("values")), "Column names should match")
+    assert(h2oframe.names().sameElements(Seq("value")), "Column names should match")
     assert(h2oframe.numRows() == rdd.count(), "Number of rows should match")
   }
 

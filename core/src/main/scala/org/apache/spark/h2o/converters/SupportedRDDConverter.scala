@@ -17,9 +17,10 @@
 
 package org.apache.spark.h2o.converters
 
-import org.apache.spark.h2o._
 import org.apache.spark._
+import org.apache.spark.h2o._
 import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.sql.Row
 
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
@@ -31,11 +32,11 @@ import scala.reflect.runtime.universe._
   */
 
 object SupportedRDDConverter {
-  /** Transform supported type for conversion to H2OFrame*/
+  /** Transform supported type for conversion to H2OFrame */
   def toH2OFrame(hc: H2OContext, rdd: SupportedRDD, frameKeyName: Option[String]): H2OFrame = rdd.toH2OFrame(hc, frameKeyName)
 
   /** Transform H2OFrame to RDD */
-  def toRDD[A <: Product: TypeTag: ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = ProductRDDConverter.toRDD[A, T](hc, fr)
+  def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = new H2ORDD[A, T](fr)(hc)
 }
 
 /**
@@ -46,93 +47,151 @@ trait SupportedRDD {
   def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame
 }
 
-private[this] object SupportedRDD {
+object SupportedRDD {
 
-  class PrimitiveSupportedRDD[T: TypeTag: ClassTag](rdd: RDD[T]) extends SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
+  implicit def toH2OFrameFromRDDJavaBool(rdd: RDD[java.lang.Boolean]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
   }
 
-  implicit def toH2OFrameFromRDDJavaInt(rdd: RDD[java.lang.Integer]): SupportedRDD = new PrimitiveSupportedRDD(rdd)
-
   implicit def toH2OFrameFromRDDJavaByte(rdd: RDD[java.lang.Byte]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
   }
 
   implicit def toH2OFrameFromRDDJavaShort(rdd: RDD[java.lang.Short]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
+  }
+
+  implicit def toH2OFrameFromRDDJavaInt(rdd: RDD[java.lang.Integer]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
   }
 
   implicit def toH2OFrameFromRDDJavaFloat(rdd: RDD[java.lang.Float]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
   }
 
   implicit def toH2OFrameFromRDDJavaDouble(rdd: RDD[java.lang.Double]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
   }
 
   implicit def toH2OFrameFromRDDJavaLong(rdd: RDD[java.lang.Long]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
-  }
-
-  implicit def toH2OFrameFromRDDJavaBool(rdd: RDD[java.lang.Boolean]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
-  }
-
-
-
-
-  implicit def toH2OFrameFromRDDString(rdd: RDD[String]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
-  }
-
-  implicit def toH2OFrameFromRDDInt(rdd: RDD[Int]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
-  }
-
-  implicit def toH2OFrameFromRDDByte(rdd: RDD[Byte]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
-  }
-
-  implicit def toH2OFrameFromRDDShort(rdd: RDD[Short]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
-  }
-
-  implicit def toH2OFrameFromRDDFloat(rdd: RDD[Float]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
-  }
-
-  implicit def toH2OFrameFromDouble(rdd: RDD[Double]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
-  }
-
-  implicit def toH2OFrameFromRDDLong(rdd: RDD[Long]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
   }
 
   implicit def toH2OFrameFromRDDBool(rdd: RDD[Boolean]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
+  }
+
+  implicit def toH2OFrameFromRDDByte(rdd: RDD[Byte]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
+  }
+
+  implicit def toH2OFrameFromRDDShort(rdd: RDD[Short]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
+  }
+
+  implicit def toH2OFrameFromRDDInt(rdd: RDD[Int]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
+  }
+
+  implicit def toH2OFrameFromRDDFloat(rdd: RDD[Float]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
+  }
+
+  implicit def toH2OFrameFromDouble(rdd: RDD[Double]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
+  }
+
+  implicit def toH2OFrameFromRDDLong(rdd: RDD[Long]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
+  }
+
+  implicit def toH2OFrameFromRDDString(rdd: RDD[String]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
   }
 
   implicit def toH2OFrameFromRDDLabeledPoint(rdd: RDD[LabeledPoint]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = LabeledPointConverter.toH2OFrame(hc, rdd, frameKeyName)
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
   }
 
   implicit def toH2OFrameFromRDDTimeStamp(rdd: RDD[java.sql.Timestamp]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = PrimitiveRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+    }
   }
 
-  implicit def toH2OFrameFromRDDProductNoTypeTag(rdd : RDD[Product]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = ProductRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
-  }
-  implicit def toH2OFrameFromRDDProduct[A <: Product : ClassTag: TypeTag](rdd : RDD[A]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = ProductRDDConverter.toH2OFrame(hc, rdd, frameKeyName)
+  implicit def toH2OFrameFromRDDProductNoTypeTag(rdd: RDD[Product]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      SparkDataFrameConverter.toH2OFrame(hc, hc.sparkSession.createDataFrame(rdd), frameKeyName)
+    }
   }
 
-  implicit def toH2OFrameFromRDDMLlibVector(rdd: RDD[mllib.linalg.Vector]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = MLLibVectorConverter.toH2OFrame(hc, rdd, frameKeyName)
+  implicit def toH2OFrameFromRDDProduct[A <: Product : ClassTag : TypeTag](rdd: RDD[A]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      SparkDataFrameConverter.toH2OFrame(hc, hc.sparkSession.createDataFrame(rdd), frameKeyName)
+    }
   }
 
   implicit def toH2OFrameFromRDDmlVector(rdd: RDD[ml.linalg.Vector]): SupportedRDD = new SupportedRDD {
-    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = MLVectorConverter.toH2OFrame(hc, rdd, frameKeyName)
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.map(v => Tuple1(v)).toDF, frameKeyName)
+    }
   }
+
+  implicit def toH2OFrameFromRDDMLlibVector(rdd: RDD[mllib.linalg.Vector]): SupportedRDD = new SupportedRDD {
+    override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
+      import hc.sparkSession.implicits._
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.map(v => Tuple1(v)).toDF, frameKeyName)
+    }
+  }
+
 }

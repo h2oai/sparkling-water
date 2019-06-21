@@ -17,10 +17,11 @@
 package water.api.RDDs
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.converters.H2OFrameFromRDDProductBuilder
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import water.Iced
 import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
@@ -56,15 +57,15 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
       h2oContext.asH2OFrame(sc.parallelize(Seq.empty[Int]), name)
     } else {
       rdd.first() match {
-        case t if t.isInstanceOf[Double] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Double]], name)
-        case t if t.isInstanceOf[LabeledPoint] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[LabeledPoint]], name)
-        case t if t.isInstanceOf[Boolean] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Boolean]], name)
-        case t if t.isInstanceOf[String] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[String]], name)
-        case t if t.isInstanceOf[Int] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Int]], name)
-        case t if t.isInstanceOf[Float] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Float]], name)
-        case t if t.isInstanceOf[Long] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Long]], name)
-        case t if t.isInstanceOf[java.sql.Timestamp] => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[java.sql.Timestamp]], name)
-        case t if t.isInstanceOf[Product] => H2OFrameFromRDDProductBuilder(h2oContext, rdd.asInstanceOf[RDD[Product]], name).withDefaultFieldNames()
+        case _ : Double => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Double]], name)
+        case _ : LabeledPoint => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[LabeledPoint]], name)
+        case _ : Boolean => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Boolean]], name)
+        case _ : String => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[String]], name)
+        case _ : Int => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Int]], name)
+        case _ : Float => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Float]], name)
+        case _ : Long => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Long]], name)
+        case _ : java.sql.Timestamp => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[java.sql.Timestamp]], name)
+        case _ : Product => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Product]], name)
         case t => throw new IllegalArgumentException(s"Do not understand type $t")
       }
     }
