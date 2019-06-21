@@ -86,12 +86,26 @@ object TestFrameUtils extends Matchers {
   }
 
   def assertDataFramesAreIdentical(expected: DataFrame, produced: DataFrame): Unit = {
-    val numberOfExtraRowsInExpected = expected.exceptAll(produced).count()
-    val numberOfExtraRowsInProduced = produced.exceptAll(expected).count()
+    val expectedCount = expected.count()
+    val producedCount = produced.count()
+    assert(
+      expectedCount == producedCount,
+      s"""The expected data frame has $expectedCount rows whereas
+         |the produced data frame has $producedCount rows.""".stripMargin)
+
+    val expectedDistinctCount = expected.distinct().count()
+    val producedDistinctCount = produced.distinct().count()
+    assert(
+      expectedDistinctCount == producedDistinctCount,
+      s"""The expected data frame has $expectedCount distinct rows whereas
+         |the produced data frame has $producedCount distinct rows.""".stripMargin)
+
+    val numberOfExtraRowsInExpected = expected.except(produced).count()
+    val numberOfExtraRowsInProduced = produced.except(expected).count()
     assert(
       numberOfExtraRowsInExpected == 0 && numberOfExtraRowsInProduced == 0,
-      s"""The expected data frame contains $numberOfExtraRowsInExpected rows that are not in the produced data frame.
-         |The produced data frame contains $numberOfExtraRowsInProduced rows that are not in the expected data frame.
+      s"""The expected data frame contains $numberOfExtraRowsInExpected distinct rows that are not in the produced data frame.
+         |The produced data frame contains $numberOfExtraRowsInProduced distinct rows that are not in the expected data frame.
        """.stripMargin)
   }
 }
