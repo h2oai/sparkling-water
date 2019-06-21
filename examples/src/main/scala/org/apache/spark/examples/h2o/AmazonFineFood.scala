@@ -86,8 +86,6 @@ object AmazonFineFood extends SparkContextSupport with SparkSessionSupport with 
     // Cleanup
     reviews.delete()
 
-    // RUN GLM or SVM
-
     // Create a predictor function
     println("DONE")
   }
