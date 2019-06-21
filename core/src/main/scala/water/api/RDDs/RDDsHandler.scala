@@ -20,8 +20,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.execution.ExternalRDD
+import org.apache.spark.sql.{Dataset, Encoders, Row}
+import org.apache.spark.sql.types.{BooleanType, ByteType, DataType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructField, StructType}
 import water.Iced
 import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
@@ -50,6 +51,19 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
     s
   }
 
+  private def fieldType(field: Any): DataType = {
+    field match {
+      case _ : Boolean => BooleanType
+      case _ : Byte => ByteType
+      case _ : Short => ShortType
+      case _ : Int => IntegerType
+      case _ : Float => FloatType
+      case _ : Double => DoubleType
+      case _ : Long => LongType
+      case _ : String => StringType
+    }
+  }
+
   // TODO(vlad): fix this 'instanceOf'
   private[RDDsHandler] def convertToH2OFrame(rdd: RDD[_], name: Option[String]): H2OFrame = {
     if (rdd.isEmpty()) {
@@ -65,7 +79,13 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
         case _ : Float => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Float]], name)
         case _ : Long => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Long]], name)
         case _ : java.sql.Timestamp => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[java.sql.Timestamp]], name)
-        case _ : Product => h2oContext.asH2OFrame(rdd.asInstanceOf[RDD[Product]], name)
+        case _ : Product =>
+          // Overcoming Spark issue, See https://issues.apache.org/jira/browse/SPARK-8288
+          val first = rdd.asInstanceOf[RDD[Product]].first()
+          val arity = first.productArity
+          val schema = StructType((0 until arity).map(idx => StructField(s"f$idx", fieldType(first.productElement(idx)))))
+          val df = h2oContext.sparkSession.createDataFrame(rdd.asInstanceOf[RDD[Product]].map(Row.fromTuple), schema)
+          h2oContext.asH2OFrame(df, name)
         case t => throw new IllegalArgumentException(s"Do not understand type $t")
       }
     }
