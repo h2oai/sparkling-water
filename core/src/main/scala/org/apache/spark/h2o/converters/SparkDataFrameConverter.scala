@@ -52,7 +52,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
     import H2OSchemaUtils._
     // Flatten the Spark data frame so we don't have any nested rows
-    val flatDataFrame = flattenDataFrame(dataFrame)
+    val flatDataFrame = flattenStructsInDataFrame(dataFrame)
     val dfRdd = flatDataFrame.rdd
     val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
 

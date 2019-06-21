@@ -19,6 +19,8 @@ package org.apache.spark.h2o.utils
 
 import java.util.UUID
 
+import org.apache.spark.sql.DataFrame
+import org.scalatest.Matchers
 import water.{DKV, Key}
 import water.fvec._
 import water.parser.BufferedString
@@ -28,7 +30,7 @@ import scala.reflect.ClassTag
 /**
   * Various helpers to help with working with Frames during tests
   */
-object TestFrameUtils {
+object TestFrameUtils extends Matchers {
   def makeH2OFrame[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
                                 data: Array[Array[T]], h2oType: Byte, colDomains: Array[Array[String]] = null): H2OFrame = {
     makeH2OFrame2(fname, colNames, chunkLayout, data.map(_.map(value => Array(value))), Array(h2oType), colDomains)
@@ -74,5 +76,22 @@ object TestFrameUtils {
     }
     FrameUtils.closeNewChunks(nchunks)
     nchunks
+  }
+
+  def assertFieldNamesAreEqual(expected: DataFrame, produced: DataFrame): Unit = {
+    def fieldNames(df: DataFrame) = df.schema.fields.map(_.name)
+    val expectedNames = fieldNames(expected)
+    val producedNames = fieldNames(produced)
+    producedNames shouldEqual expectedNames
+  }
+
+  def assertDataFramesAreIdentical(expected: DataFrame, produced: DataFrame): Unit = {
+    val numberOfExtraRowsInExpected = expected.exceptAll(produced).count()
+    val numberOfExtraRowsInProduced = produced.exceptAll(expected).count()
+    assert(
+      numberOfExtraRowsInExpected == 0 && numberOfExtraRowsInProduced == 0,
+      s"""The expected data frame contains $numberOfExtraRowsInExpected rows that are not in the produced data frame.
+         |The produced data frame contains $numberOfExtraRowsInProduced rows that are not in the expected data frame.
+       """.stripMargin)
   }
 }
