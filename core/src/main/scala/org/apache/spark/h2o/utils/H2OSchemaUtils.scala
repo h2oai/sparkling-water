@@ -180,6 +180,8 @@ object H2OSchemaUtils {
             FieldWithOrder(StructField(name, dataType, true), key)
           case (Some(StructField(name, dataType, nullable1, _)), Some(StructField(_, _, nullable2, _))) =>
             FieldWithOrder(StructField(name, dataType, nullable1 || nullable2), key)
+          case (None, None) =>
+            throw new IllegalStateException(s"There must be a corresponding value for key '$key' in one map at least.")
         }
       }
   }
