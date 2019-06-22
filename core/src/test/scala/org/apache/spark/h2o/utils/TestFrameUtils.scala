@@ -97,8 +97,8 @@ object TestFrameUtils extends Matchers {
     val producedDistinctCount = produced.distinct().count()
     assert(
       expectedDistinctCount == producedDistinctCount,
-      s"""The expected data frame has $expectedCount distinct rows whereas
-         |the produced data frame has $producedCount distinct rows.""".stripMargin)
+      s"""The expected data frame has $expectedDistinctCount distinct rows whereas
+         |the produced data frame has $producedDistinctCount distinct rows.""".stripMargin)
 
     val numberOfExtraRowsInExpected = expected.except(produced).count()
     val numberOfExtraRowsInProduced = produced.except(expected).count()
