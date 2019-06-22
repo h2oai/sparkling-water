@@ -124,13 +124,13 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
     import spark.implicits._
 
     val input = Seq(
-      Seq(Seq(1), null, Seq(3, 4, 5)),
-      Seq(Seq(1, 2), Seq(3, 4), Seq(5, 6))
-    ).toDF("arr")
-    val expected = Seq[(Integer, Integer, Integer, Integer, Integer, Integer, Integer)](
-      (1 , null, null, null, 3, 4, 5),
-      (1, 2, 3, 4, 5, 6, null)
-    ).toDF("arr_0_0", "arr_0_1", "arr_1_0", "arr_1_1", "arr_2_0", "arr_2_1", "arr_2_2")
+      (Seq(Seq(1), null, Seq(3, 4, 5)), "extra"),
+      (Seq(Seq(1, 2), Seq(3, 4), Seq(5, 6)), "extra")
+    ).toDF("arr", "extra")
+    val expected = Seq[(Integer, Integer, Integer, Integer, Integer, Integer, Integer, String)](
+      (1 , null, null, null, 3, 4, 5, "extra"),
+      (1, 2, 3, 4, 5, 6, null, "extra")
+    ).toDF("arr_0_0", "arr_0_1", "arr_1_0", "arr_1_1", "arr_2_0", "arr_2_1", "arr_2_2", "extra")
 
     val result = H2OSchemaUtils.flattenDataFrame(input)
 
@@ -160,13 +160,13 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
     import spark.implicits._
 
     val input = Seq(
-      Seq(Map("a" -> 1, "b" -> 2)),
-      Seq(Map("b" -> 2, "c" -> 3), Map("a" -> 4))
-    ).toDF("arr")
-    val expected = Seq[(Integer, Integer, Integer, Integer)](
-      (1, 2, null, null),
-      (null, 2, 3, 4)
-    ).toDF("arr_0_a", "arr_0_b", "arr_0_c", "arr_1_a")
+      (Seq(Map("a" -> 1, "b" -> 2)), "extra"),
+      (Seq(Map("b" -> 2, "c" -> 3), Map("a" -> 4)), "extra")
+    ).toDF("arr", "extra")
+    val expected = Seq[(Integer, Integer, Integer, Integer, String)](
+      (1, 2, null, null, "extra"),
+      (null, 2, 3, 4, "extra")
+    ).toDF("arr_0_a", "arr_0_b", "arr_0_c", "arr_1_a", "extra")
 
     val result = H2OSchemaUtils.flattenDataFrame(input)
 
@@ -178,13 +178,13 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
     import spark.implicits._
 
     val input = Seq(
-      Map("a" -> Seq[Integer](1, 2), "b" -> Seq[Integer](3)),
-      Map("b" -> Seq[Integer](null, 4), "c" -> Seq[Integer](5, 6))
-    ).toDF("map")
-    val expected = Seq[(Integer, Integer, Integer, Integer, Integer, Integer)](
-      (1, 2, 3, null, null, null),
-      (null, null, null, 4, 5, 6)
-    ).toDF("map_a_0", "map_a_1", "map_b_0", "map_b_1", "map_c_0", "map_c_1")
+      (Map("a" -> Seq[Integer](1, 2), "b" -> Seq[Integer](3)), "extra"),
+      (Map("b" -> Seq[Integer](null, 4), "c" -> Seq[Integer](5, 6)), "extra")
+    ).toDF("map" , "extra")
+    val expected = Seq[(Integer, Integer, Integer, Integer, Integer, Integer, String)](
+      (1, 2, 3, null, null, null, "extra"),
+      (null, null, null, 4, 5, 6, "extra")
+    ).toDF("map_a_0", "map_a_1", "map_b_0", "map_b_1", "map_c_0", "map_c_1", "extra")
 
     val result = H2OSchemaUtils.flattenDataFrame(input)
 
