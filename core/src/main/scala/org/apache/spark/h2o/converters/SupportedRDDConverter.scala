@@ -47,7 +47,7 @@ trait SupportedRDD {
   def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame
 }
 
-object SupportedRDD {
+private[this] object SupportedRDD {
 
   implicit def toH2OFrameFromRDDJavaBool(rdd: RDD[java.lang.Boolean]): SupportedRDD = new SupportedRDD {
     override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
