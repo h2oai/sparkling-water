@@ -20,7 +20,6 @@ package org.apache.spark.h2o.converters
 import org.apache.spark._
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.sql.Row
 
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
