@@ -180,7 +180,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
     val input = Seq(
       (Map("a" -> Seq[Integer](1, 2), "b" -> Seq[Integer](3)), "extra"),
       (Map("b" -> Seq[Integer](null, 4), "c" -> Seq[Integer](5, 6)), "extra")
-    ).toDF("map" , "extra")
+    ).toDF("map", "extra")
     val expected = Seq[(Integer, Integer, Integer, Integer, Integer, Integer, String)](
       (1, 2, 3, null, null, null, "extra"),
       (null, null, null, 4, 5, 6, "extra")
