@@ -1,6 +1,61 @@
 Change Log
 ==========
 
+v2.1.56 (2019-06-24)
+--------------------
+Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/56/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/56/index.html>`__
+
+-  Bug
+        
+   -  `SW-1140 <https://0xdata.atlassian.net/browse/SW-1140>`__ - Add more logging to discover intermittent RSparkling Issue in jenkins tests
+   -  `SW-1318 <https://0xdata.atlassian.net/browse/SW-1318>`__ - add back to JavaH2OContext method asDataFrame(.., SQLContext) but deprecated
+   -  `SW-1321 <https://0xdata.atlassian.net/browse/SW-1321>`__ - Remove mention of H2O UDP from user documentation
+   -  `SW-1322 <https://0xdata.atlassian.net/browse/SW-1322>`__ - Fix wrong doc in ssl.rst -&gt; val conf: H2OConf = // generate H2OConf file
+   -  `SW-1323 <https://0xdata.atlassian.net/browse/SW-1323>`__ - Model ID not available on our algo pipeline wrappers
+   -  `SW-1338 <https://0xdata.atlassian.net/browse/SW-1338>`__ - Follow up fixes after RSparkling change
+   -  `SW-1339 <https://0xdata.atlassian.net/browse/SW-1339>`__ - Use s3-cli instead of s3cmd because of performance reasons on nightlies 
+   -  `SW-1340 <https://0xdata.atlassian.net/browse/SW-1340>`__ - Fix spinx warning
+   -  `SW-1342 <https://0xdata.atlassian.net/browse/SW-1342>`__ - Fix dist
+   -  `SW-1343 <https://0xdata.atlassian.net/browse/SW-1343>`__ - Fix dist structure
+   -  `SW-1345 <https://0xdata.atlassian.net/browse/SW-1345>`__ - Fix missing rsparkling in dist package
+   -  `SW-1347 <https://0xdata.atlassian.net/browse/SW-1347>`__ - Scaladoc not uploaded to S3 after porting make-dist to gradle
+   -  `SW-1359 <https://0xdata.atlassian.net/browse/SW-1359>`__ - Fix wrong links on nightly build page
+   -  `SW-1360 <https://0xdata.atlassian.net/browse/SW-1360>`__ - Explicitly send hearbeat after we have complete flatfile
+   -  `SW-1361 <https://0xdata.atlassian.net/browse/SW-1361>`__ - sparkling water package on maven should assembly jar
+   -  `SW-1362 <https://0xdata.atlassian.net/browse/SW-1362>`__ - gradle.properties in distribution contains wrong version
+   -  `SW-1364 <https://0xdata.atlassian.net/browse/SW-1364>`__ - Rename SVM to SparkSVM
+   -  `SW-1374 <https://0xdata.atlassian.net/browse/SW-1374>`__ - Minor documentation fixes
+                
+-  New Feature
+        
+   -  `SW-1021 <https://0xdata.atlassian.net/browse/SW-1021>`__ - Upload RSparkling to S3 in a form of R repository
+   -  `SW-1353 <https://0xdata.atlassian.net/browse/SW-1353>`__ - Introduce logic flatting data frames with arbitrarily nested structures
+                
+-  Improvement
+        
+   -  `SW-554 <https://0xdata.atlassian.net/browse/SW-554>`__ - Include all used dependency licenses in the uber jar.
+   -  `SW-1308 <https://0xdata.atlassian.net/browse/SW-1308>`__ - Bundle Sparkling Water jar into rsparkling -&gt; making rsparkling version dependent on specific sparkling water
+   -  `SW-1317 <https://0xdata.atlassian.net/browse/SW-1317>`__ - Unify repl acros different rel branches
+   -  `SW-1325 <https://0xdata.atlassian.net/browse/SW-1325>`__ - Expose jks_alias in Sparkling Water
+   -  `SW-1326 <https://0xdata.atlassian.net/browse/SW-1326>`__ - Include SW version in more log statements
+   -  `SW-1330 <https://0xdata.atlassian.net/browse/SW-1330>`__ - Add additional log to H2O cloudup in internal backend mode
+   -  `SW-1331 <https://0xdata.atlassian.net/browse/SW-1331>`__ - Create local repo with RSparkling
+   -  `SW-1332 <https://0xdata.atlassian.net/browse/SW-1332>`__ - [RSparkling] Make installation from S3 the default recommended option
+   -  `SW-1333 <https://0xdata.atlassian.net/browse/SW-1333>`__ - Move the conversion logic from Spark Row to H2O RowData to a separate entity
+   -  `SW-1334 <https://0xdata.atlassian.net/browse/SW-1334>`__ - Store H2O models in transient lazy variables of  SW Mojo models
+   -  `SW-1335 <https://0xdata.atlassian.net/browse/SW-1335>`__ - Make automl tests more deterministic by using max_models instead of max_runtime_secs
+   -  `SW-1341 <https://0xdata.atlassian.net/browse/SW-1341>`__ - Use readme as main dispatch for documentation
+   -  `SW-1346 <https://0xdata.atlassian.net/browse/SW-1346>`__ - Remove chache and unpersist call in SpreadRDDBuilder
+   -  `SW-1348 <https://0xdata.atlassian.net/browse/SW-1348>`__ - Switch to s3 cli on release pipelines
+   -  `SW-1349 <https://0xdata.atlassian.net/browse/SW-1349>`__ - Use withColumn instead of select in MOJO models
+   -  `SW-1350 <https://0xdata.atlassian.net/browse/SW-1350>`__ - Fix links to doc &amp; scaladoc on nightly builds
+   -  `SW-1352 <https://0xdata.atlassian.net/browse/SW-1352>`__ - Upgrade H2O to 3.24.0.5
+   -  `SW-1365 <https://0xdata.atlassian.net/browse/SW-1365>`__ - Run only last build in jenkins
+   -  `SW-1369 <https://0xdata.atlassian.net/browse/SW-1369>`__ - Download page is missing one step on RSparkling tab -&gt; library(rsparkling)
+   -  `SW-1371 <https://0xdata.atlassian.net/browse/SW-1371>`__ - Create maven repo on our s3 for each release and nightly
+   -  `SW-1373 <https://0xdata.atlassian.net/browse/SW-1373>`__ - Update DBC documentation with respoect to latest RSparkling development
+                
+                                                                                                    
 v2.1.55 (2019-06-03)
 --------------------
 Download at: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/55/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/55/index.html>`__
