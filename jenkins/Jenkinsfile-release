@@ -95,7 +95,7 @@ def publishReleaseNotes() {
                 withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
                     sh """
                             # Copy keys
-                            rm -rf ~/.ssh
+                            rm -rf ~/.ssh ~/.gitconfig
                             mkdir -p ~/.ssh
                             cp \${ID_RSA_PATH} ~/.ssh/id_rsa
                             cp \${GITCONFIG_PATH} ~/.gitconfig
@@ -266,7 +266,7 @@ def updateDocLinks() {
 
                     sh """
                                # Copy keys
-                               rm -rf ~/.ssh
+                               rm -rf ~/.ssh ~/.gitconfig
                                mkdir -p ~/.ssh
                                cp \${ID_RSA_PATH} ~/.ssh/id_rsa
                                cp \${GITCONFIG_PATH} ~/.gitconfig
@@ -359,6 +359,7 @@ def updateNextRelVersion() {
                     sh """
                         # Copy keys
                         mkdir -p ~/.ssh
+                        rm -rf ~/.ssh ~/.gitconfig
                         cp \${ID_RSA_PATH} ~/.ssh/id_rsa
                         cp \${GITCONFIG_PATH} ~/.gitconfig
                         """
