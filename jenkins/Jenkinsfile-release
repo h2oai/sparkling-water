@@ -27,9 +27,9 @@ node('master') {
                 dir("${env.WORKSPACE}") {
 
                     cleanWs()
+                    checkout scm
 
                     withDocker {
-                        gitCheckout()()
                         publishReleaseNotes()(params)
                         build()()
                         buildConda()(params)
@@ -86,14 +86,6 @@ String getPatchVersion() {
     def v = getVersion()
     def split = v.split("\\.")
     return "${split[2]}"
-}
-
-def gitCheckout() {
-    return {
-        stage('Checkout Repo') {
-            checkout scm
-        }
-    }
 }
 
 def publishReleaseNotes() {
