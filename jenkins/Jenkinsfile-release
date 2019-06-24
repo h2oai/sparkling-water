@@ -28,7 +28,7 @@ node('master') {
 
                     cleanWs()
                     checkout scm
-                    
+
                     withDocker {
                         publishReleaseNotes()(params)
                         build()()
