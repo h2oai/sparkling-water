@@ -44,8 +44,6 @@ node('docker && micro') {
             // We therefore don't publish nightly here, but in the internal nightly job.
             // Note: We can do that as these 2 jobs run at the same time
             uploadNightly = "false"
-            dockerVersion = "15"
-
         }
     }
 }
