@@ -27,9 +27,9 @@ node('master') {
                 dir("${env.WORKSPACE}") {
 
                     cleanWs()
-
+                    gitCheckout()
+                    
                     withDocker {
-                        gitCheckout()()
                         publishReleaseNotes()(params)
                         build()()
                         buildConda()(params)
