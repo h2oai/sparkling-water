@@ -116,7 +116,8 @@ ENV PATH "/home/jenkins/miniconda/bin:${PATH}"
 RUN \
     conda install anaconda anaconda-client conda-build -y && \
     conda update conda -y && \
-    conda update anaconda anaconda-client conda-build -y
+    conda update anaconda anaconda-client conda-build -y && \
+    conda config --add channels conda-forge
 
 ENV HIVE_HOME /usr/hdp/2.2.9.0-3393/hive
 
