@@ -20,10 +20,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.execution.ExternalRDD
-import org.apache.spark.sql.{Dataset, Encoders, Row}
-import org.apache.spark.sql.types.{BooleanType, ByteType, DataType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{StructField, StructType}
 import water.Iced
 import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
