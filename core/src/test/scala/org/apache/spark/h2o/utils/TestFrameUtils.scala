@@ -186,7 +186,8 @@ object TestFrameUtils extends Matchers {
   private def generateArray(
       random: Random,
       settings: GenerateDataFrameSettings,
-      elementType: DataType, containsNull: Boolean,
+      elementType: DataType,
+      containsNull: Boolean,
       nameWithPrefix: String): Seq[Any] = {
     (0 until random.nextInt(settings.maxCollectionSize)).map { idx =>
       val arrayField = StructField(idx.toString, elementType, containsNull)
