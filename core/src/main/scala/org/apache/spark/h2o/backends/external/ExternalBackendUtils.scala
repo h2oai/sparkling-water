@@ -95,7 +95,7 @@ object ExternalBackendUtils extends ExternalBackendUtils {
         ExternalFrameUtils.EXPECTED_STRING
       } else if (clazz == classOf[java.sql.Timestamp]) {
         ExternalFrameUtils.EXPECTED_TIMESTAMP
-      } else if (clazz == classOf[org.apache.spark.mllib.linalg.Vector]) {
+      } else if (clazz == classOf[org.apache.spark.ml.linalg.Vector]) {
         ExternalFrameUtils.EXPECTED_VECTOR
       } else {
         throw new RuntimeException("Unsupported class: " + clazz)
