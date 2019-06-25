@@ -488,7 +488,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assertVectorDoubleValues(h2oFrame.vec(0), Seq(0, 1))
     assertVectorDoubleValues(h2oFrame.vec(1), Seq(1, 4))
     assertVectorDoubleValues(h2oFrame.vec(2), Seq(2, 5))
-    assertVectorDoubleValues(h2oFrame.vec(3), Seq(3, Double.NaN))
+    assertVectorDoubleValues(h2oFrame.vec(3), Seq(3, 0))
   }
 
   test("RDD[LabeledPoint] ( Sparse Vector, same size ) to H2OFrame[LabeledPoint]") {
@@ -513,8 +513,8 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(rdd.count() == h2oFrame.numRows(), "Number of rows should match")
     assertVectorDoubleValues(h2oFrame.vec(0), Seq(0, 1))
     assertVectorDoubleValues(h2oFrame.vec(1), Seq(3.0, 1.0))
-    assertVectorDoubleValues(h2oFrame.vec(2), Seq(Double.NaN, 8))
-    assertVectorDoubleValues(h2oFrame.vec(3), Seq(Double.NaN, 0))
+    assertVectorDoubleValues(h2oFrame.vec(2), Seq(0, 8))
+    assertVectorDoubleValues(h2oFrame.vec(3), Seq(0, 0))
   }
 
   test("RDD[ml.linalg.Vector](dense - same length) to H2OFrame") {
