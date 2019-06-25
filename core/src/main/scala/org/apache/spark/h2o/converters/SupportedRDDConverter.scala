@@ -163,7 +163,7 @@ private[this] object SupportedRDD {
   implicit def toH2OFrameFromRDDTimeStamp(rdd: RDD[java.sql.Timestamp]): SupportedRDD = new SupportedRDD {
     override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
       import hc.sparkSession.implicits._
-      SparkDataFrameConverter.toH2OFrame(hc, rdd.toDF(), frameKeyName)
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.map(v => Tuple1(v)).toDF(), frameKeyName)
     }
   }
 
