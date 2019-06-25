@@ -24,39 +24,9 @@ import org.apache.spark.internal.Logging
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.runtime.universe._
 
-
 private[h2o] object DatasetConverter extends Logging {
 
-  /** Transform Spark's Dataset into H2O Frame */
   def toH2OFrame[T <: Product](hc: H2OContext, ds: Dataset[T], frameKeyName: Option[String])(implicit ttag: TypeTag[T]) = {
-    val tpe = ttag.tpe
-    val constructorSymbol = tpe.decl(termNames.CONSTRUCTOR)
-    val defaultConstructor =
-      if (constructorSymbol.isMethod) constructorSymbol.asMethod
-      else {
-        val ctors = constructorSymbol.asTerm.alternatives
-        ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
-      }
-
-    val params: List[(String, Type)] = defaultConstructor.paramLists.flatten map {
-      sym => sym.name.toString -> tpe.member(sym.name).asMethod.returnType
-    }
-
-    val rdd: RDD[Product] = try {
-      ds.rdd.asInstanceOf[RDD[Product]]
-    } catch {
-      case oops: Exception =>
-        oops.printStackTrace()
-        throw oops
-    }
-    val res = try {
-      val prototype = H2OFrameFromRDDProductBuilder(hc, rdd, frameKeyName)
-      prototype.withFields(params)
-    } catch {
-      case oops: Exception =>
-        oops.printStackTrace()
-        throw oops
-    }
-    res
+    SparkDataFrameConverter.toH2OFrame(hc, ds.toDF() , frameKeyName)
   }
 }
