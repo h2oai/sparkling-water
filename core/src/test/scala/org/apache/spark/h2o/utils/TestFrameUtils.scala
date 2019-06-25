@@ -153,7 +153,7 @@ object TestFrameUtils extends Matchers {
       case None => name
       case Some(x) => s"${x}_name"
     }
-    if(nullable && random.nextDouble() <= settings.nullProbability) {
+    if (nullable && random.nextDouble() <= settings.nullProbability) {
       null
     } else {
       dataType match {
