@@ -19,13 +19,18 @@ package org.apache.spark.h2o.utils
 
 import java.util.UUID
 
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.sql.catalyst.expressions.GenericRow
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions.{lit, rand}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.scalatest.Matchers
 import water.{DKV, Key}
 import water.fvec._
 import water.parser.BufferedString
 
 import scala.reflect.ClassTag
+import scala.util.Random
 
 /**
   * Various helpers to help with working with Frames during tests
@@ -107,5 +112,86 @@ object TestFrameUtils extends Matchers {
       s"""The expected data frame contains $numberOfExtraRowsInExpected distinct rows that are not in the produced data frame.
          |The produced data frame contains $numberOfExtraRowsInProduced distinct rows that are not in the expected data frame.
        """.stripMargin)
+  }
+
+  case class GenerateDataFrameSettings(
+    numberOfRows: Int,
+    rowsPerPartition: Int,
+    maxCollectionSize: Int,
+    nullProbability: Double = 0.1,
+    seed: Long = 1234L)
+
+  trait SchemaHolder {
+    def schema: StructType
+  }
+
+  def generateDataFrame(
+      spark: SparkSession,
+      schemaHolder: SchemaHolder,
+      settings: GenerateDataFrameSettings): DataFrame = {
+    implicit val encoder = RowEncoder(schemaHolder.schema)
+    val numberOfPartitions = Math.max(1, settings.numberOfRows / settings.rowsPerPartition)
+    spark
+      .range(settings.numberOfRows)
+      .repartition(numberOfPartitions)
+      .select(rand(settings.seed) * lit(Long.MaxValue) cast LongType)
+      .map { r: Row =>
+        val schema = schemaHolder.schema
+        val localRandom = new Random(r.getLong(0))
+        val values = schema.fields.map(f => generateValueForField(localRandom, f, settings))
+        new GenericRow(values)
+      }
+  }
+
+  private def generateValueForField(
+      random: Random,
+      field: StructField,
+      settings: GenerateDataFrameSettings,
+      prefix: Option[String] = None): Any = {
+    val StructField(name, dataType, nullable, _) = field
+    val nameWithPrefix = prefix match {
+      case None => name
+      case Some(x) => s"${x}_name"
+    }
+    if (nullable && random.nextDouble() <= settings.nullProbability) {
+      null
+    } else {
+      dataType match {
+        case BooleanType => random.nextBoolean()
+        case ByteType => random.nextInt(255).toByte
+        case ShortType => random.nextInt(256 * 256 - 1).toShort
+        case IntegerType => random.nextInt()
+        case LongType => random.nextLong()
+        case DoubleType => random.nextDouble()
+        case d: DecimalType => BigDecimal(1L, d.scale)
+        case StringType => s"${name}_${random.nextInt()}"
+        case ArrayType(elementType, containsNull) =>
+          generateArray(random, settings, elementType, containsNull, nameWithPrefix)
+        case BinaryType =>
+          generateArray(random, settings, ByteType, false, nameWithPrefix)
+        case MapType(keyType, valueType, valueContainsNull) =>
+          val array = generateArray(random, settings, valueType, valueContainsNull, nameWithPrefix)
+          array.zipWithIndex.map { case (a, i) =>
+            val keyField = StructField(i.toString, keyType, valueContainsNull)
+            val key = generateValueForField(random, keyField, settings, Some(nameWithPrefix))
+            key -> a
+          }.toMap
+        case StructType(fields) =>
+          val values = fields.map(f => generateValueForField(random, f, settings, Some(nameWithPrefix)))
+          new GenericRow(values)
+      }
+    }
+  }
+
+  private def generateArray(
+      random: Random,
+      settings: GenerateDataFrameSettings,
+      elementType: DataType,
+      containsNull: Boolean,
+      nameWithPrefix: String): Seq[Any] = {
+    (0 until random.nextInt(settings.maxCollectionSize)).map { idx =>
+      val arrayField = StructField(idx.toString, elementType, containsNull)
+      generateValueForField(random, arrayField, settings, Some(nameWithPrefix))
+    }
   }
 }
