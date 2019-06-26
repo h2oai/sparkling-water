@@ -219,7 +219,7 @@ and in Python:
  .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).set_external_cluster_mode().use_auto_cluster_start().set_h2o_driver_path("path_to_extended_driver").set_num_of_external_h2o_nodes(1).set_mapper_xmx("2G").set_yarn_queue(“abc")`
+    conf = H2OConf(spark).set_external_cluster_mode().use_auto_cluster_start().set_h2o_driver_path("path_to_extended_driver").set_num_of_external_h2o_nodes(1).set_mapper_xmx("2G").set_yarn_queue("abc")`
     hc = H2OContext.getOrCreate(spark, conf)
 
 In both cases, we can see various configuration methods. We explain only the Scala ones because the Python equivalents are doing exactly the same.
