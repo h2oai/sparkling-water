@@ -20,26 +20,24 @@ package water.sparkling.itest.local
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 /**
   * Test conversion from H2O Frame to Spark Data Frame in a distributed environment. That is why the master
   * is set to local-cluster in this test suite.
   */
 @RunWith(classOf[JUnitRunner])
-class H2OFrameToDataFrameDistributedTestSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll  {
+class H2OFrameToDataFrameDistributedTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local-cluster[3,1,2048]", this.getClass.getName, conf = defaultSparkConf)
 
   test("Convert H2OFrame to DataFrame when H2OFrame was changed in DKV") {
 
-    import spark.implicits._
-    val rdd = sc.parallelize(1 to 100).repartition(3).toDF()
+    val rdd = sc.parallelize(1 to 100, 3)
     val h2oFrame = hc.asH2OFrame(rdd)
     assert(h2oFrame.anyVec().nChunks() == 3)
     val updatedFrame = h2oFrame.add(h2oFrame)
-
 
     val convertedDf = hc.asDataFrame(updatedFrame)
     convertedDf.collect() // trigger materialization
