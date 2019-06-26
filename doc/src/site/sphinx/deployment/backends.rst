@@ -93,7 +93,7 @@ Scala:
  .. code:: scala
 
     import org.apache.spark.h2o._
-    val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setH2OCluster("representant_ip", representant_port).setCloudName("test”)
+    val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setH2OCluster("representant_ip", representant_port).setCloudName("test")
     val hc = H2OContext.getOrCreate(spark, conf)
 
 Python:
@@ -101,7 +101,7 @@ Python:
  .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_cloud_name("test”)
+    conf = H2OConf(spark).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_cloud_name("test")
     hc = H2OContext.getOrCreate(spark, conf)
 
 
@@ -126,7 +126,7 @@ Now, let's start Sparkling shell first as ``./bin/sparkling-shell`` and connect 
 .. code:: scala
 
     import org.apache.spark.h2o._
-    val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test”)
+    val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")
     val hc = H2OContext.getOrCreate(spark, conf)
 
 To connect to an existing H2O cluster from Python, start PySparkling shell as ``./bin/pysparkling`` and run:
@@ -152,7 +152,7 @@ Scala:
  .. code:: scala
 
     import org.apache.spark.h2o._
-    val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setH2OCluster("representant_ip", representant_port).setCloudName("test”)
+    val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setH2OCluster("representant_ip", representant_port).setCloudName("test")
     val hc = H2OContext.getOrCreate(spark, conf)
 
 Python:
@@ -160,7 +160,7 @@ Python:
  .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_cloud_name("test”)
+    conf = H2OConf(spark).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_cloud_name("test")
     hc = H2OContext.getOrCreate(spark, conf)
 
 
@@ -184,7 +184,7 @@ Scala:
  .. code:: scala
 
     import org.apache.spark.h2o._
-    val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setH2OCluster("representant_ip", representant_port).setClientIp("192.168.0.3").setCloudName("test”)
+    val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setH2OCluster("representant_ip", representant_port).setClientIp("192.168.0.3").setCloudName("test")
     val hc = H2OContext.getOrCreate(spark, conf)
 
 Python:
@@ -192,7 +192,7 @@ Python:
  .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_client_ip("192.168.0.3").set_cloud_name("test”)
+    conf = H2OConf(spark).set_external_cluster_mode().use_manual_cluster_start().set_h2o_cluster("representant_ip", representant_port).set_client_ip("192.168.0.3").set_cloud_name("test")
     hc = H2OContext.getOrCreate(spark, conf)
 
 There is also a less strict configuration ``setClientNetworkMask`` in Scala and ``set_client_network_mask`` in Python. Instead of its IP address equivalent, using this method, we can force the H2O client to use just a specific network, and then the client determines which IP address from this network to use.
@@ -219,7 +219,7 @@ and in Python:
  .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).set_external_cluster_mode().use_auto_cluster_start().set_h2o_driver_path("path_to_extended_driver").set_num_of_external_h2o_nodes(1).set_mapper_xmx("2G”).set_yarn_queue(“abc”)`
+    conf = H2OConf(spark).set_external_cluster_mode().use_auto_cluster_start().set_h2o_driver_path("path_to_extended_driver").set_num_of_external_h2o_nodes(1).set_mapper_xmx("2G").set_yarn_queue(“abc")`
     hc = H2OContext.getOrCreate(spark, conf)
 
 In both cases, we can see various configuration methods. We explain only the Scala ones because the Python equivalents are doing exactly the same.
