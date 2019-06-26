@@ -297,7 +297,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     val clusterSize = conf.sparkConf.getOption("spark.ext.h2o.external.cluster.num.h2o.nodes")
     if (clusterSize.isDefined) {
       Log.warn("'spark.ext.h2o.external.cluster.num.h2o.nodes' is deprecated. Please use 'spark.ext.h2o.external.cluster.size'.")
-      conf.setClusterSize(clusterSize.get())
+      conf.setClusterSize(clusterSize.get.toInt)
     }
 
     if (conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_MANUAL_MODE &&
