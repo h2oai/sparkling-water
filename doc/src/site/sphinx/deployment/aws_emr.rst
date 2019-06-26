@@ -62,5 +62,5 @@ After your EMR cluster is created, you can ssh into your head node. In the head 
 
 ::
 
-  --conf “spark.dynamicAllocation.enabled=false” 
+  --conf "spark.dynamicAllocation.enabled=false"
 
