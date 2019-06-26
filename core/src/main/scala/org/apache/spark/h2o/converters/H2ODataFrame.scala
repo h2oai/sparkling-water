@@ -27,6 +27,7 @@ import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.{Partition, TaskContext}
 import water.H2O
+import water.support.H2OFrameSupport
 
 import scala.language.postfixOps
 
@@ -50,7 +51,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
   def this(@transient frame: T)
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
-  frame.update()
+  H2OFrameSupport.lockAndUpdate(frame)
   private val colNames = frame.names()
   private val types: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
 

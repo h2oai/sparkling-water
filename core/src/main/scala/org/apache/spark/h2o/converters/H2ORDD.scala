@@ -27,6 +27,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, TaskContext}
 import water.{ExternalFrameUtils, H2O}
 import water.fvec.Frame
+import water.support.H2OFrameSupport
 
 import scala.annotation.meta.{field, getter, param}
 import scala.language.postfixOps
@@ -56,9 +57,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
   def this(@transient fr: T)
           (@transient hc: H2OContext) = this(fr, ProductType.create[A])(hc)
 
-  def mkString(seq: Seq[_], sep: Any) = if (seq == null) "(null)" else seq.mkString(sep.toString)
-
-  frame.update()
+  H2OFrameSupport.lockAndUpdate(frame)
   private val colNames = frame.names()
 
   // Check that H2OFrame & given Scala type are compatible
@@ -87,7 +86,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
   private def opt[X](op: => Any): Option[X] = try {
     Option(op.asInstanceOf[X])
   } catch {
-    case ex: Exception =>
+    case _: Exception =>
       None
   }
 
