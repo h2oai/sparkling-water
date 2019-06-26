@@ -68,7 +68,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       s"-Dmapreduce.job.tags=${yarnAppTags}",
       s"-Dai.h2o.args.config=sparkling-water-external",
       "-Dmapreduce.framework.name=h2o-yarn", // use H2O's custom application Master
-      "-nodes", conf.numOfExternalH2ONodes.get,
+      "-nodes", conf.clusterSize.get,
       "-notify", conf.clusterInfoFile.get,
       "-jobname", conf.cloudName.get,
       "-mapperXmx", conf.mapperXmx,
@@ -200,9 +200,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     H2OStarter.start(h2oClientArgs, false)
 
-    if (hc.getConf.numOfExternalH2ONodes.isDefined) {
-      H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
-    }
+    H2O.waitForCloudSize(hc.getConf.clusterSize.get.toInt, hc.getConf.cloudTimeout)
+
     // Register web API for client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
@@ -295,6 +294,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
 
+    if(conf.sparkConf.getOption("spark.ext.h2o.external.cluster.num.h2o.nodes").isDefined) {
+      Log.warn("'spark.ext.h2o.external.cluster.num.h2o.nodes' is deprecated. Please use 'spark.ext.h2o.external.cluster.size'.")
+    }
+
     if (conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_MANUAL_MODE &&
       conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_AUTO_MODE) {
 
@@ -302,6 +305,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         s"""'${ExternalBackendConf.PROP_EXTERNAL_CLUSTER_START_MODE._1}' property is set to ${conf.clusterStartMode}.
           Valid options are "${ExternalBackendConf.EXTERNAL_BACKEND_MANUAL_MODE}" or "${ExternalBackendConf.EXTERNAL_BACKEND_AUTO_MODE}".
       """)
+    }
+
+    if (conf.clusterSize.isEmpty) {
+      throw new IllegalArgumentException("Number of external H2O nodes has to be specified!")
     }
 
     if (conf.isAutoClusterStartUsed) {
@@ -322,10 +329,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
       if (conf.cloudName.isEmpty) {
         conf.setCloudName(H2O_JOB_NAME.format(hc.sparkContext.applicationId))
-      }
-
-      if (conf.numOfExternalH2ONodes.isEmpty) {
-        throw new IllegalArgumentException("Number of external H2O nodes has to be specified in the auto H2O external start mode!")
       }
 
       if (conf.clusterInfoFile.isEmpty) {
