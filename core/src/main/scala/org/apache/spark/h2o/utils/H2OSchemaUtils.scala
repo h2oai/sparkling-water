@@ -438,9 +438,14 @@ object H2OSchemaUtils {
     val maxCollectionSizes = if (sizeFromMetadata.forall(_.isDefined)) {
       sizeFromMetadata.map(_.get).toArray
     } else {
-      flatDataFrame.rdd.map { row =>
+      val sizes = flatDataFrame.rdd.map { row =>
         collectionIndices.map { idx => getCollectionSize(row, idx) }
-      }.reduce((a, b) => a.indices.map(i => if (a(i) > b(i)) a(i) else b(i))).toArray
+      }
+      if (sizes.isEmpty) {
+        Array(0)
+      } else {
+        sizes.reduce((a, b) => a.indices.map(i => if (a(i) > b(i)) a(i) else b(i))).toArray
+      }
     }
 
     val collectionIdxToSize = collectionIndices.zip(maxCollectionSizes).toMap

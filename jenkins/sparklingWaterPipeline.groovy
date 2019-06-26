@@ -104,8 +104,13 @@ def call(params, body) {
     }
 }
 
+String getDockerImageVersion() {
+    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('dockerImageVersion') }
+    return versionLine.split("=")[1]
+}
+
 def withDocker(config, code) {
-    def image = 'opsh2oai/sparkling_water_tests:' + config.dockerVersion
+    def image = 'opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
     retryWithDelay(3, 120,{
         withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
             sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"

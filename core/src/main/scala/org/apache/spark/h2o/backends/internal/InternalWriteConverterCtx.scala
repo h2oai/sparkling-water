@@ -20,7 +20,7 @@ package org.apache.spark.h2o.backends.internal
 import java.sql.{Date, Timestamp}
 
 import org.apache.spark.h2o.converters.WriteConverterCtx
-import org.apache.spark.mllib.linalg.{DenseVector, SparseVector}
+import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
 import water.fvec.{FrameUtils, NewChunk}
 
 class InternalWriteConverterCtx extends WriteConverterCtx {

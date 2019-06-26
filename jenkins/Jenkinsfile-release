@@ -27,9 +27,9 @@ node('master') {
                 dir("${env.WORKSPACE}") {
 
                     cleanWs()
+                    checkout scm
 
                     withDocker {
-                        gitCheckout()()
                         publishReleaseNotes()(params)
                         build()()
                         buildConda()(params)
@@ -47,8 +47,13 @@ node('master') {
     }
 }
 
+String getDockerImageVersion() {
+    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('dockerImageVersion') }
+    return versionLine.split("=")[1]
+}
+
 def withDocker(code) {
-    def image = 'opsh2oai/sparkling_water_tests:15'
+    def image = 'opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
     retryWithDelay(3, 120, {
         withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
             sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
@@ -83,14 +88,6 @@ String getPatchVersion() {
     return "${split[2]}"
 }
 
-def gitCheckout() {
-    return {
-        stage('Checkout Repo') {
-            checkout scm
-        }
-    }
-}
-
 def publishReleaseNotes() {
     return { params ->
         stage('Create Release Notes') {
@@ -98,6 +95,7 @@ def publishReleaseNotes() {
                 withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
                     sh """
                             # Copy keys
+                            rm -rf ~/.ssh ~/.gitconfig
                             mkdir -p ~/.ssh
                             cp \${ID_RSA_PATH} ~/.ssh/id_rsa
                             cp \${GITCONFIG_PATH} ~/.gitconfig
@@ -268,6 +266,7 @@ def updateDocLinks() {
 
                     sh """
                                # Copy keys
+                               rm -rf ~/.ssh ~/.gitconfig
                                mkdir -p ~/.ssh
                                cp \${ID_RSA_PATH} ~/.ssh/id_rsa
                                cp \${GITCONFIG_PATH} ~/.gitconfig
@@ -359,6 +358,7 @@ def updateNextRelVersion() {
                 withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]) {
                     sh """
                         # Copy keys
+                        rm -rf ~/.ssh ~/.gitconfig
                         mkdir -p ~/.ssh
                         cp \${ID_RSA_PATH} ~/.ssh/id_rsa
                         cp \${GITCONFIG_PATH} ~/.gitconfig
