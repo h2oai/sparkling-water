@@ -58,7 +58,8 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
 
   def mkString(seq: Seq[_], sep: Any) = if (seq == null) "(null)" else seq.mkString(sep.toString)
 
-  val colNames = frame.names()
+  frame.update()
+  private val colNames = frame.names()
 
   // Check that H2OFrame & given Scala type are compatible
   if (!productType.isSingleton) {
