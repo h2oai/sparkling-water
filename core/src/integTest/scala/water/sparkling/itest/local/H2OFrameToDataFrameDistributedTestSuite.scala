@@ -30,11 +30,11 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class H2OFrameToDataFrameDistributedTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local-cluster[3,1,2048]", this.getClass.getName, conf = defaultSparkConf)
+  override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,2,2048]", this.getClass.getName, conf = defaultSparkConf)
 
   test("Convert H2OFrame to DataFrame when H2OFrame was changed in DKV") {
 
-    val rdd = sc.parallelize(1 to 100, 3)
+    val rdd = sc.parallelize(1 to 100, 2)
     val h2oFrame = hc.asH2OFrame(rdd)
     assert(h2oFrame.anyVec().nChunks() == 3)
     val updatedFrame = h2oFrame.add(h2oFrame)
