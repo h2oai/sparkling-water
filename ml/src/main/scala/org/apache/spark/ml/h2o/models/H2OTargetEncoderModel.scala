@@ -14,13 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package org.apache.spark.ml.h2o.models
 
 import ai.h2o.automl.targetencoding.TargetEncoderModel
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
-import org.apache.spark.ml.h2o.features.H2OTargetEncoderNoiseSettings
-import org.apache.spark.ml.h2o.param.H2OTargetEncoderParams
+import org.apache.spark.ml.h2o.features.{H2OTargetEncoderBase, H2OTargetEncoderNoiseSettings}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
@@ -29,7 +29,7 @@ import water.support.ModelSerializationSupport
 class H2OTargetEncoderModel(
     override val uid: String,
     targetEncoderModel: TargetEncoderModel)
-  extends Model[H2OTargetEncoderModel] with H2OTargetEncoderParams with MLWritable {
+  extends Model[H2OTargetEncoderModel] with H2OTargetEncoderBase with MLWritable {
 
   lazy val mojoModel: H2OTargetEncoderMojoModel = {
     val mojoData = ModelSerializationSupport.getMojoData(targetEncoderModel)
@@ -48,7 +48,7 @@ class H2OTargetEncoderModel(
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
     val input = h2oContext.asH2OFrame(dataset.toDF())
-    changeRelevantColumnsToCategorical(input)
+    convertRelevantColumnsToCategorical(input)
     val noise = Option(getNoise()).getOrElse(H2OTargetEncoderNoiseSettings(amount = 0.0))
     val holdoutStrategyId = getHoldoutStrategy().ordinal().asInstanceOf[Byte]
     val output = targetEncoderModel.transform(input, holdoutStrategyId, noise.amount, noise.seed)

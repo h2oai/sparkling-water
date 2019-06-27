@@ -14,6 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package org.apache.spark.ml.h2o.features
 
 import ai.h2o.automl.targetencoding._
@@ -27,7 +28,7 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 
 class H2OTargetEncoder(override val uid: String)
   extends Estimator[H2OTargetEncoderModel]
-  with H2OTargetEncoderParams
+  with H2OTargetEncoderBase
   with DefaultParamsWritable {
 
   def this() = this(Identifiable.randomUID("H2OTargetEncoder"))
@@ -35,7 +36,7 @@ class H2OTargetEncoder(override val uid: String)
   override def fit(dataset: Dataset[_]): H2OTargetEncoderModel = {
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
     val input = h2oContext.asH2OFrame(dataset.toDF())
-    changeRelevantColumnsToCategorical(input)
+    convertRelevantColumnsToCategorical(input)
     val targetEncoderModel = trainTargetEncodingModel(input)
     val model = new H2OTargetEncoderModel(uid, targetEncoderModel).setParent(this)
     copyValues(model)

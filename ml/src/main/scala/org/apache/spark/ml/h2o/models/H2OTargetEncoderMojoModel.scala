@@ -14,13 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package org.apache.spark.ml.h2o.models
 
 import hex.genmodel.algos.targetencoder.TargetEncoderMojoModel
 import org.apache.spark.h2o.converters.RowConverter
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.Model
-import org.apache.spark.ml.h2o.param.H2OTargetEncoderParams
+import org.apache.spark.ml.h2o.features.H2OTargetEncoderBase
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.sql.functions._
@@ -28,7 +29,7 @@ import org.apache.spark.ml.util.Identifiable
 import water.support.ModelSerializationSupport
 
 class H2OTargetEncoderMojoModel(override val uid: String) extends Model[H2OTargetEncoderMojoModel]
-  with H2OMOJOWritable with H2OTargetEncoderParams {
+  with H2OTargetEncoderBase with H2OMOJOWritable {
 
   def this() = this(Identifiable.randomUID("H2OTargetEncoderMojoModel"))
 
@@ -46,7 +47,6 @@ class H2OTargetEncoderMojoModel(override val uid: String) extends Model[H2OTarge
   }
 
   override def copy(extra: ParamMap): H2OTargetEncoderMojoModel = defaultCopy(extra)
-
 }
 
 /**

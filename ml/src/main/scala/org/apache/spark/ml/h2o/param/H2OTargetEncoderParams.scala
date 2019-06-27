@@ -14,38 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package org.apache.spark.ml.h2o.param
 
-import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.h2o.features._
-import org.apache.spark.ml.PipelineStage
 import org.apache.spark.ml.param.{Param, Params, StringArrayParam}
-import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
-import org.apache.spark.h2o.Frame
 
-trait H2OTargetEncoderParams extends PipelineStage with Params {
-
-  //
-  // Override pipeline stage members
-  //
-  override def transformSchema(schema: StructType): StructType = {
-    val flatSchema = H2OSchemaUtils.flattenSchema(schema)
-    require(getLabelCol() != null, "Label column can't be null!")
-    require(getInputCols() != null && getInputCols().nonEmpty, "The list of input columns can't be null or empty!")
-    val fields = flatSchema.fields
-    val fieldNames = fields.map(_.name)
-    require(fieldNames.contains(getLabelCol()),
-      s"The specified label column '${getLabelCol()}' was not found in the input dataset!")
-    for(inputCol <- getInputCols()) {
-      require(fieldNames.contains(inputCol),
-        s"The specified input column '$inputCol' was not found in the input dataset!")
-    }
-    val ioIntersection = getInputCols().intersect(getOutputCols())
-    require(ioIntersection.isEmpty,
-      s"""The columns [${ioIntersection.map(i => s"'$i'").mkString(", ")}] are specified
-         |as input columns and also as output columns. There can't be an overlap.""".stripMargin)
-    StructType(flatSchema.fields ++ getOutputCols().map(StructField(_, DoubleType, nullable = true)))
-  }
+trait H2OTargetEncoderParams extends Params {
 
   //
   // List of Parameters
@@ -58,21 +33,22 @@ trait H2OTargetEncoderParams extends PipelineStage with Params {
     """A strategy deciding what records will be excluded when calculating the target average on the training dataset.
       |Options:
       | None        - All rows are considered for the calculation
-      | LeaveOneOut - All rows except the row the colculation is made for
-      | KMeans      - Only out-of-fold data is considered (The option requires foldCol to be set.)
+      | LeaveOneOut - All rows except the row the calculation is made for
+      | KFold       - Only out-of-fold data is considered (The option requires foldCol to be set.)
     """.stripMargin)
   protected final val blending = new CaseClassParam[H2OTargetEncoderBlendingSettings](this,
     "blending",
-    """If set, the target average becomes a weighted average of the group target value and the global target value of a given row.
+    """If set, the target average becomes a weighted average of the posterior average for a given categorical level and the prior average of the target.
       |The weight is determined by the size of the given group that the row belongs to.
       |Attributes:
-      | InflectionPoint - The bigger number it's, the bigger groups will consider the global target value as a component in the weighted average.
-      | Smoothing       - Controls the rate of transition between group target values and global target values.""".stripMargin)
+      | InflectionPoint - The bigger number it's, the groups relatively bigger to the overall data set size will consider
+      |                   the global target value as a component in the weighted average.
+      | Smoothing       - Controls the rate of transition between a group target value and a global target value.""".stripMargin)
   protected final val noise = new CaseClassParam[H2OTargetEncoderNoiseSettings](this,
     "noise",
-    """The settings affecting how much of noise will be added to the target average.
+    """If set, output valus will be modified by randomly generated noise.
       |Attributes:
-      | Amount - amount of random noise
+      | Amount - amount of random noise added to output values
       | Seed   - a seed of the generator producing the random noise
     """.stripMargin)
 
@@ -104,14 +80,6 @@ trait H2OTargetEncoderParams extends PipelineStage with Params {
   def getBlending(): H2OTargetEncoderBlendingSettings = $(blending)
 
   def getNoise(): H2OTargetEncoderNoiseSettings = $(noise)
-
-  //
-  // Others
-  //
-  protected def changeRelevantColumnsToCategorical(frame: Frame) = {
-    val relevantColumns = getInputCols() ++ Array(getLabelCol())
-    relevantColumns.foreach(frame.toCategoricalCol(_))
-  }
 }
 
 class H2OTargetEncoderHoldoutStrategyParam private[h2o](
