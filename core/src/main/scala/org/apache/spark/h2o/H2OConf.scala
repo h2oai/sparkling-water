@@ -20,11 +20,10 @@ package org.apache.spark.h2o
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
 import org.apache.spark.h2o.backends.internal.InternalBackendConf
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.repl.h2o.H2OInterpreter
 import org.apache.spark.sql.SparkSession
-import water.util.Log
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * Configuration holder which is representing
@@ -115,7 +114,6 @@ object H2OConf extends Logging {
   private val deprecatedOptions = Map("spark.ext.h2o.external.cluster.num.h2o.nodes" -> ExternalBackendConf.PROP_EXTERNAL_CLUSTER_SIZE._1)
 
   private def checkDeprecatedOptions(sparkConf: SparkConf): Unit = {
-
     deprecatedOptions.foreach {
       case (deprecated, current) =>
         val deprecatedValue = sparkConf.getOption(deprecated)
@@ -126,8 +124,8 @@ object H2OConf extends Logging {
               s"Using value '${currentValue.get}' of '$current' as the later one is deprecated.")
           } else {
             logWarning(s"Please use '$current' as '$deprecated' is deprecated. Passing the value '${deprecatedValue.get}' to '$current'.")
+            sparkConf.set(current, deprecatedValue.get)
           }
-          sparkConf.set(current, deprecatedValue.get)
         }
     }
   }
