@@ -76,6 +76,19 @@ trait H2OFrameSupport extends JoinSupport {
   }
 
   /**
+    * Update the frame in DKV
+    * @param fr frame to update
+    * @tparam T type of H2O frame
+    * @return returns updated frame
+    */
+  def lockAndUpdate[T <: Frame](fr: T): T = {
+    fr.write_lock()
+    fr.update()
+    fr.unlock()
+    fr
+  }
+
+  /**
     * This method updates the frame locally.
     */
 

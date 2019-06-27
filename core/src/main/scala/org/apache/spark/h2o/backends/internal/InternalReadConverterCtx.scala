@@ -17,8 +17,6 @@
 
 package org.apache.spark.h2o.backends.internal
 
-import java.sql.Timestamp
-
 import org.apache.spark.h2o.converters.ReadConverterCtx
 import water.fvec.{Chunk, Frame, Vec}
 import water.parser.BufferedString
@@ -37,7 +35,7 @@ class InternalReadConverterCtx(override val keyName: String, override val chunkI
   private lazy val chks: Array[Chunk] = water.fvec.FrameUtils.getChunks(fr, chunkIdx)
 
   /** Number of rows in this partition */
-  lazy val numRows = chks(0)._len
+  lazy val numRows: Int = chks(0)._len
 
   private def underlyingFrame = DKV.get(Key.make(keyName)).get.asInstanceOf[Frame]
 
@@ -57,21 +55,21 @@ class InternalReadConverterCtx(override val keyName: String, override val chunkI
   override protected def byteAt(source: Chunk): Byte = longAt(source).toByte
   override protected def shortAt(source: Chunk): Short = longAt(source).toShort
   override protected def intAt(source: Chunk): Int = longAt(source).toInt
-  override protected def longAt(source: DataSource) = source.at8(rowIdx)
+  override protected def longAt(source: DataSource): Long = source.at8(rowIdx)
   override protected def floatAt(source: Chunk): Float = doubleAt(source).toFloat
-  override protected def doubleAt(source: DataSource) = source.atd(rowIdx)
-  override protected def string(source: DataSource) = StringProviders(source.vec().get_type())(source)
+  override protected def doubleAt(source: DataSource): Double = source.atd(rowIdx)
+  override protected def string(source: DataSource): String = StringProviders(source.vec().get_type())(source)
 
-  private def categoricalString(source: DataSource) = source.vec().domain()(longAt(source).toInt)
+  private def categoricalString(source: DataSource): String = source.vec().domain()(longAt(source).toInt)
   private def uuidString(source: DataSource) = new java.util.UUID(source.at16h(rowIdx), source.at16l(rowIdx)).toString
   private def plainString(source: DataSource) = source.atStr(new BufferedString(), rowIdx).toString
 
-  private val StringProviders = Map[Byte, (DataSource => String)](
+  private val StringProviders = Map[Byte, DataSource => String](
     Vec.T_CAT -> categoricalString,
     Vec.T_UUID -> uuidString,
     Vec.T_STR -> plainString
   ) withDefault((t: Byte) => {
     assert(assertion = false, s"Should never be here, type is $t")
-    (_: Chunk) => null
+    _: Chunk => null
   })
 }
