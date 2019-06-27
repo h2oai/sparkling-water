@@ -36,7 +36,7 @@ class H2OFrameToDataFrameDistributedTestSuite extends FunSuite with SharedH2OTes
 
     val rdd = sc.parallelize(1 to 100, 2)
     val h2oFrame = hc.asH2OFrame(rdd)
-    assert(h2oFrame.anyVec().nChunks() == 3)
+    assert(h2oFrame.anyVec().nChunks() == 2)
     val updatedFrame = h2oFrame.add(h2oFrame)
 
     val convertedDf = hc.asDataFrame(updatedFrame)
