@@ -213,8 +213,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
           s"""
              |External H2O cluster is not running or could not be connected to. Provided configuration:
              |  cluster name            : ${hc.getConf.cloudName.get}
-             |  cluster representative  : ${hc.getConf.h2oCluster.getOrElse("Not set, using multi-cast!")}
-             |  cluster start timeout   : ${hc.getConf.clusterStartTimeout} seconds
+             |  cluster representative  : ${hc.getConf.h2oCluster.getOrElse("Using multi-cast discovery!")}
+             |  cluster start timeout   : ${hc.getConf.clusterStartTimeout} sec
              |
              |It is possible that in case you provided only the cluster name, h2o is not able to cloud up
              |because multi-cast communication is limited in your network. In that case, please consider starting the
@@ -229,13 +229,20 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       }
     }
 
-    if (hc.getConf.isKillOnUnhealthyClusterEnabled) {
+    startUnhealthyStateKillThread()
+    startUnhealthyStateCheckThread()
+
+    cloudMembers
+  }
+
+  def startUnhealthyStateKillThread(): Unit = {
+    if (hc.getConf.isKillOnUnhealthyClusterEnabled && !hc.getConf.isManualClusterStartUsed) {
       cloudHealthCheckKillThread = Some(new Thread {
         override def run(): Unit = {
           while (true) {
             Thread.sleep(hc.getConf.killOnUnhealthyClusterInterval)
-            if (!H2O.CLOUD.healthy() && hc.getConf.isKillOnUnhealthyClusterEnabled) {
-              Log.err("Exiting! External H2O cloud not healthy!!")
+            if (!H2O.CLOUD.healthy()) {
+              Log.err("Exiting! External H2O cluster not healthy!!")
               H2O.shutdown(-1)
             }
           }
@@ -244,20 +251,24 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
       cloudHealthCheckKillThread.get.start()
     }
+  }
 
+  def startUnhealthyStateCheckThread(): Unit = {
     cloudHealthCheckThread = Some(new Thread {
       override def run(): Unit = {
         while (true) {
           Thread.sleep(hc.getConf.healthCheckInterval)
           if (!H2O.CLOUD.healthy()) {
-            Log.err("External H2O cloud not healthy!!")
+            if (hc.getConf.isManualClusterStartUsed) {
+              Log.warn("External H2O cluster not healthy!")
+            } else {
+              Log.err("External H2O cluster not healthy!")
+            }
           }
         }
       }
     })
     cloudHealthCheckThread.get.start()
-
-    cloudMembers
   }
 
   override def backendUIInfo: Seq[(String, String)] = {
