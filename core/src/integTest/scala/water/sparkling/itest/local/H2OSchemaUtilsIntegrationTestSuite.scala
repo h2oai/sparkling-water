@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling
+package water.sparkling.itest.local
 
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, SparkTestContext, TestFrameUtils}
 import org.apache.spark.sql.Row
@@ -23,6 +23,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
+import water.sparkling.itest.local.schemas.ComplexSchema
 
 import scala.concurrent.duration._
 

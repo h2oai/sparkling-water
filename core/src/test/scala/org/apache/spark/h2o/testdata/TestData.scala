@@ -104,6 +104,8 @@ case class SampleAltString(y: String)
 
 case class SparseVectorHolder(v: org.apache.spark.ml.linalg.SparseVector)
 
+case class DenseVectorHolder(v: org.apache.spark.ml.linalg.DenseVector)
+
 case class Name(given: String, family: String)
 
 case class Person(name: Name, age: Int)
