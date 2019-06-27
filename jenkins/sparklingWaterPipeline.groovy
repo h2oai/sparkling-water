@@ -323,8 +323,9 @@ def localIntegTest() {
                         """
                     } finally {
                         arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                        junit 'examples/build/test-results/integTest/*.xml'
+                        junit 'core/build/test-results/integTest/*.xml'
                         testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
+                        junit 'examples/build/test-results/integTest/*.xml'
                         testReport 'examples/build/reports/tests/integTest', 'Local Integration tests'
                     }
                 }
