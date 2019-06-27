@@ -123,7 +123,7 @@ object H2OConf extends Logging {
           val currentValue = sparkConf.getOption(current)
           if (currentValue.isDefined) {
             logWarning(s"Both options '$deprecated' and '$current' are specified. " +
-              s"Using value ${currentValue.get} of $current as the later one is deprecated.")
+              s"Using value '${currentValue.get}' of '$current' as the later one is deprecated.")
           } else {
             logWarning(s"Please use '$current' as '$deprecated' is deprecated. Passing the value '${deprecatedValue.get}' to '$current'.")
           }
