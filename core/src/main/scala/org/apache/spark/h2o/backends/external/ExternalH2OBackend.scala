@@ -259,11 +259,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         while (true) {
           Thread.sleep(hc.getConf.healthCheckInterval)
           if (!H2O.CLOUD.healthy()) {
-            if (hc.getConf.isManualClusterStartUsed) {
-              Log.warn("External H2O cluster not healthy!")
-            } else {
-              Log.err("External H2O cluster not healthy!")
-            }
+            val level = if (hc.getConf.isManualClusterStartUsed) Log.WARN else Log.ERRR
+            Log.log(level, "External H2O cluster not healthy!")
           }
         }
       }
