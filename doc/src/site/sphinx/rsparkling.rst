@@ -121,9 +121,6 @@ Once we've installed **rsparkling** and its dependencies, the first step would b
 
 **NOTE**: Please be sure to set ``version`` to the proper Spark version utilized by your version of Sparkling Water in ``spark_connect()``
 
-**NOTE**: The previous command requires access to the internet. If you are not connected to the internet/behind a firewall, please
-first read the previous section about Spark installation.
-
 ``spark_connect`` method has also ``spark_home`` argument which defaults to the ``SPARK_HOME`` environment
 variable. If ``SPARK_HOME`` is defined it will be always used unless the ``version``
 parameter is specified to force the use of a locally installed version. Therefore, to use existing
