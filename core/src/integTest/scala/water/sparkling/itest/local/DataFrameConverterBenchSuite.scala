@@ -73,17 +73,17 @@ class DataFrameConverterBenchSuite extends FunSuite with SharedH2OTestContext {
 
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
-    val m1 = bench(5) {
+    val result = bench(5) {
       val hf = hc.asH2OFrame(df)
       hf.remove()
     }
 
-    println(m1.show())
+    println(result.show())
   }
 
   test("Measure performance of conversion to H2OFrame on a data frame with wide dense vectors") {
     import sqlContext.implicits._
-    val numberOfCols = 50 * 1000
+    val numberOfCols = 10 * 1000
     val numberOfRows = 3 * 1000
     val partitions = 4
 
@@ -91,12 +91,12 @@ class DataFrameConverterBenchSuite extends FunSuite with SharedH2OTestContext {
 
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
-    val m1 = bench(5) {
+    val result = bench(5) {
       val hf = hc.asH2OFrame(df)
       hf.remove()
     }
 
-    println(m1.show())
+    println(result.show())
   }
 
   test("Measure performance of conversion to H2OFrame on a matrix 10x11 represented by sparse vectors") {
@@ -110,11 +110,11 @@ class DataFrameConverterBenchSuite extends FunSuite with SharedH2OTestContext {
     }
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
-    val m1 = bench(10) {
+    val result = bench(10) {
       val hf = hc.asH2OFrame(df)
       hf.remove()
     }
 
-    println(m1.show())
+    println(result.show())
   }
 }
