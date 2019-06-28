@@ -17,10 +17,10 @@
 
 package org.apache.spark.h2o.backends.external
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendConf
 import water.HeartBeatThread
-import water.util.DeprecatedMethod
 
 /**
   * External backend configuration
