@@ -19,6 +19,7 @@ package org.apache.spark.ml.h2o.algos
 import java.lang.reflect.Field
 import java.util
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.grid.GridSearch.SimpleParametersBuilderFactory
@@ -38,7 +39,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
-import water.util.{DeprecatedMethod, PojoUtils}
+import water.util.PojoUtils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable

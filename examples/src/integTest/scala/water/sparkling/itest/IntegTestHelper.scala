@@ -53,7 +53,7 @@ trait IntegTestHelper extends BeforeAndAfterEach {
   }
 
   def isYarnIntegTest() = {
-    testEnv.sparkConf += ExternalBackendConf.PROP_EXTERNAL_H2O_NODES._1 -> "2"
+    testEnv.sparkConf += ExternalBackendConf.PROP_EXTERNAL_CLUSTER_SIZE._1 -> "2"
   }
 
   // Helper function to setup environment
@@ -71,7 +71,7 @@ trait IntegTestHelper extends BeforeAndAfterEach {
       sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress)
 
     val cloudSize = 1
-    testEnv.sparkConf += ExternalBackendConf.PROP_EXTERNAL_H2O_NODES._1 -> cloudSize.toString
+    testEnv.sparkConf += ExternalBackendConf.PROP_EXTERNAL_CLUSTER_SIZE._1 -> cloudSize.toString
   }
 
   override protected def afterEach(): Unit = {

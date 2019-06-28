@@ -2,6 +2,14 @@ description = "Sparkling Water REPL"
 
 apply from: "$rootDir/gradle/utils.gradle"
 
+sourceSets {
+    main {
+        scala {
+            srcDirs += getSparkSpecificSourceDir(sparkMajorVersion)
+        }
+    }
+}
+
 dependencies {
     // Spark REPL
     compileOnly "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"

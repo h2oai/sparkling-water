@@ -46,7 +46,7 @@ def getGitHash() {
 
 def getGitBranch() {
     def branchName = System.getenv("BRANCH_NAME")
-    if (branchName != null){
+    if (branchName != null) {
         return branchName
     } else {
         def proc = ['git', 'rev-parse', '--verify', '--abbrev-ref', 'HEAD'].execute()
@@ -79,6 +79,16 @@ def getCurrentRSparklingVersion(def projectDir) {
     return "0.2." + patchVersion
 }
 
+def getSparkSpecificSourceDir(sparkMajorVersion) {
+    if (file("src/main/spark_$sparkMajorVersion").exists()) {
+        return ["src/main/spark_$sparkMajorVersion"]
+    } else if (file("src/main/spark_current").exists()) {
+        return ["src/main/spark_current"]
+    } else {
+        return []
+    }
+}
+
 // Export methods by turning them into closures
 ext {
     getOsSpecificCommandLine = this.&getOsSpecificCommandLine
@@ -91,4 +101,5 @@ ext {
     getH2OBranch = this.&getH2OBranch
     getSupportedHadoopDistributions = this.&getSupportedHadoopDistributions
     getCurrentRSparklingVersion = this.&getCurrentRSparklingVersion
+    getSparkSpecificSourceDir = this.&getSparkSpecificSourceDir
 }

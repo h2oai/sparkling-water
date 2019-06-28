@@ -1,0 +1,12 @@
+description = "Sparkling Water Scala macros"
+
+dependencies {
+    compile "org.scala-lang:scala-library:${scalaVersion}"
+    compile "org.scala-lang:scala-compiler:${scalaVersion}"
+    compile "org.scala-lang:scala-reflect:${scalaVersion}"
+
+    testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
+    testCompile "junit:junit:4.11"
+    testCompile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
+    testCompile project(":sparkling-water-core")
+}

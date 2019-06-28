@@ -22,13 +22,13 @@ import java.io._
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types._
 import py_sparkling.ml.models.{H2OMOJOPipelineModel => PyH2OMOJOPipelineModel}
-import water.util.DeprecatedMethod
 
 import scala.collection.mutable
 import scala.util.Random

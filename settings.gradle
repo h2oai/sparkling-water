@@ -16,6 +16,7 @@ include 'extension-stack-trace'
 include 'templates'
 include 'benchmarks'
 include 'dist'
+include 'macros'
 
 // Prefix all projects with sparkling-water name
 rootProject.children.each { project ->

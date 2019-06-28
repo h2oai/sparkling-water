@@ -249,7 +249,7 @@ External backend configuration properties
 | ``spark.ext.h2o.cloud.representative``                | ``None``       | ip:port of arbitrary H2O node to    |
 |                                                       |                | identify external H2O cluster.      |
 +-------------------------------------------------------+----------------+-------------------------------------+
-| ``spark.ext.h2o.external.cluster.num.h2o.nodes``      | ``None``       | Number of H2O nodes to start in     |
+| ``spark.ext.h2o.external.cluster.size``               | ``None``       | Number of H2O nodes to start in     |
 |                                                       |                | ``auto`` mode and wait for in       |
 |                                                       |                | ``manual`` mode when starting       |
 |                                                       |                | Sparkling Water in external H2O     |

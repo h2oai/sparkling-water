@@ -15,14 +15,13 @@
 * limitations under the License.
 */
 
-package water.util
+package ai.h2o.sparkling.macros
 
-import org.apache.spark.internal.Logging
+import org.apache.spark.h2o.utils.Logging
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
-import scala.language.experimental.macros
 
 @RunWith(classOf[JUnitRunner])
 class DeprecatedMethodMacroSuite extends FunSuite with Logging {
