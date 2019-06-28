@@ -28,9 +28,9 @@ import org.apache.spark.h2o.ui._
 import org.apache.spark.h2o.utils.{H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
-import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
-import water.util.{DeprecatedMethod, Log, LogBridge, PrettyPrint}
+import water.util.{Log, LogBridge, PrettyPrint}
 
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
