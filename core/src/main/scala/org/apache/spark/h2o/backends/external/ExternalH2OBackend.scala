@@ -68,7 +68,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       s"-Dmapreduce.job.tags=${yarnAppTags}",
       s"-Dai.h2o.args.config=sparkling-water-external",
       "-Dmapreduce.framework.name=h2o-yarn", // use H2O's custom application Master
-      "-nodes", conf.numOfExternalH2ONodes.get,
+      "-nodes", conf.clusterSize.get,
       "-notify", conf.clusterInfoFile.get,
       "-jobname", conf.cloudName.get,
       "-mapperXmx", conf.mapperXmx,
@@ -200,9 +200,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     H2OStarter.start(h2oClientArgs, false)
 
-    if (hc.getConf.numOfExternalH2ONodes.isDefined) {
-      H2O.waitForCloudSize(hc.getConf.numOfExternalH2ONodes.get.toInt, hc.getConf.cloudTimeout)
-    }
+    H2O.waitForCloudSize(hc.getConf.clusterSize.get.toInt, hc.getConf.cloudTimeout)
+
     // Register web API for client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
@@ -304,6 +303,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       """)
     }
 
+    if (conf.clusterSize.isEmpty) {
+      throw new IllegalArgumentException("Cluster size of external H2O cluster has to be specified!")
+    }
+
     if (conf.isAutoClusterStartUsed) {
       lazy val driverPath = sys.env.get(ExternalH2OBackend.ENV_H2O_EXTENDED_JAR)
       if (conf.h2oDriverPath.isEmpty && driverPath.isEmpty) {
@@ -322,10 +325,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
       if (conf.cloudName.isEmpty) {
         conf.setCloudName(H2O_JOB_NAME.format(hc.sparkContext.applicationId))
-      }
-
-      if (conf.numOfExternalH2ONodes.isEmpty) {
-        throw new IllegalArgumentException("Number of external H2O nodes has to be specified in the auto H2O external start mode!")
       }
 
       if (conf.clusterInfoFile.isEmpty) {
