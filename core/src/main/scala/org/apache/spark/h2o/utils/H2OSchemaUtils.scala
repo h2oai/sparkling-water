@@ -19,10 +19,9 @@ package org.apache.spark.h2o.utils
 
 import org.apache.spark.h2o._
 import org.apache.spark.ml.attribute.AttributeGroup
-import org.apache.spark.mllib.linalg.SparseVector
-import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.{ml, mllib}
 
 import scala.collection.mutable.ArrayBuffer
@@ -93,8 +92,8 @@ object H2OSchemaUtils {
   }
 
   private def fillBuffer
-      (flatSchemaIndexes: Map[String, Int], buffer: ArrayBuffer[Any])
-      (field: StructField, data: Any, prefix: Option[String] = None): Unit = {
+  (flatSchemaIndexes: Map[String, Int], buffer: ArrayBuffer[Any])
+  (field: StructField, data: Any, prefix: Option[String] = None): Unit = {
     if (data != null) {
       val StructField(name, dataType, _, _) = field
       val qualifiedName = getQualifiedName(prefix, name)
@@ -117,7 +116,7 @@ object H2OSchemaUtils {
     val seq = data.asInstanceOf[Seq[Any]]
     val subRow = Row.fromSeq(seq)
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
-    (0 until seq.size).foreach { idx =>
+    seq.indices.foreach { idx =>
       val arrayField = StructField(idx.toString, elementType)
       fillBufferPartiallyApplied(arrayField, subRow(idx), Some(qualifiedName))
     }
@@ -175,9 +174,9 @@ object H2OSchemaUtils {
       keys.map { key =>
         (firstMap.get(key), secondMap.get(key)) match {
           case (None, Some(StructField(name, dataType, _, _))) =>
-            FieldWithOrder(StructField(name, dataType, true), key)
+            FieldWithOrder(StructField(name, dataType, nullable = true), key)
           case (Some(StructField(name, dataType, _, _)), None) =>
-            FieldWithOrder(StructField(name, dataType, true), key)
+            FieldWithOrder(StructField(name, dataType, nullable = true), key)
           case (Some(StructField(name, dataType, nullable1, _)), Some(StructField(_, _, nullable2, _))) =>
             FieldWithOrder(StructField(name, dataType, nullable1 || nullable2), key)
           case (None, None) =>
@@ -218,7 +217,7 @@ object H2OSchemaUtils {
       val nullableField = isParentNullable || nullable
       dataType match {
         case BinaryType =>
-          flattenArrayType(ByteType, false, data, path, qualifiedName, nullableField)
+          flattenArrayType(ByteType, containsNull = false, data, path, qualifiedName, nullableField = nullableField)
         case MapType(_, valueType, containsNull) =>
           flattenMapType(valueType, containsNull, data, path, qualifiedName, nullableField)
         case ArrayType(elementType, containsNull) =>
@@ -244,7 +243,7 @@ object H2OSchemaUtils {
       nullableField: Boolean) = {
     val values = data.asInstanceOf[Seq[Any]]
     val subRow = Row.fromSeq(values)
-    (0 until values.size).flatMap { idx =>
+    values.indices.flatMap { idx =>
       val arrayField = StructField(idx.toString(), elementType, containsNull)
       flattenField(arrayField, subRow(idx), idx :: path, Some(qualifiedName), nullableField)
     }
@@ -319,11 +318,11 @@ object H2OSchemaUtils {
           (0 until elemMaxSizes(idx)).map { arrIdx =>
             StructField(field.name + arrIdx, ByteType, nullable = false)
           }
-        case t if t.isInstanceOf[UserDefinedType[_]] =>
-          // t.isInstanceOf[UserDefinedType[mllib.linalg.Vector]]
+        case _ : ml.linalg.VectorUDT | _: mllib.linalg.VectorUDT  =>
           (0 until elemMaxSizes(idx)).map { arrIdx =>
             StructField(field.name + arrIdx.toString, DoubleType, nullable = true)
           }
+        case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
         case _ => Seq(field)
       }
     }
@@ -341,32 +340,32 @@ object H2OSchemaUtils {
     * @return list of types with their positions
     */
   def collectSparseInfo(flatDataFrame: DataFrame, elemMaxSizes: Array[Int]): Array[Boolean] = {
-
     val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
+
     val sparseInfoForVec = {
       if (flatDataFrame.isEmpty) {
         vectorIndices.zip(Array.fill(vectorIndices.length)(false)).toMap
       } else {
         val head = flatDataFrame.head()
-        val sparseOrNot = vectorIndices.map { idx =>
-          head.getAs[org.apache.spark.mllib.linalg.Vector](idx).isInstanceOf[SparseVector]
-        }
-        vectorIndices.zip(sparseOrNot).toMap
+        vectorIndices.map { idx =>
+          head.get(idx) match {
+            case _: ml.linalg.SparseVector | _: mllib.linalg.SparseVector => (idx, true)
+            case _ => (idx, false)
+          }
+        }.toMap
       }
     }
-    
 
     flatDataFrame.schema.fields.zipWithIndex.flatMap { case (field, idx) =>
 
       field.dataType match {
         case ArrayType(_, _) =>
-          Array.fill(elemMaxSizes(idx))(false).toSeq // not a vector, we do not want do sparse
+          Array.fill(elemMaxSizes(idx))(false).toSeq
         case BinaryType =>
-          Array.fill(elemMaxSizes(idx))(false).toSeq // not a vector, we do not want do sparse
-        case t if t.isInstanceOf[UserDefinedType[_]] =>
-          // t.isInstanceOf[UserDefinedType[mllib.linalg.Vector]]
+          Array.fill(elemMaxSizes(idx))(false).toSeq
+        case _: ml.linalg.VectorUDT | _: mllib.linalg.VectorUDT =>
           Array.fill(elemMaxSizes(idx))(sparseInfoForVec(idx)).toSeq
-        case _ => Seq(false) // not a vector, we do not want do sparse
+        case _ => Seq(false)
       }
     }
   }
@@ -407,6 +406,14 @@ object H2OSchemaUtils {
     }
   }
 
+  private def fieldSizeFromMetadata(field: StructField): Option[Int] = {
+      field.dataType match {
+        case _: ml.linalg.VectorUDT =>
+          Some(AttributeGroup.fromStructField(field).size).filter(_ != -1)
+        case _ => None
+      }
+  }
+
   /**
     * Collect max size of each element in DataFrame.
     * For array -> max array size
@@ -421,20 +428,7 @@ object H2OSchemaUtils {
     val simpleIndices = collectSimpleLikeTypes(flatDataFrame.schema)
     val collectionIndices = arrayIndices ++ vectorIndices
 
-    val attributesNum = (field: StructField) => {
-      if (!field.dataType.isInstanceOf[ml.linalg.VectorUDT]) {
-        None
-      }
-      else if (AttributeGroup.fromStructField(field).size != -1) {
-        Some(AttributeGroup.fromStructField(field).size)
-      }
-      else {
-        None
-      }
-    }
-
-
-    val sizeFromMetadata = collectionIndices.map(idx => attributesNum(flatDataFrame.schema.fields(idx)))
+    val sizeFromMetadata = collectionIndices.map(idx => fieldSizeFromMetadata(flatDataFrame.schema.fields(idx)))
     val maxCollectionSizes = if (sizeFromMetadata.forall(_.isDefined)) {
       sizeFromMetadata.map(_.get).toArray
     } else {
@@ -460,7 +454,7 @@ object H2OSchemaUtils {
   def collectStringIndices(flatSchema: StructType): Seq[Int] = {
     flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
-        case StringType => Option(idx)
+        case StringType => Some(idx)
         case _ => None
       }
     }
@@ -469,8 +463,8 @@ object H2OSchemaUtils {
   def collectArrayLikeTypes(flatSchema: StructType): Seq[Int] = {
     flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
-        case ArrayType(_, _) => Option(idx)
-        case BinaryType => Option(idx)
+        case ArrayType(_, _) => Some(idx)
+        case BinaryType => Some(idx)
         case _ => None
       }
     }
@@ -479,7 +473,8 @@ object H2OSchemaUtils {
   def collectVectorLikeTypes(flatSchema: StructType): Seq[Int] = {
     flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
-        case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] => Option(idx)
+        case _: mllib.linalg.VectorUDT => Some(idx)
+        case _: ml.linalg.VectorUDT => Some(idx)
         case _ => None
       }
     }
@@ -488,49 +483,40 @@ object H2OSchemaUtils {
   private def collectSimpleLikeTypes(flatSchema: StructType): Seq[Int] = {
     flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
-        case BooleanType => Option(idx)
-        case ByteType => Option(idx)
-        case ShortType => Option(idx)
-        case IntegerType => Option(idx)
-        case LongType => Option(idx)
-        case FloatType => Option(idx)
-        case _: DecimalType => Option(idx)
-        case DoubleType => Option(idx)
-        case StringType => Option(idx)
-        case TimestampType => Option(idx)
-        case DateType => Option(idx)
+        case BooleanType => Some(idx)
+        case ByteType => Some(idx)
+        case ShortType => Some(idx)
+        case IntegerType => Some(idx)
+        case LongType => Some(idx)
+        case FloatType => Some(idx)
+        case _: DecimalType => Some(idx)
+        case DoubleType => Some(idx)
+        case StringType => Some(idx)
+        case TimestampType => Some(idx)
+        case DateType => Some(idx)
         case _ => None
       }
     }
   }
 
-
   /**
-    * Get size of Array or Vector type. Already expects flat DataFrame
+    * Get size of Array or Vector type. Expects already flattened DataFrame
     *
     * @param row current row
     * @param idx index of the element
     */
   private def getCollectionSize(row: Row, idx: Int): Int = {
     if (row.isNullAt(idx)) {
-      return 0
-    }
-
-    val elemType = row.schema.fields(idx)
-    elemType.dataType match {
-      case ArrayType(_, _) => row.getAs[Seq[_]](idx).length
-      case BinaryType => row.getAs[Array[Byte]](idx).length
-      // it is user defined type - currently, only vectors are supported
-      case _ =>
-        val value = row.get(idx)
-        value match {
-          case _: mllib.linalg.Vector =>
-            row.getAs[mllib.linalg.Vector](idx).size
-          case _: ml.linalg.Vector =>
-            row.getAs[ml.linalg.Vector](idx).size
-          case _ =>
-            throw new UnsupportedOperationException(s"User defined type is not supported: ${value.getClass}")
-        }
+      0
+    } else {
+      val dataType = row.schema.fields(idx).dataType
+      dataType match {
+        case ArrayType(_, _) => row.getAs[Seq[_]](idx).length
+        case BinaryType => row.getAs[Array[Byte]](idx).length
+        case _: mllib.linalg.VectorUDT => row.getAs[mllib.linalg.Vector](idx).size
+        case _: ml.linalg.VectorUDT => row.getAs[ml.linalg.Vector](idx).size
+        case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
+      }
     }
   }
 
