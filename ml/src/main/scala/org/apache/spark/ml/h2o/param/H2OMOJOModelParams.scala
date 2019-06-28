@@ -16,9 +16,9 @@
 */
 package org.apache.spark.ml.h2o.param
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param._
-import water.util.DeprecatedMethod
 
 /**
   * Parameters available on the MOJO Model

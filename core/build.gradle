@@ -89,8 +89,9 @@ dependencies {
 
   // Sparkling Water REPL
   compile project(':sparkling-water-repl')
+  compileOnly project(':sparkling-water-macros')
 
-  // Add joda optional convert library which is required in Scala environment
+    // Add joda optional convert library which is required in Scala environment
   compile "org.joda:joda-convert:1.7"
 
   // And Scala library
@@ -113,8 +114,7 @@ dependencies {
   testCompile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
   testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
-
-
+    
   // And use scalatest for Scala testing
   testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   testCompile "junit:junit:4.11"
