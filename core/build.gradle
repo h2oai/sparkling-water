@@ -91,8 +91,9 @@ dependencies {
 
   // Sparkling Water REPL
   compile project(':sparkling-water-repl')
+  compileOnly project(':sparkling-water-macros')
 
-  // Add joda optional convert library which is required in Scala environment
+    // Add joda optional convert library which is required in Scala environment
   compile "org.joda:joda-convert:1.7"
 
   // And Scala library

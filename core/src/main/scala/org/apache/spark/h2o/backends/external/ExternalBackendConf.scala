@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.backends.external
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendConf
 import water.HeartBeatThread
@@ -35,7 +36,10 @@ trait ExternalBackendConf extends SharedBackendConf {
   def h2oClusterHost = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(0))
   def h2oClusterPort = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(1).toInt)
 
-  def numOfExternalH2ONodes = sparkConf.getOption(PROP_EXTERNAL_H2O_NODES._1)
+  @DeprecatedMethod("clusterSize")
+  def numOfExternalH2ONodes = clusterSize
+
+  def clusterSize = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_SIZE._1)
   def clientCheckRetryTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
   def clientConnectionTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._2)
   def externalReadConfirmationTimeout = sparkConf.getInt(PROP_EXTERNAL_READ_TIMEOUT._1, PROP_EXTERNAL_READ_TIMEOUT._2)
@@ -79,7 +83,11 @@ trait ExternalBackendConf extends SharedBackendConf {
     set(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, hostPort)
   }
 
-  def setNumOfExternalH2ONodes(numOfExternalH2ONodes: Int) = set(PROP_EXTERNAL_H2O_NODES._1, numOfExternalH2ONodes.toString)
+  @DeprecatedMethod("setClusterSize")
+  def setNumOfExternalH2ONodes(numOfExternalH2ONodes: Int) = setClusterSize(numOfExternalH2ONodes)
+
+  def setClusterSize(clusterSize: Int) = set(PROP_EXTERNAL_CLUSTER_SIZE._1, clusterSize.toString)
+
   def setClientCheckRetryTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
   def setClientConnectionTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, timeout.toString)
   def setExternalReadConfirmationTimeout(timeout: Int) = set(PROP_EXTERNAL_READ_TIMEOUT._1, timeout.toString)
@@ -140,7 +148,7 @@ object ExternalBackendConf {
 
   /** Number of nodes to wait for when connecting to external H2O cluster in manual mode. In auto mode, number
     * of nodes to be started. */
-  val PROP_EXTERNAL_H2O_NODES = ("spark.ext.h2o.external.cluster.num.h2o.nodes", None)
+  val PROP_EXTERNAL_CLUSTER_SIZE = ("spark.ext.h2o.external.cluster.size", None)
 
   /** Timeout in milliseconds specifying how often the check for connected watchdog client is done */
   val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT = ("spark.ext.h2o.cluster.client.retry.timeout", 60000)

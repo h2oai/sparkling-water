@@ -20,16 +20,18 @@ package org.apache.spark.h2o
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
 import org.apache.spark.h2o.backends.internal.InternalBackendConf
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.repl.h2o.H2OInterpreter
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * Configuration holder which is representing
   * properties passed from user to Sparkling Water.
   */
 class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf with ExternalBackendConf with Serializable {
+
+  H2OConf.checkDeprecatedOptions(sparkConf)
 
   /** Support for creating H2OConf in Java environments */
   def this(jsc: JavaSparkContext) = this(jsc.sc.getConf)
@@ -107,7 +109,28 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
   }
 }
 
-object H2OConf {
+object H2OConf extends Logging {
+
+  private val deprecatedOptions = Map("spark.ext.h2o.external.cluster.num.h2o.nodes" -> ExternalBackendConf.PROP_EXTERNAL_CLUSTER_SIZE._1)
+
+  private def checkDeprecatedOptions(sparkConf: SparkConf): Unit = {
+    deprecatedOptions.foreach {
+      case (deprecated, current) =>
+        val deprecatedValue = sparkConf.getOption(deprecated)
+        if (deprecatedValue.isDefined) {
+          val currentValue = sparkConf.getOption(current)
+          if (currentValue.isDefined) {
+            logWarning(s"Both options '$deprecated' and '$current' are specified. " +
+              s"Using value '${currentValue.get}' of '$current' as the later one is deprecated.")
+          } else {
+            logWarning(s"Please use '$current' as '$deprecated' is deprecated. Passing the value '${deprecatedValue.get}' to '$current'.")
+            sparkConf.set(current, deprecatedValue.get)
+          }
+        }
+    }
+  }
+
+
   private var _sparkConfChecked = false
 
   def sparkConfChecked = _sparkConfChecked
