@@ -92,19 +92,11 @@ test {
     environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
 }
 
-def getSparkSpecificSourceDir(sparkMajorVersion) {
-    if (file("src/main/spark_$sparkMajorVersion").exists()) {
-        return "src/main/spark_$sparkMajorVersion"
-    } else {
-        return "src/main/spark_current"
-    }
-}
-
 // Add additional source sets for Java
 sourceSets {
     main {
         scala {
-            srcDirs += [getSparkSpecificSourceDir(sparkMajorVersion), "src/main/java"]
+            srcDirs += ["src/main/java"]
         }
         java {
             srcDirs = []
@@ -112,7 +104,7 @@ sourceSets {
     }
     test {
         scala {
-            srcDirs += [getSparkSpecificSourceDir(sparkMajorVersion), "src/test/java"]
+            srcDirs += ["src/test/java"]
         }
         java {
             srcDirs = []
