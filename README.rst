@@ -11,72 +11,54 @@ Sparkling Water integrates |H2O|'s fast scalable machine learning engine with Sp
 - Basic building blocks to create ML applications utilizing Spark and H2O APIs.
 - Python interface enabling use of Sparkling Water directly from PySpark.
 
-
-Are you looking for RSparkling? It's README is available `here <https://github.com/h2oai/sparkling-water/tree/rel-2.4/r>`__.
-
 Getting Started
 ---------------
 
-**User Documentation:** `http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/index.html <http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/index.html>`__
+User Documentation
+~~~~~~~~~~~~~~~~~~
+The documentation contains also documentation for our clients, PySparkling and RSparkling.
 
-Select right version
-~~~~~~~~~~~~~~~~~~~~
+- `Sparkling Water For Spark 2.4 <http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/index.html>`__
+- `Sparkling Water For Spark 2.3 <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/index.html>`__
+- `Sparkling Water For Spark 2.2 <http://docs.h2o.ai/sparkling-water/2.2/latest-stable/doc/index.html>`__
+- `Sparkling Water For Spark 2.1 <http://docs.h2o.ai/sparkling-water/2.1/latest-stable/doc/index.html>`__
 
-The Sparkling Water is developed in multiple parallel branches. Each
-branch corresponds to a Spark major release (e.g., current branch **rel-2.4**
-provides implementation of Sparkling Water for Spark **2.4**).
+Download Binaries
+~~~~~~~~~~~~~~~~~
 
-Please, switch to the right branch:
+- `Latest version for Spark 2.4 <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/latest.html>`__
+- `Latest version for Spark 2.3 <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/latest.html>`__
+- `Latest version for Spark 2.2 <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/latest.html>`__
+- `Latest version for Spark 2.1 <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/latest.html>`__
 
-- For Spark 2.4 use branch `rel-2.4 <https://github.com/h2oai/sparkling-water/tree/rel-2.4>`__
-- For Spark 2.3 use branch `rel-2.3 <https://github.com/h2oai/sparkling-water/tree/rel-2.3>`__
-- For Spark 2.2 use branch `rel-2.2 <https://github.com/h2oai/sparkling-water/tree/rel-2.2>`__
-- For Spark 2.1 use branch `rel-2.1 <https://github.com/h2oai/sparkling-water/tree/rel-2.1>`__
 
-   **Note:** The `master <https://github.com/h2oai/sparkling-water/tree/master>`__
-   branch includes the latest changes for the latest Spark version.
-   They are back-ported into older Sparkling Water versions.
+Maven
+~~~~~
 
-.. The Requirements section is copied from doc/requirements.rst as github does not support include directive of
-.. reStructuredText
+Each Sparkling Water release is published into Maven central with following coordinates:
 
-The rest of this documentation applies to Sparkling Water 2.4.
+- ``ai.h2o:sparkling-water-core_{{scala_version}}:{{version}}`` - Includes core of Sparkling Water
+- ``ai.h2o:sparkling-water-examples_{{scala_version}}:{{version}}`` - Includes example applications
+- ``ai.h2o:sparkling-water-repl_{{scala_version}}:{{version}}`` - Spark REPL integration into H2O Flow UI
+- ``ai.h2o:sparkling-water-ml_{{scala_version}}:{{version}}`` - Extends Spark ML package by H2O-based transformations
+- ``ai.h2o:sparkling-water-package_{{scala_version}}:{{version}}`` - Uber Sparkling Water package containing all dependencies. This is designed to use as Spark package via ``--packages`` option
 
-Requirements
-~~~~~~~~~~~~
+   **Note:** The ``{{version}}`` references to a release version of Sparkling Water, the ``{{scala_version}}``
+   references to Scala base version. For example:
+   ``ai.h2o:sparkling-water-examples_2.11:2.4.13``
+
+The full list of published packages is available
+`here <http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*>`__.
+
+Requirements for Sparkling Water 2.4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  Linux/OS X/Windows
 -  Java 8+
 -  Python 2.7+ For Python version of Sparkling Water (PySparkling)
 -  `Spark 2.4 <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
 
-
-Download Binaries
-~~~~~~~~~~~~~~~~~
-
-For each Sparkling Water you can download binaries here:
-
-- `Sparkling Water - Latest 2.4 version <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/latest.html>`__
-
-Maven
-~~~~~
-
-Each Sparkling Water release is published into Maven central. Published artifacts are provided for Scala 2.11.
-
-The artifacts coordinates are:
-
-- ``ai.h2o:sparkling-water-core_2.11:{{version}}`` - Includes core of Sparkling Water
-- ``ai.h2o:sparkling-water-examples_2.11:{{version}}`` - Includes example applications
-- ``ai.h2o:sparkling-water-repl_2.11:{{version}}`` - Spark REPL integration into H2O Flow UI
-- ``ai.h2o:sparkling-water-ml_2.11:{{version}}`` - Extends Spark ML package by H2O-based transformations
-- ``ai.h2o:sparkling-water-package_2.11:{{version}}`` - Uber Sparkling Water package referencing all available Sparkling Water modules. This is designed to use as Spark package via ``--packages`` option
-
-
-**Note:** The ``{{version}}`` references to a release version of Sparkling Water. For example:
-``ai.h2o:sparkling-water-examples_2.11:2.4.3``
-
-The full list of published packages is available
-`here <https://search.maven.org/#search|ga|1|g%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*%20AND%20v%3A2.4*>`__.
+To see requirements for older Spark version, please visit relevant documentation.
 
 ---------------
 
