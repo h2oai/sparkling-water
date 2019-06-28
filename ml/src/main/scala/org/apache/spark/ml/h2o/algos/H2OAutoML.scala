@@ -19,6 +19,7 @@ package org.apache.spark.ml.h2o.algos
 import java.util.Date
 
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.ScoreKeeper
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Estimator
@@ -30,7 +31,6 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, _}
 import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
-import water.util.DeprecatedMethod
 
 import scala.util.Random
 import scala.util.control.NoStackTrace

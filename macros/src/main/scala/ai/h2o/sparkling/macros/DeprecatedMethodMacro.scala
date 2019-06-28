@@ -15,17 +15,17 @@
 * limitations under the License.
 */
 
-package water.util
+package ai.h2o.sparkling.macros
 
-import scala.annotation.{StaticAnnotation, compileTimeOnly}
-import scala.reflect.macros.whitebox.Context
+import scala.annotation.StaticAnnotation
 import scala.language.experimental.macros
+import scala.reflect.macros.whitebox.Context
 
 /**
   * The class represents an annotation specifying deprecated methods of Sparkling Water API
+  *
   * @param replacement Name of a method replacing the deprecated method
   */
-@compileTimeOnly("enable macro paradise to expand macro annotations")
 class DeprecatedMethod(replacement: String = "") extends StaticAnnotation {
   def macroTransform(annottees: Any*): Any = macro DeprecatedMethodMacro.impl
 }
