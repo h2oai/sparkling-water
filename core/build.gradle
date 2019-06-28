@@ -7,6 +7,9 @@ project.ext.cssResources = project.file("flow-css")
 
 sourceSets {
     main {
+        scala {
+            srcDirs += getSparkSpecificSourceDir(sparkMajorVersion)
+        }
         resources {
             srcDir("flow-css")
         }
