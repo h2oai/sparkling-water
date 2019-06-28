@@ -15,22 +15,23 @@
 * limitations under the License.
 */
 
-package water.sparkling.itest.local
+package ai.h2o.sparkling.bench
 
+import ai.h2o.sparkling.utils.schemas._
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata.{DenseVectorHolder, SparseVectorHolder}
-import org.apache.spark.h2o.utils.BenchUtils.bench
+
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
-import water.sparkling.itest.local.schemas._
 
 @RunWith(classOf[JUnitRunner])
-class DataFrameConverterBenchSuite extends FunSuite with SharedH2OTestContext {
-  override def createSparkContext = new SparkContext("local-cluster[2, 1, 2048]", this.getClass.getSimpleName, defaultSparkConf)
+class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext {
+  val conf = defaultSparkConf
+
+  override def createSparkContext = new SparkContext("local-cluster[2, 1, 2048]", this.getClass.getSimpleName, conf)
 
   val settings = TestFrameUtils.GenerateDataFrameSettings(
     numberOfRows = 8000,
@@ -39,28 +40,25 @@ class DataFrameConverterBenchSuite extends FunSuite with SharedH2OTestContext {
     nullProbability = 0.0
   )
 
-  test("Measure performance of conversion to H2OFrame on a flat data frame") {
+  benchTest("Measure performance of conversion to H2OFrame on a flat data frame") {
     testPerSchema(FlatSchema)
   }
 
-  test("Measure performance of conversion to H2OFrame on a data frame with nested structs") {
+  benchTest("Measure performance of conversion to H2OFrame on a data frame with nested structs") {
     testPerSchema(StructsOnlySchema)
   }
 
-  test("Measure performance of conversion to H2OFrame on a data frame with flat arrays") {
+  benchTest("Measure performance of conversion to H2OFrame on a data frame with flat arrays") {
     testPerSchema(FlatArraysOnlySchema)
   }
 
   def testPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df= TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
-    val result = bench(iterations = 5, warmup = 1) {
-      val hf = hc.asH2OFrame(df)
-      hf.remove()
-    }
-    println(result.show())
+    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
+    val hf = hc.asH2OFrame(df)
+    hf.remove()
   }
 
-  test("Measure performance of conversion to H2OFrame on a data frame with wide sparse vectors") {
+  benchTest("Measure performance of conversion to H2OFrame on a data frame with wide sparse vectors") {
     import TestUtils.sparseVector
     import sqlContext.implicits._
     val numberOfCols = 50 * 1000
@@ -73,15 +71,11 @@ class DataFrameConverterBenchSuite extends FunSuite with SharedH2OTestContext {
 
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
-    val result = bench(5) {
-      val hf = hc.asH2OFrame(df)
-      hf.remove()
-    }
-
-    println(result.show())
+    val hf = hc.asH2OFrame(df)
+    hf.remove()
   }
 
-  test("Measure performance of conversion to H2OFrame on a data frame with wide dense vectors") {
+  benchTest("Measure performance of conversion to H2OFrame on a data frame with wide dense vectors") {
     import sqlContext.implicits._
     val numberOfCols = 10 * 1000
     val numberOfRows = 3 * 1000
@@ -91,15 +85,11 @@ class DataFrameConverterBenchSuite extends FunSuite with SharedH2OTestContext {
 
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
-    val result = bench(5) {
-      val hf = hc.asH2OFrame(df)
-      hf.remove()
-    }
-
-    println(result.show())
+    val hf = hc.asH2OFrame(df)
+    hf.remove()
   }
 
-  test("Measure performance of conversion to H2OFrame on a matrix 10x11 represented by sparse vectors") {
+  benchTest("Measure performance of conversion to H2OFrame on a matrix 10x11 represented by sparse vectors", iterations = 10) {
     import sqlContext.implicits._
 
     val numberOfRows = 10
@@ -110,11 +100,7 @@ class DataFrameConverterBenchSuite extends FunSuite with SharedH2OTestContext {
     }
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
-    val result = bench(10) {
-      val hf = hc.asH2OFrame(df)
-      hf.remove()
-    }
-
-    println(result.show())
+    val hf = hc.asH2OFrame(df)
+    hf.remove()
   }
 }

@@ -44,11 +44,18 @@ ext {
             project(':sparkling-water-package'),
             project(":sparkling-water-doc")
     ]
-    // Project with integration tests
+    // Projects with integration tests
     integTestProjects = [
             project(':sparkling-water-core'),
             project(':sparkling-water-examples')
     ]
+
+    // Projects with benchmarks
+    benchProjects = [
+            project(':sparkling-water-core'),
+            project(':sparkling-water-benchmarks')
+    ]
+
     // Scala projects
     scalaProjects = [
             project(':sparkling-water-repl'),
@@ -182,6 +189,10 @@ configure(subprojects) { project ->
 
     if (project in integTestProjects) {
         apply from: "$rootDir/gradle/itest.gradle"
+    }
+
+    if (project in benchProjects) {
+        apply from: "$rootDir/gradle/bench.gradle"
     }
 }
 

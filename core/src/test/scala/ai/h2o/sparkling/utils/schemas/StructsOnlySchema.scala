@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package water.sparkling.itest.local.schemas
+package ai.h2o.sparkling.utils.schemas
 
 import org.apache.spark.h2o.utils.TestFrameUtils
 import org.apache.spark.sql.types._
@@ -39,60 +39,6 @@ case object StructsOnlySchema extends TestFrameUtils.SchemaHolder {
         StructField("field_GHEYZJXM36Y", LongType),
         StructField("field_2MAZNTKZYV", LongType)
       ))),
-      StructField("field_S5765", StructType(Seq(
-        StructField("field_I8HOE0KR8RR34G6", StringType),
-        StructField("field_X8YYK7IXAIZPF", StringType),
-        StructField("field_APKTL1K66S", StringType),
-        StructField("field_3UD6Y1", StringType),
-        StructField("field_0AXFH3MKIPA", StringType),
-        StructField("field_SEZ40Q", StringType),
-        StructField("field_06RHE9", StructType(Seq(
-          StructField("field_GCW6K", LongType),
-          StructField("field_G2CRAPO", LongType),
-          StructField("field_27Y7982AE8", LongType),
-          StructField("field_P0TJBJIOJPL", LongType),
-          StructField("field_8Q4I13", LongType),
-          StructField("field_M2OC6IVCE9QS", StringType),
-          StructField("field_6TVLNM7", StringType),
-          StructField("field_0DY6HI43", StringType),
-          StructField("field_LFJXH3HCYTKY1W", LongType),
-          StructField("field_IMLEGNYTXSGHH5W", StringType),
-          StructField("field_HJLOK", BooleanType)
-        ))),
-        StructField("field_DHDMS3K", BooleanType)
-      ))),
-      StructField("field_1RMREDHZF4AQ", StructType(Seq(
-        StructField("field_5ZZPFEQA4JUEUQ", StringType),
-        StructField("field_ATREHWBOH214EGZ", StringType),
-        StructField("field_RJ8HBYCAZKAHHJ8", StringType),
-        StructField("field_LP6RHDLO1NMX8MJ", StringType),
-        StructField("field_GDPGNE", StringType),
-        StructField("field_QKYJKMQ55", BooleanType),
-        StructField("field_H4D6UGFRP", StringType),
-        StructField("field_YUMGB", StringType),
-        StructField("field_25V6QVQAGRJE", StringType),
-        StructField("field_CH11YW16FKIRZVD", StringType),
-        StructField("field_JV0J7OADPC6ZD1D", StringType),
-        StructField("field_HPCS43BFOKIWI", StringType),
-        StructField("field_KA7TIMQU2R0NMU3", BooleanType),
-        StructField("field_JIHXIXLOS", StringType),
-        StructField("field_H3PXP6NG", StringType),
-        StructField("field_146N3T9GQKP", StringType),
-        StructField("field_0XZCE8KGZY", StringType)
-      ))),
-      StructField("field_S1YYUQ7E62FYA", StructType(Seq(
-        StructField("field_I215HRZFWT3RV", StringType),
-        StructField("field_X4LK13PO", StringType),
-        StructField("field_V6P8MR1TU3QHDU", StringType),
-        StructField("field_KBPAGC3I70", StringType),
-        StructField("field_N61ICQO0UD", StringType),
-        StructField("field_T13BLECKQ", StringType),
-        StructField("field_L8L6O8WKFCY0", StringType),
-        StructField("field_9UPC9H5", StringType),
-        StructField("field_R82ACK8GHTC", StringType),
-        StructField("field_J6B3ENEQ0TAM", StringType),
-        StructField("field_F1B27T4B55WTK", StringType)
-      ))),
       StructField("field_5V460N466V", StructType(Seq(
         StructField("field_8QIMSA", LongType),
         StructField("field_NKFT9M5", StringType)
@@ -106,17 +52,6 @@ case object StructsOnlySchema extends TestFrameUtils.SchemaHolder {
         StructField("field_08TGFSZW8QIDK5X", BooleanType),
         StructField("field_ZE344PP2SY", BooleanType),
         StructField("field_P865N", StringType),
-        StructField("field_J7Y1OXRIYNYD", StructType(Seq(
-          StructField("field_9BKWQN0BR5EJIE", StringType),
-          StructField("field_HULHNCPOBEI7", StringType),
-          StructField("field_P7Q66AJ", StringType),
-          StructField("field_GYU6V0268E5P", StringType),
-          StructField("field_OEEZCC59VRZ7A", StringType),
-          StructField("field_5ILJKAE3IAV9YD", StringType),
-          StructField("field_C4QMZTAVM", StringType),
-          StructField("field_7ODC1G26483B", StringType),
-          StructField("field_OPL443M6Y", StringType)
-        ))),
         StructField("field_GOWL7", StructType(Seq(
           StructField("field_MZW55SC6R8BLMHQ", StringType),
           StructField("field_GFFT5SMPX9B3", LongType),
@@ -142,22 +77,6 @@ case object StructsOnlySchema extends TestFrameUtils.SchemaHolder {
           StructField("field_6HFHLRNB2R91X8C", StringType),
           StructField("field_BKJAHJ30", StringType),
           StructField("field_1TJFFVVM", LongType)
-        ))),
-        StructField("field_AQAOS4ILNE29EW", StructType(Seq(
-          StructField("field_UTU8G58MI7MB", StringType),
-          StructField("field_GBLNXW5AYN", StringType),
-          StructField("field_EV8GOZ", StringType),
-          StructField("field_9XELCFMLX", StringType),
-          StructField("field_ACXEJ2LP", StringType),
-          StructField("field_EA3IQ4", LongType),
-          StructField("field_DAKOPYKD", LongType),
-          StructField("field_KCD97", LongType),
-          StructField("field_0ZA1LY", LongType),
-          StructField("field_9YOS47D", BooleanType),
-          StructField("field_O0TLM1MBFT", BooleanType),
-          StructField("field_3YIYXGZHQ3O5", StringType),
-          StructField("field_VMGT6PFPO", LongType),
-          StructField("field_92DNXTAWX", StringType)
         ))),
         StructField("field_E8I8KFH8T8P8QBB", StructType(Seq(
           StructField("field_R7E6BIB3YW", StringType),
@@ -204,19 +123,6 @@ case object StructsOnlySchema extends TestFrameUtils.SchemaHolder {
           StructField("field_7RI0C3GEJZ", LongType),
           StructField("field_Q9Y0DW2SEOAZEWW", LongType),
           StructField("field_35IZ8UVC6", LongType)
-        ))),
-        StructField("field_P3SL4ZD", StructType(Seq(
-          StructField("field_INQJ3B", StringType),
-          StructField("field_8GEKHS", StringType),
-          StructField("field_SOWOZ", StringType),
-          StructField("field_4AYHTP78I", StringType),
-          StructField("field_O47PA", StringType),
-          StructField("field_BDP9W", StringType),
-          StructField("field_BH0SCF", StringType),
-          StructField("field_J3SWN4", StringType),
-          StructField("field_IR4C6GU", StringType),
-          StructField("field_A0RV4LQ58RPPA", StringType),
-          StructField("field_XUCTLKL8RB", LongType)
         ))),
         StructField("field_OONK074H2", StringType)
       ))),
