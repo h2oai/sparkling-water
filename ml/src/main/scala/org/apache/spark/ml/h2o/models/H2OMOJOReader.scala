@@ -18,6 +18,7 @@
 package org.apache.spark.ml.h2o.models
 
 import org.apache.hadoop.fs.Path
+import org.apache.spark.ml.h2o.SparkSpecificUtils
 import org.apache.spark.ml.param.Params
 import org.apache.spark.ml.util._
 import org.apache.spark.sql._
@@ -36,7 +37,7 @@ private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReade
     val allowedParams = instance.params.map(_.name)
     val filteredParams = parsedParams.diff(allowedParams)
 
-    metadata.getAndSetParams(instance, Some(filteredParams))
+    SparkSpecificUtils.setTransformerParams(metadata, instance, filteredParams)
     val model = instance.asInstanceOf[T]
 
     val inputPath = new Path(path, H2OMOJOProps.serializedFileName)

@@ -18,6 +18,7 @@
 package org.apache.spark.ml.spark
 
 import org.apache.spark.SparkContext
+import org.apache.spark.ml.h2o.SparkSpecificUtils
 import org.apache.spark.scheduler._
 import org.apache.spark.storage.RDDInfo
 import water.Job
@@ -87,7 +88,7 @@ class ProgressListener(val sc: SparkContext,
   }
 
   private def updateTaskStatus(stageId: Int, taskIdx: Int): Unit = {
-    val status = s"Stage [$stageId] status [$taskIdx/${sc.statusTracker.getStageInfo(stageId).get.numTasks}]."
+    val status = s"Stage [$stageId] status [$taskIdx/${SparkSpecificUtils.getNumTaskForStage(sc, stageId)}]."
     currentStages.put(stageId, status)
     job.update(0, printStagesStatus())
   }
