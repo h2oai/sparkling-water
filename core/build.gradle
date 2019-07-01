@@ -132,8 +132,13 @@ dependencies {
   integTestCompile "junit:junit:4.11"
   integTestCompile(project(":sparkling-water-extension-stack-trace"))
 
+  // Requirements of benchmarks
+  benchCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
+  benchCompile "junit:junit:4.11"
+    
   // Put Spark Assembly on runtime path
   integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar' )
+  benchRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar' )
 }
 
 task createSparkVersionFile {
@@ -180,6 +185,13 @@ integTest {
     systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
 
     // testLogging.showStandardStreams = true
+}
+
+bench {
+    systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
+
+    systemProperty "spark.testing",   "true"
+    systemProperty "spark.test.home", "${sparkHome}"
 }
 
 defineStandardPublication().call()

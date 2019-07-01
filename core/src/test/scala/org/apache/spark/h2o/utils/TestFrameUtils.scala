@@ -20,7 +20,7 @@ package org.apache.spark.h2o.utils
 import java.util.UUID
 
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
-import org.apache.spark.sql.catalyst.expressions.GenericRow
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions.{lit, rand}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -139,7 +139,7 @@ object TestFrameUtils extends Matchers {
         val schema = schemaHolder.schema
         val localRandom = new Random(r.getLong(0))
         val values = schema.fields.map(f => generateValueForField(localRandom, f, settings))
-        new GenericRow(values)
+        new GenericRowWithSchema(values, schema)
       }
   }
 
@@ -153,7 +153,7 @@ object TestFrameUtils extends Matchers {
       case None => name
       case Some(x) => s"${x}_name"
     }
-    if (nullable && random.nextDouble() <= settings.nullProbability) {
+    if (nullable && random.nextDouble() < settings.nullProbability) {
       null
     } else {
       dataType match {
@@ -176,9 +176,9 @@ object TestFrameUtils extends Matchers {
             val key = generateValueForField(random, keyField, settings, Some(nameWithPrefix))
             key -> a
           }.toMap
-        case StructType(fields) =>
+        case struct @ StructType(fields) =>
           val values = fields.map(f => generateValueForField(random, f, settings, Some(nameWithPrefix)))
-          new GenericRow(values)
+          new GenericRowWithSchema(values, struct)
       }
     }
   }
