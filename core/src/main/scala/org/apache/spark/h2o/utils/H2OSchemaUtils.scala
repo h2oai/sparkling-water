@@ -352,7 +352,6 @@ object H2OSchemaUtils {
       vectorIndices.zip(Array.fill(vectorIndices.length)(false)).toMap
     }
 
-
     flatDataFrame.schema.fields.zipWithIndex.flatMap { case (field, idx) =>
 
       field.dataType match {
