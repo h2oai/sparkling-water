@@ -145,15 +145,9 @@ private[h2o] object SparkDataFrameConverter extends Logging {
           case TimestampType => con.put(idxH2O, row.getAs[java.sql.Timestamp](idxField))
           case DateType => con.put(idxH2O, row.getAs[java.sql.Date](idxField))
           case ArrayType(elemType, _) => putArray(row.getAs[Seq[_]](idxField), elemType, con, idxH2O, elemSizes(idxField))
-          case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] => {
-            val value = row.get(idxField)
-            value match {
-              case vector: mllib.linalg.Vector =>
-                con.putVector(idxH2O, vector, elemSizes(idxField))
-              case vector: ml.linalg.Vector =>
-                con.putVector(idxH2O, vector, elemSizes(idxField))
-            }
-          }
+          case _: ml.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[ml.linalg.Vector](idxField), elemSizes(idxField))
+          case _: mllib.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[mllib.linalg.Vector](idxField), elemSizes(idxField))
+          case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
           case _ => con.putNA(idxH2O)
         }
       }
