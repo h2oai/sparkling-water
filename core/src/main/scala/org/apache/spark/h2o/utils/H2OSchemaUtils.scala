@@ -506,7 +506,7 @@ object H2OSchemaUtils {
     * @param idx index of the element
     */
   private def getCollectionSize(row: Row, idx: Int): Int = {
-    if (row.isNullAt(idx)) {
+    if (row.schema == null || row.isNullAt(idx)) {
       0
     } else {
       val dataType = row.schema.fields(idx).dataType
