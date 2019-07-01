@@ -473,8 +473,8 @@ object H2OSchemaUtils {
   def collectVectorLikeTypes(flatSchema: StructType): Seq[Int] = {
     flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
-        case _: mllib.linalg.VectorUDT => Some(idx)
         case _: ml.linalg.VectorUDT => Some(idx)
+        case _: mllib.linalg.VectorUDT => Some(idx)
         case _ => None
       }
     }
@@ -513,8 +513,8 @@ object H2OSchemaUtils {
       dataType match {
         case ArrayType(_, _) => row.getAs[Seq[_]](idx).length
         case BinaryType => row.getAs[Array[Byte]](idx).length
-        case _: mllib.linalg.VectorUDT => row.getAs[mllib.linalg.Vector](idx).size
         case _: ml.linalg.VectorUDT => row.getAs[ml.linalg.Vector](idx).size
+        case _: mllib.linalg.VectorUDT => row.getAs[mllib.linalg.Vector](idx).size
         case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
       }
     }
