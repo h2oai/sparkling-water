@@ -55,9 +55,8 @@ task benchJar(type: Jar, dependsOn: benchClasses) {
     from sourceSets.bench.output
 }
 
-// Run integration tests as part of build
+// Run benchmarks as a part of build
 check.dependsOn bench
 
 // Dependencies
 bench.dependsOn benchJar
-bench.dependsOn ":sparkling-water-assembly:shadowJar"

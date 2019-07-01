@@ -132,7 +132,7 @@ dependencies {
   integTestCompile "junit:junit:4.11"
   integTestCompile(project(":sparkling-water-extension-stack-trace"))
 
-  // Integration tests requirements
+  // Requirements of benchmarks
   benchCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
   benchCompile "junit:junit:4.11"
     
@@ -192,10 +192,6 @@ bench {
 
     systemProperty "spark.testing",   "true"
     systemProperty "spark.test.home", "${sparkHome}"
-
-    // Pass list of jars required for testing
-    systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
-    systemProperty "sparkling.bench.jar", "${benchJar.archivePath}"
 }
 
 defineStandardPublication().call()
