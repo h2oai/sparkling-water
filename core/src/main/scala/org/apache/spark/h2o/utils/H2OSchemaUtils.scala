@@ -341,20 +341,17 @@ object H2OSchemaUtils {
     */
   def collectSparseInfo(flatDataFrame: DataFrame, elemMaxSizes: Array[Int]): Array[Boolean] = {
     val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
-
-    val sparseInfoForVec = {
-      if (flatDataFrame.isEmpty) {
-        vectorIndices.zip(Array.fill(vectorIndices.length)(false)).toMap
-      } else {
-        val head = flatDataFrame.head()
-        vectorIndices.map { idx =>
-          head.get(idx) match {
-            case _: ml.linalg.SparseVector | _: mllib.linalg.SparseVector => (idx, true)
-            case _ => (idx, false)
-          }
-        }.toMap
-      }
+    val sparseInfoForVec = flatDataFrame.take(1).headOption.map { head =>
+      vectorIndices.map { idx =>
+        head.get(idx) match {
+          case _: ml.linalg.SparseVector | _: mllib.linalg.SparseVector => (idx, true)
+          case _ => (idx, false)
+        }
+      }.toMap
+    }.getOrElse {
+      vectorIndices.zip(Array.fill(vectorIndices.length)(false)).toMap
     }
+
 
     flatDataFrame.schema.fields.zipWithIndex.flatMap { case (field, idx) =>
 
