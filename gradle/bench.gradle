@@ -1,0 +1,62 @@
+sourceSets {
+    bench {
+        scala.srcDir file('src/bench/scala')
+        resources.srcDir file('src/bench/resources')
+
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
+}
+
+configurations {
+    benchCompile.extendsFrom testCompile
+    benchRuntime.extendsFrom testRuntime
+}
+
+
+task bench(type: Test) {
+    group = 'Verification'
+    description = 'Runs all benchmarks'
+    testClassesDirs = sourceSets.bench.output.classesDirs
+    classpath = sourceSets.bench.runtimeClasspath
+
+    //
+    // Defaults shared by all benchmarks
+    //
+
+    // Run with assertions ON
+    enableAssertions = true
+    // For a new JVM for each test class
+    forkEvery = 1
+    // Working dir will be root project
+    workingDir = rootDir
+    // Increase test runner memory
+    maxHeapSize = "4g"
+
+    if(!jvmArgs.isEmpty()) {
+        jvmArgs extraJVMArgs.split(" ")
+    }
+
+    systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-bench/nodes")
+    systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-bench/client")
+
+    include "ai/h2o/sparkling/bench/**"
+
+    // Also setup expected Scala version for Spark launcher
+    environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
+}
+
+// Create jar containing bench classes
+task benchJar(type: Jar, dependsOn: benchClasses) {
+    group = "Build"
+    description = "Assembles a jar archive with benchmark classes."
+    baseName = "${project.name}_${scalaBaseVersion}"
+    appendix = 'bench'
+    from sourceSets.bench.output
+}
+
+// Run benchmarks as a part of build
+check.dependsOn bench
+
+// Dependencies
+bench.dependsOn benchJar

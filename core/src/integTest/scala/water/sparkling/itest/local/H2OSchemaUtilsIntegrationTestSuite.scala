@@ -15,8 +15,9 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling
+package water.sparkling.itest.local
 
+import ai.h2o.sparkling.utils.schemas.ComplexSchema
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, SparkTestContext, TestFrameUtils}
 import org.apache.spark.sql.Row
 import org.apache.spark.{SparkConf, SparkContext}
