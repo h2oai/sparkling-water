@@ -25,29 +25,29 @@ def substituteBuildInfoFile(buildTimeMillis, buildTimeIso8601, buildTimeLocal) {
     buildInfoFile.write(content, 'UTF-8')
 }
 
-def getGithubURLPrefix(String swVersion) {
-    def gitBranch = getGitBranch()
-    if (swVersion.contains("SNAPSHOT-")) {
-        return "${gitBranch}/nightly"
-    } else {
-        return gitBranch
-    }
-}
+def getPatchVersionNumber() {
+    def patchVersion = version.toString().split("\\.")[2]
 
-def static getPatchVersionNumber(String swVersion) {
-    def patchVersion = swVersion.split("\\.")[2]
-
-    if (swVersion.contains("SNAPSHOT-")) {
+    if (version.contains("SNAPSHOT-")) {
         return patchVersion.split("-")[2]
     } else {
         return patchVersion
     }
 }
 
+def getS3Bucket() {
+    def prefix = "sparkling-water/${getGitBranch().replaceAll("/", "-")}-${spark}"
+    def suffix = getPatchVersionNumber()
+
+    if (version.contains("SNAPSHOT-")) {
+        return "${prefix}/nightly/${suffix}"
+    } else {
+        return "${prefix}/${suffix}"
+    }
+}
+
 def getMavenRepoLink() {
-    def urlPrefix = getGithubURLPrefix(version.toString())
-    def patchVersion = getPatchVersionNumber(version.toString())
-    return "https://h2o-release.s3.amazonaws.com/sparkling-water/${urlPrefix}/${patchVersion}/maven/repo/"
+    return "https://h2o-release.s3.amazonaws.com/${getS3Bucket()}/maven/repo/"
 }
 
 def getMavenRepoHtml() {
@@ -77,9 +77,7 @@ def substituteIndexHtml(buildTimeLocal) {
     def content = file("src/index.html").getText('UTF-8')
             .replaceAll("SUBST_SPARK_MAJOR_VERSION_WITH_EXCLUDES", sparkMajorWithExclude)
             .replaceAll("SUBST_PROJECT_VERSION", version.toString())
-            .replaceAll("SUBST_PROJECT_PATCH_VERSION", getPatchVersionNumber(version.toString()))
             .replaceAll("SUBST_PROJECT_GITHASH", getGitHash())
-            .replaceAll("SUBST_PROJECT_GITBRANCH", getGithubURLPrefix(version.toString()))
             .replaceAll("SUBST_H2O_VERSION", h2oMajorVersion)
             .replaceAll("SUBST_H2O_BUILD", h2oBuild)
             .replaceAll("SUBST_H2O_NAME", h2oMajorName)
@@ -91,6 +89,7 @@ def substituteIndexHtml(buildTimeLocal) {
             .replaceAll("SUBST_BUILD_TIME_LOCAL", buildTimeLocal)
             .replaceAll("SUBST_MAVEN_REPO", getMavenRepoHtml())
             .replaceAll("SUBST_EXTRA_REPO", getExtraSparkRepo())
+            .replaceAll("SUBST_S3_BUCKET", getS3Bucket())
     def indexHtmlFile = file("$distDir/index.html")
     indexHtmlFile.createNewFile()
     indexHtmlFile.write(content, 'UTF-8')
@@ -141,12 +140,16 @@ def distTaskDependencies = [
         ":sparkling-water-package:publish"
 ]
 
-def substituteGradleProperties() {
-    def gradlePropsFile = file("$zipDir/gradle.properties")
-    def content = gradlePropsFile.getText('UTF-8')
-            .replaceAll("version=.*", "version=${version.toString()}")
+def copyAndSubstituteGradleProperties() {
+    def content = file("$rootDir/gradle.properties").getText('UTF-8')
     
-    gradlePropsFile.write(content, 'UTF-8')
+    def sparkSpecificContent = file("$rootDir/gradle-spark${spark}.properties")
+            .getText('UTF-8')
+            .replaceAll("version=.*", "version=${version.toString()}")
+
+    def gradlePropsFile = file("$zipDir/gradle.properties")
+    gradlePropsFile.createNewFile()
+    gradlePropsFile.write(content + sparkSpecificContent, 'UTF-8')
 }
 
 task copyFilesForZipDistribution {
@@ -184,8 +187,7 @@ task copyFilesForZipDistribution {
         copyAndKeepPath("examples/smalldata/bcwd.csv", "$zipDir")
         copyAndKeepPath("LICENSE", "$zipDir")
         copyAndKeepPath("README.rst", "$zipDir")
-        copyAndKeepPath("gradle.properties", "$zipDir")
-        substituteGradleProperties()
+        copyAndSubstituteGradleProperties()
         
         copyRecursive("bin/", "$zipDir/bin")
         copyRecursive("examples/flows/", "$zipDir/examples/flows")
