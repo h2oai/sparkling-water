@@ -29,7 +29,7 @@ import org.json4s.jackson.JsonMethods.{compact, render}
 
 private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReader[T] {
 
-  private def getAndSetParams(instance: Params, metadata: Metadata, skipParams: List[String] = Nil): Unit = {
+  private def getAndSetParams(instance: Params, metadata: Metadata, skipParams: List[String]): Unit = {
     metadata.params match {
       case JObject(pairs) =>
         pairs.foreach { case (paramName, jsonValue) =>
