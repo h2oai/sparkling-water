@@ -38,7 +38,7 @@ class H2OContextLocalClusterSuite extends FunSuite
     val conf = defaultSparkConf.setJars(swassembly :: Nil)
     sc = new SparkContext("local", "test-local-cluster", conf)
 
-    val hc = H2OContext.getOrCreate(sc, new H2OConf(spark).setNumOfExternalH2ONodes(1))
+    val hc = H2OContext.getOrCreate(sc, new H2OConf(spark).setClusterSize(1))
     assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 member")
 
     hc.stop()

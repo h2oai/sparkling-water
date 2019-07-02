@@ -40,7 +40,7 @@ class HadoopSmokeTestSuite(unittest.TestCase):
         cls._spark = SparkSession.builder.config(
             conf=unit_test_utils.get_default_spark_conf().setMaster("yarn-client")).getOrCreate()
         unit_test_utils.set_up_class(cls)
-        cls._hc = H2OContext.getOrCreate(cls._spark, H2OConf(cls._spark).set_num_of_external_h2o_nodes(1))
+        cls._hc = H2OContext.getOrCreate(cls._spark, H2OConf(cls._spark).set_cluster_size(1))
 
     @classmethod
     def tearDownClass(cls):
