@@ -87,7 +87,7 @@ class ProgressListener(val sc: SparkContext,
   }
 
   private def updateTaskStatus(stageId: Int, taskIdx: Int): Unit = {
-    val status = s"Stage [$stageId] status [$taskIdx/${sc.jobProgressListener.stageIdToInfo(stageId).numTasks}]."
+    val status = s"Stage [$stageId] status [$taskIdx/${sc.statusTracker.getStageInfo(stageId).get.numTasks}]."
     currentStages.put(stageId, status)
     job.update(0, printStagesStatus())
   }
