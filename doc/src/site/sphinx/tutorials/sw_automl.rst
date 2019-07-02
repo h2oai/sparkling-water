@@ -132,10 +132,10 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
 
 
-Enabling XGBoost Models when Running Sparkling Water on YARN
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Enabling XGBoost Models when Running Sparkling Water in a Distributed Environment (YARN)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The multi-node XGBoost algorithm is considered as an experimental feature of AutoML. Thus the XGBoost algorithm is disabled for AutoML by default when running
-Sparkling Water on YARN. When Sparkling Water is run in the ``local`` mode, XGBoost is enabled.
+Sparkling Water in a distributed environment (e.g. on YARN). When Sparkling Water is run in the ``local`` mode, XGBoost is enabled.
 
 .. content-tabs::
 
