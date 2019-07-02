@@ -128,7 +128,7 @@ certificates are created.
 
         and when you have the shell running, start ``H2OContext`` as:
 
-        .. code:: scala
+        .. code:: python
 
             from pysparkling import *
             hc = H2OContext.getOrCreate(spark, verify_ssl_certificates=False)
@@ -136,7 +136,7 @@ certificates are created.
         You can also start PySparkling shell without the configuration
         and specify it using the setters on ``H2OConf`` as:
 
-        .. code:: scala
+        .. code:: python
 
             from pysparkling import *
             conf = H2OConf(spark).set_auto_flow_ssl_enabled()
