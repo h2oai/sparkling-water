@@ -54,7 +54,7 @@ class H2OConfTestSuite extends FunSuite
     // and getOrCreate methods automatically start H2OContext, we use a little bit of reflection
     val ctor = classOf[H2OContext].getDeclaredConstructor(classOf[SparkSession], classOf[H2OConf])
     ctor.setAccessible(true)
-    val hc = ctor.newInstance(spark, new H2OConf(spark).setNumOfExternalH2ONodes(1))
+    val hc = ctor.newInstance(spark, new H2OConf(spark).setClusterSize(1))
     val conf = hc.getConf
 
     // Test passed values
