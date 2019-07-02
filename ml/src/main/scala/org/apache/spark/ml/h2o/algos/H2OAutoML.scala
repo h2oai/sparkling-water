@@ -272,7 +272,7 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   def setSortMetric(value: String): this.type = {
     val allowedValues = Seq("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "mean_per_class_error")
     if (!allowedValues.contains(value)) {
-      throw new IllegalArgumentException(s"Allowed values for AutoML Stopping Metric are: ${allowedValues.mkString(", ")}")
+      throw new IllegalArgumentException(s"Allowed values for AutoML Sort Metric are: ${allowedValues.mkString(", ")}")
     }
     if (value == "AUTO") {
       set(sortMetric, null)
