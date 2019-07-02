@@ -32,12 +32,12 @@ private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReade
   private def getAndSetParams(instance: Params, metadata: Metadata, skipParams: List[String] = Nil): Unit = {
     metadata.params match {
       case JObject(pairs) =>
-        pairs.filter { case (paramName, _) =>
-          !skipParams.contains(paramName)
-        }.foreach { case (paramName, jsonValue) =>
-          val param = instance.getParam(paramName)
-          val value = param.jsonDecode(compact(render(jsonValue)))
-          instance.set(param, value)
+        pairs.foreach { case (paramName, jsonValue) =>
+          if (!skipParams.contains(paramName)) {
+            val param = instance.getParam(paramName)
+            val value = param.jsonDecode(compact(render(jsonValue)))
+            instance.set(param, value)
+          }
         }
       case _ =>
         throw new IllegalArgumentException(
