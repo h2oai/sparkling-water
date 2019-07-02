@@ -18,7 +18,6 @@
 package org.apache.spark.ml.h2o.models
 
 import org.apache.hadoop.fs.Path
-import org.apache.spark.ml.h2o.SparkSpecificUtils
 import org.apache.spark.ml.param.Params
 import org.apache.spark.ml.util.DefaultParamsReader.Metadata
 import org.apache.spark.ml.util._
