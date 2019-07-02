@@ -185,12 +185,16 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
     val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
 
     val modelOutputJson = JsonModelDescriptorReader.parseModelJson(reader).getAsJsonObject("output")
-    removeMetaField(modelOutputJson)
-    modelOutputJson.remove("domains")
-    modelOutputJson.remove("help")
-    val gson = new GsonBuilder().setPrettyPrinting().create
-    val prettyJson = gson.toJson(modelOutputJson)
-    prettyJson
+    if (modelOutputJson == null) {
+      "Model details not available!"
+    } else {
+      removeMetaField(modelOutputJson)
+      modelOutputJson.remove("domains")
+      modelOutputJson.remove("help")
+      val gson = new GsonBuilder().setPrettyPrinting().create
+      val prettyJson = gson.toJson(modelOutputJson)
+      prettyJson
+    }
   }
 
   override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): PyH2OMOJOModel = {
