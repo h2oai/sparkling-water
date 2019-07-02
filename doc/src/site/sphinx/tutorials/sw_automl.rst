@@ -56,7 +56,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             automl.setSortMetric("AUC")
             val model = automl.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the estimator as:
+        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
         .. code:: scala
 
@@ -66,7 +66,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
         .. code:: scala
 
-            model.transform(testingDF).show()
+            model.transform(testingDF).show(false)
 
 
     .. tab-container:: Python
@@ -118,7 +118,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             automl.setSortMetric("AUC")
             model = automl.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the estimator as:
+        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
         .. code:: python
 
@@ -128,21 +128,21 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
         .. code:: python
 
-            model.transform(testingDF).show()
+            model.transform(testingDF).show(truncate = False)
 
 
 
 Enabling XGBoost Models when Running Sparkling Water on YARN
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The multi-node XGBoost algorithm is considered as an experimental feature of AutoML. Thus the XGBoost algorithm is disabled for AutoML by default when running
-Sparkling Water on YARN or a local cluster.
+Sparkling Water on YARN. When Sparkling Water is run in the ``local`` mode, XGBoost is enabled.
 
 .. content-tabs::
 
     .. tab-container:: Scala
         :title: Scala
 
-        To enable the algorithm, ``sparkling-shell`` has to be executed with the extra driver option as:
+        To enable the algorithm on YARN, ``sparkling-shell`` has to be executed with the extra driver option as:
 
         .. code:: shell
 
@@ -152,7 +152,7 @@ Sparkling Water on YARN or a local cluster.
     .. tab-container:: Python
         :title: Python
 
-        To enable the algorithm, ``pysparkling`` has to be executed with the extra driver option as:
+        To enable the algorithm on YARN, ``pysparkling`` has to be executed with the extra driver option as:
 
         .. code:: shell
 
