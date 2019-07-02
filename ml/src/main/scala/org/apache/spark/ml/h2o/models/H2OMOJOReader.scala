@@ -23,32 +23,29 @@ import org.apache.spark.ml.util.DefaultParamsReader.Metadata
 import org.apache.spark.ml.util._
 import org.apache.spark.sql._
 import org.apache.spark.util.Utils
+import org.json4s.JsonAST
 import org.json4s.JsonAST.JObject
 import org.json4s.jackson.JsonMethods.{compact, render}
-import org.json4s.{DefaultFormats, JsonAST}
 
 private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReader[T] {
 
-  private def getAndSetParams(
-                               instance: Params,
-                               metadata: Metadata,
-                               skipParams: Option[List[String]] = None): Unit = {
-    implicit val format = DefaultFormats
+  private def getAndSetParams(instance: Params, metadata: Metadata, skipParams: List[String] = Nil): Unit = {
     metadata.params match {
       case JObject(pairs) =>
-        pairs.foreach { case (paramName, jsonValue) =>
-          if (skipParams == None || !skipParams.get.contains(paramName)) {
-            val param = instance.getParam(paramName)
-            val value = param.jsonDecode(compact(render(jsonValue)))
-            instance.set(param, value)
-          }
+        pairs.filter { case (paramName, _) =>
+          !skipParams.contains(paramName)
+        }.foreach { case (paramName, jsonValue) =>
+          val param = instance.getParam(paramName)
+          val value = param.jsonDecode(compact(render(jsonValue)))
+          instance.set(param, value)
         }
       case _ =>
         throw new IllegalArgumentException(
           s"Cannot recognize JSON metadata: ${metadata.metadataJson}.")
     }
   }
-  override def load(path: String): T  = {
+
+  override def load(path: String): T = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc)
     val cls = Utils.classForName(metadata.className)
     val instance =
@@ -58,7 +55,7 @@ private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReade
     val allowedParams = instance.params.map(_.name)
     val skippedParams = parsedParams.diff(allowedParams)
 
-    getAndSetParams(instance, metadata, Some(skippedParams))
+    getAndSetParams(instance, metadata, skippedParams)
     val model = instance.asInstanceOf[T]
 
     val inputPath = new Path(path, H2OMOJOProps.serializedFileName)
