@@ -40,8 +40,7 @@ private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReade
           }
         }
       case _ =>
-        throw new IllegalArgumentException(
-          s"Cannot recognize JSON metadata: ${metadata.metadataJson}.")
+        throw new IllegalArgumentException(s"Cannot recognize JSON metadata: ${metadata.metadataJson}.")
     }
   }
 
