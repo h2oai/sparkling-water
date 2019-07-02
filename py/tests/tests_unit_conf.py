@@ -39,7 +39,7 @@ class H2OConfTest(unittest.TestCase):
         cls._conf = unit_test_utils.get_default_spark_conf(cls._spark_options_from_params). \
             set("spark.ext.h2o.cloud.name", cls._cloud_name)
         cls._spark = SparkSession.builder.config(conf=cls._conf).getOrCreate()
-        cls._hc = H2OContext.getOrCreate(cls._spark, H2OConf(cls._spark).set_num_of_external_h2o_nodes(1))
+        cls._hc = H2OContext.getOrCreate(cls._spark, H2OConf(cls._spark).set_cluster_size(1))
 
     # test passing h2o_conf to H2OContext
     def test_h2o_conf(self):
