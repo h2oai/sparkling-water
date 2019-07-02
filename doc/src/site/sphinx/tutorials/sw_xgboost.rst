@@ -1,98 +1,102 @@
 Train XGBoost Model in Sparkling Water
 --------------------------------------
 
-Sparkling Water provides API for H2O XGBoost in both Scala and Python.
+Sparkling Water provides API for H2O XGBoost in Scala and Python.
 The following sections describe how to train XGBoost model in Sparkling Water in both languages.
 
-Running XGBoost in Scala
-~~~~~~~~~~~~~~~~~~~~~~~~
+.. content-tabs::
 
-First, let's start Sparkling Shell as
+    .. tab-container:: Scala
+        :title: Scala
 
-.. code:: shell
+        First, let's start Sparkling Shell as
 
-    ./bin/sparkling-shell
+        .. code:: shell
 
-Start H2O cluster inside the Spark environment
+            ./bin/sparkling-shell
 
-.. code:: scala
+        Start H2O cluster inside the Spark environment
 
-    import org.apache.spark.h2o._
-    import java.net.URI
-    val hc = H2OContext.getOrCreate(spark)
+        .. code:: scala
 
-Parse the data using H2O and convert them to Spark Frame
+            import org.apache.spark.h2o._
+            import java.net.URI
+            val hc = H2OContext.getOrCreate(spark)
 
-.. code:: scala
+        Parse the data using H2O and convert them to Spark Frame
 
-    val frame = new H2OFrame(new URI("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv"))
-    val sparkFrame = hc.asDataFrame(frame)
+        .. code:: scala
 
-Train the model. You can configure all the available XGBoost arguments using provided setters, such as the predictions column.
+            val frame = new H2OFrame(new URI("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv"))
+            val sparkDF = hc.asDataFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string")
+            val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
-.. code:: scala
+        Train the model. You can configure all the available XGBoost arguments using provided setters, such as the label column.
 
-    import org.apache.spark.ml.h2o.algos.H2OXGBoost
-    val estimator = new H2OXGBoost().setLabelCol("AGE")
-    val model = estimator.fit(sparkFrame)
+        .. code:: scala
 
-You can also get raw model details by calling the *getModelDetails()* method available on the estimator as:
+            import org.apache.spark.ml.h2o.algos.H2OXGBoost
+            val estimator = new H2OXGBoost().setLabelCol("CAPSULE")
+            val model = estimator.fit(trainingDF)
 
-.. code:: scala
+        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
-    model.getModelDetails()
+        .. code:: scala
 
-Run Predictions
+            model.getModelDetails()
 
-.. code:: scala
+        Run Predictions
 
-    model.transform(sparkFrame)
+        .. code:: scala
 
-Running XGBoost in Python
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-First, let's start PySparkling Shell as
-
-.. code:: shell
-
-    ./bin/pysparkling
-
-Start H2O cluster inside the Spark environment
-
-.. code:: python
-
-    from pysparkling import *
-    hc = H2OContext.getOrCreate(spark)
-
-Parse the data using H2O and convert them to Spark Frame
-
-.. code:: python
-
-    import h2o
-    frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
-    spark_frame = hc.as_spark_frame(frame)
-
-Train the model. You can configure all the available XGBoost arguments using provided setters, such as the predictions column.
-
-.. code:: python
-
-    from pysparkling.ml import H2OXGBoost
-    estimator = H2OXGBoost(labelCol="AGE")
-    model = estimator.fit(spark_frame)
+            model.transform(testingDF).show(false)
 
 
-You can also get raw model details by calling the *getModelDetails()* method available on the estimator as:
+    .. tab-container:: Python
+        :title: Python
 
-.. code:: python
+        First, let's start PySparkling Shell as
 
-    model.getModelDetails()
+        .. code:: shell
 
-Run Predictions
+            ./bin/pysparkling
 
-.. code:: python
+        Start H2O cluster inside the Spark environment
 
-    model.transform(spark_frame)
+        .. code:: python
+
+            from pysparkling import *
+            hc = H2OContext.getOrCreate(spark)
+
+        Parse the data using H2O and convert them to Spark Frame
+
+        .. code:: python
+
+            import h2o
+            frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
+            sparkDF = hc.as_spark_frame(frame)
+            sparkDF = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
+            [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
+
+        Train the model. You can configure all the available XGBoost arguments using provided setters or constructor parameters, such as the label column.
+
+        .. code:: python
+
+            from pysparkling.ml import H2OXGBoost
+            estimator = H2OXGBoost(labelCol = "CAPSULE")
+            model = estimator.fit(trainingDF)
+
+        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+
+        .. code:: python
+
+            model.getModelDetails()
+
+        Run Predictions
+
+        .. code:: python
+
+            model.transform(testingDF).show(truncate = False)
 
 
 XGBoost Memory Configuration
