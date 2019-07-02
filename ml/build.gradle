@@ -3,14 +3,6 @@ description = "Sparkling Water ML Pipelines"
 apply from: "$rootDir/gradle/sparkTest.gradle"
 apply from: "$rootDir/gradle/utils.gradle"
 
-sourceSets {
-  main {
-    scala {
-      srcDirs += getSparkSpecificSourceDir(sparkMajorVersion)
-    }
-  }
-}
-
 dependencies {
   // Sparkling Water Core
   compile( project(":sparkling-water-core") ) { 
