@@ -153,8 +153,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
         selectFromArray(idx)(frameWithPredictions.col(getPredictionCol() + ".preds"))
       }
 
-      var frameWithExtractedPredictions: DataFrame = frameWithPredictions
-      $(outputCols).indices.foldLeft(frameWithExtractedPredictions) { case (df, idx) =>
+      val frameWithExtractedPredictions = $(outputCols).indices.foldLeft(frameWithPredictions) { case (df, idx) =>
         df.withColumn(tempColNames(idx), predictionCols(idx))
       }
 
