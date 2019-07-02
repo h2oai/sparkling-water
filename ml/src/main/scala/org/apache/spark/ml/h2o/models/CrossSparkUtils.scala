@@ -18,11 +18,7 @@
 package org.apache.spark.ml.h2o.models
 
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.param.Params
-import org.apache.spark.ml.util.DefaultParamsReader
 
 trait CrossSparkUtils {
- def setTransformerParams(metadata: DefaultParamsReader.Metadata, instance : Params, filteredParams: List[String]): Unit
-
- def getNumTaskForStage(sc: SparkContext, stageId: Int): Int
+  def getNumTaskForStage(sc: SparkContext, stageId: Int): Int
 }

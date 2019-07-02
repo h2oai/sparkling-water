@@ -19,13 +19,8 @@ package org.apache.spark.ml.h2o
 
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.h2o.models.CrossSparkUtils
-import org.apache.spark.ml.param.Params
-import org.apache.spark.ml.util.DefaultParamsReader
 
 object SparkSpecificUtils extends CrossSparkUtils {
-  override def setTransformerParams(metadata: DefaultParamsReader.Metadata, instance: Params, filteredParams: List[String]): Unit = {
-    metadata.getAndSetParams(instance, Some(filteredParams))
-  }
 
   override def getNumTaskForStage(sc: SparkContext, stageId: Int): Int = {
     sc.statusTracker.getStageInfo(stageId).get.numTasks
