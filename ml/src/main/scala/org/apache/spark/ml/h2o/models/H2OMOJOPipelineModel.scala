@@ -42,7 +42,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   }
 
   // private parameter used to store MOJO output columns
-  protected final val outputCols: StringArrayParam =  new StringArrayParam(this, "outputCols", "OutputCols")
+  protected final val outputCols: StringArrayParam = new StringArrayParam(this, "outputCols", "OutputCols")
 
   case class Mojo2Prediction(preds: List[Double])
 
@@ -151,8 +151,8 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
       // Temporary columns are created as we can't create the columns directly as nested ones
       var frameWithExtractedPredictions: DataFrame = frameWithPredictions
       $(outputCols).indices.foreach { idx =>
-        frameWithExtractedPredictions = frameWithExtractedPredictions.withColumn(tempColNames(idx),
-          selectFromArray(idx)(frameWithExtractedPredictions.col(getPredictionCol() + ".preds")))
+        val newCol = selectFromArray(idx)(frameWithExtractedPredictions.col(getPredictionCol() + ".preds"))
+        frameWithExtractedPredictions = frameWithExtractedPredictions.withColumn(tempColNames(idx), newCol)
       }
 
       // Transform the columns at the top level under "output" column
