@@ -216,7 +216,7 @@ public class SparkSVM extends ModelBuilder<SparkSVMModel, SparkSVMParameters, Sp
                                 svm.run(training, vec2vec(_parms.initialWeights().vecs()));
                 training.unpersist(false);
 
-                sc.listenerBus().listeners().remove(progressBar);
+                sc.listenerBus().removeListener(progressBar);
 
                 model._output.weights_$eq(trainedModel.weights().toArray());
                 model._output.iterations_$eq(_parms._max_iterations);

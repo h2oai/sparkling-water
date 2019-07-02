@@ -23,15 +23,16 @@ import org.apache.spark.ml.util.DefaultParamsReader.Metadata
 import org.apache.spark.ml.util._
 import org.apache.spark.sql._
 import org.apache.spark.util.Utils
-import org.json4s.jackson.JsonMethods._
-import org.json4s.{DefaultFormats, JObject, JsonAST}
+import org.json4s.JsonAST.JObject
+import org.json4s.jackson.JsonMethods.{compact, render}
+import org.json4s.{DefaultFormats, JsonAST}
 
 private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReader[T] {
 
   private def getAndSetParams(
-                       instance: Params,
-                       metadata: Metadata,
-                       skipParams: Option[List[String]] = None): Unit = {
+                               instance: Params,
+                               metadata: Metadata,
+                               skipParams: Option[List[String]] = None): Unit = {
     implicit val format = DefaultFormats
     metadata.params match {
       case JObject(pairs) =>
@@ -47,7 +48,6 @@ private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReade
           s"Cannot recognize JSON metadata: ${metadata.metadataJson}.")
     }
   }
-
   override def load(path: String): T  = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc)
     val cls = Utils.classForName(metadata.className)
@@ -56,9 +56,9 @@ private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReade
 
     val parsedParams = metadata.params.asInstanceOf[JsonAST.JObject].obj.map(_._1)
     val allowedParams = instance.params.map(_.name)
-    val filteredParams = parsedParams.diff(allowedParams)
+    val skippedParams = parsedParams.diff(allowedParams)
 
-    getAndSetParams(instance, metadata, Some(filteredParams))
+    getAndSetParams(instance, metadata, Some(skippedParams))
     val model = instance.asInstanceOf[T]
 
     val inputPath = new Path(path, H2OMOJOProps.serializedFileName)

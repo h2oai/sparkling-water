@@ -80,10 +80,10 @@ def getCurrentRSparklingVersion(def projectDir) {
 }
 
 def getSparkSpecificSourceDir(sparkMajorVersion) {
-    if (file("src/main/spark_$sparkMajorVersion").exists()) {
-        return ["src/main/spark_$sparkMajorVersion"]
-    } else if (file("src/main/spark_current").exists()) {
-        return ["src/main/spark_current"]
+    if (file("src/main/scala_spark_$sparkMajorVersion").exists()) {
+        return ["src/main/scala_spark_$sparkMajorVersion"]
+    } else if (file("src/main/scala_spark_others").exists()) {
+        return ["src/main/scala_spark_others"]
     } else {
         return []
     }
