@@ -11,7 +11,7 @@ sourceSets {
             srcDirs += getSparkSpecificSourceDir(sparkMajorVersion)
         }
         resources {
-            srcDir("flow-css")
+            srcDirs += getSparkSpecificResourceDir(sparkMajorVersion) + ["${projectDir}/flow-css"]
         }
     }
 }
