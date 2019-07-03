@@ -144,6 +144,17 @@ public class JavaH2OContext {
         return asDataFrame(fr, true);
     }
 
+    /**
+     * Convert given H2O frame into DataFrame type
+     *
+     * @param fr         the frame to be used
+     * @param sqlContext sql context
+     * @return a new data frame
+     */
+    @Deprecated
+    public Dataset<Row> asDataFrame(Frame fr, SQLContext sqlContext) {
+        return asDataFrame(fr);
+    }
 
     /**
      * Convert given H2O frame into DataFrame type
@@ -159,6 +170,19 @@ public class JavaH2OContext {
     /**
      * Convert given H2O frame into DataFrame type
      *
+     * @param fr           H2O frame to convert
+     * @param copyMetadata true if metadata should be copied
+     * @param sqlContext   sql context
+     * @return Spark dataset
+     */
+    @Deprecated
+    public Dataset<Row> asDataFrame(Frame fr, boolean copyMetadata, SQLContext sqlContext) {
+        return asDataFrame(fr, copyMetadata);
+    }
+
+    /**
+     * Convert given H2O frame into DataFrame type
+     *
      * @param key        key of H2O frame to convert
      * @return Spark dataset
      */
@@ -166,6 +190,17 @@ public class JavaH2OContext {
         return asDataFrame(key, true);
     }
 
+    /**
+     * Convert given H2O frame into DataFrame type
+     *
+     * @param key        key of H2O frame to convert
+     * @param sqlContext sql context
+     * @return Spark dataset
+     */
+    @Deprecated
+    public Dataset<Row> asDataFrame(String key, SQLContext sqlContext) {
+        return asDataFrame(key);
+    }
 
     /**
      * Convert given H2O frame into DataFrame type
@@ -176,6 +211,19 @@ public class JavaH2OContext {
      */
     public Dataset<Row> asDataFrame(String key, boolean copyMetadata) {
         return hc.asDataFrame(key, copyMetadata);
+    }
+
+    /**
+     * Convert given H2O frame into DataFrame type
+     *
+     * @param key          key of H2O frame to convert
+     * @param copyMetadata true if metadata should be copied
+     * @param sqlContext sql context
+     * @return Spark dataset
+     */
+    @Deprecated
+    public Dataset<Row> asDataFrame(String key, boolean copyMetadata, SQLContext sqlContext) {
+        return asDataFrame(key, copyMetadata);
     }
 
     /**
