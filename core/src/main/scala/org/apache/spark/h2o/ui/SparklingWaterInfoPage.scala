@@ -28,10 +28,10 @@ import scala.xml.Node
   */
 case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage("") {
 
-  private val listener = parent.listener
+  private val provider = parent.provider
 
   private def h2oInfo(): Seq[(String, String)] = {
-    val h2oBuildInfo = listener.h2oBuildInfo.get
+    val h2oBuildInfo = provider.H2OBuildInfo
     Seq(
       ("H2O Build Version", h2oBuildInfo.h2oBuildVersion),
       ("H2O Git Branch", h2oBuildInfo.h2oGitBranch),
@@ -41,13 +41,13 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
       ("H2O Build On", h2oBuildInfo.h2oBuildOn)
     )
   }
-
-  private def flowUrl(): String = s"http://${listener.h2oCloudInfo.get.localClientIpPort}"
-
-  private def swProperties(): Seq[(String, String)] = listener.swProperties.get
+  
+  private def flowUrl(): String = s"http://${provider.localIpPort}"
+  
+  private def swProperties(): Seq[(String, String)] = provider.sparklingWaterProperties
 
   private def swInfo(): Seq[(String, String)] = {
-    val cloudInfo = listener.h2oCloudInfo.get
+    val cloudInfo = provider.H2OCloudInfo
     Seq(
       ("Flow UI", flowUrl()),
       ("Nodes", cloudInfo.cloudNodes.mkString(","))
@@ -61,7 +61,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
         |Sparkling Water runtime information.
       """.stripMargin
 
-    val content = if (listener.uiReady) {
+    val content = if (provider.isSparklingWaterStarted) {
 
       val swInfoTable = UIUtils.listingTable(
         propertyHeader, h2oRow, swInfo(), fixedWidth = true)
@@ -70,23 +70,23 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
       val h2oInfoTable = UIUtils.listingTable(
         propertyHeader, h2oRow, h2oInfo(), fixedWidth = true)
       val memoryInfo = UIUtils.listingTable(
-        propertyHeader, h2oRow, listener.memoryInfo.map{ case (n, m) => (n, "Free: " + m)}, fixedWidth = true)
+        propertyHeader, h2oRow, provider.memoryInfo.map{ case (n, m) => (n, "Free: " + m)}, fixedWidth = true)
       <div>
         <ul class="unstyled">
           <li>
             <strong>User:</strong>{parent.getSparkUser}
           </li>
           <li>
-            <strong>Uptime:</strong>{UIUtils.formatDuration(listener.lastTimeHeadFromH2O - listener.h2oCloudInfo.get.h2oStartTime)}
+            <strong>Uptime:</strong>{UIUtils.formatDuration(provider.timeInMillis - provider.H2OCloudInfo.h2oStartTime)}
           </li>
           <li>
-            <strong>Health:</strong>{if (listener.cloudHealthy) "\u2714" else "\u2716"}
+            <strong>Health:</strong>{if (provider.isCloudHealthy) "\u2714" else "\u2716"}
           </li>
           <li>
-            <strong>Secured communication:</strong>{listener.h2oCloudInfo.map(p => if (p.cloudSecured) "\u2714" else "\u2716").getOrElse("\u2754")}
+            <strong>Secured communication:</strong>{if (provider.H2OCloudInfo.cloudSecured) "\u2714" else "\u2716"}
           </li>
           <li>
-            <strong>Nodes:</strong>{listener.h2oCloudInfo.get.cloudNodes.length}
+            <strong>Nodes:</strong>{provider.H2OCloudInfo.cloudNodes.length}
           </li>
           <li>
             <strong>Memory Info:</strong>{memoryInfo}
