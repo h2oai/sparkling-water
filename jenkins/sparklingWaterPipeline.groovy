@@ -135,7 +135,7 @@ def prepareSparkEnvironment() {
                     git clone https://github.com/apache/spark.git spark_repo
                     cd spark_repo
                     git checkout ${config.sparkBranch}
-                    ./dev/make-distribution.sh --name custom-spark --pip -Phadoop-${config.hadoopVersion} -Pyarn
+                    ./dev/make-distribution.sh --name custom-spark --pip -Phadoop-${config.hadoopVersion} -Pyarn -Phive
                     cp -r ./dist/ ${env.SPARK_HOME}
                     """
                 } else {
