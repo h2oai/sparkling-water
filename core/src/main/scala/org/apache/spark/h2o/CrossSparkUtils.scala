@@ -27,5 +27,5 @@ trait CrossSparkUtils {
                       title: String,
                       content: => Seq[Node],
                       activeTab: SparkUITab,
-                      helpText: String): Unit
+                      helpText: String): Seq[Node]
 }

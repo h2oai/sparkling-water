@@ -28,7 +28,7 @@ object SparkSpecificUtils extends CrossSparkUtils {
                                title: String,
                                content: => Seq[Node],
                                activeTab: SparkUITab,
-                               helpText: String): Unit = {
+                               helpText: String): Seq[Node] = {
     UIUtils.headerSparkPage("Sparkling Water", content, activeTab, helpText = Some(helpText))
   }
 }

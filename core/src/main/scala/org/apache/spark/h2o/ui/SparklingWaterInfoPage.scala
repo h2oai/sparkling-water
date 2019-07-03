@@ -109,7 +109,6 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
         <h4>Sparkling Water UI not ready yet!</h4>
       </div>
     }
-
     SparkSpecificUtils.headerSparkPage(request, "Sparkling Water", content, parent, helpText)
   }
 
