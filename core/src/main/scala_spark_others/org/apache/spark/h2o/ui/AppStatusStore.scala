@@ -26,17 +26,17 @@ import org.apache.spark.util.kvstore.KVStore
 class AppStatusStore(store: KVStore, val listener: Option[AppStatusListener] = None)
   extends SparklingWaterInfoProvider {
 
-  def getStartedInfo(): SparklingWaterStartedInfo = {
+  private def getStartedInfo(): SparklingWaterStartedInfo = {
     val klass = classOf[SparklingWaterStartedInfo]
     store.read(klass, klass.getName)
   }
 
-  def getUpdateInfo(): SparklingWaterUpdateInfo = {
+  private def getUpdateInfo(): SparklingWaterUpdateInfo = {
     val klass = classOf[SparklingWaterUpdateInfo]
     store.read(klass, klass.getName)
   }
 
-  def isSparklingWaterStarted(): Boolean = {
+  override def isSparklingWaterStarted(): Boolean = {
     val klass = classOf[SparklingWaterStartedInfo]
     store.count(klass) != 0
   }
