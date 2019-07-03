@@ -80,8 +80,11 @@ def getCurrentRSparklingVersion(def projectDir) {
 }
 
 def getSparkSpecificSourceDir(sparkMajorVersion) {
-    if (file("src/main/scala_spark_$sparkMajorVersion").exists()) {
-        return ["src/main/scala_spark_$sparkMajorVersion"]
+    def sourceDirs = []
+    file("src/main").eachDir {sourceDirs << it.name}
+    def sourceDir = sourceDirs.find {it -> it.startsWith("scala_spark") && it.contains(sparkMajorVersion)}
+    if (file(sourceDir ) != null) {
+        return ["src/main/$sourceDir"]
     } else if (file("src/main/scala_spark_others").exists()) {
         return ["src/main/scala_spark_others"]
     } else {
@@ -90,8 +93,12 @@ def getSparkSpecificSourceDir(sparkMajorVersion) {
 }
 
 def getSparkSpecificResourceDir(sparkMajorVersion) {
-    if (file("src/main/resources_spark_$sparkMajorVersion").exists()) {
-        return ["src/main/resources_spark_$sparkMajorVersion"]
+
+    def sourceDirs = []
+    file("src/main").eachDir {sourceDirs << it.name}
+    def sourceDir = sourceDirs.find {it -> it.startsWith("resources_spark") && it.contains(sparkMajorVersion)}
+    if (file(sourceDir ) != null) {
+        return ["src/main/$sourceDir"]
     } else if (file("src/main/resources_spark_others").exists()) {
         return ["src/main/resources_spark_others"]
     } else {
