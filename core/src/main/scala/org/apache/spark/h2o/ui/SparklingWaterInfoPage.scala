@@ -47,7 +47,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
   private def swProperties(): Seq[(String, String)] = provider.sparklingWaterProperties
 
   private def swInfo(): Seq[(String, String)] = {
-    val cloudInfo = provider.H2OCloudInfo
+    val cloudInfo = provider.H2OClusterInfo
     Seq(
       ("Flow UI", flowUrl()),
       ("Nodes", cloudInfo.cloudNodes.mkString(","))
@@ -77,16 +77,16 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
             <strong>User:</strong>{parent.getSparkUser}
           </li>
           <li>
-            <strong>Uptime:</strong>{UIUtils.formatDuration(provider.timeInMillis - provider.H2OCloudInfo.h2oStartTime)}
+            <strong>Uptime:</strong>{UIUtils.formatDuration(provider.timeInMillis - provider.H2OClusterInfo.h2oStartTime)}
           </li>
           <li>
             <strong>Health:</strong>{if (provider.isCloudHealthy) "\u2714" else "\u2716"}
           </li>
           <li>
-            <strong>Secured communication:</strong>{if (provider.H2OCloudInfo.cloudSecured) "\u2714" else "\u2716"}
+            <strong>Secured communication:</strong>{if (provider.H2OClusterInfo.cloudSecured) "\u2714" else "\u2716"}
           </li>
           <li>
-            <strong>Nodes:</strong>{provider.H2OCloudInfo.cloudNodes.length}
+            <strong>Nodes:</strong>{provider.H2OClusterInfo.cloudNodes.length}
           </li>
           <li>
             <strong>Memory Info:</strong>{memoryInfo}

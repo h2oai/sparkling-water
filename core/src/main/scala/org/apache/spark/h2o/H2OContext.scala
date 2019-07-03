@@ -65,7 +65,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   self =>
   val announcementService = AnnouncementServiceFactory.create(conf)
   val sparkContext = sparkSession.sparkContext
-  val uiUpdateThread = new H2ORuntimeInfoUIThread(sparkContext, conf)
+  val uiUpdateThread = new UIHeartbeatThread(sparkContext, conf)
   /** IP of H2O client */
   private var localClientIp: String = _
   /** REST port of H2O client */
@@ -163,7 +163,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
       H2O.ABV.compiledBy(),
       H2O.ABV.compiledOn()
     )
-    val h2oCloudInfo = H2OCloudInfo(
+    val h2oClusterInfo = H2OClusterInfo(
       h2oLocalClient,
       H2O.CLOUD.healthy(),
       H2OSecurityManager.instance.securityEnabled,
@@ -176,9 +176,9 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     // Initial update
     val nodes = H2O.CLOUD.members() ++ Array(H2O.SELF)
     val memoryInfo = nodes.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
-    sparkSession.sparkContext.listenerBus.post(SparkListenerH2ORuntimeUpdate(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo))
-    sparkSession.sparkContext.listenerBus.post(SparkListenerH2OStart(
-      h2oCloudInfo,
+    sparkSession.sparkContext.listenerBus.post(SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo))
+    sparkSession.sparkContext.listenerBus.post(H2OContextStartedEvent(
+      h2oClusterInfo,
       h2oBuildInfo,
       swPropertiesInfo
     ))
