@@ -65,7 +65,6 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   self =>
   val announcementService = AnnouncementServiceFactory.create(conf)
   val sparkContext = sparkSession.sparkContext
-  val sparklingWaterListener = new SparklingWaterListener(sparkContext.conf)
   val uiUpdateThread = new H2ORuntimeInfoUIThread(sparkContext, conf)
   /** IP of H2O client */
   private var localClientIp: String = _
@@ -124,7 +123,6 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
       Security.enableFlowSSL(sparkSession, conf)
     }
 
-    sparkContext.addSparkListener(sparklingWaterListener)
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
     val nodes = backend.init()
@@ -138,6 +136,8 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
 
     localClientPort = H2O.API_PORT
 
+    val sparklingWaterListener = new SparklingWaterListener(sparkContext.conf)
+    sparkContext.addSparkListener(sparklingWaterListener)
     new SparklingWaterUITab(sparklingWaterListener, sparkContext.ui.get)
     
     // Force initialization of H2O logs so flow and other dependant tools have logs available from the start
