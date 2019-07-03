@@ -17,17 +17,21 @@
 
 package org.apache.spark.h2o.ui
 
-import org.apache.spark.scheduler.SparkListenerEvent
+trait SparklingWaterInfoProvider {
 
-/**
-  * Event representing start of H2OContext
-  */
-case class SparkListenerH2OStart(h2oCloudInfo: H2OCloudInfo,
-                                 h2oBuildInfo: H2OBuildInfo,
-                                 swProperties: Array[(String, String)]) extends SparkListenerEvent
+  def localIpPort: String
 
+  def sparklingWaterProperties: Seq[(String, String)]
 
-/**
-  * Event representing update of H2O status at run-time
-  */
-case class SparkListenerH2ORuntimeUpdate(cloudHealthy: Boolean, timeInMillis: Long, memoryInfo: Array[(String, String)]) extends SparkListenerEvent
+  def H2OCloudInfo: H2OCloudInfo
+
+  def isSparklingWaterStarted: Boolean
+
+  def H2OBuildInfo: H2OBuildInfo
+
+  def memoryInfo: Array[(String, String)]
+
+  def timeInMillis: Long
+
+  def isCloudHealthy: Boolean
+}

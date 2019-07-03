@@ -17,17 +17,11 @@
 
 package org.apache.spark.h2o.ui
 
-import org.apache.spark.scheduler.SparkListenerEvent
-
-/**
-  * Event representing start of H2OContext
-  */
-case class SparkListenerH2OStart(h2oCloudInfo: H2OCloudInfo,
-                                 h2oBuildInfo: H2OBuildInfo,
-                                 swProperties: Array[(String, String)]) extends SparkListenerEvent
-
-
-/**
-  * Event representing update of H2O status at run-time
-  */
-case class SparkListenerH2ORuntimeUpdate(cloudHealthy: Boolean, timeInMillis: Long, memoryInfo: Array[(String, String)]) extends SparkListenerEvent
+case class H2OBuildInfo(
+                         h2oBuildVersion: String,
+                         h2oGitBranch: String,
+                         h2oGitSha: String,
+                         h2oGitDescribe: String,
+                         h2oBuildBy: String,
+                         h2oBuildOn: String
+                       )

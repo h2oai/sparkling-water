@@ -31,21 +31,3 @@ case class SparkListenerH2OStart(h2oCloudInfo: H2OCloudInfo,
   * Event representing update of H2O status at run-time
   */
 case class SparkListenerH2ORuntimeUpdate(cloudHealthy: Boolean, timeInMillis: Long, memoryInfo: Array[(String, String)]) extends SparkListenerEvent
-
-
-case class H2OCloudInfo(
-                         localClientIpPort: String,
-                         cloudHealthy: Boolean,
-                         cloudSecured: Boolean,
-                         cloudNodes: Array[String],
-                         extraBackendInfo: Seq[(String, String)],
-                         h2oStartTime: Long)
-
-case class H2OBuildInfo(
-                         h2oBuildVersion: String,
-                         h2oGitBranch: String,
-                         h2oGitSha: String,
-                         h2oGitDescribe: String,
-                         h2oBuildBy: String,
-                         h2oBuildOn: String
-                       )
