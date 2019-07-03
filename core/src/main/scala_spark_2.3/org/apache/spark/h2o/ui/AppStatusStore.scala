@@ -23,7 +23,8 @@ import org.apache.spark.util.kvstore.KVStore
 /**
   * Sparkling Water accessors into general Spark KVStore
   */
-class AppStatusStore(store: KVStore, val listener: Option[AppStatusListener] = None) {
+class AppStatusStore(store: KVStore, val listener: Option[AppStatusListener] = None)
+  extends SparklingWaterInfoProvider {
 
   def getStartedInfo(): SparklingWaterStartedInfo = {
     val klass = classOf[SparklingWaterStartedInfo]
@@ -40,6 +41,19 @@ class AppStatusStore(store: KVStore, val listener: Option[AppStatusListener] = N
     store.count(klass) != 0
   }
 
+  override def localIpPort: String = getStartedInfo().h2oCloudInfo.localClientIpPort
+
+  override def sparklingWaterProperties: Seq[(String, String)] = getStartedInfo().swProperties
+
+  override def H2OCloudInfo: H2OCloudInfo = getStartedInfo().h2oCloudInfo
+
+  override def H2OBuildInfo: H2OBuildInfo = getStartedInfo().h2oBuildInfo
+
+  override def memoryInfo: Array[(String, String)] = getUpdateInfo().memoryInfo
+
+  override def timeInMillis: Long = getUpdateInfo().timeInMillis
+
+  override def isCloudHealthy: Boolean = getUpdateInfo().cloudHealthy
 }
 
 /**

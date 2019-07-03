@@ -49,7 +49,7 @@ class SparklingWaterHistoryListenerFactory extends SparkHistoryListenerFactory {
 /**
   * Listener processing related sparkling water spark events
   */
-class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging {
+class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging with SparklingWaterInfoProvider {
   var uiReady = false
   var h2oCloudInfo: Option[H2OCloudInfo] = None
   var h2oBuildInfo: Option[H2OBuildInfo] = None
@@ -57,6 +57,7 @@ class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging
   var cloudHealthy = true
   var lastTimeHeadFromH2O: Long = 0
   var memoryInfo = Array.empty[(String, String)]
+
   override def onOtherEvent(event: SparkListenerEvent): Unit = event match {
     case SparkListenerH2OStart(h2oCloudInfo, h2oBuildInfo, swProperties) => {
       this.h2oCloudInfo = Some(h2oCloudInfo)
@@ -70,10 +71,23 @@ class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging
       this.cloudHealthy = cloudHealthy
       this.lastTimeHeadFromH2O = timeInMillis
       this.memoryInfo = memoryInfo
-  }
+    }
     case _ => // Ignore
   }
 
+  override def localIpPort: String = h2oCloudInfo.get.localClientIpPort
+
+  override def sparklingWaterProperties: Seq[(String, String)] = swProperties.get
+
+  override def H2OCloudInfo: H2OCloudInfo = h2oCloudInfo.get
+
+  override def isSparklingWaterStarted: Boolean = uiReady
+
+  override def H2OBuildInfo: H2OBuildInfo = h2oBuildInfo.get
+
+  override def timeInMillis: Long = lastTimeHeadFromH2O
+
+  override def isCloudHealthy: Boolean = isCloudHealthy
 }
 
 
@@ -101,20 +115,3 @@ class SparklingWaterHistoryListener(conf: SparkConf, sparkUI: SparkUI)
   }
 }
 
-
-case class H2OCloudInfo(
-                          localClientIpPort: String,
-                          cloudHealthy: Boolean,
-                          cloudSecured: Boolean,
-                          cloudNodes: Array[String],
-                          extraBackendInfo: Seq[(String, String)],
-                          h2oStartTime: Long)
-
-case class H2OBuildInfo(
-                         h2oBuildVersion: String,
-                         h2oGitBranch: String,
-                         h2oGitSha: String,
-                         h2oGitDescribe: String,
-                         h2oBuildBy: String,
-                         h2oBuildOn: String
-                       )
