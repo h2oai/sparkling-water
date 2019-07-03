@@ -6,7 +6,6 @@ properties(
         [
                 parameters(
                         [
-                                booleanParam(name: 'publishReleaseNotes', defaultValue: true, description: 'Publish release notes'),
                                 booleanParam(name: 'buildConda', defaultValue: true, description: 'Build Conda'),
                                 booleanParam(name: 'publishToNexus', defaultValue: true, description: 'Publish to Nexus'),
                                 booleanParam(name: 'buildExtendedH2OJars', defaultValue: true, description: 'Build extended H2O Jars'),
@@ -30,7 +29,6 @@ node('master') {
                     checkout scm
 
                     withDocker {
-                        publishReleaseNotes()(params)
                         build()()
                         buildConda()(params)
                         publishToNexus()(params)
@@ -76,6 +74,10 @@ String getNextVersion() {
     return "${majorVersion}.${patchVersion.toInteger() + 1}-SNAPSHOT"
 }
 
+String getPreviousPatchVersion() {
+    return "${getPatchVersion().toInteger()}"
+}
+
 String getMajorVersion() {
     def v = getVersion()
     def split = v.split("\\.")
@@ -88,65 +90,57 @@ String getPatchVersion() {
     return "${split[2]}"
 }
 
-def publishReleaseNotes() {
-    return { params ->
-        stage('Create Release Notes') {
-            if (params.publishReleaseNotes.toBoolean()) {
-                withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]){
-                    sh """
-                            # Copy keys
-                            rm -rf ~/.ssh ~/.gitconfig
-                            mkdir -p ~/.ssh
-                            cp \${ID_RSA_PATH} ~/.ssh/id_rsa
-                            cp \${GITCONFIG_PATH} ~/.gitconfig
-                            """
+def getOrCreatePreviousChangeLog(previousPatchVersion) {
+    def content
+    try {
+        def url = "https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/${previousPatchVersion}/doc/_sources/CHANGELOG.rst.txt"
+        content = url.toURL().getText()
+    } catch (Exception ignored) {
+        content = """
+Change Log
+==========
 
-                    def version = getVersion()
-                    def patchVersion = getPatchVersion()
-                    sh """
-                            # Get id of this release
-                            jira_version_id=\$(curl --silent "https://0xdata.atlassian.net/rest/api/2/project/SW/versions" | tr '}' '\\n' | grep "\\"name\\":\\"${version}\\"" | cut -d'"' -f8)
-                            # Get the JIRA page (currently, there is no endpoint for release notes)
-                            release_notes_page="https://0xdata.atlassian.net/secure/ReleaseNote.jspa?projectId=12000&version=\${jira_version_id}"
 
-                            # Obtain the release notes and process them so they look like we expect
-                            curl --silent "\$release_notes_page" | sed '/<body>/,/<a name="editarea"><\\/a>/!d;//D' | sed 's/<ul>//' | sed 's/<\\/ul>//' | sed 's/ *<h2>/-  /' | sed 's/<\\/h2>//'  | sed 's/<\\/li>//' | sed "s/ *<li>\\[<a href='https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\([0-9]*\\)'>SW-[0-9]*<\\/a>\\]/\\   -  \\`SW-\\1 <https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\1>\\`__/" | sed '\$ d' | sed '1d' > release_notes
+"""
+    }
+    writeFile(file: 'CHANGELOG.rst', text: content)
+}
 
-                            # Put the release notes into the doc/CHANGELOG.rst
+def prepareReleaseNotes() {
+    def version = getVersion()
+    def patchVersion = getPatchVersion()
+    def previousPatchVersion = getPreviousPatchVersion()
+    dir("doc/src/site/sphinx/") {
+        getOrCreatePreviousChangeLog(previousPatchVersion)
 
-                            release_date=\$(date +%Y-%m-%d)
-                            rel_prefix=\$(echo "v${version} (\$release_date)")
-                            underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
-                            download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/${patchVersion}/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/${patchVersion}/index.html>\\`__"
+        sh """
+            # Get ID of this release
+            jira_version_id=\$(curl --silent "https://0xdata.atlassian.net/rest/api/2/project/SW/versions" | tr '}' '\\n' | grep "\\"name\\":\\"${version}\\"" | cut -d'"' -f8)
+            # Get the JIRA page (currently, there is no endpoint for release notes)
+            release_notes_page="https://0xdata.atlassian.net/secure/ReleaseNote.jspa?projectId=12000&version=\${jira_version_id}"
+        
+            # Obtain the release notes and process them so they look like we expect
+            curl --silent "\$release_notes_page" | sed '/<body>/,/<a name="editarea"><\\/a>/!d;//D' | sed 's/<ul>//' | sed 's/<\\/ul>//' | sed 's/ *<h2>/-  /' | sed 's/<\\/h2>//'  | sed 's/<\\/li>//' | sed "s/ *<li>\\[<a href='https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\([0-9]*\\)'>SW-[0-9]*<\\/a>\\]/\\   -  \\`SW-\\1 <https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\1>\\`__/" | sed '\$ d' | sed '1d' > release_notes
 
-                            # Release notes
-                            echo \$rel_prefix
-                            echo \$underscores
-                            echo
-                            cat release_notes
-
-                            # Insert release info
-                            sed -i "4i \$rel_prefix" doc/CHANGELOG.rst
-
-                            # Insert the underscores
-                            sed -i "5i \$underscores" doc/CHANGELOG.rst
-
-                            # Insert the download link
-                            sed -i "6i \$download_line" doc/CHANGELOG.rst
-
-                            # Insert the release notes
-                            sed -i "6r release_notes" doc/CHANGELOG.rst
-
-                            rm -rf release_notes
-                            git add doc/CHANGELOG.rst
-
-                            git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
-                            git commit -m "Release notes for ${version}"
-                            git push --set-upstream origin ${BRANCH_NAME}
-                            """
-                }
-            }
-        }
+            release_date=\$(date +%Y-%m-%d)
+            rel_prefix=\$(echo "v${version} (\$release_date)")
+            underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
+            download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/${patchVersion}/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/${patchVersion}/index.html>\\`__"
+        
+            # Insert release info
+            sed -i "4i \$rel_prefix" CHANGELOG.rst
+        
+            # Insert the underscores
+            sed -i "5i \$underscores" CHANGELOG.rst
+        
+            # Insert the download link
+            sed -i "6i \$download_line" CHANGELOG.rst
+        
+            # Insert the release notes
+            sed -i "6r release_notes" CHANGELOG.rst
+        
+            rm -rf release_notes
+            """
     }
 }
 
@@ -157,9 +151,12 @@ def build() {
                              usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
                              file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
 
+                prepareReleaseNotes()
                 sh """
                     activate_java_8
                     ./gradlew dist -Pversion=${getVersion()} -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
+                    # Remove sources of update changelog as after dist, it is alrady part generated web page
+                    rm -rf doc/src/site/sphinx/CHANGELOG.rst
                     """
             }
         }
