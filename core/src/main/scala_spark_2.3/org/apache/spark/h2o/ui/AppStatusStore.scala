@@ -17,47 +17,59 @@
 
 package org.apache.spark.h2o.ui
 
-import org.apache.spark.SparkConf
-import org.apache.spark.internal.Logging
-import org.apache.spark.scheduler.{SparkListener, SparkListenerEvent}
-import org.apache.spark.status.{ElementTrackingStore, LiveEntity}
+import org.apache.spark.status.KVUtils.KVIndexParam
+import org.apache.spark.util.kvstore.KVStore
 
 /**
-  * Listener processing Sparkling Water events
+  * Sparkling Water accessors into general Spark KVStore
   */
-class AppStatusListener(conf: SparkConf, store: ElementTrackingStore, live: Boolean) extends SparkListener with Logging {
+class AppStatusStore(store: KVStore, val listener: Option[AppStatusListener] = None)
+  extends SparklingWaterInfoProvider {
 
-  private def onSparklingWaterStart(event: SparkListenerH2OStart): Unit = {
-    val SparkListenerH2OStart(h2oCloudInfo, h2oBuildInfo, swProperties) = event
-    val now = System.nanoTime()
-    new SparklingWaterInfo(h2oCloudInfo, h2oBuildInfo, swProperties).write(store, now)
+  private def getStartedInfo(): SparklingWaterStartedInfo = {
+    val klass = classOf[SparklingWaterStartedInfo]
+    store.read(klass, klass.getName)
   }
 
-  private def onSparklingWaterUpdate(event: SparkListenerH2ORuntimeUpdate): Unit = {
-    val SparkListenerH2ORuntimeUpdate(cloudHealthy, timeInMillis, memoryInfo) = event
-    val now = System.nanoTime()
-    new SparklingWaterUpdate(cloudHealthy, timeInMillis, memoryInfo).write(store, now)
+  private def getUpdateInfo(): SparklingWaterUpdateInfo = {
+    val klass = classOf[SparklingWaterUpdateInfo]
+    store.read(klass, klass.getName)
   }
 
-  override def onOtherEvent(event: SparkListenerEvent): Unit = event match {
-    case e: SparkListenerH2OStart => onSparklingWaterStart(e)
-    case e: SparkListenerH2ORuntimeUpdate => onSparklingWaterUpdate(e)
-    case _ => // ignore
+  override def isSparklingWaterStarted(): Boolean = {
+    val klass = classOf[SparklingWaterStartedInfo]
+    store.count(klass) != 0
   }
 
+  override def localIpPort: String = getStartedInfo().h2oCloudInfo.localClientIpPort
 
-  private class SparklingWaterInfo(h2oCloudInfo: H2OCloudInfo,
-                                   h2oBuildInfo: H2OBuildInfo,
-                                   swProperties: Array[(String, String)]) extends LiveEntity {
-    override protected def doUpdate(): Any = {
-      new SparklingWaterStartedInfo(h2oCloudInfo, h2oBuildInfo, swProperties)
-    }
-  }
+  override def sparklingWaterProperties: Seq[(String, String)] = getStartedInfo().swProperties
 
-  private class SparklingWaterUpdate(cloudHealthy: Boolean, timeInMillis: Long, val memoryInfo: Array[(String, String)]) extends LiveEntity {
-    override protected def doUpdate(): Any = {
-      new SparklingWaterUpdateInfo(cloudHealthy, timeInMillis, memoryInfo)
-    }
-  }
+  override def H2OCloudInfo: H2OCloudInfo = getStartedInfo().h2oCloudInfo
 
+  override def H2OBuildInfo: H2OBuildInfo = getStartedInfo().h2oBuildInfo
+
+  override def memoryInfo: Array[(String, String)] = getUpdateInfo().memoryInfo
+
+  override def timeInMillis: Long = getUpdateInfo().timeInMillis
+
+  override def isCloudHealthy: Boolean = getUpdateInfo().cloudHealthy
+}
+
+/**
+  * Object encapsulating information produced when Sparkling Water is started
+  */
+class SparklingWaterStartedInfo(val h2oCloudInfo: H2OCloudInfo,
+                                val h2oBuildInfo: H2OBuildInfo,
+                                val swProperties: Array[(String, String)]) {
+  // Use lass name ad key since there is always just a single instance of this object in KVStore
+  @KVIndexParam val id: String = getClass.getName
+}
+
+/**
+  * Object encapsulating information about Sparkling Water Heartbeat
+  */
+class SparklingWaterUpdateInfo(val cloudHealthy: Boolean, val timeInMillis: Long, val memoryInfo: Array[(String, String)]) {
+  // Use lass name ad key since there is always just a single instance of this object in KVStore
+  @KVIndexParam val id: String = getClass.getName
 }
