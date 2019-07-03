@@ -359,6 +359,7 @@ public class JavaH2OContext {
      * @return new H2O Frame
      */
     public H2OFrame asH2OFrameFromRDDBool(JavaRDD<Boolean> rdd, String frameName) {
+
         return hc.asH2OFrame(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaBool(rdd.rdd()), Option.apply(frameName));
     }
 
@@ -381,6 +382,7 @@ public class JavaH2OContext {
      * @return new H2O Frame
      */
     public H2OFrame asH2OFrameFromRDDByte(JavaRDD<Byte> rdd, String frameName) {
+
         return hc.asH2OFrame(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaByte(rdd.rdd()), Option.apply(frameName));
     }
 
@@ -396,7 +398,6 @@ public class JavaH2OContext {
         return hc.asH2OFrame(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaShort(rdd.rdd()), Option.apply(frameName));
     }
 
-
     /**
      * Conversion from RDD[Float] to H2O's DataFrame
      *
@@ -405,6 +406,7 @@ public class JavaH2OContext {
      * @return new H2O Frame
      */
     public H2OFrame asH2OFrameFromRDDFloat(JavaRDD<Float> rdd, String frameName) {
+
         return hc.asH2OFrame(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaFloat(rdd.rdd()), Option.apply(frameName));
     }
 
