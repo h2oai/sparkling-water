@@ -17,21 +17,25 @@
 
 package org.apache.spark.h2o.ui
 
-trait SparklingWaterInfoProvider {
+import org.apache.spark.SparkContext
+import org.apache.spark.h2o.H2OConf
+import water.H2O
+import water.util.PrettyPrint
 
-  def localIpPort: String
-
-  def sparklingWaterProperties: Seq[(String, String)]
-
-  def H2OClusterInfo: H2OClusterInfo
-
-  def isSparklingWaterStarted: Boolean
-
-  def H2OBuildInfo: H2OBuildInfo
-
-  def memoryInfo: Array[(String, String)]
-
-  def timeInMillis: Long
-
-  def isCloudHealthy: Boolean
+/**
+  * Periodically publish information to Spark UI
+  */
+class UIHeartbeatThread(sc: SparkContext, conf: H2OConf) extends Thread {
+  override def run(): Unit = {
+    while (!Thread.interrupted()) {
+      val nodes = H2O.CLOUD.members() ++ Array(H2O.SELF)
+      val memoryInfo = nodes.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
+      sc.listenerBus.post(SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo))
+      try {
+        Thread.sleep(conf.uiUpdateInterval)
+      } catch {
+        case _: InterruptedException => Thread.currentThread.interrupt()
+      }
+    }
+  }
 }

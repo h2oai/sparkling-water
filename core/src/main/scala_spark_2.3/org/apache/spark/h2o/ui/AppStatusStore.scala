@@ -41,11 +41,11 @@ class AppStatusStore(store: KVStore, val listener: Option[AppStatusListener] = N
     store.count(klass) != 0
   }
 
-  override def localIpPort: String = getStartedInfo().h2oCloudInfo.localClientIpPort
+  override def localIpPort: String = getStartedInfo().h2oClusterInfo.localClientIpPort
 
   override def sparklingWaterProperties: Seq[(String, String)] = getStartedInfo().swProperties
 
-  override def H2OCloudInfo: H2OCloudInfo = getStartedInfo().h2oCloudInfo
+  override def H2OClusterInfo: H2OClusterInfo = getStartedInfo().h2oClusterInfo
 
   override def H2OBuildInfo: H2OBuildInfo = getStartedInfo().h2oBuildInfo
 
@@ -59,7 +59,7 @@ class AppStatusStore(store: KVStore, val listener: Option[AppStatusListener] = N
 /**
   * Object encapsulating information produced when Sparkling Water is started
   */
-class SparklingWaterStartedInfo(val h2oCloudInfo: H2OCloudInfo,
+class SparklingWaterStartedInfo(val h2oClusterInfo: H2OClusterInfo,
                                 val h2oBuildInfo: H2OBuildInfo,
                                 val swProperties: Array[(String, String)]) {
   // Use lass name ad key since there is always just a single instance of this object in KVStore
