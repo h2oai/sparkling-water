@@ -268,6 +268,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   }
 
   /** Convert given H2O frame into DataFrame type */
+
   def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
     SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
   }
