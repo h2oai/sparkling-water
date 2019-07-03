@@ -22,19 +22,6 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.scheduler._
 import org.apache.spark.ui.SparkUI
 
-/**
-  * H2OContext is started
-  */
-case class SparkListenerH2OStart(h2oCloudInfo: H2OCloudInfo,
-                                 h2oBuildInfo: H2OBuildInfo,
-                                 swProperties: Array[(String, String)]) extends SparkListenerEvent
-
-
-/**
-  * Update of H2O status at run-time
-  */
-case class SparkListenerH2ORuntimeUpdate(cloudHealthy: Boolean, timeInMillis: Long, memoryInfo: Array[(String, String)])
-  extends SparkListenerEvent
 
 /**
   * Required at the history server in order to create the [[SparklingWaterHistoryListener]]
