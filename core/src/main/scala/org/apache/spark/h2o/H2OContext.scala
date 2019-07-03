@@ -136,10 +136,8 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
 
     localClientPort = H2O.API_PORT
 
-    val sparklingWaterListener = new SparklingWaterListener(sparkContext.conf)
-    sparkContext.addSparkListener(sparklingWaterListener)
-    new SparklingWaterUITab(sparklingWaterListener, sparkContext.ui.get)
-    
+    SparkSpecificUtils.addSparklingWaterTab(sparkContext)
+
     // Force initialization of H2O logs so flow and other dependant tools have logs available from the start
     val level = LogBridge.getH2OLogLevel()
     LogBridge.setH2OLogLevel(Log.TRACE) // just temporarily, set Trace Level so we can
