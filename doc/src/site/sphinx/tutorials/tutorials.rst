@@ -40,6 +40,7 @@ How to...
    :maxdepth: 2
 
    sw_xgboost
+   sw_automl
 
 **Spark Pipelines**
 
