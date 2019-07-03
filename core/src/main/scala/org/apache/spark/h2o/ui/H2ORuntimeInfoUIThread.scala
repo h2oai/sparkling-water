@@ -25,7 +25,7 @@ import water.util.PrettyPrint
 /**
   * Periodically publish info to UI
   */
-class H2ORuntimeInfoUIThread(sc: SparkContext, conf : H2OConf) extends Thread{
+class H2ORuntimeInfoUIThread(sc: SparkContext, conf: H2OConf) extends Thread {
   override def run(): Unit = {
     while (!Thread.interrupted()) {
       val nodes = H2O.CLOUD.members() ++ Array(H2O.SELF)
@@ -33,7 +33,7 @@ class H2ORuntimeInfoUIThread(sc: SparkContext, conf : H2OConf) extends Thread{
       sc.listenerBus.post(SparkListenerH2ORuntimeUpdate(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo))
       try {
         Thread.sleep(conf.uiUpdateInterval)
-      }catch {
+      } catch {
         case _: InterruptedException => Thread.currentThread.interrupt()
       }
     }

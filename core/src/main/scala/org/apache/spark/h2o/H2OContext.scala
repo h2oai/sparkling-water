@@ -131,9 +131,9 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     // Fill information about H2O client and H2O nodes in the cluster
     h2oNodes.append(nodes: _*)
     localClientIp = if (_conf.ignoreSparkPublicDNS) {
-      sparkContext.env.rpcEnv.address.host
+      H2O.getIpPortString.split(":")(0)
     } else {
-      sys.env.getOrElse("SPARK_PUBLIC_DNS", sparkContext.env.rpcEnv.address.host)
+      sys.env.getOrElse("SPARK_PUBLIC_DNS", H2O.getIpPortString.split(":")(0))
     }
 
     localClientPort = H2O.API_PORT
@@ -175,7 +175,6 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     )
 
     val swPropertiesInfo = _conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
-
     // Initial update
     val nodes = H2O.CLOUD.members() ++ Array(H2O.SELF)
     val memoryInfo = nodes.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
@@ -266,6 +265,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   }
 
   /** Convert given H2O frame into DataFrame type */
+
   def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
     SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
   }

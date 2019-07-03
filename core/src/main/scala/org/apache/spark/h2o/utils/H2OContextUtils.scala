@@ -176,14 +176,12 @@ private[spark] trait H2OContextUtils extends Logging {
     }
 
     import java.io.FileOutputStream
+    val outputStream = new FileOutputStream(destination.toString)
     try {
-      val outputStream = new FileOutputStream(destination.toString)
-      try {
-        baos.writeTo(outputStream)
-      }
-      finally {
-        if (outputStream != null) outputStream.close()
-      }
+      baos.writeTo(outputStream)
+    }
+    finally {
+      if (outputStream != null) outputStream.close()
     }
     destination
   }
