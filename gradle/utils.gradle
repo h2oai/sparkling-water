@@ -89,6 +89,17 @@ def getSparkSpecificSourceDir(sparkMajorVersion) {
     }
 }
 
+def getSparkSpecificResourceDir(sparkMajorVersion) {
+    if (file("src/main/resources_spark_$sparkMajorVersion").exists()) {
+        return ["src/main/resources_spark_$sparkMajorVersion"]
+    } else if (file("src/main/resources_spark_others").exists()) {
+        return ["src/main/resources_spark_others"]
+    } else {
+        return []
+    }
+}
+
+
 // Export methods by turning them into closures
 ext {
     getOsSpecificCommandLine = this.&getOsSpecificCommandLine
@@ -102,4 +113,5 @@ ext {
     getSupportedHadoopDistributions = this.&getSupportedHadoopDistributions
     getCurrentRSparklingVersion = this.&getCurrentRSparklingVersion
     getSparkSpecificSourceDir = this.&getSparkSpecificSourceDir
+    getSparkSpecificResourceDir = this.&getSparkSpecificResourceDir
 }
