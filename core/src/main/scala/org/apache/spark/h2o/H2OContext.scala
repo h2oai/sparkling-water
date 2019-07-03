@@ -29,7 +29,6 @@ import org.apache.spark.h2o.utils.{H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.status.ElementTrackingStore
 import water._
 import water.util.{Log, LogBridge, PrettyPrint}
 
@@ -137,11 +136,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
 
     localClientPort = H2O.API_PORT
 
-    val kvStore = sparkContext.statusStore.store.asInstanceOf[ElementTrackingStore]
-    val listener = new AppStatusListener(_conf.sparkConf, kvStore, live = true)
-    sparkContext.addSparkListener(listener)
-    val statusStore = new AppStatusStore(kvStore, Some(listener))
-    new SparklingWaterUITab(statusStore, sparkContext.ui.get)
+    SparkSpecificUtils.addSparklingWaterTab(sparkContext)
     
     // Force initialization of H2O logs so flow and other dependant tools have logs available from the start
     val level = LogBridge.getH2OLogLevel()
