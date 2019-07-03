@@ -17,15 +17,14 @@
 
 package org.apache.spark.h2o.utils
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
+import java.io.{ByteArrayOutputStream, File}
 import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{BuildInfo, Frame, H2OConf}
-import org.apache.spark.internal.Logging
+import org.apache.spark.h2o.{BuildInfo, H2OConf}
 import water.H2O
 import water.api.ImportHiveTableHandler
 import water.api.ImportHiveTableHandler.HiveTableImporter
