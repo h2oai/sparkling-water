@@ -23,7 +23,7 @@ import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, ReflectionUtils}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types.{BinaryType, BooleanType, ByteType, DateType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType, _}
-import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row, SQLContext}
+import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row}
 import org.apache.spark.{mllib, _}
 import water.Key
 import water.fvec.{Frame, H2OFrame}
