@@ -623,7 +623,7 @@ class H2OAutoMLParams(H2OCommonParams):
         return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
 
     def setSortMetric(self, value):
-        assert_is_type(value, None, "AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC" "mean_per_class_error")
+        assert_is_type(value, None, "AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "mean_per_class_error")
         if value is "AUTO":
             return self._set(sortMetric=None)
         else:
