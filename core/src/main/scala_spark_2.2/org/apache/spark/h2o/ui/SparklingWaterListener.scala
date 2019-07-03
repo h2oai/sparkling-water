@@ -38,7 +38,7 @@ class SparklingWaterHistoryListenerFactory extends SparkHistoryListenerFactory {
   */
 class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging with SparklingWaterInfoProvider {
   var uiReady = false
-  var h2oCloudInfo: Option[H2OCloudInfo] = None
+  var h2oClusterInfo: Option[H2OClusterInfo] = None
   var h2oBuildInfo: Option[H2OBuildInfo] = None
   var swProperties: Option[Array[(String, String)]] = None
   var cloudHealthy = true
@@ -46,15 +46,15 @@ class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging
   var memoryInfo = Array.empty[(String, String)]
 
   override def onOtherEvent(event: SparkListenerEvent): Unit = event match {
-    case SparkListenerH2OStart(h2oCloudInfo, h2oBuildInfo, swProperties) => {
-      this.h2oCloudInfo = Some(h2oCloudInfo)
+    case H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swProperties) => {
+      this.h2oClusterInfo = Some(h2oClusterInfo)
       this.h2oBuildInfo = Some(h2oBuildInfo)
       this.swProperties = Some(swProperties)
-      cloudHealthy = h2oCloudInfo.cloudHealthy
-      lastTimeHeadFromH2O = h2oCloudInfo.h2oStartTime
+      cloudHealthy = h2oClusterInfo.cloudHealthy
+      lastTimeHeadFromH2O = h2oClusterInfo.h2oStartTime
       uiReady = true
     }
-    case SparkListenerH2ORuntimeUpdate(cloudHealthy, timeInMillis, memoryInfo) => {
+    case SparklingWaterHeartbeatEvent(cloudHealthy, timeInMillis, memoryInfo) => {
       this.cloudHealthy = cloudHealthy
       this.lastTimeHeadFromH2O = timeInMillis
       this.memoryInfo = memoryInfo
@@ -62,11 +62,11 @@ class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging
     case _ => // Ignore
   }
 
-  override def localIpPort: String = h2oCloudInfo.get.localClientIpPort
+  override def localIpPort: String = h2oClusterInfo.get.localClientIpPort
 
   override def sparklingWaterProperties: Seq[(String, String)] = swProperties.get
 
-  override def H2OCloudInfo: H2OCloudInfo = h2oCloudInfo.get
+  override def H2OClusterInfo: H2OClusterInfo = h2oClusterInfo.get
 
   override def isSparklingWaterStarted: Boolean = uiReady
 
@@ -92,7 +92,7 @@ class SparklingWaterHistoryListener(conf: SparkConf, sparkUI: SparkUI)
   }
 
   override def onOtherEvent(event: SparkListenerEvent): Unit = event match {
-    case _: SparkListenerH2OStart =>
+    case _: H2OContextStartedEvent =>
       if (!sparklingWaterTabAttached) {
         new SparklingWaterUITab(this, sparkUI)
         sparklingWaterTabAttached = true
