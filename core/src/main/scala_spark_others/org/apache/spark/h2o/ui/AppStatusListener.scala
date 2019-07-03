@@ -27,30 +27,30 @@ import org.apache.spark.status.{ElementTrackingStore, LiveEntity}
   */
 class AppStatusListener(conf: SparkConf, store: ElementTrackingStore, live: Boolean) extends SparkListener with Logging {
 
-  private def onSparklingWaterStart(event: SparkListenerH2OStart): Unit = {
-    val SparkListenerH2OStart(h2oCloudInfo, h2oBuildInfo, swProperties) = event
+  private def onSparklingWaterStart(event: H2OContextStartedEvent): Unit = {
+    val H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swProperties) = event
     val now = System.nanoTime()
-    new SparklingWaterInfo(h2oCloudInfo, h2oBuildInfo, swProperties).write(store, now)
+    new SparklingWaterInfo(h2oClusterInfo, h2oBuildInfo, swProperties).write(store, now)
   }
 
-  private def onSparklingWaterUpdate(event: SparkListenerH2ORuntimeUpdate): Unit = {
-    val SparkListenerH2ORuntimeUpdate(cloudHealthy, timeInMillis, memoryInfo) = event
+  private def onSparklingWaterUpdate(event: SparklingWaterHeartbeatEvent): Unit = {
+    val SparklingWaterHeartbeatEvent(cloudHealthy, timeInMillis, memoryInfo) = event
     val now = System.nanoTime()
     new SparklingWaterUpdate(cloudHealthy, timeInMillis, memoryInfo).write(store, now)
   }
 
   override def onOtherEvent(event: SparkListenerEvent): Unit = event match {
-    case e: SparkListenerH2OStart => onSparklingWaterStart(e)
-    case e: SparkListenerH2ORuntimeUpdate => onSparklingWaterUpdate(e)
+    case e: H2OContextStartedEvent => onSparklingWaterStart(e)
+    case e: SparklingWaterHeartbeatEvent => onSparklingWaterUpdate(e)
     case _ => // ignore
   }
 
 
-  private class SparklingWaterInfo(h2oCloudInfo: H2OCloudInfo,
+  private class SparklingWaterInfo(h2oClusterInfo: H2OClusterInfo,
                                    h2oBuildInfo: H2OBuildInfo,
                                    swProperties: Array[(String, String)]) extends LiveEntity {
     override protected def doUpdate(): Any = {
-      new SparklingWaterStartedInfo(h2oCloudInfo, h2oBuildInfo, swProperties)
+      new SparklingWaterStartedInfo(h2oClusterInfo, h2oBuildInfo, swProperties)
     }
   }
 
