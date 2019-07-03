@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.ui
 
 import javax.servlet.http.HttpServletRequest
-
+import org.apache.spark.h2o.SparkSpecificUtils
 import org.apache.spark.ui.{UIUtils, WebUIPage}
 
 import scala.xml.Node
@@ -110,7 +110,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
       </div>
     }
 
-    UIUtils.headerSparkPage(request, "Sparkling Water", content, parent, helpText = Some(helpText))
+    SparkSpecificUtils.headerSparkPage(request, "Sparkling Water", content, parent, helpText)
   }
 
   private def propertyHeader = Seq("Name", "Value")
