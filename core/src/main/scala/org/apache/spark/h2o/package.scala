@@ -17,11 +17,12 @@
 
 package org.apache.spark
 
+import org.apache.spark.internal.Logging
 import org.apache.spark.sql._
 import hex.{Model, ModelBuilder}
 
 /** Type shortcuts to simplify work in Sparkling REPL */
-package object h2o {
+package object h2o extends Logging {
   type Frame = water.fvec.Frame
   //type Key = water.Key
   type H2O = water.H2O
@@ -41,19 +42,24 @@ package object h2o {
     def result: Option[T]
   }
 
-  case class ByteHolder  (result: Option[Byte])   extends Holder[Byte]
+  case class ByteHolder(result: Option[Byte]) extends Holder[Byte]
+
   case class DoubleHolder(result: Option[Double]) extends Holder[Double]
-  case class IntHolder   (result: Option[Int])    extends Holder[Int]
-  case class ShortHolder (result: Option[Short])  extends Holder[Short]
+
+  case class IntHolder(result: Option[Int]) extends Holder[Int]
+
+  case class ShortHolder(result: Option[Short]) extends Holder[Short]
+
   case class StringHolder(result: Option[String]) extends Holder[String]
 
 
   /**
-  * Adds a method, `h2o`, to DataFrameWriter that allows you to write h2o frames using
+    * Adds a method, `h2o`, to DataFrameWriter that allows you to write h2o frames using
     * the DataFileWriter. It's alias for sqlContext.write.format("org.apache.spark.h2o").option("key","new_frame_key").save()
-  */
+    */
   implicit class H2ODataFrameWriter[T](writer: DataFrameWriter[T]) {
     def h2o(key: String): Unit = writer.format("org.apache.spark.h2o").save(key)
+
     def h2o(key: water.Key[_]): Unit = h2o(key.toString)
   }
 
@@ -63,7 +69,15 @@ package object h2o {
     */
   implicit class H2ODataFrameReader(reader: DataFrameReader) {
     def h2o(key: String): DataFrame = reader.format("org.apache.spark.h2o").load(key)
+
     def h2o(key: water.Key[_]): DataFrame = h2o(key.toString)
+  }
+
+  implicit class WithSQLContext(dataFrame: DataFrame) {
+    def apply(sqlContext: SQLContext): DataFrame = {
+      logWarning("The method 'asDataFrame' with implicit SQLContext argument is deprecated. Use 'asDataFrame' without implicit SQLContext parameter instead!")
+      dataFrame
+    }
   }
 
 }
