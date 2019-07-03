@@ -29,7 +29,6 @@ import org.apache.spark.h2o.utils.H2OAsserts._
 import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedH2OTestContext}
 import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
@@ -454,25 +453,25 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("Expand composed schema of DataFrame") {
-    import spark.implicits._
     val num = 2
-    val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 1.0))
-    val rdd: RDD[ComposedA] = sc.parallelize(values)
-    val df = rdd.toDF
+    val rdd = sc.parallelize(1 to num).map(x => Row(Row(x, "name=" + x), x * 1.0))
+    val schema = StructType(Seq(
+      StructField("a", StructType(Seq(
+        StructField("n", IntegerType, nullable = false),
+        StructField("name", StringType, nullable = true))),
+        nullable = false),
+      StructField("weight", DoubleType, nullable = false)
+    ))
+    val df = spark.createDataFrame(rdd, schema)
 
     val flattenDF = H2OSchemaUtils.flattenStructsInDataFrame(df)
     val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(flattenDF)
     val expandedSchema = H2OSchemaUtils.expandedSchema(H2OSchemaUtils.flattenStructsInSchema(df.schema), maxElementSizes)
     val expected: Vector[StructField] = Vector(
-      StructField("a.n", IntegerType),
-      StructField("a.name", StringType),
+      StructField("a.n", IntegerType, nullable = false),
+      StructField("a.name", StringType, nullable = true),
       StructField("weight", DoubleType, nullable = false))
     Assertions.assertResult(expected.length)(expandedSchema.length)
-
-    // When we create StructField manually, the nullability fiels it set to true by default.
-    // However when creating dataframe the nullability is inferred based on the data automatically.
-    // This is caused by this Spark fix https://issues.apache.org/jira/browse/SPARK-14584
-    assertResult(false, "Nullability in component#2")(expandedSchema(2).nullable)
 
     for {i <- expected.indices} {
       assertResult(expected(i), s"@$i")(expandedSchema(i))
@@ -660,15 +659,19 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("Expand complex schema with sparse and dense vectors") {
-    import spark.implicits._
     val num = 3
-    val values = (0 until num).map(x =>
-      ComplexMlFixture(
+    val rdd = sc.parallelize(0 until num, num).map { x =>
+      Row(
         org.apache.spark.ml.linalg.Vectors.sparse(num, Seq((x, 1.0))),
         x,
-        org.apache.spark.ml.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray)
-      ))
-    val df = sc.parallelize(values, num).toDF()
+        org.apache.spark.ml.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray))
+    }
+    val schema = StructType(Seq(
+      StructField("f1", new org.apache.spark.ml.linalg.VectorUDT),
+      StructField("idx", IntegerType, nullable = false),
+      StructField("f2", new org.apache.spark.ml.linalg.VectorUDT)
+    ))
+    val df = spark.createDataFrame(rdd, schema)
 
     val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
 
