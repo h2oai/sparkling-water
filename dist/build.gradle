@@ -160,7 +160,7 @@ task copyFilesForZipDistribution {
             zipDir.mkdirs()
         }
 
-        copySingle("r/build/", "rsparkling_${version.replace("-SNAPSHOT", "").replace("_nightly", ".99999")}.tar.gz", "$zipDir")
+        copySingle("r/build/", "rsparkling_${version.replace("-SNAPSHOT", "")}.tar.gz", "$zipDir")
         createSupportedHadoopFile("$zipDir")
 
         copyAndKeepPath("assembly/build/libs/sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar", "$zipDir")

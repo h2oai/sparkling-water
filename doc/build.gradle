@@ -27,13 +27,13 @@ task substitute() {
 
         def (first, second, third) = version.tokenize(".")
         def majorVersion = "${first}.${second}"
-        def minorVersion = third.replace("-SNAPSHOT", "").replace("_nightly", ".99999")
+        def minorVersion = third.replace("-SNAPSHOT", "")
 
         new File(siteDir).eachFileRecurse(FILES) {
             if (it.name.endsWith('.html')) {
                 def contents = file(it).getText('UTF-8')
                 contents = contents
-                        .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", "").replace("_nightly", ".99999"))
+                        .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", ""))
                         .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
                         .replaceAll("SUBST_SW_MINOR_VERSION", minorVersion)
                         .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
