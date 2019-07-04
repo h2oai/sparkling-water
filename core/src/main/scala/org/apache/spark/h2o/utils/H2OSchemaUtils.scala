@@ -96,8 +96,12 @@ object H2OSchemaUtils {
     df.map[Row] { row: Row =>
       val result = ArrayBuffer.fill[Any](numberOfColumns)(null)
       val fillBufferPartiallyApplied = fillBuffer(nameToIndexMap, result) _
-      originalSchema.fields.zipWithIndex.foreach { case (field, idx) =>
-        fillBufferPartiallyApplied(field, row(idx), None)
+      var idx = 0
+      val fields = originalSchema.fields
+      while (idx < fields.length) {
+        val field = fields(idx)
+        fillBufferPartiallyApplied(field, row(idx), "")
+        idx = idx + 1
       }
       new GenericRowWithSchema(result.toArray, flatSchema)
     }
@@ -105,15 +109,14 @@ object H2OSchemaUtils {
 
   private def fillBuffer
   (flatSchemaIndexes: Map[String, Int], buffer: ArrayBuffer[Any])
-  (field: StructField, data: Any, prefix: Option[String] = None): Unit = {
+  (field: StructField, data: Any, prefix: String = ""): Unit = {
     if (data != null) {
-      val StructField(name, dataType, _, _) = field
-      val qualifiedName = getQualifiedName(prefix, name)
-      dataType match {
+      val qualifiedName = getQualifiedName(prefix, field.name)
+      field.dataType match {
         case BinaryType => fillArray(ByteType, flatSchemaIndexes, buffer, data, qualifiedName)
-        case MapType(_, valueType, _) => fillMap(valueType, flatSchemaIndexes, buffer, data, qualifiedName)
-        case ArrayType(elementType, _) => fillArray(elementType, flatSchemaIndexes, buffer, data, qualifiedName)
-        case StructType(fields) => fillStruct(fields, flatSchemaIndexes, buffer, data, qualifiedName)
+        case m: MapType => fillMap(m.valueType, flatSchemaIndexes, buffer, data, qualifiedName)
+        case a: ArrayType => fillArray(a.elementType, flatSchemaIndexes, buffer, data, qualifiedName)
+        case s: StructType => fillStruct(s.fields, flatSchemaIndexes, buffer, data, qualifiedName)
         case _ => buffer(flatSchemaIndexes(qualifiedName)) = data
       }
     }
@@ -130,7 +133,7 @@ object H2OSchemaUtils {
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
     seq.indices.foreach { idx =>
       val arrayField = StructField(idx.toString, elementType)
-      fillBufferPartiallyApplied(arrayField, subRow(idx), Some(qualifiedName))
+      fillBufferPartiallyApplied(arrayField, subRow(idx), qualifiedName)
     }
   }
 
@@ -145,7 +148,7 @@ object H2OSchemaUtils {
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
     map.keys.zipWithIndex.foreach { case (key, idx) =>
       val mapField = StructField(key.toString, valueType)
-      fillBufferPartiallyApplied(mapField, subRow(idx), Some(qualifiedName))
+      fillBufferPartiallyApplied(mapField, subRow(idx), qualifiedName)
     }
   }
 
@@ -158,7 +161,7 @@ object H2OSchemaUtils {
     val subRow = data.asInstanceOf[Row]
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
     fields.zipWithIndex.foreach { case (subField, idx) =>
-      fillBufferPartiallyApplied(subField, subRow(idx), Some(qualifiedName))
+      fillBufferPartiallyApplied(subField, subRow(idx), qualifiedName)
     }
   }
 
@@ -230,16 +233,13 @@ object H2OSchemaUtils {
     Ordering.Iterable(segmentOrdering)
   }
 
-  private def getQualifiedName(prefix: Option[String], name: String): String = prefix match {
-    case None => name
-    case Some(p) => s"${p}_$name"
-  }
+  private def getQualifiedName(prefix: String, name: String): String = if(prefix.isEmpty) name else prefix + "_" + name
 
   private def flattenField(
       originalField: StructField,
       data: Any,
       path: List[Any],
-      prefix: Option[String] = None,
+      prefix: String = "",
       isParentNullable: Boolean = false): Seq[FieldWithOrder] = {
     if (data != null) {
       val StructField(name, dataType, nullable, _) = originalField
@@ -275,7 +275,7 @@ object H2OSchemaUtils {
     val subRow = Row.fromSeq(values)
     values.indices.flatMap { idx =>
       val arrayField = StructField(idx.toString(), elementType, containsNull)
-      flattenField(arrayField, subRow(idx), idx :: path, Some(qualifiedName), nullableField)
+      flattenField(arrayField, subRow(idx), idx :: path, qualifiedName, nullableField)
     }
   }
 
@@ -290,7 +290,7 @@ object H2OSchemaUtils {
     val subRow = Row.fromSeq(map.values.toSeq)
     map.keys.zipWithIndex.flatMap { case (key, idx) =>
       val mapField = StructField(key.toString, valueType, containsNull)
-      flattenField(mapField, subRow(idx), key :: path, Some(qualifiedName), nullableField)
+      flattenField(mapField, subRow(idx), key :: path, qualifiedName, nullableField)
     }.toSeq
   }
 
@@ -302,7 +302,7 @@ object H2OSchemaUtils {
       nullableField: Boolean) = {
     val subRow = data.asInstanceOf[Row]
     fields.zipWithIndex.flatMap { case (subField, idx) =>
-      flattenField(subField, subRow(idx), idx :: path, Some(qualifiedName), nullableField)
+      flattenField(subField, subRow(idx), idx :: path, qualifiedName, nullableField)
     }
   }
 
