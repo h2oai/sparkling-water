@@ -74,7 +74,7 @@ class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging
 
   override def timeInMillis: Long = lastTimeHeadFromH2O
 
-  override def isCloudHealthy: Boolean = isCloudHealthy
+  override def isCloudHealthy: Boolean = cloudHealthy
 }
 
 
