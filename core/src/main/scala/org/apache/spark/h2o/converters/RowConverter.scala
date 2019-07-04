@@ -55,22 +55,25 @@ object RowConverter {
             row.getAs[Seq[_]](idxRow).zipWithIndex.foreach { case (v, idx) =>
               put(f.name + idx, v.toString)
             }
-          case _: UserDefinedType[_ /*mllib.linalg.Vector*/ ] =>
-            val value = row.get(idxRow)
-            value match {
-              case vector: mllib.linalg.Vector =>
-                (0 until vector.size).foreach { idx => // WRONG this patter needs to share the same code as in the data transformation
-                  put(f.name + idx, vector(idx).toString)
-                }
-              case vector: ml.linalg.Vector =>
-                (0 until vector.size).foreach { idx =>
-                  put(f.name + idx, vector(idx).toString)
-                }
+            // WRONG this patter needs to share the same code as in the SparkDataFrameConverter
+            // Currently, In SparkDataFrameConverter we handle arrays, binary types and vectors of different size
+            // and align them to the same size. The same thing should be done here
+          case _: ml.linalg.VectorUDT =>
+           val vector = row.getAs[ml.linalg.Vector](idxRow)
+          (0 until vector.size).foreach { idx =>
+            put(f.name + idx, vector(idx).toString)
+          }
+          case _: mllib.linalg.VectorUDT =>
+            val vector = row.getAs[ml.linalg.Vector](idxRow)
+            (0 until vector.size).foreach { idx =>
+              put(f.name + idx, vector(idx).toString)
             }
+          case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
           case null => // no op
           case _ => put(f.name, get(idxRow).toString)
         }
       }
     }
   }
+
 }
