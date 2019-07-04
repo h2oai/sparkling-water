@@ -35,7 +35,7 @@ def getGradleCommand(config) {
         cmd = "${cmd} -Ph2oMajorName=master -Ph2oMajorVersion=${h2oNightlyMajorVersion} -Ph2oBuild=${h2oNightlyBuildVersion}"
     }
 
-    return "${cmd}"
+    return cmd
 }
 
 def call(params, body) {
