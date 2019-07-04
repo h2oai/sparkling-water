@@ -37,8 +37,6 @@ node('docker && micro') {
             sparklingTestEnv = "yarn"
             buildAgainstH2OBranch = "true"
             h2oBranch = "${p.h2oBranch}"
-            buildAgainstSparkBranch = "false"
-            sparkBranch = "master"
             hadoopVersion = "2.7"
             backendMode = "internal"
             hdpVersion = "2.2.6.3-1"
