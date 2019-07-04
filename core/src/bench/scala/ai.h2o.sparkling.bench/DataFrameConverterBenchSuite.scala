@@ -95,50 +95,50 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
     H2OSchemaUtils.rowsToRowSchemas(df).foreach(_ => {})
   }
+  /*
+    benchTest("Measure performance of conversion to H2OFrame on a data frame with wide sparse vectors") {
+      import TestUtils.sparseVector
+      import sqlContext.implicits._
+      val numberOfCols = 50 * 1000
+      val sparsity = 0.2
+      val numberOfRows = 3 * 1000
+      val partitions = 4
 
-  benchTest("Measure performance of conversion to H2OFrame on a data frame with wide sparse vectors") {
-    import TestUtils.sparseVector
-    import sqlContext.implicits._
-    val numberOfCols = 50 * 1000
-    val sparsity = 0.2
-    val numberOfRows = 3 * 1000
-    val partitions = 4
+      val elementsPerRow = (sparsity * numberOfCols).toInt
+      val rowGenerator = (row: Int) => new SparseVectorHolder(sparseVector(numberOfCols, elementsPerRow))
 
-    val elementsPerRow = (sparsity * numberOfCols).toInt
-    val rowGenerator = (row: Int) => new SparseVectorHolder(sparseVector(numberOfCols, elementsPerRow))
+      val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
-    val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
-
-    val hf = hc.asH2OFrame(df)
-    hf.remove()
-  }
-
-  benchTest("Measure performance of conversion to H2OFrame on a data frame with wide dense vectors") {
-    import sqlContext.implicits._
-    val numberOfCols = 10 * 1000
-    val numberOfRows = 3 * 1000
-    val partitions = 4
-
-    val rowGenerator = (row: Int) => new DenseVectorHolder(new DenseVector(Array.fill[Double](numberOfCols)(row)))
-
-    val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
-
-    val hf = hc.asH2OFrame(df)
-    hf.remove()
-  }
-
-  benchTest("Measure performance of conversion to H2OFrame on a matrix 10x11 represented by sparse vectors", iterations = 10) {
-    import sqlContext.implicits._
-
-    val numberOfRows = 10
-    val numberOfCols = 11
-    val partitions = 2
-    val rowGenerator = (row: Int) => {
-      new SparseVectorHolder(new SparseVector(numberOfCols, Array(row), Array[Double](row)))
+      val hf = hc.asH2OFrame(df)
+      hf.remove()
     }
-    val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
-    val hf = hc.asH2OFrame(df)
-    hf.remove()
-  }
+    benchTest("Measure performance of conversion to H2OFrame on a data frame with wide dense vectors") {
+      import sqlContext.implicits._
+      val numberOfCols = 10 * 1000
+      val numberOfRows = 3 * 1000
+      val partitions = 4
+
+      val rowGenerator = (row: Int) => new DenseVectorHolder(new DenseVector(Array.fill[Double](numberOfCols)(row)))
+
+      val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
+
+      val hf = hc.asH2OFrame(df)
+      hf.remove()
+    }
+  */
+    benchTest("Measure performance of conversion to H2OFrame on a matrix 10x11 represented by sparse vectors", iterations = 10) {
+      import sqlContext.implicits._
+
+      val numberOfRows = 10
+      val numberOfCols = 11
+      val partitions = 2
+      val rowGenerator = (row: Int) => {
+        new SparseVectorHolder(new SparseVector(numberOfCols, Array(row), Array[Double](row)))
+      }
+      val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
+
+      val hf = hc.asH2OFrame(df)
+      hf.remove()
+    }
 }

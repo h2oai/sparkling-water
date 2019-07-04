@@ -188,7 +188,6 @@ object H2OSchemaUtils {
 
   private def mergeRowSchemas(ds: Dataset[ArrayBuffer[FieldWithOrder]]): ArrayBuffer[FieldWithOrder] = ds.reduce {
     (first, second) =>
-
       var fidx = 0
       var sidx = 0
       val result = new ArrayBuffer[FieldWithOrder]()
