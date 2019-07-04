@@ -12,7 +12,7 @@ dependencies {
 
 ext {
     contribDir = file("${project.buildDir}/repo/src/contrib")
-    editedVersion = version.replace("-SNAPSHOT", "").replace("_nightly", ".99999").toString()
+    editedVersion = version.replace("-SNAPSHOT", "").toString()
 }
 
 def copyRSetup() {
