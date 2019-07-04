@@ -64,7 +64,7 @@ object RowConverter {
             put(f.name + idx, vector(idx).toString)
           }
           case _: mllib.linalg.VectorUDT =>
-            val vector = row.getAs[ml.linalg.Vector](idxRow)
+            val vector = row.getAs[mllib.linalg.Vector](idxRow)
             (0 until vector.size).foreach { idx =>
               put(f.name + idx, vector(idx).toString)
             }
