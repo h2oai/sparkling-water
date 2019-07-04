@@ -20,6 +20,7 @@ package org.apache.spark.h2o.utils
 import org.apache.spark.h2o._
 import org.apache.spark.ml.attribute.AttributeGroup
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.{ml, mllib}
@@ -71,9 +72,20 @@ object H2OSchemaUtils {
     StructType(types)
   }
 
+  def isSchemaFlat(schema: StructType): Boolean = schema.fields.forall {
+    field: StructField => field.dataType match {
+      case _: BinaryType | _: ArrayType | _: StructType | _: MapType => false
+      case _ => true
+    }
+  }
+
   def flattenDataFrame(df: DataFrame): DataFrame = {
-    val schema = flattenSchema(df)
-    flattenDataFrame(df, schema)
+    if (isSchemaFlat(df.schema)) {
+      df
+    } else {
+      val schema = flattenSchema(df)
+      flattenDataFrame(df, schema)
+    }
   }
 
   def flattenDataFrame(df: DataFrame, flatSchema: StructType): DataFrame = {
@@ -87,7 +99,7 @@ object H2OSchemaUtils {
       originalSchema.fields.zipWithIndex.foreach { case (field, idx) =>
         fillBufferPartiallyApplied(field, row(idx), None)
       }
-      Row.fromSeq(result)
+      new GenericRowWithSchema(result.toArray, flatSchema)
     }
   }
 
@@ -156,33 +168,55 @@ object H2OSchemaUtils {
     StructType(mergedSchema.map(_.field))
   }
 
-  private def rowsToRowSchemas(df: DataFrame): Dataset[Seq[FieldWithOrder]] = {
-    implicit val encoder = org.apache.spark.sql.Encoders.kryo[Seq[FieldWithOrder]]
+  def rowsToRowSchemas(df: DataFrame): Dataset[ArrayBuffer[FieldWithOrder]] = {
+    implicit val encoder = org.apache.spark.sql.Encoders.kryo[ArrayBuffer[FieldWithOrder]]
     val originalSchema = df.schema
-    df.map[Seq[FieldWithOrder]] { row: Row =>
-      originalSchema.fields.zipWithIndex.foldLeft(Seq.empty[FieldWithOrder]) {
-        case (acc, (field, index)) => acc ++ flattenField(field, row(index), index :: Nil)
+    df.map[ArrayBuffer[FieldWithOrder]] { row: Row =>
+      var i = 0
+      val fields = originalSchema.fields
+      val result = new ArrayBuffer[FieldWithOrder]()
+      while (i < fields.length) {
+        result ++= flattenField(fields(i), row(i), i :: Nil)
+        i = i + 1
       }
+      result.sortBy(_.order)(fieldPathOrdering)
     }
   }
 
-  private def mergeRowSchemas(ds: Dataset[Seq[FieldWithOrder]]): Seq[FieldWithOrder] = ds.reduce {
+  private def mergeRowSchemas(ds: Dataset[ArrayBuffer[FieldWithOrder]]): ArrayBuffer[FieldWithOrder] = ds.reduce {
     (first, second) =>
-      val firstMap = convertRowSchemaToPathToFieldMap(first)
-      val secondMap = convertRowSchemaToPathToFieldMap(second)
-      val keys = (firstMap.keySet ++ secondMap.keySet).toSeq.sorted(fieldPathOrdering)
-      keys.map { key =>
-        (firstMap.get(key), secondMap.get(key)) match {
-          case (None, Some(StructField(name, dataType, _, _))) =>
-            FieldWithOrder(StructField(name, dataType, nullable = true), key)
-          case (Some(StructField(name, dataType, _, _)), None) =>
-            FieldWithOrder(StructField(name, dataType, nullable = true), key)
-          case (Some(StructField(name, dataType, nullable1, _)), Some(StructField(_, _, nullable2, _))) =>
-            FieldWithOrder(StructField(name, dataType, nullable1 || nullable2), key)
-          case (None, None) =>
-            throw new IllegalStateException(s"There must be a corresponding value for key '$key' in one map at least.")
+
+      var fidx = 0
+      var sidx = 0
+      val result = new ArrayBuffer[FieldWithOrder]()
+      while (fidx < first.length && sidx < second.length) {
+        val f = first(fidx)
+        val s = second(sidx)
+        if (fieldPathOrdering.lt(f.order, s.order)) {
+          result += f.copy(field = f.field.copy(nullable = true))
+          fidx = fidx + 1
+        } else if (fieldPathOrdering.gt(f.order, s.order)) {
+          result += s.copy(field = s.field.copy(nullable = true))
+          sidx = sidx + 1
+        } else {
+          result += f.copy(field = f.field.copy(nullable = f.field.nullable || s.field.nullable))
+          fidx = fidx + 1
+          sidx = sidx + 1
         }
+
       }
+      while (fidx < first.length) {
+        val f = first(fidx)
+        result += f.copy(field = f.field.copy(nullable = true))
+        fidx = fidx + 1
+
+      }
+      while (sidx < second.length) {
+        val s = second(sidx)
+        result += s.copy(field = s.field.copy(nullable = true))
+        sidx = sidx + 1
+      }
+      result
   }
 
   @transient private lazy val fieldPathOrdering = {
@@ -194,10 +228,6 @@ object H2OSchemaUtils {
       }
     }
     Ordering.Iterable(segmentOrdering)
-  }
-
-  private def convertRowSchemaToPathToFieldMap(rowSchema: Seq[FieldWithOrder]): Map[Seq[Any], StructField] = {
-    rowSchema.map(f => f.order -> f.field).toMap
   }
 
   private def getQualifiedName(prefix: Option[String], name: String): String = prefix match {
@@ -232,7 +262,7 @@ object H2OSchemaUtils {
     }
   }
 
-  private case class FieldWithOrder(field: StructField, order: Seq[Any])
+  case class FieldWithOrder(field: StructField, order: Iterable[Any])
 
   private def flattenArrayType(
       elementType: DataType,
@@ -310,14 +340,6 @@ object H2OSchemaUtils {
 
     val expandedSchema = flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
-        case ArrayType(arrType, nullable) =>
-          (0 until elemMaxSizes(idx)).map { arrIdx =>
-            StructField(field.name + arrIdx.toString, arrType, nullable)
-          }
-        case BinaryType =>
-          (0 until elemMaxSizes(idx)).map { arrIdx =>
-            StructField(field.name + arrIdx, ByteType, nullable = false)
-          }
         case _ : ml.linalg.VectorUDT | _: mllib.linalg.VectorUDT  =>
           (0 until elemMaxSizes(idx)).map { arrIdx =>
             StructField(field.name + arrIdx.toString, DoubleType, nullable = true)
@@ -335,7 +357,7 @@ object H2OSchemaUtils {
     *  - all arrays are expanded into columns based on the longest one
     *  - all vectors are expanded into columns based on the longest one
     *
-    * @param flatDataFrame flat data frame
+    * @param flatDataFrame flat data framez
     * @param elemMaxSizes  max sizes of each element in the dataframe
     * @return list of types with their positions
     */
@@ -355,33 +377,11 @@ object H2OSchemaUtils {
     flatDataFrame.schema.fields.zipWithIndex.flatMap { case (field, idx) =>
 
       field.dataType match {
-        case ArrayType(_, _) =>
-          Array.fill(elemMaxSizes(idx))(false).toSeq
-        case BinaryType =>
-          Array.fill(elemMaxSizes(idx))(false).toSeq
         case _: ml.linalg.VectorUDT | _: mllib.linalg.VectorUDT =>
           Array.fill(elemMaxSizes(idx))(sparseInfoForVec(idx)).toSeq
         case _ => Seq(false)
       }
     }
-  }
-
-
-  def expandWithoutVectors(flatSchema: StructType, elemMaxSizes: Array[Int]): Seq[StructField] = {
-    val expandedSchema = flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
-      field.dataType match {
-        case ArrayType(arrType, nullable) =>
-          (0 until elemMaxSizes(idx)).map { arrIdx =>
-            StructField(field.name + arrIdx.toString, arrType, nullable)
-          }
-        case BinaryType =>
-          (0 until elemMaxSizes(idx)).map { arrIdx =>
-            StructField(field.name + arrIdx.toString, ByteType, nullable = false)
-          }
-        case _ => Seq(field)
-      }
-    }
-    expandedSchema
   }
 
   /**
@@ -419,17 +419,15 @@ object H2OSchemaUtils {
     * @return array containing size of each element
     */
   def collectMaxElementSizes(flatDataFrame: DataFrame): Array[Int] = {
-    val arrayIndices = collectArrayLikeTypes(flatDataFrame.schema)
     val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
     val simpleIndices = collectSimpleLikeTypes(flatDataFrame.schema)
-    val collectionIndices = arrayIndices ++ vectorIndices
 
-    val sizeFromMetadata = collectionIndices.map(idx => fieldSizeFromMetadata(flatDataFrame.schema.fields(idx)))
+    val sizeFromMetadata = vectorIndices.map(idx => fieldSizeFromMetadata(flatDataFrame.schema.fields(idx)))
     val maxCollectionSizes = if (sizeFromMetadata.forall(_.isDefined)) {
       sizeFromMetadata.map(_.get).toArray
     } else {
       val sizes = flatDataFrame.rdd.map { row =>
-        collectionIndices.map { idx => getCollectionSize(row, idx) }
+        vectorIndices.map { idx => getCollectionSize(row, idx) }
       }
       if (sizes.isEmpty) {
         Array(0)
@@ -438,7 +436,7 @@ object H2OSchemaUtils {
       }
     }
 
-    val collectionIdxToSize = collectionIndices.zip(maxCollectionSizes).toMap
+    val collectionIdxToSize = vectorIndices.zip(maxCollectionSizes).toMap
     val simpleTypeIdxToSize = simpleIndices.zip(Array.fill(simpleIndices.length)(1)).toMap
     val elemTypeIdxToSize = collectionIdxToSize ++ simpleTypeIdxToSize
     val elemSizeArray = elemTypeIdxToSize.toSeq.sortBy(_._1).map(_._2)
@@ -507,8 +505,6 @@ object H2OSchemaUtils {
     } else {
       val dataType = row.schema.fields(idx).dataType
       dataType match {
-        case ArrayType(_, _) => row.getAs[Seq[_]](idx).length
-        case BinaryType => row.getAs[Array[Byte]](idx).length
         case _: ml.linalg.VectorUDT => row.getAs[ml.linalg.Vector](idx).size
         case _: mllib.linalg.VectorUDT => row.getAs[mllib.linalg.Vector](idx).size
         case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")

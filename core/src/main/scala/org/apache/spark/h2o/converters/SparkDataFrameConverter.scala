@@ -51,8 +51,8 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
     import H2OSchemaUtils._
-    // Flatten the Spark data frame so we don't have any nested rows
-    val flatDataFrame = flattenStructsInDataFrame(dataFrame)
+
+    val flatDataFrame = flattenDataFrame(dataFrame)
     val dfRdd = flatDataFrame.rdd
     val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
 
@@ -71,7 +71,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       // Transform datatype into h2o types
       flatRddSchema.map(f => ReflectionUtils.vecTypeFor(f.dataType)).toArray
     } else {
-      val internalJavaClasses = H2OSchemaUtils.expandWithoutVectors(flatDataFrame.schema, elemMaxSizes).map { f =>
+      val internalJavaClasses = flatDataFrame.schema.map { f =>
         ExternalWriteConverterCtx.internalJavaClassOf(f.dataType)
       }.toArray
       ExternalBackendUtils.prepareExpectedTypes(internalJavaClasses)
