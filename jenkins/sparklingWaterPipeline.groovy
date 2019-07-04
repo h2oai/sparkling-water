@@ -409,7 +409,6 @@ def publishNightly() {
         stage('Nightly: Publishing Artifacts to S3 - ' + config.backendMode) {
             withDocker(config) {
                 if (config.uploadNightly.toBoolean()) {
-
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
                                      usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
                                      file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
@@ -434,44 +433,6 @@ def publishNightly() {
                                 ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/${BRANCH_NAME}/nightly/index.html --acl public-read
                             fi                    
                             """
-                    }
-
-                    // Update only if we are doing regular nighly build from master and rel branches
-                    if (!config.buildAgainstH2OBranch.toBoolean()) {
-                        withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN'), sshUserPrivateKey(credentialsId: 'h2oOpsGitPrivateKey', keyFileVariable: 'SSH_KEY_GITHUB')]) {
-
-                            sh """
-                               # Copy keys
-                               mkdir -p ~/.ssh
-                               cp \${ID_RSA_PATH} ~/.ssh/id_rsa
-                               cp \${GITCONFIG_PATH} ~/.gitconfig
-
-cat <<EOF >>  ~/.ssh/config
-Host github.com
-   HostName github.com
-   User git
-   IdentityFile \${SSH_KEY_GITHUB}
-   IdentitiesOnly yes
-EOF
-
-                                ssh-keyscan github.com >> ~/.ssh/known_hosts
-                               """
-                            // Update the links
-                            retryWithDelay(3, 120, {
-                                sh """
-                                # S3 Already containes incremented version
-                                BUILD_VERSION=\$(wget https://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/latest -q -O -)
-
-                                rm -rf docs.h2o.ai
-                                git clone git@github.com:h2oai/docs.h2o.ai.git
-                                cd docs.h2o.ai/sites-available/
-                                sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/${BRANCH_NAME}/nightly/\${BUILD_VERSION}/?" 000-default.conf
-                                git add 000-default.conf
-                                git commit -m "Update links of Sparkling Water nighly version on ${BRANCH_NAME} to \${BUILD_VERSION}"
-                                git push --set-upstream origin master
-                            """ })
-
-                        }
                     }
                 }
             }
