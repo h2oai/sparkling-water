@@ -464,12 +464,12 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     ))
     val df = spark.createDataFrame(rdd, schema)
 
-    val flattenDF = H2OSchemaUtils.flattenStructsInDataFrame(df)
+    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
     val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(flattenDF)
-    val expandedSchema = H2OSchemaUtils.expandedSchema(H2OSchemaUtils.flattenStructsInSchema(df.schema), maxElementSizes)
+    val expandedSchema = H2OSchemaUtils.expandedSchema(H2OSchemaUtils.flattenSchema(df), maxElementSizes)
     val expected: Vector[StructField] = Vector(
-      StructField("a.n", IntegerType, nullable = false),
-      StructField("a.name", StringType, nullable = true),
+      StructField("a_n", IntegerType, nullable = false),
+      StructField("a_name", StringType, nullable = true),
       StructField("weight", DoubleType, nullable = false))
     Assertions.assertResult(expected.length)(expandedSchema.length)
 

@@ -125,7 +125,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val flattenedDF = H2OSchemaUtils.flattenStructsInDataFrame(dataset.toDF())
+    val flattenedDF = H2OSchemaUtils.flattenDataFrame(dataset.toDF())
     val relevantColumnNames = flattenedDF.columns.intersect(getFeaturesCols())
     val args = relevantColumnNames.map(flattenedDF(_))
 

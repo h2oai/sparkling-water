@@ -318,28 +318,6 @@ object H2OSchemaUtils {
     }
   }
 
-  def flattenStructsInSchema(schema: StructType, prefix: String = null, nullable: Boolean = false): StructType = {
-
-    val flattened = schema.fields.flatMap { f =>
-      val escaped = if (f.name.contains(".")) "`" + f.name + "`" else f.name
-      val colName = if (prefix == null) escaped else prefix + "." + escaped
-
-      f.dataType match {
-        case st: StructType => flattenStructsInSchema(st, colName, nullable || f.nullable)
-        case _ => Array[StructField](StructField(colName, f.dataType, nullable || f.nullable))
-      }
-    }
-    StructType(flattened)
-  }
-
-  def flattenStructsInDataFrame(df: DataFrame): DataFrame = {
-    import org.apache.spark.sql.functions.col
-    val flatten = flattenStructsInSchema(df.schema)
-    val cols = flatten.map(f => col(f.name).as(f.name.replaceAll("`", "")))
-    df.select(cols: _*)
-  }
-
-
   /** Returns expanded schema
     *  - schema is represented as list of types
     *  - all arrays are expanded into columns based on the longest one
@@ -454,26 +432,6 @@ object H2OSchemaUtils {
     val elemSizeArray = elemTypeIdxToSize.toSeq.sortBy(_._1).map(_._2)
 
     elemSizeArray.toArray
-  }
-
-
-  def collectStringIndices(flatSchema: StructType): Seq[Int] = {
-    flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
-      field.dataType match {
-        case StringType => Some(idx)
-        case _ => None
-      }
-    }
-  }
-
-  def collectArrayLikeTypes(flatSchema: StructType): Seq[Int] = {
-    flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
-      field.dataType match {
-        case ArrayType(_, _) => Some(idx)
-        case BinaryType => Some(idx)
-        case _ => None
-      }
-    }
   }
 
   def collectVectorLikeTypes(flatSchema: StructType): Seq[Int] = {
