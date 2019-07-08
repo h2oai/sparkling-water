@@ -289,9 +289,9 @@ object H2OSchemaUtils {
     val map = data.asInstanceOf[Map[Any, Any]]
     val subRow = Row.fromSeq(map.values.toSeq)
     val result = new ArrayBuffer[FieldWithOrder]()
-    map.foreach { case(key, value) =>
+    map.foreach { case (key, value) =>
       val fieldQualifiedName = getQualifiedName(qualifiedName, key.toString)
-      flattenField(fieldQualifiedName, valueType, nullable, metadata, value, key :: path)
+      result ++= flattenField(fieldQualifiedName, valueType, nullable, metadata, value, key :: path)
     }
     result
   }
