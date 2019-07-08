@@ -18,13 +18,6 @@ properties(
                                 booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests'),
                                 booleanParam(name: 'runIntegTests', defaultValue: false, description: 'Run integration tests'),
                                 booleanParam(name: 'runPySparklingIntegTests', defaultValue: true, description: 'Run pySparkling integration tests'),
-
-
-                                choice(
-                                        choices: 'yarn\nstandalone\nlocal',
-                                        description: 'Sparkling water test profile',
-                                        name: 'sparklingTestEnv'),
-
                                 choice(
                                         choices: 'hdp2.2\nhdp2.3\nhdp2.4\nhdp2.5\nhdp2.6\ncdh5.4\ncdh5.5\ncdh5.6\ncdh5.7\ncdh5.8\ncdh5.10\nmapr4.0\nmapr5.0\nmapr5.1\nmapr5.2\niop4.2',
                                         description: 'Hadoop version for which H2O driver is obtained',
@@ -62,7 +55,6 @@ node('docker && micro') {
             runScriptTests = "${p.runScriptTests}"
             runIntegTests = "${p.runIntegTests}"
             runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
-            sparklingTestEnv = "${p.sparklingTestEnv}"
             buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
             h2oBranch = "${p.h2oBranch}"
             hadoopVersion = "2.7"
