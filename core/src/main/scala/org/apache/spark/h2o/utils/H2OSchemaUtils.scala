@@ -112,7 +112,9 @@ object H2OSchemaUtils {
       (qualifiedName: String, dataType: DataType, data: Any) = {
     if (data != null) {
       dataType match {
-        case BinaryType => fillArray(qualifiedName, ByteType, flatSchemaIndexes, buffer, data)
+        case BinaryType =>
+          val binaryData = data.asInstanceOf[Array[Byte]].toSeq
+          fillArray(qualifiedName, ByteType, flatSchemaIndexes, buffer, binaryData)
         case m: MapType => fillMap(qualifiedName, m.valueType, flatSchemaIndexes, buffer, data)
         case a: ArrayType => fillArray(qualifiedName, a.elementType, flatSchemaIndexes, buffer, data)
         case s: StructType => fillStruct(qualifiedName, s.fields, flatSchemaIndexes, buffer, data)
@@ -244,7 +246,8 @@ object H2OSchemaUtils {
     if (data != null) {
       dataType match {
         case BinaryType =>
-          flattenArrayType(qualifiedName, ByteType, nullable, metadata, data, path)
+          val binaryData = data.asInstanceOf[Array[Byte]].toSeq
+          flattenArrayType(qualifiedName, ByteType, nullable, metadata, binaryData, path)
         case MapType(_, valueType, containsNull) =>
           flattenMapType(qualifiedName, valueType, containsNull || nullable, metadata, data, path)
         case ArrayType(elementType, containsNull) =>

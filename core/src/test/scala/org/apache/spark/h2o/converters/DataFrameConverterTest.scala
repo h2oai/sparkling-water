@@ -490,21 +490,21 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("Expand schema with array") {
-    import spark.implicits._
     val num = 5
-    val values = (1 to num).map(x => PrimitiveB(1 to x))
-    val df = sc.parallelize(values).toDF
+    val rdd = sc.parallelize(1 to num).map(x => Row(1 to x))
+    val schema = StructType(StructField("f", ArrayType(IntegerType, containsNull = false), nullable = false) :: Nil)
+    val df = spark.createDataFrame(rdd, schema)
 
     val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
 
     val metadatas = expandedSchema.map(f => f.metadata)
 
-    assert(expandedSchema === Vector(
-      (StructField("f0", IntegerType, nullable = false, metadatas.head)),
-      (StructField("f1", IntegerType, nullable = false, metadatas(1))),
-      (StructField("f2", IntegerType, nullable = false, metadatas(2))),
-      (StructField("f3", IntegerType, nullable = false, metadatas(3))),
-      (StructField("f4", IntegerType, nullable = false, metadatas(4)))))
+    assert(expandedSchema === Array(
+      (StructField("f_0", IntegerType, nullable = false, metadatas.head)),
+      (StructField("f_1", IntegerType, nullable = true, metadatas(1))),
+      (StructField("f_2", IntegerType, nullable = true, metadatas(2))),
+      (StructField("f_3", IntegerType, nullable = true, metadatas(3))),
+      (StructField("f_4", IntegerType, nullable = true, metadatas(4)))))
 
     // Verify transformation into dataframe
     val h2oFrame = hc.asH2OFrame(df)
@@ -785,7 +785,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val renamedDF = spark.sqlContext.createDataFrame(df.rdd, personSchema)
     val hf = hc.asH2OFrame(renamedDF)
 
-    assert(hf.names() sameElements Array("name.given.name", "name.family", "person.age"))
+    assert(hf.names() sameElements Array("name_given.name", "name_family", "person.age"))
   }
 
   test("Test conversion of frame with high number of columns"){
@@ -811,9 +811,9 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   def getSchemaInfo(df: DataFrame): (DataFrame, Array[Int], Seq[StructField]) = {
-    val flattenDF = H2OSchemaUtils.flattenStructsInDataFrame(df)
+    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
     val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(flattenDF)
-    val expandedSchema = H2OSchemaUtils.expandedSchema(H2OSchemaUtils.flattenStructsInSchema(df.schema), maxElementSizes)
+    val expandedSchema = H2OSchemaUtils.expandedSchema(H2OSchemaUtils.flattenSchema(df), maxElementSizes)
     (flattenDF, maxElementSizes, expandedSchema)
   }
 }
