@@ -34,7 +34,6 @@ node('docker && micro') {
             runScriptTests = "true"
             runIntegTests = "false"
             runPySparklingIntegTests = "true"
-            sparklingTestEnv = "yarn"
             buildAgainstH2OBranch = "true"
             h2oBranch = "${p.h2oBranch}"
             hadoopVersion = "2.7"
