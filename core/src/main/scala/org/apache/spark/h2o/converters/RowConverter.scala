@@ -55,14 +55,14 @@ object RowConverter {
             row.getAs[Seq[_]](idxRow).zipWithIndex.foreach { case (v, idx) =>
               put(f.name + idx, v.toString)
             }
-            // WRONG this patter needs to share the same code as in the SparkDataFrameConverter
-            // Currently, In SparkDataFrameConverter we handle arrays, binary types and vectors of different size
-            // and align them to the same size. The same thing should be done here
+          // WRONG this patter needs to share the same code as in the SparkDataFrameConverter
+          // Currently, In SparkDataFrameConverter we handle arrays, binary types and vectors of different size
+          // and align them to the same size. The same thing should be done here
           case _: ml.linalg.VectorUDT =>
-           val vector = row.getAs[ml.linalg.Vector](idxRow)
-          (0 until vector.size).foreach { idx =>
-            put(f.name + idx, vector(idx).toString)
-          }
+            val vector = row.getAs[ml.linalg.Vector](idxRow)
+            (0 until vector.size).foreach { idx =>
+              put(f.name + idx, vector(idx).toString)
+            }
           case _: mllib.linalg.VectorUDT =>
             val vector = row.getAs[mllib.linalg.Vector](idxRow)
             (0 until vector.size).foreach { idx =>
@@ -75,5 +75,4 @@ object RowConverter {
       }
     }
   }
-
 }
