@@ -807,7 +807,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
   def assertH2OFrameInvariants(inputDF: DataFrame, df: H2OFrame): Unit = {
     assert(inputDF.count == df.numRows(), "Number of rows has to match")
-    assert(df.numCols() == H2OSchemaUtils.flattenStructsInSchema(inputDF.schema).length, "Number columns should match")
+    assert(df.numCols() == H2OSchemaUtils.flattenSchema(inputDF).length, "Number columns should match")
   }
 
   def getSchemaInfo(df: DataFrame): (DataFrame, Array[Int], Seq[StructField]) = {
