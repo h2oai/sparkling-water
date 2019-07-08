@@ -146,10 +146,10 @@ In the above, ``spark.ext.h2o.node.port.base`` affects the worker nodes,
 and ``spark.ext.h2o.client.port.base`` affects the client.
 
 Using RSparkling
-================
+----------------
 
 H2OContext & Flow
------------------
+~~~~~~~~~~~~~~~~~
 
 The call to ``library(rsparkling)`` automatically registers the Sparkling Water extension.
 Let's inspect the `H2OContext` for our Spark connection:
@@ -181,7 +181,7 @@ We can also view the H2O Flow web UI:
 
 
 H2O with Spark DataFrames
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 As an example, let's copy the mtcars dataset to to Spark so we can access it from H2O Sparkling Water:
 
 .. code:: r
@@ -249,7 +249,7 @@ Here is how you convert a Spark DataFrame into an H2O Frame:
 
 
 Obtaining Logs
---------------
+~~~~~~~~~~~~~~
 
 Look at the Spark log from R:
 
@@ -259,7 +259,7 @@ Look at the Spark log from R:
 
 
 Disconnect from Spark
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 Now we disconnect from Spark, this will result in the H2OContext being stopped as well
 since it's owned by the spark shell process used by our Spark connection:
 
