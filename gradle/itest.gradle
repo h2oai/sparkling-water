@@ -38,10 +38,10 @@ task integTest(type: Test) {
     // Increase test runner memory
     maxHeapSize = "4g"
 
-    if(!jvmArgs.isEmpty()) {
+    if (!jvmArgs.isEmpty()) {
         jvmArgs extraJVMArgs.split(" ")
     }
-    
+
     def testEnv = detectEnvironment()
     // Decide which tests should be launch here based on environment
     switch (testEnv) {
@@ -95,10 +95,10 @@ ext {
 }
 
 String detectEnvironment(String defaultEnv = "local") {
-    String denv = [ project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
-                    System.properties["sparklingTestEnv"],
-                    defaultEnv
-    ].find { h -> h!=null } // first match
+    String denv = [project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
+                   System.properties["sparklingTestEnv"],
+                   defaultEnv
+    ].find { h -> h != null } // first match
     // Return env
     logger.info("* Detected '$denv' Sparkling test environment (configure via property 'sparklingTestEnv')")
     denv

@@ -28,17 +28,6 @@ def detectBackendClusterMode(defaultBackendMode = "internal") {
 def h2oJarLocation() {
     return "http://h2o-release.s3.amazonaws.com/h2o/${h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"}/${h2oBuild}/h2o-${h2oMajorVersion}.${h2oBuild}.zip"
 }
-
-def detectTestEnvironment(defaultEnv = "local") {
-    def denv = [project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
-                System.properties["sparklingTestEnv"],
-                defaultEnv
-    ].find { h -> h != null } // first match
-    // Return env
-    logger.info("* Detected '$denv' Sparkling test environment (configure via property 'sparklingTestEnv')")
-    denv
-}
-
 def getGitHash() {
     def proc = ['git', 'rev-parse', '--verify', 'HEAD'].execute()
     return proc.text.trim()
@@ -106,7 +95,6 @@ ext {
     isWindowsBased = this.&isWindowsBased
     detectBackendClusterMode = this.&detectBackendClusterMode
     h2oJarLocation = this.&h2oJarLocation
-    detectTestEnvironment = this.&detectTestEnvironment
     getGitHash = this.&getGitHash
     getGitBranch = this.&getGitBranch
     getH2OBranch = this.&getH2OBranch
