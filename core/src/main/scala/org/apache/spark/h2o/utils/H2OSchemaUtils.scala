@@ -110,15 +110,15 @@ object H2OSchemaUtils {
   private def fillBuffer
       (flatSchemaIndexes: Map[String, Int], buffer: ArrayBuffer[Any])
       (qualifiedName: String, dataType: DataType, data: Any) = {
-        if (data != null) {
-          dataType match {
-            case BinaryType => fillArray(qualifiedName, ByteType, flatSchemaIndexes, buffer, data)
-            case m: MapType => fillMap(qualifiedName, m.valueType, flatSchemaIndexes, buffer, data)
-            case a: ArrayType => fillArray(qualifiedName, a.elementType, flatSchemaIndexes, buffer, data)
-            case s: StructType => fillStruct(qualifiedName, s.fields, flatSchemaIndexes, buffer, data)
-            case _ => buffer(flatSchemaIndexes(qualifiedName)) = data
-          }
-        }
+    if (data != null) {
+      dataType match {
+        case BinaryType => fillArray(qualifiedName, ByteType, flatSchemaIndexes, buffer, data)
+        case m: MapType => fillMap(qualifiedName, m.valueType, flatSchemaIndexes, buffer, data)
+        case a: ArrayType => fillArray(qualifiedName, a.elementType, flatSchemaIndexes, buffer, data)
+        case s: StructType => fillStruct(qualifiedName, s.fields, flatSchemaIndexes, buffer, data)
+        case _ => buffer(flatSchemaIndexes(qualifiedName)) = data
+      }
+    }
   }
 
   private def fillArray(
@@ -179,8 +179,8 @@ object H2OSchemaUtils {
       val fields = originalSchema.fields
       val result = new ArrayBuffer[FieldWithOrder]()
       while (i < fields.length) {
-        val StructField(name, dataType, nullable, _) = fields(i)
-        result ++= flattenField(name, dataType, nullable, row(i), i :: Nil)
+        val StructField(name, dataType, nullable, metadata) = fields(i)
+        result ++= flattenField(name, dataType, nullable, metadata, row(i), i :: Nil)
         i = i + 1
       }
       result.sortBy(_.order)(fieldPathOrdering)
@@ -238,20 +238,21 @@ object H2OSchemaUtils {
       qualifiedName: String,
       dataType: DataType,
       nullable: Boolean,
+      metadata: Metadata,
       data: Any,
       path: List[Any]): Seq[FieldWithOrder] = {
     if (data != null) {
       dataType match {
         case BinaryType =>
-          flattenArrayType(qualifiedName, ByteType, nullable, data, path)
+          flattenArrayType(qualifiedName, ByteType, nullable, metadata, data, path)
         case MapType(_, valueType, containsNull) =>
-          flattenMapType(qualifiedName, valueType, containsNull || nullable, data, path)
+          flattenMapType(qualifiedName, valueType, containsNull || nullable, metadata, data, path)
         case ArrayType(elementType, containsNull) =>
-          flattenArrayType(qualifiedName, elementType, containsNull || nullable, data, path)
+          flattenArrayType(qualifiedName, elementType, containsNull || nullable, metadata, data, path)
         case StructType(fields) =>
-          flattenStructType(qualifiedName, nullable, fields, data, path)
+          flattenStructType(qualifiedName, nullable, metadata, fields, data, path)
         case dt =>
-          FieldWithOrder(StructField(qualifiedName, dt, nullable), path.reverse) :: Nil
+          FieldWithOrder(StructField(qualifiedName, dt, nullable, metadata), path.reverse) :: Nil
       }
     } else {
       Nil
@@ -264,6 +265,7 @@ object H2OSchemaUtils {
       qualifiedName: String,
       elementType: DataType,
       nullable: Boolean,
+      metadata: Metadata,
       data: Any,
       path: List[Any]) = {
     val values = data.asInstanceOf[Seq[Any]]
@@ -271,7 +273,7 @@ object H2OSchemaUtils {
     var idx = 0
     while (idx < values.length) {
       val fieldQualifiedName = getQualifiedName(qualifiedName, idx.toString())
-      result ++= flattenField(fieldQualifiedName, elementType, nullable, values(idx), idx :: path)
+      result ++= flattenField(fieldQualifiedName, elementType, nullable, metadata, values(idx), idx :: path)
       idx = idx + 1
     }
     result
@@ -281,6 +283,7 @@ object H2OSchemaUtils {
       qualifiedName: String,
       valueType: DataType,
       nullable: Boolean,
+      metadata: Metadata,
       data: Any,
       path: List[Any]) = {
     val map = data.asInstanceOf[Map[Any, Any]]
@@ -288,7 +291,7 @@ object H2OSchemaUtils {
     val result = new ArrayBuffer[FieldWithOrder]()
     map.foreach { case(key, value) =>
       val fieldQualifiedName = getQualifiedName(qualifiedName, key.toString)
-      flattenField(fieldQualifiedName, valueType, nullable, value, key :: path)
+      flattenField(fieldQualifiedName, valueType, nullable, metadata, value, key :: path)
     }
     result
   }
@@ -296,14 +299,19 @@ object H2OSchemaUtils {
   private def flattenStructType(
       qualifiedName: String,
       nullableParent: Boolean,
+      metadata: Metadata,
       fields: Seq[StructField],
       data: Any,
       path: List[Any]) = {
     val subRow = data.asInstanceOf[Row]
     fields.zipWithIndex.flatMap { case (subField, idx) =>
-      val StructField(name, dataType, nullable, _) = subField
+      val StructField(name, dataType, nullable, fieldMetadata) = subField
+      val metadataBuilder = new MetadataBuilder()
+      metadataBuilder.withMetadata(metadata)
+      metadataBuilder.withMetadata(fieldMetadata)
+      val mergedMetedata = metadataBuilder.build()
       val fieldQualifiedName = getQualifiedName(qualifiedName, name)
-      flattenField(fieldQualifiedName, dataType, nullable || nullableParent, subRow(idx), idx :: path)
+      flattenField(fieldQualifiedName, dataType, nullable || nullableParent, mergedMetedata, subRow(idx), idx :: path)
     }
   }
 
