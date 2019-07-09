@@ -112,14 +112,28 @@ object H2OSchemaUtils {
       (qualifiedName: String, dataType: DataType, data: Any) = {
     if (data != null) {
       dataType match {
-        case BinaryType =>
-          val binaryData = data.asInstanceOf[Array[Byte]].toSeq
-          fillArray(qualifiedName, ByteType, flatSchemaIndexes, buffer, binaryData)
+        case BinaryType => fillBinary(qualifiedName, ByteType, flatSchemaIndexes, buffer, data)
         case m: MapType => fillMap(qualifiedName, m.valueType, flatSchemaIndexes, buffer, data)
         case a: ArrayType => fillArray(qualifiedName, a.elementType, flatSchemaIndexes, buffer, data)
         case s: StructType => fillStruct(qualifiedName, s.fields, flatSchemaIndexes, buffer, data)
         case _ => buffer(flatSchemaIndexes(qualifiedName)) = data
       }
+    }
+  }
+
+  private def fillBinary(
+      qualifiedName: String,
+      elementType: DataType,
+      flatSchemaIndexes: Map[String, Int],
+      buffer: ArrayBuffer[Any],
+      data: Any): Unit = {
+    val array = data.asInstanceOf[Array[Byte]]
+    val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
+    var idx = 0
+    while (idx < array.length) {
+      val fieldQualifiedName = getQualifiedName(qualifiedName, idx.toString)
+      fillBufferPartiallyApplied(fieldQualifiedName, elementType, array(idx))
+      idx = idx + 1
     }
   }
 
@@ -246,8 +260,7 @@ object H2OSchemaUtils {
     if (data != null) {
       dataType match {
         case BinaryType =>
-          val binaryData = data.asInstanceOf[Array[Byte]].toSeq
-          flattenArrayType(qualifiedName, ByteType, nullable, metadata, binaryData, path)
+          flattenBinaryType(qualifiedName, ByteType, nullable, metadata, data, path)
         case MapType(_, valueType, containsNull) =>
           flattenMapType(qualifiedName, valueType, containsNull || nullable, metadata, data, path)
         case ArrayType(elementType, containsNull) =>
@@ -263,6 +276,24 @@ object H2OSchemaUtils {
   }
 
   case class FieldWithOrder(field: StructField, order: Iterable[Any])
+
+  private def flattenBinaryType(
+      qualifiedName: String,
+      elementType: DataType,
+      nullable: Boolean,
+      metadata: Metadata,
+      data: Any,
+      path: List[Any]) = {
+    val values = data.asInstanceOf[Array[Byte]]
+    val result = new ArrayBuffer[FieldWithOrder]()
+    var idx = 0
+    while (idx < values.length) {
+      val fieldQualifiedName = getQualifiedName(qualifiedName, idx.toString())
+      result ++= flattenField(fieldQualifiedName, elementType, nullable, metadata, values(idx), idx :: path)
+      idx = idx + 1
+    }
+    result
+  }
 
   private def flattenArrayType(
       qualifiedName: String,
