@@ -28,18 +28,19 @@ def detectBackendClusterMode(defaultBackendMode = "internal") {
 def h2oJarLocation() {
     return "http://h2o-release.s3.amazonaws.com/h2o/${h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"}/${h2oBuild}/h2o-${h2oMajorVersion}.${h2oBuild}.zip"
 }
+
 def getGitHash() {
     def proc = ['git', 'rev-parse', '--verify', 'HEAD'].execute()
     return proc.text.trim()
 }
 
-def getGitBranch() {
+String getGitBranch() {
     def branchName = System.getenv("BRANCH_NAME")
     if (branchName != null) {
-        return branchName
+        return branchName.toString()
     } else {
         def proc = ['git', 'rev-parse', '--verify', '--abbrev-ref', 'HEAD'].execute()
-        return proc.text.trim()
+        return proc.text.trim().toString()
     }
 }
 

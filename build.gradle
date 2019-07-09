@@ -84,6 +84,26 @@ ext {
     supportedScalaBaseVersions = ['2.11': '2.11.12']
 }
 
+def versionSpecificProps = new Properties()
+file("$rootDir/gradle-spark${spark}.properties").withInputStream { versionSpecificProps.load(it) }
+
+def loadVersionSpecificProp(propName, versionSpecificProps) {
+    // first check if the property was specified/override via -P
+    if (project.hasProperty(propName)) {
+        return project.properties.get(propName)
+    } else {
+        return versionSpecificProps.getProperty(propName)
+    }
+}
+
+def loadVersion(versionSpecificProps){
+    if (project.properties.get("version") != "unspecified") {
+        return project.properties.get("version")
+    } else {
+        return versionSpecificProps.getProperty("version")
+    }
+}
+
 //
 // For all projects (this and all subprojects) specify common properties and tasks
 //
@@ -102,11 +122,15 @@ configure(allprojects) { project ->
 
         // h2oBuild property is defined in gradle.properties
         h2oVersion = "$h2oMajorVersion.$h2oBuild"
-        sparkVersion = "$sparkVersion"
+        sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
         sparkMajorVersion = sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
         junitVersion = '4.11'
-    }
 
+        minSupportedJavaVersion = loadVersionSpecificProp("minSupportedJavaVersion", versionSpecificProps)
+        supportedEmrVersion = loadVersionSpecificProp("supportedEmrVersion", versionSpecificProps)
+        extraJVMArgs = loadVersionSpecificProp("extraJVMArgs", versionSpecificProps)
+        unsupportedMinorSparkVersions = loadVersionSpecificProp("unsupportedMinorSparkVersions", versionSpecificProps)
+    }
 }
 
 // 
@@ -114,7 +138,7 @@ configure(allprojects) { project ->
 //
 configure(subprojects) { project ->
     // All project inherits the same versioning number
-    version = rootProject.version
+    version = loadVersion(versionSpecificProps)
 
     repositories {
         // Should be enabled only in development mode
