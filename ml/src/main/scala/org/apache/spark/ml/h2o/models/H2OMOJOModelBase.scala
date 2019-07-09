@@ -18,7 +18,6 @@
 package org.apache.spark.ml.h2o.models
 
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.utils.H2OSchemaUtils.{flattenDataFrame, flattenSchema}
 import org.apache.spark.h2o.utils.{DatasetShape, H2OSchemaUtils}
 import org.apache.spark.ml.h2o.param.H2OMOJOModelParams
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
@@ -43,32 +42,19 @@ abstract class H2OMOJOModelBase[T <: SparkModel[T]]
 
   override def write: MLWriter = new H2OMOJOWriter(this, getMojoData)
 
+  val temporaryPrefix = "SparklingWater_MOJO_temporary"
+
   protected def applyPredictionUdf(
       dataset: Dataset[_],
       udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
     val originalDF = dataset.toDF()
     H2OSchemaUtils.getGetDatasetShape(dataset.schema) match {
       case DatasetShape.Flat => applyPredictionUdfToFlatDataFrame(originalDF, udfConstructor)
-      case DatasetShape.StructsOnly =>
-        val prefix = "SparklingWater_MOJO_temporary"
-        val flattenedDF = H2OSchemaUtils.appendFlattenedStructsToDataFrame(originalDF, prefix)
+      case DatasetShape.StructsOnly | DatasetShape.Nested =>
+        val flattenedDF = H2OSchemaUtils.appendFlattenedStructsToDataFrame(originalDF, temporaryPrefix)
         val flatWithPredictionsDF = applyPredictionUdfToFlatDataFrame(flattenedDF, udfConstructor)
         flatWithPredictionsDF.schema.foldLeft(flatWithPredictionsDF) { (df, field) =>
-          if(field.name.startsWith(prefix)) df.drop(field.name) else df
-        }
-      case DatasetShape.Nested =>
-        if (dataset.isStreaming) {
-          throw new UnsupportedOperationException(
-            "Flattening streamed data frames with an ArrayType, BinaryType or MapType is not supported.")
-        } else {
-          val temporaryIdColumnName = "SparklingWater_MOJO_temporary_id_for_join"
-          val withIdentifierDF = originalDF.withColumn(temporaryIdColumnName, monotonically_increasing_id()).cache()
-          val schema = flattenSchema(withIdentifierDF)
-          val flattenedDF = H2OSchemaUtils.flattenDataFrame(withIdentifierDF, schema)
-          val flatWithPredictionsDF = applyPredictionUdfToFlatDataFrame(flattenedDF, udfConstructor)
-          val predictionsOnlyDF = flatWithPredictionsDF.select(temporaryIdColumnName, getPredictionCol())
-          val joinedDF = withIdentifierDF.join(predictionsOnlyDF, temporaryIdColumnName :: Nil, joinType = "left")
-          joinedDF.drop(temporaryIdColumnName)
+          if(field.name.startsWith(temporaryPrefix)) df.drop(field.name) else df
         }
     }
   }
@@ -76,7 +62,9 @@ abstract class H2OMOJOModelBase[T <: SparkModel[T]]
   private def applyPredictionUdfToFlatDataFrame(
       flatDataFrame: DataFrame,
       udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
-    val relevantColumnNames = flatDataFrame.columns.intersect(getFeaturesCols())
+    val relevantColumnNames = flatDataFrame.columns.intersect {
+      getFeaturesCols() ++ getFeaturesCols().map(s => temporaryPrefix + "_" + s)
+    }
     val args = relevantColumnNames.map(flatDataFrame(_))
     val udf = udfConstructor(relevantColumnNames)
     flatDataFrame.withColumn(getPredictionCol(), udf(struct(args: _*)))
