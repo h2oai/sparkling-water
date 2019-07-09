@@ -426,7 +426,7 @@ object H2OSchemaUtils {
     *  - all arrays are expanded into columns based on the longest one
     *  - all vectors are expanded into columns based on the longest one
     *
-    * @param flatDataFrame flat data framez
+    * @param flatDataFrame flat data frame
     * @param elemMaxSizes  max sizes of each element in the dataframe
     * @return list of types with their positions
     */
