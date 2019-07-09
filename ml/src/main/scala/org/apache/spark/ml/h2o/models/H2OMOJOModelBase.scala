@@ -18,6 +18,7 @@
 package org.apache.spark.ml.h2o.models
 
 import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.h2o.converters.RowConverter
 import org.apache.spark.h2o.utils.{DatasetShape, H2OSchemaUtils}
 import org.apache.spark.ml.h2o.param.H2OMOJOModelParams
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
@@ -42,8 +43,6 @@ abstract class H2OMOJOModelBase[T <: SparkModel[T]]
 
   override def write: MLWriter = new H2OMOJOWriter(this, getMojoData)
 
-  val temporaryPrefix = "SparklingWater_MOJO_temporary"
-
   protected def applyPredictionUdf(
       dataset: Dataset[_],
       udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
@@ -51,10 +50,10 @@ abstract class H2OMOJOModelBase[T <: SparkModel[T]]
     H2OSchemaUtils.getGetDatasetShape(dataset.schema) match {
       case DatasetShape.Flat => applyPredictionUdfToFlatDataFrame(originalDF, udfConstructor)
       case DatasetShape.StructsOnly | DatasetShape.Nested =>
-        val flattenedDF = H2OSchemaUtils.appendFlattenedStructsToDataFrame(originalDF, temporaryPrefix)
+        val flattenedDF = H2OSchemaUtils.appendFlattenedStructsToDataFrame(originalDF, RowConverter.temporaryColumnPrefix)
         val flatWithPredictionsDF = applyPredictionUdfToFlatDataFrame(flattenedDF, udfConstructor)
         flatWithPredictionsDF.schema.foldLeft(flatWithPredictionsDF) { (df, field) =>
-          if(field.name.startsWith(temporaryPrefix)) df.drop(field.name) else df
+          if(field.name.startsWith(RowConverter.temporaryColumnPrefix)) df.drop(field.name) else df
         }
     }
   }
@@ -63,7 +62,7 @@ abstract class H2OMOJOModelBase[T <: SparkModel[T]]
       flatDataFrame: DataFrame,
       udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
     val relevantColumnNames = flatDataFrame.columns.intersect {
-      getFeaturesCols() ++ getFeaturesCols().map(s => temporaryPrefix + "_" + s)
+      getFeaturesCols() ++ getFeaturesCols().map(s => RowConverter.temporaryColumnPrefix + "_" + s)
     }
     val args = relevantColumnNames.map(flatDataFrame(_))
     val udf = udfConstructor(relevantColumnNames)

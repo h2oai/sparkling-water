@@ -27,33 +27,36 @@ import org.apache.spark.sql.types._
   */
 object RowConverter {
 
+  val temporaryColumnPrefix = "SparklingWater_MOJO_temporary"
+
   /**
     * Converts a Spark to H2O row data
     */
   def toH2ORowData(row: Row): RowData = new RowData {
     val fieldsWithIndex = row.schema.fields.zipWithIndex
     fieldsWithIndex.foreach { case (f, idxRow) =>
+      val name = if (f.name.startsWith(temporaryColumnPrefix)) f.name.substring(temporaryColumnPrefix.length + 1) else f.name
       if (row.get(idxRow) != null) {
         f.dataType match {
           case BooleanType =>
-            put(f.name, row.getBoolean(idxRow).toString)
+            put(name, row.getBoolean(idxRow).toString)
           case BinaryType =>
             row.getAs[Array[Byte]](idxRow).zipWithIndex.foreach { case (v, idx) =>
-              put(f.name + idx, v.toString)
+              put(name + idx, v.toString)
             }
-          case ByteType => put(f.name, row.getByte(idxRow).toString)
-          case ShortType => put(f.name, row.getShort(idxRow).toString)
-          case IntegerType => put(f.name, row.getInt(idxRow).toString)
-          case LongType => put(f.name, row.getLong(idxRow).toString)
-          case FloatType => put(f.name, row.getFloat(idxRow).toString)
-          case _: DecimalType => put(f.name, row.getDecimal(idxRow).doubleValue().toString)
-          case DoubleType => put(f.name, row.getDouble(idxRow).toString)
-          case StringType => put(f.name, row.getString(idxRow))
-          case TimestampType => put(f.name, row.getAs[java.sql.Timestamp](idxRow).getTime.toString)
-          case DateType => put(f.name, row.getAs[java.sql.Date](idxRow).getTime.toString)
+          case ByteType => put(name, row.getByte(idxRow).toString)
+          case ShortType => put(name, row.getShort(idxRow).toString)
+          case IntegerType => put(name, row.getInt(idxRow).toString)
+          case LongType => put(name, row.getLong(idxRow).toString)
+          case FloatType => put(name, row.getFloat(idxRow).toString)
+          case _: DecimalType => put(name, row.getDecimal(idxRow).doubleValue().toString)
+          case DoubleType => put(name, row.getDouble(idxRow).toString)
+          case StringType => put(name, row.getString(idxRow))
+          case TimestampType => put(name, row.getAs[java.sql.Timestamp](idxRow).getTime.toString)
+          case DateType => put(name, row.getAs[java.sql.Date](idxRow).getTime.toString)
           case ArrayType(_, _) => // for now assume that all arrays and vecs have the same size - we can store max size as part of the model
             row.getAs[Seq[_]](idxRow).zipWithIndex.foreach { case (v, idx) =>
-              put(f.name + idx, v.toString)
+              put(name + idx, v.toString)
             }
           // WRONG this patter needs to share the same code as in the SparkDataFrameConverter
           // Currently, In SparkDataFrameConverter we handle arrays, binary types and vectors of different size
@@ -61,16 +64,16 @@ object RowConverter {
           case _: ml.linalg.VectorUDT =>
             val vector = row.getAs[ml.linalg.Vector](idxRow)
             (0 until vector.size).foreach { idx =>
-              put(f.name + idx, vector(idx).toString)
+              put(name + idx, vector(idx).toString)
             }
           case _: mllib.linalg.VectorUDT =>
             val vector = row.getAs[mllib.linalg.Vector](idxRow)
             (0 until vector.size).foreach { idx =>
-              put(f.name + idx, vector(idx).toString)
+              put(name + idx, vector(idx).toString)
             }
           case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
           case null => // no op
-          case _ => put(f.name, get(idxRow).toString)
+          case _ => put(name, get(idxRow).toString)
         }
       }
     }

@@ -141,6 +141,27 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers 
     mojo.transform(df).show(3, false)
   }
 
+  test("DataFrame contains structs") {
+    import spark.implicits._
+    val gbm = configureGBMforProstateDF()
+
+    val structuredDF = prostateDataFrame.select(
+      'ID,
+      'CAPSULE,
+      'AGE,
+      struct( 'RACE, 'DPROS, struct( 'DCAPS, 'PSA) as "b") as "a",
+      'VOL,
+      'GLEASON)
+
+    val expectedModel = configureGBMforProstateDF().fit(prostateDataFrame)
+    val expectedPredictionDF = expectedModel.transform(prostateDataFrame).select('prediction_output)
+
+    val model = configureGBMforProstateDF().fit(structuredDF)
+    val predictionDF = model.transform(structuredDF).select('prediction_output)
+
+    TestUtils.assertEqual(expectedPredictionDF, predictionDF)
+  }
+
   test("Testing dataset is missing one of feature columns") {
     val Array(trainingDF, rawTestingDF) = prostateDataFrame.randomSplit(Array(0.9, 0.1))
     val testingDF = rawTestingDF
