@@ -53,7 +53,7 @@ abstract class H2OMOJOModelBase[T <: SparkModel[T]]
         val flattenedDF = H2OSchemaUtils.appendFlattenedStructsToDataFrame(originalDF, RowConverter.temporaryColumnPrefix)
         val flatWithPredictionsDF = applyPredictionUdfToFlatDataFrame(flattenedDF, udfConstructor)
         flatWithPredictionsDF.schema.foldLeft(flatWithPredictionsDF) { (df, field) =>
-          if(field.name.startsWith(RowConverter.temporaryColumnPrefix)) df.drop(field.name) else df
+          if (field.name.startsWith(RowConverter.temporaryColumnPrefix)) df.drop(field.name) else df
         }
     }
   }
