@@ -369,32 +369,39 @@ object H2OSchemaUtils {
     }
   }
 
-  def flattenStructsInSchema(schema: StructType, prefix: String = null, nullable: Boolean = false): StructType = {
+  def flattenStructsInSchema(
+      schema: StructType,
+      colPrefix: Option[String] = None,
+      newNamePrefix: Option[String] = None,
+      nullable: Boolean = false): Seq[(StructField, String)] = {
 
     val flattened = schema.fields.flatMap { f =>
       val escaped = if (f.name.contains(".")) "`" + f.name + "`" else f.name
-      val colName = if (prefix == null) escaped else prefix + "_" + escaped
+      val colName = if (colPrefix.isDefined) colPrefix.get + "." + escaped else escaped
+      val newName = if (newNamePrefix.isDefined) newNamePrefix.get + "_" + f.name else f.name
 
       f.dataType match {
-        case st: StructType => flattenStructsInSchema(st, colName, nullable || f.nullable)
-        case _ => Array[StructField](StructField(colName, f.dataType, nullable || f.nullable))
+        case st: StructType => flattenStructsInSchema(st, Some(colName), Some(newName), nullable || f.nullable)
+        case _ => Array((StructField(newName, f.dataType, nullable || f.nullable), colName))
       }
     }
-    StructType(flattened)
+    flattened
   }
 
   def flattenStructsInDataFrame(df: DataFrame): DataFrame = {
     val flatten = flattenStructsInSchema(df.schema)
-    val cols = flatten.map(f => col(f.name).as(f.name.replaceAll("`", "")))
+    val cols = flatten.map{
+      case (field, colName) => col(colName).as(field.name)
+    }
     df.select(cols: _*)
   }
 
   def appendFlattenedStructsToDataFrame(df: DataFrame, prefixForNewColumns: String): DataFrame = {
     val structsOnlySchema = StructType(df.schema.fields.filter(_.dataType.isInstanceOf[StructType]))
-    val flatten = flattenStructsInSchema(structsOnlySchema, prefixForNewColumns)
-    val schema = StructType(flatten.fields ++ structsOnlySchema.fields)
-    val cols = schema.map(f => col(f.name).as(f.name.replaceAll("`", "")))
-    df.select(cols: _*)
+    val flatten = flattenStructsInSchema(structsOnlySchema, newNamePrefix = Some(prefixForNewColumns))
+    flatten.foldLeft(df) { case (tempDF, (field, colName)) =>
+      tempDF.withColumn(field.name, col(colName), field.metadata)
+    }
   }
 
   /** Returns expanded schema
