@@ -33,6 +33,40 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
 
   sc = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 
+  "flattenStructsInSchema" should "flatten a simple schema" in {
+    val expSchema = StructType(
+      StructField("a", IntegerType, true) ::
+        StructField("b", IntegerType, false)
+        :: Nil
+    )
+    val flatSchema = H2OSchemaUtils.flattenStructsInSchema(expSchema)
+    val expected = Seq(
+      StructField("a", IntegerType, true),
+      StructField("b", IntegerType, false))
+    assert (flatSchema.fields === expected)
+  }
+
+  "flattenStructsInSchema" should "flatten a composed schema" in {
+    val expSchema = StructType(
+      StructField("a", StructType(
+        StructField("a1", DoubleType, false)::
+          StructField("a2", StringType, true):: Nil
+      ), true) ::
+        StructField("b", StructType(
+          StructField("b1", DoubleType, false)::
+            StructField("b2", StringType, true):: Nil
+        ), false)
+        :: Nil
+    )
+    val flatSchema = H2OSchemaUtils.flattenStructsInSchema(expSchema)
+    val expected = Seq(
+      StructField("a_a1", DoubleType, true),
+      StructField("a_a2", StringType, true),
+      StructField("b_b1", DoubleType, false),
+      StructField("b_b2", StringType, true))
+    assert (flatSchema.fields === expected)
+  }
+
   "flattenDataFrame" should "flatten an array of structs" in {
     import spark.implicits._
 
