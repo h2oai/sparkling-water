@@ -18,10 +18,12 @@
 package org.apache.spark.h2o.utils
 
 import org.apache.spark.h2o._
+import org.apache.spark.h2o.utils.DatasetShape.DatasetShape
 import org.apache.spark.ml.attribute.AttributeGroup
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.{ml, mllib}
 
@@ -72,20 +74,38 @@ object H2OSchemaUtils {
     StructType(types)
   }
 
-  def isSchemaFlat(schema: StructType): Boolean = schema.fields.forall {
-    field: StructField => field.dataType match {
-      case _: BinaryType | _: ArrayType | _: StructType | _: MapType => false
-      case _ => true
+  def getGetDatasetShape(schema: StructType): DatasetShape = {
+    def mergeShape(first: DatasetShape, second: DatasetShape): DatasetShape = (first, second) match {
+      case (DatasetShape.Nested, _) => DatasetShape.Nested
+      case (_, DatasetShape.Nested) => DatasetShape.Nested
+      case (DatasetShape.StructsOnly, _) => DatasetShape.StructsOnly
+      case (_, DatasetShape.StructsOnly) => DatasetShape.StructsOnly
+      case _ => DatasetShape.Flat
+    }
+
+    def fieldToShape(field: StructField): DatasetShape = field.dataType match {
+      case _: ArrayType | _: MapType | _: BinaryType => DatasetShape.Nested
+      case s: StructType => mergeShape(DatasetShape.StructsOnly, getGetDatasetShape(s))
+      case _ => DatasetShape.Flat
+    }
+
+    schema.fields.foldLeft(DatasetShape.Flat) { (acc, field) =>
+      val fieldShape = fieldToShape(field)
+      mergeShape(acc, fieldShape)
     }
   }
 
-  def flattenDataFrame(df: DataFrame): DataFrame = {
-    if (isSchemaFlat(df.schema)) {
-      df
-    } else {
-      val schema = flattenSchema(df)
-      flattenDataFrame(df, schema)
-    }
+  def flattenDataFrame(df: DataFrame): DataFrame = getGetDatasetShape(df.schema) match {
+    case DatasetShape.Flat => df
+    case DatasetShape.StructsOnly => flattenStructsInDataFrame(df)
+    case DatasetShape.Nested =>
+      if (df.isStreaming) {
+        throw new UnsupportedOperationException(
+          "Flattening streamed data frames with an ArrayType, BinaryType or MapType is not supported.")
+      } else {
+        val schema = flattenSchema(df)
+        flattenDataFrame(df, schema)
+      }
   }
 
   def flattenDataFrame(df: DataFrame, flatSchema: StructType): DataFrame = {
@@ -347,6 +367,34 @@ object H2OSchemaUtils {
       val fieldQualifiedName = getQualifiedName(qualifiedName, name)
       flattenField(fieldQualifiedName, dataType, nullable || nullableParent, mergedMetedata, subRow(idx), idx :: path)
     }
+  }
+
+  def flattenStructsInSchema(schema: StructType, prefix: String = null, nullable: Boolean = false): StructType = {
+
+    val flattened = schema.fields.flatMap { f =>
+      val escaped = if (f.name.contains(".")) "`" + f.name + "`" else f.name
+      val colName = if (prefix == null) escaped else prefix + "_" + escaped
+
+      f.dataType match {
+        case st: StructType => flattenStructsInSchema(st, colName, nullable || f.nullable)
+        case _ => Array[StructField](StructField(colName, f.dataType, nullable || f.nullable))
+      }
+    }
+    StructType(flattened)
+  }
+
+  def flattenStructsInDataFrame(df: DataFrame): DataFrame = {
+    val flatten = flattenStructsInSchema(df.schema)
+    val cols = flatten.map(f => col(f.name).as(f.name.replaceAll("`", "")))
+    df.select(cols: _*)
+  }
+
+  def appendFlattenedStructsToDataFrame(df: DataFrame, prefixForNewColumns: String): DataFrame = {
+    val structsOnlySchema = StructType(df.schema.fields.filter(_.dataType.isInstanceOf[StructType]))
+    val flatten = flattenStructsInSchema(structsOnlySchema, prefixForNewColumns)
+    val schema = StructType(flatten.fields ++ structsOnlySchema.fields)
+    val cols = schema.map(f => col(f.name).as(f.name.replaceAll("`", "")))
+    df.select(cols: _*)
   }
 
   /** Returns expanded schema

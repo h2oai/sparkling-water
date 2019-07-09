@@ -18,7 +18,8 @@
 package org.apache.spark.ml.h2o.models
 
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.utils.H2OSchemaUtils
+import org.apache.spark.h2o.utils.H2OSchemaUtils.{flattenDataFrame, flattenSchema}
+import org.apache.spark.h2o.utils.{DatasetShape, H2OSchemaUtils}
 import org.apache.spark.ml.h2o.param.H2OMOJOModelParams
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.types.{StructField, StructType}
@@ -46,16 +47,29 @@ abstract class H2OMOJOModelBase[T <: SparkModel[T]]
       dataset: Dataset[_],
       udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
     val originalDF = dataset.toDF()
-    if (H2OSchemaUtils.isSchemaFlat(originalDF.schema)) {
-      applyPredictionUdfToFlatDataFrame(originalDF, udfConstructor)
-    } else {
-      val temporaryIdColumnName = "SparklingWater_MOJO_temporary_id_for_join"
-      val withIdentifierDF = originalDF.withColumn(temporaryIdColumnName, monotonically_increasing_id()).cache()
-      val flattenedDF = H2OSchemaUtils.flattenDataFrame(withIdentifierDF)
-      val flatWithPredictionsDF = applyPredictionUdfToFlatDataFrame(flattenedDF, udfConstructor)
-      val predictionsOnlyDF = flatWithPredictionsDF.select(temporaryIdColumnName, getPredictionCol())
-      val joinedDF = withIdentifierDF.join(predictionsOnlyDF, temporaryIdColumnName :: Nil, joinType = "left")
-      joinedDF.drop(temporaryIdColumnName)
+    H2OSchemaUtils.getGetDatasetShape(dataset.schema) match {
+      case DatasetShape.Flat => applyPredictionUdfToFlatDataFrame(originalDF, udfConstructor)
+      case DatasetShape.StructsOnly =>
+        val prefix = "SparklingWater_MOJO_temporary"
+        val flattenedDF = H2OSchemaUtils.appendFlattenedStructsToDataFrame(originalDF, prefix)
+        val flatWithPredictionsDF = applyPredictionUdfToFlatDataFrame(flattenedDF, udfConstructor)
+        flatWithPredictionsDF.schema.foldLeft(flatWithPredictionsDF) { (df, field) =>
+          if(field.name.startsWith(prefix)) df.drop(field.name) else df
+        }
+      case DatasetShape.Nested =>
+        if (dataset.isStreaming) {
+          throw new UnsupportedOperationException(
+            "Flattening streamed data frames with an ArrayType, BinaryType or MapType is not supported.")
+        } else {
+          val temporaryIdColumnName = "SparklingWater_MOJO_temporary_id_for_join"
+          val withIdentifierDF = originalDF.withColumn(temporaryIdColumnName, monotonically_increasing_id()).cache()
+          val schema = flattenSchema(withIdentifierDF)
+          val flattenedDF = H2OSchemaUtils.flattenDataFrame(withIdentifierDF, schema)
+          val flatWithPredictionsDF = applyPredictionUdfToFlatDataFrame(flattenedDF, udfConstructor)
+          val predictionsOnlyDF = flatWithPredictionsDF.select(temporaryIdColumnName, getPredictionCol())
+          val joinedDF = withIdentifierDF.join(predictionsOnlyDF, temporaryIdColumnName :: Nil, joinType = "left")
+          joinedDF.drop(temporaryIdColumnName)
+        }
     }
   }
 
