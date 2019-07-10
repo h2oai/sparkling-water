@@ -468,8 +468,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(flattenDF)
     val expandedSchema = H2OSchemaUtils.expandedSchema(H2OSchemaUtils.flattenSchema(df), maxElementSizes)
     val expected: Vector[StructField] = Vector(
-      StructField("a_n", IntegerType, nullable = false),
-      StructField("a_name", StringType, nullable = true),
+      StructField("a.n", IntegerType, nullable = false),
+      StructField("a.name", StringType, nullable = true),
       StructField("weight", DoubleType, nullable = false))
     Assertions.assertResult(expected.length)(expandedSchema.length)
 
@@ -500,11 +500,11 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val metadatas = expandedSchema.map(f => f.metadata)
 
     assert(expandedSchema === Array(
-      (StructField("f_0", IntegerType, nullable = false, metadatas.head)),
-      (StructField("f_1", IntegerType, nullable = true, metadatas(1))),
-      (StructField("f_2", IntegerType, nullable = true, metadatas(2))),
-      (StructField("f_3", IntegerType, nullable = true, metadatas(3))),
-      (StructField("f_4", IntegerType, nullable = true, metadatas(4)))))
+      (StructField("f.0", IntegerType, nullable = false, metadatas.head)),
+      (StructField("f.1", IntegerType, nullable = true, metadatas(1))),
+      (StructField("f.2", IntegerType, nullable = true, metadatas(2))),
+      (StructField("f.3", IntegerType, nullable = true, metadatas(3))),
+      (StructField("f.4", IntegerType, nullable = true, metadatas(4)))))
 
     // Verify transformation into dataframe
     val h2oFrame = hc.asH2OFrame(df)
@@ -785,7 +785,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val renamedDF = spark.sqlContext.createDataFrame(df.rdd, personSchema)
     val hf = hc.asH2OFrame(renamedDF)
 
-    assert(hf.names() sameElements Array("name_given.name", "name_family", "person.age"))
+    assert(hf.names() sameElements Array("name.given.name", "name.family", "person.age"))
   }
 
   test("Test conversion of frame with high number of columns"){
