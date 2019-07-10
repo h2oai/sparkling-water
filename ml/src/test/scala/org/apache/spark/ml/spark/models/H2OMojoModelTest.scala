@@ -143,7 +143,6 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers 
 
   test("DataFrame contains structs") {
     import spark.implicits._
-    val gbm = configureGBMforProstateDF()
 
     val structuredDF = prostateDataFrame.select(
       'ID,
