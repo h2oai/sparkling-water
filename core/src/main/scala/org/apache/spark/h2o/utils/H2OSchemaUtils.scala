@@ -74,7 +74,7 @@ object H2OSchemaUtils {
     StructType(types)
   }
 
-  def getGetDatasetShape(schema: StructType): DatasetShape = {
+  def getDatasetShape(schema: StructType): DatasetShape = {
     def mergeShape(first: DatasetShape, second: DatasetShape): DatasetShape = (first, second) match {
       case (DatasetShape.Nested, _) => DatasetShape.Nested
       case (_, DatasetShape.Nested) => DatasetShape.Nested
@@ -85,7 +85,7 @@ object H2OSchemaUtils {
 
     def fieldToShape(field: StructField): DatasetShape = field.dataType match {
       case _: ArrayType | _: MapType | _: BinaryType => DatasetShape.Nested
-      case s: StructType => mergeShape(DatasetShape.StructsOnly, getGetDatasetShape(s))
+      case s: StructType => mergeShape(DatasetShape.StructsOnly, getDatasetShape(s))
       case _ => DatasetShape.Flat
     }
 
@@ -95,7 +95,7 @@ object H2OSchemaUtils {
     }
   }
 
-  def flattenDataFrame(df: DataFrame): DataFrame = getGetDatasetShape(df.schema) match {
+  def flattenDataFrame(df: DataFrame): DataFrame = getDatasetShape(df.schema) match {
     case DatasetShape.Flat => df
     case DatasetShape.StructsOnly => flattenStructsInDataFrame(df)
     case DatasetShape.Nested =>
@@ -225,34 +225,36 @@ object H2OSchemaUtils {
 
   private def mergeRowSchemas(ds: Dataset[ArrayBuffer[FieldWithOrder]]): ArrayBuffer[FieldWithOrder] = ds.reduce {
     (first, second) =>
-      var fidx = 0
-      var sidx = 0
+      var idxForFirst = 0
+      var idxForSecond = 0
       val result = new ArrayBuffer[FieldWithOrder]()
-      while (fidx < first.length && sidx < second.length) {
-        val f = first(fidx)
-        val s = second(sidx)
-        if (fieldPathOrdering.lt(f.order, s.order)) {
-          result += f.copy(field = f.field.copy(nullable = true))
-          fidx = fidx + 1
-        } else if (fieldPathOrdering.gt(f.order, s.order)) {
-          result += s.copy(field = s.field.copy(nullable = true))
-          sidx = sidx + 1
+      while (idxForFirst < first.length && idxForSecond < second.length) {
+        val itemFromFirst = first(idxForFirst)
+        val itemFromSecond = second(idxForSecond)
+        if (fieldPathOrdering.lt(itemFromFirst.order, itemFromSecond.order)) {
+          result += itemFromFirst.copy(field = itemFromFirst.field.copy(nullable = true))
+          idxForFirst = idxForFirst + 1
+        } else if (fieldPathOrdering.gt(itemFromFirst.order, itemFromSecond.order)) {
+          result += itemFromSecond.copy(field = itemFromSecond.field.copy(nullable = true))
+          idxForSecond = idxForSecond + 1
         } else {
-          result += f.copy(field = f.field.copy(nullable = f.field.nullable || s.field.nullable))
-          fidx = fidx + 1
-          sidx = sidx + 1
+          result += itemFromFirst.copy(
+            field = itemFromFirst.field.copy(
+              nullable = itemFromFirst.field.nullable || itemFromSecond.field.nullable))
+          idxForFirst = idxForFirst + 1
+          idxForSecond = idxForSecond + 1
         }
       }
-      while (fidx < first.length) {
-        val f = first(fidx)
-        result += f.copy(field = f.field.copy(nullable = true))
-        fidx = fidx + 1
+      while (idxForFirst < first.length) {
+        val itemFromFirst = first(idxForFirst)
+        result += itemFromFirst.copy(field = itemFromFirst.field.copy(nullable = true))
+        idxForFirst = idxForFirst + 1
 
       }
-      while (sidx < second.length) {
-        val s = second(sidx)
-        result += s.copy(field = s.field.copy(nullable = true))
-        sidx = sidx + 1
+      while (idxForSecond < second.length) {
+        val itemFromSecond = second(idxForSecond)
+        result += itemFromSecond.copy(field = itemFromSecond.field.copy(nullable = true))
+        idxForSecond = idxForSecond + 1
       }
       result
   }
@@ -268,7 +270,7 @@ object H2OSchemaUtils {
     Ordering.Iterable(segmentOrdering)
   }
 
-  private def getQualifiedName(prefix: String, name: String): String = prefix + "_" + name
+  private def getQualifiedName(prefix: String, name: String): String = prefix + "." + name
 
   private def flattenField(
       qualifiedName: String,
@@ -363,22 +365,22 @@ object H2OSchemaUtils {
       val metadataBuilder = new MetadataBuilder()
       metadataBuilder.withMetadata(metadata)
       metadataBuilder.withMetadata(fieldMetadata)
-      val mergedMetedata = metadataBuilder.build()
+      val mergedMetadata = metadataBuilder.build()
       val fieldQualifiedName = getQualifiedName(qualifiedName, name)
-      flattenField(fieldQualifiedName, dataType, nullable || nullableParent, mergedMetedata, subRow(idx), idx :: path)
+      flattenField(fieldQualifiedName, dataType, nullable || nullableParent, mergedMetadata, subRow(idx), idx :: path)
     }
   }
 
   def flattenStructsInSchema(
       schema: StructType,
-      colPrefix: Option[String] = None,
-      newNamePrefix: Option[String] = None,
+      sourceColPrefix: Option[String] = None,
+      targetColPrefix: Option[String] = None,
       nullable: Boolean = false): Seq[(StructField, String)] = {
 
     val flattened = schema.fields.flatMap { f =>
       val escaped = if (f.name.contains(".")) "`" + f.name + "`" else f.name
-      val colName = if (colPrefix.isDefined) colPrefix.get + "." + escaped else escaped
-      val newName = if (newNamePrefix.isDefined) newNamePrefix.get + "_" + f.name else f.name
+      val colName = if (sourceColPrefix.isDefined) sourceColPrefix.get + "." + escaped else escaped
+      val newName = if (targetColPrefix.isDefined) targetColPrefix.get + "." + f.name else f.name
 
       f.dataType match {
         case st: StructType => flattenStructsInSchema(st, Some(colName), Some(newName), nullable || f.nullable)
@@ -390,7 +392,7 @@ object H2OSchemaUtils {
 
   def flattenStructsInDataFrame(df: DataFrame): DataFrame = {
     val flatten = flattenStructsInSchema(df.schema)
-    val cols = flatten.map{
+    val cols = flatten.map {
       case (field, colName) => col(colName).as(field.name)
     }
     df.select(cols: _*)
@@ -398,7 +400,7 @@ object H2OSchemaUtils {
 
   def appendFlattenedStructsToDataFrame(df: DataFrame, prefixForNewColumns: String): DataFrame = {
     val structsOnlySchema = StructType(df.schema.fields.filter(_.dataType.isInstanceOf[StructType]))
-    val flatten = flattenStructsInSchema(structsOnlySchema, newNamePrefix = Some(prefixForNewColumns))
+    val flatten = flattenStructsInSchema(structsOnlySchema, targetColPrefix = Some(prefixForNewColumns))
     flatten.foldLeft(df) { case (tempDF, (field, colName)) =>
       tempDF.withColumn(field.name, col(colName), field.metadata)
     }
