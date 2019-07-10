@@ -125,7 +125,12 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val frameWithPredictions = applyPredictionUdf(dataset, modelUdf)
+    val flattenedDF = H2OSchemaUtils.flattenStructsInDataFrame(dataset.toDF())
+    val relevantColumnNames = flattenedDF.columns.intersect(getFeaturesCols())
+    val args = relevantColumnNames.map(flattenedDF(_))
+
+    // get the altered frame
+    val frameWithPredictions = flattenedDF.withColumn(getPredictionCol(), modelUdf(relevantColumnNames)(struct(args: _*)))
 
     val fr = if (getNamedMojoOutputColumns()) {
 

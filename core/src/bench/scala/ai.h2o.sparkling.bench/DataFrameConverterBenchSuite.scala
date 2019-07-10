@@ -20,7 +20,8 @@ package ai.h2o.sparkling.bench
 import ai.h2o.sparkling.utils.schemas._
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata.{DenseVectorHolder, SparseVectorHolder}
-import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedH2OTestContext, TestFrameUtils}
+
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -51,49 +52,10 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     testPerSchema(FlatArraysOnlySchema)
   }
 
-  benchTest("Measure performance of flattening a data frame with nested structs") {
-    testflattenOnlyPerSchema(StructsOnlySchema)
-  }
-
-  benchTest("Measure performance of flattening a data frame with flat arrays") {
-    testflattenOnlyPerSchema(FlatArraysOnlySchema)
-  }
-
-  benchTest("Measure performance of flattening a schema with nested structs") {
-    testflattenSchema(StructsOnlySchema)
-  }
-
-  benchTest("Measure performance of flattening a schema with flat arrays") {
-    testflattenSchema(FlatArraysOnlySchema)
-  }
-
-  benchTest("Measure performance of row to schema with nested structs") {
-    rowToSchema(StructsOnlySchema)
-  }
-
-  benchTest("Measure performance of row to schema with flat arrays") {
-    rowToSchema(FlatArraysOnlySchema)
-  }
-
   def testPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
     val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
     val hf = hc.asH2OFrame(df)
     hf.remove()
-  }
-
-  def testflattenOnlyPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
-    H2OSchemaUtils.flattenDataFrame(df).foreach(_ => {})
-  }
-
-  def testflattenSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
-    H2OSchemaUtils.flattenSchema(df)
-  }
-
-  def rowToSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
-    H2OSchemaUtils.rowsToRowSchemas(df).foreach(_ => {})
   }
 
   benchTest("Measure performance of conversion to H2OFrame on a data frame with wide sparse vectors") {

@@ -157,7 +157,12 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
-  override def transform(dataset: Dataset[_]): DataFrame = applyPredictionUdf(dataset, _ => getModelUdf())
+  override def transform(dataset: Dataset[_]): DataFrame = {
+    val flattenedDF = H2OSchemaUtils.flattenStructsInDataFrame(dataset.toDF())
+    val relevantColumnNames = flattenedDF.columns.intersect(getFeaturesCols())
+    val args = relevantColumnNames.map(flattenedDF(_))
+    flattenedDF.withColumn(getPredictionCol(), getModelUdf()(struct(args: _*)))
+  }
 }
 
 

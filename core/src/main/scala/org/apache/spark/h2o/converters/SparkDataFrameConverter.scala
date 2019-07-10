@@ -51,8 +51,8 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
     import H2OSchemaUtils._
-
-    val flatDataFrame = flattenDataFrame(dataFrame)
+    // Flatten the Spark data frame so we don't have any nested rows
+    val flatDataFrame = flattenStructsInDataFrame(dataFrame)
     val dfRdd = flatDataFrame.rdd
     val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
 
@@ -71,7 +71,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       // Transform datatype into h2o types
       flatRddSchema.map(f => ReflectionUtils.vecTypeFor(f.dataType)).toArray
     } else {
-      val internalJavaClasses = flatDataFrame.schema.map { f =>
+      val internalJavaClasses = H2OSchemaUtils.expandWithoutVectors(flatDataFrame.schema, elemMaxSizes).map { f =>
         ExternalWriteConverterCtx.internalJavaClassOf(f.dataType)
       }.toArray
       ExternalBackendUtils.prepareExpectedTypes(internalJavaClasses)
@@ -133,6 +133,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       } else {
         entry.dataType match {
           case BooleanType => con.put(idxH2O, row.getBoolean(idxField))
+          case BinaryType => putArray(row.getAs[Array[Byte]](idxField), ByteType, con, idxH2O, elemSizes(idxField))
           case ByteType => con.put(idxH2O, row.getByte(idxField))
           case ShortType => con.put(idxH2O, row.getShort(idxField))
           case IntegerType => con.put(idxH2O, row.getInt(idxField))
@@ -143,6 +144,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
           case StringType => con.put(idxH2O, row.getString(idxField))
           case TimestampType => con.put(idxH2O, row.getAs[java.sql.Timestamp](idxField))
           case DateType => con.put(idxH2O, row.getAs[java.sql.Date](idxField))
+          case ArrayType(elemType, _) => putArray(row.getAs[Seq[_]](idxField), elemType, con, idxH2O, elemSizes(idxField))
           case _: ml.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[ml.linalg.Vector](idxField), elemSizes(idxField))
           case _: mllib.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[mllib.linalg.Vector](idxField), elemSizes(idxField))
           case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
@@ -151,5 +153,27 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       }
     }
     con.finishRow()
+  }
+
+  private def putArray(arr: Seq[_], elemType: DataType, con: WriteConverterCtx, idx: Int, maxArrSize: Int) {
+    arr.indices.foreach { arrIdx =>
+      val currentIdx = idx + arrIdx
+      elemType match {
+        case BooleanType => con.put(currentIdx, if (arr(arrIdx).asInstanceOf[Boolean]) 1 else 0)
+        case ByteType => con.put(currentIdx, arr(arrIdx).asInstanceOf[Byte])
+        case ShortType => con.put(currentIdx, arr(arrIdx).asInstanceOf[Short])
+        case IntegerType => con.put(currentIdx, arr(arrIdx).asInstanceOf[Int])
+        case LongType => con.put(currentIdx, arr(arrIdx).asInstanceOf[Long])
+        case FloatType => con.put(currentIdx, arr(arrIdx).asInstanceOf[Float])
+        case _: DecimalType => con.put(currentIdx, arr(arrIdx).asInstanceOf[BigDecimal].doubleValue())
+        case DoubleType => con.put(currentIdx, arr(arrIdx).asInstanceOf[Double])
+        case StringType => con.put(currentIdx, arr(arrIdx).asInstanceOf[String])
+        case TimestampType => con.put(currentIdx, arr(arrIdx).asInstanceOf[java.sql.Timestamp])
+        case DateType => con.put(currentIdx, arr(arrIdx).asInstanceOf[java.sql.Date])
+        case _ => con.putNA(currentIdx)
+      }
+    }
+
+    (arr.size until maxArrSize).foreach { arrIdx => con.putNA(idx + arrIdx) }
   }
 }
