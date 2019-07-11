@@ -301,7 +301,7 @@ class FrameTransformationsTest(unittest.TestCase):
         algo = H2OGLM(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
                       labelCol="AGE",
                       seed=1,
-                      ratio=0.8)
+                      splitRatio=0.8)
 
         pipeline = Pipeline(stages=[algo])
         pipeline.write().overwrite().save("file://" + os.path.abspath("build/glm_pipeline"))
@@ -317,7 +317,7 @@ class FrameTransformationsTest(unittest.TestCase):
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True, inferSchema=True)
 
-        algo = H2OGridSearch(labelCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, ratio=0.8, algo=H2OGBM(),
+        algo = H2OGridSearch(labelCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, splitRatio=0.8, algo=H2OGBM(),
                              strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
 
         pipeline = Pipeline(stages=[algo])
