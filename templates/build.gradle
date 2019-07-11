@@ -1,5 +1,7 @@
-apply plugin: 'base'
 description = "Templates for Sparkling Water deployment"
+
+apply plugin: 'base'
+apply from: "$rootDir/gradle/utils.gradle"
 
 
 /**
@@ -10,24 +12,10 @@ task substituteAWS(){
     doLast {
         def aws_script = "${project.buildDir.toString()}/aws/install_sparkling_water_${version}.sh"
         def contents = file(aws_script).getText('UTF-8')
-        def (first, second, third) = version.tokenize(".")
-        def majorVersion = "${first}.${second}"
-        def minorVersion = third
-        def branchName = version.toString().contains("99999-SNAPSHOT") ? "master" : "rel-${majorVersion}"
-        def isNightly = version.toString().contains("SNAPSHOT")
-
-        def s3path = isNightly ? "${branchName}/nightly" : "${branchName}"
-        if (isNightly){
-            def edited = minorVersion.toString().replaceAll("\\d+-SNAPSHOT", "")
-            edited = edited.replaceAll("-", "")
-            s3path = "${s3path}/${edited}"
-        } else {
-            s3path = "${s3path}/${minorVersion}"
-        }
+        
         contents = contents
-                .replaceAll("SUBST_S3_PATH", s3path)
-                .replaceAll("SUBST_MAJOR_VERSION", majorVersion)
-                .replaceAll("SUBST_MINOR_VERSION", minorVersion)
+                .replaceAll("SUBST_S3_BUCKET", getS3Bucket())
+                .replaceAll("SUBST_SW_VERSION", version)
 
         file(aws_script).write(contents, 'UTF-8')
     }
@@ -36,7 +24,7 @@ task substituteAWS(){
 task substituteTerraform(){
     doLast {
         def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
-        def tfScripts = ["${tfBaseDir}/variables.tf", "${tfBaseDir}/modules/emr/variables.tf"]
+        def tfScripts = ["${tfBaseDir}/variables.tf", "${tfBaseDir}/modules/emr/variables.tf", "${tfBaseDir}/modules/emr/main.tf"]
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             def (first, second, third) = version.tokenize(".")
@@ -44,12 +32,12 @@ task substituteTerraform(){
             def minorVersion = third
             contents = contents
                     .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
-                    .replaceAll("SUBST_MAJOR_VERSION", majorVersion)
-                    .replaceAll("SUBST_MINOR_VERSION", minorVersion)
+                    .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
+                    .replaceAll("SUBST_SW_PATCH_VERSION", minorVersion)
+                    .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
 
             file(path).write(contents, 'UTF-8')
         }
-
     }
 }
 

@@ -1,6 +1,6 @@
 package:
   name: h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION
-  version: SUBST_PYSPARKLING_VERSION
+  version: SUBST_SW_VERSION
 
 source:
   path: ../../pkg

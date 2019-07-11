@@ -25,12 +25,12 @@ sudo python -m pip install -U scikit-learn
 mkdir -p /home/hadoop/h2o
 cd /home/hadoop/h2o
 
-echo -e "\n Installing sparkling water version SUBST_MAJOR_VERSION.SUBST_MINOR_VERSION "
+echo -e "\n Installing sparkling water version SUBST_SW_VERSION"
 
-wget http://h2o-release.s3.amazonaws.com/sparkling-water/SUBST_S3_PATH/sparkling-water-SUBST_MAJOR_VERSION.SUBST_MINOR_VERSION.zip &
+wget http://h2o-release.s3.amazonaws.com/SUBST_S3_BUCKET/sparkling-water-SUBST_SW_VERSION.zip &
 wait
 
-unzip -o sparkling-water-SUBST_MAJOR_VERSION.SUBST_MINOR_VERSION.zip 1> /dev/null &
+unzip -o sparkling-water-SUBST_SW_VERSION.zip 1> /dev/null &
 wait
 
 export MASTER="yarn-client"
