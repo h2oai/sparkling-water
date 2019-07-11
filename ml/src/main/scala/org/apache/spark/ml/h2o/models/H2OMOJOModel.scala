@@ -38,9 +38,6 @@ import scala.collection.JavaConverters._
 
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
 
-  logWarning("Default value of 'predictionCol' parameter on H2OMOJOModel will be changed to 'prediction' from 'prediction_output' in the next major release.")
-  setDefault(predictionCol, "prediction_output")
-
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient private lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
