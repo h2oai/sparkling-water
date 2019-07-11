@@ -70,12 +70,9 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
         if "histogramType" in kwargs:
             kwargs["histogramType"] = self._hc._jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(kwargs["histogramType"])
 
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
-        propagate_value_from_deprecated_property(kwargs, "ratio", "splitRatio")
-
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
-        double_types = ["minRows", "predNoiseBandwidth", "ratio", "learnRate", "colSampleRate", "learnRateAnnealing", "maxAbsLeafnodePred"
+        double_types = ["minRows", "predNoiseBandwidth", "splitRatio", "learnRate", "colSampleRate", "learnRateAnnealing", "maxAbsLeafnodePred"
                         "minSplitImprovement", "r2Stopping", "sampleRate", "colSampleRateChangePerLevel", "colSampleRatePerTree"]
         set_double_values(kwargs, double_types)
 
@@ -118,12 +115,9 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
         if "distribution" in kwargs:
             kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
 
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
-        propagate_value_from_deprecated_property(kwargs, "ratio", "splitRatio")
-
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
-        double_types = ["ratio", "epochs", "l1", "l2"]
+        double_types = ["splitRatio", "epochs", "l1", "l2"]
         set_double_values(kwargs, double_types)
 
         return self._set(**kwargs)
@@ -177,15 +171,9 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
             jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
             kwargs["includeAlgos"] = get_enum_array_from_str_array(kwargs["includeAlgos"], jvm.ai.h2o.automl.Algo)
 
-        propagate_value_from_deprecated_property(kwargs, "weightsColumn", "weightCol")
-        propagate_value_from_deprecated_property(kwargs, "foldColumn", "foldCol")
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
-        propagate_value_from_deprecated_property(kwargs, "ignoredColumns", "ignoredCols")
-        propagate_value_from_deprecated_property(kwargs, "ratio", "splitRatio")
-
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
-        double_types = ["maxRuntimeSecs", "stoppingTolerance", "ratio", "maxAfterBalanceSize"]
+        double_types = ["maxRuntimeSecs", "stoppingTolerance", "splitRatio", "maxAfterBalanceSize"]
         set_double_values(kwargs, double_types)
         return self._set(**kwargs)
 
@@ -278,12 +266,9 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
         if "backend" in kwargs:
             kwargs["backend"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf(kwargs["backend"])
 
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
-        propagate_value_from_deprecated_property(kwargs, "ratio", "splitRatio")
-
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
-        double_types = ["ratio", "minRows", "minChildWeight", "learnRate", "eta", "learnRateAnnealing"
+        double_types = ["splitRatio", "minRows", "minChildWeight", "learnRate", "eta", "learnRateAnnealing"
                         "sampleRate", "subsample", "colSampleRate", "colSampleByLevel", "colSampleRatePerTree",
                         "colsampleBytree", "maxAbsLeafnodePred", "maxDeltaStep", "minSplitImprovement", "gamma",
                         "minSumHessianInLeaf", "minDataInLeaf", "regLambda", "regAlpha", "rateDrop", "skipDrop"]
@@ -352,13 +337,9 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
         if "missingValuesHandling" in kwargs:
             kwargs["missingValuesHandling"] = self._hc._jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(kwargs["missingValuesHandling"])
 
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
-        propagate_value_from_deprecated_property(kwargs, "removeCollinearColumns", "removeCollinearCols")
-        propagate_value_from_deprecated_property(kwargs, "ratio", "splitRatio")
-
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
-        double_types = ["ratio", "tweedieVariancePower", "tweedieLinkPower", "prior", "lambdaMinRatio",
+        double_types = ["splitRatio", "tweedieVariancePower", "tweedieLinkPower", "prior", "lambdaMinRatio",
                         "betaEpsilon", "objectiveEpsilon", "gradientEpsilon", "objReg"]
         set_double_values(kwargs, double_types)
 
@@ -412,12 +393,9 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
         if "selectBestModelBy" in kwargs and kwargs["selectBestModelBy"] is not None:
             kwargs["selectBestModelBy"] = self._hc._jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.valueOf(kwargs["selectBestModelBy"])
 
-        propagate_value_from_deprecated_property(kwargs, "predictionCol", "labelCol")
-        propagate_value_from_deprecated_property(kwargs, "ratio", "splitRatio")
-
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
-        double_types = ["ratio", "stoppingTolerance", "maxRuntimeSecs"]
+        double_types = ["splitRatio", "stoppingTolerance", "maxRuntimeSecs"]
         set_double_values(kwargs, double_types)
         if "algo" in kwargs and kwargs["algo"] is not None:
             tmp = kwargs["algo"]

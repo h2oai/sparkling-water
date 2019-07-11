@@ -133,14 +133,6 @@ class H2OAlgorithmParams(H2OCommonParams):
     def getModelId(self):
         return self.getOrDefault(self.modelId)
 
-    def getRatio(self):
-        warnings.warn("The method 'getRatio' is deprecated. Use 'getSplitRatio' instead!")
-        return self.getSplitRatio()
-
-    def getPredictionCol(self):
-        warnings.warn("The method 'getPredictionCol' is deprecated. Use 'getLabelCol' instead!")
-        return self.getLabelCol()
-
     def getKeepCrossValidationPredictions(self):
         return self.getOrDefault(self.keepCrossValidationPredictions)
 
@@ -160,14 +152,6 @@ class H2OAlgorithmParams(H2OCommonParams):
     def setModelId(self, value):
         assert_is_type(value, None, str)
         return self._set(modelId=value)
-
-    def setRatio(self, value):
-        warnings.warn("The method 'setRatio' is deprecated. Use 'setSplitRatio' instead!")
-        return self.setSplitRatio(value)
-
-    def setPredictionCol(self, value):
-        warnings.warn("The method 'setPredictionCol' is deprecated. Use 'setLabelCol' instead!")
-        return self.setLabelCol(value)
 
     def setKeepCrossValidationPredictions(self, value):
         assert_is_type(value, bool)
@@ -462,28 +446,8 @@ class H2OAutoMLParams(H2OCommonParams):
     ##
     # Getters
     ##
-    def getPredictionCol(self):
-        warnings.warn("The method 'getPredictionCol' is deprecated. Use 'getLabelCol' instead!")
-        return self.getLabelCol()
-
-    def getRatio(self):
-        warnings.warn("The method 'getRatio' is deprecated. Use 'getSplitRatio' instead!")
-        return self.getSplitRatio()
-
-    def getFoldColumn(self):
-        warnings.warn("The method 'getFoldColumn' is deprecated. Use 'getFoldCol' instead!")
-        return self.getFoldCol()
-
-    def getWeightsColumn(self):
-        warnings.warn("The method 'getWeightsColumn' is deprecated. Use 'getWeightCol' instead!")
-        return self.getWeightCol()
-
     def getIgnoredCols(self):
         return self.getOrDefault(self.ignoredCols)
-
-    def getIgnoredColumns(self):
-        warnings.warn("The method 'getIgnoredColumns' is deprecated. Use 'getIgnoredCols' instead!")
-        return self.getIgnoredCols()
 
     def getTryMutations(self):
         return self.getOrDefault(self.tryMutations)
@@ -553,29 +517,9 @@ class H2OAutoMLParams(H2OCommonParams):
     ##
     # Setters
     ##
-    def setPredictionCol(self, value):
-        warnings.warn("The method 'setPredictionCol' is deprecated. Use 'setLabelCol' instead!")
-        return self.setLabelCol(value)
-
-    def setRatio(self, value):
-        warnings.warn("The method 'setRatio' is deprecated. Use 'setSplitRatio' instead!")
-        return self.setSplitRatio(value)
-
-    def setFoldColumn(self, value):
-        warnings.warn("The method 'setFoldColumn' is deprecated. Use 'setFoldCol' instead!")
-        return self.setFoldCol(value)
-
-    def setWeightsColumn(self, value):
-        warnings.warn("The method 'setWeightsColumn' is deprecated. Use 'setWeightCol' instead!")
-        return self.setWeightCol(value)
-
     def setIgnoredCols(self, value):
         assert_is_type(value, [str])
         return self._set(ignoredCols=value)
-
-    def setIgnoredColumns(self, value):
-        warnings.warn("The method 'setIgnoredColumns' is deprecated. Use 'setIgnoredCols' instead!")
-        return self.setIgnoredCols(value)
 
     def setTryMutations(self, value):
         assert_is_type(value, bool)
@@ -1271,10 +1215,6 @@ class H2OGridSearchParams(H2OCommonParams):
     def getAlgoParams(self):
         return self._java_obj.getAlgoParams()
 
-    def getRatio(self):
-        warnings.warn("The method 'getRatio' is deprecated. Use 'getSplitRatio' instead!")
-        return self.getSplitRatio()
-
     def getHyperParameters(self):
         params = self.getOrDefault(self.hyperParameters)
         if isinstance(params, JavaObject):
@@ -1320,10 +1260,6 @@ class H2OGridSearchParams(H2OCommonParams):
         assert_is_type(value, object)
         self._java_obj.setAlgo(value._java_obj)
         return self
-
-    def setRatio(self, value):
-        warnings.warn("The method 'setRatio' is deprecated. Use 'setSplitRatio' instead!")
-        return self.setSplitRatio(value)
 
     def setHyperParameters(self, value):
         assert_is_type(value, None, {str : [object]})

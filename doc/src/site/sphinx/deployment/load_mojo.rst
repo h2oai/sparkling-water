@@ -105,4 +105,4 @@ or in Python:
 
     from pysparkling.ml import *
     settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = True, convertInvalidNumbersToNa = True)
-    model = H2OMOJOModel.create_from_mojo("prostate.mojo", settings)
+    model = H2OMOJOModel.createFromMojo("prostate.mojo", settings)

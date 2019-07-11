@@ -152,7 +152,7 @@ Prepare the predictor function:
       val smsTextRowRDD = sc.parallelize(Seq(smsText)).map(Row(_))
       val smsTextDF = sqlContext.createDataFrame(smsTextRowRDD, smsTextSchema)
       val prediction = model.transform(smsTextDF)
-      prediction.select("prediction_output.p1").first.getDouble(0) > hamThreshold
+      prediction.select("prediction.p1").first.getDouble(0) > hamThreshold
     }
 
 And finally, run the predictions:

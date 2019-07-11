@@ -19,7 +19,6 @@ package org.apache.spark.ml.h2o.algos
 import java.util.Date
 
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.ScoreKeeper
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Estimator
@@ -43,8 +42,6 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   // Override default values
   setDefault(nfolds, 5)
-  logWarning("Default value of 'convertUnknownCategoricalLevelsToNa' parameter will be changed to 'false' in the next major release.")
-  setDefault(convertUnknownCategoricalLevelsToNa, true)
 
   private lazy val spark = SparkSession.builder().getOrCreate()
 
@@ -137,14 +134,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
 object H2OAutoML extends DefaultParamsReadable[py_sparkling.ml.algos.H2OAutoML]
 
-trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
-
-  override protected def renamingMap: Map[String, String] = Map(
-    "predictionCol" -> "labelCol",
-    "foldColumn" -> "foldCol",
-    "ignoredColumns" -> "ignoredCols",
-    "ratio" -> "splitRatio"
-  )
+trait H2OAutoMLParams extends H2OCommonParams with Params {
 
   //
   // Param definitions
@@ -190,22 +180,7 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   //
   // Getters
   //
-  @DeprecatedMethod("getLabelCol")
-  def getPredictionCol(): String = getLabelCol()
-
-  @DeprecatedMethod("getSplitRatio")
-  def getRatio(): Double = getSplitRatio()
-
-  @DeprecatedMethod("getFoldCol")
-  def getFoldColumn() = getFoldCol()
-
-  @DeprecatedMethod("getWeightCol")
-  def getWeightsColumn(): String = getWeightCol()
-
   def getIgnoredCols(): Array[String] = $(ignoredCols)
-
-  @DeprecatedMethod("getIgnoredCols")
-  def getIgnoredColumns(): Array[String] = getIgnoredCols()
 
   def getIncludeAlgos(): Array[Algo] = $(includeAlgos)
 
@@ -238,22 +213,7 @@ trait H2OAutoMLParams extends H2OCommonParams with DeprecatableParams {
   //
   // Setters
   //
-  @DeprecatedMethod("setLabelCol")
-  def setPredictionCol(value: String): this.type = setLabelCol(value)
-
-  @DeprecatedMethod("setSplitRatio")
-  def setRatio(value: Double): this.type = setSplitRatio(value)
-
-  @DeprecatedMethod("setFoldCol")
-  def setFoldColumn(value: String): this.type = setFoldCol(value)
-
-  @DeprecatedMethod("setWeightCol")
-  def setWeightsColumn(value: String): this.type = setWeightCol(value)
-
   def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
-
-  @DeprecatedMethod("setIgnoredCols")
-  def setIgnoredColumns(value: Array[String]): this.type = setIgnoredCols(value)
 
   def setIncludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(includeAlgos, value)
 
