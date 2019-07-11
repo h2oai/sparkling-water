@@ -6,11 +6,11 @@
     "build_time_iso8601" : "SUBST_BUILD_TIME_ISO8601",
     "build_time_local" : "SUBST_BUILD_TIME_LOCAL",
 
-    "project_version" : "SUBST_PROJECT_VERSION",
+    "project_version" : "SUBST_SW_VERSION",
     "last_commit_hash" : "SUBST_LAST_COMMIT_HASH",
 
-    "zip_file_name" : "sparkling-water-SUBST_PROJECT_VERSION.zip",
-    "zip_file_path" : "sparkling-water-SUBST_PROJECT_VERSION.zip",
+    "zip_file_name" : "sparkling-water-SUBST_SW_VERSION.zip",
+    "zip_file_path" : "sparkling-water-SUBST_SW_VERSION.zip",
 
     "h2o_name" : "SUBST_H2O_NAME",
     "h2o_version" : "SUBST_H2O_VERSION",

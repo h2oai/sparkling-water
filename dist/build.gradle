@@ -11,7 +11,7 @@ def substituteBuildInfoFile(buildTimeMillis, buildTimeIso8601, buildTimeLocal) {
             .replaceAll("SUBST_BUILD_TIME_MILLIS", buildTimeMillis)
             .replaceAll("SUBST_BUILD_TIME_ISO8601", buildTimeIso8601)
             .replaceAll("SUBST_BUILD_TIME_LOCAL", buildTimeLocal)
-            .replaceAll("SUBST_PROJECT_VERSION", version.toString())
+            .replaceAll("SUBST_SW_VERSION", version)
             .replaceAll("SUBST_LAST_COMMIT_HASH", getGitHash())
             .replaceAll("SUBST_H2O_NAME", h2oMajorName)
             .replaceAll("SUBST_H2O_VERSION", h2oMajorVersion)
@@ -55,7 +55,7 @@ def substituteIndexHtml(buildTimeLocal) {
     sparkMajorWithExclude = unsupportedMinorSparkVersions.isEmpty() ? "${sparkMajorWithExclude}" : "${sparkMajorWithExclude} except ${unsupportedMinorSparkVersions}"
     def content = file("src/index.html").getText('UTF-8')
             .replaceAll("SUBST_SPARK_MAJOR_VERSION_WITH_EXCLUDES", sparkMajorWithExclude)
-            .replaceAll("SUBST_PROJECT_VERSION", version)
+            .replaceAll("SUBST_SW_VERSION", version)
             .replaceAll("SUBST_PROJECT_GITHASH", getGitHash())
             .replaceAll("SUBST_H2O_VERSION", h2oMajorVersion)
             .replaceAll("SUBST_H2O_BUILD", h2oBuild)
@@ -124,7 +124,7 @@ def copyAndSubstituteGradleProperties() {
 
     def sparkSpecificContent = file("$rootDir/gradle-spark${spark}.properties")
             .getText('UTF-8')
-            .replaceAll("version=.*", "version=${version.toString()}")
+            .replaceAll("version=.*", "version=${version}")
 
     def gradlePropsFile = file("$zipDir/gradle.properties")
     gradlePropsFile.createNewFile()

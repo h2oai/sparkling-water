@@ -21,7 +21,7 @@ def copyRSetup() {
         into new File(project.buildDir, "src")
 
         filter {
-            it.replaceAll("SUBST_PROJECT_VERSION", version)
+            it.replaceAll("SUBST_SW_VERSION", version)
         }
     }
 
