@@ -153,10 +153,10 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers 
       'GLEASON)
 
     val expectedModel = configureGBMforProstateDF().fit(prostateDataFrame)
-    val expectedPredictionDF = expectedModel.transform(prostateDataFrame).select("prediction")
+    val expectedPredictionDF = expectedModel.transform(prostateDataFrame).select('prediction_output)
 
     val model = configureGBMforProstateDF().fit(structuredDF)
-    val predictionDF = model.transform(structuredDF).select("prediction")
+    val predictionDF = model.transform(structuredDF).select('prediction_output)
 
     TestUtils.assertEqual(expectedPredictionDF, predictionDF)
   }
@@ -197,7 +197,7 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers 
   }
 
   def assertPredictions(originalDF: DataFrame, predictionDF: DataFrame): Unit ={
-    val records = predictionDF.select("prediction").collect()
+    val records = predictionDF.select("prediction_output").collect()
     val expectedNumberOfRecords = originalDF.count()
     records should have size expectedNumberOfRecords
     records.foreach { row =>
