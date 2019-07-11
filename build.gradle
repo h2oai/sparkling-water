@@ -130,19 +130,20 @@ configure(allprojects) { project ->
         supportedEmrVersion = loadVersionSpecificProp("supportedEmrVersion", versionSpecificProps)
         extraJVMArgs = loadVersionSpecificProp("extraJVMArgs", versionSpecificProps)
         unsupportedMinorSparkVersions = loadVersionSpecificProp("unsupportedMinorSparkVersions", versionSpecificProps)
+        isNightlyBuild = loadVersion(versionSpecificProps).toString().contains("-SNAPSHOT-")
     }
+
+    // All project inherits the same versioning number
+    version = loadVersion(versionSpecificProps).toString().replace("-SNAPSHOT", "").replace("{sparkMajor}", ext.sparkMajorVersion)
 }
 
 // 
 // Common configuration for all subprojects
 //
 configure(subprojects) { project ->
-    // All project inherits the same versioning number
-    version = loadVersion(versionSpecificProps)
-
     repositories {
         // Should be enabled only in development mode
-        if (h2oBuild == '99999' || project.hasProperty('useMavenLocal') || h2oBuild.endsWith("-SNAPSHOT")) {
+        if (project.hasProperty('useMavenLocal') || h2oBuild.endsWith("-SNAPSHOT")) {
             mavenLocal()
         }
 

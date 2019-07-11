@@ -89,6 +89,26 @@ def getSparkSpecificResourceDir(sparkMajorVersion) {
     }
 }
 
+def getPatchVersionNumber() {
+    def patchVersion = version.toString().split("\\.")[2]
+
+    if (isNightlyBuild) {
+        return patchVersion.split("-")[2]
+    } else {
+        return patchVersion
+    }
+}
+
+def getS3Bucket() {
+    def prefix = "sparkling-water/${getGitBranch().replaceAll("/", "-")}-${spark}"
+    def suffix = getPatchVersionNumber()
+
+    if (isNightlyBuild) {
+        return "${prefix}/nightly/${suffix}"
+    } else {
+        return "${prefix}/${suffix}"
+    }
+}
 
 // Export methods by turning them into closures
 ext {
@@ -103,4 +123,5 @@ ext {
     getCurrentRSparklingVersion = this.&getCurrentRSparklingVersion
     getSparkSpecificSourceDir = this.&getSparkSpecificSourceDir
     getSparkSpecificResourceDir = this.&getSparkSpecificResourceDir
+    getS3Bucket = this.&getS3Bucket
 }

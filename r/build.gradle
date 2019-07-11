@@ -12,7 +12,6 @@ dependencies {
 
 ext {
     contribDir = file("${project.buildDir}/repo/src/contrib")
-    editedVersion = version.replace("-SNAPSHOT", "").toString()
 }
 
 def copyRSetup() {
@@ -22,7 +21,7 @@ def copyRSetup() {
         into new File(project.buildDir, "src")
 
         filter {
-            it.replaceAll("SUBST_PROJECT_VERSION", editedVersion)
+            it.replaceAll("SUBST_PROJECT_VERSION", version)
         }
     }
 
@@ -41,7 +40,7 @@ def createBuildInfoFile(String basePath) {
     f.write("${h2oVersion}\n")
     f.append("${h2oMajorName}\n")
     f.append("${h2oBuild}\n")
-    f.append("${editedVersion}")
+    f.append("${version}")
 }
 
 task distR(type: Exec, dependsOn: configurations.sparklingWaterAssemblyJar) {
@@ -76,14 +75,14 @@ task installH2ORPackage(type: Exec) {
 
 task installRSparklingPackage(type: Exec, dependsOn: distR) {
     workingDir project.buildDir
-    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_${editedVersion}.tar.gz\", type=\"source\", repos=NULL)"])
+    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_${version}.tar.gz\", type=\"source\", repos=NULL)"])
 }
 
 task prepareRepoDir(dependsOn: distR) {
     doLast {
         contribDir.mkdirs()
         copy {
-            from("${project.buildDir}/rsparkling_${editedVersion}.tar.gz")
+            from("${project.buildDir}/rsparkling_${version}.tar.gz")
             into "$contribDir"
         }
     }

@@ -77,7 +77,7 @@ task createVersionFile {
             versionFileDir.mkdirs()
         }
         File version_file = new File(versionFileDir, "version.txt")
-        def version_txt = version.replace("-SNAPSHOT", "")
+        def version_txt = version
         version_file.write(version_txt)
     }
 }
@@ -128,10 +128,7 @@ export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
 }
 
 def copyPySetup() {
-    def fullVersion = version.replace("-SNAPSHOT", "")
-    def (first, second, third) = fullVersion.tokenize(".")
-    def majorVersion = "${first}.${second}"
-
+    
     copy {
         from("$projectDir") {
             include 'setup.py'
@@ -139,8 +136,8 @@ def copyPySetup() {
         filter {
             it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
                     .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-                    .replaceAll("SUBST_PYSPARKLING_VERSION", fullVersion)
-                    .replaceAll("SUBST_PYSPARKLING_MAJOR_VERSION", majorVersion)
+                    .replaceAll("SUBST_PYSPARKLING_VERSION", version)
+                    .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
         }
         into pkgDir
     }
@@ -172,7 +169,7 @@ def copyPySetup() {
         filter {
             it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
                     .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-                    .replaceAll("SUBST_PYSPARKLING_VERSION", fullVersion)
+                    .replaceAll("SUBST_PYSPARKLING_VERSION", version)
         }
         into condaDir
     }

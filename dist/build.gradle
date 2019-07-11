@@ -25,33 +25,12 @@ def substituteBuildInfoFile(buildTimeMillis, buildTimeIso8601, buildTimeLocal) {
     buildInfoFile.write(content, 'UTF-8')
 }
 
-def getPatchVersionNumber() {
-    def patchVersion = version.toString().split("\\.")[2]
-
-    if (version.contains("SNAPSHOT-")) {
-        return patchVersion.split("-")[2]
-    } else {
-        return patchVersion
-    }
-}
-
-def getS3Bucket() {
-    def prefix = "sparkling-water/${getGitBranch().replaceAll("/", "-")}-${spark}"
-    def suffix = getPatchVersionNumber()
-
-    if (version.contains("SNAPSHOT-")) {
-        return "${prefix}/nightly/${suffix}"
-    } else {
-        return "${prefix}/${suffix}"
-    }
-}
-
 def getMavenRepoLink() {
     return "https://h2o-release.s3.amazonaws.com/${getS3Bucket()}/maven/repo/"
 }
 
 def getMavenRepoHtml() {
-    if (version.contains("SNAPSHOT")) {
+    if (isNightlyBuild) {
         return """
                 &nbsp;maven {</br>
                 &nbsp;&nbsp;url "${getMavenRepoLink()}"</br>
@@ -63,7 +42,7 @@ def getMavenRepoHtml() {
 }
 
 def getExtraSparkRepo() {
-    if (version.contains("SNAPSHOT")) {
+    if (isNightlyBuild) {
         return "--repositories ${getMavenRepoLink()}"
     } else {
         return ""
@@ -76,7 +55,7 @@ def substituteIndexHtml(buildTimeLocal) {
     sparkMajorWithExclude = unsupportedMinorSparkVersions.isEmpty() ? "${sparkMajorWithExclude}" : "${sparkMajorWithExclude} except ${unsupportedMinorSparkVersions}"
     def content = file("src/index.html").getText('UTF-8')
             .replaceAll("SUBST_SPARK_MAJOR_VERSION_WITH_EXCLUDES", sparkMajorWithExclude)
-            .replaceAll("SUBST_PROJECT_VERSION", version.toString())
+            .replaceAll("SUBST_PROJECT_VERSION", version)
             .replaceAll("SUBST_PROJECT_GITHASH", getGitHash())
             .replaceAll("SUBST_H2O_VERSION", h2oMajorVersion)
             .replaceAll("SUBST_H2O_BUILD", h2oBuild)
@@ -141,11 +120,10 @@ def distTaskDependencies = [
 ]
 
 def copyAndSubstituteGradleProperties() {
-    def content = file("$rootDir/gradle.properties").getText('UTF-8')
-    
-    def sparkSpecificContent = file("$rootDir/gradle-spark${spark}.properties")
+    def content = file("$rootDir/gradle.properties")
             .getText('UTF-8')
             .replaceAll("version=.*", "version=${version.toString()}")
+    def sparkSpecificContent = file("$rootDir/gradle-spark${spark}.properties")
 
     def gradlePropsFile = file("$zipDir/gradle.properties")
     gradlePropsFile.createNewFile()
@@ -158,12 +136,12 @@ task copyFilesForZipDistribution {
         if (buildDir.exists()) {
             buildDir.deleteDir()
         }
-        
-        if (!zipDir.exists()){
+
+        if (!zipDir.exists()) {
             zipDir.mkdirs()
         }
 
-        copySingle("r/build/", "rsparkling_${version.replace("-SNAPSHOT", "")}.tar.gz", "$zipDir")
+        copySingle("r/build/", "rsparkling_${version}.tar.gz", "$zipDir")
         createSupportedHadoopFile("$zipDir")
 
         copyAndKeepPath("assembly/build/libs/sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar", "$zipDir")
@@ -188,7 +166,7 @@ task copyFilesForZipDistribution {
         copyAndKeepPath("LICENSE", "$zipDir")
         copyAndKeepPath("README.rst", "$zipDir")
         copyAndSubstituteGradleProperties()
-        
+
         copyRecursive("bin/", "$zipDir/bin")
         copyRecursive("examples/flows/", "$zipDir/examples/flows")
         copyRecursive("doc/build/site/", "$zipDir/doc/build/site")

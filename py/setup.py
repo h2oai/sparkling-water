@@ -11,7 +11,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 
 setup(
-    name = 'h2o_pysparkling_SUBST_PYSPARKLING_MAJOR_VERSION',
+    name = 'h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see

@@ -12,7 +12,7 @@ task createVersionFile {
             buildDir.mkdir()
         }
         File version_file = new File(buildDir, "project_version")
-        def version_txt = version.replace("-SNAPSHOT", "")
+        def version_txt = version
         version_file.write(version_txt)
     }
 }
@@ -25,15 +25,14 @@ task substitute() {
     doLast {
         def siteDir = "${buildDir}/site"
 
-        def (first, second, third) = version.tokenize(".")
+        def (first, second, minorVersion) = version.tokenize(".")
         def majorVersion = "${first}.${second}"
-        def minorVersion = third.replace("-SNAPSHOT", "")
 
         new File(siteDir).eachFileRecurse(FILES) {
             if (it.name.endsWith('.html')) {
                 def contents = file(it).getText('UTF-8')
                 contents = contents
-                        .replaceAll("SUBST_SW_VERSION", version.replace("-SNAPSHOT", ""))
+                        .replaceAll("SUBST_SW_VERSION", version)
                         .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
                         .replaceAll("SUBST_SW_MINOR_VERSION", minorVersion)
                         .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
