@@ -130,11 +130,12 @@ configure(allprojects) { project ->
         supportedEmrVersion = loadVersionSpecificProp("supportedEmrVersion", versionSpecificProps)
         extraJVMArgs = loadVersionSpecificProp("extraJVMArgs", versionSpecificProps)
         unsupportedMinorSparkVersions = loadVersionSpecificProp("unsupportedMinorSparkVersions", versionSpecificProps)
+        // Nightly build versions have format x.y.z-SNAPSHOT-w where w is the SNAPSHOT build number
         isNightlyBuild = loadVersion(versionSpecificProps).toString().contains("-SNAPSHOT-")
     }
 
     // All project inherits the same versioning number
-    version = loadVersion(versionSpecificProps).toString().replace("-SNAPSHOT", "").replace("{sparkMajor}", ext.sparkMajorVersion)
+    version = loadVersion(versionSpecificProps).toString().replace("-SNAPSHOT", "")
 }
 
 // 

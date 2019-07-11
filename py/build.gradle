@@ -136,7 +136,7 @@ def copyPySetup() {
         filter {
             it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
                     .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-                    .replaceAll("SUBST_PYSPARKLING_VERSION", version)
+                    .replaceAll("SUBST_SW_VERSION", version)
                     .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
         }
         into pkgDir
@@ -169,7 +169,7 @@ def copyPySetup() {
         filter {
             it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
                     .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-                    .replaceAll("SUBST_PYSPARKLING_VERSION", version)
+                    .replaceAll("SUBST_SW_VERSION", version)
         }
         into condaDir
     }

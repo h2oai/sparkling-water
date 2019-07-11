@@ -120,10 +120,11 @@ def distTaskDependencies = [
 ]
 
 def copyAndSubstituteGradleProperties() {
-    def content = file("$rootDir/gradle.properties")
+    def content = file("$rootDir/gradle.properties").getText('UTF-8')
+
+    def sparkSpecificContent = file("$rootDir/gradle-spark${spark}.properties")
             .getText('UTF-8')
             .replaceAll("version=.*", "version=${version.toString()}")
-    def sparkSpecificContent = file("$rootDir/gradle-spark${spark}.properties")
 
     def gradlePropsFile = file("$zipDir/gradle.properties")
     gradlePropsFile.createNewFile()
