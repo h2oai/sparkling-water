@@ -162,7 +162,7 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
 def getNightlyStageDefinition(sparkMajorVersion, config) {
     return {
         stage("Spark ${sparkMajorVersion}") {
-            withSharedSetup {
+            withSharedSetup(sparkMajorVersion, config) {
                 withDocker(config) {
                     publishNightly()(config)
                 }
