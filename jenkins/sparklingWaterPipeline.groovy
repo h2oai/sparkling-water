@@ -81,7 +81,7 @@ def withDocker(config, code) {
 }
 
 def withSharedSetup(sparkMajorVersion, config, code) {
-    node('docker && micro') {
+    node('mr-0xc10') {
         docker.withRegistry("http://harbor.h2o.ai") {
             ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
                 config.put("sparkMajorVersion", sparkMajorVersion)
@@ -204,6 +204,7 @@ def call(params, body) {
         backendTypes.each { backend ->
             def configCopy = config.clone()
             configCopy["backendMode"] = backend
+            throw new RuntimeException(configCopy.backendMode)
             parallelStages["Spark ${version} - ${backend}"] = getTestingStagesDefinition(version, configCopy)
         }
     }
