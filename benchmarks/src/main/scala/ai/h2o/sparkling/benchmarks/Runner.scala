@@ -33,7 +33,7 @@ import scala.collection.JavaConverters._
 
 object Runner {
   val datasetDetailsFilePath = "datasets.json"
-  val outputDir = new File("benchmarks","output")
+  val outputDir = new File("benchmarks", "output")
 
   val spark = SparkSession
     .builder()
