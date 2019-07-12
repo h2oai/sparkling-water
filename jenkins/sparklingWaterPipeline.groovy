@@ -80,7 +80,7 @@ def withDocker(config, code) {
     }
 }
 
-def withSharedSetup(code) {
+def withSharedSetup(sparkMajorVersion, config, code) {
     node('docker && micro') {
         docker.withRegistry("http://harbor.h2o.ai") {
             ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
@@ -120,8 +120,8 @@ def withSharedSetup(code) {
 
 def getTestingStagesDefinition(sparkMajorVersion, config) {
     return {
-        stage("Spark ${sparkMajorVersion}") {
-            withSharedSetup {
+        stage("Spark ${sparkMajorVersion} - ${config.backendMode}") {
+            withSharedSetup(sparkMajorVersion, config) {
                 withDocker(config) {
                     sh "sudo -E /usr/sbin/startup.sh"
                     prepareSparkEnvironment()(config)
