@@ -81,7 +81,7 @@ def withDocker(config, code) {
 }
 
 def withSharedSetup(code) {
-    node('docker && micro') {
+    node('mr-0xc10') {
         docker.withRegistry("http://harbor.h2o.ai") {
             ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
                 config.put("sparkMajorVersion", sparkMajorVersion)
