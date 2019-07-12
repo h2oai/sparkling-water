@@ -32,9 +32,9 @@ pipeline(params) { p ->
     buildAgainstH2OBranch = "false"
     h2oBranch = "master"
     hadoopVersion = "2.7"
-    backendMode = "external"
+    backendMode = "both"
     hdpVersion = "2.2.6.3-1"
     driverHadoopVersion = "hdp2.2"
     buildAgainstNightlyH2O = "true"
-    uploadNightly = "false"
+    uploadNightly = "true"
 }

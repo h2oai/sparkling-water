@@ -1,9 +1,14 @@
 #!/usr/bin/groovy
 @Library('test-shared-library') _
 
+// Job parameters
 properties(
         [
-                pipelineTriggers([cron('H 16 * * *')]),
+                parameters(
+                        [
+                                string(name: 'h2oBranch', defaultValue: 'master', description: 'H2O branch to build against if buildAgainstH2OBranch is set to true'),
+                        ]
+                ),
                 buildDiscarder(logRotator(numToKeepStr: '10'))
         ]
 )
@@ -17,6 +22,7 @@ node("docker") {
     def versionLine = readFile("gradle.properties")
             .split("\n").find() { line -> line.startsWith('supportedSparkVersions') }
     sparkVersions = versionLine.split("=")[1].split(" ")
+
 }
 
 pipeline(params) { p ->
@@ -29,11 +35,11 @@ pipeline(params) { p ->
     runScriptTests = "true"
     runIntegTests = "false"
     runPySparklingIntegTests = "true"
-    buildAgainstH2OBranch = "false"
-    h2oBranch = "master"
+    buildAgainstH2OBranch = "true"
+    h2oBranch = "${p.h2oBranch}"
     hadoopVersion = "2.7"
-    backendMode = "internal"
+    backendMode = "both"
     hdpVersion = "2.2.6.3-1"
-    buildAgainstNightlyH2O = "true"
+    buildAgainstNightlyH2O = "false"
     uploadNightly = "true"
 }
