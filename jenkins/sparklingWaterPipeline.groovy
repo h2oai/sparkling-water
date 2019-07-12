@@ -118,7 +118,7 @@ def withSharedSetup(code) {
     }
 }
 
-def getParallelStageDefinition(sparkMajorVersion, config) {
+def getTestingStagesDefinition(sparkMajorVersion, config) {
     return {
         stage("Spark ${sparkMajorVersion}") {
             withSharedSetup {
@@ -151,6 +151,18 @@ def getParallelStageDefinition(sparkMajorVersion, config) {
                         }
                     }
                 }
+                withDocker(config) {
+                    publishNightly()(config)
+                }
+            }
+        }
+    }
+}
+
+def getNightlyStageDefinition(sparkMajorVersion, config) {
+    return {
+        stage("Spark ${sparkMajorVersion}") {
+            withSharedSetup {
                 withDocker(config) {
                     publishNightly()(config)
                 }
@@ -192,24 +204,21 @@ def call(params, body) {
         backendTypes.each { backend ->
             def configCopy = config.clone()
             configCopy["backendMode"] = backend
-            parallelStages["Spark ${version} - ${backend}"] = getParallelStageDefinition(version, configCopy)
+            parallelStages["Spark ${version} - ${backend}"] = getTestingStagesDefinition(version, configCopy)
+        }
+    }
+
+    def nightlyParallelStages = [:]
+    if (params.uploadNightly.toBoolean()) {
+        config.sparkMajorVersions.each { version ->
+            def configCopy = config.clone()
+            nightlyParallelStages["Spark ${version}"] = getNightlyStageDefinition(version, configCopy)
         }
     }
 
     parallel(parallelStages)
-
     // Publish nightly only in case all tests for all Spark succeeded
-    if (params.uploadNightly.toBoolean()) {
-        config.sparkMajorVersions.each { version ->
-            stage("Spark ${sparkMajorVersion} - Publishing Nightly") {
-                withSharedSetup {
-                    withDocker(config) {
-                        publishNightly()(config)
-                    }
-                }
-            }
-        }
-    }
+    parallel(nightlyParallelStages)
 }
 
 def prepareSparkEnvironment() {
