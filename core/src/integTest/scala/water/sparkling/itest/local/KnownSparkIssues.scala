@@ -29,7 +29,7 @@ import org.scalatest.junit.JUnitRunner
 class KnownSparkIssues extends FunSuite with SharedH2OTestContext {
 
   // we use local-cluster since the non-determinism isn't reproducible in local mode
-  override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,2,2048]", "test-local-cluster", conf = defaultSparkConf)
+  override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,1024]", "test-local-cluster", conf = defaultSparkConf)
 
   test("PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Negative test") {
 

@@ -35,7 +35,7 @@ class H2OSchemaUtilsIntegrationTestSuite extends FunSuite with Matchers with Spa
     .set("spark.executor.memory", "1g")
     .set("spark.driver.memory", "2g")
 
-  sc = new SparkContext("local-cluster[4,1,1024]", this.getClass.getSimpleName, conf)
+  sc = new SparkContext("local-cluster[2,1,1024]", this.getClass.getSimpleName, conf)
 
   test("flattenDataFrame should process a complex data frame with more than 200k columns after flattening") {
     val expectedNumberOfColumns = 200000
