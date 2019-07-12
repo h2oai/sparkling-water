@@ -190,10 +190,10 @@ def call(params, body) {
     body(params)
 
     def backendTypes = []
-    if (params.backendMode.toString() == "both") {
+    if (config.backendMode.toString() == "both") {
         backendTypes.add("internal")
         backendTypes.add("external")
-    } else if (params.backendMode.toString() == "internal") {
+    } else if (config.backendMode.toString() == "internal") {
         backendTypes.add("internal")
     } else {
         backendTypes.add("external")
@@ -209,7 +209,7 @@ def call(params, body) {
     }
 
     def nightlyParallelStages = [:]
-    if (params.uploadNightly.toBoolean()) {
+    if (config.uploadNightly.toBoolean()) {
         config.sparkMajorVersions.each { version ->
             def configCopy = config.clone()
             nightlyParallelStages["Spark ${version}"] = getNightlyStageDefinition(version, configCopy)
