@@ -80,73 +80,79 @@ def withDocker(config, code) {
     }
 }
 
+def withSharedSetup(code) {
+    node('docker && micro') {
+        docker.withRegistry("http://harbor.h2o.ai") {
+            ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
+                config.put("sparkMajorVersion", sparkMajorVersion)
+
+                cleanWs()
+                checkout scm
+
+                config.put("gradleCmd", getGradleCommand(config))
+                config.put("sparkVersion", getSparkVersion(config))
+
+                def customEnv = [
+                        "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
+                        "SPARK_HOME=${env.WORKSPACE}/spark",
+                        "HADOOP_CONF_DIR=/etc/hadoop/conf",
+                        "MASTER=yarn-client",
+                        "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
+                        // Properties used in case we are building against specific H2O version
+                        "BUILD_HADOOP=true",
+                        "H2O_TARGET=${config.driverHadoopVersion}",
+                        "H2O_ORIGINAL_JAR=${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
+                ]
+
+                ansiColor('xterm') {
+                    timestamps {
+                        withEnv(customEnv) {
+                            timeout(time: 180, unit: 'MINUTES') {
+                                code()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 def getParallelStageDefinition(sparkMajorVersion, config) {
     return {
         stage("Spark ${sparkMajorVersion}") {
-            node('docker && micro') {
-                docker.withRegistry("http://harbor.h2o.ai") {
+            withSharedSetup {
+                withDocker(config) {
+                    sh "sudo -E /usr/sbin/startup.sh"
+                    prepareSparkEnvironment()(config)
+                    prepareSparklingWaterEnvironment()(config)
+                    buildAndLint()(config)
+                    unitTests()(config)
+                    pyUnitTests()(config)
+                    rUnitTests()(config)
+                    localIntegTest()(config)
+                    localPyIntegTest()(config)
+                    scriptsTest()(config)
+                    pysparklingIntegTest()(config)
+                }
+                // Run Integration on real Hadoop Cluster
+                node("dX-hadoop") {
                     ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
-                        config.put("sparkMajorVersion", sparkMajorVersion)
-
-                        cleanWs()
-                        checkout scm
-
-                        config.put("gradleCmd", getGradleCommand(config))
-                        config.put("sparkVersion", getSparkVersion(config))
-
-                        def customEnv = [
+                        def customEnvNew = [
                                 "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
                                 "SPARK_HOME=${env.WORKSPACE}/spark",
                                 "HADOOP_CONF_DIR=/etc/hadoop/conf",
                                 "MASTER=yarn-client",
                                 "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
-                                // Properties used in case we are building against specific H2O version
-                                "BUILD_HADOOP=true",
-                                "H2O_TARGET=${config.driverHadoopVersion}",
-                                "H2O_ORIGINAL_JAR=${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
-                        ]
-
-                        ansiColor('xterm') {
-                            timestamps {
-                                withEnv(customEnv) {
-                                    timeout(time: 180, unit: 'MINUTES') {
-                                        withDocker(config) {
-                                            sh "sudo -E /usr/sbin/startup.sh"
-                                            prepareSparkEnvironment()(config)
-                                            prepareSparklingWaterEnvironment()(config)
-                                            buildAndLint()(config)
-                                            unitTests()(config)
-                                            pyUnitTests()(config)
-                                            rUnitTests()(config)
-                                            localIntegTest()(config)
-                                            localPyIntegTest()(config)
-                                            scriptsTest()(config)
-                                            pysparklingIntegTest()(config)
-                                        }
-                                        // Run Integration on real Hadoop Cluster
-                                        node("dX-hadoop") {
-                                            ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
-                                                def customEnvNew = [
-                                                        "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
-                                                        "SPARK_HOME=${env.WORKSPACE}/spark",
-                                                        "HADOOP_CONF_DIR=/etc/hadoop/conf",
-                                                        "MASTER=yarn-client",
-                                                        "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
-                                                        "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
-                                                        "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}"]
-                                                withEnv(customEnvNew) {
-                                                    integTest()(config)
-                                                }
-                                            }
-                                        }
-                                        withDocker(config) {
-                                            publishNightly()(config)
-                                        }
-                                    }
-                                }
-                            }
+                                "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
+                                "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}"]
+                        withEnv(customEnvNew) {
+                            integTest()(config)
                         }
                     }
+                }
+                withDocker(config) {
+                    publishNightly()(config)
                 }
             }
         }
@@ -171,11 +177,39 @@ def call(params, body) {
     body.delegate = config
     body(params)
 
+    def backendTypes = []
+    if (params.backendMode.toString() == "both") {
+        backendTypes.add("internal")
+        backendTypes.add("external")
+    } else if (params.backendMode.toString() == "internal") {
+        backendTypes.add("internal")
+    } else {
+        backendTypes.add("external")
+    }
+
     def parallelStages = [:]
     config.sparkMajorVersions.each { version ->
-        parallelStages["Spark ${version}"] = getParallelStageDefinition(version, config.clone())
+        backendTypes.each { backend ->
+            def configCopy = config.clone()
+            configCopy["backendMode"] = backend
+            parallelStages["Spark ${version} - ${backend}"] = getParallelStageDefinition(version, configCopy)
+        }
     }
+
     parallel(parallelStages)
+
+    // Publish nightly only in case all tests for all Spark succeeded
+    if (params.uploadNightly.toBoolean()) {
+        config.sparkMajorVersions.each { version ->
+            stage("Spark ${sparkMajorVersion} - Publishing Nightly") {
+                withSharedSetup {
+                    withDocker(config) {
+                        publishNightly()(config)
+                    }
+                }
+            }
+        }
+    }
 }
 
 def prepareSparkEnvironment() {

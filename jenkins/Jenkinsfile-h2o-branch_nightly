@@ -38,7 +38,7 @@ pipeline(params) { p ->
     buildAgainstH2OBranch = "true"
     h2oBranch = "${p.h2oBranch}"
     hadoopVersion = "2.7"
-    backendMode = "internal"
+    backendMode = "both"
     hdpVersion = "2.2.6.3-1"
     buildAgainstNightlyH2O = "false"
     uploadNightly = "true"
