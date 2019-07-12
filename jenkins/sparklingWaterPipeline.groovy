@@ -120,7 +120,7 @@ def withSharedSetup(sparkMajorVersion, config, code) {
 
 def getTestingStagesDefinition(sparkMajorVersion, config) {
     return {
-        stage("Spark ${sparkMajorVersion}") {
+        stage("Spark ${sparkMajorVersion} - ${config.backendMode}") {
             withSharedSetup(sparkMajorVersion, config) {
                 withDocker(config) {
                     sh "sudo -E /usr/sbin/startup.sh"
