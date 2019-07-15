@@ -93,7 +93,7 @@ def getPatchVersionNumber() {
     def patchVersion = version.toString().split("\\.")[2]
 
     if (isNightlyBuild) {
-        return patchVersion.split("-")[2]
+        return patchVersion.split("-")[1]
     } else {
         return patchVersion
     }
