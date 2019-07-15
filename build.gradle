@@ -115,6 +115,9 @@ configure(allprojects) { project ->
     gradleLint.rules = ['all-dependency']
     gradleLint.alwaysRun = false // Run linter manually
 
+    // All project inherits the same versioning number
+    version = loadVersion(versionSpecificProps).toString().replace("-SNAPSHOT", "")
+
     // Version of main components
     ext {
         scalaBaseVersion = project.findProperty('scalaBaseVersion') ?: defaultScalaBaseVersion
@@ -131,11 +134,9 @@ configure(allprojects) { project ->
         extraJVMArgs = loadVersionSpecificProp("extraJVMArgs", versionSpecificProps)
         unsupportedMinorSparkVersions = loadVersionSpecificProp("unsupportedMinorSparkVersions", versionSpecificProps)
         // Nightly build versions have format x.y.z-SNAPSHOT-w where w is the SNAPSHOT build number
-        isNightlyBuild = loadVersion(versionSpecificProps).toString().contains("-SNAPSHOT-")
+        // After removing -SNAPSHOT we check for the -
+        isNightlyBuild = version.contains("-")
     }
-
-    // All project inherits the same versioning number
-    version = loadVersion(versionSpecificProps).toString().replace("-SNAPSHOT", "")
 }
 
 // 
