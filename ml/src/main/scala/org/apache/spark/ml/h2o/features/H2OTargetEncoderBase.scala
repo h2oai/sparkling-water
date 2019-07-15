@@ -25,9 +25,8 @@ import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
 
 trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderParams {
   override def transformSchema(schema: StructType): StructType = {
-    val flatSchema = H2OSchemaUtils.flattenStructsInSchema(schema)
-    validateSchema(flatSchema)
-    StructType(flatSchema.fields ++ getOutputCols().map(StructField(_, DoubleType, nullable = true)))
+    validateSchema(schema)
+    StructType(schema.fields ++ getOutputCols().map(StructField(_, DoubleType, nullable = true)))
   }
 
   private def validateSchema(flatSchema: StructType): Unit = {
