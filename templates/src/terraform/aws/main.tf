@@ -17,8 +17,7 @@ module "emr" {
   aws_vpc_id = "${module.network.aws_vpc_id}"
   aws_subnet_id = "${module.network.aws_subnet_id}"
 
-  sw_major_version = "${var.sw_major_version}"
-  sw_patch_version = "${var.sw_patch_version}"
+  sw_version = "${var.sw_version}"
   aws_core_instance_count = "${var.aws_core_instance_count}"
   aws_instance_type = "${var.aws_instance_type}"
   aws_emr_version = "${var.aws_emr_version}"

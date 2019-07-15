@@ -14,8 +14,8 @@ task substituteAWS(){
         def contents = file(aws_script).getText('UTF-8')
         
         contents = contents
-                .replaceAll("SUBST_S3_BUCKET", getS3Bucket())
                 .replaceAll("SUBST_SW_VERSION", version)
+                .replaceAll("SUBST_S3_BUCKET", getS3Bucket())
 
         file(aws_script).write(contents, 'UTF-8')
     }
@@ -27,14 +27,12 @@ task substituteTerraform(){
         def tfScripts = ["${tfBaseDir}/variables.tf", "${tfBaseDir}/modules/emr/variables.tf", "${tfBaseDir}/modules/emr/main.tf"]
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
-            def (first, second, third) = version.tokenize(".")
-            def majorVersion = "${first}.${second}"
-            def minorVersion = third
             contents = contents
+                    .replaceAll("SUBST_SW_VERSION", version)
                     .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
-                    .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
-                    .replaceAll("SUBST_SW_PATCH_VERSION", minorVersion)
                     .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+                    .replaceAll("SUBST_S3_BUCKET_PREFIX", getS3BucketPrefix())
+
 
             file(path).write(contents, 'UTF-8')
         }

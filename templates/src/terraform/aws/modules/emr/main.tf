@@ -53,9 +53,9 @@ sudo python2.7 -m pip install -U scikit-learn
 mkdir -p /home/hadoop/h2o
 cd /home/hadoop/h2o
 
-wget https://s3.amazonaws.com/h2o-release/sparkling-water/rel-SUBST_SPARK_MAJOR_VERSION/${var.sw_patch_version}/sparkling-water-${var.sw_major_version}.${var.sw_patch_version}.zip
+wget https://s3.amazonaws.com/h2o-release/SUBST_S3_BUCKET_PREFIX/sparkling-water-${var.sw_version}.zip
 
-unzip -o sparkling-water-${var.sw_major_version}.${var.sw_patch_version}.zip 1> /dev/null & wait
+unzip -o sparkling-water-${var.sw_version}.zip 1> /dev/null & wait
 
 PYSPARKLING_ZIP=$(find /home/hadoop/h2o/ -name h2o_pysparkling_*.zip)
 sudo python3 -m pip install $PYSPARKLING_ZIP

@@ -206,3 +206,9 @@ task dist(dependsOn: zipDistribution) {
         substituteIndexHtml(buildTimeLocal)
     }
 }
+
+task s3Bucket {
+    doLast {
+       println(getS3BucketPrefix())
+    }
+}

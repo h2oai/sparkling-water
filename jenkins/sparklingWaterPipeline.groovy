@@ -4,37 +4,24 @@
 // Utility methods for the pipeline
 //
 
-String getBranch() {
-    return "${BRANCH_NAME}"
-}
-
 def getBucket(config) {
-    if (config.buildAgainstH2OBranch.toBoolean()) {
-        "sparkling-water/${config.h2oBranch.replaceAll("/", "-")}-${config.sparkMajorVersion}"
-    } else {
-        "sparkling-water/${getBranch().replaceAll("/", "-")}-${config.sparkMajorVersion}/nightly"
-    }
+    return sh(script: "${config.gradleCmd} -q s3bucket", returnStdout: true).trim()
 }
 
-def getNextNightlyBuildNumber(config) {
-    if (config.buildAgainstH2OBranch.toBoolean()){
-        return new Date().format('Y_m_d_H_M_S').toString()
-    } else {
-        try {
-            def buildNumber = "https://h2o-release.s3.amazonaws.com/${getBucket(config)}/latest".toURL().getText().toInteger()
-            return buildNumber + 1
-        } catch(Exception ignored){
-            return 1
-        }
-    }
-}
-
-String getVersion(config) {
+String getNightlyVersion(config) {
     def sparkMajorVersion = config.sparkMajorVersion
     def versionLine = readFile("gradle-spark${sparkMajorVersion}.properties").split("\n").find() { line -> line.startsWith('version') }
     def version = versionLine.split("=")[1]
-    if (config.uploadNightly.toBoolean() && !config.buildAgainstH2OBranch.toBoolean()) {
-        return "${version}-${getNextNightlyBuildNumber(config)}"
+    if (config.uploadNightly.toBoolean()) {
+        def buildNumber
+        try {
+            def lastVersion = "https://h2o-release.s3.amazonaws.com/${getBucket(config)}/latest".toURL().getText().toString()
+            def splits = lastVersion.split("-|_")
+            buildNumber = splits[1].toInteger() + 1
+        } catch (Exception ignored) {
+            buildNumber = 1
+        }
+        return "${version.split("-")[0]}-${buildNumber}-${sparkMajorVersion}"
     } else {
         return version
     }
@@ -47,18 +34,17 @@ String getSparkVersion(config) {
 }
 
 def getGradleCommand(config) {
-    def cmd = "${env.WORKSPACE}/gradlew -Pspark=${config.sparkMajorVersion} -PsparkVersion=${getSparkVersion(config)} -Pversion=${getVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
-
+    def cmd = "${env.WORKSPACE}/gradlew -Pspark=${config.sparkMajorVersion} -PsparkVersion=${getSparkVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
     if (config.buildAgainstH2OBranch.toBoolean()) {
-        cmd = "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} --include-build ${env.WORKSPACE}/h2o-3"
+        return "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} -PbuildAgainstH2OBranch=${config.h2oBranch} --include-build ${env.WORKSPACE}/h2o-3"
     } else if(config.buildAgainstNightlyH2O.toBoolean()) {
         def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
         def h2oNightlyMajorVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/${h2oNightlyBuildVersion}/project_version").getText().trim()
         h2oNightlyMajorVersion = h2oNightlyMajorVersion.substring(0, h2oNightlyMajorVersion.lastIndexOf('.'))
-        cmd = "${cmd} -Ph2oMajorName=master -Ph2oMajorVersion=${h2oNightlyMajorVersion} -Ph2oBuild=${h2oNightlyBuildVersion}"
+        return "${cmd} -Ph2oMajorName=master -Ph2oMajorVersion=${h2oNightlyMajorVersion} -Ph2oBuild=${h2oNightlyBuildVersion}"
+    } else {
+        return cmd
     }
-
-    return cmd
 }
 
 String getDockerImageVersion() {
@@ -455,25 +441,24 @@ def publishNightly() {
                     dir("doc/src/site/sphinx/") {
                         downloadLastChangeLog(config)
                     }
+                    def version = getNightlyVersion(config)
+                    def bucket = getBucket(config)
                     sh  """
-                        ${config.gradleCmd} dist -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
+                        ${config.gradleCmd} -Pversion=${version} dist -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
                         rm -rf doc/src/site/sphinx/CHANGELOG.rst
-                        NEW_BUILD_VERSION=${getNextNightlyBuildNumber(config)}
                                             
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                        ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/${getBucket(config)}/\${NEW_BUILD_VERSION}/ --acl public-read
+                        ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/${bucket}/${version}/ --acl public-read
                         
-                        if [ ${config.buildAgainstH2OBranch} = false ]; then
-                            echo UPDATE LATEST POINTER
-                            echo \${NEW_BUILD_VERSION} > latest
-                            echo "<head>" > latest.html
-                            echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=\${NEW_BUILD_VERSION}/index.html\\" />" >> latest.html
-                            echo "</head>" >> latest.html
-                            ~/.local/bin/aws s3 cp latest s3://h2o-release/${getBucket(config)}/latest --acl public-read
-                            ~/.local/bin/aws s3 cp latest.html s3://h2o-release/${getBucket(config)}/latest.html --acl public-read
-                            ~/.local/bin/aws s3 cp latest.html s3://h2o-release/${getBucket(config)}/index.html --acl public-read
-                        fi                    
+                        echo UPDATE LATEST POINTER
+                        echo ${version} > latest
+                        echo "<head>" > latest.html
+                        echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${version}/index.html\\" />" >> latest.html
+                        echo "</head>" >> latest.html
+                        ~/.local/bin/aws s3 cp latest s3://h2o-release/${bucket}/latest --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/${bucket}/latest.html --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/${bucket}/index.html --acl public-read                   
                         """
                 }
             }
