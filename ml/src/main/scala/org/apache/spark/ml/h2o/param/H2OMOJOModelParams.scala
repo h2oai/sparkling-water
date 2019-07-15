@@ -16,7 +16,6 @@
 */
 package org.apache.spark.ml.h2o.param
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param._
 
@@ -71,13 +70,4 @@ trait H2OMOJOModelParams extends Params with Logging {
   def getNamedMojoOutputColumns(): Boolean = $(namedMojoOutputColumns)
 
   def getModelDetails(): String = $(modelDetails)
-
-  //
-  // Setters
-  //
-  @DeprecatedMethod("H2OMOJOSettings.convertUnknownCategoricalLevelsToNa")
-  def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
-
-  @DeprecatedMethod("H2OMOJOSettings.namedMojoOutputColumns")
-  def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
 }

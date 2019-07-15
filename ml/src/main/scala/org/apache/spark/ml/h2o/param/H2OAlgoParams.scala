@@ -16,7 +16,6 @@
 */
 package org.apache.spark.ml.h2o.param
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.ml.param.Params
@@ -26,12 +25,7 @@ import org.apache.spark.ml.param.Params
   *
   * TODO: There are still bunch of parameters defined Model.ModelParameters which need to be ported here
   */
-trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OCommonParams with DeprecatableParams {
-
-  override protected def renamingMap: Map[String, String] = Map(
-    "predictionCol" -> "labelCol",
-    "ratio" -> "splitRatio"
-  )
+trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OCommonParams with Params {
 
   //
   // Param definitions
@@ -60,12 +54,6 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   //
   def getModelId(): String = $(modelId)
 
-  @DeprecatedMethod("getSplitRatio")
-  def getTrainRatio(): Double = getSplitRatio()
-
-  @DeprecatedMethod("getLabelCol")
-  def getPredictionCol(): String = getLabelCol()
-
   def getKeepCrossValidationPredictions(): Boolean = $(keepCrossValidationPredictions)
 
   def getKeepCrossValidationFoldAssignment(): Boolean = $(keepCrossValidationFoldAssignment)
@@ -78,12 +66,6 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   // Setters
   //
   def setModelId(id: String): this.type = set(modelId, id)
-
-  @DeprecatedMethod("setSplitRatio")
-  def setTrainRatio(value: Double): this.type = setSplitRatio(value)
-
-  @DeprecatedMethod("setLabelCol")
-  def setPredictionCol(value: String): this.type = setLabelCol(value)
 
   def setKeepCrossValidationPredictions(value: Boolean): this.type = set(keepCrossValidationPredictions, value)
 

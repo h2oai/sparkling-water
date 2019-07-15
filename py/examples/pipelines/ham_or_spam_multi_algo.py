@@ -64,7 +64,7 @@ if algo == "gbm":
     algoStage = H2OGBM(splitRatio=0.8,
                  seed=1,
                  featuresCols=[idf.getOutputCol()],
-                 predictionCol="label")
+                 labelCol="label")
 elif algo == "dl":
     ## Create H2ODeepLearning model
     algoStage = H2ODeepLearning(epochs=10,
@@ -73,19 +73,19 @@ elif algo == "dl":
                          l2=0.0,
                          hidden=[200, 200],
                          featuresCols=[idf.getOutputCol()],
-                         predictionCol="label")
+                         labelCol="label")
 elif algo == "automl":
     ## Create H2OAutoML model
     algoStage = H2OAutoML(convertUnknownCategoricalLevelsToNa=True,
                        maxRuntimeSecs=60*100, # 100 minutes
                        maxModels=3,
                        seed=1,
-                       predictionCol="label")
+                       labelCol="label")
 elif algo == "xgboost":
     ## Create H2OXGBoost model
     algoStage = H2OXGBoost(convertUnknownCategoricalLevelsToNa=True,
                            featuresCols=[idf.getOutputCol()],
-                           predictionCol="label")
+                           labelCol="label")
 ## Remove all helper columns
 colPruner = ColumnPruner(columns=[idf.getOutputCol(), hashingTF.getOutputCol(), stopWordsRemover.getOutputCol(), tokenizer.getOutputCol()])
 
@@ -115,7 +115,7 @@ loaded_model = PipelineModel.load("examples/build/model")
 def isSpam(smsText, model, hamThreshold = 0.5):
     smsTextDF = spark.createDataFrame([(smsText,)], ["text"]) # create one element tuple
     prediction = model.transform(smsTextDF)
-    return prediction.select("prediction_output.p1").first()["p1"] > hamThreshold
+    return prediction.select("prediction.p1").first()["p1"] > hamThreshold
 
 
 print(isSpam("Michal, h2oworld party tonight in MV?", loaded_model))

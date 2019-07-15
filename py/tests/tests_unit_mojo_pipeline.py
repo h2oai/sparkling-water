@@ -30,8 +30,7 @@ import unittest
 import generic_test_utils
 import unit_test_utils
 from pyspark.sql import SparkSession
-
-from pysparkling.ml import H2OMOJOPipelineModel
+from pysparkling.ml import H2OMOJOPipelineModel, H2OMOJOSettings
 from pyspark.ml import Pipeline, PipelineModel
 
 
@@ -48,9 +47,10 @@ class H2OMojoPipelineTest(unittest.TestCase):
     # test predictions on H2O Pipeline MOJO
     def test_h2o_mojo_pipeline_predictions(self):
         # Try loading the Mojo and prediction on it without starting H2O Context
-        mojo = H2OMOJOPipelineModel.createFromMojo(
-            "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
-        mojo.setNamedMojoOutputColumns(False)
+        path = "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo")
+        settings = H2OMOJOSettings(namedMojoOutputColumns=False)
+        mojo = H2OMOJOPipelineModel.createFromMojo(path, settings)
+
         prostateFrame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True)
         preds = mojo.transform(prostateFrame).repartition(1)

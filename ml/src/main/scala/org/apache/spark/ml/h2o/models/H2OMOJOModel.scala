@@ -26,20 +26,16 @@ import com.google.gson.{GsonBuilder, JsonElement}
 import hex.ModelCategory
 import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.h2o.converters.RowConverter
-import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql._
 import py_sparkling.ml.models.{H2OMOJOModel => PyH2OMOJOModel}
 import water.support.ModelSerializationSupport
 
 import scala.collection.JavaConverters._
 
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
-
-  logWarning("Default value of 'predictionCol' parameter on H2OMOJOModel will be changed to 'prediction' from 'prediction_output' in the next major release.")
-  setDefault(predictionCol, "prediction_output")
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient private lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {

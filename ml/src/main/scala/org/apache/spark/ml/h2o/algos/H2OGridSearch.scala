@@ -19,7 +19,6 @@ package org.apache.spark.ml.h2o.algos
 import java.lang.reflect.Field
 import java.util
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.grid.GridSearch.SimpleParametersBuilderFactory
@@ -49,10 +48,6 @@ import scala.collection.mutable
   */
 class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgorithmCommons with DefaultParamsWritable with H2OGridSearchParams {
-
-  // Override default values
-  logWarning("Default value of 'convertUnknownCategoricalLevelsToNa' parameter will be changed to 'false' in the next major release.")
-  setDefault(convertUnknownCategoricalLevelsToNa, true)
 
   private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
@@ -387,12 +382,7 @@ object H2OGridSearch extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGrid
   }
 }
 
-trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
-
-  override protected def renamingMap: Map[String, String] = Map(
-    "predictionCol" -> "labelCol",
-    "ratio" -> "splitRatio"
-  )
+trait H2OGridSearchParams extends H2OCommonParams with Params {
 
   //
   // Param definitions
@@ -434,9 +424,6 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
 
   def getHyperParameters(): util.Map[String, Array[AnyRef]] = $(hyperParameters)
 
-  @DeprecatedMethod("getLabelCol")
-  def getPredictionCol(): String = getLabelCol()
-
   def getStrategy(): HyperSpaceSearchCriteria.Strategy = $(strategy)
 
   def getMaxRuntimeSecs(): Double = $(maxRuntimeSecs)
@@ -473,9 +460,6 @@ trait H2OGridSearchParams extends H2OCommonParams with DeprecatableParams {
   def setHyperParameters(value: mutable.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.toMap.asJava)
 
   def setHyperParameters(value: java.util.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
-
-  @DeprecatedMethod("setLabelCol")
-  def setPredictionCol(value: String): this.type = setLabelCol(value)
 
   def setStrategy(value: HyperSpaceSearchCriteria.Strategy): this.type = set(strategy, value)
 

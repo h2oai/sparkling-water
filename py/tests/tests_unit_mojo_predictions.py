@@ -28,7 +28,7 @@ import unittest
 from pyspark.sql import SparkSession
 from pyspark.sql import Row
 import os
-from pysparkling.ml import H2OMOJOModel
+from pysparkling.ml import H2OMOJOModel, H2OMOJOSettings
 
 import unit_test_utils
 import generic_test_utils
@@ -55,9 +55,10 @@ class H2OMojoPredictionsTest(unittest.TestCase):
         mojo.transform(prostate_frame).repartition(1).collect()
 
     def test_h2o_mojo_predictions_unseen_categoricals(self):
-        mojo = H2OMOJOModel.createFromMojo(
-            "file://" + os.path.abspath("../ml/src/test/resources/deep_learning_airlines_categoricals.zip"))
-        mojo.setConvertUnknownCategoricalLevelsToNa(True)
+        path =  "file://" + os.path.abspath("../ml/src/test/resources/deep_learning_airlines_categoricals.zip")
+        settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa=True)
+        mojo = H2OMOJOModel.createFromMojo(path, settings)
+
         row_for_scoring = Row("sepal_len", "sepal_wid", "petal_len", "petal_wid", "class")
 
         df = self._spark.createDataFrame(self._spark.sparkContext.
@@ -70,7 +71,7 @@ class H2OMojoPredictionsTest(unittest.TestCase):
         assert data["petal_wid"] == 0.2
         assert data["sepal_len"] == 5.1
         assert data["sepal_wid"] == 3.5
-        assert data["prediction_output"][0] == 5.240174068202646
+        assert data["prediction"][0] == 5.240174068202646
 
     def test_h2o_mojo_model_serialization_in_pipeline(self):
         mojo = H2OMOJOModel.createFromMojo(

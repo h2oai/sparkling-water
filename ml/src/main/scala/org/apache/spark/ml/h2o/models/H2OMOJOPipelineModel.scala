@@ -22,8 +22,6 @@ import java.io._
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
-import ai.h2o.sparkling.macros.DeprecatedMethod
-import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{col, struct, udf}
@@ -170,9 +168,6 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     val fields = StructField("original", ArrayType(DoubleType)) :: Nil
     Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
   }
-
-  @DeprecatedMethod("getFeaturesCols")
-  def getInputNames(): Array[String] = getFeaturesCols()
 
   def selectPredictionUDF(column: String): Column = {
     if (getNamedMojoOutputColumns()) {
