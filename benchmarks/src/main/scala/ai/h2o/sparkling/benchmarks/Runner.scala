@@ -77,7 +77,7 @@ object Runner {
 
   private def processArguments(args: Array[String]): Settings = {
     require(args.length % 2 == 0, "Wrong arguments. Example: -b benchmarkName -d datasetName -a algorithmName")
-    val (keys, values) = args.zipWithIndex.partition{ case (_, idx) => idx % 2 == 1 }
+    val (keys, values) = args.zipWithIndex.partition { case (_, idx) => idx % 2 == 1 }
     val map = keys.map(_._1).zip(values.map(_._1)).toMap
     Settings(map.get("-b"), map.get("-d"), map.get("-a"))
   }
@@ -128,7 +128,7 @@ object Runner {
     val benchmarkContexts = datasetDetails.map(BenchmarkContext(spark, hc, _))
     benchmarkClasses.map { benchmarkClass =>
       val parameterSets = if (isAlgorithmBenchmark(benchmarkClass)) {
-        for(context <- benchmarkContexts; algorithm <- algorithms) yield Array(context, algorithm.copy(ParamMap.empty))
+        for (context <- benchmarkContexts; algorithm <- algorithms) yield Array(context, algorithm.copy(ParamMap.empty))
       } else {
         benchmarkContexts.map(Array(_))
       }
