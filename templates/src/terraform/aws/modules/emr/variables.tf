@@ -21,11 +21,8 @@ variable "aws_core_instance_count" {
 variable "aws_instance_type" {
   default = "m3.xlarge"
 }
-variable "sw_major_version" {
-  default = "SUBST_SW_MAJOR_VERSION"
-}
-variable "sw_patch_version" {
-  default = "SUBST_SW_PATCH_VERSION"
+variable "sw_version" {
+  default = "SUBST_SW_VERSION"
 }
 variable "jupyter_name" {
   default = "admin"

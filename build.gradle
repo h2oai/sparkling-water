@@ -107,6 +107,8 @@ def loadVersion(versionSpecificProps){
 //
 // For all projects (this and all subprojects) specify common properties and tasks
 //
+def loadedVersion = loadVersion(versionSpecificProps).toString()
+
 configure(allprojects) { project ->
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -114,10 +116,6 @@ configure(allprojects) { project ->
     apply plugin: 'nebula.lint'
     gradleLint.rules = ['all-dependency']
     gradleLint.alwaysRun = false // Run linter manually
-
-    // All project inherits the same versioning number
-    version = loadVersion(versionSpecificProps).toString().replace("-SNAPSHOT", "")
-
     // Version of main components
     ext {
         scalaBaseVersion = project.findProperty('scalaBaseVersion') ?: defaultScalaBaseVersion
@@ -133,10 +131,12 @@ configure(allprojects) { project ->
         supportedEmrVersion = loadVersionSpecificProp("supportedEmrVersion", versionSpecificProps)
         extraJVMArgs = loadVersionSpecificProp("extraJVMArgs", versionSpecificProps)
         unsupportedMinorSparkVersions = loadVersionSpecificProp("unsupportedMinorSparkVersions", versionSpecificProps)
-        // Nightly build versions have format x.y.z-SNAPSHOT-w where w is the SNAPSHOT build number
-        // After removing -SNAPSHOT we check for the -
-        isNightlyBuild = version.contains("-")
+        // Nightly build versions have format x.y.z-w-sparkMajor where w is the SNAPSHOT build number
+        isNightlyBuild = loadedVersion.substring(0, loadedVersion.lastIndexOf("-")).contains("-")
     }
+
+    // All project inherits the same versioning number
+    version = loadedVersion.replace("-SNAPSHOT", "")
 }
 
 // 

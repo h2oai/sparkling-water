@@ -24,8 +24,8 @@ properties(
 // Utility methods for the pipeline
 //
 
-def getBranch(params) {
-    return "${BRANCH_NAME}-${params.spark}".replaceAll("/", "-")
+def getBucket(params) {
+    return sh(script: "./gradlew -Pspark=${params.spark} -Pversion=${getVersion(params)} -q s3bucket", returnStdout: true).trim()
 }
 
 def getParallelStageDefinition(params){
@@ -85,11 +85,11 @@ String getVersion(params) {
 String getNextVersion(params) {
     def majorVersion = getMajorVersion(params)
     def patchVersion = getPatchVersion(params)
-    return "${majorVersion}.${patchVersion.toInteger() + 1}-SNAPSHOT"
+    return "${majorVersion}.${patchVersion.toInteger() + 1}-SNAPSHOT-${params.spark}"
 }
 
-String getPreviousPatchVersion(params) {
-    return "${getPatchVersion(params).toInteger()}"
+String getPreviousVersion(params) {
+    return "${getMajorVersion(params)}.${getPatchVersion(params).toInteger() - 1}-${params.spark}"
 }
 
 String getMajorVersion(params) {
@@ -100,14 +100,14 @@ String getMajorVersion(params) {
 
 String getPatchVersion(params) {
     def v = getVersion(params)
-    def split = v.split("\\.")
-    return "${split[2]}"
+    def split = v.split("-")
+    return "${split[0].split("\\.")[2]}"
 }
 
-def getOrCreatePreviousChangeLog(params, previousPatchVersion) {
+def getOrCreatePreviousChangeLog(bucket, previousVersion) {
     def content
     try {
-        def url = "https://h2o-release.s3.amazonaws.com/sparkling-water/${getBranch(params)}/${previousPatchVersion}/doc/_sources/CHANGELOG.rst.txt"
+        def url = "https://h2o-release.s3.amazonaws.com/${bucket}/${previousVersion}/doc/_sources/CHANGELOG.rst.txt"
         content = url.toURL().getText()
     } catch (Exception ignored) {
         content = """
@@ -122,10 +122,10 @@ Change Log
 
 def prepareReleaseNotes(params) {
     def version = getVersion(params)
-    def patchVersion = getPatchVersion(params)
-    def previousPatchVersion = getPreviousPatchVersion(params)
+    def bucket = getBucket(params)
+    def previousVersion = getPreviousVersion(params)
     dir("doc/src/site/sphinx/") {
-        getOrCreatePreviousChangeLog(params, previousPatchVersion)
+        getOrCreatePreviousChangeLog(bucket, previousVersion)
 
         sh """
             # Get ID of this release
@@ -139,7 +139,7 @@ def prepareReleaseNotes(params) {
             release_date=\$(date +%Y-%m-%d)
             rel_prefix=\$(echo "v${version} (\$release_date)")
             underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
-            download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/sparkling-water/${getBranch(params)}/${patchVersion}/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/${getBranch(params)}/${patchVersion}/index.html>\\`__"
+            download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/${bucket}/${version}/index.html <http://h2o-release.s3.amazonaws.com/${bucket}/${version}/index.html>\\`__"
         
             # Insert release info
             sed -i "4i \$rel_prefix" CHANGELOG.rst
@@ -209,16 +209,15 @@ def buildConda() {
     return { params ->
         stage('Build Conda Packages') {
             if (params.buildConda.toBoolean()) {
-                def majorVersion = getMajorVersion(params)
                 dir("py/build/conda") {
                     def pythonVersions = ['2.7', '3.6']
                     for (pyVersion in pythonVersions) {
                         sh """
                            . /envs/h2o_env_python3.6/bin/activate
 
-                           conda build h2o_pysparkling_${majorVersion} --output-folder "." --no-anaconda-upload --py ${pyVersion}
+                           conda build h2o_pysparkling_${params.spark} --output-folder "." --no-anaconda-upload --py ${pyVersion}
 
-                           PACKAGE_PATH=\$(conda build h2o_pysparkling_${majorVersion} --py ${pyVersion} --output-folder "." --output | tail -1)
+                           PACKAGE_PATH=\$(conda build h2o_pysparkling_${params.spark} --py ${pyVersion} --output-folder "." --output | tail -1)
                            CURRENT_PLATFORM=\$(basename \$(dirname \$PACKAGE_PATH))
                            mkdir -p ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM
                            cp \$PACKAGE_PATH ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM/
@@ -274,22 +273,23 @@ def publishToS3() {
     return { params ->
         stage('Publish to S3') {
             if (params.publishToS3.toBoolean()) {
-                def patchVersion = getPatchVersion(params)
+                def version = getVersion(params)
+                def bucket = getBucket(params)
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     sh """
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                        ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/${getBranch(params)}/${patchVersion} --acl public-read
+                        ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/${bucket}/${version} --acl public-read
 
                         echo UPDATE LATEST POINTER
-                        echo ${patchVersion} > latest
+                        echo ${version} > latest
                         echo "<head>" > latest.html
-                        echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${patchVersion}/index.html\\" />" >> latest.html
+                        echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${version}/index.html\\" />" >> latest.html
                         echo "</head>" >> latest.html
 
-                        ~/.local/bin/aws s3 cp latest s3://h2o-release/sparkling-water/${getBranch(params)}/latest --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/${getBranch(params)}/latest.html --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/${getBranch(params)}/index.html --acl public-read
+                        ~/.local/bin/aws s3 cp latest s3://h2o-release/${bucket}/latest --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/${bucket}/latest.html --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/${bucket}/index.html --acl public-read
                         """
                 }
             }
@@ -321,16 +321,16 @@ EOF
                                 ssh-keyscan github.com >> ~/.ssh/known_hosts
                                """
 
-                    def majorVersion = getMajorVersion(params)
-                    def patchVersion = getPatchVersion(params)
+                    def version = getVersion(params)
+                    def bucket = getBucket(params)
                     retryWithDelay(3, 120, {
                         sh """
                                 rm -rf docs.h2o.ai
                                 git clone git@github.com:h2oai/docs.h2o.ai.git
                                 cd docs.h2o.ai/sites-available/
-                                sed -i.backup -E "s?http://h2o-release.s3.amazonaws.com/sparkling-water/${getBranch(params)}/[0-9]+/?http://h2o-release.s3.amazonaws.com/sparkling-water/${getBranch(params)}/${patchVersion}/?" 000-default.conf
+                                sed -i.backup -E 's?        ProxyPass "/sparkling-water/${params.spark}/latest-stable/".*?        ProxyPass "/sparkling-water/${params.spark}/latest-stable/" "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${version}/"?' 000-default.conf
                                 git add 000-default.conf
-                                git commit -m "Update links of Sparkling Water ${majorVersion} version to ${patchVersion}"
+                                git commit -m "Update latest version of Sparkling Water for Spark ${params.spark} version to ${version}"
                                 git push --set-upstream origin master
                                 cd ../..
                             """
@@ -363,14 +363,13 @@ def publishToConda() {
     return { params ->
         stage('Publish to Conda') {
             if (params.buildConda.toBoolean() && params.publishConda.toBoolean()) {
-                def majorVersion = getMajorVersion(params)
                 dir("py/build/conda") {
                     withCredentials([usernamePassword(credentialsId: 'anaconda-credentials', usernameVariable: 'ANACONDA_USERNAME', passwordVariable: 'ANACONDA_PASSWORD')]) {
                         def pythonVersions = ['2.7', '3.6']
                         for (pyVersion in pythonVersions) {
                             sh """
             
-                                CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_${majorVersion} --py ${pyVersion} --output-folder "." --output | tail -1)
+                                CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_${params.spark} --py ${pyVersion} --output-folder "." --output | tail -1)
                                 PKG_NAME=\$(basename \$CONDA_PKG_CURRENT_ARCH_PATH)
 
                                 # Upload Conda packages of PySparkling
