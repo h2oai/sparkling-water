@@ -77,7 +77,7 @@ class H2OTargetEncoderTest extends FunSuite with SharedH2OTestContext {
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")
-      .setNoise(H2OTargetEncoderNoiseSettings(amount = 0.5))
+      .setNoise(0.5)
     val pipeline = new Pipeline().setStages(Array(targetEncoder))
 
     val model = pipeline.fit(trainingDataset)
