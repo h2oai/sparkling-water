@@ -122,6 +122,7 @@ Change Log
 
 def prepareReleaseNotes(params) {
     def version = getVersion(params)
+    def versionNoSparkSuffix = version.substring(0, version.lastIndexOf("-"))
     def bucket = getBucket(params)
     def previousVersion = getPreviousVersion(params)
     dir("doc/src/site/sphinx/") {
@@ -129,7 +130,7 @@ def prepareReleaseNotes(params) {
 
         sh """
             # Get ID of this release
-            jira_version_id=\$(curl --silent "https://0xdata.atlassian.net/rest/api/2/project/SW/versions" | tr '}' '\\n' | grep "\\"name\\":\\"${version}\\"" | cut -d'"' -f8)
+            jira_version_id=\$(curl --silent "https://0xdata.atlassian.net/rest/api/2/project/SW/versions" | tr '}' '\\n' | grep "\\"name\\":\\"${versionNoSparkSuffix}\\"" | cut -d'"' -f8)
             # Get the JIRA page (currently, there is no endpoint for release notes)
             release_notes_page="https://0xdata.atlassian.net/secure/ReleaseNote.jspa?projectId=12000&version=\${jira_version_id}"
         
@@ -137,7 +138,7 @@ def prepareReleaseNotes(params) {
             curl --silent "\$release_notes_page" | sed '/<body>/,/<a name="editarea"><\\/a>/!d;//D' | sed 's/<ul>//' | sed 's/<\\/ul>//' | sed 's/ *<h2>/-  /' | sed 's/<\\/h2>//'  | sed 's/<\\/li>//' | sed "s/ *<li>\\[<a href='https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\([0-9]*\\)'>SW-[0-9]*<\\/a>\\]/\\   -  \\`SW-\\1 <https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\1>\\`__/" | sed '\$ d' | sed '1d' > release_notes
 
             release_date=\$(date +%Y-%m-%d)
-            rel_prefix=\$(echo "v${version} (\$release_date)")
+            rel_prefix=\$(echo "v${versionNoSparkSuffix} (\$release_date)")
             underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
             download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/${bucket}/${version}/index.html <http://h2o-release.s3.amazonaws.com/${bucket}/${version}/index.html>\\`__"
         
