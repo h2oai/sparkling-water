@@ -10,7 +10,7 @@ properties(
 
 def pipeline
 def sparkVersions
-node("mr-0xc10") {
+node("docker") {
     cleanWs()
     checkout scm
     pipeline = load 'jenkins/sparklingWaterPipeline.groovy'

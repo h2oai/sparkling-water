@@ -77,7 +77,7 @@ task createVersionFile {
             versionFileDir.mkdirs()
         }
         File version_file = new File(versionFileDir, "version.txt")
-        
+
         def version_txt = version.substring(0, version.lastIndexOf("-"))
         version_file.write(version_txt)
     }
@@ -267,7 +267,7 @@ else:
         file("${project.pkgDir}/sparkling_water/__init__.py").write("# Sparkling-water JAR holder for pySparkling module.")
     }
     // Configure proper name
-    archiveBaseName = "h2o_pysparkling_${sparkMaster}"
+    archiveBaseName = "h2o_pysparkling_${sparkMajorVersion}"
 
     from pkgDir
     destinationDir distDir
