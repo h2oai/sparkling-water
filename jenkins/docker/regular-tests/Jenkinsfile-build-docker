@@ -1,6 +1,25 @@
 #!/usr/bin/groovy
 @Library('test-shared-library') _
 
+String getDockerImageVersion() {
+    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('dockerImageVersion') }
+    return versionLine.split("=")[1]
+}
+
+def withDocker(code) {
+    def image = 'opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
+    retryWithDelay(3, 120, {
+        withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
+            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
+            sh "docker pull harbor.h2o.ai/${image}"
+        }
+    })
+    docker.image(image).inside("--init --privileged --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
+        sh "activate_java_8"
+        code()
+    }
+}
+
 node('docker && !mr-0xc8') {
 
     // Clean workspace
@@ -9,8 +28,10 @@ node('docker && !mr-0xc8') {
     checkout scm
 
     stage("Build Docker") {
-        sh "activate_java_8"
-        sh "./gradlew :sparkling-water-jenkins:createDockerFile"
+        withDocker {
+            sh "activate_java_8"
+            sh "./gradlew :sparkling-water-jenkins:createDockerFile"
+        }
         dir("jenkins/docker/regular-tests") {
             sh """
                cp -R ../conf conf
@@ -18,6 +39,7 @@ node('docker && !mr-0xc8') {
                docker build -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${BUILD_NUMBER} -f Dockerfile .
                """
         }
+
     }
 
     stage("Publish Docker") {
