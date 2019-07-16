@@ -109,10 +109,6 @@ def getSparkMajorVersion(versionSpecificProps) {
 //
 def loadedVersion = loadVersion(versionSpecificProps)
 
-if (!sparkVersion.startsWith(spark)) {
-    throw new IllegalArgumentException("Inconsistent Spark configuration. Both params spark and sparkVersion specified, but" +
-            " with different major Apark versions.")
-}
 
 configure(allprojects) { project ->
     apply plugin: 'idea'
@@ -129,6 +125,10 @@ configure(allprojects) { project ->
         // h2oBuild property is defined in gradle.properties
         h2oVersion = "$h2oMajorVersion.$h2oBuild"
         sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
+        if (!sparkVersion.startsWith(spark)) {
+            throw new IllegalArgumentException("Inconsistent Spark configuration. Both params spark and sparkVersion specified, but" +
+                    " with different major Apark versions.")
+        }
         sparkMajorVersion = sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
         junitVersion = '4.11'
         minSupportedJavaVersion = loadVersionSpecificProp("minSupportedJavaVersion", versionSpecificProps)

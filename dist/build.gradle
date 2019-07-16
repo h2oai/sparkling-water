@@ -121,14 +121,14 @@ def distTaskDependencies = [
 
 def copyAndSubstituteGradleProperties() {
     def content = file("$rootDir/gradle.properties").getText('UTF-8')
+            .replaceAll("version=.*", "version=${version}")
 
     def sparkSpecificContent = file("$rootDir/gradle-spark${spark}.properties")
             .getText('UTF-8')
-            .replaceAll("version=.*", "version=${version}")
 
     def gradlePropsFile = file("$zipDir/gradle.properties")
     gradlePropsFile.createNewFile()
-    gradlePropsFile.write(content + sparkSpecificContent, 'UTF-8')
+    gradlePropsFile.write(content + "\n" + sparkSpecificContent, 'UTF-8')
 }
 
 task copyFilesForZipDistribution {
@@ -209,6 +209,6 @@ task dist(dependsOn: zipDistribution) {
 
 task s3Bucket {
     doLast {
-       println(getS3BucketPrefix())
+        println(getS3BucketPrefix())
     }
 }
