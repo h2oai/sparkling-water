@@ -8,11 +8,11 @@ apply from: "$rootDir/gradle/utils.gradle"
  * We can't use Sphinx substitutions in for example code blocks and other container, so we post-process
  * the generated files manually
  */
-task substituteAWS(){
+task substituteAWS() {
     doLast {
         def aws_script = "${project.buildDir.toString()}/aws/install_sparkling_water_${version}.sh"
         def contents = file(aws_script).getText('UTF-8')
-        
+
         contents = contents
                 .replaceAll("SUBST_SW_VERSION", version)
                 .replaceAll("SUBST_S3_BUCKET", getS3Bucket())
@@ -21,7 +21,7 @@ task substituteAWS(){
     }
 }
 
-task substituteTerraform(){
+task substituteTerraform() {
     doLast {
         def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
         def tfScripts = ["${tfBaseDir}/variables.tf", "${tfBaseDir}/modules/emr/variables.tf", "${tfBaseDir}/modules/emr/main.tf"]

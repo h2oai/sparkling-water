@@ -1,13 +1,14 @@
 apply from: "$rootDir/gradle/utils.gradle"
 
 /* Get spark home value from local environment */
+
 String getSparkHome() {
     String sh =
-            [ project.hasProperty("sparkHome") ? project["sparkHome"] : null,
-              System.properties["SPARK_HOME"],
-              System.env['SPARK_HOME']
-            ].find { h -> h!=null ? new File(h).isDirectory() : false }
-    if (sh!=null) {
+            [project.hasProperty("sparkHome") ? project["sparkHome"] : null,
+             System.properties["SPARK_HOME"],
+             System.env['SPARK_HOME']
+            ].find { h -> h != null ? new File(h).isDirectory() : false }
+    if (sh != null) {
         logger.info("Found spark home: ${sh}")
         return sh
     } else {
@@ -16,36 +17,39 @@ String getSparkHome() {
 }
 
 /* Get spark home value from local environment */
+
 String getSparkMaster() {
     String sh =
-            [ project.hasProperty("sparkMaster") ? project["sparkMaster"] : null,
-              System.properties["MASTER"],
-              System.env['MASTER']
-            ].find { h -> h!=null }
-    if (sh!=null) {
+            [project.hasProperty("sparkMaster") ? project["sparkMaster"] : null,
+             System.properties["MASTER"],
+             System.env['MASTER']
+            ].find { h -> h != null }
+    if (sh != null) {
         logger.info("Found spark master: ${sh}")
         return sh
     } else {
         return null
     }
 }
-String getSparkSubmitScriptName(){
-    if(isWindowsBased()){
+
+String getSparkSubmitScriptName() {
+    if (isWindowsBased()) {
         return "spark-submit.cmd"
-    }else{
+    } else {
         return "spark-submit"
     }
 }
-String getSparkSubmitScriptPath(String sparkHome){
+
+String getSparkSubmitScriptPath(String sparkHome) {
     new File(new File((String) sparkHome), "bin" + File.separator + getSparkSubmitScriptName()).absolutePath
 }
 
-String getSystemSparkVersion()  {
+String getSystemSparkVersion() {
 
     // getOsSpecificCommandLine calls /usr/bin/env which sets different JAVA version for the sub-processes
     // started from gradle. Explicit configuration of JAVA_HOME fixes this issue
     String javaHome = System.getenv("JAVA_HOME")
-    if(javaHome == null){
+    if (javaHome == null) {
         throw new InvalidUserDataException("Cannot find JAVA_HOME - please specify JAVA_HOME env variable")
     }
     String sparkHome = getSparkHome()
@@ -57,41 +61,41 @@ String getSystemSparkVersion()  {
     // In that case gradle SPARK_HOME is set to specified Spark location but global SPARK_HOME is unchanged
     // and we need to temporary change it in child process to get the correct Spark version
     def commandEnvVars
-    if(isWindowsBased()){
+    if (isWindowsBased()) {
         // In case of Windows we can't set environment variables in execute command as it breaks the build
         commandEnvVars = null
-    }else{
+    } else {
         commandEnvVars = ["SPARK_HOME=" + getSparkHome(), "JAVA_HOME=" + System.getenv("JAVA_HOME")]
     }
 
     def command
-    if(isWindowsBased()){
+    if (isWindowsBased()) {
         // In case of Windows we can't set environment variable in execute command so we set it them as part of the command
         command = getOsSpecificCommandLine(["SET SPARK_HOME=${getSparkHome()} & SET JAVA_HOME=${System.getenv("JAVA_HOME")} &", getSparkSubmitScriptPath(sparkHome), "--version DUMMY_TEXT_FOR_SPARK20"]).join(" ")
-    }else{
+    } else {
         command = getOsSpecificCommandLine([getSparkSubmitScriptPath(sparkHome), "--version DUMMY_TEXT_FOR_SPARK20"]).join(" ")
     }
-    def commandOutput = command.execute(commandEnvVars,null).err.text
+    def commandOutput = command.execute(commandEnvVars, null).err.text
     def response = commandOutput.readLines()
-    def version_line = response.find{ it.contains("version")}
+    def version_line = response.find { it.contains("version") }
     if (version_line == null) throw new InvalidUserDataException("Failed to detect Spark version, command was " + command + ", response was\n" + response)
-    return version_line.replaceAll(".*version ","")
+    return version_line.replaceAll(".*version ", "")
 }
 
 
 String getHdpVersion() {
     String sh =
-            [ project.hasProperty("hdpVersion") ? project["hdpVersion"] : null,
-              System.properties['HDP_VERSION'],
-              System.env['HDP_VERSION']
-            ].find { h -> h!=null }
+            [project.hasProperty("hdpVersion") ? project["hdpVersion"] : null,
+             System.properties['HDP_VERSION'],
+             System.env['HDP_VERSION']
+            ].find { h -> h != null }
     return sh
 }
 
 void checkSparkVersion() {
     String systemSparkVersion = getSystemSparkVersion()
     String majorSparkVersion = systemSparkVersion.count(".") == 1 ? systemSparkVersion : systemSparkVersion.substring(0, systemSparkVersion.lastIndexOf('.'))
-    if (!ext.sparkVersion.startsWith(majorSparkVersion)){
+    if (!ext.sparkVersion.startsWith(majorSparkVersion)) {
         throw new InvalidUserDataException("You are trying to build Sparkling Water for Spark $ext.sparkVersion, but your \$SPARK_HOME(=${getSparkHome()}) property points to Spark of version ${getSystemSparkVersion()}. Please ensure correct Spark is provided and re-run Sparkling Water.")
     }
 }

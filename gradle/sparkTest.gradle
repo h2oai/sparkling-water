@@ -16,7 +16,7 @@ test {
     // Increase heap size
     maxHeapSize = "4g"
 
-    if(!jvmArgs.isEmpty()) {
+    if (!jvmArgs.isEmpty()) {
         jvmArgs extraJVMArgs.split(" ")
     }
     // Working dir will be root project
