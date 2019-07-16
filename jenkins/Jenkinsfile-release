@@ -78,7 +78,7 @@ def withDocker(code) {
 }
 
 String getVersion(params) {
-    def versionLine = readFile("gradle-spark-${params.spark}.properties").split("\n").find() { line -> line.startsWith('version') }
+    def versionLine = readFile("gradle-spark${params.spark}.properties").split("\n").find() { line -> line.startsWith('version') }
     return versionLine.split("=")[1].replace("-SNAPSHOT", "")
 }
 
