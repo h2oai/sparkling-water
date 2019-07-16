@@ -209,16 +209,15 @@ def buildConda() {
     return { params ->
         stage('Build Conda Packages') {
             if (params.buildConda.toBoolean()) {
-                def majorVersion = getMajorVersion(params)
                 dir("py/build/conda") {
                     def pythonVersions = ['2.7', '3.6']
                     for (pyVersion in pythonVersions) {
                         sh """
                            . /envs/h2o_env_python3.6/bin/activate
 
-                           conda build h2o_pysparkling_${majorVersion} --output-folder "." --no-anaconda-upload --py ${pyVersion}
+                           conda build h2o_pysparkling_${params.spark} --output-folder "." --no-anaconda-upload --py ${pyVersion}
 
-                           PACKAGE_PATH=\$(conda build h2o_pysparkling_${majorVersion} --py ${pyVersion} --output-folder "." --output | tail -1)
+                           PACKAGE_PATH=\$(conda build h2o_pysparkling_${params.spark} --py ${pyVersion} --output-folder "." --output | tail -1)
                            CURRENT_PLATFORM=\$(basename \$(dirname \$PACKAGE_PATH))
                            mkdir -p ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM
                            cp \$PACKAGE_PATH ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM/
