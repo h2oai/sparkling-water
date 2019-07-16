@@ -17,19 +17,17 @@
 
 package org.apache.spark.h2o.utils
 
-import java.io.{ByteArrayOutputStream, File}
 import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{BuildInfo, H2OConf}
 import water.H2O
-import water.api.ImportHiveTableHandler
 import water.api.ImportHiveTableHandler.HiveTableImporter
+import water.api.{ImportHiveTableHandler, RequestServer}
 import water.fvec.Frame
-import water.util.{GetLogsFromNode, Log, StringUtils}
+import water.util.{GetLogsFromNode, Log, LogArchiveContainer, StringUtils}
 
 import scala.language.postfixOps
 
@@ -96,30 +94,26 @@ private[spark] trait H2OContextUtils extends Logging {
   /**
     * @param destination directory where the logs will be downloaded
     */
-  def downloadH2OLogs(destination: URI): URI = {
-    val perNodeZipByteArray = H2O.CLOUD.members.zipWithIndex.map { case (node, i) =>
-      // Skip nodes that aren't healthy, since they are likely to cause the entire process to hang.
+  def downloadH2OLogs(destination: URI, logContainer: LogArchiveContainer): URI = {
+
+    val perNodeArchiveByteArray = H2O.CLOUD.members.zipWithIndex.map { case (node, i) =>
       try {
         if (node.isHealthy) {
-          val g = new GetLogsFromNode()
-          g.nodeidx = i
+          val g = new GetLogsFromNode(i, logContainer)
           g.doIt()
           g.bytes
-        }
-        else {
+        } else {
           StringUtils.bytesOf("Node not healthy")
         }
       }
       catch {
-        case e: Exception =>
-          StringUtils.toBytes(e)
+        case e: Exception => StringUtils.toBytes(e);
       }
     }
 
     val clientNodeByteArray = if (H2O.ARGS.client) {
       try {
-        val g = new GetLogsFromNode
-        g.nodeidx = -1
+        val g = new GetLogsFromNode(-1, logContainer)
         g.doIt()
         g.bytes
       } catch {
@@ -131,58 +125,39 @@ private[spark] trait H2OContextUtils extends Logging {
     }
 
     val outputFileStem = "h2ologs_" + new SimpleDateFormat("yyyyMMdd_hhmmss").format(new Date)
-    zipLogs(perNodeZipByteArray, clientNodeByteArray, outputFileStem, destination)
-  }
 
-  def downloadH2OLogs(destination: String): String = {
-    downloadH2OLogs(new URI(destination))
-    destination
-  }
 
-  /** Zip the H2O logs and store them to specified destination */
-  private def zipLogs(results: Array[Array[Byte]], clientResult: Array[Byte], topDir: String, destination: URI): URI = {
-    assert(H2O.CLOUD._memary.length == results.length, "Unexpected change in the cloud!")
-    val l = results.map(_.length).sum
-    val baos = new ByteArrayOutputStream(l)
-    // Add top-level directory.
-    val zos = new ZipOutputStream(baos)
-    val zde = new ZipEntry(topDir + File.separator)
-    zos.putNextEntry(zde)
-
-    try {
-      // Add zip directory from each cloud member.
-      results.zipWithIndex.foreach { case (result, i) =>
-        val filename = topDir + File.separator + "node" + i + "_" + H2O.CLOUD._memary(i).getIpPortString.replace(':', '_').replace('/', '_') + ".zip"
-        val ze = new ZipEntry(filename)
-        zos.putNextEntry(ze)
-        zos.write(result)
-        zos.closeEntry()
-      }
-
-      // Add zip directory from the client node.  Name it 'driver' since that's what Sparking Water users see.
-      if (clientResult != null) {
-        val filename = topDir + File.separator + "driver.zip"
-        val ze = new ZipEntry(filename)
-        zos.putNextEntry(ze)
-        zos.write(clientResult)
-        zos.closeEntry()
-      }
-      // Close the top-level directory.
-      zos.closeEntry()
-    } finally {
-      // Close the full zip file.
-      zos.close()
+    val finalArchiveByteArray = try {
+      val method = classOf[RequestServer].getDeclaredMethod("archiveLogs")
+      val res = method.invoke(null, logContainer, new Date, perNodeArchiveByteArray, clientNodeByteArray, outputFileStem);
+      res.asInstanceOf[Array[Byte]]
+    } catch {
+      case e: Exception =>
+        StringUtils.toBytes(e)
     }
 
     import java.io.FileOutputStream
     val outputStream = new FileOutputStream(destination.toString)
     try {
-      baos.writeTo(outputStream)
+      outputStream.write(finalArchiveByteArray)
     }
     finally {
       if (outputStream != null) outputStream.close()
     }
     destination
+  }
+
+  def downloadH2OLogs(destination: URI, logContainer: String): URI = {
+    downloadH2OLogs(destination, LogArchiveContainer.valueOf(logContainer))
+  }
+
+  def downloadH2OLogs(destination: String, logArchiveContainer: LogArchiveContainer): String = {
+    downloadH2OLogs(new URI(destination), logArchiveContainer)
+    destination
+  }
+
+  def downloadH2OLogs(destination: String, logContainer: String = "ZIP"): String = {
+    downloadH2OLogs(destination, LogArchiveContainer.valueOf(logContainer))
   }
 
   def importHiveTable(database: String = HiveTableImporter.DEFAULT_DATABASE, table: String,

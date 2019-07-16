@@ -21,7 +21,7 @@ import java.io.ByteArrayInputStream
 import java.util
 
 import _root_.hex.genmodel.MojoReaderBackendFactory
-import _root_.hex.genmodel.descriptor.JsonModelDescriptorReader
+import _root_.hex.genmodel.attributes.ModelJsonReader
 import com.google.gson.{GsonBuilder, JsonElement}
 import hex.ModelCategory
 import hex.genmodel.easy.EasyPredictModelWrapper
@@ -175,7 +175,8 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
     val is = new ByteArrayInputStream(mojoData)
     val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
 
-    val modelOutputJson = JsonModelDescriptorReader.parseModelJson(reader).getAsJsonObject("output")
+
+    val modelOutputJson = ModelJsonReader.parseModelJson(reader).getAsJsonObject("output")
     if (modelOutputJson == null) {
       "Model details not available!"
     } else {
