@@ -9,6 +9,7 @@ node('docker && !mr-0xc8') {
     checkout scm
 
     stage("Build Docker") {
+        sh "./gradlew :sparkling-water-jenkins:createDockerFile"
         dir("jenkins/docker/regular-tests") {
             sh """
                cp -R ../conf conf
