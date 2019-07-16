@@ -149,7 +149,7 @@ private[spark] trait H2OContextUtils extends Logging {
       outputStream.write(finalArchiveByteArray)
     }
     finally {
-      if (outputStream != null) outputStream.close()
+      outputStream.close()
     }
     destinationFile.toURI
   }
