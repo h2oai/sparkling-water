@@ -80,14 +80,14 @@ RUN cd /home/jenkins && \
 
 ### Create VirtualEnvs for each Spark & Python combination
 RUN cd /home/jenkins/sparkling-water && \
-    git checkout rel-2.4 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
-    git checkout rel-2.3 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
-    git checkout rel-2.2 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
-    git checkout rel-2.1 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
-    git checkout rel-2.4 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
-    git checkout rel-2.3 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
-    git checkout rel-2.2 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
-    git checkout rel-2.1 && ./gradlew :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
+    ./gradlew -Pspark=2.4 :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
+    ./gradlew -Pspark=2.3 :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
+    ./gradlew -Pspark=2.2 :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
+    ./gradlew -Pspark=2.1 :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \
+    ./gradlew -Pspark=2.4 :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
+    ./gradlew -Pspark=2.3 :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
+    ./gradlew -Pspark=2.2 :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
+    ./gradlew -Pspark=2.1 :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin && \
     cp -R /home/jenkins/sparkling-water/.gradle/python /home/jenkins/.gradle/python
 
 
