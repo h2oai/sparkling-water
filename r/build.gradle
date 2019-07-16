@@ -88,7 +88,7 @@ task prepareRepoDir(dependsOn: distR) {
     }
 }
 
-task createCranRepo(type: Exec, dependsOn: prepareRepoDir){
+task createCranRepo(type: Exec, dependsOn: prepareRepoDir) {
     workingDir contribDir
     commandLine getOsSpecificCommandLine(["R", "-e", "tools::write_PACKAGES()"])
 }

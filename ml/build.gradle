@@ -4,50 +4,52 @@ apply from: "$rootDir/gradle/sparkTest.gradle"
 apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
-  // Sparkling Water Core
-  compile( project(":sparkling-water-core") ) { 
-    exclude group: "javax.servlet", module: "servlet-api"
-  }
-  // MLLIb pipelines
-  compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-  testCompile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+    // Sparkling Water Core
+    compile(project(":sparkling-water-core")) {
+        exclude group: "javax.servlet", module: "servlet-api"
+    }
+    // MLLIb pipelines
+    compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+    testCompile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
-  // And Scala library
-  compile "org.scala-lang:scala-library:${scalaVersion}"
+    // And Scala library
+    compile "org.scala-lang:scala-library:${scalaVersion}"
 
-  testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+    testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 
 
-  compile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
-  testCompile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
+    compile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
+    testCompile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
 
-  if (project.property("testMojoPipeline") == "true") {
-    testRuntime "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
-  }
+    if (project.property("testMojoPipeline") == "true") {
+        testRuntime "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
+    }
 
-  // And use scalatest for Scala testing
-  testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
-  testCompile "junit:junit:4.11"
-  testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
-  testCompile(project(":sparkling-water-extension-stack-trace"))
+    // And use scalatest for Scala testing
+    testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
+    testCompile "junit:junit:4.11"
+    testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
+    testCompile(project(":sparkling-water-extension-stack-trace"))
 
-  // to reuse some utils test classes defined in the core
-  testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
-  
-  // For test purposes, force newer client as the tests are modifying classpath and we get errors which
-  // we do not get during normal production usage
-  testCompile('org.apache.hadoop:hadoop-mapreduce-client-core:2.7.2') {force = true}
-  testCompile('org.apache.hadoop:hadoop-common:2.7.2') {force = true} // required for org.apache.hadoop.util.StopWatch
-  testCompile('commons-io:commons-io:2.4') {force = true} // required for org.apache.commons.io.Charsets that is used internally
+    // to reuse some utils test classes defined in the core
+    testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
 
-  compileOnly project(":sparkling-water-macros")
+    // For test purposes, force newer client as the tests are modifying classpath and we get errors which
+    // we do not get during normal production usage
+    testCompile('org.apache.hadoop:hadoop-mapreduce-client-core:2.7.2') { force = true }
+    testCompile('org.apache.hadoop:hadoop-common:2.7.2') { force = true }
+    // required for org.apache.hadoop.util.StopWatch
+    testCompile('commons-io:commons-io:2.4') { force = true }
+    // required for org.apache.commons.io.Charsets that is used internally
+
+    compileOnly project(":sparkling-water-macros")
 }
 
 
 test {
-  if (project.property("testMojoPipeline") != "true") {
-    exclude 'org/apache/spark/ml/spark/models/H2OMOJOPipelineModelTest.class'
-  }
+    if (project.property("testMojoPipeline") != "true") {
+        exclude 'org/apache/spark/ml/spark/models/H2OMOJOPipelineModelTest.class'
+    }
 }
 
 defineStandardPublication().call()

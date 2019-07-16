@@ -129,7 +129,7 @@ export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
 }
 
 def copyPySetup() {
-    
+
     copy {
         from("$projectDir") {
             include 'setup.py'

@@ -75,7 +75,7 @@ if (project.hasProperty("doExtend")) {
             transitive = false
         }
 
-        artifactsToMerge(project(":sparkling-water-extension-stack-trace")){
+        artifactsToMerge(project(":sparkling-water-extension-stack-trace")) {
             transitive = false
         }
 

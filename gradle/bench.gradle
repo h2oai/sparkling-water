@@ -33,7 +33,7 @@ task bench(type: Test) {
     // Increase test runner memory
     maxHeapSize = "4g"
 
-    if(!jvmArgs.isEmpty()) {
+    if (!jvmArgs.isEmpty()) {
         jvmArgs extraJVMArgs.split(" ")
     }
 

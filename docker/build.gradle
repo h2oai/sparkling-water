@@ -61,8 +61,8 @@ task createDockerfile(type: Dockerfile) {
                """.stripMargin()
 
     // Setup environment
-    environmentVariable("SPARK_HOME","/opt/spark")
-    environmentVariable("SPARKLING_WATER_HOME","/opt/sparkling-water")
+    environmentVariable("SPARK_HOME", "/opt/spark")
+    environmentVariable("SPARKLING_WATER_HOME", "/opt/sparkling-water")
 
     exposePort 4040, 54321
 

@@ -1,11 +1,11 @@
 apply plugin: 'scalaStyle'
 
 scalaStyle {
-  configLocation = "$rootDir/gradle/conf/scalastyle-config.xml"
-  includeTestSourceDirectory = true
-  source = "src/main/scala"
-  testSource = "src/test/scala"
-  verbose = false
+    configLocation = "$rootDir/gradle/conf/scalastyle-config.xml"
+    includeTestSourceDirectory = true
+    source = "src/main/scala"
+    testSource = "src/test/scala"
+    verbose = false
 }
 
 // By default run as one of the checks
