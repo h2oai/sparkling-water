@@ -18,7 +18,6 @@
 package org.apache.spark.ml.h2o.features
 
 import org.apache.spark.h2o.Frame
-import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.PipelineStage
 import org.apache.spark.ml.h2o.param.H2OTargetEncoderParams
 import org.apache.spark.sql.types.{DoubleType, StructField, StructType}

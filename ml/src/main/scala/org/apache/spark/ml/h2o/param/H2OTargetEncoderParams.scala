@@ -18,7 +18,7 @@
 package org.apache.spark.ml.h2o.param
 
 import org.apache.spark.ml.h2o.features._
-import org.apache.spark.ml.param.{Param, Params, StringArrayParam}
+import org.apache.spark.ml.param._
 
 trait H2OTargetEncoderParams extends Params {
 
@@ -36,21 +36,21 @@ trait H2OTargetEncoderParams extends Params {
       | LeaveOneOut - All rows except the row the calculation is made for
       | KFold       - Only out-of-fold data is considered (The option requires foldCol to be set.)
     """.stripMargin)
-  protected final val blending = new CaseClassParam[H2OTargetEncoderBlendingSettings](this,
-    "blending",
+  protected final val blendedAvgEnabled = new BooleanParam(this,
+    "blendedAvgEnabled",
     """If set, the target average becomes a weighted average of the posterior average for a given categorical level and the prior average of the target.
-      |The weight is determined by the size of the given group that the row belongs to.
-      |Attributes:
-      | InflectionPoint - The bigger number it's, the groups relatively bigger to the overall data set size will consider
-      |                   the global target value as a component in the weighted average.
-      | Smoothing       - Controls the rate of transition between a group target value and a global target value.""".stripMargin)
-  protected final val noise = new CaseClassParam[H2OTargetEncoderNoiseSettings](this,
+      |The weight is determined by the size of the given group that the row belongs to. By default, the blended average is disabled.""".stripMargin)
+  protected final val blendedAvgInflectionPoint = new DoubleParam(this,
+    "blendedAvgInflectionPoint",
+    """A parameter of the blended average. The bigger number is set, the groups relatively bigger to the overall data set size will consider
+      | the global target value as a component in the weighted average. The default value is 10.""".stripMargin)
+  protected final val blendedAvgSmoothing = new DoubleParam(this,
+    "blendedAvgSmoothing",
+    "A parameter of blended average. Controls the rate of transition between a group target value and a global target value. The default value is 20.")
+  protected final val noise = new DoubleParam(this,
     "noise",
-    """If set, output valus will be modified by randomly generated noise.
-      |Attributes:
-      | Amount - amount of random noise added to output values
-      | Seed   - a seed of the generator producing the random noise
-    """.stripMargin)
+    "Amount of random noise added to output values. The default value is 0.01")
+  protected final val noiseSeed = new LongParam(this, "noiseSeed", "A seed of the generator producing the random noise")
 
   //
   // Default values
@@ -60,8 +60,11 @@ trait H2OTargetEncoderParams extends Params {
     labelCol -> "label",
     inputCols -> Array[String](),
     holdoutStrategy -> H2OTargetEncoderHoldoutStrategy.None,
-    blending -> null,
-    noise -> H2OTargetEncoderNoiseSettings(0.01, -1)
+    blendedAvgEnabled -> false,
+    blendedAvgInflectionPoint -> 10.0,
+    blendedAvgSmoothing -> 20.0,
+    noise -> 0.01,
+    noiseSeed -> -1
   )
 
   //
@@ -77,9 +80,15 @@ trait H2OTargetEncoderParams extends Params {
 
   def getHoldoutStrategy(): H2OTargetEncoderHoldoutStrategy = $(holdoutStrategy)
 
-  def getBlending(): H2OTargetEncoderBlendingSettings = $(blending)
+  def getBlendedAvgEnabled(): Boolean = $(blendedAvgEnabled)
 
-  def getNoise(): H2OTargetEncoderNoiseSettings = $(noise)
+  def getBlendedAvgInflectionPoint(): Double = $(blendedAvgInflectionPoint)
+
+  def getBlendedAvgSmoothing(): Double = $(blendedAvgSmoothing)
+
+  def getNoise(): Double = $(noise)
+
+  def getNoiseSeed(): Long = $(noiseSeed)
 }
 
 class H2OTargetEncoderHoldoutStrategyParam private[h2o](
