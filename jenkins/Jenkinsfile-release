@@ -24,8 +24,8 @@ properties(
 // Utility methods for the pipeline
 //
 
-def getBucket(config) {
-    return sh(script: "${config.gradleCmd} -q s3bucket", returnStdout: true)
+def getBucket(params) {
+    return sh(script: "./gradlew -Pspark=${params.spark} -Pversion=${getVersion(params)} -q s3bucket", returnStdout: true).trim()
 }
 
 def getParallelStageDefinition(params){
