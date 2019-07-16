@@ -7,12 +7,10 @@ defaultTasks 'createDockerFile'
 description = "Sparkling-Water Docker Support"
 
 ext {
-    sparkling_water_release = sparkVersion.substring(0,sparkVersion.lastIndexOf("."))
-    sparkling_water_build = version.substring(version.lastIndexOf(".")+1) 
-    sparkling_water_file_name = "sparkling-water-${sparkling_water_release}.${sparkling_water_build}"
+    sparkling_water_file_name = "sparkling-water-${version}"
     spark_file_name = "spark-${sparkVersion}-bin-hadoop2.7"
     spark_download_url = "http://mirrors.ocf.berkeley.edu/apache/spark/spark-${sparkVersion}/${spark_file_name}.tgz"
-    sparkling_water_download_url = "http://h2o-release.s3.amazonaws.com/sparkling-water/rel-${sparkling_water_release}/${sparkling_water_build}/${sparkling_water_file_name}.zip"
+    sparkling_water_download_url = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${sparkMajorVersion}/${version}/${sparkling_water_file_name}.zip"
     docker_file = file('sparkling-water/base/Dockerfile')
 }
 

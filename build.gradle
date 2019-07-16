@@ -96,18 +96,23 @@ def loadVersionSpecificProp(propName, versionSpecificProps) {
     }
 }
 
-def loadVersion(versionSpecificProps){
-    if (project.properties.get("version") != "unspecified") {
-        return project.properties.get("version")
-    } else {
-        return versionSpecificProps.getProperty("version")
-    }
+def loadVersion(versionSpecificProps) {
+    return "${project.properties.get("version")}-${getSparkMajorVersion(versionSpecificProps)}"
 }
 
+def getSparkMajorVersion(versionSpecificProps) {
+    def sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
+    return sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
+}
 //
 // For all projects (this and all subprojects) specify common properties and tasks
 //
-def loadedVersion = loadVersion(versionSpecificProps).toString()
+def loadedVersion = loadVersion(versionSpecificProps)
+
+if (!sparkVersion.startsWith(spark)) {
+    throw new IllegalArgumentException("Inconsistent Spark configuration. Both params spark and sparkVersion specified, but" +
+            " with different major Apark versions.")
+}
 
 configure(allprojects) { project ->
     apply plugin: 'idea'
@@ -126,7 +131,6 @@ configure(allprojects) { project ->
         sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
         sparkMajorVersion = sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
         junitVersion = '4.11'
-
         minSupportedJavaVersion = loadVersionSpecificProp("minSupportedJavaVersion", versionSpecificProps)
         supportedEmrVersion = loadVersionSpecificProp("supportedEmrVersion", versionSpecificProps)
         extraJVMArgs = loadVersionSpecificProp("extraJVMArgs", versionSpecificProps)
@@ -139,7 +143,7 @@ configure(allprojects) { project ->
     version = loadedVersion.replace("-SNAPSHOT", "")
 }
 
-// 
+//
 // Common configuration for all subprojects
 //
 configure(subprojects) { project ->
