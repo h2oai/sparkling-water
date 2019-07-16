@@ -18,7 +18,7 @@ def withDocker(code) {
             sh "docker pull harbor.h2o.ai/${image}"
         }
     })
-    docker.image(image).inside("--init --privileged --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
+    docker.image(image).inside("--init --privileged --dns 172.16.0.200") {
         sh "activate_java_8"
         code()
     }
@@ -26,15 +26,14 @@ def withDocker(code) {
 
 node('docker && !mr-0xc8') {
 
-    // Clean workspace
-    sh 'rm -rf *'
-    // Get Sparkling Water and save the scm environment variables
+    cleanWs()
     checkout scm
 
     stage("Build Docker") {
-        withDocker {
-            sh "activate_java_8"
-            sh "./gradlew :sparkling-water-jenkins:createDockerFile"
+        docker.withRegistry("http://harbor.h2o.ai") {
+            withDocker {
+                sh "./gradlew :sparkling-water-jenkins:createDockerFile"
+            }
         }
         dir("jenkins/docker/regular-tests") {
             sh """
