@@ -6,6 +6,10 @@ String getDockerImageVersion() {
     return versionLine.split("=")[1]
 }
 
+Integer getNextDockerImageVersion(){
+    getDockerImageVersion().toInteger() + 1
+}
+
 def withDocker(code) {
     def image = 'opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
     retryWithDelay(3, 120, {
@@ -36,7 +40,7 @@ node('docker && !mr-0xc8') {
             sh """
                cp -R ../conf conf
                docker pull harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:58
-               docker build -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${BUILD_NUMBER} -f Dockerfile .
+               docker build -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${getNextDockerImageVersion()} -f Dockerfile .
                """
         }
 
@@ -44,7 +48,7 @@ node('docker && !mr-0xc8') {
 
     stage("Publish Docker") {
         sh """
-           docker push harbor.h2o.ai/opsh2oai/sparkling_water_tests:${BUILD_NUMBER}
+           docker push harbor.h2o.ai/opsh2oai/sparkling_water_tests:${getNextDockerImageVersion()}
            """
     }
 }
