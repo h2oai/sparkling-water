@@ -143,7 +143,7 @@ private[spark] trait H2OContextUtils extends Logging {
     }
 
     import java.io.FileOutputStream
-    val destinationFile = new File(destination.toString,  outputFileStem + "." + logContainer.getFileExtension)
+    val destinationFile = new File(destination.toString, outputFileStem + "." + logContainer.getFileExtension)
     val outputStream = new FileOutputStream(destinationFile)
     try {
       outputStream.write(finalArchiveByteArray)
