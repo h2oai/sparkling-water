@@ -49,7 +49,8 @@ trait H2OTargetEncoderParams extends Params {
     "A parameter of blended average. Controls the rate of transition between a group target value and a global target value. The default value is 20.")
   protected final val noise = new DoubleParam(this,
     "noise",
-    "Amount of random noise added to output values. The default value is 0.01")
+    """Amount of random noise added to output values of training dataset.
+      |The default value is 0.01. Noise addition can be disabled by setting the parameter to 0.0""".stripMargin)
   protected final val noiseSeed = new LongParam(this, "noiseSeed", "A seed of the generator producing the random noise")
 
   //
