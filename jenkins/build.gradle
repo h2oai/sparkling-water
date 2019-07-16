@@ -1,0 +1,117 @@
+apply plugin: 'base'
+apply plugin: 'com.bmuschko.docker-remote-api'
+
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+
+defaultTasks 'createDockerFile'
+description = "Create a Docker file for jenkins tests"
+
+ext {
+    outputFile = file("$projectDir//docker/regular-tests/Dockerfile")
+}
+
+task createDockerfile(type: Dockerfile) {
+    destFile = outputFile
+    from 'harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:58'
+
+    environmentVariable("LANG", "'C.UTF-8'")
+    runCommand "locale"
+    runCommand "rm -rf /etc/hadoop/conf/yarn-site.xml"
+    copyFile("conf/yarn-site.xml", "/etc/hadoop/conf/yarn-site.xml")
+    runCommand "rm /etc/startup/70_start_slapd"
+    runCommand """\\
+                apt-get update && apt-get install apt-transport-https && \\
+                apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \\
+                add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
+                """
+    runCommand "apt-get update && apt-get install -y git npm curl zip s3cmd r-base r-base-dev libxml2-dev libssl-dev libcurl4-openssl-dev"
+    runCommand """\\
+                curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash - && \\
+                sudo apt-get install -y nodejs
+                """
+    runCommand """\\
+                R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("openssl", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("bitops", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("jsonlite", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("dplyr", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("usethis", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
+                """
+    getAllFullSparkVersions().each { version ->
+        runCommand """\\
+                    cd /home/jenkins && \\
+                    wget http://archive.apache.org/dist/spark/spark-${version}/spark-${version}-bin-hadoop2.7.tgz  && \\
+                    mkdir -p spark-${version}-bin-hadoop2.7 &&  \\
+                    tar zxvf spark-${version}-bin-hadoop2.7.tgz -C spark-${version}-bin-hadoop2.7 --strip-components 1 && \\
+                    rm -rf spark-${version}-bin-hadoop2.7.tgz
+                    """
+
+        def first = version.split("\\.")[0]
+        def second = version.split("\\.")[1]
+        environmentVariable("SPARK_HOME_${first}_${second}", "/home/jenkins/spark-${version}-bin-hadoop2.7")
+    }
+    user("jenkins")
+    runCommand """\\
+                cd /home/jenkins && \\
+                git clone https://github.com/h2oai/sparkling-water.git && \\
+                cd sparkling-water && \\
+                ./gradlew build testClasses resolveTestRuntimeDependencies -PtestMojoPipeline=true -x check -x :sparkling-water-r:build -x :sparkling-water-py:build && \\
+                cd ..
+                """
+
+    supportedSparkVersions.split(" ").each { majorVersion ->
+        runCommand """\\
+                    cd /home/jenkins/sparkling-water && \\
+                    ./gradlew -Pspark=${majorVersion} :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \\
+                    ./gradlew -Pspark=${majorVersion} :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin
+                    """
+    }
+    runCommand "cp -R /home/jenkins/sparkling-water/.gradle/python /home/jenkins/.gradle/python"
+    user("root")
+
+    runCommand """\\
+                sudo sh -c "echo \\"jenkins ALL=(ALL) NOPASSWD:ALL\\" >> /etc/sudoers"
+               """
+    runCommand "cd /home/jenkins && rm -rf sparkling-water"
+    // Change permissions so we can install R packages
+    runCommand "chmod 777 /usr/local/lib/R/site-library"
+
+    user("jenkins")
+    environmentVariable("USER", "jenkins")
+    runCommand """\\
+               cd /home/jenkins && \\
+               wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /home/jenkins/miniconda.sh && \\
+               bash /home/jenkins/miniconda.sh -b -p /home/jenkins/miniconda && \\
+               rm /home/jenkins/miniconda.sh
+                """
+    environmentVariable("PATH", "\"/home/jenkins/miniconda/bin:\${PATH}\"")
+    runCommand """\\
+                conda install anaconda anaconda-client conda-build -y && \\
+                conda update conda -y && \\
+                conda update anaconda anaconda-client conda-build -y && \\
+                conda config --add channels conda-forge
+                """
+
+    environmentVariable("HIVE_HOME", "/usr/hdp/2.2.9.0-3393/hive")
+    runCommand "pip install awscli --upgrade --user"
+
+}
+
+def getAllFullSparkVersions() {
+    return supportedSparkVersions.split(" ").collect { majorVersion ->
+        def props = new Properties()
+        file("$rootDir/gradle-spark${majorVersion}.properties").withInputStream { props.load(it) }
+        props.get("sparkVersion").toString()
+    }
+}
+
+task cleanDockerfile(type: Delete) {
+    delete outputFile
+}
+
+clean.dependsOn cleanDockerfile

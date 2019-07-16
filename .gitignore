@@ -72,3 +72,5 @@ templates/src/terraform/aws/modules/network/.terraform.tfstate.lock.info
 templates/src/terraform/aws/modules/network/terraform.tfstate
 templates/src/terraform/aws/modules/network/*.tfvars
 templates/src/terraform/aws/modules/network/terraform.tfstate.backup
+
+jenkins/docker/regular-tests/Dockerfile
