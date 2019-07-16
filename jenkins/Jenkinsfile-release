@@ -85,11 +85,11 @@ String getVersion(params) {
 String getNextVersion(params) {
     def majorVersion = getMajorVersion(params)
     def patchVersion = getPatchVersion(params)
-    return "${majorVersion}.${patchVersion.toInteger() + 1}-SNAPSHOT_${params.spark}"
+    return "${majorVersion}.${patchVersion.toInteger() + 1}-SNAPSHOT-${params.spark}"
 }
 
 String getPreviousVersion(params) {
-    return "${getMajorVersion(params)}.${getPatchVersion(params).toInteger() - 1}_${params.spark}"
+    return "${getMajorVersion(params)}.${getPatchVersion(params).toInteger() - 1}-${params.spark}"
 }
 
 String getMajorVersion(params) {
@@ -100,8 +100,8 @@ String getMajorVersion(params) {
 
 String getPatchVersion(params) {
     def v = getVersion(params)
-    def split = v.split("\\.")
-    return "${split[2].split("_")[0]}"
+    def split = v.split("-")
+    return "${split[0].split("\\.")[2]}"
 }
 
 def getOrCreatePreviousChangeLog(bucket, previousVersion) {
