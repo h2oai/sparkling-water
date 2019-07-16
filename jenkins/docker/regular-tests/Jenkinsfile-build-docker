@@ -28,7 +28,7 @@ node('docker && !mr-0xc8') {
 
     cleanWs()
     checkout scm
-
+    def nextVersion = getNextDockerImageVersion()
     stage("Build Docker") {
         docker.withRegistry("http://harbor.h2o.ai") {
             withDocker {
@@ -39,7 +39,7 @@ node('docker && !mr-0xc8') {
             sh """
                cp -R ../conf conf
                docker pull harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:58
-               docker build -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${getNextDockerImageVersion()} -f Dockerfile .
+               docker build -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${nextVersion} -f Dockerfile .
                """
         }
 
@@ -47,7 +47,7 @@ node('docker && !mr-0xc8') {
 
     stage("Publish Docker") {
         sh """
-           docker push harbor.h2o.ai/opsh2oai/sparkling_water_tests:${getNextDockerImageVersion()}
+           docker push harbor.h2o.ai/opsh2oai/sparkling_water_tests:${nextVersion}
            """
     }
 }
