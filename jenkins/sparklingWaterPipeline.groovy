@@ -10,13 +10,13 @@ def getBucket(config) {
 
 String getNightlyVersion(config) {
     def sparkMajorVersion = config.sparkMajorVersion
-    def versionLine = readFile("gradle-spark${sparkMajorVersion}.properties").split("\n").find() { line -> line.startsWith('version') }
+    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('version') }
     def version = versionLine.split("=")[1]
     if (config.uploadNightly.toBoolean()) {
         def buildNumber
         try {
             def lastVersion = "https://h2o-release.s3.amazonaws.com/${getBucket(config)}/latest".toURL().getText().toString()
-            def splits = lastVersion.split("-|_")
+            def splits = lastVersion.split("-")
             buildNumber = splits[1].toInteger() + 1
         } catch (Exception ignored) {
             buildNumber = 1
