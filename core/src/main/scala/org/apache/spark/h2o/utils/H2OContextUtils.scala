@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.utils
 
+import java.io.File
 import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -91,12 +92,8 @@ private[spark] trait H2OContextUtils extends Logging {
     }
   }
 
-  /**
-    * @param destination directory where the logs will be downloaded
-    */
-  def downloadH2OLogs(destination: URI, logContainer: LogArchiveContainer): URI = {
-
-    val perNodeArchiveByteArray = H2O.CLOUD.members.zipWithIndex.map { case (node, i) =>
+  private def getLogsFromWorkers(logContainer: LogArchiveContainer): Array[Array[Byte]] = {
+    H2O.CLOUD.members.zipWithIndex.map { case (node, i) =>
       try {
         if (node.isHealthy) {
           val g = new GetLogsFromNode(i, logContainer)
@@ -110,8 +107,10 @@ private[spark] trait H2OContextUtils extends Logging {
         case e: Exception => StringUtils.toBytes(e);
       }
     }
+  }
 
-    val clientNodeByteArray = if (H2O.ARGS.client) {
+  private def getLogsFromClient(logContainer: LogArchiveContainer): Array[Byte] = {
+    if (H2O.ARGS.client) {
       try {
         val g = new GetLogsFromNode(-1, logContainer)
         g.doIt()
@@ -123,28 +122,36 @@ private[spark] trait H2OContextUtils extends Logging {
     } else {
       null
     }
+  }
 
+  /**
+    * @param destination directory where the logs will be downloaded
+    */
+  def downloadH2OLogs(destination: URI, logContainer: LogArchiveContainer): URI = {
+    val workersLogs = getLogsFromWorkers(logContainer)
+    val clientLogs = getLogsFromClient(logContainer)
     val outputFileStem = "h2ologs_" + new SimpleDateFormat("yyyyMMdd_hhmmss").format(new Date)
 
-
     val finalArchiveByteArray = try {
-      val method = classOf[RequestServer].getDeclaredMethod("archiveLogs")
-      val res = method.invoke(null, logContainer, new Date, perNodeArchiveByteArray, clientNodeByteArray, outputFileStem);
+      val method = classOf[RequestServer].getDeclaredMethod("archiveLogs", classOf[LogArchiveContainer],
+        classOf[Date], classOf[Array[Array[Byte]]], classOf[Array[Byte]], classOf[String])
+      method.setAccessible(true)
+      val res = method.invoke(null, logContainer, new Date, workersLogs, clientLogs, outputFileStem)
       res.asInstanceOf[Array[Byte]]
     } catch {
-      case e: Exception =>
-        StringUtils.toBytes(e)
+      case e: Exception => StringUtils.toBytes(e)
     }
 
     import java.io.FileOutputStream
-    val outputStream = new FileOutputStream(destination.toString)
+    val destinationFile = new File(destination.toString,  outputFileStem + "." + logContainer.getFileExtension)
+    val outputStream = new FileOutputStream(destinationFile)
     try {
       outputStream.write(finalArchiveByteArray)
     }
     finally {
       if (outputStream != null) outputStream.close()
     }
-    destination
+    destinationFile.toURI
   }
 
   def downloadH2OLogs(destination: URI, logContainer: String): URI = {
