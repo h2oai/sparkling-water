@@ -77,7 +77,8 @@ task createVersionFile {
             versionFileDir.mkdirs()
         }
         File version_file = new File(versionFileDir, "version.txt")
-        def version_txt = version
+        
+        def version_txt = version.substring(0, version.lastIndexOf("-"))
         version_file.write(version_txt)
     }
 }
@@ -136,7 +137,7 @@ def copyPySetup() {
         filter {
             it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
                     .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-                    .replaceAll("SUBST_SW_VERSION", version)
+                    .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")))
                     .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
         }
         into pkgDir
@@ -169,7 +170,7 @@ def copyPySetup() {
         filter {
             it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
                     .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-                    .replaceAll("SUBST_SW_VERSION", version)
+                    .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")))
         }
         into condaDir
     }
