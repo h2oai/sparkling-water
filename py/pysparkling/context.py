@@ -11,6 +11,8 @@ from pysparkling.conversions import FrameConversions as fc
 import warnings
 import atexit
 import sys
+from h2o.utils.typechecks import assert_is_type, Enum
+
 
 def _monkey_patch_H2OFrame(hc):
     @staticmethod
@@ -193,8 +195,9 @@ class H2OContext(object):
         self.__stop()
         sys.exit()
 
-    def download_h2o_logs(self, destination):
-        return self._jhc.h2oContext().downloadH2OLogs(destination)
+    def download_h2o_logs(self, destination, container = "ZIP"):
+        assert_is_type(container, Enum("ZIP", "LOG"))
+        return self._jhc.h2oContext().downloadH2OLogs(destination, container)
     
     def __str__(self):
         if H2OContext.is_initialized:
