@@ -82,7 +82,7 @@ def getSparkSpecificResourceDir(sparkMajorVersion) {
 }
 
 def getS3Path() {
-    def prefix = "sparkling-water/spark-${spark}"
+    def prefix = ""
 
     def branch = getGitBranch()
     def formattedSWBranch = branch.replaceAll("/", "-")
