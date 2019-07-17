@@ -15,7 +15,8 @@ task substituteAWS() {
 
         contents = contents
                 .replaceAll("SUBST_SW_VERSION", version)
-                .replaceAll("SUBST_S3_BUCKET", getS3Bucket())
+                .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+                .replaceAll("SUBST_S3_PATH", getS3Path())
 
         file(aws_script).write(contents, 'UTF-8')
     }
@@ -31,7 +32,7 @@ task substituteTerraform() {
                     .replaceAll("SUBST_SW_VERSION", version)
                     .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
                     .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-                    .replaceAll("SUBST_S3_BUCKET_PREFIX", getS3BucketPrefix())
+                    .replaceAll("SUBST_S3_PATH", getS3Path())
 
 
             file(path).write(contents, 'UTF-8')

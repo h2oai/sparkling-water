@@ -4,8 +4,8 @@
 // Utility methods for the pipeline
 //
 
-def getBucket(config) {
-    return sh(script: "${config.gradleCmd} -q s3bucket", returnStdout: true).trim()
+def getS3Path(config) {
+    return sh(script: "${config.gradleCmd} -q s3path", returnStdout: true).trim()
 }
 
 String getNightlyVersion(config) {
@@ -15,7 +15,7 @@ String getNightlyVersion(config) {
     if (config.uploadNightly.toBoolean()) {
         def buildNumber
         try {
-            def lastVersion = "https://h2o-release.s3.amazonaws.com/${getBucket(config)}/latest".toURL().getText().toString()
+            def lastVersion = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${config.sparkMajorVersion}/${getS3Path(config)}latest".toURL().getText().toString()
             def splits = lastVersion.split("-")
             buildNumber = splits[1].toInteger() + 1
         } catch (Exception ignored) {
@@ -432,22 +432,22 @@ def publishNightly() {
                                  file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
 
                     def version = getNightlyVersion(config)
-                    def bucket = getBucket(config)
+                    def path = getS3Path(config)
                     sh  """
                         ${config.gradleCmd} -Pversion=${version} dist -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
                                             
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                        ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/${bucket}/${version}/ --acl public-read
+                        ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}${version}/ --acl public-read
                         
                         echo UPDATE LATEST POINTER
                         echo ${version} > latest
                         echo "<head>" > latest.html
                         echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${version}/index.html\\" />" >> latest.html
                         echo "</head>" >> latest.html
-                        ~/.local/bin/aws s3 cp latest s3://h2o-release/${bucket}/latest --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/${bucket}/latest.html --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/${bucket}/index.html --acl public-read                   
+                        ~/.local/bin/aws s3 cp latest s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest.html --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}index.html --acl public-read                   
                         """
                 }
             }
