@@ -24,8 +24,8 @@ properties(
 // Utility methods for the pipeline
 //
 
-def getBucket(params) {
-    return sh(script: "./gradlew -Pspark=${params.spark} -Pversion=${getVersion(params)} -q s3bucket", returnStdout: true).trim()
+def getS3Path(params) {
+    return sh(script: "./gradlew -Pspark=${params.spark} -Pversion=${getVersion(params)} -q s3path", returnStdout: true).trim()
 }
 
 def getParallelStageDefinition(params){
@@ -104,10 +104,10 @@ String getPatchVersion(params) {
     return "${split[0].split("\\.")[2]}"
 }
 
-def getOrCreatePreviousChangeLog(bucket, previousVersion) {
+def getOrCreatePreviousChangeLog(sparkMajorVersion, path, previousVersion) {
     def content
     try {
-        def url = "https://h2o-release.s3.amazonaws.com/${bucket}/${previousVersion}/doc/_sources/CHANGELOG.rst.txt"
+        def url = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${sparkMajorVersion}/${path}/${previousVersion}/doc/_sources/CHANGELOG.rst.txt"
         content = url.toURL().getText()
     } catch (Exception ignored) {
         content = """
@@ -123,10 +123,10 @@ Change Log
 def prepareReleaseNotes(params) {
     def version = getVersion(params)
     def versionNoSparkSuffix = version.substring(0, version.lastIndexOf("-"))
-    def bucket = getBucket(params)
+    def path = getS3Path(params)
     def previousVersion = getPreviousVersion(params)
     dir("doc/src/site/sphinx/") {
-        getOrCreatePreviousChangeLog(bucket, previousVersion)
+        getOrCreatePreviousChangeLog(path, previousVersion)
 
         sh """
             # Get ID of this release
@@ -140,7 +140,7 @@ def prepareReleaseNotes(params) {
             release_date=\$(date +%Y-%m-%d)
             rel_prefix=\$(echo "v${versionNoSparkSuffix} (\$release_date)")
             underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
-            download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/${bucket}/${version}/index.html <http://h2o-release.s3.amazonaws.com/${bucket}/${version}/index.html>\\`__"
+            download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${path}/${version}/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${path}/${version}/index.html>\\`__"
         
             # Insert release info
             sed -i "4i \$rel_prefix" CHANGELOG.rst
@@ -275,12 +275,12 @@ def publishToS3() {
         stage('Publish to S3') {
             if (params.publishToS3.toBoolean()) {
                 def version = getVersion(params)
-                def bucket = getBucket(params)
+                def path = getS3Path(params)
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     sh """
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                        ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/${bucket}/${version} --acl public-read
+                        ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/spark-${params.spark}/${path}/${version} --acl public-read
 
                         echo UPDATE LATEST POINTER
                         echo ${version} > latest
@@ -288,9 +288,9 @@ def publishToS3() {
                         echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${version}/index.html\\" />" >> latest.html
                         echo "</head>" >> latest.html
 
-                        ~/.local/bin/aws s3 cp latest s3://h2o-release/${bucket}/latest --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/${bucket}/latest.html --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/${bucket}/index.html --acl public-read
+                        ~/.local/bin/aws s3 cp latest s3://h2o-release/sparkling-water/spark-${params.spark}/${path}/latest --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/spark-${params.spark}/${path}/latest.html --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/spark-${params.spark}/${path}/index.html --acl public-read
                         """
                 }
             }
@@ -323,7 +323,6 @@ EOF
                                """
 
                     def version = getVersion(params)
-                    def bucket = getBucket(params)
                     retryWithDelay(3, 120, {
                         sh """
                                 rm -rf docs.h2o.ai

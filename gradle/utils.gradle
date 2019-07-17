@@ -81,7 +81,7 @@ def getSparkSpecificResourceDir(sparkMajorVersion) {
     }
 }
 
-def getS3BucketPrefix() {
+def getS3Path() {
     def prefix = "sparkling-water/spark-${spark}"
 
     def branch = getGitBranch()
@@ -107,11 +107,6 @@ def getS3BucketPrefix() {
     }
 }
 
-def getS3Bucket() {
-    def prefix = getS3BucketPrefix()
-    return "${prefix}/${version}"
-
-}
 // Export methods by turning them into closures
 ext {
     getOsSpecificCommandLine = this.&getOsSpecificCommandLine
@@ -124,6 +119,5 @@ ext {
     getSupportedHadoopDistributions = this.&getSupportedHadoopDistributions
     getSparkSpecificSourceDir = this.&getSparkSpecificSourceDir
     getSparkSpecificResourceDir = this.&getSparkSpecificResourceDir
-    getS3Bucket = this.&getS3Bucket
-    getS3BucketPrefix = this.&getS3BucketPrefix
+    getS3Path = this.&getS3Path
 }
