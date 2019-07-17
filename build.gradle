@@ -99,7 +99,16 @@ def loadVersionSpecificProp(propName, versionSpecificProps) {
 def loadVersion(versionSpecificProps) {
     def version = project.properties.get("version")
     def sparkMajorVersion = getSparkMajorVersion(versionSpecificProps)
-    return version.endsWith("-${sparkMajorVersion}") ? version : "${version}-${sparkMajorVersion}"
+    if (version.endsWith("-${sparkMajorVersion}")) {
+        return version
+    } else {
+        supportedSparkVersions.split(" ").each { majorVersion ->
+            if (version.endsWith("-${majorVersion}")) {
+                throw new RuntimeException("You are specifying version suffix for Spark ${majorVersion}, but build is for Spark ${sparkMajorVersion} ")
+            }
+        }
+        return "${version}-${sparkMajorVersion}"
+    }
 }
 
 def getSparkMajorVersion(versionSpecificProps) {
