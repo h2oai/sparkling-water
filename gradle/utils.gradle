@@ -98,7 +98,7 @@ def getS3Path() {
             path = "${formattedSWBranch}"
         }
     }
-    if (isNightlyBuild) {
+    if (isNightlyBuild.toBoolean()) {
         if (path != "") {
             path = "${path}/nightly"
         } else {

@@ -25,7 +25,7 @@ properties(
 // Utility methods for the pipeline
 //
 
-def getS3Path(params) {
+def getS3Path() {
     return sh(script: "./gradlew -q s3path", returnStdout: true).trim()
 }
 
@@ -107,9 +107,9 @@ String getPatchVersion(params) {
     return "${split[0].split("\\.")[2]}"
 }
 
-def prepareReleaseNotes(params, sparkMajorVersions) {
+def prepareReleaseNotes(sparkMajorVersions) {
     def versionNoSparkSuffix = getVersionNoSuffix()
-    def path = getS3Path(params)
+    def path = getS3Path()
     def links = sparkMajorVersions.collect{ majorVersion ->
         "   - for Spark ${majorVersion}: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${majorVersion}/${path}${versionNoSparkSuffix}-${majorVersion}/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${majorVersion}/${path}${versionNoSparkSuffix}-${majorVersion}/index.html>`__"
     }
@@ -216,7 +216,7 @@ def updateChangeLogStage(sparkMajorVersions) {
                         ansiColor('xterm') {
                             timestamps {
                                 withDocker {
-                                    prepareReleaseNotes(params, sparkMajorVersions)
+                                    prepareReleaseNotes(sparkMajorVersions)
                                 }
                             }
                         }
@@ -310,7 +310,7 @@ def publishToS3() {
         stage('Publish to S3') {
             if (params.publishToS3.toBoolean()) {
                 def version = getVersion(params)
-                def path = getS3Path(params)
+                def path = getS3Path()
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     sh """
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
