@@ -97,7 +97,9 @@ def loadVersionSpecificProp(propName, versionSpecificProps) {
 }
 
 def loadVersion(versionSpecificProps) {
-    return "${project.properties.get("version")}-${getSparkMajorVersion(versionSpecificProps)}"
+    def version = project.properties.get("version")
+    def sparkMajorVersion = getSparkMajorVersion(versionSpecificProps)
+    return version.endsWith("-${sparkMajorVersion}") ? version : "${version}-${sparkMajorVersion}"
 }
 
 def getSparkMajorVersion(versionSpecificProps) {
@@ -108,7 +110,6 @@ def getSparkMajorVersion(versionSpecificProps) {
 // For all projects (this and all subprojects) specify common properties and tasks
 //
 def loadedVersion = loadVersion(versionSpecificProps)
-
 
 configure(allprojects) { project ->
     apply plugin: 'idea'
