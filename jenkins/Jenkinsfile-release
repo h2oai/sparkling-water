@@ -5,9 +5,8 @@
 properties(
         [
                 parameters(
-                        [       booleanParam(name: 'updateChangeLog', defaultValue: true, description: "Update change log"),
-                                string(name: 'releaseFor', defaultValue: 'all', description: "For which Spark Major version" +
-                                        " do a release. By default, do release for all supported released versions"),
+                        [       string(name: 'releaseFor', defaultValue: 'all', description: "For which Spark Major version" +
+                                " do a release. By default, do release for all supported released versions"),
                                 booleanParam(name: 'buildConda', defaultValue: true, description: 'Build Conda'),
                                 booleanParam(name: 'publishToNexus', defaultValue: true, description: 'Publish to Nexus'),
                                 booleanParam(name: 'buildExtendedH2OJars', defaultValue: true, description: 'Build extended H2O Jars'),
@@ -26,7 +25,7 @@ properties(
 //
 
 def getS3Path(params) {
-    return sh(script: "./gradlew -q s3path", returnStdout: true).trim()
+    return sh(script: "./gradlew -Pspark=${params.spark} -Pversion=${getVersion(params)} -q s3path", returnStdout: true).trim()
 }
 
 def getParallelStageDefinition(params){
@@ -83,17 +82,15 @@ String getVersion(params) {
     return "${versionLine.split("=")[1].replace("-SNAPSHOT", "")}-${params.spark}"
 }
 
-String getVersionNoSuffix() {
-    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('version') }
-    return versionLine.split("=")[1].replace("-SNAPSHOT", "")
-}
-
 String getNextVersion(params) {
     def majorVersion = getMajorVersion(params)
     def patchVersion = getPatchVersion(params)
     return "${majorVersion}.${patchVersion.toInteger() + 1}-SNAPSHOT-${params.spark}"
 }
 
+String getPreviousVersion(params) {
+    return "${getMajorVersion(params)}.${getPatchVersion(params).toInteger() - 1}-${params.spark}"
+}
 
 String getMajorVersion(params) {
     def v = getVersion(params)
@@ -107,14 +104,30 @@ String getPatchVersion(params) {
     return "${split[0].split("\\.")[2]}"
 }
 
-def prepareReleaseNotes(params, sparkMajorVersions) {
-    def versionNoSparkSuffix = getVersionNoSuffix()
-    def path = getS3Path(params)
-    def links = sparkMajorVersions.collect{ majorVersion ->
-        "   - for Spark ${majorVersion}: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${majorVersion}/${path}${versionNoSparkSuffix}-${majorVersion}/index.html <ttp://h2o-release.s3.amazonaws.com/sparkling-water/spark-${majorVersion}/${path}${versionNoSparkSuffix}-${majorVersion}/index.html>`__"
+def getOrCreatePreviousChangeLog(sparkMajorVersion, path, previousVersion) {
+    def content
+    try {
+        def url = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${sparkMajorVersion}/${path}/${previousVersion}/doc/_sources/CHANGELOG.rst.txt"
+        content = url.toURL().getText()
+    } catch (Exception ignored) {
+        content = """
+Change Log
+==========
+
+
+"""
     }
-    throw new RuntimeException(links.join("\n"))
-    dir("doc/") {
+    writeFile(file: 'CHANGELOG.rst', text: content)
+}
+
+def prepareReleaseNotes(params) {
+    def version = getVersion(params)
+    def versionNoSparkSuffix = version.substring(0, version.lastIndexOf("-"))
+    def path = getS3Path(params)
+    def previousVersion = getPreviousVersion(params)
+    dir("doc/src/site/sphinx/") {
+        getOrCreatePreviousChangeLog(path, previousVersion)
+
         sh """
             # Get ID of this release
             jira_version_id=\$(curl --silent "https://0xdata.atlassian.net/rest/api/2/project/SW/versions" | tr '}' '\\n' | grep "\\"name\\":\\"${versionNoSparkSuffix}\\"" | cut -d'"' -f8)
@@ -127,7 +140,7 @@ def prepareReleaseNotes(params, sparkMajorVersions) {
             release_date=\$(date +%Y-%m-%d)
             rel_prefix=\$(echo "v${versionNoSparkSuffix} (\$release_date)")
             underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
-            downloads_header="Downloads:\n"
+            download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${path}${version}/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${path}${version}/index.html>\\`__"
         
             # Insert release info
             sed -i "4i \$rel_prefix" CHANGELOG.rst
@@ -135,16 +148,13 @@ def prepareReleaseNotes(params, sparkMajorVersions) {
             # Insert the underscores
             sed -i "5i \$underscores" CHANGELOG.rst
         
-            # Insert the downloads header
-            sed -i "6i \$downloads_header" CHANGELOG.rst
-            
-            sed -i "7i ${links}" CHANGELOG.rst
+            # Insert the download link
+            sed -i "6i \$download_line" CHANGELOG.rst
+        
             # Insert the release notes
-            sed -i "7r release_notes" CHANGELOG.rst
+            sed -i "6r release_notes" CHANGELOG.rst
         
             rm -rf release_notes
-            
-            cat CHANGELOG.rst
             """
     }
 }
@@ -175,37 +185,21 @@ sparkMajorVersions.each { version ->
     parallelStages["Spark ${version}"] = getParallelStageDefinition(config.clone())
 }
 
-updateChangeLogStage(sparkMajorVersions)(params)
 parallel(parallelStages)
 
-def updateChangeLogStage(sparkMajorVersions) {
-    return { params ->
-        stage('Update Change Log') {
-            if (params.updateChangeLog.toBoolean()) {
-                node("master") {
-                    docker.withRegistry("http://harbor.h2o.ai") {
-                        ansiColor('xterm') {
-                            timestamps {
-                                withDocker {
-                                    prepareReleaseNotes(params, sparkMajorVersions)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 def build() {
     return { params ->
         stage('Build') {
             withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD'),
                              usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
                              file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
+
+                prepareReleaseNotes(params)
                 sh """
                     activate_java_8
                     ./gradlew dist -Pspark=${params.spark} -Pversion=${getVersion(params)} -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
+                    # Remove sources of update changelog as after dist, it is alrady part generated web page
+                    rm -rf doc/src/site/sphinx/CHANGELOG.rst
                     """
             }
         }
