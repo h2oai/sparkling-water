@@ -5,10 +5,10 @@ v2.1.56, v2.2.42, v2.3.31, v2.4.13 (2019-06-24)
 -----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/13/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/13/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/31/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/31/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/42/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/42/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/56/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/56/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/13/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/13/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/31/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/31/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/42/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/42/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/56/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/56/index.html>`__
 
 -  Bug
 
@@ -65,10 +65,10 @@ v2.1.55, v2.2.41, v2.3.30, v2.4.12 (2019-06-03)
 -----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/12/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/12/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/30/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/30/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/41/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/41/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/55/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/55/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/12/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/12/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/30/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/30/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/41/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/41/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/55/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/55/index.html>`__
 
 -  Bug
 
@@ -106,10 +106,10 @@ v2.1.54, v2.2.40, v2.3.29, v2.4.11 (2019-05-17)
 -----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/11/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/11/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/29/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/29/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/40/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/40/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/54/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/54/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/11/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/11/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/29/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/29/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/40/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/40/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/54/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/54/index.html>`__
 
 -  Bug
 
@@ -149,10 +149,10 @@ v2.1.53, v2.2.39, v2.3.28, v2.4.10 (2019-04-26)
 -----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/10/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/10/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/28/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/28/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/39/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/39/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/53/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/53/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/10/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/10/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/28/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/28/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/39/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/39/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/53/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/53/index.html>`__
 
 -  Bug
 
@@ -208,10 +208,10 @@ v2.1.52, v2.2.38, v2.3.27, v2.4.9 (2019-04-03)
 ----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/9/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/9/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/27/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/27/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/38/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/38/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/52/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/52/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/9/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/9/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/27/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/27/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/38/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/38/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/52/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/52/index.html>`__
 
 -  Bug
 
@@ -239,10 +239,10 @@ v2.1.51, v2.2.37, v2.3.26, v2.4.8 (2019-03-15)
 ----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/8/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/8/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/26/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/26/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/37/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/37/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/51/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/51/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/8/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/8/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/26/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/26/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/37/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/37/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/51/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/51/index.html>`__
 
 -  Bug
 
@@ -258,10 +258,10 @@ v2.1.50, v2.2.36, v2.3.25, v2.4.7 (2019-03-07)
 ----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/7/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/7/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/25/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/25/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/36/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/36/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/50/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/50/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/7/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/7/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/25/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/25/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/36/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/36/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/50/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/50/index.html>`__
 
 -  Bug
 
@@ -288,10 +288,10 @@ v2.1.49, v2.2.35, v2.3.24, v2.4.6 (2019-02-18)
 ----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/6/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/6/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/24/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/24/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/35/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/35/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/49/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/49/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/6/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/6/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/24/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/24/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/35/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/35/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/49/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/49/index.html>`__
 
 -  Bug
 
@@ -310,10 +310,10 @@ v2.1.48, v2.2.34, v2.3.23, v2.4.5 (2019-01-29)
 ----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/5/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/5/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/23/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/23/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/34/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/34/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/48/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/48/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/5/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/5/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/23/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/23/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/34/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/34/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/48/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/48/index.html>`__
 
 -  Bug
 
@@ -324,10 +324,10 @@ v2.1.47, v2.2.33, v2.3.22, v2.4.4 (2019-01-21)
 ----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/4/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/22/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/22/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/33/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/33/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/47/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/47/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/4/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/22/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/22/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/33/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/33/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/47/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/47/index.html>`__
 
 -  Bug
 
@@ -343,10 +343,10 @@ v2.1.46, v2.2.32, v2.3.21, v2.4.3 (2019-01-17)
 ----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/3/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/21/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/21/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/32/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/32/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/46/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/46/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/3/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/21/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/21/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/32/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/32/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/46/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/46/index.html>`__
 
 -  Bug
 
@@ -364,10 +364,10 @@ v2.1.45, v2.2.31, v2.3.20, v2.4.2 (2019-01-08)
 ----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/2/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/20/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/20/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/31/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/31/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/45/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/45/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/20/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/20/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/31/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/31/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/45/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/45/index.html>`__
 
 -  Bug
 
@@ -388,10 +388,10 @@ v2.1.44, v2.2.30, v2.3.19, v2.4.1 (2018-12-27)
 ----------------------------------------------
 Downloads:
 
-   - Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/1/index.html>`__
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/19/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/19/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/30/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/30/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/44/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/44/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/1/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/19/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/19/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/30/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/30/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/44/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/44/index.html>`__
 
 -  Bug
 
@@ -418,9 +418,9 @@ v2.1.43, v2.2.29, v2.3.18 (2018-11-27)
 --------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/18/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/18/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/29/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/29/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/43/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/43/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/18/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/18/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/29/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/29/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/43/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/43/index.html>`__
 
 -  Improvement
 
@@ -431,9 +431,9 @@ v2.1.42, v2.2.28, v2.3.17 (2018-10-27)
 --------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/17/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/17/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/28/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/28/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/42/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/42/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/17/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/17/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/28/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/28/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/42/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/42/index.html>`__
 
 -  Bug
 
@@ -450,9 +450,9 @@ v2.1.41, v2.2.27, v2.3.16 (2018-10-17)
 --------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/16/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/16/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/27/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/27/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/41/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/41/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/16/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/16/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/27/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/27/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/41/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/41/index.html>`__
 
 -  Bug
 
@@ -478,9 +478,9 @@ v2.1.40, v2.2.26, v2.3.15 (2018-10-02)
 --------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/15/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/15/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/26/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/26/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/40/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/40/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/15/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/15/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/26/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/26/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/40/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/40/index.html>`__
 
 -  Bug
 
@@ -498,9 +498,9 @@ v2.1.39, v2.2.25, v2.3.14 (2018-09-24)
 --------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/14/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/14/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/25/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/25/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/39/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/39/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/14/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/14/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/25/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/25/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/39/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/39/index.html>`__
 
 -  New Feature
 
@@ -531,9 +531,9 @@ v2.1.38, v2.2.24, v2.3.13 (2018-09-14)
 --------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/13/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/13/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/24/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/24/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/38/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/38/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/13/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/13/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/24/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/24/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/38/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/38/index.html>`__
 
 -  New Feature
 
@@ -554,9 +554,9 @@ v2.1.37, v2.2.23, v2.3.12 (2018-08-28)
 --------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/12/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/12/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/23/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/23/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/37/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/37/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/12/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/12/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/23/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/23/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/37/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/37/index.html>`__
 
 -  Bug
 
@@ -603,9 +603,9 @@ v2.1.36, v2.2.22, v2.3.11 (2018-08-09)
 --------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/11/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/11/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/22/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/22/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/36/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/36/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/11/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/11/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/22/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/22/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/36/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/36/index.html>`__
 
 -  Bug
 
@@ -642,9 +642,9 @@ v2.1.35, v2.2.21, v2.3.10 (2018-08-01)
 --------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/10/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/10/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/21/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/21/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/35/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/35/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/10/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/10/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/21/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/21/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/35/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/35/index.html>`__
 
 -  Bug
 
@@ -675,9 +675,9 @@ v2.1.34, v2.2.20, v2.3.9 (2018-07-16)
 -------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/9/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/9/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/20/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/20/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/34/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/34/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/9/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/9/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/20/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/20/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/34/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/34/index.html>`__
 
 -  Bug
 
@@ -714,9 +714,9 @@ v2.1.33, v2.2.19, v2.3.8 (2018-06-18)
 -------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/8/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/8/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/19/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/19/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/33/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/33/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/8/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/8/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/19/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/19/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/33/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/33/index.html>`__
 
 -  Improvement
 
@@ -727,9 +727,9 @@ v2.1.32, v2.2.18, v2.3.7 (2018-06-18)
 -------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/7/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/7/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/18/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/18/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/32/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/32/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/7/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/7/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/18/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/18/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/32/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/32/index.html>`__
 
 -  Bug
 
@@ -752,9 +752,9 @@ v2.1.31, v2.2.17, v2.3.6 (2018-06-13)
 -------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/6/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/6/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/17/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/17/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/31/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/31/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/6/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/6/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/17/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/17/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/31/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/31/index.html>`__
 
 -  Bug
 
@@ -785,9 +785,9 @@ v2.1.30, v2.2.16, v2.3.5 (2018-05-23)
 -------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/5/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/5/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/16/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/16/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/30/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/30/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/5/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/5/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/16/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/16/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/30/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/30/index.html>`__
 
 -  Bug
 
@@ -803,9 +803,9 @@ v2.1.29, v2.2.15, v2.3.4 (2018-05-18)
 -------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/4/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/15/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/15/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/29/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/29/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/4/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/15/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/15/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/29/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/29/index.html>`__
 
 -  Bug
 
@@ -819,9 +819,9 @@ v2.1.28, v2.2.14, v2.3.3 (2018-05-15)
 -------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/3/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/14/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/14/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/28/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/28/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/3/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/14/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/14/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/28/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/28/index.html>`__
 
 -  Bug
 
@@ -844,9 +844,9 @@ v2.1.27, v2.2.13, v2.3.2 (2018-05-02)
 -------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/2/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/13/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/13/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/27/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/27/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/2/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/13/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/13/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/27/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/27/index.html>`__
 
 -  Bug
 
@@ -872,9 +872,9 @@ v2.1.26, v2.2.12, v2.3.1 (2018-04-19)
 -------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/1/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/12/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/12/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/26/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/26/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/12/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/12/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/26/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/26/index.html>`__
 
 -  Bug
 
@@ -902,9 +902,9 @@ v2.1.25, v2.2.11, v2.3.0 (2018-03-29)
 -------------------------------------
 Downloads:
 
-   - Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/0/index.html>`__
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/11/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/11/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/25/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/25/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/0/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/11/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/11/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/25/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/25/index.html>`__
 
 -  Bug
 
@@ -941,8 +941,8 @@ v2.1.24, v2.2.10 (2018-03-08)
 -----------------------------
 Downloads:
 
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/10/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/10/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/24/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/24/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/10/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/10/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/24/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/24/index.html>`__
 
 -  Bug
 
@@ -970,8 +970,8 @@ v2.1.23, v2.2.9 (2018-02-26)
 ----------------------------
 Downloads:
 
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/9/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/9/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/23/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/23/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/9/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/9/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/23/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/23/index.html>`__
 
 -  Bug
 
@@ -994,8 +994,8 @@ v2.1.22, v2.2.8 (2018-02-14)
 ----------------------------
 Downloads:
 
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/8/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/8/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/22/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/22/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/8/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/8/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/22/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/22/index.html>`__
 
 -  Technical task
 
@@ -1044,8 +1044,8 @@ v2.1.21, v2.2.7 (2018-01-18)
 ----------------------------
 Downloads:
 
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/7/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/7/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/21/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/21/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/7/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/7/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/21/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/21/index.html>`__
 
 -  Bug
 
@@ -1071,8 +1071,8 @@ v2.1.20, v2.2.6 (2018-01-03)
 ----------------------------
 Downloads:
 
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/6/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/6/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/20/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/20/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/6/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/6/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/20/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/20/index.html>`__
 
 -  Bug
 
@@ -1106,8 +1106,8 @@ v2.1.19, v2.2.5 (2017-12-11)
 ----------------------------
 Downloads:
 
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/5/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/5/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/19/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/19/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/5/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/5/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/19/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/19/index.html>`__
 
 -  Bug
 
@@ -1126,8 +1126,8 @@ v2.1.18, v2.2.4 (2017-12-01)
 ----------------------------
 Downloads:
 
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/4/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/18/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/18/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/4/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/18/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/18/index.html>`__
 
 -  Bug
 
@@ -1144,8 +1144,8 @@ v2.1.17, v2.2.3 (2017-11-25)
 ----------------------------
 Downloads:
 
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/3/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/17/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/17/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/3/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/17/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/17/index.html>`__
 
 -  Bug
 
@@ -1201,8 +1201,8 @@ v2.1.16, v2.2.2 (2017-10-23)
 ----------------------------
 Downloads:
 
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/2/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/16/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/16/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/2/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/16/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/16/index.html>`__
 
 -  Bug
 
@@ -1229,8 +1229,8 @@ v2.1.15, v2.2.1 (2017-10-10)
 ----------------------------
 Downloads:
 
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/1/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/15/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/15/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/1/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/15/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/15/index.html>`__
 
 -  Bug
 
@@ -1271,8 +1271,8 @@ v2.1.14, v2.2.0 (2017-08-23)
 ----------------------------
 Downloads:
 
-   - Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/0/index.html>`__
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/14/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/14/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/0/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/14/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/14/index.html>`__
 
 -  Bug
 
@@ -1296,7 +1296,7 @@ v2.1.13 (2017-08-02)
 --------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/13/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/13/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/13/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/13/index.html>`__
 
 -  Bug
 
@@ -1317,7 +1317,7 @@ v2.1.12 (2017-07-17)
 --------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/12/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/12/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/12/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/12/index.html>`__
 
 -  Improvement
 
@@ -1334,7 +1334,7 @@ v2.1.11 (2017-07-12)
 --------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/11/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/11/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/11/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/11/index.html>`__
 
 -  Bug
 
@@ -1350,7 +1350,7 @@ v2.1.10 (2017-06-29)
 --------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/10/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/10/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/10/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/10/index.html>`__
 
 -  Bug
 
@@ -1376,7 +1376,7 @@ v2.1.9 (2017-06-15)
 -------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/9/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/9/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/9/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/9/index.html>`__
 
 -  Technical task
 
@@ -1418,7 +1418,7 @@ v2.1.8 (2017-05-25)
 -------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/8/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/8/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/8/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/8/index.html>`__
 
 -  Bug
 
@@ -1449,7 +1449,7 @@ v2.1.7 (2017-05-10)
 -------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/7/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/7/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/7/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/7/index.html>`__
 
 -  Bug
 
@@ -1460,7 +1460,7 @@ v2.1.6 (2017-05-09)
 -------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/6/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/6/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/6/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/6/index.html>`__
 
 -  Improvement
 
@@ -1472,7 +1472,7 @@ v2.1.5 (2017-04-27)
 -------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/5/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/5/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/5/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/5/index.html>`__
 
 -  Bug
 
@@ -1487,7 +1487,7 @@ v2.1.4 (2017-04-20)
 -------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/4/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/4/index.html>`__
 
 -  Bug
 
@@ -1514,7 +1514,7 @@ v2.1.3 (2017-04-7)
 ------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/3/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/3/index.html>`__
 
 -  Bug
 
@@ -1550,7 +1550,7 @@ v2.1.2 (2017-03-20)
 -------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/2/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/2/index.html>`__
 
 -  Bug
 
@@ -1566,7 +1566,7 @@ v2.1.1 (2017-03-18)
 -------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/1/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/1/index.html>`__
 
 -  Bug
 
@@ -1591,7 +1591,7 @@ v2.1.0 (2017-03-02)
 -------------------
 Downloads:
 
-   - Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/0/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/0/index.html>`__
 
 -  Bug
 
