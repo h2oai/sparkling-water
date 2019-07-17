@@ -51,7 +51,8 @@ class H2OTargetEncoder(override val uid: String)
     targetEncoderParameters.setTrain(trainingFrame._key)
 
     val builder = new TargetEncoderBuilder(targetEncoderParameters)
-    builder.trainModel().get()
+    builder.trainModel().get() // Calling get() to wait until the model training is finished.
+    builder.getTargetEncoderModel()
   }
 
   override def copy(extra: ParamMap): H2OTargetEncoder = defaultCopy(extra)
