@@ -157,13 +157,6 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
     }
 }
 
-def downloadLastChangeLog(config) {
-    def buildNumber = "https://h2o-release.s3.amazonaws.com/sparkling-water/rel-${config.sparkMajorVersion}/latest".toURL().getText().toInteger()
-    def url = "https://h2o-release.s3.amazonaws.com/sparkling-water/rel-${config.sparkMajorVersion}/${buildNumber}/doc/_sources/CHANGELOG.rst.txt"
-    def content = url.toURL().getText()
-    writeFile(file: 'CHANGELOG.rst', text: content)
-}
-
 //
 // Main entry point to the pipeline and definition of all stages
 //
@@ -438,14 +431,10 @@ def publishNightly() {
                                  usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
                                  file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
 
-                    dir("doc/src/site/sphinx/") {
-                        downloadLastChangeLog(config)
-                    }
                     def version = getNightlyVersion(config)
                     def bucket = getBucket(config)
                     sh  """
                         ${config.gradleCmd} -Pversion=${version} dist -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
-                        rm -rf doc/src/site/sphinx/CHANGELOG.rst
                                             
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
