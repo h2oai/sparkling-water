@@ -53,7 +53,7 @@ sudo python2.7 -m pip install -U scikit-learn
 mkdir -p /home/hadoop/h2o
 cd /home/hadoop/h2o
 
-wget https://s3.amazonaws.com/h2o-release/SUBST_S3_BUCKET_PREFIX/sparkling-water-${var.sw_version}.zip
+wget https://s3.amazonaws.com/h2o-release/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_S3_PATH${var.sw_version}/sparkling-water-${var.sw_version}.zip
 
 unzip -o sparkling-water-${var.sw_version}.zip 1> /dev/null & wait
 
