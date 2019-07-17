@@ -25,7 +25,7 @@ properties(
 //
 
 def getS3Path(params) {
-    return sh(script: "./gradlew -Pspark=${params.spark} -Pversion=${getVersion(params)} -q s3path", returnStdout: true).trim()
+    return sh(script: "./gradlew -q s3path", returnStdout: true).trim()
 }
 
 def getParallelStageDefinition(params){
