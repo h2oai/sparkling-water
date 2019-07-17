@@ -140,7 +140,7 @@ def prepareReleaseNotes(params) {
             release_date=\$(date +%Y-%m-%d)
             rel_prefix=\$(echo "v${versionNoSparkSuffix} (\$release_date)")
             underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
-            download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${path}/${version}/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${path}/${version}/index.html>\\`__"
+            download_line="Download at: \\`http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${path}${version}/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${path}${version}/index.html>\\`__"
         
             # Insert release info
             sed -i "4i \$rel_prefix" CHANGELOG.rst
@@ -280,7 +280,7 @@ def publishToS3() {
                     sh """
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                        ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/spark-${params.spark}/${path}/${version} --acl public-read
+                        ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/spark-${params.spark}/${path}${version} --acl public-read
 
                         echo UPDATE LATEST POINTER
                         echo ${version} > latest
@@ -288,9 +288,9 @@ def publishToS3() {
                         echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${version}/index.html\\" />" >> latest.html
                         echo "</head>" >> latest.html
 
-                        ~/.local/bin/aws s3 cp latest s3://h2o-release/sparkling-water/spark-${params.spark}/${path}/latest --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/spark-${params.spark}/${path}/latest.html --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/spark-${params.spark}/${path}/index.html --acl public-read
+                        ~/.local/bin/aws s3 cp latest s3://h2o-release/sparkling-water/spark-${params.spark}/${path}latest --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/spark-${params.spark}/${path}latest.html --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/spark-${params.spark}/${path}index.html --acl public-read
                         """
                 }
             }

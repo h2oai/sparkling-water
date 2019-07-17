@@ -82,29 +82,30 @@ def getSparkSpecificResourceDir(sparkMajorVersion) {
 }
 
 def getS3Path() {
-    def prefix = ""
-
     def branch = getGitBranch()
     def formattedSWBranch = branch.replaceAll("/", "-")
-    def path
+    String path
     if (project.hasProperty("buildAgainstH2OBranch")) {
         def h2oBranch = project.property("buildAgainstH2OBranch")
         def formattedH2OBranch = h2oBranch.replaceAll("/", "-")
-        path = "${prefix}/${formattedSWBranch}_${formattedH2OBranch}"
+        path = "${formattedSWBranch}_${formattedH2OBranch}"
     } else {
         def majorVersion = "${version.split("\\.")[0]}.${version.split("\\.")[1]}"
         def relBranch = "rel-${majorVersion}"
         if (branch == relBranch) {
-            path = "${prefix}"
+            path = ""
         } else {
-            path = "${prefix}/${formattedSWBranch}"
+            path = "${formattedSWBranch}"
         }
     }
     if (isNightlyBuild) {
-        return "${path}/nightly"
-    } else {
-        return path
+        path = "${path}/nightly"
     }
+
+    if (path != "") {
+        path = "${path}/"
+    }
+    return path
 }
 
 // Export methods by turning them into closures
