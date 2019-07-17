@@ -26,7 +26,7 @@ def substituteBuildInfoFile(buildTimeMillis, buildTimeIso8601, buildTimeLocal) {
 }
 
 def getMavenRepoLink() {
-    return "https://h2o-release.s3.amazonaws.com/${getS3Path()}/${version}/maven/repo/"
+    return "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${sparkMajorVersion}/${getS3Path()}/${version}/maven/repo/"
 }
 
 def getMavenRepoHtml() {
