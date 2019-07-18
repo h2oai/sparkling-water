@@ -267,7 +267,8 @@ else:
         file("${project.pkgDir}/sparkling_water/__init__.py").write("# Sparkling-water JAR holder for pySparkling module.")
     }
     // Configure proper name
-    archiveFileName = "h2o_pysparkling_${sparkMajorVersion}_${version.substring(0, version.lastIndexOf("-"))}.zip"
+    archiveBaseName = "h2o_pysparkling_${sparkMajorVersion}"
+
     from pkgDir
     destinationDir distDir
 }
