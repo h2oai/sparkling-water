@@ -22,7 +22,10 @@ else:
         __version__ = f.read().strip()
 
 pyspark_version = pyspark.__version__.split(".")
-pysparkling_version = __version__.split(".")
+pysparkling_spark_version = __version__.split("-")[1].split(".")
+
+pyspark_major = pyspark_version[0] + "." + pyspark_version[1]
+pysparkling_spark_major = pysparkling_spark_version[0] + "." + pysparkling_spark_version[1]
 
 def custom_formatwarning(msg, *args, **kwargs):
     # ignore everything except the message
@@ -31,10 +34,10 @@ def custom_formatwarning(msg, *args, **kwargs):
 warnings.formatwarning = custom_formatwarning
 
 
-if not (pyspark_version[0] == pysparkling_version[0] and pyspark_version[1] == pysparkling_version[1]):
+if not (pyspark_major == pysparkling_spark_major):
     warnings.warn("""
-    You are using PySparkling of version {pysparkling_version}, but your PySpark is of
-    version {pyspark_version}. Please make sure Spark and PySparkling versions are compatible. """.format(pysparkling_version=__version__, pyspark_version=pyspark.__version__))
+    You are using PySparkling for Spark {pysparkling_spark_major}, but your PySpark is of
+    version {pyspark_major}. Please make sure Spark and PySparkling versions are compatible. """.format(pysparkling_spark_major=pysparkling_spark_major, pyspark_major=pyspark_major))
 
 
 # set imports from this project which will be available when the module is imported

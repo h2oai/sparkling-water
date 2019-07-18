@@ -78,7 +78,7 @@ task createVersionFile {
         }
         File version_file = new File(versionFileDir, "version.txt")
 
-        def version_txt = version.substring(0, version.lastIndexOf("-"))
+        def version_txt = version
         version_file.write(version_txt)
     }
 }
