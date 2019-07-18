@@ -137,9 +137,6 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                         }
                     }
                 }
-                withDocker(config) {
-                    publishNightly()(config)
-                }
             }
         }
     }
