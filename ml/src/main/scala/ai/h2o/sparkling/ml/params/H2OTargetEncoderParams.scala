@@ -15,9 +15,11 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.param
+package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.ml.features.H2OTargetEncoderHoldoutStrategy
 import org.apache.spark.ml.h2o.features._
+import org.apache.spark.ml.h2o.param.{EnumParam, NullableStringParam}
 import org.apache.spark.ml.param._
 
 trait H2OTargetEncoderParams extends Params {

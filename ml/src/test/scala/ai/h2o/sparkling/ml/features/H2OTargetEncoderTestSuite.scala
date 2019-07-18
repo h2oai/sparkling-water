@@ -1,9 +1,9 @@
-package org.apache.spark.ml.h2o.features
+package ai.h2o.sparkling.ml.features
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.h2o.algos.H2OGBM
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.DataFrame
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -11,7 +11,7 @@ import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
-class H2OTargetEncoderTest extends FunSuite with SharedH2OTestContext {
+class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", "H2OTargetEncoderTest", conf = defaultSparkConf)
 

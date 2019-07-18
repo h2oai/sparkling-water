@@ -14,7 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.ml.h2o.features;
+
+package ai.h2o.sparkling.ml.features;
 
 public enum H2OTargetEncoderHoldoutStrategy {
     LeaveOneOut,

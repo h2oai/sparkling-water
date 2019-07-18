@@ -15,12 +15,12 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package ai.h2o.sparkling.ml.models
 
 import ai.h2o.automl.targetencoding.TargetEncoderModel
+import ai.h2o.sparkling.ml.features.H2OTargetEncoderBase
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
-import org.apache.spark.ml.h2o.features.H2OTargetEncoderBase
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
