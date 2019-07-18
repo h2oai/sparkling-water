@@ -20,10 +20,12 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.automl.targetencoding.TargetEncoderModel
 import ai.h2o.sparkling.ml.features.H2OTargetEncoderBase
 import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.functions._
 import water.support.ModelSerializationSupport
 
 class H2OTargetEncoderModel(
@@ -47,11 +49,20 @@ class H2OTargetEncoderModel(
 
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
-    val input = h2oContext.asH2OFrame(dataset.toDF())
+    val temporaryColumn = getClass.getSimpleName + "_temporary_id"
+    val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
+    val flatDF = H2OSchemaUtils.flattenDataFrame(withIdDF)
+    val relevantColumns = getInputCols() ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
+    val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
+    val input = h2oContext.asH2OFrame(relevantColumnsDF)
     convertRelevantColumnsToCategorical(input)
     val holdoutStrategyId = getHoldoutStrategy().ordinal().asInstanceOf[Byte]
-    val output = targetEncoderModel.transform(input, holdoutStrategyId, getNoise(), getNoiseSeed())
-    h2oContext.asDataFrame(output)
+    val outputFrame = targetEncoderModel.transform(input, holdoutStrategyId, getNoise(), getNoiseSeed())
+    val outputColumnsOnlyFrame = outputFrame.subframe(getOutputCols() ++ Array(temporaryColumn))
+    val outputColumnsOnlyDF = h2oContext.asDataFrame(outputColumnsOnlyFrame)
+    withIdDF
+      .join(outputColumnsOnlyDF, Seq(temporaryColumn), joinType="left")
+      .drop(temporaryColumn)
   }
 
   private def inTrainingMode: Boolean = {

@@ -1,10 +1,12 @@
 package ai.h2o.sparkling.ml.features
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.ml.h2o.algos.H2OGBM
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.IntegerType
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -28,18 +30,6 @@ class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(filePath)
-  }
-
-  private def assertDataFramesAreIdentical(expected: DataFrame, produced: DataFrame): Unit = {
-    produced.cache()
-    val numberOfExtraColumnsInExpected = expected.exceptAll(produced).count()
-    val numberOfExtraColumnsInProduced = produced.exceptAll(expected).count()
-    produced.unpersist()
-    assert(
-      numberOfExtraColumnsInExpected == 0 && numberOfExtraColumnsInProduced == 0,
-      s"""The expected data frame contains $numberOfExtraColumnsInExpected rows that are not in the produced data frame.
-         |The produced data frame contains $numberOfExtraColumnsInProduced rows that are not in the expected data frame.
-       """.stripMargin)
   }
 
   private lazy val dataset = loadDataFrameFromCsv("smalldata/prostate/prostate.csv")
@@ -70,7 +60,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
     val loadedModel = PipelineModel.load(path)
     val transformedTestingDataset = model.transform(testingDataset)
 
-    assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+    TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
   }
 
   test("The target encoder doesn't apply noise on the testing dataset") {
@@ -83,6 +73,71 @@ class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
     val model = pipeline.fit(trainingDataset)
     val transformedTestingDataset = model.transform(testingDataset)
 
-    assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+    TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+  }
+
+  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform the training dataset the same way") {
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setLabelCol("CAPSULE")
+      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setNoise(0.0)
+    val targetEncoderModel = targetEncoder.fit(trainingDataset)
+
+    val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset)
+    val transformedByMOJOModel = targetEncoderModel.transform(trainingDataset)
+
+    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+  }
+
+  test("TargetEncoder will use global average for unexpected values in the testing dataset") {
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("DCAPS"))
+      .setLabelCol("CAPSULE")
+
+    val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
+    val expectedValue = trainingDataset.groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+    val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te", lit(expectedValue))
+    val model = targetEncoder.fit(trainingDataset)
+
+    val resultDF = model.transform(unexpectedValuesDF)
+
+    TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+  }
+
+  test("TargetEncoder will use global average for null values in the testing dataset") {
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("DCAPS"))
+      .setLabelCol("CAPSULE")
+
+    val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
+    val expectedValue = trainingDataset.groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+    val expectedDF = withNullsDF.withColumn("DCAPS_te", lit(expectedValue))
+    val model = targetEncoder.fit(trainingDataset)
+
+    val resultDF = model.transform(withNullsDF)
+
+    TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+  }
+
+  test("TargetEncoder can be trained and used on a dataset with null values") {
+    import spark.implicits._
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("DCAPS"))
+      .setLabelCol("CAPSULE")
+      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setNoise(0.0)
+
+    val trainingWithNullsDF = trainingDataset
+      .withColumn("DCAPS", when(rand(1) < 0.5, 'DCAPS).otherwise(lit(null)))
+      .cache()
+
+    val model = targetEncoder.fit(trainingWithNullsDF)
+    val transformedByModel = model.transformTrainingDataset(trainingWithNullsDF).cache()
+    val transformedByMOJOModel = model.transform(trainingWithNullsDF).cache()
+
+    assert(transformedByModel.filter('DCAPS_te.isNull).count() == 0)
+    assert(transformedByMOJOModel.filter('DCAPS_te.isNull).count() == 0)
+    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 }
