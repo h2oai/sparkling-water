@@ -34,7 +34,7 @@ def custom_formatwarning(msg, *args, **kwargs):
 warnings.formatwarning = custom_formatwarning
 
 
-if not (pyspark_version[0] == pysparkling_spark_version[0] and pyspark_version[1] == pysparkling_spark_version[1]):
+if not (pyspark_major == pysparkling_spark_major):
     warnings.warn("""
     You are using PySparkling for Spark {pysparkling_spark_major}, but your PySpark is of
     version {pyspark_major}. Please make sure Spark and PySparkling versions are compatible. """.format(pysparkling_spark_major=pysparkling_spark_major, pyspark_major=pyspark_major))
