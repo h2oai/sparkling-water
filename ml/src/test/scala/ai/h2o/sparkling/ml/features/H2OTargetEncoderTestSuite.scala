@@ -6,7 +6,7 @@ import org.apache.spark.ml.h2o.algos.H2OGBM
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.IntegerType
+import org.apache.spark.sql.types.{IntegerType, StringType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -90,7 +90,22 @@ class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
     TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
-  test("TargetEncoder will use global average for unexpected values in the testing dataset") {
+  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel apply blended average the same way") {
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE"))
+      .setLabelCol("CAPSULE")
+      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setBlendedAvgEnabled(true)
+      .setNoise(0.0)
+    val targetEncoderModel = targetEncoder.fit(trainingDataset)
+
+    val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset).cache()
+    val transformedByMOJOModel = targetEncoderModel.transform(trainingDataset).cache()
+
+    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+  }
+
+  test("The target encoder will use global average for unexpected values in the testing dataset") {
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("DCAPS"))
       .setLabelCol("CAPSULE")
@@ -105,7 +120,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
     TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
   }
 
-  test("TargetEncoder will use global average for null values in the testing dataset") {
+  test("The target encoder will use global average for null values in the testing dataset") {
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("DCAPS"))
       .setLabelCol("CAPSULE")
@@ -120,10 +135,10 @@ class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
     TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
   }
 
-  test("TargetEncoder can be trained and used on a dataset with null values") {
+  test("The targetEncoder can be trained and used on a dataset with null values") {
     import spark.implicits._
     val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("DCAPS"))
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
       .setNoise(0.0)
@@ -139,5 +154,50 @@ class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
     assert(transformedByModel.filter('DCAPS_te.isNull).count() == 0)
     assert(transformedByMOJOModel.filter('DCAPS_te.isNull).count() == 0)
     TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+  }
+
+  test("The KFold strategy with column should give the same results as LeaveOneOut on the training dataset") {
+    val targetEncoderKFold = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setLabelCol("CAPSULE")
+      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.KFold)
+      .setFoldCol("ID")
+      .setNoise(0.0)
+
+    val targetEncoderLeaveOneOut = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setLabelCol("CAPSULE")
+      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.LeaveOneOut)
+      .setNoise(0.0)
+
+    val modelKFold = targetEncoderKFold.fit(trainingDataset)
+    val modelLeaveOneOut = targetEncoderLeaveOneOut.fit(trainingDataset)
+    val transformedKFold = modelKFold.transformTrainingDataset(trainingDataset)
+    val transformedLeaveOneOut = modelLeaveOneOut.transformTrainingDataset(trainingDataset)
+
+    TestFrameUtils.assertDataFramesAreIdentical(transformedLeaveOneOut, transformedKFold)
+  }
+
+  test("The target encoder treats string columns as other types ") {
+    import spark.implicits._
+
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setLabelCol("CAPSULE")
+      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setNoise(0.0)
+    val datasetWithStrings = dataset
+      .withColumn("RACE", 'RACE cast StringType)
+      .withColumn("DPROS", 'DPROS cast StringType)
+      .withColumn("DCAPS", 'DCAPS cast StringType)
+      .withColumn("CAPSULE", 'CAPSULE cast StringType)
+    val Array(trainingDataset, testingDateset) = datasetWithStrings.randomSplit(Array(0.8, 0.2), 1234L)
+    val model = targetEncoder.fit(trainingDataset)
+
+    val transformedByModel = model.transformTrainingDataset(testingDataset)
+    val transformedByMOJOModel = model.transform(testingDateset)
+
+    TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByModel)
+    TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByMOJOModel)
   }
 }
