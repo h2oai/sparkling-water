@@ -99,8 +99,8 @@ class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
       .setNoise(0.0)
     val targetEncoderModel = targetEncoder.fit(trainingDataset)
 
-    val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset).cache()
-    val transformedByMOJOModel = targetEncoderModel.transform(trainingDataset).cache()
+    val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset)
+    val transformedByMOJOModel = targetEncoderModel.transform(trainingDataset)
 
     TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
