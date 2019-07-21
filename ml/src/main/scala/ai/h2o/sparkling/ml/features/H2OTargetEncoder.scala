@@ -41,7 +41,7 @@ class H2OTargetEncoder(override val uid: String)
     copyValues(model)
   }
 
-  private def trainTargetEncodingModel(trainingFrame: Frame) = {
+  private def trainTargetEncodingModel(trainingFrame: Frame) = try {
     val targetEncoderParameters = new TargetEncoderModel.TargetEncoderParameters()
     targetEncoderParameters._withBlending = getBlendedAvgEnabled()
     targetEncoderParameters._blendingParams = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
@@ -53,6 +53,9 @@ class H2OTargetEncoder(override val uid: String)
     val builder = new TargetEncoderBuilder(targetEncoderParameters)
     builder.trainModel().get() // Calling get() to wait until the model training is finished.
     builder.getTargetEncoderModel()
+  } catch {
+    case e: IllegalStateException if e.getMessage.contains("We do not support multi-class target case") =>
+      throw new RuntimeException("The label column can not contain more than two unique values.")
   }
 
   override def copy(extra: ParamMap): H2OTargetEncoder = defaultCopy(extra)

@@ -8,12 +8,12 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{IntegerType, StringType}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
-class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
+class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", "H2OTargetEncoderTest", conf = defaultSparkConf)
 
@@ -151,8 +151,8 @@ class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
     val transformedByModel = model.transformTrainingDataset(trainingWithNullsDF).cache()
     val transformedByMOJOModel = model.transform(trainingWithNullsDF).cache()
 
-    assert(transformedByModel.filter('DCAPS_te.isNull).count() == 0)
-    assert(transformedByMOJOModel.filter('DCAPS_te.isNull).count() == 0)
+    transformedByModel.filter('DCAPS_te.isNull).count() shouldBe  0
+    transformedByMOJOModel.filter('DCAPS_te.isNull).count() shouldBe 0
     TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
@@ -178,7 +178,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
     TestFrameUtils.assertDataFramesAreIdentical(transformedLeaveOneOut, transformedKFold)
   }
 
-  test("The target encoder treats string columns as other types ") {
+  test("The target encoder treats string columns as other types") {
     import spark.implicits._
 
     val targetEncoder = new H2OTargetEncoder()
@@ -199,5 +199,94 @@ class H2OTargetEncoderTestSuite extends FunSuite with SharedH2OTestContext {
 
     TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByModel)
     TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByMOJOModel)
+  }
+
+  test("The target encoder can work with arbitrary label categories") {
+    val trainingDatasetWithLabel = trainingDataset.withColumn(
+      "LABEL",
+      when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setLabelCol("LABEL")
+      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setNoise(0.0)
+    val model = targetEncoder.fit(trainingDatasetWithLabel)
+
+    val transformedByModel = model.transformTrainingDataset(trainingDatasetWithLabel)
+    val transformedByMOJOModel = model.transform(trainingDatasetWithLabel)
+
+    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+  }
+
+  test("The target encoder can treads null as a regular category of the label column") {
+    val trainingDatasetWithLabel = trainingDataset.withColumn(
+      "LABEL",
+      when(rand(1) < 0.5, lit("a")).otherwise(lit(null)))
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setLabelCol("LABEL")
+      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setNoise(0.0)
+    val model = targetEncoder.fit(trainingDatasetWithLabel)
+
+    val transformedByModel = model.transformTrainingDataset(trainingDatasetWithLabel)
+    val transformedByMOJOModel = model.transform(trainingDatasetWithLabel)
+
+    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+  }
+
+  test("The fit function throws a runtime exception when the label domain has more than two categories") {
+    val trainingDatasetWithLabel = trainingDataset.withColumn(
+      "LABEL",
+      when(rand(1) < 0.3, lit("a"))
+        .when(rand(1) < 0.5, lit("b"))
+        .otherwise(lit("c")))
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setLabelCol("LABEL")
+      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setNoise(0.0)
+
+    intercept[RuntimeException] {
+      targetEncoder.fit(trainingDatasetWithLabel)
+    }
+  }
+
+  test("The transformTrainingDataset function throws a runtime exception when a label value wasn't expected") {
+    val trainingDatasetWithLabel = trainingDataset.withColumn(
+      "LABEL",
+      when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
+    val testingDatasetWithLabel = testingDataset.withColumn(
+      "LABEL",
+      lit("c"))
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setLabelCol("LABEL")
+      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setNoise(0.0)
+    val model = targetEncoder.fit(trainingDatasetWithLabel)
+
+    intercept[RuntimeException] {
+      model.transformTrainingDataset(testingDatasetWithLabel)
+    }
+  }
+
+  test("The transform function throws an exception when a label value wasn't expected") {
+    val trainingDatasetWithLabel = trainingDataset.withColumn(
+      "LABEL",
+      when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
+    val testingDatasetWithLabel = testingDataset.withColumn(
+      "LABEL",
+      lit("c"))
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setLabelCol("LABEL")
+      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setNoise(0.0)
+    val model = targetEncoder.fit(trainingDatasetWithLabel)
+
+    intercept[Exception] {
+      model.transform(testingDatasetWithLabel)
+    }
   }
 }

@@ -57,7 +57,13 @@ class H2OTargetEncoderModel(
     val input = h2oContext.asH2OFrame(relevantColumnsDF)
     convertRelevantColumnsToCategorical(input)
     val holdoutStrategyId = getHoldoutStrategy().ordinal().asInstanceOf[Byte]
-    val outputFrame = targetEncoderModel.transform(input, holdoutStrategyId, getNoise(), getNoiseSeed())
+    val outputFrame = try {
+      targetEncoderModel.transform(input, holdoutStrategyId, getNoise(), getNoiseSeed())
+    } catch {
+      case e: IllegalStateException if e.getMessage.contains("We do not support multi-class target case") =>
+        throw new RuntimeException(
+          "An unexpected value. The label column can contain only values that were present in the training dataset")
+    }
     val outputColumnsOnlyFrame = outputFrame.subframe(getOutputCols() ++ Array(temporaryColumn))
     val outputColumnsOnlyDF = h2oContext.asDataFrame(outputColumnsOnlyFrame)
     withIdDF
