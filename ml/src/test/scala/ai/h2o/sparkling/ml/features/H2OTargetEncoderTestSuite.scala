@@ -218,7 +218,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
-  test("The target encoder can treads null as a regular category of the label column") {
+  test("The target encoder treats null as a regular category of the label column") {
     val trainingDatasetWithLabel = trainingDataset.withColumn(
       "LABEL",
       when(rand(1) < 0.5, lit("a")).otherwise(lit(null)))
