@@ -20,10 +20,6 @@ import com.google.common.base.CaseFormat
 import hex.Model.Parameters
 import org.apache.spark.h2o.utils.ReflectionUtils.api
 import org.apache.spark.ml.param._
-import org.json4s.JsonAST.JArray
-import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import org.json4s.{JDouble, JNull, JString}
-
 
 import scala.reflect.ClassTag
 
@@ -132,5 +128,14 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
 
   protected def nullableStringArrayParam(name: String, doc: Option[String] = None): NullableStringArrayParam = {
     new NullableStringArrayParam(this, name, getDoc(doc, name))
+  }
+
+  protected def checkAllowedEnumValues[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
+                                                    (implicit ctag: reflect.ClassTag[T]): Unit = {
+    val names = ctag.runtimeClass.getDeclaredMethod("values").invoke(null).asInstanceOf[Array[T]].map(_.name())
+    if (name == null && !nullAllowed || !names.contains(name)) {
+      val nullStr = if (nullAllowed) "null or " else ""
+      throw new IllegalArgumentException(s"'$name' is not a valid value. Allowed values are: $nullStr${names.mkString(", ")}")
+    }
   }
 }
