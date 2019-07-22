@@ -166,7 +166,9 @@ class H2OAlgorithmParams(H2OCommonParams):
 
     def setDistribution(self, value):
         assert_is_type(value, Enum("AUTO", "bernoulli", "quasibinomial", "modified_huber", "multinomial", "ordinal", "gaussian", "poisson", "gamma", "tweedie", "huber", "laplace", "quantile"))
-        return self._set(distribution=value)
+        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+        correct_case_value = get_correct_case_enum(jvm.hex.genmodel.utils.DistributionFamily.values(), value)
+        return self._set(distribution=correct_case_value)
 
 
 class H2OSharedTreeParams(H2OAlgorithmParams):
