@@ -17,7 +17,7 @@
 
 package org.apache.spark.sql
 
-object DatasetExtensions{
+object DatasetExtensions {
   implicit class DatasetWrapper(dataset: Dataset[_]) {
     def withColumns(colNames: Seq[String], cols: Seq[Column]): DataFrame = dataset.withColumns(colNames, cols)
   }

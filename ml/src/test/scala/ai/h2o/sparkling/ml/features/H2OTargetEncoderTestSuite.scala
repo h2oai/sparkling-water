@@ -97,7 +97,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")
-      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setHoldoutStrategy("None")
       .setNoise(0.0)
     val targetEncoderModel = targetEncoder.fit(trainingDataset)
 
@@ -111,7 +111,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE"))
       .setLabelCol("CAPSULE")
-      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setHoldoutStrategy("None")
       .setBlendedAvgEnabled(true)
       .setNoise(0.0)
     val targetEncoderModel = targetEncoder.fit(trainingDataset)
@@ -157,7 +157,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")
-      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setHoldoutStrategy("None")
       .setNoise(0.0)
 
     val trainingWithNullsDF = trainingDataset
@@ -177,14 +177,14 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val targetEncoderKFold = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")
-      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.KFold)
+      .setHoldoutStrategy("KFold")
       .setFoldCol("ID")
       .setNoise(0.0)
 
     val targetEncoderLeaveOneOut = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")
-      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.LeaveOneOut)
+      .setHoldoutStrategy("LeaveOneOut")
       .setNoise(0.0)
 
     val modelKFold = targetEncoderKFold.fit(trainingDataset)
@@ -201,7 +201,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")
-      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setHoldoutStrategy("None")
       .setNoise(0.0)
     val datasetWithStrings = dataset
       .withColumn("RACE", 'RACE cast StringType)
@@ -225,7 +225,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
-      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setHoldoutStrategy("None")
       .setNoise(0.0)
     val model = targetEncoder.fit(trainingDatasetWithLabel)
 
@@ -242,7 +242,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
-      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setHoldoutStrategy("None")
       .setNoise(0.0)
     val model = targetEncoder.fit(trainingDatasetWithLabel)
 
@@ -261,7 +261,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
-      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setHoldoutStrategy("None")
       .setNoise(0.0)
 
     intercept[RuntimeException] {
@@ -279,7 +279,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
-      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setHoldoutStrategy("None")
       .setNoise(0.0)
     val model = targetEncoder.fit(trainingDatasetWithLabel)
 
@@ -298,7 +298,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
-      .setHoldoutStrategy(H2OTargetEncoderHoldoutStrategy.None)
+      .setHoldoutStrategy("None")
       .setNoise(0.0)
     val model = targetEncoder.fit(trainingDatasetWithLabel)
 

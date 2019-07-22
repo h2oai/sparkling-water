@@ -56,7 +56,7 @@ class H2OTargetEncoderModel(
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
     val input = h2oContext.asH2OFrame(relevantColumnsDF)
     convertRelevantColumnsToCategorical(input)
-    val holdoutStrategyId = getHoldoutStrategy().ordinal().asInstanceOf[Byte]
+    val holdoutStrategyId = possibleHoldoutStrategyValues.indexOf(getHoldoutStrategy().toLowerCase).asInstanceOf[Byte]
     val outputFrame = try {
       targetEncoderModel.transform(input, holdoutStrategyId, getNoise(), getNoiseSeed())
     } catch {

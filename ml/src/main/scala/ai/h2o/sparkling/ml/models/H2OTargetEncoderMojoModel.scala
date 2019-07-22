@@ -30,7 +30,6 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
-import org.apache.spark.sql.DatasetExtensions._
 
 import water.support.ModelSerializationSupport
 
@@ -39,11 +38,12 @@ class H2OTargetEncoderMojoModel(override val uid: String) extends Model[H2OTarge
 
   override protected def inputColumnNames: Array[String] = getInputCols()
 
-  override protected def outputColumnName: String = this.getClass.getSimpleName + "_output"
+  override protected def outputColumnName: String = getClass.getSimpleName + "_output"
 
-  def this() = this(Identifiable.randomUID("H2OTargetEncoderMojoModel"))
+  def this() = this(Identifiable.randomUID(getClass.getSimpleName))
 
   override def transform(dataset: Dataset[_]): DataFrame = {
+    import org.apache.spark.sql.DatasetExtensions._
     val outputCols = getOutputCols()
     val udfWrapper = H2OTargetEncoderMojoUdfWrapper(getMojoData(), outputCols)
     val withPredictionsDF = applyPredictionUdf(dataset, _ => udfWrapper.mojoUdf)

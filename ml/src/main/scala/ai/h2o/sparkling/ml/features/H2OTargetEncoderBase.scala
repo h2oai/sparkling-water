@@ -35,7 +35,7 @@ trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderParams {
     val fieldNames = fields.map(_.name)
     require(fieldNames.contains(getLabelCol()),
       s"The specified label column '${getLabelCol()}' was not found in the input dataset!")
-    for(inputCol <- getInputCols()) {
+    getInputCols().foreach { inputCol =>
       require(fieldNames.contains(inputCol),
         s"The specified input column '$inputCol' was not found in the input dataset!")
     }

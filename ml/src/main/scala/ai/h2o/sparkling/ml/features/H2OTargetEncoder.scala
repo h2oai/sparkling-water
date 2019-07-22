@@ -70,7 +70,12 @@ class H2OTargetEncoder(override val uid: String)
 
   def setInputCols(values: Array[String]): this.type = set(inputCols, values)
 
-  def setHoldoutStrategy(value: H2OTargetEncoderHoldoutStrategy): this.type = set(holdoutStrategy, value)
+  def setHoldoutStrategy(value: String): this.type = {
+    require(value != null, "The value can't be null.")
+    require(possibleHoldoutStrategyValues.contains(value.toLowerCase),
+      s"Only the values ${possibleHoldoutStrategyValues.mkString(", ")} are allowed.")
+    set(holdoutStrategy, value)
+  }
 
   def setBlendedAvgEnabled(value: Boolean): this.type = set(blendedAvgEnabled, value)
 

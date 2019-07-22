@@ -17,12 +17,12 @@
 
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.ml.features.H2OTargetEncoderHoldoutStrategy
-import org.apache.spark.ml.h2o.features._
-import org.apache.spark.ml.h2o.param.{EnumParam, NullableStringParam}
+import org.apache.spark.ml.h2o.param.NullableStringParam
 import org.apache.spark.ml.param._
 
 trait H2OTargetEncoderParams extends Params {
+
+  protected final def possibleHoldoutStrategyValues: Array[String] = Array("LeaveOneOut", "KFold", "None").map(_.toLowerCase)
 
   //
   // List of Parameters
@@ -30,7 +30,7 @@ trait H2OTargetEncoderParams extends Params {
   protected final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   protected final val labelCol = new Param[String](this, "labelCol", "Label column name")
   protected final val inputCols = new StringArrayParam(this, "inputCols", "Names of columns that will be transformed")
-  protected final val holdoutStrategy = new H2OTargetEncoderHoldoutStrategyParam(this,
+  protected final val holdoutStrategy = new Param[String](this,
     "holdoutStrategy",
     """A strategy deciding what records will be excluded when calculating the target average on the training dataset.
       |Options:
@@ -62,7 +62,7 @@ trait H2OTargetEncoderParams extends Params {
     foldCol -> null,
     labelCol -> "label",
     inputCols -> Array[String](),
-    holdoutStrategy -> H2OTargetEncoderHoldoutStrategy.None,
+    holdoutStrategy -> "None",
     blendedAvgEnabled -> false,
     blendedAvgInflectionPoint -> 10.0,
     blendedAvgSmoothing -> 20.0,
@@ -81,7 +81,7 @@ trait H2OTargetEncoderParams extends Params {
 
   def getOutputCols(): Array[String] = getInputCols().map(_ + "_te")
 
-  def getHoldoutStrategy(): H2OTargetEncoderHoldoutStrategy = $(holdoutStrategy)
+  def getHoldoutStrategy(): String = $(holdoutStrategy)
 
   def getBlendedAvgEnabled(): Boolean = $(blendedAvgEnabled)
 
@@ -92,14 +92,4 @@ trait H2OTargetEncoderParams extends Params {
   def getNoise(): Double = $(noise)
 
   def getNoiseSeed(): Long = $(noiseSeed)
-}
-
-class H2OTargetEncoderHoldoutStrategyParam private[h2o](
-    parent: Params,
-    name: String,
-    doc: String,
-    isValid: H2OTargetEncoderHoldoutStrategy => Boolean)
-  extends EnumParam[H2OTargetEncoderHoldoutStrategy](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
