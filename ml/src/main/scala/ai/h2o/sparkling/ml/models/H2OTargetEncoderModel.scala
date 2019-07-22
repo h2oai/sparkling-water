@@ -40,7 +40,7 @@ class H2OTargetEncoderModel(
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    if(inTrainingMode) {
+    if (inTrainingMode) {
       transformTrainingDataset(dataset)
     } else {
       mojoModel.transform(dataset)
