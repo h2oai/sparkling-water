@@ -17,7 +17,8 @@
 
 package water.sparkling.itest.local
 
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -29,8 +30,13 @@ import org.scalatest.junit.JUnitRunner
   */
 @RunWith(classOf[JUnitRunner])
 class H2OFrameToDataFrameDistributedTestSuite extends FunSuite with SharedH2OTestContext {
+  val conf = new SparkConf()
+    .set("spark.driver.extraClassPath", sys.props("java.class.path"))
+    .set("spark.executor.extraClassPath", sys.props("java.class.path"))
+    .set("spark.executor.memory", "1g")
+    .set("spark.driver.memory", "2g")
 
-  override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,1024]", this.getClass.getName, conf = defaultSparkConf)
+  override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,1024]", this.getClass.getName, conf)
 
   test("Convert H2OFrame to DataFrame when H2OFrame was changed in DKV") {
 
