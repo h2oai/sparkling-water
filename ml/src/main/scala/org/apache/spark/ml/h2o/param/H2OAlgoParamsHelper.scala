@@ -145,7 +145,7 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
     }
   }
 
-  // Expects that checkAllowedEnumValues was called before this method
+  // Expects that checkAllowedEnumValues method was called before this method
   protected def getCorrectEnumCase[T <: Enum[T]](name: String)
                                                 (implicit ctag: reflect.ClassTag[T]): String = {
     val names = ctag.runtimeClass.getDeclaredMethod("values").invoke(null).asInstanceOf[Array[T]].map(_.name())
