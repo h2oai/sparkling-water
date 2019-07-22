@@ -165,7 +165,7 @@ class H2OAlgorithmParams(H2OCommonParams):
         return self._set(parallelizeCrossValidation=value)
 
     def setDistribution(self, value):
-        assert_is_type(value, "AUTO", "bernoulli", "quasibinomial", "modified_huber", "multinomial", "ordinal", "gaussian", "poisson", "gamma", "tweedie", "huber", "laplace", "quantile")
+        assert_is_type(value, Enum("AUTO", "bernoulli", "quasibinomial", "modified_huber", "multinomial", "ordinal", "gaussian", "poisson", "gamma", "tweedie", "huber", "laplace", "quantile"))
         return self._set(distribution=value)
 
 

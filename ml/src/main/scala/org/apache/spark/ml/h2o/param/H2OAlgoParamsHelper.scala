@@ -132,10 +132,29 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
 
   protected def checkAllowedEnumValues[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
                                                     (implicit ctag: reflect.ClassTag[T]): Unit = {
+
     val names = ctag.runtimeClass.getDeclaredMethod("values").invoke(null).asInstanceOf[Array[T]].map(_.name())
-    if (name == null && !nullAllowed || !names.contains(name)) {
+
+    if (!nullAllowed && name == null) {
+      throw new IllegalArgumentException(s"Null is not a valid value. Allowed values are: ${names.mkString(", ")}")
+    }
+
+    if (!names.map(_.toLowerCase()).contains(name.toLowerCase())) {
       val nullStr = if (nullAllowed) "null or " else ""
       throw new IllegalArgumentException(s"'$name' is not a valid value. Allowed values are: $nullStr${names.mkString(", ")}")
     }
   }
+
+  // Expects that checkAllowedEnumValues was called before this method
+  protected def getCorrectEnumCase[T <: Enum[T]](name: String)
+                                                (implicit ctag: reflect.ClassTag[T]): String = {
+    val names = ctag.runtimeClass.getDeclaredMethod("values").invoke(null).asInstanceOf[Array[T]].map(_.name())
+
+    if (name == null) {
+      null
+    } else {
+      names.find(_.toLowerCase() == name.toLowerCase).get
+    }
+  }
+
 }
