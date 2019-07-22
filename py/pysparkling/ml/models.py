@@ -11,7 +11,3 @@ class H2OMOJOModel(py_sparkling.ml.models.H2OMOJOModel):
 
 class H2OMOJOPipelineModel(py_sparkling.ml.models.H2OMOJOPipelineModel):
     pass
-
-
-class H2OTargetEncoderModel(py_sparkling.ml.models.H2OMOJOPipelineModel):
-    pass

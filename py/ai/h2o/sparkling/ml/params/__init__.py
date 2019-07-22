@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-from py_sparkling.ml.features.H2OTargetEncoder import H2OTargetEncoder
+from ai.h2o.sparkling.ml.params.H2OTargetEncoderParams import H2OTargetEncoderParams
