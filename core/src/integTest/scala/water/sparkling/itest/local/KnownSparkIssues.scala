@@ -32,6 +32,7 @@ class KnownSparkIssues extends FunSuite with SharedH2OTestContext {
     .set("spark.executor.extraClassPath", sys.props("java.class.path"))
     .set("spark.executor.memory", "1g")
     .set("spark.driver.memory", "2g")
+    .set("spark.ext.h2o.cloud.timeout", s"${3 * 60 * 1000}")
 
   // we use local-cluster since the non-determinism isn't reproducible in local mode
   override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,1024]", "test-local-cluster", conf)
