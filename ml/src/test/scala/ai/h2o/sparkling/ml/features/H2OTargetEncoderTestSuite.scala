@@ -109,7 +109,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
   test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel apply blended average the same way") {
     val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE"))
+      .setInputCols(Array("DCAPS"))
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")
       .setBlendedAvgEnabled(true)
@@ -235,23 +235,6 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
-  test("The target encoder treats null as a regular category of the label column") {
-    val trainingDatasetWithLabel = trainingDataset.withColumn(
-      "LABEL",
-      when(rand(1) < 0.5, lit("a")).otherwise(lit(null)))
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("LABEL")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-    val model = targetEncoder.fit(trainingDatasetWithLabel)
-
-    val transformedByModel = model.transformTrainingDataset(trainingDatasetWithLabel)
-    val transformedByMOJOModel = model.transform(trainingDatasetWithLabel)
-
-    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
-  }
-
   test("The fit function throws a runtime exception when the label domain has more than two categories") {
     val trainingDatasetWithLabel = trainingDataset.withColumn(
       "LABEL",
@@ -276,6 +259,26 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val testingDatasetWithLabel = testingDataset.withColumn(
       "LABEL",
       lit("c"))
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setLabelCol("LABEL")
+      .setHoldoutStrategy("None")
+      .setNoise(0.0)
+    val model = targetEncoder.fit(trainingDatasetWithLabel)
+
+    val transformedByModel = model.transformTrainingDataset(testingDatasetWithLabel)
+    val transformedByMOJOModel = model.transform(testingDatasetWithLabel)
+
+    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+  }
+
+  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with a null label the same way") {
+    val trainingDatasetWithLabel = trainingDataset.withColumn(
+      "LABEL",
+      when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
+    val testingDatasetWithLabel = testingDataset.withColumn(
+      "LABEL",
+      when(rand(1) < 0.5, lit("a")).otherwise(lit(null)))
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
