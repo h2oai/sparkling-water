@@ -130,13 +130,13 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
     new NullableStringArrayParam(this, name, getDoc(doc, name))
   }
 
-  def getValidatedEnumValue[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
+  protected def getValidatedEnumValue[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
                                          (implicit ctag: reflect.ClassTag[T]): String = {
     H2OAlgoParamsHelper.getValidatedEnumValue(name, nullAllowed)
   }
 }
 
-object H2OAlgoParamsHelper {
+private[param] object H2OAlgoParamsHelper {
   def getValidatedEnumValue[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
                                          (implicit ctag: reflect.ClassTag[T]): String = {
 
