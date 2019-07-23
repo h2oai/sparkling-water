@@ -50,7 +50,6 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
   // Param definitions
   //
   private val quietMode = booleanParam("quietMode")
-  private val missingValuesHandling = new MissingValuesHandlingParam(this, "missingValuesHandling", "Missing Values Handling")
   private val ntrees = intParam("ntrees")
   private val nEstimators = intParam("nEstimators")
   private val maxDepth = intParam("maxDepth")
@@ -95,7 +94,6 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
   //
   setDefault(
     quietMode -> true,
-    missingValuesHandling -> null,
     ntrees -> 50,
     nEstimators -> 0,
     maxDepth -> 6,
@@ -227,8 +225,6 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
   //
   def setQuietMode(value: Boolean): this.type = set(quietMode, value)
 
-  def setMissingValuesHandling(value: MissingValuesHandling): this.type = set(missingValuesHandling, value)
-
   def setNtrees(value: Int): this.type = set(ntrees, value)
 
   def setNEstimators(value: Int): this.type = set(nEstimators, value)
@@ -310,7 +306,6 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
   override def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._quiet_mode = $(quietMode)
-    parameters._missing_values_handling = $(missingValuesHandling)
     parameters._ntrees = $(ntrees)
     parameters._n_estimators = $(nEstimators)
     parameters._max_depth = $(maxDepth)
@@ -371,13 +366,6 @@ class GrowPolicyParam private[h2o](parent: Params, name: String, doc: String,
 class BoosterParam private[h2o](parent: Params, name: String, doc: String,
                                 isValid: XGBoostParameters.Booster => Boolean)
   extends EnumParam[XGBoostParameters.Booster](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-class MissingValuesHandlingParam private[h2o](parent: Params, name: String, doc: String,
-                                              isValid: XGBoostParameters.MissingValuesHandling => Boolean)
-  extends EnumParam[XGBoostParameters.MissingValuesHandling](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
