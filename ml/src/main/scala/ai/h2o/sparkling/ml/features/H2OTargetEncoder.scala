@@ -21,6 +21,7 @@ import ai.h2o.automl.targetencoding._
 import ai.h2o.sparkling.ml.models.H2OTargetEncoderModel
 import org.apache.spark.h2o.{Frame, H2OContext}
 import org.apache.spark.ml.Estimator
+import org.apache.spark.ml.h2o.param.H2OAlgoParamsHelper
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.{Dataset, SparkSession}
@@ -71,10 +72,7 @@ class H2OTargetEncoder(override val uid: String)
   def setInputCols(values: Array[String]): this.type = set(inputCols, values)
 
   def setHoldoutStrategy(value: String): this.type = {
-    require(value != null, "The value can't be null.")
-    require(possibleHoldoutStrategyValues.contains(value.toLowerCase),
-      s"Only the values ${possibleHoldoutStrategyValues.mkString(", ")} are allowed.")
-    set(holdoutStrategy, value)
+    set(holdoutStrategy, H2OAlgoParamsHelper.getValidatedEnumValue[H2OTargetEncoderHoldoutStrategy](value))
   }
 
   def setBlendedAvgEnabled(value: Boolean): this.type = set(blendedAvgEnabled, value)

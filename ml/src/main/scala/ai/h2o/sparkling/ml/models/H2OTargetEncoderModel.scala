@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.automl.targetencoding.TargetEncoderModel
-import ai.h2o.sparkling.ml.features.H2OTargetEncoderBase
+import ai.h2o.sparkling.ml.features.{H2OTargetEncoderBase, H2OTargetEncoderHoldoutStrategy}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.Model
@@ -56,7 +56,7 @@ class H2OTargetEncoderModel(
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
     val input = h2oContext.asH2OFrame(relevantColumnsDF)
     convertRelevantColumnsToCategorical(input)
-    val holdoutStrategyId = possibleHoldoutStrategyValues.indexOf(getHoldoutStrategy().toLowerCase).asInstanceOf[Byte]
+    val holdoutStrategyId = H2OTargetEncoderHoldoutStrategy.valueOf(getHoldoutStrategy()).ordinal().asInstanceOf[Byte]
     val outputFrame = try {
       targetEncoderModel.transform(input, holdoutStrategyId, getNoise(), getNoiseSeed())
     } catch {
