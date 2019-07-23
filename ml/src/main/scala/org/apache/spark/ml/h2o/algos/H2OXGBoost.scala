@@ -140,8 +140,6 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
   //
   def getQuietMode(): Boolean = $(quietMode)
 
-  def getMissingValuesHandling(): MissingValuesHandling = $(missingValuesHandling)
-
   def getNtrees(): Int = $(ntrees)
 
   def getNEstimators(): Int = $(nEstimators)
