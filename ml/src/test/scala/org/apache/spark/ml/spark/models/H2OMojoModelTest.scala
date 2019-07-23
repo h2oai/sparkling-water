@@ -192,7 +192,7 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers 
     new H2OGBM()
       .setNtrees(2)
       .setSeed(42)
-      .setDistribution(DistributionFamily.bernoulli)
+      .setDistribution("bernoulli")
       .setLabelCol("CAPSULE")
   }
 
@@ -246,7 +246,7 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers 
     val gbm = new H2OGBM()
       .setNtrees(2)
       .setSeed(42)
-      .setDistribution(DistributionFamily.bernoulli)
+      .setDistribution("bernoulli")
       .setLabelCol("capsule")
 
     (inputDf, gbm.fit(inputDf))
@@ -257,7 +257,7 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers 
     val gbm = new H2OGBM()
       .setNtrees(2)
       .setSeed(42)
-      .setDistribution(DistributionFamily.multinomial)
+      .setDistribution("multinomial")
       .setLabelCol("class")
 
     (inputDf, gbm.fit(inputDf))

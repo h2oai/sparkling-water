@@ -44,7 +44,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
         self._setDefault(modelId=None, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                         seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
+                         seed=-1, distribution="AUTO",
                          ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024, minSplitImprovement=1e-5,
                          histogramType=self._hc._jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf("AUTO"),
                          r2Stopping=self._hc._jvm.Double.MAX_VALUE, nbinsTopLevel=1<<10, buildTreeOneNode=False, scoreTreeInterval=0,
@@ -65,8 +65,6 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        if "distribution" in kwargs:
-            kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
         if "histogramType" in kwargs:
             kwargs["histogramType"] = self._hc._jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(kwargs["histogramType"])
 
@@ -99,7 +97,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
 
         self._setDefault(modelId=None, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                         seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
+                         seed=-1, distribution="AUTO",
                          epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False,
                          foldCol=None)
         kwargs = get_input_kwargs(self)
@@ -111,9 +109,6 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                   seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False,
                   foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
-
-        if "distribution" in kwargs:
-            kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -208,7 +203,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
 
         self._setDefault(modelId=None, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                         seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"), convertUnknownCategoricalLevelsToNa=False,
+                         seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False,
                          quietMode=True, missingValuesHandling=None, ntrees=50, nEstimators=0, maxDepth=6, minRows=1.0, minChildWeight=1.0,
                          learnRate=0.3, eta=0.3, learnRateAnnealing=1.0, sampleRate=1.0, subsample=1.0, colSampleRate=1.0, colSampleByLevel=1.0,
                          colSampleRatePerTree=1.0, colsampleBytree=1.0, maxAbsLeafnodePred=0.0, maxDeltaStep=0.0, scoreTreeInterval=0,
@@ -241,9 +236,6 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                   normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
                   foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
-
-        if "distribution" in kwargs:
-            kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
 
         if "treeMethod" in kwargs:
             kwargs["treeMethod"] = self._hc._jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.valueOf(kwargs["treeMethod"])
@@ -296,7 +288,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
 
         self._setDefault(modelId=None, splitRatio=1.0, labelCol="label", weightCol=None,  featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
-                         seed=-1, distribution=self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf("AUTO"),
+                         seed=-1, distribution="AUTO",
                          convertUnknownCategoricalLevelsToNa=False,
                          standardize=True, family=self._hc._jvm.hex.glm.GLMModel.GLMParameters.Family.valueOf("gaussian"),
                          link=self._hc._jvm.hex.glm.GLMModel.GLMParameters.Link.valueOf("family_default"),
@@ -321,9 +313,6 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearCols=False,
                   interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
-
-        if "distribution" in kwargs:
-            kwargs["distribution"] = self._hc._jvm.hex.genmodel.utils.DistributionFamily.valueOf(kwargs["distribution"])
 
         if "family" in kwargs:
             kwargs["family"] = self._hc._jvm.hex.glm.GLMModel.GLMParameters.Family.valueOf(kwargs["family"])

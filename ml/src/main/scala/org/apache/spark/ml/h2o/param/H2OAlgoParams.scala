@@ -16,6 +16,7 @@
 */
 package org.apache.spark.ml.h2o.param
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.ml.param.Params
@@ -36,7 +37,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   private val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
   private val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
   private val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
-  private val distribution = H2ODistributionParam("distribution")
+  private val distribution = stringParam("distribution")
 
   //
   // Default values
@@ -46,7 +47,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
     keepCrossValidationPredictions -> parameters._keep_cross_validation_predictions,
     keepCrossValidationFoldAssignment -> parameters._keep_cross_validation_fold_assignment,
     parallelizeCrossValidation -> parameters._parallelize_cross_validation,
-    distribution -> parameters._distribution
+    distribution -> parameters._distribution.name()
   )
 
   //
@@ -60,7 +61,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
 
   def getParallelizeCrossValidation(): Boolean = $(parallelizeCrossValidation)
 
-  def getDistribution(): DistributionFamily = $(distribution)
+  def getDistribution(): String = $(distribution)
 
   //
   // Setters
@@ -73,10 +74,11 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
 
   def setParallelizeCrossValidation(value: Boolean): this.type = set(parallelizeCrossValidation, value)
 
-  def setDistribution(value: DistributionFamily): this.type = set(distribution, value)
+  @DeprecatedMethod("setDistribution(value: String)")
+  def setDistribution(value: DistributionFamily): this.type = setDistribution(value.name())
 
-  def H2ODistributionParam(name: String): H2ODistributionParam = {
-    new H2ODistributionParam(this, name, getDoc(None, name))
+  def setDistribution(value: String): this.type = {
+    set(distribution, getValidatedEnumValue[DistributionFamily](value))
   }
 
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
@@ -89,12 +91,6 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
     parameters._keep_cross_validation_fold_assignment = $(keepCrossValidationFoldAssignment)
     parameters._parallelize_cross_validation = $(parallelizeCrossValidation)
     parameters._seed = getSeed()
-    parameters._distribution = $(distribution)
+    parameters._distribution = DistributionFamily.valueOf(getDistribution())
   }
-}
-
-class H2ODistributionParam(parent: Params, name: String, doc: String, isValid: DistributionFamily => Boolean)
-  extends EnumParam[DistributionFamily](parent, name, doc) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
