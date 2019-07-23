@@ -1,5 +1,11 @@
 from pyspark.ml.util import JavaMLReader, MLReadable
+from pysparkling.context import H2OContext
+from pyspark.sql import SparkSession
 
+def getValidatedEnumValue(enumClass, name, nullEnabled = False):
+    jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+    package = getattr(jvm.org.apache.spark.ml.h2o.param, "H2OAlgoParamsHelper$")
+    return package.__getattr__("MODULE$").getValidatedEnumValue(enumClass, name, nullEnabled)
 
 def get_correct_case_enum(enum_values, enum_single_value):
     for a in enum_values:

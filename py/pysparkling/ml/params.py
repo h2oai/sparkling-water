@@ -3,7 +3,7 @@ from h2o.utils.typechecks import assert_is_type, Enum
 from pysparkling.context import H2OContext
 from pyspark.sql import SparkSession
 from py4j.java_gateway import JavaObject
-from py_sparkling.ml.util import get_correct_case_enum, get_enum_array_from_str_array
+from py_sparkling.ml.util import get_correct_case_enum, get_enum_array_from_str_array, getValidatedEnumValue
 import warnings
 
 
@@ -165,10 +165,7 @@ class H2OAlgorithmParams(H2OCommonParams):
         return self._set(parallelizeCrossValidation=value)
 
     def setDistribution(self, value):
-        assert_is_type(value, Enum("AUTO", "bernoulli", "quasibinomial", "modified_huber", "multinomial", "ordinal", "gaussian", "poisson", "gamma", "tweedie", "huber", "laplace", "quantile"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.genmodel.utils.DistributionFamily.values(), value)
-        return self._set(distribution=correct_case_value)
+        return self._set(distribution=getValidatedEnumValue("hex.genmodel.utils.DistributionFamily", value))
 
 
 class H2OSharedTreeParams(H2OAlgorithmParams):
