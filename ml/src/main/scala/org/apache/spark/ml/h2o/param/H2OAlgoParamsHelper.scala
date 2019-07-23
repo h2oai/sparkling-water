@@ -20,10 +20,6 @@ import com.google.common.base.CaseFormat
 import hex.Model.Parameters
 import org.apache.spark.h2o.utils.ReflectionUtils.api
 import org.apache.spark.ml.param._
-import org.json4s.JsonAST.JArray
-import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import org.json4s.{JDouble, JNull, JString}
-
 
 import scala.reflect.ClassTag
 
@@ -133,4 +129,37 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
   protected def nullableStringArrayParam(name: String, doc: Option[String] = None): NullableStringArrayParam = {
     new NullableStringArrayParam(this, name, getDoc(doc, name))
   }
+
+  protected def getValidatedEnumValue[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
+                                                   (implicit ctag: reflect.ClassTag[T]): String = {
+    H2OAlgoParamsHelper.getValidatedEnumValue(name, nullAllowed)
+  }
+}
+
+object H2OAlgoParamsHelper {
+  def getValidatedEnumValue[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
+                                         (implicit ctag: reflect.ClassTag[T]): String = {
+    getValidatedEnumValue(ctag.runtimeClass, name, nullAllowed)
+  }
+
+  def getValidatedEnumValue(className: String, name: String, nullAllowed: Boolean): String = {
+    getValidatedEnumValue(Class.forName(className), name, nullAllowed)
+  }
+
+  def getValidatedEnumValue(clazz: Class[_], name: String, nullAllowed: Boolean): String = {
+    val names = clazz.getDeclaredMethod("values").invoke(null).asInstanceOf[Array[Enum[_]]].map(_.name())
+
+    if (!nullAllowed && name == null) {
+      throw new IllegalArgumentException(s"Null is not a valid value. Allowed values are: ${names.mkString(", ")}")
+    } else if (nullAllowed && name == null) {
+      return null
+    }
+
+    if (!names.map(_.toLowerCase()).contains(name.toLowerCase())) {
+      val nullStr = if (nullAllowed) "null or " else ""
+      throw new IllegalArgumentException(s"'$name' is not a valid value. Allowed values are: $nullStr${names.mkString(", ")}")
+    }
+    names.find(_.toLowerCase() == name.toLowerCase).get
+  }
+
 }

@@ -1,10 +1,10 @@
-from pyspark.ml.param import *
 from h2o.utils.typechecks import assert_is_type, Enum
-from pysparkling.context import H2OContext
-from pyspark.sql import SparkSession
 from py4j.java_gateway import JavaObject
-from py_sparkling.ml.util import get_correct_case_enum, get_enum_array_from_str_array
-import warnings
+from pyspark.ml.param import *
+from pyspark.sql import SparkSession
+
+from py_sparkling.ml.util import get_enum_array_from_str_array, getValidatedEnumValue
+from pysparkling.context import H2OContext
 
 
 class H2OCommonParams(Params):
@@ -143,8 +143,7 @@ class H2OAlgorithmParams(H2OCommonParams):
         return self.getOrDefault(self.parallelizeCrossValidation)
 
     def getDistribution(self):
-        # Convert Java Enum to String so we can represent it in Python
-        return self.getOrDefault(self.distribution).toString()
+        return self.getOrDefault(self.distribution)
 
     ##
     # Setters
@@ -166,10 +165,8 @@ class H2OAlgorithmParams(H2OCommonParams):
         return self._set(parallelizeCrossValidation=value)
 
     def setDistribution(self, value):
-        assert_is_type(value, None, Enum("AUTO", "bernoulli", "quasibinomial", "modified_huber", "multinomial", "ordinal", "gaussian", "poisson", "gamma", "tweedie", "huber", "laplace", "quantile"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.genmodel.utils.DistributionFamily.values(), value)
-        return self._set(distribution=jvm.hex.genmodel.utils.DistributionFamily.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.genmodel.utils.DistributionFamily", value)
+        return self._set(distribution=validated)
 
 
 class H2OSharedTreeParams(H2OAlgorithmParams):
@@ -270,10 +267,8 @@ class H2OSharedTreeParams(H2OAlgorithmParams):
         return self._set(minSplitImprovement=value)
 
     def setHistogramType(self, value):
-        assert_is_type(value, None, Enum("AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.values(), value)
-        return self._set(histogramType=jvm.hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType", value, nullEnabled=True)
+        return self._set(histogramType=validated)
 
     def setR2Stopping(self, value):
         assert_is_type(value, int, float)
@@ -560,11 +555,8 @@ class H2OAutoMLParams(H2OCommonParams):
         return self._set(stoppingTolerance=value)
 
     def setStoppingMetric(self, value):
-        # H2O typechecks does not check for case sensitivity
-        assert_is_type(value, Enum("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "lift_top_group", "misclassification", "mean_per_class_error", "custom"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.ScoreKeeper.StoppingMetric.values(), value)
-        return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.ScoreKeeper.StoppingMetric", value)
+        return self._set(stoppingMetric=validated)
 
     def setSortMetric(self, value):
         assert_is_type(value, None, "AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "mean_per_class_error")
@@ -784,13 +776,8 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(quietMode=value)
 
     def setMissingValuesHandling(self, value):
-        if value is not None:
-            assert_is_type(value, None, Enum("MeanImputation", "Skip"))
-            jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-            correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling.values(), value)
-            return self._set(missingValuesHandling=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling.valueOf(correct_case_value))
-        else:
-            return self._set(missingValuesHandling=None)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling", value, nullEnabled=True)
+        return self._set(missingValuesHandling=validated)
 
     def setNtrees(self, value):
         assert_is_type(value, int)
@@ -897,28 +884,20 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(minDataInLeaf=value)
 
     def setTreeMethod(self, value):
-        assert_is_type(value, Enum("auto", "exact", "approx", "hist"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.values(), value)
-        return self._set(treeMethod=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod", value)
+        return self._set(treeMethod=validated)
 
     def setGrowPolicy(self, value):
-        assert_is_type(value, Enum("depthwise", "lossguide"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.values(), value)
-        return self._set(growPolicy=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy", value)
+        return self._set(growPolicy=validated)
 
     def setBooster(self, value):
-        assert_is_type(value, Enum("gbtree", "gblinear", "dart"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.values(), value)
-        return self._set(booster=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster", value)
+        return self._set(booster=validated)
 
     def setDmatrixType(self, value):
-        assert_is_type(value, Enum("auto", "dense", "sparse"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.values(), value)
-        return self._set(dmatrixType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType", value)
+        return self._set(dmatrixType=validated)
 
     def setRegLambda(self, value):
         assert_is_type(value, int, float)
@@ -929,16 +908,12 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(regAlpha=value)
 
     def setSampleType(self, value):
-        assert_is_type(value, Enum("uniform", "weighted"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.values(), value)
-        return self._set(sampleType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType", value)
+        return self._set(sampleType=validated)
 
     def setNormalizeType(self, value):
-        assert_is_type(value, Enum("tree", "forest"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.values(), value)
-        return self._set(normalizeType=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType", value)
+        return self._set(normalizeType=validated)
 
     def setRateDrop(self, value):
         assert_is_type(value, int, float)
@@ -957,10 +932,8 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(gpuId=value)
 
     def setBackend(self, value):
-        assert_is_type(value, Enum("auto", "gpu", "cpu"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.values(), value)
-        return self._set(backend=jvm.hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend", value)
+        return self._set(backend=validated)
 
 
 class H2OGLMParams(H2OAlgorithmParams):
@@ -1085,22 +1058,16 @@ class H2OGLMParams(H2OAlgorithmParams):
         return self._set(standardize=value)
 
     def setFamily(self, value):
-        assert_is_type(value, Enum("gaussian", "binomial", "quasibinomial", "poisson", "gamma", "multinomial", "tweedie", "ordinal"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.glm.GLMModel.GLMParameters.Family.values(), value)
-        return self._set(family=jvm.hex.glm.GLMModel.GLMParameters.Family.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.glm.GLMModel.GLMParameters.Family", value)
+        return self._set(family=validated)
 
     def setLink(self, value):
-        assert_is_type(value, Enum("family_default", "identity", "logit", "log", "inverse", "tweedie", "multinomial", "ologit", "oprobit", "ologlog"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.glm.GLMModel.GLMParameters.Link.values(), value)
-        return self._set(link=jvm.hex.glm.GLMModel.GLMParameters.Link.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.glm.GLMModel.GLMParameters.Link", value)
+        return self._set(link=validated)
 
     def setSolver(self, value):
-        assert_is_type(value, Enum("AUTO", "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.glm.GLMModel.GLMParameters.Solver.values(), value)
-        return self._set(solver=jvm.hex.glm.GLMModel.GLMParameters.Solver.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.glm.GLMModel.GLMParameters.Solver", value)
+        return self._set(solver=validated)
 
     def setTweedieVariancePower(self, value):
         assert_is_type(value, int, float)
@@ -1119,10 +1086,8 @@ class H2OGLMParams(H2OAlgorithmParams):
         return self._set(lambda_=value)
 
     def setMissingValuesHandling(self, value):
-        assert_is_type(value, Enum("MeanImputation", "Skip"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.values(), value)
-        return self._set(missingValuesHandling=jvm.hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling", value)
+        return self._set(missingValuesHandling=validated)
 
     def setPrior(self, value):
         assert_is_type(value, int, float)
@@ -1266,10 +1231,8 @@ class H2OGridSearchParams(H2OCommonParams):
         return self._set(hyperParameters=value)
 
     def setStrategy(self, value):
-        assert_is_type(value, Enum("Cartesian", "RandomDiscrete"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.values(), value)
-        return self._set(link=jvm.hex.grid.HyperSpaceSearchCriteria.Strategy.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.grid.HyperSpaceSearchCriteria.Strategy", value)
+        return self._set(link=validated)
 
     def setMaxRuntimeSecs(self, value):
         assert_is_type(value, int, float)
@@ -1288,20 +1251,12 @@ class H2OGridSearchParams(H2OCommonParams):
         return self._set(stoppingTolerance=value)
 
     def setStoppingMetric(self, value):
-        # H2O typechecks does not check for case sensitivity
-        assert_is_type(value, Enum("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "lift_top_group", "misclassification", "mean_per_class_error", "custom"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.hex.ScoreKeeper.StoppingMetric.values(), value)
-        return self._set(stoppingMetric=jvm.hex.ScoreKeeper.StoppingMetric.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("hex.ScoreKeeper.StoppingMetric", value)
+        return self._set(stoppingMetric=validated)
 
     def setSelectBestModelBy(self, value):
-        # H2O typechecks does not check for case sensitivity
-        assert_is_type(value, None, Enum("MeanResidualDeviance", "R2", "ResidualDeviance", "ResidualDegreesOfFreedom", "NullDeviance",
-                                   "NullDegreesOfFreedom", "AIC", "AUC", "Gini", "F1", "F2",
-                                   "F0point5", "Precision", "Recall", "MCC", "Logloss", "Error", "MaxPerClassError", "Accuracy", "MSE", "RMSE"))
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        correct_case_value = get_correct_case_enum(jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.values(), value)
-        return self._set(selectBestModelBy=jvm.org.apache.spark.ml.h2o.algos.H2OGridSearchMetric.valueOf(correct_case_value))
+        validated = getValidatedEnumValue("org.apache.spark.ml.h2o.algos.H2OGridSearchMetric", value, nullEnabled=True)
+        return self._set(selectBestModelBy=validated)
 
     def setSelectBestModelDecreasing(self, value):
         assert_is_type(value, bool)
