@@ -78,8 +78,7 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
   def setDistribution(value: DistributionFamily): this.type = setDistribution(value.name())
 
   def setDistribution(value: String): this.type = {
-    checkAllowedEnumValues[DistributionFamily](value)
-    set(distribution, getCorrectEnumCase[DistributionFamily](value))
+    set(distribution, getValidatedEnumValue[DistributionFamily](value))
   }
 
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
