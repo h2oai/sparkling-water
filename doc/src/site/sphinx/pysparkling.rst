@@ -92,16 +92,7 @@ The Sparkling Water Python Module
 Prepare the environment
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Either clone and build Sparkling Water project
-
-  .. code-block:: bash
-
-    git clone http://github.com/h2oai/sparkling-water
-    cd sparkling-water
-    ./gradlew build -x check
-
-
- or download and unpack sparkling water release from  `here <https://www.h2o.ai/download/>`_.
+1. Download unpack Sparkling Water release from `https://www.h2o.ai/download/ <https://www.h2o.ai/download/>`_.
 
 2. Configure the location of Spark distribution and cluster:
 
@@ -168,7 +159,7 @@ PySparkling can be added as library in two ways. You can either upload the PySpa
 PySparkling module from PyPI.
 
 If you choose to upload PySparkling zip file, don't forget to add PySparkling `Dependencies`_.
-The PySparkling zip file is available in *py/dist* directory in both built Sparkling Water project and downloaded Sparkling Water release.
+The PySparkling zip file is available in *py/dist* directory of Sparkling Water distribution package.
 
 .. |Join the chat at https://gitter.im/h2oai/sparkling-water| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: Join the chat at https://gitter.im/h2oai/sparkling-water?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge

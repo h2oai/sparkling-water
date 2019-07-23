@@ -1,3 +1,5 @@
+.. _build:
+
 Build Sparkling Water
 ---------------------
 
@@ -8,6 +10,8 @@ In order to build the full distribution, run:
 .. code:: bash
 
     ./gradlew dist
+
+After this command finishes, the full distribution of Sparkling Water is available at `./dist/build/dist` directory.
 
 - To avoid running tests,  use the ``-x check`` option.
 
