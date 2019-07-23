@@ -269,7 +269,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     }
   }
 
-  test("The transformTrainingDataset function throws a runtime exception when a label value wasn't expected") {
+  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with an unexpected label the same way") {
     val trainingDatasetWithLabel = trainingDataset.withColumn(
       "LABEL",
       when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
@@ -283,27 +283,9 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .setNoise(0.0)
     val model = targetEncoder.fit(trainingDatasetWithLabel)
 
-    intercept[RuntimeException] {
-      model.transformTrainingDataset(testingDatasetWithLabel)
-    }
-  }
+    val transformedByModel = model.transformTrainingDataset(testingDatasetWithLabel)
+    val transformedByMOJOModel = model.transform(testingDatasetWithLabel)
 
-  test("The transform function throws an exception when a label value wasn't expected") {
-    val trainingDatasetWithLabel = trainingDataset.withColumn(
-      "LABEL",
-      when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
-    val testingDatasetWithLabel = testingDataset.withColumn(
-      "LABEL",
-      lit("c"))
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("LABEL")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-    val model = targetEncoder.fit(trainingDatasetWithLabel)
-
-    intercept[Exception] {
-      model.transform(testingDatasetWithLabel)
-    }
+    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 }
