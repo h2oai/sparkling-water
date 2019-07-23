@@ -131,16 +131,23 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
   }
 
   protected def getValidatedEnumValue[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
-                                         (implicit ctag: reflect.ClassTag[T]): String = {
+                                                   (implicit ctag: reflect.ClassTag[T]): String = {
     H2OAlgoParamsHelper.getValidatedEnumValue(name, nullAllowed)
   }
 }
 
-private[param] object H2OAlgoParamsHelper {
+object H2OAlgoParamsHelper {
   def getValidatedEnumValue[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
                                          (implicit ctag: reflect.ClassTag[T]): String = {
+    getValidatedEnumValue(ctag.runtimeClass, name, nullAllowed)
+  }
 
-    val names = ctag.runtimeClass.getDeclaredMethod("values").invoke(null).asInstanceOf[Array[T]].map(_.name())
+  def getValidatedEnumValue(className: String, name: String, nullAllowed: Boolean): String = {
+    getValidatedEnumValue(Class.forName(className), name, nullAllowed)
+  }
+
+  def getValidatedEnumValue(clazz: Class[_], name: String, nullAllowed: Boolean): String = {
+    val names = clazz.getDeclaredMethod("values").invoke(null).asInstanceOf[Array[Enum[_]]].map(_.name())
 
     if (!nullAllowed && name == null) {
       throw new IllegalArgumentException(s"Null is not a valid value. Allowed values are: ${names.mkString(", ")}")
@@ -154,4 +161,5 @@ private[param] object H2OAlgoParamsHelper {
     }
     names.find(_.toLowerCase() == name.toLowerCase).get
   }
+
 }
