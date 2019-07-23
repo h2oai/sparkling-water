@@ -16,9 +16,10 @@
 */
 package org.apache.spark.ml.h2o.param
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.tree.SharedTreeModel.SharedTreeParameters
 import hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType
-import org.apache.spark.ml.param.Params
+import org.apache.spark.ml.h2o.param.H2OAlgoParamsHelper.getValidatedEnumValue
 
 trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
 
@@ -31,7 +32,7 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
   final val nbins = intParam("nbins")
   final val nbinsCats = intParam("nbinsCats")
   final val minSplitImprovement = doubleParam("minSplitImprovement")
-  final val histogramType = H2OHistogramTypeParam("histogramType")
+  final val histogramType = stringParam("histogramType")
   final val r2Stopping = doubleParam("r2Stopping")
   final val nbinsTopLevel = intParam("nbinsTopLevel")
   final val buildTreeOneNode = booleanParam("buildTreeOneNode")
@@ -51,7 +52,7 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
     nbins -> parameters._nbins,
     nbinsCats -> parameters._nbins_cats,
     minSplitImprovement -> parameters._min_split_improvement,
-    histogramType -> parameters._histogram_type,
+    histogramType -> parameters._histogram_type.name(),
     r2Stopping -> parameters._r2_stopping,
     nbinsTopLevel -> parameters._nbins_top_level,
     buildTreeOneNode -> parameters._build_tree_one_node,
@@ -65,103 +66,74 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
   //
   // Getters
   //
-  /** @group getParam */
   def getNtrees() = $(ntrees)
 
-  /** @group getParam */
   def getMaxDepth() = $(maxDepth)
 
-  /** @group getParam */
   def getMinRows() = $(minRows)
 
-  /** @group getParam */
   def getNbins() = $(nbins)
 
-  /** @group getParam */
   def getNbinsCats() = $(nbinsCats)
 
-  /** @group getParam */
   def getMinSplitImprovement() = $(minSplitImprovement)
 
-  /** @group getParam */
   def getHistogramType() = $(histogramType)
 
-  /** @group getParam */
   def getR2Stopping() = $(r2Stopping)
 
-  /** @group getParam */
   def getNbinsTopLevel() = $(nbinsTopLevel)
 
-  /** @group getParam */
   def getBuildTreeOneNode() = $(buildTreeOneNode)
 
-  /** @group getParam */
   def getScoreTreeInterval() = $(scoreTreeInterval)
 
-  /** @group getParam */
   def getSampleRate() = $(sampleRate)
 
-  /** @group getParam */
   def getSampleRatePerClass() = $(sampleRatePerClass)
 
-  /** @group getParam */
   def getColSampleRateChangePerLevel() = $(colSampleRateChangePerLevel)
 
-  /** @group getParam */
   def getColSampleRatePerTree() = $(colSampleRatePerTree)
 
   //
   // Setters
   //
-  /** @group setParam */
   def setNtrees(value: Int): this.type = set(ntrees, value)
 
-  /** @group setParam */
   def setMaxDepth(value: Int): this.type = set(maxDepth, value)
 
-  /** @group setParam */
   def setMinRows(value: Double): this.type = set(minRows, value)
 
-  /** @group setParam */
   def setNbins(value: Int): this.type = set(nbins, value)
 
-  /** @group setParam */
   def setNbinsCats(value: Int): this.type = set(nbinsCats, value)
 
-  /** @group setParam */
   def setMinSplitImprovement(value: Double): this.type = set(minSplitImprovement, value)
 
-  /** @group setParam */
-  def setHistogramType(value: HistogramType): this.type = set(histogramType, value)
+  @DeprecatedMethod("setHistogramType(value: String)")
+  def setHistogramType(value: HistogramType): this.type = setHistogramType(value.name())
 
-  /** @group setParam */
+  def setHistogramType(value: String): this.type = {
+    val validated = getValidatedEnumValue[HistogramType](value)
+    set(histogramType, validated)
+  }
+
   def setR2Stopping(value: Double): this.type = set(r2Stopping, value)
 
-  /** @group setParam */
   def setNbinsTopLevel(value: Int): this.type = set(nbinsTopLevel, value)
 
-  /** @group setParam */
   def setBuildTreeOneNode(value: Boolean): this.type = set(buildTreeOneNode, value)
 
-  /** @group setParam */
   def setScoreTreeInterval(value: Int): this.type = set(scoreTreeInterval, value)
 
-  /** @group setParam */
   def setSampleRate(value: Double): this.type = set(sampleRate, value)
 
-  /** @group setParam */
   def setSampleRatePerClass(value: Array[Double]): this.type = set(sampleRatePerClass, value)
 
-  /** @group setParam */
   def setColSampleRateChangePerLevel(value: Double): this.type = set(colSampleRateChangePerLevel, value)
 
-  /** @group setParam */
   def setColSampleRatePerTree(value: Double): this.type = set(colSampleRatePerTree, value)
-
-
-  def H2OHistogramTypeParam(name: String): H2OHistogramTypeParam = {
-    new H2OHistogramTypeParam(this, name, getDoc(None, name))
-  }
 
   override def updateH2OParams(): Unit = {
     super.updateH2OParams()
@@ -171,7 +143,7 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
     parameters._nbins = $(nbins)
     parameters._nbins_cats = $(nbinsCats)
     parameters._min_split_improvement = $(minSplitImprovement)
-    parameters._histogram_type = $(histogramType)
+    parameters._histogram_type = HistogramType.valueOf($(histogramType))
     parameters._r2_stopping = $(r2Stopping)
     parameters._nbins_top_level = $(nbinsTopLevel)
     parameters._build_tree_one_node = $(buildTreeOneNode)
@@ -181,10 +153,4 @@ trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
     parameters._col_sample_rate_change_per_level = $(colSampleRateChangePerLevel)
     parameters._col_sample_rate_per_tree = $(colSampleRatePerTree)
   }
-}
-
-class H2OHistogramTypeParam(parent: Params, name: String, doc: String, isValid: HistogramType => Boolean)
-  extends EnumParam[HistogramType](parent, name, doc){
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }

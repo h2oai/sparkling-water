@@ -33,16 +33,11 @@ class H2OAlgoParamsHelperTest extends FunSuite with Matchers {
     assert(thrown.getMessage.startsWith("'not_exist' is not a valid value. Allowed values are:"))
   }
 
-  test("getValidatedEnumValue with null, but null not allowed") {
+  test("getValidatedEnumValue with null") {
     val thrown = intercept[IllegalArgumentException] {
       getValidatedEnumValue[DistributionFamily](null)
     }
     assert(thrown.getMessage.startsWith("Null is not a valid value. Allowed values are:"))
-  }
-
-  test("getValidatedEnumValue with null") {
-    val ret = getValidatedEnumValue[DistributionFamily](null, nullAllowed = true)
-    assert(ret == null)
   }
 
   test("getValidatedEnumValue with valid enum value") {

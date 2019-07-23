@@ -17,6 +17,7 @@
 package org.apache.spark.ml.h2o.algos;
 
 public enum H2OGridSearchMetric {
+    AUTO,
     MeanResidualDeviance, R2, ResidualDeviance, ResidualDegreesOfFreedom, NullDeviance,
     NullDegreesOfFreedom, AIC, AUC, Gini, F1, F2,
     F0point5, Precision, Recall, MCC, Logloss, Error, MaxPerClassError, Accuracy, MSE, RMSE

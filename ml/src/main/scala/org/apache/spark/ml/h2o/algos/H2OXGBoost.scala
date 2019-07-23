@@ -16,13 +16,14 @@
 */
 package org.apache.spark.ml.h2o.algos
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
 import hex.tree.xgboost.{XGBoost, XGBoostModel}
-import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
-import org.apache.spark.ml.param.Params
+import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.util.{DefaultParamsReader, Identifiable}
+import org.apache.spark.ml.h2o.param.H2OAlgoParamsHelper.getValidatedEnumValue
 
 /**
   * H2O XGBoost algorithm exposed via Spark ML pipelines.
@@ -76,19 +77,19 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
   private val maxLeaves = intParam("maxLeaves")
   private val minSumHessianInLeaf = floatParam("minSumHessianInLeaf")
   private val minDataInLeaf = floatParam("minDataInLeaf")
-  private val treeMethod = new TreeMethodParam(this, "treeMethod", "Tree Method")
-  private val growPolicy = new GrowPolicyParam(this, "growPolicy", "Grow Policy")
-  private val booster = new BoosterParam(this, "booster", "Booster")
-  private val dmatrixType = new DMatrixTypeParam(this, "dmatrixType", "DMatrix type")
+  private val treeMethod = stringParam( "treeMethod", "Tree Method")
+  private val growPolicy = stringParam( "growPolicy", "Grow Policy")
+  private val booster = stringParam( "booster", "Booster")
+  private val dmatrixType = stringParam(  "dmatrixType", "DMatrix type")
   private val regLambda = floatParam("regLambda")
   private val regAlpha = floatParam("regAlpha")
-  private val sampleType = new DartSampleTypeParam(this, "sampleType", "Dart Sample Type")
-  private val normalizeType = new DartNormalizeTypeParam(this, "normalizeType", "Dart Normalize Type")
+  private val sampleType = stringParam( "sampleType", "Dart Sample Type")
+  private val normalizeType = stringParam(  "normalizeType", "Dart Normalize Type")
   private val rateDrop = floatParam("rateDrop")
   private val oneDrop = booleanParam("oneDrop")
   private val skipDrop = floatParam("skipDrop")
   private val gpuId = intParam("gpuId")
-  private val backend = new BackendParam(this, "backend", "Backend")
+  private val backend = stringParam("backend", "Backend")
   //
   // Default values
   //
@@ -120,19 +121,19 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
     maxLeaves -> 0,
     minSumHessianInLeaf -> 100,
     minDataInLeaf -> 0,
-    treeMethod -> TreeMethod.auto,
-    growPolicy -> GrowPolicy.depthwise,
-    booster -> Booster.gbtree,
-    dmatrixType -> DMatrixType.auto,
+    treeMethod -> TreeMethod.auto.name(),
+    growPolicy -> GrowPolicy.depthwise.name(),
+    booster -> Booster.gbtree.name(),
+    dmatrixType -> DMatrixType.auto.name(),
     regLambda -> 0,
     regAlpha -> 0,
-    sampleType -> DartSampleType.uniform,
-    normalizeType -> DartNormalizeType.tree,
+    sampleType -> DartSampleType.uniform.name(),
+    normalizeType -> DartNormalizeType.tree.name(),
     rateDrop -> 0,
     oneDrop -> false,
     skipDrop -> 0,
     gpuId -> 0, // which GPU to use
-    backend -> Backend.auto
+    backend -> Backend.auto.name()
   )
 
   //
@@ -192,21 +193,21 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
 
   def getMinDataInLeaf(): Float = $(minDataInLeaf)
 
-  def getTreeMethod(): TreeMethod = $(treeMethod)
+  def getTreeMethod(): String = $(treeMethod)
 
-  def getGrowPolicy(): GrowPolicy = $(growPolicy)
+  def getGrowPolicy(): String = $(growPolicy)
 
-  def getBooster(): Booster = $(booster)
+  def getBooster(): String = $(booster)
 
-  def getDmatrixType(): DMatrixType = $(dmatrixType)
+  def getDmatrixType(): String = $(dmatrixType)
 
   def getRegLambda(): Float = $(regLambda)
 
   def getRegAlpha(): Float = $(regAlpha)
 
-  def getSampleType(): DartSampleType = $(sampleType)
+  def getSampleType(): String = $(sampleType)
 
-  def getNormalizeType(): DartNormalizeType = $(normalizeType)
+  def getNormalizeType(): String = $(normalizeType)
 
   def getRateDrop(): Float = $(rateDrop)
 
@@ -216,7 +217,7 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
 
   def getGpuId(): Int = $(gpuId)
 
-  def getBackend(): Backend = $(backend)
+  def getBackend(): String = $(backend)
 
   //
   // Setters
@@ -275,21 +276,57 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
 
   def setMinDataInLeaf(value: Float): this.type = set(minDataInLeaf, value)
 
-  def setTreeMethod(value: TreeMethod): this.type = set(treeMethod, value)
+  @DeprecatedMethod("setTreeMethod(value: String)")
+  def setTreeMethod(value: TreeMethod): this.type = setTreeMethod(value.name())
 
-  def setGrowPolicy(value: GrowPolicy): this.type = set(growPolicy, value)
+  def setTreeMethod(value: String): this.type = {
+    val validated = getValidatedEnumValue[TreeMethod](value)
+    set(treeMethod, validated)
+  }
 
-  def setBooster(value: Booster): this.type = set(booster, value)
+  @DeprecatedMethod("setGrowPolicy(value: String)")
+  def setGrowPolicy(value: GrowPolicy): this.type = setGrowPolicy(value.name())
 
-  def setDmatrixType(value: DMatrixType): this.type = set(dmatrixType, value)
+  def setGrowPolicy(value: String): this.type = {
+    val validated = getValidatedEnumValue[GrowPolicy](value)
+    set(growPolicy, validated)
+  }
+
+  @DeprecatedMethod("setBooster(value: String)")
+  def setBooster(value: Booster): this.type = setBooster(value.name())
+
+  def setBooster(value: String): this.type = {
+    val validated = getValidatedEnumValue[Booster](value)
+    set(booster, validated)
+  }
+
+  @DeprecatedMethod("setDmatrixType(value: String)")
+  def setDmatrixType(value: DMatrixType): this.type = setDmatrixType(value.name())
+
+  def setDmatrixType(value: String): this.type = {
+    val validated = getValidatedEnumValue[DMatrixType](value)
+    set(dmatrixType, validated)
+  }
 
   def setRegLambda(value: Float): this.type = set(regLambda, value)
 
   def setRegAlpha(value: Float): this.type = set(regAlpha, value)
 
-  def setSampleType(value: DartSampleType): this.type = set(sampleType, value)
+  @DeprecatedMethod("setSampleType(value: String)")
+  def setSampleType(value: DartSampleType): this.type = setSampleType(value.name())
 
-  def setNormalizeType(value: DartNormalizeType): this.type = set(normalizeType, value)
+  def setSampleType(value: String): this.type = {
+    val validated = getValidatedEnumValue[DartSampleType](value)
+    set(sampleType, validated)
+  }
+
+  @DeprecatedMethod("setNormalizeType(value: String)")
+  def setNormalizeType(value: DartNormalizeType): this.type = setNormalizeType(value.name())
+
+  def setNormalizeType(value: String): this.type = {
+    val validated = getValidatedEnumValue[DartNormalizeType](value)
+    set(normalizeType, validated)
+  }
 
   def setRateDrop(value: Float): this.type = set(rateDrop, value)
 
@@ -299,7 +336,13 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
 
   def setGpuId(value: Int): this.type = set(gpuId, value)
 
-  def setBackend(value: Backend): this.type = set(backend, value)
+  @DeprecatedMethod("setBackend(value: String)")
+  def setBackend(value: Backend): this.type = setBackend(value.name())
+
+  def setBackend(value: String): this.type = {
+    val validated = getValidatedEnumValue[Backend](value)
+    set(backend, validated)
+  }
 
   override def updateH2OParams(): Unit = {
     super.updateH2OParams()
@@ -330,68 +373,19 @@ trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
     parameters._max_leaves = $(maxLeaves)
     parameters._min_sum_hessian_in_leaf = $(minSumHessianInLeaf)
     parameters._min_data_in_leaf = $(minDataInLeaf)
-    parameters._tree_method = $(treeMethod)
-    parameters._grow_policy = $(growPolicy)
-    parameters._booster = $(booster)
-    parameters._dmatrix_type = $(dmatrixType)
+    parameters._tree_method = TreeMethod.valueOf($(treeMethod))
+    parameters._grow_policy = GrowPolicy.valueOf($(growPolicy))
+    parameters._booster = Booster.valueOf($(booster))
+    parameters._dmatrix_type = DMatrixType.valueOf($(dmatrixType))
     parameters._reg_lambda = $(regLambda)
     parameters._reg_alpha = $(regAlpha)
-    parameters._sample_type = $(sampleType)
-    parameters._normalize_type = $(normalizeType)
+    parameters._sample_type = DartSampleType.valueOf($(sampleType))
+    parameters._normalize_type = DartNormalizeType.valueOf($(normalizeType))
     parameters._rate_drop = $(rateDrop)
     parameters._one_drop = $(oneDrop)
     parameters._skip_drop = $(skipDrop)
     parameters._gpu_id = $(gpuId)
-    parameters._backend = $(backend)
+    parameters._backend = Backend.valueOf($(backend))
   }
 
-}
-
-class TreeMethodParam private[h2o](parent: Params, name: String, doc: String,
-                                   isValid: XGBoostParameters.TreeMethod => Boolean)
-  extends EnumParam[XGBoostParameters.TreeMethod](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-class GrowPolicyParam private[h2o](parent: Params, name: String, doc: String,
-                                   isValid: XGBoostParameters.GrowPolicy => Boolean)
-  extends EnumParam[XGBoostParameters.GrowPolicy](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-class BoosterParam private[h2o](parent: Params, name: String, doc: String,
-                                isValid: XGBoostParameters.Booster => Boolean)
-  extends EnumParam[XGBoostParameters.Booster](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-class DartSampleTypeParam private[h2o](parent: Params, name: String, doc: String,
-                                       isValid: XGBoostParameters.DartSampleType => Boolean)
-  extends EnumParam[XGBoostParameters.DartSampleType](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-class DartNormalizeTypeParam private[h2o](parent: Params, name: String, doc: String,
-                                          isValid: XGBoostParameters.DartNormalizeType => Boolean)
-  extends EnumParam[XGBoostParameters.DartNormalizeType](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-class DMatrixTypeParam private[h2o](parent: Params, name: String, doc: String,
-                                    isValid: XGBoostParameters.DMatrixType => Boolean)
-  extends EnumParam[XGBoostParameters.DMatrixType](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-class BackendParam private[h2o](parent: Params, name: String, doc: String,
-                                isValid: XGBoostParameters.Backend => Boolean)
-  extends EnumParam[XGBoostParameters.Backend](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }

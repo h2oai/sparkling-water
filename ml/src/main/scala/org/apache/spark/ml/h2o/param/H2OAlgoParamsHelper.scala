@@ -20,7 +20,6 @@ import com.google.common.base.CaseFormat
 import hex.Model.Parameters
 import org.apache.spark.h2o.utils.ReflectionUtils.api
 import org.apache.spark.ml.param._
-
 import scala.reflect.ClassTag
 
 /**
@@ -130,34 +129,27 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
     new NullableStringArrayParam(this, name, getDoc(doc, name))
   }
 
-  protected def getValidatedEnumValue[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
-                                                   (implicit ctag: reflect.ClassTag[T]): String = {
-    H2OAlgoParamsHelper.getValidatedEnumValue(name, nullAllowed)
-  }
 }
 
 object H2OAlgoParamsHelper {
-  def getValidatedEnumValue[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
+  def getValidatedEnumValue[T <: Enum[T]](name: String)
                                          (implicit ctag: reflect.ClassTag[T]): String = {
-    getValidatedEnumValue(ctag.runtimeClass, name, nullAllowed)
+    getValidatedEnumValue(ctag.runtimeClass, name)
   }
 
-  def getValidatedEnumValue(className: String, name: String, nullAllowed: Boolean): String = {
-    getValidatedEnumValue(Class.forName(className), name, nullAllowed)
+  def getValidatedEnumValue(className: String, name: String): String = {
+    getValidatedEnumValue(Class.forName(className), name)
   }
 
-  def getValidatedEnumValue(clazz: Class[_], name: String, nullAllowed: Boolean): String = {
+  def getValidatedEnumValue(clazz: Class[_], name: String): String = {
     val names = clazz.getDeclaredMethod("values").invoke(null).asInstanceOf[Array[Enum[_]]].map(_.name())
 
-    if (!nullAllowed && name == null) {
+    if (name == null) {
       throw new IllegalArgumentException(s"Null is not a valid value. Allowed values are: ${names.mkString(", ")}")
-    } else if (nullAllowed && name == null) {
-      return null
     }
 
     if (!names.map(_.toLowerCase()).contains(name.toLowerCase())) {
-      val nullStr = if (nullAllowed) "null or " else ""
-      throw new IllegalArgumentException(s"'$name' is not a valid value. Allowed values are: $nullStr${names.mkString(", ")}")
+      throw new IllegalArgumentException(s"'$name' is not a valid value. Allowed values are: ${names.mkString(", ")}")
     }
     names.find(_.toLowerCase() == name.toLowerCase).get
   }
