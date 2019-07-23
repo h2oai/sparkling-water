@@ -92,7 +92,7 @@ The Sparkling Water Python Module
 Prepare the environment
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Download unpack Sparkling Water release from `https://www.h2o.ai/download/ <https://www.h2o.ai/download/>`_.
+1. Download and unpack Sparkling Water release from `https://www.h2o.ai/download/ <https://www.h2o.ai/download/>`_.
 
 2. Configure the location of Spark distribution and cluster:
 
