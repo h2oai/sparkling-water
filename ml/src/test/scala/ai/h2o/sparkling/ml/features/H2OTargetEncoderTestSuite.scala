@@ -122,7 +122,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
-  test("The target encoder will use global average for unexpected values in the testing dataset") {
+  test("TargetEncoderMOJOModel will use global average for unexpected values in the testing dataset") {
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("DCAPS"))
       .setLabelCol("CAPSULE")
@@ -137,7 +137,22 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
   }
 
-  test("The target encoder will use global average for null values in the testing dataset") {
+  test("TargetEncoderModel will use global average for unexpected values in the testing dataset") {
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("DCAPS"))
+      .setLabelCol("CAPSULE")
+
+    val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
+    val expectedValue = trainingDataset.groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+    val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te", lit(expectedValue))
+    val model = targetEncoder.fit(trainingDataset)
+
+    val resultDF = model.transformTrainingDataset(unexpectedValuesDF)
+
+    TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+  }
+
+  test("TargetEncoderMOJOModel will use global average for null values in the testing dataset") {
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("DCAPS"))
       .setLabelCol("CAPSULE")
@@ -148,6 +163,21 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val model = targetEncoder.fit(trainingDataset)
 
     val resultDF = model.transform(withNullsDF)
+
+    TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+  }
+
+  test("TargetEncoderModel will use global average for null values in the testing dataset") {
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("DCAPS"))
+      .setLabelCol("CAPSULE")
+
+    val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
+    val expectedValue = trainingDataset.groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+    val expectedDF = withNullsDF.withColumn("DCAPS_te", lit(expectedValue))
+    val model = targetEncoder.fit(trainingDataset)
+
+    val resultDF = model.transformTrainingDataset(withNullsDF)
 
     TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
   }
@@ -170,6 +200,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
     transformedByModel.filter('DCAPS_te.isNull).count() shouldBe  0
     transformedByMOJOModel.filter('DCAPS_te.isNull).count() shouldBe 0
+
     TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
