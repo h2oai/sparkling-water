@@ -17,8 +17,9 @@
 
 package water.sparkling.itest.local
 
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.h2o.backends.SharedBackendConf
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -34,8 +35,6 @@ class H2OFrameToDataFrameDistributedTestSuite extends FunSuite with SharedH2OTes
     .set("spark.executor.extraClassPath", sys.props("java.class.path"))
     .set("spark.executor.memory", "1g")
     .set("spark.driver.memory", "2g")
-    .set("spark.ext.h2o.cloud.timeout", s"${3 * 60 * 1000}")
-
 
   override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,1024]", this.getClass.getName, conf)
 
