@@ -3,11 +3,10 @@ Running Sparkling Water Examples
 
 The Sparkling Water distribution includes also a set of examples. You can find their implementation in `examples directory <https://github.com/h2oai/sparkling-water/tree/master/examples>`__. You can build and run them in the following way:
 
-1. Build a package that can be submitted to Spark cluster:
+1. Obtain Sparkling Water distribution
 
-   .. code:: bash
-
-        ./gradlew build -x check
+You can download the official release from `https://www.h2o.ai/download/ <https://www.h2o.ai/download/>`_.  or build it yourself.
+To see how to build Sparkling Water, please see :ref:`build`.
 
 2. Set the configuration of the demo Spark cluster (for example, ``local[*]``)
 
@@ -17,7 +16,6 @@ The Sparkling Water distribution includes also a set of examples. You can find t
         export MASTER="local[*]"
 
    In this example, the description ``local[*]`` causes creation of a single node local cluster.
-
 
 3. And run the example:
 
