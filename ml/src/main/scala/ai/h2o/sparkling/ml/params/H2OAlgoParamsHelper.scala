@@ -14,19 +14,20 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.param
+package ai.h2o.sparkling.ml.params
 
 import java.util
 
 import com.google.common.base.CaseFormat
 import hex.Model.Parameters
 import org.apache.spark.h2o.utils.ReflectionUtils.api
+import org.apache.spark.ml.h2o.param.{NullableDoubleArrayParam, NullableStringArrayParam, NullableStringParam}
 import org.apache.spark.ml.param._
 
 import scala.reflect.ClassTag
 
 /**
-  * Base trait providing parameters utilities and shared methods for handling parameters for H2O objects
+  * Base trait providing parameters utilities and shared methods for handling parameters for H2O parameters
   *
   * @tparam P H2O's parameter type
   */

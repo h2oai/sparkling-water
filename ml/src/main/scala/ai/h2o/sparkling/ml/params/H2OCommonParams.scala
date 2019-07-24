@@ -14,9 +14,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.param
+package ai.h2o.sparkling.ml.params
 
 import org.apache.spark.internal.Logging
+import org.apache.spark.ml.h2o.param.NullableStringParam
 import org.apache.spark.ml.param._
 
 /**
@@ -25,7 +26,6 @@ import org.apache.spark.ml.param._
 trait H2OCommonParams extends Params with Logging {
 
   protected final val featuresCols = new StringArrayParam(this, "featuresCols", "Name of feature columns")
-  protected final val labelCol = new Param[String](this, "labelCol", "Label column name")
   protected final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   protected final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
   protected final val splitRatio = new DoubleParam(this, "splitRatio",
@@ -57,7 +57,6 @@ trait H2OCommonParams extends Params with Logging {
   //
   setDefault(
     featuresCols -> Array.empty[String],
-    labelCol -> "label",
     foldCol -> null,
     weightCol -> null,
     splitRatio -> 1.0, // Use whole frame as training frame
@@ -76,8 +75,6 @@ trait H2OCommonParams extends Params with Logging {
     val excludedCols = getExcludedCols()
     $(featuresCols).filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
   }
-
-  def getLabelCol(): String = $(labelCol)
 
   def getFoldCol(): String = $(foldCol)
 
@@ -109,8 +106,6 @@ trait H2OCommonParams extends Params with Logging {
     set(featuresCols, columnNames)
   }
 
-  def setLabelCol(columnName: String): this.type = set(labelCol, columnName)
-
   def setFoldCol(columnName: String): this.type = set(foldCol, columnName)
 
   def setWeightCol(columnName: String): this.type = set(weightCol, columnName)
@@ -131,11 +126,5 @@ trait H2OCommonParams extends Params with Logging {
 
   def setConvertInvalidNumbersToNa(value: Boolean): this.type = set(convertInvalidNumbersToNa, value)
 
-  //
-  // Other methods
-  //
-  protected def getExcludedCols(): Seq[String] = {
-    Seq(getLabelCol(), getFoldCol(), getWeightCol())
-      .flatMap(Option(_)) // Remove nulls
-  }
+  protected def getExcludedCols(): Seq[String]
 }

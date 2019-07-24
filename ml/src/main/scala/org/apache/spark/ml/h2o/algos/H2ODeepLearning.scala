@@ -16,10 +16,10 @@
 */
 package org.apache.spark.ml.h2o.algos
 
+import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
-import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.util._
 
 /**
@@ -37,7 +37,7 @@ object H2ODeepLearning extends DefaultParamsReadable[py_sparkling.ml.algos.H2ODe
 /**
   * Parameters here can be set as normal and are duplicated to DeepLearningParameters H2O object
   */
-trait H2ODeepLearningParams extends H2OAlgoParams[DeepLearningParameters] {
+trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParameters] {
 
   type H2O_SCHEMA = DeepLearningParametersV3
 

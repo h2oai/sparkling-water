@@ -16,10 +16,10 @@
 */
 package org.apache.spark.ml.h2o.algos
 
+import ai.h2o.sparkling.ml.params.H2OAlgoSharedTreeParams
 import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.gbm.{GBM, GBMModel}
-import org.apache.spark.ml.h2o.param.H2OSharedTreeParams
 import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 
 /**
@@ -35,7 +35,7 @@ object H2OGBM extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGBM]
 /**
   * Parameters for Spark's API exposing underlying H2O model.
   */
-trait H2OGBMParams extends H2OSharedTreeParams[GBMParameters] {
+trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] {
 
   type H2O_SCHEMA = GBMParametersV3
 

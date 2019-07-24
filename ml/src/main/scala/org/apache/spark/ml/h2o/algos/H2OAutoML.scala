@@ -20,6 +20,8 @@ import java.util.Date
 
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
+import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OCommonSupervisedParams}
 import hex.ScoreKeeper
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Estimator
@@ -39,7 +41,7 @@ import scala.util.control.NoStackTrace
   * H2O AutoML pipeline step
   */
 class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
-  with H2OAlgorithmCommons with DefaultParamsWritable with H2OAutoMLParams {
+  with H2OAlgoCommonUtils with DefaultParamsWritable with H2OAutoMLParams {
 
   // Override default values
   setDefault(nfolds, 5)
@@ -135,7 +137,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
 object H2OAutoML extends DefaultParamsReadable[py_sparkling.ml.algos.H2OAutoML]
 
-trait H2OAutoMLParams extends H2OCommonParams with Params {
+trait H2OAutoMLParams extends H2OCommonSupervisedParams {
 
   //
   // Param definitions
