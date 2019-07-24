@@ -399,7 +399,7 @@ trait H2OGridSearchParams extends H2OCommonParams with Params {
   private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Relative tolerance for metric-based" +
     " stopping criterion: stop if relative improvement is not at least this much.")
   private val stoppingMetric = new Param[String](this, "stoppingMetric", "Stopping Metric")
-  private val selectBestModelBy = new NullableStringParam(this, "selectBestModelBy", "Select best model by specific metric." +
+  private val selectBestModelBy = new Param[String](this, "selectBestModelBy", "Select best model by specific metric." +
     "If this value is not specified that the first model os taken.")
   private val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
     "True if sort in decreasing order accordingto selected metrics")

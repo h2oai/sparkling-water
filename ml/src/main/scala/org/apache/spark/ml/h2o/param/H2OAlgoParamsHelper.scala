@@ -135,8 +135,7 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
 }
 
 object H2OAlgoParamsHelper {
-
-
+  
   def getValidatedEnumValue[T <: Enum[T]](name: String)(implicit ctag: reflect.ClassTag[T]): String = {
     getValidatedEnumValue(ctag.runtimeClass, name)
   }
