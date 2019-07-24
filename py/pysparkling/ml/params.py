@@ -8,7 +8,6 @@ from py_sparkling.ml.util import getValidatedEnumValue, getValidatedEnumValues
 class H2OCommonParams(Params):
 
     featuresCols = Param(Params._dummy(), "featuresCols", "Name of feature columns")
-    labelCol = Param(Params._dummy(), "labelCol", "Label column name")
     foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
     splitRatio = Param(Params._dummy(), "splitRatio",
@@ -34,9 +33,6 @@ class H2OCommonParams(Params):
     ##
     def getFeaturesCols(self):
         return self.getOrDefault(self.featuresCols)
-
-    def getLabelCol(self):
-        return self.getOrDefault(self.labelCol)
 
     def getFoldCol(self):
         return self.getOrDefault(self.foldCol)
@@ -68,10 +64,6 @@ class H2OCommonParams(Params):
     def setFeaturesCols(self, value):
         assert_is_type(value, [str])
         return self._set(featuresCols=value)
-
-    def setLabelCol(self, value):
-        assert_is_type(value, str)
-        return self._set(labelCol=value)
 
     def setFoldCol(self, value):
         assert_is_type(value, str, None)
@@ -115,7 +107,23 @@ class H2OCommonParams(Params):
         return self._set(convertUnknownCategoricalLevelsToNa=value)
 
 
-class H2OAlgorithmParams(H2OCommonParams):
+class H2OCommonUnsupervisedParams(H2OCommonParams):
+    pass
+
+
+class H2OCommonSupervisedParams(H2OCommonParams):
+
+    labelCol = Param(Params._dummy(), "labelCol", "Label column name")
+
+    def getLabelCol(self):
+        return self.getOrDefault(self.labelCol)
+
+    def setLabelCol(self, value):
+        assert_is_type(value, str)
+        return self._set(labelCol=value)
+
+
+class H2OAlgoCommonParams:
     ##
     # Param definitions
     ##
@@ -167,7 +175,15 @@ class H2OAlgorithmParams(H2OCommonParams):
         return self._set(distribution=validated)
 
 
-class H2OSharedTreeParams(H2OAlgorithmParams):
+class H2OAlgoUnsupervisedParams(H2OAlgoCommonParams, H2OCommonUnsupervisedParams):
+    pass
+
+
+class H2OAlgoSupervisedParams(H2OAlgoCommonParams, H2OCommonSupervisedParams):
+    pass
+
+
+class H2OSharedTreeParams(H2OAlgoSupervisedParams):
 
     ##
     # Param definitions
@@ -353,7 +369,7 @@ class H2OGBMParams(H2OSharedTreeParams):
         return self._set(predNoiseBandwidth=value)
 
 
-class H2ODeepLearningParams(H2OAlgorithmParams):
+class H2ODeepLearningParams(H2OAlgoUnsupervisedParams):
 
     ##
     # Param definitions
@@ -413,7 +429,7 @@ class H2ODeepLearningParams(H2OAlgorithmParams):
         return self._set(reproducible=value)
 
 
-class H2OAutoMLParams(H2OCommonParams):
+class H2OAutoMLParams(H2OCommonSupervisedParams):
 
     ##
     # Param definitions
@@ -578,7 +594,7 @@ class H2OAutoMLParams(H2OCommonParams):
         return self._set(maxModels=value)
 
 
-class H2OXGBoostParams(H2OAlgorithmParams):
+class H2OXGBoostParams(H2OAlgoSupervisedParams):
 
     ##
     # Param definitions
@@ -912,7 +928,7 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(backend=validated)
 
 
-class H2OGLMParams(H2OAlgorithmParams):
+class H2OGLMParams(H2OAlgoSupervisedParams):
 
     ##
     # Param definitions
@@ -1134,7 +1150,7 @@ class H2OGLMParams(H2OAlgorithmParams):
         return self._set(earlyStopping=value)
 
 
-class H2OGridSearchParams(H2OCommonParams):
+class H2OGridSearchParams(H2OCommonSupervisedParams):
 
     ##
     # Param definitions
