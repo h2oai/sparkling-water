@@ -11,7 +11,7 @@ from py_sparkling.ml.models import H2OMOJOModel
 from pysparkling import *
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, \
     H2OGridSearchParams
-from .util import JavaH2OMLReadable
+from .util import JavaH2OMLReadable, validateEnumValue, validateEnumValues
 
 java_max_double_value = (2-2**(-52))*(2**1023)
 from pysparkling.spark_specifics import get_input_kwargs
@@ -66,7 +66,10 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
+        validateEnumValue(self.__getDistributionEnum(), kwargs, "distribution")
+        validateEnumValue(self.__getHistogramTypeEnum(), kwargs, "histogramType")
+
+    # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
         double_types = ["minRows", "predNoiseBandwidth", "splitRatio", "learnRate", "colSampleRate", "learnRateAnnealing", "maxAbsLeafnodePred"
                         "minSplitImprovement", "r2Stopping", "sampleRate", "colSampleRateChangePerLevel", "colSampleRatePerTree"]
@@ -107,6 +110,8 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                   seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False,
                   foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
+
+        validateEnumValue(self.__getDistributionEnum(), kwargs, "distribution")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -149,6 +154,11 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                   keepCrossValidationModels=True, maxModels=0, **deprecatedArgs):
 
         kwargs = get_input_kwargs(self)
+
+        validateEnumValues(self.__getAutomlAlgoEnum(), kwargs, "includeAlgos", nullEnabled=True)
+        validateEnumValues(self.__getAutomlAlgoEnum(), kwargs, "excludeAlgos", nullEnabled=True)
+        validateEnumValue(self.__getStoppingMetricEnum(), kwargs, "stoppingMetric")
+
 
         if "projectName" in kwargs and kwargs["projectName"] is None:
             kwargs["projectName"] = ''.join(random.choice(string.ascii_letters) for i in range(30))
@@ -217,7 +227,17 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                   foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
+        validateEnumValue(self.__getDistributionEnum(), kwargs, "distribution")
+        validateEnumValue(self.__getTreeMethodEnum(), kwargs, "treeMethod")
+        validateEnumValue(self.__getGrowPolicyEnum(), kwargs, "growPolicy")
+        validateEnumValue(self.__getBoosterEnum(), kwargs, "booster")
+        validateEnumValue(self.__getDmatrixTypeEnum(), kwargs, "dmatrixType")
+        validateEnumValue(self.__getSampleTypeEnum(), kwargs, "sampleType")
+        validateEnumValue(self.__getNormalizeTypeEnum(), kwargs, "normalizeType")
+        validateEnumValue(self.__getBackendEnum(), kwargs, "backend")
+
+
+    # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
         double_types = ["splitRatio", "minRows", "minChildWeight", "learnRate", "eta", "learnRateAnnealing"
                         "sampleRate", "subsample", "colSampleRate", "colSampleByLevel", "colSampleRatePerTree",
@@ -273,6 +293,12 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
+        validateEnumValue(self.__getDistributionEnum(), kwargs, "distribution")
+        validateEnumValue(self.__getFamilyEnum(), kwargs, "family")
+        validateEnumValue(self.__getLinkEnum(), kwargs, "link")
+        validateEnumValue(self.__getSolverEnum(), kwargs, "solver")
+        validateEnumValue(self.__getMissingValuesHandlingEnum(), kwargs, "missingValuesHandling")
+
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
         double_types = ["splitRatio", "tweedieVariancePower", "tweedieLinkPower", "prior", "lambdaMinRatio",
@@ -318,6 +344,10 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                   stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy="AUTO",
                   selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
+
+        validateEnumValue(self.__getStrategyEnum(), kwargs, "strategy")
+        validateEnumValue(self.__getStoppingMetricEnum(), kwargs, "stoppingMetric")
+        validateEnumValue(self.__getSelectBestModelByEnum(), kwargs, "selectBestModelBy")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception

@@ -7,11 +7,18 @@ def getValidatedEnumValue(enumClass, name):
     package = getattr(jvm.ai.h2o.sparkling.ml.params, "H2OAlgoParamsHelper$")
     return package.__getattr__("MODULE$").getValidatedEnumValue(enumClass, name)
 
-def getValidatedEnumValues(enumClass, names, nullEnabled = False):
+def getValidatedEnumValues(enumClass, names, nullEnabled=False):
     jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
     package = getattr(jvm.ai.h2o.sparkling.ml.params, "H2OAlgoParamsHelper$")
     return package.__getattr__("MODULE$").getValidatedEnumValues(enumClass, names, nullEnabled)
 
+def validateEnumValue(enumClass, kwargs, name):
+    if name in kwargs:
+        getValidatedEnumValue(enumClass, kwargs[name])
+
+def validateEnumValues(enumClass, kwargs, name, nullEnabled=False):
+    if name in kwargs:
+        getValidatedEnumValues(enumClass, kwargs[name], nullEnabled=nullEnabled)
 
 class JavaH2OMLReadable(MLReadable):
     """
