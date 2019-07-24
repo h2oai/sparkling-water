@@ -14,11 +14,11 @@ def getValidatedEnumValues(enumClass, names, nullEnabled=False):
 
 def validateEnumValue(enumClass, kwargs, name):
     if name in kwargs:
-        getValidatedEnumValue(enumClass, kwargs[name])
+        kwargs[name] = getValidatedEnumValue(enumClass, kwargs[name])
 
 def validateEnumValues(enumClass, kwargs, name, nullEnabled=False):
     if name in kwargs:
-        getValidatedEnumValues(enumClass, kwargs[name], nullEnabled=nullEnabled)
+        kwargs[name] = getValidatedEnumValues(enumClass, kwargs[name], nullEnabled=nullEnabled)
 
 class JavaH2OMLReadable(MLReadable):
     """

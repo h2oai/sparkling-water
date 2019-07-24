@@ -66,8 +66,8 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        validateEnumValue(self.__getDistributionEnum(), kwargs, "distribution")
-        validateEnumValue(self.__getHistogramTypeEnum(), kwargs, "histogramType")
+        validateEnumValue(self._H2OGBMParams__getDistributionEnum(), kwargs, "distribution")
+        validateEnumValue(self._H2OGBMParams__getHistogramTypeEnum(), kwargs, "histogramType")
 
     # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -111,7 +111,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                   foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        validateEnumValue(self.__getDistributionEnum(), kwargs, "distribution")
+        validateEnumValue(self._H2ODeepLearningParams__getDistributionEnum(), kwargs, "distribution")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -155,9 +155,9 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
 
         kwargs = get_input_kwargs(self)
 
-        validateEnumValues(self.__getAutomlAlgoEnum(), kwargs, "includeAlgos", nullEnabled=True)
-        validateEnumValues(self.__getAutomlAlgoEnum(), kwargs, "excludeAlgos", nullEnabled=True)
-        validateEnumValue(self.__getStoppingMetricEnum(), kwargs, "stoppingMetric")
+        validateEnumValues(self._H2OAutoMLParams__getAutomlAlgoEnum(), kwargs, "includeAlgos", nullEnabled=True)
+        validateEnumValues(self._H2OAutoMLParams__getAutomlAlgoEnum(), kwargs, "excludeAlgos", nullEnabled=True)
+        validateEnumValue(self._H2OAutoMLParams__getStoppingMetricEnum(), kwargs, "stoppingMetric")
 
 
         if "projectName" in kwargs and kwargs["projectName"] is None:
@@ -227,14 +227,14 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                   foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        validateEnumValue(self.__getDistributionEnum(), kwargs, "distribution")
-        validateEnumValue(self.__getTreeMethodEnum(), kwargs, "treeMethod")
-        validateEnumValue(self.__getGrowPolicyEnum(), kwargs, "growPolicy")
-        validateEnumValue(self.__getBoosterEnum(), kwargs, "booster")
-        validateEnumValue(self.__getDmatrixTypeEnum(), kwargs, "dmatrixType")
-        validateEnumValue(self.__getSampleTypeEnum(), kwargs, "sampleType")
-        validateEnumValue(self.__getNormalizeTypeEnum(), kwargs, "normalizeType")
-        validateEnumValue(self.__getBackendEnum(), kwargs, "backend")
+        validateEnumValue(self._H2OXGBoostParams__getDistributionEnum(), kwargs, "distribution")
+        validateEnumValue(self._H2OXGBoostParams__getTreeMethodEnum(), kwargs, "treeMethod")
+        validateEnumValue(self._H2OXGBoostParams__getGrowPolicyEnum(), kwargs, "growPolicy")
+        validateEnumValue(self._H2OXGBoostParams__getBoosterEnum(), kwargs, "booster")
+        validateEnumValue(self._H2OXGBoostParams__getDmatrixTypeEnum(), kwargs, "dmatrixType")
+        validateEnumValue(self._H2OXGBoostParams__getSampleTypeEnum(), kwargs, "sampleType")
+        validateEnumValue(self._H2OXGBoostParams__getNormalizeTypeEnum(), kwargs, "normalizeType")
+        validateEnumValue(self._H2OXGBoostParams__getBackendEnum(), kwargs, "backend")
 
 
     # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
@@ -293,11 +293,11 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        validateEnumValue(self.__getDistributionEnum(), kwargs, "distribution")
-        validateEnumValue(self.__getFamilyEnum(), kwargs, "family")
-        validateEnumValue(self.__getLinkEnum(), kwargs, "link")
-        validateEnumValue(self.__getSolverEnum(), kwargs, "solver")
-        validateEnumValue(self.__getMissingValuesHandlingEnum(), kwargs, "missingValuesHandling")
+        validateEnumValue(self._H2OGLMParams__getDistributionEnum(), kwargs, "distribution")
+        validateEnumValue(self._H2OGLMParams__getFamilyEnum(), kwargs, "family")
+        validateEnumValue(self._H2OGLMParams__getLinkEnum(), kwargs, "link")
+        validateEnumValue(self._H2OGLMParams__getSolverEnum(), kwargs, "solver")
+        validateEnumValue(self._H2OGLMParams__getMissingValuesHandlingEnum(), kwargs, "missingValuesHandling")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -345,9 +345,9 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                   selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        validateEnumValue(self.__getStrategyEnum(), kwargs, "strategy")
-        validateEnumValue(self.__getStoppingMetricEnum(), kwargs, "stoppingMetric")
-        validateEnumValue(self.__getSelectBestModelByEnum(), kwargs, "selectBestModelBy")
+        validateEnumValue(self._H2OGridSearchParams__getStrategyEnum(), kwargs, "strategy")
+        validateEnumValue(self._H2OGridSearchParams__getStoppingMetricEnum(), kwargs, "stoppingMetric")
+        validateEnumValue(self._H2OGridSearchParams__getSelectBestModelByEnum(), kwargs, "selectBestModelBy")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
