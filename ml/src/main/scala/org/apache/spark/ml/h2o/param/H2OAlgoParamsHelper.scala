@@ -169,10 +169,12 @@ object H2OAlgoParamsHelper {
 
   private def getValidatedEnumValues(clazz: Class[_], inputNames: Array[String], nullEnabled: Boolean): Array[String] = {
     val names = getEnumValues(clazz)
-    if (nullEnabled && inputNames == null) {
-      return null
-    } else if (!nullEnabled && inputNames == null) {
-      throw new IllegalArgumentException(s"Null is not a valid value. Allowed input is array with any of the following elements: ${names.mkString(", ")}")
+    if (inputNames == null) {
+      if (nullEnabled) {
+        return null
+      } else {
+        throw new IllegalArgumentException(s"Null is not a valid value. Allowed input is array with any of the following elements: ${names.mkString(", ")}")
+      }
     }
 
     inputNames.foreach { name =>
