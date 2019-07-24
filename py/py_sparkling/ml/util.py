@@ -4,12 +4,12 @@ from pyspark.sql import SparkSession
 
 def getValidatedEnumValue(enumClass, name):
     jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-    package = getattr(jvm.org.apache.spark.ml.h2o.param, "H2OAlgoParamsHelper$")
+    package = getattr(jvm.ai.h2o.sparkling.ml.params, "H2OAlgoParamsHelper$")
     return package.__getattr__("MODULE$").getValidatedEnumValue(enumClass, name)
 
 def getValidatedEnumValues(enumClass, names, nullEnabled = False):
     jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-    package = getattr(jvm.org.apache.spark.ml.h2o.param, "H2OAlgoParamsHelper$")
+    package = getattr(jvm.ai.h2o.sparkling.ml.params, "H2OAlgoParamsHelper$")
     return package.__getattr__("MODULE$").getValidatedEnumValues(enumClass, names, nullEnabled)
 
 
