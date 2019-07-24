@@ -19,7 +19,7 @@ from pyspark.ml.util import JavaMLWritable
 from pyspark.ml.wrapper import JavaEstimator
 from pyspark.sql import SparkSession
 from pyspark import keyword_only
-from py_sparkling.ml.util import getValidatedEnumValue
+from py_sparkling.ml.util import getValidatedEnumValue, validateEnumValue
 
 from pysparkling.context import H2OContext
 from pysparkling.spark_specifics import get_input_kwargs
@@ -50,8 +50,7 @@ class H2OTargetEncoder(H2OTargetEncoderParams, JavaEstimator, JavaH2OMLReadable,
                   blendedAvgEnabled=False, blendedAvgInflectionPoint=10.0, blendedAvgSmoothing=20.0, noise=0.01, noiseSeed=-1):
         kwargs = get_input_kwargs(self)
 
-        if "holdoutStrategy" in kwargs:
-            kwargs["holdoutStrategy"] = getValidatedEnumValue(self.__getHoldoutStrategyEnumName(), kwargs["holdoutStrategy"])
+        validateEnumValue(self.__getHoldoutStrategyEnumName(), kwargs, "holdoutStrategy")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
