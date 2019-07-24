@@ -18,11 +18,12 @@
 package org.apache.spark.ml.h2o.models
 
 case class H2OMOJOSettings(
-  convertUnknownCategoricalLevelsToNa: Boolean = false,
-  convertInvalidNumbersToNa: Boolean = false,
-  namedMojoOutputColumns: Boolean = true
-)
+                            predictionCol: String = "prediction",
+                            convertUnknownCategoricalLevelsToNa: Boolean = false,
+                            convertInvalidNumbersToNa: Boolean = false,
+                            namedMojoOutputColumns: Boolean = true
+                          )
 
-object H2OMOJOSettings{
+object H2OMOJOSettings {
   def default = H2OMOJOSettings()
 }

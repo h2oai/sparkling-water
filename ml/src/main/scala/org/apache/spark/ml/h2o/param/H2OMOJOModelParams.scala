@@ -17,6 +17,7 @@
 package org.apache.spark.ml.h2o.param
 
 import org.apache.spark.internal.Logging
+import org.apache.spark.ml.h2o.models.H2OMOJOSettings
 import org.apache.spark.ml.param._
 
 /**
@@ -49,10 +50,10 @@ trait H2OMOJOModelParams extends Params with Logging {
   //
   setDefault(
     featuresCols -> Array.empty[String],
-    predictionCol -> "prediction",
-    convertUnknownCategoricalLevelsToNa -> false,
-    convertInvalidNumbersToNa -> false,
-    namedMojoOutputColumns -> true,
+    predictionCol -> H2OMOJOSettings.default.predictionCol,
+    convertUnknownCategoricalLevelsToNa -> H2OMOJOSettings.default.convertUnknownCategoricalLevelsToNa,
+    convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa,
+    namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns,
     modelDetails -> null
   )
 

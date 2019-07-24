@@ -11,18 +11,22 @@ from pyspark.ml.param import *
 class H2OMOJOSettings(JavaWrapper):
 
     def __init__(self,
+                 predictionCol = "prediction",
                  convertUnknownCategoricalLevelsToNa = False,
                  convertInvalidNumbersToNa = False,
                  namedMojoOutputColumns = True):
+        assert_is_type(predictionCol, str)
         assert_is_type(convertUnknownCategoricalLevelsToNa, bool)
         assert_is_type(convertInvalidNumbersToNa, bool)
         assert_is_type(namedMojoOutputColumns, bool)
+        self.predictionCol = predictionCol
         self.convertUnknownCategoricalLevelsToNa = convertUnknownCategoricalLevelsToNa
         self.convertInvalidNumbersToNa = convertInvalidNumbersToNa
         self.namedMojoOutputColumns = namedMojoOutputColumns
 
     def toJavaObject(self):
         return self._new_java_obj("org.apache.spark.ml.h2o.models.H2OMOJOSettings",
+                           self.predictionCol,
                            self.convertUnknownCategoricalLevelsToNa,
                            self.convertInvalidNumbersToNa,
                            self.namedMojoOutputColumns)
