@@ -20,8 +20,6 @@ import org.apache.spark.h2o.utils.Logging
 import org.apache.spark.ml.h2o.param.NullableStringParam
 import org.apache.spark.ml.param._
 
-import scala.reflect.internal.util.TableDef.Column
-
 /**
   * This trait contains parameters that are shared across all algorithms.
   */
