@@ -14,14 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.param
+package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.tree.SharedTreeModel.SharedTreeParameters
 import hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType
-import org.apache.spark.ml.h2o.param.H2OAlgoParamsHelper.getValidatedEnumValue
 
-trait H2OSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoParams[P] {
+trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervisedParams[P] {
 
   //
   // Param definitions

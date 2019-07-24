@@ -14,20 +14,17 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.algos
+package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.ml.params.H2OCommonParams
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.h2o.param.H2OCommonParams
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{Dataset, SparkSession}
 import water.Key
 import water.fvec.Frame
 import water.support.H2OFrameSupport
 
-/**
-  * This trait contains methods that are shared across all algorithms.
-  */
-trait H2OAlgorithmCommons extends H2OCommonParams {
+trait H2OAlgoCommonUtils extends H2OCommonParams {
   protected def prepareDatasetForFitting(dataset: Dataset[_]): (Frame, Option[Frame]) = {
     val excludedCols = getExcludedCols()
 

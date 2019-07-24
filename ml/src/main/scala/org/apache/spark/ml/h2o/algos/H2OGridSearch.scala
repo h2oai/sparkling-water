@@ -20,6 +20,8 @@ import java.lang.reflect.Field
 import java.util
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
+import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OCommonSupervisedParams}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.grid.GridSearch.SimpleParametersBuilderFactory
@@ -48,7 +50,7 @@ import scala.collection.mutable
   * H2O Grid Search
   */
 class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
-  with H2OAlgorithmCommons with DefaultParamsWritable with H2OGridSearchParams {
+  with H2OAlgoCommonUtils with DefaultParamsWritable with H2OGridSearchParams {
 
   private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
@@ -384,7 +386,7 @@ object H2OGridSearch extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGrid
   }
 }
 
-trait H2OGridSearchParams extends H2OCommonParams with Params {
+trait H2OGridSearchParams extends H2OCommonSupervisedParams {
 
   //
   // Param definitions

@@ -19,7 +19,7 @@ package org.apache.spark.ml.h2o.param
 
 import ai.h2o.automl.Algo
 import hex.genmodel.utils.DistributionFamily
-import org.apache.spark.ml.h2o.param.H2OAlgoParamsHelper._
+import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
