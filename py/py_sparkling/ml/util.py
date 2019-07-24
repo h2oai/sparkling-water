@@ -2,23 +2,15 @@ from pyspark.ml.util import JavaMLReader, MLReadable
 from pysparkling.context import H2OContext
 from pyspark.sql import SparkSession
 
-def getValidatedEnumValue(enumClass, name, nullEnabled = False):
+def getValidatedEnumValue(enumClass, name):
     jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
     package = getattr(jvm.org.apache.spark.ml.h2o.param, "H2OAlgoParamsHelper$")
-    return package.__getattr__("MODULE$").getValidatedEnumValue(enumClass, name, nullEnabled)
+    return package.__getattr__("MODULE$").getValidatedEnumValue(enumClass, name)
 
-def get_correct_case_enum(enum_values, enum_single_value):
-    for a in enum_values:
-        if a.toString().lower() == enum_single_value.lower():
-            return a.toString()
-
-
-def get_enum_array_from_str_array(str_array, java_enum_class):
-    enum_array = []
-    if str_array is not None:
-        for algo in str_array:
-            enum_array.append(java_enum_class.valueOf(get_correct_case_enum(java_enum_class.values(), algo)))
-        return enum_array
+def getValidatedEnumValues(enumClass, names, nullEnabled = False):
+    jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
+    package = getattr(jvm.org.apache.spark.ml.h2o.param, "H2OAlgoParamsHelper$")
+    return package.__getattr__("MODULE$").getValidatedEnumValues(enumClass, names, nullEnabled)
 
 
 class JavaH2OMLReadable(MLReadable):

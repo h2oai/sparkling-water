@@ -19,6 +19,7 @@ package org.apache.spark.ml.h2o.algos
 import java.lang.reflect.Field
 import java.util
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.grid.GridSearch.SimpleParametersBuilderFactory
@@ -87,13 +88,15 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
     water.DKV.put(trainFrame)
+    val Cartesian = HyperSpaceSearchCriteria.Strategy.Cartesian.name()
+    val RandomDiscrete = HyperSpaceSearchCriteria.Strategy.RandomDiscrete.name()
     val criteria = getStrategy() match {
-      case HyperSpaceSearchCriteria.Strategy.Cartesian => new CartesianSearchCriteria
-      case HyperSpaceSearchCriteria.Strategy.RandomDiscrete =>
+      case Cartesian => new CartesianSearchCriteria
+      case RandomDiscrete =>
         val c = new RandomDiscreteValueSearchCriteria
         c.set_stopping_tolerance(getStoppingTolerance())
         c.set_stopping_rounds(getStoppingRounds())
-        c.set_stopping_metric(getStoppingMetric())
+        c.set_stopping_metric(ScoreKeeper.StoppingMetric.valueOf(getStoppingMetric()))
         c.set_seed(getSeed())
         c.set_max_models(getMaxModels())
         c.set_max_runtime_secs(getMaxRuntimeSecs())
@@ -192,23 +195,22 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       throw new IllegalArgumentException("No Model returned.")
     }
 
-    val metric = if (getSelectBestModelBy() == null) {
+    val metric = if (getSelectBestModelBy() == H2OGridSearchMetric.AUTO.name()) {
       selectMetric(grid.getModels()(0)) match {
         case _: ModelMetricsRegression => H2OGridSearchMetric.RMSE
         case _: ModelMetricsBinomial => H2OGridSearchMetric.AUC
         case _: ModelMetricsMultinomial => H2OGridSearchMetric.Logloss
       }
     } else {
-      getSelectBestModelBy()
+      H2OGridSearchMetric.valueOf(getSelectBestModelBy())
     }
-
     val modelMetricPair = grid.getModels.map { m =>
       (m, extractMetrics(m).find(_._1 == metric).get._2)
     }
 
-    val ordering = if (getSelectBestModelBy() == null) {
-      logWarning("You did not specify 'selectBestModelBy' parameter, but specified 'selectBestModelDecreasing'." +
-        " In the case 'selectBestModelBy' is not specified, we sort the grid models by default metric and ignore the ordering" +
+    val ordering = if (getSelectBestModelBy() == H2OGridSearchMetric.AUTO.name()) {
+      logWarning("'selectBestModelBy' parameter is specified to 'AUTO', but you also specified 'selectBestModelDecreasing'." +
+        " In the case 'selectBestModelBy' is set to AUTO', we sort the grid models by default metric and ignore the ordering" +
         " specified by 'selectBestModelDecreasing'." +
         " If you still wish to use the specific ordering, please make sure to explicitly select the metric which you want to" +
         " order.")
@@ -390,14 +392,14 @@ trait H2OGridSearchParams extends H2OCommonParams with Params {
   private val algo = new DoubleParam(this, "algo", "dummy argument for pysparkling")
   protected final val gridAlgoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
   private val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
-  private val strategy = new GridSearchStrategyParam(this, "strategy", "Search criteria strategy")
+  private val strategy = new Param[String](this, "strategy", "Search criteria strategy")
   private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "maxRuntimeSecs")
   private val maxModels = new IntParam(this, "maxModels", "maxModels")
   private val stoppingRounds = new IntParam(this, "stoppingRounds", "Early stopping based on convergence of stoppingMetric")
   private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Relative tolerance for metric-based" +
     " stopping criterion: stop if relative improvement is not at least this much.")
-  private val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping Metric")
-  private val selectBestModelBy = new MetricParam(this, "selectBestModelBy", "Select best model by specific metric." +
+  private val stoppingMetric = new Param[String](this, "stoppingMetric", "Stopping Metric")
+  private val selectBestModelBy = new Param[String](this, "selectBestModelBy", "Select best model by specific metric." +
     "If this value is not specified that the first model os taken.")
   private val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
     "True if sort in decreasing order accordingto selected metrics")
@@ -408,13 +410,13 @@ trait H2OGridSearchParams extends H2OCommonParams with Params {
   setDefault(
     gridAlgoParams -> null,
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
-    strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian,
+    strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian.name(),
     maxRuntimeSecs -> 0,
     maxModels -> 0,
     stoppingRounds -> 0,
     stoppingTolerance -> 0.001,
-    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
-    selectBestModelBy -> null,
+    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
+    selectBestModelBy -> H2OGridSearchMetric.AUTO.name(),
     selectBestModelDecreasing -> true
   )
 
@@ -424,7 +426,7 @@ trait H2OGridSearchParams extends H2OCommonParams with Params {
 
   def getHyperParameters(): util.Map[String, Array[AnyRef]] = $(hyperParameters)
 
-  def getStrategy(): HyperSpaceSearchCriteria.Strategy = $(strategy)
+  def getStrategy(): String = $(strategy)
 
   def getMaxRuntimeSecs(): Double = $(maxRuntimeSecs)
 
@@ -434,9 +436,9 @@ trait H2OGridSearchParams extends H2OCommonParams with Params {
 
   def getStoppingTolerance(): Double = $(stoppingTolerance)
 
-  def getStoppingMetric(): ScoreKeeper.StoppingMetric = $(stoppingMetric)
+  def getStoppingMetric(): String = $(stoppingMetric)
 
-  def getSelectBestModelBy(): H2OGridSearchMetric = $(selectBestModelBy)
+  def getSelectBestModelBy(): String = $(selectBestModelBy)
 
   def getSelectBestModelDecreasing(): Boolean = $(selectBestModelDecreasing)
 
@@ -461,7 +463,13 @@ trait H2OGridSearchParams extends H2OCommonParams with Params {
 
   def setHyperParameters(value: java.util.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
 
-  def setStrategy(value: HyperSpaceSearchCriteria.Strategy): this.type = set(strategy, value)
+  @DeprecatedMethod("setStrategy(value: String)")
+  def setStrategy(value: HyperSpaceSearchCriteria.Strategy): this.type = setStrategy(value.name())
+
+  def setStrategy(value: String): this.type = {
+    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[HyperSpaceSearchCriteria.Strategy](value)
+    set(strategy, validated)
+  }
 
   def setMaxRuntimeSecs(value: Double): this.type = set(maxRuntimeSecs, value)
 
@@ -471,23 +479,22 @@ trait H2OGridSearchParams extends H2OCommonParams with Params {
 
   def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
 
-  def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = set(stoppingMetric, value)
+  @DeprecatedMethod("setStoppingMetric(value: String)")
+  def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = setStoppingMetric(value.name())
 
-  def setSelectBestModelBy(value: H2OGridSearchMetric): this.type = set(selectBestModelBy, value)
+  def setStoppingMetric(value: String): this.type = {
+    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[ScoreKeeper.StoppingMetric](value)
+    set(stoppingMetric, validated)
+  }
+
+  @DeprecatedMethod("setSelectBestModelBy(value: String)")
+  def setSelectBestModelBy(value: H2OGridSearchMetric): this.type = setSelectBestModelBy(value.name())
+
+  def setSelectBestModelBy(value: String): this.type = {
+    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[H2OGridSearchMetric](value)
+    set(selectBestModelBy, validated)
+  }
+
 
   def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
-}
-
-class GridSearchStrategyParam private[h2o](parent: Params, name: String, doc: String,
-                                           isValid: HyperSpaceSearchCriteria.Strategy => Boolean)
-  extends EnumParam[HyperSpaceSearchCriteria.Strategy](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-class MetricParam private[h2o](parent: Params, name: String, doc: String,
-                               isValid: H2OGridSearchMetric => Boolean)
-  extends EnumParam[H2OGridSearchMetric](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }

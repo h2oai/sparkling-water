@@ -16,6 +16,8 @@
 */
 package org.apache.spark.ml.h2o.param
 
+import java.util
+
 import com.google.common.base.CaseFormat
 import hex.Model.Parameters
 import org.apache.spark.h2o.utils.ReflectionUtils.api
@@ -130,36 +132,65 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
     new NullableStringArrayParam(this, name, getDoc(doc, name))
   }
 
-  protected def getValidatedEnumValue[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
-                                                   (implicit ctag: reflect.ClassTag[T]): String = {
-    H2OAlgoParamsHelper.getValidatedEnumValue(name, nullAllowed)
-  }
 }
 
 object H2OAlgoParamsHelper {
-  def getValidatedEnumValue[T <: Enum[T]](name: String, nullAllowed: Boolean = false)
-                                         (implicit ctag: reflect.ClassTag[T]): String = {
-    getValidatedEnumValue(ctag.runtimeClass, name, nullAllowed)
+  
+  def getValidatedEnumValue[T <: Enum[T]](name: String)(implicit ctag: reflect.ClassTag[T]): String = {
+    getValidatedEnumValue(ctag.runtimeClass, name)
   }
 
-  def getValidatedEnumValue(className: String, name: String, nullAllowed: Boolean): String = {
-    getValidatedEnumValue(Class.forName(className), name, nullAllowed)
+  def getValidatedEnumValues[T <: Enum[T]](inputNames: Array[String], nullEnabled: Boolean = false)(implicit ctag: reflect.ClassTag[T]): Array[String] = {
+    getValidatedEnumValues(ctag.runtimeClass, inputNames, nullEnabled)
   }
 
-  def getValidatedEnumValue(clazz: Class[_], name: String, nullAllowed: Boolean): String = {
-    val names = clazz.getDeclaredMethod("values").invoke(null).asInstanceOf[Array[Enum[_]]].map(_.name())
+  // Method exposed for PySparkling so we can do the same checks there
+  def getValidatedEnumValue(className: String, name: String): String = {
+    getValidatedEnumValue(Class.forName(className), name)
+  }
 
-    if (!nullAllowed && name == null) {
+  // Method exposed for PySparkling so we can do the same checks there
+  def getValidatedEnumValues(className: String, inputNames: util.ArrayList[String], nullEnabled: Boolean): Array[String] = {
+    val arr = if (inputNames == null) null else inputNames.toArray(new Array[String](inputNames.size()))
+    getValidatedEnumValues(Class.forName(className), arr, nullEnabled)
+  }
+
+  private def getValidatedEnumValue(clazz: Class[_], name: String): String = {
+    val names = getEnumValues(clazz)
+    if (name == null) {
       throw new IllegalArgumentException(s"Null is not a valid value. Allowed values are: ${names.mkString(", ")}")
-    } else if (nullAllowed && name == null) {
-      return null
     }
 
     if (!names.map(_.toLowerCase()).contains(name.toLowerCase())) {
-      val nullStr = if (nullAllowed) "null or " else ""
-      throw new IllegalArgumentException(s"'$name' is not a valid value. Allowed values are: $nullStr${names.mkString(", ")}")
+      throw new IllegalArgumentException(s"'$name' is not a valid value. Allowed values are: ${names.mkString(", ")}")
     }
     names.find(_.toLowerCase() == name.toLowerCase).get
   }
 
+  private def getValidatedEnumValues(clazz: Class[_], inputNames: Array[String], nullEnabled: Boolean): Array[String] = {
+    val names = getEnumValues(clazz)
+    if (inputNames == null) {
+      if (nullEnabled) {
+        return null
+      } else {
+        throw new IllegalArgumentException(s"Null is not a valid value. Allowed input is array with any of the following elements: ${names.mkString(", ")}")
+      }
+    }
+
+    inputNames.foreach { name =>
+      val nullStr = if (nullEnabled) " null or " else " "
+      if (name == null) {
+        throw new IllegalArgumentException(s"Null can not be specified as the input array element. Allowed input is${nullStr}array with any of the following elements: ${names.mkString(", ")}")
+      }
+      if (!names.map(_.toLowerCase()).contains(name.toLowerCase())) {
+        throw new IllegalArgumentException(s"'$name' is not a valid value. Allowed input is${nullStr}array with any of the following elements: ${names.mkString(", ")}")
+      }
+    }
+
+    names.filter(name => inputNames.map(_.toLowerCase).contains(name.toLowerCase()))
+  }
+
+  private def getEnumValues(clazz: Class[_]): Array[String] = {
+    clazz.getDeclaredMethod("values").invoke(null).asInstanceOf[Array[Enum[_]]].map(_.name())
+  }
 }

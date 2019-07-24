@@ -19,6 +19,7 @@ package org.apache.spark.ml.h2o.param
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
+import org.apache.spark.ml.h2o.param.H2OAlgoParamsHelper.getValidatedEnumValue
 import org.apache.spark.ml.param.Params
 
 /**

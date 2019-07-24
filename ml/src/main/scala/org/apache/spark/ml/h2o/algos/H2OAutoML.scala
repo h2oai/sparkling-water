@@ -19,6 +19,7 @@ package org.apache.spark.ml.h2o.algos
 import java.util.Date
 
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.ScoreKeeper
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Estimator
@@ -73,14 +74,14 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spec.input_spec.weights_column = getWeightCol()
     spec.input_spec.ignored_columns = getIgnoredCols()
     spec.input_spec.sort_metric = getSortMetric()
-    spec.build_models.exclude_algos = if (getExcludeAlgos() == null) null else Array(getExcludeAlgos(): _*)
-    spec.build_models.include_algos = if (getIncludeAlgos() == null) null else Array(getIncludeAlgos(): _*)
+    spec.build_models.exclude_algos = if (getExcludeAlgos() == null) null else Array(getExcludeAlgos().map(Algo.valueOf): _*)
+    spec.build_models.include_algos = if (getIncludeAlgos() == null) null else Array(getIncludeAlgos().map(Algo.valueOf): _*)
     spec.build_control.project_name = getProjectName()
     spec.build_control.stopping_criteria.set_seed(getSeed())
     spec.build_control.stopping_criteria.set_max_runtime_secs(getMaxRuntimeSecs())
     spec.build_control.stopping_criteria.set_stopping_rounds(getStoppingRounds())
     spec.build_control.stopping_criteria.set_stopping_tolerance(getStoppingTolerance())
-    spec.build_control.stopping_criteria.set_stopping_metric(getStoppingMetric())
+    spec.build_control.stopping_criteria.set_stopping_metric(ScoreKeeper.StoppingMetric.valueOf(getStoppingMetric()))
     spec.build_control.stopping_criteria.set_max_models(getMaxModels())
     spec.build_control.nfolds = getNfolds()
     spec.build_control.balance_classes = getBalanceClasses()
@@ -140,14 +141,14 @@ trait H2OAutoMLParams extends H2OCommonParams with Params {
   // Param definitions
   //
   private val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
-  private val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
-  private val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
+  private val includeAlgos = new NullableStringArrayParam(this, "includeAlgos", "Algorithms to include when using automl")
+  private val excludeAlgos = new NullableStringArrayParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
   private val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
     " (e.g., airlines and iris)")
   private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
   private val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
   private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
-  private val stoppingMetric = new StoppingMetricParam(this, "stoppingMetric", "Stopping metric")
+  private val stoppingMetric = new Param[String](this, "stoppingMetric", "Stopping metric")
   private val sortMetric = new NullableStringParam(this, "sortMetric", "Sort metric for the AutoML leaderboard")
   private val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
   private val classSamplingFactors = new NullableFloatArrayParam(this, "classSamplingFactors", "Class sampling factors")
@@ -167,7 +168,7 @@ trait H2OAutoMLParams extends H2OCommonParams with Params {
     maxRuntimeSecs -> 3600,
     stoppingRounds -> 3,
     stoppingTolerance -> 0.001,
-    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO,
+    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
     sortMetric -> null,
     balanceClasses -> false,
     classSamplingFactors -> null,
@@ -182,9 +183,9 @@ trait H2OAutoMLParams extends H2OCommonParams with Params {
   //
   def getIgnoredCols(): Array[String] = $(ignoredCols)
 
-  def getIncludeAlgos(): Array[Algo] = $(includeAlgos)
+  def getIncludeAlgos(): Array[String] = $(includeAlgos)
 
-  def getExcludeAlgos(): Array[Algo] = $(excludeAlgos)
+  def getExcludeAlgos(): Array[String] = $(excludeAlgos)
 
   def getProjectName(): String = $(projectName)
 
@@ -194,7 +195,7 @@ trait H2OAutoMLParams extends H2OCommonParams with Params {
 
   def getStoppingTolerance(): Double = $(stoppingTolerance)
 
-  def getStoppingMetric(): ScoreKeeper.StoppingMetric = $(stoppingMetric)
+  def getStoppingMetric(): String = $(stoppingMetric)
 
   def getSortMetric(): String = $(sortMetric)
 
@@ -215,9 +216,21 @@ trait H2OAutoMLParams extends H2OCommonParams with Params {
   //
   def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
 
-  def setIncludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(includeAlgos, value)
+  @DeprecatedMethod("setIncludeAlgos(value: Array[String])")
+  def setIncludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = setIncludeAlgos(value.map(_.name()))
 
-  def setExcludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(excludeAlgos, value)
+  def setIncludeAlgos(value: Array[String]): this.type = {
+    val validated = H2OAlgoParamsHelper.getValidatedEnumValues[Algo](value, nullEnabled = true)
+    set(includeAlgos, validated)
+  }
+
+  @DeprecatedMethod("setExcludeAlgos(value: Array[String])")
+  def setExcludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = setExcludeAlgos(value.map(_.name()))
+
+  def setExcludeAlgos(value: Array[String]): this.type = {
+    val validated = H2OAlgoParamsHelper.getValidatedEnumValues[Algo](value, nullEnabled = true)
+    set(excludeAlgos, validated)
+  }
 
   def setProjectName(value: String): this.type = set(projectName, value)
 
@@ -227,7 +240,13 @@ trait H2OAutoMLParams extends H2OCommonParams with Params {
 
   def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
 
-  def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = set(stoppingMetric, value)
+  @DeprecatedMethod("setStoppingMetric(value: String)")
+  def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = setStoppingMetric(value.name())
+
+  def setStoppingMetric(value: String): this.type = {
+    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[ScoreKeeper.StoppingMetric](value)
+    set(stoppingMetric, validated)
+  }
 
   def setSortMetric(value: String): this.type = {
     val allowedValues = Seq("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "mean_per_class_error")
@@ -253,12 +272,3 @@ trait H2OAutoMLParams extends H2OCommonParams with Params {
 
   def setMaxModels(value: Int): this.type = set(maxModels, value)
 }
-
-class H2OAutoMLAlgosParam private[h2o](parent: Params, name: String, doc: String,
-                                       isValid: Array[ai.h2o.automl.Algo] => Boolean)
-  extends EnumArrayParam[ai.h2o.automl.Algo](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-
