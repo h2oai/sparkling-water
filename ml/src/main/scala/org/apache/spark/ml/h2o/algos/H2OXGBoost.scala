@@ -17,18 +17,19 @@
 package org.apache.spark.ml.h2o.algos
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
+import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
 import hex.tree.xgboost.{XGBoost, XGBoostModel}
 import org.apache.spark.ml.util.{DefaultParamsReader, Identifiable}
-import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 
 /**
   * H2O XGBoost algorithm exposed via Spark ML pipelines.
   */
-class H2OXGBoost(override val uid: String) extends H2OAlgorithm[XGBoost, XGBoostModel, XGBoostParameters] with H2OXGBoostParams {
+class H2OXGBoost(override val uid: String) extends H2OSupervisedAlgorithm[XGBoost, XGBoostModel, XGBoostParameters] with H2OXGBoostParams {
 
   def this() = this(Identifiable.randomUID("xgboost"))
 }

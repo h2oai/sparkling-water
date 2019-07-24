@@ -16,6 +16,7 @@
 */
 package org.apache.spark.ml.h2o.algos
 
+import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.{DeepLearning, DeepLearningModel}
@@ -27,7 +28,8 @@ import org.apache.spark.ml.util._
   *
   * TODO: There are still bunch of parameters defined DeepLearningParameters which need to be ported here
   */
-class H2ODeepLearning(override val uid: String) extends H2OAlgorithm[DeepLearning, DeepLearningModel, DeepLearningParameters] with H2ODeepLearningParams {
+class H2ODeepLearning(override val uid: String) extends
+  H2OSupervisedAlgorithm[DeepLearning, DeepLearningModel, DeepLearningParameters] with H2ODeepLearningParams {
 
   def this() = this(Identifiable.randomUID("deeplearning"))
 }

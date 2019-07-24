@@ -17,6 +17,8 @@
 package org.apache.spark.ml.h2o.algos
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
+import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import hex.StringPair
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling
@@ -30,11 +32,10 @@ import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JValue}
 import water.AutoBuffer
-import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 /**
   * H2O GLM algorithm exposed via Spark ML pipelines.
   */
-class H2OGLM(override val uid: String) extends H2OAlgorithm[GLM, GLMModel, GLMParameters] with H2OGLMParams {
+class H2OGLM(override val uid: String) extends H2OSupervisedAlgorithm[GLM, GLMModel, GLMParameters] with H2OGLMParams {
 
   def this() = this(Identifiable.randomUID("glm"))
 }
