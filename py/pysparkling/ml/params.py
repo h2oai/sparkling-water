@@ -7,6 +7,7 @@ from py_sparkling.ml.util import getValidatedEnumValue, getValidatedEnumValues
 
 class H2OCommonParams(Params):
 
+    predictionCol = Param(Params._dummy(), "predictionCol", "Prediction column name")
     featuresCols = Param(Params._dummy(), "featuresCols", "Name of feature columns")
     foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
@@ -31,6 +32,9 @@ class H2OCommonParams(Params):
     ##
     # Getters
     ##
+    def getPredictionCol(self):
+        return self.getOrDefault(self.predictionCol)
+
     def getFeaturesCols(self):
         return self.getOrDefault(self.featuresCols)
 
@@ -61,6 +65,10 @@ class H2OCommonParams(Params):
     ##
     # Setters
     ##
+    def setPredictioNCol(self, value):
+        assert_is_type(value, str)
+        return self._set(predictionCol=value)
+
     def setFeaturesCols(self, value):
         assert_is_type(value, [str])
         return self._set(featuresCols=value)

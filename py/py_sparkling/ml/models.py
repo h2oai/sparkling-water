@@ -6,15 +6,25 @@ from pyspark.sql.column import Column
 from .util import JavaH2OMLReadable
 from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
+from pyspark.ml.util import _jvm
 
+def getDefaults():
+    java_class = "org.apache.spark.ml.h2o.models.H2OMOJOSettings"
+    java_obj = _jvm()
+    for name in java_class.split("."):
+        java_obj = getattr(java_obj, name)
+
+    return java_obj.default()
 
 class H2OMOJOSettings(JavaWrapper):
 
+
+
     def __init__(self,
-                 predictionCol = "prediction",
-                 convertUnknownCategoricalLevelsToNa = False,
-                 convertInvalidNumbersToNa = False,
-                 namedMojoOutputColumns = True):
+                 predictionCol = getDefaults().predictionCol(),
+                 convertUnknownCategoricalLevelsToNa = getDefaults().convertUnknownCategoricalLevelsToNa(),
+                 convertInvalidNumbersToNa = getDefaults().convertInvalidNumbersToNa(),
+                 namedMojoOutputColumns = getDefaults().namedMojoOutputColumns()):
         assert_is_type(predictionCol, str)
         assert_is_type(convertUnknownCategoricalLevelsToNa, bool)
         assert_is_type(convertInvalidNumbersToNa, bool)
