@@ -17,13 +17,13 @@
 package org.apache.spark.ml.h2o.algos
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
 import hex.tree.xgboost.{XGBoost, XGBoostModel}
-import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.util.{DefaultParamsReader, Identifiable}
-import org.apache.spark.ml.h2o.param.H2OAlgoParamsHelper.getValidatedEnumValue
+import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 
 /**
   * H2O XGBoost algorithm exposed via Spark ML pipelines.
@@ -39,7 +39,7 @@ object H2OXGBoost extends DefaultParamsReader[py_sparkling.ml.algos.H2OXGBoost]
 /**
   * Parameters for Spark's API exposing underlying H2O model.
   */
-trait H2OXGBoostParams extends H2OAlgoParams[XGBoostParameters] {
+trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
 
   type H2O_SCHEMA = XGBoostParametersV3
 

@@ -14,20 +14,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.param
+package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
-import org.apache.spark.ml.h2o.param.H2OAlgoParamsHelper.getValidatedEnumValue
-import org.apache.spark.ml.param.Params
+import org.apache.spark.ml.h2o.param.NullableStringParam
 
 /**
-  * A trait extracting a shared parameters among all models.
-  *
-  * TODO: There are still bunch of parameters defined Model.ModelParameters which need to be ported here
+  * A trait extracting a shared parameters among all simple algorithms (all except Grid & AutoML).
   */
-trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OCommonParams with Params {
+trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OCommonParams {
 
   //
   // Param definitions
@@ -84,13 +82,12 @@ trait H2OAlgoParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OComm
 
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
   protected def updateH2OParams(): Unit = {
-    parameters._response_column = getLabelCol()
     parameters._weights_column = getWeightCol()
-    parameters._nfolds = $(nfolds)
+    parameters._nfolds = getNfolds()
     parameters._fold_column = getFoldCol()
-    parameters._keep_cross_validation_predictions = $(keepCrossValidationPredictions)
-    parameters._keep_cross_validation_fold_assignment = $(keepCrossValidationFoldAssignment)
-    parameters._parallelize_cross_validation = $(parallelizeCrossValidation)
+    parameters._keep_cross_validation_predictions = getKeepCrossValidationPredictions()
+    parameters._keep_cross_validation_fold_assignment = getKeepCrossValidationFoldAssignment()
+    parameters._parallelize_cross_validation = getParallelizeCrossValidation()
     parameters._seed = getSeed()
     parameters._distribution = DistributionFamily.valueOf(getDistribution())
   }

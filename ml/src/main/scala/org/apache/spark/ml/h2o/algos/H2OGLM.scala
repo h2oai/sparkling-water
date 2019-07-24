@@ -17,21 +17,20 @@
 package org.apache.spark.ml.h2o.algos
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import hex.StringPair
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling
 import hex.glm.GLMModel.GLMParameters
 import hex.glm.GLMModel.GLMParameters.{Family, Link, Solver}
 import hex.glm.{GLM, GLMModel}
 import hex.schemas.GLMV3.GLMParametersV3
-import org.apache.spark.ml.h2o.param.H2OAlgoParams
-import org.apache.spark.ml.h2o.param.H2OAlgoParamsHelper.getValidatedEnumValue
 import org.apache.spark.ml.param.{Param, Params}
 import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JValue}
 import water.AutoBuffer
-
+import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 /**
   * H2O GLM algorithm exposed via Spark ML pipelines.
   */
@@ -46,7 +45,7 @@ object H2OGLM extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGLM]
 /**
   * Parameters for Spark's API exposing underlying H2O model.
   */
-trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
+trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
 
   type H2O_SCHEMA = GLMParametersV3
 

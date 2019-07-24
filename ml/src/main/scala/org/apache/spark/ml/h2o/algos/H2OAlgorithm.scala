@@ -16,27 +16,28 @@
 */
 package org.apache.spark.ml.h2o.algos
 
-import hex.{Model, ModelBuilder}
+import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
+import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
+import hex.Model
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
+import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.{H2OMOJOModel, H2OMOJOSettings}
-import org.apache.spark.ml.h2o.param.H2OAlgoParams
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
-import org.apache.spark.ml.Estimator
-import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.Dataset
-import water.{H2O, Key}
+import org.apache.spark.sql.types.StructType
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
+import water.{H2O, Key}
 
-import scala.reflect.{classTag, ClassTag}
+import scala.reflect.{ClassTag, classTag}
 
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
 abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseModel, P <: Model.Parameters : ClassTag]
-  extends Estimator[H2OMOJOModel] with H2OAlgorithmCommons with DefaultParamsWritable with H2OAlgoParams[P] {
+  extends Estimator[H2OMOJOModel] with H2OAlgoCommonUtils with DefaultParamsWritable with H2OAlgoSupervisedParams[P] {
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     // Update H2O params based on provided configuration
