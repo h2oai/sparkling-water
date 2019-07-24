@@ -19,9 +19,9 @@ package ai.h2o.sparkling.ml.features
 
 import ai.h2o.automl.targetencoding._
 import ai.h2o.sparkling.ml.models.H2OTargetEncoderModel
+import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
 import org.apache.spark.h2o.{Frame, H2OContext}
 import org.apache.spark.ml.Estimator
-import org.apache.spark.ml.h2o.param.H2OAlgoParamsHelper
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.{Dataset, SparkSession}
