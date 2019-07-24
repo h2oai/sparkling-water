@@ -375,7 +375,7 @@ class H2OGBMParams(H2OSharedTreeParams):
         return self._set(predNoiseBandwidth=value)
 
 
-class H2ODeepLearningParams(H2OAlgoUnsupervisedParams):
+class H2ODeepLearningParams(H2OAlgoSupervisedParams):
 
     ##
     # Param definitions

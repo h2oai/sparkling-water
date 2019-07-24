@@ -66,8 +66,8 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        validateEnumValue(self._H2OGBMParams__getDistributionEnum(), kwargs, "distribution")
-        validateEnumValue(self._H2OGBMParams__getHistogramTypeEnum(), kwargs, "histogramType")
+        validateEnumValue(self._H2OAlgoCommonParams__getDistributionEnum(), kwargs, "distribution")
+        validateEnumValue(self._H2OSharedTreeParams__getHistogramTypeEnum(), kwargs, "histogramType")
 
     # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -111,7 +111,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                   foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        validateEnumValue(self._H2ODeepLearningParams__getDistributionEnum(), kwargs, "distribution")
+        validateEnumValue(self._H2OAlgoCommonParams__getDistributionEnum(), kwargs, "distribution")
 
         # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
@@ -227,7 +227,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                   foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        validateEnumValue(self._H2OXGBoostParams__getDistributionEnum(), kwargs, "distribution")
+        validateEnumValue(self._H2OAlgoCommonParams__getDistributionEnum(), kwargs, "distribution")
         validateEnumValue(self._H2OXGBoostParams__getTreeMethodEnum(), kwargs, "treeMethod")
         validateEnumValue(self._H2OXGBoostParams__getGrowPolicyEnum(), kwargs, "growPolicy")
         validateEnumValue(self._H2OXGBoostParams__getBoosterEnum(), kwargs, "booster")
@@ -293,7 +293,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
-        validateEnumValue(self._H2OGLMParams__getDistributionEnum(), kwargs, "distribution")
+        validateEnumValue(self._H2OAlgoCommonParams__getDistributionEnum(), kwargs, "distribution")
         validateEnumValue(self._H2OGLMParams__getFamilyEnum(), kwargs, "family")
         validateEnumValue(self._H2OGLMParams__getLinkEnum(), kwargs, "link")
         validateEnumValue(self._H2OGLMParams__getSolverEnum(), kwargs, "solver")
