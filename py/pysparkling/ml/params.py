@@ -596,7 +596,6 @@ class H2OXGBoostParams(H2OAlgorithmParams):
     # Param definitions
     ##
     quietMode = Param(Params._dummy(), "quietMode", "Quiet mode")
-    missingValuesHandling = Param(Params._dummy(), "missingValuesHandling", "Missing Values Handling")
     ntrees = Param(Params._dummy(), "ntrees", "Number of trees")
     nEstimators = Param(Params._dummy(), "nEstimators", "number of estimators")
     maxDepth = Param(Params._dummy(), "maxDepth", "Maximal depth")
@@ -642,13 +641,6 @@ class H2OXGBoostParams(H2OAlgorithmParams):
     ##
     def getQuietMode(self):
         return self.getOrDefault(self.quietMode)
-
-    def getMissingValuesHandling(self):
-        res = self.getOrDefault(self.missingValuesHandling)
-        if res is not None:
-            return res.toString()
-        else:
-            return None
 
     def getNtrees(self):
         return self.getOrDefault(self.ntrees)
@@ -774,10 +766,6 @@ class H2OXGBoostParams(H2OAlgorithmParams):
     def setQuietMode(self, value):
         assert_is_type(value, bool)
         return self._set(quietMode=value)
-
-    def setMissingValuesHandling(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.MissingValuesHandling", value, nullEnabled=True)
-        return self._set(missingValuesHandling=validated)
 
     def setNtrees(self, value):
         assert_is_type(value, int)
