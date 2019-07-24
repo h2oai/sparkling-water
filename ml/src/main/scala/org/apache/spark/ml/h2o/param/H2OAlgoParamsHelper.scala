@@ -135,7 +135,7 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
 }
 
 object H2OAlgoParamsHelper {
-  
+
   def getValidatedEnumValue[T <: Enum[T]](name: String)(implicit ctag: reflect.ClassTag[T]): String = {
     getValidatedEnumValue(ctag.runtimeClass, name)
   }
@@ -180,10 +180,12 @@ object H2OAlgoParamsHelper {
     inputNames.foreach { name =>
       val nullStr = if (nullEnabled) " null or " else " "
       if (name == null) {
-        throw new IllegalArgumentException(s"Null can not be specified as the input array element. Allowed input is${nullStr}array with any of the following elements: ${names.mkString(", ")}")
+        throw new IllegalArgumentException(s"Null can not be specified as the input array element. " +
+          s"Allowed input is${nullStr}array with any of the following elements: ${names.mkString(", ")}")
       }
       if (!names.map(_.toLowerCase()).contains(name.toLowerCase())) {
-        throw new IllegalArgumentException(s"'$name' is not a valid value. Allowed input is${nullStr}array with any of the following elements: ${names.mkString(", ")}")
+        throw new IllegalArgumentException(s"'$name' is not a valid value. Allowed input is${nullStr}array with" +
+          s" any of the following elements: ${names.mkString(", ")}")
       }
     }
 
