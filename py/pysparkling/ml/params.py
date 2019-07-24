@@ -264,7 +264,7 @@ class H2OSharedTreeParams(H2OAlgorithmParams):
         return self._set(minSplitImprovement=value)
 
     def setHistogramType(self, value):
-        validated = getValidatedEnumValue("hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType", value)
+        validated = getValidatedEnumValue("hex.tree.SharedTreeModel$SharedTreeParameters$HistogramType", value)
         return self._set(histogramType=validated)
 
     def setR2Stopping(self, value):
@@ -543,7 +543,7 @@ class H2OAutoMLParams(H2OCommonParams):
         return self._set(stoppingTolerance=value)
 
     def setStoppingMetric(self, value):
-        validated = getValidatedEnumValue("hex.ScoreKeeper.StoppingMetric", value)
+        validated = getValidatedEnumValue("hex.ScoreKeeper$StoppingMetric", value)
         return self._set(stoppingMetric=validated)
 
     def setSortMetric(self, value):
@@ -860,19 +860,19 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(minDataInLeaf=value)
 
     def setTreeMethod(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$TreeMethod", value)
         return self._set(treeMethod=validated)
 
     def setGrowPolicy(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$GrowPolicy", value)
         return self._set(growPolicy=validated)
 
     def setBooster(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$Booster", value)
         return self._set(booster=validated)
 
     def setDmatrixType(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$DMatrixType", value)
         return self._set(dmatrixType=validated)
 
     def setRegLambda(self, value):
@@ -884,11 +884,11 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(regAlpha=value)
 
     def setSampleType(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$DartSampleType", value)
         return self._set(sampleType=validated)
 
     def setNormalizeType(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$DartNormalizeType", value)
         return self._set(normalizeType=validated)
 
     def setRateDrop(self, value):
@@ -908,7 +908,7 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(gpuId=value)
 
     def setBackend(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$Backend", value)
         return self._set(backend=validated)
 
 
@@ -1034,15 +1034,15 @@ class H2OGLMParams(H2OAlgorithmParams):
         return self._set(standardize=value)
 
     def setFamily(self, value):
-        validated = getValidatedEnumValue("hex.glm.GLMModel.GLMParameters.Family", value)
+        validated = getValidatedEnumValue("hex.glm.GLMModel$GLMParameters$Family", value)
         return self._set(family=validated)
 
     def setLink(self, value):
-        validated = getValidatedEnumValue("hex.glm.GLMModel.GLMParameters.Link", value)
+        validated = getValidatedEnumValue("hex.glm.GLMModel$GLMParameters$Link", value)
         return self._set(link=validated)
 
     def setSolver(self, value):
-        validated = getValidatedEnumValue("hex.glm.GLMModel.GLMParameters.Solver", value)
+        validated = getValidatedEnumValue("hex.glm.GLMModel$GLMParameters$Solver", value)
         return self._set(solver=validated)
 
     def setTweedieVariancePower(self, value):
@@ -1062,7 +1062,7 @@ class H2OGLMParams(H2OAlgorithmParams):
         return self._set(lambda_=value)
 
     def setMissingValuesHandling(self, value):
-        validated = getValidatedEnumValue("hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling", value)
+        validated = getValidatedEnumValue("hex.deeplearning.DeepLearningModel$DeepLearningParameters$MissingValuesHandling", value)
         return self._set(missingValuesHandling=validated)
 
     def setPrior(self, value):
@@ -1204,7 +1204,7 @@ class H2OGridSearchParams(H2OCommonParams):
         return self._set(hyperParameters=value)
 
     def setStrategy(self, value):
-        validated = getValidatedEnumValue("hex.grid.HyperSpaceSearchCriteria.Strategy", value)
+        validated = getValidatedEnumValue("hex.grid.HyperSpaceSearchCriteria$Strategy", value)
         return self._set(link=validated)
 
     def setMaxRuntimeSecs(self, value):
@@ -1224,7 +1224,7 @@ class H2OGridSearchParams(H2OCommonParams):
         return self._set(stoppingTolerance=value)
 
     def setStoppingMetric(self, value):
-        validated = getValidatedEnumValue("hex.ScoreKeeper.StoppingMetric", value)
+        validated = getValidatedEnumValue("hex.ScoreKeeper$StoppingMetric", value)
         return self._set(stoppingMetric=validated)
 
     def setSelectBestModelBy(self, value):
