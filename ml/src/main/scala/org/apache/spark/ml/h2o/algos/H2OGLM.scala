@@ -16,13 +16,15 @@
 */
 package org.apache.spark.ml.h2o.algos
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.StringPair
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling
 import hex.glm.GLMModel.GLMParameters
 import hex.glm.GLMModel.GLMParameters.{Family, Link, Solver}
 import hex.glm.{GLM, GLMModel}
 import hex.schemas.GLMV3.GLMParametersV3
-import org.apache.spark.ml.h2o.param.{EnumParam, H2OAlgoParams}
+import org.apache.spark.ml.h2o.param.H2OAlgoParams
+import org.apache.spark.ml.h2o.param.H2OAlgoParamsHelper.getValidatedEnumValue
 import org.apache.spark.ml.param.{Param, Params}
 import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 import org.json4s.JsonAST.{JArray, JInt}
@@ -56,14 +58,14 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   // Param definitions
   //
   private val standardize = booleanParam("standardize")
-  private val family = new H2OGLMFamilyParam(this, "family", "family")
-  private val link = new H2OGLMLinkParam(this, "link", "link")
-  private val solver = new H2OGLMSolverParam(this, "solver", "solver")
+  private val family = stringParam( "family", "family")
+  private val link = stringParam( "link", "link")
+  private val solver = stringParam( "solver", "solver")
   private val tweedieVariancePower = doubleParam("tweedieVariancePower")
   private val tweedieLinkPower = doubleParam("tweedieLinkPower")
   private val alpha = nullableDoubleArrayParam("alpha")
   private val lambda_ = nullableDoubleArrayParam("lambda_", "lambda")
-  private val missingValuesHandling = new H2OGLMMissingValuesHandlingParam(this, "missingValuesHandling", "missingValuesHandling")
+  private val missingValuesHandling = stringParam(  "missingValuesHandling", "missingValuesHandling")
   private val prior = doubleParam("prior")
   private val lambdaSearch = booleanParam("lambdaSearch")
   private val nlambdas = intParam("nlambdas")
@@ -87,14 +89,14 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   //
   setDefault(
     standardize -> true,
-    family -> Family.gaussian,
-    link -> Link.family_default,
-    solver -> Solver.AUTO,
+    family -> Family.gaussian.name(),
+    link -> Link.family_default.name(),
+    solver -> Solver.AUTO.name(),
     tweedieVariancePower -> 0,
     tweedieLinkPower -> 0,
     alpha -> null,
     lambda_ -> null,
-    missingValuesHandling -> MissingValuesHandling.MeanImputation,
+    missingValuesHandling -> MissingValuesHandling.MeanImputation.name(),
     prior -> -1,
     lambdaSearch -> false,
     nlambdas -> -1,
@@ -119,11 +121,11 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   //
   def getStandardize(): Boolean = $(standardize)
 
-  def getFamily(): Family = $(family)
+  def getFamily(): String = $(family)
 
-  def getLink(): Link = $(link)
+  def getLink(): String = $(link)
 
-  def getSolver(): Solver = $(solver)
+  def getSolver(): String = $(solver)
 
   def getTweedieVariancePower(): Double = $(tweedieVariancePower)
 
@@ -133,7 +135,7 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
 
   def getLambda(): Array[Double] = $(lambda_)
 
-  def getMissingValuesHandling(): MissingValuesHandling = $(missingValuesHandling)
+  def getMissingValuesHandling(): String = $(missingValuesHandling)
 
   def getPrior(): Double = $(prior)
 
@@ -175,11 +177,29 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   //
   def setStandardize(value: Boolean): this.type = set(standardize, value)
 
-  def setFamily(value: Family): this.type = set(family, value)
+  @DeprecatedMethod("setFamily(value: String)")
+  def setFamily(value: Family): this.type = setFamily(value.name())
 
-  def setLink(value: Link): this.type = set(link, value)
+  def setFamily(value: String): this.type = {
+    val validated = getValidatedEnumValue[Family](value)
+    set(family, validated)
+  }
 
-  def setSolver(value: Solver): this.type = set(solver, value)
+  @DeprecatedMethod("setLink(value: String)")
+  def setLink(value: Link): this.type = setLink(value.name())
+
+  def setLink(value: String): this.type = {
+    val validated = getValidatedEnumValue[Link](value)
+    set(link, validated)
+  }
+
+  @DeprecatedMethod("setSolver(value: String)")
+  def setSolver(value: Solver): this.type = setSolver(value.name())
+
+  def setSolver(value: String): this.type = {
+    val validated = getValidatedEnumValue[Solver](value)
+    set(solver, validated)
+  }
 
   def setTweedieVariancePower(value: Double): this.type = set(tweedieVariancePower, value)
 
@@ -189,7 +209,13 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
 
   def setLambda(value: Array[Double]): this.type = set(lambda_, value)
 
-  def setMissingValuesHandling(value: MissingValuesHandling): this.type = set(missingValuesHandling, value)
+  @DeprecatedMethod("setMissingValuesHandling(value: String)")
+  def setMissingValuesHandling(value: MissingValuesHandling): this.type = setMissingValuesHandling(value.name())
+
+  def setMissingValuesHandling(value: String): this.type = {
+    val validated = getValidatedEnumValue[MissingValuesHandling](value)
+    set(missingValuesHandling, validated)
+  }
 
   def setPrior(value: Double): this.type = set(prior, value)
 
@@ -229,14 +255,14 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
   override def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._standardize = $(standardize)
-    parameters._family = $(family)
-    parameters._link = $(link)
-    parameters._solver = $(solver)
+    parameters._family = Family.valueOf($(family))
+    parameters._link = Link.valueOf($(link))
+    parameters._solver = Solver.valueOf($(solver))
     parameters._tweedie_variance_power = $(tweedieVariancePower)
     parameters._tweedie_link_power = $(tweedieLinkPower)
     parameters._alpha = $(alpha)
     parameters._lambda = $(lambda_)
-    parameters._missing_values_handling = $(missingValuesHandling)
+    parameters._missing_values_handling = MissingValuesHandling.valueOf($(missingValuesHandling))
     parameters._prior = $(prior)
     parameters._lambda_search = $(lambdaSearch)
     parameters._nlambdas = $(nlambdas)
@@ -264,34 +290,6 @@ trait H2OGLMParams extends H2OAlgoParams[GLMParameters] {
     }
     parameters._early_stopping = $(earlyStopping)
   }
-}
-
-class H2OGLMFamilyParam private[h2o](parent: Params, name: String, doc: String,
-                                     isValid: Family => Boolean)
-  extends EnumParam[Family](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-class H2OGLMLinkParam private[h2o](parent: Params, name: String, doc: String,
-                                   isValid: Link => Boolean)
-  extends EnumParam[Link](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-class H2OGLMSolverParam private[h2o](parent: Params, name: String, doc: String,
-                                     isValid: Solver => Boolean)
-  extends EnumParam[Solver](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-class H2OGLMMissingValuesHandlingParam private[h2o](parent: Params, name: String, doc: String,
-                                                    isValid: MissingValuesHandling => Boolean)
-  extends EnumParam[MissingValuesHandling](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
 }
 
 class H2OGLMStringPairArrayParam(parent: Params, name: String, doc: String, isValid: Array[(String, String)] => Boolean)

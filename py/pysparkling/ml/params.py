@@ -1,10 +1,8 @@
-from h2o.utils.typechecks import assert_is_type, Enum
+from h2o.utils.typechecks import assert_is_type
 from py4j.java_gateway import JavaObject
 from pyspark.ml.param import *
-from pyspark.sql import SparkSession
 
-from py_sparkling.ml.util import get_enum_array_from_str_array, getValidatedEnumValue
-from pysparkling.context import H2OContext
+from py_sparkling.ml.util import getValidatedEnumValue, getValidatedEnumValues
 
 
 class H2OCommonParams(Params):
@@ -212,8 +210,7 @@ class H2OSharedTreeParams(H2OAlgorithmParams):
         return self.getOrDefault(self.minSplitImprovement)
     
     def getHistogramType(self):
-        # Convert Java Enum to String so we can represent it in Python
-        return self.getOrDefault(self.histogramType).toString()
+        return self.getOrDefault(self.histogramType)
     
     def getR2Stopping(self):
         return self.getOrDefault(self.r2Stopping)
@@ -267,7 +264,7 @@ class H2OSharedTreeParams(H2OAlgorithmParams):
         return self._set(minSplitImprovement=value)
 
     def setHistogramType(self, value):
-        validated = getValidatedEnumValue("hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType", value, nullEnabled=True)
+        validated = getValidatedEnumValue("hex.tree.SharedTreeModel$SharedTreeParameters$HistogramType", value)
         return self._set(histogramType=validated)
 
     def setR2Stopping(self, value):
@@ -448,22 +445,20 @@ class H2OAutoMLParams(H2OCommonParams):
         return self.getOrDefault(self.tryMutations)
 
     def getExcludeAlgos(self):
-        # Convert Java Enum to String so we can represent it in Python
+        # Convert Java Array[String] to Python
         algos = self.getOrDefault(self.excludeAlgos)
-        algos_str = []
-        if algos is not None:
-            for a in algos:
-                algos_str.append(a)
-        return algos_str
+        if algos is None:
+            return None
+        else:
+            return [algo for algo in algos]
 
     def getIncludeAlgos(self):
-        # Convert Java Enum to String so we can represent it in Python
+        # Convert Java Array[String] to Python
         algos = self.getOrDefault(self.includeAlgos)
-        algos_str = []
-        if algos is not None:
-            for a in algos:
-                algos_str.append(a)
-        return algos_str
+        if algos is None:
+            return None
+        else:
+            return [algo for algo in algos]
 
     def getProjectName(self):
         return self.getOrDefault(self.projectName)
@@ -481,8 +476,7 @@ class H2OAutoMLParams(H2OCommonParams):
         return self.getOrDefault(self.stoppingTolerance)
 
     def getStoppingMetric(self):
-        # Convert Java Enum to String so we can represent it in Python
-        return self.getOrDefault(self.stoppingMetric).toString()
+        return self.getOrDefault(self.stoppingMetric)
 
     def getSortMetric(self):
         metric = self.getOrDefault(self.sortMetric)
@@ -521,18 +515,12 @@ class H2OAutoMLParams(H2OCommonParams):
         return self._set(tryMutations=value)
 
     def setIncludeAlgos(self, value):
-        assert_is_type(value, None, [Enum("XGBoost", "GLM", "DRF", "GBM", "DeepLearning", "StackedEnsemble")])
-        # H2O typechecks does not check for case sensitivity
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        java_enums = get_enum_array_from_str_array(value, jvm.ai.h2o.automl.Algo)
-        return self._set(includeAlgos=java_enums)
+        validated = getValidatedEnumValues("ai.h2o.automl.Algo", value, nullEnabled=True)
+        return self._set(includeAlgos=validated)
 
     def setExcludeAlgos(self, value):
-        assert_is_type(value, None, [Enum("XGBoost", "GLM", "DRF", "GBM", "DeepLearning", "StackedEnsemble")])
-        # H2O typechecks does not check for case sensitivity
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        java_enums = get_enum_array_from_str_array(value, jvm.ai.h2o.automl.Algo)
-        return self._set(excludeAlgos=java_enums)
+        validated = getValidatedEnumValues("ai.h2o.automl.Algo", value, nullEnabled=True)
+        return self._set(excludeAlgos=validated)
 
     def setProjectName(self, value):
         assert_is_type(value, None, str)
@@ -555,7 +543,7 @@ class H2OAutoMLParams(H2OCommonParams):
         return self._set(stoppingTolerance=value)
 
     def setStoppingMetric(self, value):
-        validated = getValidatedEnumValue("hex.ScoreKeeper.StoppingMetric", value)
+        validated = getValidatedEnumValue("hex.ScoreKeeper$StoppingMetric", value)
         return self._set(stoppingMetric=validated)
 
     def setSortMetric(self, value):
@@ -721,16 +709,16 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self.getOrDefault(self.minDataInLeaf)
 
     def getTreeMethod(self):
-        return self.getOrDefault(self.treeMethod).toString()
+        return self.getOrDefault(self.treeMethod)
 
     def getGrowPolicy(self):
-        return self.getOrDefault(self.growPolicy).toString()
+        return self.getOrDefault(self.growPolicy)
 
     def getBooster(self):
-        return self.getOrDefault(self.booster).toString()
+        return self.getOrDefault(self.booster)
 
     def getDmatrixType(self):
-        return self.getOrDefault(self.dmatrixType).toString()
+        return self.getOrDefault(self.dmatrixType)
 
     def getRegLambda(self):
         return self.getOrDefault(self.regLambda)
@@ -739,10 +727,10 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self.getOrDefault(self.regAlpha)
 
     def getSampleType(self):
-        return self.getOrDefault(self.sampleType).toString()
+        return self.getOrDefault(self.sampleType)
 
     def getNormalizeType(self):
-        return self.getOrDefault(self.normalizeType).toString()
+        return self.getOrDefault(self.normalizeType)
 
     def getRateDrop(self):
         return self.getOrDefault(self.rateDrop)
@@ -757,7 +745,7 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self.getOrDefault(self.gpuId)
 
     def getBackend(self):
-        return self.getOrDefault(self.backend).toString()
+        return self.getOrDefault(self.backend)
 
 
     ##
@@ -872,19 +860,19 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(minDataInLeaf=value)
 
     def setTreeMethod(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.TreeMethod", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$TreeMethod", value)
         return self._set(treeMethod=validated)
 
     def setGrowPolicy(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.GrowPolicy", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$GrowPolicy", value)
         return self._set(growPolicy=validated)
 
     def setBooster(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.Booster", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$Booster", value)
         return self._set(booster=validated)
 
     def setDmatrixType(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.DMatrixType", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$DMatrixType", value)
         return self._set(dmatrixType=validated)
 
     def setRegLambda(self, value):
@@ -896,11 +884,11 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(regAlpha=value)
 
     def setSampleType(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartSampleType", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$DartSampleType", value)
         return self._set(sampleType=validated)
 
     def setNormalizeType(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.DartNormalizeType", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$DartNormalizeType", value)
         return self._set(normalizeType=validated)
 
     def setRateDrop(self, value):
@@ -920,7 +908,7 @@ class H2OXGBoostParams(H2OAlgorithmParams):
         return self._set(gpuId=value)
 
     def setBackend(self, value):
-        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel.XGBoostParameters.Backend", value)
+        validated = getValidatedEnumValue("hex.tree.xgboost.XGBoostModel$XGBoostParameters$Backend", value)
         return self._set(backend=validated)
 
 
@@ -963,13 +951,13 @@ class H2OGLMParams(H2OAlgorithmParams):
         return self.getOrDefault(self.standardize)
 
     def getFamily(self):
-        return self.getOrDefault(self.family).toString()
+        return self.getOrDefault(self.family)
 
     def getLink(self):
-        return self.getOrDefault(self.link).toString()
+        return self.getOrDefault(self.link)
 
     def getSolver(self):
-        return self.getOrDefault(self.solver).toString()
+        return self.getOrDefault(self.solver)
 
     def getTweedieVariancePower(self):
         return self.getOrDefault(self.tweedieVariancePower)
@@ -984,7 +972,7 @@ class H2OGLMParams(H2OAlgorithmParams):
         return self.getOrDefault(self.lambda_)
 
     def getMissingValuesHandling(self):
-        return self.getOrDefault(self.missingValuesHandling).toString()
+        return self.getOrDefault(self.missingValuesHandling)
 
     def getPrior(self):
         return self.getOrDefault(self.prior)
@@ -1046,15 +1034,15 @@ class H2OGLMParams(H2OAlgorithmParams):
         return self._set(standardize=value)
 
     def setFamily(self, value):
-        validated = getValidatedEnumValue("hex.glm.GLMModel.GLMParameters.Family", value)
+        validated = getValidatedEnumValue("hex.glm.GLMModel$GLMParameters$Family", value)
         return self._set(family=validated)
 
     def setLink(self, value):
-        validated = getValidatedEnumValue("hex.glm.GLMModel.GLMParameters.Link", value)
+        validated = getValidatedEnumValue("hex.glm.GLMModel$GLMParameters$Link", value)
         return self._set(link=validated)
 
     def setSolver(self, value):
-        validated = getValidatedEnumValue("hex.glm.GLMModel.GLMParameters.Solver", value)
+        validated = getValidatedEnumValue("hex.glm.GLMModel$GLMParameters$Solver", value)
         return self._set(solver=validated)
 
     def setTweedieVariancePower(self, value):
@@ -1074,7 +1062,7 @@ class H2OGLMParams(H2OAlgorithmParams):
         return self._set(lambda_=value)
 
     def setMissingValuesHandling(self, value):
-        validated = getValidatedEnumValue("hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling", value)
+        validated = getValidatedEnumValue("hex.deeplearning.DeepLearningModel$DeepLearningParameters$MissingValuesHandling", value)
         return self._set(missingValuesHandling=validated)
 
     def setPrior(self, value):
@@ -1180,8 +1168,7 @@ class H2OGridSearchParams(H2OCommonParams):
             return params
 
     def getStrategy(self):
-        # Convert Java Enum to String so we can represent it in Python
-        return self.getOrDefault(self.strategy).toString()
+        return self.getOrDefault(self.strategy)
 
     def getMaxRuntimeSecs(self):
         return self.getOrDefault(self.maxRuntimeSecs)
@@ -1196,12 +1183,10 @@ class H2OGridSearchParams(H2OCommonParams):
         return self.getOrDefault(self.stoppingTolerance)
 
     def getStoppingMetric(self):
-        # Convert Java Enum to String so we can represent it in Python
-        return self.getOrDefault(self.stoppingMetric).toString()
+        return self.getOrDefault(self.stoppingMetric)
 
     def getSelectBestModelBy(self):
-        # Convert Java Enum to String so we can represent it in Python
-        return self.getOrDefault(self.selectBestModelBy).toString()
+        return self.getOrDefault(self.selectBestModelBy)
 
     def getSelectBestModelDecreasing(self):
         return self.getOrDefault(self.selectBestModelDecreasing)
@@ -1219,7 +1204,7 @@ class H2OGridSearchParams(H2OCommonParams):
         return self._set(hyperParameters=value)
 
     def setStrategy(self, value):
-        validated = getValidatedEnumValue("hex.grid.HyperSpaceSearchCriteria.Strategy", value)
+        validated = getValidatedEnumValue("hex.grid.HyperSpaceSearchCriteria$Strategy", value)
         return self._set(link=validated)
 
     def setMaxRuntimeSecs(self, value):
@@ -1239,11 +1224,11 @@ class H2OGridSearchParams(H2OCommonParams):
         return self._set(stoppingTolerance=value)
 
     def setStoppingMetric(self, value):
-        validated = getValidatedEnumValue("hex.ScoreKeeper.StoppingMetric", value)
+        validated = getValidatedEnumValue("hex.ScoreKeeper$StoppingMetric", value)
         return self._set(stoppingMetric=validated)
 
     def setSelectBestModelBy(self, value):
-        validated = getValidatedEnumValue("org.apache.spark.ml.h2o.algos.H2OGridSearchMetric", value, nullEnabled=True)
+        validated = getValidatedEnumValue("org.apache.spark.ml.h2o.algos.H2OGridSearchMetric", value)
         return self._set(selectBestModelBy=validated)
 
     def setSelectBestModelDecreasing(self, value):
