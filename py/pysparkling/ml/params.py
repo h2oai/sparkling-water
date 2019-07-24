@@ -1,10 +1,8 @@
-from h2o.utils.typechecks import assert_is_type, Enum
+from h2o.utils.typechecks import assert_is_type
 from py4j.java_gateway import JavaObject
 from pyspark.ml.param import *
-from pyspark.sql import SparkSession
 
-from py_sparkling.ml.util import get_enum_array_from_str_array, getValidatedEnumValue
-from pysparkling.context import H2OContext
+from py_sparkling.ml.util import getValidatedEnumValue, getValidatedEnumValues
 
 
 class H2OCommonParams(Params):
@@ -447,22 +445,20 @@ class H2OAutoMLParams(H2OCommonParams):
         return self.getOrDefault(self.tryMutations)
 
     def getExcludeAlgos(self):
-        # Convert Java Enum to String so we can represent it in Python
+        # Convert Java Array[String] to Python
         algos = self.getOrDefault(self.excludeAlgos)
-        algos_str = []
-        if algos is not None:
-            for a in algos:
-                algos_str.append(a)
-        return algos_str
+        if algos is None:
+            return None
+        else:
+            return [algo for algo in algos]
 
     def getIncludeAlgos(self):
-        # Convert Java Enum to String so we can represent it in Python
+        # Convert Java Array[String] to Python
         algos = self.getOrDefault(self.includeAlgos)
-        algos_str = []
-        if algos is not None:
-            for a in algos:
-                algos_str.append(a)
-        return algos_str
+        if algos is None:
+            return None
+        else:
+            return [algo for algo in algos]
 
     def getProjectName(self):
         return self.getOrDefault(self.projectName)
@@ -519,18 +515,12 @@ class H2OAutoMLParams(H2OCommonParams):
         return self._set(tryMutations=value)
 
     def setIncludeAlgos(self, value):
-        assert_is_type(value, None, [Enum("XGBoost", "GLM", "DRF", "GBM", "DeepLearning", "StackedEnsemble")])
-        # H2O typechecks does not check for case sensitivity
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        java_enums = get_enum_array_from_str_array(value, jvm.ai.h2o.automl.Algo)
-        return self._set(includeAlgos=java_enums)
+        validated = getValidatedEnumValues("ai.h2o.automl.Algo", value, nullEnabled=True)
+        return self._set(includeAlgos=validated)
 
     def setExcludeAlgos(self, value):
-        assert_is_type(value, None, [Enum("XGBoost", "GLM", "DRF", "GBM", "DeepLearning", "StackedEnsemble")])
-        # H2O typechecks does not check for case sensitivity
-        jvm = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)._jvm
-        java_enums = get_enum_array_from_str_array(value, jvm.ai.h2o.automl.Algo)
-        return self._set(excludeAlgos=java_enums)
+        validated = getValidatedEnumValues("ai.h2o.automl.Algo", value, nullEnabled=True)
+        return self._set(excludeAlgos=validated)
 
     def setProjectName(self, value):
         assert_is_type(value, None, str)

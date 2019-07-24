@@ -74,8 +74,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spec.input_spec.weights_column = getWeightCol()
     spec.input_spec.ignored_columns = getIgnoredCols()
     spec.input_spec.sort_metric = getSortMetric()
-    spec.build_models.exclude_algos = if (getExcludeAlgos() == null) null else Array(getExcludeAlgos(): _*)
-    spec.build_models.include_algos = if (getIncludeAlgos() == null) null else Array(getIncludeAlgos(): _*)
+    spec.build_models.exclude_algos = if (getExcludeAlgos() == null) null else Array(getExcludeAlgos().map(Algo.valueOf): _*)
+    spec.build_models.include_algos = if (getIncludeAlgos() == null) null else Array(getIncludeAlgos().map(Algo.valueOf): _*)
     spec.build_control.project_name = getProjectName()
     spec.build_control.stopping_criteria.set_seed(getSeed())
     spec.build_control.stopping_criteria.set_max_runtime_secs(getMaxRuntimeSecs())
@@ -141,8 +141,8 @@ trait H2OAutoMLParams extends H2OCommonParams with Params {
   // Param definitions
   //
   private val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
-  private val includeAlgos = new H2OAutoMLAlgosParam(this, "includeAlgos", "Algorithms to include when using automl")
-  private val excludeAlgos = new H2OAutoMLAlgosParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
+  private val includeAlgos = new NullableStringArrayParam(this, "includeAlgos", "Algorithms to include when using automl")
+  private val excludeAlgos = new NullableStringArrayParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
   private val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
     " (e.g., airlines and iris)")
   private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
@@ -183,9 +183,9 @@ trait H2OAutoMLParams extends H2OCommonParams with Params {
   //
   def getIgnoredCols(): Array[String] = $(ignoredCols)
 
-  def getIncludeAlgos(): Array[Algo] = $(includeAlgos)
+  def getIncludeAlgos(): Array[String] = $(includeAlgos)
 
-  def getExcludeAlgos(): Array[Algo] = $(excludeAlgos)
+  def getExcludeAlgos(): Array[String] = $(excludeAlgos)
 
   def getProjectName(): String = $(projectName)
 
@@ -216,9 +216,21 @@ trait H2OAutoMLParams extends H2OCommonParams with Params {
   //
   def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
 
-  def setIncludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(includeAlgos, value)
+  @DeprecatedMethod("setIncludeAlgos(value: Array[String])")
+  def setIncludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = setIncludeAlgos(value.map(_.name()))
 
-  def setExcludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = set(excludeAlgos, value)
+  def setIncludeAlgos(value: Array[String]): this.type = {
+    val validated = H2OAlgoParamsHelper.getValidatedEnumValues[Algo](value, nullEnabled = true)
+    set(includeAlgos, validated)
+  }
+
+  @DeprecatedMethod("setExcludeAlgos(value: Array[String])")
+  def setExcludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = setExcludeAlgos(value.map(_.name()))
+
+  def setExcludeAlgos(value: Array[String]): this.type = {
+    val validated = H2OAlgoParamsHelper.getValidatedEnumValues[Algo](value, nullEnabled = true)
+    set(excludeAlgos, validated)
+  }
 
   def setProjectName(value: String): this.type = set(projectName, value)
 
@@ -260,12 +272,3 @@ trait H2OAutoMLParams extends H2OCommonParams with Params {
 
   def setMaxModels(value: Int): this.type = set(maxModels, value)
 }
-
-class H2OAutoMLAlgosParam private[h2o](parent: Params, name: String, doc: String,
-                                       isValid: Array[ai.h2o.automl.Algo] => Boolean)
-  extends EnumArrayParam[ai.h2o.automl.Algo](parent, name, doc, isValid) {
-
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, _ => true)
-}
-
-
