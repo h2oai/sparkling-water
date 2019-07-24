@@ -65,7 +65,7 @@ class H2OCommonParams(Params):
     ##
     # Setters
     ##
-    def setPredictioNCol(self, value):
+    def setPredictionCol(self, value):
         assert_is_type(value, str)
         return self._set(predictionCol=value)
 
