@@ -17,16 +17,17 @@
 
 package org.apache.spark.ml.spark.models
 
+import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
 import hex.Model
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.h2o.algos._
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
-import water.{H2O, Key}
+import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
+import water.{H2O, Key}
 
 import scala.collection.mutable
 
@@ -129,7 +130,7 @@ class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
   }
 
 
-  private def testGridSearch(algo: H2OAlgorithm[_, _, _ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
+  private def testGridSearch(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
       val dataset = spark.read
         .option("header", "true")
         .option("inferSchema", "true")

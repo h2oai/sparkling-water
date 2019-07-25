@@ -14,10 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.algos
+package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
-import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
+import ai.h2o.sparkling.ml.params.{H2OAlgoCommonParams, H2OAlgoSupervisedParams}
 import hex.Model
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.DeveloperApi
@@ -37,7 +36,9 @@ import scala.reflect.{ClassTag, classTag}
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
 abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseModel, P <: Model.Parameters : ClassTag]
-  extends Estimator[H2OMOJOModel] with H2OAlgoCommonUtils with DefaultParamsWritable with H2OAlgoSupervisedParams[P] {
+  extends Estimator[H2OMOJOModel] with H2OAlgoCommonUtils with DefaultParamsWritable with H2OAlgoCommonParams[P] {
+
+  protected def preProcessBeforeFit(trainFrame: Frame): Unit = {}
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     // Update H2O params based on provided configuration
@@ -53,12 +54,8 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
     }
     H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
-    if ((parameters._distribution == DistributionFamily.bernoulli
-      || parameters._distribution == DistributionFamily.multinomial)
-      && !trainFrame.vec(getLabelCol()).isCategorical) {
-      trainFrame.replace(trainFrame.find(getLabelCol()),
-        trainFrame.vec(getLabelCol()).toCategoricalVec).remove()
-    }
+    preProcessBeforeFit(trainFrame)
+
     water.DKV.put(trainFrame)
     
     // Train
@@ -110,10 +107,6 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    require(schema.fields.exists(f => f.name.compareToIgnoreCase(getLabelCol()) == 0),
-      s"Specified label column '${getLabelCol()} was not found in input dataset!")
-    require(!getFeaturesCols().exists(n => n.compareToIgnoreCase(getLabelCol()) == 0),
-      s"Specified input features cannot contain the label column!")
     schema
   }
 

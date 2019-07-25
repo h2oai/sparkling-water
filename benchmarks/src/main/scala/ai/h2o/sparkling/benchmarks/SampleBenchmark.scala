@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import org.apache.spark.ml.h2o.algos.H2OAlgorithm
+import ai.h2o.sparkling.ml.algos.H2OAlgorithm
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.functions._
 

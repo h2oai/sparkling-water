@@ -16,6 +16,7 @@
 */
 package org.apache.spark.ml.h2o.algos
 
+import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
 import ai.h2o.sparkling.ml.params.H2OAlgoSharedTreeParams
 import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.GBMModel.GBMParameters
@@ -25,7 +26,7 @@ import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 /**
   * H2O GBM algorithm exposed via Spark ML pipelines.
   */
-class H2OGBM(override val uid: String) extends H2OAlgorithm[GBM, GBMModel, GBMParameters] with H2OGBMParams {
+class H2OGBM(override val uid: String) extends H2OSupervisedAlgorithm[GBM, GBMModel, GBMParameters] with H2OGBMParams {
 
   def this() = this(Identifiable.randomUID("gbm"))
 }
