@@ -11,7 +11,7 @@ from py_sparkling.ml.models import H2OMOJOModel
 from pysparkling import *
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, \
     H2OGridSearchParams
-from .util import JavaH2OMLReadable, validateEnumValue, validateEnumValues
+from .util import JavaH2OMLReadable, validateEnumValue, validateEnumValues, arrayToDoubleArray
 
 java_max_double_value = (2-2**(-52))*(2**1023)
 from pysparkling.spark_specifics import get_input_kwargs
@@ -72,15 +72,14 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
         validateEnumValue(self._H2OAlgoCommonParams__getDistributionEnum(), kwargs, "distribution")
         validateEnumValue(self._H2OSharedTreeParams__getHistogramTypeEnum(), kwargs, "histogramType")
 
-    # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
+        # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
         # the whole type is actually int and we get class cast exception
         double_types = ["minRows", "predNoiseBandwidth", "splitRatio", "learnRate", "colSampleRate", "learnRateAnnealing", "maxAbsLeafnodePred"
                         "minSplitImprovement", "r2Stopping", "sampleRate", "colSampleRateChangePerLevel", "colSampleRatePerTree"]
         set_double_values(kwargs, double_types)
 
         # We need to also map all doubles in the arrays
-        if "sampleRatePerClass" in kwargs:
-            kwargs["sampleRatePerClass"] = map(float, kwargs["sampleRatePerClass"])
+        arrayToDoubleArray("sampleRatePerClass", kwargs)
 
         return self._set(**kwargs)
 
@@ -314,11 +313,8 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
         set_double_values(kwargs, double_types)
 
         # We need to also map all doubles in the arrays
-        if "alpha" in kwargs:
-            kwargs["alpha"] = map(float, kwargs["alpha"])
-
-        if "lambda_" in kwargs:
-            kwargs["lambda_"] = map(float, kwargs["lambda_"])
+        arrayToDoubleArray("alpha", kwargs)
+        arrayToDoubleArray("lambda_", kwargs)
 
         return self._set(**kwargs)
 

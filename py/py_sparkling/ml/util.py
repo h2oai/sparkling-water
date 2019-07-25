@@ -20,6 +20,10 @@ def validateEnumValues(enumClass, kwargs, name, nullEnabled=False):
     if name in kwargs:
         kwargs[name] = getValidatedEnumValues(enumClass, kwargs[name], nullEnabled=nullEnabled)
 
+def arrayToDoubleArray(param, kwargs):
+    if param in kwargs and kwargs[param] is not None:
+        kwargs[param] = map(float, kwargs[param])
+
 class JavaH2OMLReadable(MLReadable):
     """
     Special version of JavaMLReadable to be able to load pipelines exported together with H2O pipeline stages
