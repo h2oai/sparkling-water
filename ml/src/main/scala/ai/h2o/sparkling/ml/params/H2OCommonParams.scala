@@ -26,8 +26,10 @@ import org.apache.spark.ml.param._
 trait H2OCommonParams extends Params with Logging {
 
   protected final val predictionCol = new Param[String](this, "predictionCol", "Prediction column name")
-  protected final val detailedPredictionCol = new Param[String](this, "detailedPredictionCol", "Column containing additional prediction details, its content depends on the model type.")
-  protected final val withDetailedPredictionCol = new BooleanParam(this, "withDetailedPredictionCol", "Enables or disables generating additional prediction column, but with more details")
+  protected final val detailedPredictionCol = new Param[String](this, "detailedPredictionCol",
+    "Column containing additional prediction details, its content depends on the model type.")
+  protected final val withDetailedPredictionCol = new BooleanParam(this, "withDetailedPredictionCol",
+    "Enables or disables generating additional prediction column, but with more details")
   protected final val featuresCols = new StringArrayParam(this, "featuresCols", "Name of feature columns")
   protected final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   protected final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")

@@ -29,8 +29,10 @@ trait H2OMOJOModelParams extends Params with Logging {
   // Param definitions
   //
   protected final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
-  protected final val detailedPredictionCol = new Param[String](this, "detailedPredictionCol", "Column containing additional prediction details, its content depends on the model type.")
-  protected final val withDetailedPredictionCol = new BooleanParam(this, "withDetailedPredictionCol", "Enables or disables generating additional prediction column, but with more details")
+  protected final val detailedPredictionCol = new Param[String](this, "detailedPredictionCol",
+    "Column containing additional prediction details, its content depends on the model type.")
+  protected final val withDetailedPredictionCol = new BooleanParam(this, "withDetailedPredictionCol",
+    "Enables or disables generating additional prediction column, but with more details")
 
   protected final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
 
