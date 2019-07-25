@@ -9,8 +9,9 @@ pySparkling - The Sparkling-Water Python Package
 from .features import ColumnPruner
 from .algos import H2OGBM, H2ODeepLearning, H2OAutoML, H2OXGBoost, H2OGLM, H2OGridSearch
 from .models import H2OMOJOModel, H2OMOJOPipelineModel, H2OMOJOSettings
+from ai.h2o.sparkling.ml.algos import H2OKMeans
 # set what is meant by * packages in statement from foo import *
-__all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost", "H2OGLM", "H2OMOJOModel", "H2OMOJOPipelineModel", "H2OGridSearch", "H2OMOJOSettings"]
+__all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost", "H2OGLM", "H2OMOJOModel", "H2OMOJOPipelineModel", "H2OGridSearch", "H2OMOJOSettings", "H2OKMeans"]
 
 from pysparkling.initializer import Initializer
 
