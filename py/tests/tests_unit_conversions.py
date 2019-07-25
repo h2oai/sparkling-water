@@ -294,6 +294,21 @@ class FrameTransformationsTest(unittest.TestCase):
         fr = h2o.import_file(
             "gs://gcp-public-data-nexrad-l2/2018/01/01/KABR/NWS_NEXRAD_NXL2DPBL_KABR_20180101050000_20180101055959.tar")
 
+    def test_propagation_of_prediction_col(self):
+        prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
+                                              header=True, inferSchema=True)
+
+        predictionCol = "my_prediction_col_name"
+        algo = H2OGLM(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
+                      labelCol="AGE",
+                      seed=1,
+                      splitRatio=0.8,
+                      predictionCol=predictionCol)
+
+        model = algo.fit(prostate_frame)
+        columns = model.transform(prostate_frame).columns
+        self.assertEquals(True, predictionCol in columns)
+
     def test_glm_in_spark_pipeline(self):
         prostate_frame = self._spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
                                               header=True, inferSchema=True)
