@@ -35,6 +35,9 @@ class H2OCommonParams(Params):
                                                 "convertUnknownCategoricalLevelsToNa",
                                                 "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
 
+    convertInvalidNumbersToNa = Param(Params._dummy(),
+                                      "convertInvalidNumbersToNa",
+                                      "If set to 'true', the model converts invalid numbers to NA during making predictions.")
     ##
     # Getters
     ##
@@ -73,6 +76,9 @@ class H2OCommonParams(Params):
 
     def getConvertUnknownCategoricalLevelsToNa(self):
         return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
+
+    def getConvertInvalidNumbersToNa(self):
+        return self.getOrDefault(self.convertInvalidNumbersToNa)
 
     ##
     # Setters
@@ -134,6 +140,9 @@ class H2OCommonParams(Params):
         assert_is_type(value, bool)
         return self._set(convertUnknownCategoricalLevelsToNa=value)
 
+    def setConvertInvalidNumbersToNa(self, value):
+        assert_is_type(value, bool)
+        return self._set(convertInvalidNumbersToNa=value)
 
 class H2OCommonUnsupervisedParams(H2OCommonParams):
     pass
