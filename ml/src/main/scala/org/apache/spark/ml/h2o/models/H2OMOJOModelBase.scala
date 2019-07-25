@@ -44,15 +44,16 @@ abstract class H2OMOJOModelBase[T <: SparkModel[T]]
   override def write: MLWriter = new H2OMOJOWriter(this, getMojoData)
 
   protected def applyPredictionUdf(
+      predictionCol: String,
       dataset: Dataset[_],
       udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
     val originalDF = dataset.toDF()
     H2OSchemaUtils.getDatasetShape(dataset.schema) match {
-      case DatasetShape.Flat => applyPredictionUdfToFlatDataFrame(originalDF, udfConstructor, getFeaturesCols())
+      case DatasetShape.Flat => applyPredictionUdfToFlatDataFrame(predictionCol, originalDF, udfConstructor, getFeaturesCols())
       case DatasetShape.StructsOnly | DatasetShape.Nested =>
         val flattenedDF = H2OSchemaUtils.appendFlattenedStructsToDataFrame(originalDF, RowConverter.temporaryColumnPrefix)
         val features = getFeaturesCols() ++ getFeaturesCols().map(s => RowConverter.temporaryColumnPrefix + "." + s)
-        val flatWithPredictionsDF = applyPredictionUdfToFlatDataFrame(flattenedDF, udfConstructor, features)
+        val flatWithPredictionsDF = applyPredictionUdfToFlatDataFrame(predictionCol, flattenedDF, udfConstructor, features)
         flatWithPredictionsDF.schema.foldLeft(flatWithPredictionsDF) { (df, field) =>
           if (field.name.startsWith(RowConverter.temporaryColumnPrefix)) df.drop(field.name) else df
         }
@@ -60,12 +61,13 @@ abstract class H2OMOJOModelBase[T <: SparkModel[T]]
   }
 
   private def applyPredictionUdfToFlatDataFrame(
+      predictionCol: String,
       flatDataFrame: DataFrame,
       udfConstructor: Array[String] => UserDefinedFunction,
       features: Array[String]): DataFrame = {
     val relevantColumnNames = flatDataFrame.columns.intersect(features)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)
-    flatDataFrame.withColumn(getPredictionCol(), udf(struct(args: _*)))
+    flatDataFrame.withColumn(predictionCol, udf(struct(args: _*)))
   }
 }

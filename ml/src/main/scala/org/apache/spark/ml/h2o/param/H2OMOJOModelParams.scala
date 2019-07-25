@@ -29,6 +29,9 @@ trait H2OMOJOModelParams extends Params with Logging {
   // Param definitions
   //
   protected final val predictionCol: Param[String] = new Param[String](this, "predictionCol", "Prediction column name")
+  protected final val detailedPredictionCol = new Param[String](this, "detailedPredictionCol", "Column containing additional prediction details, its content depends on the model type.")
+  protected final val withDetailedPredictionCol = new BooleanParam(this, "withDetailedPredictionCol", "Enables or disables generating additional prediction column, but with more details")
+
   protected final val featuresCols: StringArrayParam = new StringArrayParam(this, "featuresCols", "Name of feature columns")
 
   protected final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
@@ -54,6 +57,8 @@ trait H2OMOJOModelParams extends Params with Logging {
     convertUnknownCategoricalLevelsToNa -> H2OMOJOSettings.default.convertUnknownCategoricalLevelsToNa,
     convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa,
     namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns,
+    detailedPredictionCol -> H2OMOJOSettings.default.detailedPredictionCol,
+    withDetailedPredictionCol -> H2OMOJOSettings.default.withDetailedPredictionCol,
     modelDetails -> null
   )
 
@@ -61,6 +66,10 @@ trait H2OMOJOModelParams extends Params with Logging {
   // Getters
   //
   def getPredictionCol(): String = $(predictionCol)
+
+  def getDetailedPredictionCol(): String = $(detailedPredictionCol)
+
+  def getWithDetailedPredictionCol(): Boolean = $(withDetailedPredictionCol)
 
   def getFeaturesCols(): Array[String] = $(featuresCols)
 

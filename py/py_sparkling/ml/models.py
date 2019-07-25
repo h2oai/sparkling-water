@@ -12,14 +12,20 @@ class H2OMOJOSettings(JavaWrapper):
 
     def __init__(self,
                  predictionCol="prediction",
+                 detailedPredictionCol="detailed_prediction",
+                 withDetailedPredictionCol=False,
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,
                  namedMojoOutputColumns=True):
         assert_is_type(predictionCol, str)
+        assert_is_type(detailedPredictionCol, str)
+        assert_is_type(withDetailedPredictionCol, str)
         assert_is_type(convertUnknownCategoricalLevelsToNa, bool)
         assert_is_type(convertInvalidNumbersToNa, bool)
         assert_is_type(namedMojoOutputColumns, bool)
         self.predictionCol = predictionCol
+        self.detailedPredictionCol = detailedPredictionCol
+        self.withDetailedPredictionCol = withDetailedPredictionCol
         self.convertUnknownCategoricalLevelsToNa = convertUnknownCategoricalLevelsToNa
         self.convertInvalidNumbersToNa = convertInvalidNumbersToNa
         self.namedMojoOutputColumns = namedMojoOutputColumns
@@ -27,6 +33,8 @@ class H2OMOJOSettings(JavaWrapper):
     def toJavaObject(self):
         return self._new_java_obj("org.apache.spark.ml.h2o.models.H2OMOJOSettings",
                                   self.predictionCol,
+                                  self.detailedPredictionCol,
+                                  self.withDetailedPredictionCol,
                                   self.convertUnknownCategoricalLevelsToNa,
                                   self.convertInvalidNumbersToNa,
                                   self.namedMojoOutputColumns)
@@ -46,6 +54,12 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     def getPredictionCol(self):
         return self._java_obj.getPredictionCol()
+
+    def getDetailedPredictionCol(self):
+        return self._java_obj.getDetailedPredictionCol()
+
+    def getWithDetailedPredictionCol(self):
+        return self._java_obj.getWithDetailedPredictionCol()
 
     def getModelDetails(self):
         return self._java_obj.getModelDetails()
