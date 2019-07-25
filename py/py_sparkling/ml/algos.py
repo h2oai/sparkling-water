@@ -6,6 +6,7 @@ from pyspark.ml.util import JavaMLWritable
 from pyspark.ml.wrapper import JavaEstimator
 from pyspark.sql.dataframe import DataFrame
 
+from py_sparkling.ml.util import set_double_values
 from py_sparkling.ml.models import H2OMOJOModel
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, \
     H2OGridSearchParams
@@ -14,12 +15,6 @@ from .util import JavaH2OMLReadable, validateEnumValue, validateEnumValues, arra
 java_max_double_value = (2-2**(-52))*(2**1023)
 from pysparkling.spark_specifics import get_input_kwargs
 from pyspark.ml.util import _jvm
-
-def set_double_values(kwargs, values):
-    for v in values:
-        if v in kwargs:
-            kwargs[v] = float(kwargs[v])
-
 
 def propagate_value_from_deprecated_property(kwargs, from_deprecated, to_replacing):
     if from_deprecated in kwargs:

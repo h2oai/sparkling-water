@@ -150,6 +150,7 @@ def copyPySetup() {
             include 'setup.cfg'
             include 'pysparkling/**/*'
             include 'py_sparkling/**/*'
+            include 'ai/**/*'
             exclude '**/*.pyc'
         }
         into pkgDir
