@@ -2,7 +2,7 @@ from h2o.utils.typechecks import assert_is_type
 from py4j.java_gateway import JavaObject
 from pyspark.ml.param import *
 
-from py_sparkling.ml.util import getValidatedEnumValue, getValidatedEnumValues
+from py_sparkling.ml.util import getValidatedEnumValue, getValidatedEnumValues, getDoubleArrayFromIntArray
 
 
 class H2OCommonParams(Params):
@@ -109,7 +109,7 @@ class H2OCommonParams(Params):
 
     def setSplitRatio(self, value):
         assert_is_type(value, int, float)
-        return self._set(splitRatio=value)
+        return self._set(splitRatio=float(value))
 
     def setSeed(self, value):
         assert_is_type(value, int)
@@ -317,7 +317,7 @@ class H2OSharedTreeParams(H2OAlgoSupervisedParams):
 
     def setMinSplitImprovement(self, value):
         assert_is_type(value, int, float)
-        return self._set(minSplitImprovement=value)
+        return self._set(minSplitImprovement=float(value))
 
     def setHistogramType(self, value):
         validated = getValidatedEnumValue(self.__getHistogramTypeEnum(), value)
@@ -328,10 +328,10 @@ class H2OSharedTreeParams(H2OAlgoSupervisedParams):
 
     def setR2Stopping(self, value):
         assert_is_type(value, int, float)
-        return self._set(r2Stopping=value)
+        return self._set(r2Stopping=float(value))
 
     def setNbinsTopLevel(self, value):
-        assert_is_type(value, int, float)
+        assert_is_type(value, int)
         return self._set(nbinsTopLevel=value)
 
     def setBuildTreeOneNode(self, value):
@@ -344,19 +344,19 @@ class H2OSharedTreeParams(H2OAlgoSupervisedParams):
 
     def setSampleRate(self, value):
         assert_is_type(value, int, float)
-        return self._set(sampleRate=value)
+        return self._set(sampleRate=float(value))
 
     def setSampleRatePerClass(self, value):
         assert_is_type(value, None, [int, float])
-        return self._set(sampleRatePerClass=value)
+        return self._set(sampleRatePerClass=getDoubleArrayFromIntArray(value))
 
     def setColSampleRateChangePerLevel(self, value):
         assert_is_type(value, int, float)
-        return self._set(colSampleRateChangePerLevel=value)
+        return self._set(colSampleRateChangePerLevel=float(value))
 
     def setColSampleRatePerTree(self, value):
         assert_is_type(value, int, float)
-        return self._set(colSampleRatePerTree=value)
+        return self._set(colSampleRatePerTree=float(value))
 
 
 class H2OGBMParams(H2OSharedTreeParams):
@@ -393,23 +393,23 @@ class H2OGBMParams(H2OSharedTreeParams):
     ##
     def setLearnRate(self, value):
         assert_is_type(value, int, float)
-        return self._set(learnRate=value)
+        return self._set(learnRate=float(value))
 
     def setLearnRateAnnealing(self, value):
         assert_is_type(value, int, float)
-        return self._set(learnRateAnnealing=value)
+        return self._set(learnRateAnnealing=float(value))
 
     def setColSampleRate(self, value):
         assert_is_type(value, int, float)
-        return self._set(colSampleRate=value)
+        return self._set(colSampleRate=float(value))
 
     def setMaxAbsLeafnodePred(self, value):
         assert_is_type(value, int, float)
-        return self._set(maxAbsLeafnodePred=value)
+        return self._set(maxAbsLeafnodePred=float(value))
 
     def setPredNoiseBandwidth(self, value):
         assert_is_type(value, int, float)
-        return self._set(predNoiseBandwidth=value)
+        return self._set(predNoiseBandwidth=float(value))
 
 
 class H2ODeepLearningParams(H2OAlgoSupervisedParams):
@@ -453,15 +453,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams):
     ##
     def setEpochs(self, value):
         assert_is_type(value, int, float)
-        return self._set(epochs=value)
+        return self._set(epochs=float(value))
 
     def setL1(self, value):
         assert_is_type(value, int, float)
-        return self._set(l1=value)
+        return self._set(l1=float(value))
 
     def setL2(self, value):
         assert_is_type(value, int, float)
-        return self._set(l2=value)
+        return self._set(l2=float(value))
 
     def setHidden(self, value):
         assert_is_type(value, [int])
@@ -594,7 +594,7 @@ class H2OAutoMLParams(H2OCommonSupervisedParams):
 
     def setMaxRuntimeSecs(self, value):
         assert_is_type(value, int, float)
-        return self._set(maxRuntimeSecs=value)
+        return self._set(maxRuntimeSecs=float(value))
 
     def setStoppingRounds(self, value):
         assert_is_type(value, int)
@@ -602,7 +602,7 @@ class H2OAutoMLParams(H2OCommonSupervisedParams):
 
     def setStoppingTolerance(self, value):
         assert_is_type(value, int, float)
-        return self._set(stoppingTolerance=value)
+        return self._set(stoppingTolerance=float(value))
 
     def setStoppingMetric(self, value):
         validated = getValidatedEnumValue(self.__getStoppingMetricEnum(), value)
@@ -624,11 +624,11 @@ class H2OAutoMLParams(H2OCommonSupervisedParams):
 
     def setClassSamplingFactors(self, value):
         assert_is_type(value, [int, float])
-        return self._set(classSamplingFactors=value)
+        return self._set(classSamplingFactors=getDoubleArrayFromIntArray(array))
 
     def setMaxAfterBalanceSize(self, value):
         assert_is_type(value, int, float)
-        return self._set(maxAfterBalanceSize=value)
+        return self._set(maxAfterBalanceSize=float(value))
 
     def setKeepCrossValidationPredictions(self, value):
         assert_is_type(value, bool)
@@ -834,55 +834,55 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
 
     def setMinRows(self, value):
         assert_is_type(value, int, float)
-        return self._set(minRows=value)
+        return self._set(minRows=float(value))
 
     def setMinChildWeight(self, value):
         assert_is_type(value, int, float)
-        return self._set(minChildWeight=value)
+        return self._set(minChildWeight=float(value))
 
     def setLearnRate(self, value):
         assert_is_type(value, int, float)
-        return self._set(learnRate=value)
+        return self._set(learnRate=float(value))
 
     def setEta(self, value):
         assert_is_type(value, int, float)
-        return self._set(eta=value)
+        return self._set(eta=float(value))
 
     def setLearnRateAnnealing(self, value):
         assert_is_type(value, int, float)
-        return self._set(learnRateAnnealing=value)
+        return self._set(learnRateAnnealing=float(value))
 
     def setSampleRate(self, value):
         assert_is_type(value, int, float)
-        return self._set(sampleRate=value)
+        return self._set(sampleRate=float(value))
 
     def setSubsample(self, value):
         assert_is_type(value, int, float)
-        return self._set(subsample=value)
+        return self._set(subsample=float(value))
 
     def setColSampleRate(self, value):
         assert_is_type(value, int, float)
-        return self._set(colSampleRate=value)
+        return self._set(colSampleRate=float(value))
 
     def setColSampleByLevel(self, value):
         assert_is_type(value, int, float)
-        return self._set(colSampleByLevel=value)
+        return self._set(colSampleByLevel=float(value))
 
     def setColSampleRatePerTree(self, value):
         assert_is_type(value, int, float)
-        return self._set(colSampleRatePerTree=value)
+        return self._set(colSampleRatePerTree=float(value))
 
     def setColsampleBytree(self, value):
         assert_is_type(value, int, float)
-        return self._set(colsampleBytree=value)
+        return self._set(colsampleBytree=float(value))
 
     def setMaxAbsLeafnodePred(self, value):
         assert_is_type(value, int, float)
-        return self._set(maxAbsLeafnodePred=value)
+        return self._set(maxAbsLeafnodePred=float(value))
 
     def setMaxDeltaStep(self, value):
         assert_is_type(value, int, float)
-        return self._set(maxDeltaStep=value)
+        return self._set(maxDeltaStep=float(value))
 
     def setScoreTreeInterval(self, value):
         assert_is_type(value, int)
@@ -898,11 +898,11 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
 
     def setMinSplitImprovement(self, value):
         assert_is_type(value, int, float)
-        return self._set(minSplitImprovement=value)
+        return self._set(minSplitImprovement=float(value))
 
     def setGamma(self, value):
         assert_is_type(value, int, float)
-        return self._set(gamma=value)
+        return self._set(gamma=float(value))
 
     def setNthread(self, value):
         assert_is_type(value, int)
@@ -918,11 +918,11 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
 
     def setMinSumHessianInLeaf(self, value):
         assert_is_type(value, int, float)
-        return self._set(minSumHessianInLeaf=value)
+        return self._set(minSumHessianInLeaf=float(value))
 
     def setMinDataInLeaf(self, value):
         assert_is_type(value, int, float)
-        return self._set(minDataInLeaf=value)
+        return self._set(minDataInLeaf=float(value))
 
     def setTreeMethod(self, value):
         validated = getValidatedEnumValue(self.__getTreeMethodEnum(), value)
@@ -954,11 +954,11 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
 
     def setRegLambda(self, value):
         assert_is_type(value, int, float)
-        return self._set(regLambda=value)
+        return self._set(regLambda=float(value))
 
     def setRegAlpha(self, value):
         assert_is_type(value, int, float)
-        return self._set(regAlpha=value)
+        return self._set(regAlpha=float(value))
 
     def setSampleType(self, value):
         validated = getValidatedEnumValue(self.__getSampleTypeEnum(), value)
@@ -976,7 +976,7 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
 
     def setRateDrop(self, value):
         assert_is_type(value, int, float)
-        return self._set(rateDrop=value)
+        return self._set(rateDrop=float(value))
 
     def setOneDrop(self, value):
         assert_is_type(value, bool)
@@ -984,7 +984,7 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
 
     def setSkipDrop(self, value):
         assert_is_type(value, int, float)
-        return self._set(skipDrop=value)
+        return self._set(skipDrop=float(value))
 
     def setGpuId(self, value):
         assert_is_type(value, int)
@@ -1142,19 +1142,19 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setTweedieVariancePower(self, value):
         assert_is_type(value, int, float)
-        return self._set(tweedieVariancePower=value)
+        return self._set(tweedieVariancePower=float(value))
 
     def setTweedieLinkPower(self, value):
         assert_is_type(value, int, float)
-        return self._set(tweedieLinkPower=value)
+        return self._set(tweedieLinkPower=float(value))
 
     def setAlpha(self, value):
         assert_is_type(value, None, [int, float])
-        return self._set(alpha=value)
+        return self._set(alpha=getDoubleArrayFromIntArray(value))
 
     def setLambda(self, value):
         assert_is_type(value, None, [int, float])
-        return self._set(lambda_=value)
+        return self._set(lambda_=getDoubleArrayFromIntArray(value))
 
     def setMissingValuesHandling(self, value):
         validated = getValidatedEnumValue(self.__getMissingValuesHandlingEnum(), value)
@@ -1165,7 +1165,7 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setPrior(self, value):
         assert_is_type(value, int, float)
-        return self._set(prior=value)
+        return self._set(prior=float(value))
 
     def setLambdaSearch(self, value):
         assert_is_type(value, bool)
@@ -1185,7 +1185,7 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setLambdaMinRatio(self, value):
         assert_is_type(value, int, float)
-        return self._set(lambdaMinRatio=value)
+        return self._set(lambdaMinRatio=float(value))
 
     def setMaxIterations(self, value):
         assert_is_type(value, int)
@@ -1197,19 +1197,19 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setBetaEpsilon(self, value):
         assert_is_type(value, int, float)
-        return self._set(betaEpsilon=value)
+        return self._set(betaEpsilon=float(value))
 
     def setObjectiveEpsilon(self, value):
         assert_is_type(value, int, float)
-        return self._set(objectiveEpsilon=value)
+        return self._set(objectiveEpsilon=float(value))
 
     def setGradientEpsilon(self, value):
         assert_is_type(value, int, float)
-        return self._set(gradientEpsilon=value)
+        return self._set(gradientEpsilon=float(value))
 
     def setObjReg(self, value):
         assert_is_type(value, int, float)
-        return self._set(objReg=value)
+        return self._set(objReg=float(value))
 
     def setComputePValues(self, value):
         assert_is_type(value, bool)
@@ -1310,7 +1310,7 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
 
     def setMaxRuntimeSecs(self, value):
         assert_is_type(value, int, float)
-        return self._set(maxRuntimeSecs=value)
+        return self._set(maxRuntimeSecs=float(value))
 
     def setMaxModels(self, value):
         assert_is_type(value, int)
@@ -1322,7 +1322,7 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
 
     def setStoppingTolerance(self, value):
         assert_is_type(value, int, float)
-        return self._set(stoppingTolerance=value)
+        return self._set(stoppingTolerance=float(value))
 
     def setStoppingMetric(self, value):
         validated = getValidatedEnumValue(self.__getStoppingMetricEnum(), value)

@@ -20,9 +20,15 @@ def validateEnumValues(enumClass, kwargs, name, nullEnabled=False):
     if name in kwargs:
         kwargs[name] = getValidatedEnumValues(enumClass, kwargs[name], nullEnabled=nullEnabled)
 
+def getDoubleArrayFromIntArray(array):
+    if array is None:
+        return None
+    else:
+        return list(map(float, array))
+
 def arrayToDoubleArray(param, kwargs):
     if param in kwargs and kwargs[param] is not None:
-        kwargs[param] = list(map(float, kwargs[param]))
+        kwargs[param] = getDoubleArrayFromIntArray(kwargs[param])
 
 def set_double_values(kwargs, values):
     for v in values:
