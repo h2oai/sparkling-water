@@ -25,6 +25,7 @@ import org.apache.spark.ml.param._
   */
 trait H2OCommonParams extends Params with Logging {
 
+  protected final val predictionCol = new Param[String](this, "predictionCol", "Prediction column name")
   protected final val featuresCols = new StringArrayParam(this, "featuresCols", "Name of feature columns")
   protected final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   protected final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
@@ -56,6 +57,7 @@ trait H2OCommonParams extends Params with Logging {
   // Default values
   //
   setDefault(
+    predictionCol -> "prediction",
     featuresCols -> Array.empty[String],
     foldCol -> null,
     weightCol -> null,
@@ -71,6 +73,8 @@ trait H2OCommonParams extends Params with Logging {
   //
   // Getters
   //
+  def getPredictionCol(): String = $(predictionCol)
+
   def getFeaturesCols(): Array[String] = {
     val excludedCols = getExcludedCols()
     $(featuresCols).filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
@@ -97,6 +101,8 @@ trait H2OCommonParams extends Params with Logging {
   //
   // Setters
   //
+  def setPredictionCol(columnName: String): this.type = set(predictionCol, columnName)
+
   def setFeaturesCol(first: String): this.type = setFeaturesCols(first)
 
   def setFeaturesCols(first: String, others: String*): this.type = set(featuresCols, Array(first) ++ others)

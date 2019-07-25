@@ -106,6 +106,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     val binaryModel = aml.leader()
     val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
     val modelSettings = H2OMOJOSettings(
+      predictionCol = getPredictionCol(),
       convertUnknownCategoricalLevelsToNa = getConvertUnknownCategoricalLevelsToNa(),
       convertInvalidNumbersToNa = getConvertInvalidNumbersToNa())
     H2OMOJOModel.createFromMojo(
