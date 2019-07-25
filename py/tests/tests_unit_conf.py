@@ -55,7 +55,7 @@ class H2OConfTest(unittest.TestCase):
                sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=1,
                predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None,
-               predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPrediction=False)
+               predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
 
         self.assertEquals(gbm.getModelId(), None)
         self.assertEquals(gbm.getSplitRatio(), 1.0)
@@ -101,7 +101,7 @@ class H2OConfTest(unittest.TestCase):
                              nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                              seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False,
                              convertUnknownCategoricalLevelsToNa=False, foldCol=None,
-                             predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPrediction=False)
+                             predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
 
         self.assertEquals(dl.getModelId(), None)
         self.assertEquals(dl.getSplitRatio(), 1.0)
@@ -133,7 +133,7 @@ class H2OConfTest(unittest.TestCase):
                            stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=True, seed=-1,
                            sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
                            keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0,
-                           predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPrediction=False)
+                           predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
 
         self.assertEquals(automl.getFeaturesCols(), [])
         self.assertEquals(automl.getLabelCol(), "label")
@@ -175,7 +175,7 @@ class H2OConfTest(unittest.TestCase):
                              minSumHessianInLeaf=100.0, minDataInLeaf=0.0, treeMethod="auto", growPolicy="depthwise",
                              booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0, sampleType="uniform",
                              normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
-                             foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPrediction=False)
+                             foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
 
 
         self.assertEquals(xgboost.getModelId(), None)
@@ -247,7 +247,7 @@ class H2OConfTest(unittest.TestCase):
                      lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                      gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearCols=False,
                      interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None,
-                     predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPrediction=False)
+                     predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
 
         self.assertEquals(glm.getModelId(), None)
         self.assertEquals(glm.getSplitRatio(), 1.0)
@@ -299,7 +299,7 @@ class H2OConfTest(unittest.TestCase):
                              columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                              stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy="AUTO",
                              selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True,
-                             predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPrediction=False)
+                             predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
 
         self.assertEquals(grid.getFeaturesCols(), [])
         self.assertEquals(grid.getSplitRatio(), 1.0)
