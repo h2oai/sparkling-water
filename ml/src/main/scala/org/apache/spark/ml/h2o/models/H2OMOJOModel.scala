@@ -169,9 +169,9 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     }
 
     if (getWithDetailedPredictionCol()) {
-      withPredictionDf.drop(getDetailedPredictionCol())
-    } else {
       withPredictionDf
+    } else {
+      withPredictionDf.drop(getDetailedPredictionCol())
     }
   }
 }
