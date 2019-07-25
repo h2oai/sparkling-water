@@ -112,6 +112,12 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
     new DoubleArrayParam(this, name, getDoc(doc, name))
   }
 
+  protected def nullableDoubleArrayArrayParam(name: String, doc: String): NullableDoubleArrayArrayParam = nullableDoubleArrayArrayParam(name, Some(doc))
+
+  protected def nullableDoubleArrayArrayParam(name: String, doc: Option[String] = None): NullableDoubleArrayArrayParam = {
+    new NullableDoubleArrayArrayParam(this, name, getDoc(doc, name))
+  }
+
   protected def getH2ODoc(fieldName: String) = api(schemaTag.runtimeClass, fieldName).help()
 
   protected def getDoc(doc: Option[String], fieldName: String) = {
