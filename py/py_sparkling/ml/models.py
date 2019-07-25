@@ -36,16 +36,7 @@ class H2OMOJOSettings(JavaWrapper):
         return H2OMOJOSettings()
 
 
-class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
-
-    @staticmethod
-    def createFromMojo(pathToMojo, settings=H2OMOJOSettings.default()):
-        spark_session = SparkSession.builder.getOrCreate()
-        # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
-        Initializer.load_sparkling_jar(spark_session._sc)
-        javaModel = spark_session._jvm.py_sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo,
-                                                                                          settings.toJavaObject())
-        return H2OMOJOModel(javaModel)
+class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     def getConvertUnknownCategoricalLevelsToNa(self):
         return self._java_obj.getConvertUnknownCategoricalLevelsToNa()
@@ -59,12 +50,26 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
     def getModelDetails(self):
         return self._java_obj.getModelDetails()
 
+    def getNamedMojoOutputColumns(self):
+        return self._java_obj.getNamedMojoOutputColumns()
+
     # Overriding the method to avoid changes on the companion Java object
     def _transfer_params_to_java(self):
         pass
 
+class H2OMOJOModel(H2OMOJOModelBase):
 
-class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
+    @staticmethod
+    def createFromMojo(pathToMojo, settings=H2OMOJOSettings.default()):
+        spark_session = SparkSession.builder.getOrCreate()
+        # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
+        Initializer.load_sparkling_jar(spark_session._sc)
+        javaModel = spark_session._jvm.py_sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo,
+                                                                                          settings.toJavaObject())
+        return H2OMOJOModel(javaModel)
+
+
+class H2OMOJOPipelineModel(H2OMOJOModelBase):
 
     @staticmethod
     def createFromMojo(pathToMojo, settings=H2OMOJOSettings.default()):
@@ -75,19 +80,6 @@ class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
                                                                                                   settings.toJavaObject())
         return H2OMOJOPipelineModel(javaModel)
 
-    def getFeaturesCols(self):
-        return list(self._java_obj.getFeaturesCols())
-
-    def getPredictionCol(self):
-        return self._java_obj.getPredictionCol()
-
-    def getNamedMojoOutputColumns(self):
-        return self._java_obj.getNamedMojoOutputColumns()
-
     def selectPredictionUDF(self, column):
         java_col = self._java_obj.selectPredictionUDF(column)
         return Column(java_col)
-
-    # Overriding the method to avoid changes on the companion Java object
-    def _transfer_params_to_java(self):
-        pass
