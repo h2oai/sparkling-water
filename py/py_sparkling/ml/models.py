@@ -6,25 +6,15 @@ from pyspark.sql.column import Column
 from .util import JavaH2OMLReadable
 from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
-from pyspark.ml.util import _jvm
 
-def getDefaults():
-    java_class = "org.apache.spark.ml.h2o.models.H2OMOJOSettings"
-    java_obj = _jvm()
-    for name in java_class.split("."):
-        java_obj = getattr(java_obj, name)
-
-    return java_obj.default()
 
 class H2OMOJOSettings(JavaWrapper):
 
-
-
     def __init__(self,
-                 predictionCol = getDefaults().predictionCol(),
-                 convertUnknownCategoricalLevelsToNa = getDefaults().convertUnknownCategoricalLevelsToNa(),
-                 convertInvalidNumbersToNa = getDefaults().convertInvalidNumbersToNa(),
-                 namedMojoOutputColumns = getDefaults().namedMojoOutputColumns()):
+                 predictionCol="prediction",
+                 convertUnknownCategoricalLevelsToNa=False,
+                 convertInvalidNumbersToNa=False,
+                 namedMojoOutputColumns=True):
         assert_is_type(predictionCol, str)
         assert_is_type(convertUnknownCategoricalLevelsToNa, bool)
         assert_is_type(convertInvalidNumbersToNa, bool)
@@ -36,10 +26,10 @@ class H2OMOJOSettings(JavaWrapper):
 
     def toJavaObject(self):
         return self._new_java_obj("org.apache.spark.ml.h2o.models.H2OMOJOSettings",
-                           self.predictionCol,
-                           self.convertUnknownCategoricalLevelsToNa,
-                           self.convertInvalidNumbersToNa,
-                           self.namedMojoOutputColumns)
+                                  self.predictionCol,
+                                  self.convertUnknownCategoricalLevelsToNa,
+                                  self.convertInvalidNumbersToNa,
+                                  self.namedMojoOutputColumns)
 
     @staticmethod
     def default():
@@ -49,11 +39,12 @@ class H2OMOJOSettings(JavaWrapper):
 class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
-    def createFromMojo(pathToMojo, settings = H2OMOJOSettings.default()):
+    def createFromMojo(pathToMojo, settings=H2OMOJOSettings.default()):
         spark_session = SparkSession.builder.getOrCreate()
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
-        javaModel = spark_session._jvm.py_sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo, settings.toJavaObject())
+        javaModel = spark_session._jvm.py_sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo,
+                                                                                          settings.toJavaObject())
         return H2OMOJOModel(javaModel)
 
     def getConvertUnknownCategoricalLevelsToNa(self):
@@ -76,11 +67,12 @@ class H2OMOJOModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 class H2OMOJOPipelineModel(JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     @staticmethod
-    def createFromMojo(pathToMojo, settings = H2OMOJOSettings.default()):
+    def createFromMojo(pathToMojo, settings=H2OMOJOSettings.default()):
         spark_session = SparkSession.builder.getOrCreate()
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar(spark_session._sc)
-        javaModel = spark_session._jvm.py_sparkling.ml.models.H2OMOJOPipelineModel.createFromMojo(pathToMojo, settings.toJavaObject())
+        javaModel = spark_session._jvm.py_sparkling.ml.models.H2OMOJOPipelineModel.createFromMojo(pathToMojo,
+                                                                                                  settings.toJavaObject())
         return H2OMOJOPipelineModel(javaModel)
 
     def getFeaturesCols(self):
