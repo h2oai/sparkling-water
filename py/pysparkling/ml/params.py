@@ -8,6 +8,12 @@ from py_sparkling.ml.util import getValidatedEnumValue, getValidatedEnumValues
 class H2OCommonParams(Params):
 
     predictionCol = Param(Params._dummy(), "predictionCol", "Prediction column name")
+    detailedPredictionCol = Param(Params._dummy(), "detailedPredictionCol",
+                                  "Column containing additional prediction details, its content depends"
+                                  " on the model type.")
+    withDetailedPredictionCol = Param(Params._dummy(), "withDetailedPredictionCol",
+                                      "Enables or disables generating additional prediction column, but with more details")
+
     featuresCols = Param(Params._dummy(), "featuresCols", "Name of feature columns")
     foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
@@ -34,6 +40,12 @@ class H2OCommonParams(Params):
     ##
     def getPredictionCol(self):
         return self.getOrDefault(self.predictionCol)
+
+    def getDetailedPredictionCol(self):
+        return self.getOrDefault(self.detailedPredictionCol)
+
+    def getWithDetailedPredictionCol(self):
+        return self.getOrDefault(self.withDetailedPredictionCol)
 
     def getFeaturesCols(self):
         return self.getOrDefault(self.featuresCols)
@@ -69,6 +81,14 @@ class H2OCommonParams(Params):
         assert_is_type(value, str)
         return self._set(predictionCol=value)
 
+    def setDetailedPredictionCol(self, value):
+        assert_is_type(value, str)
+        return self._set(detailedPredictionCol=value)
+
+    def setWithDetailedPredictionCol(self, value):
+        assert_is_type(value, bool)
+        return self._set(withDetailedPredictionCol=value)
+    
     def setFeaturesCols(self, value):
         assert_is_type(value, [str])
         return self._set(featuresCols=value)

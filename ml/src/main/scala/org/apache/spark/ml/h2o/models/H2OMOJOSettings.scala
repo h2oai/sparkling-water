@@ -19,6 +19,8 @@ package org.apache.spark.ml.h2o.models
 
 case class H2OMOJOSettings(
                             predictionCol: String = "prediction",
+                            detailedPredictionCol: String = "detailed_prediction",
+                            withDetailedPredictionCol: Boolean = false,
                             convertUnknownCategoricalLevelsToNa: Boolean = false,
                             convertInvalidNumbersToNa: Boolean = false,
                             namedMojoOutputColumns: Boolean = true

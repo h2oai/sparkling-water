@@ -43,6 +43,8 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     config.setModel(ModelSerializationSupport.getMojoModel(getMojoData()))
     config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     config.setConvertInvalidNumbersToNa(getConvertInvalidNumbersToNa())
+    // always let H2O produce full output, filter later if required
+    config.setUseExtendedOutput(true)
     new EasyPredictModelWrapper(config)
   }
 
@@ -54,7 +56,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
 
   case class MultinomialPrediction(probabilities: Array[Double])
 
-  case class ClusteringPrediction(cluster: Integer)
+  case class ClusteringPrediction(cluster: Integer, distances: Array[Double])
 
   case class AutoEncoderPrediction(original: Array[Double], reconstructed: Array[Double])
 
@@ -127,7 +129,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
         }
         case ModelCategory.Clustering => udf[ClusteringPrediction, Row] { r: Row =>
           val pred = easyPredictModelWrapper.predictClustering(RowConverter.toH2ORowData(r))
-          ClusteringPrediction(pred.cluster)
+          ClusteringPrediction(pred.cluster, pred.distances)
         }
         case ModelCategory.AutoEncoder => udf[AutoEncoderPrediction, Row] { r: Row =>
           val pred = easyPredictModelWrapper.predictAutoEncoder(RowConverter.toH2ORowData(r))
@@ -153,7 +155,25 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
-  override def transform(dataset: Dataset[_]): DataFrame = applyPredictionUdf(dataset, _ => getModelUdf())
+  override def transform(dataset: Dataset[_]): DataFrame = {
+    val baseDf = applyPredictionUdf(getDetailedPredictionCol(), dataset, _ => getModelUdf())
+
+    val withPredictionDf = easyPredictModelWrapper.getModelCategory match {
+      case ModelCategory.Clustering =>
+        baseDf.withColumn(getPredictionCol(), col(s"${getDetailedPredictionCol()}.cluster"))
+      case _ =>
+        // For already existing algos, keep the functionality same,
+        // We can deprecate that and slowly migrate to solution where prediction contains
+        // always single value
+        baseDf.withColumn(getPredictionCol(), col(getDetailedPredictionCol()))
+    }
+
+    if (getWithDetailedPredictionCol()) {
+      withPredictionDf
+    } else {
+      withPredictionDf.drop(getDetailedPredictionCol())
+    }
+  }
 }
 
 
@@ -200,6 +220,8 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     model.set(model.modelDetails -> getModelDetails(mojoData))
     model.set(model.predictionCol -> settings.predictionCol)
+    model.set(model.detailedPredictionCol -> settings.detailedPredictionCol)
+    model.set(model.withDetailedPredictionCol -> settings.withDetailedPredictionCol)
     model.setMojoData(mojoData)
     model
   }
