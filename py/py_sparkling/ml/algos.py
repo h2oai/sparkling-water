@@ -4,17 +4,16 @@ import warnings
 from pyspark import keyword_only
 from pyspark.ml.util import JavaMLWritable
 from pyspark.ml.wrapper import JavaEstimator
-from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
 from py_sparkling.ml.models import H2OMOJOModel
-from pysparkling import *
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, \
     H2OGridSearchParams
 from .util import JavaH2OMLReadable, validateEnumValue, validateEnumValues, arrayToDoubleArray
 
 java_max_double_value = (2-2**(-52))*(2**1023)
 from pysparkling.spark_specifics import get_input_kwargs
+from pyspark.ml.util import _jvm
 
 def set_double_values(kwargs, values):
     for v in values:
@@ -41,7 +40,6 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                  predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None,
                  predictionCol="prediction", **deprecatedArgs):
         super(H2OGBM, self).__init__()
-        self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGBM", self.uid)
 
         self._setDefault(modelId=None, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
@@ -49,9 +47,9 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                          seed=-1, distribution="AUTO",
                          ntrees=50, maxDepth=5, minRows=10.0, nbins=20, nbinsCats=1024, minSplitImprovement=1e-5,
                          histogramType="AUTO",
-                         r2Stopping=self._hc._jvm.Double.MAX_VALUE, nbinsTopLevel=1<<10, buildTreeOneNode=False, scoreTreeInterval=0,
+                         r2Stopping=_jvm().Double.MAX_VALUE, nbinsTopLevel=1<<10, buildTreeOneNode=False, scoreTreeInterval=0,
                          sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
-                         learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=self._hc._jvm.Double.MAX_VALUE,
+                         learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=_jvm().Double.MAX_VALUE,
                          predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None,
                          predictionCol="prediction")
         kwargs = get_input_kwargs(self)
@@ -96,7 +94,6 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                  convertUnknownCategoricalLevelsToNa=False, foldCol=None,
                  predictionCol="prediction", **deprecatedArgs):
         super(H2ODeepLearning, self).__init__()
-        self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2ODeepLearning", self.uid)
 
         self._setDefault(modelId=None, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
@@ -137,7 +134,6 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                  keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0,
                  predictionCol="prediction", **deprecatedArgs):
         super(H2OAutoML, self).__init__()
-        self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OAutoML", self.uid)
 
         self._setDefault(featuresCols=[], labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], splitRatio=1.0, foldCol=None,
@@ -199,7 +195,6 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                  normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
                  foldCol=None, predictionCol="prediction", **deprecatedArgs):
         super(H2OXGBoost, self).__init__()
-        self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OXGBoost", self.uid)
 
         self._setDefault(modelId=None, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
@@ -267,7 +262,6 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                  interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None,
                  predictionCol="prediction", **deprecatedArgs):
         super(H2OGLM, self).__init__()
-        self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGLM", self.uid)
 
         self._setDefault(modelId=None, splitRatio=1.0, labelCol="label", weightCol=None,  featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
@@ -330,7 +324,6 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                  selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True,
                  predictionCol="prediction", **deprecatedArgs):
         super(H2OGridSearch, self).__init__()
-        self._hc = H2OContext.getOrCreate(SparkSession.builder.getOrCreate(), verbose=False)
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch", self.uid)
 
         self._setDefault(featuresCols=[], algo=None, splitRatio=1.0, hyperParameters={}, labelCol="label", weightCol=None, allStringColumnsToCategorical=True,
