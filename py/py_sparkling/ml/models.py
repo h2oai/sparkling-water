@@ -49,6 +49,9 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaH2OMLReadable):
     def getConvertUnknownCategoricalLevelsToNa(self):
         return self._java_obj.getConvertUnknownCategoricalLevelsToNa()
 
+    def getConvertInvalidNumbersToNa(self):
+        return self._java_obj.getConvertInvalidNumbersToNa()
+
     def getFeaturesCols(self):
         return list(self._java_obj.getFeaturesCols())
 
