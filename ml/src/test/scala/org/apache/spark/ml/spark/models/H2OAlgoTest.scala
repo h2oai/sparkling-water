@@ -36,19 +36,33 @@ class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", "mojo-test-local", conf = defaultSparkConf)
 
+  lazy val dataset = spark.read
+    .option("header", "true")
+    .option("inferSchema", "true")
+    .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+
+  test("Propagation of predictionCol settings") {
+
+    val predictionCol = "my_prediction_col_name"
+    val algo = new H2OGLM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+      .setPredictionCol(predictionCol)
+
+    val model = algo.fit(dataset)
+
+    model.transform(dataset).columns.contains(predictionCol)
+  }
+
   test("Test H2OGLM Pipeline") {
 
-    val dataset = spark.read
-      .option("header", "true")
-      .option("inferSchema", "true")
-      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
-
-      // Create GLM model
-     val algo = new H2OGLM()
-        .setSplitRatio(0.8)
-        .setSeed(1)
-        .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON")
-        .setLabelCol("AGE")
+    val algo = new H2OGLM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
 
     val pipeline = new Pipeline().setStages(Array(algo))
     pipeline.write.overwrite().save("ml/build/glm_pipeline")
@@ -78,7 +92,7 @@ class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
       .setModelId(modelId)
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA" , "VOL", "GLEASON")
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
 
     H2O.containsKey(Key.make(modelId)) shouldBe false
@@ -131,24 +145,24 @@ class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
 
 
   private def testGridSearch(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
-      val dataset = spark.read
-        .option("header", "true")
-        .option("inferSchema", "true")
-        .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    val dataset = spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
-      val stage = new H2OGridSearch()
-        .setLabelCol("AGE")
-        .setHyperParameters(hyperParams)
-        .setAlgo(algo)
+    val stage = new H2OGridSearch()
+      .setLabelCol("AGE")
+      .setHyperParameters(hyperParams)
+      .setAlgo(algo)
 
-      val pipeline = new Pipeline().setStages(Array(stage))
-      pipeline.write.overwrite().save("ml/build/grid_glm_pipeline")
-      val loadedPipeline = Pipeline.load("ml/build/grid_glm_pipeline")
-      val model = loadedPipeline.fit(dataset)
+    val pipeline = new Pipeline().setStages(Array(stage))
+    pipeline.write.overwrite().save("ml/build/grid_glm_pipeline")
+    val loadedPipeline = Pipeline.load("ml/build/grid_glm_pipeline")
+    val model = loadedPipeline.fit(dataset)
 
-      model.write.overwrite().save("ml/build/grid_glm_pipeline_model")
-      val loadedModel = PipelineModel.load("ml/build/grid_glm_pipeline_model")
+    model.write.overwrite().save("ml/build/grid_glm_pipeline_model")
+    val loadedModel = PipelineModel.load("ml/build/grid_glm_pipeline_model")
 
-      loadedModel.transform(dataset).count()
+    loadedModel.transform(dataset).count()
   }
 }
