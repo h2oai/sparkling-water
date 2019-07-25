@@ -32,8 +32,8 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                  nbinsTopLevel=1<<10, buildTreeOneNode=False, scoreTreeInterval=0,
                  sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                  learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=java_max_double_value,
-                 predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None,
-                 predictionCol="prediction", **deprecatedArgs):
+                 predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None, predictionCol="prediction",
+                 detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False, **deprecatedArgs):
         super(H2OGBM, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGBM", self.uid)
 
@@ -46,7 +46,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                          sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                          learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=_jvm().Double.MAX_VALUE,
                          predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None,
-                         predictionCol="prediction")
+                         predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
         kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
@@ -58,8 +58,8 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   nbinsTopLevel=1<<10, buildTreeOneNode=False, scoreTreeInterval=0,
                   sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                   learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=java_max_double_value,
-                  predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None,
-                  predictionCol="prediction", **deprecatedArgs):
+                  predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None, predictionCol="prediction",
+                  detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
         validateEnumValue(self._H2OAlgoCommonParams__getDistributionEnum(), kwargs, "distribution")
@@ -86,8 +86,8 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
     def __init__(self, modelId=None, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                  nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                  seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False,
-                 convertUnknownCategoricalLevelsToNa=False, foldCol=None,
-                 predictionCol="prediction", **deprecatedArgs):
+                 convertUnknownCategoricalLevelsToNa=False, foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
+                 withDetailedPredictionCol=False, **deprecatedArgs):
         super(H2ODeepLearning, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2ODeepLearning", self.uid)
 
@@ -95,7 +95,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                          nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                          seed=-1, distribution="AUTO",
                          epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False,
-                         foldCol=None, predictionCol="prediction")
+                         foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
         kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
@@ -103,7 +103,8 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
     def setParams(self, modelId=None, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                   nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                   seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False, convertUnknownCategoricalLevelsToNa=False,
-                  foldCol=None, predictionCol="prediction", **deprecatedArgs):
+                  foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+                  **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
         validateEnumValue(self._H2OAlgoCommonParams__getDistributionEnum(), kwargs, "distribution")
@@ -127,7 +128,8 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                  stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=True, seed=-1,
                  sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
                  keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0,
-                 predictionCol="prediction", **deprecatedArgs):
+                 predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+                 **deprecatedArgs):
         super(H2OAutoML, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OAutoML", self.uid)
 
@@ -136,7 +138,8 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                          stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5,
                          convertUnknownCategoricalLevelsToNa=True, seed=-1, sortMetric=None, balanceClasses=False,
                          classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
-                         keepCrossValidationModels=True, maxModels=0, predictionCol="prediction")
+                         keepCrossValidationModels=True, maxModels=0, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
+                         withDetailedPredictionCol=False)
         kwargs = get_input_kwargs(self)
 
         self.setParams(**kwargs)
@@ -146,7 +149,8 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                   weightCol=None, ignoredCols=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                   stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=True, seed=-1,
                   sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
-                  keepCrossValidationModels=True, maxModels=0, predictionCol="prediction", **deprecatedArgs):
+                  keepCrossValidationModels=True, maxModels=0, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
+                  withDetailedPredictionCol=False, **deprecatedArgs):
 
         kwargs = get_input_kwargs(self)
 
@@ -188,7 +192,8 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                  minSumHessianInLeaf=100.0, minDataInLeaf=0.0, treeMethod="auto", growPolicy="depthwise",
                  booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0, sampleType="uniform",
                  normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
-                 foldCol=None, predictionCol="prediction", **deprecatedArgs):
+                 foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
+                 withDetailedPredictionCol=False, **deprecatedArgs):
         super(H2OXGBoost, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OXGBoost", self.uid)
 
@@ -202,7 +207,8 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                          minSumHessianInLeaf=100.0, minDataInLeaf=0.0,
                          treeMethod="auto", growPolicy="depthwise", booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0,
                          sampleType="uniform", normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0,
-                         backend="auto", foldCol=None, predictionCol="prediction")
+                         backend="auto", foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
+                         withDetailedPredictionCol=False)
 
         kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
@@ -218,7 +224,8 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                   minSumHessianInLeaf=100.0, minDataInLeaf=0.0, treeMethod="auto", growPolicy="depthwise",
                   booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0, sampleType="uniform",
                   normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
-                  foldCol=None, predictionCol="prediction", **deprecatedArgs):
+                  foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
+                  withDetailedPredictionCol=False, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
         validateEnumValue(self._H2OAlgoCommonParams__getDistributionEnum(), kwargs, "distribution")
@@ -255,7 +262,8 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                  lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                  gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearCols=False,
                  interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None,
-                 predictionCol="prediction", **deprecatedArgs):
+                 predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+                 **deprecatedArgs):
         super(H2OGLM, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGLM", self.uid)
 
@@ -272,7 +280,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                          lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                          gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearCols=False,
                          interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None,
-                         predictionCol="prediction")
+                         predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
         kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
@@ -286,7 +294,8 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                   lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                   gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearCols=False,
                   interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None,
-                  predictionCol="prediction", **deprecatedArgs):
+                  predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+                  **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
         validateEnumValue(self._H2OAlgoCommonParams__getDistributionEnum(), kwargs, "distribution")
@@ -317,7 +326,8 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                  columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                  stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy="AUTO",
                  selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True,
-                 predictionCol="prediction", **deprecatedArgs):
+                 predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+                 **deprecatedArgs):
         super(H2OGridSearch, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch", self.uid)
 
@@ -327,7 +337,8 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                          stoppingRounds=0, stoppingTolerance=0.001,
                          stoppingMetric="AUTO", nfolds=0,
                          selectBestModelBy="AUTO", selectBestModelDecreasing=True, foldCol=None,
-                         convertUnknownCategoricalLevelsToNa=True, predictionCol="prediction")
+                         convertUnknownCategoricalLevelsToNa=True, predictionCol="prediction",
+                         detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
         kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
@@ -336,7 +347,8 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                   columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                   stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy="AUTO",
                   selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True,
-                  predictionCol="prediction", **deprecatedArgs):
+                  predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+                  **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
         validateEnumValue(self._H2OGridSearchParams__getStrategyEnum(), kwargs, "strategy")

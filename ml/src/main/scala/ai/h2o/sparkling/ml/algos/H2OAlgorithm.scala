@@ -63,6 +63,8 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
     val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
     val modelSettings = H2OMOJOSettings(
       predictionCol = getPredictionCol(),
+      detailedPredictionCol = getDetailedPredictionCol(),
+      withDetailedPredictionCol = getWithDetailedPredictionCol(),
       convertUnknownCategoricalLevelsToNa = getConvertUnknownCategoricalLevelsToNa(),
       convertInvalidNumbersToNa = getConvertInvalidNumbersToNa())
     H2OMOJOModel.createFromMojo(
