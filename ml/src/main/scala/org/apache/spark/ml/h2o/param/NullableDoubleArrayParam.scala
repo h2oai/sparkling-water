@@ -19,7 +19,7 @@ package org.apache.spark.ml.h2o.param
 import org.apache.spark.ml.param.{Param, ParamPair, Params}
 import org.json4s.JsonAST.JArray
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import org.json4s.{JDouble, JNull, JString}
+import org.json4s.{JDouble, JNull, JString, JValue}
 
 import scala.collection.JavaConverters._
 
@@ -38,16 +38,8 @@ class NullableDoubleArrayParam(parent: Params, name: String, doc: String, isVali
       compact(render(JNull))
     } else {
       import org.json4s.JsonDSL._
-      compact(render(value.toSeq.map {
-        case v if v.isNaN =>
-          JString("NaN")
-        case Double.NegativeInfinity =>
-          JString("-Inf")
-        case Double.PositiveInfinity =>
-          JString("Inf")
-        case v =>
-          JDouble(v)
-      }))
+      val a = value.toSeq.map(v => DoubleParam.jValueDecode(v))
+      compact(render(a))
     }
   }
 
@@ -56,20 +48,41 @@ class NullableDoubleArrayParam(parent: Params, name: String, doc: String, isVali
       case JNull =>
         null
       case JArray(values) =>
-        values.map {
-          case JString("NaN") =>
-            Double.NaN
-          case JString("-Inf") =>
-            Double.NegativeInfinity
-          case JString("Inf") =>
-            Double.PositiveInfinity
-          case JDouble(x) =>
-            x
-          case jValue =>
-            throw new IllegalArgumentException(s"Cannot decode $jValue to Double.")
-        }.toArray
+        values.map(DoubleParam.jValueDecode).toArray
       case _ =>
         throw new IllegalArgumentException(s"Cannot decode $json to Array[Double].")
+    }
+  }
+}
+
+object DoubleParam {
+  /** Encodes a param value into JValue. */
+  def jValueEncode(value: Double): JValue = {
+    value match {
+      case _ if value.isNaN =>
+        JString("NaN")
+      case Double.NegativeInfinity =>
+        JString("-Inf")
+      case Double.PositiveInfinity =>
+        JString("Inf")
+      case _ =>
+        JDouble(value)
+    }
+  }
+
+  /** Decodes a param value from JValue. */
+  def jValueDecode(jValue: JValue): Double = {
+    jValue match {
+      case JString("NaN") =>
+        Double.NaN
+      case JString("-Inf") =>
+        Double.NegativeInfinity
+      case JString("Inf") =>
+        Double.PositiveInfinity
+      case JDouble(x) =>
+        x
+      case _ =>
+        throw new IllegalArgumentException(s"Cannot decode $jValue to Double.")
     }
   }
 }
