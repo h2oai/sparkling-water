@@ -156,7 +156,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val baseDf = applyPredictionUdf(getPredictionCol(), dataset, _ => getModelUdf())
+    val baseDf = applyPredictionUdf(getDetailedPredictionCol(), dataset, _ => getModelUdf())
 
     val withPredictionDf = easyPredictModelWrapper.getModelCategory match {
       case ModelCategory.Clustering =>
