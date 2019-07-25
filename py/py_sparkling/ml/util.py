@@ -24,6 +24,12 @@ def arrayToDoubleArray(param, kwargs):
     if param in kwargs and kwargs[param] is not None:
         kwargs[param] = list(map(float, kwargs[param]))
 
+def set_double_values(kwargs, values):
+    for v in values:
+        if v in kwargs:
+            kwargs[v] = float(kwargs[v])
+
+
 class JavaH2OMLReadable(MLReadable):
     """
     Special version of JavaMLReadable to be able to load pipelines exported together with H2O pipeline stages
