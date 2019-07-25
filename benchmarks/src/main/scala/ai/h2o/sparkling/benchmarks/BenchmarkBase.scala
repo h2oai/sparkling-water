@@ -19,8 +19,9 @@ package ai.h2o.sparkling.benchmarks
 
 import java.io.{OutputStream, PrintWriter}
 
+import ai.h2o.sparkling.ml.algos.H2OAlgorithm
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.h2o.algos.{H2OAlgorithm, H2OGBM, H2OGLM}
+import org.apache.spark.ml.h2o.algos.{H2OGBM, H2OGLM}
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable.ArrayBuffer

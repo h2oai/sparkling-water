@@ -20,7 +20,7 @@ import java.lang.reflect.Field
 import java.util
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
-import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
+import ai.h2o.sparkling.ml.algos.{H2OAlgoCommonUtils, H2OSupervisedAlgorithm}
 import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OCommonSupervisedParams}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
@@ -448,7 +448,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   // Setters
   //
 
-  def setAlgo(value: H2OAlgorithm[_, _, _ <: Model.Parameters]): this.type = {
+  def setAlgo(value: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): this.type = {
     val field = PojoUtils.getFieldEvenInherited(value, "parameters")
     field.setAccessible(true)
     val algoParams = field.get(value).asInstanceOf[Model.Parameters]
