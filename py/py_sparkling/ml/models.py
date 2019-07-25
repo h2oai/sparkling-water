@@ -19,7 +19,7 @@ class H2OMOJOSettings(JavaWrapper):
                  namedMojoOutputColumns=True):
         assert_is_type(predictionCol, str)
         assert_is_type(detailedPredictionCol, str)
-        assert_is_type(withDetailedPredictionCol, str)
+        assert_is_type(withDetailedPredictionCol, bool)
         assert_is_type(convertUnknownCategoricalLevelsToNa, bool)
         assert_is_type(convertInvalidNumbersToNa, bool)
         assert_is_type(namedMojoOutputColumns, bool)
