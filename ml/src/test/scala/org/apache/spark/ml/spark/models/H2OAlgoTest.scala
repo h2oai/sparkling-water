@@ -53,7 +53,7 @@ class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
 
     val model = algo.fit(dataset)
 
-    model.transform(dataset).columns.contains(predictionCol)
+    assert(model.transform(dataset).columns.contains(predictionCol))
   }
 
   test("Test H2OGLM Pipeline") {
