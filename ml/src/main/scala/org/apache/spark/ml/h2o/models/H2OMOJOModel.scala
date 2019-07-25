@@ -166,7 +166,6 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
         // We can deprecate that and slowly migrate to solution where prediction contains
         // always single value
         baseDf.withColumn(getPredictionCol(), col(getDetailedPredictionCol()))
-
     }
 
     if (getWithDetailedPredictionCol()) {
