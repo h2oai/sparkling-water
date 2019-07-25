@@ -55,7 +55,8 @@ class H2OConfTest(unittest.TestCase):
                sampleRate=1.0, sampleRatePerClass=None, colSampleRateChangePerLevel=1.0, colSampleRatePerTree=1.0,
                learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=1,
                predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None,
-               predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
+               predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+               convertInvalidNumbersToNa=False)
 
         self.assertEquals(gbm.getModelId(), None)
         self.assertEquals(gbm.getSplitRatio(), 1.0)
@@ -95,13 +96,15 @@ class H2OConfTest(unittest.TestCase):
         self.assertEquals(gbm.getPredictionCol(), "prediction")
         self.assertEquals(gbm.getDetailedPredictionCol(), "detailed_prediction")
         self.assertEquals(gbm.getWithDetailedPredictionCol(), False)
+        self.assertEquals(gbm.getConvertInvalidNumbersToNa(), False)
 
     def test_dl_params(self):
         dl = H2ODeepLearning(modelId=None, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
                              nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                              seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False,
                              convertUnknownCategoricalLevelsToNa=False, foldCol=None,
-                             predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
+                             predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+                             convertInvalidNumbersToNa=False)
 
         self.assertEquals(dl.getModelId(), None)
         self.assertEquals(dl.getSplitRatio(), 1.0)
@@ -126,6 +129,7 @@ class H2OConfTest(unittest.TestCase):
         self.assertEquals(dl.getPredictionCol(), "prediction")
         self.assertEquals(dl.getDetailedPredictionCol(), "detailed_prediction")
         self.assertEquals(dl.getWithDetailedPredictionCol(), False)
+        self.assertEquals(dl.getConvertInvalidNumbersToNa(), False)
 
     def test_automl_params(self):
         automl = H2OAutoML(featuresCols=[], labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], splitRatio=1.0, foldCol=None,
@@ -133,7 +137,8 @@ class H2OConfTest(unittest.TestCase):
                            stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=True, seed=-1,
                            sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
                            keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0,
-                           predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
+                           predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+                           convertInvalidNumbersToNa=False)
 
         self.assertEquals(automl.getFeaturesCols(), [])
         self.assertEquals(automl.getLabelCol(), "label")
@@ -163,6 +168,7 @@ class H2OConfTest(unittest.TestCase):
         self.assertEquals(automl.getPredictionCol(), "prediction")
         self.assertEquals(automl.getDetailedPredictionCol(), "detailed_prediction")
         self.assertEquals(automl.getWithDetailedPredictionCol(), False)
+        self.assertEquals(automl.getConvertInvalidNumbersToNa(), False)
 
     def test_xgboost_params(self):
         xgboost = H2OXGBoost(modelId=None, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
@@ -175,7 +181,8 @@ class H2OConfTest(unittest.TestCase):
                              minSumHessianInLeaf=100.0, minDataInLeaf=0.0, treeMethod="auto", growPolicy="depthwise",
                              booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0, sampleType="uniform",
                              normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
-                             foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
+                             foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+                             convertInvalidNumbersToNa=False)
 
 
         self.assertEquals(xgboost.getModelId(), None)
@@ -236,6 +243,7 @@ class H2OConfTest(unittest.TestCase):
         self.assertEquals(xgboost.getPredictionCol(), "prediction")
         self.assertEquals(xgboost.getDetailedPredictionCol(), "detailed_prediction")
         self.assertEquals(xgboost.getWithDetailedPredictionCol(), False)
+        self.assertEquals(xgboost.getConvertInvalidNumbersToNa(), False)
 
     def test_glm_params(self):
         glm = H2OGLM(modelId=None, splitRatio=1.0, labelCol="label", weightCol=None, featuresCols=[], allStringColumnsToCategorical=True, columnsToCategorical=[],
@@ -247,7 +255,8 @@ class H2OConfTest(unittest.TestCase):
                      lambdaMinRatio=-1.0,maxIterations=-1, intercept=True, betaEpsilon=1e-4, objectiveEpsilon=-1.0,
                      gradientEpsilon=-1.0, objReg=-1.0, computePValues=False, removeCollinearCols=False,
                      interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None,
-                     predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
+                     predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+                     convertInvalidNumbersToNa=False)
 
         self.assertEquals(glm.getModelId(), None)
         self.assertEquals(glm.getSplitRatio(), 1.0)
@@ -293,13 +302,15 @@ class H2OConfTest(unittest.TestCase):
         self.assertEquals(glm.getPredictionCol(), "prediction")
         self.assertEquals(glm.getDetailedPredictionCol(), "detailed_prediction")
         self.assertEquals(glm.getWithDetailedPredictionCol(), False)
+        self.assertEquals(glm.getConvertInvalidNumbersToNa(), False)
 
     def test_grid_params(self):
         grid = H2OGridSearch(featuresCols=[], algo=None, splitRatio=1.0, hyperParameters={}, labelCol="label", weightCol=None, allStringColumnsToCategorical=True,
                              columnsToCategorical=[], strategy="Cartesian", maxRuntimeSecs=0.0, maxModels=0, seed=-1,
                              stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy="AUTO",
                              selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True,
-                             predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False)
+                             predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
+                             convertInvalidNumbersToNa=False)
 
         self.assertEquals(grid.getFeaturesCols(), [])
         self.assertEquals(grid.getSplitRatio(), 1.0)
@@ -323,6 +334,8 @@ class H2OConfTest(unittest.TestCase):
         self.assertEquals(grid.getPredictionCol(), "prediction")
         self.assertEquals(grid.getDetailedPredictionCol(), "detailed_prediction")
         self.assertEquals(grid.getWithDetailedPredictionCol(), False)
+        self.assertEquals(grid.getConvertInvalidNumbersToNa(), False)
+
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([H2OConfTest], file_name="py_unit_tests_conf_report")
