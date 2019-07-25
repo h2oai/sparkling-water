@@ -22,7 +22,7 @@ def validateEnumValues(enumClass, kwargs, name, nullEnabled=False):
 
 def arrayToDoubleArray(param, kwargs):
     if param in kwargs and kwargs[param] is not None:
-        kwargs[param] = map(float, kwargs[param])
+        kwargs[param] = list(map(float, kwargs[param]))
 
 class JavaH2OMLReadable(MLReadable):
     """
