@@ -220,6 +220,8 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     model.set(model.modelDetails -> getModelDetails(mojoData))
     model.set(model.predictionCol -> settings.predictionCol)
+    model.set(model.detailedPredictionCol -> settings.detailedPredictionCol)
+    model.set(model.withDetailedPredictionCol -> settings.withDetailedPredictionCol)
     model.setMojoData(mojoData)
     model
   }
