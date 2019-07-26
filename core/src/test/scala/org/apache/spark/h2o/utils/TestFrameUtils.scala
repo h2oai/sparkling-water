@@ -91,6 +91,8 @@ object TestFrameUtils extends Matchers {
   }
 
   def assertDataFramesAreIdentical(expected: DataFrame, produced: DataFrame): Unit = {
+    expected.cache()
+    produced.cache()
     val expectedCount = expected.count()
     val producedCount = produced.count()
     assert(
