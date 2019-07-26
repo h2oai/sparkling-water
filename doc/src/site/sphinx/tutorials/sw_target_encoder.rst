@@ -149,7 +149,7 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
 
         .. code:: scala
 
-            import ai.h2o.sparkling.features.ml.H2OTargetEncoder
+            import ai.h2o.sparkling.ml.features.H2OTargetEncoder
             val targetEncoder = new H2OTargetEncoder()
               .setInputCols(Array("RACE", "DPROS", "DCAPS"))
               .setLabelCol("CAPSULE")
@@ -169,13 +169,13 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
 
         .. code:: scala
 
-            val pipelineModel = pipeline.fit(trainingDataset)
+            val pipelineModel = pipeline.fit(trainingDF)
 
         Make predictions including a model of Target Encoder:
 
         .. code:: scala
 
-            pipelineModel.transform(testingDataset).show()
+            pipelineModel.transform(testingDF).show()
 
         The model of Target Encoder is persistable to MOJO, so you can save and load the whole pipeline model:
 
@@ -184,7 +184,7 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
             import org.apache.spark.ml.PipelineModel
             pipelineModel.write.save("somePathForStoringPipelineModel")
             val loadedPipelineModel = PipelineModel.load("somePathForStoringPipelineModel")
-            loadedModel.transform(testingDataset).show()
+            loadedPipelineModel.transform(testingDF).show()
 
     .. tab-container:: Python
         :title: Python
@@ -194,8 +194,8 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
         .. code:: python
 
             from pysparkling.ml import H2OTargetEncoder
-            targetEncoder = new H2OTargetEncoder()\
-              .setInputCols(Array("RACE", "DPROS", "DCAPS"))\
+            targetEncoder = H2OTargetEncoder()\
+              .setInputCols(["RACE", "DPROS", "DCAPS"])\
               .setLabelCol("CAPSULE")
 
         Also create an instance of an algorithm consuming encoded columns and define pipeline:
@@ -213,22 +213,22 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
 
         .. code:: python
 
-            pipelineModel = pipeline.fit(trainingDataset)
+            pipelineModel = pipeline.fit(trainingDF)
 
         Make predictions including a model of Target Encoder:
 
         .. code:: python
 
-            pipelineModel.transform(testingDataset).show()
+            pipelineModel.transform(testingDF).show()
 
         The model of Target Encoder is persistable to MOJO, so you can save and load the whole pipeline model:
 
         .. code:: python
 
             from pyspark.ml import PipelineModel
-            pipelineModel.write.save("somePathForStoringPipelineModel")
+            pipelineModel.save("somePathForStoringPipelineModel")
             loadedPipelineModel = PipelineModel.load("somePathForStoringPipelineModel")
-            loadedModel.transform(testingDataset).show()
+            loadedPipelineModel.transform(testingDF).show()
 
 
 Standalone Target Encoder
