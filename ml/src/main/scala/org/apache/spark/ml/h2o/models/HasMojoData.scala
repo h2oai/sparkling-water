@@ -23,10 +23,9 @@ import org.apache.spark.sql.SparkSession
 private[models] trait HasMojoData {
 
   // Called during init of the model
-   def setMojoData(mojoData : Array[Byte]): this.type = {
+   def setMojoData(mojoData : Array[Byte]): Unit = {
     this.mojoData = mojoData
     broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(this.mojoData)
-    this
   }
 
   protected def getMojoData(): Array[Byte] = broadcastMojo.value
