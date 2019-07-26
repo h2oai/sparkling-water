@@ -15,12 +15,11 @@
 # limitations under the License.
 #
 
-from pyspark.ml.util import JavaMLWritable
+from pyspark.ml.util import JavaMLWritable, JavaMLReadable
 from pyspark.ml.wrapper import JavaModel
 
 from ai.h2o.sparkling.ml.params import H2OTargetEncoderParams
-from py_sparkling.ml.util import JavaH2OMLReadable
 
 
-class H2OTargetEncoderMojoModel(H2OTargetEncoderParams, JavaModel, JavaMLWritable, JavaH2OMLReadable):
+class H2OTargetEncoderMojoModel(H2OTargetEncoderParams, JavaModel, JavaMLWritable, JavaMLReadable):
     pass
