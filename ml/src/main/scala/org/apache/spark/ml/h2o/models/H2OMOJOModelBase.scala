@@ -18,18 +18,20 @@
 package org.apache.spark.ml.h2o.models
 
 import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.h2o.converters.RowConverter
+import org.apache.spark.h2o.utils.{DatasetShape, H2OSchemaUtils}
 import org.apache.spark.ml.h2o.param.H2OMOJOModelParams
+import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.types.{StructField, StructType}
 import org.apache.spark.ml.{Model => SparkModel}
+import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.sql.functions._
 
-abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]] extends SparkModel[T]
-  with H2OMOJOModelParams with HasMojoData with H2OMOJOWritable with H2OMOJOFlattenedInput {
+abstract class H2OMOJOModelBase[T <: SparkModel[T]]
+  extends SparkModel[T] with H2OMOJOModelParams with MLWritable with HasMojoData {
 
   protected def getPredictionSchema(): Seq[StructField]
-
-  override protected def inputColumnNames: Array[String] = getFeaturesCols()
-
-  override protected def outputColumnName: String = getPredictionCol()
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
@@ -37,5 +39,35 @@ abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]] extends SparkModel[T]
     // in theory user can pass invalid schema with missing columns
     // and model will be able to still provide a prediction
     StructType(schema.fields ++ getPredictionSchema())
+  }
+
+  override def write: MLWriter = new H2OMOJOWriter(this, getMojoData)
+
+  protected def applyPredictionUdf(
+      predictionCol: String,
+      dataset: Dataset[_],
+      udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
+    val originalDF = dataset.toDF()
+    H2OSchemaUtils.getDatasetShape(dataset.schema) match {
+      case DatasetShape.Flat => applyPredictionUdfToFlatDataFrame(predictionCol, originalDF, udfConstructor, getFeaturesCols())
+      case DatasetShape.StructsOnly | DatasetShape.Nested =>
+        val flattenedDF = H2OSchemaUtils.appendFlattenedStructsToDataFrame(originalDF, RowConverter.temporaryColumnPrefix)
+        val features = getFeaturesCols() ++ getFeaturesCols().map(s => RowConverter.temporaryColumnPrefix + "." + s)
+        val flatWithPredictionsDF = applyPredictionUdfToFlatDataFrame(predictionCol, flattenedDF, udfConstructor, features)
+        flatWithPredictionsDF.schema.foldLeft(flatWithPredictionsDF) { (df, field) =>
+          if (field.name.startsWith(RowConverter.temporaryColumnPrefix)) df.drop(field.name) else df
+        }
+    }
+  }
+
+  private def applyPredictionUdfToFlatDataFrame(
+      predictionCol: String,
+      flatDataFrame: DataFrame,
+      udfConstructor: Array[String] => UserDefinedFunction,
+      features: Array[String]): DataFrame = {
+    val relevantColumnNames = flatDataFrame.columns.intersect(features)
+    val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
+    val udf = udfConstructor(relevantColumnNames)
+    flatDataFrame.withColumn(predictionCol, udf(struct(args: _*)))
   }
 }
