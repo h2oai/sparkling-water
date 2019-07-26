@@ -53,7 +53,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
   private lazy val Array(trainingDataset, testingDataset) = dataset.randomSplit(Array(0.8, 0.2), 1234L).map(_.cache())
   private lazy val expectedTestingDataset = loadDataFrameFromCsvAsResource("/target_encoder/testing_dataset_transformed.csv").cache()
 
-  test("The pipeline with a target encoder transform training and testing dataset without an exception") {
+  test("A pipeline with a target encoder transform training and testing dataset without an exception") {
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")

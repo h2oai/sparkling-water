@@ -41,16 +41,17 @@ class H2OTargetEncoderTestSuite(unittest.TestCase):
         [cls._trainingDataset, cls._testingDataset] = dataset.randomSplit([0.8, 0.2], 1)
 
 
-    def assertTargetEncoderAndMOJOModelParamsAreEqual(self, targetEncoder, mojoModel):
-        assert targetEncoder.getFoldCol() == mojoModel.getFoldCol()
-        assert targetEncoder.getLabelCol() == mojoModel.getLabelCol()
-        assert targetEncoder.getInputCols() == mojoModel.getInputCols()
-        assert targetEncoder.getHoldoutStrategy() == mojoModel.getHoldoutStrategy()
-        assert targetEncoder.getBlendedAvgEnabled() == mojoModel.getBlendedAvgEnabled()
-        assert targetEncoder.getBlendedAvgInflectionPoint() == mojoModel.getBlendedAvgInflectionPoint()
-        assert targetEncoder.getBlendedAvgSmoothing() == mojoModel.getBlendedAvgSmoothing()
-        assert targetEncoder.getNoise() == mojoModel.getNoise()
-        assert targetEncoder.getNoiseSeed() == mojoModel.getNoiseSeed()
+    def assertTargetEncoderAndMOJOModelParamsAreEqual(self, expected, produced):
+        assert expected.getFoldCol() == produced.getFoldCol()
+        assert expected.getLabelCol() == produced.getLabelCol()
+        assert expected.getInputCols() == produced.getInputCols()
+        assert expected.getOutputCols() == produced.getOutputCols()
+        assert expected.getHoldoutStrategy() == produced.getHoldoutStrategy()
+        assert expected.getBlendedAvgEnabled() == produced.getBlendedAvgEnabled()
+        assert expected.getBlendedAvgInflectionPoint() == produced.getBlendedAvgInflectionPoint()
+        assert expected.getBlendedAvgSmoothing() == produced.getBlendedAvgSmoothing()
+        assert expected.getNoise() == produced.getNoise()
+        assert expected.getNoiseSeed() == produced.getNoiseSeed()
 
 
     def testTargetEncoderConstructorParametersGetPropagatedToLoadedMOJOModel(self):
@@ -64,6 +65,24 @@ class H2OTargetEncoderTestSuite(unittest.TestCase):
         mojoModel = loadedModel.stages[0]
 
         self.assertTargetEncoderAndMOJOModelParamsAreEqual(targetEncoder, mojoModel)
+
+
+    def testPipelineWithTargetEncoderIsSerializable(self):
+        targetEncoder = H2OTargetEncoder(foldCol="ID", labelCol="CAPSULE", inputCols=["RACE", "DPROS", "DCAPS"], holdoutStrategy = "KFold",
+                                         blendedAvgEnabled=True, blendedAvgInflectionPoint=15.0, blendedAvgSmoothing=25.0, noise=0.05, noiseSeed=123)
+        gbm = H2OGBM()\
+            .setLabelCol("CAPSULE")\
+            .setFeaturesCols(targetEncoder.getOutputCols())
+        pipeline = Pipeline(stages=[targetEncoder, gbm])
+        path = "file://" + os.path.abspath("build/testPipelineWithTargetEncoderIsSerializable")
+        pipeline.write().overwrite().save(path)
+        loadedPipeline = Pipeline.load(path)
+        loadedTargetEncoder = loadedPipeline.stages[0]
+        loadedGbm = loadedPipeline.stages[1]
+
+        self.assertTargetEncoderAndMOJOModelParamsAreEqual(targetEncoder, loadedTargetEncoder)
+        assert gbm.getLabelCol() == loadedGbm.getLabelCol()
+        assert gbm.getFeaturesCols() == loadedGbm.getFeaturesCols()
 
 
     def testTargetEncoderSetterParametersGetPropagatedToLoadedMOJOModel(self):
