@@ -241,13 +241,12 @@ When Target Encoder is inside ML pipeline, the differentiation is done automatic
 an algorithm without ML pipeline, the 'transformTrainingDataset' method should be on the model of Target Encoder to get
 appropriate results.
 
-Supported Edge Cases
-~~~~~~~~~~~~~~~~~~~~~~~~~
-- `null` values are treated as regular categories and are encoded the same way as other categorical values.
-- When an input column of a testing/production data set contains a value that wasn't present in the training dataset,
-  the prior average will be used as an output value. The statement also holds for ``null`` values.
 
-Limitations
-~~~~~~~~~~~~~~~~~~~~~~~~~
-- Target Encoder in Sparkling Water supports only label columns with two unique categorical values.
-- `null` is not allowed to be a value of the label column.
+Limitations and Edge Cases
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- The label column can't contain more than two unique categorical values.
+- The label column can't contain any ``null`` values.
+- Input columns transformed by Target Encoder can contain ``null`` values.
+- Novel values in a testing/production data set and ``null`` values belong to the same category. In other words,
+  Target Encoder returns a prior average for all novel values in case a given column of the training dataset
+  did not contain any ``null`` values. Otherwise, the posterior average of rows having ``null`` values in the column is returned.
