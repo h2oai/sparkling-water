@@ -15,22 +15,10 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package org.apache.spark.sql
 
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.SparkSession
-
-private[models] trait HasMojoData {
-
-  // Called during init of the model
-   def setMojoData(mojoData : Array[Byte]): this.type = {
-    this.mojoData = mojoData
-    broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(this.mojoData)
-    this
+object DatasetExtensions {
+  implicit class DatasetWrapper(dataset: Dataset[_]) {
+    def withColumns(colNames: Seq[String], cols: Seq[Column]): DataFrame = dataset.withColumns(colNames, cols)
   }
-
-  protected def getMojoData(): Array[Byte] = broadcastMojo.value
-
-  @transient private var mojoData: Array[Byte] = _
-  private var broadcastMojo: Broadcast[Array[Byte]] = _
 }
