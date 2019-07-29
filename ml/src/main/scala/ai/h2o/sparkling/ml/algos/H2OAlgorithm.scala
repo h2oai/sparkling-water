@@ -49,13 +49,7 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
     parameters._valid = valid.map(_._key).orNull
 
     val trainFrame = parameters._train.get()
-    if (getAllStringColumnsToCategorical()) {
-      H2OFrameSupport.allStringVecToCategorical(trainFrame)
-    }
-    H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
-
     preProcessBeforeFit(trainFrame)
-
     water.DKV.put(trainFrame)
     
     // Train
