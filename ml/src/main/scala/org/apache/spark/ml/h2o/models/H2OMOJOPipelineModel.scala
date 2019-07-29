@@ -183,7 +183,6 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
 }
 
 object H2OMOJOPipelineModel extends H2OMOJOReadable[PyH2OMOJOPipelineModel] with H2OMOJOLoader[PyH2OMOJOPipelineModel] {
-
   override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): PyH2OMOJOPipelineModel = {
     val model = new PyH2OMOJOPipelineModel(uid)
     val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
