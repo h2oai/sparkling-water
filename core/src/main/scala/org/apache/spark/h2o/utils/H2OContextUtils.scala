@@ -17,18 +17,15 @@
 
 package org.apache.spark.h2o.utils
 
-import java.io.File
 import java.net.URI
-import java.text.SimpleDateFormat
-import java.util.Date
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{BuildInfo, H2OConf}
 import water.H2O
+import water.api.ImportHiveTableHandler
 import water.api.ImportHiveTableHandler.HiveTableImporter
-import water.api.{ImportHiveTableHandler, RequestServer}
 import water.fvec.Frame
-import water.util.{GetLogsFromNode, Log, LogArchiveContainer, StringUtils}
+import water.util.{Log, LogArchiveContainer}
 
 import scala.language.postfixOps
 
@@ -92,79 +89,23 @@ private[spark] trait H2OContextUtils extends Logging {
     }
   }
 
-  private def getLogsFromWorkers(logContainer: LogArchiveContainer): Array[Array[Byte]] = {
-    H2O.CLOUD.members.zipWithIndex.map { case (node, i) =>
-      try {
-        if (node.isHealthy) {
-          val g = new GetLogsFromNode(i, logContainer)
-          g.doIt()
-          g.bytes
-        } else {
-          StringUtils.bytesOf("Node not healthy")
-        }
-      }
-      catch {
-        case e: Exception => StringUtils.toBytes(e);
-      }
-    }
-  }
-
-  private def getLogsFromClient(logContainer: LogArchiveContainer): Array[Byte] = {
-    if (H2O.ARGS.client) {
-      try {
-        val g = new GetLogsFromNode(-1, logContainer)
-        g.doIt()
-        g.bytes
-      } catch {
-        case e: Exception =>
-          StringUtils.toBytes(e)
-      }
-    } else {
-      null
-    }
-  }
-
   /**
     * @param destination directory where the logs will be downloaded
     */
   def downloadH2OLogs(destination: URI, logContainer: LogArchiveContainer): URI = {
-    val workersLogs = getLogsFromWorkers(logContainer)
-    val clientLogs = getLogsFromClient(logContainer)
-    val outputFileStem = "h2ologs_" + new SimpleDateFormat("yyyyMMdd_hhmmss").format(new Date)
-
-    val finalArchiveByteArray = try {
-      val method = classOf[RequestServer].getDeclaredMethod("archiveLogs", classOf[LogArchiveContainer],
-        classOf[Date], classOf[Array[Array[Byte]]], classOf[Array[Byte]], classOf[String])
-      method.setAccessible(true)
-      val res = method.invoke(null, logContainer, new Date, workersLogs, clientLogs, outputFileStem)
-      res.asInstanceOf[Array[Byte]]
-    } catch {
-      case e: Exception => StringUtils.toBytes(e)
-    }
-
-    import java.io.FileOutputStream
-    val destinationFile = new File(destination.toString, outputFileStem + "." + logContainer.getFileExtension)
-    val outputStream = new FileOutputStream(destinationFile)
-    try {
-      outputStream.write(finalArchiveByteArray)
-    }
-    finally {
-      outputStream.close()
-    }
-    destinationFile.toURI
+    H2O.downloadLogs(destination, logContainer)
   }
 
   def downloadH2OLogs(destination: URI, logContainer: String): URI = {
-    downloadH2OLogs(destination, LogArchiveContainer.valueOf(logContainer))
+    H2O.downloadLogs(destination, logContainer)
   }
 
-  def downloadH2OLogs(destination: String, logArchiveContainer: LogArchiveContainer): String = {
-    downloadH2OLogs(new URI(destination), logArchiveContainer)
-    destination
+  def downloadH2OLogs(destination: String, logContainer: LogArchiveContainer): String = {
+    H2O.downloadLogs(destination, logContainer).toString
   }
 
   def downloadH2OLogs(destination: String, logContainer: String = "ZIP"): String = {
-    downloadH2OLogs(destination, LogArchiveContainer.valueOf(logContainer))
+    H2O.downloadLogs(destination, logContainer).toString
   }
 
   def importHiveTable(database: String = HiveTableImporter.DEFAULT_DATABASE, table: String,
