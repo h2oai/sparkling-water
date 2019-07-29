@@ -18,6 +18,7 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.params.H2OCommonParams
 import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{Dataset, SparkSession}
 import water.Key
@@ -25,13 +26,21 @@ import water.fvec.Frame
 import water.support.H2OFrameSupport
 
 trait H2OAlgoCommonUtils extends H2OCommonParams {
+
   protected def prepareDatasetForFitting(dataset: Dataset[_]): (Frame, Option[Frame]) = {
     val excludedCols = getExcludedCols()
 
-    // if this is left empty select
     if ($(featuresCols).isEmpty) {
       val features = dataset.columns.filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
       setFeaturesCols(features)
+    } else {
+      val missingColumns = getFeaturesCols()
+        .filterNot(col => dataset.columns.contains(col))
+
+      if (missingColumns.nonEmpty) {
+        throw new IllegalArgumentException("The following feature columns are not available on" +
+          s" the training dataset: '${missingColumns.mkString(", ")}'")
+      }
     }
 
     val cols = (getFeaturesCols() ++ excludedCols).map(col)
