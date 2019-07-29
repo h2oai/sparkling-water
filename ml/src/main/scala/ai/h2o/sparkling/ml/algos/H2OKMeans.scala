@@ -124,6 +124,4 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
     parameters._estimate_k = getEstimateK()
     parameters._k = getK()
   }
-
 }
-
