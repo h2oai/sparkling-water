@@ -29,8 +29,9 @@ trait H2OFrameSupport extends JoinSupport {
   /**
     * Split & Shuffle H2O Frame into multiple frames according to specified ratios. The output keys need to be specified
     * in advance. The order of the data is not kept.
-    * @param fr frame to split
-    * @param keys output keys
+    *
+    * @param fr     frame to split
+    * @param keys   output keys
     * @param ratios output ratios
     * @tparam T H2O Frame Type
     * @return array of frames
@@ -44,8 +45,9 @@ trait H2OFrameSupport extends JoinSupport {
   /**
     * Split H2O Frame into multiple frames according to specified ratios. The output keys need to be specified
     * in advance. This method keeps the order of the data
-    * @param fr frame to split
-    * @param keys output keys
+    *
+    * @param fr     frame to split
+    * @param keys   output keys
     * @param ratios output ratios
     * @tparam T H2O Frame Type
     * @return array of frames
@@ -61,8 +63,9 @@ trait H2OFrameSupport extends JoinSupport {
   /**
     * This method should be used whenever the Frame needs to be updated. This method ensures to use proper
     * locking mechanism.
+    *
     * @param fr frame to update
-    * @param f function to run on the frame
+    * @param f  function to run on the frame
     * @tparam T H2O Frame Type
     * @return returns the updated frame
     */
@@ -77,6 +80,7 @@ trait H2OFrameSupport extends JoinSupport {
 
   /**
     * Update the frame in DKV
+    *
     * @param fr frame to update
     * @tparam T type of H2O frame
     * @return returns updated frame
@@ -95,40 +99,41 @@ trait H2OFrameSupport extends JoinSupport {
   /**
     * Convert all strings to categorical/enum values inside the given Frame.
     *
-    * Call fr.update() after it if you already have a lock or
-    * consider calling it inside withLockAndUpdate method which obtains the lock, updates the frame and releases the lock
-    *
     * @param fr frame to update
     * @tparam T H2O Frame type
     * @return frame with string columns replaced by categoricals
     */
   def allStringVecToCategorical[T <: Frame](fr: T): T = {
-    fr.vecs().indices
-      .filter(idx => fr.vec(idx).isString)
-      .foreach(idx => fr.replace(idx, fr.vec(idx).toCategoricalVec).remove())
-    fr
+    withLockAndUpdate(fr) { fr =>
+      fr.vecs().indices
+        .filter(idx => fr.vec(idx).isString)
+        .foreach(idx => fr.replace(idx, fr.vec(idx).toCategoricalVec).remove())
+    }
   }
 
   /**
     * Convert specific columns to categoricals
-    * @param fr frame to update
+    *
+    * @param fr         frame to update
     * @param colIndices indices of the columns to turn into categoricals
     * @tparam T H2O Frame type
     * @return frame with specified columns replaced by categoricals
     */
   def columnsToCategorical[T <: Frame](fr: T, colIndices: Array[Int]): T = {
-    colIndices.foreach(idx => fr.replace(idx, fr.vec(idx).toCategoricalVec).remove())
-    fr
+    withLockAndUpdate(fr) { fr =>
+      colIndices.foreach(idx => fr.replace(idx, fr.vec(idx).toCategoricalVec).remove())
+    }
   }
 
   /**
     * Convert specific columns to categoricals
-    * @param fr frame to update
+    *
+    * @param fr       frame to update
     * @param colNames indices of the columns to turn into categoricals
     * @tparam T H2O Frame type
     * @return frame with specified columns replaced by categoricals
     */
-  def columnsToCategorical[T <: Frame](fr: T, colNames: Array[String]): T  = {
+  def columnsToCategorical[T <: Frame](fr: T, colNames: Array[String]): T = {
     columnsToCategorical(fr, colNames.map(fr.names().indexOf(_)))
   }
 }
