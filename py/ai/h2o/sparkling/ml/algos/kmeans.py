@@ -104,7 +104,7 @@ class H2OKMeans(H2OKMeansParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
                  init="Furthest",
                  userPoints=None,
                  estimateK=False,
-                 k=1,
+                 k=2,
                  **deprecatedArgs):
         super(H2OKMeans, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OKMeans", self.uid)
@@ -133,7 +133,7 @@ class H2OKMeans(H2OKMeansParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
             init="Furthest",
             userPoints=None,
             estimateK=False,
-            k=1)
+            k=2)
         kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
@@ -162,7 +162,7 @@ class H2OKMeans(H2OKMeansParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
                   init="Furthest",
                   userPoints=None,
                   estimateK=False,
-                  k=1,
+                  k=2,
                   **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 

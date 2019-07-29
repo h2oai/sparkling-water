@@ -115,7 +115,7 @@ H2O KMeans Parameters
     coordinates of an initial cluster center. The user-specified points must have the same number of columns as the training observations.
     The number of rows must equal the number of clusters.
 - **estimateK**
-    If enabled, the algorithm tries to identify optimal number of clusters, up to **k** clusters.
+    If enabled, the algorithm tries to identify an optimal number of clusters, up to **k** clusters.
 - **k**
     Number of clusters to generate.
 

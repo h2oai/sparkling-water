@@ -123,7 +123,7 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
     parameters._init = KMeans.Initialization.valueOf(getInit())
     parameters._user_points = {
       val userPoints = getUserPoints()
-      if (userPoints == null || userPoints.length == 0) {
+      if (userPoints == null) {
         null
       } else {
         val spark = SparkSession.builder().getOrCreate()
