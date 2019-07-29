@@ -23,6 +23,7 @@ import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 import org.apache.spark.sql.SparkSession
+import water.fvec.H2OFrame
 
 /**
   * H2O KMeans algorithm exposed via Spark ML pipelines.
@@ -112,7 +113,7 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
     parameters._init = KMeans.Initialization.valueOf(getInit())
     parameters._user_points = {
       val userPoints = getUserPoints()
-      if (userPoints == null) {
+      if (userPoints == null || userPoints.length == 0) {
         null
       } else {
         val spark = SparkSession.builder().getOrCreate()
