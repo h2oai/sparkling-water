@@ -37,6 +37,8 @@ import scala.collection.JavaConverters._
 
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
 
+  override protected def outputColumnName: String = getDetailedPredictionCol()
+
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient private lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
@@ -156,7 +158,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val baseDf = applyPredictionUdf(getDetailedPredictionCol(), dataset, _ => getModelUdf())
+    val baseDf = applyPredictionUdf(dataset, _ => getModelUdf())
 
     val withPredictionDf = easyPredictModelWrapper.getModelCategory match {
       case ModelCategory.Clustering =>
