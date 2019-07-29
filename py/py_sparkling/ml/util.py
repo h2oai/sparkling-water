@@ -26,12 +26,6 @@ def getDoubleArrayFromIntArray(array):
     else:
         return list(map(float, array))
 
-def getDoubleArrayArrayFromIntArrayArray(array):
-    if array is None:
-        return None
-    else:
-        return [getDoubleArrayFromIntArray(arr) for arr in array]
-
 def arrayToDoubleArray(param, kwargs):
     if param in kwargs and kwargs[param] is not None:
         kwargs[param] = getDoubleArrayFromIntArray(kwargs[param])

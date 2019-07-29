@@ -6,9 +6,7 @@ from pyspark.ml.util import JavaMLWritable, JavaMLReadable
 from pyspark.ml.wrapper import JavaEstimator
 
 from py_sparkling.ml.models import H2OMOJOModel
-from py_sparkling.ml.util import set_double_values
-from py_sparkling.ml.util import validateEnumValue, \
-    getDoubleArrayArrayFromIntArrayArray
+from py_sparkling.ml.util import set_double_values, validateEnumValue
 from pysparkling.ml.params import H2OAlgoUnsupervisedParams
 from pysparkling.spark_specifics import get_input_kwargs
 
@@ -62,6 +60,7 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
 
     def setUserPoints(self, value):
         assert_is_type(value, [[int, float]])
+        from ai.h2o.sparkling.ml.utils import getDoubleArrayArrayFromIntArrayArray
         return self._set(userPoints=getDoubleArrayArrayFromIntArrayArray(value))
 
     def setEstimateK(self, value):
