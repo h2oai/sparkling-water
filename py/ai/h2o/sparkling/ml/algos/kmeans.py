@@ -13,14 +13,17 @@ from pysparkling.spark_specifics import get_input_kwargs
 
 
 class H2OKMeansParams(H2OAlgoUnsupervisedParams):
-    maxIterations = Param(Params._dummy(), "maxIterations", "Maximum number of KMeans Iterations")
-    standardize = Param(Params._dummy(), "standardize", "Standardize columns before computing distances")
+    maxIterations = Param(Params._dummy(), "maxIterations",
+                          "Maximum number of KMeans iterations to find the centroids.")
+    standardize = Param(Params._dummy(), "standardize",
+                        "Standardize the numeric columns to have a mean of zero and unit variance.")
     init = Param(Params._dummy(), "init", "Initialization mode")
-    userPoints = Param(Params._dummy(), "userPoints", "This option allows" +
-                       " you to specify array of points, where each point represents coordinates of an initial cluster center. The user-specified" +
+    userPoints = Param(Params._dummy(), "userPoints", "This option enables" +
+                       " to specify array of points, where each point represents coordinates of an initial cluster center. The user-specified" +
                        " points must have the same number of columns as the training observations. The number of rows must equal" +
                        " the number of clusters.")
-    estimateK = Param(Params._dummy(), "estimateK", "If enabled, iteratively find up to k clusters.")
+    estimateK = Param(Params._dummy(), "estimateK",
+                      "If enabled, the algorithm tries to identify optimal number of clusters, up to k clusters.")
     k = Param(Params._dummy(), "k", "Number of clusters to generate.")
 
     #
