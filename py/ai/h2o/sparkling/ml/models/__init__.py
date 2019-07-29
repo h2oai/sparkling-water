@@ -15,5 +15,5 @@
 # limitations under the License.
 #
 
-from algos import H2OKMeans
-from features import H2OTargetEncoder
+from ai.h2o.sparkling.ml.models.H2OTargetEncoderModel import H2OTargetEncoderModel
+from ai.h2o.sparkling.ml.models.H2OTargetEncoderMojoModel import H2OTargetEncoderMojoModel

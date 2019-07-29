@@ -15,5 +15,12 @@
 # limitations under the License.
 #
 
-from algos import H2OKMeans
-from features import H2OTargetEncoder
+from pyspark.ml.util import JavaMLWritable
+from pyspark.ml.wrapper import JavaModel
+
+from ai.h2o.sparkling.ml.params import H2OTargetEncoderParams
+from py_sparkling.ml.util import JavaH2OMLReadable
+
+
+class H2OTargetEncoderMojoModel(H2OTargetEncoderParams, JavaModel, JavaMLWritable, JavaH2OMLReadable):
+    pass

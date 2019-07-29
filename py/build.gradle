@@ -339,12 +339,17 @@ task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
     command = "tests/tests_unit_mojo_pipeline.py"
 }
 
+task testTargetEncoder(type: PythonTask, dependsOn: distPython) {
+    extraArgs(*createUnitTestArgs())
+    command = "tests/tests_unit_target_encoder.py"
+}
+
 task hadoopSmokeTests(type: PythonTask, dependsOn: distPython) {
     extraArgs(*createUnitTestArgs())
     command = "tests/tests_hadoop_smoke.py"
 }
 
-task testPython(dependsOn: [testPythonConf, testPythonConversions, testPythonMojoPredictions, testPythonKMeans]) {}
+task testPython(dependsOn: [testPythonConf, testPythonConversions, testPythonMojoPredictions, testPythonKMeans, testTargetEncoder]) {}
 
 if (project.property("testMojoPipeline") == "true") {
     testPython.dependsOn testPythonMojoPipeline
