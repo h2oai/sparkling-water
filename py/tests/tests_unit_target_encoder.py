@@ -77,8 +77,7 @@ class H2OTargetEncoderTestSuite(unittest.TestCase):
         path = "file://" + os.path.abspath("build/testPipelineWithTargetEncoderIsSerializable")
         pipeline.write().overwrite().save(path)
         loadedPipeline = Pipeline.load(path)
-        loadedTargetEncoder = loadedPipeline.stages[0]
-        loadedGbm = loadedPipeline.stages[1]
+        [loadedTargetEncoder, loadedGbm] = loadedPipeline.getStages()
 
         self.assertTargetEncoderAndMOJOModelParamsAreEqual(targetEncoder, loadedTargetEncoder)
         assert gbm.getLabelCol() == loadedGbm.getLabelCol()
