@@ -34,6 +34,7 @@ from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pyspark.ml import Pipeline, PipelineModel
 
+
 class H2OKMeansTestSuite(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -41,10 +42,9 @@ class H2OKMeansTestSuite(unittest.TestCase):
         cls._spark = SparkSession.builder.config(conf=cls._conf).getOrCreate()
         cls._hc = H2OContext.getOrCreate(cls._spark, H2OConf(cls._spark).set_cluster_size(1))
         cls.dataset = cls._spark.read.csv("file://" + unit_test_utils.locate("smalldata/iris/iris_wheader.csv"),
-                                           header=True, inferSchema=True)
+                                          header=True, inferSchema=True)
 
-
-    def test_H2OKMeans_Pipeline_serialization_and_deserialization(self):
+    def testPipelineSerialization(self):
         algo = H2OKMeans(splitRatio=0.8,
                          seed=1,
                          k=3,
@@ -56,12 +56,11 @@ class H2OKMeansTestSuite(unittest.TestCase):
         model = loaded_pipeline.fit(self.dataset)
 
         model.write().overwrite().save("file://" + os.path.abspath("build/kmeans_pipeline_model"))
-        loaded_model = PipelineModel.load("file://" + os.path.abspath("build/kmeans_pipeline_model"))
+        loadedModel = PipelineModel.load("file://" + os.path.abspath("build/kmeans_pipeline_model"))
 
-        loaded_model.transform(self.dataset).count()
+        loadedModel.transform(self.dataset).count()
 
-
-    def test_H2OKMeans_result_directly_in_prediction_column(self):
+    def testResultInPredictionCol(self):
         algo = H2OKMeans(splitRatio=0.8,
                          seed=1,
                          k=3,
@@ -72,21 +71,20 @@ class H2OKMeansTestSuite(unittest.TestCase):
         self.assertEquals(transformed.select("prediction").head()[0], 0, "Prediction should match")
         self.assertEquals(transformed.select("prediction").distinct().count(), 3, "Number of clusters should match")
 
-    def test_H2OKMeans_full_result_in_prediction_details_column(self):
+    def testFullResultInPredictionDetailsCol(self):
         algo = H2OKMeans(splitRatio=0.8,
                          seed=1,
                          k=3,
                          featuresCols=["sepal_len", "sepal_wid", "petal_len", "petal_wid"],
                          withDetailedPredictionCol=True)
 
-
         model = algo.fit(self.dataset)
         transformed = model.transform(self.dataset)
-        self.assertEquals(transformed.select("detailed_prediction.cluster").head()[0], 0,  "Prediction should match")
-        self.assertEquals(len(transformed.select("detailed_prediction.distances").head()[0]), 3, "Size of distances array should match")
+        self.assertEquals(transformed.select("detailed_prediction.cluster").head()[0], 0, "Prediction should match")
+        self.assertEquals(len(transformed.select("detailed_prediction.distances").head()[0]), 3,
+                          "Size of distances array should match")
 
-
-    def test_H2OKMeans_user_points(self):
+    def testUserPoints(self):
         algo = H2OKMeans(splitRatio=0.8,
                          seed=1,
                          k=3,
