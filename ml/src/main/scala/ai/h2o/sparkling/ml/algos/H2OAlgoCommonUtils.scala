@@ -38,6 +38,11 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
     val input = h2oContext.asH2OFrame(dataset.select(cols: _*).toDF())
 
+    if (getAllStringColumnsToCategorical()) {
+      H2OFrameSupport.allStringVecToCategorical(input)
+    }
+    H2OFrameSupport.columnsToCategorical(input, getColumnsToCategorical())
+
     if (getSplitRatio() < 1.0) {
       // need to do splitting
       val keys = H2OFrameSupport.split(input, Seq(Key.rand(), Key.rand()), Seq(getSplitRatio()))
