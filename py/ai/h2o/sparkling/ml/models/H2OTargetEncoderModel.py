@@ -15,5 +15,15 @@
 # limitations under the License.
 #
 
-from algos import H2OKMeans
-from features import H2OTargetEncoder
+from pyspark.ml.util import JavaMLWritable
+from pyspark.ml.wrapper import JavaModel
+from pyspark.sql import DataFrame
+
+from ai.h2o.sparkling.ml.params import H2OTargetEncoderParams
+
+
+class H2OTargetEncoderModel(H2OTargetEncoderParams, JavaModel, JavaMLWritable):
+
+    def transformTrainingDataset(self, dataset):
+        self._transfer_params_to_java()
+        return DataFrame(self._java_obj.transformTrainingDataset(dataset._jdf), dataset.sql_ctx)
