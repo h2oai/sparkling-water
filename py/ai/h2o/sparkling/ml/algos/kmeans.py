@@ -59,8 +59,8 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         return self._set(standardize=value)
 
     def setInit(self, value):
-        validateEnumValue(self.__getInitEnum(), value)
-        return self._set(init=value)
+        validated = validateEnumValue(self.__getInitEnum(), value)
+        return self._set(init=validated)
 
     def setUserPoints(self, value):
         assert_is_type(value, [[int, float]])
