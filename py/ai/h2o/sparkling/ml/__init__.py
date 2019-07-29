@@ -14,3 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from algos import H2OKMeans
+from features import H2OTargetEncoder
