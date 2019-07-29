@@ -17,7 +17,7 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
                           "Maximum number of KMeans iterations to find the centroids.")
     standardize = Param(Params._dummy(), "standardize",
                         "Standardize the numeric columns to have a mean of zero and unit variance.")
-    init = Param(Params._dummy(), "init", "Initialization mode")
+    init = Param(Params._dummy(), "init", "Initialization mode for finding the initial cluster centers.")
     userPoints = Param(Params._dummy(), "userPoints", "This option enables" +
                        " to specify array of points, where each point represents coordinates of an initial cluster center. The user-specified" +
                        " points must have the same number of columns as the training observations. The number of rows must equal" +

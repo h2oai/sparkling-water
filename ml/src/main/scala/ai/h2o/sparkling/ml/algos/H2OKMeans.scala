@@ -51,7 +51,7 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
   //
   private val maxIterations = intParam("maxIterations", "Maximum number of KMeans iterations to find the centroids.")
   private val standardize = booleanParam("standardize", "Standardize the numeric columns to have a mean of zero and unit variance.")
-  private val init = stringParam("init", "Initialization mode")
+  private val init = stringParam("init", "Initialization mode for finding the initial cluster centers.")
   private val userPoints = nullableDoubleArrayArrayParam("userPoints", "This option allows" +
     " you to specify array of points, where each point represents coordinates of an initial cluster center. The user-specified" +
     " points must have the same number of columns as the training observations. The number of rows must equal" +
