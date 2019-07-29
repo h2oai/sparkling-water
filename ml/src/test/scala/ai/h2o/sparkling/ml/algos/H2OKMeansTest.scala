@@ -30,7 +30,7 @@ import water.exceptions.H2OModelBuilderIllegalArgumentException
 @RunWith(classOf[JUnitRunner])
 class H2OKMeansTest extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkContext = new SparkContext("local[1]", this.getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 
   private lazy val dataset = spark.read
     .option("header", "true")

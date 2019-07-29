@@ -107,21 +107,22 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
 
   override def updateH2OParams(): Unit = {
     super.updateH2OParams()
-    parameters._max_iterations = $(maxIterations)
-    parameters._standardize = $(standardize)
-    parameters._init = KMeans.Initialization.valueOf($(init))
+    parameters._max_iterations = getMaxIterations()
+    parameters._standardize = getStandardize()
+    parameters._init = KMeans.Initialization.valueOf(getInit())
     parameters._user_points = {
-      if ($(userPoints) == null) {
+      val userPoints = getUserPoints()
+      if (userPoints == null) {
         null
       } else {
         val spark = SparkSession.builder().getOrCreate()
         import spark.implicits._
-        val df = spark.sparkContext.parallelize($(userPoints)).toDF()
+        val df = spark.sparkContext.parallelize(userPoints).toDF()
         H2OContext.getOrCreate(spark).asH2OFrame(df).key
       }
     }
-    parameters._estimate_k = $(estimateK)
-    parameters._k = $(k)
+    parameters._estimate_k = getEstimateK()
+    parameters._k = getK()
   }
 
 }
