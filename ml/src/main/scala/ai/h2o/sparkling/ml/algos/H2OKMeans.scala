@@ -23,7 +23,6 @@ import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 import org.apache.spark.sql.SparkSession
-import water.fvec.H2OFrame
 
 /**
   * H2O KMeans algorithm exposed via Spark ML pipelines.
@@ -69,7 +68,7 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
     init -> KMeans.Initialization.Furthest.name(),
     userPoints -> null,
     estimateK -> false,
-    k -> 1
+    k -> 2
   )
 
   //
