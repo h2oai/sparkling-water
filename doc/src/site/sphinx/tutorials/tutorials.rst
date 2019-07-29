@@ -41,6 +41,7 @@ How to...
 
    sw_xgboost
    sw_automl
+   sw_kmeans
 
 **Spark Pipelines**
 
