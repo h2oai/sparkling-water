@@ -102,9 +102,10 @@ class H2OKMeansTest extends FunSuite with Matchers with SharedH2OTestContext {
       .setFeaturesCols("class")
       .setAllStringColumnsToCategorical(false)
 
-    intercept[H2OModelBuilderIllegalArgumentException] {
+    val thrown = intercept[IllegalArgumentException] {
       algo.fit(dataset)
     }
+    assert(thrown.getMessage.startsWith("Following columns are of type string: 'class'"))
   }
 
   test("H2OKMeans string column input with other non-string column") {
@@ -115,7 +116,42 @@ class H2OKMeansTest extends FunSuite with Matchers with SharedH2OTestContext {
       .setFeaturesCols("class", "sepal_wid")
       .setAllStringColumnsToCategorical(false)
 
-    val model = algo.fit(dataset)
-    assert(model.transform(dataset).select("prediction").head() == Row(2))
+    val thrown = intercept[IllegalArgumentException] {
+      algo.fit(dataset)
+    }
+    assert(thrown.getMessage.startsWith("Following columns are of type string: 'class'"))
   }
+
+  test("H2OKMeans input feature which is not in the dataset") {
+    val algo = new H2OKMeans()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setK(3)
+      .setFeaturesCols("not_exist_1", "not_exist_2")
+      .setAllStringColumnsToCategorical(false)
+
+    val thrown = intercept[IllegalArgumentException] {
+      algo.fit(dataset)
+    }
+    assert(thrown.getMessage == "The following feature columns are not available on" +
+      " the training dataset: 'not_exist_1, not_exist_2'")
+  }
+
+  test("H2OKMeans with constant column") {
+    import org.apache.spark.sql.functions.lit
+    val datasetWithConst = dataset.withColumn("constant", lit(1))
+    val algo = new H2OKMeans()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setK(3)
+      .setFeaturesCols("constant")
+      .setAllStringColumnsToCategorical(false)
+
+    val thrown = intercept[IllegalArgumentException] {
+      algo.fit(datasetWithConst)
+    }
+    assert(thrown.getMessage.startsWith("H2O could not use any of the specified feature" +
+      " columns: 'constant'. H2O ignores constant columns, are all the columns constants?"))
+  }
+
 }

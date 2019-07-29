@@ -1,7 +1,9 @@
 Train KMeans Model in Sparkling Water
 --------------------------------------
 
-Sparkling Water provides API for H2O KMeans in Scala and Python.
+Sparkling Water provides API for H2O KMeans in Scala and Python. All available parameters
+of H2OKmeans model are described at `H2O KMeans Parameters`_.
+
 The following sections describe how to train KMeans model in Sparkling Water in both languages.
 
 .. content-tabs::
@@ -96,4 +98,24 @@ The following sections describe how to train KMeans model in Sparkling Water in 
         .. code:: python
 
             model.transform(testingDF).show(truncate = False)
+
+H2O KMeans Parameters
+~~~~~~~~~~~~~~~~~~~~~
+
+- **maxIterations**
+    Maximum number of KMeans iterations to find the centroids.
+- **standardize**
+    Standardize the numeric columns to have a mean of zero and unit variance.  More information about
+    the standardization is available at `H2O KMeans standardize param documentation <https://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/docs-website/h2o-docs/data-science/algo-params/standardize.html>`__.
+- **init**
+    Initialization mode for finding the initial cluster centers. More information about
+    the initialization is available at `H2O KMeans Init param documentation <https://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/docs-website/h2o-docs/data-science/algo-params/init.html>`__.
+- **userPoints**
+    This option allows you to specify array of points, where each point represents
+    coordinates of an initial cluster center. The user-specified points must have the same number of columns as the training observations.
+    The number of rows must equal the number of clusters.
+- **estimateK**
+    If enabled, the algorithm tries to identify optimal number of clusters, up to **k** clusters.
+- **k**
+    Number of clusters to generate.
 

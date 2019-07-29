@@ -16,9 +16,8 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.{H2OAlgoCommonParams, H2OAlgoSupervisedParams}
+import ai.h2o.sparkling.ml.params.H2OAlgoCommonParams
 import hex.Model
-import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
@@ -27,7 +26,8 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
-import water.support.{H2OFrameSupport, ModelSerializationSupport}
+import water.exceptions.H2OModelBuilderIllegalArgumentException
+import water.support.ModelSerializationSupport
 import water.{H2O, Key}
 
 import scala.reflect.{ClassTag, classTag}
@@ -78,7 +78,14 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
       val constructor = algoClass.getConstructor(parameterClass, classOf[Key[M]])
       constructor.newInstance(params, convertModelIdToKey(modelId))
     }
-    builder.asInstanceOf[B].trainModel().get()
+    try {
+      builder.asInstanceOf[B].trainModel().get()
+    } catch {
+      case e: H2OModelBuilderIllegalArgumentException
+        if e.getMessage.contains("There are no usable columns to generate") =>
+        throw new IllegalArgumentException(s"H2O could not use any of the specified feature" +
+          s" columns: '${getFeaturesCols().mkString(", ")}'. H2O ignores constant columns, are all the columns constants?", e)
+    }
   }
 
   private def convertModelIdToKey(modelId: String): Key[M] = {

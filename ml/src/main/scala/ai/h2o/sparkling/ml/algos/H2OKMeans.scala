@@ -20,7 +20,7 @@ import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OAlgoUnsupervisedParam
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.kmeans.{KMeans, KMeansModel}
 import hex.schemas.GLMV3.GLMParametersV3
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{Frame, H2OContext}
 import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 import org.apache.spark.sql.SparkSession
 
@@ -28,6 +28,17 @@ import org.apache.spark.sql.SparkSession
   * H2O KMeans algorithm exposed via Spark ML pipelines.
   */
 class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMeans, KMeansModel, KMeansParameters] with H2OKMeansParams {
+
+  override protected def preProcessBeforeFit(trainFrame: Frame): Unit = {
+    super.preProcessBeforeFit(trainFrame)
+    val stringCols = trainFrame.names.filter(name => trainFrame.vec(name).isString)
+    if (stringCols.nonEmpty) {
+      throw new IllegalArgumentException(s"Following columns are of type string: '${stringCols.mkString(", ")}', but" +
+        s" H2OKMeans does not accept string columns. However, you can use the `allStringColumnsToCategorical`" +
+        s" or 'columnsToCategorical' methods on H2OKMeans. These methods ensure that string columns are " +
+        s" converted to representation H2O-3 understands.")
+    }
+  }
 
   def this() = this(Identifiable.randomUID("kmeans"))
 }
