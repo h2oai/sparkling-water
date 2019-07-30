@@ -21,5 +21,5 @@ from pyspark.ml.wrapper import JavaModel
 from ai.h2o.sparkling.ml.params import H2OTargetEncoderParams
 
 
-class H2OTargetEncoderMojoModel(H2OTargetEncoderParams, JavaModel, JavaMLWritable, JavaMLReadable):
+class H2OTargetEncoderMOJOModel(H2OTargetEncoderParams, JavaModel, JavaMLWritable, JavaMLReadable):
     pass
