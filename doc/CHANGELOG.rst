@@ -1,6 +1,94 @@
 Change Log
 ==========
 
+v3.26.2 (2019-07-30)
+--------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.2-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.2-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.2-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.2-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.2-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.2-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.2-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.2-2.4/index.html>`__
+-  Bug
+        
+   -  `SW-1337 <https://0xdata.atlassian.net/browse/SW-1337>`__ - Restarting h2o cluster makes all Spark Sessions connected to it unusable
+   -  `SW-1379 <https://0xdata.atlassian.net/browse/SW-1379>`__ - Fix IOOB exception when converting H2OFrame to DataFrame
+   -  `SW-1381 <https://0xdata.atlassian.net/browse/SW-1381>`__ - Bad quotes in documentation
+   -  `SW-1382 <https://0xdata.atlassian.net/browse/SW-1382>`__ - Remove extra quote in exception on ExternalH2OBackend
+   -  `SW-1383 <https://0xdata.atlassian.net/browse/SW-1383>`__ - Fix cloud up in external backend manual mode
+   -  `SW-1384 <https://0xdata.atlassian.net/browse/SW-1384>`__ - Fix wrong statement in rsparkling documentation
+   -  `SW-1390 <https://0xdata.atlassian.net/browse/SW-1390>`__ - Fix NPE when reading modelDetails in Mojo
+   -  `SW-1393 <https://0xdata.atlassian.net/browse/SW-1393>`__ - Use Python formatting for Python in secured_flow.rst
+   -  `SW-1396 <https://0xdata.atlassian.net/browse/SW-1396>`__ - Fix wrong exception in H2OAutoML sort metric handling
+   -  `SW-1397 <https://0xdata.atlassian.net/browse/SW-1397>`__ - User setClusterSize instead of deprecated setter in tests
+   -  `SW-1400 <https://0xdata.atlassian.net/browse/SW-1400>`__ - Nullability tests in DataFrameConverterTest should use data frames with an explicit schema
+   -  `SW-1413 <https://0xdata.atlassian.net/browse/SW-1413>`__ - Use VectorUDT in RowConverter
+   -  `SW-1418 <https://0xdata.atlassian.net/browse/SW-1418>`__ - Lower memory requirements in tests
+   -  `SW-1439 <https://0xdata.atlassian.net/browse/SW-1439>`__ - [Prototype] Switch to using String value on the setters &amp; getters in the ml API on distribution param
+   -  `SW-1441 <https://0xdata.atlassian.net/browse/SW-1441>`__ - PySparkling can&#39;t be started after version change using pysparkling.sh
+   -  `SW-1447 <https://0xdata.atlassian.net/browse/SW-1447>`__ - Remove missingValuesHandling param from XGBoost wrapper
+   -  `SW-1454 <https://0xdata.atlassian.net/browse/SW-1454>`__ - It is no longer possible to specify predictionCol :(
+   -  `SW-1462 <https://0xdata.atlassian.net/browse/SW-1462>`__ - convertInvalidNumbersToNa missing on PySparkling
+   -  `SW-1463 <https://0xdata.atlassian.net/browse/SW-1463>`__ - Fix setters which accept both int and float 
+   -  `SW-1464 <https://0xdata.atlassian.net/browse/SW-1464>`__ - Fix nullableArrayArray param for pyspakrling
+   -  `SW-1468 <https://0xdata.atlassian.net/browse/SW-1468>`__ - Use absolute imports as the relative ones are removed in python3
+   -  `SW-1470 <https://0xdata.atlassian.net/browse/SW-1470>`__ - DatasetWrapper should use withColumn insteadOf withColumns method
+   -  `SW-1472 <https://0xdata.atlassian.net/browse/SW-1472>`__ - Fix tests after modifying allStringsToCategorical
+                
+-  New Feature
+        
+   -  `SW-1425 <https://0xdata.atlassian.net/browse/SW-1425>`__ - Add Target Encoding to Sparkling Water Python API
+   -  `SW-1446 <https://0xdata.atlassian.net/browse/SW-1446>`__ - Implement H2OKmeans pipeline wrapper
+   -  `SW-1455 <https://0xdata.atlassian.net/browse/SW-1455>`__ - Introduce NullableDoubleArrayParam for KMeans
+   -  `SW-1456 <https://0xdata.atlassian.net/browse/SW-1456>`__ - Documentation of Target Encoder
+                
+-  Task
+        
+   -  `SW-1294 <https://0xdata.atlassian.net/browse/SW-1294>`__ - Benchmarks: Infrastructure for Getting Information about Execution Details
+                
+-  Improvement
+        
+   -  `SW-1207 <https://0xdata.atlassian.net/browse/SW-1207>`__ - Add Target Encoding to Sparkling Water Scala API
+   -  `SW-1344 <https://0xdata.atlassian.net/browse/SW-1344>`__ - Unify ml package accross rel branches
+   -  `SW-1351 <https://0xdata.atlassian.net/browse/SW-1351>`__ - Unify jenkins scripts &amp; create gradle profiles
+   -  `SW-1375 <https://0xdata.atlassian.net/browse/SW-1375>`__ - Single execution path for all spark-&gt;h2o frame conversions
+   -  `SW-1387 <https://0xdata.atlassian.net/browse/SW-1387>`__ - Handle vectors in SparkDataFrameConverter more explicitly
+   -  `SW-1388 <https://0xdata.atlassian.net/browse/SW-1388>`__ - Specify spark specific source dir per project, so they can differ in subprojects
+   -  `SW-1392 <https://0xdata.atlassian.net/browse/SW-1392>`__ - Document an example of training AutoML model
+   -  `SW-1394 <https://0xdata.atlassian.net/browse/SW-1394>`__ - Modify sw_xgboost.rst to use tabs for Python and Scala code
+   -  `SW-1395 <https://0xdata.atlassian.net/browse/SW-1395>`__ - ML Code simplifications &amp; improvements
+   -  `SW-1402 <https://0xdata.atlassian.net/browse/SW-1402>`__ - [MAJOR_RELESE] Remove deprecated methods
+   -  `SW-1412 <https://0xdata.atlassian.net/browse/SW-1412>`__ - Integrate generic conversion logic to data frame conversion to H2O frames
+   -  `SW-1417 <https://0xdata.atlassian.net/browse/SW-1417>`__ - Improve SNAPSHOT handling
+   -  `SW-1419 <https://0xdata.atlassian.net/browse/SW-1419>`__ - Jenkins file improvements -&gt; publish nihhtly only if both External &amp; internal test pass for all Spark versions
+   -  `SW-1421 <https://0xdata.atlassian.net/browse/SW-1421>`__ - Upgrade to H2O 3.26.0.1
+   -  `SW-1422 <https://0xdata.atlassian.net/browse/SW-1422>`__ - Switch to one version of Sparkling Water
+   -  `SW-1424 <https://0xdata.atlassian.net/browse/SW-1424>`__ - Upgrade to H2O 3.26.0.2
+   -  `SW-1430 <https://0xdata.atlassian.net/browse/SW-1430>`__ - Use downloadLogs method from H2O and remove relevant methods on Sparkling Water side
+   -  `SW-1436 <https://0xdata.atlassian.net/browse/SW-1436>`__ - Fix warninig in python package as SW version no longer starts with spark major version
+   -  `SW-1437 <https://0xdata.atlassian.net/browse/SW-1437>`__ - Remove duplicate spark version specifier on pysparkling 
+   -  `SW-1442 <https://0xdata.atlassian.net/browse/SW-1442>`__ - Update build SW doc
+   -  `SW-1443 <https://0xdata.atlassian.net/browse/SW-1443>`__ - Ignore local-cluster failing tests
+   -  `SW-1444 <https://0xdata.atlassian.net/browse/SW-1444>`__ - Use string representations instead of enums on Pipeline API
+   -  `SW-1448 <https://0xdata.atlassian.net/browse/SW-1448>`__ - Refactor parameters into supervised &amp; unsupervised
+   -  `SW-1449 <https://0xdata.atlassian.net/browse/SW-1449>`__ - Create Supervised &amp; Unsupervised Algorithm
+   -  `SW-1451 <https://0xdata.atlassian.net/browse/SW-1451>`__ - Document H2OKmeans pipeline wrapper
+   -  `SW-1452 <https://0xdata.atlassian.net/browse/SW-1452>`__ - Refactor params to supervised and unsupervised on PySparklin side
+   -  `SW-1453 <https://0xdata.atlassian.net/browse/SW-1453>`__ - Put back constructor checks for Enums on PySparkling side ( accidentally removed)
+   -  `SW-1473 <https://0xdata.atlassian.net/browse/SW-1473>`__ - Rename H2OTargetEncoderMojoModel to H2OTargetEncoderMOJOModel
+                
+-  Engineering Story
+        
+   -  `SW-1378 <https://0xdata.atlassian.net/browse/SW-1378>`__ - Integration test for flattening logic
+   -  `SW-1386 <https://0xdata.atlassian.net/browse/SW-1386>`__ - Micro benchmark for conversion from a DataFrame to H2OFrame 
+   -  `SW-1404 <https://0xdata.atlassian.net/browse/SW-1404>`__ - Unification of creating header page across different spark versions
+   -  `SW-1457 <https://0xdata.atlassian.net/browse/SW-1457>`__ - Test passing params to pipeline wrappers of H2O Algos
+   -  `SW-1458 <https://0xdata.atlassian.net/browse/SW-1458>`__ - No longer need to H2OContext.getOrCreate ini __init__ methods of pysparkling algo wrappers
+   -  `SW-1459 <https://0xdata.atlassian.net/browse/SW-1459>`__ - Avoid duplicating MojoParams on PySparkling side
+   -  `SW-1460 <https://0xdata.atlassian.net/browse/SW-1460>`__ - Infrastructure for prediction column with a simple prediction value
+   -  `SW-1461 <https://0xdata.atlassian.net/browse/SW-1461>`__ - prepare ai.h2o.sparkling structure on PySpakrling side
+   -  `SW-1466 <https://0xdata.atlassian.net/browse/SW-1466>`__ - Move logic for converting columns to categorical to prepareDatasetForFitting method
+                
+                            
 v2.1.56, v2.2.42, v2.3.31, v2.4.13 (2019-06-24)
 -----------------------------------------------
 Downloads:
