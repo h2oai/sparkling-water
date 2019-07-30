@@ -30,7 +30,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
   * Utilities for working with Spark SQL component.
   */
-trait SchemaUtils {
+object SchemaUtils {
 
   def flattenDataFrame(df: DataFrame): DataFrame = DatasetShape.getDatasetShape(df.schema) match {
     case DatasetShape.Flat => df
@@ -507,5 +507,3 @@ trait SchemaUtils {
     }
   }
 }
-
-object SchemaUtils extends SchemaUtils
