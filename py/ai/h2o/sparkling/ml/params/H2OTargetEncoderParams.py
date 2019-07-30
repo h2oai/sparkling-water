@@ -56,7 +56,7 @@ class H2OTargetEncoderParams(Params):
         return self.getOrDefault(self.inputCols)
 
     def getOutputCols(self):
-        return map(lambda c: c + "_te", self.getInputCols())
+        return list(map(lambda c: c + "_te", self.getInputCols()))
 
     def getHoldoutStrategy(self):
         return self.getOrDefault(self.holdoutStrategy)
