@@ -79,9 +79,7 @@ class ChicagoCrimeApp(weatherFile: String,
     //crimeWeather.printSchema()
     val crimeWeatherDF: H2OFrame = crimeWeather
     // Transform all string columns into categorical
-    withLockAndUpdate(crimeWeatherDF) {
-      allStringVecToCategorical
-    }
+    allStringVecToCategorical(crimeWeatherDF)
 
     //
     // Split final data table
@@ -206,7 +204,6 @@ class ChicagoCrimeApp(weatherFile: String,
   def createCensusTable(datafile: String): H2OFrame = {
     val table = loadData(datafile)
     withLockAndUpdate(table) { fr =>
-      // Rename columns: replace ' ' by '_'      _.remove(0).remove()
       val colNames = fr.names().map(n => n.trim.replace(' ', '_').replace('+', '_'))
       fr._names = colNames
     }
@@ -252,9 +249,7 @@ class ChicagoCrimeApp(weatherFile: String,
     // Join table with census data
     val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
     // Transform all string columns into categorical
-    withLockAndUpdate(row) {
-      allStringVecToCategorical
-    }
+    allStringVecToCategorical(row)
 
     val predictTable = model.score(row)
     val probOfArrest = predictTable.vec("true").at(0)
