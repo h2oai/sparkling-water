@@ -206,6 +206,7 @@ sparkMajorVersions.each { version ->
 updateChangeLogStage(sparkMajorVersions)(params)
 parallel(parallelStages)
 updateRelVersionStage()(params)
+
 def updateChangeLogStage(sparkMajorVersions) {
     return { params ->
         stage('Update Change Log') {
