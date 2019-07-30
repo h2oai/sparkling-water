@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from ai.h2o.sparkling.ml.algos.kmeans import H2OKMeans
+from ai.h2o.sparkling.ml.algos.H2OKmeans import H2OKMeans
