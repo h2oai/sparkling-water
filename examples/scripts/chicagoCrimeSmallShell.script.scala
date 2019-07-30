@@ -124,7 +124,7 @@ val crimeWeather = sqlContext.sql(
 crimeWeather.printSchema()
 val crimeWeatherDF:H2OFrame = crimeWeather
 // Transform all string columns into categorical
-withLockAndUpdate(crimeWeatherDF){ allStringVecToCategorical(_) }
+allStringVecToCategorical(crimeWeatherDF)
 
 
 //
@@ -221,7 +221,7 @@ def scoreEvent(crime: Crime, model: Model[_,_,_], censusTable: DataFrame)
   // Join table with census data
   val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
 
-  withLockAndUpdate(row){ allStringVecToCategorical(_) }
+  allStringVecToCategorical(row)
   val predictTable = model.score(row)
   val probOfArrest = predictTable.vec("true").at(0)
 
