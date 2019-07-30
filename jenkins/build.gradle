@@ -97,6 +97,8 @@ task createDockerfile(type: Dockerfile) {
                 conda config --add channels conda-forge
                 """
 
+    runCommand "sudo chown -R jenkins:jenkins /home/jenkins/miniconda/pkgs"
+
     environmentVariable("HIVE_HOME", "/usr/hdp/2.2.9.0-3393/hive")
     runCommand "pip install awscli --upgrade --user"
 
