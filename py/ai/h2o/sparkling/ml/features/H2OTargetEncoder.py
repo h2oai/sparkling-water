@@ -92,15 +92,15 @@ class H2OTargetEncoder(H2OTargetEncoderParams, JavaEstimator, JavaMLReadable, Ja
 
     def setBlendedAvgInflectionPoint(self, value):
         assert_is_type(value, int, float)
-        return self._set(blendedAvgInflectionPoint=value)
+        return self._set(blendedAvgInflectionPoint=float(value))
 
     def setBlendedAvgSmoothing(self, value):
         assert_is_type(value, int, float)
-        return self._set(blendedAvgSmoothing=value)
+        return self._set(blendedAvgSmoothing=float(value))
 
     def setNoise(self, value):
         assert_is_type(value, int, float)
-        return self._set(noise=value)
+        return self._set(noise=float(value))
 
     def setNoiseSeed(self, value):
         assert_is_type(value, int)
