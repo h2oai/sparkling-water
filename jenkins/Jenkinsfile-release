@@ -88,10 +88,10 @@ String getVersionNoSuffix() {
     return versionLine.split("=")[1].replace("-SNAPSHOT", "")
 }
 
-String getNextVersion(params) {
+String getNextVersionNoSuffix(params) {
     def majorVersion = getMajorVersion(params)
     def patchVersion = getPatchVersion(params)
-    return "${majorVersion}.${patchVersion.toInteger() + 1}-SNAPSHOT-${params.spark}"
+    return "${majorVersion}.${patchVersion.toInteger() + 1}-SNAPSHOT"
 }
 
 
@@ -437,8 +437,8 @@ def updateNextRelVersion() {
                         cp \${GITCONFIG_PATH} ~/.gitconfig
                         """
 
-                    def version = getVersion(params)
-                    def nextVersion = getNextVersion(params)
+                    def version = getVersionNoSuffix(params)
+                    def nextVersion = getNextVersionNoSuffix(params)
                     retryWithDelay(6, 10, {
                         sh """
                         git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
