@@ -18,7 +18,6 @@ include 'benchmarks'
 include 'dist'
 include 'macros'
 include 'jenkins'
-include 'scoring'
 include 'utils'
 
 // Prefix all projects with sparkling-water name
