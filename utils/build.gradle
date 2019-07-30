@@ -8,5 +8,4 @@ dependencies {
     compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 }
 
-
 defineStandardPublication().call()
