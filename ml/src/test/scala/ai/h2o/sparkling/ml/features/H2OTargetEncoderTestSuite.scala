@@ -75,7 +75,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val path = "build/ml/targetEncoder_save_load"
     model.write.overwrite().save(path)
     val loadedModel = PipelineModel.load(path)
-    val transformedTestingDataset = model.transform(testingDataset)
+    val transformedTestingDataset = loadedModel.transform(testingDataset)
 
     TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
   }
