@@ -193,7 +193,7 @@ node("master") {
 
 
 if (params.releaseFor.toString() != "all") {
-    sparkMajorVersions = [params.releaseFor]
+    sparkMajorVersions = params.releaseFor.split(" ")
 }
 
 parallelStages = [:]
@@ -437,7 +437,7 @@ def updateNextRelVersion() {
                         cp \${GITCONFIG_PATH} ~/.gitconfig
                         """
 
-                    def version = getVersionNoSuffix(params)
+                    def version = getVersionNoSuffix()
                     def nextVersion = getNextVersionNoSuffix(params)
                     retryWithDelay(6, 10, {
                         sh """
