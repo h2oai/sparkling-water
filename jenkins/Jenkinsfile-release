@@ -289,7 +289,7 @@ def buildExtendedH2OJars() {
             if (params.buildExtendedH2OJars.toBoolean()) {
                 sh """
                     # Create extended H2O jar for all supported hadoop distributions
-                    HADOOP_DISTRIBUTIONS=`./gradlew -Pversion=${getVersion(params)} -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false -q :sparkling-water-assembly-h2o:printHadoopDistributions)`
+                    HADOOP_DISTRIBUTIONS=`./gradlew -Pspark=${params.spark} -Pversion=${getVersion(params)} -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false -q :sparkling-water-assembly-h2o:printHadoopDistributions)`
                     for distro in \${HADOOP_DISTRIBUTIONS}
                     do
                       ./gradlew -Pspark=${params.spark} -Pversion=${getVersion(params)} -PdoExtend extendJar -PdownloadH2O="\${distro}"
