@@ -19,6 +19,10 @@ package org.apache.spark.sql
 
 object DatasetExtensions {
   implicit class DatasetWrapper(dataset: Dataset[_]) {
-    def withColumns(colNames: Seq[String], cols: Seq[Column]): DataFrame = dataset.withColumns(colNames, cols)
+    def withColumns(colNames: Seq[String], cols: Seq[Column]): DataFrame = {
+      colNames.zip(cols).foldLeft(dataset.toDF()) {
+        case (currentDataFrame, (columnName, column)) => currentDataFrame.withColumn(columnName, column)
+      }
+    }
   }
 }
