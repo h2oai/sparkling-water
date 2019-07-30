@@ -33,7 +33,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
 import water.support.ModelSerializationSupport
 
-class H2OTargetEncoderMojoModel(override val uid: String) extends Model[H2OTargetEncoderMojoModel]
+class H2OTargetEncoderMOJOModel(override val uid: String) extends Model[H2OTargetEncoderMOJOModel]
   with H2OTargetEncoderBase with H2OMOJOWritable with H2OMOJOFlattenedInput {
 
   override protected def inputColumnNames: Array[String] = getInputCols()
@@ -45,20 +45,20 @@ class H2OTargetEncoderMojoModel(override val uid: String) extends Model[H2OTarge
   override def transform(dataset: Dataset[_]): DataFrame = {
     import org.apache.spark.sql.DatasetExtensions._
     val outputCols = getOutputCols()
-    val udfWrapper = H2OTargetEncoderMojoUdfWrapper(getMojoData(), outputCols)
+    val udfWrapper = H2OTargetEncoderMOJOUdfWrapper(getMojoData(), outputCols)
     val withPredictionsDF = applyPredictionUdf(dataset, _ => udfWrapper.mojoUdf)
     withPredictionsDF
       .withColumns(outputCols, outputCols.zipWithIndex.map{ case (c, i) => col(outputColumnName)(i) as c })
       .drop(outputColumnName)
   }
 
-  override def copy(extra: ParamMap): H2OTargetEncoderMojoModel = defaultCopy(extra)
+  override def copy(extra: ParamMap): H2OTargetEncoderMOJOModel = defaultCopy(extra)
 }
 
 /**
   * The class holds all necessary dependencies of udf that needs to be serialized.
   */
-case class H2OTargetEncoderMojoUdfWrapper(mojoData: Array[Byte], outputCols: Array[String]) {
+case class H2OTargetEncoderMOJOUdfWrapper(mojoData: Array[Byte], outputCols: Array[String]) {
   @transient private lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
     val model = ModelSerializationSupport
       .getMojoModel(mojoData)
@@ -81,4 +81,4 @@ case class H2OTargetEncoderMojoUdfWrapper(mojoData: Array[Byte], outputCols: Arr
   }
 }
 
-object H2OTargetEncoderMojoModel extends H2OMOJOReadable[H2OTargetEncoderMojoModel]
+object H2OTargetEncoderMOJOModel extends H2OMOJOReadable[H2OTargetEncoderMOJOModel]

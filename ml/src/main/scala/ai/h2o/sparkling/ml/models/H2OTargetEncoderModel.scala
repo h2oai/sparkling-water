@@ -33,9 +33,9 @@ class H2OTargetEncoderModel(
     targetEncoderModel: TargetEncoderModel)
   extends Model[H2OTargetEncoderModel] with H2OTargetEncoderBase with MLWritable {
 
-  lazy val mojoModel: H2OTargetEncoderMojoModel = {
+  lazy val mojoModel: H2OTargetEncoderMOJOModel = {
     val mojoData = ModelSerializationSupport.getMojoData(targetEncoderModel)
-    val model = new H2OTargetEncoderMojoModel()
+    val model = new H2OTargetEncoderMOJOModel()
     copyValues(model).setMojoData(mojoData)
   }
 
