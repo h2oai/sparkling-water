@@ -18,7 +18,8 @@
 package org.apache.spark.ml.h2o.models
 
 import org.apache.spark.h2o.converters.RowConverter
-import org.apache.spark.h2o.utils.{DatasetShape, H2OSchemaUtils}
+import ai.h2o.sparkling.ml.utils.DatasetShape
+import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.struct
@@ -32,10 +33,10 @@ trait H2OMOJOFlattenedInput {
       dataset: Dataset[_],
       udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
     val originalDF = dataset.toDF()
-    H2OSchemaUtils.getDatasetShape(dataset.schema) match {
+    DatasetShape.getDatasetShape(dataset.schema) match {
       case DatasetShape.Flat => applyPredictionUdfToFlatDataFrame(originalDF, udfConstructor, inputColumnNames)
       case DatasetShape.StructsOnly | DatasetShape.Nested =>
-        val flattenedDF = H2OSchemaUtils.appendFlattenedStructsToDataFrame(originalDF, RowConverter.temporaryColumnPrefix)
+        val flattenedDF = SchemaUtils.appendFlattenedStructsToDataFrame(originalDF, RowConverter.temporaryColumnPrefix)
         val inputs = inputColumnNames ++ inputColumnNames.map(s => RowConverter.temporaryColumnPrefix + "." + s)
         val flatWithPredictionsDF = applyPredictionUdfToFlatDataFrame(flattenedDF, udfConstructor, inputs)
         flatWithPredictionsDF.schema.foldLeft(flatWithPredictionsDF) { (df, field) =>

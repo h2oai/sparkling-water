@@ -19,8 +19,8 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.automl.targetencoding.TargetEncoderModel
 import ai.h2o.sparkling.ml.features.{H2OTargetEncoderBase, H2OTargetEncoderHoldoutStrategy}
+import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
@@ -51,7 +51,7 @@ class H2OTargetEncoderModel(
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
     val temporaryColumn = getClass.getSimpleName + "_temporary_id"
     val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
-    val flatDF = H2OSchemaUtils.flattenDataFrame(withIdDF)
+    val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
     val relevantColumns = getInputCols() ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
     val input = h2oContext.asH2OFrame(relevantColumnsDF)

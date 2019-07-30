@@ -17,8 +17,9 @@
 
 package water.sparkling.itest.local
 
+import ai.h2o.sparkling.ml.utils.SchemaUtils
 import ai.h2o.sparkling.utils.schemas.ComplexSchema
-import org.apache.spark.h2o.utils.{H2OSchemaUtils, SparkTestContext, TestFrameUtils}
+import org.apache.spark.h2o.utils.{SparkTestContext, TestFrameUtils}
 import org.apache.spark.sql.Row
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
@@ -58,7 +59,7 @@ class H2OSchemaUtilsIntegrationTestSuite extends FunSuite with Matchers with Spa
   def testFlatteningOnComplexType(settings: TestFrameUtils.GenerateDataFrameSettings, expectedNumberOfColumns: Int) = {
     trackTime {
       val complexDF = TestFrameUtils.generateDataFrame(spark, ComplexSchema, settings)
-      val flattened = H2OSchemaUtils.flattenDataFrame(complexDF)
+      val flattened = SchemaUtils.flattenDataFrame(complexDF)
 
       val fieldTypeNames = flattened.schema.fields.map(_.dataType.typeName)
       val numberOfFields = fieldTypeNames.length

@@ -19,11 +19,11 @@ package org.apache.spark.sql
 
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.converters.H2ODataFrame
-import org.apache.spark.h2o.utils.H2OSchemaUtils
+import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.sources.{BaseRelation, PrunedScan, TableScan}
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{MetadataBuilder, StructField, StructType}
 import water.fvec.Frame
 
 /**
@@ -50,11 +50,52 @@ case class H2OFrameRelation[T <: Frame](@transient h2oFrame: T,
 
   override val needConversion = false
 
-  override val schema: StructType = H2OSchemaUtils.createSchema(h2oFrame, copyMetadata)
+  override val schema: StructType = createSchema(h2oFrame, copyMetadata)
 
   override def buildScan(): RDD[Row] =
     new H2ODataFrame(h2oFrame)(h2oContext).asInstanceOf[RDD[Row]]
 
   override def buildScan(requiredColumns: Array[String]): RDD[Row] =
     new H2ODataFrame(h2oFrame, requiredColumns)(h2oContext).asInstanceOf[RDD[Row]]
+
+  private def createSchema(f: T, copyMetadata: Boolean): StructType = {
+    import ReflectionUtils._
+
+    val types = new Array[StructField](f.numCols())
+    val vecs = f.vecs()
+    val names = f.names()
+    for (i <- 0 until f.numCols()) {
+      val vec = vecs(i)
+      types(i) = if (copyMetadata) {
+        var metadata = (new MetadataBuilder).
+          putLong("count", vec.length()).
+          putLong("naCnt", vec.naCnt())
+
+        if (vec.isCategorical) {
+          metadata = metadata.putStringArray("vals", vec.domain()).
+            putLong("cardinality", vec.cardinality().toLong)
+        } else if (vec.isNumeric) {
+          metadata = metadata.
+            putDouble("min", vec.min()).
+            putDouble("mean", vec.mean()).
+            putDoubleArray("percentiles", vec.pctiles()).
+            putDouble("max", vec.max()).
+            putDouble("std", vec.sigma()).
+            putDouble("sparsity", vec.nzCnt() / vec.length().toDouble)
+        }
+        StructField(
+          names(i), // Name of column
+          dataTypeFor(vec), // Catalyst type of column
+          vec.naCnt() > 0,
+          metadata.build())
+      } else {
+        StructField(
+          names(i), // Name of column
+          dataTypeFor(vec), // Catalyst type of column
+          vec.naCnt() > 0)
+      }
+    }
+    StructType(types)
+  }
+
 }

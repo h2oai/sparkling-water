@@ -15,87 +15,24 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.utils
+package ai.h2o.sparkling.ml.utils
 
-import org.apache.spark.h2o._
-import org.apache.spark.h2o.utils.DatasetShape.DatasetShape
 import org.apache.spark.ml.attribute.AttributeGroup
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.{DataFrame, Row}
-import org.apache.spark.{ml, mllib}
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Dataset, Row}
+import org.apache.spark.{ExposeUtils, ml, mllib}
 
 import scala.collection.mutable.ArrayBuffer
 
 /**
   * Utilities for working with Spark SQL component.
   */
-object H2OSchemaUtils {
+trait SchemaUtils {
 
-  import ReflectionUtils._
-
-  def createSchema[T <: Frame](f: T, copyMetadata: Boolean): StructType = {
-    val types = new Array[StructField](f.numCols())
-    val vecs = f.vecs()
-    val names = f.names()
-    for (i <- 0 until f.numCols()) {
-      val vec = vecs(i)
-      types(i) = if (copyMetadata) {
-        var metadata = (new MetadataBuilder).
-          putLong("count", vec.length()).
-          putLong("naCnt", vec.naCnt())
-
-        if (vec.isCategorical) {
-          metadata = metadata.putStringArray("vals", vec.domain()).
-            putLong("cardinality", vec.cardinality().toLong)
-        } else if (vec.isNumeric) {
-          metadata = metadata.
-            putDouble("min", vec.min()).
-            putDouble("mean", vec.mean()).
-            putDoubleArray("percentiles", vec.pctiles()).
-            putDouble("max", vec.max()).
-            putDouble("std", vec.sigma()).
-            putDouble("sparsity", vec.nzCnt() / vec.length().toDouble)
-        }
-        StructField(
-          names(i), // Name of column
-          dataTypeFor(vec), // Catalyst type of column
-          vec.naCnt() > 0,
-          metadata.build())
-      } else {
-        StructField(
-          names(i), // Name of column
-          dataTypeFor(vec), // Catalyst type of column
-          vec.naCnt() > 0)
-      }
-    }
-    StructType(types)
-  }
-
-  def getDatasetShape(schema: StructType): DatasetShape = {
-    def mergeShape(first: DatasetShape, second: DatasetShape): DatasetShape = (first, second) match {
-      case (DatasetShape.Nested, _) => DatasetShape.Nested
-      case (_, DatasetShape.Nested) => DatasetShape.Nested
-      case (DatasetShape.StructsOnly, _) => DatasetShape.StructsOnly
-      case (_, DatasetShape.StructsOnly) => DatasetShape.StructsOnly
-      case _ => DatasetShape.Flat
-    }
-
-    def fieldToShape(field: StructField): DatasetShape = field.dataType match {
-      case _: ArrayType | _: MapType | _: BinaryType => DatasetShape.Nested
-      case s: StructType => mergeShape(DatasetShape.StructsOnly, getDatasetShape(s))
-      case _ => DatasetShape.Flat
-    }
-
-    schema.fields.foldLeft(DatasetShape.Flat) { (acc, field) =>
-      val fieldShape = fieldToShape(field)
-      mergeShape(acc, fieldShape)
-    }
-  }
-
-  def flattenDataFrame(df: DataFrame): DataFrame = getDatasetShape(df.schema) match {
+  def flattenDataFrame(df: DataFrame): DataFrame = DatasetShape.getDatasetShape(df.schema) match {
     case DatasetShape.Flat => df
     case DatasetShape.StructsOnly => flattenStructsInDataFrame(df)
     case DatasetShape.Nested =>
@@ -128,8 +65,8 @@ object H2OSchemaUtils {
   }
 
   private def fillBuffer
-      (flatSchemaIndexes: Map[String, Int], buffer: ArrayBuffer[Any])
-      (qualifiedName: String, dataType: DataType, data: Any) = {
+  (flatSchemaIndexes: Map[String, Int], buffer: ArrayBuffer[Any])
+  (qualifiedName: String, dataType: DataType, data: Any) = {
     if (data != null) {
       dataType match {
         case BinaryType => fillBinary(qualifiedName, ByteType, flatSchemaIndexes, buffer, data)
@@ -142,11 +79,11 @@ object H2OSchemaUtils {
   }
 
   private def fillBinary(
-      qualifiedName: String,
-      elementType: DataType,
-      flatSchemaIndexes: Map[String, Int],
-      buffer: ArrayBuffer[Any],
-      data: Any): Unit = {
+                          qualifiedName: String,
+                          elementType: DataType,
+                          flatSchemaIndexes: Map[String, Int],
+                          buffer: ArrayBuffer[Any],
+                          data: Any): Unit = {
     val array = data.asInstanceOf[Array[Byte]]
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
     var idx = 0
@@ -158,11 +95,11 @@ object H2OSchemaUtils {
   }
 
   private def fillArray(
-      qualifiedName: String,
-      elementType: DataType,
-      flatSchemaIndexes: Map[String, Int],
-      buffer: ArrayBuffer[Any],
-      data: Any): Unit = {
+                         qualifiedName: String,
+                         elementType: DataType,
+                         flatSchemaIndexes: Map[String, Int],
+                         buffer: ArrayBuffer[Any],
+                         data: Any): Unit = {
     val seq = data.asInstanceOf[Seq[Any]]
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
     var idx = 0
@@ -174,11 +111,11 @@ object H2OSchemaUtils {
   }
 
   private def fillMap(
-      qualifiedName: String,
-      valueType: DataType,
-      flatSchemaIndexes: Map[String, Int],
-      buffer: ArrayBuffer[Any],
-      data: Any): Unit = {
+                       qualifiedName: String,
+                       valueType: DataType,
+                       flatSchemaIndexes: Map[String, Int],
+                       buffer: ArrayBuffer[Any],
+                       data: Any): Unit = {
     val map = data.asInstanceOf[Map[Any, Any]]
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
     map.foreach { case (key, value) =>
@@ -188,11 +125,11 @@ object H2OSchemaUtils {
   }
 
   private def fillStruct(
-      qualifiedName: String,
-      fields: Seq[StructField],
-      flatSchemaIndexes: Map[String, Int],
-      buffer: ArrayBuffer[Any],
-      data: Any): Unit = {
+                          qualifiedName: String,
+                          fields: Seq[StructField],
+                          flatSchemaIndexes: Map[String, Int],
+                          buffer: ArrayBuffer[Any],
+                          data: Any): Unit = {
     val subRow = data.asInstanceOf[Row]
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
     fields.zip(subRow.toSeq).foreach { case (subField, value) =>
@@ -273,12 +210,12 @@ object H2OSchemaUtils {
   private def getQualifiedName(prefix: String, name: String): String = prefix + "." + name
 
   private def flattenField(
-      qualifiedName: String,
-      dataType: DataType,
-      nullable: Boolean,
-      metadata: Metadata,
-      data: Any,
-      path: List[Any]): Seq[FieldWithOrder] = {
+                            qualifiedName: String,
+                            dataType: DataType,
+                            nullable: Boolean,
+                            metadata: Metadata,
+                            data: Any,
+                            path: List[Any]): Seq[FieldWithOrder] = {
     if (data != null) {
       dataType match {
         case BinaryType =>
@@ -300,12 +237,12 @@ object H2OSchemaUtils {
   case class FieldWithOrder(field: StructField, order: Iterable[Any])
 
   private def flattenBinaryType(
-      qualifiedName: String,
-      elementType: DataType,
-      nullable: Boolean,
-      metadata: Metadata,
-      data: Any,
-      path: List[Any]) = {
+                                 qualifiedName: String,
+                                 elementType: DataType,
+                                 nullable: Boolean,
+                                 metadata: Metadata,
+                                 data: Any,
+                                 path: List[Any]) = {
     val values = data.asInstanceOf[Array[Byte]]
     val result = new ArrayBuffer[FieldWithOrder]()
     var idx = 0
@@ -318,12 +255,12 @@ object H2OSchemaUtils {
   }
 
   private def flattenArrayType(
-      qualifiedName: String,
-      elementType: DataType,
-      nullable: Boolean,
-      metadata: Metadata,
-      data: Any,
-      path: List[Any]) = {
+                                qualifiedName: String,
+                                elementType: DataType,
+                                nullable: Boolean,
+                                metadata: Metadata,
+                                data: Any,
+                                path: List[Any]) = {
     val values = data.asInstanceOf[Seq[Any]]
     val result = new ArrayBuffer[FieldWithOrder]()
     var idx = 0
@@ -336,14 +273,13 @@ object H2OSchemaUtils {
   }
 
   private def flattenMapType(
-      qualifiedName: String,
-      valueType: DataType,
-      nullable: Boolean,
-      metadata: Metadata,
-      data: Any,
-      path: List[Any]) = {
+                              qualifiedName: String,
+                              valueType: DataType,
+                              nullable: Boolean,
+                              metadata: Metadata,
+                              data: Any,
+                              path: List[Any]) = {
     val map = data.asInstanceOf[Map[Any, Any]]
-    val subRow = Row.fromSeq(map.values.toSeq)
     val result = new ArrayBuffer[FieldWithOrder]()
     map.foreach { case (key, value) =>
       val fieldQualifiedName = getQualifiedName(qualifiedName, key.toString)
@@ -353,12 +289,12 @@ object H2OSchemaUtils {
   }
 
   private def flattenStructType(
-      qualifiedName: String,
-      nullableParent: Boolean,
-      metadata: Metadata,
-      fields: Seq[StructField],
-      data: Any,
-      path: List[Any]) = {
+                                 qualifiedName: String,
+                                 nullableParent: Boolean,
+                                 metadata: Metadata,
+                                 fields: Seq[StructField],
+                                 data: Any,
+                                 path: List[Any]) = {
     val subRow = data.asInstanceOf[Row]
     fields.zipWithIndex.flatMap { case (subField, idx) =>
       val StructField(name, dataType, nullable, fieldMetadata) = subField
@@ -372,10 +308,10 @@ object H2OSchemaUtils {
   }
 
   def flattenStructsInSchema(
-      schema: StructType,
-      sourceColPrefix: Option[String] = None,
-      targetColPrefix: Option[String] = None,
-      nullable: Boolean = false): Seq[(StructField, String)] = {
+                              schema: StructType,
+                              sourceColPrefix: Option[String] = None,
+                              targetColPrefix: Option[String] = None,
+                              nullable: Boolean = false): Seq[(StructField, String)] = {
 
     val flattened = schema.fields.flatMap { f =>
       val escaped = if (f.name.contains(".")) "`" + f.name + "`" else f.name
@@ -399,6 +335,7 @@ object H2OSchemaUtils {
   }
 
   def appendFlattenedStructsToDataFrame(df: DataFrame, prefixForNewColumns: String): DataFrame = {
+    import org.apache.spark.sql.DatasetExtensions._
     val structsOnlySchema = StructType(df.schema.fields.filter(_.dataType.isInstanceOf[StructType]))
     val flatten = flattenStructsInSchema(structsOnlySchema, targetColPrefix = Some(prefixForNewColumns))
     flatten.foldLeft(df) { case (tempDF, (field, colName)) =>
@@ -418,11 +355,11 @@ object H2OSchemaUtils {
 
     val expandedSchema = flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
-        case _ : ml.linalg.VectorUDT | _: mllib.linalg.VectorUDT  =>
+        case v if ExposeUtils.isAnyVectorUDT(v) =>
           (0 until elemMaxSizes(idx)).map { arrIdx =>
             StructField(field.name + arrIdx.toString, DoubleType, nullable = true)
           }
-        case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
+        case udt if ExposeUtils.isUDT(udt) => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
         case _ => Seq(field)
       }
     }
@@ -455,7 +392,7 @@ object H2OSchemaUtils {
     flatDataFrame.schema.fields.zipWithIndex.flatMap { case (field, idx) =>
 
       field.dataType match {
-        case _: ml.linalg.VectorUDT | _: mllib.linalg.VectorUDT =>
+        case v if ExposeUtils.isAnyVectorUDT(v) =>
           Array.fill(elemMaxSizes(idx))(sparseInfoForVec(idx)).toSeq
         case _ => Seq(false)
       }
@@ -481,11 +418,11 @@ object H2OSchemaUtils {
   }
 
   private def fieldSizeFromMetadata(field: StructField): Option[Int] = {
-      field.dataType match {
-        case _: ml.linalg.VectorUDT =>
-          Some(AttributeGroup.fromStructField(field).size).filter(_ != -1)
-        case _ => None
-      }
+    field.dataType match {
+      case v if ExposeUtils.isMLVectorUDT(v) =>
+        Some(AttributeGroup.fromStructField(field).size).filter(_ != -1)
+      case _ => None
+    }
   }
 
   /**
@@ -525,7 +462,7 @@ object H2OSchemaUtils {
   def collectVectorLikeTypes(flatSchema: StructType): Seq[Int] = {
     flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
       field.dataType match {
-        case _: ml.linalg.VectorUDT => Some(idx)
+        case v if ExposeUtils.isMLVectorUDT(v) => Some(idx)
         case _: mllib.linalg.VectorUDT => Some(idx)
         case _ => None
       }
@@ -563,11 +500,12 @@ object H2OSchemaUtils {
     } else {
       val dataType = row.schema.fields(idx).dataType
       dataType match {
-        case _: ml.linalg.VectorUDT => row.getAs[ml.linalg.Vector](idx).size
+        case v if ExposeUtils.isMLVectorUDT(v) => row.getAs[ml.linalg.Vector](idx).size
         case _: mllib.linalg.VectorUDT => row.getAs[mllib.linalg.Vector](idx).size
-        case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
+        case udt if ExposeUtils.isUDT(udt) => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
       }
     }
   }
-
 }
+
+object SchemaUtils extends SchemaUtils
