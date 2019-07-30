@@ -12,7 +12,7 @@ release {
     failOnUnversionedFiles = false
     failOnCommitNeeded = false
     preCommitText = ":tada: "
-    versionPropertyFile = "gradle-spark${spark}.properties"
+    versionPropertyFile = "gradle.properties"
     git {
         requireBranch = null
     }
