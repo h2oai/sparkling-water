@@ -177,6 +177,30 @@ def prepareReleaseNotes(sparkMajorVersions) {
     }
 }
 
+def updateNexRelVersion(params) {
+    withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]) {
+        sh """
+                        # Copy keys
+                        rm -rf ~/.ssh ~/.gitconfig
+                        mkdir -p ~/.ssh
+                        cp \${ID_RSA_PATH} ~/.ssh/id_rsa
+                        cp \${GITCONFIG_PATH} ~/.gitconfig
+                        """
+
+        def version = getVersionNoSuffix()
+        def nextVersion = getNextVersionNoSuffix(params)
+        retryWithDelay(6, 10, {
+            sh """
+                        git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
+                        git pull
+                        if git tag --list | grep -q RELEASE-${version}; then git tag -d RELEASE-${version}; fi
+                        if git ls-remote --tags origin | grep -q RELEASE-${version}; then git push --delete origin RELEASE-${version}; fi
+                        ./gradlew -Pspark=${params.spark} -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${version} -Prelease.newVersion=${nextVersion} -PdoRelease release -x check
+                        """
+        })
+    }
+}
+
 //
 // Main entry point to the pipeline and definition of all stages
 //
@@ -231,26 +255,16 @@ def updateRelVersionStage() {
     return { params ->
         stage('Update Next Release Version') {
             if (params.releaseOnGithub.toBoolean()) {
-                withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]) {
-                    sh """
-                        # Copy keys
-                        rm -rf ~/.ssh ~/.gitconfig
-                        mkdir -p ~/.ssh
-                        cp \${ID_RSA_PATH} ~/.ssh/id_rsa
-                        cp \${GITCONFIG_PATH} ~/.gitconfig
-                        """
-
-                    def version = getVersionNoSuffix()
-                    def nextVersion = getNextVersionNoSuffix(params)
-                    retryWithDelay(6, 10, {
-                        sh """
-                        git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
-                        git pull
-                        if git tag --list | grep -q RELEASE-${version}; then git tag -d RELEASE-${version}; fi
-                        if git ls-remote --tags origin | grep -q RELEASE-${version}; then git push --delete origin RELEASE-${version}; fi
-                        ./gradlew -Pspark=${params.spark} -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${version} -Prelease.newVersion=${nextVersion} -PdoRelease release -x check
-                        """
-                    })
+                node("master") {
+                    docker.withRegistry("http://harbor.h2o.ai") {
+                        ansiColor('xterm') {
+                            timestamps {
+                                withDocker {
+                                    updateNexRelVersion(params)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
