@@ -2,7 +2,7 @@ from h2o.utils.typechecks import assert_is_type
 from py4j.java_gateway import JavaObject
 from pyspark.ml.param import *
 
-from py_sparkling.ml.util import getValidatedEnumValue, getValidatedEnumValues, getDoubleArrayFromIntArray
+from ai.h2o.sparkling.ml.utils import getValidatedEnumValue, getValidatedEnumValues, getDoubleArrayFromIntArray
 
 class H2OMOJOAlgoSharedParams(Params):
     predictionCol = Param(Params._dummy(), "predictionCol", "Prediction column name")

@@ -19,12 +19,11 @@ from pyspark.ml.util import JavaMLWritable, JavaMLReadable
 from pyspark.ml.wrapper import JavaEstimator
 from pyspark.sql import SparkSession
 from pyspark import keyword_only
-from py_sparkling.ml.util import getValidatedEnumValue, validateEnumValue
+from ai.h2o.sparkling.ml.utils import getValidatedEnumValue, validateEnumValue, set_double_values
 
 from pysparkling.context import H2OContext
 from pysparkling.spark_specifics import get_input_kwargs
 from ai.h2o.sparkling.ml.params import H2OTargetEncoderParams
-from py_sparkling.ml.util import set_double_values
 from ai.h2o.sparkling.ml.models import H2OTargetEncoderModel
 
 from h2o.utils.typechecks import assert_is_type, Enum
