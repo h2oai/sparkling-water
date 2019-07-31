@@ -336,6 +336,58 @@ class H2OConfTest(unittest.TestCase):
         self.assertEquals(grid.getWithDetailedPredictionCol(), False)
         self.assertEquals(grid.getConvertInvalidNumbersToNa(), False)
 
+    def test_kmeans_params(self):
+        kmeans = H2OKMeans(
+            predictionCol="prediction",
+            detailedPredictionCol="detailed_prediction",
+            withDetailedPredictionCol=False,
+            featuresCols=[],
+            foldCol=None,
+            weightCol=None,
+            splitRatio=1.0,
+            seed=-1,
+            nfolds=0,
+            allStringColumnsToCategorical=True,
+            columnsToCategorical=[],
+            convertUnknownCategoricalLevelsToNa=False,
+            convertInvalidNumbersToNa=False,
+            modelId=None,
+            keepCrossValidationPredictions=False,
+            keepCrossValidationFoldAssignment=False,
+            parallelizeCrossValidation=True,
+            distribution="AUTO",
+            maxIterations=10,
+            standardize=True,
+            init="Furthest",
+            userPoints=None,
+            estimateK=False,
+            k=2)
+
+        self.assertEquals(kmeans.getPredictionCol(), "prediction")
+        self.assertEquals(kmeans.getDetailedPredictionCol(), "detailed_prediction")
+        self.assertEquals(kmeans.getWithDetailedPredictionCol(), False)
+        self.assertEquals(kmeans.getFeaturesCols(), [])
+        self.assertEquals(kmeans.getFoldCol(), None)
+        self.assertEquals(kmeans.getWeightCol(), None)
+        self.assertEquals(kmeans.getSplitRatio(), 1.0)
+        self.assertEquals(kmeans.getSeed(), -1)
+        self.assertEquals(kmeans.getNfolds(), 0)
+        self.assertEquals(kmeans.getAllStringColumnsToCategorical(), True)
+        self.assertEquals(kmeans.getColumnsToCategorical(), [])
+        self.assertEquals(kmeans.getConvertUnknownCategoricalLevelsToNa(), False)
+        self.assertEquals(kmeans.getConvertInvalidNumbersToNa(), False)
+        self.assertEquals(kmeans.getModelId(), None)
+        self.assertEquals(kmeans.getKeepCrossValidationPredictions(), False)
+        self.assertEquals(kmeans.getKeepCrossValidationFoldAssignment(), False)
+        self.assertEquals(kmeans.getParallelizeCrossValidation(), True)
+        self.assertEquals(kmeans.getDistribution(), "AUTO")
+        self.assertEquals(kmeans.getMaxIterations(), 10)
+        self.assertEquals(kmeans.getStandardize(), True)
+        self.assertEquals(kmeans.getInit(), "Furthest")
+        self.assertEquals(kmeans.getUserPoints(), None)
+        self.assertEquals(kmeans.getEstimateK(), False)
+        self.assertEquals(kmeans.getK(), 2)
+
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([H2OConfTest], file_name="py_unit_tests_conf_report")

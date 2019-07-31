@@ -7,7 +7,7 @@ from pyspark.ml.wrapper import JavaEstimator
 
 from ai.h2o.sparkling.ml.utils import getDoubleArrayArrayFromIntArrayArray
 from py_sparkling.ml.models import H2OMOJOModel
-from py_sparkling.ml.util import set_double_values, validateEnumValue
+from py_sparkling.ml.util import set_double_values, validateEnumValue, getValidatedEnumValue
 from pysparkling.ml.params import H2OAlgoUnsupervisedParams
 from pysparkling.spark_specifics import get_input_kwargs
 
@@ -59,7 +59,7 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         return self._set(standardize=value)
 
     def setInit(self, value):
-        validated = validateEnumValue(self.__getInitEnum(), value)
+        validated = getValidateEnumValue(self.__getInitEnum(), value)
         return self._set(init=validated)
 
     def setUserPoints(self, value):
@@ -75,7 +75,7 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         return self._set(k=value)
 
     def __getInitEnum(self):
-        return "hex.kmeans$Initialization"
+        return "hex.kmeans.KMeans$Initialization"
 
 
 class H2OKMeans(H2OKMeansParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
@@ -174,8 +174,8 @@ class H2OKMeans(H2OKMeansParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
         double_types = ["splitRatio"]
         set_double_values(kwargs, double_types)
 
-        if "init" in kwargs:
-            kwargs["init"] = getDoubleArrayArrayFromIntArrayArray(kwargs["init"])
+        if "userPoints" in kwargs:
+            kwargs["userPoints"] = getDoubleArrayArrayFromIntArrayArray(kwargs["userPoints"])
 
         return self._set(**kwargs)
 
