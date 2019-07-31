@@ -195,7 +195,7 @@ def updateNexRelVersion(params) {
                         git pull
                         if git tag --list | grep -q RELEASE-${version}; then git tag -d RELEASE-${version}; fi
                         if git ls-remote --tags origin | grep -q RELEASE-${version}; then git push --delete origin RELEASE-${version}; fi
-                        ./gradlew -Pspark=${params.spark} -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${version} -Prelease.newVersion=${nextVersion} -PdoRelease release -x check
+                        ./gradlew -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${version} -Prelease.newVersion=${nextVersion} -PdoRelease release -x check
                         """
         })
     }
