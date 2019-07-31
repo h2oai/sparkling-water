@@ -15,10 +15,11 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package ai.h2o.sparkling.ml.models
 
-import org.apache.spark.ml.util.{MLReadable, MLReader}
+import org.apache.spark.ml.param.Params
+import org.apache.spark.ml.util.{MLWritable, MLWriter}
 
-trait H2OMOJOReadable[T <: HasMojoData] extends MLReadable[T] {
-  override def read: MLReader[T] = new H2OMOJOReader[T]
+trait H2OMOJOWritable extends MLWritable with Params with HasMojoData {
+  override def write: MLWriter = new H2OMOJOWriter(this, getMojoData())
 }

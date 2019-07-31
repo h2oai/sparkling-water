@@ -15,14 +15,13 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package ai.h2o.sparkling.ml.models
 
+import ai.h2o.sparkling.ml.utils.{DatasetShape, SchemaUtils}
 import org.apache.spark.h2o.converters.RowConverter
-import ai.h2o.sparkling.ml.utils.DatasetShape
-import ai.h2o.sparkling.ml.utils.SchemaUtils
-import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.struct
+import org.apache.spark.sql.{DataFrame, Dataset}
 
 trait H2OMOJOFlattenedInput {
   protected def inputColumnNames: Array[String]

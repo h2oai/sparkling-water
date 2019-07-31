@@ -15,13 +15,14 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package ai.h2o.sparkling.ml.models
 
 import java.io.InputStream
 
 import org.apache.hadoop.fs.Path
-import org.apache.spark.ml.util._
-import org.apache.spark.sql._
+import org.apache.spark.ml.h2o.models.H2OMOJOSettings
+import org.apache.spark.ml.util.Identifiable
+import org.apache.spark.sql.SparkSession
 
 trait H2OMOJOLoader[T] {
 
