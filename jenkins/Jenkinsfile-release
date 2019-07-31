@@ -408,7 +408,7 @@ EOF
                                 rm -rf docs.h2o.ai
                                 git clone git@github.com:h2oai/docs.h2o.ai.git
                                 cd docs.h2o.ai/sites-available/
-                                sed -i.backup -E 's?        ProxyPass "/sparkling-water/${params.spark}/latest-stable/".*?        ProxyPass "/sparkling-water/${params.spark}/latest-stable/" "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${version}/"?' 000-default.conf
+                                sed -i.backup -E 's?        ProxyPass "/sparkling-water/${params.spark}/latest-stable/".*?        ProxyPass "/sparkling-water/${params.spark}/latest-stable/" "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${version}/"?' 000-default.conf
                                 git add 000-default.conf
                                 git commit -m "Update latest version of Sparkling Water for Spark ${params.spark} version to ${version}"
                                 git push --set-upstream origin master
