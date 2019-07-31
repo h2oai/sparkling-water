@@ -48,37 +48,6 @@ class H2OMOJOAlgoSharedParams(Params):
     def getNamedMojoOutputColumns(self):
         return self.getOrDefault(self.namedMojoOutputColumns)
 
-    ##
-    # Setters
-    ##
-    def setPredictionCol(self, value):
-        assert_is_type(value, str)
-        return self._set(predictionCol=value)
-
-    def setDetailedPredictionCol(self, value):
-        assert_is_type(value, str)
-        return self._set(detailedPredictionCol=value)
-
-    def setWithDetailedPredictionCol(self, value):
-        assert_is_type(value, bool)
-        return self._set(withDetailedPredictionCol=value)
-
-    def setFeaturesCols(self, value):
-        assert_is_type(value, [str])
-        return self._set(featuresCols=value)
-
-    def setConvertUnknownCategoricalLevelsToNa(self, value):
-        assert_is_type(value, bool)
-        return self._set(convertUnknownCategoricalLevelsToNa=value)
-
-    def setConvertInvalidNumbersToNa(self, value):
-        assert_is_type(value, bool)
-        return self._set(convertInvalidNumbersToNa=value)
-
-    def setNamedMojoOutputColumns(self, value):
-        assert_is_type(value, bool)
-        return self._set(namedMojoOutputColumns=value)
-
 class H2OCommonParams(H2OMOJOAlgoSharedParams):
 
 
@@ -162,6 +131,35 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
 
         return self._set(columnsToCategorical=value)
 
+    # Setters for parameters which are defined on MOJO as well
+    def setPredictionCol(self, value):
+        assert_is_type(value, str)
+        return self._set(predictionCol=value)
+
+    def setDetailedPredictionCol(self, value):
+        assert_is_type(value, str)
+        return self._set(detailedPredictionCol=value)
+
+    def setWithDetailedPredictionCol(self, value):
+        assert_is_type(value, bool)
+        return self._set(withDetailedPredictionCol=value)
+
+    def setFeaturesCols(self, value):
+        assert_is_type(value, [str])
+        return self._set(featuresCols=value)
+
+    def setConvertUnknownCategoricalLevelsToNa(self, value):
+        assert_is_type(value, bool)
+        return self._set(convertUnknownCategoricalLevelsToNa=value)
+
+    def setConvertInvalidNumbersToNa(self, value):
+        assert_is_type(value, bool)
+        return self._set(convertInvalidNumbersToNa=value)
+
+    def setNamedMojoOutputColumns(self, value):
+        assert_is_type(value, bool)
+        return self._set(namedMojoOutputColumns=value)
+    
 class H2OCommonUnsupervisedParams(H2OCommonParams):
     pass
 
