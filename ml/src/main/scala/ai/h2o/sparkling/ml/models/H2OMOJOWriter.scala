@@ -15,11 +15,12 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package ai.h2o.sparkling.ml.models
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.ml.param.Params
-import org.apache.spark.ml.util.{DefaultParamsWriter, MLWriter}
+import org.apache.spark.ml.util.MLWriter
+import org.apache.spark.ml.util.expose.DefaultParamsWriter
 
 private[models] class H2OMOJOWriter(instance: Params, val mojoData: Array[Byte]) extends MLWriter {
 

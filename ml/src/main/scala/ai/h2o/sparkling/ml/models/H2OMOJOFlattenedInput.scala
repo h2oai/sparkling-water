@@ -1,28 +1,10 @@
-/*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+package ai.h2o.sparkling.ml.models
 
-package org.apache.spark.ml.h2o.models
-
+import ai.h2o.sparkling.ml.utils.{DatasetShape, SchemaUtils}
 import org.apache.spark.h2o.converters.RowConverter
-import ai.h2o.sparkling.ml.utils.DatasetShape
-import ai.h2o.sparkling.ml.utils.SchemaUtils
-import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.struct
+import org.apache.spark.sql.{DataFrame, Dataset}
 
 trait H2OMOJOFlattenedInput {
   protected def inputColumnNames: Array[String]
