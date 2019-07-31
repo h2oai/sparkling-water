@@ -29,7 +29,8 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 class H2OTargetEncoder(override val uid: String)
   extends Estimator[H2OTargetEncoderModel]
   with H2OTargetEncoderBase
-  with DefaultParamsWritable {
+  with DefaultParamsWritable
+  with H2OTargetEncoderModelUtils {
 
   def this() = this(Identifiable.randomUID("H2OTargetEncoder"))
 

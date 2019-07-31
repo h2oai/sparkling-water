@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.ml.features
 
 import ai.h2o.sparkling.ml.params.H2OTargetEncoderParams
-import org.apache.spark.h2o.Frame
 import org.apache.spark.ml.PipelineStage
 import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
 
@@ -43,10 +42,5 @@ trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderParams {
     require(ioIntersection.isEmpty,
       s"""The columns [${ioIntersection.map(i => s"'$i'").mkString(", ")}] are specified
          |as input columns and also as output columns. There can't be an overlap.""".stripMargin)
-  }
-
-  protected def convertRelevantColumnsToCategorical(frame: Frame): Unit = {
-    val relevantColumns = getInputCols() ++ Array(getLabelCol())
-    relevantColumns.foreach(frame.toCategoricalCol(_))
   }
 }
