@@ -21,12 +21,11 @@ import java.util.Date
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
-import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OCommonSupervisedParams}
+import ai.h2o.sparkling.ml.params._
 import hex.ScoreKeeper
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.{H2OMOJOModel, H2OMOJOSettings}
-import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}

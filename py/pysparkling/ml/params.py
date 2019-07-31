@@ -4,17 +4,84 @@ from pyspark.ml.param import *
 
 from py_sparkling.ml.util import getValidatedEnumValue, getValidatedEnumValues, getDoubleArrayFromIntArray
 
-
-class H2OCommonParams(Params):
-
+class H2OMOJOAlgoSharedParams(Params):
     predictionCol = Param(Params._dummy(), "predictionCol", "Prediction column name")
     detailedPredictionCol = Param(Params._dummy(), "detailedPredictionCol",
-                                  "Column containing additional prediction details, its content depends"
-                                  " on the model type.")
+                              "Column containing additional prediction details, its content depends"
+                              " on the model type.")
     withDetailedPredictionCol = Param(Params._dummy(), "withDetailedPredictionCol",
-                                      "Enables or disables generating additional prediction column, but with more details")
-
+                                  "Enables or disables generating additional prediction column, but with more details")
     featuresCols = Param(Params._dummy(), "featuresCols", "Name of feature columns")
+
+    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(),
+                                                "convertUnknownCategoricalLevelsToNa",
+                                                "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
+
+    convertInvalidNumbersToNa = Param(Params._dummy(),
+                                      "convertInvalidNumbersToNa",
+                                      "If set to 'true', the model converts invalid numbers to NA during making predictions.")
+
+    namedMojoOutputColumns = Param(Params._dummy(), "namedMojoOutputColumns", "Mojo Output is not stored" +
+                                                                              " in the array but in the properly named columns")
+
+    ##
+    # Getters
+    ##
+    def getPredictionCol(self):
+        return self.getOrDefault(self.predictionCol)
+
+    def getDetailedPredictionCol(self):
+        return self.getOrDefault(self.detailedPredictionCol)
+
+    def getWithDetailedPredictionCol(self):
+        return self.getOrDefault(self.withDetailedPredictionCol)
+
+    def getFeaturesCols(self):
+        return self.getOrDefault(self.featuresCols)
+
+    def getConvertUnknownCategoricalLevelsToNa(self):
+        return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
+
+    def getConvertInvalidNumbersToNa(self):
+        return self.getOrDefault(self.convertInvalidNumbersToNa)
+
+    def getNamedMojoOutputColumns(self):
+        return self.getOrDefault(self.namedMojoOutputColumns)
+
+    ##
+    # Setters
+    ##
+    def setPredictionCol(self, value):
+        assert_is_type(value, str)
+        return self._set(predictionCol=value)
+
+    def setDetailedPredictionCol(self, value):
+        assert_is_type(value, str)
+        return self._set(detailedPredictionCol=value)
+
+    def setWithDetailedPredictionCol(self, value):
+        assert_is_type(value, bool)
+        return self._set(withDetailedPredictionCol=value)
+
+    def setFeaturesCols(self, value):
+        assert_is_type(value, [str])
+        return self._set(featuresCols=value)
+
+    def setConvertUnknownCategoricalLevelsToNa(self, value):
+        assert_is_type(value, bool)
+        return self._set(convertUnknownCategoricalLevelsToNa=value)
+
+    def setConvertInvalidNumbersToNa(self, value):
+        assert_is_type(value, bool)
+        return self._set(convertInvalidNumbersToNa=value)
+
+    def setNamedMojoOutputColumns(self, value):
+        assert_is_type(value, bool)
+        return self._set(namedMojoOutputColumns=value)
+
+class H2OCommonParams(H2OMOJOAlgoSharedParams):
+
+
     foldCol = Param(Params._dummy(), "foldCol", "Fold column name")
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
     splitRatio = Param(Params._dummy(), "splitRatio",
@@ -31,28 +98,9 @@ class H2OCommonParams(Params):
                                  "columnsToCategorical",
                                  "List of columns to convert to categorical before modelling")
 
-    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(),
-                                                "convertUnknownCategoricalLevelsToNa",
-                                                "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
-
-    convertInvalidNumbersToNa = Param(Params._dummy(),
-                                      "convertInvalidNumbersToNa",
-                                      "If set to 'true', the model converts invalid numbers to NA during making predictions.")
     ##
     # Getters
     ##
-    def getPredictionCol(self):
-        return self.getOrDefault(self.predictionCol)
-
-    def getDetailedPredictionCol(self):
-        return self.getOrDefault(self.detailedPredictionCol)
-
-    def getWithDetailedPredictionCol(self):
-        return self.getOrDefault(self.withDetailedPredictionCol)
-
-    def getFeaturesCols(self):
-        return self.getOrDefault(self.featuresCols)
-
     def getFoldCol(self):
         return self.getOrDefault(self.foldCol)
 
@@ -74,31 +122,9 @@ class H2OCommonParams(Params):
     def getColumnsToCategorical(self):
         return self.getOrDefault(self.columnsToCategorical)
 
-    def getConvertUnknownCategoricalLevelsToNa(self):
-        return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
-
-    def getConvertInvalidNumbersToNa(self):
-        return self.getOrDefault(self.convertInvalidNumbersToNa)
-
     ##
     # Setters
     ##
-    def setPredictionCol(self, value):
-        assert_is_type(value, str)
-        return self._set(predictionCol=value)
-
-    def setDetailedPredictionCol(self, value):
-        assert_is_type(value, str)
-        return self._set(detailedPredictionCol=value)
-
-    def setWithDetailedPredictionCol(self, value):
-        assert_is_type(value, bool)
-        return self._set(withDetailedPredictionCol=value)
-    
-    def setFeaturesCols(self, value):
-        assert_is_type(value, [str])
-        return self._set(featuresCols=value)
-
     def setFoldCol(self, value):
         assert_is_type(value, str, None)
         return self._set(foldCol=value)
@@ -135,14 +161,6 @@ class H2OCommonParams(Params):
             prepared_array.append(arg)
 
         return self._set(columnsToCategorical=value)
-
-    def setConvertUnknownCategoricalLevelsToNa(self, value):
-        assert_is_type(value, bool)
-        return self._set(convertUnknownCategoricalLevelsToNa=value)
-
-    def setConvertInvalidNumbersToNa(self, value):
-        assert_is_type(value, bool)
-        return self._set(convertInvalidNumbersToNa=value)
 
 class H2OCommonUnsupervisedParams(H2OCommonParams):
     pass

@@ -14,25 +14,35 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+package ai.h2o.sparkling.ml.params
 
-package org.apache.spark.ml.h2o.param
-
-import org.apache.spark.internal.Logging
 import org.apache.spark.ml.param.{Param, Params}
+import org.json4s.jackson.JsonMethods.{compact, parse, render}
+import org.json4s.{JNull, JString, JValue}
 
-/**
-  * The trait represents a definition of ML algorithm parameters that may contain some deprecations
-  */
-trait DeprecatableParams extends Params with Logging {
+class NullableStringParam(parent: Params, name: String, doc: String, isValid: String => Boolean)
+  extends Param[String](parent, name, doc, isValid) {
 
-  /**
-    * When a parameter is renamed, the mapping 'old name' -> 'new name' should be added into this map.
-    */
-  protected def renamingMap: Map[String, String]
+  def this(parent: Params, name: String, doc: String) =
+    this(parent, name, doc, _ => true)
 
-  private def applyRenaming(parameterName: String): String = renamingMap.getOrElse(parameterName, parameterName)
+  override def jsonEncode(value: String): String = {
+    val encoded: JValue = if (value == null) {
+      JNull
+    } else {
+      JString(value)
+    }
+    compact(render(encoded))
+  }
 
-  override def hasParam(paramName: String): Boolean = super.hasParam(applyRenaming(paramName))
-
-  override def getParam(paramName: String): Param[Any] = super.getParam(applyRenaming(paramName))
+  override def jsonDecode(json: String): String = {
+    parse(json) match {
+      case JNull =>
+        null
+      case JString(s) =>
+        s
+      case _ =>
+        throw new IllegalArgumentException(s"Cannot decode $json to String.")
+    }
+  }
 }
