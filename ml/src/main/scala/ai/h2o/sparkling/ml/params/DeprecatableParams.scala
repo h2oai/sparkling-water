@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.params
 
-import org.apache.spark.internal.Logging
+import org.apache.spark.h2o.utils.Logging
 import org.apache.spark.ml.param.{Param, Params}
 
 /**
