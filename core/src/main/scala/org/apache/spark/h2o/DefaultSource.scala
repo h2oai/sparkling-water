@@ -78,7 +78,8 @@ class DefaultSource extends RelationProvider
         case SaveMode.Append =>
           sys.error("Appending to H2O Frame is not supported.")
         case SaveMode.Overwrite =>
-          DataSourceUtils.overwrite(key, originalFrame, data)
+          originalFrame.remove()
+          h2oContext.asH2OFrame(data, key)
         case SaveMode.ErrorIfExists =>
           sys.error(s"Frame with key '$key' already exists, if you want to override it set the save mode to override.")
         case SaveMode.Ignore => // do nothing

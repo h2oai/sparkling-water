@@ -1,0 +1,13 @@
+description = "Utilities shared accross Sparkling Water sub-modules. These utilities does not depend on H2O."
+
+apply from: "$rootDir/gradle/sparkTest.gradle"
+apply from: "$rootDir/gradle/utils.gradle"
+
+dependencies {
+    compileOnly "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
+    compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+
+    compile "org.scala-lang:scala-compiler:${scalaVersion}"
+}
+
+defineStandardPublication().call()
