@@ -6,11 +6,11 @@ from pyspark.ml.util import JavaMLWritable
 from pyspark.ml.wrapper import JavaEstimator
 from pyspark.sql.dataframe import DataFrame
 
-from py_sparkling.ml.util import set_double_values
+from ai.h2o.sparkling.ml.utils import set_double_values, validateEnumValue, validateEnumValues, arrayToDoubleArray
 from py_sparkling.ml.models import H2OMOJOModel
 from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, \
     H2OGridSearchParams
-from .util import JavaH2OMLReadable, validateEnumValue, validateEnumValues, arrayToDoubleArray
+from .util import JavaH2OMLReadable
 
 java_max_double_value = (2-2**(-52))*(2**1023)
 from pysparkling.spark_specifics import get_input_kwargs
