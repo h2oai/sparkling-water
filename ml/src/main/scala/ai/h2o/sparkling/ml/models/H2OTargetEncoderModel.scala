@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.automl.targetencoding.TargetEncoderModel
-import ai.h2o.sparkling.ml.features.{H2OTargetEncoderBase, H2OTargetEncoderHoldoutStrategy}
+import ai.h2o.sparkling.ml.features.{H2OTargetEncoderBase, H2OTargetEncoderHoldoutStrategy, H2OTargetEncoderModelUtils}
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
@@ -31,7 +31,8 @@ import water.support.ModelSerializationSupport
 class H2OTargetEncoderModel(
     override val uid: String,
     targetEncoderModel: TargetEncoderModel)
-  extends Model[H2OTargetEncoderModel] with H2OTargetEncoderBase with MLWritable {
+  extends Model[H2OTargetEncoderModel] with H2OTargetEncoderBase with MLWritable
+  with H2OTargetEncoderModelUtils {
 
   lazy val mojoModel: H2OTargetEncoderMOJOModel = {
     val mojoData = ModelSerializationSupport.getMojoData(targetEncoderModel)
