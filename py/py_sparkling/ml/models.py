@@ -6,7 +6,7 @@ from pyspark.sql.column import Column
 from .util import JavaH2OMLReadable
 from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
-
+from pysparkling.ml.params import H2OMOJOAlgoSharedParams
 
 class H2OMOJOSettings(JavaWrapper):
 
@@ -44,31 +44,7 @@ class H2OMOJOSettings(JavaWrapper):
         return H2OMOJOSettings()
 
 
-class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaH2OMLReadable):
-
-    def getConvertUnknownCategoricalLevelsToNa(self):
-        return self._java_obj.getConvertUnknownCategoricalLevelsToNa()
-
-    def getConvertInvalidNumbersToNa(self):
-        return self._java_obj.getConvertInvalidNumbersToNa()
-
-    def getFeaturesCols(self):
-        return list(self._java_obj.getFeaturesCols())
-
-    def getPredictionCol(self):
-        return self._java_obj.getPredictionCol()
-
-    def getDetailedPredictionCol(self):
-        return self._java_obj.getDetailedPredictionCol()
-
-    def getWithDetailedPredictionCol(self):
-        return self._java_obj.getWithDetailedPredictionCol()
-
-    def getModelDetails(self):
-        return self._java_obj.getModelDetails()
-
-    def getNamedMojoOutputColumns(self):
-        return self._java_obj.getNamedMojoOutputColumns()
+class H2OMOJOModelBase(H2OMOJOAlgoSharedParams, JavaModel, JavaMLWritable, JavaH2OMLReadable):
 
     # Overriding the method to avoid changes on the companion Java object
     def _transfer_params_to_java(self):
@@ -84,6 +60,10 @@ class H2OMOJOModel(H2OMOJOModelBase):
         javaModel = spark_session._jvm.py_sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo,
                                                                                           settings.toJavaObject())
         return H2OMOJOModel(javaModel)
+
+    def getModelDetails(self):
+        return self._java_obj.getModelDetails()
+
 
 
 class H2OMOJOPipelineModel(H2OMOJOModelBase):

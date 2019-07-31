@@ -22,6 +22,7 @@ import java.util
 
 import _root_.hex.genmodel.MojoReaderBackendFactory
 import _root_.hex.genmodel.attributes.ModelJsonReader
+import ai.h2o.sparkling.ml.params.NullableStringParam
 import com.google.gson.{GsonBuilder, JsonElement}
 import hex.ModelCategory
 import hex.genmodel.easy.EasyPredictModelWrapper
@@ -36,6 +37,14 @@ import water.support.ModelSerializationSupport
 import scala.collection.JavaConverters._
 
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
+
+  protected final val modelDetails: NullableStringParam = new NullableStringParam(this, "modelDetails", "Raw details of this model.")
+
+  setDefault(
+    modelDetails -> null
+  )
+
+  def getModelDetails(): String = $(modelDetails)
 
   override protected def outputColumnName: String = getDetailedPredictionCol()
 

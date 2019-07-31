@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.param
+package ai.h2o.sparkling.ml.params
 
 import org.apache.spark.ml.param.{Param, Params}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}

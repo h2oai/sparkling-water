@@ -21,7 +21,7 @@ import java.util
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.algos.{H2OAlgoCommonUtils, H2OSupervisedAlgorithm}
-import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OCommonSupervisedParams}
+import ai.h2o.sparkling.ml.params.{AlgoParams, H2OAlgoParamsHelper, H2OCommonSupervisedParams, HyperParamsParam}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.grid.GridSearch.SimpleParametersBuilderFactory
@@ -34,7 +34,6 @@ import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.h2o.models.{H2OMOJOModel, H2OMOJOSettings}
-import org.apache.spark.ml.h2o.param._
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types._

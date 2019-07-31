@@ -17,7 +17,6 @@
 
 package ai.h2o.sparkling.ml.params
 
-import org.apache.spark.ml.h2o.param.DoubleParam
 import org.apache.spark.ml.param.{Param, ParamPair, Params}
 import org.json4s.JsonAST.{JArray, JNull}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
