@@ -16,21 +16,13 @@
 */
 package ai.h2o.sparkling.ml.params
 
-import org.apache.spark.h2o.utils.Logging
-import org.apache.spark.ml.h2o.param.NullableStringParam
 import org.apache.spark.ml.param._
 
 /**
   * This trait contains parameters that are shared across all algorithms.
   */
-trait H2OCommonParams extends Params with Logging {
+trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
 
-  protected final val predictionCol = new Param[String](this, "predictionCol", "Prediction column name")
-  protected final val detailedPredictionCol = new Param[String](this, "detailedPredictionCol",
-    "Column containing additional prediction details, its content depends on the model type.")
-  protected final val withDetailedPredictionCol = new BooleanParam(this, "withDetailedPredictionCol",
-    "Enables or disables generating additional prediction column, but with more details")
-  protected final val featuresCols = new StringArrayParam(this, "featuresCols", "Name of feature columns")
   protected final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   protected final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
   protected final val splitRatio = new DoubleParam(this, "splitRatio",
@@ -48,44 +40,23 @@ trait H2OCommonParams extends Params with Logging {
     "columnsToCategorical",
     "List of columns to convert to categorical before modelling")
 
-  protected final val convertUnknownCategoricalLevelsToNa = new BooleanParam(this,
-    "convertUnknownCategoricalLevelsToNa",
-    "If set to 'true', the model converts unknown categorical levels to NA during making predictions.")
-
-  protected final val convertInvalidNumbersToNa = new BooleanParam(this,
-    "convertInvalidNumbersToNa",
-    "If set to 'true', the model converts invalid numbers to NA during making predictions.")
-
-
   //
   // Default values
   //
   setDefault(
-    predictionCol -> "prediction",
-    detailedPredictionCol -> "detailed_prediction",
-    withDetailedPredictionCol -> false,
-    featuresCols -> Array.empty[String],
     foldCol -> null,
     weightCol -> null,
     splitRatio -> 1.0, // Use whole frame as training frame
     seed -> -1,
     nfolds -> 0,
     allStringColumnsToCategorical -> true,
-    columnsToCategorical -> Array.empty[String],
-    convertUnknownCategoricalLevelsToNa -> false,
-    convertInvalidNumbersToNa -> false
+    columnsToCategorical -> Array.empty[String]
   )
 
   //
   // Getters
   //
-  def getPredictionCol(): String = $(predictionCol)
-
-  def getDetailedPredictionCol(): String = $(detailedPredictionCol)
-
-  def getWithDetailedPredictionCol(): Boolean = $(withDetailedPredictionCol)
-
-  def getFeaturesCols(): Array[String] = {
+  override def getFeaturesCols(): Array[String] = {
     val excludedCols = getExcludedCols()
     $(featuresCols).filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
   }
@@ -104,28 +75,9 @@ trait H2OCommonParams extends Params with Logging {
 
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
-  def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
-
-  def getConvertInvalidNumbersToNa(): Boolean = $(convertInvalidNumbersToNa)
-
   //
   // Setters
   //
-  def setPredictionCol(columnName: String): this.type = set(predictionCol, columnName)
-
-  def setDetailedPredictionCol(columnName: String): this.type = set(detailedPredictionCol, columnName)
-
-  def setWithDetailedPredictionCol(enabled: Boolean): this.type = set(withDetailedPredictionCol, enabled)
-
-  def setFeaturesCol(first: String): this.type = setFeaturesCols(first)
-
-  def setFeaturesCols(first: String, others: String*): this.type = set(featuresCols, Array(first) ++ others)
-
-  def setFeaturesCols(columnNames: Array[String]): this.type = {
-    require(columnNames.length > 0, "Array with feature columns must contain at least one column.")
-    set(featuresCols, columnNames)
-  }
-
   def setFoldCol(columnName: String): this.type = set(foldCol, columnName)
 
   def setWeightCol(columnName: String): this.type = set(weightCol, columnName)
@@ -142,9 +94,26 @@ trait H2OCommonParams extends Params with Logging {
 
   def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
 
+  // Setters for parameters which are defined on MOJO as well
+  def setPredictionCol(columnName: String): this.type = set(predictionCol, columnName)
+
+  def setDetailedPredictionCol(columnName: String): this.type = set(detailedPredictionCol, columnName)
+
+  def setWithDetailedPredictionCol(enabled: Boolean): this.type = set(withDetailedPredictionCol, enabled)
+
+  def setFeaturesCol(first: String): this.type = setFeaturesCols(first)
+
+  def setFeaturesCols(first: String, others: String*): this.type = set(featuresCols, Array(first) ++ others)
+
+  def setFeaturesCols(columnNames: Array[String]): this.type = {
+    require(columnNames.length > 0, "Array with feature columns must contain at least one column.")
+    set(featuresCols, columnNames)
+  }
+
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = set(convertUnknownCategoricalLevelsToNa, value)
 
   def setConvertInvalidNumbersToNa(value: Boolean): this.type = set(convertInvalidNumbersToNa, value)
 
+  def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
   protected def getExcludedCols(): Seq[String]
 }

@@ -14,16 +14,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.param
+package ai.h2o.sparkling.ml.params
 
 import org.apache.spark.internal.Logging
 import org.apache.spark.ml.h2o.models.H2OMOJOSettings
 import org.apache.spark.ml.param._
 
 /**
-  * Parameters available on the MOJO Model
+  * Parameters available on the algorithm & MOJO Model
   */
-trait H2OMOJOModelParams extends Params with Logging {
+trait H2OMOJOAlgoSharedParams extends Params with Logging {
 
   //
   // Param definitions
@@ -47,21 +47,18 @@ trait H2OMOJOModelParams extends Params with Logging {
   protected final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
     " in the array but in the properly named columns")
 
-  protected final val modelDetails: NullableStringParam = new NullableStringParam(this, "modelDetails", "Raw details of this model.")
-
   //
   //
   // Default values
   //
   setDefault(
-    featuresCols -> Array.empty[String],
     predictionCol -> H2OMOJOSettings.default.predictionCol,
-    convertUnknownCategoricalLevelsToNa -> H2OMOJOSettings.default.convertUnknownCategoricalLevelsToNa,
-    convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa,
-    namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns,
     detailedPredictionCol -> H2OMOJOSettings.default.detailedPredictionCol,
     withDetailedPredictionCol -> H2OMOJOSettings.default.withDetailedPredictionCol,
-    modelDetails -> null
+    featuresCols -> Array.empty[String],
+    convertUnknownCategoricalLevelsToNa -> H2OMOJOSettings.default.convertUnknownCategoricalLevelsToNa,
+    convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa,
+    namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns
   )
 
   //
@@ -80,6 +77,4 @@ trait H2OMOJOModelParams extends Params with Logging {
   def getConvertInvalidNumbersToNa(): Boolean = $(convertInvalidNumbersToNa)
 
   def getNamedMojoOutputColumns(): Boolean = $(namedMojoOutputColumns)
-
-  def getModelDetails(): String = $(modelDetails)
 }

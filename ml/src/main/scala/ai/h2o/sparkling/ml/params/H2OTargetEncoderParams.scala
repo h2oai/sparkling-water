@@ -17,7 +17,6 @@
 
 package ai.h2o.sparkling.ml.params
 
-import org.apache.spark.ml.h2o.param.NullableStringParam
 import org.apache.spark.ml.param._
 
 trait H2OTargetEncoderParams extends Params {

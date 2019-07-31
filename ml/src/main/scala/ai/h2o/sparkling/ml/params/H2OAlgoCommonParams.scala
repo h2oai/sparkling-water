@@ -20,7 +20,6 @@ import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
-import org.apache.spark.ml.h2o.param.NullableStringParam
 
 /**
   * A trait extracting a shared parameters among all simple algorithms (all except Grid & AutoML).
