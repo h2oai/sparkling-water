@@ -22,6 +22,7 @@ import java.io._
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
+import ai.h2o.sparkling.ml.models.{H2OMOJOLoader, H2OMOJOModelBase, H2OMOJOReadable}
 import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{col, struct, udf}

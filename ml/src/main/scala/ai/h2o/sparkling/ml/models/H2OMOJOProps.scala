@@ -15,15 +15,8 @@
 * limitations under the License.
 */
 
-package py_sparkling.ml.models
+package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.{H2OMOJOLoader, H2OMOJOReadable}
-import org.apache.spark.ml.h2o.models.H2OMOJOSettings
-
-class H2OMOJOPipelineModel(override val uid: String) extends org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel(uid)
-
-object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H2OMOJOLoader[H2OMOJOPipelineModel] {
-  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
-    org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel.createFromMojo(mojoData, uid, settings)
-  }
+object H2OMOJOProps {
+  val serializedFileName = "mojo_model"
 }

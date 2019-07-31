@@ -15,27 +15,10 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package ai.h2o.sparkling.ml.models
 
-import org.apache.hadoop.fs.Path
-import org.apache.spark.ml.param.Params
-import org.apache.spark.ml.util.{DefaultParamsWriter, MLWriter}
+import org.apache.spark.ml.util.{MLReadable, MLReader}
 
-private[models] class H2OMOJOWriter(instance: Params, val mojoData: Array[Byte]) extends MLWriter {
-
-  override protected def saveImpl(path: String): Unit = {
-    DefaultParamsWriter.saveMetadata(instance, path, sc)
-
-    val outputPath = new Path(path, H2OMOJOProps.serializedFileName)
-    val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
-    val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val out = fs.create(qualifiedOutputPath)
-    try {
-      out.write(mojoData)
-    } finally {
-      out.close()
-    }
-    logInfo(s"Saved to: $qualifiedOutputPath")
-  }
-
+trait H2OMOJOReadable[T <: HasMojoData] extends MLReadable[T] {
+  override def read: MLReader[T] = new H2OMOJOReader[T]
 }

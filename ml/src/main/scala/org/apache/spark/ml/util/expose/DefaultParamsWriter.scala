@@ -15,22 +15,16 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package org.apache.spark.ml.util.expose
 
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.SparkContext
+import org.apache.spark.ml.param.Params
 
-private[models] trait HasMojoData {
-
-  // Called during init of the model
-   def setMojoData(mojoData : Array[Byte]): this.type = {
-    this.mojoData = mojoData
-    broadcastMojo = SparkSession.builder().getOrCreate().sparkContext.broadcast(this.mojoData)
-    this
+object DefaultParamsWriter {
+  def saveMetadata(
+                    instance: Params,
+                    path: String,
+                    sc: SparkContext): Unit = {
+    org.apache.spark.ml.util.DefaultParamsWriter.saveMetadata(instance, path, sc)
   }
-
-  protected def getMojoData(): Array[Byte] = broadcastMojo.value
-
-  @transient private var mojoData: Array[Byte] = _
-  private var broadcastMojo: Broadcast[Array[Byte]] = _
 }

@@ -19,18 +19,14 @@ package ai.h2o.sparkling.ml.models
 
 
 import ai.h2o.sparkling.ml.features.H2OTargetEncoderBase
-
 import hex.genmodel.easy.EasyPredictModelWrapper
 import hex.genmodel.algos.targetencoder.TargetEncoderMojoModel
-
 import org.apache.spark.h2o.converters.RowConverter
 import org.apache.spark.ml.Model
-import org.apache.spark.ml.h2o.models.{H2OMOJOFlattenedInput, H2OMOJOReadable, H2OMOJOWritable}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
-
 import water.support.ModelSerializationSupport
 
 class H2OTargetEncoderMOJOModel(override val uid: String) extends Model[H2OTargetEncoderMOJOModel]

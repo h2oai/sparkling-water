@@ -15,19 +15,20 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package ai.h2o.sparkling.ml.models
 
 import org.apache.hadoop.fs.Path
+import org.apache.spark.ExposeUtils
 import org.apache.spark.ml.param.Params
-import org.apache.spark.ml.util.DefaultParamsReader.Metadata
 import org.apache.spark.ml.util._
+import org.apache.spark.ml.util.expose.DefaultParamsReader
+import org.apache.spark.ml.util.expose.DefaultParamsReader.Metadata
 import org.apache.spark.sql._
-import org.apache.spark.util.Utils
 import org.json4s.JsonAST
 import org.json4s.JsonAST.JObject
 import org.json4s.jackson.JsonMethods.{compact, render}
 
-private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReader[T] {
+private[models] class H2OMOJOReader[T <: HasMojoData] extends MLReader[T] {
 
   private def getAndSetParams(instance: Params, metadata: Metadata, skipParams: List[String]): Unit = {
     metadata.params match {
@@ -46,7 +47,7 @@ private[models] class H2OMOJOReader[T <: HasMojoData] extends DefaultParamsReade
 
   override def load(path: String): T = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc)
-    val cls = Utils.classForName(metadata.className)
+    val cls = ExposeUtils.classForName(metadata.className)
     val instance =
       cls.getConstructor(classOf[String]).newInstance(metadata.uid).asInstanceOf[Params]
 
