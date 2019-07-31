@@ -22,11 +22,12 @@ import java.sql.Timestamp
 import java.util
 import java.util.UUID
 
+import ai.h2o.sparkling.ml.utils.SchemaUtils
 import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OAsserts._
-import org.apache.spark.h2o.utils.{H2OSchemaUtils, SharedH2OTestContext}
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.types._
@@ -464,9 +465,9 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     ))
     val df = spark.createDataFrame(rdd, schema)
 
-    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
-    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(flattenDF)
-    val expandedSchema = H2OSchemaUtils.expandedSchema(H2OSchemaUtils.flattenSchema(df), maxElementSizes)
+    val flattenDF = SchemaUtils.flattenDataFrame(df)
+    val maxElementSizes = SchemaUtils.collectMaxElementSizes(flattenDF)
+    val expandedSchema = SchemaUtils.expandedSchema(SchemaUtils.flattenSchema(df), maxElementSizes)
     val expected: Vector[StructField] = Vector(
       StructField("a.n", IntegerType, nullable = false),
       StructField("a.name", StringType, nullable = true),
@@ -807,13 +808,13 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
   def assertH2OFrameInvariants(inputDF: DataFrame, df: H2OFrame): Unit = {
     assert(inputDF.count == df.numRows(), "Number of rows has to match")
-    assert(df.numCols() == H2OSchemaUtils.flattenSchema(inputDF).length, "Number columns should match")
+    assert(df.numCols() == SchemaUtils.flattenSchema(inputDF).length, "Number columns should match")
   }
 
   def getSchemaInfo(df: DataFrame): (DataFrame, Array[Int], Seq[StructField]) = {
-    val flattenDF = H2OSchemaUtils.flattenDataFrame(df)
-    val maxElementSizes = H2OSchemaUtils.collectMaxElementSizes(flattenDF)
-    val expandedSchema = H2OSchemaUtils.expandedSchema(H2OSchemaUtils.flattenSchema(df), maxElementSizes)
+    val flattenDF = SchemaUtils.flattenDataFrame(df)
+    val maxElementSizes = SchemaUtils.collectMaxElementSizes(flattenDF)
+    val expandedSchema = SchemaUtils.expandedSchema(SchemaUtils.flattenSchema(df), maxElementSizes)
     (flattenDF, maxElementSizes, expandedSchema)
   }
 }

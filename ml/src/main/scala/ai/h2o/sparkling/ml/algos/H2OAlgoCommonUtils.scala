@@ -18,7 +18,6 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.params.H2OCommonParams
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.utils.H2OSchemaUtils
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{Dataset, SparkSession}
 import water.Key

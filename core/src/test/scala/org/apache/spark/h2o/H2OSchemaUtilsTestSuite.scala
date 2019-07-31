@@ -16,8 +16,9 @@
 */
 package org.apache.spark.h2o
 
+import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{H2OSchemaUtils, SparkTestContext, TestFrameUtils}
+import org.apache.spark.h2o.utils.{SparkTestContext, TestFrameUtils}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{ArrayType, DoubleType, IntegerType, MapType, StringType, StructField, StructType}
 import org.apache.spark.sql.functions._
@@ -39,7 +40,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
         StructField("b", IntegerType, false)
         :: Nil
     )
-    val flatSchema = H2OSchemaUtils.flattenStructsInSchema(expSchema)
+    val flatSchema = SchemaUtils.flattenStructsInSchema(expSchema)
     val expected = Seq(
       (StructField("a", IntegerType, true), "a"),
       (StructField("b", IntegerType, false), "b"))
@@ -58,7 +59,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
         ), false)
         :: Nil
     )
-    val flatSchema = H2OSchemaUtils.flattenStructsInSchema(expSchema)
+    val flatSchema = SchemaUtils.flattenStructsInSchema(expSchema)
     val expected = Seq(
       (StructField("a.a1", DoubleType, true), "a.a1"),
       (StructField("a.a2", StringType, true), "a.a2"),
@@ -79,7 +80,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       (1, 2, 3, 4, 5, 6)
     ).toDF("arr.0._1", "arr.0._2", "arr.1._1", "arr.1._2", "arr.2._1", "arr.2._2")
 
-    val result = H2OSchemaUtils.flattenDataFrame(input)
+    val result = SchemaUtils.flattenDataFrame(input)
 
     TestFrameUtils.assertFieldNamesAreEqual(expected, result)
     TestFrameUtils.assertDataFramesAreIdentical(expected, result)
@@ -97,7 +98,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       (1, 2, null, null, 5, 6)
     ).toDF("struct.arr1.0", "struct.arr1.1", "struct.arr2.0", "struct.arr2.1", "struct.arr3.0", "struct.arr3.1")
 
-    val result = H2OSchemaUtils.flattenDataFrame(input)
+    val result = SchemaUtils.flattenDataFrame(input)
 
     TestFrameUtils.assertFieldNamesAreEqual(expected, result)
     TestFrameUtils.assertDataFramesAreIdentical(expected, result)
@@ -115,7 +116,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       (1, 2, 3, 4, 5, 6, null, "extra")
     ).toDF("arr.0.0", "arr.0.1", "arr.1.0", "arr.1.1", "arr.2.0", "arr.2.1", "arr.2.2", "extra")
 
-    val result = H2OSchemaUtils.flattenDataFrame(input)
+    val result = SchemaUtils.flattenDataFrame(input)
 
     TestFrameUtils.assertFieldNamesAreEqual(expected, result)
     TestFrameUtils.assertDataFramesAreIdentical(expected, result)
@@ -133,7 +134,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       (1, 2, null, 4)
     ).toDF("struct.struct1._1", "struct.struct1._2", "struct.struct2._1", "struct.struct2._2")
 
-    val result = H2OSchemaUtils.flattenDataFrame(input)
+    val result = SchemaUtils.flattenDataFrame(input)
 
     TestFrameUtils.assertFieldNamesAreEqual(expected, result)
     TestFrameUtils.assertDataFramesAreIdentical(expected, result)
@@ -151,7 +152,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       (null, 2, 3, 4, "extra")
     ).toDF("arr.0.a", "arr.0.b", "arr.0.c", "arr.1.a", "extra")
 
-    val result = H2OSchemaUtils.flattenDataFrame(input)
+    val result = SchemaUtils.flattenDataFrame(input)
 
     TestFrameUtils.assertFieldNamesAreEqual(expected, result)
     TestFrameUtils.assertDataFramesAreIdentical(expected, result)
@@ -169,7 +170,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       (null, null, null, 4, 5, 6, "extra")
     ).toDF("map.a.0", "map.a.1", "map.b.0", "map.b.1", "map.c.0", "map.c.1", "extra")
 
-    val result = H2OSchemaUtils.flattenDataFrame(input)
+    val result = SchemaUtils.flattenDataFrame(input)
 
     TestFrameUtils.assertFieldNamesAreEqual(expected, result)
     TestFrameUtils.assertDataFramesAreIdentical(expected, result)
@@ -200,7 +201,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       StructField("arr.2.b", IntegerType, true) ::
       Nil)
 
-    val result = H2OSchemaUtils.flattenSchema(df)
+    val result = SchemaUtils.flattenSchema(df)
 
     result shouldEqual expectedSchema
   }
@@ -232,7 +233,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       StructField("struct.d.1", IntegerType, true) ::
       Nil)
 
-    val result = H2OSchemaUtils.flattenSchema(df)
+    val result = SchemaUtils.flattenSchema(df)
 
     result shouldEqual expectedSchema
   }
@@ -264,7 +265,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       StructField("map.d.b", IntegerType, true) ::
       Nil)
 
-    val result = H2OSchemaUtils.flattenSchema(df)
+    val result = SchemaUtils.flattenSchema(df)
 
     result shouldEqual expectedSchema
   }
@@ -297,7 +298,7 @@ class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestConte
       StructField("struct.d.i", IntegerType, true) ::
       Nil)
 
-    val result = H2OSchemaUtils.flattenSchema(df)
+    val result = SchemaUtils.flattenSchema(df)
 
     result shouldEqual expectedSchema
   }

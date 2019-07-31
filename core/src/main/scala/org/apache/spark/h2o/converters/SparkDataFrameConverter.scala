@@ -20,9 +20,9 @@ package org.apache.spark.h2o.converters
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalWriteConverterCtx}
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
-import org.apache.spark.h2o.utils.{H2OSchemaUtils, ReflectionUtils}
+import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.internal.Logging
-import org.apache.spark.sql.types.{BinaryType, BooleanType, ByteType, DateType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType, _}
+import org.apache.spark.sql.types.{BooleanType, ByteType, DateType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType, _}
 import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row}
 import org.apache.spark.{mllib, _}
 import water.Key
@@ -50,7 +50,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
 
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
-    import H2OSchemaUtils._
+    import ai.h2o.sparkling.ml.utils.SchemaUtils._
 
     val flatDataFrame = flattenDataFrame(dataFrame)
     val dfRdd = flatDataFrame.rdd

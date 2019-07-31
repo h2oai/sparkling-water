@@ -25,6 +25,7 @@ jar {
 }
 
 dependencies {
+    compile project(':sparkling-water-utils')
     compile("ai.h2o:h2o-ext-jython-cfunc:${h2oVersion}")
 
     // Generic model support
