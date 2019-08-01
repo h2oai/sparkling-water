@@ -111,7 +111,7 @@ class Initializer(object):
             if not previous_version == sw_h2o_version and previous_version is not "":
                 warnings.warn("PySparkling is using internally bundled H2O of version " +
                               str(sw_h2o_version) + ", but H2O installed in the python"
-                                                    " environment is of version " + str(previous_version) + ".")
+                              " environment is of version " + str(previous_version) + ".")
         except subprocess.CalledProcessError:
             pass
 
