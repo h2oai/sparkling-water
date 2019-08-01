@@ -35,7 +35,7 @@ The following sections describe how to train XGBoost model in Sparkling Water in
 
         .. code:: scala
 
-            import org.apache.spark.ml.h2o.algos.H2OXGBoost
+            import ai.h2o.sparkling.ml.algos.H2OXGBoost
             val estimator = new H2OXGBoost().setLabelCol("CAPSULE")
             val model = estimator.fit(trainingDF)
 

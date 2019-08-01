@@ -16,12 +16,12 @@
 */
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.ml.algos.H2OGridSearch
 import hex.Model
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
-import org.apache.spark.ml.h2o.algos.H2OGridSearch
 import org.apache.spark.ml.param.{Param, Params}
 import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}

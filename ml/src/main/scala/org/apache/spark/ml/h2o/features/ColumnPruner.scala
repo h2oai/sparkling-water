@@ -14,84 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package org.apache.spark.ml.h2o.features
 
-import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.param._
-import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
-import org.apache.spark.sql.types.{StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Dataset}
+import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 
-/**
-  * Column pruner removes specified columns in the input dataset
-  */
-class ColumnPruner(override val uid: String) extends Transformer with ColumnPrunerParams with DefaultParamsWritable {
+@Deprecated
+class ColumnPruner(override val uid: String) extends ai.h2o.sparkling.ml.features.ColumnPruner(uid)
 
-  def this() = this(Identifiable.randomUID("h2oColRemover"))
-
-  @DeveloperApi
-  override def transformSchema(schema: StructType): StructType = {
-    val columnsToLeft = if (getKeep()) {
-      schema.fieldNames.filter(getColumns().contains(_))
-    } else {
-      schema.fieldNames.filter(!getColumns().contains(_))
-    }
-
-    StructType(columnsToLeft.map {
-      col => StructField(col, schema(col).dataType, schema(col).nullable, schema(col).metadata)
-    })
-  }
-
-  override def transform(dataset: Dataset[_]): DataFrame = {
-    val columnsToRemove = if (getKeep()) {
-      dataset.columns.filter(!getColumns().contains(_))
-    } else {
-      dataset.columns.filter(getColumns().contains(_))
-    }
-    var resultDataset = dataset
-    columnsToRemove.foreach {
-      col => resultDataset = resultDataset.drop(col)
-    }
-    resultDataset.toDF()
-  }
-
-  override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
-}
-
-object ColumnPruner extends DefaultParamsReadable[ColumnPruner]
-
-trait ColumnPrunerParams extends Params {
-
-  //
-  // Param definitions
-  //
-  private final val keep = new BooleanParam(this, "keep", "Determines if the column specified in the 'columns' parameter should be kept or removed")
-  private final val columns = new StringArrayParam(this, "columns", "List of columns to be kept or removed")
-
-  //
-  // Default values
-  //
-  setDefault(
-    keep -> false, // default is false which means remove specified columns
-    columns -> Array[String]() // default is empty array which means no columns are removed
-  )
-
-  //
-  // Getters
-  //
-  /** @group getParam */
-  def getKeep() = $(keep)
-
-  /** @group getParam */
-  def getColumns() = $(columns)
-
-  //
-  // Setters
-  //
-  /** @group setParam */
-  def setKeep(value: Boolean): this.type = set(keep, value)
-
-  /** @group setParam */
-  def setColumns(value: Array[String]): this.type = set(columns, value)
-}
+@Deprecated
+object ColumnPruner extends H2OParamsReadable[ai.h2o.sparkling.ml.features.ColumnPruner]
