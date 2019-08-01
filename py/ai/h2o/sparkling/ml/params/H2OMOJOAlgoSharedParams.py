@@ -38,6 +38,10 @@ class H2OMOJOAlgoSharedParams(Params):
     namedMojoOutputColumns = Param(Params._dummy(), "namedMojoOutputColumns", "Mojo Output is not stored" +
                                    " in the array but in the properly named columns")
 
+    calculateContributions = Param(Params._dummy(),
+                                   "calculateContributions",
+                                   "Return SHAP values for supported algorithms. The contributions are returned into the detailedPredictionCol.")
+
     ##
     # Getters
     ##
@@ -61,3 +65,6 @@ class H2OMOJOAlgoSharedParams(Params):
 
     def getNamedMojoOutputColumns(self):
         return self.getOrDefault(self.namedMojoOutputColumns)
+
+    def getCalculateContributions(self):
+        return self.getOrDefault(self.calculateContributions)

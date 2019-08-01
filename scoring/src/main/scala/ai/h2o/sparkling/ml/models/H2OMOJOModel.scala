@@ -34,7 +34,7 @@ import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
 
-class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
+class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOModelPredictions {
 
   protected final val modelDetails: NullableStringParam = new NullableStringParam(this, "modelDetails", "Raw details of this model.")
 
@@ -47,21 +47,16 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   override protected def outputColumnName: String = getDetailedPredictionCol()
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
-  @transient private lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
+  @transient protected lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
     config.setModel(Utils.getMojoModel(getMojoData()))
     config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     config.setConvertInvalidNumbersToNa(getConvertInvalidNumbersToNa())
+    config.setEnableContributions(getCalculateContributions())
     // always let H2O produce full output, filter later if required
     config.setUseExtendedOutput(true)
     new EasyPredictModelWrapper(config)
   }
-
-  case class BinomialPrediction(p0: Double, p1: Double)
-
-  case class BinomialPredictionExtended(p0: Double, p1: Double, p0_calibrated: Double, p1_calibrated: Double)
-
-  case class RegressionPrediction(value: Double)
 
   case class MultinomialPrediction(probabilities: Array[Double])
 
@@ -78,14 +73,9 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   override protected def getPredictionSchema(): Seq[StructField] = {
     val fields = easyPredictModelWrapper.getModelCategory match {
       case ModelCategory.Binomial =>
-        val binomialSchemaBase = Seq("p0", "p1")
-        val binomialSchema = if (supportsCalibratedProbabilities()) {
-          binomialSchemaBase ++ Seq("p0_calibrated", "p1_calibrated")
-        } else {
-          binomialSchemaBase
-        }
-        binomialSchema.map(StructField(_, DoubleType, nullable = false))
-      case ModelCategory.Regression => StructField("value", DoubleType) :: Nil
+        getBinomialPredictionSchema()
+      case ModelCategory.Regression =>
+        getRegressionPredictionSchema()
       case ModelCategory.Multinomial => StructField("probabilities", ArrayType(DoubleType)) :: Nil
       case ModelCategory.Clustering => StructField("cluster", DoubleType) :: Nil
       case ModelCategory.AutoEncoder => StructField("original", ArrayType(DoubleType)) :: StructField("reconstructed", ArrayType(DoubleType)) :: Nil
@@ -97,41 +87,13 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
   }
 
-  private def supportsCalibratedProbabilities(): Boolean = {
-    // calibrateClassProbabilities returns false if model does not support calibrated probabilities,
-    // however it also accepts array of probabilities to calibrate. We are not interested in calibration,
-    // but to call this method, we need to pass dummy array of size 2 with default values to 0.
-    easyPredictModelWrapper.m.calibrateClassProbabilities(Array.fill[Double](2)(0))
-  }
-
   private def getModelUdf() = {
     val modelUdf = {
       easyPredictModelWrapper.getModelCategory match {
         case ModelCategory.Binomial =>
-          if (supportsCalibratedProbabilities()) {
-            udf[BinomialPredictionExtended, Row] { r: Row =>
-              val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
-              BinomialPredictionExtended(
-                pred.classProbabilities(0),
-                pred.classProbabilities(1),
-                pred.calibratedClassProbabilities(0),
-                pred.calibratedClassProbabilities(1)
-              )
-            }
-          } else {
-            udf[BinomialPrediction, Row] { r: Row =>
-              val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
-              BinomialPrediction(
-                pred.classProbabilities(0),
-                pred.classProbabilities(1)
-              )
-            }
-          }
-
-        case ModelCategory.Regression => udf[RegressionPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictRegression(RowConverter.toH2ORowData(r))
-          RegressionPrediction(pred.value)
-        }
+         getBinomialPredictionUDF()
+        case ModelCategory.Regression =>
+          getRegressionPredictionUDF()
         case ModelCategory.Multinomial => udf[MultinomialPrediction, Row] { r: Row =>
           val pred = easyPredictModelWrapper.predictMultinomial(RowConverter.toH2ORowData(r))
           MultinomialPrediction(pred.classProbabilities)
