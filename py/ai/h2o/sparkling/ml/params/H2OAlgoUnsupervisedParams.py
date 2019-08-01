@@ -15,6 +15,9 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.models.H2OTargetEncoderModel import H2OTargetEncoderModel
-from ai.h2o.sparkling.ml.models.H2OTargetEncoderMOJOModel import H2OTargetEncoderMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOSettings import H2OMOJOSettings
+from ai.h2o.sparkling.ml.params.H2OAlgoCommonParams import H2OAlgoCommonParams
+from ai.h2o.sparkling.ml.params.H2OCommonUnsupervisedParams import H2OCommonUnsupervisedParams
+
+
+class H2OAlgoUnsupervisedParams(H2OAlgoCommonParams, H2OCommonUnsupervisedParams):
+    pass
