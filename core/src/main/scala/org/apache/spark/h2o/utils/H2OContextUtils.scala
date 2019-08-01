@@ -20,6 +20,7 @@ package org.apache.spark.h2o.utils
 import java.net.URI
 
 import org.apache.spark.SparkContext
+import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.{BuildInfo, H2OConf}
 import water.H2O
 import water.api.ImportHiveTableHandler

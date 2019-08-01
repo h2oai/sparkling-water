@@ -21,7 +21,6 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.ml.features.H2OTargetEncoderBase
 import hex.genmodel.easy.EasyPredictModelWrapper
 import hex.genmodel.algos.targetencoder.TargetEncoderMojoModel
-import org.apache.spark.h2o.converters.RowConverter
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable

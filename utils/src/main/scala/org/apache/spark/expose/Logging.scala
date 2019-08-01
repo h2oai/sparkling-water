@@ -14,8 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
-package org.apache.spark.h2o.utils
+package org.apache.spark.expose
 
 /**
   * The trait is used just to make visible the logic of [[org.apache.spark.internal.Logging]].
