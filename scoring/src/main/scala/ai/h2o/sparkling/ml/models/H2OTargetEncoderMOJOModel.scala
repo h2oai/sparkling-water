@@ -18,15 +18,14 @@
 package ai.h2o.sparkling.ml.models
 
 
-import ai.h2o.sparkling.ml.features.H2OTargetEncoderBase
-import hex.genmodel.easy.EasyPredictModelWrapper
-import hex.genmodel.algos.targetencoder.TargetEncoderMojoModel
+import _root_.hex.genmodel.algos.targetencoder.TargetEncoderMojoModel
+import _root_.hex.genmodel.easy.EasyPredictModelWrapper
+import ai.h2o.sparkling.ml.Utils
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
-import water.support.ModelSerializationSupport
 
 class H2OTargetEncoderMOJOModel(override val uid: String) extends Model[H2OTargetEncoderMOJOModel]
   with H2OTargetEncoderBase with H2OMOJOWritable with H2OMOJOFlattenedInput {
@@ -55,8 +54,7 @@ class H2OTargetEncoderMOJOModel(override val uid: String) extends Model[H2OTarge
   */
 case class H2OTargetEncoderMOJOUdfWrapper(mojoData: Array[Byte], outputCols: Array[String]) {
   @transient private lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
-    val model = ModelSerializationSupport
-      .getMojoModel(mojoData)
+    val model = Utils.getMojoModel(mojoData)
       .asInstanceOf[TargetEncoderMojoModel]
     val config = new EasyPredictModelWrapper.Config()
     config.setModel(model)

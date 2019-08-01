@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.ml.features
+package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.params.H2OTargetEncoderParams
 import org.apache.spark.ml.PipelineStage
