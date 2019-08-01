@@ -14,3 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from ai.h2o.sparkling.H2OConf import H2OConf
+from ai.h2o.sparkling.H2OContext import H2OContext
+from ai.h2o.sparkling.Initializer import Initializer

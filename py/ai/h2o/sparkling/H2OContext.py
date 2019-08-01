@@ -1,17 +1,35 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import atexit
+import h2o
+import sys
+import warnings
+from h2o.frame import H2OFrame
+from h2o.utils.typechecks import assert_is_type, Enum
 from pyspark.context import SparkContext
-from pyspark.sql.dataframe import DataFrame
 from pyspark.rdd import RDD
 from pyspark.sql import SparkSession
-from h2o.frame import H2OFrame
-from pysparkling.initializer import Initializer
-from pysparkling.conf import H2OConf
-import h2o
+from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import *
-from pysparkling.conversions import FrameConversions as fc
-import warnings
-import atexit
-import sys
-from h2o.utils.typechecks import assert_is_type, Enum
+
+from ai.h2o.sparkling.FrameConversions import FrameConversions as fc
+from ai.h2o.sparkling.Initializer import Initializer
+from ai.h2o.sparkling.H2OConf import H2OConf
 
 
 def _monkey_patch_H2OFrame(hc):
@@ -35,8 +53,8 @@ def _monkey_patch_H2OFrame(hc):
         # Can we use cached H2O frame?
         # Only if we cached it before and cache was not invalidated by rapids expression
         if not hasattr(self, '_java_frame') or self._java_frame is None \
-           or self._ex._cache._id is None or self._ex._cache.is_empty() \
-           or not self._ex._cache._id == self._java_frame_sid:
+                or self._ex._cache._id is None or self._ex._cache.is_empty() \
+                or not self._ex._cache._id == self._java_frame_sid:
             # Note: self.frame_id will trigger frame evaluation
             self._java_frame = hc._jhc.asH2OFrame(self.frame_id)
             self._java_frame_sid = self._java_frame.key().toString()
@@ -198,7 +216,7 @@ class H2OContext(object):
     def download_h2o_logs(self, destination, container = "ZIP"):
         assert_is_type(container, Enum("ZIP", "LOG"))
         return self._jhc.h2oContext().downloadH2OLogs(destination, container)
-    
+
     def __str__(self):
         if H2OContext.is_initialized:
             return self._jhc.toString()

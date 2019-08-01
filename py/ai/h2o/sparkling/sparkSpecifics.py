@@ -15,12 +15,17 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.params.H2OTargetEncoderParams import H2OTargetEncoderParams
-from ai.h2o.sparkling.ml.params.H2OKMeansParams import H2OKMeansParams
-from ai.h2o.sparkling.ml.params.H2OGBMParams import H2OGBMParams
-from ai.h2o.sparkling.ml.params.H2ODeepLearningParams import H2ODeepLearningParams
-from ai.h2o.sparkling.ml.params.H2OAutoMLParams import H2OAutoMLParams
-from ai.h2o.sparkling.ml.params.H2OXGBoostParams import H2OXGBoostParams
-from ai.h2o.sparkling.ml.params.H2OGLMParams import H2OGLMParams
-from ai.h2o.sparkling.ml.params.H2OGridSearchParams import H2OGridSearchParams
-from ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams import H2OMOJOAlgoSharedParams
+# Methods, whose implementation changes between Spark versions
+# and we need to handle it differently
+
+from pyspark.sql import SparkSession
+
+
+def get_input_kwargs(instance):
+    spark_version = SparkSession.builder.getOrCreate().version
+
+    if spark_version == "2.1.0":
+        return instance.__init__._input_kwargs
+    else:
+        # on newer versions we need to use the following variant
+        return instance._input_kwargs

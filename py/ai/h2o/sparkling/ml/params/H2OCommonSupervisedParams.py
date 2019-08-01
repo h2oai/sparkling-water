@@ -15,12 +15,19 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.params.H2OTargetEncoderParams import H2OTargetEncoderParams
-from ai.h2o.sparkling.ml.params.H2OKMeansParams import H2OKMeansParams
-from ai.h2o.sparkling.ml.params.H2OGBMParams import H2OGBMParams
-from ai.h2o.sparkling.ml.params.H2ODeepLearningParams import H2ODeepLearningParams
-from ai.h2o.sparkling.ml.params.H2OAutoMLParams import H2OAutoMLParams
-from ai.h2o.sparkling.ml.params.H2OXGBoostParams import H2OXGBoostParams
-from ai.h2o.sparkling.ml.params.H2OGLMParams import H2OGLMParams
-from ai.h2o.sparkling.ml.params.H2OGridSearchParams import H2OGridSearchParams
-from ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams import H2OMOJOAlgoSharedParams
+from h2o.utils.typechecks import assert_is_type
+from pyspark.ml.param import *
+
+from ai.h2o.sparkling.ml.params.H2OCommonParams import H2OCommonParams
+
+
+class H2OCommonSupervisedParams(H2OCommonParams):
+
+    labelCol = Param(Params._dummy(), "labelCol", "Label column name")
+
+    def getLabelCol(self):
+        return self.getOrDefault(self.labelCol)
+
+    def setLabelCol(self, value):
+        assert_is_type(value, str)
+        return self._set(labelCol=value)

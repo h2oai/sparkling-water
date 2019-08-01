@@ -1,47 +1,13 @@
-from pyspark.ml.util import JavaMLReadable, JavaMLWritable
-from pyspark.ml.wrapper import JavaModel, JavaWrapper
-from pysparkling.initializer import *
+from pyspark.ml.param import *
+from pyspark.ml.util import JavaMLWritable
+from pyspark.ml.wrapper import JavaModel
 from pyspark.sql import SparkSession
 from pyspark.sql.column import Column
-from .util import JavaH2OMLReadable
-from h2o.utils.typechecks import assert_is_type
-from pyspark.ml.param import *
-from pysparkling.ml.params import H2OMOJOAlgoSharedParams
 
-class H2OMOJOSettings(JavaWrapper):
-
-    def __init__(self,
-                 predictionCol="prediction",
-                 detailedPredictionCol="detailed_prediction",
-                 withDetailedPredictionCol=False,
-                 convertUnknownCategoricalLevelsToNa=False,
-                 convertInvalidNumbersToNa=False,
-                 namedMojoOutputColumns=True):
-        assert_is_type(predictionCol, str)
-        assert_is_type(detailedPredictionCol, str)
-        assert_is_type(withDetailedPredictionCol, bool)
-        assert_is_type(convertUnknownCategoricalLevelsToNa, bool)
-        assert_is_type(convertInvalidNumbersToNa, bool)
-        assert_is_type(namedMojoOutputColumns, bool)
-        self.predictionCol = predictionCol
-        self.detailedPredictionCol = detailedPredictionCol
-        self.withDetailedPredictionCol = withDetailedPredictionCol
-        self.convertUnknownCategoricalLevelsToNa = convertUnknownCategoricalLevelsToNa
-        self.convertInvalidNumbersToNa = convertInvalidNumbersToNa
-        self.namedMojoOutputColumns = namedMojoOutputColumns
-
-    def toJavaObject(self):
-        return self._new_java_obj("org.apache.spark.ml.h2o.models.H2OMOJOSettings",
-                                  self.predictionCol,
-                                  self.detailedPredictionCol,
-                                  self.withDetailedPredictionCol,
-                                  self.convertUnknownCategoricalLevelsToNa,
-                                  self.convertInvalidNumbersToNa,
-                                  self.namedMojoOutputColumns)
-
-    @staticmethod
-    def default():
-        return H2OMOJOSettings()
+from ai.h2o.sparkling import Initializer
+from ai.h2o.sparkling.ml.params import H2OMOJOAlgoSharedParams
+from ai.h2o.sparkling.ml.models import H2OMOJOSettings
+from py_sparkling.ml.util import JavaH2OMLReadable
 
 
 class H2OMOJOModelBase(H2OMOJOAlgoSharedParams, JavaModel, JavaMLWritable, JavaH2OMLReadable):
