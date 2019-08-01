@@ -3,6 +3,7 @@ from pyspark.ml.param.shared import *
 from pyspark.ml.util import JavaMLReadable, JavaMLWritable
 from pyspark.ml.wrapper import JavaTransformer
 
+from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
 
 
