@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.models.H2OTargetEncoderModel import H2OTargetEncoderModel
-from ai.h2o.sparkling.ml.models.H2OTargetEncoderMOJOModel import H2OTargetEncoderMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOSettings import H2OMOJOSettings
+from ai.h2o.sparkling.ml import H2OMOJOSettings
+from py_sparkling.ml.models import H2OMOJOPipelineModel, H2OMOJOModel
+
+__all__ = ["H2OMOJOSettings", "H2OMOJOPipelineModel", "H2OMOJOModel"]

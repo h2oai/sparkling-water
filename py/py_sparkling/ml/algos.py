@@ -1,26 +1,20 @@
 import random
 import string
-import warnings
 from pyspark import keyword_only
 from pyspark.ml.util import JavaMLWritable
+from pyspark.ml.util import _jvm
 from pyspark.ml.wrapper import JavaEstimator
 from pyspark.sql.dataframe import DataFrame
 
+from ai.h2o.sparkling import Initializer
+from ai.h2o.sparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, \
+    H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams
 from ai.h2o.sparkling.ml.utils import set_double_values, validateEnumValue, validateEnumValues, arrayToDoubleArray
+from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
 from py_sparkling.ml.models import H2OMOJOModel
-from pysparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, \
-    H2OGridSearchParams
-from .util import JavaH2OMLReadable
+from py_sparkling.ml.util import JavaH2OMLReadable
 
 java_max_double_value = (2-2**(-52))*(2**1023)
-from pysparkling.spark_specifics import get_input_kwargs
-from pyspark.ml.util import _jvm
-
-def propagate_value_from_deprecated_property(kwargs, from_deprecated, to_replacing):
-    if from_deprecated in kwargs:
-        warnings.warn("The parameter '{}' is deprecated and its usage will override a value specified via '{}'!".format(from_deprecated, to_replacing))
-        kwargs[to_replacing] = kwargs[from_deprecated]
-        del kwargs[from_deprecated]
 
 
 class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
@@ -35,6 +29,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                  predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None, predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
                  convertInvalidNumbersToNa=False, **deprecatedArgs):
+        Initializer.load_sparkling_jar()
         super(H2OGBM, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGBM", self.uid)
 
@@ -91,6 +86,7 @@ class H2ODeepLearning(H2ODeepLearningParams, JavaEstimator, JavaH2OMLReadable, J
                  seed=-1, distribution="AUTO", epochs=10.0, l1=0.0, l2=0.0, hidden=[200,200], reproducible=False,
                  convertUnknownCategoricalLevelsToNa=False, foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
                  withDetailedPredictionCol=False, convertInvalidNumbersToNa=False, **deprecatedArgs):
+        Initializer.load_sparkling_jar()
         super(H2ODeepLearning, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2ODeepLearning", self.uid)
 
@@ -134,6 +130,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritabl
                  keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0,
                  predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
                  convertInvalidNumbersToNa=False, **deprecatedArgs):
+        Initializer.load_sparkling_jar()
         super(H2OAutoML, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OAutoML", self.uid)
 
@@ -198,6 +195,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaH2OMLReadable, JavaMLWrita
                  normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
                  foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
                  withDetailedPredictionCol=False, convertInvalidNumbersToNa=False, **deprecatedArgs):
+        Initializer.load_sparkling_jar()
         super(H2OXGBoost, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OXGBoost", self.uid)
 
@@ -268,6 +266,7 @@ class H2OGLM(H2OGLMParams, JavaEstimator, JavaH2OMLReadable, JavaMLWritable):
                  interactions=None, interactionPairs=None, earlyStopping=True, foldCol=None,
                  predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
                  convertInvalidNumbersToNa=False, **deprecatedArgs):
+        Initializer.load_sparkling_jar()
         super(H2OGLM, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGLM", self.uid)
 
@@ -333,6 +332,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaH2OMLReadable, JavaM
                  selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True,
                  predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
                  convertInvalidNumbersToNa=False, **deprecatedArgs):
+        Initializer.load_sparkling_jar()
         super(H2OGridSearch, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.algos.H2OGridSearch", self.uid)
 

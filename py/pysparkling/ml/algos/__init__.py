@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.models.H2OTargetEncoderModel import H2OTargetEncoderModel
-from ai.h2o.sparkling.ml.models.H2OTargetEncoderMOJOModel import H2OTargetEncoderMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOSettings import H2OMOJOSettings
+from ai.h2o.sparkling.ml.algos import H2OKMeans
+from py_sparkling.ml.algos import H2OAutoML, H2OGridSearch, H2OGLM, H2OGBM, H2OXGBoost, H2ODeepLearning
+
+__all__ = ["H2OAutoML", "H2OGridSearch", "H2OGLM", "H2OGBM", "H2OXGBoost", "H2ODeepLearning", "H2OKMeans"]

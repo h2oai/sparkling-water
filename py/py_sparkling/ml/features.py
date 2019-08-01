@@ -2,7 +2,8 @@ from pyspark import keyword_only
 from pyspark.ml.param.shared import *
 from pyspark.ml.util import JavaMLReadable, JavaMLWritable
 from pyspark.ml.wrapper import JavaTransformer
-from pysparkling.spark_specifics import get_input_kwargs
+
+from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
 
 
 class ColumnPruner(JavaTransformer, JavaMLReadable, JavaMLWritable):
@@ -12,6 +13,7 @@ class ColumnPruner(JavaTransformer, JavaMLReadable, JavaMLWritable):
 
     @keyword_only
     def __init__(self, keep=False, columns=[]):
+        Initializer.load_sparkling_jar()
         super(ColumnPruner, self).__init__()
         self._java_obj = self._new_java_obj("py_sparkling.ml.features.ColumnPruner", self.uid)
         self._setDefault(keep=False, columns=[])
