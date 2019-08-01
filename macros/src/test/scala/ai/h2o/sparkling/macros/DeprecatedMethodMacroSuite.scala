@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.macros
 
-import org.apache.spark.h2o.utils.Logging
+import org.apache.spark.expose.Logging
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner

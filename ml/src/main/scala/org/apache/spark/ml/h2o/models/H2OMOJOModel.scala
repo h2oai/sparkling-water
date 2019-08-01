@@ -22,12 +22,11 @@ import java.util
 
 import _root_.hex.genmodel.MojoReaderBackendFactory
 import _root_.hex.genmodel.attributes.ModelJsonReader
-import ai.h2o.sparkling.ml.models.{H2OMOJOLoader, H2OMOJOModelBase, H2OMOJOReadable}
+import ai.h2o.sparkling.ml.models.{H2OMOJOLoader, H2OMOJOModelBase, H2OMOJOReadable, RowConverter}
 import ai.h2o.sparkling.ml.params.NullableStringParam
 import com.google.gson.{GsonBuilder, JsonElement}
 import hex.ModelCategory
 import hex.genmodel.easy.EasyPredictModelWrapper
-import org.apache.spark.h2o.converters.RowConverter
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
