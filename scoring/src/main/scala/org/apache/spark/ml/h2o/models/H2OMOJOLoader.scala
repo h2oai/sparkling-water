@@ -15,18 +15,26 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.ml.models
+package org.apache.spark.ml.h2o.models
 
 import java.io.InputStream
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.hadoop.fs.Path
+import org.apache.spark.expose.Logging
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.SparkSession
 
-trait H2OMOJOLoader[T] {
+/**
+  * Created in order to support passing old H2OMOJOSettings to original createFromMojo method
+  */
+@Deprecated
+trait H2OMOJOLoader[T] extends Logging {
 
+  @DeprecatedMethod("ai.h2o.sparkling.ml.models.H2OMOJOModel.createFromMojo")
   def createFromMojo(path: String): T = createFromMojo(path, H2OMOJOSettings.default)
 
+  @DeprecatedMethod("ai.h2o.sparkling.ml.models.H2OMOJOModel.createFromMojo")
   def createFromMojo(path: String, settings: H2OMOJOSettings): T = {
     val inputPath = new Path(path)
     val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
@@ -36,12 +44,15 @@ trait H2OMOJOLoader[T] {
     createFromMojo(is, Identifiable.randomUID(inputPath.getName), settings)
   }
 
+  @DeprecatedMethod("ai.h2o.sparkling.ml.models.H2OMOJOModel.createFromMojo")
   def createFromMojo(is: InputStream, uid: String): T = createFromMojo(is, uid, H2OMOJOSettings.default)
 
+  @DeprecatedMethod("ai.h2o.sparkling.ml.models.H2OMOJOModel.createFromMojo")
   def createFromMojo(is: InputStream, uid: String, settings: H2OMOJOSettings): T = {
     createFromMojo(Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray, uid, settings)
   }
 
+  @DeprecatedMethod("ai.h2o.sparkling.ml.models.H2OMOJOModel.createFromMojo")
   def createFromMojo(mojoData: Array[Byte], uid: String): T = createFromMojo(mojoData, uid, H2OMOJOSettings.default)
 
   def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): T

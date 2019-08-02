@@ -84,7 +84,7 @@ At this point, you should have available a Sparkling Water interactive terminal 
 .. code:: scala
 
 	// First, specify the dependency
-	import org.apache.spark.ml.h2o.models.H2OMOJOPipelineModel
+	import ai.h2o.sparkling.ml.models.H2OMOJOPipelineModel
 
 .. code:: scala
 

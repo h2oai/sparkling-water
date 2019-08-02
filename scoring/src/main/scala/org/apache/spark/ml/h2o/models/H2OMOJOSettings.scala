@@ -17,6 +17,7 @@
 
 package org.apache.spark.ml.h2o.models
 
+@Deprecated
 case class H2OMOJOSettings(
                             predictionCol: String = "prediction",
                             detailedPredictionCol: String = "detailed_prediction",
@@ -26,6 +27,7 @@ case class H2OMOJOSettings(
                             namedMojoOutputColumns: Boolean = true
                           )
 
+@Deprecated
 object H2OMOJOSettings {
   def default = H2OMOJOSettings()
 }
