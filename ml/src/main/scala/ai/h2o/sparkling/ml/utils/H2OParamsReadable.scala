@@ -14,26 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+package ai.h2o.sparkling.ml.utils
 
-package ai.h2o.sparkling.ml.models
+import org.apache.spark.ml.util.{MLReadable, MLReader}
 
-import ai.h2o.sparkling.ml.utils.H2OReaderBase
-import org.apache.hadoop.fs.Path
-import org.apache.spark.sql._
+class H2OParamsReadable[T] extends MLReadable[T] {
 
-
-private[models] class H2OMOJOReader[T <: HasMojoData] extends H2OReaderBase[T] {
-
-  override def load(path: String): T = {
-    val model = super.load(path)
-
-    val inputPath = new Path(path, H2OMOJOProps.serializedFileName)
-    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
-    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val is = fs.open(qualifiedInputPath)
-    val mojoData = Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
-    model.setMojoData(mojoData)
-    model
-  }
-
+  override def read: MLReader[T] = new H2OReaderBase[T]
 }
