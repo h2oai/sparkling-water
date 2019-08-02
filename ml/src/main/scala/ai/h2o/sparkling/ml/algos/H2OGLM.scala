@@ -19,6 +19,7 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
+import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.StringPair
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling
 import hex.glm.GLMModel.GLMParameters
@@ -39,7 +40,7 @@ class H2OGLM(override val uid: String) extends H2OSupervisedAlgorithm[GLM, GLMMo
   def this() = this(Identifiable.randomUID("glm"))
 }
 
-object H2OGLM extends DefaultParamsReadable[H2OGLM]
+object H2OGLM extends H2OParamsReadable[H2OGLM]
 
 
 /**
