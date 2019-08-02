@@ -20,19 +20,19 @@ package org.apache.spark.ml.h2o.models
 import java.io.ByteArrayInputStream
 import java.util
 
+import _root_.hex.ModelCategory
 import _root_.hex.genmodel.MojoReaderBackendFactory
 import _root_.hex.genmodel.attributes.ModelJsonReader
+import _root_.hex.genmodel.easy.EasyPredictModelWrapper
+import ai.h2o.sparkling.ml.Utils
 import ai.h2o.sparkling.ml.models.{H2OMOJOLoader, H2OMOJOModelBase, H2OMOJOReadable, RowConverter}
 import ai.h2o.sparkling.ml.params.NullableStringParam
 import com.google.gson.{GsonBuilder, JsonElement}
-import hex.ModelCategory
-import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import py_sparkling.ml.models.{H2OMOJOModel => PyH2OMOJOModel}
-import water.support.ModelSerializationSupport
 
 import scala.collection.JavaConverters._
 
@@ -51,7 +51,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
   @transient private lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
-    config.setModel(ModelSerializationSupport.getMojoModel(getMojoData()))
+    config.setModel(Utils.getMojoModel(getMojoData()))
     config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     config.setConvertInvalidNumbersToNa(getConvertInvalidNumbersToNa())
     // always let H2O produce full output, filter later if required
@@ -221,7 +221,7 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
   }
 
   override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): PyH2OMOJOModel = {
-    val mojoModel = ModelSerializationSupport.getMojoModel(mojoData)
+    val mojoModel = Utils.getMojoModel(mojoData)
 
     val model = new PyH2OMOJOModel(uid)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo

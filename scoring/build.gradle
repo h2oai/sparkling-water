@@ -1,0 +1,22 @@
+description = "Sparkling Water MOJO scoring package"
+
+apply from: "$rootDir/gradle/utils.gradle"
+
+sourceSets {
+    main {
+        scala {
+            srcDirs += getSparkSpecificSourceDir(sparkMajorVersion)
+        }
+    }
+}
+
+dependencies {
+    compileOnly "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
+    compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+
+    compile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
+    compile("ai.h2o:h2o-genmodel:${h2oVersion}")
+    compile project(":sparkling-water-utils")
+}
+
+defineStandardPublication().call()

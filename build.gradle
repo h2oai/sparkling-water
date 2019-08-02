@@ -43,7 +43,8 @@ ext {
             project(':sparkling-water-ml'),
             project(':sparkling-water-package'),
             project(":sparkling-water-doc"),
-            project(':sparkling-water-utils')
+            project(':sparkling-water-utils'),
+            project(':sparkling-water-scoring')
     ]
     // Projects with integration tests
     integTestProjects = [
@@ -67,7 +68,8 @@ ext {
             project(':sparkling-water-package'),
             project(':sparkling-water-benchmarks'),
             project(':sparkling-water-macros'),
-            project(':sparkling-water-utils')
+            project(':sparkling-water-utils'),
+            project(':sparkling-water-scoring')
     ]
     javaProjects = [
             project(':sparkling-water-extension-stack-trace')

@@ -19,6 +19,7 @@ include 'dist'
 include 'macros'
 include 'jenkins'
 include 'utils'
+include 'scoring'
 
 // Prefix all projects with sparkling-water name
 rootProject.children.each { project ->

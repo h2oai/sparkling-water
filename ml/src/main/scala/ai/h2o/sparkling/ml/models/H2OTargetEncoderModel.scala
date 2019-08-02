@@ -18,14 +18,14 @@
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.automl.targetencoding.TargetEncoderModel
-import ai.h2o.sparkling.ml.features.{H2OTargetEncoderBase, H2OTargetEncoderHoldoutStrategy, H2OTargetEncoderModelUtils}
+import ai.h2o.sparkling.ml.features.{H2OTargetEncoderHoldoutStrategy, H2OTargetEncoderModelUtils}
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import water.support.ModelSerializationSupport
 
 class H2OTargetEncoderModel(
