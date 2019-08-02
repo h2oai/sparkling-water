@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml import H2OMOJOSettings
-from py_sparkling.ml.models import H2OMOJOPipelineModel, H2OMOJOModel
+from ai.h2o.sparkling.ml import H2OMOJOSettings, H2OMOJOPipelineModel, H2OMOJOModel
 
 __all__ = ["H2OMOJOSettings", "H2OMOJOPipelineModel", "H2OMOJOModel"]

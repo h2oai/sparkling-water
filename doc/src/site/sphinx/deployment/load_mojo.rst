@@ -9,7 +9,7 @@ If HDFS is not available for Spark, then call, in Scala:
 
 .. code:: scala
 
-    import org.apache.spark.ml.h2o.models._
+    import ai.h2o.sparkling.ml.models._
     val model = H2OMOJOModel.createFromMojo("prostate.mojo")
 
 or in Python:
@@ -24,7 +24,7 @@ You can also specify the full path such as, in Scala:
 
 .. code:: scala
 
-    import org.apache.spark.ml.h2o.models._
+    import ai.h2o.sparkling.ml.models._
     val model = H2OMOJOModel.createFromMojo("/Users/peter/prostate.mojo")
 
 or in Python:
@@ -39,7 +39,7 @@ In the case Spark is running on Hadoop and HDFS is available, then call, in Scal
 
 .. code:: scala
 
-    import org.apache.spark.ml.h2o.models._
+    import ai.h2o.sparkling.ml.models._
     val model = H2OMOJOModel.createFromMojo("prostate.mojo")
 
 or in Python:
@@ -55,7 +55,7 @@ You can also specify the absolute path in this case as, in Scala:
 
 .. code:: scala
 
-    import org.apache.spark.ml.h2o.models._
+    import ai.h2o.sparkling.ml.models._
     val model = H2OMOJOModel.createFromMojo("/user/peter/prostate.mojo")
 
 or in Python:
@@ -73,7 +73,7 @@ You can also manually specify the type of data source you need to use, in that c
 
 .. code:: scala
 
-    import org.apache.spark.ml.h2o.models._
+    import ai.h2o.sparkling.ml.models._
     // HDFS
     val modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate.mojo")
     // Local file
@@ -95,7 +95,7 @@ On the other hand, the model can be configured during its creation via ``H2OMOJO
 
 .. code:: scala
 
-    import org.apache.spark.ml.h2o.models._
+    import ai.h2o.sparkling.ml.models._
     val settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = true, convertInvalidNumbersToNa = true)
     val model = H2OMOJOModel.createFromMojo("prostate.mojo", settings)
 

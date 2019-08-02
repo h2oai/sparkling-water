@@ -15,19 +15,17 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package ai.h2o.sparkling.ml.models
 
 import java.io._
 
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
-import ai.h2o.sparkling.ml.models.{H2OMOJOLoader, H2OMOJOModelBase, H2OMOJOReadable}
 import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types._
-import py_sparkling.ml.models.{H2OMOJOPipelineModel => PyH2OMOJOPipelineModel}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -183,9 +181,9 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   }
 }
 
-object H2OMOJOPipelineModel extends H2OMOJOReadable[PyH2OMOJOPipelineModel] with H2OMOJOLoader[PyH2OMOJOPipelineModel] {
-  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): PyH2OMOJOPipelineModel = {
-    val model = new PyH2OMOJOPipelineModel(uid)
+object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H2OMOJOLoader[H2OMOJOPipelineModel] {
+  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
+    val model = new H2OMOJOPipelineModel(uid)
     val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
     val featureCols = MojoPipeline.loadFrom(reader).getInputMeta.getColumnNames
     model.set(model.featuresCols, featureCols)

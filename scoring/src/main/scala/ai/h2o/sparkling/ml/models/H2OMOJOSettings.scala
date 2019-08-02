@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package ai.h2o.sparkling.ml.models
 
 case class H2OMOJOSettings(
                             predictionCol: String = "prediction",
