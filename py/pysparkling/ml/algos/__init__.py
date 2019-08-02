@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos import H2OKMeans
-from py_sparkling.ml.algos import H2OAutoML, H2OGridSearch, H2OGLM, H2OGBM, H2OXGBoost, H2ODeepLearning
+from ai.h2o.sparkling.ml.algos import H2OKMeans, H2OAutoML, H2OGridSearch, H2OGLM, H2OGBM, H2OXGBoost, H2ODeepLearning
 
 __all__ = ["H2OAutoML", "H2OGridSearch", "H2OGLM", "H2OGBM", "H2OXGBoost", "H2ODeepLearning", "H2OKMeans"]

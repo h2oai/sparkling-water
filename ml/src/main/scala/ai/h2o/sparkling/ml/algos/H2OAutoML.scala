@@ -14,18 +14,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.algos
+package ai.h2o.sparkling.ml.algos
 
 import java.util.Date
 
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import ai.h2o.sparkling.macros.DeprecatedMethod
-import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
-import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
+import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.ScoreKeeper
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Estimator
+import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -137,7 +137,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 }
 
-object H2OAutoML extends DefaultParamsReadable[py_sparkling.ml.algos.H2OAutoML]
+object H2OAutoML extends H2OParamsReadable[H2OAutoML]
 
 trait H2OAutoMLParams extends H2OCommonSupervisedParams {
 

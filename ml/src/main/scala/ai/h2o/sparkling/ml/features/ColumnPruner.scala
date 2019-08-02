@@ -14,12 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.features
+package ai.h2o.sparkling.ml.features
 
+import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param._
-import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
+import org.apache.spark.ml.util.{DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.types.{StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset}
 
@@ -28,7 +29,7 @@ import org.apache.spark.sql.{DataFrame, Dataset}
   */
 class ColumnPruner(override val uid: String) extends Transformer with ColumnPrunerParams with DefaultParamsWritable {
 
-  def this() = this(Identifiable.randomUID("h2oColRemover"))
+  def this() = this(Identifiable.randomUID("columnPruner"))
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
@@ -59,7 +60,7 @@ class ColumnPruner(override val uid: String) extends Transformer with ColumnPrun
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
 }
 
-object ColumnPruner extends DefaultParamsReadable[ColumnPruner]
+object ColumnPruner extends H2OParamsReadable[ColumnPruner]
 
 trait ColumnPrunerParams extends Params {
 
@@ -80,18 +81,14 @@ trait ColumnPrunerParams extends Params {
   //
   // Getters
   //
-  /** @group getParam */
   def getKeep() = $(keep)
 
-  /** @group getParam */
   def getColumns() = $(columns)
 
   //
   // Setters
   //
-  /** @group setParam */
   def setKeep(value: Boolean): this.type = set(keep, value)
 
-  /** @group setParam */
   def setColumns(value: Array[String]): this.type = set(columns, value)
 }

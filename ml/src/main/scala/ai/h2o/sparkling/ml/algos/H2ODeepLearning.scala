@@ -14,10 +14,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.algos
+package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
+import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
@@ -34,7 +34,7 @@ class H2ODeepLearning(override val uid: String) extends
   def this() = this(Identifiable.randomUID("deeplearning"))
 }
 
-object H2ODeepLearning extends DefaultParamsReadable[py_sparkling.ml.algos.H2ODeepLearning]
+object H2ODeepLearning extends H2OParamsReadable[H2ODeepLearning]
 
 /**
   * Parameters here can be set as normal and are duplicated to DeepLearningParameters H2O object
