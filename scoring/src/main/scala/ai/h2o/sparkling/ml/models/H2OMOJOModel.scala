@@ -197,6 +197,7 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     model.set(model.predictionCol -> settings.predictionCol)
     model.set(model.detailedPredictionCol -> settings.detailedPredictionCol)
     model.set(model.withDetailedPredictionCol -> settings.withDetailedPredictionCol)
+    model.set(model.calculateContributions -> settings.calculateContributions)
     model.setMojoData(mojoData)
     model
   }
