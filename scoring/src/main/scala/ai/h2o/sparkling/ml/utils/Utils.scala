@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.ml
+package ai.h2o.sparkling.ml.utils
 
 import java.io.ByteArrayInputStream
 
