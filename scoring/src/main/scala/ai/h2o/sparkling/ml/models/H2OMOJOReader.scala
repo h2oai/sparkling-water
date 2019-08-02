@@ -19,6 +19,7 @@ package ai.h2o.sparkling.ml.models
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.ExposeUtils
+import org.apache.spark.expose.Logging
 import org.apache.spark.ml.param.Params
 import org.apache.spark.ml.util._
 import org.apache.spark.ml.util.expose.DefaultParamsReader
@@ -28,7 +29,7 @@ import org.json4s.JsonAST
 import org.json4s.JsonAST.JObject
 import org.json4s.jackson.JsonMethods.{compact, render}
 
-private[models] class H2OMOJOReader[T <: HasMojoData] extends MLReader[T] {
+private[models] class H2OMOJOReader[T <: HasMojoData] extends MLReader[T] with Logging {
 
   private def getAndSetParams(instance: Params, metadata: Metadata, skipParams: List[String]): Unit = {
     metadata.params match {
@@ -47,7 +48,13 @@ private[models] class H2OMOJOReader[T <: HasMojoData] extends MLReader[T] {
 
   override def load(path: String): T = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc)
-    val cls = ExposeUtils.classForName(metadata.className)
+    val cls = if (metadata.className.startsWith("org.apache.spark.ml.h2o")) {
+      logWarning("classes in package org.apache.spark.ml.h2o are deprecated. " +
+        "Please re-generate your pipeline, it will automatically use classes from the ai.h2o.sparkling.ml package")
+      ExposeUtils.classForName(metadata.className.replace("org.apache.spark.ml.h2o", "ai.h2o.sparkling.ml"))
+    } else {
+      ExposeUtils.classForName(metadata.className)
+    }
     val instance =
       cls.getConstructor(classOf[String]).newInstance(metadata.uid).asInstanceOf[Params]
 

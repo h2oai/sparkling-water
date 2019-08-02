@@ -22,10 +22,10 @@ from pyspark.ml.util import JavaMLWritable, JavaMLReadable
 from pyspark.ml.wrapper import JavaEstimator
 
 from ai.h2o.sparkling import Initializer
+from ai.h2o.sparkling.ml.models import H2OMOJOModel
 from ai.h2o.sparkling.ml.params import H2OKMeansParams
 from ai.h2o.sparkling.ml.utils import set_double_values, validateEnumValue, getDoubleArrayArrayFromIntArrayArray
 from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
-from py_sparkling.ml.models import H2OMOJOModel
 
 
 class H2OKMeans(H2OKMeansParams, JavaEstimator, JavaMLReadable, JavaMLWritable):

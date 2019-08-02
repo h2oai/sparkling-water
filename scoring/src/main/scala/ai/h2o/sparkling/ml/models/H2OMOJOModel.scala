@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.models
+package ai.h2o.sparkling.ml.models
 
 import java.io.ByteArrayInputStream
 import java.util
@@ -24,15 +24,13 @@ import _root_.hex.ModelCategory
 import _root_.hex.genmodel.MojoReaderBackendFactory
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
-import ai.h2o.sparkling.ml.models.{H2OMOJOLoader, H2OMOJOModelBase, H2OMOJOReadable, RowConverter}
-import ai.h2o.sparkling.ml.params.NullableStringParam
 import ai.h2o.sparkling.ml.utils.Utils
+import ai.h2o.sparkling.ml.params.NullableStringParam
 import com.google.gson.{GsonBuilder, JsonElement}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import py_sparkling.ml.models.{H2OMOJOModel => PyH2OMOJOModel}
 
 import scala.collection.JavaConverters._
 
@@ -188,7 +186,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
 }
 
 
-object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[PyH2OMOJOModel] {
+trait H2OMOJOModelUtils {
 
   private def removeMetaField(json: JsonElement): JsonElement = {
     if (json.isJsonObject) {
@@ -202,7 +200,7 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
   }
 
 
-  private def getModelDetails(mojoData: Array[Byte]): String = {
+  protected def getModelDetails(mojoData: Array[Byte]): String = {
     val is = new ByteArrayInputStream(mojoData)
     val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
 
@@ -220,10 +218,14 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
     }
   }
 
-  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): PyH2OMOJOModel = {
+}
+
+object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2OMOJOModel] with H2OMOJOModelUtils {
+
+  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojoModel = Utils.getMojoModel(mojoData)
 
-    val model = new PyH2OMOJOModel(uid)
+    val model = new H2OMOJOModel(uid)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
@@ -237,3 +239,4 @@ object H2OMOJOModel extends H2OMOJOReadable[PyH2OMOJOModel] with H2OMOJOLoader[P
     model
   }
 }
+

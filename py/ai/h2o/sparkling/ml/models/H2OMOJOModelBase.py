@@ -15,6 +15,15 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos import H2OKMeans
-from ai.h2o.sparkling.ml.features import H2OTargetEncoder
-from ai.h2o.sparkling.ml.models import H2OMOJOModel, H2OMOJOPipelineModel, H2OMOJOSettings
+from pyspark.ml.param import *
+from pyspark.ml.util import JavaMLWritable, JavaMLReadable
+from pyspark.ml.wrapper import JavaModel
+
+from ai.h2o.sparkling.ml.params import H2OMOJOAlgoSharedParams
+
+
+class H2OMOJOModelBase(H2OMOJOAlgoSharedParams, JavaModel, JavaMLWritable, JavaMLReadable):
+
+    # Overriding the method to avoid changes on the companion Java object
+    def _transfer_params_to_java(self):
+        pass
