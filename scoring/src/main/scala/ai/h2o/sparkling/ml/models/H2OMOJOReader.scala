@@ -46,15 +46,22 @@ private[models] class H2OMOJOReader[T <: HasMojoData] extends MLReader[T] with L
     }
   }
 
+  private val newPkg = "ai.h2o.sparkling.ml"
+
+  private val oldPkgs = Array("org.apache.spark.ml.h2o", "py_sparkling.ml")
+
   override def load(path: String): T = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc)
-    val cls = if (metadata.className.startsWith("org.apache.spark.ml.h2o")) {
-      logWarning("classes in package org.apache.spark.ml.h2o are deprecated. " +
-        "Please re-generate your pipeline, it will automatically use classes from the ai.h2o.sparkling.ml package")
-      ExposeUtils.classForName(metadata.className.replace("org.apache.spark.ml.h2o", "ai.h2o.sparkling.ml"))
-    } else {
+
+    val cls = if (metadata.className.startsWith(newPkg)) {
       ExposeUtils.classForName(metadata.className)
+    } else {
+      val oldPkg = oldPkgs.filter(metadata.className.startsWith).head
+      logWarning(s"classes in package $oldPkg are deprecated. " +
+        s"Please re-generate your pipeline, it will automatically use classes from the $newPkg package.")
+      ExposeUtils.classForName(metadata.className.replace(oldPkg, newPkg))
     }
+
     val instance =
       cls.getConstructor(classOf[String]).newInstance(metadata.uid).asInstanceOf[Params]
 
