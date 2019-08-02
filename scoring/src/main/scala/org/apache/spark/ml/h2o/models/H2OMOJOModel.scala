@@ -45,4 +45,3 @@ object H2OMOJOModel extends H2OMOJOReadable[ai.h2o.sparkling.ml.models.H2OMOJOMo
     model
   }
 }
-

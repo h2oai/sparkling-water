@@ -24,8 +24,8 @@ import _root_.hex.ModelCategory
 import _root_.hex.genmodel.MojoReaderBackendFactory
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
-import ai.h2o.sparkling.ml.utils.Utils
 import ai.h2o.sparkling.ml.params.NullableStringParam
+import ai.h2o.sparkling.ml.utils.Utils
 import com.google.gson.{GsonBuilder, JsonElement}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
