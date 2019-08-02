@@ -28,7 +28,8 @@ case class H2OMOJOSettings(
                             convertUnknownCategoricalLevelsToNa: Boolean = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.
                               convertUnknownCategoricalLevelsToNa,
                             convertInvalidNumbersToNa: Boolean = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.convertInvalidNumbersToNa,
-                            namedMojoOutputColumns: Boolean = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.namedMojoOutputColumns
+                            namedMojoOutputColumns: Boolean = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.namedMojoOutputColumns,
+                            calculateContributions: Boolean = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.calculateContributions
                           )
 
 
@@ -36,5 +37,4 @@ case class H2OMOJOSettings(
 object H2OMOJOSettings extends Logging {
   @DeprecatedMethod("ai.h2o.sparkling.ml.models.H2OMOJOSettings.default")
   def default = H2OMOJOSettings()
-
 }
