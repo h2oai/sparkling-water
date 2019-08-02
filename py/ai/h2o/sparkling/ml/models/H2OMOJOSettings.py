@@ -43,7 +43,7 @@ class H2OMOJOSettings(JavaWrapper):
         self.namedMojoOutputColumns = namedMojoOutputColumns
 
     def toJavaObject(self):
-        return self._new_java_obj("org.apache.spark.ml.h2o.models.H2OMOJOSettings",
+        return self._new_java_obj("ai.h2o.sparkling.ml.models.H2OMOJOSettings",
                                   self.predictionCol,
                                   self.detailedPredictionCol,
                                   self.withDetailedPredictionCol,

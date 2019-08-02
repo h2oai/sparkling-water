@@ -21,9 +21,9 @@ import java.sql.{Date, Timestamp}
 
 import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
+import ai.h2o.sparkling.ml.models.{H2OMOJOPipelineModel, H2OMOJOSettings}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
-import org.apache.spark.ml.h2o.models.{H2OMOJOPipelineModel, H2OMOJOSettings}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
@@ -131,7 +131,6 @@ class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
 
     val filePath = getClass.getResource("/mojo2_multiple_outputs/example.csv").getFile
     val df = spark.read.option("header", "true").csv(filePath)
-    import org.apache.spark.ml.h2o.models._
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2_multiple_outputs/pipeline.mojo"),
       "iris_pipeline.mojo")

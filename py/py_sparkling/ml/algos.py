@@ -11,7 +11,7 @@ from ai.h2o.sparkling.ml.params import H2OGBMParams, H2ODeepLearningParams, \
     H2OAutoMLParams, H2OXGBoostParams, H2OGLMParams, H2OGridSearchParams
 from ai.h2o.sparkling.ml.utils import set_double_values, validateEnumValue, validateEnumValues, arrayToDoubleArray
 from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
-from py_sparkling.ml.models import H2OMOJOModel
+from ai.h2o.sparkling.ml.models import H2OMOJOModel
 from py_sparkling.ml.util import JavaH2OMLReadable
 
 java_max_double_value = (2-2**(-52))*(2**1023)
