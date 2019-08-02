@@ -91,7 +91,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     val modelUdf = {
       easyPredictModelWrapper.getModelCategory match {
         case ModelCategory.Binomial =>
-         getBinomialPredictionUDF()
+          getBinomialPredictionUDF()
         case ModelCategory.Regression =>
           getRegressionPredictionUDF()
         case ModelCategory.Multinomial => udf[MultinomialPrediction, Row] { r: Row =>
