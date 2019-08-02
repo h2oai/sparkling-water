@@ -8,6 +8,8 @@ dependencies {
     compile(project(":sparkling-water-core")) {
         exclude group: "javax.servlet", module: "servlet-api"
     }
+    
+    compile project(":sparkling-water-scoring")
     // MLLIb pipelines
     compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
     testCompile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
