@@ -20,7 +20,7 @@ package ai.h2o.sparkling.ml.models
 
 import _root_.hex.genmodel.algos.targetencoder.TargetEncoderMojoModel
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
-import ai.h2o.sparkling.ml.Utils
+import ai.h2o.sparkling.ml.utils.Utils
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
