@@ -35,7 +35,7 @@ class H2OAutoML(H2OAutoMLParams, H2OAutoMLExtensions, JavaEstimator, JavaMLReada
                  sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
                  keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0,
                  predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
-                 convertInvalidNumbersToNa=False, **deprecatedArgs):
+                 convertInvalidNumbersToNa=False, calculateContributions=False, **deprecatedArgs):
         Initializer.load_sparkling_jar()
         super(H2OAutoML, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OAutoML", self.uid)
@@ -46,7 +46,7 @@ class H2OAutoML(H2OAutoMLParams, H2OAutoMLExtensions, JavaEstimator, JavaMLReada
                          convertUnknownCategoricalLevelsToNa=True, seed=-1, sortMetric="AUTO", balanceClasses=False,
                          classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
                          keepCrossValidationModels=True, maxModels=0, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
-                         withDetailedPredictionCol=False, convertInvalidNumbersToNa=False)
+                         withDetailedPredictionCol=False, convertInvalidNumbersToNa=False, calculateContributions=False)
         kwargs = get_input_kwargs(self)
 
         self.setParams(**kwargs)
@@ -57,7 +57,7 @@ class H2OAutoML(H2OAutoMLParams, H2OAutoMLExtensions, JavaEstimator, JavaMLReada
                   stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=True, seed=-1,
                   sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
                   keepCrossValidationModels=True, maxModels=0, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
-                  withDetailedPredictionCol=False, convertInvalidNumbersToNa=False, **deprecatedArgs):
+                  withDetailedPredictionCol=False, convertInvalidNumbersToNa=False, calculateContributions=False, **deprecatedArgs):
 
         kwargs = get_input_kwargs(self)
 

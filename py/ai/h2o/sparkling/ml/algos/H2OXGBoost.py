@@ -40,7 +40,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaMLReadable, JavaMLWritable
                  booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0, sampleType="uniform",
                  normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
                  foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
-                 withDetailedPredictionCol=False, convertInvalidNumbersToNa=False, **deprecatedArgs):
+                 withDetailedPredictionCol=False, convertInvalidNumbersToNa=False, calculateContributions=False, **deprecatedArgs):
         Initializer.load_sparkling_jar()
         super(H2OXGBoost, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OXGBoost", self.uid)
@@ -56,7 +56,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaMLReadable, JavaMLWritable
                          treeMethod="auto", growPolicy="depthwise", booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0,
                          sampleType="uniform", normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0,
                          backend="auto", foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
-                         withDetailedPredictionCol=False, convertInvalidNumbersToNa=False)
+                         withDetailedPredictionCol=False, convertInvalidNumbersToNa=False, calculateContributions=False)
 
         kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
@@ -73,7 +73,7 @@ class H2OXGBoost(H2OXGBoostParams, JavaEstimator, JavaMLReadable, JavaMLWritable
                   booster="gbtree", dmatrixType="auto", regLambda=0.0, regAlpha=0.0, sampleType="uniform",
                   normalizeType="tree", rateDrop=0.0, oneDrop=False, skipDrop=0.0, gpuId=0, backend="auto",
                   foldCol=None, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
-                  withDetailedPredictionCol=False, convertInvalidNumbersToNa=False, **deprecatedArgs):
+                  withDetailedPredictionCol=False, convertInvalidNumbersToNa=False, calculateContributions=False, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
         validateEnumValue(self._H2OAlgoCommonParams__getDistributionEnum(), kwargs, "distribution")

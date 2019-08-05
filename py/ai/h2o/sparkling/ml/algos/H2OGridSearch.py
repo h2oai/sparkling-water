@@ -34,7 +34,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaMLReadable, JavaMLWr
                  stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy="AUTO",
                  selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True,
                  predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
-                 convertInvalidNumbersToNa=False, **deprecatedArgs):
+                 convertInvalidNumbersToNa=False, calculateContributions=False, **deprecatedArgs):
         Initializer.load_sparkling_jar()
         super(H2OGridSearch, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGridSearch", self.uid)
@@ -47,7 +47,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaMLReadable, JavaMLWr
                          selectBestModelBy="AUTO", selectBestModelDecreasing=True, foldCol=None,
                          convertUnknownCategoricalLevelsToNa=True, predictionCol="prediction",
                          detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
-                         convertInvalidNumbersToNa=False)
+                         convertInvalidNumbersToNa=False, calculateContributions=False)
         kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
@@ -57,7 +57,7 @@ class H2OGridSearch(H2OGridSearchParams, JavaEstimator, JavaMLReadable, JavaMLWr
                   stoppingRounds=0, stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=0, selectBestModelBy="AUTO",
                   selectBestModelDecreasing=True, foldCol=None, convertUnknownCategoricalLevelsToNa=True,
                   predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
-                  convertInvalidNumbersToNa=False, **deprecatedArgs):
+                  convertInvalidNumbersToNa=False, calculateContributions=False, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
         validateEnumValue(self._H2OGridSearchParams__getStrategyEnum(), kwargs, "strategy")
