@@ -127,7 +127,7 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         return self._set(selectBestModelBy=validated)
 
     def __getSelectBestModelByEnum(self):
-        return "org.apache.spark.ml.h2o.algos.H2OGridSearchMetric"
+        return "ai.h2o.sparkling.ml.algos.H2OGridSearchMetric"
 
     def setSelectBestModelDecreasing(self, value):
         assert_is_type(value, bool)

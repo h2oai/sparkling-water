@@ -54,6 +54,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val spec = new AutoMLBuildSpec
 
+    if (getSortMetric() == "AUTO") {
+      setSortMetric(null)
+    }
     // override the buildSpec with the configuration specified directly on the estimator
     if (getProjectName() == null) {
       // generate random name to generate fresh leaderboard (the default behaviour)
@@ -153,7 +156,7 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams {
   private val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
   private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
   private val stoppingMetric = new Param[String](this, "stoppingMetric", "Stopping metric")
-  private val sortMetric = new NullableStringParam(this, "sortMetric", "Sort metric for the AutoML leaderboard")
+  private val sortMetric = new Param[String](this, "sortMetric", "Sort metric for the AutoML leaderboard")
   private val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
   private val classSamplingFactors = new NullableFloatArrayParam(this, "classSamplingFactors", "Class sampling factors")
   private val maxAfterBalanceSize = new FloatParam(this, "maxAfterBalanceSize", "Max after balance size")
@@ -173,7 +176,7 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams {
     stoppingRounds -> 3,
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
-    sortMetric -> null,
+    sortMetric -> H2OAutoMLSortMetric.AUTO.name(),
     balanceClasses -> false,
     classSamplingFactors -> null,
     maxAfterBalanceSize -> 5.0f,
@@ -253,15 +256,8 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams {
   }
 
   def setSortMetric(value: String): this.type = {
-    val allowedValues = Seq("AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "mean_per_class_error")
-    if (!allowedValues.contains(value)) {
-      throw new IllegalArgumentException(s"Allowed values for AutoML Sort Metric are: ${allowedValues.mkString(", ")}")
-    }
-    if (value == "AUTO") {
-      set(sortMetric, null)
-    } else {
-      set(sortMetric, value)
-    }
+    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[H2OAutoMLSortMetric](value)
+    set(sortMetric, validated)
   }
 
   def setBalanceClasses(value: Boolean): this.type = set(balanceClasses, value)
