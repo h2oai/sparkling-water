@@ -20,11 +20,9 @@ package ai.h2o.sparkling.benchmarks
 import java.io.{File, FileOutputStream, FileReader}
 import java.lang.reflect.Modifier
 
-import ai.h2o.sparkling.ml.algos.H2OAlgorithm
 import com.google.common.reflect.ClassPath
 import org.apache.spark.SparkConf
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.SparkSession
 import org.json4s._
 import org.json4s.jackson.Serialization._
@@ -67,7 +65,11 @@ object Runner {
 
     val filteredDatasetDetails = filterCollection[DatasetDetails]("Dataset", settings.dataset, datasetDetails, _.name)
     val filteredBenchmarks = filterCollection[Class[_]]("Benchmark", settings.benchmark, benchmarks, _.getSimpleName)
-    val filteredAlgorithms = filterCollection[H2OAlgorithm[_, _, _]]("Algorithm", settings.algorithm, algorithms, _.getClass.getSimpleName)
+    val filteredAlgorithms = filterCollection[AlgorithmBundle](
+      "Algorithm",
+      settings.algorithm,
+      algorithms,
+      _.h2oAlgorithm.getClass.getSimpleName)
 
     val batches = createBatches(filteredDatasetDetails, filteredBenchmarks, filteredAlgorithms)
     batches.foreach(executeBatch)
@@ -100,7 +102,7 @@ object Runner {
 
     def isBenchmark(clazz: Class[_]) = {
       val isAbstract = Modifier.isAbstract(clazz.getModifiers)
-      val inheritsFromBenchmarkBase  = classOf[BenchmarkBase].isAssignableFrom(clazz)
+      val inheritsFromBenchmarkBase  = classOf[BenchmarkBase[_]].isAssignableFrom(clazz)
       !isAbstract && inheritsFromBenchmarkBase
     }
 
@@ -123,17 +125,17 @@ object Runner {
   private def createBatches(
       datasetDetails: Seq[DatasetDetails],
       benchmarkClasses: Seq[Class[_]],
-      algorithms: Seq[H2OAlgorithm[_, _, _]]): Seq[BenchmarkBatch]  = {
-    def isAlgorithmBenchmark(clazz: Class[_]): Boolean = classOf[AlgorithmBenchmarkBase].isAssignableFrom(clazz)
+      algorithms: Seq[AlgorithmBundle]): Seq[BenchmarkBatch]  = {
+    def isAlgorithmBenchmark(clazz: Class[_]): Boolean = classOf[AlgorithmBenchmarkBase[_]].isAssignableFrom(clazz)
     val benchmarkContexts = datasetDetails.map(BenchmarkContext(spark, hc, _))
     benchmarkClasses.map { benchmarkClass =>
       val parameterSets = if (isAlgorithmBenchmark(benchmarkClass)) {
-        for (context <- benchmarkContexts; algorithm <- algorithms) yield Array(context, algorithm.copy(ParamMap.empty))
+        for (context <- benchmarkContexts; algorithm <- algorithms) yield Array(context, algorithm.newInstance())
       } else {
         benchmarkContexts.map(Array(_))
       }
       val benchmarkInstances = parameterSets.map { parameterSet =>
-        benchmarkClass.getConstructors()(0).newInstance(parameterSet : _*).asInstanceOf[BenchmarkBase]
+        benchmarkClass.getConstructors()(0).newInstance(parameterSet: _*).asInstanceOf[BenchmarkBase[_]]
       }
       BenchmarkBatch(benchmarkClass.getSimpleName, benchmarkInstances)
     }
@@ -157,7 +159,7 @@ object Runner {
     println(s"Benchmark batch '${batch.name}' has finished.")
   }
 
-  private case class BenchmarkBatch(name: String, benchmarks: Seq[BenchmarkBase])
+  private case class BenchmarkBatch(name: String, benchmarks: Seq[BenchmarkBase[_]])
 
   private case class Settings(benchmark: Option[String], dataset: Option[String], algorithm: Option[String])
 }

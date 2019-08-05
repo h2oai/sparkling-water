@@ -18,15 +18,25 @@
 package ai.h2o.sparkling.benchmarks
 
 import java.io.{OutputStream, PrintWriter}
+import java.net.URI
 
-import ai.h2o.sparkling.ml.algos.{H2OAlgorithm, H2OGBM, H2OGLM}
+import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
+import hex.glm.GLM
+import hex.glm.GLMModel.GLMParameters
+import hex.tree.gbm.GBM
+import hex.tree.gbm.GBMModel.GBMParameters
+import hex.{Model, ModelBuilder}
+import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder, H2OFrame}
+import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.sql.DataFrame
+import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
 
-abstract class BenchmarkBase(context: BenchmarkContext) {
+abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
   private var lastMeasurementId = 1
   private val measurements = new ArrayBuffer[Measurement]()
 
@@ -39,14 +49,32 @@ abstract class BenchmarkBase(context: BenchmarkContext) {
     s"${this.getClass.getSimpleName} results for the dataset '${context.datasetDetails.name}'"
   }
 
-  protected def body(): Unit
+  protected def initialize(): TInput
+
+  protected def body(input: TInput): Unit
+
+  def loadDataToDataFrame(): DataFrame = {
+    val df = context.spark
+      .read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv(context.datasetDetails.url)
+    context.spark.createDataFrame(df.rdd, df.schema) // Materializing the original data frame
+  }
+
+  def loadDataToH2OFrame(): H2OFrame = {
+    val uri = new URI(context.datasetDetails.url)
+    val frame = new H2OFrame(uri)
+    frame
+  }
 
   def run(): Unit = {
+    val input = initialize()
     val startedAtNanos = System.nanoTime()
-    body()
+    body(input)
     val elapsedAtNanos = System.nanoTime() - startedAtNanos
     val durationAtNanos = Duration.fromNanos(elapsedAtNanos)
-    val duration = Duration(durationAtNanos.toSeconds, SECONDS)
+    val duration = Duration(durationAtNanos.toMillis, MILLISECONDS)
     measurements.append(Measurement(1, "time", duration))
   }
 
@@ -61,16 +89,33 @@ abstract class BenchmarkBase(context: BenchmarkContext) {
   }
 }
 
-abstract class AlgorithmBenchmarkBase(context: BenchmarkContext, algorithm: H2OAlgorithm[_, _, _])
-  extends BenchmarkBase(context) {
+abstract class AlgorithmBenchmarkBase[TInput](context: BenchmarkContext, algorithm: AlgorithmBundle)
+  extends BenchmarkBase[TInput](context) {
 
   override protected def getResultHeader(): String = {
-    s"${super.getResultHeader()} and algorithm '${algorithm.getClass.getSimpleName}'"
+    s"${super.getResultHeader()} and algorithm '${algorithm.h2oAlgorithm.getClass.getSimpleName}'"
   }
 }
 
 object AlgorithmBenchmarkBase {
-  val supportedAlgorithms: Seq[H2OAlgorithm[_, _, _]] = Seq(new H2OGBM, new H2OGLM)
+  val supportedAlgorithms: Seq[AlgorithmBundle] = {
+    Seq(
+      AlgorithmBundle(new H2OGBM, new GBM(new GBMParameters)),
+      AlgorithmBundle(new H2OGLM, new GLM(new GLMParameters)))
+  }
+}
+
+case class AlgorithmBundle(
+    swAlgorithm: H2OSupervisedAlgorithm[_ <: H2OBaseModelBuilder, _ <: H2OBaseModel, _ <: Model.Parameters],
+    h2oAlgorithm: ModelBuilder[_, _ <: Model.Parameters, _]) {
+  def newInstance(): AlgorithmBundle = {
+    val clonedSwAlgorithm = swAlgorithm.copy(ParamMap.empty)
+    val clonedH2OParams = h2oAlgorithm._parms.clone()
+    val h2oAlgorithmClass = h2oAlgorithm.getClass
+    val constructor = h2oAlgorithmClass.getConstructor(clonedH2OParams.getClass)
+    val newH2OAlgorithm = constructor.newInstance(clonedH2OParams)
+    AlgorithmBundle(clonedSwAlgorithm, newH2OAlgorithm)
+  }
 }
 
 case class Measurement(id: Int, name: String, value: Any)

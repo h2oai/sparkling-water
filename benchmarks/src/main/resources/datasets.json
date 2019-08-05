@@ -1,13 +1,13 @@
 [
   {
-  "name" : "airlines-1m",
-  "url" : "/home/0xdiag/h2o-3-benchmark/airlines-1m.csv",
-  "labelCol" : "dep_delayed_15min"
+    "name" : "airlines-1m",
+    "url" : "/home/0xdiag/h2o-3-benchmark/airlines-1m.csv",
+    "labelCol" : "Distance"
   },
   {
     "name" : "airlines-10m",
     "url" : "/home/0xdiag/h2o-3-benchmark/airlines-10m.csv",
-    "labelCol" : "dep_delayed_15min"
+    "labelCol" : "Distance"
   },
   {
     "name" : "springleaf",
