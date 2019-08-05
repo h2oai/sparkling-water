@@ -54,12 +54,12 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
   protected def body(input: TInput): Unit
 
   def loadDataToDataFrame(): DataFrame = {
-    val df = context.spark
+    context.spark
       .read
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(context.datasetDetails.url)
-    context.spark.createDataFrame(df.rdd, df.schema) // Materializing the original data frame
+      .localCheckpoint() // Materialize the data frame
   }
 
   def loadDataToH2OFrame(): H2OFrame = {
