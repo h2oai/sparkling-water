@@ -26,7 +26,7 @@ import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
-class H2OGBMTest extends FunSuite with Matchers with SharedH2OTestContext {
+class H2OGBMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 
