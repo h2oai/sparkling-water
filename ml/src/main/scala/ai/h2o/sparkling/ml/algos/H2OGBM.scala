@@ -21,7 +21,7 @@ import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.gbm.{GBM, GBMModel}
-import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
+import org.apache.spark.ml.util.Identifiable
 
 /**
   * H2O GBM algorithm exposed via Spark ML pipelines.
