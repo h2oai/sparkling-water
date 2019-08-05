@@ -46,7 +46,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
         self._setDefault(featuresCols=[], labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], splitRatio=1.0, foldCol=None,
                          weightCol=None, ignoredCols=[], includeAlgos=None, excludeAlgos=None, projectName=None, maxRuntimeSecs=3600.0, stoppingRounds=3,
                          stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5,
-                         convertUnknownCategoricalLevelsToNa=True, seed=-1, sortMetric=None, balanceClasses=False,
+                         convertUnknownCategoricalLevelsToNa=True, seed=-1, sortMetric="AUTO", balanceClasses=False,
                          classSamplingFactors=None, maxAfterBalanceSize=5.0, keepCrossValidationPredictions=True,
                          keepCrossValidationModels=True, maxModels=0, predictionCol="prediction", detailedPredictionCol="detailed_prediction",
                          withDetailedPredictionCol=False, convertInvalidNumbersToNa=False)
@@ -67,7 +67,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
         validateEnumValues(self._H2OAutoMLParams__getAutomlAlgoEnum(), kwargs, "includeAlgos", nullEnabled=True)
         validateEnumValues(self._H2OAutoMLParams__getAutomlAlgoEnum(), kwargs, "excludeAlgos", nullEnabled=True)
         validateEnumValue(self._H2OAutoMLParams__getStoppingMetricEnum(), kwargs, "stoppingMetric")
-
+        validateEnumValue(self._H2OAutoMLParams__getSortMetricEnum(), kwargs, "sortMetric")
 
         if "projectName" in kwargs and kwargs["projectName"] is None:
             kwargs["projectName"] = ''.join(random.choice(string.ascii_letters) for i in range(30))
