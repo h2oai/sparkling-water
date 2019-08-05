@@ -133,4 +133,5 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
         return self._set(namedMojoOutputColumns=value)
 
     def setCalculateContributions(self, value):
+        assert_is_type(value, bool)
         return self._set(calculateContributions=value)
