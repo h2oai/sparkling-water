@@ -27,7 +27,7 @@ import hex.glm.GLMModel.GLMParameters.{Family, Link, Solver}
 import hex.glm.{GLM, GLMModel}
 import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.ml.param.{Param, Params}
-import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
+import org.apache.spark.ml.util.Identifiable
 import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JValue}
