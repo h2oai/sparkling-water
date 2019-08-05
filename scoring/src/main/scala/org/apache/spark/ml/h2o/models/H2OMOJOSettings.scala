@@ -19,17 +19,16 @@ package org.apache.spark.ml.h2o.models
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.expose.Logging
-
+import ai.h2o.sparkling.ml.models.{H2OMOJOSettings => NewH2OMOJOSettings}
 @Deprecated
 case class H2OMOJOSettings(
-                            predictionCol: String = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.predictionCol,
-                            detailedPredictionCol: String = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.detailedPredictionCol,
-                            withDetailedPredictionCol: Boolean = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.withDetailedPredictionCol,
-                            convertUnknownCategoricalLevelsToNa: Boolean = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.
-                              convertUnknownCategoricalLevelsToNa,
-                            convertInvalidNumbersToNa: Boolean = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.convertInvalidNumbersToNa,
-                            namedMojoOutputColumns: Boolean = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.namedMojoOutputColumns,
-                            calculateContributions: Boolean = ai.h2o.sparkling.ml.models.H2OMOJOSettings.default.calculateContributions
+                            predictionCol: String = NewH2OMOJOSettings.default.predictionCol,
+                            detailedPredictionCol: String = NewH2OMOJOSettings.default.detailedPredictionCol,
+                            withDetailedPredictionCol: Boolean = NewH2OMOJOSettings.default.withDetailedPredictionCol,
+                            convertUnknownCategoricalLevelsToNa: Boolean = NewH2OMOJOSettings.default.convertUnknownCategoricalLevelsToNa,
+                            convertInvalidNumbersToNa: Boolean = NewH2OMOJOSettings.default.convertInvalidNumbersToNa,
+                            namedMojoOutputColumns: Boolean = NewH2OMOJOSettings.default.namedMojoOutputColumns,
+                            calculateContributions: Boolean = NewH2OMOJOSettings.default.calculateContributions
                           )
 
 
