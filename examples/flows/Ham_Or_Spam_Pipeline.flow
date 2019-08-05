@@ -23,7 +23,7 @@
     },
     {
       "type": "sca",
-      "input": "import org.apache.spark.SparkFiles\nimport org.apache.spark.ml._\nimport org.apache.spark.ml.feature._\nimport org.apache.spark.ml.h2o.features._\nimport org.apache.spark.ml.h2o.algos._\nimport org.apache.spark.sql.types.{StringType, StructField, StructType}\nimport org.apache.spark.sql.{DataFrame, Row, SQLContext}\nimport water.support.SparkContextSupport\nimport water.fvec.H2OFrame"
+      "input": "import org.apache.spark.SparkFiles\nimport org.apache.spark.ml._\nimport org.apache.spark.ml.feature._\nimport ai.h2o.sparkling.ml.features._\nimport org.apache.spark.ml.h2o.algos._\nimport org.apache.spark.sql.types.{StringType, StructField, StructType}\nimport org.apache.spark.sql.{DataFrame, Row, SQLContext}\nimport water.support.SparkContextSupport\nimport water.fvec.H2OFrame"
     },
     {
       "type": "sca",

@@ -149,7 +149,6 @@ def copyPySetup() {
             include 'MANIFEST.in'
             include 'setup.cfg'
             include 'pysparkling/**/*'
-            include 'py_sparkling/**/*'
             include 'ai/**/*'
             exclude '**/*.pyc'
         }

@@ -14,15 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.algos
+package ai.h2o.sparkling.ml.algos
 
 import java.lang.reflect.Field
 import java.util
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
-import ai.h2o.sparkling.ml.algos.{H2OAlgoCommonUtils, H2OSupervisedAlgorithm}
-import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.{AlgoParams, H2OAlgoParamsHelper, H2OCommonSupervisedParams, HyperParamsParam}
+import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.grid.GridSearch.SimpleParametersBuilderFactory
@@ -34,6 +33,8 @@ import hex.{Model, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMu
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
+import org.apache.spark.ml.h2o.algos.H2OGridSearchMetric
+import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types._
@@ -371,7 +372,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 }
 
-object H2OGridSearch extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGridSearch] {
+object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
   object SupportedAlgos extends Enumeration {
     val gbm, glm, deeplearning, xgboost = Value // still missing pipeline wrappers for KMeans & drf
 

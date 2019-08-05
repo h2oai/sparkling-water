@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.features import H2OTargetEncoder
-from py_sparkling.ml.features import ColumnPruner
+from ai.h2o.sparkling.ml.features import H2OTargetEncoder, ColumnPruner
 
 __all__ = ["ColumnPruner", "H2OTargetEncoder"]

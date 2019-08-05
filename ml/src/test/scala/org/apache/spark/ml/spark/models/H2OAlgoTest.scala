@@ -17,11 +17,10 @@
 
 package org.apache.spark.ml.spark.models
 
-import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
+import ai.h2o.sparkling.ml.algos._
 import hex.Model
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.ml.h2o.algos._
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

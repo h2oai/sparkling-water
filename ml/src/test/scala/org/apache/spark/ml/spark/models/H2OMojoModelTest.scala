@@ -19,11 +19,11 @@ package org.apache.spark.ml.spark.models
 
 import java.io.File
 
+import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM}
 import ai.h2o.sparkling.ml.models.H2OMOJOModel
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.ml.h2o.algos.{H2ODeepLearning, H2OGBM}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}

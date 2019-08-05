@@ -36,7 +36,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
         .. code:: scala
 
-            import org.apache.spark.ml.h2o.algos.H2OAutoML
+            import ai.h2o.sparkling.ml.algos.H2OAutoML
             val automl = new H2OAutoML()
             automl.setLabelCol("CAPSULE")
             automl.setIgnoredCols(Array("ID"))

@@ -13,8 +13,8 @@
 import org.apache.spark.SparkFiles
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.feature._
-import org.apache.spark.ml.h2o.features.ColumnPruner
-import org.apache.spark.ml.h2o.algos.{H2OAutoML, H2ODeepLearning, H2OGBM, H2OGridSearch}
+import ai.h2o.sparkling.ml.features.ColumnPruner
+import ai.h2o.sparkling.ml.algos.{H2OAutoML, H2ODeepLearning, H2OGBM, H2OGridSearch}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import water.support.SparkContextSupport

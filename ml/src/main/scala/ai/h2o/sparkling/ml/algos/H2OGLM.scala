@@ -14,12 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.algos
+package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
-import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
+import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.StringPair
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling
 import hex.glm.GLMModel.GLMParameters
@@ -40,7 +40,7 @@ class H2OGLM(override val uid: String) extends H2OSupervisedAlgorithm[GLM, GLMMo
   def this() = this(Identifiable.randomUID("glm"))
 }
 
-object H2OGLM extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGLM]
+object H2OGLM extends H2OParamsReadable[H2OGLM]
 
 
 /**
