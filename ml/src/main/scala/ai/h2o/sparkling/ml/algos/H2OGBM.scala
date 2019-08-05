@@ -14,10 +14,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.ml.h2o.algos
+package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
 import ai.h2o.sparkling.ml.params.H2OAlgoSharedTreeParams
+import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.gbm.{GBM, GBMModel}
@@ -31,7 +31,7 @@ class H2OGBM(override val uid: String) extends H2OSupervisedAlgorithm[GBM, GBMMo
   def this() = this(Identifiable.randomUID("gbm"))
 }
 
-object H2OGBM extends DefaultParamsReadable[py_sparkling.ml.algos.H2OGBM]
+object H2OGBM extends H2OParamsReadable[H2OGBM]
 
 /**
   * Parameters for Spark's API exposing underlying H2O model.

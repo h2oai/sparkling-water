@@ -14,4 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from ai.h2o.sparkling.ml.algos.H2OKmeans import H2OKMeans
+
+from ai.h2o.sparkling.ml.algos.H2OKMeans import H2OKMeans
+from ai.h2o.sparkling.ml.algos.H2ODeepLearning import H2ODeepLearning
+from ai.h2o.sparkling.ml.algos.H2OXGBoost import H2OXGBoost
+from ai.h2o.sparkling.ml.algos.H2OGBM import H2OGBM
+from ai.h2o.sparkling.ml.algos.H2OGLM import H2OGLM
+from ai.h2o.sparkling.ml.algos.H2OGridSearch import H2OGridSearch
+from ai.h2o.sparkling.ml.algos.H2OAutoML import H2OAutoML

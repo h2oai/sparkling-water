@@ -158,7 +158,7 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
 
         .. code:: scala
 
-            import org.apache.spark.ml.h2o.algos.H2OGBM
+            import ai.h2o.sparkling.ml.algos.H2OGBM
             import org.apache.spark.ml.Pipeline
             val gbm = new H2OGBM()
                 .setFeaturesCols(targetEncoder.getOutputCols())

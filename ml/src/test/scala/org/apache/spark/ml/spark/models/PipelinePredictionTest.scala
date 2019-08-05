@@ -20,11 +20,11 @@ package org.apache.spark.ml.spark.models
 import java.io.{File, PrintWriter}
 import java.util.Locale
 
+import ai.h2o.sparkling.ml.algos.H2OGBM
+import ai.h2o.sparkling.ml.features.ColumnPruner
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.ml.feature._
-import org.apache.spark.ml.h2o.algos.H2OGBM
-import org.apache.spark.ml.h2o.features.ColumnPruner
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}

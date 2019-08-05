@@ -17,9 +17,9 @@
 
 package ai.h2o.sparkling.ml.features
 
+import ai.h2o.sparkling.ml.algos.H2OGBM
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
-import org.apache.spark.ml.h2o.algos.H2OGBM
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
