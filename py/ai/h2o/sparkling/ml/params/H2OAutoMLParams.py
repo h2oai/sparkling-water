@@ -88,11 +88,7 @@ class H2OAutoMLParams(H2OCommonSupervisedParams):
         return self.getOrDefault(self.stoppingMetric)
 
     def getSortMetric(self):
-        metric = self.getOrDefault(self.sortMetric)
-        if metric is None:
-            return "AUTO"
-        else:
-            return metric
+        return self.getOrDefault(self.sortMetric)
 
     def getBalanceClasses(self):
         return self.getOrDefault(self.balanceClasses)
@@ -162,11 +158,11 @@ class H2OAutoMLParams(H2OCommonSupervisedParams):
         return "hex.ScoreKeeper$StoppingMetric"
 
     def setSortMetric(self, value):
-        assert_is_type(value, None, "AUTO", "deviance", "logloss", "MSE", "RMSE", "MAE", "RMSLE", "AUC", "mean_per_class_error")
-        if value is "AUTO":
-            return self._set(sortMetric=None)
-        else:
-            return self._set(sortMetric=value)
+        validated = getValidatedEnumValue(self.__getSortMetricEnum(), value)
+        return self._set(sortMetric=validated)
+
+    def __getSortMetricEnum(self):
+        return "ai.h2o.sparkling.ml.algos.H2OAutoMLSortMetric"
 
     def setBalanceClasses(self, value):
         assert_is_type(value, bool)

@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.ml.h2o.algos;
 
-public enum H2OGridSearchMetric {
-    AUTO,
-    MeanResidualDeviance, R2, ResidualDeviance, ResidualDegreesOfFreedom, NullDeviance,
-    NullDegreesOfFreedom, AIC, AUC, Gini, F1, F2,
-    F0point5, Precision, Recall, MCC, Logloss, Error, MaxPerClassError, Accuracy, MSE, RMSE
+package ai.h2o.sparkling.ml.algos;
+
+public enum H2OAutoMLSortMetric {
+    AUTO, deviance, logloss, MSE, RMSE, MAE, RMSLE, AUC, mean_per_class_error
 }

@@ -33,7 +33,6 @@ import hex.{Model, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMu
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
-import org.apache.spark.ml.h2o.algos.H2OGridSearchMetric
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
