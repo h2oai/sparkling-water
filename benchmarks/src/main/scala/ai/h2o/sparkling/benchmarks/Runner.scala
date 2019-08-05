@@ -144,6 +144,7 @@ object Runner {
     batch.benchmarks.foreach { benchmark =>
       benchmark.run()
       benchmark.exportMeasurements(System.out)
+      new DKVCleaner().clean()
     }
     outputDir.mkdirs()
     val outputFile = new File(outputDir, s"${hc._conf.backendClusterMode}_${batch.name}.txt")
