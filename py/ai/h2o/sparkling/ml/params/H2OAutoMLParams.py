@@ -72,9 +72,6 @@ class H2OAutoMLParams(H2OCommonSupervisedParams):
     def getProjectName(self):
         return self.getOrDefault(self.projectName)
 
-    def getLoss(self):
-        return self.getOrDefault(self.loss)
-
     def getMaxRuntimeSecs(self):
         return self.getOrDefault(self.maxRuntimeSecs)
 
@@ -133,10 +130,6 @@ class H2OAutoMLParams(H2OCommonSupervisedParams):
     def setProjectName(self, value):
         assert_is_type(value, None, str)
         return self._set(projectName=value)
-
-    def setLoss(self, value):
-        assert_is_type(value, "AUTO")
-        return self._set(loss=value)
 
     def setMaxRuntimeSecs(self, value):
         assert_is_type(value, int, float)
