@@ -32,7 +32,7 @@ import org.apache.spark.sql.DataFrame
 import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.DatasetExtensions._
+import org.apache.spark.storage.StorageLevel
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
@@ -54,14 +54,22 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
 
   protected def body(input: TInput): Unit
 
+  protected def cleanUp(input: TInput): Unit = {}
+
   def loadDataToDataFrame(): DataFrame = {
-    context.spark
+    val df = context.spark
       .read
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(context.datasetDetails.url)
-      .h2oLocalCheckpoint() // Materialize the data frame
+      .persist(StorageLevel.DISK_ONLY)
+
+    df.foreach(_ => {}) // Load DataFrame to cache.
+
+    df
   }
+
+  def removeFromCache(dataFrame: DataFrame): Unit = dataFrame.unpersist(blocking = true)
 
   def loadDataToH2OFrame(): H2OFrame = {
     val uri = new URI(context.datasetDetails.url)
@@ -77,6 +85,7 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
     val durationAtNanos = Duration.fromNanos(elapsedAtNanos)
     val duration = Duration(durationAtNanos.toMillis, MILLISECONDS)
     measurements.append(Measurement(1, "time", duration))
+    cleanUp(input)
   }
 
   def exportMeasurements(outputStream: OutputStream): Unit = {
