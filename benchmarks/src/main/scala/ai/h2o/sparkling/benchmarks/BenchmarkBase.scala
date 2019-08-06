@@ -32,6 +32,7 @@ import org.apache.spark.sql.DataFrame
 import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.DatasetExtensions._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
@@ -59,7 +60,7 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(context.datasetDetails.url)
-      .localCheckpoint() // Materialize the data frame
+      .h2oLocalCheckpoint() // Materialize the data frame
   }
 
   def loadDataToH2OFrame(): H2OFrame = {
