@@ -25,7 +25,6 @@ from pyspark.sql.dataframe import DataFrame
 from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.ml.models import H2OMOJOModel
 from ai.h2o.sparkling.ml.params import H2OAutoMLParams
-from ai.h2o.sparkling.ml.utils import set_double_values, validateEnumValue, validateEnumValues
 from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
 
 
@@ -64,18 +63,9 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
 
         kwargs = get_input_kwargs(self)
 
-        validateEnumValues(self._H2OAutoMLParams__getAutomlAlgoEnum(), kwargs, "includeAlgos", nullEnabled=True)
-        validateEnumValues(self._H2OAutoMLParams__getAutomlAlgoEnum(), kwargs, "excludeAlgos", nullEnabled=True)
-        validateEnumValue(self._H2OAutoMLParams__getStoppingMetricEnum(), kwargs, "stoppingMetric")
-        validateEnumValue(self._H2OAutoMLParams__getSortMetricEnum(), kwargs, "sortMetric")
-
         if "projectName" in kwargs and kwargs["projectName"] is None:
             kwargs["projectName"] = ''.join(random.choice(string.ascii_letters) for i in range(30))
 
-        # we need to convert double arguments manually to floats as if we assign integer to double, py4j thinks that
-        # the whole type is actually int and we get class cast exception
-        double_types = ["maxRuntimeSecs", "stoppingTolerance", "splitRatio", "maxAfterBalanceSize"]
-        set_double_values(kwargs, double_types)
         return self._set(**kwargs)
 
     def _create_model(self, java_model):
