@@ -17,7 +17,6 @@
 
 from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
-from pyspark.ml.param import TypeConverters
 
 from ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams import H2OMOJOAlgoSharedParams
 
