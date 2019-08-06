@@ -54,9 +54,6 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val spec = new AutoMLBuildSpec
 
-    if (getSortMetric() == "AUTO") {
-      setSortMetric(null)
-    }
     // override the buildSpec with the configuration specified directly on the estimator
     if (getProjectName() == null) {
       // generate random name to generate fresh leaderboard (the default behaviour)
@@ -77,7 +74,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spec.input_spec.fold_column = getFoldCol()
     spec.input_spec.weights_column = getWeightCol()
     spec.input_spec.ignored_columns = getIgnoredCols()
-    spec.input_spec.sort_metric = getSortMetric()
+    val sortMetric = getSortMetric()
+    spec.input_spec.sort_metric = if (sortMetric == "AUTO") null else sortMetric
     spec.build_models.exclude_algos = if (getExcludeAlgos() == null) null else Array(getExcludeAlgos().map(Algo.valueOf): _*)
     spec.build_models.include_algos = if (getIncludeAlgos() == null) null else Array(getIncludeAlgos().map(Algo.valueOf): _*)
     spec.build_control.project_name = getProjectName()
