@@ -47,7 +47,9 @@ class H2OGBMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     val model = algo.fit(dataset)
 
     val predictions = model.transform(dataset)
-    assert(!predictions.select("prediction.contributions").isEmpty)
+    val contributions = predictions.select("prediction.contributions").head().getAs[Seq[Double]](0)
+    assert(contributions != null)
+    assert(contributions.size == 8)
   }
 
 }
