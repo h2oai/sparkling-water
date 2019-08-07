@@ -86,7 +86,7 @@ trait H2OMOJOModelPredictions {
       } else {
         base
       }
-    } else if (getWithDetailedPredictionCol())) {
+    } else if (getWithDetailedPredictionCol()) {
       binomialSchemaBase ++ Seq(StructField("contributions", ArrayType(FloatType)))
     } else {
       binomialSchemaBase
