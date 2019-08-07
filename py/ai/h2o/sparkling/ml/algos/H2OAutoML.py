@@ -15,20 +15,18 @@
 # limitations under the License.
 #
 
-import random
-import string
 from pyspark import keyword_only
 from pyspark.ml.util import JavaMLWritable, JavaMLReadable
 from pyspark.ml.wrapper import JavaEstimator
-from pyspark.sql.dataframe import DataFrame
 
 from ai.h2o.sparkling import Initializer
+from ai.h2o.sparkling.ml.algos.H2OAutoMLExtensions import H2OAutoMLExtensions
 from ai.h2o.sparkling.ml.models import H2OMOJOModel
 from ai.h2o.sparkling.ml.params import H2OAutoMLParams
 from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
 
 
-class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
+class H2OAutoML(H2OAutoMLParams, H2OAutoMLExtensions, JavaEstimator, JavaMLReadable, JavaMLWritable):
 
     @keyword_only
     def __init__(self, featuresCols=[], labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], splitRatio=1.0, foldCol=None,
@@ -63,17 +61,7 @@ class H2OAutoML(H2OAutoMLParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
 
         kwargs = get_input_kwargs(self)
 
-        if "projectName" in kwargs and kwargs["projectName"] is None:
-            kwargs["projectName"] = ''.join(random.choice(string.ascii_letters) for i in range(30))
-
         return self._set(**kwargs)
 
     def _create_model(self, java_model):
         return H2OMOJOModel(java_model)
-
-    def leaderboard(self):
-        leaderboard_java = self._java_obj.leaderboard()
-        if leaderboard_java.isDefined():
-            return DataFrame(leaderboard_java.get(), self._hc._sql_context)
-        else:
-            return None
