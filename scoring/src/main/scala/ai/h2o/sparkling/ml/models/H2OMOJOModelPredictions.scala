@@ -34,7 +34,7 @@ trait H2OMOJOModelPredictions {
 
   def getBinomialPredictionUDF(): UserDefinedFunction = {
     if (supportsCalibratedProbabilities()) {
-      if (getCalculateContributions()) {
+      if (getWithDetailedPredictionCol()) {
         udf[BinomialPrediction3, Row] { r: Row =>
           val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
           BinomialPrediction3(
@@ -56,7 +56,7 @@ trait H2OMOJOModelPredictions {
           )
         }
       }
-    } else if (getCalculateContributions()) {
+    } else if (getWithDetailedPredictionCol()) {
       udf[BinomialPrediction2, Row] { r: Row =>
         val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
         BinomialPrediction2(
@@ -81,12 +81,12 @@ trait H2OMOJOModelPredictions {
 
     if (supportsCalibratedProbabilities()) {
       val base = binomialSchemaBase ++ Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
-      if (getCalculateContributions()) {
+      if (getWithDetailedPredictionCol()) {
         base ++ Seq(StructField("contributions", ArrayType(FloatType)))
       } else {
         base
       }
-    } else if (getCalculateContributions()) {
+    } else if (getWithDetailedPredictionCol())) {
       binomialSchemaBase ++ Seq(StructField("contributions", ArrayType(FloatType)))
     } else {
       binomialSchemaBase
@@ -94,7 +94,7 @@ trait H2OMOJOModelPredictions {
   }
 
   def getRegressionPredictionUDF(): UserDefinedFunction = {
-    if (getCalculateContributions()) {
+    if (getWithDetailedPredictionCol()) {
       udf[RegressionPrediction1, Row] { r: Row =>
         val pred = easyPredictModelWrapper.predictRegression(RowConverter.toH2ORowData(r))
         RegressionPrediction1(pred.value, pred.contributions)
@@ -108,7 +108,7 @@ trait H2OMOJOModelPredictions {
   }
 
   def getRegressionPredictionSchema(): Seq[StructField] = {
-    if (getCalculateContributions()) {
+    if (getWithDetailedPredictionCol()) {
       StructField("value", DoubleType) :: StructField("contributions", ArrayType(FloatType)) :: Nil
     } else {
       StructField("value", DoubleType) :: Nil

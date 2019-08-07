@@ -18,8 +18,9 @@
 package org.apache.spark.ml.h2o.models
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
-import org.apache.spark.expose.Logging
 import ai.h2o.sparkling.ml.models.{H2OMOJOSettings => NewH2OMOJOSettings}
+import org.apache.spark.expose.Logging
+
 @Deprecated
 case class H2OMOJOSettings(
                             predictionCol: String = NewH2OMOJOSettings.default.predictionCol,
@@ -27,8 +28,7 @@ case class H2OMOJOSettings(
                             withDetailedPredictionCol: Boolean = NewH2OMOJOSettings.default.withDetailedPredictionCol,
                             convertUnknownCategoricalLevelsToNa: Boolean = NewH2OMOJOSettings.default.convertUnknownCategoricalLevelsToNa,
                             convertInvalidNumbersToNa: Boolean = NewH2OMOJOSettings.default.convertInvalidNumbersToNa,
-                            namedMojoOutputColumns: Boolean = NewH2OMOJOSettings.default.namedMojoOutputColumns,
-                            calculateContributions: Boolean = NewH2OMOJOSettings.default.calculateContributions
+                            namedMojoOutputColumns: Boolean = NewH2OMOJOSettings.default.namedMojoOutputColumns
                           )
 
 

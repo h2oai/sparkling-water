@@ -52,7 +52,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     config.setModel(Utils.getMojoModel(getMojoData()))
     config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     config.setConvertInvalidNumbersToNa(getConvertInvalidNumbersToNa())
-    config.setEnableContributions(getCalculateContributions())
+    config.setEnableContributions(getWithDetailedPredictionCol())
     // always let H2O produce full output, filter later if required
     config.setUseExtendedOutput(true)
     new EasyPredictModelWrapper(config)
@@ -197,7 +197,6 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     model.set(model.predictionCol -> settings.predictionCol)
     model.set(model.detailedPredictionCol -> settings.detailedPredictionCol)
     model.set(model.withDetailedPredictionCol -> settings.withDetailedPredictionCol)
-    model.set(model.calculateContributions -> settings.calculateContributions)
     model.setMojoData(mojoData)
     model
   }

@@ -25,8 +25,7 @@ case class H2OMOJOSettings(
                             withDetailedPredictionCol: Boolean = false,
                             convertUnknownCategoricalLevelsToNa: Boolean = false,
                             convertInvalidNumbersToNa: Boolean = false,
-                            namedMojoOutputColumns: Boolean = true,
-                            calculateContributions: Boolean = false
+                            namedMojoOutputColumns: Boolean = true
                           )
 
 object H2OMOJOSettings {
@@ -38,7 +37,7 @@ object H2OMOJOSettings {
       detailedPredictionCol = params.getDetailedPredictionCol(),
       withDetailedPredictionCol = params.getWithDetailedPredictionCol(),
       convertUnknownCategoricalLevelsToNa = params.getConvertUnknownCategoricalLevelsToNa(),
-      convertInvalidNumbersToNa = params.getConvertInvalidNumbersToNa(),
-      calculateContributions = params.getCalculateContributions())
+      convertInvalidNumbersToNa = params.getConvertInvalidNumbersToNa()
+    )
   }
 }

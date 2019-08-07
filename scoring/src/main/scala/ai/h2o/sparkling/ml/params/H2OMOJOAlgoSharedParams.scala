@@ -47,10 +47,6 @@ trait H2OMOJOAlgoSharedParams extends Params with Logging {
   protected final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(this, "namedMojoOutputColumns", "Mojo Output is not stored" +
     " in the array but in the properly named columns")
 
-  protected final val calculateContributions = new BooleanParam(this,
-    "calculateContributions",
-    "Return SHAP values for supported algorithms. The contributions are returned into the detailedPredictionCol.")
-
   //
   //
   // Default values
@@ -62,8 +58,7 @@ trait H2OMOJOAlgoSharedParams extends Params with Logging {
     featuresCols -> Array.empty[String],
     convertUnknownCategoricalLevelsToNa -> H2OMOJOSettings.default.convertUnknownCategoricalLevelsToNa,
     convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa,
-    namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns,
-    calculateContributions -> H2OMOJOSettings.default.calculateContributions
+    namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns
   )
 
   //
@@ -82,6 +77,4 @@ trait H2OMOJOAlgoSharedParams extends Params with Logging {
   def getConvertInvalidNumbersToNa(): Boolean = $(convertInvalidNumbersToNa)
 
   def getNamedMojoOutputColumns(): Boolean = $(namedMojoOutputColumns)
-
-  def getCalculateContributions(): Boolean = $(calculateContributions)
 }

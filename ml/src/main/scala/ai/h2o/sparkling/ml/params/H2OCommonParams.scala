@@ -116,7 +116,5 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
 
   def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
 
-  def setCalculateContributions(value: Boolean): this.type = set(calculateContributions, value)
-
   protected def getExcludedCols(): Seq[String]
 }

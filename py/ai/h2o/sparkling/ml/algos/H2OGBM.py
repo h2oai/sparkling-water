@@ -40,7 +40,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
                  learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=java_max_double_value,
                  predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None, predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
-                 convertInvalidNumbersToNa=False, calculateContributions=False, **deprecatedArgs):
+                 convertInvalidNumbersToNa=False, **deprecatedArgs):
         Initializer.load_sparkling_jar()
         super(H2OGBM, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGBM", self.uid)
@@ -55,7 +55,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
                          learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=_jvm().Double.MAX_VALUE,
                          predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None,
                          predictionCol="prediction", detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
-                         convertInvalidNumbersToNa=False, calculateContributions=False)
+                         convertInvalidNumbersToNa=False)
         kwargs = get_input_kwargs(self)
         self.setParams(**kwargs)
 
@@ -69,7 +69,7 @@ class H2OGBM(H2OGBMParams, JavaEstimator, JavaMLReadable, JavaMLWritable):
                   learnRate=0.1, learnRateAnnealing=1.0, colSampleRate=1.0, maxAbsLeafnodePred=java_max_double_value,
                   predNoiseBandwidth=0.0, convertUnknownCategoricalLevelsToNa=False, foldCol=None, predictionCol="prediction",
                   detailedPredictionCol="detailed_prediction", withDetailedPredictionCol=False,
-                  convertInvalidNumbersToNa=False, calculateContributions=False, **deprecatedArgs):
+                  convertInvalidNumbersToNa=False, **deprecatedArgs):
         kwargs = get_input_kwargs(self)
 
         validateEnumValue(self._H2OAlgoCommonParams__getDistributionEnum(), kwargs, "distribution")
