@@ -40,7 +40,7 @@ class H2OGBMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setCalculateContributions(true)
+      .setWithDetailedPredictionCol(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
 
