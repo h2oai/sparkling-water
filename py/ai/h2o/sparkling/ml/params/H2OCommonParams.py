@@ -28,7 +28,7 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
     weightCol = Param(Params._dummy(), "weightCol", "Weight column name")
     splitRatio = Param(Params._dummy(), "splitRatio",
                        "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training and for validation. "
-                       "For example, 0.8 -> 80% training 20% validation.")
+                       "For example, 0.8 -> 80% training 20% validation.", TypeConverters.toFloat)
     seed = Param(Params._dummy(), "seed", "Used to specify seed to reproduce the model run")
     nfolds = Param(Params._dummy(), "nfolds", "Number of fold columns")
 
@@ -76,8 +76,7 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
         return self._set(weightCol=value)
 
     def setSplitRatio(self, value):
-        assert_is_type(value, int, float)
-        return self._set(splitRatio=float(value))
+        return self._set(splitRatio=value)
 
     def setSeed(self, value):
         assert_is_type(value, int)
