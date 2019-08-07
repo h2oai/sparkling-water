@@ -19,7 +19,6 @@ package ai.h2o.sparkling.ml.algos
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.ml.h2o.algos.H2OGBM
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -47,9 +46,39 @@ class H2OGBMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     val model = algo.fit(dataset)
 
     val predictions = model.transform(dataset)
-    val contributions = predictions.select("prediction.contributions").head().getAs[Seq[Double]](0)
+    val contributions = predictions.select("detailed_prediction.contributions").head().getAs[Seq[Double]](0)
     assert(contributions != null)
     assert(contributions.size == 8)
   }
 
+  test("H2OGBM basic output in the prediction column, the old variant") {
+    val algo = new H2OGBM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setWithDetailedPredictionCol(false)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+
+    val model = algo.fit(dataset)
+
+    val predictions = model.transform(dataset)
+    // if the column would not exist, Spark would throw exception
+    predictions.select("prediction.value").head().getDouble(0)
+  }
+
+  // This test can be enabled after we deprecate the old behaviour captured in the test above. It was created now
+  // to give context to the reader of this source code where the changes are heading
+  ignore("H2OGBM basic output in the prediction column") {
+    val algo = new H2OGBM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setWithDetailedPredictionCol(false)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+
+    val model = algo.fit(dataset)
+
+    val predictions = model.transform(dataset)
+    predictions.select("prediction").head().getDouble(0)
+  }
 }

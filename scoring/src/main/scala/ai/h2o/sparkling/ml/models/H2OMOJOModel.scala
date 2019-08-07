@@ -18,9 +18,7 @@
 package ai.h2o.sparkling.ml.models
 
 import java.io.ByteArrayInputStream
-import java.util
 
-import _root_.hex.ModelCategory
 import _root_.hex.genmodel.MojoReaderBackendFactory
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
@@ -29,12 +27,11 @@ import ai.h2o.sparkling.ml.utils.Utils
 import com.google.gson.{GsonBuilder, JsonElement}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
 
-class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOModelPredictions {
+class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
 
   protected final val modelDetails: NullableStringParam = new NullableStringParam(this, "modelDetails", "Raw details of this model.")
 
@@ -58,86 +55,22 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     new EasyPredictModelWrapper(config)
   }
 
-  case class MultinomialPrediction(probabilities: Array[Double])
-
-  case class ClusteringPrediction(cluster: Integer, distances: Array[Double])
-
-  case class AutoEncoderPrediction(original: Array[Double], reconstructed: Array[Double])
-
-  case class DimReductionPrediction(dimensions: Array[Double])
-
-  case class WordEmbeddingPrediction(wordEmbeddings: util.HashMap[String, Array[Float]])
-
-  case class AnomalyPrediction(score: Double, normalizedScore: Double)
-
-  override protected def getPredictionSchema(): Seq[StructField] = {
-    val fields = easyPredictModelWrapper.getModelCategory match {
-      case ModelCategory.Binomial =>
-        getBinomialPredictionSchema()
-      case ModelCategory.Regression =>
-        getRegressionPredictionSchema()
-      case ModelCategory.Multinomial => StructField("probabilities", ArrayType(DoubleType)) :: Nil
-      case ModelCategory.Clustering => StructField("cluster", DoubleType) :: Nil
-      case ModelCategory.AutoEncoder => StructField("original", ArrayType(DoubleType)) :: StructField("reconstructed", ArrayType(DoubleType)) :: Nil
-      case ModelCategory.DimReduction => StructField("dimensions", ArrayType(DoubleType)) :: Nil
-      case ModelCategory.WordEmbedding => StructField("wordEmbeddings", DataTypes.createMapType(StringType, ArrayType(FloatType))) :: Nil
-      case _ => throw new RuntimeException("Unknown model category")
-    }
-
-    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
+  override protected def getPredictionColSchema(): Seq[StructField] = {
+    H2OMOJOPrediction.getPredictionColSchema(this, easyPredictModelWrapper)
   }
 
-  private def getModelUdf() = {
-    val modelUdf = {
-      easyPredictModelWrapper.getModelCategory match {
-        case ModelCategory.Binomial =>
-          getBinomialPredictionUDF()
-        case ModelCategory.Regression =>
-          getRegressionPredictionUDF()
-        case ModelCategory.Multinomial => udf[MultinomialPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictMultinomial(RowConverter.toH2ORowData(r))
-          MultinomialPrediction(pred.classProbabilities)
-        }
-        case ModelCategory.Clustering => udf[ClusteringPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictClustering(RowConverter.toH2ORowData(r))
-          ClusteringPrediction(pred.cluster, pred.distances)
-        }
-        case ModelCategory.AutoEncoder => udf[AutoEncoderPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictAutoEncoder(RowConverter.toH2ORowData(r))
-          AutoEncoderPrediction(pred.original, pred.reconstructed)
-        }
-        case ModelCategory.DimReduction => udf[DimReductionPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictDimReduction(RowConverter.toH2ORowData(r))
-          DimReductionPrediction(pred.dimensions)
-        }
-        case ModelCategory.WordEmbedding => udf[WordEmbeddingPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictWord2Vec(RowConverter.toH2ORowData(r))
-          WordEmbeddingPrediction(pred.wordEmbeddings)
-        }
-        case ModelCategory.AnomalyDetection => udf[AnomalyPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictAnomalyDetection(RowConverter.toH2ORowData(r))
-          AnomalyPrediction(pred.score, pred.normalizedScore)
-        }
-        case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
-      }
-    }
-    modelUdf
+  override protected def getDetailedPredictionColSchema(): Seq[StructField] = {
+    H2OMOJOPrediction.getDetailedPredictionColSchema(this, easyPredictModelWrapper)
   }
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val baseDf = applyPredictionUdf(dataset, _ => getModelUdf())
+    val baseDf = applyPredictionUdf(dataset, _ => H2OMOJOPrediction.getPredictionUDF(this, easyPredictModelWrapper))
 
-    val withPredictionDf = easyPredictModelWrapper.getModelCategory match {
-      case ModelCategory.Clustering =>
-        baseDf.withColumn(getPredictionCol(), col(s"${getDetailedPredictionCol()}.cluster"))
-      case _ =>
-        // For already existing algos, keep the functionality same,
-        // We can deprecate that and slowly migrate to solution where prediction contains
-        // always single value
-        baseDf.withColumn(getPredictionCol(), col(getDetailedPredictionCol()))
-    }
+    val withPredictionDf = baseDf.withColumn(getPredictionCol(),
+      H2OMOJOPrediction.extractPredictionColContent(this, easyPredictModelWrapper))
+
 
     if (getWithDetailedPredictionCol()) {
       withPredictionDf
