@@ -17,31 +17,37 @@
 
 package ai.h2o.sparkling.ml.models
 
-import hex.genmodel.easy.EasyPredictModelWrapper
-import org.apache.spark.sql.{Column, Row}
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionMultinomial.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField}
+import org.apache.spark.sql.{Column, Row}
 
-object H2OMOJOPredictionMultinomial extends H2OMOJOPrediction {
-  override def getPredictionUDF(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): UserDefinedFunction = {
+trait H2OMOJOPredictionMultinomial {
+  self: H2OMOJOModel =>
+  def getMultinomialPredictionUDF(): UserDefinedFunction = {
     udf[Base, Row] { r: Row =>
-      val pred = predictWrapper.predictMultinomial(RowConverter.toH2ORowData(r))
+      val pred = easyPredictModelWrapper.predictMultinomial(RowConverter.toH2ORowData(r))
       Base(pred.classProbabilities)
     }
   }
 
-  override def getPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
-    getDetailedPredictionColSchema(model, predictWrapper)
+  def getMultinomialPredictionColSchema(): Seq[StructField] = {
+    getDetailedPredictionColSchema()
   }
 
-  override def getDetailedPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
+  def getMultinomialDetailedPredictionColSchema(): Seq[StructField] = {
     StructField("probabilities", ArrayType(DoubleType)) :: Nil
   }
 
+
+  def extractMultinomialPredictionColContent(): Column = {
+    col(getDetailedPredictionCol())
+  }
+}
+
+object H2OMOJOPredictionMultinomial {
+
   case class Base(probabilities: Array[Double])
 
-  override def extractSimplePredictionColumns(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Column = {
-    col(model.getDetailedPredictionCol())
-  }
 }

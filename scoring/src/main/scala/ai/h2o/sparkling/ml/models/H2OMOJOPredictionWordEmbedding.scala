@@ -18,31 +18,36 @@ package ai.h2o.sparkling.ml.models
 
 import java.util
 
-import hex.genmodel.easy.EasyPredictModelWrapper
-import org.apache.spark.sql.{Column, Row}
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionWordEmbedding.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{Column, Row}
 
-object H2OMOJOPredictionWordEmbedding extends H2OMOJOPrediction {
-  override def getPredictionUDF(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): UserDefinedFunction = {
+trait H2OMOJOPredictionWordEmbedding {
+  self: H2OMOJOModel =>
+
+  def getWordEmbeddingPredictionUDF(): UserDefinedFunction = {
     udf[Base, Row] { r: Row =>
-      val pred = predictWrapper.predictWord2Vec(RowConverter.toH2ORowData(r))
+      val pred = easyPredictModelWrapper.predictWord2Vec(RowConverter.toH2ORowData(r))
       Base(pred.wordEmbeddings)
     }
   }
 
-  override def getPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
-    getDetailedPredictionColSchema(model, predictWrapper)
+  def getWordEmbeddingPredictionColSchema(): Seq[StructField] = {
+    getWordEmbeddingDetailedPredictionColSchema()
   }
 
-  override def getDetailedPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
+  def getWordEmbeddingDetailedPredictionColSchema(): Seq[StructField] = {
     StructField("wordEmbeddings", DataTypes.createMapType(StringType, ArrayType(FloatType))) :: Nil
   }
 
-  case class Base(wordEmbeddings: util.HashMap[String, Array[Float]])
-
-  override def extractSimplePredictionColumns(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Column = {
-    col(model.getDetailedPredictionCol())
+  def extractWordEmbeddingPredictionColContent(): Column = {
+    col(getDetailedPredictionCol())
   }
+
+}
+
+object H2OMOJOPredictionWordEmbedding {
+  case class Base(wordEmbeddings: util.HashMap[String, Array[Float]])
 }

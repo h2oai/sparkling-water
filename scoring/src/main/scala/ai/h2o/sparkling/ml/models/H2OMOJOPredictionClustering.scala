@@ -16,30 +16,36 @@
 */
 package ai.h2o.sparkling.ml.models
 
-import hex.genmodel.easy.EasyPredictModelWrapper
-import org.apache.spark.sql.{Column, Row}
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionClustering.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField}
+import org.apache.spark.sql.{Column, Row}
 
-object H2OMOJOPredictionClustering extends H2OMOJOPrediction {
+trait H2OMOJOPredictionClustering {
+  self: H2OMOJOModel =>
 
-  override def getPredictionUDF(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): UserDefinedFunction = {
+  def getClusteringPredictionUDF(): UserDefinedFunction = {
     udf[Base, Row] { r: Row =>
-      val pred = predictWrapper.predictClustering(RowConverter.toH2ORowData(r))
+      val pred = easyPredictModelWrapper.predictClustering(RowConverter.toH2ORowData(r))
       Base(pred.cluster, pred.distances)
     }
   }
 
-  override def getPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = StructField("value", DoubleType) :: Nil
+  def getClusteringPredictionColSchema(): Seq[StructField] = StructField("value", DoubleType) :: Nil
 
-  override def getDetailedPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
+  def getClusteringDetailedPredictionColSchema(): Seq[StructField] = {
     StructField("value", DoubleType) :: StructField("distances", ArrayType(DoubleType)) :: Nil
   }
 
+
+  def extractClusteringPredictionColContent(): Column = {
+    col(s"${getDetailedPredictionCol()}.cluster")
+  }
+}
+
+object H2OMOJOPredictionClustering {
+
   case class Base(cluster: Integer, distances: Array[Double])
 
-  override def extractSimplePredictionColumns(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Column = {
-    col(s"${model.getDetailedPredictionCol()}.cluster")
-  }
 }

@@ -27,11 +27,10 @@ import ai.h2o.sparkling.ml.utils.Utils
 import com.google.gson.{GsonBuilder, JsonElement}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
-import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
 
-class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
+class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOPrediction {
 
   protected final val modelDetails: NullableStringParam = new NullableStringParam(this, "modelDetails", "Raw details of this model.")
 
@@ -55,22 +54,13 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     new EasyPredictModelWrapper(config)
   }
 
-  override protected def getPredictionColSchema(): Seq[StructField] = {
-    H2OMOJOPrediction.getPredictionColSchema(this, easyPredictModelWrapper)
-  }
-
-  override protected def getDetailedPredictionColSchema(): Seq[StructField] = {
-    H2OMOJOPrediction.getDetailedPredictionColSchema(this, easyPredictModelWrapper)
-  }
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val baseDf = applyPredictionUdf(dataset, _ => H2OMOJOPrediction.getPredictionUDF(this, easyPredictModelWrapper))
+    val baseDf = applyPredictionUdf(dataset, _ => getPredictionUDF())
 
-    val withPredictionDf = baseDf.withColumn(getPredictionCol(),
-      H2OMOJOPrediction.extractPredictionColContent(this, easyPredictModelWrapper))
-
+    val withPredictionDf = baseDf.withColumn(getPredictionCol(), extractPredictionColContent())
 
     if (getWithDetailedPredictionCol()) {
       withPredictionDf

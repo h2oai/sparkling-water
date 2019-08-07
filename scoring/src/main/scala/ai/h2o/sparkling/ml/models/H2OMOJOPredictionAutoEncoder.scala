@@ -16,31 +16,38 @@
 */
 package ai.h2o.sparkling.ml.models
 
-import hex.genmodel.easy.EasyPredictModelWrapper
-import org.apache.spark.sql.{Column, Row}
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionAutoEncoder.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField}
+import org.apache.spark.sql.{Column, Row}
 
-object H2OMOJOPredictionAutoEncoder extends H2OMOJOPrediction {
-  override def getPredictionUDF(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): UserDefinedFunction = {
+trait H2OMOJOPredictionAutoEncoder {
+  self: H2OMOJOModel =>
+
+  def getAutoEncoderPredictionUDF(): UserDefinedFunction = {
     udf[Base, Row] { r: Row =>
-      val pred = predictWrapper.predictAutoEncoder(RowConverter.toH2ORowData(r))
+      val pred = easyPredictModelWrapper.predictAutoEncoder(RowConverter.toH2ORowData(r))
       Base(pred.original, pred.reconstructed)
     }
   }
 
-  override def getPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
-    getDetailedPredictionColSchema(model, predictWrapper)
+  def getAutoEncoderPredictionColSchema(): Seq[StructField] = {
+    getDetailedPredictionColSchema()
   }
 
-  override def getDetailedPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
+  def getAutoEncoderDetailedPredictionColSchema(): Seq[StructField] = {
     Seq("original", "reconstructed").map(StructField(_, ArrayType(DoubleType)))
   }
 
+
+  def extractAutoEncoderPredictionColContent(): Column = {
+    col(getDetailedPredictionCol())
+  }
+}
+
+object H2OMOJOPredictionAutoEncoder {
+
   case class Base(original: Array[Double], reconstructed: Array[Double])
 
-  override def extractSimplePredictionColumns(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Column = {
-    col(model.getDetailedPredictionCol())
-  }
 }

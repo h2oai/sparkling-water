@@ -18,111 +18,108 @@
 package ai.h2o.sparkling.ml.models
 
 import hex.ModelCategory
-import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.types.{StructField, StructType}
 
-trait H2OMOJOPrediction {
+trait H2OMOJOPrediction
+  extends H2OMOJOPredictionRegression
+    with H2OMOJOPredictionWordEmbedding
+    with H2OMOJOPredictionAnomaly
+    with H2OMOJOPredictionAutoEncoder
+    with H2OMOJOPredictionMultinomial
+    with H2OMOJOPredictionDimReduction
+    with H2OMOJOPredictionClustering
+  with H2OMOJOPredictionBinomial {
+  self: H2OMOJOModel =>
 
-  def extractSimplePredictionColumns(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Column
-
-  def getPredictionUDF(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): UserDefinedFunction
-
-  def getPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField]
-
-  def getDetailedPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField]
-}
-
-object H2OMOJOPrediction {
-
-  def extractPredictionColContent(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Column = {
-    predictWrapper.getModelCategory match {
+  def extractPredictionColContent(): Column = {
+    easyPredictModelWrapper.getModelCategory match {
       case ModelCategory.Binomial =>
-        H2OMOJOPredictionBinomial.extractSimplePredictionColumns(model, predictWrapper)
+        extractBinomialPredictionColContent()
       case ModelCategory.Regression =>
-        H2OMOJOPredictionRegression.extractSimplePredictionColumns(model, predictWrapper)
+        extractRegressionPredictionColContent()
       case ModelCategory.Multinomial =>
-        H2OMOJOPredictionMultinomial.extractSimplePredictionColumns(model, predictWrapper)
+        extractMultinomialPredictionColContent()
       case ModelCategory.Clustering =>
-        H2OMOJOPredictionClustering.extractSimplePredictionColumns(model, predictWrapper)
+        extractClusteringPredictionColContent()
       case ModelCategory.AutoEncoder =>
-        H2OMOJOPredictionAutoEncoder.extractSimplePredictionColumns(model, predictWrapper)
+        extractAutoEncoderPredictionColContent()
       case ModelCategory.DimReduction =>
-        H2OMOJOPredictionDimReduction.extractSimplePredictionColumns(model, predictWrapper)
+        extractDimReductionSimplePredictionColContent()
       case ModelCategory.WordEmbedding =>
-        H2OMOJOPredictionWordEmbedding.extractSimplePredictionColumns(model, predictWrapper)
+        extractWordEmbeddingPredictionColContent()
       case ModelCategory.AnomalyDetection =>
-        H2OMOJOPredictionAnomaly.extractSimplePredictionColumns(model, predictWrapper)
-      case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
+        extractAnomalyPredictionColContent()
+      case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
     }
   }
 
-  def getPredictionUDF(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): UserDefinedFunction = {
-    predictWrapper.getModelCategory match {
+  def getPredictionUDF(): UserDefinedFunction = {
+    easyPredictModelWrapper.getModelCategory match {
       case ModelCategory.Binomial =>
-        H2OMOJOPredictionBinomial.getPredictionUDF(model, predictWrapper)
+        getBinomialPredictionUDF()
       case ModelCategory.Regression =>
-        H2OMOJOPredictionRegression.getPredictionUDF(model, predictWrapper)
+        getRegressionPredictionUDF()
       case ModelCategory.Multinomial =>
-        H2OMOJOPredictionMultinomial.getPredictionUDF(model, predictWrapper)
+        getMultinomialPredictionUDF()
       case ModelCategory.Clustering =>
-        H2OMOJOPredictionClustering.getPredictionUDF(model, predictWrapper)
+        getClusteringPredictionUDF()
       case ModelCategory.AutoEncoder =>
-        H2OMOJOPredictionAutoEncoder.getPredictionUDF(model, predictWrapper)
+        getAutoEncoderPredictionUDF()
       case ModelCategory.DimReduction =>
-        H2OMOJOPredictionDimReduction.getPredictionUDF(model, predictWrapper)
+        getDimReductionPredictionUDF()
       case ModelCategory.WordEmbedding =>
-        H2OMOJOPredictionWordEmbedding.getPredictionUDF(model, predictWrapper)
+        getWordEmbeddingPredictionUDF()
       case ModelCategory.AnomalyDetection =>
-        H2OMOJOPredictionAnomaly.getPredictionUDF(model, predictWrapper)
-      case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
+        getAnomalyPredictionUDF()
+      case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
     }
   }
 
-  def getPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
-    val fields = predictWrapper.getModelCategory match {
+  override def getPredictionColSchema(): Seq[StructField] = {
+    val fields = easyPredictModelWrapper.getModelCategory match {
       case ModelCategory.Binomial =>
-        H2OMOJOPredictionBinomial.getPredictionColSchema(model, predictWrapper)
+        getBinomialPredictionColSchema()
       case ModelCategory.Regression =>
-        H2OMOJOPredictionRegression.getPredictionColSchema(model, predictWrapper)
+        getRegressionPredictionColSchema()
       case ModelCategory.Multinomial =>
-        H2OMOJOPredictionMultinomial.getPredictionColSchema(model, predictWrapper)
+        getMultinomialPredictionColSchema()
       case ModelCategory.Clustering =>
-        H2OMOJOPredictionClustering.getPredictionColSchema(model, predictWrapper)
+        getClusteringPredictionColSchema()
       case ModelCategory.AutoEncoder =>
-        H2OMOJOPredictionAutoEncoder.getPredictionColSchema(model, predictWrapper)
+        getAutoEncoderPredictionColSchema()
       case ModelCategory.DimReduction =>
-        H2OMOJOPredictionDimReduction.getPredictionColSchema(model, predictWrapper)
+        getDimReductionPredictionColSchema()
       case ModelCategory.WordEmbedding =>
-        H2OMOJOPredictionWordEmbedding.getPredictionColSchema(model, predictWrapper)
+        getWordEmbeddingPredictionColSchema()
       case ModelCategory.AnomalyDetection =>
-        H2OMOJOPredictionAnomaly.getPredictionColSchema(model, predictWrapper)
-      case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
+        getAnomalyPredictionColSchema()
+      case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
     }
-    Seq(StructField(model.getPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
   }
 
-  def getDetailedPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
-    val fields = predictWrapper.getModelCategory match {
+  override def getDetailedPredictionColSchema(): Seq[StructField] = {
+    val fields = easyPredictModelWrapper.getModelCategory match {
       case ModelCategory.Binomial =>
-        H2OMOJOPredictionBinomial.getDetailedPredictionColSchema(model, predictWrapper)
+        getBinomialDetailedPredictionColSchema()
       case ModelCategory.Regression =>
-        H2OMOJOPredictionRegression.getDetailedPredictionColSchema(model, predictWrapper)
+        getRegressionDetailedPredictionColSchema()
       case ModelCategory.Multinomial =>
-        H2OMOJOPredictionMultinomial.getDetailedPredictionColSchema(model, predictWrapper)
+        getMultinomialDetailedPredictionColSchema()
       case ModelCategory.Clustering =>
-        H2OMOJOPredictionClustering.getDetailedPredictionColSchema(model, predictWrapper)
+        getClusteringDetailedPredictionColSchema()
       case ModelCategory.AutoEncoder =>
-        H2OMOJOPredictionAutoEncoder.getDetailedPredictionColSchema(model, predictWrapper)
+        getAutoEncoderDetailedPredictionColSchema()
       case ModelCategory.DimReduction =>
-        H2OMOJOPredictionDimReduction.getDetailedPredictionColSchema(model, predictWrapper)
+        getDimReductionDetailedPredictionColSchema()
       case ModelCategory.WordEmbedding =>
-        H2OMOJOPredictionWordEmbedding.getDetailedPredictionColSchema(model, predictWrapper)
+        getWordEmbeddingDetailedPredictionColSchema()
       case ModelCategory.AnomalyDetection =>
-        H2OMOJOPredictionAnomaly.getDetailedPredictionColSchema(model, predictWrapper)
-      case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
+        getAnomalyDetailedPredictionColSchema()
+      case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
     }
-    Seq(StructField(model.getDetailedPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
   }
 }

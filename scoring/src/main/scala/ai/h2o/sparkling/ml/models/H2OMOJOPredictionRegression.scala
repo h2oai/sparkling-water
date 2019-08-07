@@ -16,45 +16,51 @@
 */
 package ai.h2o.sparkling.ml.models
 
-import hex.genmodel.easy.EasyPredictModelWrapper
-import org.apache.spark.sql.{Column, Row}
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionRegression.{Base, WithContributions}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, FloatType, StructField}
+import org.apache.spark.sql.{Column, Row}
 
-object H2OMOJOPredictionRegression extends H2OMOJOPrediction {
+trait H2OMOJOPredictionRegression {
+  self: H2OMOJOModel =>
 
-  override def getPredictionUDF(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): UserDefinedFunction = {
-    if (model.getWithDetailedPredictionCol()) {
+  def getRegressionPredictionUDF(): UserDefinedFunction = {
+    if (getWithDetailedPredictionCol()) {
       udf[WithContributions, Row] { r: Row =>
-        val pred = predictWrapper.predictRegression(RowConverter.toH2ORowData(r))
+        val pred = easyPredictModelWrapper.predictRegression(RowConverter.toH2ORowData(r))
         WithContributions(pred.value, pred.contributions)
       }
     } else {
       udf[Base, Row] { r: Row =>
-        val pred = predictWrapper.predictRegression(RowConverter.toH2ORowData(r))
+        val pred = easyPredictModelWrapper.predictRegression(RowConverter.toH2ORowData(r))
         Base(pred.value)
       }
     }
   }
 
-  override def getPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
+  def getRegressionPredictionColSchema(): Seq[StructField] = {
     StructField("value", DoubleType) :: Nil
   }
 
-  override def getDetailedPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
-    if (model.getWithDetailedPredictionCol()) {
+  def getRegressionDetailedPredictionColSchema(): Seq[StructField] = {
+    if (getWithDetailedPredictionCol()) {
       StructField("value", DoubleType) :: StructField("contributions", ArrayType(FloatType)) :: Nil
     } else {
       StructField("value", DoubleType) :: Nil
     }
   }
 
+  def extractRegressionPredictionColContent(): Column = {
+    struct(col(s"${getDetailedPredictionCol()}.value")).as("value")
+  }
+
+}
+
+object H2OMOJOPredictionRegression {
+
   case class Base(value: Double)
 
   case class WithContributions(value: Double, contributions: Array[Float])
 
-  override def extractSimplePredictionColumns(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Column = {
-    struct(col(s"${model.getDetailedPredictionCol()}.value")).as("value")
-  }
 }

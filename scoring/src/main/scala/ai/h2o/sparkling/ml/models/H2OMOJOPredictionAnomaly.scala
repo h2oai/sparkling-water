@@ -16,31 +16,36 @@
 */
 package ai.h2o.sparkling.ml.models
 
-import hex.genmodel.easy.EasyPredictModelWrapper
-import org.apache.spark.sql.{Column, Row}
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionAnomaly.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.{DoubleType, StructField}
+import org.apache.spark.sql.{Column, Row}
 
-object H2OMOJOPredictionAnomaly extends H2OMOJOPrediction {
-  override def getPredictionUDF(model: H2OMOJOModel, predictWrapper: EasyPredictModelWrapper): UserDefinedFunction = {
+trait H2OMOJOPredictionAnomaly {
+  self: H2OMOJOModel =>
+  def getAnomalyPredictionUDF(): UserDefinedFunction = {
     udf[Base, Row] { r: Row =>
-      val pred = predictWrapper.predictAnomalyDetection(RowConverter.toH2ORowData(r))
+      val pred = easyPredictModelWrapper.predictAnomalyDetection(RowConverter.toH2ORowData(r))
       Base(pred.score, pred.normalizedScore)
     }
   }
 
-  override def getPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
-    getDetailedPredictionColSchema(model, predictWrapper)
+  def getAnomalyPredictionColSchema(): Seq[StructField] = {
+    getDetailedPredictionColSchema()
   }
 
-  override def getDetailedPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
+  def getAnomalyDetailedPredictionColSchema(): Seq[StructField] = {
     Seq("score", "normalizedScore").map(StructField(_, DoubleType, nullable = false))
   }
 
+  def extractAnomalyPredictionColContent(): Column = {
+    col(getDetailedPredictionCol())
+  }
+}
+
+object H2OMOJOPredictionAnomaly {
+
   case class Base(score: Double, normalizedScore: Double)
 
-  override def extractSimplePredictionColumns(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Column = {
-    col(model.getDetailedPredictionCol())
-  }
 }

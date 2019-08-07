@@ -15,31 +15,38 @@
 * limitations under the License.
 */
 package ai.h2o.sparkling.ml.models
-import hex.genmodel.easy.EasyPredictModelWrapper
-import org.apache.spark.sql.{Column, Row}
+
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionDimReduction.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField}
+import org.apache.spark.sql.{Column, Row}
 
-object H2OMOJOPredictionDimReduction extends H2OMOJOPrediction {
-  override def getPredictionUDF(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): UserDefinedFunction = {
+trait H2OMOJOPredictionDimReduction {
+  self: H2OMOJOModel =>
+  def getDimReductionPredictionUDF(): UserDefinedFunction = {
     udf[Base, Row] { r: Row =>
-      val pred = predictWrapper.predictDimReduction(RowConverter.toH2ORowData(r))
+      val pred = easyPredictModelWrapper.predictDimReduction(RowConverter.toH2ORowData(r))
       Base(pred.dimensions)
     }
   }
 
-  override def getPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
-    getDetailedPredictionColSchema(model, predictWrapper)
+  def getDimReductionPredictionColSchema(): Seq[StructField] = {
+    getDetailedPredictionColSchema()
   }
 
-  override def getDetailedPredictionColSchema(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Seq[StructField] = {
+  def getDimReductionDetailedPredictionColSchema(): Seq[StructField] = {
     StructField("dimensions", ArrayType(DoubleType)) :: Nil
   }
 
+
+  def extractDimReductionSimplePredictionColContent(): Column = {
+    col(getDetailedPredictionCol())
+  }
+}
+
+object H2OMOJOPredictionDimReduction {
+
   case class Base(dimensions: Array[Double])
 
-  override def extractSimplePredictionColumns(@transient model: H2OMOJOModel, @transient predictWrapper: EasyPredictModelWrapper): Column = {
-    col(model.getDetailedPredictionCol())
-  }
 }
