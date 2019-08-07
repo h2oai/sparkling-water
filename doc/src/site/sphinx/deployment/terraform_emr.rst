@@ -11,7 +11,7 @@ The Terraform scripts for EMR are available in the release distribution in the
 **templates/build/terraform/aws** directory or on-line in S3 as part of each Sparkling Water
 release.
 
-Sparkling Water provide 3 templates/modules:
+Sparkling Water provides 3 templates/modules:
 
  - ``network`` module (**/templates/build/terraform/aws/modules/network**). This module is used to set up network infrastructure on your AWS. It sets up VPC, internet gateway, subnet, routing tables and default DHCP settings.
 
@@ -38,8 +38,7 @@ Sparkling Water provide 3 templates/modules:
    - ``aws_emr_version`` (optional) - EMR version. Defaults to ``emr-2.20.0``.
    - ``aws_core_instance_count`` (optional) - Number of worker nodes. Defaults to ``2``.
    - ``aws_instance_type`` (optional) - type of EC2 instances. Defaults to ``m3.xlarge``.
-   - ``sw_major_version`` (optional) - Sparkling Water major version. Defaults to SUBST_SW_MAJOR_VERSION.
-   - ``sw_patch_version`` (optional) - Sparkling Water minor version. Defaults to SUBST_SW_MINOR_VERSION.
+   - ``sw_major_version`` (optional) - Sparkling Water version. Defaults to SUBST_SW_VERSION.
    - ``jupyter_name`` (optional) - User name for Jupyter Notebook. Defaults to ``admin``.
 
  - ``default`` module  (**/templates/build/terraform/aws**). This module is a combination of the two previous modules. It starts the network infrastructure and starts EMR with Sparkling Water on top of it.
@@ -53,8 +52,7 @@ Sparkling Water provide 3 templates/modules:
    - ``aws_emr_version`` (optional) - EMR version. Defaults to ``emr-2.20.0``.
    - ``aws_core_instance_count`` (optional) - Number of worker nodes. Defaults to ``2``.
    - ``aws_instance_type`` (optional) - type of EC2 instances. Defaults to ``m3.xlarge``.
-   - ``sw_major_version`` (optional) - Sparkling Water major version. Defaults to SUBST_SW_MAJOR_VERSION.
-   - ``sw_patch_version`` (optional) - Sparkling Water minor version. Defaults to SUBST_SW_MINOR_VERSION.
+   - ``sw_major_version`` (optional) - Sparkling Water version. Defaults to SUBST_SW_VERSION.
    - ``jupyter_name`` (optional) - User name for Jupyter Notebook. Defaults to ``admin``.
 
 
