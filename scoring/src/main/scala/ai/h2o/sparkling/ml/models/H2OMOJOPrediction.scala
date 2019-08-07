@@ -126,5 +126,3 @@ object H2OMOJOPrediction {
     Seq(StructField(model.getDetailedPredictionCol(), StructType(fields), nullable = false))
   }
 }
-
-
