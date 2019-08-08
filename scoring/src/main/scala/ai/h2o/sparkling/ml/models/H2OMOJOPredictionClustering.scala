@@ -40,7 +40,8 @@ trait H2OMOJOPredictionClustering {
 
 
   def extractClusteringPredictionColContent(): Column = {
-    col(s"${getDetailedPredictionCol()}.cluster")
+    val columnName = getClusteringDetailedPredictionColSchema().map(_.name)
+    col(s"${getDetailedPredictionCol()}.$columnName")
   }
 }
 

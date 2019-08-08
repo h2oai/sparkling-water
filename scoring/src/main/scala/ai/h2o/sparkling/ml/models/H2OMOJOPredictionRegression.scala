@@ -52,7 +52,8 @@ trait H2OMOJOPredictionRegression {
   }
 
   def extractRegressionPredictionColContent(): Column = {
-    struct(col(s"${getDetailedPredictionCol()}.value")).as("value")
+    val cols = extractColumnsAsNested(getRegressionPredictionColSchema().map(_.name))
+    struct(cols: _*)
   }
 }
 

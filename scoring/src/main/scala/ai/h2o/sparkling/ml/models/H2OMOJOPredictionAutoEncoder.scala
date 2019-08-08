@@ -18,7 +18,7 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionAutoEncoder.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField}
 import org.apache.spark.sql.{Column, Row}
 
@@ -33,16 +33,16 @@ trait H2OMOJOPredictionAutoEncoder {
   }
 
   def getAutoEncoderPredictionColSchema(): Seq[StructField] = {
-    getDetailedPredictionColSchema()
+    Seq("original", "reconstructed").map(StructField(_, ArrayType(DoubleType)))
   }
 
   def getAutoEncoderDetailedPredictionColSchema(): Seq[StructField] = {
     Seq("original", "reconstructed").map(StructField(_, ArrayType(DoubleType)))
   }
 
-
   def extractAutoEncoderPredictionColContent(): Column = {
-    col(getDetailedPredictionCol())
+    val cols = extractColumnsAsNested(getAutoEncoderPredictionColSchema().map(_.name))
+    struct(cols: _*)
   }
 }
 

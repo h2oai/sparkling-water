@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionBinomial._
 import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, struct, udf}
+import org.apache.spark.sql.functions.{struct, udf}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, FloatType, StructField}
 import org.apache.spark.sql.{Column, Row}
 
@@ -104,16 +104,8 @@ trait H2OMOJOPredictionBinomial {
 
 
   def extractBinomialPredictionColContent(): Column = {
-    val p0col = col(s"${getDetailedPredictionCol()}.p0").as("p0")
-    val p1col = col(s"${getDetailedPredictionCol()}.p1").as("p1")
-
-    if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
-      val p0calibratedCol = col(s"${getDetailedPredictionCol()}.p0_calibrated").as("p0_calibrated")
-      val p1calibratedCol = col(s"${getDetailedPredictionCol()}.p1_calibrated").as("p1_calibrated")
-      struct(p0col, p1col, p0calibratedCol, p1calibratedCol)
-    } else {
-      struct(p0col, p1col)
-    }
+    val cols = extractColumnsAsNested(getBinomialPredictionColSchema().map(_.name))
+    struct(cols: _*)
   }
 }
 

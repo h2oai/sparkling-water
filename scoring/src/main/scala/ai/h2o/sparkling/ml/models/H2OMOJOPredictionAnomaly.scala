@@ -18,11 +18,11 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionAnomaly.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.functions.{col, struct, udf}
 import org.apache.spark.sql.types.{DoubleType, StructField}
 import org.apache.spark.sql.{Column, Row}
 
-trait H2OMOJOPredictionAnomaly {
+trait H2OMOJOPredictionAnomaly extends H2OMOJOPredictionUtils {
   self: H2OMOJOModel =>
   def getAnomalyPredictionUDF(): UserDefinedFunction = {
     udf[Base, Row] { r: Row =>
@@ -32,7 +32,7 @@ trait H2OMOJOPredictionAnomaly {
   }
 
   def getAnomalyPredictionColSchema(): Seq[StructField] = {
-    getDetailedPredictionColSchema()
+    Seq("score", "normalizedScore").map(StructField(_, DoubleType, nullable = false))
   }
 
   def getAnomalyDetailedPredictionColSchema(): Seq[StructField] = {
@@ -40,7 +40,8 @@ trait H2OMOJOPredictionAnomaly {
   }
 
   def extractAnomalyPredictionColContent(): Column = {
-    col(getDetailedPredictionCol())
+    val cols = extractColumnsAsNested(getAnomalyPredictionColSchema().map(_.name))
+    struct(cols: _*)
   }
 }
 
