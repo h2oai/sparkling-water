@@ -19,8 +19,8 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionBinomial._
 import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{struct, udf}
-import org.apache.spark.sql.types.{ArrayType, DoubleType, FloatType, StructField, StructType}
+import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
 trait H2OMOJOPredictionBinomial {

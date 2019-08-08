@@ -20,7 +20,7 @@ import java.util
 
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionWordEmbedding.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
@@ -34,16 +34,18 @@ trait H2OMOJOPredictionWordEmbedding {
     }
   }
 
+  private val baseFields = StructField("wordEmbeddings", DataTypes.createMapType(StringType, ArrayType(FloatType))) :: Nil
+
   def getWordEmbeddingPredictionColSchema(): Seq[StructField] = {
-    getWordEmbeddingDetailedPredictionColSchema()
+    Seq(StructField(getPredictionCol(), StructType(baseFields), nullable = false))
   }
 
   def getWordEmbeddingDetailedPredictionColSchema(): Seq[StructField] = {
-    StructField("wordEmbeddings", DataTypes.createMapType(StringType, ArrayType(FloatType))) :: Nil
+    Seq(StructField(getDetailedPredictionCol(), StructType(baseFields), nullable = false))
   }
 
   def extractWordEmbeddingPredictionColContent(): Column = {
-    col(getDetailedPredictionCol())
+    extractColumnsAsNested(Seq("wordEmbeddings"))
   }
 
 }
