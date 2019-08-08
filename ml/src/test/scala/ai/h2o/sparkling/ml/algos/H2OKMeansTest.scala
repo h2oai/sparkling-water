@@ -55,33 +55,6 @@ class H2OKMeansTest extends FunSuite with Matchers with SharedH2OTestContext {
     loadedModel.transform(dataset).count()
   }
 
-  test("H2OKMeans' result is directly in prediction column") {
-    val algo = new H2OKMeans()
-      .setSplitRatio(0.8)
-      .setSeed(1)
-      .setK(3)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
-
-    val model = algo.fit(dataset)
-    val transformed = model.transform(dataset)
-    assert(transformed.select("prediction").head() == Row(0))
-    assert(transformed.select("prediction").distinct().count() == 3)
-  }
-
-  test("H2OKMeans' full result in prediction details column") {
-    val algo = new H2OKMeans()
-      .setSplitRatio(0.8)
-      .setSeed(1)
-      .setK(3)
-      .setWithDetailedPredictionCol(true)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
-
-    val model = algo.fit(dataset)
-    val transformed = model.transform(dataset)
-    assert(transformed.select("detailed_prediction.cluster").head().getInt(0) == 0)
-    assert(transformed.select("detailed_prediction.distances").head().getAs[Seq[Double]](0).length == 3)
-  }
-
   test("H2OKMeans user points") {
     val algo = new H2OKMeans()
       .setSplitRatio(0.8)

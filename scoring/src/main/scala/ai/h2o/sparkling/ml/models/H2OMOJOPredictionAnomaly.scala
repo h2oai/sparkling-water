@@ -18,8 +18,8 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionAnomaly.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, struct, udf}
-import org.apache.spark.sql.types.{DoubleType, StructField}
+import org.apache.spark.sql.functions.{struct, udf}
+import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
 import org.apache.spark.sql.{Column, Row}
 
 trait H2OMOJOPredictionAnomaly extends H2OMOJOPredictionUtils {
@@ -31,17 +31,18 @@ trait H2OMOJOPredictionAnomaly extends H2OMOJOPredictionUtils {
     }
   }
 
+  private val baseFields = Seq("score", "normalizedScore").map(StructField(_, DoubleType, nullable = false))
+
   def getAnomalyPredictionColSchema(): Seq[StructField] = {
-    Seq("score", "normalizedScore").map(StructField(_, DoubleType, nullable = false))
+    Seq(StructField(getPredictionCol(), StructType(baseFields), nullable = false))
   }
 
   def getAnomalyDetailedPredictionColSchema(): Seq[StructField] = {
-    Seq("score", "normalizedScore").map(StructField(_, DoubleType, nullable = false))
+    Seq(StructField(getDetailedPredictionCol(), StructType(baseFields), nullable = false))
   }
 
   def extractAnomalyPredictionColContent(): Column = {
-    val cols = extractColumnsAsNested(getAnomalyPredictionColSchema().map(_.name))
-    struct(cols: _*)
+    extractColumnsAsNested(Seq("score", "normalizedScore"))
   }
 }
 

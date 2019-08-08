@@ -18,8 +18,8 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionDimReduction.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, struct, udf}
-import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField}
+import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField, StructType}
 import org.apache.spark.sql.{Column, Row}
 
 trait H2OMOJOPredictionDimReduction {
@@ -31,18 +31,18 @@ trait H2OMOJOPredictionDimReduction {
     }
   }
 
+  private val baseFields = StructField("dimensions", ArrayType(DoubleType)) :: Nil
+
   def getDimReductionPredictionColSchema(): Seq[StructField] = {
-    StructField("dimensions", ArrayType(DoubleType)) :: Nil
+    Seq(StructField(getPredictionCol(), StructType(baseFields), nullable = false))
   }
 
   def getDimReductionDetailedPredictionColSchema(): Seq[StructField] = {
-    StructField("dimensions", ArrayType(DoubleType)) :: Nil
+    Seq(StructField(getDetailedPredictionCol(), StructType(baseFields), nullable = false))
   }
 
-
   def extractDimReductionSimplePredictionColContent(): Column = {
-    val cols = extractColumnsAsNested(getDimReductionPredictionColSchema().map(_.name))
-    struct(cols: _*)
+    extractColumnsAsNested(Seq("dimensions"))
   }
 }
 

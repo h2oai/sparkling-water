@@ -19,23 +19,40 @@ package ai.h2o.sparkling.ml.algos
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
-class H2OGBMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 
-  lazy val dataset = spark.read
+  private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
 
-  test("H2OGBM with contributions") {
+  test("predictionCol content") {
+    val algo = new H2OGBM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setWithDetailedPredictionCol(false)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+
+    val model = algo.fit(dataset)
+
+    val expectedCols = Seq("value")
+    val predictions = model.transform(dataset)
+    assert(predictions.select("prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
+    assert(!predictions.columns.contains("detailed_prediction"))
+  }
+
+  test("detailedPredictionCol content") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
@@ -46,39 +63,48 @@ class H2OGBMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     val model = algo.fit(dataset)
 
     val predictions = model.transform(dataset)
+
+    val expectedCols = Seq("value", "contributions")
+    assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
     val contributions = predictions.select("detailed_prediction.contributions").head().getAs[Seq[Double]](0)
     assert(contributions != null)
     assert(contributions.size == 8)
   }
 
-  test("H2OGBM basic output in the prediction column, the old variant") {
+  test("transformSchema with detailed prediction col") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setWithDetailedPredictionCol(false)
+      .setWithDetailedPredictionCol(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
-
     val model = algo.fit(dataset)
 
-    val predictions = model.transform(dataset)
-    // if the column would not exist, Spark would throw exception
-    predictions.select("prediction.value").head().getDouble(0)
+    val datasetFields = dataset.schema.fields
+    val valueField = StructField("value", DoubleType, nullable = false)
+    val predictionColField = StructField("prediction", StructType(valueField :: Nil), nullable = false)
+    val contributionsField = StructField("contributions", ArrayType(FloatType))
+    val detailedPredictionColField = StructField("detailed_prediction", StructType(valueField :: contributionsField :: Nil), nullable = false)
+
+    val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
+    val schema = model.transformSchema(dataset.schema)
+    assert(schema == expectedSchema)
   }
 
-  // This test can be enabled after we deprecate the old behaviour captured in the test above. It was created now
-  // to give context to the reader of this source code where the changes are heading
-  ignore("H2OGBM basic output in the prediction column") {
+  test("transformSchema without detailed prediction col") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setWithDetailedPredictionCol(false)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
-
     val model = algo.fit(dataset)
 
-    val predictions = model.transform(dataset)
-    predictions.select("prediction").head().getDouble(0)
+    val datasetFields = dataset.schema.fields
+    val valueField = StructField("value", DoubleType, nullable = false)
+    val predictionColField = StructField("prediction", StructType(valueField :: Nil), nullable = false)
+
+    val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
+    val schema = model.transformSchema(dataset.schema)
+    assert(schema == expectedSchema)
   }
 }

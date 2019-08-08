@@ -18,8 +18,8 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionAutoEncoder.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, struct, udf}
-import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField}
+import org.apache.spark.sql.functions.{struct, udf}
+import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField, StructType}
 import org.apache.spark.sql.{Column, Row}
 
 trait H2OMOJOPredictionAutoEncoder {
@@ -32,17 +32,18 @@ trait H2OMOJOPredictionAutoEncoder {
     }
   }
 
+  private val baseFields = Seq("original", "reconstructed").map(StructField(_, ArrayType(DoubleType)))
+
   def getAutoEncoderPredictionColSchema(): Seq[StructField] = {
-    Seq("original", "reconstructed").map(StructField(_, ArrayType(DoubleType)))
+    Seq(StructField(getPredictionCol(), StructType(baseFields), nullable = false))
   }
 
   def getAutoEncoderDetailedPredictionColSchema(): Seq[StructField] = {
-    Seq("original", "reconstructed").map(StructField(_, ArrayType(DoubleType)))
+    Seq(StructField(getDetailedPredictionCol(), StructType(baseFields), nullable = false))
   }
 
   def extractAutoEncoderPredictionColContent(): Column = {
-    val cols = extractColumnsAsNested(getAutoEncoderPredictionColSchema().map(_.name))
-    struct(cols: _*)
+    extractColumnsAsNested(Seq("original", "reconstructed"))
   }
 }
 

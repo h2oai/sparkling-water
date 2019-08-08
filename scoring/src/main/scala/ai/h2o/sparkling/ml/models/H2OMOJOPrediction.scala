@@ -20,7 +20,7 @@ package ai.h2o.sparkling.ml.models
 import hex.ModelCategory
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.types.StructField
 
 trait H2OMOJOPrediction
   extends H2OMOJOPredictionRegression
@@ -62,7 +62,7 @@ trait H2OMOJOPrediction
   }
 
   override def getPredictionColSchema(): Seq[StructField] = {
-    val fields = easyPredictModelWrapper.getModelCategory match {
+    easyPredictModelWrapper.getModelCategory match {
       case ModelCategory.Binomial => getBinomialPredictionColSchema()
       case ModelCategory.Regression => getRegressionPredictionColSchema()
       case ModelCategory.Multinomial => getMultinomialPredictionColSchema()
@@ -73,11 +73,10 @@ trait H2OMOJOPrediction
       case ModelCategory.AnomalyDetection => getAnomalyPredictionColSchema()
       case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
     }
-    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
   }
 
   override def getDetailedPredictionColSchema(): Seq[StructField] = {
-    val fields = easyPredictModelWrapper.getModelCategory match {
+    easyPredictModelWrapper.getModelCategory match {
       case ModelCategory.Binomial => getBinomialDetailedPredictionColSchema()
       case ModelCategory.Regression => getRegressionDetailedPredictionColSchema()
       case ModelCategory.Multinomial => getMultinomialDetailedPredictionColSchema()
@@ -88,6 +87,5 @@ trait H2OMOJOPrediction
       case ModelCategory.AnomalyDetection => getAnomalyDetailedPredictionColSchema()
       case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
     }
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
   }
 }

@@ -19,12 +19,13 @@ package ai.h2o.sparkling.ml.models
 
 import java.io.ByteArrayInputStream
 
-import _root_.hex.genmodel.MojoReaderBackendFactory
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
+import _root_.hex.genmodel.{GenModel, MojoReaderBackendFactory, PredictContributionsFactory}
 import ai.h2o.sparkling.ml.params.NullableStringParam
 import ai.h2o.sparkling.ml.utils.Utils
 import com.google.gson.{GsonBuilder, JsonElement}
+import hex.ModelCategory
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
 
@@ -48,12 +49,22 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     config.setModel(Utils.getMojoModel(getMojoData()))
     config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     config.setConvertInvalidNumbersToNa(getConvertInvalidNumbersToNa())
-    config.setEnableContributions(getWithDetailedPredictionCol())
+    if (canGenerateContributions(config.getModel)) {
+      config.setEnableContributions(getWithDetailedPredictionCol())
+    }
     // always let H2O produce full output, filter later if required
     config.setUseExtendedOutput(true)
     new EasyPredictModelWrapper(config)
   }
 
+  private def canGenerateContributions(model: GenModel): Boolean = {
+    model match {
+      case _: PredictContributionsFactory =>
+        val modelCategory = model.getModelCategory
+        modelCategory == ModelCategory.Regression || modelCategory == ModelCategory.Binomial
+      case _ => false
+    }
+  }
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 

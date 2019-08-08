@@ -20,7 +20,7 @@ import ai.h2o.sparkling.ml.models.H2OMOJOPredictionBinomial._
 import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{struct, udf}
-import org.apache.spark.sql.types.{ArrayType, DoubleType, FloatType, StructField}
+import org.apache.spark.sql.types.{ArrayType, DoubleType, FloatType, StructField, StructType}
 import org.apache.spark.sql.{Column, Row}
 
 trait H2OMOJOPredictionBinomial {
@@ -77,35 +77,41 @@ trait H2OMOJOPredictionBinomial {
     }
   }
 
-  private val binomialSchemaBase = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
+  private val baseFields = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
 
   def getBinomialPredictionColSchema(): Seq[StructField] = {
-    if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
-      binomialSchemaBase ++ Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
+    val fields = if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
+      baseFields ++ Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
     } else {
-      binomialSchemaBase
+      baseFields
     }
+
+    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
   }
 
   def getBinomialDetailedPredictionColSchema(): Seq[StructField] = {
-    if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
-      val base = binomialSchemaBase ++ Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
+    val fields = if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
+      val base = baseFields ++ Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
       if (getWithDetailedPredictionCol()) {
         base ++ Seq(StructField("contributions", ArrayType(FloatType)))
       } else {
         base
       }
     } else if (getWithDetailedPredictionCol()) {
-      binomialSchemaBase ++ Seq(StructField("contributions", ArrayType(FloatType)))
+      baseFields ++ Seq(StructField("contributions", ArrayType(FloatType)))
     } else {
-      binomialSchemaBase
+      baseFields
     }
+
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
   }
 
-
   def extractBinomialPredictionColContent(): Column = {
-    val cols = extractColumnsAsNested(getBinomialPredictionColSchema().map(_.name))
-    struct(cols: _*)
+    if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
+      extractColumnsAsNested(Seq("p0", "p1", "p0_calibrated", "p1_calibrated"))
+    } else {
+      extractColumnsAsNested(Seq("p0", "p1"))
+    }
   }
 }
 

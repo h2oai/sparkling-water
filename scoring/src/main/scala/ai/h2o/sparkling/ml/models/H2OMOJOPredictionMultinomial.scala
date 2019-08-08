@@ -19,8 +19,8 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionMultinomial.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{struct, udf}
-import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField}
+import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField, StructType}
 import org.apache.spark.sql.{Column, Row}
 
 trait H2OMOJOPredictionMultinomial {
@@ -32,17 +32,18 @@ trait H2OMOJOPredictionMultinomial {
     }
   }
 
+  private val baseFields = StructField("probabilities", ArrayType(DoubleType)) :: Nil
+
   def getMultinomialPredictionColSchema(): Seq[StructField] = {
-    StructField("probabilities", ArrayType(DoubleType)) :: Nil
+    Seq(StructField(getPredictionCol(), StructType(baseFields), nullable = false))
   }
 
   def getMultinomialDetailedPredictionColSchema(): Seq[StructField] = {
-    StructField("probabilities", ArrayType(DoubleType)) :: Nil
+    Seq(StructField(getDetailedPredictionCol(), StructType(baseFields), nullable = false))
   }
 
   def extractMultinomialPredictionColContent(): Column = {
-    val cols = extractColumnsAsNested(getMultinomialPredictionColSchema().map(_.name))
-    struct(cols: _*)
+    extractColumnsAsNested(Seq("probabilities"))
   }
 }
 

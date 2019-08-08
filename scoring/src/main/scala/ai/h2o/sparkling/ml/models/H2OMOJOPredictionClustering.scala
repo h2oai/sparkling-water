@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionClustering.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
-import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField}
+import org.apache.spark.sql.types.{ArrayType, DoubleType, IntegerType, StructField, StructType}
 import org.apache.spark.sql.{Column, Row}
 
 trait H2OMOJOPredictionClustering {
@@ -32,16 +32,23 @@ trait H2OMOJOPredictionClustering {
     }
   }
 
-  def getClusteringPredictionColSchema(): Seq[StructField] = StructField("value", DoubleType) :: Nil
+  private val predictionColType = IntegerType
+  private val predictionColNullable = false
 
-  def getClusteringDetailedPredictionColSchema(): Seq[StructField] = {
-    StructField("value", DoubleType) :: StructField("distances", ArrayType(DoubleType)) :: Nil
+  def getClusteringPredictionColSchema(): Seq[StructField] = {
+    Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
   }
 
+  def getClusteringDetailedPredictionColSchema(): Seq[StructField] = {
+    val clusterField = StructField("cluster", predictionColType, nullable = predictionColNullable)
+    val distancesField = StructField("distances", ArrayType(DoubleType))
+    val fields = clusterField :: distancesField :: Nil
+
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
+  }
 
   def extractClusteringPredictionColContent(): Column = {
-    val columnName = getClusteringDetailedPredictionColSchema().map(_.name)
-    col(s"${getDetailedPredictionCol()}.$columnName")
+    col(s"${getDetailedPredictionCol()}.cluster")
   }
 }
 

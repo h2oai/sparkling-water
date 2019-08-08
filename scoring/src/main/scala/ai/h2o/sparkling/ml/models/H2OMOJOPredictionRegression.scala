@@ -18,8 +18,8 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionRegression.{Base, WithContributions}
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, struct, udf}
-import org.apache.spark.sql.types.{ArrayType, DoubleType, FloatType, StructField}
+import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
 trait H2OMOJOPredictionRegression {
@@ -39,21 +39,25 @@ trait H2OMOJOPredictionRegression {
     }
   }
 
+  private val baseField = StructField("value", DoubleType, nullable = false)
+
   def getRegressionPredictionColSchema(): Seq[StructField] = {
-    StructField("value", DoubleType) :: Nil
+    Seq(StructField(getPredictionCol(), StructType(baseField :: Nil), nullable = false))
   }
 
   def getRegressionDetailedPredictionColSchema(): Seq[StructField] = {
-    if (getWithDetailedPredictionCol()) {
-      StructField("value", DoubleType) :: StructField("contributions", ArrayType(FloatType)) :: Nil
+    val fields = if (getWithDetailedPredictionCol()) {
+      val contributionsField = StructField("contributions", ArrayType(FloatType))
+      baseField :: contributionsField :: Nil
     } else {
-      StructField("value", DoubleType) :: Nil
+      baseField :: Nil
     }
+
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
   }
 
   def extractRegressionPredictionColContent(): Column = {
-    val cols = extractColumnsAsNested(getRegressionPredictionColSchema().map(_.name))
-    struct(cols: _*)
+    extractColumnsAsNested(Seq("value"))
   }
 }
 

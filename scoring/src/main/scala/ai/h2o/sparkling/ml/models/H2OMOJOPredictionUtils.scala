@@ -17,13 +17,13 @@
 package ai.h2o.sparkling.ml.models
 
 import org.apache.spark.sql.Column
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.{col, struct}
 
 trait H2OMOJOPredictionUtils {
   self: H2OMOJOModel =>
-  def extractColumnsAsNested(colNames: Seq[String]): Seq[Column] = {
-    colNames.map {
+  def extractColumnsAsNested(colNames: Seq[String]): Column = {
+    struct(colNames.map {
       name => col(s"${getDetailedPredictionCol()}.$name").as(name)
-    }
+    }: _*)
   }
 }
