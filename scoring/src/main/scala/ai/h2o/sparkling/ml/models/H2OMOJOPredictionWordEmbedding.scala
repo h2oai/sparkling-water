@@ -49,5 +49,7 @@ trait H2OMOJOPredictionWordEmbedding {
 }
 
 object H2OMOJOPredictionWordEmbedding {
+
   case class Base(wordEmbeddings: util.HashMap[String, Array[Float]])
+
 }

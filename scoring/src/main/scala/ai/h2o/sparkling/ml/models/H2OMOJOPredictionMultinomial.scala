@@ -40,7 +40,6 @@ trait H2OMOJOPredictionMultinomial {
     StructField("probabilities", ArrayType(DoubleType)) :: Nil
   }
 
-
   def extractMultinomialPredictionColContent(): Column = {
     col(getDetailedPredictionCol())
   }

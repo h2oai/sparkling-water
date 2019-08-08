@@ -54,7 +54,6 @@ trait H2OMOJOPredictionRegression {
   def extractRegressionPredictionColContent(): Column = {
     struct(col(s"${getDetailedPredictionCol()}.value")).as("value")
   }
-
 }
 
 object H2OMOJOPredictionRegression {
