@@ -26,6 +26,8 @@ trait H2OMOJOPredictionRegression {
   self: H2OMOJOModel =>
 
   def getRegressionPredictionUDF(): UserDefinedFunction = {
+    logWarning("Starting from next major release, the content of 'prediction' column will be generated to " +
+      " 'detailed_prediction' instead. The 'prediction' column will contain directly the predicted value.")
     if (getWithDetailedPredictionCol()) {
       udf[WithContributions, Row] { r: Row =>
         val pred = easyPredictModelWrapper.predictRegression(RowConverter.toH2ORowData(r))

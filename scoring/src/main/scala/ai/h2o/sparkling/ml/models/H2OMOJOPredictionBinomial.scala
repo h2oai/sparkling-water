@@ -34,6 +34,8 @@ trait H2OMOJOPredictionBinomial {
   }
 
   def getBinomialPredictionUDF(): UserDefinedFunction = {
+    logWarning("Starting from next major release, the content of 'prediction' column will be generated to " +
+      " 'detailed_prediction' instead. The 'prediction' column will contain directly the predicted label.")
     if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
       if (getWithDetailedPredictionCol()) {
         udf[WithCalibrationAndContribution, Row] { r: Row =>
