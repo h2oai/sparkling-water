@@ -19,11 +19,12 @@ from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OCommonParams import H2OCommonParams
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2OCommonSupervisedParams(H2OCommonParams):
 
-    labelCol = Param(Params._dummy(), "labelCol", "Label column name")
+    labelCol = Param(Params._dummy(), "labelCol", "Label column name", H2OTypeConverters.toString())
 
     def getLabelCol(self):
         return self.getOrDefault(self.labelCol)
