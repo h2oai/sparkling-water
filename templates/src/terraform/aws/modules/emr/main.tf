@@ -127,16 +127,14 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
   core_instance_type = "${var.aws_instance_type}"
   core_instance_count = "${var.aws_core_instance_count}"
 
-  tags {
+  tags = {
     name = "SparklingWater"
   }
 
-  bootstrap_action = [
-    {
-      path = "${format("s3://%s/install_sw.sh", aws_s3_bucket.sw_bucket.bucket)}"
-      name = "Custom action"
-    }
-  ]
+  bootstrap_action {
+    path = "${format("s3://%s/install_sw.sh", aws_s3_bucket.sw_bucket.bucket)}"
+    name = "Custom action"
+  }
 
   step {
     action_on_failure = "TERMINATE_CLUSTER"
@@ -147,7 +145,6 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
       args = ["${format("s3://%s/setup_jupyter.sh", aws_s3_bucket.sw_bucket.bucket)}", "${var.jupyter_name}"]
     }
   }
-
 
   configurations_json = <<EOF
   [
