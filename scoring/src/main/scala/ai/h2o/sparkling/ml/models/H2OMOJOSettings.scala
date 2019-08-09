@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.ml.models
 
+import ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams
+
 case class H2OMOJOSettings(
                             predictionCol: String = "prediction",
                             detailedPredictionCol: String = "detailed_prediction",
@@ -28,4 +30,14 @@ case class H2OMOJOSettings(
 
 object H2OMOJOSettings {
   def default = H2OMOJOSettings()
+
+  def createFromModelParams(params: H2OMOJOAlgoSharedParams): H2OMOJOSettings = {
+    H2OMOJOSettings(
+      predictionCol = params.getPredictionCol(),
+      detailedPredictionCol = params.getDetailedPredictionCol(),
+      withDetailedPredictionCol = params.getWithDetailedPredictionCol(),
+      convertUnknownCategoricalLevelsToNa = params.getConvertUnknownCategoricalLevelsToNa(),
+      convertInvalidNumbersToNa = params.getConvertInvalidNumbersToNa()
+    )
+  }
 }

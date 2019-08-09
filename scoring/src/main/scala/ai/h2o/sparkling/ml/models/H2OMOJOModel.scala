@@ -18,23 +18,20 @@
 package ai.h2o.sparkling.ml.models
 
 import java.io.ByteArrayInputStream
-import java.util
 
-import _root_.hex.ModelCategory
-import _root_.hex.genmodel.MojoReaderBackendFactory
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
+import _root_.hex.genmodel.{GenModel, MojoReaderBackendFactory, PredictContributionsFactory}
 import ai.h2o.sparkling.ml.params.NullableStringParam
 import ai.h2o.sparkling.ml.utils.Utils
 import com.google.gson.{GsonBuilder, JsonElement}
+import hex.ModelCategory
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
 
-class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] {
+class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOPrediction {
 
   protected final val modelDetails: NullableStringParam = new NullableStringParam(this, "modelDetails", "Raw details of this model.")
 
@@ -47,135 +44,34 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   override protected def outputColumnName: String = getDetailedPredictionCol()
 
   // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
-  @transient private lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
+  @transient protected lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
     config.setModel(Utils.getMojoModel(getMojoData()))
     config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
     config.setConvertInvalidNumbersToNa(getConvertInvalidNumbersToNa())
+    if (canGenerateContributions(config.getModel)) {
+      config.setEnableContributions(getWithDetailedPredictionCol())
+    }
     // always let H2O produce full output, filter later if required
     config.setUseExtendedOutput(true)
     new EasyPredictModelWrapper(config)
   }
 
-  case class BinomialPrediction(p0: Double, p1: Double)
-
-  case class BinomialPredictionExtended(p0: Double, p1: Double, p0_calibrated: Double, p1_calibrated: Double)
-
-  case class RegressionPrediction(value: Double)
-
-  case class MultinomialPrediction(probabilities: Array[Double])
-
-  case class ClusteringPrediction(cluster: Integer, distances: Array[Double])
-
-  case class AutoEncoderPrediction(original: Array[Double], reconstructed: Array[Double])
-
-  case class DimReductionPrediction(dimensions: Array[Double])
-
-  case class WordEmbeddingPrediction(wordEmbeddings: util.HashMap[String, Array[Float]])
-
-  case class AnomalyPrediction(score: Double, normalizedScore: Double)
-
-  override protected def getPredictionSchema(): Seq[StructField] = {
-    val fields = easyPredictModelWrapper.getModelCategory match {
-      case ModelCategory.Binomial =>
-        val binomialSchemaBase = Seq("p0", "p1")
-        val binomialSchema = if (supportsCalibratedProbabilities()) {
-          binomialSchemaBase ++ Seq("p0_calibrated", "p1_calibrated")
-        } else {
-          binomialSchemaBase
-        }
-        binomialSchema.map(StructField(_, DoubleType, nullable = false))
-      case ModelCategory.Regression => StructField("value", DoubleType) :: Nil
-      case ModelCategory.Multinomial => StructField("probabilities", ArrayType(DoubleType)) :: Nil
-      case ModelCategory.Clustering => StructField("cluster", DoubleType) :: Nil
-      case ModelCategory.AutoEncoder => StructField("original", ArrayType(DoubleType)) :: StructField("reconstructed", ArrayType(DoubleType)) :: Nil
-      case ModelCategory.DimReduction => StructField("dimensions", ArrayType(DoubleType)) :: Nil
-      case ModelCategory.WordEmbedding => StructField("wordEmbeddings", DataTypes.createMapType(StringType, ArrayType(FloatType))) :: Nil
-      case _ => throw new RuntimeException("Unknown model category")
+  private def canGenerateContributions(model: GenModel): Boolean = {
+    model match {
+      case _: PredictContributionsFactory =>
+        val modelCategory = model.getModelCategory
+        modelCategory == ModelCategory.Regression || modelCategory == ModelCategory.Binomial
+      case _ => false
     }
-
-    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
-  }
-
-  private def supportsCalibratedProbabilities(): Boolean = {
-    // calibrateClassProbabilities returns false if model does not support calibrated probabilities,
-    // however it also accepts array of probabilities to calibrate. We are not interested in calibration,
-    // but to call this method, we need to pass dummy array of size 2 with default values to 0.
-    easyPredictModelWrapper.m.calibrateClassProbabilities(Array.fill[Double](2)(0))
-  }
-
-  private def getModelUdf() = {
-    val modelUdf = {
-      easyPredictModelWrapper.getModelCategory match {
-        case ModelCategory.Binomial =>
-          if (supportsCalibratedProbabilities()) {
-            udf[BinomialPredictionExtended, Row] { r: Row =>
-              val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
-              BinomialPredictionExtended(
-                pred.classProbabilities(0),
-                pred.classProbabilities(1),
-                pred.calibratedClassProbabilities(0),
-                pred.calibratedClassProbabilities(1)
-              )
-            }
-          } else {
-            udf[BinomialPrediction, Row] { r: Row =>
-              val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
-              BinomialPrediction(
-                pred.classProbabilities(0),
-                pred.classProbabilities(1)
-              )
-            }
-          }
-
-        case ModelCategory.Regression => udf[RegressionPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictRegression(RowConverter.toH2ORowData(r))
-          RegressionPrediction(pred.value)
-        }
-        case ModelCategory.Multinomial => udf[MultinomialPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictMultinomial(RowConverter.toH2ORowData(r))
-          MultinomialPrediction(pred.classProbabilities)
-        }
-        case ModelCategory.Clustering => udf[ClusteringPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictClustering(RowConverter.toH2ORowData(r))
-          ClusteringPrediction(pred.cluster, pred.distances)
-        }
-        case ModelCategory.AutoEncoder => udf[AutoEncoderPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictAutoEncoder(RowConverter.toH2ORowData(r))
-          AutoEncoderPrediction(pred.original, pred.reconstructed)
-        }
-        case ModelCategory.DimReduction => udf[DimReductionPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictDimReduction(RowConverter.toH2ORowData(r))
-          DimReductionPrediction(pred.dimensions)
-        }
-        case ModelCategory.WordEmbedding => udf[WordEmbeddingPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictWord2Vec(RowConverter.toH2ORowData(r))
-          WordEmbeddingPrediction(pred.wordEmbeddings)
-        }
-        case ModelCategory.AnomalyDetection => udf[AnomalyPrediction, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictAnomalyDetection(RowConverter.toH2ORowData(r))
-          AnomalyPrediction(pred.score, pred.normalizedScore)
-        }
-        case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
-      }
-    }
-    modelUdf
   }
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    val baseDf = applyPredictionUdf(dataset, _ => getModelUdf())
+    val baseDf = applyPredictionUdf(dataset, _ => getPredictionUDF())
 
-    val withPredictionDf = easyPredictModelWrapper.getModelCategory match {
-      case ModelCategory.Clustering =>
-        baseDf.withColumn(getPredictionCol(), col(s"${getDetailedPredictionCol()}.cluster"))
-      case _ =>
-        // For already existing algos, keep the functionality same,
-        // We can deprecate that and slowly migrate to solution where prediction contains
-        // always single value
-        baseDf.withColumn(getPredictionCol(), col(getDetailedPredictionCol()))
-    }
+    val withPredictionDf = baseDf.withColumn(getPredictionCol(), extractPredictionColContent())
 
     if (getWithDetailedPredictionCol()) {
       withPredictionDf

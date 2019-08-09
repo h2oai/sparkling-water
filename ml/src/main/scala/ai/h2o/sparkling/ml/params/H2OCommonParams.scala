@@ -115,5 +115,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
   def setConvertInvalidNumbersToNa(value: Boolean): this.type = set(convertInvalidNumbersToNa, value)
 
   def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
+
   protected def getExcludedCols(): Seq[String]
 }
