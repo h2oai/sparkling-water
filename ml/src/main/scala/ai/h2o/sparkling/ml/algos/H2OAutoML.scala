@@ -20,12 +20,12 @@ import java.util.Date
 
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.ScoreKeeper
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Estimator
-import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -70,8 +70,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spec.input_spec.ignored_columns = getIgnoredCols()
     val sortMetric = getSortMetric()
     spec.input_spec.sort_metric = if (sortMetric == "AUTO") null else sortMetric
-    spec.build_models.exclude_algos = if (getExcludeAlgos() == null) null else Array(getExcludeAlgos().map(Algo.valueOf): _*)
-    spec.build_models.include_algos = if (getIncludeAlgos() == null) null else Array(getIncludeAlgos().map(Algo.valueOf): _*)
+    spec.build_models.exclude_algos = determineIncludedAlgos()
+    spec.build_models.include_algos = null
     val projectName = getProjectName()
     spec.build_control.project_name = if (projectName == null) Random.alphanumeric.take(30).mkString else projectName
     spec.build_control.stopping_criteria.set_seed(getSeed())
@@ -107,6 +107,15 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       modelSettings)
   }
 
+  private def determineIncludedAlgos(): Array[Algo] = {
+    val bothIncludedExcluded = getIncludeAlgos().intersect(getExcludeAlgos())
+    bothIncludedExcluded.foreach { algo =>
+      logWarning(s"Algorithm '$algo' was specified in both include and exclude parameters. " +
+        s"Excluding the algorithm.")
+    }
+    getExcludeAlgos().diff(bothIncludedExcluded).map(Algo.valueOf)
+  }
+
   private def leaderboardAsSparkFrame(aml: AutoML): Option[DataFrame] = {
     // Get LeaderBoard
     val twoDimtable = aml.leaderboard().toTwoDimTable
@@ -136,8 +145,8 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams {
   // Param definitions
   //
   private val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
-  private val includeAlgos = new NullableStringArrayParam(this, "includeAlgos", "Algorithms to include when using automl")
-  private val excludeAlgos = new NullableStringArrayParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
+  private val includeAlgos = new StringArrayParam(this, "includeAlgos", "Algorithms to include when using automl")
+  private val excludeAlgos = new StringArrayParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
   private val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
     " (e.g., airlines and iris)")
   private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
@@ -157,8 +166,8 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams {
   //
   setDefault(
     ignoredCols -> Array.empty[String],
-    includeAlgos -> null,
-    excludeAlgos -> null,
+    includeAlgos -> Algo.values().map(_.name()),
+    excludeAlgos -> Array.empty[String],
     projectName -> null, // will be automatically generated
     maxRuntimeSecs -> 3600,
     stoppingRounds -> 3,

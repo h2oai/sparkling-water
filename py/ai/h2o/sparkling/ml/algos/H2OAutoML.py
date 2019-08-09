@@ -29,8 +29,8 @@ class H2OAutoML(H2OAutoMLParams, H2OAlgoBase):
     @keyword_only
     def __init__(self,
                  ignoredCols=[],
-                 includeAlgos=None,
-                 excludeAlgos=None,
+                 includeAlgos=[],
+                 excludeAlgos=["GLM", "DRF", "GBM", "DeepLearning", "StackedEnsemble", "XGBoost"],
                  projectName=None,
                  maxRuntimeSecs=3600.0,
                  stoppingRounds=3,
