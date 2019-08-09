@@ -57,7 +57,7 @@ class Initializer(object):
     def __add_sparkling_jar_to_spark(sc):
         jvm = sc._jvm
         # Add Sparkling water assembly JAR to driver
-        sw_jar_file = Initializer.__get_sw_jar()
+        sw_jar_file = Initializer.__get_sw_jar(sc)
 
         # SW-593 - adding an extra / to fix a windows shell issue creating malform url
         if not sw_jar_file.startswith('/'):
@@ -72,12 +72,11 @@ class Initializer(object):
         sc._jsc.addJar(sw_jar_file)
 
     @staticmethod
-    def __extracted_jar_path():
+    def __extracted_jar_path(sc):
 
         if Initializer.__extracted_jar_dir is None:
             zip_file = Initializer.__get_pysparkling_zip_path()
-            import tempfile
-            Initializer.__extracted_jar_dir = tempfile.mkdtemp()
+            Initializer.__extracted_jar_dir = sc._temp_dir
             import zipfile
             with zipfile.ZipFile(zip_file) as fzip:
                 fzip.extract('sparkling_water/sparkling_water_assembly.jar', path=Initializer.__extracted_jar_dir)
@@ -116,12 +115,12 @@ class Initializer(object):
             pass
 
     @staticmethod
-    def __get_sw_jar():
+    def __get_sw_jar(sc):
         import sparkling_water
         sw_pkg_file = sparkling_water.__file__
         # Extract jar file from zip
         if '.zip' in sw_pkg_file:
-            return Initializer.__extracted_jar_path()
+            return Initializer.__extracted_jar_path(sc)
         else:
             from pkg_resources import resource_filename
             return os.path.abspath(resource_filename("sparkling_water", 'sparkling_water_assembly.jar'))
