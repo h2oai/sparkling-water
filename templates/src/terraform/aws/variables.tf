@@ -10,6 +10,9 @@ variable "aws_ssh_public_key" {
 variable "aws_region" {
   default = "us-east-1"
 }
+variable "aws_availability_zone" {
+  default = "us-east-1e"
+}
 variable "aws_emr_version" {
   default = "SUBST_EMR_VERSION"
 }
