@@ -43,6 +43,7 @@ How to...
    sw_automl
    sw_kmeans
    sw_target_encoder
+   shap_values
 
 **Spark Pipelines**
 

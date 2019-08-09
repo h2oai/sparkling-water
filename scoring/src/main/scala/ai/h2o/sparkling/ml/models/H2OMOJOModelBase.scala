@@ -25,7 +25,9 @@ import org.apache.spark.sql.types.{StructField, StructType}
 abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]] extends SparkModel[T]
   with H2OMOJOAlgoSharedParams with HasMojoData with H2OMOJOWritable with H2OMOJOFlattenedInput {
 
-  protected def getPredictionSchema(): Seq[StructField]
+  protected def getPredictionColSchema(): Seq[StructField]
+
+  protected def getDetailedPredictionColSchema(): Seq[StructField] = Nil
 
   override protected def inputColumnNames: Array[String] = getFeaturesCols()
 
@@ -36,6 +38,7 @@ abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]] extends SparkModel[T]
     // Here we should check validity of input schema however
     // in theory user can pass invalid schema with missing columns
     // and model will be able to still provide a prediction
-    StructType(schema.fields ++ getPredictionSchema())
+    val detailedPredictionColSchema = if (getWithDetailedPredictionCol()) getDetailedPredictionColSchema() else Nil
+    StructType(schema.fields ++ getPredictionColSchema() ++ detailedPredictionColSchema)
   }
 }
