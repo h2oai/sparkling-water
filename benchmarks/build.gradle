@@ -53,6 +53,11 @@ task copyTerraform(type: Copy) {
     into "build/terraform"
 }
 
+task cleanTerraform(type: Delete) {
+    delete "build/terraform"
+}
+
+copyTerraform.dependsOn cleanTerraform
 substituteTerraform.dependsOn copyTerraform
 build.dependsOn substituteTerraform
 build.dependsOn shadowJar
