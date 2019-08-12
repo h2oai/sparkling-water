@@ -113,7 +113,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       logWarning(s"Algorithm '$algo' was specified in both include and exclude parameters. " +
         s"Excluding the algorithm.")
     }
-    getExcludeAlgos().diff(bothIncludedExcluded).map(Algo.valueOf)
+    getIncludeAlgos().diff(bothIncludedExcluded).map(Algo.valueOf)
   }
 
   private def leaderboardAsSparkFrame(aml: AutoML): Option[DataFrame] = {
