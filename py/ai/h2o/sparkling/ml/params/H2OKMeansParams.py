@@ -15,26 +15,50 @@
 # limitations under the License.
 #
 
-from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoUnsupervisedParams import H2OAlgoUnsupervisedParams
-from ai.h2o.sparkling.ml.utils import getValidatedEnumValue, getDoubleArrayArrayFromIntArrayArray
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2OKMeansParams(H2OAlgoUnsupervisedParams):
-    maxIterations = Param(Params._dummy(), "maxIterations",
-                          "Maximum number of KMeans iterations to find the centroids.")
-    standardize = Param(Params._dummy(), "standardize",
-                        "Standardize the numeric columns to have a mean of zero and unit variance.")
-    init = Param(Params._dummy(), "init", "Initialization mode for finding the initial cluster centers.")
-    userPoints = Param(Params._dummy(), "userPoints", "This option enables" +
-                       " to specify array of points, where each point represents coordinates of an initial cluster center. The user-specified" +
-                       " points must have the same number of columns as the training observations. The number of rows must equal" +
-                       " the number of clusters.")
-    estimateK = Param(Params._dummy(), "estimateK",
-                      "If enabled, the algorithm tries to identify optimal number of clusters, up to k clusters.")
-    k = Param(Params._dummy(), "k", "Number of clusters to generate.")
+    maxIterations = Param(
+        Params._dummy(),
+        "maxIterations",
+        "Maximum number of KMeans iterations to find the centroids.",
+        H2OTypeConverters.toInt())
+
+    standardize = Param(
+        Params._dummy(),
+        "standardize",
+        "Standardize the numeric columns to have a mean of zero and unit variance.",
+        H2OTypeConverters.toBoolean())
+
+    init = Param(
+        Params._dummy(),
+        "init",
+        "Initialization mode for finding the initial cluster centers.",
+        H2OTypeConverters.toEnumString("hex.kmeans.KMeans$Initialization"))
+
+    userPoints = Param(
+        Params._dummy(),
+        "userPoints",
+        "This option enables to specify array of points, where each point represents coordinates of "
+        "an initial cluster center. The user-specified points must have the same number of columns "
+        "as the training observations. The number of rows must equal the number of clusters.",
+        H2OTypeConverters.toNullableListFloat())
+
+    estimateK = Param(
+        Params._dummy(),
+        "estimateK",
+        "If enabled, the algorithm tries to identify optimal number of clusters, up to k clusters.",
+        H2OTypeConverters.toBoolean())
+
+    k = Param(
+        Params._dummy(),
+        "k",
+        "Number of clusters to generate.",
+        H2OTypeConverters.toInt())
 
     #
     # Getters
@@ -61,28 +85,19 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
     # Setters
     #
     def setMaxIterations(self, value):
-        assert_is_type(value, int)
         return self._set(maxIterations=value)
 
     def setStandardize(self, value):
-        assert_is_type(value, bool)
         return self._set(standardize=value)
 
     def setInit(self, value):
-        validated = getValidatedEnumValue(self.__getInitEnum(), value)
-        return self._set(init=validated)
+        return self._set(init=value)
 
     def setUserPoints(self, value):
-        assert_is_type(value, [[int, float]])
-        return self._set(userPoints=getDoubleArrayArrayFromIntArrayArray(value))
+        return self._set(userPoints=value)
 
     def setEstimateK(self, value):
-        assert_is_type(value, bool)
         return self._set(estimateK=value)
 
     def setK(self, value):
-        assert_is_type(value, int)
         return self._set(k=value)
-
-    def __getInitEnum(self):
-        return "hex.kmeans.KMeans$Initialization"

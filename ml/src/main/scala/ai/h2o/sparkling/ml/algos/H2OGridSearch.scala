@@ -407,6 +407,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   // Default values
   //
   setDefault(
+    algo -> 0,
     gridAlgoParams -> null,
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
     strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian.name(),
