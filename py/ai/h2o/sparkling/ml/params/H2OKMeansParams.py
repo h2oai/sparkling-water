@@ -46,7 +46,7 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         "This option enables to specify array of points, where each point represents coordinates of "
         "an initial cluster center. The user-specified points must have the same number of columns "
         "as the training observations. The number of rows must equal the number of clusters.",
-        H2OTypeConverters.toNullableListFloat())
+        H2OTypeConverters.toNullableListListFloat())
 
     estimateK = Param(
         Params._dummy(),
