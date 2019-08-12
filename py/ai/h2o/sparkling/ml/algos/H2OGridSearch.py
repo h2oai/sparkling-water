@@ -58,12 +58,13 @@ class H2OGridSearch(H2OGridSearchParams, H2OAlgoBase):
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGridSearch", self.uid)
         self._setDefaultValuesFromJava(["algoParams"])
         kwargs = Utils.getInputKwargs(self)
-        self._set(**kwargs)
 
         if "algo" in kwargs and kwargs["algo"] is not None:
             tmp = kwargs["algo"]
             del kwargs['algo']
             self._java_obj.setAlgo(tmp._java_obj)
+
+        self._set(**kwargs)
 
     def get_grid_models(self):
         return [H2OMOJOModel(m) for m in self._java_obj.getGridModels()]
