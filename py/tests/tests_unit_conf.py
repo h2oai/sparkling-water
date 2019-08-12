@@ -133,7 +133,7 @@ class H2OConfTest(unittest.TestCase):
 
     def test_automl_params(self):
         automl = H2OAutoML(featuresCols=[], labelCol="label", allStringColumnsToCategorical=True, columnsToCategorical=[], splitRatio=1.0, foldCol=None,
-                           weightCol=None, ignoredCols=[], includeAlgos=None, excludeAlgos=["DRF", "DeePLeArNING"], projectName="test", maxRuntimeSecs=3600.0, stoppingRounds=3,
+                           weightCol=None, ignoredCols=[], includeAlgos=["XGbooST"], excludeAlgos=["DRF", "DeePLeArNING"], projectName="test", maxRuntimeSecs=3600.0, stoppingRounds=3,
                            stoppingTolerance=0.001, stoppingMetric="AUTO", nfolds=5, convertUnknownCategoricalLevelsToNa=True, seed=-1,
                            sortMetric="AUTO", balanceClasses=False, classSamplingFactors=None, maxAfterBalanceSize=5.0,
                            keepCrossValidationPredictions=True, keepCrossValidationModels=True, maxModels=0,
@@ -148,7 +148,7 @@ class H2OConfTest(unittest.TestCase):
         self.assertEquals(automl.getFoldCol(), None)
         self.assertEquals(automl.getWeightCol(), None)
         self.assertEquals(automl.getIgnoredCols(), [])
-        self.assertEquals(automl.getIncludeAlgos(), None)
+        self.assertEquals(automl.getIncludeAlgos(), ["XGBoost"])
         self.assertEquals(automl.getExcludeAlgos(), ["DRF", "DeepLearning"])
         self.assertEquals(automl.getProjectName(), "test")
         self.assertEquals(automl.getMaxRuntimeSecs(), 3600.0)

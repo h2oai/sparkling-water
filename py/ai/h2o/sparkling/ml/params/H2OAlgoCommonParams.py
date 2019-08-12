@@ -15,21 +15,45 @@
 # limitations under the License.
 #
 
-from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
-from ai.h2o.sparkling.ml.utils import getValidatedEnumValue
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2OAlgoCommonParams:
     ##
     # Param definitions
     ##
-    modelId = Param(Params._dummy(), "modelId", "An unique identifier of a trained model. If the id already exists, a number will be appended to ensure uniqueness.")
-    keepCrossValidationPredictions = Param(Params._dummy(), "keepCrossValidationPredictions", "Whether to keep the predictions of the cross-validation models")
-    keepCrossValidationFoldAssignment = Param(Params._dummy(), "keepCrossValidationFoldAssignment", "Whether to keep the cross-validation fold assignment")
-    parallelizeCrossValidation = Param(Params._dummy(), "parallelizeCrossValidation", "Allow parallel training of cross-validation models")
-    distribution = Param(Params._dummy(), "distribution", "Distribution function")
+    modelId = Param(
+        Params._dummy(),
+        "modelId",
+        "An unique identifier of a trained model. If the id already exists, a number will be appended to "
+        "ensure uniqueness.",
+        H2OTypeConverters.toNullableString())
+
+    keepCrossValidationPredictions = Param(
+        Params._dummy(),
+        "keepCrossValidationPredictions",
+        "Whether to keep the predictions of the cross-validation models",
+        H2OTypeConverters.toBoolean())
+
+    keepCrossValidationFoldAssignment = Param(
+        Params._dummy(),
+        "keepCrossValidationFoldAssignment",
+        "Whether to keep the cross-validation fold assignment",
+        H2OTypeConverters.toBoolean())
+
+    parallelizeCrossValidation = Param(
+        Params._dummy(),
+        "parallelizeCrossValidation",
+        "Allow parallel training of cross-validation models",
+        H2OTypeConverters.toBoolean())
+
+    distribution = Param(
+        Params._dummy(),
+        "distribution",
+        "Distribution function",
+        H2OTypeConverters.toEnumString("hex.genmodel.utils.DistributionFamily"))
 
     ##
     # Getters
@@ -53,24 +77,16 @@ class H2OAlgoCommonParams:
     # Setters
     ##
     def setModelId(self, value):
-        assert_is_type(value, None, str)
         return self._set(modelId=value)
 
     def setKeepCrossValidationPredictions(self, value):
-        assert_is_type(value, bool)
         return self._set(keepCrossValidationPredictions=value)
 
     def setKeepCrossValidationFoldAssignment(self, value):
-        assert_is_type(value, bool)
         return self._set(keepCrossValidationFoldAssignment=value)
 
     def setParallelizeCrossValidation(self, value):
-        assert_is_type(value, bool)
         return self._set(parallelizeCrossValidation=value)
 
     def setDistribution(self, value):
-        validated = getValidatedEnumValue(self.__getDistributionEnum(), value)
-        return self._set(distribution=validated)
-
-    def __getDistributionEnum(self):
-        return "hex.genmodel.utils.DistributionFamily"
+        return self._set(distribution=value)

@@ -15,22 +15,45 @@
 # limitations under the License.
 #
 
-from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OSharedTreeParams import H2OSharedTreeParams
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2OGBMParams(H2OSharedTreeParams):
-
     ##
     # Param definitions
     ##
-    learnRate = Param(Params._dummy(), "learnRate", "Learning rate (from 0.0 to 1.0)")
-    learnRateAnnealing = Param(Params._dummy(), "learnRateAnnealing", "Scale the learning rate by this factor after each tree (e.g., 0.99 or 0.999)")
-    colSampleRate = Param(Params._dummy(), "colSampleRate", "Column sample rate (from 0.0 to 1.0)")
-    maxAbsLeafnodePred = Param(Params._dummy(), "maxAbsLeafnodePred", "Maximum absolute value of a leaf node prediction")
-    predNoiseBandwidth = Param(Params._dummy(), "predNoiseBandwidth", "Bandwidth (sigma) of Gaussian multiplicative noise ~N(1,sigma) for tree node predictions")
+    learnRate = Param(
+        Params._dummy(),
+        "learnRate",
+        "Learning rate (from 0.0 to 1.0)",
+        H2OTypeConverters.toFloat())
+
+    learnRateAnnealing = Param(
+        Params._dummy(),
+        "learnRateAnnealing",
+        "Scale the learning rate by this factor after each tree (e.g., 0.99 or 0.999)",
+        H2OTypeConverters.toFloat())
+
+    colSampleRate = Param(
+        Params._dummy(),
+        "colSampleRate",
+        "Column sample rate (from 0.0 to 1.0)",
+        H2OTypeConverters.toFloat())
+
+    maxAbsLeafnodePred = Param(
+        Params._dummy(),
+        "maxAbsLeafnodePred",
+        "Maximum absolute value of a leaf node prediction",
+        H2OTypeConverters.toFloat())
+
+    predNoiseBandwidth = Param(
+        Params._dummy(),
+        "predNoiseBandwidth",
+        "Bandwidth (sigma) of Gaussian multiplicative noise ~N(1,sigma) for tree node predictions",
+        H2OTypeConverters.toFloat())
 
     ##
     # Getters
@@ -54,21 +77,16 @@ class H2OGBMParams(H2OSharedTreeParams):
     # Setters
     ##
     def setLearnRate(self, value):
-        assert_is_type(value, int, float)
-        return self._set(learnRate=float(value))
+        return self._set(learnRate=value)
 
     def setLearnRateAnnealing(self, value):
-        assert_is_type(value, int, float)
-        return self._set(learnRateAnnealing=float(value))
+        return self._set(learnRateAnnealing=value)
 
     def setColSampleRate(self, value):
-        assert_is_type(value, int, float)
-        return self._set(colSampleRate=float(value))
+        return self._set(colSampleRate=value)
 
     def setMaxAbsLeafnodePred(self, value):
-        assert_is_type(value, int, float)
-        return self._set(maxAbsLeafnodePred=float(value))
+        return self._set(maxAbsLeafnodePred=value)
 
     def setPredNoiseBandwidth(self, value):
-        assert_is_type(value, int, float)
-        return self._set(predNoiseBandwidth=float(value))
+        return self._set(predNoiseBandwidth=value)

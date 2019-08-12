@@ -15,58 +15,256 @@
 # limitations under the License.
 #
 
-from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
-from ai.h2o.sparkling.ml.utils import getValidatedEnumValue, getValidatedEnumValues
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2OXGBoostParams(H2OAlgoSupervisedParams):
-
     ##
     # Param definitions
     ##
-    quietMode = Param(Params._dummy(), "quietMode", "Quiet mode")
-    ntrees = Param(Params._dummy(), "ntrees", "Number of trees")
-    nEstimators = Param(Params._dummy(), "nEstimators", "number of estimators")
-    maxDepth = Param(Params._dummy(), "maxDepth", "Maximal depth")
-    minRows = Param(Params._dummy(), "minRows", "Min rows")
-    minChildWeight = Param(Params._dummy(), "minChildWeight", "minimal child weight")
-    learnRate = Param(Params._dummy(), "learnRate", "learn rate")
-    eta = Param(Params._dummy(), "eta", "eta")
-    learnRateAnnealing = Param(Params._dummy(), "learnRateAnnealing", "Learn Rate Annealing")
-    sampleRate = Param(Params._dummy(), "sampleRate", "Sample rate")
-    subsample = Param(Params._dummy(), "subsample", "subsample")
-    colSampleRate = Param(Params._dummy(), "colSampleRate", "col sample rate")
-    colSampleByLevel = Param(Params._dummy(), "colSampleByLevel", "Col Sample By Level")
-    colSampleRatePerTree = Param(Params._dummy(), "colSampleRatePerTree", "col samle rate")
-    colsampleBytree = Param(Params._dummy(), "colsampleBytree", "col sample by tree")
-    maxAbsLeafnodePred = Param(Params._dummy(), "maxAbsLeafnodePred", "max abs lead node prediction")
-    maxDeltaStep = Param(Params._dummy(), "maxDeltaStep", "max delta step")
-    scoreTreeInterval = Param(Params._dummy(), "scoreTreeInterval", "score tree interval")
-    initialScoreInterval = Param(Params._dummy(), "initialScoreInterval", "Initial Score Interval")
-    scoreInterval = Param(Params._dummy(), "scoreInterval", "Score Interval")
-    minSplitImprovement = Param(Params._dummy(), "minSplitImprovement", "Min split improvement")
-    gamma = Param(Params._dummy(), "gamma", "gamma")
-    nthread = Param(Params._dummy(), "nthread", "nthread")
-    maxBins = Param(Params._dummy(), "maxBins", "nbins")
-    maxLeaves = Param(Params._dummy(), "maxLeaves", "max leaves")
-    minSumHessianInLeaf = Param(Params._dummy(), "minSumHessianInLeaf", "min sum hessian in leaf")
-    minDataInLeaf = Param(Params._dummy(), "minDataInLeaf", "min data in leaf")
-    treeMethod = Param(Params._dummy(), "treeMethod", "Tree Method")
-    growPolicy = Param(Params._dummy(), "growPolicy", "Grow Policy")
-    booster = Param(Params._dummy(), "booster", "Booster")
-    dmatrixType = Param(Params._dummy(), "dmatrixType", "DMatrix type")
-    regLambda = Param(Params._dummy(), "regLambda", "req lambda")
-    regAlpha = Param(Params._dummy(), "regAlpha", "req aplha")
-    sampleType = Param(Params._dummy(), "sampleType", "Dart Sample Type")
-    normalizeType = Param(Params._dummy(), "normalizeType", "Dart Normalize Type")
-    rateDrop = Param(Params._dummy(), "rateDrop", "rate drop")
-    oneDrop = Param(Params._dummy(), "oneDrop", "onde drop")
-    skipDrop = Param(Params._dummy(), "skipDrop", "skip drop")
-    gpuId = Param(Params._dummy(), "gpuId", "GPU id")
-    backend = Param(Params._dummy(), "backend", "Backend")
+    quietMode = Param(
+        Params._dummy(),
+        "quietMode",
+        "Quiet mode",
+        H2OTypeConverters.toBoolean())
+
+    ntrees = Param(
+
+        Params._dummy(),
+        "ntrees",
+        "Number of trees",
+        H2OTypeConverters.toInt())
+
+    nEstimators = Param(
+        Params._dummy(),
+        "nEstimators",
+        "number of estimators",
+        H2OTypeConverters.toInt())
+
+    maxDepth = Param(
+        Params._dummy(),
+        "maxDepth",
+        "Maximal depth",
+        H2OTypeConverters.toInt())
+
+    minRows = Param(
+        Params._dummy(),
+        "minRows",
+        "Min rows",
+        H2OTypeConverters.toFloat())
+
+    minChildWeight = Param(
+        Params._dummy(),
+        "minChildWeight",
+        "minimal child weight",
+        H2OTypeConverters.toFloat())
+
+    learnRate = Param(
+        Params._dummy(),
+        "learnRate",
+        "learn rate",
+        H2OTypeConverters.toFloat())
+
+    eta = Param(
+        Params._dummy(),
+        "eta",
+        "eta",
+        H2OTypeConverters.toFloat())
+
+    learnRateAnnealing = Param(
+        Params._dummy(),
+        "learnRateAnnealing",
+        "Learn Rate Annealing",
+        H2OTypeConverters.toFloat())
+
+    sampleRate = Param(
+        Params._dummy(),
+        "sampleRate",
+        "Sample rate",
+        H2OTypeConverters.toFloat())
+
+    subsample = Param(
+        Params._dummy(),
+        "subsample",
+        "subsample",
+        H2OTypeConverters.toFloat())
+
+    colSampleRate = Param(
+        Params._dummy(),
+        "colSampleRate",
+        "col sample rate",
+        H2OTypeConverters.toFloat())
+
+    colSampleByLevel = Param(
+        Params._dummy(),
+        "colSampleByLevel",
+        "Col Sample By Level",
+        H2OTypeConverters.toFloat())
+
+    colSampleRatePerTree = Param(
+        Params._dummy(),
+        "colSampleRatePerTree",
+        "col samle rate",
+        H2OTypeConverters.toFloat())
+
+    colsampleBytree = Param(
+        Params._dummy(),
+        "colsampleBytree",
+        "col sample by tree",
+        H2OTypeConverters.toFloat())
+
+    maxAbsLeafnodePred = Param(
+        Params._dummy(),
+        "maxAbsLeafnodePred",
+        "max abs lead node prediction",
+        H2OTypeConverters.toFloat())
+
+    maxDeltaStep = Param(
+        Params._dummy(),
+        "maxDeltaStep",
+        "max delta step",
+        H2OTypeConverters.toFloat())
+
+    scoreTreeInterval = Param(
+        Params._dummy(),
+        "scoreTreeInterval",
+        "score tree interval",
+        H2OTypeConverters.toInt())
+
+    initialScoreInterval = Param(
+        Params._dummy(),
+        "initialScoreInterval",
+        "Initial Score Interval",
+        H2OTypeConverters.toInt())
+
+    scoreInterval = Param(
+        Params._dummy(),
+        "scoreInterval",
+        "Score Interval",
+        H2OTypeConverters.toInt())
+
+    minSplitImprovement = Param(
+        Params._dummy(),
+        "minSplitImprovement",
+        "Min split improvement",
+        H2OTypeConverters.toFloat())
+
+    gamma = Param(
+        Params._dummy(),
+        "gamma",
+        "gamma",
+        H2OTypeConverters.toFloat())
+
+    nthread = Param(
+        Params._dummy(),
+        "nthread",
+        "nthread",
+        H2OTypeConverters.toInt())
+
+    maxBins = Param(
+        Params._dummy(),
+        "maxBins",
+        "nbins",
+        H2OTypeConverters.toInt())
+
+    maxLeaves = Param(
+        Params._dummy(),
+        "maxLeaves",
+        "max leaves",
+        H2OTypeConverters.toInt())
+
+    minSumHessianInLeaf = Param(
+        Params._dummy(),
+        "minSumHessianInLeaf",
+        "min sum hessian in leaf",
+        H2OTypeConverters.toFloat())
+
+    minDataInLeaf = Param(
+        Params._dummy(),
+        "minDataInLeaf",
+        "min data in leaf",
+        H2OTypeConverters.toFloat())
+
+    treeMethod = Param(
+        Params._dummy(),
+        "treeMethod",
+        "Tree Method",
+        H2OTypeConverters.toEnumString("hex.tree.xgboost.XGBoostModel$XGBoostParameters$TreeMethod"))
+
+    growPolicy = Param(
+        Params._dummy(),
+        "growPolicy",
+        "Grow Policy",
+        H2OTypeConverters.toEnumString("hex.tree.xgboost.XGBoostModel$XGBoostParameters$GrowPolicy"))
+
+    booster = Param(
+        Params._dummy(),
+        "booster",
+        "Booster",
+        H2OTypeConverters.toEnumString("hex.tree.xgboost.XGBoostModel$XGBoostParameters$Booster"))
+
+    dmatrixType = Param(
+        Params._dummy(),
+        "dmatrixType",
+        "DMatrix type",
+        H2OTypeConverters.toEnumString("hex.tree.xgboost.XGBoostModel$XGBoostParameters$DMatrixType"))
+
+    regLambda = Param(
+        Params._dummy(),
+        "regLambda",
+        "req lambda",
+        H2OTypeConverters.toFloat())
+
+    regAlpha = Param(
+        Params._dummy(),
+        "regAlpha",
+        "req aplha",
+        H2OTypeConverters.toFloat())
+
+    sampleType = Param(
+        Params._dummy(),
+        "sampleType",
+        "Dart Sample Type",
+        H2OTypeConverters.toEnumString("hex.tree.xgboost.XGBoostModel$XGBoostParameters$DartSampleType"))
+
+    normalizeType = Param(
+        Params._dummy(),
+        "normalizeType",
+        "Dart Normalize Type",
+        H2OTypeConverters.toEnumString("hex.tree.xgboost.XGBoostModel$XGBoostParameters$DartNormalizeType"))
+
+    rateDrop = Param(
+        Params._dummy(),
+        "rateDrop",
+        "rate drop",
+        H2OTypeConverters.toFloat())
+
+    oneDrop = Param(
+        Params._dummy(),
+        "oneDrop",
+        "onde drop",
+        H2OTypeConverters.toBoolean())
+
+    skipDrop = Param(
+        Params._dummy(),
+        "skipDrop",
+        "skip drop",
+        H2OTypeConverters.toFloat())
+
+    gpuId = Param(
+        Params._dummy(),
+        "gpuId",
+        "GPU id",
+        H2OTypeConverters.toInt())
+
+    backend = Param(
+        Params._dummy(),
+        "backend",
+        "Backend",
+        H2OTypeConverters.toEnumString("hex.tree.xgboost.XGBoostModel$XGBoostParameters$Backend"))
 
     ##
     # Getters
@@ -191,187 +389,125 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
     def getBackend(self):
         return self.getOrDefault(self.backend)
 
-
     ##
     # Setters
     ##
     def setQuietMode(self, value):
-        assert_is_type(value, bool)
         return self._set(quietMode=value)
 
     def setNtrees(self, value):
-        assert_is_type(value, int)
         return self._set(ntrees=value)
 
     def setNEstimators(self, value):
-        assert_is_type(value, int)
         return self._set(nEstimators=value)
 
     def setMaxDepth(self, value):
-        assert_is_type(value, int)
         return self._set(maxDepth=value)
 
     def setMinRows(self, value):
-        assert_is_type(value, int, float)
-        return self._set(minRows=float(value))
+        return self._set(minRows=value)
 
     def setMinChildWeight(self, value):
-        assert_is_type(value, int, float)
-        return self._set(minChildWeight=float(value))
+        return self._set(minChildWeight=value)
 
     def setLearnRate(self, value):
-        assert_is_type(value, int, float)
-        return self._set(learnRate=float(value))
+        return self._set(learnRate=value)
 
     def setEta(self, value):
-        assert_is_type(value, int, float)
-        return self._set(eta=float(value))
+        return self._set(eta=value)
 
     def setLearnRateAnnealing(self, value):
-        assert_is_type(value, int, float)
-        return self._set(learnRateAnnealing=float(value))
+        return self._set(learnRateAnnealing=value)
 
     def setSampleRate(self, value):
-        assert_is_type(value, int, float)
-        return self._set(sampleRate=float(value))
+        return self._set(sampleRate=value)
 
     def setSubsample(self, value):
-        assert_is_type(value, int, float)
-        return self._set(subsample=float(value))
+        return self._set(subsample=value)
 
     def setColSampleRate(self, value):
-        assert_is_type(value, int, float)
-        return self._set(colSampleRate=float(value))
+        return self._set(colSampleRate=value)
 
     def setColSampleByLevel(self, value):
-        assert_is_type(value, int, float)
-        return self._set(colSampleByLevel=float(value))
+        return self._set(colSampleByLevel=value)
 
     def setColSampleRatePerTree(self, value):
-        assert_is_type(value, int, float)
-        return self._set(colSampleRatePerTree=float(value))
+        return self._set(colSampleRatePerTree=value)
 
     def setColsampleBytree(self, value):
-        assert_is_type(value, int, float)
-        return self._set(colsampleBytree=float(value))
+        return self._set(colsampleBytree=value)
 
     def setMaxAbsLeafnodePred(self, value):
-        assert_is_type(value, int, float)
-        return self._set(maxAbsLeafnodePred=float(value))
+        return self._set(maxAbsLeafnodePred=value)
 
     def setMaxDeltaStep(self, value):
-        assert_is_type(value, int, float)
-        return self._set(maxDeltaStep=float(value))
+        return self._set(maxDeltaStep=value)
 
     def setScoreTreeInterval(self, value):
-        assert_is_type(value, int)
         return self._set(scoreTreeInterval=value)
 
     def setInitialScoreInterval(self, value):
-        assert_is_type(value, int)
         return self._set(initialScoreInterval=value)
 
     def setScoreInterval(self, value):
-        assert_is_type(value, int)
         return self._set(scoreInterval=value)
 
     def setMinSplitImprovement(self, value):
-        assert_is_type(value, int, float)
-        return self._set(minSplitImprovement=float(value))
+        return self._set(minSplitImprovement=value)
 
     def setGamma(self, value):
-        assert_is_type(value, int, float)
-        return self._set(gamma=float(value))
+        return self._set(gamma=value)
 
     def setNthread(self, value):
-        assert_is_type(value, int)
         return self._set(nthread=value)
 
     def setMaxBins(self, value):
-        assert_is_type(value, int)
         return self._set(maxBins=value)
 
     def setMaxLeaves(self, value):
-        assert_is_type(value, int)
         return self._set(maxLeaves=value)
 
     def setMinSumHessianInLeaf(self, value):
-        assert_is_type(value, int, float)
-        return self._set(minSumHessianInLeaf=float(value))
+        return self._set(minSumHessianInLeaf=value)
 
     def setMinDataInLeaf(self, value):
-        assert_is_type(value, int, float)
-        return self._set(minDataInLeaf=float(value))
+        return self._set(minDataInLeaf=value)
 
     def setTreeMethod(self, value):
-        validated = getValidatedEnumValue(self.__getTreeMethodEnum(), value)
-        return self._set(treeMethod=validated)
-
-    def __getTreeMethodEnum(self):
-        return "hex.tree.xgboost.XGBoostModel$XGBoostParameters$TreeMethod"
+        return self._set(treeMethod=value)
 
     def setGrowPolicy(self, value):
-        validated = getValidatedEnumValue(self.__getGrowPolicyEnum(), value)
-        return self._set(growPolicy=validated)
-
-    def __getGrowPolicyEnum(self):
-        return "hex.tree.xgboost.XGBoostModel$XGBoostParameters$GrowPolicy"
+        return self._set(growPolicy=value)
 
     def setBooster(self, value):
-        validated = getValidatedEnumValue(self.__getBoosterEnum(), value)
-        return self._set(booster=validated)
-
-    def __getBoosterEnum(self):
-        return "hex.tree.xgboost.XGBoostModel$XGBoostParameters$Booster"
+        return self._set(booster=value)
 
     def setDmatrixType(self, value):
-        validated = getValidatedEnumValue(self.__getDmatrixTypeEnum(), value)
-        return self._set(dmatrixType=validated)
-
-    def __getDmatrixTypeEnum(self):
-        return "hex.tree.xgboost.XGBoostModel$XGBoostParameters$DMatrixType"
+        return self._set(dmatrixType=value)
 
     def setRegLambda(self, value):
-        assert_is_type(value, int, float)
-        return self._set(regLambda=float(value))
+        return self._set(regLambda=value)
 
     def setRegAlpha(self, value):
-        assert_is_type(value, int, float)
-        return self._set(regAlpha=float(value))
+        return self._set(regAlpha=value)
 
     def setSampleType(self, value):
-        validated = getValidatedEnumValue(self.__getSampleTypeEnum(), value)
-        return self._set(sampleType=validated)
-
-    def __getSampleTypeEnum(self):
-        return "hex.tree.xgboost.XGBoostModel$XGBoostParameters$DartSampleType"
+        return self._set(sampleType=value)
 
     def setNormalizeType(self, value):
-        validated = getValidatedEnumValues(self.__getNormalizeTypeEnum(), value)
-        return self._set(normalizeType=validated)
-
-    def __getNormalizeTypeEnum(self):
-        return "hex.tree.xgboost.XGBoostModel$XGBoostParameters$DartNormalizeType"
+        return self._set(normalizeType=value)
 
     def setRateDrop(self, value):
-        assert_is_type(value, int, float)
-        return self._set(rateDrop=float(value))
+        return self._set(rateDrop=value)
 
     def setOneDrop(self, value):
-        assert_is_type(value, bool)
         return self._set(oneDrop=value)
 
     def setSkipDrop(self, value):
-        assert_is_type(value, int, float)
-        return self._set(skipDrop=float(value))
+        return self._set(skipDrop=value)
 
     def setGpuId(self, value):
-        assert_is_type(value, int)
         return self._set(gpuId=value)
 
     def setBackend(self, value):
-        validated = getValidatedEnumValue(self.__getBackendEnum(), value)
-        return self._set(backend=validated)
-
-    def __getBackendEnum(self):
-        return "hex.tree.xgboost.XGBoostModel$XGBoostParameters$Backend"
+        return self._set(backend=value)
