@@ -21,29 +21,47 @@ from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2OMOJOAlgoSharedParams(Params):
-    predictionCol = Param(Params._dummy(), "predictionCol", "Prediction column name", H2OTypeConverters.toString())
-    detailedPredictionCol = Param(Params._dummy(), "detailedPredictionCol",
-                                  "Column containing additional prediction details, its content depends"
-                                  " on the model type.",
-                                  H2OTypeConverters.toString())
-    withDetailedPredictionCol = Param(Params._dummy(), "withDetailedPredictionCol",
-                                      "Enables or disables generating additional prediction column, but with more details",
-                                      H2OTypeConverters.toBoolean())
-    featuresCols = Param(Params._dummy(), "featuresCols", "Name of feature columns", H2OTypeConverters.toListString())
+    predictionCol = Param(
+        Params._dummy(),
+        "predictionCol",
+        "Prediction column name",
+        H2OTypeConverters.toString())
 
-    convertUnknownCategoricalLevelsToNa = Param(Params._dummy(),
-                                                "convertUnknownCategoricalLevelsToNa",
-                                                "If set to 'true', the model converts unknown categorical levels to NA during making predictions.",
-                                                H2OTypeConverters.toBoolean())
+    detailedPredictionCol = Param(
+        Params._dummy(),
+        "detailedPredictionCol",
+        "Column containing additional prediction details, its content depends on the model type.",
+        H2OTypeConverters.toString())
 
-    convertInvalidNumbersToNa = Param(Params._dummy(),
-                                      "convertInvalidNumbersToNa",
-                                      "If set to 'true', the model converts invalid numbers to NA during making predictions.",
-                                      H2OTypeConverters.toBoolean())
+    withDetailedPredictionCol = Param(
+        Params._dummy(),
+        "withDetailedPredictionCol",
+        "Enables or disables generating additional prediction column, but with more details",
+        H2OTypeConverters.toBoolean())
 
-    namedMojoOutputColumns = Param(Params._dummy(), "namedMojoOutputColumns", "Mojo Output is not stored" +
-                                   " in the array but in the properly named columns",
-                                   H2OTypeConverters.toBoolean())
+    featuresCols = Param(
+        Params._dummy(),
+        "featuresCols",
+        "Name of feature columns",
+        H2OTypeConverters.toListString())
+
+    convertUnknownCategoricalLevelsToNa = Param(
+        Params._dummy(),
+        "convertUnknownCategoricalLevelsToNa",
+        "If set to 'true', the model converts unknown categorical levels to NA during making predictions.",
+        H2OTypeConverters.toBoolean())
+
+    convertInvalidNumbersToNa = Param(
+        Params._dummy(),
+        "convertInvalidNumbersToNa",
+        "If set to 'true', the model converts invalid numbers to NA during making predictions.",
+        H2OTypeConverters.toBoolean())
+
+    namedMojoOutputColumns = Param(
+        Params._dummy(),
+        "namedMojoOutputColumns",
+        "Mojo Output is not stored in the array but in the properly named columns",
+        H2OTypeConverters.toBoolean())
 
     ##
     # Getters

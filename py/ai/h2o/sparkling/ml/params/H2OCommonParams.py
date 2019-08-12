@@ -18,30 +18,53 @@
 from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
-from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams import H2OMOJOAlgoSharedParams
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2OCommonParams(H2OMOJOAlgoSharedParams):
+    foldCol = Param(
+        Params._dummy(),
+        "foldCol",
+        "Fold column name",
+        H2OTypeConverters.toNullableString())
 
+    weightCol = Param(
+        Params._dummy(),
+        "weightCol",
+        "Weight column name",
+        H2OTypeConverters.toNullableString())
 
-    foldCol = Param(Params._dummy(), "foldCol", "Fold column name", H2OTypeConverters.toNullableString())
-    weightCol = Param(Params._dummy(), "weightCol", "Weight column name", H2OTypeConverters.toNullableString())
-    splitRatio = Param(Params._dummy(), "splitRatio",
-                       "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training and for validation. "
-                       "For example, 0.8 -> 80% training 20% validation.", H2OTypeConverters.toFloat())
-    seed = Param(Params._dummy(), "seed", "Used to specify seed to reproduce the model run", H2OTypeConverters.toInt())
-    nfolds = Param(Params._dummy(), "nfolds", "Number of fold columns", H2OTypeConverters.toInt())
+    splitRatio = Param(
+        Params._dummy(),
+        "splitRatio",
+        "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training"
+        " and for validation. For example, 0.8 -> 80% training 20% validation.",
+        H2OTypeConverters.toFloat())
 
-    allStringColumnsToCategorical = Param(Params._dummy(),
-                                          "allStringColumnsToCategorical",
-                                          "Transform all strings columns to categorical",
-                                          H2OTypeConverters.toBoolean())
+    seed = Param(
+        Params._dummy(),
+        "seed",
+        "Used to specify seed to reproduce the model run",
+        H2OTypeConverters.toInt())
 
-    columnsToCategorical = Param(Params._dummy(),
-                                 "columnsToCategorical",
-                                 "List of columns to convert to categorical before modelling",
-                                 H2OTypeConverters.toListString())
+    nfolds = Param(
+        Params._dummy(),
+        "nfolds",
+        "Number of fold columns",
+        H2OTypeConverters.toInt())
+
+    allStringColumnsToCategorical = Param(
+        Params._dummy(),
+        "allStringColumnsToCategorical",
+        "Transform all strings columns to categorical",
+        H2OTypeConverters.toBoolean())
+
+    columnsToCategorical = Param(
+        Params._dummy(),
+        "columnsToCategorical",
+        "List of columns to convert to categorical before modelling",
+        H2OTypeConverters.toListString())
 
     ##
     # Getters

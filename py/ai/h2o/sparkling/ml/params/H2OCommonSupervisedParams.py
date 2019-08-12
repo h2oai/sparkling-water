@@ -23,8 +23,11 @@ from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2OCommonSupervisedParams(H2OCommonParams):
-
-    labelCol = Param(Params._dummy(), "labelCol", "Label column name", H2OTypeConverters.toString())
+    labelCol = Param(
+        Params._dummy(),
+        "labelCol",
+        "Label column name",
+        H2OTypeConverters.toString())
 
     def getLabelCol(self):
         return self.getOrDefault(self.labelCol)
