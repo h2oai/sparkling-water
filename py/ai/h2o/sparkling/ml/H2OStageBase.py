@@ -16,10 +16,9 @@
 #
 
 from pyspark.ml.util import JavaMLWritable, JavaMLReadable
-from pyspark.ml.wrapper import JavaEstimator
 
 
-class H2OTransformerBase(JavaEstimator, JavaMLReadable, JavaMLWritable):
+class H2OStageBase(JavaMLReadable, JavaMLWritable):
 
     # Set default values directly from Scala so we don't have to duplicate it on PySpark side
     def _setDefaultValuesFromJava(self, skip=None):

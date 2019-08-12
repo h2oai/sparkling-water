@@ -18,8 +18,8 @@
 from pyspark import keyword_only
 
 from ai.h2o.sparkling import Initializer
-from ai.h2o.sparkling.ml.H2OTransformerBase import H2OTransformerBase
 from ai.h2o.sparkling.ml.Utils import Utils
+from ai.h2o.sparkling.ml.features.H2OTransformerBase import H2OTransformerBase
 from ai.h2o.sparkling.ml.models import H2OTargetEncoderModel
 from ai.h2o.sparkling.ml.params import H2OTargetEncoderParams
 

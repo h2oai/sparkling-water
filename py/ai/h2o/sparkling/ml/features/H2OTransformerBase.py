@@ -15,13 +15,10 @@
 # limitations under the License.
 #
 
-from pyspark.ml.wrapper import JavaEstimator
+from pyspark.ml.wrapper import JavaTransformer
 
 from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
-from ai.h2o.sparkling.ml.models import H2OMOJOModel
 
 
-class H2OAlgoBase(H2OStageBase, JavaEstimator):
-
-    def _create_model(self, java_model):
-        return H2OMOJOModel(java_model)
+class H2OTransformerBase(H2OStageBase, JavaTransformer):
+    pass
