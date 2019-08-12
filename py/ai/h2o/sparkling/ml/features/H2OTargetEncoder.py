@@ -19,9 +19,9 @@ from pyspark import keyword_only
 
 from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.ml.H2OTransformerBase import H2OTransformerBase
+from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.models import H2OTargetEncoderModel
 from ai.h2o.sparkling.ml.params import H2OTargetEncoderParams
-from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
 
 
 class H2OTargetEncoder(H2OTargetEncoderParams, H2OTransformerBase):
@@ -41,7 +41,7 @@ class H2OTargetEncoder(H2OTargetEncoderParams, H2OTransformerBase):
         super(H2OTargetEncoder, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.features.H2OTargetEncoder", self.uid)
         self._setDefaultValuesFromJava()
-        kwargs = get_input_kwargs(self)
+        kwargs = Utils.getInputKwargs(self)
         self._set(**kwargs)
 
     def _create_model(self, java_model):

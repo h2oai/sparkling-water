@@ -18,9 +18,9 @@
 from pyspark import keyword_only
 
 from ai.h2o.sparkling import Initializer
+from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.algos.H2OAlgoBase import H2OAlgoBase
 from ai.h2o.sparkling.ml.params import H2ODeepLearningParams
-from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
 
 
 class H2ODeepLearning(H2ODeepLearningParams, H2OAlgoBase):
@@ -55,5 +55,5 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OAlgoBase):
         super(H2ODeepLearning, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODeepLearning", self.uid)
         self._setDefaultValuesFromJava()
-        kwargs = get_input_kwargs(self)
+        kwargs = Utils.getInputKwargs(self)
         self._set(**kwargs)

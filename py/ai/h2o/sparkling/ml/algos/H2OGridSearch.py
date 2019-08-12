@@ -19,10 +19,10 @@ from pyspark import keyword_only
 from pyspark.sql.dataframe import DataFrame
 
 from ai.h2o.sparkling import Initializer
+from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.algos.H2OAlgoBase import H2OAlgoBase
 from ai.h2o.sparkling.ml.models import H2OMOJOModel
 from ai.h2o.sparkling.ml.params import H2OGridSearchParams
-from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
 
 
 class H2OGridSearch(H2OGridSearchParams, H2OAlgoBase):
@@ -57,7 +57,7 @@ class H2OGridSearch(H2OGridSearchParams, H2OAlgoBase):
         super(H2OGridSearch, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGridSearch", self.uid)
         self._setDefaultValuesFromJava(["algoParams"])
-        kwargs = get_input_kwargs(self)
+        kwargs = Utils.getInputKwargs(self)
         self._set(**kwargs)
 
         if "algo" in kwargs and kwargs["algo"] is not None:

@@ -15,17 +15,27 @@
 # limitations under the License.
 #
 
-# Methods, whose implementation changes between Spark versions
-# and we need to handle it differently
-
+import warnings
 from pyspark.sql import SparkSession
 
 
-def get_input_kwargs(instance):
-    spark_version = SparkSession.builder.getOrCreate().version
+class Utils(object):
 
-    if spark_version == "2.1.0":
-        return instance.__init__._input_kwargs
-    else:
-        # on newer versions we need to use the following variant
-        return instance._input_kwargs
+    @staticmethod
+    def propagate_value_from_deprecated_property(kwargs, from_deprecated, to_replacing):
+        if from_deprecated in kwargs:
+            warnings.warn(
+                "The parameter '{}' is deprecated and its usage will override a value specified via '{}'!".format(
+                    from_deprecated, to_replacing))
+            kwargs[to_replacing] = kwargs[from_deprecated]
+            del kwargs[from_deprecated]
+
+    @staticmethod
+    def getInputKwargs(instance):
+        spark_version = SparkSession.builder.getOrCreate().version
+
+        if spark_version == "2.1.0":
+            return instance.__init__._input_kwargs
+        else:
+            # on newer versions we need to use the following variant
+            return instance._input_kwargs

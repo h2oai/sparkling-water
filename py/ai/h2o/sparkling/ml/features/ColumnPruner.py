@@ -20,8 +20,8 @@ from pyspark.ml.param.shared import *
 
 from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.ml.H2OTransformerBase import H2OTransformerBase
+from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
-from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
 
 
 class ColumnPruner(H2OTransformerBase):
@@ -45,7 +45,7 @@ class ColumnPruner(H2OTransformerBase):
         super(ColumnPruner, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.features.ColumnPruner", self.uid)
         self._setDefaultValuesFromJava()
-        kwargs = get_input_kwargs(self)
+        kwargs = Utils.getInputKwargs(self)
         self._set(**kwargs)
 
     def setKeep(self, value):
