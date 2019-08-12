@@ -21,16 +21,47 @@ from pyspark.sql.dataframe import DataFrame
 from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.ml.algos.H2OAlgoBase import H2OAlgoBase
 from ai.h2o.sparkling.ml.params import H2OAutoMLParams
+from ai.h2o.sparkling.sparkSpecifics import get_input_kwargs
 
 
 class H2OAutoML(H2OAutoMLParams, H2OAlgoBase):
 
     @keyword_only
-    def __init__(self, **kwargs):
+    def __init__(self,
+                 ignoredCols=[],
+                 includeAlgos=None,
+                 excludeAlgos=None,
+                 projectName=None,
+                 maxRuntimeSecs=3600.0,
+                 stoppingRounds=3,
+                 stoppingTolerance=0.001,
+                 stoppingMetric="AUTO",
+                 sortMetric="AUTO",
+                 balanceClasses=False,
+                 classSamplingFactors=None,
+                 maxAfterBalanceSize=5.0,
+                 keepCrossValidationPredictions=True,
+                 keepCrossValidationModels=True,
+                 maxModels=0,
+                 labelCol="label",
+                 foldCol=None,
+                 weightCol=None,
+                 splitRatio=1.0,
+                 seed=-1,
+                 nfolds=5,
+                 allStringColumnsToCategorical=True,
+                 columnsToCategorical=[],
+                 predictionCol="prediction",
+                 detailedPredictionCol="detailed_prediction",
+                 withDetailedPredictionCol=False,
+                 featuresCols=[],
+                 convertUnknownCategoricalLevelsToNa=False,
+                 convertInvalidNumbersToNa=False):
         Initializer.load_sparkling_jar()
         super(H2OAutoML, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OAutoML", self.uid)
         self._setDefaultValuesFromJava()
+        kwargs = get_input_kwargs(self)
         self._set(**kwargs)
 
     def leaderboard(self):

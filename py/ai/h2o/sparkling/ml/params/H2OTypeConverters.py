@@ -79,7 +79,7 @@ class H2OTypeConverters(object):
             if value is None:
                 return None
             else:
-                return H2OTypeConverters.toString()(value)
+                return TypeConverters.toString(value)
 
         return convert
 
@@ -99,7 +99,7 @@ class H2OTypeConverters(object):
             if value is None:
                 return None
             else:
-                return H2OTypeConverters.toInt()(value)
+                return TypeConverters.toInt(value)
 
         return convert
 
@@ -119,7 +119,7 @@ class H2OTypeConverters(object):
             if value is None:
                 return None
             else:
-                return H2OTypeConverters.toFloat()(value)
+                return TypeConverters.toFloat(value)
 
         return convert
 
@@ -139,7 +139,7 @@ class H2OTypeConverters(object):
             if value is None:
                 return None
             else:
-                return H2OTypeConverters.toBoolean()(value)
+                return TypeConverters.toBoolean(value)
 
         return convert
 
