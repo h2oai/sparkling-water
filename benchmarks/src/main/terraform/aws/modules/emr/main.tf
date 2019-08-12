@@ -60,11 +60,6 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
     name = "SparklingWaterBenchmarks"
   }
 
-  bootstrap_action {
-    path = "${format("s3://%s/install_sw.sh", aws_s3_bucket.sw_bucket.bucket)}"
-    name = "Custom action"
-  }
-
   configurations_json = <<EOF
   [
     {
@@ -97,4 +92,11 @@ EOF
     command = "sleep 60"
   }
   service_role = "${aws_iam_role.emr_role.arn}"
+}
+
+resource "aws_instance" "benchmarks_jar" {
+  provisioner "file" {
+    source      = "../../../../libs/sparkling-water-benchmarks_SUBST_SCALA_VERSION-${var.sw_version}-all.jar"
+    destination = "benchmarks.jar"
+  }
 }

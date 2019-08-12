@@ -71,8 +71,7 @@ resource "aws_main_route_table_association" "a" {
 ##
 resource "aws_vpc_dhcp_options" "main" {
   domain_name = "ec2.internal"
-  domain_name_servers = [
-    "AmazonProvidedDNS"]
+  domain_name_servers = ["AmazonProvidedDNS"]
   tags = {
     Name = "SparklingWaterBenchmarksDeploymentDHCPOptions"
   }

@@ -40,7 +40,9 @@ task substituteTerraform() {
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
-                    .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
+                .replaceAll("SUBST_SW_VERSION", version)
+                .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
+                .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
             
             file(path).write(contents, 'UTF-8')
         }
@@ -61,4 +63,3 @@ copyTerraform.dependsOn cleanTerraform
 substituteTerraform.dependsOn copyTerraform
 build.dependsOn substituteTerraform
 build.dependsOn shadowJar
-

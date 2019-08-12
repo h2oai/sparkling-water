@@ -22,3 +22,6 @@ variable "aws_core_instance_count" {
 variable "aws_instance_type" {
   default = "m3.xlarge"
 }
+variable "sw_version" {
+  default = "SUBST_SW_VERSION"
+}
