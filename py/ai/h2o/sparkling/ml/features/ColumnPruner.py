@@ -17,14 +17,15 @@
 
 from pyspark import keyword_only
 from pyspark.ml.param.shared import *
+from pyspark.ml.wrapper import JavaTransformer
 
 from ai.h2o.sparkling import Initializer
+from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
 from ai.h2o.sparkling.ml.Utils import Utils
-from ai.h2o.sparkling.ml.features.H2OTransformerBase import H2OTransformerBase
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
-class ColumnPruner(H2OTransformerBase):
+class ColumnPruner(H2OStageBase, JavaTransformer):
     keep = Param(
         Params._dummy(),
         "keep",

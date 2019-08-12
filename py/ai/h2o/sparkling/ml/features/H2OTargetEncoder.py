@@ -16,15 +16,16 @@
 #
 
 from pyspark import keyword_only
+from pyspark.ml.wrapper import JavaEstimator
 
 from ai.h2o.sparkling import Initializer
+from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
 from ai.h2o.sparkling.ml.Utils import Utils
-from ai.h2o.sparkling.ml.features.H2OTransformerBase import H2OTransformerBase
 from ai.h2o.sparkling.ml.models import H2OTargetEncoderModel
 from ai.h2o.sparkling.ml.params import H2OTargetEncoderParams
 
 
-class H2OTargetEncoder(H2OTargetEncoderParams, H2OTransformerBase):
+class H2OTargetEncoder(H2OTargetEncoderParams, H2OStageBase, JavaEstimator):
 
     @keyword_only
     def __init__(self,
