@@ -19,40 +19,168 @@ from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
-from ai.h2o.sparkling.ml.utils import getValidatedEnumValue, getDoubleArrayFromIntArray
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2OGLMParams(H2OAlgoSupervisedParams):
-
     ##
     # Param definitions
     ##
-    standardize = Param(Params._dummy(), "standardize", "standardize")
-    family = Param(Params._dummy(), "family", "family")
-    link = Param(Params._dummy(), "link", "link")
-    solver = Param(Params._dummy(), "solver", "solver")
-    tweedieVariancePower = Param(Params._dummy(), "tweedieVariancePower", "Tweedie variance power")
-    tweedieLinkPower = Param(Params._dummy(), "tweedieLinkPower", "Tweedie link power")
-    alpha = Param(Params._dummy(), "alpha", "alpha")
-    lambda_ = Param(Params._dummy(), "lambda_", "lambda")
-    missingValuesHandling = Param(Params._dummy(), "missingValuesHandling", "missingValuesHandling")
-    prior = Param(Params._dummy(), "prior", "prior")
-    lambdaSearch = Param(Params._dummy(), "lambdaSearch", "lambda search")
-    nlambdas = Param(Params._dummy(), "nlambdas", "nlambdas")
-    nonNegative = Param(Params._dummy(), "nonNegative", "nonNegative")
-    exactLambdas = Param(Params._dummy(), "exactLambdas", "exact lambdas")
-    lambdaMinRatio = Param(Params._dummy(), "lambdaMinRatio", "lambdaMinRatio")
-    maxIterations = Param(Params._dummy(), "maxIterations", "maxIterations")
-    intercept = Param(Params._dummy(), "intercept", "intercept")
-    betaEpsilon = Param(Params._dummy(), "betaEpsilon", "betaEpsilon")
-    objectiveEpsilon = Param(Params._dummy(), "objectiveEpsilon", "objectiveEpsilon")
-    gradientEpsilon = Param(Params._dummy(), "gradientEpsilon", "gradientEpsilon")
-    objReg = Param(Params._dummy(), "objReg", "objReg")
-    computePValues = Param(Params._dummy(), "computePValues", "computePValues")
-    removeCollinearCols = Param(Params._dummy(), "removeCollinearCols", "removeCollinearCols")
-    interactions = Param(Params._dummy(), "interactions", "interactions")
-    interactionPairs = Param(Params._dummy(), "interactionPairs", "interactionPairs")
-    earlyStopping = Param(Params._dummy(), "earlyStopping", "earlyStopping")
+    standardize = Param(
+        Params._dummy(),
+        "standardize",
+        "standardize",
+        H2OTypeConverters.toBoolean())
+
+    family = Param(
+        Params._dummy(),
+        "family",
+        "family",
+        H2OTypeConverters.toEnumString("hex.glm.GLMModel$GLMParameters$Family"))
+
+    link = Param(
+        Params._dummy(),
+        "link",
+        "link",
+        H2OTypeConverters.toEnumString("hex.glm.GLMModel$GLMParameters$Link"))
+
+    solver = Param(
+        Params._dummy(),
+        "solver",
+        "solver",
+        H2OTypeConverters.toEnumString("hex.glm.GLMModel$GLMParameters$Solver"))
+
+    tweedieVariancePower = Param(
+        Params._dummy(),
+        "tweedieVariancePower",
+        "Tweedie variance power",
+        H2OTypeConverters.toFloat())
+
+    tweedieLinkPower = Param(
+        Params._dummy(),
+        "tweedieLinkPower",
+        "Tweedie link power",
+        H2OTypeConverters.toFloat())
+
+    alpha = Param(
+        Params._dummy(),
+        "alpha",
+        "alpha",
+        H2OTypeConverters.toNullableListFloat())
+
+    lambda_ = Param(
+        Params._dummy(),
+        "lambda_",
+        "lambda",
+        H2OTypeConverters.toNullableListFloat())
+
+    missingValuesHandling = Param(
+        Params._dummy(),
+        "missingValuesHandling",
+        "missingValuesHandling",
+        H2OTypeConverters.toEnumString(
+            "hex.deeplearning.DeepLearningModel$DeepLearningParameters$MissingValuesHandling"))
+
+    prior = Param(
+        Params._dummy(),
+        "prior",
+        "prior",
+        H2OTypeConverters.toFloat())
+
+    lambdaSearch = Param(
+        Params._dummy(),
+        "lambdaSearch",
+        "lambda search",
+        H2OTypeConverters.toBoolean())
+
+    nlambdas = Param(
+        Params._dummy(),
+        "nlambdas",
+        "nlambdas",
+        H2OTypeConverters.toInt())
+
+    nonNegative = Param(
+        Params._dummy(),
+        "nonNegative",
+        "nonNegative",
+        H2OTypeConverters.toBoolean())
+
+    exactLambdas = Param(
+        Params._dummy(),
+        "exactLambdas",
+        "exact lambdas",
+        H2OTypeConverters.toBoolean())
+
+    lambdaMinRatio = Param(
+        Params._dummy(),
+        "lambdaMinRatio",
+        "lambdaMinRatio",
+        H2OTypeConverters.toFloat())
+
+    maxIterations = Param(
+        Params._dummy(),
+        "maxIterations",
+        "maxIterations",
+        H2OTypeConverters.toInt())
+
+    intercept = Param(
+        Params._dummy(),
+        "intercept",
+        "intercept",
+        H2OTypeConverters.toBoolean())
+
+    betaEpsilon = Param(
+        Params._dummy(),
+        "betaEpsilon",
+        "betaEpsilon",
+        H2OTypeConverters.toFloat())
+
+    objectiveEpsilon = Param(
+        Params._dummy(),
+        "objectiveEpsilon",
+        "objectiveEpsilon",
+        H2OTypeConverters.toFloat())
+
+    gradientEpsilon = Param(
+        Params._dummy(),
+        "gradientEpsilon",
+        "gradientEpsilon",
+        H2OTypeConverters.toFloat())
+
+    objReg = Param(
+        Params._dummy(),
+        "objReg",
+        "objReg",
+        H2OTypeConverters.toFloat())
+
+    computePValues = Param(
+        Params._dummy(),
+        "computePValues",
+        "computePValues",
+        H2OTypeConverters.toBoolean())
+
+    removeCollinearCols = Param(
+        Params._dummy(),
+        "removeCollinearCols",
+        "removeCollinearCols",
+        H2OTypeConverters.toBoolean())
+
+    interactions = Param(
+        Params._dummy(),
+        "interactions",
+        "interactions",
+        H2OTypeConverters.toNullableListString())
+
+    interactionPairs = Param(
+        Params._dummy(),
+        "interactionPairs",
+        "interactionPairs")
+
+    earlyStopping = Param(
+        Params._dummy(),
+        "earlyStopping",
+        "earlyStopping",
+        H2OTypeConverters.toBoolean())
 
     ##
     # Getters
@@ -135,116 +263,79 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
     def getEarlyStopping(self):
         return self.getOrDefault(self.earlyStopping)
 
-
     ##
     # Setters
     ##
     def setStandardize(self, value):
-        assert_is_type(value, bool)
         return self._set(standardize=value)
 
     def setFamily(self, value):
-        validated = getValidatedEnumValue(self.__getFamilyEnum(), value)
-        return self._set(family=validated)
-
-    def __getFamilyEnum(self):
-        return "hex.glm.GLMModel$GLMParameters$Family"
+        return self._set(family=value)
 
     def setLink(self, value):
-        validated = getValidatedEnumValue(self.__getLinkEnum(), value)
-        return self._set(link=validated)
-
-    def __getLinkEnum(self):
-        return "hex.glm.GLMModel$GLMParameters$Link"
+        return self._set(link=value)
 
     def setSolver(self, value):
-        validated = getValidatedEnumValue(self.__getSolverEnum(), value)
-        return self._set(solver=validated)
-
-    def __getSolverEnum(self):
-        return "hex.glm.GLMModel$GLMParameters$Solver"
+        return self._set(solver=value)
 
     def setTweedieVariancePower(self, value):
-        assert_is_type(value, int, float)
-        return self._set(tweedieVariancePower=float(value))
+        return self._set(tweedieVariancePower=value)
 
     def setTweedieLinkPower(self, value):
-        assert_is_type(value, int, float)
-        return self._set(tweedieLinkPower=float(value))
+        return self._set(tweedieLinkPower=value)
 
     def setAlpha(self, value):
-        assert_is_type(value, None, [int, float])
-        return self._set(alpha=getDoubleArrayFromIntArray(value))
+        return self._set(alpha=value)
 
     def setLambda(self, value):
-        assert_is_type(value, None, [int, float])
-        return self._set(lambda_=getDoubleArrayFromIntArray(value))
+        return self._set(lambda_=value)
 
     def setMissingValuesHandling(self, value):
-        validated = getValidatedEnumValue(self.__getMissingValuesHandlingEnum(), value)
-        return self._set(missingValuesHandling=validated)
-
-    def __getMissingValuesHandlingEnum(self):
-        return "hex.deeplearning.DeepLearningModel$DeepLearningParameters$MissingValuesHandling"
+        return self._set(missingValuesHandling=value)
 
     def setPrior(self, value):
-        assert_is_type(value, int, float)
-        return self._set(prior=float(value))
+        return self._set(prior=value)
 
     def setLambdaSearch(self, value):
-        assert_is_type(value, bool)
         return self._set(lambdaSearch=value)
 
     def setNlambdas(self, value):
-        assert_is_type(value, int)
         return self._set(nlambdas=value)
 
     def setNonNegative(self, value):
-        assert_is_type(value, bool)
         return self._set(nonNegative=value)
 
     def setExactLambdas(self, value):
-        assert_is_type(value, bool)
         return self._set(exactLambdas=value)
 
     def setLambdaMinRatio(self, value):
-        assert_is_type(value, int, float)
-        return self._set(lambdaMinRatio=float(value))
+        return self._set(lambdaMinRatio=value)
 
     def setMaxIterations(self, value):
-        assert_is_type(value, int)
         return self._set(maxIterations=value)
 
     def setIntercept(self, value):
-        assert_is_type(value, bool)
         return self._set(intercept=value)
 
     def setBetaEpsilon(self, value):
-        assert_is_type(value, int, float)
-        return self._set(betaEpsilon=float(value))
+        return self._set(betaEpsilon=value)
 
     def setObjectiveEpsilon(self, value):
-        assert_is_type(value, int, float)
-        return self._set(objectiveEpsilon=float(value))
+        return self._set(objectiveEpsilon=value)
 
     def setGradientEpsilon(self, value):
-        assert_is_type(value, int, float)
-        return self._set(gradientEpsilon=float(value))
+        return self._set(gradientEpsilon=value)
 
     def setObjReg(self, value):
-        assert_is_type(value, int, float)
-        return self._set(objReg=float(value))
+        return self._set(objReg=value)
 
     def setComputePValues(self, value):
-        assert_is_type(value, bool)
         return self._set(computePValues=value)
 
     def setRemoveCollinearCols(self, value):
-        assert_is_type(value, bool)
         return self._set(removeCollinearCols=value)
 
     def setInteractions(self, value):
-        assert_is_type(value, None, [str])
         return self._set(interactions=value)
 
     def setInteractionPairs(self, value):
@@ -252,5 +343,4 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         return self._set(interactionPairs=value)
 
     def setEarlyStopping(self, value):
-        assert_is_type(value, bool)
         return self._set(earlyStopping=value)

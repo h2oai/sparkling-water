@@ -20,24 +20,70 @@ from py4j.java_gateway import JavaObject
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OCommonSupervisedParams import H2OCommonSupervisedParams
-from ai.h2o.sparkling.ml.utils import getValidatedEnumValue
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2OGridSearchParams(H2OCommonSupervisedParams):
-
     ##
     # Param definitions
     ##
-    algo = Param(Params._dummy(), "algo", "Algo to run grid search on")
-    hyperParameters = Param(Params._dummy(), "hyperParameters", "Grid Search Hyper Params map")
-    strategy = Param(Params._dummy(), "strategy", "strategy")
-    maxRuntimeSecs = Param(Params._dummy(), "maxRuntimeSecs", "maxRuntimeSecs")
-    maxModels = Param(Params._dummy(), "maxModels", "maxModels")
-    stoppingRounds = Param(Params._dummy(), "stoppingRounds", "stoppingRounds")
-    stoppingTolerance = Param(Params._dummy(), "stoppingTolerance", "stoppingTolerance")
-    stoppingMetric = Param(Params._dummy(), "stoppingMetric", "stoppingMetric")
-    selectBestModelBy = Param(Params._dummy(), "selectBestModelBy", "selectBestModelBy")
-    selectBestModelDecreasing = Param(Params._dummy(), "selectBestModelDecreasing", "selectBestModelDecreasing")
+    algo = Param(
+        Params._dummy(),
+        "algo",
+        "Algo to run grid search on")
+
+    hyperParameters = Param(
+        Params._dummy(),
+        "hyperParameters",
+        "Grid Search Hyper Params map")
+
+    strategy = Param(
+        Params._dummy(),
+        "strategy",
+        "strategy",
+        H2OTypeConverters.toEnumString("hex.grid.HyperSpaceSearchCriteria$Strategy"))
+
+    maxRuntimeSecs = Param(
+        Params._dummy(),
+        "maxRuntimeSecs",
+        "maxRuntimeSecs",
+        H2OTypeConverters.toFloat())
+
+    maxModels = Param(
+        Params._dummy(),
+        "maxModels",
+        "maxModels",
+        H2OTypeConverters.toInt())
+
+    stoppingRounds = Param(
+        Params._dummy(),
+        "stoppingRounds",
+        "stoppingRounds",
+        H2OTypeConverters.toInt())
+
+    stoppingTolerance = Param(
+        Params._dummy(),
+        "stoppingTolerance",
+        "stoppingTolerance",
+        H2OTypeConverters.toFloat())
+
+    stoppingMetric = Param(
+        Params._dummy(),
+        "stoppingMetric",
+        "stoppingMetric",
+        H2OTypeConverters.toEnumString("hex.ScoreKeeper$StoppingMetric"))
+
+    selectBestModelBy = Param(
+        Params._dummy(),
+        "selectBestModelBy",
+        "selectBestModelBy",
+        H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.algos.H2OGridSearchMetric"))
+
+    selectBestModelDecreasing = Param(
+        Params._dummy(),
+        "selectBestModelDecreasing",
+        "selectBestModelDecreasing",
+        H2OTypeConverters.toBoolean())
 
     ##
     # Getters
@@ -89,46 +135,29 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         return self
 
     def setHyperParameters(self, value):
-        assert_is_type(value, None, {str : [object]})
+        assert_is_type(value, None, {str: [object]})
         return self._set(hyperParameters=value)
 
     def setStrategy(self, value):
-        validated = getValidatedEnumValue(self.__getStrategyEnum(), value)
-        return self._set(link=validated)
-
-    def __getStrategyEnum(self):
-        return "hex.grid.HyperSpaceSearchCriteria$Strategy"
+        return self._set(link=value)
 
     def setMaxRuntimeSecs(self, value):
-        assert_is_type(value, int, float)
-        return self._set(maxRuntimeSecs=float(value))
+        return self._set(maxRuntimeSecs=value)
 
     def setMaxModels(self, value):
-        assert_is_type(value, int)
         return self._set(maxModels=value)
 
     def setStoppingRounds(self, value):
-        assert_is_type(value, int)
         return self._set(stoppingRounds=value)
 
     def setStoppingTolerance(self, value):
-        assert_is_type(value, int, float)
-        return self._set(stoppingTolerance=float(value))
+        return self._set(stoppingTolerance=value)
 
     def setStoppingMetric(self, value):
-        validated = getValidatedEnumValue(self.__getStoppingMetricEnum(), value)
-        return self._set(stoppingMetric=validated)
-
-    def __getStoppingMetricEnum(self):
-        return "hex.ScoreKeeper$StoppingMetric"
+        return self._set(stoppingMetric=value)
 
     def setSelectBestModelBy(self, value):
-        validated = getValidatedEnumValue(self.__getSelectBestModelByEnum(), value)
-        return self._set(selectBestModelBy=validated)
-
-    def __getSelectBestModelByEnum(self):
-        return "ai.h2o.sparkling.ml.algos.H2OGridSearchMetric"
+        return self._set(selectBestModelBy=value)
 
     def setSelectBestModelDecreasing(self, value):
-        assert_is_type(value, bool)
         return self._set(selectBestModelDecreasing=value)

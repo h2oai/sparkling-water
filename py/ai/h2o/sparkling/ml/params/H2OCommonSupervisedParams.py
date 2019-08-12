@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OCommonParams import H2OCommonParams
@@ -33,5 +32,4 @@ class H2OCommonSupervisedParams(H2OCommonParams):
         return self.getOrDefault(self.labelCol)
 
     def setLabelCol(self, value):
-        assert_is_type(value, str)
         return self._set(labelCol=value)

@@ -15,29 +15,49 @@
 # limitations under the License.
 #
 
-from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2ODeepLearningParams(H2OAlgoSupervisedParams):
-
     ##
     # Param definitions
     ##
-    epochs = Param(Params._dummy(), "epochs", "The number of passes over the training dataset to be carried out")
+    epochs = Param(
+        Params._dummy(),
+        "epochs",
+        "The number of passes over the training dataset to be carried out",
+        H2OTypeConverters.toFloat())
 
-    l1 = Param(Params._dummy(), "l1", "A regularization method that constrains the absolute value of the weights and"
-                                      " has the net effect of dropping some weights (setting them to zero) from"
-                                      " a model to reduce complexity and avoid overfitting.")
+    l1 = Param(
+        Params._dummy(),
+        "l1",
+        "A regularization method that constrains the absolute value of the weights and "
+        "has the net effect of dropping some weights (setting them to zero) from a model "
+        "to reduce complexity and avoid overfitting.",
+        H2OTypeConverters.toFloat())
 
-    l2 = Param(Params._dummy(), "l2", "A regularization method that constrains the sum of the squared weights."
-                                      " This method introduces bias into parameter estimates, but frequently"
-                                      " produces substantial gains in modeling as estimate variance is reduced.")
+    l2 = Param(
+        Params._dummy(),
+        "l2",
+        "A regularization method that constrains the sum of the squared weights. "
+        "This method introduces bias into parameter estimates, but frequently "
+        "produces substantial gains in modeling as estimate variance is reduced.",
+        H2OTypeConverters.toFloat())
 
-    hidden = Param(Params._dummy(), "hidden", "The number and size of each hidden layer in the model")
-    reproducible = Param(Params._dummy(), "reproducible", "Force reproducibility on small data (will be slow - only uses 1 thread)")
+    hidden = Param(
+        Params._dummy(),
+        "hidden",
+        "The number and size of each hidden layer in the model",
+        H2OTypeConverters.toListInt())
+
+    reproducible = Param(
+        Params._dummy(),
+        "reproducible",
+        "Force reproducibility on small data (will be slow - only uses 1 thread)",
+        H2OTypeConverters.toBoolean())
 
     ##
     # Getters
@@ -61,22 +81,16 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams):
     # Setters
     ##
     def setEpochs(self, value):
-        assert_is_type(value, int, float)
-        return self._set(epochs=float(value))
+        return self._set(epochs=value)
 
     def setL1(self, value):
-        assert_is_type(value, int, float)
-        return self._set(l1=float(value))
+        return self._set(l1=value)
 
     def setL2(self, value):
-        assert_is_type(value, int, float)
-        return self._set(l2=float(value))
+        return self._set(l2=value)
 
     def setHidden(self, value):
-        assert_is_type(value, [int])
         return self._set(hidden=value)
 
     def setReproducible(self, value):
-        assert_is_type(value, bool)
         return self._set(reproducible=value)
-

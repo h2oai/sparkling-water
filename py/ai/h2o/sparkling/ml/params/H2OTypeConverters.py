@@ -38,6 +38,7 @@ class H2OTypeConverters(object):
                 return None
             else:
                 return list(javaArray)
+
         return convert
 
     @staticmethod
@@ -198,5 +199,25 @@ class H2OTypeConverters(object):
                     valueForConversion = list(value)
 
                 return TypeConverters.toListInt(valueForConversion)
+
+        return convert
+
+    @staticmethod
+    def toNullableListListFloat():
+        def convert(value):
+            if value is None:
+                return None
+            else:
+                return H2OTypeConverters.toListListFloat()(value)
+
+        return convert
+
+    @staticmethod
+    def toListListFloat():
+        def convert(value):
+            if value is None:
+                raise TypeError("None is not allowed.")
+            else:
+                return [H2OTypeConverters.toListFloat()(v) for v in TypeConverters.toList(value)]
 
         return convert
