@@ -123,9 +123,14 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
     instance_profile = "${aws_iam_instance_profile.emr_ec2_instance_profile.arn}"
   }
 
-  master_instance_type = "${var.aws_instance_type}"
-  core_instance_type = "${var.aws_instance_type}"
-  core_instance_count = "${var.aws_core_instance_count}"
+  master_instance_group {
+    instance_type = "${var.aws_instance_type}"
+  }
+
+  core_instance_group {
+    instance_type = "${var.aws_instance_type}"
+    instance_count = "${var.aws_core_instance_count}"
+  }
 
   tags = {
     name = "SparklingWater"
