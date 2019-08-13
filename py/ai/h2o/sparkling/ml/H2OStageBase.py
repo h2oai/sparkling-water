@@ -22,13 +22,13 @@ class H2OStageBase(JavaMLReadable, JavaMLWritable):
 
     # Set default values directly from Scala so we don't have to duplicate it on PySpark side
     def _setDefaultValuesFromJava(self, skip=[]):
-        for paramPair in self._java_obj.defaultParamMap().toList():
+        for paramPair in self._java_obj.extractParamMap().toList():
             paramName = paramPair.param().name()
             if paramName not in skip:
-                paramValue = paramPair.value()
+                paramValue = self._java_obj.getDefault(paramPair.param()).get()
                 param = getattr(self, paramName)
                 self._defaultParamMap[param] = param.typeConverter(paramValue)
-
+ 
         return self
 
     # Override of _set method
