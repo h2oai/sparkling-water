@@ -74,6 +74,3 @@ class H2OGridSearch(H2OGridSearchParams, H2OAlgoBase):
 
     def get_grid_models_metrics(self):
         return DataFrame(self._java_obj.getGridModelsMetrics(), self._hc._sql_context)
-
-    def _create_model(self, java_model):
-        return H2OMOJOModel(java_model)
