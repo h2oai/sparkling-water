@@ -111,6 +111,29 @@ class H2OMojoPipelineTest(unittest.TestCase):
         assert preds[3][0] == 65.78772654671035
         assert preds[4][0] == 66.11327967814829
 
+    def testMojoPipelineProtoBackendWithoutError(self):
+        mojo = H2OMOJOPipelineModel.createFromMojo(
+            "file://" + os.path.abspath("../ml/src/test/resources/proto_based_pipeline.mojo"))
+
+        data = [(2.0,'male',0.41670000553131104,111361,6.449999809265137,'A19'),
+             (1.0,'female',0.33329999446868896,110413,6.4375,'A14'),
+             (1.0,'female',0.16670000553131104,111320,6.237500190734863,'A21'),
+             (1.0,'female',2.0,111361,6.237500190734863,'A20'),
+             (3.0,'female',1.0,110152,6.75,'A14'),
+             (1.0,'male',0.666700005531311,110489,6.85830020904541,'A10'),
+             (3.0,'male',0.33329999446868896,111320,0.0,'A11'),
+             (3.0,'male',2.0,110413,6.85830020904541,'A24'),
+             (1.0,'female',1.0,110489,3.170799970626831,'A21'),
+             (1.0,'female',0.33329999446868896,111240,0.0,'A14')
+             ]
+        rdd = self._spark.sc.parallelize(data)
+        df = self._spark.createDataFrame(rdd, ['pclass', 'sex', 'age', 'ticket', 'fare', 'cabin'])
+        prediction = mojo.transform(df)
+
+        # Flatenize prediction column to allow export to simple csv/console
+        output = prediction.select("*", "prediction.*").drop("prediction")
+        output.count()
+        output.show()
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([H2OMojoPipelineTest], file_name="py_unit_tests_mojo_pipeline_report")

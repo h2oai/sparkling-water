@@ -3,7 +3,7 @@ Using the MOJO Scoring Pipeline with Spark/Sparkling Water
 
 MOJO scoring pipeline artifacts can be used in Spark to deploy predictions in parallel using the Sparkling Water API. This section shows how to load and run predictions on the MOJO scoring pipeline in Spark using Scala and the Python API.
 
-In the event that you upgrade H2O Driverless AI, we have a good news! Sparkling Water is backwards compatible with MOJO versions produced by older Driverless AI versions.
+Sparkling Water is backwards compatible with MOJO versions produced by older Driverless AI versions.
 
 Requirements
 ''''''''''''
@@ -16,9 +16,9 @@ The H2OContext does not have to be created if you only want to run predictions o
 Preparing Your Environment
 ''''''''''''''''''''''''''
 
-Both PySparkling and Sparkling Water need to be started with some extra configurations in order to enable the MOJO scoring pipeline. Examples are provided below. Specifically, you must pass the path of the H2O Driverless AI license to the Spark ``--jars`` argument. Additionally, you need to add to the same ``--jars`` configuration path to the MOJO scoring pipeline implementation JAR file ``mojo2-runtime.jar``. This file is proprietary and is not part of the resulting Sparkling Water assembly JAR file.
+Both PySparkling and Sparkling Water need to be started with some extra configurations in order to enable the MOJO scoring pipeline. Examples are provided below. Specifically, you must pass the path of the H2O Driverless AI license to the Spark ``--jars`` argument.
 
-**Note**: In Local Spark mode, please use ``--driver-class-path`` to specify path to the license file and the MOJO Pipeline JAR file.
+**Note**: In Local Spark mode, please use ``--driver-class-path`` to specify path to the license file.
 
 PySparkling
 '''''''''''
@@ -28,14 +28,14 @@ First, start PySpark with all the required dependencies. The following command p
 
 .. code:: bash
 
-    ./bin/pyspark --jars license.sig,mojo2-runtime.jar --py-files pysparkling.zip
+    ./bin/pyspark --jars license.sig --py-files pysparkling.zip
 
 or, you can download official Sparkling Water distribution from `H2O Download page <https://www.h2o.ai/download/>`__. Please follow steps on the
 Sparkling Water download page. Once you are in the Sparkling Water directory, you can call:
 
 .. code:: bash
 
-    ./bin/pysparkling --jars license.sig,mojo2-runtime.jar
+    ./bin/pysparkling --jars license.sig
 
 
 At this point, you should have available a PySpark interactive terminal where you can try out predictions. If you would like to productionalize the scoring process, you can use the same configuration, except instead of using ``./bin/pyspark``, you would use ``./bin/spark-submit`` to submit your job to a cluster.

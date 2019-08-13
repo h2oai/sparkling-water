@@ -244,13 +244,9 @@ def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
-                withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD')]) {
-                    sh """
-                        ${config.gradleCmd} clean build -x check scalaStyle -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD
-                       """
-                    if (config.runIntegTests.toBoolean()) {
-                        stash "sw-build-${config.sparkMajorVersion}"
-                    }
+                sh "${config.gradleCmd} clean build -x check scalaStyle"
+                if (config.runIntegTests.toBoolean()) {
+                    stash "sw-build-${config.sparkMajorVersion}"
                 }
             } finally {
                 arch 'assembly/build/reports/dependency-license/**/*'

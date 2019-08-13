@@ -274,12 +274,11 @@ def updateRelVersionStage() {
 def build() {
     return { params ->
         stage('Build') {
-            withCredentials([usernamePassword(credentialsId: "LOCAL_NEXUS", usernameVariable: 'LOCAL_NEXUS_USERNAME', passwordVariable: 'LOCAL_NEXUS_PASSWORD'),
-                             usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
+            withCredentials([usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
                              file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
                 sh """
                     activate_java_8
-                    ./gradlew dist -Pspark=${params.spark} -Pversion=${getVersion(params)} -PlocalNexusUsername=$LOCAL_NEXUS_USERNAME -PlocalNexusPassword=$LOCAL_NEXUS_PASSWORD -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
+                    ./gradlew dist -Pspark=${params.spark} -Pversion=${getVersion(params)} -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
                     """
             }
         }
