@@ -244,9 +244,7 @@ def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
-                sh """
-                    ${config.gradleCmd} clean build -x check scalaStyle
-                   """
+                sh "${config.gradleCmd} clean build -x check scalaStyle"
                 if (config.runIntegTests.toBoolean()) {
                     stash "sw-build-${config.sparkMajorVersion}"
                 }
