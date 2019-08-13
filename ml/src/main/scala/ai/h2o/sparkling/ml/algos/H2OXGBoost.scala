@@ -18,7 +18,7 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
-import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
+import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
@@ -40,7 +40,7 @@ object H2OXGBoost extends H2OParamsReadable[H2OXGBoost]
 /**
   * Parameters for Spark's API exposing underlying H2O model.
   */
-trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
+trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with DeprecatableParams {
 
   type H2O_SCHEMA = XGBoostParametersV3
 
@@ -65,7 +65,7 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
   private val colSampleRate = doubleParam("colSampleRate")
   private val colSampleByLevel = doubleParam("colSampleByLevel", "Col Sample By Level")
   private val colSampleRatePerTree = doubleParam("colSampleRatePerTree")
-  private val colsampleBytree = doubleParam("colsampleBytree")
+  private val colSampleByTree = doubleParam("colSampleByTree", "Col Sample By Tree")
   private val maxAbsLeafnodePred = floatParam("maxAbsLeafnodePred")
   private val maxDeltaStep = floatParam("maxDeltaStep")
   private val scoreTreeInterval = intParam("scoreTreeInterval")
@@ -78,14 +78,14 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
   private val maxLeaves = intParam("maxLeaves")
   private val minSumHessianInLeaf = floatParam("minSumHessianInLeaf")
   private val minDataInLeaf = floatParam("minDataInLeaf")
-  private val treeMethod = stringParam( "treeMethod", "Tree Method")
-  private val growPolicy = stringParam( "growPolicy", "Grow Policy")
-  private val booster = stringParam( "booster", "Booster")
-  private val dmatrixType = stringParam(  "dmatrixType", "DMatrix type")
+  private val treeMethod = stringParam("treeMethod", "Tree Method")
+  private val growPolicy = stringParam("growPolicy", "Grow Policy")
+  private val booster = stringParam("booster", "Booster")
+  private val dmatrixType = stringParam("dmatrixType", "DMatrix type")
   private val regLambda = floatParam("regLambda")
   private val regAlpha = floatParam("regAlpha")
-  private val sampleType = stringParam( "sampleType", "Dart Sample Type")
-  private val normalizeType = stringParam(  "normalizeType", "Dart Normalize Type")
+  private val sampleType = stringParam("sampleType", "Dart Sample Type")
+  private val normalizeType = stringParam("normalizeType", "Dart Normalize Type")
   private val rateDrop = floatParam("rateDrop")
   private val oneDrop = booleanParam("oneDrop")
   private val skipDrop = floatParam("skipDrop")
@@ -109,7 +109,7 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
     colSampleRate -> 1.0,
     colSampleByLevel -> 1.0,
     colSampleRatePerTree -> 1.0,
-    colsampleBytree -> 1.0,
+    colSampleByTree -> 1.0,
     maxAbsLeafnodePred -> 0,
     maxDeltaStep -> 0,
     scoreTreeInterval -> 0,
@@ -168,7 +168,10 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
 
   def getColSampleRatePerTree(): Double = $(colSampleRatePerTree)
 
-  def getColsampleBytree(): Double = $(colsampleBytree)
+  def getColSampleByTree(): Double = $(colSampleByTree)
+
+  @DeprecatedMethod("getColSampleByTree")
+  def getColsampleBytree(): Double = getColSampleByTree()
 
   def getMaxAbsLeafnodePred(): Float = $(maxAbsLeafnodePred)
 
@@ -251,7 +254,10 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
 
   def setColSampleRatePerTree(value: Double): this.type = set(colSampleRatePerTree, value)
 
-  def setColsampleBytree(value: Double): this.type = set(colsampleBytree, value)
+  def setColSampleByTree(value: Double): this.type = set(colSampleByTree, value)
+
+  @DeprecatedMethod("setColSampleByTree")
+  def setColsampleBytree(value: Double): this.type = setColSampleByTree(value)
 
   def setMaxAbsLeafnodePred(value: Float): this.type = set(maxAbsLeafnodePred, value)
 
@@ -361,7 +367,7 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
     parameters._col_sample_rate = $(colSampleRate)
     parameters._colsample_bylevel = $(colSampleByLevel)
     parameters._col_sample_rate_per_tree = $(colSampleRatePerTree)
-    parameters._colsample_bytree = $(colsampleBytree)
+    parameters._colsample_bytree = $(colSampleByTree)
     parameters._max_abs_leafnode_pred = $(maxAbsLeafnodePred)
     parameters._max_delta_step = $(maxDeltaStep)
     parameters._score_tree_interval = $(scoreTreeInterval)
@@ -389,4 +395,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
     parameters._backend = Backend.valueOf($(backend))
   }
 
+  /**
+    * When a parameter is renamed, the mapping 'old name' -> 'new name' should be added into this map.
+    */
+  override protected def renamingMap: Map[String, String] = Map("colsampleBytree" -> "colSampleBytree")
 }

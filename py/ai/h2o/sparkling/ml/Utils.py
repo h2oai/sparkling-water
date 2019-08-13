@@ -22,13 +22,13 @@ from pyspark.sql import SparkSession
 class Utils(object):
 
     @staticmethod
-    def propagate_value_from_deprecated_property(kwargs, from_deprecated, to_replacing):
-        if from_deprecated in kwargs:
+    def propagateValueFromDeprecatedProperty(kwargs, deprecatedOption, replacingOption):
+        if deprecatedOption in kwargs:
             warnings.warn(
                 "The parameter '{}' is deprecated and its usage will override a value specified via '{}'!".format(
-                    from_deprecated, to_replacing))
-            kwargs[to_replacing] = kwargs[from_deprecated]
-            del kwargs[from_deprecated]
+                    deprecatedOption, replacingOption))
+            kwargs[replacingOption] = kwargs[deprecatedOption]
+            del kwargs[deprecatedOption]
 
     @staticmethod
     def getInputKwargs(instance):

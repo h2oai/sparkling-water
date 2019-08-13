@@ -3,6 +3,8 @@ Using the MOJO Scoring Pipeline with Spark/Sparkling Water
 
 MOJO scoring pipeline artifacts can be used in Spark to deploy predictions in parallel using the Sparkling Water API. This section shows how to load and run predictions on the MOJO scoring pipeline in Spark using Scala and the Python API.
 
+Sparkling Water is backwards compatible with MOJO versions produced by older Driverless AI versions.
+
 Requirements
 ''''''''''''
 

@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+import warnings
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
@@ -110,9 +111,9 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
         "col samle rate",
         H2OTypeConverters.toFloat())
 
-    colsampleBytree = Param(
+    colSampleByTree = Param(
         Params._dummy(),
-        "colsampleBytree",
+        "colSampleByTree",
         "col sample by tree",
         H2OTypeConverters.toFloat())
 
@@ -311,8 +312,12 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
     def getColSampleRatePerTree(self):
         return self.getOrDefault(self.colSampleRatePerTree)
 
+    def getColSampleByTree(self):
+        return self.getOrDefault(self.colSampleByTree)
+
     def getColsampleBytree(self):
-        return self.getOrDefault(self.colsampleBytree)
+        warnings.warn("The method 'getColsampleBytree' is deprecated. Use 'getColSampleByTree' instead!")
+        return self.getColSampleByTree()
 
     def getMaxAbsLeafnodePred(self):
         return self.getOrDefault(self.maxAbsLeafnodePred)
@@ -434,8 +439,12 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
     def setColSampleRatePerTree(self, value):
         return self._set(colSampleRatePerTree=value)
 
+    def setColSampleByTree(self, value):
+        return self._set(colSampleByTree=value)
+
     def setColsampleBytree(self, value):
-        return self._set(colsampleBytree=value)
+        warnings.warn("The method 'setColsampleBytree' is deprecated. Use 'setColSampleByTree' instead!")
+        return self.setColSampleByTree(value)
 
     def setMaxAbsLeafnodePred(self, value):
         return self._set(maxAbsLeafnodePred=value)
