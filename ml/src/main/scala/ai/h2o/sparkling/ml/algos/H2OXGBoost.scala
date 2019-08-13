@@ -18,7 +18,7 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
-import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
+import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
@@ -40,7 +40,7 @@ object H2OXGBoost extends H2OParamsReadable[H2OXGBoost]
 /**
   * Parameters for Spark's API exposing underlying H2O model.
   */
-trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
+trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with DeprecatableParams {
 
   type H2O_SCHEMA = XGBoostParametersV3
 
@@ -78,14 +78,14 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
   private val maxLeaves = intParam("maxLeaves")
   private val minSumHessianInLeaf = floatParam("minSumHessianInLeaf")
   private val minDataInLeaf = floatParam("minDataInLeaf")
-  private val treeMethod = stringParam( "treeMethod", "Tree Method")
-  private val growPolicy = stringParam( "growPolicy", "Grow Policy")
-  private val booster = stringParam( "booster", "Booster")
-  private val dmatrixType = stringParam(  "dmatrixType", "DMatrix type")
+  private val treeMethod = stringParam("treeMethod", "Tree Method")
+  private val growPolicy = stringParam("growPolicy", "Grow Policy")
+  private val booster = stringParam("booster", "Booster")
+  private val dmatrixType = stringParam("dmatrixType", "DMatrix type")
   private val regLambda = floatParam("regLambda")
   private val regAlpha = floatParam("regAlpha")
-  private val sampleType = stringParam( "sampleType", "Dart Sample Type")
-  private val normalizeType = stringParam(  "normalizeType", "Dart Normalize Type")
+  private val sampleType = stringParam("sampleType", "Dart Sample Type")
+  private val normalizeType = stringParam("normalizeType", "Dart Normalize Type")
   private val rateDrop = floatParam("rateDrop")
   private val oneDrop = booleanParam("oneDrop")
   private val skipDrop = floatParam("skipDrop")
@@ -170,7 +170,7 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
 
   def getColSampleByTree(): Double = $(colSampleByTree)
 
-  @DeprecatedMethod("getColSampleBytree")
+  @DeprecatedMethod("getColSampleByTree")
   def getColsampleBytree(): Double = getColSampleByTree()
 
   def getMaxAbsLeafnodePred(): Float = $(maxAbsLeafnodePred)
@@ -395,4 +395,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] {
     parameters._backend = Backend.valueOf($(backend))
   }
 
+  /**
+    * When a parameter is renamed, the mapping 'old name' -> 'new name' should be added into this map.
+    */
+  override protected def renamingMap: Map[String, String] = Map("colsampleBytree" -> "colSampleBytree")
 }

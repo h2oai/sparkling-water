@@ -315,7 +315,7 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
     def getColsampleByTree(self):
         return self.getOrDefault(self.colSampleByTree)
 
-    def getColsampleByTree(self):
+    def getColsampleBytree(self):
         warnings.warn("The method 'getColsampleBytree' is deprecated. Use 'getColSampleByTree' instead!")
         return self.getColSampleByTree()
 
@@ -440,7 +440,7 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
         return self._set(colSampleRatePerTree=value)
 
     def setColSampleByTree(self, value):
-        return self._set(colSampleBytree=value)
+        return self._set(colSampleByTree=value)
 
     def setColsampleBytree(self, value):
         warnings.warn("The method 'setColsampleBytree' is deprecated. Use 'setColSampleByTree' instead!")
