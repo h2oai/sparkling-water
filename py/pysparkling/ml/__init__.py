@@ -23,7 +23,4 @@ __all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost
 
 from pysparkling.initializer import Initializer
 
-# Load sparkling water jar only if Spark is already running
-sc = Initializer.active_spark_context()
-if sc is not None:
-    Initializer.load_sparkling_jar(sc)
+Initializer.load_sparkling_jar()
