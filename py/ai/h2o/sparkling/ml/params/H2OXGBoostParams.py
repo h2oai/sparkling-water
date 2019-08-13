@@ -312,7 +312,7 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams):
     def getColSampleRatePerTree(self):
         return self.getOrDefault(self.colSampleRatePerTree)
 
-    def getColsampleByTree(self):
+    def getColSampleByTree(self):
         return self.getOrDefault(self.colSampleByTree)
 
     def getColsampleBytree(self):
