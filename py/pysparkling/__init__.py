@@ -20,7 +20,7 @@ import warnings
 
 from pysparkling.initializer import Initializer
 
-__version__ = Initializer.readVersion()
+__version__ = Initializer.getVersion()
 pyspark_version = pyspark.__version__.split(".")
 pysparkling_spark_version = __version__.split("-")[1].split(".")
 

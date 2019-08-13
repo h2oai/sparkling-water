@@ -49,7 +49,7 @@ class Initializer(object):
                 Initializer.__add_sparkling_jar_to_spark(sc)
             else:
                 otherVersion = jvm.scala.io.Source.fromInputStream(stream, "UTF-8").mkString()
-                currentVersion = Initializer.readVersion()
+                currentVersion = Initializer.getVersion()
                 if otherVersion != currentVersion:
                     raise Exception("JAR file for Sparkling Water {} is already attached to the cluster, but you " \
                                     "are starting PySparkling for {}. Either remove the attached JAR of the different " \
@@ -114,9 +114,9 @@ class Initializer(object):
             previous_version = subprocess.check_output(full_command, shell=True, stderr=DEVNULL).decode(
                 'utf-8').replace("\n", "")
             if not previous_version == sw_h2o_version and previous_version is not "":
-                warnings.warn("PySparkling is using internally bundled H2O of version " +
-                              str(sw_h2o_version) + ", but H2O installed in the python"
-                                                    " environment is of version " + str(previous_version) + ".")
+                warnings.warn("PySparkling is using internally bundled H2O of version {}, but H2O"
+                              " installed in the python environment is of version {}."
+                              .format(sw_h2o_version, previous_version))
         except subprocess.CalledProcessError:
             pass
 
@@ -149,7 +149,7 @@ class Initializer(object):
             cl = cl.getParent()
 
     @staticmethod
-    def readVersion():
+    def getVersion():
         here = path.abspath(path.dirname(__file__))
         if '.zip' in here:
             with zipfile.ZipFile(here[:-len("ai/h2o/sparkling/")], 'r') as archive:
