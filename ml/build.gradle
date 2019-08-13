@@ -25,7 +25,6 @@ dependencies {
     
     testCompile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
     testCompile "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
-
     
     // And use scalatest for Scala testing
     testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
