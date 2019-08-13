@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from h2o.backend import H2OConnection
 from h2o.frame import H2OFrame
 
 
@@ -71,9 +70,3 @@ class FrameConversions:
         j_h2o_frame = h2oContext._jhc.asH2OFrame(df._jdf, frame_name)
         j_h2o_frame_key = j_h2o_frame.key()
         return H2OFrame.from_java_h2o_frame(j_h2o_frame,j_h2o_frame_key, full_cols)
-
-    @staticmethod
-    def init_scala_int_session():
-        res = H2OConnection.post("scalaint")
-        session_id = res.json()["session_id"]
-        return session_id
