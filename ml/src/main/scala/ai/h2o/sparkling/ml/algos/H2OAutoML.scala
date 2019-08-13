@@ -70,8 +70,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spec.input_spec.ignored_columns = getIgnoredCols()
     val sortMetric = getSortMetric()
     spec.input_spec.sort_metric = if (sortMetric == "AUTO") null else sortMetric
-    spec.build_models.exclude_algos = determineIncludedAlgos()
-    spec.build_models.include_algos = null
+    spec.build_models.include_algos = determineIncludedAlgos()
+    spec.build_models.exclude_algos = null
     val projectName = getProjectName()
     spec.build_control.project_name = if (projectName == null) Random.alphanumeric.take(30).mkString else projectName
     spec.build_control.stopping_criteria.set_seed(getSeed())
