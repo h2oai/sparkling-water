@@ -22,6 +22,7 @@ import java.io.File
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.internal.Logging
+import org.apache.spark.util.Utils
 
 /**
   * Shared functions which can be used by both backends
@@ -166,18 +167,8 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
   val TEMP_DIR_ATTEMPTS = 1000
 
   def createTempDir(): File = {
-    def baseDir = new File(System.getProperty("java.io.tmpdir"))
-
-    def baseName = System.currentTimeMillis() + "-"
-
-    var cnt = 0
-    while (cnt < TEMP_DIR_ATTEMPTS) {
-      // infinite loop
-      val tempDir = new File(baseDir, baseName + cnt)
-      if (tempDir.mkdir()) return tempDir
-      cnt += 1
-    }
-    throw new IllegalStateException(s"Failed to create temporary directory ${baseDir} / ${baseName}")
+    val sparkLocalDir = Utils.getLocalDir(SparkEnv.get.conf)
+    Utils.createTempDir(sparkLocalDir, "sparkling-water")
   }
 
   /**
@@ -204,7 +195,6 @@ object SharedBackendUtils extends SharedBackendUtils {
 
   def saveFlatFileAsFile(content: String): File = {
     val tmpDir = createTempDir()
-    tmpDir.deleteOnExit()
     val flatFile = new File(tmpDir, "flatfile.txt")
     val p = new java.io.PrintWriter(flatFile)
     try {
