@@ -54,6 +54,9 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
       1
     } else if (colType != Type.Bool && colType.isnumeric && colData.toString.toLowerCase() == "false") {
       0
+    } else if (colType.isAssignableFrom(classOf[String]) && !colData.isInstanceOf[String]) {
+      // MOJO expects String, but we have DataFrame with different column type, cast to String
+      colData.toString
     } else {
       colData
     }
@@ -105,7 +108,13 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
         builder.addRow(rowBuilder)
         val output = mojoPipeline.transform(builder.toMojoFrame)
         val predictions = output.getColumnNames.zipWithIndex.map { case (_, i) =>
-          val predictedVal = output.getColumnData(i).asInstanceOf[Array[Double]]
+          val columnOutput = output.getColumnData(i)
+          val predictedVal = columnOutput match {
+            case floats: Array[Float] =>
+              floats.map(_.asInstanceOf[Double])
+            case _ =>
+              columnOutput.asInstanceOf[Array[Double]]
+          }
           if (predictedVal.length != 1) {
             throw new RuntimeException("Invalid state, we predict on each row by row, independently at this moment.")
           }
