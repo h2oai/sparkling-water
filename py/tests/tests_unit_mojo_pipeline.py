@@ -129,10 +129,7 @@ class H2OMojoPipelineTest(unittest.TestCase):
         rdd = self._spark.sparkContext.parallelize(data)
         df = self._spark.createDataFrame(rdd, ['pclass', 'sex', 'age', 'ticket', 'fare', 'cabin'])
         prediction = mojo.transform(df)
-
-        # Flatenize prediction column to allow export to simple csv/console
-        output = prediction.select("*", "prediction.*").drop("prediction")
-        output.show()
+        prediction.collect()
 
 if __name__ == '__main__':
     generic_test_utils.run_tests([H2OMojoPipelineTest], file_name="py_unit_tests_mojo_pipeline_report")
