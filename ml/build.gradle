@@ -21,12 +21,11 @@ dependencies {
 
 
     compile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
+    compile "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
+    
     testCompile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
-
-    if (project.property("testMojoPipeline") == "true") {
-        testRuntime "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
-    }
-
+    testCompile "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
+    
     // And use scalatest for Scala testing
     testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
     testCompile "junit:junit:4.11"

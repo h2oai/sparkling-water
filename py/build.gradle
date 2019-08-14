@@ -45,26 +45,15 @@ python {
 }
 
 configurations {
-    mojopipeline
     s3deps
     sparklingWaterAssemblyJar
 }
 
 dependencies {
     sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
-
-    if (project.property("testMojoPipeline") == "true") {
-        mojopipeline "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
-    }
-
+    
     s3deps "com.amazonaws:aws-java-sdk:1.7.4"
     s3deps "org.apache.hadoop:hadoop-aws:2.7.3"
-}
-
-task resolveTestRuntimeDependencies {
-    doLast {
-        project.configurations.mojopipeline.resolve()
-    }
 }
 
 //
@@ -286,11 +275,7 @@ def createUnitTestArgs() {
             "${distPython.archiveFile.get()}",
             "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}"
     ]
-
-    if (project.property("testMojoPipeline") == "true") {
-        args.add("spark.jars=${configurations.mojopipeline.resolve().join(",")}")
-    }
-
+    
     gradle.taskGraph.whenReady {
         if (gradle.taskGraph.hasTask(":${project.name}:hadoopSmokeTests")) {
             args.add("spark.jars=${configurations.s3deps.resolve().join(",")}")
@@ -393,4 +378,3 @@ distPython.dependsOn createVersionFile
 build.dependsOn distPython
 test.dependsOn testPython
 integTest.dependsOn integTestPython
-

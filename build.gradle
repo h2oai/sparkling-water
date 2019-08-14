@@ -178,17 +178,7 @@ configure(subprojects) { project ->
         maven {
             url "http://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
         }
-
-        // We add the local nexus repository because of mojo2. It is defined as the last one so all the artifacts are
-        // resolved from public repositories first
-        maven {
-            url "$localNexusLocation/releases/"
-            credentials {
-                username project.findProperty("localNexusUsername") ?: "<NA>"
-                password project.findProperty("localNexusPassword") ?: "<NA>"
-            }
-        }
-
+        
         if (sparkVersion.endsWith("-SNAPSHOT")) {
             maven {
                 url "https://repository.apache.org/content/repositories/snapshots/"
