@@ -55,6 +55,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     } else if (colType != Type.Bool && colType.isnumeric && colData.toString.toLowerCase() == "false") {
       0
     } else if (colType.isAssignableFrom(classOf[String]) && !colData.isInstanceOf[String]) {
+      // MOJO expects String, but we have DataFrame with different column type, cast to String
       colData.toString
     } else {
       colData
