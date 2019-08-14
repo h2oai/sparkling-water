@@ -111,8 +111,10 @@ class Initializer(object):
             command_sys_path = "import sys; sys.path = " + str(path_without_sw).replace("'", "\"") + ";"
             command_import_h2o = "import h2o; print(h2o.__version__)"
             full_command = "python -c '" + command_sys_path + command_import_h2o + "'"
-            previous_version = subprocess.check_output(full_command, shell=True, stderr=DEVNULL).decode(
-                'utf-8').replace("\n", "")
+            previous_version = subprocess\
+                .check_output(full_command, shell=True, stderr=DEVNULL)\
+                .decode('utf-8')\
+                .replace("\n", "")
             if not previous_version == sw_h2o_version and previous_version is not "":
                 warnings.warn("PySparkling is using internally bundled H2O of version {}, but H2O"
                               " installed in the python environment is of version {}."
