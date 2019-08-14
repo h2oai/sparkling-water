@@ -111,8 +111,7 @@ class H2OContext(object):
         try:
             self.__do_init(spark_session)
             _monkey_patch_H2OFrame(self)
-            # Load sparkling water jar only if it hasn't been already loaded
-            Initializer.load_sparkling_jar(self._sc)
+            Initializer.load_sparkling_jar()
         except:
             raise
 
