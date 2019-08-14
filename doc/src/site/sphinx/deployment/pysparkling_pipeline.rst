@@ -26,7 +26,7 @@ Let's first create and export the model as:
     data = load()
 
     # Create the H2O GBM pipeline stage
-    gbm = H2OGBM(ratio=0.8, seed=1, predictionCol="label")
+    gbm = H2OGBM(splitRatio=0.8, seed=1, labelCol="label")
 
     # Create a pipeline with a single GBM step
     pipeline = Pipeline(stages=[gbm])
