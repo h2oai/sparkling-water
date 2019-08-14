@@ -22,8 +22,32 @@ from pyspark.ml.wrapper import JavaModel
 from ai.h2o.sparkling.ml.params import H2OMOJOAlgoSharedParams
 
 
-class H2OMOJOModelBase(H2OMOJOAlgoSharedParams, JavaModel, JavaMLWritable, JavaMLReadable):
+class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaMLReadable):
 
     # Overriding the method to avoid changes on the companion Java object
     def _transfer_params_to_java(self):
         pass
+
+    ##
+    # Getters
+    ##
+    def getPredictionCol(self):
+        return self._java_obj.getPredictionCol()
+
+    def getDetailedPredictionCol(self):
+        return self._java_obj.getDetailedPredictionCol()
+
+    def getWithDetailedPredictionCol(self):
+        return self._java_obj.getWithDetailedPredictionCol()
+
+    def getFeaturesCols(self):
+        return self._java_obj.getFeaturesCols()
+
+    def getConvertUnknownCategoricalLevelsToNa(self):
+        return self._java_obj.getConvertUnknownCategoricalLevelsToNa()
+
+    def getConvertInvalidNumbersToNa(self):
+        return self._java_obj.getConvertInvalidNumbersToNa()
+
+    def getNamedMojoOutputColumns(self):
+        return self._java_obj.getNamedMojoOutputColumns()
