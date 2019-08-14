@@ -126,13 +126,12 @@ class H2OMojoPipelineTest(unittest.TestCase):
              (1.0,'female',1.0,110489,3.170799970626831,'A21'),
              (1.0,'female',0.33329999446868896,111240,0.0,'A14')
              ]
-        rdd = self._spark.sc.parallelize(data)
+        rdd = self._spark.sparkContext.parallelize(data)
         df = self._spark.createDataFrame(rdd, ['pclass', 'sex', 'age', 'ticket', 'fare', 'cabin'])
         prediction = mojo.transform(df)
 
         # Flatenize prediction column to allow export to simple csv/console
         output = prediction.select("*", "prediction.*").drop("prediction")
-        output.count()
         output.show()
 
 if __name__ == '__main__':
