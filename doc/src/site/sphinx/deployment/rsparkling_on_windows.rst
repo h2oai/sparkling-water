@@ -26,7 +26,6 @@ The script will check that you can:
 .. code:: r
 
     library(sparklyr)
-    options(rsparkling.sparklingwater.version = "SUBST_SW_VERSION") # Using Sparkling Water SUBST_SW_VERSION
     library(rsparkling)
 
     # Set spark connection
@@ -43,28 +42,6 @@ The script will check that you can:
 
 Troubleshooting
 ~~~~~~~~~~~~~~~
-
--  Error from running ``spark_connect``
-
-    .. code:: java
-
-            Error in force(code) :
-              Failed while connecting to sparklyr to port (8880) for sessionid (4388): Gateway in port (8880) did not respond.
-              ....
-              :: problems summary ::
-            :::: WARNINGS
-                           [NOT FOUND  ] commons-io#commons-io;2.4!commons-io.jar (16ms)
-
-                    ==== local-m2-cache: tried
-
-
-    This may be caused by the Windows Firewall.  The package sparklyR is downloading jars from Maven Center repository to run
-    the ``spark_connect`` function. This issue is due to Windows Firewall which actively prevents ``Java.exe`` from reaching out
-    to the internet and downloading.
-
-    To fix this error, download the files manually from the Maven repository.
-
-
 
 -  Error from running ``h2o_context``
 
