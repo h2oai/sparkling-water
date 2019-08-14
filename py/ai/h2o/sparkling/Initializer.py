@@ -18,40 +18,45 @@
 import os
 import sys
 import warnings
-
+import zipfile
+from codecs import open
+from os import path
 from pyspark import SparkContext
 
 """
-This class is used to load sparkling water JAR into spark environment.
-It is called when H2OConf or H2OContext is used
-to ensure the required java classes are available in Spark.
+This class is used to load sparkling water JAR into spark environment - driver and executors.
+The JAR is loaded when we call or import any of the publicly available PySparkling class.
+
+This ensure the required java classes are available in Spark without the need of configuring JAR file using
+--jars option.
 """
 
 
 class Initializer(object):
     # Flag to inform us whether sparkling jar has been already loaded or not.
     # We don't want to load it more than once.
-    __sparkling_jar_loaded = False
+    __sparklingWaterJarLoaded = False
     __extracted_jar_dir = None
 
     @staticmethod
-    def active_spark_context():
-        from pyspark import SparkContext
-        return SparkContext._active_spark_context
-
-    @staticmethod
-    def load_sparkling_jar(spark=None):
-        if spark is None:
-            sc = Initializer.active_spark_context()
-        elif isinstance(spark, SparkContext):
-            sc = spark
-        else:  # We have Spark Session
-            sc = spark.sparkContext
-
-        if not Initializer.__sparkling_jar_loaded:
-            sys.path.append(".")
-            Initializer.__add_sparkling_jar_to_spark(sc)
-            Initializer.__sparkling_jar_loaded = True
+    def load_sparkling_jar():
+        if Initializer.__sparklingWaterJarLoaded is not True:
+            sc = SparkContext._active_spark_context
+            jvm = sc._jvm
+            stream = jvm.Thread.currentThread().getContextClassLoader().getResourceAsStream("sw.version")
+            if stream is None:
+                sys.path.append(".")
+                Initializer.__add_sparkling_jar_to_spark(sc)
+            else:
+                otherVersion = jvm.scala.io.Source.fromInputStream(stream, "UTF-8").mkString()
+                currentVersion = Initializer.getVersion()
+                if otherVersion != currentVersion:
+                    raise Exception("JAR file for Sparkling Water {} is already attached to the cluster, but you " \
+                                    "are starting PySparkling for {}. Either remove the attached JAR of the different " \
+                                    "version or use PySparkling of the same version as the attached JAR.".format(
+                        otherVersion,
+                        currentVersion))
+            Initializer.__sparklingWaterJarLoaded = True
 
     @staticmethod
     def __add_sparkling_jar_to_spark(sc):
@@ -106,11 +111,14 @@ class Initializer(object):
             command_sys_path = "import sys; sys.path = " + str(path_without_sw).replace("'", "\"") + ";"
             command_import_h2o = "import h2o; print(h2o.__version__)"
             full_command = "python -c '" + command_sys_path + command_import_h2o + "'"
-            previous_version = subprocess.check_output(full_command, shell=True, stderr=DEVNULL).decode('utf-8').replace("\n", "")
+            previous_version = subprocess\
+                .check_output(full_command, shell=True, stderr=DEVNULL)\
+                .decode('utf-8')\
+                .replace("\n", "")
             if not previous_version == sw_h2o_version and previous_version is not "":
-                warnings.warn("PySparkling is using internally bundled H2O of version " +
-                              str(sw_h2o_version) + ", but H2O installed in the python"
-                              " environment is of version " + str(previous_version) + ".")
+                warnings.warn("PySparkling is using internally bundled H2O of version {}, but H2O"
+                              " installed in the python environment is of version {}."
+                              .format(sw_h2o_version, previous_version))
         except subprocess.CalledProcessError:
             pass
 
@@ -141,3 +149,13 @@ class Initializer(object):
             else:
                 logger.debug("Skipping classloader '{}'".format(cl.toString()))
             cl = cl.getParent()
+
+    @staticmethod
+    def getVersion():
+        here = path.abspath(path.dirname(__file__))
+        if '.zip' in here:
+            with zipfile.ZipFile(here[:-len("ai/h2o/sparkling/")], 'r') as archive:
+                return archive.read('ai/h2o/sparkling/version.txt').decode('utf-8').strip()
+        else:
+            with open(path.join(here, 'version.txt'), encoding='utf-8') as f:
+                return f.read().strip()

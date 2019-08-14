@@ -72,7 +72,7 @@ task resolveTestRuntimeDependencies {
 //
 task createVersionFile {
     doLast {
-        def versionFileDir = new File(pkgDir, "pysparkling")
+        def versionFileDir = new File(pkgDir, "ai/h2o/sparkling")
         if (!versionFileDir.exists()) {
             versionFileDir.mkdirs()
         }

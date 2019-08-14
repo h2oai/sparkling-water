@@ -31,7 +31,7 @@ class H2OConf(object):
                               "parameter of type SparkSession is preferred.")
                 spark_session = SparkSession.builder.getOrCreate()
 
-            Initializer.load_sparkling_jar(spark_session._sc)
+            Initializer.load_sparkling_jar()
             self._do_init(spark_session)
         except:
             raise
