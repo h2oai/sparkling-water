@@ -81,11 +81,7 @@ object InternalBackendUtils extends InternalBackendUtils {
   def getH2OWorkerArgs(conf: H2OConf): Seq[String] = {
     val ip = {
       val hostname = SharedBackendUtils.getHostname(SparkEnv.get)
-      if (conf.ipBasedFlatfile) {
-        InternalBackendUtils.translateHostnameToIp(hostname)
-      } else {
-        hostname
-      }
+      InternalBackendUtils.translateHostnameToIp(hostname)
     }
 
     new ArgumentBuilder()
@@ -118,7 +114,7 @@ object InternalBackendUtils extends InternalBackendUtils {
 
   private def toFlatFileString(executors: Array[NodeDesc]): String = {
     executors.map {
-      en => s"${en.hostname}:${en.port}"
+      en => s"${translateHostnameToIp(en.hostname)}:${en.port}"
     }.mkString("\n")
   }
 
