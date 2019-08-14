@@ -175,7 +175,7 @@ class H2OConfTest(unittest.TestCase):
                              nfolds=0, keepCrossValidationPredictions=False, keepCrossValidationFoldAssignment=False, parallelizeCrossValidation=True,
                              seed=-1, distribution="AUTO", convertUnknownCategoricalLevelsToNa=False, quietMode=True,
                              ntrees=50, nEstimators=0, maxDepth=6, minRows=1.0, minChildWeight=1.0, learnRate=0.3, eta=0.3, learnRateAnnealing=1.0,
-                             sampleRate=1.0, subsample=1.0, colSampleRate=1.0, colSampleByLevel=1.0, colSampleRatePerTree=1.0, colsampleBytree=1.0,
+                             sampleRate=1.0, subsample=1.0, colSampleRate=1.0, colSampleByLevel=1.0, colSampleRatePerTree=1.0, colSampleByTree=1.0,
                              maxAbsLeafnodePred=0.0, maxDeltaStep=0.0, scoreTreeInterval=0, initialScoreInterval=4000, scoreInterval=4000,
                              minSplitImprovement=0.0, gamma=0.0, nthread=-1, maxBins=256, maxLeaves=0,
                              minSumHessianInLeaf=100.0, minDataInLeaf=0.0, treeMethod="auto", growPolicy="depthwise",
@@ -213,7 +213,7 @@ class H2OConfTest(unittest.TestCase):
         self.assertEquals(xgboost.getColSampleRate(), 1.0)
         self.assertEquals(xgboost.getColSampleByLevel(), 1.0)
         self.assertEquals(xgboost.getColSampleRatePerTree(), 1.0)
-        self.assertEquals(xgboost.getColsampleBytree(), 1.0)
+        self.assertEquals(xgboost.getColSampleByTree(), 1.0)
         self.assertEquals(xgboost.getMaxAbsLeafnodePred(), 0.0)
         self.assertEquals(xgboost.getMaxDeltaStep(), 0.0)
         self.assertEquals(xgboost.getScoreTreeInterval(), 0)
