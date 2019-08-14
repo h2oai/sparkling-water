@@ -162,10 +162,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-client")
       .buildArgs()
   }
-
-
-  val TEMP_DIR_ATTEMPTS = 1000
-
+  
   def createTempDir(): File = {
     val sparkLocalDir = Utils.getLocalDir(SparkEnv.get.conf)
     Utils.createTempDir(sparkLocalDir, "sparkling-water")
