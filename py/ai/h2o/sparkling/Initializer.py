@@ -40,8 +40,8 @@ class Initializer(object):
 
     @staticmethod
     def load_sparkling_jar():
-        if Initializer.__sparklingWaterJarLoaded is not True:
-            sc = SparkContext._active_spark_context
+        sc = SparkContext._active_spark_context
+        if Initializer.__sparklingWaterJarLoaded is not True and sc is not None:
             jvm = sc._jvm
             stream = jvm.Thread.currentThread().getContextClassLoader().getResourceAsStream("sw.version")
             if stream is None:
