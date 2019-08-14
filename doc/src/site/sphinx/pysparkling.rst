@@ -115,8 +115,7 @@ Run PySparkling interactive shell
 The *pysparkling* shell accepts common *pyspark* arguments.
 
 
-For running on YARN and other supported platforms please see `Running Sparkling Water on supported platforms
-<https://github.com/h2oai/sparkling-water/blob/master/DEVEL.md#TargetPlatforms>`_.
+For running on YARN and other supported platforms please see :ref:`supported_platforms`.
 
 
 2. Initialize H2OContext
