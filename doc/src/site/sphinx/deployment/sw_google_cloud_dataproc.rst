@@ -23,7 +23,7 @@ Perform the following steps to start Sparkling Water ``H2OContext`` on Cloud Dat
 	apt-get install -y python-dev python-pip jq
 
 	cd /usr/lib/
-	wget http://h2o-release.s3.amazonaws.com/sparkling-water/rel-SUBST_SW_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/sparkling-water-SUBST_SW_VERSION.zip
+	wget http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/sparkling-water-SUBST_SW_VERSION.zip
 	unzip sparkling-water-SUBST_SW_VERSION.zip
 
 	pip install pip==9.0.3
@@ -32,7 +32,7 @@ Perform the following steps to start Sparkling Water ``H2OContext`` on Cloud Dat
 	pip install future
 	pip install colorama
 	pip install scikit-learn==0.19.1
-	pip install https://h2o-release.s3.amazonaws.com/h2o/rel-wright/4/Python/h2o-3.20.0.4-py2.py3-none-any.whl
+	pip install https://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/Python/h2o-SUBST_H2O_VERSION-py2.py3-none-any.whl
 	pip install --upgrade google-cloud-bigquery
 	pip install --upgrade google-cloud-storage
 

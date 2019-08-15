@@ -71,7 +71,7 @@ This section describes how to launch Sparkling Water on Hadoop using YARN.
 
 .. code:: bash
 
-    wget https://s3.amazonaws.com/h2o-release/sparkling-water/rel-SUBST_SW_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/sparkling-water-SUBST_SW_VERSION.zip
+    wget http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/sparkling-water-SUBST_SW_VERSION.zip
     unzip sparkling-water-SUBST_SW_VERSION.zip 
     cd sparkling-water-SUBST_SW_VERSION/
     bin/sparkling-shell --num-executors 3 --executor-memory 2g --master yarn --deploy-mode client
