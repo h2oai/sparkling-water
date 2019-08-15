@@ -95,6 +95,7 @@ class SparklingWaterHistoryListener(conf: SparkConf, sparkUI: SparkUI)
     case _: H2OContextStartedEvent =>
       if (!sparklingWaterTabAttached) {
         new SparklingWaterUITab(this, sparkUI)
+        new SparklingWaterFlowUITab(this, sparkUI)
         sparklingWaterTabAttached = true
       }
       super.onOtherEvent(event)

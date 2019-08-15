@@ -17,24 +17,19 @@
 
 package org.apache.spark.h2o.ui
 
-import org.apache.spark.SparkConf
-import org.apache.spark.scheduler._
-import org.apache.spark.status.{AppHistoryServerPlugin, ElementTrackingStore}
-import org.apache.spark.ui.SparkUI
+import org.apache.spark.ui.{SparkUI, SparkUITab}
+
 
 /**
-  * History server plugin to enable Sparkling Water UI on history server
+  * Enrich Spark UI by a Sparkling Water specific tab.
   */
-class AppStatusPlugin extends AppHistoryServerPlugin {
-  override def createListeners(conf: SparkConf, store: ElementTrackingStore): Seq[SparkListener] = {
-    Seq(new AppStatusListener(conf, store, live = false))
-  }
+private[h2o] class SparklingWaterFlowUITab(val provider: SparklingWaterInfoProvider, val parent: SparkUI)
+  extends SparkUITab(parent, "sparkling-water-flow") {
 
-  override def setupUI(ui: SparkUI): Unit = {
-    val sparklingWaterAppStatusStore = new AppStatusStore(ui.store.store)
-    if (sparklingWaterAppStatusStore.isSparklingWaterStarted()) {
-      new SparklingWaterUITab(sparklingWaterAppStatusStore, ui)
-      new SparklingWaterFlowUITab(sparklingWaterAppStatusStore, ui)
-    }
-  }
+  override val name = "H2O Flow UI \u2728"
+
+  attachPage(SparklingWaterFlowUIPage(this))
+  parent.attachTab(this)
+
+  def getSparkUser: String = parent.getSparkUser
 }

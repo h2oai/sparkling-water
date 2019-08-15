@@ -19,7 +19,7 @@ package org.apache.spark.h2o
 
 import javax.servlet.http.HttpServletRequest
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.ui.{AppStatusListener, AppStatusStore, SparklingWaterUITab}
+import org.apache.spark.h2o.ui.{AppStatusListener, AppStatusStore, SparklingWaterFlowUITab, SparklingWaterUITab}
 import org.apache.spark.ui.{SparkUITab, UIUtils}
 import org.apache.spark.status.ElementTrackingStore
 
@@ -32,7 +32,7 @@ object SparkSpecificUtils extends CrossSparkUtils {
                                content: => Seq[Node],
                                activeTab: SparkUITab,
                                helpText: String): Seq[Node] = {
-    UIUtils.headerSparkPage(request, "Sparkling Water", content, activeTab, helpText = Some(helpText))
+    UIUtils.headerSparkPage(request, title, content, activeTab, helpText = Some(helpText))
   }
 
   override def addSparklingWaterTab(sc: SparkContext): Unit = {
@@ -41,5 +41,6 @@ object SparkSpecificUtils extends CrossSparkUtils {
     sc.addSparkListener(listener)
     val statusStore = new AppStatusStore(kvStore, Some(listener))
     new SparklingWaterUITab(statusStore, sc.ui.get)
+    new SparklingWaterFlowUITab(statusStore, sc.ui.get)
   }
 }

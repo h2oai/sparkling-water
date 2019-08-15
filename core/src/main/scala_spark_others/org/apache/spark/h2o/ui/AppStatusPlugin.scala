@@ -34,6 +34,7 @@ class AppStatusPlugin extends AppHistoryServerPlugin {
     val sparklingWaterAppStatusStore = new AppStatusStore(ui.store.store)
     if (sparklingWaterAppStatusStore.isSparklingWaterStarted()) {
       new SparklingWaterUITab(sparklingWaterAppStatusStore, ui)
+      new SparklingWaterFlowUITab(sparklingWaterAppStatusStore, ui)
     }
   }
 }
