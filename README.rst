@@ -26,10 +26,10 @@ The documentation contains also documentation for our clients, PySparkling and R
 Download Binaries
 ~~~~~~~~~~~~~~~~~
 
-- `Latest version for Spark 2.4 <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.4/latest.html>`__
-- `Latest version for Spark 2.3 <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.3/latest.html>`__
-- `Latest version for Spark 2.2 <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.2/latest.html>`__
-- `Latest version for Spark 2.1 <http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/latest.html>`__
+- `Latest version for Spark 2.4 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/latest.html>`__
+- `Latest version for Spark 2.3 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/latest.html>`__
+- `Latest version for Spark 2.2 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/latest.html>`__
+- `Latest version for Spark 2.1 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/latest.html>`__
 
 
 Maven
@@ -41,17 +41,17 @@ Each Sparkling Water release is published into Maven central with following coor
 - ``ai.h2o:sparkling-water-examples_{{scala_version}}:{{version}}`` - Includes example applications
 - ``ai.h2o:sparkling-water-repl_{{scala_version}}:{{version}}`` - Spark REPL integration into H2O Flow UI
 - ``ai.h2o:sparkling-water-ml_{{scala_version}}:{{version}}`` - Extends Spark ML package by H2O-based transformations
+- ``ai.h2o:sparkling-water-scoring_{{scala_version}}:{{version}}`` - Lightweight package used for Scoring with H2O MOJOs. This package does not have run-time dependency on H2O cluster.
 - ``ai.h2o:sparkling-water-package_{{scala_version}}:{{version}}`` - Uber Sparkling Water package containing all dependencies. This is designed to use as Spark package via ``--packages`` option
 
    **Note:** The ``{{version}}`` references to a release version of Sparkling Water, the ``{{scala_version}}``
-   references to Scala base version. For example:
-   ``ai.h2o:sparkling-water-examples_2.11:2.4.13``
+   references to Scala base version.
 
 The full list of published packages is available
 `here <http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*>`__.
 
-Requirements for Sparkling Water 2.4
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sparkling Water Requirements for Spark 2.4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  Linux/OS X/Windows
 -  Java 8+
