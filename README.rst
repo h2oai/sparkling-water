@@ -45,14 +45,13 @@ Each Sparkling Water release is published into Maven central with following coor
 - ``ai.h2o:sparkling-water-package_{{scala_version}}:{{version}}`` - Uber Sparkling Water package containing all dependencies. This is designed to use as Spark package via ``--packages`` option
 
    **Note:** The ``{{version}}`` references to a release version of Sparkling Water, the ``{{scala_version}}``
-   references to Scala base version. For example:
-   ``ai.h2o:sparkling-water-examples_2.11:3.26.2-2.4``
+   references to Scala base version.
 
 The full list of published packages is available
 `here <http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*>`__.
 
-Requirements for Sparkling Water for Spark 2.4
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sparkling Water Requirements for Spark 2.4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  Linux/OS X/Windows
 -  Java 8+
