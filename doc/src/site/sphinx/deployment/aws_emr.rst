@@ -30,7 +30,7 @@ To use Sparkling Water with an EMR cluster, you can use a premade H2O template.
 
 4. On the Select Template page, enter https://s3-us-west-2.amazonaws.com/h2o-cloud/aws-template/TemplateEMR.json in the **Specify an Amazon S3 template URL** field.
 
- This template requires an install script, which is available here: https://s3.amazonaws.com/h2o-release/sparkling-water/rel-SUBST_SW_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/templates/aws/install_sparkling_water_SUBST_SW_VERSION.sh. This script can be added using one of the following methods:
+ This template requires an install script, which is available here: https://s3.amazonaws.com/h2o-release/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/templates/aws/install_sparkling_water_SUBST_SW_VERSION.sh. This script can be added using one of the following methods:
 
   - Download and place the script in the following s3 path: s3://h2o-cloud/aws-template/install_sparkling_water_SUBST_SW_VERSION.sh
   

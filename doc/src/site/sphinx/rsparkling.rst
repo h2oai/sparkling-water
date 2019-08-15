@@ -101,12 +101,12 @@ Install rsparkling
 ------------------
 
 RSparkling can be installed from hosted R repository in Sparkling Water's S3 buckets
-from the link `http://h2o-release.s3.amazonaws.com/sparkling-water/rel-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/R` as:
+from the link `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R` as:
 
 .. code:: r
 
    # Download, install, and initialize the RSparkling
-   install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/rel-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/R")
+   install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R")
 
 
 Starting Spark
