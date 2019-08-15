@@ -33,11 +33,11 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
         # Install Sparklyr
         install.packages("sparklyr")
 
-        # Install RSparkling SUBST_SPARK_MAJOR_VERSION.SUBST_SW_MINOR_VERSION
-        install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/rel-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_MINOR_VERSION/R")
-
         # Install H2O SUBST_H2O_VERSION (SUBST_H2O_RELEASE_NAME)
         install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R")
+
+        # Install RSparkling SUBST_SW_VERSION
+        install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R")
 
         # Connect to Spark on Databricks
         library(rsparkling)
