@@ -119,7 +119,7 @@ Step-by-Step Weather Data Example
 
     flightsToORD.count
 
-8.  Join the flight and weather data frames:
+8.  Join the flights data frame with the weather data frame:
 
 .. code:: scala
 
