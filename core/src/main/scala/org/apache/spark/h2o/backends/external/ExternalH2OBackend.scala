@@ -44,35 +44,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   private var cloudHealthCheckKillThread: Option[Thread] = None
   private var cloudHealthCheckThread: Option[Thread] = None
 
-  private def VerifyVersionFromDriverJAR(driverPath: String): Unit = {
-    val clientH2OVersion = BuildInfo.H2OVersion
-
-    val jarFile = new JarFile(driverPath)
-    val entry = jarFile.getJarEntry("h2o.version")
-    val is = jarFile.getInputStream(entry)
-    val externalVersion = scala.io.Source.fromInputStream(is).mkString
-    jarFile.close()
-
-    if (clientH2OVersion != externalVersion) {
-      throw new RuntimeException(s"The driver '$driverPath' is for H2O of version $externalVersion but Sparkling Water " +
-        s"is using version of H2O $clientH2OVersion. Please make sure to use the corresponding extended H2O JAR.")
-    }
-  }
-
-  private def verifyVersionFromRuntime(): Unit = {
-    val clientH2OVersion = BuildInfo.H2OVersion
-    new MRTask() {
-      override def setupLocal(): Unit = {
-        val externalVersion = AbstractBuildVersion.getBuildVersion.projectVersion()
-        if (clientH2OVersion != externalVersion) {
-          throw new RuntimeException(s"The external H2O cluster is of version $externalVersion but Sparkling Water " +
-            s"is using version of H2O $clientH2OVersion. Please restart your cluster and make sure to use " +
-            s" the corresponding extended H2O JAR.")
-        }
-      }
-    }.doAllNodes()
-  }
-
   def launchH2OOnYarn(conf: H2OConf): String = {
     import ExternalH2OBackend._
 
@@ -202,7 +173,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   override def init(): Array[NodeDesc] = {
     if (hc.getConf.isAutoClusterStartUsed) {
       // For automatic mode we can check the driver version early
-      VerifyVersionFromDriverJAR(hc.getConf.h2oDriverPath.get)
+      ExternalH2OBackend.verifyVersionFromDriverJAR(hc.getConf.h2oDriverPath.get)
       // start h2o instances on yarn
       logInfo("Starting the external H2O cluster on YARN.")
       val ipPort = launchH2OOnYarn(hc.getConf)
@@ -234,8 +205,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     H2O.waitForCloudSize(hc.getConf.clusterSize.get.toInt, hc.getConf.cloudTimeout)
 
-    if(hc._conf.isManualClusterStartUsed) {
-      verifyVersionFromRuntime()
+    if (hc._conf.isManualClusterStartUsed) {
+      ExternalH2OBackend.verifyVersionFromRuntime()
     }
 
     // Register web API for client
@@ -419,6 +390,36 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 }
 
 object ExternalH2OBackend {
+
+  private def verifyVersionFromDriverJAR(driverPath: String): Unit = {
+    val clientH2OVersion = BuildInfo.H2OVersion
+
+    val jarFile = new JarFile(driverPath)
+    val entry = jarFile.getJarEntry("h2o.version")
+    val is = jarFile.getInputStream(entry)
+    val externalVersion = scala.io.Source.fromInputStream(is).mkString
+    jarFile.close()
+
+    if (clientH2OVersion != externalVersion) {
+      throw new RuntimeException(s"The driver '$driverPath' is for H2O of version $externalVersion but Sparkling Water " +
+        s"is using version of H2O $clientH2OVersion. Please make sure to use the corresponding extended H2O JAR.")
+    }
+  }
+
+  private def verifyVersionFromRuntime(): Unit = {
+    val clientH2OVersion = BuildInfo.H2OVersion
+    new MRTask() {
+      override def setupLocal(): Unit = {
+        val externalVersion = AbstractBuildVersion.getBuildVersion.projectVersion()
+        if (clientH2OVersion != externalVersion) {
+          throw new RuntimeException(s"The external H2O cluster is of version $externalVersion but Sparkling Water " +
+            s"is using version of H2O $clientH2OVersion. Please restart your cluster and make sure to use " +
+            s" the corresponding extended H2O JAR.")
+        }
+      }
+    }.doAllNodes()
+  }
+
   // This string tags instances of H2O launched from Sparkling Water
   val TAG_EXTERNAL_H2O = "H2O/Sparkling-Water"
   // Another tag which identifies launcher - aka Spark application
