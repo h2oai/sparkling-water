@@ -214,10 +214,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     } else {
       // manual mode, check if the user specified the cluster representative
       if (hc._conf.h2oCluster.isDefined) {
-        // Verify the version before we actually connect
-        // We can do it because user specified ip:port of external H2O cluster
-        // This has the advantage that the user does not need to restart shell to connect to
-        // the right cluster again as we haven't initiated any H2O client so far
         val clientIp = NetworkUtils.indentifyClientIp(hc._conf.h2oClusterHost.get)
         if (clientIp.isDefined && hc._conf.clientIp.isEmpty && hc._conf.clientNetworkMask.isEmpty) {
           hc._conf.setClientIp(clientIp.get)
