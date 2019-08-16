@@ -16,5 +16,6 @@
 #
 
 from ai.h2o.sparkling import Initializer
+from ai.h2o.sparkling import VersionComponents
 
-__all__ = ["Initializer"]
+__all__ = ["Initializer", "VersionComponents"]

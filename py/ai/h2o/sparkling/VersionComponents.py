@@ -15,7 +15,18 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.H2OConf import H2OConf
-from ai.h2o.sparkling.H2OContext import H2OContext
-from ai.h2o.sparkling.Initializer import Initializer
-from ai.h2o.sparkling.VersionComponents import VersionComponents
+import re
+
+class VersionComponents(object):
+
+    @staticmethod
+    def parseFromVersion(version):
+        match = re.search(r"^((\d+\.\d+).(\d+))(-(\d+))?-(\d+.\d+)$", version)
+        result = VersionComponents()
+        result.fullVersion = match.group(0)
+        result.sparklingVersion = match.group(1)
+        result.sparklingMajorVersion = match.group(2)
+        result.sparklingMinorVersion = match.group(3)
+        result.nightlyVersion = match.group(5)
+        result.sparkVersion = match.group(6)
+        return result
