@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.backends.internal
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendConf
 
@@ -30,7 +31,8 @@ trait InternalBackendConf extends SharedBackendConf {
 
   /** Getters */
 
-  def ipBasedFlatfile = sparkConf.getBoolean(PROP_USE_IP_BASED_FLATFILE._1, PROP_USE_IP_BASED_FLATFILE._2)
+  @DeprecatedMethod
+  def ipBasedFlatfile = true
   def numH2OWorkers = sparkConf.getOption(PROP_CLUSTER_SIZE._1).map(_.toInt)
   def drddMulFactor = sparkConf.getInt(PROP_DUMMY_RDD_MUL_FACTOR._1, PROP_DUMMY_RDD_MUL_FACTOR._2)
   def numRddRetries = sparkConf.getInt(PROP_SPREADRDD_RETRIES._1, PROP_SPREADRDD_RETRIES._2)
@@ -44,9 +46,10 @@ trait InternalBackendConf extends SharedBackendConf {
                                                                 PROP_INTERNAL_SECURE_CONNECTIONS._2)
 
   /** Setters */
-
-  def setIpBasedFlatFileEnabled() = set(PROP_USE_IP_BASED_FLATFILE._1, true)
-  def setIpBasedFlatFileDisabled() = set(PROP_USE_IP_BASED_FLATFILE._1, false)
+  @DeprecatedMethod
+  def setIpBasedFlatFileEnabled() = this
+  @DeprecatedMethod
+  def setIpBasedFlatFileDisabled() = this
 
   def setNumH2OWorkers(numWorkers: Int) = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
   def setDrddMulFactor(factor: Int) = set(PROP_DUMMY_RDD_MUL_FACTOR._1, factor.toString)
@@ -77,12 +80,6 @@ trait InternalBackendConf extends SharedBackendConf {
 }
 
 object InternalBackendConf {
-
-  /** Translate hostnames of the worker nodes discovered by Spark to the IP address. The generated
-    * flatfile will contain these IP address. Can be useful in certain restricted DNS environments.
-    */
-  val PROP_USE_IP_BASED_FLATFILE = ("spark.ext.h2o.ip.based.flatfile", false)
-
   /** Configuration property - expected number of workers of H2O cloud.
     * Value None means automatic detection of cluster size.
     */
