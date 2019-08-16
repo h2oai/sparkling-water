@@ -96,7 +96,13 @@ Step-by-Step Weather Data Example
 .. code:: scala
 
     val weatherDataFile = "examples/smalldata/chicago/Chicago_Ohare_International_Airport.csv"
-    val weatherTable = spark.read.option("header", "true").option("inferSchema", "true").csv(weatherDataFile).withColumn("Date", to_date('Date, "MM/dd/yyyy")).withColumn("Year", year('Date)).withColumn("Month", month('Date)).withColumn("DayofMonth", dayofmonth('Date))
+    val weatherTable = spark.read.option("header", "true")
+      .option("inferSchema", "true")
+      .csv(weatherDataFile)
+      .withColumn("Date", to_date('Date, "MM/dd/yyyy"))
+      .withColumn("Year", year('Date))
+      .withColumn("Month", month('Date))
+      .withColumn("DayofMonth", dayofmonth('Date))
 
 5.  Load airlines data using the H2O parser:
 
