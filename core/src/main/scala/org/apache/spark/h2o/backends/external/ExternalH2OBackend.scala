@@ -235,12 +235,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     H2O.waitForCloudSize(hc.getConf.clusterSize.get.toInt, hc.getConf.cloudTimeout)
 
     verifyVersionFromRuntime()
-
-    if (hc.getConf.isManualClusterStartUsed) {
-      // Check the version of the external H2O backend started using manual mode
-      // we already checked for automatic mode
-
-    }
+    
     // Register web API for client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
