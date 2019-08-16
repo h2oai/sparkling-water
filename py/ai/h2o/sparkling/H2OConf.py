@@ -277,11 +277,11 @@ class H2OConf(object):
     # setters for internal backend
 
     def set_ip_based_faltfile_enabled(self):
-        self._jconf.setIpBasedFlatFileEnabled()
+        warnings.warn("The method 'set_ip_based_faltfile_enabled' has no effect anymore and will be removed in the next major release")
         return self
 
     def set_ip_based_faltfile_disabled(self):
-        self._jconf.setIpBasedFlatFileDisabled()
+        warnings.warn("The method 'set_ip_based_faltfile_disabled' has no effect anymore and will be removed in the next major release")
         return self
 
     def set_num_h2o_workers(self, num_workers):
@@ -571,7 +571,8 @@ class H2OConf(object):
     # Getters for internal backend
 
     def ip_based_flatfile(self):
-        return self._jconf.ipBasedFlatfile()
+        warnings.warn("The method 'ip_based_flatfile' has no effect anymore and will be removed in the next major release")
+        return True
 
     def num_h2o_workers(self):
         return self._get_option(self._jconf.numH2OWorkers())
