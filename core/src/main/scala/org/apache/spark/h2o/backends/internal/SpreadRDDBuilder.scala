@@ -18,6 +18,7 @@
 package org.apache.spark.h2o.backends.internal
 
 
+import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.SharedBackendUtils
 import org.apache.spark.rpc.{RpcEndpointRef, RpcEnv}
@@ -33,7 +34,7 @@ import scala.annotation.tailrec
   */
 private[spark]
 class SpreadRDDBuilder(@transient private val hc: H2OContext,
-                       numExecutorHint: Option[Int] = None) extends SharedBackendUtils {
+                       numExecutorHint: Option[Int] = None) extends Logging {
   @transient private val sc = hc.sparkContext
   private val conf = hc.getConf
   private val isLocal = sc.isLocal
