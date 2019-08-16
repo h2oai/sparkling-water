@@ -17,15 +17,14 @@
 
 import pyspark
 import warnings
+import re
 
 from pysparkling.initializer import Initializer
+from pysparkling.initializer import VersionComponents
 
 __version__ = Initializer.getVersion()
-pyspark_version = pyspark.__version__.split(".")
-pysparkling_spark_version = __version__.split("-")[1].split(".")
-
-pyspark_major = pyspark_version[0] + "." + pyspark_version[1]
-pysparkling_spark_major = pysparkling_spark_version[0] + "." + pysparkling_spark_version[1]
+pySparklingVersionComponents = VersionComponents.parseFromVersion(__version__)
+pySparkMinorVersion = re.search(r"^(\d+\.\d+)\.\d+$", pyspark.__version__).group(1)
 
 def custom_formatwarning(msg, *args, **kwargs):
     # ignore everything except the message
@@ -34,10 +33,11 @@ def custom_formatwarning(msg, *args, **kwargs):
 warnings.formatwarning = custom_formatwarning
 
 
-if not (pyspark_major == pysparkling_spark_major):
+if not (pySparkMinorVersion == pySparklingVersionComponents.sparkVersion):
     warnings.warn("""
-    You are using PySparkling for Spark {pysparkling_spark_major}, but your PySpark is of
-    version {pyspark_major}. Please make sure Spark and PySparkling versions are compatible. """.format(pysparkling_spark_major=pysparkling_spark_major, pyspark_major=pyspark_major))
+    You are using PySparkling for Spark {}, but your PySpark is of version {}.
+    Please make sure Spark and PySparkling versions are compatible.""".format(
+        pySparklingVersionComponents.sparkVersion, pySparkMinorVersion))
 
 
 # set imports from this project which will be available when the module is imported
