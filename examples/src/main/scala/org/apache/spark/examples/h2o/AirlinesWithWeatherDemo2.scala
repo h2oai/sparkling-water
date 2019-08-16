@@ -34,13 +34,8 @@ import water.support.{H2OFrameSupport, SparkContextSupport, SparkSessionSupport}
 /** Demo for meetup presented at 12/17/2014 */
 object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSupport {
 
-  def residualPlotRCode(prediction: Frame, predCol: String, actual: Frame, actCol: String, h2oContext: H2OContext = null): String = {
-    val (ip, port, _) = if (h2oContext != null) {
-      val s = h2oContext.h2oLocalClient.split(":")
-      (s(0), s(1), s(2))
-    } else {
-      ("127.0.0.1", "54321", "")
-    }
+  def residualPlotRCode(prediction: Frame, predCol: String, actual: Frame, actCol: String, hc: H2OContext = null): String = {
+    val (ip, port) = if (hc == null) ("127.0.0.1", 54321) else (hc.h2oLocalClientIp, hc.h2oLocalClientPort)
 
     s"""# R script for residual plot
        |library(h2o)

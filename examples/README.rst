@@ -60,13 +60,13 @@ Available Demos for Sparkling Shell
 Building and Running Examples
 -----------------------------
 
-Please see `Running Sparkling Water Examples <../doc/src/site/sphinx/devel/running_examples.rst>`__ for more information how to build
+Please see `Running Sparkling Water Examples <http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/devel/running_examples.html>`__ for more information how to build
 and run examples.
 
 Configuring Sparkling Water Variables
 -------------------------------------
 
-Please see `Available Sparkling Water Configuration Properties <../doc/src/site/sphinx/configuration/configuration_properties.rst>`__ for
+Please see `Available Sparkling Water Configuration Properties <http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/configuration/configuration_properties.html>`__ for
 more information about possible Sparkling Water configurations.
 
 Step-by-Step Weather Data Example
@@ -76,7 +76,9 @@ Step-by-Step Weather Data Example
 
 .. code:: bash
 
-    export SPARK_HOME="/path/to/spark/installation"   export MASTER="local[*]"   bin/sparkling-shell
+    export SPARK_HOME="/path/to/spark/installation"
+    export MASTER="local[*]"
+    bin/sparkling-shell
 
 2.  To see the Sparkling shell (i.e., Spark driver) status, go to http://localhost:4040/.
 
@@ -85,19 +87,22 @@ Step-by-Step Weather Data Example
 .. code:: scala
 
     import org.apache.spark.h2o._
-    val h2oContext = H2OContext.getOrCreate(spark)
-    import h2oContext._
-    import h2oContext.implicits._
+    val hc = H2OContext.getOrCreate(spark)
+    import hc.implicits._
+    import spark.implicits._
 
-4.  Load weather data for Chicago international airport (ORD), with help
-    from the RDD API:
+4.  Load weather data for Chicago international airport (ORD):
 
 .. code:: scala
 
-    import org.apache.spark.examples.h2o._
     val weatherDataFile = "examples/smalldata/chicago/Chicago_Ohare_International_Airport.csv"
-    val wrawdata = spark.sparkContext.textFile(weatherDataFile,3).cache()
-    val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
+    val weatherTable = spark.read.option("header", "true")
+      .option("inferSchema", "true")
+      .csv(weatherDataFile)
+      .withColumn("Date", to_date('Date, "MM/dd/yyyy"))
+      .withColumn("Year", year('Date))
+      .withColumn("Month", month('Date))
+      .withColumn("DayofMonth", dayofmonth('Date))
 
 5.  Load airlines data using the H2O parser:
 
@@ -105,14 +110,14 @@ Step-by-Step Weather Data Example
 
     import java.io.File
     val dataFile = "examples/smalldata/airlines/allyears2k_headers.zip"
-    val airlinesData = new H2OFrame(new File(dataFile))
+    val airlinesH2OFrame = new H2OFrame(new File(dataFile))
 
 6.  Select flights destined for Chicago (ORD):
 
 .. code:: scala
 
-    val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
-    val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
+    val airlinesTable = hc.asDataFrame(airlinesH2OFrame)
+    val flightsToORD = airlinesTable.filter('Dest === "ORD")
 
 7.  Compute the number of these flights:
 
@@ -120,40 +125,20 @@ Step-by-Step Weather Data Example
 
     flightsToORD.count
 
-8.  Use Spark SQL to join the flight data with the weather data:
+8.  Join the flights data frame with the weather data frame:
 
 .. code:: scala
 
-    implicit val sqlContext = spark.sqlContext
-    import sqlContext.implicits._
-    flightsToORD.toDF.createOrReplaceTempView("FlightsToORD")
-    weatherTable.toDF.createOrReplaceTempView("WeatherORD")
+    val joinedDf = flightsToORD.join(weatherTable, Seq("Year", "Month", "DayofMonth"))
 
-9.  Perform SQL JOIN on both tables:
+9. Transform the columns containing date information into enum columns:
 
 .. code:: scala
 
-    val bigTable = sqlContext.sql(
-            """SELECT
-                |f.Year,f.Month,f.DayofMonth,
-                |f.CRSDepTime,f.CRSArrTime,f.CRSElapsedTime,
-                |f.UniqueCarrier,f.FlightNum,f.TailNum,
-                |f.Origin,f.Distance,
-                |w.TmaxF,w.TminF,w.TmeanF,w.PrcpIn,w.SnowIn,w.CDD,w.HDD,w.GDD,
-                |f.ArrDelay
-                |FROM FlightsToORD f
-                |JOIN WeatherORD w
-                |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
+    import water.support.H2OFrameSupport._
+    val joinedHf = columnsToCategorical(hc.asH2OFrame(joinedDf), Array("Year", "Month", "DayofMonth"))
 
-10. Transform the first 3 columns containing date information into enum columns:
-
-.. code:: scala
-
-    val bigDataFrame: H2OFrame = h2oContext.asH2OFrame(bigTable)
-    for( i <- 0 to 2) bigDataFrame.replace(i, bigDataFrame.vec(i).toCategoricalVec)
-    bigDataFrame.update()
-
-11. Run deep learning to produce a model estimating arrival delay:
+10. Run deep learning to produce a model estimating arrival delay:
 
 .. code:: scala
 
@@ -161,7 +146,7 @@ Step-by-Step Weather Data Example
     import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters
     import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
     val dlParams = new DeepLearningParameters()
-    dlParams._train = bigDataFrame
+    dlParams._train = joinedHf
     dlParams._response_column = "ArrDelay"
     dlParams._epochs = 5
     dlParams._activation = Activation.RectifierWithDropout
@@ -171,48 +156,21 @@ Step-by-Step Weather Data Example
     val dl = new DeepLearning(dlParams)
     val dlModel = dl.trainModel.get
 
-
-12. Use the model to estimate the delay on the training data:
+11. Use the model to estimate the delay on the training data:
 
 .. code:: scala
 
-    val predictionH2OFrame = dlModel.score(bigTable)("predict")
-    val predictionsFromModel = asDataFrame(predictionH2OFrame)(sqlContext).collect.map{
-        row => if (row.isNullAt(0)) Double.NaN else row(0)
-    }
+    val predictionsHf = dlModel.score(joinedHf)
+    val predictionsDf = hc.asDataFrame(predictionsHf)
 
-13. Generate an R-code producing residual plot:
+12. Generate an R-code producing residual plot:
+
+The generated code can be run in RStudio to produce residual plots.
 
 .. code:: scala
 
     import org.apache.spark.examples.h2o.AirlinesWithWeatherDemo2.residualPlotRCode
-    residualPlotRCode(predictionH2OFrame, "predict", bigTable, "ArrDelay", h2oContext)
-
-14. Execute generated R-code in RStudio:
-
-.. code:: R
-
-    #
-    # R script for residual plot
-    #
-    # Import H2O library
-    library(h2o)
-    # Initialize H2O R-client
-    h2o.init()
-    # Fetch prediction and actual data, use remembered keys
-    pred = h2o.getFrame("dframe_b5f449d0c04ee75fda1b9bc865b14a69")
-    act = h2o.getFrame ("frame_rdd_14_b429e8b43d2d8c02899ccb61b72c4e57")
-    # Select right columns
-    predDelay = pred$predict
-    actDelay = act$ArrDelay
-    # Make sure that number of rows is same
-    nrow(actDelay) == nrow(predDelay)
-    # Compute residuals
-    residuals = predDelay - actDelay
-    # Plot residuals
-    compare = cbind (as.data.frame(actDelay$ArrDelay), as.data.frame(residuals$predict))
-    nrow(compare)
-    plot( compare[,1:2] )
+    residualPlotRCode(predictionsHf, "predict", joinedDf, "ArrDelay", hc)
 
 
 .. Links to the examples
