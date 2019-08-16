@@ -5,8 +5,9 @@ The Sparkling Water distribution includes also a set of examples. You can find t
 
 1. Obtain Sparkling Water distribution
 
-You can download the official release from `https://www.h2o.ai/download/ <https://www.h2o.ai/download/>`_.  or build it yourself.
-To see how to build Sparkling Water, please see :ref:`build`.
+Download the official release from `https://www.h2o.ai/download/ <https://www.h2o.ai/download/>`_.  or build it yourself.
+To see how to build Sparkling Water, please see :ref:`build`. The scripts to start interactive Sparkling Water/PySparkling
+shells are available in the `bin` directory of the extracted distribution.
 
 2. Set the configuration of the demo Spark cluster (for example, ``local[*]``)
 
