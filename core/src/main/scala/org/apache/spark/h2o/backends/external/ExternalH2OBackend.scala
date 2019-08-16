@@ -20,17 +20,18 @@ package org.apache.spark.h2o.backends.external
 
 import java.io.{File, FileInputStream}
 import java.util.Properties
+import java.util.jar.JarFile
 
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend.H2O_JOB_NAME
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.utils.NodeDesc
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
-import water.init.NetworkUtils
+import water.init.{AbstractBuildVersion, NetworkUtils}
 import water.util.Log
-import water.{H2O, H2OStarter}
+import water.{H2O, H2OStarter, MRTask}
 
 import scala.io.Source
 import scala.util.control.NoStackTrace
@@ -42,6 +43,35 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   private var externalIP: Option[String] = None
   private var cloudHealthCheckKillThread: Option[Thread] = None
   private var cloudHealthCheckThread: Option[Thread] = None
+
+  private def VerifyVersionFromDriverJAR(driverPath: String): Unit = {
+    val clientH2OVersion = BuildInfo.H2OVersion
+
+    val jarFile = new JarFile(driverPath)
+    val entry = jarFile.getJarEntry("h2o.version")
+    val is = jarFile.getInputStream(entry)
+    val externalVersion = scala.io.Source.fromInputStream(is).mkString
+    jarFile.close()
+
+    if (clientH2OVersion != externalVersion) {
+      throw new RuntimeException(s"The driver '$driverPath' is for H2O of version $externalVersion but Sparkling Water " +
+        s"is using version of H2O $clientH2OVersion. Please make sure to use the corresponding extended H2O JAR.")
+    }
+  }
+
+  private def verifyVersionFromRuntime(): Unit = {
+    val clientH2OVersion = BuildInfo.H2OVersion
+    new MRTask() {
+      override def setupLocal(): Unit = {
+        val externalVersion = AbstractBuildVersion.getBuildVersion.projectVersion()
+        if (clientH2OVersion != externalVersion) {
+          throw new RuntimeException(s"The external H2O cluster is of version $externalVersion but Sparkling Water " +
+            s"is using version of H2O $clientH2OVersion. Please restart your cluster and make sure to use " +
+            s" the corresponding extended H2O JAR.")
+        }
+      }
+    }.doAllNodes()
+  }
 
   def launchH2OOnYarn(conf: H2OConf): String = {
     import ExternalH2OBackend._
@@ -171,6 +201,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
   override def init(): Array[NodeDesc] = {
     if (hc.getConf.isAutoClusterStartUsed) {
+      // For automatic mode we can check the driver version early
+      VerifyVersionFromDriverJAR(hc.getConf.h2oDriverPath.get)
       // start h2o instances on yarn
       logInfo("Starting the external H2O cluster on YARN.")
       val ipPort = launchH2OOnYarn(hc.getConf)
@@ -182,6 +214,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     } else {
       // manual mode, check if the user specified the cluster representative
       if (hc._conf.h2oCluster.isDefined) {
+        // Verify the version before we actually connect
+        // We can do it because user specified ip:port of external H2O cluster
+        // This has the advantage that the user does not need to restart shell to connect to
+        // the right cluster again as we haven't initiated any H2O client so far
         val clientIp = NetworkUtils.indentifyClientIp(hc._conf.h2oClusterHost.get)
         if (clientIp.isDefined && hc._conf.clientIp.isEmpty && hc._conf.clientNetworkMask.isEmpty) {
           hc._conf.setClientIp(clientIp.get)
@@ -202,6 +238,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     H2O.waitForCloudSize(hc.getConf.clusterSize.get.toInt, hc.getConf.cloudTimeout)
 
+    verifyVersionFromRuntime()
+
+    if (hc.getConf.isManualClusterStartUsed) {
+      // Check the version of the external H2O backend started using manual mode
+      // we already checked for automatic mode
+
+    }
     // Register web API for client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
