@@ -128,6 +128,7 @@ class H2OTargetEncoderTestSuite(unittest.TestCase):
 
         unit_test_utils.assert_data_frames_are_identical(transformedByProducedModel, transformedByLoadedModel)
 
+
     def testTargetEncoderModelWithDisabledNoiseAndTargetEncoderMOJOModelTransformTheTrainingDatasetSameWay(self):
         targetEncoder = H2OTargetEncoder()\
             .setInputCols(["RACE", "DPROS", "DCAPS"])\
