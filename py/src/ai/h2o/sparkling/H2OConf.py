@@ -358,6 +358,7 @@ class H2OConf(object):
         return self
 
     def set_external_read_confirmation_timeout(self, timeout):
+        warnings.warn("The method 'set_external_read_confirmation_timeout' is deprecated.")
         self._jconf.setExternalReadConfirmationTimeout(timeout)
         return self
 
@@ -639,6 +640,7 @@ class H2OConf(object):
         return self._jconf.clientConnectionTimeout()
 
     def external_read_confirmation_timeout(self):
+        warnings.warn("The method 'external_read_confirmation_timeout' is deprecated.")
         return self._jconf.externalReadConfirmationTimeout()
 
     def external_write_confirmation_timeout(self):

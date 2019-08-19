@@ -42,6 +42,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def clusterSize = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_SIZE._1)
   def clientCheckRetryTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
   def clientConnectionTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._2)
+  @DeprecatedMethod
   def externalReadConfirmationTimeout = sparkConf.getInt(PROP_EXTERNAL_READ_TIMEOUT._1, PROP_EXTERNAL_READ_TIMEOUT._2)
   def externalWriteConfirmationTimeout = sparkConf.getInt(PROP_EXTERNAL_WRITE_TIMEOUT._1, PROP_EXTERNAL_WRITE_TIMEOUT._2)
   def clusterStartTimeout = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, PROP_EXTERNAL_CLUSTER_START_TIMEOUT._2)
@@ -94,6 +95,7 @@ trait ExternalBackendConf extends SharedBackendConf {
 
   def setClientCheckRetryTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
   def setClientConnectionTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, timeout.toString)
+  @DeprecatedMethod
   def setExternalReadConfirmationTimeout(timeout: Int) = set(PROP_EXTERNAL_READ_TIMEOUT._1, timeout.toString)
   def setExternalWriteConfirmationTimeout(timeout: Int) = set(PROP_EXTERNAL_WRITE_TIMEOUT._1, timeout.toString)
   def setClusterStartTimeout(clusterStartTimeout: Int) = set(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, clusterStartTimeout.toString)
