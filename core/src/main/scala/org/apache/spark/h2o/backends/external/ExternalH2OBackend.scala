@@ -395,8 +395,10 @@ object ExternalH2OBackend {
     val driverPathStr = if (driverPath.isDefined) s"(=$driverPath)" else ""
     if (clientVersion != externalVersion) {
       throw new RuntimeException(
-        s"""The external H2O cluster$driverPathStr is of H2O of version $externalVersion but Sparkling Water " +
-        s"is using version of H2O $clientVersion. Please make sure to use the corresponding extended H2O JAR."""
+        s"""
+            The external H2O cluster$driverPathStr is of version $externalVersion but Sparkling Water
+            is using version of H2O $clientVersion. Please make sure to use the corresponding extended H2O JAR.
+          """
       )
     }
   }
