@@ -27,14 +27,14 @@ resource "aws_s3_bucket" "sw_bucket" {
   }
 }
 
-data "aws_s3_bucket_object" "user_token" {
+resource "aws_s3_bucket_object" "benchmarks_jar" {
   bucket = "${aws_s3_bucket.sw_bucket.bucket}"
-  key    = "user.token"
-  depends_on = ["aws_emr_cluster.sparkling-water-cluster"]
+  key = "benchmarks.jar"
+  source = "${var.sw_package_file}"
 }
 
 resource "aws_emr_cluster" "sparkling-water-cluster" {
-  name = "Sparkling-Water"
+  name = "Sparkling-Water-Benchmarks"
   release_label = "${var.aws_emr_version}"
   log_uri = "s3://${aws_s3_bucket.sw_bucket.bucket}/"
   applications = ["Spark", "Hadoop"]
@@ -58,6 +58,24 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
 
   tags = {
     name = "SparklingWaterBenchmarks"
+  }
+
+  step {
+    action_on_failure = "TERMINATE_CLUSTER"
+    name   = "ExecuteBenchmarks"
+
+    hadoop_jar_step {
+      jar  = "command-runner.jar"
+      args = [
+        "spark-submit",
+        "--class", "ai.h2o.sparkling.benchmarks.Runner",
+        "--master", "yarn",
+        "--deploy-mode", "client",
+        "--executor-memory", "4G",
+        "--num-executors", "${var.aws_core_instance_count}",
+        "--conf", "spark.dynamicAllocation.enabled=false",
+        "${format("s3://%s/benchmarks.jar", aws_s3_bucket.sw_bucket.bucket)}"]
+    }
   }
 
   configurations_json = <<EOF
@@ -94,9 +112,3 @@ EOF
   service_role = "${aws_iam_role.emr_role.arn}"
 }
 
-resource "aws_instance" "benchmarks_jar" {
-  provisioner "file" {
-    source      = "../../../../libs/sparkling-water-benchmarks_SUBST_SCALA_VERSION-${var.sw_version}-all.jar"
-    destination = "benchmarks.jar"
-  }
-}

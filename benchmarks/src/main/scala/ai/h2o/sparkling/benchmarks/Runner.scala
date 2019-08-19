@@ -83,13 +83,12 @@ object Runner {
   }
 
   private def loadDatasetDetails(): Seq[DatasetDetails] = {
-    val url = getClass.getClassLoader.getResource(datasetDetailsFilePath)
+    val stream = getClass.getClassLoader.getResourceAsStream(datasetDetailsFilePath)
     implicit val formats = DefaultFormats
-    val reader = new FileReader(url.getPath)
     try {
-      read[Seq[DatasetDetails]](reader)
+      read[Seq[DatasetDetails]](stream)
     } finally {
-      reader.close()
+      stream.close()
     }
   }
 
