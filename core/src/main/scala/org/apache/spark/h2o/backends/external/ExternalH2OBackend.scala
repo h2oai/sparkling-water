@@ -391,31 +391,33 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
 object ExternalH2OBackend {
 
+  private def throwWrongVersionException(clientVersion: String, externalVersion: String, driverPath: Option[String] = None) = {
+    val driverPathStr = if (driverPath.isDefined) s"(=$driverPath)" else ""
+    if (clientVersion != externalVersion) {
+      throw new RuntimeException(
+        s"""The external H2O cluster$driverPathStr is of H2O of version $externalVersion but Sparkling Water " +
+        s"is using version of H2O $clientVersion. Please make sure to use the corresponding extended H2O JAR."""
+      )
+    }
+  }
+
   private def verifyVersionFromDriverJAR(driverPath: String): Unit = {
-    val clientH2OVersion = BuildInfo.H2OVersion
+    val clientVersion = BuildInfo.H2OVersion
 
     val jarFile = new JarFile(driverPath)
     val entry = jarFile.getJarEntry("h2o.version")
     val is = jarFile.getInputStream(entry)
     val externalVersion = scala.io.Source.fromInputStream(is).mkString
     jarFile.close()
-
-    if (clientH2OVersion != externalVersion) {
-      throw new RuntimeException(s"The driver '$driverPath' is for H2O of version $externalVersion but Sparkling Water " +
-        s"is using version of H2O $clientH2OVersion. Please make sure to use the corresponding extended H2O JAR.")
-    }
+    throwWrongVersionException(clientVersion, externalVersion, Some(driverPath))
   }
 
   private def verifyVersionFromRuntime(): Unit = {
-    val clientH2OVersion = BuildInfo.H2OVersion
+    val clientVersion = BuildInfo.H2OVersion
     new MRTask() {
       override def setupLocal(): Unit = {
         val externalVersion = AbstractBuildVersion.getBuildVersion.projectVersion()
-        if (clientH2OVersion != externalVersion) {
-          throw new RuntimeException(s"The external H2O cluster is of version $externalVersion but Sparkling Water " +
-            s"is using version of H2O $clientH2OVersion. Please restart your cluster and make sure to use " +
-            s" the corresponding extended H2O JAR.")
-        }
+        throwWrongVersionException(clientVersion, externalVersion)
       }
     }.doAllNodes()
   }
