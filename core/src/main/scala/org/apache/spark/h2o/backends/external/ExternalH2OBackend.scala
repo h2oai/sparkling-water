@@ -405,7 +405,6 @@ object ExternalH2OBackend {
 
   private def verifyVersionFromDriverJAR(driverPath: String): Unit = {
     val clientVersion = BuildInfo.H2OVersion
-
     val jarFile = new JarFile(driverPath)
     val entry = jarFile.getJarEntry("h2o.version")
     val is = jarFile.getInputStream(entry)
