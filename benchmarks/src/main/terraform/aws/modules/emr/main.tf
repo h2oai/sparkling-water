@@ -33,11 +33,40 @@ resource "aws_s3_bucket_object" "benchmarks_jar" {
   source = "${var.sw_package_file}"
 }
 
+resource "aws_s3_bucket_object" "run_benchmarks_script" {
+  bucket = "${aws_s3_bucket.sw_bucket.id}"
+  key    = "run_benchmarks.sh"
+  acl = "private"
+  content = <<EOF
+
+  #!/bin/bash
+  set -x -e
+
+  function runBenchmarks {
+    spark-submit \
+      --class ai.h2o.sparkling.benchmarks.Runner \
+      --master "$1" \
+      --executor-memory "$3" \
+      --num-executors ${var.aws_core_instance_count} \
+      --conf "spark.dynamicAllocation.enabled=false" \
+      --conf "spark.ext.h2o.backend.cluster.mode=$2" \
+      ${format("s3://%s/benchmarks.jar", aws_s3_bucket.sw_bucket.bucket)} \
+      -o /home/hadoop/benchmarks
+  }
+
+  runBenchmarks "yarn-client" "internal" "4G"
+
+  aws s3 sync /home/hadoop/benchmarks ${format("s3://ai.h2o.sparkling/benchmarks/results/%s", aws_s3_bucket.sw_bucket.bucket)}
+
+EOF
+}
+
 resource "aws_emr_cluster" "sparkling-water-cluster" {
   name = "Sparkling-Water-Benchmarks"
   release_label = "${var.aws_emr_version}"
   log_uri = "s3://${aws_s3_bucket.sw_bucket.bucket}/"
   applications = ["Spark", "Hadoop"]
+  depends_on = [aws_s3_bucket_object.benchmarks_jar, aws_s3_bucket_object.run_benchmarks_script]
 
   ec2_attributes {
     subnet_id = "${data.aws_subnet.main.id}"
@@ -62,19 +91,11 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
 
   step {
     action_on_failure = "TERMINATE_CLUSTER"
-    name   = "ExecuteBenchmarks"
+    name = "ExecuteBenchmarks"
 
     hadoop_jar_step {
-      jar  = "command-runner.jar"
-      args = [
-        "spark-submit",
-        "--class", "ai.h2o.sparkling.benchmarks.Runner",
-        "--master", "yarn",
-        "--deploy-mode", "client",
-        "--executor-memory", "4G",
-        "--num-executors", "${var.aws_core_instance_count}",
-        "--conf", "spark.dynamicAllocation.enabled=false",
-        "${format("s3://%s/benchmarks.jar", aws_s3_bucket.sw_bucket.bucket)}"]
+      jar  = "${format("s3://%s.elasticmapreduce/libs/script-runner/script-runner.jar", var.aws_region)}"
+      args = ["${format("s3://%s/run_benchmarks.sh", aws_s3_bucket.sw_bucket.bucket)}"]
     }
   }
 
@@ -112,3 +133,8 @@ EOF
   service_role = "${aws_iam_role.emr_role.arn}"
 }
 
+resource "aws_s3_bucket_object" "benchmarks_results" {
+  bucket = "${aws_s3_bucket.sw_bucket.bucket}"
+  key    = "benchmarks.finished"
+  depends_on = [aws_emr_cluster.sparkling-water-cluster]
+}

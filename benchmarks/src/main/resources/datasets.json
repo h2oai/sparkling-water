@@ -1,17 +1,17 @@
 [
   {
     "name" : "airlines-1m",
-    "url" : "s3://ai.h2o.sparkling/benchmarks/airlines-1m.csv",
+    "url" : "s3://ai.h2o.sparkling/benchmarks/data/airlines-1m.csv",
     "labelCol" : "Distance"
   },
   {
     "name" : "airlines-10m",
-    "url" : "s3://ai.h2o.sparkling/benchmarks/airlines-10m.csv",
+    "url" : "s3://ai.h2o.sparkling/benchmarks/data/airlines-10m.csv",
     "labelCol" : "Distance"
   },
   {
     "name" : "springleaf",
-    "url" : "s3://ai.h2o.sparkling/benchmarks/springleaf_train_4.csv",
+    "url" : "s3://ai.h2o.sparkling/benchmarks/data/springleaf_train_4.csv",
     "labelCol" : "target"
   }
 ]

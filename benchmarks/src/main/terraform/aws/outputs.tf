@@ -7,3 +7,6 @@ output "master_public_dns" {
 output "bucket" {
   value = "${module.emr.bucket}"
 }
+output "benchmark_results" {
+  value = "${module.emr.benchmark_results}"
+}
