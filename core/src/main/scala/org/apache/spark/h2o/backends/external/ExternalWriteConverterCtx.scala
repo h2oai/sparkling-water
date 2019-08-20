@@ -17,31 +17,22 @@
 
 package org.apache.spark.h2o.backends.external
 
+import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o.converters.WriteConverterCtx
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vector}
 import org.apache.spark.sql.types._
-import water.{ExternalFrameConfirmationException, ExternalFrameUtils, ExternalFrameWriterClient}
+import water.fvec.Frame
+import water._
 
 class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTimeout: Int, driverTimeStamp: Short) extends WriteConverterCtx {
 
-  val socketChannel = ExternalFrameUtils.getConnection(nodeDesc.hostname, nodeDesc.port, driverTimeStamp)
-  val externalFrameWriter = new ExternalFrameWriterClient(socketChannel)
+  private val externalFrameWriter = ExternalFrameWriterClient.create(nodeDesc.hostname, nodeDesc.port, driverTimeStamp)
 
-  /**
-    * This method closes the communication after the chunks have been closed
-    * @throws ExternalFrameConfirmationException in case of confirmation failure.
-    *         This has also effect of Spark stopping the current job and
-    *         rescheduling it
-    */
   override def closeChunks(numRows: Int): Unit = {
-    try{
-      externalFrameWriter.waitUntilAllWritten(writeTimeout)
-    } finally {
-      socketChannel.close()
-    }
+    externalFrameWriter.close()
   }
 
   /**
@@ -49,22 +40,33 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTi
     */
   override def createChunks(keystr: String, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
                             sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
-    externalFrameWriter.createChunks(keystr, expectedTypes, chunkId, totalNumOfRows, maxVecSizes)
+    externalFrameWriter.createChunk(keystr, expectedTypes, chunkId, totalNumOfRows, maxVecSizes)
   }
 
   override def put(colIdx: Int, data: Boolean) = externalFrameWriter.sendBoolean(data)
+
   override def put(colIdx: Int, data: Byte) = externalFrameWriter.sendByte(data)
+
   override def put(colIdx: Int, data: Char) = externalFrameWriter.sendChar(data)
+
   override def put(colIdx: Int, data: Short) = externalFrameWriter.sendShort(data)
+
   override def put(colIdx: Int, data: Int) = externalFrameWriter.sendInt(data)
+
   override def put(colIdx: Int, data: Long) = externalFrameWriter.sendLong(data)
+
   override def put(colIdx: Int, data: Float) = externalFrameWriter.sendFloat(data)
+
   override def put(colIdx: Int, data: Double) = externalFrameWriter.sendDouble(data)
+
   override def put(colIdx: Int, data: java.sql.Timestamp) = externalFrameWriter.sendTimestamp(data)
+
   // Here we should call externalFrameWriter.sendDate - however such method does not exist
   // Hence going through the same path as sending Timestamp long value.
   override def put(colIdx: Int, data: java.sql.Date) = externalFrameWriter.sendLong(data.getTime)
+
   override def put(colIdx: Int, data: String) = externalFrameWriter.sendString(data)
+
   override def putNA(columnNum: Int) = externalFrameWriter.sendNA()
 
   override def numOfRows(): Int = totalNumOfRows
@@ -78,6 +80,7 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTi
   }
 
   override def startRow(rowIdx: Int): Unit = {}
+
   override def finishRow(): Unit = {}
 }
 
@@ -92,12 +95,34 @@ object ExternalWriteConverterCtx extends ExternalBackendUtils {
     uploadPlan
   }
 
-  def internalJavaClassOf(dt: DataType) : Class[_] = {
+  def internalJavaClassOf(dt: DataType): Class[_] = {
     dt match {
       case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] => Double.javaClass
-      case _ : DateType => Long.javaClass
-      case _ : UserDefinedType[_/*ml.linalg.Vector */] => classOf[Vector]
-      case _ : DataType => ReflectionUtils.supportedTypeOf(dt).javaClass
+      case _: DateType => Long.javaClass
+      case _: UserDefinedType[_ /*ml.linalg.Vector */ ] => classOf[Vector]
+      case _: DataType => ReflectionUtils.supportedTypeOf(dt).javaClass
     }
   }
+
+  def initFrame(key: String, columns: Array[String]): Unit = {
+    val (ip, port, timestamp) = leaderInfo()
+    val client = ExternalFrameWriterClient.create(ip, port, timestamp)
+    client.initFrame(key, columns)
+    client.close()
+  }
+
+  def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]] = null): H2OFrame = {
+    val (ip, port, timestamp) = leaderInfo()
+    val client = ExternalFrameWriterClient.create(ip, port, timestamp)
+    client.finalizeFrame(key, rowsPerChunk, colTypes, domains)
+    client.close()
+    new H2OFrame(DKV.getGet[Frame](key))
+  }
+
+  private def leaderInfo(): (String, Int, Short) = {
+    val leader = H2O.CLOUD.leader()
+    val nodeDesc = NodeDesc(leader)
+    (nodeDesc.hostname, nodeDesc.port, leader.getTimestamp)
+  }
+
 }

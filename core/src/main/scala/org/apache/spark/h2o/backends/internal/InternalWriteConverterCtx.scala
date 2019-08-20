@@ -19,9 +19,14 @@ package org.apache.spark.h2o.backends.internal
 
 import java.sql.{Date, Timestamp}
 
+import org.apache.spark.h2o.{Frame, H2OFrame}
 import org.apache.spark.h2o.converters.WriteConverterCtx
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
-import water.fvec.{FrameUtils, NewChunk}
+import water.fvec.{Chunk, FrameUtils, NewChunk}
+import water.util.Log
+import water.{DKV, H2ONode, Key, MRTask}
+
+import scala.collection.mutable
 
 class InternalWriteConverterCtx extends WriteConverterCtx {
 
@@ -109,5 +114,100 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
     (0 until vector.size).foreach { idx => put(startIdx + idx, vector(idx)) }
 
     (vector.size until maxVecSize).foreach(idx => put(startIdx + idx, 0.0))
+  }
+}
+
+object InternalWriteConverterCtx {
+  def initFrame(keyName: String, names: Array[String]): Unit = {
+    val fr = new water.fvec.Frame(Key.make[Frame](keyName))
+    water.fvec.FrameUtils.preparePartialFrame(fr, names)
+    // Save it directly to DKV
+    fr.update()
+  }
+
+  def finalizeFrame(keyName: String,
+                    res: Array[Long],
+                    colTypes: Array[Byte],
+                    colDomains: Array[Array[String]] = null): H2OFrame = {
+    val fr = DKV.getGet[Frame](keyName)
+    water.fvec.FrameUtils.finalizePartialFrame(fr, res, colDomains, colTypes)
+    validateFrame(fr)
+    new H2OFrame(fr)
+  }
+
+  private def validateFrame(fr: Frame): Unit = {
+
+    if (Log.isLoggingFor("DEBUG")) {
+      if (!fr.vecs().isEmpty) {
+        Log.debug("Number of chunks on frame: " + fr.anyVec.nChunks)
+        val nodes = mutable.Map.empty[H2ONode, Int]
+        (0 until fr.anyVec().nChunks()).foreach { i =>
+          val home = fr.anyVec().chunkKey(i).home_node()
+          if (!nodes.contains(home)) {
+            nodes += (home -> 0)
+          }
+          nodes(home) = nodes(home) + 1
+        }
+        Log.debug("Frame distributed on nodes:")
+        nodes.foreach {
+          case (node, n) =>
+            Log.debug(node + ": " + n + " chunks.")
+        }
+      }
+    }
+
+    // Validate num of chunks in each vector
+    if (!fr.vecs().isEmpty) {
+      val first = fr.vecs.head
+      fr.vecs.tail.foreach { vec =>
+        if (vec.nChunks() != first.nChunks()) {
+          throw new IllegalArgumentException(
+            s"""
+               | Vectors have different number of chunks: ${fr.vecs().map(_.nChunks()).mkString(", ")}
+        """.stripMargin)
+        }
+      }
+    }
+
+    // Validate that espc is the same in each vector
+    if (!fr.vecs().isEmpty) {
+      val layouts = fr.vecs().map(_.espc())
+      val first = layouts.head
+      layouts.tail.foreach { espc =>
+        if (first != espc) {
+          throw new IllegalArgumentException(
+            s"""
+               | Invalid shape of H2O Frame:
+               |
+          | ${layouts.zipWithIndex.map { case (arr, idx) => s"Vec $idx has layout: ${arr.mkString(", ")}\n" }}
+               |
+        }
+        """.stripMargin)
+        }
+      }
+    }
+
+    // Check number of entries in each chunk
+    if (!fr.vecs().isEmpty) {
+
+      new MRTask() {
+
+        override def map(cs: Array[Chunk]): Unit = {
+
+          val values = cs.map(_.len())
+          if (values.length > 1) {
+            val firstLen = values.head
+            values.tail.zipWithIndex.foreach { case (len, idx) =>
+              if (firstLen != len) {
+                throw new IllegalArgumentException(s"Chunks have different sizes in different vectors: $firstLen in vector 1 and" +
+                  s"$len in vector $idx")
+              }
+            }
+          }
+        }
+
+      }.doAll(fr)
+
+    }
   }
 }
