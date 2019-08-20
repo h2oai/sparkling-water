@@ -135,6 +135,7 @@ function checkSparkVersion() {
 export GREP_OPTIONS=
 # Version of this distribution
 PROP_FILE="$TOPDIR/gradle.properties"
+export VERSION
 VERSION=$(grep version "$PROP_FILE" | grep -v '#' | sed -e "s/.*=//" )
 H2O_VERSION=$(grep h2oMajorVersion "$PROP_FILE" | sed -e "s/.*=//")
 H2O_BUILD=$(grep h2oBuild "$PROP_FILE" | sed -e "s/.*=//")
@@ -149,6 +150,7 @@ export MAJOR_VERSION
 MAJOR_VERSION=$(echo "$VERSION" | cut -d . -f 1,2)
 export PATCH_VERSION
 PATCH_VERSION=$(echo "$VERSION" | cut -d . -f 3)
+export SPARK_MAJOR_VERSION
 SPARK_MAJOR_VERSION=$(echo "$SPARK_VERSION" | cut -d . -f 1,2)
 
 PY_ZIP="h2o_pysparkling_${SPARK_MAJOR_VERSION}-${VERSION}.zip"
