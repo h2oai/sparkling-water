@@ -332,7 +332,7 @@ External backend configuration properties
 |                                                       |                | callback interface; eg:             |
 |                                                       |                | 50000-55000.                        |
 +-------------------------------------------------------+----------------+-------------------------------------+
-| ``spark.ext.h2o.external.extra.memory.percent``       | ``10``         | extramempercent is a percentage of  |
+| ``spark.ext.h2o.external.extra.memory.percent``       | ``10``         | This option is a percentage of      |
 |                                                       |                | ``spark.ext.h2o.hadoop.memory`` and |
 |                                                       |                | specifies memory for internal JVM   |
 |                                                       |                | use outside of Java heap.           |

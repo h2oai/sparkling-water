@@ -450,7 +450,7 @@ class H2OConf(object):
         return self
 
     def setExternalExtraMemoryPercent(self, memoryPercent):
-        self._jconf.etExternalExtraMemoryPercent(memoryPercent)
+        self._jconf.setExternalExtraMemoryPercent(memoryPercent)
         return self
 
     # getters independent on backend
