@@ -25,23 +25,28 @@ resource "aws_s3_bucket" "deployment_bucket" {
   tags = {
     Name= "SparklingWaterBenchmarksDeploymentBucket"
   }
+}
 
-  policy = <<EOF
-  {
-    "Version": "2019-08-21",
-    "Statement": [
-      {
-        "Sid": "PublicReadForGetBucketObjects",
-        "Effect": "Allow",
-        "Principal": {
-          "AWS": "*"
-        },
-        "Action": "s3:GetObject",
-        "Resource": "arn:aws:s3:::${aws_s3_bucket.deployment_bucket.bucket}/public-read/*"
-      }
-    ]
-  }
-  EOF
+resource "aws_s3_bucket_policy" "read_objects" {
+  bucket = "${aws_s3_bucket.deployment_bucket.id}"
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Id": "ReadObjectsPolicy",
+  "Statement": [
+    {
+      "Sid": "PublicReadForGetBucketObjects",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.deployment_bucket.bucket}/public-read/*"
+    }
+  ]
+}
+POLICY
 }
 
 resource "aws_s3_bucket_object" "benchmarks_jar" {
@@ -69,14 +74,15 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
       --conf "spark.dynamicAllocation.enabled=false" \
       --conf "spark.ext.h2o.backend.cluster.mode=$2" \
       ${format("s3://%s/benchmarks.jar", aws_s3_bucket.deployment_bucket.bucket)} \
-      -o /home/hadoop/benchmarks
+      -o /home/hadoop/results
   }
 
-  runBenchmarks "local" "internal" "4G"
+  runBenchmarks "yarn-client" "internal" "4G"
 
-  aws s3 sync /home/hadoop/benchmarks ${format("s3://%s/public-read/results", aws_s3_bucket.deployment_bucket.bucket)}
-  touch /home/hodoop/finished
-  aws s3 cp /home/hodoop/finished ${format("s3://%s/public-read/finished", aws_s3_bucket.deployment_bucket.bucket)}
+  tar -zcvf /home/hadoop/results.tar.gz /home/hadoop/results
+  aws s3 cp /home/hadoop/results.tar.gz ${format("s3://%s/public-read/results.tar.gz", aws_s3_bucket.deployment_bucket.bucket)}
+  touch /home/hadoop/finished
+  aws s3 cp /home/hadoop/finished ${format("s3://%s/public-read/finished", aws_s3_bucket.deployment_bucket.bucket)}
 
 EOF
 }

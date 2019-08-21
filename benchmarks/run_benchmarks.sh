@@ -39,3 +39,8 @@ until $(curl --output /dev/null --silent --head --fail "$finished_file_url"); do
         break
     fi
 done
+
+cd "$(dirname "$0")"
+curl "$results_url" --output output/results.tar.gz
+tar -zxvf output/results.tar.gz -C output
+rm output/results.tar.gz
