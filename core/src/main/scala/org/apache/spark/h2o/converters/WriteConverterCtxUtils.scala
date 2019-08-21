@@ -72,9 +72,10 @@ object WriteConverterCtxUtils {
     */
   def convert[T: ClassTag: TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                  maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]) = {
+    val writeTimeout = hc.getConf.externalWriteConfirmationTimeout
     // Make an H2O data Frame - but with no backing data (yet)
     if (hc.getConf.runsInExternalClusterMode) {
-      ExternalWriteConverterCtx.initFrame(keyName, colNames)
+      ExternalWriteConverterCtx.initFrame(keyName, colNames, writeTimeout)
     } else {
       InternalWriteConverterCtx.initFrame(keyName, colNames)
     }
@@ -95,7 +96,7 @@ object WriteConverterCtxUtils {
       rddInput
     }
 
-    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, hc.getConf.externalWriteConfirmationTimeout, H2O.SELF.getTimestamp(), sparse)
+    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse)
 
     val rows = hc.sparkContext.runJob(rdd, operation) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
@@ -110,7 +111,7 @@ object WriteConverterCtxUtils {
     }
 
     if (hc.getConf.runsInExternalClusterMode) {
-      ExternalWriteConverterCtx.finalizeFrame(keyName, res, types)
+      ExternalWriteConverterCtx.finalizeFrame(keyName, res, types, writeTimeout)
     } else {
       InternalWriteConverterCtx.finalizeFrame(keyName, res, types)
     }

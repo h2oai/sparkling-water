@@ -29,7 +29,7 @@ import water._
 
 class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTimeout: Int, driverTimeStamp: Short) extends WriteConverterCtx {
 
-  private val externalFrameWriter = ExternalFrameWriterClient.create(nodeDesc.hostname, nodeDesc.port, driverTimeStamp)
+  private val externalFrameWriter = ExternalFrameWriterClient.create(nodeDesc.hostname, nodeDesc.port, driverTimeStamp, writeTimeout)
 
   override def closeChunks(numRows: Int): Unit = {
     externalFrameWriter.close()
@@ -104,16 +104,16 @@ object ExternalWriteConverterCtx extends ExternalBackendUtils {
     }
   }
 
-  def initFrame(key: String, columns: Array[String]): Unit = {
+  def initFrame(key: String, columns: Array[String], timeout: Int): Unit = {
     val (ip, port, timestamp) = leaderInfo()
-    val client = ExternalFrameWriterClient.create(ip, port, timestamp)
+    val client = ExternalFrameWriterClient.create(ip, port, timestamp, timeout)
     client.initFrame(key, columns)
     client.close()
   }
 
-  def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]] = null): H2OFrame = {
+  def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], timeout: Int, domains: Array[Array[String]] = null): H2OFrame = {
     val (ip, port, timestamp) = leaderInfo()
-    val client = ExternalFrameWriterClient.create(ip, port, timestamp)
+    val client = ExternalFrameWriterClient.create(ip, port, timestamp, timeout)
     client.finalizeFrame(key, rowsPerChunk, colTypes, domains)
     client.close()
     new H2OFrame(DKV.getGet[Frame](key))
