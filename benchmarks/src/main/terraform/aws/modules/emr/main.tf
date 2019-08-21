@@ -19,22 +19,40 @@ resource "aws_key_pair" "key" {
   public_key = "ssh-rsa ${var.aws_ssh_public_key == "" ? "AAAAB3NzaC1yc2EAAAADAQABAAABAQC0eX0fhy3WTIHF13DuSTHBFjLzKRssFRrW6e2B+/9Oh2Ua/zsEoIeLyX5YtPAqeR22DVJBA+sOvKMQnenAVUa0XG7y6rzEPgugqWNv6NVsFgbgHMfWpRYcuPuOo42T0AQD/9rLViyAzy6lRDid3gpN3PkSBhDLGPEZYs9Lzucawm2FZV92/9u5CxgvRZBAAIrWtgHwGpos3mVuisNxHjH3uEv0B43NzN5hJfBYiEyHhwi2eyjTuDFvVQ8rywcrDZ+aR2BTRX+roR7eVq7isjyOq41qy+pRsRLl8/9ULA6HvDYyozN+jCd5xhFJHTMG1IInapIUcRewtqzsgA9XggyT" : var.aws_ssh_public_key}"
 }
 
-resource "aws_s3_bucket" "sw_bucket" {
-  acl = "private"
+resource "aws_s3_bucket" "deployment_bucket" {
+  acl = "public-read"
   force_destroy = true
   tags = {
     Name= "SparklingWaterBenchmarksDeploymentBucket"
   }
+
+  policy = <<EOF
+  {
+    "Version": "2019-08-21",
+    "Statement": [
+      {
+        "Sid": "PublicReadForGetBucketObjects",
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "*"
+        },
+        "Action": "s3:GetObject",
+        "Resource": "arn:aws:s3:::${aws_s3_bucket.deployment_bucket.bucket}/public-read/*"
+      }
+    ]
+  }
+  EOF
 }
 
 resource "aws_s3_bucket_object" "benchmarks_jar" {
-  bucket = "${aws_s3_bucket.sw_bucket.bucket}"
+  bucket = "${aws_s3_bucket.deployment_bucket.bucket}"
   key = "benchmarks.jar"
+  acl = "private"
   source = "${var.sw_package_file}"
 }
 
 resource "aws_s3_bucket_object" "run_benchmarks_script" {
-  bucket = "${aws_s3_bucket.sw_bucket.id}"
+  bucket = "${aws_s3_bucket.deployment_bucket.id}"
   key    = "run_benchmarks.sh"
   acl = "private"
   content = <<EOF
@@ -50,13 +68,15 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
       --num-executors ${var.aws_core_instance_count} \
       --conf "spark.dynamicAllocation.enabled=false" \
       --conf "spark.ext.h2o.backend.cluster.mode=$2" \
-      ${format("s3://%s/benchmarks.jar", aws_s3_bucket.sw_bucket.bucket)} \
+      ${format("s3://%s/benchmarks.jar", aws_s3_bucket.deployment_bucket.bucket)} \
       -o /home/hadoop/benchmarks
   }
 
-  runBenchmarks "yarn-client" "internal" "4G"
+  runBenchmarks "local" "internal" "4G"
 
-  aws s3 sync /home/hadoop/benchmarks ${format("s3://ai.h2o.sparkling/benchmarks/results/%s", aws_s3_bucket.sw_bucket.bucket)}
+  aws s3 sync /home/hadoop/benchmarks ${format("s3://%s/public-read/results", aws_s3_bucket.deployment_bucket.bucket)}
+  touch /home/hodoop/finished
+  aws s3 cp /home/hodoop/finished ${format("s3://%s/public-read/finished", aws_s3_bucket.deployment_bucket.bucket)}
 
 EOF
 }
@@ -64,7 +84,7 @@ EOF
 resource "aws_emr_cluster" "sparkling-water-cluster" {
   name = "Sparkling-Water-Benchmarks"
   release_label = "${var.aws_emr_version}"
-  log_uri = "s3://${aws_s3_bucket.sw_bucket.bucket}/"
+  log_uri = "s3://${aws_s3_bucket.deployment_bucket.bucket}/"
   applications = ["Spark", "Hadoop"]
   depends_on = [aws_s3_bucket_object.benchmarks_jar, aws_s3_bucket_object.run_benchmarks_script]
 
@@ -95,7 +115,7 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
 
     hadoop_jar_step {
       jar  = "${format("s3://%s.elasticmapreduce/libs/script-runner/script-runner.jar", var.aws_region)}"
-      args = ["${format("s3://%s/run_benchmarks.sh", aws_s3_bucket.sw_bucket.bucket)}"]
+      args = ["${format("s3://%s/run_benchmarks.sh", aws_s3_bucket.deployment_bucket.bucket)}"]
     }
   }
 
@@ -127,14 +147,5 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
     }
   ]
 EOF
-  provisioner "local-exec" {
-    command = "sleep 60"
-  }
   service_role = "${aws_iam_role.emr_role.arn}"
-}
-
-resource "aws_s3_bucket_object" "benchmarks_results" {
-  bucket = "${aws_s3_bucket.sw_bucket.bucket}"
-  key    = "benchmarks.finished"
-  depends_on = [aws_emr_cluster.sparkling-water-cluster]
 }
