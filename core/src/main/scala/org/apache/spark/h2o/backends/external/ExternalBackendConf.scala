@@ -62,6 +62,10 @@ trait ExternalBackendConf extends SharedBackendConf {
   def kerberosPrincipal = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_PRINCIPAL._1)
   def kerberosKeytab = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_KEYTAB._1)
   def runAsUser = sparkConf.getOption(PROP_EXTERNAL_RUN_AS_USER._1)
+  def externalH2ODriverIf = sparkConf.getOption(PROP_EXTERNAL_DRIVER_IF._1)
+  def externalH2ODriverPort = sparkConf.getOption(PROP_EXTERNAL_DRIVER_PORT._1)
+  def externalH2ODriverPortRange = sparkConf.getOption(PROP_EXTERNAL_DRIVER_PORT_RANGE._1)
+  def externalExtraMemoryPercent = sparkConf.getInt(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._2)
 
   /** Setters */
 
@@ -127,6 +131,11 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setKerberosKeytab(path: String) = set(PROP_EXTERNAL_KERBEROS_KEYTAB._1, path)
   def setRunAsUser(user: String) = set(PROP_EXTERNAL_RUN_AS_USER._1, user)
 
+  def setExternalH2ODriverIf(iface: String): H2OConf = set(PROP_EXTERNAL_DRIVER_IF._1, iface)
+  def setExternalH2ODriverPort(port: Int): H2OConf = set(PROP_EXTERNAL_DRIVER_PORT._1, port.toString)
+  def setExternalH2ODriverPortRange(portRange: String): H2OConf = set(PROP_EXTERNAL_DRIVER_PORT_RANGE._1, portRange)
+  def setExternalExtraMemoryPercent(memoryPercent: Int): H2OConf = set(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, memoryPercent.toString)
+
   def externalConfString: String =
     s"""Sparkling Water configuration:
         |  backend cluster mode : ${backendClusterMode}
@@ -142,6 +151,14 @@ object ExternalBackendConf {
 
   val EXTERNAL_BACKEND_AUTO_MODE = "auto"
   val EXTERNAL_BACKEND_MANUAL_MODE = "manual"
+
+  val PROP_EXTERNAL_DRIVER_IF = ("spark.ext.h2o.external.driver.if", None)
+
+  val PROP_EXTERNAL_DRIVER_PORT = ("spark.ext.h2o.external.driver.port", None)
+
+  val PROP_EXTERNAL_DRIVER_PORT_RANGE = ("spark.ext.h2o.external.driver.port.range", None)
+
+  val PROP_EXTERNAL_EXTRA_MEMORY_PERCENT = ("spark.ext.h2o.external.extra.memory.percent", 10)
 
   /** ip:port of arbitrary h2o node to identify external h2o cluster */
   val PROP_EXTERNAL_CLUSTER_REPRESENTATIVE = ("spark.ext.h2o.cloud.representative", None)

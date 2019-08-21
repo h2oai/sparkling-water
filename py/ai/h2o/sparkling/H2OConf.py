@@ -437,6 +437,22 @@ class H2OConf(object):
         self._jconf.setRunAsUser(user)
         return self
 
+    def setExternalH2ODriverIf(self, iface):
+        self._jconf.setExternalH2ODriverIf(iface)
+        return self
+
+    def setExternalH2ODriverPort(self, port):
+        self._jconf.setExternalH2ODriverPort(port)
+        return self
+
+    def setExternalH2ODriverPortRange(self, portrange):
+        self._jconf.setExternalH2ODriverPortRange(portrange)
+        return self
+
+    def setExternalExtraMemoryPercent(self, memoryPercent):
+        self._jconf.etExternalExtraMemoryPercent(memoryPercent)
+        return self
+
     # getters independent on backend
 
     def backend_cluster_mode(self):
@@ -675,6 +691,18 @@ class H2OConf(object):
 
     def run_as_user(self):
         return self._get_option(self._jconf.runAsUser())
+
+    def externalH2ODriverIf(self):
+        return self._get_option(self._jconf.externalH2ODriverIf())
+
+    def externalH2ODriverPort(self):
+        return self._get_option(self._jconf.externalH2ODriverPort())
+
+    def externalH2ODriverPortRange(self):
+        return self._get_option(self._jconf.externalH2ODriverPortRange())
+
+    def externalExtraMemoryPercent(self):
+        return self._jconf.externalExtraMemoryPercent()
 
     def set(self, key, value):
         self._jconf.set(key, value)
