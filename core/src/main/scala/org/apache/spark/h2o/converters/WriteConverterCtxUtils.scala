@@ -71,7 +71,7 @@ object WriteConverterCtxUtils {
     * @return H2O Frame
     */
   def convert[T: ClassTag: TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
-                 maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]) = {
+                 maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): H2OFrame = {
     val writeTimeout = hc.getConf.externalWriteConfirmationTimeout
 
     val writerClient = if (hc.getConf.runsInInternalClusterMode) {

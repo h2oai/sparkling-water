@@ -25,7 +25,6 @@ import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vector}
 import org.apache.spark.sql.types._
 import water._
-import water.fvec.Frame
 
 class ExternalWriteConverterCtx(nodeDesc: NodeDesc, writeTimeout: Int, driverTimeStamp: Short) extends WriteConverterCtx {
 
@@ -41,7 +40,7 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, writeTimeout: Int, driverTim
 
   override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]] = null): H2OFrame = {
     externalFrameWriter.finalizeFrame(key, rowsPerChunk, colTypes, domains)
-    new H2OFrame(DKV.getGet[Frame](key))
+    new H2OFrame(key)
   }
 
   /**

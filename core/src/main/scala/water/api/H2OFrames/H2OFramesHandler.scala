@@ -28,20 +28,12 @@ import water.{DKV, Iced}
   */
 class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
   def toDataFrame(version: Int, s: DataFrameIDV3): DataFrameIDV3 = {
-    val value = DKV.get(s.h2oframe_id)
-    if (value == null) {
+    val fr = H2OFrame.findByKey(s.h2oframe_id)
+    if (fr == null) {
       throw new H2ONotFoundArgumentException(s"H2OFrame with id '${s.h2oframe_id}' does not exist, can not proceed with the transformation!")
     }
 
-    val h2oFrame: H2OFrame = value.className() match {
-      case name if name.equals(classOf[Frame].getName) => {
-        import h2oContext.implicits._
-        value.get[Frame]()
-      }
-      case name if name.equals(classOf[H2OFrame].getName) => value.get[H2OFrame]()
-    }
-
-    val dataFrame = h2oContext.asDataFrame(h2oFrame)
+    val dataFrame = h2oContext.asDataFrame(fr)
     dataFrame.rdd.cache()
     if (s.dataframe_id == null) {
       s.dataframe_id = "df_" + dataFrame.rdd.id.toString

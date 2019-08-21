@@ -35,7 +35,7 @@ object SupportedRDDConverter {
   def toH2OFrame(hc: H2OContext, rdd: SupportedRDD, frameKeyName: Option[String]): H2OFrame = rdd.toH2OFrame(hc, frameKeyName)
 
   /** Transform H2OFrame to RDD */
-  def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = new H2ORDD[A, T](fr)(hc)
+  def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, H2OFrame] = new H2ORDD[A, H2OFrame](new H2OFrame(fr))(hc)
 }
 
 /**

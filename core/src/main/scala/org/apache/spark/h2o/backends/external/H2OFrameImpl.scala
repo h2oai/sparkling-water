@@ -15,18 +15,26 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package org.apache.spark.h2o.backends.external
 
+import org.apache.spark.h2o.{Frame, H2OFrameIFace}
+import water.Key
 
-import org.apache.spark.h2o._
-import org.apache.spark.internal.Logging
+class H2OFrameImpl(key: String) extends H2OFrameIFace {
+  override val _key: Key[Frame] = getKeyFromString(key)
 
-import scala.language.{implicitConversions, postfixOps}
-import scala.reflect.runtime.universe._
+  def this(key: Key[Frame]) = this(key.toString)
 
-private[h2o] object DatasetConverter extends Logging {
+  def this(fr: Frame) = this(fr._key)
 
-  def toH2OFrame[T <: Product](hc: H2OContext, ds: Dataset[T], frameKeyName: Option[String])(implicit ttag: TypeTag[T]): H2OFrame = {
-    SparkDataFrameConverter.toH2OFrame(hc, ds.toDF() , frameKeyName)
+  private def getKeyFromString(key: String): Key[Frame] = {
+    val clazz = classOf[Key[Frame]]
+    val method = clazz.getDeclaredMethod("decodeKeyName", classOf[java.lang.String])
+    method.setAccessible(true)
+    val keyBytes = method.invoke(null, key).asInstanceOf[Array[Byte]]
+
+    val constructor = clazz.getConstructor(classOf[Array[Byte]])
+    constructor.setAccessible(true)
+    constructor.newInstance(keyBytes)
   }
 }

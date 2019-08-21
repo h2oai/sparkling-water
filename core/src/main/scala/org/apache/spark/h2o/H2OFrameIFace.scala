@@ -15,18 +15,12 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package org.apache.spark.h2o
 
+import water.Key
 
-import org.apache.spark.h2o._
-import org.apache.spark.internal.Logging
+trait H2OFrameIFace {
+  val _key: Key[Frame]
 
-import scala.language.{implicitConversions, postfixOps}
-import scala.reflect.runtime.universe._
-
-private[h2o] object DatasetConverter extends Logging {
-
-  def toH2OFrame[T <: Product](hc: H2OContext, ds: Dataset[T], frameKeyName: Option[String])(implicit ttag: TypeTag[T]): H2OFrame = {
-    SparkDataFrameConverter.toH2OFrame(hc, ds.toDF() , frameKeyName)
-  }
+  def key: Key[Frame] = _key
 }

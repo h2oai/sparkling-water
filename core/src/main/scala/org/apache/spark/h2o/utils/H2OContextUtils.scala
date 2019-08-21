@@ -21,7 +21,7 @@ import java.net.URI
 
 import org.apache.spark.SparkContext
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.{BuildInfo, H2OConf}
+import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OFrame}
 import water.H2O
 import water.api.ImportHiveTableHandler
 import water.api.ImportHiveTableHandler.HiveTableImporter
@@ -75,7 +75,7 @@ private[spark] trait H2OContextUtils extends Logging {
   def isRunningOnCorrectSpark(sc: SparkContext) = sc.version.startsWith(BuildInfo.buildSparkMajorVersion)
 
 
-  def withConversionDebugPrints[R <: Frame](sc: SparkContext, conversionName: String, block: => R): R = {
+  def withConversionDebugPrints(sc: SparkContext, conversionName: String, block: => H2OFrame): H2OFrame = {
     val propName = "spark.h2o.measurements.timing"
     val performancePrintConf = sc.getConf.getOption(propName).orElse(sys.props.get(propName))
 

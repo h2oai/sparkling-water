@@ -25,9 +25,6 @@ package object h2o {
   type Frame = water.fvec.Frame
   //type Key = water.Key
   type H2O = water.H2O
-
-  // Alias for H2OFrame
-  type H2OFrame = water.fvec.H2OFrame
   // Alias for
   type RDD[X] = org.apache.spark.rdd.RDD[X]
 

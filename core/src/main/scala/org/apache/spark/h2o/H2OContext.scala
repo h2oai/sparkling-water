@@ -259,13 +259,17 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     * This code: hc.asRDD[PUBDEV458Type](rdd) will need to be call as hc.asRDD[PUBDEV458Type].apply(rdd)
     */
   def asRDD[A <: Product : TypeTag : ClassTag] = new {
-    def apply[T <: Frame](fr: T): H2ORDD[A, T] = SupportedRDDConverter.toRDD[A, T](H2OContext.this, fr)
+    def apply[T <: Frame](fr: T): H2ORDD[A, H2OFrame] = SupportedRDDConverter.toRDD[A, H2OFrame](H2OContext.this, new H2OFrame(fr))
   }
 
   /** Convert given H2O frame into DataFrame type */
 
-  def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
+  def asDataFrame(fr: H2OFrame, copyMetadata: Boolean = true): DataFrame = {
     SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
+  }
+
+  def asDataFrame(fr: Frame, copyMetadata: Boolean = true): DataFrame = {
+    SparkDataFrameConverter.toDataFrame(this, new H2OFrame(fr), copyMetadata)
   }
 
   def asDataFrame(s: String, copyMetadata: Boolean): DataFrame = {
