@@ -22,7 +22,7 @@ import java.lang.reflect.Modifier
 
 import com.google.common.reflect.ClassPath
 import org.apache.spark.SparkConf
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
 import org.json4s._
 import org.json4s.jackson.Serialization._
@@ -37,8 +37,6 @@ object Runner {
     .builder()
     .config(createSparkConf())
     .getOrCreate()
-
-  new H2OConf(spark).setExternalClusterMode()
 
   val hc = H2OContext.getOrCreate(spark)
 
@@ -149,7 +147,8 @@ object Runner {
       new DKVCleaner().clean()
     }
     outputDir.mkdirs()
-    val outputFile = new File(outputDir, s"${hc._conf.backendClusterMode}_${batch.name}.txt")
+    val sparkMaster = spark.conf.get("spark.master")
+    val outputFile = new File(outputDir, s"${sparkMaster}_${hc._conf.backendClusterMode}_${batch.name}.txt")
     val outputStream = new FileOutputStream(outputFile)
     try {
       batch.benchmarks.foreach(_.exportMeasurements(outputStream))
