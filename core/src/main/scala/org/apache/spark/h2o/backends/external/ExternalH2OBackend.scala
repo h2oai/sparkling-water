@@ -134,9 +134,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       cmdToLaunch = cmdToLaunch ++ Seq("-driverportrange", conf.externalH2ODriverPortRange.get)
     }
 
-    if (conf.externalExtraMemoryPercent.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-extramempercent", conf.externalExtraMemoryPercent.get)
-    }
+    cmdToLaunch = cmdToLaunch ++ Seq("-extramempercent", conf.externalExtraMemoryPercent.toString)
 
     // start external H2O cluster and log the output
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
