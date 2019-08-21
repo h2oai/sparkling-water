@@ -319,6 +319,24 @@ External backend configuration properties
 +-------------------------------------------------------+----------------+-------------------------------------+
 | ``spark.ext.h2o.external.run.as.user``                | ``None``       | Impersonated Hadoop user.           |
 +-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.external.driver.if``                  | ``None``       | Ip address or network of            |
+|                                                       |                | mapper->driver callback interface.  |
+|                                                       |                | Default value means automatic       |
+|                                                       |                | detection.                          |
++-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.external.driver.port``                |  ``None``      | Port of mapper->driver callback     |
+|                                                       |                | interface. Default value means      |
+|                                                       |                | automatic detection.                |
++-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.external.driver.port.range``          | ``None``       | Range portX-portY of mapper->driver |
+|                                                       |                | callback interface; eg:             |
+|                                                       |                | 50000-55000.                        |
++-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.external.extra.memory.percent``       | ``10``         | This option is a percentage of      |
+|                                                       |                | ``spark.ext.h2o.hadoop.memory`` and |
+|                                                       |                | specifies memory for internal JVM   |
+|                                                       |                | use outside of Java heap.           |
++-------------------------------------------------------+----------------+-------------------------------------+
 
 --------------
 

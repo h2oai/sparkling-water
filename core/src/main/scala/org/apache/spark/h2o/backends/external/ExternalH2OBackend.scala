@@ -122,6 +122,20 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         hc.getConf.kerberosPrincipal.get, "-keytab", hc.getConf.kerberosKeytab.get)
     }
 
+    if (conf.externalH2ODriverIf.isDefined) {
+      cmdToLaunch = cmdToLaunch ++ Seq("-driverif", conf.externalH2ODriverIf.get)
+    }
+
+    if (conf.externalH2ODriverPort.isDefined) {
+      cmdToLaunch = cmdToLaunch ++ Seq("-driverport", conf.externalH2ODriverPort.get)
+    }
+
+    if (conf.externalH2ODriverPortRange.isDefined) {
+      cmdToLaunch = cmdToLaunch ++ Seq("-driverportrange", conf.externalH2ODriverPortRange.get)
+    }
+
+    cmdToLaunch = cmdToLaunch ++ Seq("-extramempercent", conf.externalExtraMemoryPercent.toString)
+
     // start external H2O cluster and log the output
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
 
