@@ -24,10 +24,10 @@ import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vector}
 import org.apache.spark.sql.types._
-import water.fvec.Frame
 import water._
+import water.fvec.Frame
 
-class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTimeout: Int, driverTimeStamp: Short) extends WriteConverterCtx {
+class ExternalWriteConverterCtx(nodeDesc: NodeDesc, writeTimeout: Int, driverTimeStamp: Short) extends WriteConverterCtx {
 
   private val externalFrameWriter = ExternalFrameWriterClient.create(nodeDesc.hostname, nodeDesc.port, driverTimeStamp, writeTimeout)
 
@@ -35,12 +35,21 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTi
     externalFrameWriter.close()
   }
 
+  override def initFrame(key: String, columns: Array[String]): Unit = {
+    externalFrameWriter.initFrame(key, columns)
+  }
+
+  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]] = null): H2OFrame = {
+    externalFrameWriter.finalizeFrame(key, rowsPerChunk, colTypes, domains)
+    new H2OFrame(DKV.getGet[Frame](key))
+  }
+
   /**
     * Initialize the communication before the chunks are created
     */
-  override def createChunks(keystr: String, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
-                            sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
-    externalFrameWriter.createChunk(keystr, expectedTypes, chunkId, totalNumOfRows, maxVecSizes)
+  override def createChunk(keystr: String, numRows: Option[Int], expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
+                           sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
+    externalFrameWriter.createChunk(keystr, expectedTypes, chunkId, numRows.get, maxVecSizes)
   }
 
   override def put(colIdx: Int, data: Boolean) = externalFrameWriter.sendBoolean(data)
@@ -69,7 +78,7 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, totalNumOfRows: Int, writeTi
 
   override def putNA(columnNum: Int) = externalFrameWriter.sendNA()
 
-  override def numOfRows(): Int = totalNumOfRows
+  override def numOfRows(): Int = externalFrameWriter.getNumberOfWrittenRows
 
   override def putSparseVector(startIdx: Int, vector: SparseVector, maxVecSize: Int): Unit = {
     externalFrameWriter.sendSparseVector(vector.indices, vector.values)
@@ -103,26 +112,4 @@ object ExternalWriteConverterCtx extends ExternalBackendUtils {
       case _: DataType => ReflectionUtils.supportedTypeOf(dt).javaClass
     }
   }
-
-  def initFrame(key: String, columns: Array[String], timeout: Int): Unit = {
-    val (ip, port, timestamp) = leaderInfo()
-    val client = ExternalFrameWriterClient.create(ip, port, timestamp, timeout)
-    client.initFrame(key, columns)
-    client.close()
-  }
-
-  def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], timeout: Int, domains: Array[Array[String]] = null): H2OFrame = {
-    val (ip, port, timestamp) = leaderInfo()
-    val client = ExternalFrameWriterClient.create(ip, port, timestamp, timeout)
-    client.finalizeFrame(key, rowsPerChunk, colTypes, domains)
-    client.close()
-    new H2OFrame(DKV.getGet[Frame](key))
-  }
-
-  private def leaderInfo(): (String, Int, Short) = {
-    val leader = H2O.CLOUD.leader()
-    val nodeDesc = NodeDesc(leader)
-    (nodeDesc.hostname, nodeDesc.port, leader.getTimestamp)
-  }
-
 }

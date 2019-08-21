@@ -37,9 +37,9 @@ object WriteConverterCtxUtils {
   type UploadPlan = immutable.Map[Int, NodeDesc]
 
   def create(uploadPlan: Option[UploadPlan],
-             partitionId: Int, totalNumOfRows: Option[Int], writeTimeout: Int, driverTimeStamp: Short): WriteConverterCtx = {
+             partitionId: Int, writeTimeout: Int, driverTimeStamp: Short): WriteConverterCtx = {
     uploadPlan
-      .map { _ => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), totalNumOfRows.get, writeTimeout, driverTimeStamp) }
+      .map { _ => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), writeTimeout, driverTimeStamp) }
       .getOrElse(new InternalWriteConverterCtx())
   }
 
@@ -73,12 +73,15 @@ object WriteConverterCtxUtils {
   def convert[T: ClassTag: TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                  maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]) = {
     val writeTimeout = hc.getConf.externalWriteConfirmationTimeout
-    // Make an H2O data Frame - but with no backing data (yet)
-    if (hc.getConf.runsInExternalClusterMode) {
-      ExternalWriteConverterCtx.initFrame(keyName, colNames, writeTimeout)
+
+    val writerClient = if (hc.getConf.runsInInternalClusterMode) {
+      new InternalWriteConverterCtx()
     } else {
-      InternalWriteConverterCtx.initFrame(keyName, colNames)
+      val leader = H2O.CLOUD.leader()
+      new ExternalWriteConverterCtx(NodeDesc(leader), writeTimeout, H2O.SELF.getTimestamp)
     }
+
+    writerClient.initFrame(keyName, colNames)
 
     // prepare required metadata based on the used backend
     val uploadPlan = if (hc.getConf.runsInExternalClusterMode) {
@@ -110,12 +113,7 @@ object WriteConverterCtxUtils {
       expectedTypes
     }
 
-    if (hc.getConf.runsInExternalClusterMode) {
-      ExternalWriteConverterCtx.finalizeFrame(keyName, res, types, writeTimeout)
-    } else {
-      InternalWriteConverterCtx.finalizeFrame(keyName, res, types)
-    }
-
+   writerClient.finalizeFrame(keyName, res, types)
   }
 
 }

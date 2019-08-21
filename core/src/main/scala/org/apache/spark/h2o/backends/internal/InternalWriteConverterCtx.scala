@@ -19,14 +19,13 @@ package org.apache.spark.h2o.backends.internal
 
 import java.sql.{Date, Timestamp}
 
-import org.apache.spark.h2o.{Frame, H2OFrame}
+import org.apache.spark.h2o.backends.internal.InternalWriteConverterCtx.validateFrame
 import org.apache.spark.h2o.converters.WriteConverterCtx
+import org.apache.spark.h2o.{Frame, H2OFrame}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
+import water.fvec.FrameUtils._
 import water.fvec.{Chunk, FrameUtils, NewChunk}
-import water.util.Log
-import water.{DKV, H2ONode, Key, MRTask}
-
-import scala.collection.mutable
+import water.{DKV, Key, MRTask}
 
 class InternalWriteConverterCtx extends WriteConverterCtx {
 
@@ -37,11 +36,24 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
 
   private var rowIdx: Int = _
 
-  override def createChunks(keyName: String, expectedTypes: Array[Byte], chunkId: Int,
-                            maxVecSizes: Array[Int], sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
+  override def initFrame(key: String, columns: Array[String]): Unit = {
+    val fr = new water.fvec.Frame(Key.make[Frame](key))
+    preparePartialFrame(fr, columns)
+    fr.update()
+  }
+
+  override def createChunk(keyName: String, numRows: Option[Int], expectedTypes: Array[Byte], chunkId: Int,
+                           maxVecSizes: Array[Int], sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
     chunks = FrameUtils.createNewChunks(keyName, expectedTypes, chunkId, sparse)
     sparseVectorPts = collection.mutable.Map(vecStartSize.mapValues(size => new Array[Int](size)).toSeq: _*)
     sparseVectorInUse = collection.mutable.Map(vecStartSize.mapValues(_ => false).toSeq: _*)
+  }
+
+  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]]): H2OFrame = {
+    val fr = DKV.getGet[Frame](key)
+    water.fvec.FrameUtils.finalizePartialFrame(fr, rowsPerChunk, domains, colTypes)
+    validateFrame(fr)
+    new H2OFrame(fr)
   }
 
   override def closeChunks(numRows: Int): Unit = {
@@ -118,43 +130,10 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
 }
 
 object InternalWriteConverterCtx {
-  def initFrame(keyName: String, names: Array[String]): Unit = {
-    val fr = new water.fvec.Frame(Key.make[Frame](keyName))
-    water.fvec.FrameUtils.preparePartialFrame(fr, names)
-    // Save it directly to DKV
-    fr.update()
-  }
-
-  def finalizeFrame(keyName: String,
-                    res: Array[Long],
-                    colTypes: Array[Byte],
-                    colDomains: Array[Array[String]] = null): H2OFrame = {
-    val fr = DKV.getGet[Frame](keyName)
-    water.fvec.FrameUtils.finalizePartialFrame(fr, res, colDomains, colTypes)
-    validateFrame(fr)
-    new H2OFrame(fr)
-  }
 
   private def validateFrame(fr: Frame): Unit = {
 
-    if (Log.isLoggingFor("DEBUG")) {
-      if (!fr.vecs().isEmpty) {
-        Log.debug("Number of chunks on frame: " + fr.anyVec.nChunks)
-        val nodes = mutable.Map.empty[H2ONode, Int]
-        (0 until fr.anyVec().nChunks()).foreach { i =>
-          val home = fr.anyVec().chunkKey(i).home_node()
-          if (!nodes.contains(home)) {
-            nodes += (home -> 0)
-          }
-          nodes(home) = nodes(home) + 1
-        }
-        Log.debug("Frame distributed on nodes:")
-        nodes.foreach {
-          case (node, n) =>
-            Log.debug(node + ": " + n + " chunks.")
-        }
-      }
-    }
+
 
     // Validate num of chunks in each vector
     if (!fr.vecs().isEmpty) {
@@ -162,9 +141,7 @@ object InternalWriteConverterCtx {
       fr.vecs.tail.foreach { vec =>
         if (vec.nChunks() != first.nChunks()) {
           throw new IllegalArgumentException(
-            s"""
-               | Vectors have different number of chunks: ${fr.vecs().map(_.nChunks()).mkString(", ")}
-        """.stripMargin)
+            s"Vectors have different number of chunks: ${fr.vecs().map(_.nChunks()).mkString(", ")}")
         }
       }
     }
@@ -179,7 +156,7 @@ object InternalWriteConverterCtx {
             s"""
                | Invalid shape of H2O Frame:
                |
-          | ${layouts.zipWithIndex.map { case (arr, idx) => s"Vec $idx has layout: ${arr.mkString(", ")}\n" }}
+               | ${layouts.zipWithIndex.map { case (arr, idx) => s"Vec $idx has layout: ${arr.mkString(", ")}\n" }}
                |
         }
         """.stripMargin)

@@ -100,13 +100,13 @@ private[h2o] object SparkDataFrameConverter extends Logging {
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
 
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
-    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), dataSize, writeTimeout, driverTimeStamp)
+    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), writeTimeout, driverTimeStamp)
     // Collect mapping start position of vector and its size
     val vecStartSize = (for (vecIdx <- vecIndices) yield {
       (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))
     }).toMap
     // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunks(keyName, expectedTypes, context.partitionId(), vecIndices.map(elemMaxSizes(_)), sparse, vecStartSize)
+    con.createChunk(keyName, dataSize, expectedTypes, context.partitionId(), vecIndices.map(elemMaxSizes(_)), sparse, vecStartSize)
 
     var localRowIdx = 0
     iterator.foreach { row =>
