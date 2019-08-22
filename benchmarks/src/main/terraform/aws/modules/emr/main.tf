@@ -83,7 +83,6 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
 
   runBenchmarks "local" "internal" "8G"
   runBenchmarks "yarn" "internal" "8G"
-  runBenchmarks "yarn" "external" "4G"
 
   tar -zcvf /home/hadoop/results.tar.gz -C /home/hadoop/results .
   aws s3 cp /home/hadoop/results.tar.gz ${format("s3://%s/public-read/results.tar.gz", aws_s3_bucket.deployment_bucket.bucket)}

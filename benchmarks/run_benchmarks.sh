@@ -30,7 +30,7 @@ if [ "$outputs_header" == "Outputs:" ]; then
     # Wait until benchmarks are finished
     polling_step=5
     current_timeout="$benchmark_execution_timeout"
-    printf 'Executing benchmarks.'
+    printf 'Executing benchmarks...'
     until $(curl --output /dev/null --silent --head --fail "$finished_file_url"); do
         printf '.'
         sleep "$polling_step"
