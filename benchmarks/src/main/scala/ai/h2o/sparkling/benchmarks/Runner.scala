@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import java.io.{File, FileOutputStream, FileReader}
+import java.io.{File, FileOutputStream, FileReader, InputStreamReader}
 import java.lang.reflect.Modifier
 
 import com.google.common.reflect.ClassPath
@@ -89,11 +89,12 @@ object Runner {
 
   private def loadDatasetDetails(): Seq[DatasetDetails] = {
     val stream = getClass.getClassLoader.getResourceAsStream(datasetDetailsFilePath)
+    val reader = new InputStreamReader(stream)
     implicit val formats = DefaultFormats
     try {
-      read[Seq[DatasetDetails]](stream)
+      read[Seq[DatasetDetails]](reader)
     } finally {
-      stream.close()
+      reader.close()
     }
   }
 
