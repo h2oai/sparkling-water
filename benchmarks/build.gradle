@@ -61,7 +61,12 @@ task cleanTerraform(type: Delete) {
     delete "build/terraform"
 }
 
+task cleanOutput(type: Delete) {
+    delete "output"
+}
+
 copyTerraform.dependsOn cleanTerraform
 substituteTerraform.dependsOn copyTerraform
 build.dependsOn substituteTerraform
 build.dependsOn shadowJar
+clean.dependsOn cleanOutput
