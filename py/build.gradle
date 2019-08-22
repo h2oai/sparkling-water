@@ -135,12 +135,6 @@ def copyPySetup() {
     copy {
         from("$projectDir") {
             include 'README.rst'
-        }
-        into pkgDir
-    }
-
-    copy {
-        from("$projectDir/src") {
             include 'MANIFEST.in'
             include 'setup.cfg'
             include 'pysparkling/**/*'
