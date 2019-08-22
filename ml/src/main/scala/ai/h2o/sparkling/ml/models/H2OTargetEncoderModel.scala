@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.automl.targetencoding.TargetEncoderModel
+import hex.targetencoding.TargetEncoderModel
 import ai.h2o.sparkling.ml.features.{H2OTargetEncoderHoldoutStrategy, H2OTargetEncoderModelUtils}
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.h2o.H2OContext
