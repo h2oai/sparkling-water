@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.automl.targetencoding._
+import hex.targetencoding._
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
 import org.apache.spark.h2o.{Frame, H2OContext}
@@ -45,11 +45,13 @@ class H2OTargetEncoder(override val uid: String)
 
   private def trainTargetEncodingModel(trainingFrame: Frame) = try {
     val targetEncoderParameters = new TargetEncoderModel.TargetEncoderParameters()
-    targetEncoderParameters._withBlending = getBlendedAvgEnabled()
-    targetEncoderParameters._blendingParams = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
+    targetEncoderParameters._blending = getBlendedAvgEnabled()
+    targetEncoderParameters._blending_parameters = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
     targetEncoderParameters._response_column = getLabelCol()
-    targetEncoderParameters._teFoldColumnName = getFoldCol()
-    targetEncoderParameters._columnNamesToEncode = getInputCols()
+    targetEncoderParameters._fold_column = getFoldCol()
+    targetEncoderParameters._encoded_columns = getInputCols().map {
+      column => new water.fvec.Frame.VecSpecifier(trainingFrame._key, column)
+    }
     targetEncoderParameters.setTrain(trainingFrame._key)
 
     val builder = new TargetEncoderBuilder(targetEncoderParameters)
