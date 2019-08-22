@@ -19,7 +19,7 @@ variable "aws_core_instance_count" {
   default = "2"
 }
 variable "aws_instance_type" {
-  default = "m3.xlarge"
+  default = "m5.xlarge"
 }
 variable "sw_version" {
   default = "SUBST_SW_VERSION"
