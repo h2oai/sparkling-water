@@ -65,16 +65,20 @@ task cleanOutput(type: Delete) {
     delete "output"
 }
 
-task runBenchmarks(type: Exec) {
-    def accessKey = project.property("aws_access_key")
-    def secretKey = project.property("aws_secret_key")
-    def publicKey = project.property("aws_ssh_public_key")
+task runBenchmarks{
+    doLast {
+        exec {
+            def accessKey = project.property("aws_access_key")
+            def secretKey = project.property("aws_secret_key")
+            def publicKey = project.property("aws_ssh_public_key")
 
-    environment("aws_access_key", accessKey)
-    environment("aws_secret_key", secretKey)
-    environment("aws_ssh_public_key", publicKey)
+            environment("aws_access_key", accessKey)
+            environment("aws_secret_key", secretKey)
+            environment("aws_ssh_public_key", publicKey)
 
-    commandLine "./run_benchmarks.sh"
+            commandLine "./run_benchmarks.sh"
+        }
+    }
 }
 
 copyTerraform.dependsOn cleanTerraform

@@ -23,7 +23,7 @@ output_block=$(terraform apply \
     -var "aws_secret_key=$aws_secret_key" \
     -var "aws_ssh_public_key=$aws_ssh_public_key" \
     -auto-approve \
-    | tee /dev/tty | tail -n 6)
+    | tee /dev/stderr | tail -n 6)
 
 # If cluster is established wait for benchmarks and download them
 outputs_header=$(echo "$output_block" | head -n 1)
