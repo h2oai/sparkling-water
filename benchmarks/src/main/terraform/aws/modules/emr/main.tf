@@ -56,6 +56,13 @@ resource "aws_s3_bucket_object" "benchmarks_jar" {
   source = "${var.sw_package_file}"
 }
 
+resource "aws_s3_bucket_object" "h2o_jar" {
+  bucket = "${aws_s3_bucket.deployment_bucket.bucket}"
+  key = "h2o.jar"
+  acl = "private"
+  source = "${var.h2o_jar_file}"
+}
+
 resource "aws_s3_bucket_object" "run_benchmarks_script" {
   bucket = "${aws_s3_bucket.deployment_bucket.id}"
   key    = "run_benchmarks.sh"
@@ -78,11 +85,13 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
       --conf "spark.ext.h2o.hadoop.memory=$3" \
       --conf "spark.ext.h2o.external.start.mode=auto" \
       ${format("s3://%s/benchmarks.jar", aws_s3_bucket.deployment_bucket.bucket)} \
-      -o /home/hadoop/results
+      -o /home/hadoop/results \
+      -b DummyDataFrameBenchmark
   }
 
-  runBenchmarks "local" "internal" "8G"
-  runBenchmarks "yarn" "internal" "8G"
+  aws s3 cp ${format("s3://%s/h2o.jar", aws_s3_bucket.deployment_bucket.bucket)} /home/hadoop/h2o.jar
+  export H2O_EXTENDED_JAR=/home/hadoop/h2o.jar
+  runBenchmarks "yarn" "external" "6G"
 
   tar -zcvf /home/hadoop/results.tar.gz -C /home/hadoop/results .
   aws s3 cp /home/hadoop/results.tar.gz ${format("s3://%s/public-read/results.tar.gz", aws_s3_bucket.deployment_bucket.bucket)}
@@ -97,7 +106,11 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
   release_label = "${var.aws_emr_version}"
   log_uri = "s3://${aws_s3_bucket.deployment_bucket.bucket}/"
   applications = ["Spark", "Hadoop"]
-  depends_on = [aws_s3_bucket_object.benchmarks_jar, aws_s3_bucket_object.run_benchmarks_script]
+  depends_on = [
+    aws_s3_bucket_object.benchmarks_jar,
+    aws_s3_bucket_object.h2o_jar,
+    aws_s3_bucket_object.run_benchmarks_script
+  ]
 
   ec2_attributes {
     subnet_id = "${data.aws_subnet.main.id}"

@@ -5,6 +5,7 @@ apply from: "$rootDir/gradle/shadowRuntime.gradle"
 apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
+    compileOnly project(":sparkling-water-assembly-h2o")
 
     // Sparkling Water libraries
     compile project(":sparkling-water-ml")
@@ -41,7 +42,12 @@ task substituteTerraform() {
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
-                .replaceAll("SUBST_PACKAGE_FILE", "${project.buildDir.toString()}/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
+                .replaceAll(
+                    "SUBST_H2O_JAR_FILE",
+                    "${project(":sparkling-water-assembly-h2o").buildDir.toString()}/libs/sparkling-water-assembly-h2o-${version}.jar")
+                .replaceAll(
+                    "SUBST_PACKAGE_FILE", 
+                    "${project.buildDir.toString()}/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
                 .replaceAll("SUBST_SW_VERSION", version)
                 .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
                 .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
