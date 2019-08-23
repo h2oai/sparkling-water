@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import java.io.{File, FileOutputStream, FileReader}
+import java.io.{File, FileOutputStream, FileReader, InputStreamReader}
 import java.lang.reflect.Modifier
 
 import com.google.common.reflect.ClassPath
@@ -31,7 +31,7 @@ import scala.collection.JavaConverters._
 
 object Runner {
   val datasetDetailsFilePath = "datasets.json"
-  val outputDir = new File("benchmarks", "output")
+  val defaultOutputDir = new File("benchmarks", "output")
 
   val spark = SparkSession
     .builder()
@@ -69,23 +69,28 @@ object Runner {
       algorithms,
       _.h2oAlgorithm.getClass.getSimpleName)
 
+    val outputDir = settings.outputDir match {
+      case Some(dir) => new File(dir)
+      case None => defaultOutputDir
+    }
+
     val batches = createBatches(filteredDatasetDetails, filteredBenchmarks, filteredAlgorithms)
-    batches.foreach(executeBatch)
+    batches.foreach(batch => executeBatch(batch, outputDir))
 
     hc.stop(stopSparkContext = true)
   }
 
   private def processArguments(args: Array[String]): Settings = {
-    require(args.length % 2 == 0, "Wrong arguments. Example: -b benchmarkName -d datasetName -a algorithmName")
+    require(args.length % 2 == 0, "Wrong arguments. Example: -b benchmarkName -d datasetName -a algorithmName -o outputDir")
     val (keys, values) = args.zipWithIndex.partition { case (_, idx) => idx % 2 == 0 }
     val map = keys.map(_._1).zip(values.map(_._1)).toMap
-    Settings(map.get("-b"), map.get("-d"), map.get("-a"))
+    Settings(map.get("-b"), map.get("-d"), map.get("-a"), map.get("-o"))
   }
 
   private def loadDatasetDetails(): Seq[DatasetDetails] = {
-    val url = getClass.getClassLoader.getResource(datasetDetailsFilePath)
+    val stream = getClass.getClassLoader.getResourceAsStream(datasetDetailsFilePath)
+    val reader = new InputStreamReader(stream)
     implicit val formats = DefaultFormats
-    val reader = new FileReader(url.getPath)
     try {
       read[Seq[DatasetDetails]](reader)
     } finally {
@@ -139,7 +144,7 @@ object Runner {
     }
   }
 
-  private def executeBatch(batch: BenchmarkBatch) = {
+  private def executeBatch(batch: BenchmarkBatch, outputDir: File) = {
     println(s"Executing benchmark batch '${batch.name}' ...")
     batch.benchmarks.foreach { benchmark =>
       benchmark.run()
@@ -160,5 +165,5 @@ object Runner {
 
   private case class BenchmarkBatch(name: String, benchmarks: Seq[BenchmarkBase[_]])
 
-  private case class Settings(benchmark: Option[String], dataset: Option[String], algorithm: Option[String])
+  private case class Settings(benchmark: Option[String], dataset: Option[String], algorithm: Option[String], outputDir: Option[String])
 }
