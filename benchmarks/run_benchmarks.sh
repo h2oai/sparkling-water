@@ -2,9 +2,15 @@
 
 benchmark_execution_timeout=10800 # 3 hours
 
-read -p "Enter your aws access key: "  aws_access_key
-read -p "Enter your aws secret key: "  aws_secret_key
-read -p "Enter your aws ssh public key: "  aws_ssh_public_key
+if [ -z "$aws_access_key" ]; then
+    read -p "Enter your aws access key: "  aws_access_key
+fi
+if [ -z "$aws_secret_key" ]; then
+    read -p "Enter your aws secret key: "  aws_secret_key
+fi
+if [ -z "$aws_ssh_public_key" ]; then
+    read -p "Enter your aws ssh public key: "  aws_ssh_public_key
+fi
 
 cd "$(dirname "$0")"
 script_path=$(pwd)
