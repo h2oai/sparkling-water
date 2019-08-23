@@ -125,10 +125,7 @@ if (project.hasProperty("doExtend")) {
             attributes 'Main-Class': getJarMainClass(getOrDownloadOriginalJar())
         }
         configurations = [project.configurations.artifactsToMerge]
-        baseName = fileName
-        classifier = null
-        version = null
-
+        archiveBaseName = fileName
         finalizedBy "printExtendedJarLocation"
     }
 }
