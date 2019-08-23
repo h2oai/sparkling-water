@@ -2,6 +2,7 @@ description = "Sparkling Water Benchmarks"
 
 apply plugin: 'com.github.johnrengelman.shadow'
 apply from: "$rootDir/gradle/shadowRuntime.gradle"
+apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
 
@@ -29,7 +30,43 @@ shadowJar {
     relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
     relocate 'org.eclipse.jetty.orbit', 'ai.h2o.org.eclipse.jetty.orbit'
 
+    from "$project.buildDir/resources/main" include '**/*'
     exclude 'www/flow/packs/test-*/**'
 }
 
+task substituteTerraform() {
+    doLast {
+        def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
+        def tfScripts = ["${tfBaseDir}/variables.tf", "${tfBaseDir}/modules/emr/variables.tf", "${tfBaseDir}/modules/emr/main.tf"]
+        tfScripts.each { path ->
+            def contents = file(path).getText('UTF-8')
+            contents = contents
+                .replaceAll("SUBST_PACKAGE_FILE", "${project.buildDir.toString()}/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
+                .replaceAll("SUBST_SW_VERSION", version)
+                .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
+                .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
+            
+            file(path).write(contents, 'UTF-8')
+        }
+    }
+}
+
+task copyTerraform(type: Copy) {
+    from 'src/main/terraform'
+    include "**/*.tf"
+    into "build/terraform"
+}
+
+task cleanTerraform(type: Delete) {
+    delete "build/terraform"
+}
+
+task cleanOutput(type: Delete) {
+    delete "output"
+}
+
+copyTerraform.dependsOn cleanTerraform
+substituteTerraform.dependsOn copyTerraform
+build.dependsOn substituteTerraform
 build.dependsOn shadowJar
+clean.dependsOn cleanOutput
