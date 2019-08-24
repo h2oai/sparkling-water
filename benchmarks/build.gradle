@@ -37,16 +37,22 @@ shadowJar {
 
 task substituteTerraform() {
     doLast {
+        def outputStream = new ByteArrayOutputStream()
+        exec {
+            workingDir(project.parent.rootDir)
+            commandLine './gradlew', '-PdoExtend', 'extendJar', '-PdownloadH2O'
+            standardOutput = outputStream
+        }
+        def h2oExtendedJar = outputStream.toString().readLines().find{ it.contains("extended") && it.endsWith('jar') }
+
         def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
         def tfScripts = ["${tfBaseDir}/variables.tf", "${tfBaseDir}/modules/emr/variables.tf", "${tfBaseDir}/modules/emr/main.tf"]
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
+                .replaceAll("SUBST_H2O_JAR_FILE", h2oExtendedJar)
                 .replaceAll(
-                    "SUBST_H2O_JAR_FILE",
-                    "${project(":sparkling-water-assembly-h2o").buildDir.toString()}/libs/sparkling-water-assembly-h2o-${version}.jar")
-                .replaceAll(
-                    "SUBST_PACKAGE_FILE", 
+                    "SUBST_PACKAGE_FILE",
                     "${project.buildDir.toString()}/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
                 .replaceAll("SUBST_SW_VERSION", version)
                 .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
