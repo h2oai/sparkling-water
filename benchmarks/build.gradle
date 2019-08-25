@@ -40,7 +40,7 @@ task substituteTerraform() {
         def outputStream = new ByteArrayOutputStream()
         exec {
             workingDir(project.parent.rootDir)
-            commandLine './gradlew', '-PdoExtend', 'extendJar', '-PdownloadH2O'
+            commandLine './gradlew', '-PdoExtend', 'extendJar', '-PdownloadH2O=hdp2.6'
             standardOutput = outputStream
         }
         def h2oExtendedJar = outputStream.toString().readLines().find{ it.contains("extended") && it.endsWith('jar') }

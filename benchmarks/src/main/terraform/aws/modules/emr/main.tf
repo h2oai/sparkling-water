@@ -85,10 +85,11 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
       --conf "spark.ext.h2o.hadoop.memory=$3" \
       --conf "spark.ext.h2o.external.start.mode=auto" \
       ${format("s3://%s/benchmarks.jar", aws_s3_bucket.deployment_bucket.bucket)} \
-      -o /home/hadoop/results \
-      -b DummyDataFrameBenchmark
+      -o /home/hadoop/results
   }
 
+  runBenchmarks "local" "internal" "12G"
+  runBenchmarks "yarn" "internal" "12G"
   aws s3 cp ${format("s3://%s/h2o.jar", aws_s3_bucket.deployment_bucket.bucket)} /home/hadoop/h2o.jar
   export H2O_EXTENDED_JAR=/home/hadoop/h2o.jar
   runBenchmarks "yarn" "external" "6G"
