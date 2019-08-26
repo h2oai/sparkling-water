@@ -5,8 +5,6 @@ apply from: "$rootDir/gradle/shadowRuntime.gradle"
 apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
-    compileOnly project(":sparkling-water-assembly-h2o")
-
     // Sparkling Water libraries
     compile project(":sparkling-water-ml")
     compile project(":sparkling-water-repl")
@@ -35,7 +33,7 @@ shadowJar {
     exclude 'www/flow/packs/test-*/**'
 }
 
-task substituteTerraform() {
+task buildH2OExtendedJar() {
     doLast {
         def outputStream = new ByteArrayOutputStream()
         exec {
@@ -44,13 +42,19 @@ task substituteTerraform() {
             standardOutput = outputStream
         }
         def h2oExtendedJar = outputStream.toString().readLines().find{ it.contains("extended") && it.endsWith('jar') }
+        buildH2OExtendedJar.ext.fileName = h2oExtendedJar
+    }
+}
 
+task substituteTerraform() {
+    dependsOn buildH2OExtendedJar
+    doLast {
         def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
         def tfScripts = ["${tfBaseDir}/variables.tf", "${tfBaseDir}/modules/emr/variables.tf", "${tfBaseDir}/modules/emr/main.tf"]
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
-                .replaceAll("SUBST_H2O_JAR_FILE", h2oExtendedJar)
+                .replaceAll("SUBST_H2O_JAR_FILE", buildH2OExtendedJar.fileName)
                 .replaceAll(
                     "SUBST_PACKAGE_FILE",
                     "${project.buildDir.toString()}/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")

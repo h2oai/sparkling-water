@@ -106,7 +106,7 @@ if (project.hasProperty("doExtend")) {
     task printExtendedJarLocation() {
         doLast {
             def fileName = getH2OJarName(getOrDownloadOriginalJar())
-            println(file("private/extended/${fileName}-${version}.jar"))
+            println(file("private/extended/${fileName}.jar"))
         }
     }
 
