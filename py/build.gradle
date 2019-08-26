@@ -143,6 +143,7 @@ def copyPySetup() {
         from("$projectDir/src") {
             include 'MANIFEST.in'
             include 'setup.cfg'
+            include 'setup.py'
             include 'pysparkling/**/*'
             include 'ai/**/*'
             exclude '**/*.pyc'
