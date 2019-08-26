@@ -30,6 +30,7 @@ python {
     }
 
     pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
+    pip "pytest:4.6.5" // For running tests
     pip "tabulate:0.8.3"
     pip "requests:2.21.0"
     pip "future:0.17.1"
@@ -51,7 +52,7 @@ configurations {
 
 dependencies {
     sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
-    
+
     s3deps "com.amazonaws:aws-java-sdk:1.7.4"
     s3deps "org.apache.hadoop:hadoop-aws:2.7.3"
 }
@@ -281,7 +282,7 @@ def createUnitTestArgs() {
             "${distPython.archiveFile.get()}",
             "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}"
     ]
-    
+
     gradle.taskGraph.whenReady {
         if (gradle.taskGraph.hasTask(":${project.name}:hadoopSmokeTests")) {
             args.add("spark.jars=${configurations.s3deps.resolve().join(",")}")
@@ -304,54 +305,20 @@ def createIntegTestArgs(String integTestKind) {
     ]
 }
 
-task testPythonConf(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createUnitTestArgs())
-    command = "tests/tests_unit_conf.py"
-}
-
-task testPythonKMeans(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createUnitTestArgs())
-    command = "tests/tests_unit_kmeans.py"
-}
-
-task testPythonConversions(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createUnitTestArgs())
-    command = "tests/tests_unit_conversions.py"
-}
-
-task testPythonMojoPredictions(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createUnitTestArgs())
-    command = "tests/tests_unit_mojo_predictions.py"
-}
-
 task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
     extraArgs(*createUnitTestArgs())
     command = "tests/tests_unit_mojo_pipeline.py"
 }
 
-task testTargetEncoder(type: PythonTask, dependsOn: distPython) {
+task testPython(type: PythonTask, dependsOn: distPython) {
     extraArgs(*createUnitTestArgs())
-    command = "tests/tests_unit_target_encoder.py"
-}
-
-task testVersionComponents(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createUnitTestArgs())
-    command = "tests/tests_unit_version_components.py"
+    command = "tests/unit_test_runner.py"
 }
 
 task hadoopSmokeTests(type: PythonTask, dependsOn: distPython) {
     extraArgs(*createUnitTestArgs())
     command = "tests/tests_hadoop_smoke.py"
 }
-
-task testPython(dependsOn: [
-        testPythonConf, 
-        testPythonConversions, 
-        testPythonMojoPredictions, 
-        testPythonKMeans, 
-        testTargetEncoder,
-        testVersionComponents
-]) {}
 
 if (project.property("testMojoPipeline") == "true") {
     testPython.dependsOn testPythonMojoPipeline
