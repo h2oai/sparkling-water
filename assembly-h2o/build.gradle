@@ -110,7 +110,7 @@ if (project.hasProperty("doExtend")) {
         }
     }
 
-
+    
     task extendJar(type: ShadowJar, dependsOn: [":sparkling-water-examples:jar",
                                                 ":sparkling-water-ml:jar",
                                                 ":sparkling-water-core:jar"]) {
@@ -126,6 +126,7 @@ if (project.hasProperty("doExtend")) {
         }
         configurations = [project.configurations.artifactsToMerge]
         archiveBaseName = fileName
+        version = ""
         finalizedBy "printExtendedJarLocation"
     }
 }
