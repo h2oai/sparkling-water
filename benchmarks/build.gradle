@@ -65,8 +65,25 @@ task cleanOutput(type: Delete) {
     delete "output"
 }
 
+task runBenchmarks{
+    doLast {
+        exec {
+            def accessKey = project.property("aws_access_key")
+            def secretKey = project.property("aws_secret_key")
+            def publicKey = project.property("aws_ssh_public_key")
+
+            environment("aws_access_key", accessKey)
+            environment("aws_secret_key", secretKey)
+            environment("aws_ssh_public_key", publicKey)
+
+            commandLine "./run_benchmarks.sh"
+        }
+    }
+}
+
 copyTerraform.dependsOn cleanTerraform
 substituteTerraform.dependsOn copyTerraform
 build.dependsOn substituteTerraform
 build.dependsOn shadowJar
-clean.dependsOn cleanOutput
+runBenchmarks.dependsOn build
+runBenchmarks.dependsOn cleanOutput
