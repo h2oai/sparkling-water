@@ -20,10 +20,10 @@ from pyspark import SparkConf
 from generic_test_utils import *
 
 
-def asert_h2o_frame(test_suite, h2o_frame, rdd):
-    test_suite.assertEquals(h2o_frame.nrow, rdd.count(), "Number of rows should match")
-    test_suite.assertEquals(h2o_frame.ncol, 1, "Number of columns should equal 1")
-    test_suite.assertEquals(h2o_frame.names, ["value"], "Column should be name values")
+def asert_h2o_frame(h2o_frame, rdd):
+    assert h2o_frame.nrow == rdd.count(), "Number of rows should match"
+    assert h2o_frame.ncol == 1, "Number of columns should equal 1"
+    assert h2o_frame.names == ["value"], "Column should be name values"
 
 
 def get_default_spark_conf(additional_conf=None):
