@@ -32,9 +32,6 @@ private[converters] trait H2ORDDLike[T <: Frame] {
   /** Is the external backend in use */
   val isExternalBackend: Boolean
 
-  /** Timeout for read confirmation */
-  val readTimeout: Int
-
   /** Timestamp of the H2O Driver node */
   val driverTimeStamp: Short
 
@@ -75,7 +72,7 @@ private[converters] trait H2ORDDLike[T <: Frame] {
         partIndex,
         // we need to send list of all expected types, not only the list filtered for expected columns
         // because on the h2o side we get the expected type using index from selectedColumnIndices array
-        chksLocation, expectedTypes, selectedColumnIndices, readTimeout, driverTimeStamp
+        chksLocation, expectedTypes, selectedColumnIndices, driverTimeStamp
       )
 
     override def hasNext: Boolean = converterCtx.hasNext

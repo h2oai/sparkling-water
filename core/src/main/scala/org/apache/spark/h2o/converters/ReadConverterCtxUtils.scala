@@ -27,11 +27,10 @@ object ReadConverterCtxUtils {
              chksLocation: Option[Array[NodeDesc]],
              expectedTypes: Option[Array[Byte]],
              selectedColumnIndices: Array[Int],
-             readTimeout: Int,
              driverTimestamp: Short): ReadConverterCtx = {
 
     chksLocation.map(loc => new ExternalReadConverterCtx(keyName, chunkIdx, loc(chunkIdx),
-      expectedTypes.get, selectedColumnIndices, readTimeout, driverTimestamp))
+      expectedTypes.get, selectedColumnIndices, driverTimestamp))
       .getOrElse(new InternalReadConverterCtx(keyName, chunkIdx))
 
   }
