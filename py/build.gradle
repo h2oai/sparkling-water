@@ -120,7 +120,7 @@ export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
 def copyPySetup() {
 
     copy {
-        from("$projectDir") {
+        from("$projectDir/src") {
             include 'setup.py'
         }
         filter {
@@ -143,7 +143,6 @@ def copyPySetup() {
         from("$projectDir/src") {
             include 'MANIFEST.in'
             include 'setup.cfg'
-            include 'setup.py'
             include 'pysparkling/**/*'
             include 'ai/**/*'
             exclude '**/*.pyc'
