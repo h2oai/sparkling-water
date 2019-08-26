@@ -132,9 +132,6 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
 object InternalWriteConverterCtx {
 
   private def validateFrame(fr: Frame): Unit = {
-
-
-
     // Validate num of chunks in each vector
     if (!fr.vecs().isEmpty) {
       val first = fr.vecs.head
