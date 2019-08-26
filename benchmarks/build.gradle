@@ -42,22 +42,35 @@ task buildH2OExtendedJar() {
             standardOutput = outputStream
         }
         def h2oExtendedJar = outputStream.toString().readLines().find{ it.contains("extended") && it.endsWith('jar') }
+        copy {
+            from h2oExtendedJar
+            into "${project.buildDir}/libs/"
+            rename { _ -> "h2o-extended.jar" }
+        }
         buildH2OExtendedJar.ext.fileName = h2oExtendedJar
     }
 }
 
-task substituteTerraform() {
-    dependsOn buildH2OExtendedJar
+task buildH2OExtendedJarWithBenchmarks(type: Jar, dependsOn: buildH2OExtendedJar) {
+    manifest{
+        attributes 'Main-Class': 'water.hadoop.h2odriver'
+    }
+    version = ''
+    archiveBaseName = "h2o-extended-with-benchmarks"
+    zip64 true
+    from "$buildDir/classes/scala/main/"
+    from zipTree("$buildDir/libs/h2o-extended.jar")
+}
+
+task substituteTerraform(dependsOn: buildH2OExtendedJarWithBenchmarks) {
     doLast {
         def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
         def tfScripts = ["${tfBaseDir}/variables.tf", "${tfBaseDir}/modules/emr/variables.tf", "${tfBaseDir}/modules/emr/main.tf"]
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
-                .replaceAll("SUBST_H2O_JAR_FILE", buildH2OExtendedJar.fileName)
-                .replaceAll(
-                    "SUBST_PACKAGE_FILE",
-                    "${project.buildDir.toString()}/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
+                .replaceAll("SUBST_H2O_JAR_FILE", "$buildDir/libs/h2o-extended-with-benchmarks.jar")
+                .replaceAll("SUBST_PACKAGE_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
                 .replaceAll("SUBST_SW_VERSION", version)
                 .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
                 .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
@@ -99,7 +112,7 @@ task runBenchmarks{
 
 copyTerraform.dependsOn cleanTerraform
 substituteTerraform.dependsOn copyTerraform
-build.dependsOn substituteTerraform
 build.dependsOn shadowJar
+build.finalizedBy substituteTerraform
 runBenchmarks.dependsOn build
 runBenchmarks.dependsOn cleanOutput
