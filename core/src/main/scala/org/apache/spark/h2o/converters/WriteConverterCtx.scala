@@ -18,6 +18,7 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark._
+import org.apache.spark.h2o.H2OFrame
 
 /**
   * Methods which each WriteConverterCtx has to implement.
@@ -26,8 +27,13 @@ import org.apache.spark._
   * via unified API
   */
 trait WriteConverterCtx {
-  def createChunks(keyName: String, h2oTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
-                   sparse: Array[Boolean], vecStartSize: Map[Int, Int] = Map.empty)
+
+  def initFrame(key: String, columns: Array[String]): Unit
+
+  def createChunk(keyName: String, numRows: Option[Int], h2oTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
+                  sparse: Array[Boolean], vecStartSize: Map[Int, Int] = Map.empty)
+
+  def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]] = null): H2OFrame
 
   def closeChunks(numRows: Int = -1)
 
