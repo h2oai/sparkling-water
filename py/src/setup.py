@@ -54,6 +54,6 @@ setup(
     # bundled binary packages
     package_data={'sparkling_water': ['*.jar'],
                   'h2o': ['version.txt', 'buildinfo.txt'],
-                  'pysparkling': ['version.txt']},
+                  'ai.h2o.sparkling': ['version.txt']},
 )
 
