@@ -21,9 +21,8 @@ import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.StringPair
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling
 import hex.glm.GLMModel.GLMParameters
-import hex.glm.GLMModel.GLMParameters.{Family, Link, Solver}
+import hex.glm.GLMModel.GLMParameters.{Family, Link, MissingValuesHandling, Solver}
 import hex.glm.{GLM, GLMModel}
 import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.ml.param.{Param, Params}
@@ -32,6 +31,7 @@ import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JValue}
 import water.AutoBuffer
+
 /**
   * H2O GLM algorithm exposed via Spark ML pipelines.
   */
@@ -58,14 +58,14 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
   // Param definitions
   //
   private val standardize = booleanParam("standardize")
-  private val family = stringParam( "family", "family")
-  private val link = stringParam( "link", "link")
-  private val solver = stringParam( "solver", "solver")
+  private val family = stringParam("family", "family")
+  private val link = stringParam("link", "link")
+  private val solver = stringParam("solver", "solver")
   private val tweedieVariancePower = doubleParam("tweedieVariancePower")
   private val tweedieLinkPower = doubleParam("tweedieLinkPower")
   private val alpha = nullableDoubleArrayParam("alpha")
   private val lambda_ = nullableDoubleArrayParam("lambda_", "lambda")
-  private val missingValuesHandling = stringParam(  "missingValuesHandling", "missingValuesHandling")
+  private val missingValuesHandling = stringParam("missingValuesHandling", "missingValuesHandling")
   private val prior = doubleParam("prior")
   private val lambdaSearch = booleanParam("lambdaSearch")
   private val nlambdas = intParam("nlambdas")
