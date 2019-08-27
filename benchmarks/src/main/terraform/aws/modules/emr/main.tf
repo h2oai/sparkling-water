@@ -137,7 +137,7 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
   }
 
   step {
-    action_on_failure = "CONTINUE"
+    action_on_failure = "TERMINATE_CLUSTER"
     name = "ExecuteBenchmarks"
 
     hadoop_jar_step {
