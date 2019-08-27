@@ -88,11 +88,12 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
       -o /home/hadoop/results
   }
 
-  runBenchmarks "local" "internal" "12G"
-  runBenchmarks "yarn" "internal" "12G"
+
+  runBenchmarks "yarn" "internal" "8G"
   aws s3 cp ${format("s3://%s/h2o.jar", aws_s3_bucket.deployment_bucket.bucket)} /home/hadoop/h2o.jar
   export H2O_EXTENDED_JAR=/home/hadoop/h2o.jar
-  runBenchmarks "yarn" "external" "6G"
+  runBenchmarks "yarn" "external" "4G"
+  runBenchmarks "local" "internal" "8G"
 
   tar -zcvf /home/hadoop/results.tar.gz -C /home/hadoop/results .
   aws s3 cp /home/hadoop/results.tar.gz ${format("s3://%s/public-read/results.tar.gz", aws_s3_bucket.deployment_bucket.bucket)}
@@ -135,7 +136,7 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
   }
 
   step {
-    action_on_failure = "TERMINATE_CLUSTER"
+    action_on_failure = "CONTINUE"
     name = "ExecuteBenchmarks"
 
     hadoop_jar_step {
