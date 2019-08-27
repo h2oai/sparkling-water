@@ -76,24 +76,25 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
     spark-submit \
       --class ai.h2o.sparkling.benchmarks.Runner \
       --master "$1" \
-      --executor-memory "$3" \
+      --driver-memory "$3" \
+      --executor-memory "$4" \
       --deploy-mode client \
       --num-executors ${var.aws_core_instance_count} \
       --conf "spark.dynamicAllocation.enabled=false" \
       --conf "spark.ext.h2o.backend.cluster.mode=$2" \
       --conf "spark.ext.h2o.external.cluster.size=${var.aws_core_instance_count}" \
-      --conf "spark.ext.h2o.hadoop.memory=$3" \
+      --conf "spark.ext.h2o.hadoop.memory=$4" \
       --conf "spark.ext.h2o.external.start.mode=auto" \
       ${format("s3://%s/benchmarks.jar", aws_s3_bucket.deployment_bucket.bucket)} \
       -o /home/hadoop/results
   }
 
 
-  runBenchmarks "yarn" "internal" "8G"
+  runBenchmarks "yarn" "internal" "8G" "8G"
   aws s3 cp ${format("s3://%s/h2o.jar", aws_s3_bucket.deployment_bucket.bucket)} /home/hadoop/h2o.jar
   export H2O_EXTENDED_JAR=/home/hadoop/h2o.jar
-  runBenchmarks "yarn" "external" "4G"
-  runBenchmarks "local" "internal" "8G"
+  runBenchmarks "yarn" "external" "8G" "4G"
+  runBenchmarks "local" "internal" "8G" "8G"
 
   tar -zcvf /home/hadoop/results.tar.gz -C /home/hadoop/results .
   aws s3 cp /home/hadoop/results.tar.gz ${format("s3://%s/public-read/results.tar.gz", aws_s3_bucket.deployment_bucket.bucket)}
