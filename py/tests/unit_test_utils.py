@@ -17,7 +17,7 @@
 
 from pyspark import SparkConf
 
-from generic_test_utils import *
+from tests.generic_test_utils import *
 
 
 def asert_h2o_frame(h2o_frame, rdd):

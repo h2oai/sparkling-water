@@ -16,9 +16,10 @@
 #
 
 
-import sys
 import subprocess
-from generic_test_utils import *
+import sys
+
+from tests.generic_test_utils import *
 
 
 def get_default_spark_conf(additional_conf=None):

@@ -19,17 +19,16 @@
 Unit tests for PySparkling Data Conversions;
 """
 
-import generic_test_utils
 import h2o
-import unit_test_utils
 import unittest
 import uuid
 from datetime import datetime
 from pandas.util.testing import assert_frame_equal
 from pyspark.sql import SparkSession
-
 from pysparkling.conf import H2OConf
 from pysparkling.context import H2OContext
+
+from tests import generic_test_utils, unit_test_utils
 
 
 # Hadoop Smoke Test Suite

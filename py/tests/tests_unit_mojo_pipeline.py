@@ -19,16 +19,15 @@
 Unit tests for MOJO pipelines functionality in PySparkling. We don't start H2O context for these tests to actually tests
 that mojo can run without H2O runtime in PySparkling environment
 """
-import sys
 import os
+import sys
 
 sys.path.insert(0, sys.argv[1])
 os.environ['PYSPARK_PYTHON'] = sys.executable
 import os
 import unittest
 
-import generic_test_utils
-import unit_test_utils
+from tests import generic_test_utils, unit_test_utils
 from pyspark.sql import SparkSession
 from pysparkling.ml import H2OMOJOPipelineModel, H2OMOJOSettings
 from pyspark.ml import Pipeline, PipelineModel
