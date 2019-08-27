@@ -19,9 +19,8 @@
 Unit tests for PySparkling Data Conversions;
 """
 
-import generic_test_utils
+from tests import generic_test_utils, unit_test_utils
 import h2o
-import unit_test_utils
 import unittest
 import uuid
 from datetime import datetime

@@ -24,8 +24,8 @@ import os
 sys.path.insert(0, sys.argv[1])
 os.environ['PYSPARK_PYTHON'] = sys.executable
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
-from integ_test_utils import *
-from generic_test_utils import run_tests
+from tests.integ_test_utils import *
+from tests.generic_test_utils import run_tests
 
 
 class YarnIntegTestSuite(unittest.TestCase):

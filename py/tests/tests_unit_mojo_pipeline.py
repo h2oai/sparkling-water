@@ -27,8 +27,7 @@ os.environ['PYSPARK_PYTHON'] = sys.executable
 import os
 import unittest
 
-import generic_test_utils
-import unit_test_utils
+from tests import  generic_test_utils, unit_test_utils
 from pyspark.sql import SparkSession
 from pysparkling.ml import H2OMOJOPipelineModel, H2OMOJOSettings
 from pyspark.ml import Pipeline, PipelineModel
