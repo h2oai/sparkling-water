@@ -16,8 +16,9 @@
 #
 
 
-import sys
 import subprocess
+import sys
+
 from tests.generic_test_utils import *
 
 

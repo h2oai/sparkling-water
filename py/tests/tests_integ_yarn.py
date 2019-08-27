@@ -18,14 +18,14 @@
 """
 Integration tests for pySparkling for Spark running in YARN mode
 """
-import unittest
-import sys
 import os
+import sys
+import unittest
+
 sys.path.insert(0, sys.argv[1])
 os.environ['PYSPARK_PYTHON'] = sys.executable
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 from tests.integ_test_utils import *
-from tests.generic_test_utils import run_tests
 
 
 class YarnIntegTestSuite(unittest.TestCase):
