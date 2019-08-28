@@ -317,7 +317,7 @@ task testPython(type: PythonTask, dependsOn: distPython) {
 
 task hadoopSmokeTests(type: PythonTask, dependsOn: distPython) {
     extraArgs(*createUnitTestArgs())
-    command = "tests/tests_hadoop_smoke.py"
+    command = "tests/test_runner.py tests/hadoop_smoke"
 }
 
 if (project.property("testMojoPipeline") == "true") {
