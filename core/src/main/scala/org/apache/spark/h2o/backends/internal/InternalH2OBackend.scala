@@ -113,7 +113,7 @@ object InternalH2OBackend extends Logging {
     val launcherArgs = InternalBackendUtils.toH2OArgs(args)
 
     H2OStarter.start(launcherArgs, false)
-    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostName, H2O.API_PORT)
+    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
 
 
@@ -122,7 +122,7 @@ object InternalH2OBackend extends Logging {
     val launcherArgs = InternalBackendUtils.toH2OArgs(args)
 
     H2OStarter.start(launcherArgs, true)
-    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostName, H2O.API_PORT)
+    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
 
   private def startH2OClient(conf: H2OConf, nodes: Array[NodeDesc]): NodeDesc = {
