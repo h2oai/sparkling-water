@@ -26,7 +26,7 @@ def dist(request):
     return request.config.getoption("--dist")
 
 @pytest.fixture(scope="module")
-def spark_conf(request, dist):
+def spark_conf(request):
     conf = request.config.getoption("--spark_conf").split()
     m = {}
     for arg in conf:
