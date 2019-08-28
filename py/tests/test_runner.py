@@ -18,7 +18,6 @@
 import os
 import sys
 
-print sys.argv[1]
 dist = sys.argv[2]
 path = os.getenv("PYTHONPATH")
 if path is None:
