@@ -14,18 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pytest
 
-import os
-import sys
 
-dist = sys.argv[1]
-path = os.getenv("PYTHONPATH")
-if path is None:
-    path = sys.argv[1]
-else:
-    path = "{}:{}".format(dist, path)
-
-os.putenv("PYTHONPATH", path)
-os.putenv("PYSPARK_PYTHON", sys.executable)
-cmd = '{} -m pytest tests/unit --spark_conf="{}"'.format(sys.executable, ' '.join(sys.argv[2:]))
-os.system(cmd)
+@pytest.fixture(scope="module")
+def integ_spark_conf(spark_conf, dist):
+    spark_conf["spark.master"] = "local[*]"
+    spark_conf["spark.submit.pyFiles"] = dist
+    # Configure YARN environment
+    spark_conf["spark.yarn.max.executor.failures"] = "1"  # In fail of executor, fail the test
+    spark_conf["spark.executor.instances"] = "1"
+    return spark_conf

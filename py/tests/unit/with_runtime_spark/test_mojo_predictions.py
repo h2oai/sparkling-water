@@ -25,16 +25,12 @@ from pyspark.ml import Pipeline, PipelineModel
 from pyspark.sql import Row
 from pysparkling.ml import H2OMOJOModel, H2OMOJOSettings
 
-from tests import unit_test_utils
 
-
-def testMojoPredictions(spark):
+def testMojoPredictions(prostateDataset):
     # Try loading the Mojo and prediction on it without starting H2O Context
     mojo = H2OMOJOModel.createFromMojo(
         "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
-    prostateFrame = spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
-                                   header=True)
-    mojo.transform(prostateFrame).repartition(1).collect()
+    mojo.transform(prostateDataset).repartition(1).collect()
 
 
 def testMojoPredictionsUnseenCategoricals(spark):
@@ -57,18 +53,16 @@ def testMojoPredictionsUnseenCategoricals(spark):
     assert data["prediction"][0] == 5.240174068202646
 
 
-def testMojoModelSerializationInPipeline(spark):
+def testMojoModelSerializationInPipeline(prostateDataset):
     mojo = H2OMOJOModel.createFromMojo(
         "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
-    prostateFrame = spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
-                                   header=True)
 
     pipeline = Pipeline(stages=[mojo])
 
     pipeline.write().overwrite().save("file://" + os.path.abspath("build/test_spark_pipeline_model_mojo"))
     loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/test_spark_pipeline_model_mojo"))
 
-    model = loadedPipeline.fit(prostateFrame)
+    model = loadedPipeline.fit(prostateDataset)
 
     model.write().overwrite().save("file://" + os.path.abspath("build/test_spark_pipeline_model_mojo_model"))
     PipelineModel.load("file://" + os.path.abspath("build/test_spark_pipeline_model_mojo_model"))
