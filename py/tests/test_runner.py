@@ -14,18 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import pytest
-from pyspark.sql import SparkSession
 
-from tests import unit_test_utils
+import os
+import sys
+
+print sys.argv[1]
+dist = sys.argv[2]
+path = os.getenv("PYTHONPATH")
+if path is None:
+    path = dist
+else:
+    path = "{}:{}".format(dist, path)
+
+os.putenv("PYTHONPATH", path)
+os.putenv('PYSPARK_DRIVER_PYTHON', sys.executable)
+os.putenv('PYSPARK_PYTHON', sys.executable)
 
 
-@pytest.fixture(scope="module")
-def spark(spark_conf):
-    conf = unit_test_utils.get_default_spark_conf(spark_conf)
-    return SparkSession.builder.config(conf=conf).getOrCreate()
-
-@pytest.fixture(scope="module")
-def prostateDataset(spark):
-    return spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
-                          header=True, inferSchema=True)
+cmd = '{} -m pytest {} --dist={} --spark_conf="{}"'.format(sys.executable, sys.argv[1].replace("'", ""), dist, ' '.join(sys.argv[3:]))
+os.system(cmd)

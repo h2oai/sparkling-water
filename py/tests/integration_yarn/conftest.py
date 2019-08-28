@@ -14,20 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
 import pytest
 
 
-def pytest_addoption(parser):
-    parser.addoption("--spark_conf", action="store", default="")
-
-
 @pytest.fixture(scope="module")
-def spark_conf(request):
-    conf = request.config.getoption("--spark_conf").split()
-    m = {}
-    for arg in conf:
-        split = arg.split("=", 1)
-        m[split[0]] = split[1]
-    return m
+def integ_spark_conf(spark_conf, dist):
+    spark_conf["spark.master"] = "local[*]"
+    spark_conf["spark.submit.pyFiles"] = dist
+    # Configure YARN environment
+    spark_conf["spark.yarn.max.executor.failures"] = "1"  # In fail of executor, fail the test
+    spark_conf["spark.executor.instances"] = "1"
+    return spark_conf

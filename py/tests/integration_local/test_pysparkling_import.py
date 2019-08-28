@@ -15,17 +15,8 @@
 # limitations under the License.
 #
 
-import os
-import sys
+from tests.integ_test_utils import *
 
-dist = sys.argv[1]
-path = os.getenv("PYTHONPATH")
-if path is None:
-    path = sys.argv[1]
-else:
-    path = "{}:{}".format(dist, path)
-
-os.putenv("PYTHONPATH", path)
-os.putenv("PYSPARK_PYTHON", sys.executable)
-cmd = '{} -m pytest tests/unit --spark_conf="{}"'.format(sys.executable, ' '.join(sys.argv[2:]))
-os.system(cmd)
+def test_import_pysparkling_standalone_app(integ_spark_conf):
+    return_code = launch(integ_spark_conf, "examples/scripts/tests/pysparkling_ml_import_overrides_spark_test.py")
+    assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
