@@ -15,19 +15,20 @@
 # limitations under the License.
 #
 
+import os
+import sys
 
-import pytest
+dist = sys.argv[2]
+path = os.getenv("PYTHONPATH")
+if path is None:
+    path = dist
+else:
+    path = "{}:{}".format(dist, path)
+
+os.putenv("PYTHONPATH", path)
+os.putenv('PYSPARK_DRIVER_PYTHON', sys.executable)
+os.putenv('PYSPARK_PYTHON', sys.executable)
 
 
-def pytest_addoption(parser):
-    parser.addoption("--spark_conf", action="store", default="")
-
-
-@pytest.fixture(scope="module")
-def spark_conf(request):
-    conf = request.config.getoption("--spark_conf").split()
-    m = {}
-    for arg in conf:
-        split = arg.split("=", 1)
-        m[split[0]] = split[1]
-    return m
+cmd = '{} -m pytest {} --dist={} --spark_conf="{}"'.format(sys.executable, sys.argv[1].replace("'", ""), dist, ' '.join(sys.argv[3:]))
+os.system(cmd)

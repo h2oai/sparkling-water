@@ -15,17 +15,21 @@
 # limitations under the License.
 #
 import pytest
-from pyspark.sql import SparkSession
-
-from tests import unit_test_utils
 
 
-@pytest.fixture(scope="module")
-def spark(spark_conf):
-    conf = unit_test_utils.get_default_spark_conf(spark_conf)
-    return SparkSession.builder.config(conf=conf).getOrCreate()
+def pytest_addoption(parser):
+    parser.addoption("--dist", action="store", default="")
+    parser.addoption("--spark_conf", action="store", default="")
 
 @pytest.fixture(scope="module")
-def prostateDataset(spark):
-    return spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
-                          header=True, inferSchema=True)
+def dist(request):
+    return request.config.getoption("--dist")
+
+@pytest.fixture(scope="module")
+def spark_conf(request):
+    conf = request.config.getoption("--spark_conf").split()
+    m = {}
+    for arg in conf:
+        split = arg.split("=", 1)
+        m[split[0]] = split[1]
+    return m

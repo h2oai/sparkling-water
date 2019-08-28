@@ -307,17 +307,17 @@ def createIntegTestArgs(String integTestKind) {
 
 task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
     extraArgs(*createUnitTestArgs())
-    command = "tests/tests_unit_mojo_pipeline.py"
+    command = "tests/test_runner.py tests/unit/with_runtime_spark/test_mojo_pipeline.py"
 }
 
 task testPython(type: PythonTask, dependsOn: distPython) {
     extraArgs(*createUnitTestArgs())
-    command = "tests/unit_test_runner.py"
+    command = "tests/test_runner.py 'tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py'"
 }
 
 task hadoopSmokeTests(type: PythonTask, dependsOn: distPython) {
     extraArgs(*createUnitTestArgs())
-    command = "tests/tests_hadoop_smoke.py"
+    command = "tests/test_runner.py tests/hadoop_smoke"
 }
 
 if (project.property("testMojoPipeline") == "true") {
@@ -326,13 +326,12 @@ if (project.property("testMojoPipeline") == "true") {
 
 task localIntegTestsPython(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
     extraArgs(*createIntegTestArgs("local"))
-    command = "tests/tests_integ_local.py"
+    command = "tests/test_runner.py tests/integration_local"
 }
-
 
 task yarnIntegTestsPython(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
     extraArgs(*createIntegTestArgs("yarn"))
-    command = "tests/tests_integ_yarn.py"
+    command = "tests/test_runner.py tests/integration_yarn"
 }
 
 task integTestPython(dependsOn: localIntegTestsPython)

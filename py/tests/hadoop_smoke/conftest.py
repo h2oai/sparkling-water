@@ -16,6 +16,8 @@
 #
 import pytest
 from pyspark.sql import SparkSession
+from pysparkling.conf import H2OConf
+from pysparkling.context import H2OContext
 
 from tests import unit_test_utils
 
@@ -23,9 +25,9 @@ from tests import unit_test_utils
 @pytest.fixture(scope="module")
 def spark(spark_conf):
     conf = unit_test_utils.get_default_spark_conf(spark_conf)
-    return SparkSession.builder.config(conf=conf).getOrCreate()
+    return SparkSession.builder.config(conf=conf).setMaster("yarn-client").getOrCreate()
+
 
 @pytest.fixture(scope="module")
-def prostateDataset(spark):
-    return spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
-                          header=True, inferSchema=True)
+def hc(spark):
+    return H2OContext.getOrCreate(spark, H2OConf(spark).set_cluster_size(1))
