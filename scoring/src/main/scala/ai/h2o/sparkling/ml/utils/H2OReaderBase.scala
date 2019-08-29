@@ -45,24 +45,10 @@ private[ml] class H2OReaderBase[T] extends MLReader[T] with Logging {
     }
   }
 
-  private val newPkg = "ai.h2o.sparkling.ml"
-
-  private val oldPkgs = Array("org.apache.spark.ml.h2o", "py_sparkling.ml")
-
   override def load(path: String): T = {
     val metadata = DefaultParamsReader.loadMetadata(path, sc)
-
-    val cls = if (metadata.className.startsWith(newPkg)) {
-      ExposeUtils.classForName(metadata.className)
-    } else {
-      val oldPkg = oldPkgs.filter(metadata.className.startsWith).head
-      logWarning(s"classes in package $oldPkg are deprecated. " +
-        s"Please re-generate your pipeline, it will automatically use classes from the $newPkg package.")
-      ExposeUtils.classForName(metadata.className.replace(oldPkg, newPkg))
-    }
-
-    val instance =
-      cls.getConstructor(classOf[String]).newInstance(metadata.uid).asInstanceOf[Params]
+    val cls = ExposeUtils.classForName(metadata.className)
+    val instance = cls.getConstructor(classOf[String]).newInstance(metadata.uid).asInstanceOf[Params]
 
     val parsedParams = metadata.params.asInstanceOf[JsonAST.JObject].obj.map(_._1)
     val allowedParams = instance.params.map(_.name)
