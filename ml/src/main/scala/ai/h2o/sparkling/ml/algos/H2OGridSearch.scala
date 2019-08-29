@@ -59,9 +59,8 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   private var gridMojoModels: Array[H2OMOJOModel] = _
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val algoParams = $ {
-      gridAlgoParams
-    }
+
+    val algoParams = $(gridAlgoParams)
 
     if (algoParams == null) {
       throw new IllegalArgumentException(s"Algorithm has to be specified. Available algorithms are " +
