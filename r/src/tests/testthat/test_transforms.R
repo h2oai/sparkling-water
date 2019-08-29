@@ -5,7 +5,7 @@ context("Test transformations of H2O frames and Spark frames in rsparkling")
 config=spark_config()
 config=c(config, list(
                 "spark.hadoop.yarn.timeline-service.enabled"="false",
-                "spark.ext.h2o.external.cluster.num.h2o.nodes"="1",
+                "spark.ext.h2o.external.cluster.size"="1",
                 "spark.ext.h2o.backend.cluster.mode"=Sys.getenv("spark.ext.h2o.backend.cluster.mode"),
                 "spark.ext.h2o.client.ip"=Sys.getenv("H2O_CLIENT_IP"),
                 "sparklyr.gateway.connect.timeout"=240,
