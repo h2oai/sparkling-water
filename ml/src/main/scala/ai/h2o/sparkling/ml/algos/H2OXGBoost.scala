@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -170,9 +169,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with D
 
   def getColSampleByTree(): Double = $(colSampleByTree)
 
-  @DeprecatedMethod("getColSampleByTree")
-  def getColsampleBytree(): Double = getColSampleByTree()
-
   def getMaxAbsLeafnodePred(): Float = $(maxAbsLeafnodePred)
 
   def getMaxDeltaStep(): Float = $(maxDeltaStep)
@@ -255,9 +251,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with D
   def setColSampleRatePerTree(value: Double): this.type = set(colSampleRatePerTree, value)
 
   def setColSampleByTree(value: Double): this.type = set(colSampleByTree, value)
-
-  @DeprecatedMethod("setColSampleByTree")
-  def setColsampleBytree(value: Double): this.type = setColSampleByTree(value)
 
   def setMaxAbsLeafnodePred(value: Float): this.type = set(maxAbsLeafnodePred, value)
 
