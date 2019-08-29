@@ -327,11 +327,6 @@ class H2OConf(object):
         self._jconf.setH2OCluster(ip, port)
         return self
 
-    def set_num_of_external_h2o_nodes(self, num_of_external_h2o_nodes):
-        warnings.warn("The method 'set_num_of_external_h2o_nodes' is deprecated. Use 'set_cluster_size' instead!")
-        self.set_cluster_size(num_of_external_h2o_nodes)
-        return self
-
     def set_cluster_size(self, cluster_size):
         self._jconf.setClusterSize(cluster_size)
         return self
@@ -625,10 +620,6 @@ class H2OConf(object):
 
     def h2o_cluster_port(self):
         return self._get_option(self._jconf.h2oClusterPort())
-
-    def num_of_external_h2o_nodes(self):
-        warnings.warn("The method 'num_of_external_h2o_nodes' is deprecated. Use 'cluster_size' instead!")
-        return self.cluster_size()
 
     def cluster_size(self):
         return self._get_option(self._jconf.clusterSize())

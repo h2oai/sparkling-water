@@ -36,9 +36,6 @@ trait ExternalBackendConf extends SharedBackendConf {
   def h2oClusterHost = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(0))
   def h2oClusterPort = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(1).toInt)
 
-  @DeprecatedMethod("clusterSize")
-  def numOfExternalH2ONodes = clusterSize
-
   def clusterSize = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_SIZE._1)
   def clientCheckRetryTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
   def clientConnectionTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._2)
@@ -87,9 +84,6 @@ trait ExternalBackendConf extends SharedBackendConf {
     setExternalClusterMode()
     set(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, hostPort)
   }
-
-  @DeprecatedMethod("setClusterSize")
-  def setNumOfExternalH2ONodes(numOfExternalH2ONodes: Int) = setClusterSize(numOfExternalH2ONodes)
 
   def setClusterSize(clusterSize: Int) = set(PROP_EXTERNAL_CLUSTER_SIZE._1, clusterSize.toString)
 
