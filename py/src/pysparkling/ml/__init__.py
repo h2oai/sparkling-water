@@ -19,7 +19,7 @@ from pysparkling.ml.algos import *
 from pysparkling.ml.features import *
 from pysparkling.ml.models import *
 
-__all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost", "H2OGLM", "H2OMOJOModel", "H2OMOJOPipelineModel", "H2OGridSearch", "H2OMOJOSettings", "H2OKMeans", "H2OTargetEncoder"]
+__all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost", "H2OGLM", "H2OMOJOModel", "H2OMOJOPipelineModel", "H2OGridSearch", "H2OMOJOSettings", "H2OKMeans", "H2OTargetEncoder", "H2ODRF"]
 
 from pysparkling.initializer import Initializer
 
