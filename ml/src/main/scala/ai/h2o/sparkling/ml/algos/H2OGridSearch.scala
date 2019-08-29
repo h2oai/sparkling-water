@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.algos
 import java.lang.reflect.Field
 import java.util
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.{AlgoParams, H2OAlgoParamsHelper, H2OCommonSupervisedParams, HyperParamsParam}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
@@ -33,7 +33,6 @@ import hex.{Model, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMu
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
-import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types._
@@ -60,7 +59,9 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   private var gridMojoModels: Array[H2OMOJOModel] = _
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val algoParams = ${gridAlgoParams}
+    val algoParams = $ {
+      gridAlgoParams
+    }
 
     if (algoParams == null) {
       throw new IllegalArgumentException(s"Algorithm has to be specified. Available algorithms are " +
@@ -367,6 +368,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 }
 
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
+
   object SupportedAlgos extends Enumeration {
     val gbm, glm, deeplearning, xgboost = Value // still missing pipeline wrappers for KMeans & drf
 
@@ -381,6 +383,7 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
     type MetricOrder = Value
     val Asc, Desc = Value
   }
+
 }
 
 trait H2OGridSearchParams extends H2OCommonSupervisedParams {
@@ -463,9 +466,6 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
 
   def setHyperParameters(value: java.util.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
 
-  @DeprecatedMethod("setStrategy(value: String)")
-  def setStrategy(value: HyperSpaceSearchCriteria.Strategy): this.type = setStrategy(value.name())
-
   def setStrategy(value: String): this.type = {
     val validated = H2OAlgoParamsHelper.getValidatedEnumValue[HyperSpaceSearchCriteria.Strategy](value)
     set(strategy, validated)
@@ -479,16 +479,10 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
 
   def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
 
-  @DeprecatedMethod("setStoppingMetric(value: String)")
-  def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = setStoppingMetric(value.name())
-
   def setStoppingMetric(value: String): this.type = {
     val validated = H2OAlgoParamsHelper.getValidatedEnumValue[ScoreKeeper.StoppingMetric](value)
     set(stoppingMetric, validated)
   }
-
-  @DeprecatedMethod("setSelectBestModelBy(value: String)")
-  def setSelectBestModelBy(value: H2OGridSearchMetric): this.type = setSelectBestModelBy(value.name())
 
   def setSelectBestModelBy(value: String): this.type = {
     val validated = H2OAlgoParamsHelper.getValidatedEnumValue[H2OGridSearchMetric](value)

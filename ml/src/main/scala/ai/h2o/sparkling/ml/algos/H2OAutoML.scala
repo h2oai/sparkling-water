@@ -19,7 +19,6 @@ package ai.h2o.sparkling.ml.algos
 import java.util.Date
 
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -220,16 +219,10 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams {
   //
   def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
 
-  @DeprecatedMethod("setIncludeAlgos(value: Array[String])")
-  def setIncludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = setIncludeAlgos(value.map(_.name()))
-
   def setIncludeAlgos(value: Array[String]): this.type = {
     val validated = H2OAlgoParamsHelper.getValidatedEnumValues[Algo](value, nullEnabled = true)
     set(includeAlgos, validated)
   }
-
-  @DeprecatedMethod("setExcludeAlgos(value: Array[String])")
-  def setExcludeAlgos(value: Array[ai.h2o.automl.Algo]): this.type = setExcludeAlgos(value.map(_.name()))
 
   def setExcludeAlgos(value: Array[String]): this.type = {
     val validated = H2OAlgoParamsHelper.getValidatedEnumValues[Algo](value, nullEnabled = true)
@@ -243,9 +236,6 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams {
   def setStoppingRounds(value: Int): this.type = set(stoppingRounds, value)
 
   def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
-
-  @DeprecatedMethod("setStoppingMetric(value: String)")
-  def setStoppingMetric(value: ScoreKeeper.StoppingMetric): this.type = setStoppingMetric(value.name())
 
   def setStoppingMetric(value: String): this.type = {
     val validated = H2OAlgoParamsHelper.getValidatedEnumValue[ScoreKeeper.StoppingMetric](value)
