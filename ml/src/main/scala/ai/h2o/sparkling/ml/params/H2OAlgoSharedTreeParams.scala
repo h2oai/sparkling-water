@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.tree.SharedTreeModel.SharedTreeParameters
 import hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType
@@ -38,7 +37,7 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
   final val buildTreeOneNode = booleanParam("buildTreeOneNode")
   final val scoreTreeInterval = intParam("scoreTreeInterval")
   final val sampleRate = doubleParam("sampleRate")
-  final val sampleRatePerClass =  nullableDoubleArrayParam("sampleRatePerClass")
+  final val sampleRatePerClass = nullableDoubleArrayParam("sampleRatePerClass")
   final val colSampleRateChangePerLevel = doubleParam("colSampleRateChangePerLevel")
   final val colSampleRatePerTree = doubleParam("colSampleRatePerTree")
 
@@ -110,9 +109,6 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
   def setNbinsCats(value: Int): this.type = set(nbinsCats, value)
 
   def setMinSplitImprovement(value: Double): this.type = set(minSplitImprovement, value)
-
-  @DeprecatedMethod("setHistogramType(value: String)")
-  def setHistogramType(value: HistogramType): this.type = setHistogramType(value.name())
 
   def setHistogramType(value: String): this.type = {
     val validated = getValidatedEnumValue[HistogramType](value)

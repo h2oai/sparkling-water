@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -177,24 +176,15 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
   //
   def setStandardize(value: Boolean): this.type = set(standardize, value)
 
-  @DeprecatedMethod("setFamily(value: String)")
-  def setFamily(value: Family): this.type = setFamily(value.name())
-
   def setFamily(value: String): this.type = {
     val validated = getValidatedEnumValue[Family](value)
     set(family, validated)
   }
 
-  @DeprecatedMethod("setLink(value: String)")
-  def setLink(value: Link): this.type = setLink(value.name())
-
   def setLink(value: String): this.type = {
     val validated = getValidatedEnumValue[Link](value)
     set(link, validated)
   }
-
-  @DeprecatedMethod("setSolver(value: String)")
-  def setSolver(value: Solver): this.type = setSolver(value.name())
 
   def setSolver(value: String): this.type = {
     val validated = getValidatedEnumValue[Solver](value)
@@ -208,9 +198,6 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
   def setAlpha(value: Array[Double]): this.type = set(alpha, value)
 
   def setLambda(value: Array[Double]): this.type = set(lambda_, value)
-
-  @DeprecatedMethod("setMissingValuesHandling(value: String)")
-  def setMissingValuesHandling(value: MissingValuesHandling): this.type = setMissingValuesHandling(value.name())
 
   def setMissingValuesHandling(value: String): this.type = {
     val validated = getValidatedEnumValue[MissingValuesHandling](value)

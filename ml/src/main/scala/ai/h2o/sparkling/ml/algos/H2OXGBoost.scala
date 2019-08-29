@@ -283,32 +283,21 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with D
 
   def setMinDataInLeaf(value: Float): this.type = set(minDataInLeaf, value)
 
-  @DeprecatedMethod("setTreeMethod(value: String)")
-  def setTreeMethod(value: TreeMethod): this.type = setTreeMethod(value.name())
-
   def setTreeMethod(value: String): this.type = {
     val validated = getValidatedEnumValue[TreeMethod](value)
     set(treeMethod, validated)
   }
-
-  @DeprecatedMethod("setGrowPolicy(value: String)")
-  def setGrowPolicy(value: GrowPolicy): this.type = setGrowPolicy(value.name())
 
   def setGrowPolicy(value: String): this.type = {
     val validated = getValidatedEnumValue[GrowPolicy](value)
     set(growPolicy, validated)
   }
 
-  @DeprecatedMethod("setBooster(value: String)")
-  def setBooster(value: Booster): this.type = setBooster(value.name())
-
   def setBooster(value: String): this.type = {
     val validated = getValidatedEnumValue[Booster](value)
     set(booster, validated)
   }
 
-  @DeprecatedMethod("setDmatrixType(value: String)")
-  def setDmatrixType(value: DMatrixType): this.type = setDmatrixType(value.name())
 
   def setDmatrixType(value: String): this.type = {
     val validated = getValidatedEnumValue[DMatrixType](value)
@@ -319,16 +308,10 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with D
 
   def setRegAlpha(value: Float): this.type = set(regAlpha, value)
 
-  @DeprecatedMethod("setSampleType(value: String)")
-  def setSampleType(value: DartSampleType): this.type = setSampleType(value.name())
-
   def setSampleType(value: String): this.type = {
     val validated = getValidatedEnumValue[DartSampleType](value)
     set(sampleType, validated)
   }
-
-  @DeprecatedMethod("setNormalizeType(value: String)")
-  def setNormalizeType(value: DartNormalizeType): this.type = setNormalizeType(value.name())
 
   def setNormalizeType(value: String): this.type = {
     val validated = getValidatedEnumValue[DartNormalizeType](value)
@@ -342,9 +325,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with D
   def setSkipDrop(value: Float): this.type = set(skipDrop, value)
 
   def setGpuId(value: Int): this.type = set(gpuId, value)
-
-  @DeprecatedMethod("setBackend(value: String)")
-  def setBackend(value: Backend): this.type = setBackend(value.name())
 
   def setBackend(value: String): this.type = {
     val validated = getValidatedEnumValue[Backend](value)

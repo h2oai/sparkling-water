@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
@@ -71,10 +70,7 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
   def setKeepCrossValidationFoldAssignment(value: Boolean): this.type = set(keepCrossValidationFoldAssignment, value)
 
   def setParallelizeCrossValidation(value: Boolean): this.type = set(parallelizeCrossValidation, value)
-
-  @DeprecatedMethod("setDistribution(value: String)")
-  def setDistribution(value: DistributionFamily): this.type = setDistribution(value.name())
-
+  
   def setDistribution(value: String): this.type = {
     set(distribution, getValidatedEnumValue[DistributionFamily](value))
   }
