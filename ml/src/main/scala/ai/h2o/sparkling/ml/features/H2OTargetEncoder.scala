@@ -17,9 +17,9 @@
 
 package ai.h2o.sparkling.ml.features
 
-import hex.targetencoding._
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
+import ai.h2o.targetencoding._
 import org.apache.spark.h2o.{Frame, H2OContext}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
