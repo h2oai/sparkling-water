@@ -111,7 +111,7 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
 
 object H2OConf extends Logging {
 
-  private val deprecatedOptions = Map()
+  private val deprecatedOptions = Map[String, String]()
 
   private def checkDeprecatedOptions(sparkConf: SparkConf): Unit = {
     deprecatedOptions.foreach {
