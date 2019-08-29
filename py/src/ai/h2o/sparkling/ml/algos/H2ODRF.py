@@ -20,20 +20,17 @@ from pyspark import keyword_only
 from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.algos.H2OAlgoBase import H2OAlgoBase
-from ai.h2o.sparkling.ml.params import H2OGBMParams
+from ai.h2o.sparkling.ml.params import H2ODRFParams
 
-class H2OGBM(H2OGBMParams, H2OAlgoBase):
+class H2ODRF(H2ODRFParams, H2OAlgoBase):
 
     @keyword_only
     def __init__(self,
-                 learnRate=0.1,
-                 learnRateAnnealing=1.0,
-                 colSampleRate=1.0,
-                 maxAbsLeafnodePred=Utils.javaDoubleMaxValue,
-                 predNoiseBandwidth=0.0,
+                 binomialDoubleTrees=False,
+                 mtries=-1,
                  ntrees=50,
-                 maxDepth=5,
-                 minRows=10.0,
+                 maxDepth=20,
+                 minRows=1,
                  nbins=20,
                  nbinsCats=1024,
                  minSplitImprovement=1e-5,
@@ -66,8 +63,8 @@ class H2OGBM(H2OGBMParams, H2OAlgoBase):
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False):
         Initializer.load_sparkling_jar()
-        super(H2OGBM, self).__init__()
-        self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGBM", self.uid)
+        super(H2ODRF, self).__init__()
+        self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODRF", self.uid)
         self._setDefaultValuesFromJava()
         kwargs = Utils.getInputKwargs(self)
         self._set(**kwargs)

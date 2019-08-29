@@ -22,3 +22,4 @@ from ai.h2o.sparkling.ml.algos.H2OGBM import H2OGBM
 from ai.h2o.sparkling.ml.algos.H2OGLM import H2OGLM
 from ai.h2o.sparkling.ml.algos.H2OGridSearch import H2OGridSearch
 from ai.h2o.sparkling.ml.algos.H2OAutoML import H2OAutoML
+from ai.h2o.sparkling.ml.algos.H2ODRF import H2ODRF
