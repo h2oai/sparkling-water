@@ -20,6 +20,7 @@ from pyspark.sql import SparkSession
 
 
 class Utils(object):
+    javaDoubleMaxValue = (2 - 2 ** (-52)) * (2 ** 1023)
 
     @staticmethod
     def propagateValueFromDeprecatedProperty(kwargs, deprecatedOption, replacingOption):

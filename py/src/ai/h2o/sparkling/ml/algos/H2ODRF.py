@@ -22,9 +22,6 @@ from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.algos.H2OAlgoBase import H2OAlgoBase
 from ai.h2o.sparkling.ml.params import H2ODRFParams
 
-javaMaxDoubleValue = (2 - 2 ** (-52)) * (2 ** 1023)
-
-
 class H2ODRF(H2ODRFParams, H2OAlgoBase):
 
     @keyword_only
@@ -32,13 +29,13 @@ class H2ODRF(H2ODRFParams, H2OAlgoBase):
                  binomialDoubleTrees=False,
                  mtries=-1,
                  ntrees=50,
-                 maxDepth=5,
-                 minRows=10.0,
+                 maxDepth=20,
+                 minRows=1,
                  nbins=20,
                  nbinsCats=1024,
                  minSplitImprovement=1e-5,
                  histogramType="AUTO",
-                 r2Stopping=javaMaxDoubleValue,
+                 r2Stopping=Utils.javaDoubleMaxValue,
                  nbinsTopLevel=1 << 10,
                  buildTreeOneNode=False,
                  scoreTreeInterval=0,

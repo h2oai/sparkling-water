@@ -16,9 +16,8 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.H2OAlgoSharedTreeParams
+import ai.h2o.sparkling.ml.params.H2ODRFParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.schemas.DRFV3.DRFParametersV3
 import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.drf.{DRF, DRFModel}
 import org.apache.spark.ml.util.Identifiable
@@ -28,57 +27,7 @@ import org.apache.spark.ml.util.Identifiable
   */
 class H2ODRF(override val uid: String) extends H2OSupervisedAlgorithm[DRF, DRFModel, DRFParameters] with H2ODRFParams {
 
-  def this() = this(Identifiable.randomUID("drf"))
+  def this() = this(Identifiable.randomUID(classOf[H2ODRF].getSimpleName))
 }
 
 object H2ODRF extends H2OParamsReadable[H2ODRF]
-
-/**
-  * Parameters for Spark's API exposing underlying H2O model.
-  */
-trait H2ODRFParams extends H2OAlgoSharedTreeParams[DRFParameters] {
-
-  type H2O_SCHEMA = DRFParametersV3
-
-  protected def paramTag = reflect.classTag[DRFParameters]
-
-  protected def schemaTag = reflect.classTag[H2O_SCHEMA]
-
-  //
-  // Param definitions
-  //
-  private val binomialDoubleTrees = booleanParam("binomialDoubleTrees")
-  private val mtries = intParam("mtries")
-
-  //
-  // Default values
-  //
-  setDefault(
-    binomialDoubleTrees -> false,
-    mtries -> -1,
-    maxDepth -> 20, // DRF overrides this default value from SharedTreeParams
-    minRows -> 1 // DRF overrides this default value from SharedTreeParams
-  )
-
-  //
-  // Getters
-  //
-  def getBinomialDoubleTrees(): Boolean = $(binomialDoubleTrees)
-
-  def getMtries(): Double = $(mtries)
-
-
-  //
-  // Setters
-  //
-  def setBinomialDoubleTrees(value: Boolean): this.type = set(binomialDoubleTrees, value)
-
-  def setMtries(value: Int): this.type = set(mtries, value)
-
-
-  override def updateH2OParams(): Unit = {
-    super.updateH2OParams()
-    parameters._binomial_double_trees = $(binomialDoubleTrees)
-    parameters._mtries = $(mtries)
-  }
-}

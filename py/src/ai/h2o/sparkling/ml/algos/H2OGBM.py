@@ -22,9 +22,6 @@ from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.algos.H2OAlgoBase import H2OAlgoBase
 from ai.h2o.sparkling.ml.params import H2OGBMParams
 
-javaMaxDoubleValue = (2 - 2 ** (-52)) * (2 ** 1023)
-
-
 class H2OGBM(H2OGBMParams, H2OAlgoBase):
 
     @keyword_only
@@ -32,7 +29,7 @@ class H2OGBM(H2OGBMParams, H2OAlgoBase):
                  learnRate=0.1,
                  learnRateAnnealing=1.0,
                  colSampleRate=1.0,
-                 maxAbsLeafnodePred=javaMaxDoubleValue,
+                 maxAbsLeafnodePred=Utils.javaDoubleMaxValue,
                  predNoiseBandwidth=0.0,
                  ntrees=50,
                  maxDepth=5,
@@ -41,7 +38,7 @@ class H2OGBM(H2OGBMParams, H2OAlgoBase):
                  nbinsCats=1024,
                  minSplitImprovement=1e-5,
                  histogramType="AUTO",
-                 r2Stopping=javaMaxDoubleValue,
+                 r2Stopping=Utils.javaDoubleMaxValue,
                  nbinsTopLevel=1 << 10,
                  buildTreeOneNode=False,
                  scoreTreeInterval=0,
