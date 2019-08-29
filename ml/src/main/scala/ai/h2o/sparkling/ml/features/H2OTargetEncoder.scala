@@ -75,7 +75,7 @@ class H2OTargetEncoder(override val uid: String)
   def setInputCols(values: Array[String]): this.type = set(inputCols, values)
 
   def setHoldoutStrategy(value: String): this.type = {
-    set(holdoutStrategy, H2OAlgoParamsHelper.getValidatedEnumValue[H2OTargetEncoderHoldoutStrategy](value))
+    set(holdoutStrategy, H2OAlgoParamsHelper.getValidatedEnumValue[TargetEncoder.DataLeakageHandlingStrategy](value))
   }
 
   def setBlendedAvgEnabled(value: Boolean): this.type = set(blendedAvgEnabled, value)
