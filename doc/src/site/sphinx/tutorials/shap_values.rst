@@ -107,4 +107,4 @@ To get SHAP values(=contributions) from H2OXGBoost model, please do:
 
         .. code:: python
 
-            predictions.select("detailed_prediction.contribution").show()
+            predictions.select("detailed_prediction.contributions").show()
