@@ -16,6 +16,7 @@ dependencies {
 
     // Dependency for Target Encoder
     compile "ai.h2o:h2o-ext-target-encoder:${h2oVersion}"
+    testCompile "ai.h2o:h2o-ext-target-encoder:${h2oVersion}"
 
     // And Scala library
     compile "org.scala-lang:scala-library:${scalaVersion}"
