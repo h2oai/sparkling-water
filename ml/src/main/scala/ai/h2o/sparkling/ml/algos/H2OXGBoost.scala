@@ -371,5 +371,5 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with D
   /**
     * When a parameter is renamed, the mapping 'old name' -> 'new name' should be added into this map.
     */
-  override protected def renamingMap: Map[String, String] = Map("colsampleBytree" -> "colSampleBytree")
+  override protected def renamingMap: Map[String, String] = Map[String, String]()
 }
