@@ -131,7 +131,7 @@ class PipelinePredictionTest extends PipelinePredictionTestBase {
     //
     // Load exported pipeline
     //
-    val model_path = getClass.getResource("/sms_pipeline_deployment/sms_pipeline.model")
+    val model_path = getClass.getResource("/sms_pipeline.model")
     val pipelineModel = PipelineModel.read.load(model_path.getFile)
 
     //
@@ -163,7 +163,7 @@ class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
 
   test("Test streaming pipeline with H2O MOJO") {
     //
-    val model_path = getClass.getResource("/sms_pipeline_deployment/sms_pipeline.model")
+    val model_path = getClass.getResource("/sms_pipeline.model")
     val pipelineModel = PipelineModel.read.load(model_path.getFile)
 
     //
@@ -209,5 +209,3 @@ class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
   }
 
 }
-
-
