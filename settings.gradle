@@ -29,3 +29,5 @@ rootProject.children.each { project ->
     }
     project.name = rootProject.name + "-" + project.name 
 }
+
+includeBuild "../h2o-3"
