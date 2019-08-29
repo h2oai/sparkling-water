@@ -56,22 +56,42 @@ task buildH2OExtendedJarWithBenchmarks(type: Jar, dependsOn: buildH2OExtendedJar
         attributes 'Main-Class': 'water.hadoop.h2odriver'
     }
     version = ''
-    archiveBaseName = "h2o-extended-with-benchmarks"
+    archiveBaseName = 'h2o-extended-with-benchmarks'
     zip64 true
     from "$buildDir/classes/scala/main/"
     from zipTree("$buildDir/libs/h2o-extended.jar")
 }
 
-task substituteTerraform(dependsOn: buildH2OExtendedJarWithBenchmarks) {
+task cleanTerraform(type: Delete) {
+    delete "build/terraform"
+}
+
+task copyTerraform(type: Copy, dependsOn: cleanTerraform) {
+    from 'src/main/terraform'
+    include "**/*.tf"
+    into "build/terraform"
+}
+
+task copyTerraformFromTemplates(type: Copy, dependsOn: copyTerraform) {
+    from '../templates/src/terraform/aws/modules'
+    include "network/*.tf"
+    include "emr_security/*.tf"
+    into "build/terraform/aws/modules"
+}
+
+task substituteTerraform(dependsOn: [buildH2OExtendedJarWithBenchmarks, copyTerraformFromTemplates]) {
     doLast {
         def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
-        def tfScripts = ["${tfBaseDir}/variables.tf", "${tfBaseDir}/modules/emr/variables.tf", "${tfBaseDir}/modules/emr/main.tf"]
+        def tfScripts = [
+            "${tfBaseDir}/variables.tf",
+            "${tfBaseDir}/modules/emr_benchmarks_deployment/variables.tf",
+            "${tfBaseDir}/modules/emr_benchmarks_deployment/main.tf"]
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
                 .replaceAll("SUBST_H2O_JAR_FILE", "$buildDir/libs/h2o-extended-with-benchmarks.jar")
                 .replaceAll("SUBST_PACKAGE_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
-                .replaceAll("SUBST_SW_VERSION", version)
+                .replaceAll("SUBST_SW_VERSION", version.toString())
                 .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
                 .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
             
@@ -80,21 +100,11 @@ task substituteTerraform(dependsOn: buildH2OExtendedJarWithBenchmarks) {
     }
 }
 
-task copyTerraform(type: Copy) {
-    from 'src/main/terraform'
-    include "**/*.tf"
-    into "build/terraform"
-}
-
-task cleanTerraform(type: Delete) {
-    delete "build/terraform"
-}
-
 task cleanOutput(type: Delete) {
     delete "output"
 }
 
-task runBenchmarks{
+task runBenchmarks(dependsOn: [build, cleanOutput]) {
     doLast {
         exec {
             def accessKey = project.property("aws_access_key")
@@ -110,9 +120,5 @@ task runBenchmarks{
     }
 }
 
-copyTerraform.dependsOn cleanTerraform
-substituteTerraform.dependsOn copyTerraform
 build.dependsOn shadowJar
 build.finalizedBy substituteTerraform
-runBenchmarks.dependsOn build
-runBenchmarks.dependsOn cleanOutput
