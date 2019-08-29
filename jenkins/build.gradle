@@ -12,7 +12,7 @@ ext {
 
 task createDockerfile(type: Dockerfile) {
     destFile = outputFile
-    from 'harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:58'
+    from 'harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:64'
 
     environmentVariable("LANG", "'C.UTF-8'")
     runCommand "locale"
