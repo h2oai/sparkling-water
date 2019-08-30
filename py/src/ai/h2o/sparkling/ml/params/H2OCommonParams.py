@@ -94,26 +94,21 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
     # Setters
     ##
     def setFoldCol(self, value):
-        assert_is_type(value, str, None)
         return self._set(foldCol=value)
 
     def setWeightCol(self, value):
-        assert_is_type(value, str)
         return self._set(weightCol=value)
 
     def setSplitRatio(self, value):
         return self._set(splitRatio=value)
 
     def setSeed(self, value):
-        assert_is_type(value, int)
         return self._set(seed=value)
 
     def setNfolds(self, value):
-        assert_is_type(value, int)
         return self._set(nfolds=value)
 
     def setAllStringColumnsToCategorical(self, value):
-        assert_is_type(value, bool)
         return self._set(allStringColumnsToCategorical=value)
 
     def setColumnsToCategorical(self, value, *args):
