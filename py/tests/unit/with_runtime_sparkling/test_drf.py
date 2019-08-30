@@ -22,80 +22,17 @@ from pyspark.sql.types import *
 from pyspark.sql.types import *
 from pysparkling.ml import H2ODRF
 
-def testParams():
-    drf = H2ODRF(binomialDoubleTrees=False,
-                 mtries=-1,
-                 ntrees=50,
-                 maxDepth=5,
-                 minRows=10.0,
-                 nbins=20,
-                 nbinsCats=1024,
-                 minSplitImprovement=1e-5,
-                 histogramType="AUTO",
-                 r2Stopping=1,
-                 nbinsTopLevel=1 << 10,
-                 buildTreeOneNode=False,
-                 scoreTreeInterval=0,
-                 sampleRate=1.0,
-                 sampleRatePerClass=None,
-                 colSampleRateChangePerLevel=1.0,
-                 colSampleRatePerTree=1.0,
-                 modelId=None,
-                 keepCrossValidationPredictions=False,
-                 keepCrossValidationFoldAssignment=False,
-                 parallelizeCrossValidation=True,
-                 distribution="AUTO",
-                 labelCol="label",
-                 foldCol=None,
-                 weightCol=None,
-                 splitRatio=1.0,
-                 seed=-1,
-                 nfolds=0,
-                 allStringColumnsToCategorical=True,
-                 columnsToCategorical=[],
-                 predictionCol="prediction",
-                 detailedPredictionCol="detailed_prediction",
-                 withDetailedPredictionCol=False,
-                 featuresCols=[],
-                 convertUnknownCategoricalLevelsToNa=False,
-                 convertInvalidNumbersToNa=False)
+from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
-    assert drf.getBinomialDoubleTrees() == False
-    assert drf.getMtries() == -1
-    assert drf.getNtrees() == 50
-    assert drf.getMaxDepth() == 5
-    assert drf.getMinRows() == 10.0
-    assert drf.getNbins() == 20
-    assert drf.getNbinsCats() == 1024
-    assert drf.getMinSplitImprovement() == 1e-5
-    assert drf.getHistogramType() == "AUTO"
-    assert drf.getR2Stopping() == 1
-    assert drf.getNbinsTopLevel() == 1 << 10
-    assert drf.getBuildTreeOneNode() == False
-    assert drf.getScoreTreeInterval() == 0
-    assert drf.getSampleRate() == 1.0
-    assert drf.getSampleRatePerClass() == None
-    assert drf.getColSampleRateChangePerLevel() == 1.0
-    assert drf.getColSampleRatePerTree() == 1.0
-    assert drf.getModelId() == None
-    assert drf.getKeepCrossValidationPredictions() == False
-    assert drf.getKeepCrossValidationFoldAssignment() == False
-    assert drf.getParallelizeCrossValidation() == True
-    assert drf.getDistribution() == "AUTO"
-    assert drf.getLabelCol() == "label"
-    assert drf.getFoldCol() == None
-    assert drf.getWeightCol() == None
-    assert drf.getSplitRatio() == 1.0
-    assert drf.getSeed() == -1
-    assert drf.getNfolds() == 0
-    assert drf.getAllStringColumnsToCategorical() == True
-    assert drf.getColumnsToCategorical() == []
-    assert drf.getPredictionCol() == "prediction"
-    assert drf.getDetailedPredictionCol() == "detailed_prediction"
-    assert drf.getWithDetailedPredictionCol() == False
-    assert drf.getFeaturesCols() == []
-    assert drf.getConvertUnknownCategoricalLevelsToNa() == False
-    assert drf.getConvertInvalidNumbersToNa() == False
+
+def testParamsPassedByConstructor():
+    # Skipping testing of algo option as we don't generate equal algo
+    assertParamsViaConstructor("H2ODRF", ["algo"])
+
+
+def testParamsPassedBySetters():
+    # Skipping testing of algo option as we don't generate equal algo
+    assertParamsViaSetters("H2ODRF", ["algo"])
 
 
 def testPipelineSerialization(prostateDataset):
