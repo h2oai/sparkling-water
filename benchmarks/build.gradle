@@ -66,20 +66,23 @@ task cleanTerraform(type: Delete) {
     delete "build/terraform"
 }
 
-task copyTerraform(type: Copy, dependsOn: cleanTerraform) {
-    from 'src/main/terraform'
-    include "**/*.tf"
-    into "build/terraform"
+task copyTerraform(dependsOn: cleanTerraform) {
+    doLast {
+        copy {
+            from 'src/main/terraform'
+            include "**/*.tf"
+            into "build/terraform"
+        }
+        copy {
+            from '../templates/src/terraform/aws/modules'
+            include "network/*.tf"
+            include "emr_security/*.tf"
+            into "build/terraform/aws/modules"
+        }
+    }
 }
 
-task copyTerraformFromTemplates(type: Copy, dependsOn: copyTerraform) {
-    from '../templates/src/terraform/aws/modules'
-    include "network/*.tf"
-    include "emr_security/*.tf"
-    into "build/terraform/aws/modules"
-}
-
-task substituteTerraform(dependsOn: [buildH2OExtendedJarWithBenchmarks, copyTerraformFromTemplates]) {
+task substituteTerraform(dependsOn: [buildH2OExtendedJarWithBenchmarks, copyTerraform]) {
     doLast {
         def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
         def tfScripts = [
