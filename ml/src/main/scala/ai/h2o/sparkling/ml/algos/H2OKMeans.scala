@@ -40,7 +40,7 @@ class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMean
     }
   }
 
-  def this() = this(Identifiable.randomUID("kmeans"))
+  def this() = this(Identifiable.randomUID(classOf[H2OKMeans].getSimpleName))
 }
 
 object H2OKMeans extends DefaultParamsReadable[H2OKMeans]
