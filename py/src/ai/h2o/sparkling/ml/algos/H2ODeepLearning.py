@@ -50,7 +50,8 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OAlgoBase):
                  withDetailedPredictionCol=False,
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
-                 convertInvalidNumbersToNa=False):
+                 convertInvalidNumbersToNa=False,
+                 namedMojoOutputColumns=True):
         Initializer.load_sparkling_jar()
         super(H2ODeepLearning, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODeepLearning", self.uid)
