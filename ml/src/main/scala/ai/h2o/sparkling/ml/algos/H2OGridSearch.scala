@@ -45,14 +45,15 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 /**
-  * H2O Grid Search
+  * H2O Grid Search algorithm exposed via Spark ML pipelines.
+
   */
 class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgoCommonUtils with DefaultParamsWritable with H2OGridSearchParams {
 
   private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
-  def this() = this(Identifiable.randomUID("gridsearch"))
+  def this() = this(Identifiable.randomUID(classOf[H2OGridSearch].getSimpleName))
 
   private var grid: Grid[_ <: Model.Parameters] = _
   private var gridModels: Array[H2OBaseModel] = _

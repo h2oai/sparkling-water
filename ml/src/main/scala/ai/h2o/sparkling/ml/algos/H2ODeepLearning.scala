@@ -24,14 +24,12 @@ import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 import org.apache.spark.ml.util._
 
 /**
-  * H2O Deep learning algorithm exposed via Spark ML pipelines.
-  *
-  * TODO: There are still bunch of parameters defined DeepLearningParameters which need to be ported here
+  * H2O DeepLearning algorithm exposed via Spark ML pipelines.
   */
 class H2ODeepLearning(override val uid: String) extends
   H2OSupervisedAlgorithm[DeepLearning, DeepLearningModel, DeepLearningParameters] with H2ODeepLearningParams {
 
-  def this() = this(Identifiable.randomUID("deeplearning"))
+  def this() = this(Identifiable.randomUID(classOf[H2ODeepLearning].getSimpleName))
 }
 
 object H2ODeepLearning extends H2OParamsReadable[H2ODeepLearning]

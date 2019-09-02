@@ -37,7 +37,7 @@ import water.AutoBuffer
   */
 class H2OGLM(override val uid: String) extends H2OSupervisedAlgorithm[GLM, GLMModel, GLMParameters] with H2OGLMParams {
 
-  def this() = this(Identifiable.randomUID("glm"))
+  def this() = this(Identifiable.randomUID(classOf[H2OGLM].getSimpleName))
 }
 
 object H2OGLM extends H2OParamsReadable[H2OGLM]
