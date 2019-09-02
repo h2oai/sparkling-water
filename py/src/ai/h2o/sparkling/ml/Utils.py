@@ -40,3 +40,7 @@ class Utils(object):
         else:
             # on newer versions we need to use the following variant
             return instance._input_kwargs
+
+    @staticmethod
+    def deprecationWarning(old, new):
+        warnings.warn("The method '{}' is deprecated. Use '{}' instead!".format(old, new))
