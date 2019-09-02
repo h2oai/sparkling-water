@@ -86,6 +86,7 @@ class H2OXGBoost(H2OXGBoostParams, H2OAlgoBase):
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,
+                 namedMojoOutputColumns=True,
                  **DeprecatedArgs):
         Initializer.load_sparkling_jar()
         super(H2OXGBoost, self).__init__()

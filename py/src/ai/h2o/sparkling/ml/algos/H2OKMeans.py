@@ -50,7 +50,8 @@ class H2OKMeans(H2OKMeansParams, H2OAlgoBase):
                  withDetailedPredictionCol=False,
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
-                 convertInvalidNumbersToNa=False):
+                 convertInvalidNumbersToNa=False,
+                 namedMojoOutputColumns=True):
         Initializer.load_sparkling_jar()
         super(H2OKMeans, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OKMeans", self.uid)
