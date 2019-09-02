@@ -230,6 +230,7 @@ class H2OTypeConverters(object):
             elif isinstance(value, JavaObject):
                 return value
             elif isinstance(value._java_obj, JavaObject):
+                value._transfer_params_to_java()
                 return value._java_obj
             else:
                 raise TypeError("Invalid type.")

@@ -92,6 +92,26 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     ##
     def getAlgo(self):
         javaAlgo = self.getOrDefault(self.algo)
+        algoName = javaAlgo.parameters().algoName()
+        if algoName == "GBM":
+            from ai.h2o.sparkling.ml.algos import H2OGBM
+            algo = H2OGBM()
+        elif algoName == "DeepLearning":
+            from ai.h2o.sparkling.ml.algos import H2ODeepLearning
+            algo = H2ODeepLearning()
+        elif algoName == "XGBoost":
+            from ai.h2o.sparkling.ml.algos import H2OXGBoost
+            algo = H2OXGBoost()
+        elif algoName == "GLM":
+            from ai.h2o.sparkling.ml.algos import H2OGLM
+            algo = H2OGLM()
+        else:
+            raise ValueError('Unsupported algorithm for H2OGridSearch')
+
+        algo._resetUid(javaAlgo.uid())
+        algo._java_obj = javaAlgo
+        algo._transfer_params_from_java()
+        return algo
 
     def getHyperParameters(self):
         return self.getOrDefault(self.hyperParameters)
@@ -120,7 +140,7 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     def getSelectBestModelDecreasing(self):
         Utils.deprecationWarning("getSelectBestModelDecreasing", "getSelectBestModelOrdering")
         ordering = self.getOrDefault(self.selectBestModelOrdering)
-        return ordering is "ASC" # The default value was DESC as well
+        return ordering is "ASC"  # The default value was DESC as well
 
     def getSelectBestModelOrdering(self):
         return self.getOrDefault(self.selectBestModelOrdering)
