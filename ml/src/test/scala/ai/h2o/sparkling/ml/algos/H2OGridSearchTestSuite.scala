@@ -24,6 +24,7 @@ import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
+import water.api.TestUtils
 
 import scala.collection.mutable
 
@@ -35,8 +36,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
-    .csv("/Users/kuba/devel/repos/sparkling-water/examples/smalldata/prostate/prostate.csv")
-  //.csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
   test("H2O Grid Search GLM Pipeline") {
     val glm = new H2OGLM()
