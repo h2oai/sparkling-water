@@ -29,7 +29,7 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         Params._dummy(),
         "algo",
         "Algo to run grid search on",
-        H2OTypeConverters.toH2OModelParameters())
+        H2OTypeConverters.toJavaObj())
 
     hyperParameters = Param(
         Params._dummy(),

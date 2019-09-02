@@ -16,7 +16,6 @@
 #
 
 from py4j.java_gateway import JavaObject
-from pyspark import SparkContext
 from pyspark.ml.param import TypeConverters
 from pyspark.ml.util import _jvm
 
@@ -224,29 +223,18 @@ class H2OTypeConverters(object):
         return convert
 
     @staticmethod
-    def toH2OModelParameters():
+    def toJavaObj():
         def convert(value):
             if value is None:
                 return None
             elif isinstance(value, JavaObject):
                 return value
             elif isinstance(value._java_obj, JavaObject):
-                H2OTypeConverters.__updateH2OParams(value._java_obj)
-                return value._java_obj.parameters()
+                return value._java_obj
             else:
                 raise TypeError("Invalid type.")
 
         return convert
-
-    @staticmethod
-    def __updateH2OParams(algo):
-        gateway = SparkContext._gateway
-        classArray = gateway.new_array(_jvm().Class, 0)
-        m = algo.getClass().getDeclaredMethod("updateH2OParams", classArray)
-        m.setAccessible(True)
-
-        objectArray = gateway.new_array(_jvm().Object, 0)
-        m.invoke(algo, objectArray)
 
     @staticmethod
     def toDictionaryWithAnyElements():
