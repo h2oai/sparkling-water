@@ -18,7 +18,7 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
-import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
+import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.StringPair
 import hex.glm.GLMModel.GLMParameters
@@ -46,7 +46,7 @@ object H2OGLM extends H2OParamsReadable[H2OGLM]
 /**
   * Parameters for Spark's API exposing underlying H2O model.
   */
-trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
+trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with DeprecatableParams {
 
   type H2O_SCHEMA = GLMParametersV3
 
@@ -63,8 +63,8 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
   private val solver = stringParam("solver", "solver")
   private val tweedieVariancePower = doubleParam("tweedieVariancePower")
   private val tweedieLinkPower = doubleParam("tweedieLinkPower")
-  private val alpha = nullableDoubleArrayParam("alpha")
-  private val lambda_ = nullableDoubleArrayParam("lambda_", "lambda")
+  private val alphaValue = nullableDoubleArrayParam("alphaValue", "alpha values")
+  private val lambdaValue = nullableDoubleArrayParam("lambdaValue", "lambda values")
   private val missingValuesHandling = stringParam("missingValuesHandling", "missingValuesHandling")
   private val prior = doubleParam("prior")
   private val lambdaSearch = booleanParam("lambdaSearch")
@@ -94,8 +94,8 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
     solver -> Solver.AUTO.name(),
     tweedieVariancePower -> 0,
     tweedieLinkPower -> 0,
-    alpha -> null,
-    lambda_ -> null,
+    alphaValue -> null,
+    lambdaValue -> null,
     missingValuesHandling -> MissingValuesHandling.MeanImputation.name(),
     prior -> -1,
     lambdaSearch -> false,
@@ -131,9 +131,15 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
 
   def getTweedieLinkPower(): Double = $(tweedieLinkPower)
 
-  def getAlpha(): Array[Double] = $(alpha)
+  @DeprecatedMethod("getAlphaValue")
+  def getAlpha(): Array[Double] = getAlphaValue()
 
-  def getLambda(): Array[Double] = $(lambda_)
+  def getAlphaValue(): Array[Double] = $(alphaValue)
+
+  @DeprecatedMethod("getLambdaValue")
+  def getLambda(): Array[Double] = getLambdaValue()
+
+  def getLambdaValue(): Array[Double] = $(lambdaValue)
 
   def getMissingValuesHandling(): String = $(missingValuesHandling)
 
@@ -205,9 +211,15 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
 
   def setTweedieLinkPower(value: Double): this.type = set(tweedieLinkPower, value)
 
-  def setAlpha(value: Array[Double]): this.type = set(alpha, value)
+  @DeprecatedMethod("setAlphaValue")
+  def setAlpha(value: Array[Double]): this.type = setAlphaValue(value)
 
-  def setLambda(value: Array[Double]): this.type = set(lambda_, value)
+  def setAlphaValue(value: Array[Double]): this.type = set(alphaValue, value)
+
+  @DeprecatedMethod("setLambdaValue")
+  def setLambda(value: Array[Double]): this.type = setLambdaValue(value)
+
+  def setLambdaValue(value: Array[Double]): this.type = set(lambdaValue, value)
 
   @DeprecatedMethod("setMissingValuesHandling(value: String)")
   def setMissingValuesHandling(value: MissingValuesHandling): this.type = setMissingValuesHandling(value.name())
@@ -260,8 +272,8 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
     parameters._solver = Solver.valueOf($(solver))
     parameters._tweedie_variance_power = $(tweedieVariancePower)
     parameters._tweedie_link_power = $(tweedieLinkPower)
-    parameters._alpha = $(alpha)
-    parameters._lambda = $(lambda_)
+    parameters._alpha = $(alphaValue)
+    parameters._lambda = $(lambdaValue)
     parameters._missing_values_handling = MissingValuesHandling.valueOf($(missingValuesHandling))
     parameters._prior = $(prior)
     parameters._lambda_search = $(lambdaSearch)
@@ -290,6 +302,14 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
     }
     parameters._early_stopping = $(earlyStopping)
   }
+
+  /**
+    * When a parameter is renamed, the mapping 'old name' -> 'new name' should be added into this map.
+    */
+  override protected def renamingMap: Map[String, String] = Map[String, String](
+    "alpha" -> "alphaValue",
+    "lambda_" -> "lambdaValue"
+  )
 }
 
 class H2OGLMStringPairArrayParam(parent: Params, name: String, doc: String, isValid: Array[(String, String)] => Boolean)

@@ -20,7 +20,7 @@ from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
-
+from ai.h2o.sparkling.ml.Utils import Utils
 
 class H2OGLMParams(H2OAlgoSupervisedParams):
     ##
@@ -62,16 +62,16 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         "Tweedie link power",
         H2OTypeConverters.toFloat())
 
-    alpha = Param(
+    alphaValue = Param(
         Params._dummy(),
-        "alpha",
-        "alpha",
+        "alphaValue",
+        "alphaValue",
         H2OTypeConverters.toNullableListFloat())
 
-    lambda_ = Param(
+    lambdaValue = Param(
         Params._dummy(),
-        "lambda_",
-        "lambda",
+        "lambdaValue",
+        "lambdaValue",
         H2OTypeConverters.toNullableListFloat())
 
     missingValuesHandling = Param(
@@ -204,10 +204,18 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         return self.getOrDefault(self.tweedieLinkPower)
 
     def getAlpha(self):
-        return self.getOrDefault(self.alpha)
+        Utils.deprecationWarning("getAlpha", "getAlphaValue")
+        return self.getAlphaValue()
+
+    def getAlphaValue(self):
+        return self.getOrDefault(self.alphaValue)
 
     def getLambda(self):
-        return self.getOrDefault(self.lambda_)
+        Utils.deprecationWarning("getLambda", "getLambdaValue")
+        return self.getLambda()
+
+    def getLambdaValue(self):
+        return self.getOrDefault(self.lambdaValue)
 
     def getMissingValuesHandling(self):
         return self.getOrDefault(self.missingValuesHandling)
@@ -285,10 +293,18 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         return self._set(tweedieLinkPower=value)
 
     def setAlpha(self, value):
-        return self._set(alpha=value)
+        Utils.deprecationWarning("setAlpha", "setAlphaValue")
+        return self.setAlphaValue(value)
+
+    def setAlphaValue(self, value):
+        return self._set(alphaValue=value)
 
     def setLambda(self, value):
-        return self._set(lambda_=value)
+        Utils.deprecationWarning("setLambda", "setLambdaValue")
+        return self.setLambdaValue(value)
+
+    def setLambdaValue(self, value):
+        return self._set(lambdaValue=value)
 
     def setMissingValuesHandling(self, value):
         return self._set(missingValuesHandling=value)
