@@ -212,7 +212,7 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def getLambda(self):
         Utils.deprecationWarning("getLambda", "getLambdaValue")
-        return self.getLambda()
+        return self.getLambdaValue()
 
     def getLambdaValue(self):
         return self.getOrDefault(self.lambdaValue)
