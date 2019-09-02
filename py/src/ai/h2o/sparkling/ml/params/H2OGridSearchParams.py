@@ -90,6 +90,9 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     ##
     # Getters
     ##
+    def getAlgo(self):
+        javaAlgo = self.getOrDefault(self.algo)
+
     def getHyperParameters(self):
         return self.getOrDefault(self.hyperParameters)
 

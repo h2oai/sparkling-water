@@ -233,7 +233,6 @@ class H2OTypeConverters(object):
                 return value._java_obj
             else:
                 raise TypeError("Invalid type.")
-
         return convert
 
     @staticmethod
