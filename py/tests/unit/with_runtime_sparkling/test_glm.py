@@ -42,8 +42,8 @@ def testParams():
                  solver="AUTO",
                  tweedieVariancePower=0.0,
                  tweedieLinkPower=0.0,
-                 alpha=[1],
-                 lambda_=None,
+                 alphaValue=[1],
+                 lambdaValue=None,
                  missingValuesHandling="MeanImputation",
                  prior=-1.0,
                  lambdaSearch=False,
@@ -88,8 +88,8 @@ def testParams():
     assert glm.getSolver() == "AUTO"
     assert glm.getTweedieVariancePower() == 0.0
     assert glm.getTweedieLinkPower() == 0.0
-    assert glm.getAlpha() == [1.0]
-    assert glm.getLambda() == None
+    assert glm.getAlphaValue() == [1.0]
+    assert glm.getLambdaValue() == None
     assert glm.getMissingValuesHandling() == "MeanImputation"
     assert glm.getPrior() == -1.0
     assert glm.getLambdaSearch() == False
