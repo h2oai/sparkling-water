@@ -37,7 +37,7 @@ import scala.util.Random
 import scala.util.control.NoStackTrace
 
 /**
-  * H2O AutoML pipeline step
+  * H2O AutoML algorithm exposed via Spark ML pipelines.
   */
 class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgoCommonUtils with DefaultParamsWritable with H2OAutoMLParams {
@@ -47,7 +47,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   private lazy val spark = SparkSession.builder().getOrCreate()
 
-  def this() = this(Identifiable.randomUID("automl"))
+  def this() = this(Identifiable.randomUID(classOf[H2OAutoML].getSimpleName))
 
   var leaderboard: Option[DataFrame] = None
 

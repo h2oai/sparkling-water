@@ -31,7 +31,7 @@ import org.apache.spark.ml.util.Identifiable
   */
 class H2OXGBoost(override val uid: String) extends H2OSupervisedAlgorithm[XGBoost, XGBoostModel, XGBoostParameters] with H2OXGBoostParams {
 
-  def this() = this(Identifiable.randomUID("xgboost"))
+  def this() = this(Identifiable.randomUID(classOf[H2OXGBoost].getSimpleName))
 }
 
 object H2OXGBoost extends H2OParamsReadable[H2OXGBoost]
