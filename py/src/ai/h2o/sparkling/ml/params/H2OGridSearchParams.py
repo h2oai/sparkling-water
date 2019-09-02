@@ -15,12 +15,10 @@
 # limitations under the License.
 #
 
-from h2o.utils.typechecks import assert_is_type
-from py4j.java_gateway import JavaObject
-from pyspark.ml.param import *
-
+from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.params.H2OCommonSupervisedParams import H2OCommonSupervisedParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from pyspark.ml.param import *
 
 
 class H2OGridSearchParams(H2OCommonSupervisedParams):
@@ -30,12 +28,14 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     algo = Param(
         Params._dummy(),
         "algo",
-        "Algo to run grid search on")
+        "Algo to run grid search on",
+        H2OTypeConverters.toH2OModelParameters())
 
     hyperParameters = Param(
         Params._dummy(),
         "hyperParameters",
-        "Grid Search Hyper Params map")
+        "Grid Search Hyper Params map",
+        H2OTypeConverters.toDictionaryWithAnyElements())
 
     strategy = Param(
         Params._dummy(),
@@ -76,31 +76,22 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     selectBestModelBy = Param(
         Params._dummy(),
         "selectBestModelBy",
-        "selectBestModelBy",
+        "Specifies the metric which is used for comparing and sorting the models returned by the grid.",
         H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.algos.H2OGridSearchMetric"))
 
-    selectBestModelDecreasing = Param(
+    selectBestModelOrdering = Param(
         Params._dummy(),
-        "selectBestModelDecreasing",
-        "selectBestModelDecreasing",
-        H2OTypeConverters.toBoolean())
+        "selectBestModelOrdering",
+        "Specifies the ordering in which the resulting models found by grid search are returned. The "
+        "possible values are ASC, DESC and AUTO. The automatic mode selects the correct ordering based in the "
+        "selected metric in selectBestModelBy.",
+        H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.algos.H2OGridSearchOrdering"))
 
     ##
     # Getters
     ##
-    def getAlgoParams(self):
-        return self._java_obj.getAlgoParams()
-
     def getHyperParameters(self):
-        params = self.getOrDefault(self.hyperParameters)
-        if isinstance(params, JavaObject):
-            keys = [k for k in params.keySet().toArray()]
-            map = {}
-            for k in keys:
-                map[k] = [v for v in params.get(k)]
-            return map
-        else:
-            return params
+        return self.getOrDefault(self.hyperParameters)
 
     def getStrategy(self):
         return self.getOrDefault(self.strategy)
@@ -124,22 +115,24 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         return self.getOrDefault(self.selectBestModelBy)
 
     def getSelectBestModelDecreasing(self):
-        return self.getOrDefault(self.selectBestModelDecreasing)
+        Utils.deprecationWarning("getSelectBestModelDecreasing", "getSelectBestModelOrdering")
+        ordering = self.getOrDefault(self.selectBestModelOrdering)
+        return ordering is "ASC" # The default value was DESC as well
+
+    def getSelectBestModelOrdering(self):
+        return self.getOrDefault(self.selectBestModelOrdering)
 
     ##
     # Setters
     ##
     def setAlgo(self, value):
-        assert_is_type(value, object)
-        self._java_obj.setAlgo(value._java_obj)
-        return self
+        return self._set(algo=value)
 
     def setHyperParameters(self, value):
-        assert_is_type(value, None, {str: [object]})
         return self._set(hyperParameters=value)
 
     def setStrategy(self, value):
-        return self._set(link=value)
+        return self._set(strategy=value)
 
     def setMaxRuntimeSecs(self, value):
         return self._set(maxRuntimeSecs=value)
@@ -160,4 +153,12 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         return self._set(selectBestModelBy=value)
 
     def setSelectBestModelDecreasing(self, value):
-        return self._set(selectBestModelDecreasing=value)
+        Utils.deprecationWarning("setSelectBestModelDecreasing", "setSelectBestModelOrdering")
+        if value:
+            self.setSelectBestModelOrdering("DESC")
+        else:
+            self.setSelectBestModelOrdering("ASC")
+        return self
+
+    def setSelectBestModelOrdering(self, value):
+        return self._set(selectBestModelOrdering=value)
