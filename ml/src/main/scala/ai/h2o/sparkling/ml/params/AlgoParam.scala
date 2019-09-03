@@ -16,15 +16,13 @@
 */
 package ai.h2o.sparkling.ml.params
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
-
 import ai.h2o.sparkling.ml.algos._
 import hex.Model
-import org.apache.spark.ml.param.{Param, Params}
-import org.json4s.JValue
-import org.json4s.JsonAST.{JArray, JInt}
+import org.apache.spark.ml.param.{Param, ParamPair, Params}
+import org.json4s.JsonAST.{JArray, JNull, JString}
+import org.json4s.JsonDSL._
+import org.json4s._
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
-
 
 class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters] => Boolean)
   extends Param[H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]](parent, name, doc, isValid) {
@@ -33,31 +31,51 @@ class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OSupervise
     this(parent, name, doc, _ => true)
 
   override def jsonEncode(value: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): String = {
-    val stream = new ByteArrayOutputStream()
-    val oos = new ObjectOutputStream(stream)
-    oos.writeObject(value)
-    oos.close()
-    val bytes = stream.toByteArray
-    val encoded: JValue = JArray(bytes.toSeq.map(JInt(_)).toList)
+    val encoded = if (value == null) {
+      JNull
+    } else {
+      val algoClassName = value.getClass.getName
+      val uid = value.uid
+      val params = value.extractParamMap().toSeq
+      val jsonParams = render(params.map { case ParamPair(p, v) =>
+        p.name -> parse(p.jsonEncode(v))
+      }.toList)
+      JString(algoClassName) ++ JString(uid) ++ jsonParams
+    }
     compact(render(encoded))
   }
 
+
   override def jsonDecode(json: String): H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters] = {
     parse(json) match {
-      case JArray(values) =>
-        val bytes = values.map {
-          case JInt(x) =>
-            x.byteValue()
-          case _ =>
-            throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
-        }.toArray
-
-        val ois = new ObjectInputStream(new ByteArrayInputStream(bytes))
-        val value = ois.readObject
-        ois.close()
-        value.asInstanceOf[H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]]
+      case JNull => null
+      case JArray(JString(algoName) :: JString(uid) :: jsonParams :: Nil) =>
+        val algo = createH2OAlgoInstance(algoName, uid)
+        jsonParams match {
+          case JObject(pairs) => pairs.foreach {
+            case (paramName, jsonValue) =>
+              val param = algo.getParam(paramName)
+              val value = param.jsonDecode(compact(render(jsonValue)))
+              algo.set(param, value)
+          }
+          case _ => throw new RuntimeException("Invalid JSON parameters")
+        }
+        updateH2OParams(algo)
+        algo
       case _ =>
         throw new IllegalArgumentException(s"Cannot decode $json to a H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters].")
     }
+  }
+
+
+  private def createH2OAlgoInstance(algoName: String, uid: String): H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters] = {
+    val cls = Class.forName(algoName)
+    cls.getConstructor(classOf[String]).newInstance(uid).asInstanceOf[H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]]
+  }
+
+  private def updateH2OParams(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): Unit = {
+    val updateH2OParamsMethod = algo.getClass.getDeclaredMethod("updateH2OParams")
+    updateH2OParamsMethod.setAccessible(true)
+    updateH2OParamsMethod.invoke(algo)
   }
 }

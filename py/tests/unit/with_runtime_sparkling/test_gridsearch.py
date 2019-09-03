@@ -73,10 +73,10 @@ def testParams():
 
 
 def gridSearchTester(algo, prostateDataset):
-    algo = H2OGridSearch(labelCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, splitRatio=0.8, algo=algo,
+    grid = H2OGridSearch(labelCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, splitRatio=0.8, algo=algo,
                          strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
 
-    pipeline = Pipeline(stages=[algo])
+    pipeline = Pipeline(stages=[grid])
     pipeline.write().overwrite().save("file://" + os.path.abspath("build/grid_pipeline"))
     loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/grid_pipeline"))
     model = loadedPipeline.fit(prostateDataset)
