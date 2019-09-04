@@ -472,7 +472,5 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   }
 
   @DeprecatedMethod()
-  def setSelectBestModelDecreasing(value: Boolean): this.type = {
-    set(selectBestModelDecreasing, value)
-  }
+  def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
 }
