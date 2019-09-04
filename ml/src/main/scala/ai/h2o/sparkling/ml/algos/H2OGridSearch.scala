@@ -395,7 +395,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   private val selectBestModelBy = new Param[String](this, "selectBestModelBy", "Select best model by specific metric." +
     "If this value is not specified that the first model os taken.")
   private val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
-    "Ordering of models on the final leaderboard. Is automatic by default.")
+    "True if sort in decreasing order accordingto selected metrics")
 
   //
   // Default values
