@@ -6,7 +6,6 @@ module "network" {
   aws_availability_zone = "${var.aws_availability_zone}"
 }
 
-
 module "emr" {
   source = "./modules/emr"
 

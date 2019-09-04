@@ -21,4 +21,3 @@ output "aws_subnet_cidr_block" {
 output "aws_region" {
   value = "${var.aws_region}"
 }
-
