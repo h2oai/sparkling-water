@@ -18,7 +18,7 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionRegression.{Base, WithContributions}
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
@@ -26,8 +26,6 @@ trait H2OMOJOPredictionRegression {
   self: H2OMOJOModel =>
 
   def getRegressionPredictionUDF(): UserDefinedFunction = {
-    logWarning("Starting from the next major release, the content of 'prediction' column will be generated to " +
-      " 'detailed_prediction' instead. The 'prediction' column will contain directly the predicted value.")
     if (getWithDetailedPredictionCol()) {
       udf[WithContributions, Row] { r: Row =>
         val pred = easyPredictModelWrapper.predictRegression(RowConverter.toH2ORowData(r))
@@ -41,25 +39,27 @@ trait H2OMOJOPredictionRegression {
     }
   }
 
-  private val baseField = StructField("value", DoubleType, nullable = false)
+  private val predictionColType = DoubleType
+  private val predictionColNullable = false
 
   def getRegressionPredictionColSchema(): Seq[StructField] = {
-    Seq(StructField(getPredictionCol(), StructType(baseField :: Nil), nullable = false))
+    Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
   }
 
   def getRegressionDetailedPredictionColSchema(): Seq[StructField] = {
+    val valueField = StructField("value", DoubleType, nullable = false)
     val fields = if (getWithDetailedPredictionCol()) {
       val contributionsField = StructField("contributions", ArrayType(FloatType))
-      baseField :: contributionsField :: Nil
+      valueField :: contributionsField :: Nil
     } else {
-      baseField :: Nil
+      valueField :: Nil
     }
 
     Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
   }
 
   def extractRegressionPredictionColContent(): Column = {
-    extractColumnsAsNested(Seq("value"))
+    col(s"${getDetailedPredictionCol()}.value")
   }
 }
 

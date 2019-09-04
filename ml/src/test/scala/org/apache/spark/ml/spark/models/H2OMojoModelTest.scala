@@ -167,10 +167,10 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers 
       .cache()
     val gbm = configureGBMforProstateDF()
 
-    val model = gbm.fit(trainingDF)
+    val model = gbm.setWithDetailedPredictionCol(true).fit(trainingDF)
     val predictionDF = model.transform(testingDF)
 
-    assertPredictions(testingDF, predictionDF)
+    assertGBMPredictions(testingDF, predictionDF)
   }
 
   test("Testing dataset has an extra feature column") {
@@ -181,10 +181,10 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers 
       .cache()
     val gbm = configureGBMforProstateDF()
 
-    val model = gbm.fit(trainingDF)
+    val model = gbm.setWithDetailedPredictionCol(true).fit(trainingDF)
     val predictionDF = model.transform(testingDF)
 
-    assertPredictions(testingDF, predictionDF)
+    assertGBMPredictions(testingDF, predictionDF)
   }
 
   def configureGBMforProstateDF(): H2OGBM = {
@@ -195,15 +195,13 @@ class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers 
       .setLabelCol("CAPSULE")
   }
 
-  def assertPredictions(originalDF: DataFrame, predictionDF: DataFrame): Unit ={
-    val records = predictionDF.select("prediction").collect()
+  def assertGBMPredictions(originalDF: DataFrame, predictionDF: DataFrame): Unit = {
+    val records = predictionDF.select( "detailed_prediction.p0", "detailed_prediction.p1").collect()
     val expectedNumberOfRecords = originalDF.count()
     records should have size expectedNumberOfRecords
     records.foreach { row =>
-      val value = row.getAs[Row](0).toSeq.asInstanceOf[Seq[Double]]
-      value should not be null
-      value(0) should (be >= 0.0 and be <= 1.0)
-      value(1) should (be >= 0.0 and be <= 1.0)
+      row.getDouble(0) should (be >= 0.0 and be <= 1.0)
+      row.getDouble(1) should (be >= 0.0 and be <= 1.0)
     }
   }
 

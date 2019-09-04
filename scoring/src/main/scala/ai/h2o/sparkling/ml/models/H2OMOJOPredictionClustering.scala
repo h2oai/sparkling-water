@@ -16,19 +16,26 @@
 */
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.H2OMOJOPredictionClustering.Base
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionClustering.{Base, Detailed}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
-import org.apache.spark.sql.types.{ArrayType, DoubleType, IntegerType, StructField, StructType}
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
 trait H2OMOJOPredictionClustering {
   self: H2OMOJOModel =>
 
   def getClusteringPredictionUDF(): UserDefinedFunction = {
-    udf[Base, Row] { r: Row =>
-      val pred = easyPredictModelWrapper.predictClustering(RowConverter.toH2ORowData(r))
-      Base(pred.cluster, pred.distances)
+    if (getWithDetailedPredictionCol()) {
+      udf[Detailed, Row] { r: Row =>
+        val pred = easyPredictModelWrapper.predictClustering(RowConverter.toH2ORowData(r))
+        Detailed(pred.cluster, pred.distances)
+      }
+    } else {
+      udf[Base, Row] { r: Row =>
+        val pred = easyPredictModelWrapper.predictClustering(RowConverter.toH2ORowData(r))
+        Base(pred.cluster)
+      }
     }
   }
 
@@ -41,9 +48,12 @@ trait H2OMOJOPredictionClustering {
 
   def getClusteringDetailedPredictionColSchema(): Seq[StructField] = {
     val clusterField = StructField("cluster", predictionColType, nullable = predictionColNullable)
-    val distancesField = StructField("distances", ArrayType(DoubleType))
-    val fields = clusterField :: distancesField :: Nil
-
+    val fields = if (getWithDetailedPredictionCol()) {
+      val distancesField = StructField("distances", ArrayType(DoubleType))
+      clusterField :: distancesField :: Nil
+    } else {
+      clusterField :: Nil
+    }
     Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
   }
 
@@ -54,6 +64,8 @@ trait H2OMOJOPredictionClustering {
 
 object H2OMOJOPredictionClustering {
 
-  case class Base(cluster: Integer, distances: Array[Double])
+  case class Base(cluster: Integer)
+
+  case class Detailed(cluster: Integer, distances: Array[Double])
 
 }

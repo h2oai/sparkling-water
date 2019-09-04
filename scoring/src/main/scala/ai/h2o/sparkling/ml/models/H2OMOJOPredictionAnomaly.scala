@@ -16,40 +16,57 @@
 */
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.H2OMOJOPredictionAnomaly.Base
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionAnomaly.{Base, Detailed}
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
 import org.apache.spark.sql.{Column, Row}
 
-trait H2OMOJOPredictionAnomaly extends H2OMOJOPredictionUtils {
+trait H2OMOJOPredictionAnomaly {
   self: H2OMOJOModel =>
   def getAnomalyPredictionUDF(): UserDefinedFunction = {
-    logWarning("Starting from the next major release, the content of 'prediction' column will be generated to " +
-      " 'detailed_prediction' instead. The 'prediction' column will contain directly the predicted score.")
-    udf[Base, Row] { r: Row =>
-      val pred = easyPredictModelWrapper.predictAnomalyDetection(RowConverter.toH2ORowData(r))
-      Base(pred.score, pred.normalizedScore)
+    if (getWithDetailedPredictionCol()) {
+      udf[Detailed, Row] { r: Row =>
+        val pred = easyPredictModelWrapper.predictAnomalyDetection(RowConverter.toH2ORowData(r))
+        Detailed(pred.score, pred.normalizedScore)
+      }
+    }
+    else {
+      udf[Base, Row] { r: Row =>
+        val pred = easyPredictModelWrapper.predictAnomalyDetection(RowConverter.toH2ORowData(r))
+        Base(pred.score)
+      }
     }
   }
 
-  private val baseFields = Seq("score", "normalizedScore").map(StructField(_, DoubleType, nullable = false))
+  private val predictionColType = DoubleType
+  private val predictionColNullable = false
 
   def getAnomalyPredictionColSchema(): Seq[StructField] = {
-    Seq(StructField(getPredictionCol(), StructType(baseFields), nullable = false))
+    Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
   }
 
   def getAnomalyDetailedPredictionColSchema(): Seq[StructField] = {
-    Seq(StructField(getDetailedPredictionCol(), StructType(baseFields), nullable = false))
+    val scoreField = StructField("score", predictionColType, nullable = predictionColNullable)
+    val fields = if (getWithDetailedPredictionCol()) {
+      val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = predictionColNullable)
+      scoreField :: normalizedScoreField :: Nil
+    } else {
+      scoreField :: Nil
+    }
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
+
   }
 
   def extractAnomalyPredictionColContent(): Column = {
-    extractColumnsAsNested(Seq("score", "normalizedScore"))
+    col(s"${getDetailedPredictionCol()}.score")
   }
 }
 
 object H2OMOJOPredictionAnomaly {
 
-  case class Base(score: Double, normalizedScore: Double)
+  case class Base(score: Double)
+
+  case class Detailed(score: Double, normalizedScore: Double)
 
 }

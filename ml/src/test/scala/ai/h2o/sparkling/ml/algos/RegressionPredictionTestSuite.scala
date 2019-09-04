@@ -46,9 +46,9 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
 
     val model = algo.fit(dataset)
 
-    val expectedCols = Seq("value")
+    val expectedCols = Seq("prediction")
     val predictions = model.transform(dataset)
-    assert(predictions.select("prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
+    assert(predictions.select("prediction").schema.fields.map(_.name).sameElements(expectedCols))
     assert(!predictions.columns.contains("detailed_prediction"))
   }
 
@@ -82,7 +82,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
 
     val datasetFields = dataset.schema.fields
     val valueField = StructField("value", DoubleType, nullable = false)
-    val predictionColField = StructField("prediction", StructType(valueField :: Nil), nullable = false)
+    val predictionColField = StructField("prediction", DoubleType, nullable = false)
     val contributionsField = StructField("contributions", ArrayType(FloatType))
     val detailedPredictionColField = StructField("detailed_prediction", StructType(valueField :: contributionsField :: Nil), nullable = false)
 
@@ -100,8 +100,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
     val model = algo.fit(dataset)
 
     val datasetFields = dataset.schema.fields
-    val valueField = StructField("value", DoubleType, nullable = false)
-    val predictionColField = StructField("prediction", StructType(valueField :: Nil), nullable = false)
+    val predictionColField = StructField("prediction", DoubleType, nullable = false)
 
     val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
     val schema = model.transformSchema(dataset.schema)

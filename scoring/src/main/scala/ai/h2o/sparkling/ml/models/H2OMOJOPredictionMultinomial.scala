@@ -17,40 +17,57 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.H2OMOJOPredictionMultinomial.Base
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionMultinomial.{Base, Detailed}
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.udf
-import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField, StructType}
+import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
 trait H2OMOJOPredictionMultinomial {
   self: H2OMOJOModel =>
   def getMultinomialPredictionUDF(): UserDefinedFunction = {
-    logWarning("Starting from the next major release, the content of 'prediction' column will be generated to " +
-      " 'detailed_prediction' instead. The 'prediction' column will contain directly the predicted label.")
-    udf[Base, Row] { r: Row =>
-      val pred = easyPredictModelWrapper.predictMultinomial(RowConverter.toH2ORowData(r))
-      Base(pred.classProbabilities)
+    if (getWithDetailedPredictionCol()) {
+      udf[Detailed, Row] { r: Row =>
+        val pred = easyPredictModelWrapper.predictMultinomial(RowConverter.toH2ORowData(r))
+        Detailed(pred.label, pred.classProbabilities)
+      }
+    } else {
+      udf[Base, Row] { r: Row =>
+        val pred = easyPredictModelWrapper.predictMultinomial(RowConverter.toH2ORowData(r))
+        Base(pred.label)
+      }
     }
   }
 
-  private val baseFields = StructField("probabilities", ArrayType(DoubleType)) :: Nil
+  private val predictionColType = StringType
+  private val predictionColNullable = false
 
   def getMultinomialPredictionColSchema(): Seq[StructField] = {
-    Seq(StructField(getPredictionCol(), StructType(baseFields), nullable = false))
+    Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
   }
 
   def getMultinomialDetailedPredictionColSchema(): Seq[StructField] = {
-    Seq(StructField(getDetailedPredictionCol(), StructType(baseFields), nullable = false))
+    val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
+
+    val fields = if (getWithDetailedPredictionCol()) {
+      val probabilitiesField = StructField("probabilities", ArrayType(DoubleType))
+      labelField :: probabilitiesField :: Nil
+    } else {
+      labelField :: Nil
+    }
+
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
   }
 
   def extractMultinomialPredictionColContent(): Column = {
-    extractColumnsAsNested(Seq("probabilities"))
+    col(s"${getDetailedPredictionCol()}.label")
   }
 }
 
 object H2OMOJOPredictionMultinomial {
 
-  case class Base(probabilities: Array[Double])
+  case class Base(label: String)
+
+  case class Detailed(label: String, probabilities: Array[Double])
 
 }
