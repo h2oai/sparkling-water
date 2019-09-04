@@ -213,13 +213,13 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
           case _: ModelMetricsRegression => Ordering.Double
           case _: ModelMetricsBinomial => Ordering.Double.reverse
           case _: ModelMetricsMultinomial => Ordering.Double
-          case metric => throw new RuntimeException("Unsupported model metric " + metric)
+          case metric => throw new RuntimeException(s"Unsupported model metric: $metric")
         }
       case H2OGridSearchOrdering.DESC =>
         Ordering.Double.reverse
       case H2OGridSearchOrdering.ASC =>
         Ordering.Double
-      case ord => throw new RuntimeException("Unsupported ordering " + ord)
+      case ord => throw new RuntimeException(s"Unsupported ordering: $ord")
     }
 
 
