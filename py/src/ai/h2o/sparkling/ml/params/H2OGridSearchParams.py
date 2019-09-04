@@ -29,7 +29,7 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         Params._dummy(),
         "algo",
         "Algo to run grid search on",
-        H2OTypeConverters.toJavaObj())
+        H2OTypeConverters.toH2OGridSearchSupportedAlgo())
 
     hyperParameters = Param(
         Params._dummy(),
@@ -136,7 +136,7 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         return self.getOrDefault(self.selectBestModelBy)
 
     def getSelectBestModelDecreasing(self):
-        Utils.deprecationWarning("getSelectBestModelDecreasing")
+        Utils.methodDeprecationWarning("getSelectBestModelDecreasing")
         return self.getOrDefault(self.selectBestModelDecreasing)
 
     ##
@@ -170,5 +170,5 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         return self._set(selectBestModelBy=value)
 
     def setSelectBestModelDecreasing(self, value):
-        Utils.deprecationWarning("setSelectBestModelDecreasing")
+        Utils.methodDeprecationWarning("setSelectBestModelDecreasing")
         return self._set(selectBestModelDecreasing=value)

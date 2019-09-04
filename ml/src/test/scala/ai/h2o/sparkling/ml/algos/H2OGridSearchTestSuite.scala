@@ -97,14 +97,19 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   }
 
   test("Deserialize algo param") {
-    val algoParam = new AlgoParam(null, "algo", "desc")
-    val gbm = new H2OGBM().setLabelCol("AGE")
+    val algoParam = new AlgoParam(parentParams, "algo", "desc")
+    val gbm = new H2OGBM().setLabelCol("AGE").setColumnsToCategorical(Array("a", "b"))
     val encoded = algoParam.jsonEncode(gbm)
 
     val algo = algoParam.jsonDecode(encoded)
     assert(algo.isInstanceOf[H2OGBM])
     assert(algo.getLabelCol() == "AGE")
-    assert(algo.extractParamMap() == gbm.extractParamMap())
+    val gbmParamMap = gbm.extractParamMap()
+    algo.extractParamMap().toSeq.foreach { paramPair =>
+      if (paramPair.param.name == "AGE") {
+        assert(paramPair.value == gbmParamMap.get(paramPair.param).get)
+      }
+    }
   }
 
   private def testGridSearch(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {

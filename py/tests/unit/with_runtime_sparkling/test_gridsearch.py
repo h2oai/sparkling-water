@@ -40,7 +40,6 @@ def testParams():
                          stoppingMetric="AUTO",
                          nfolds=0,
                          selectBestModelBy="AUTO",
-                         selectBestModelOrdering="AUTO",
                          foldCol=None,
                          convertUnknownCategoricalLevelsToNa=True,
                          predictionCol="prediction",
@@ -64,7 +63,6 @@ def testParams():
     assert grid.getStoppingMetric() == "AUTO"
     assert grid.getNfolds() == 0
     assert grid.getSelectBestModelBy() == "AUTO"
-    assert grid.getSelectBestModelOrdering() == "AUTO"
     assert grid.getFoldCol() == None
     assert grid.getConvertUnknownCategoricalLevelsToNa() == True
     assert grid.getPredictionCol() == "prediction"

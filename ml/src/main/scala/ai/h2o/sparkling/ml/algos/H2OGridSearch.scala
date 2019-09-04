@@ -65,12 +65,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 
     if (algoParams == null) {
       throw new IllegalArgumentException(s"Algorithm has to be specified. Available algorithms are " +
-        s"${H2OGridSearch.SupportedAlgos.allAsString}")
-    }
-
-    if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(algoParams.algoName())) {
-      throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '${algoParams.algoName()}'. Supported " +
-        s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
+        s"${H2OGridSearch.SupportedAlgos.values.mkString(", ")}")
     }
 
     val hyperParams = processHyperParams(algoParams, getHyperParameters())
@@ -208,12 +203,12 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }
 
     val ordering = {
-        grid.getModels()(0)._output._training_metrics match {
-          case _: ModelMetricsRegression => Ordering.Double
-          case _: ModelMetricsBinomial => Ordering.Double.reverse
-          case _: ModelMetricsMultinomial => Ordering.Double
-          case metric => throw new RuntimeException(s"Unsupported model metric: $metric")
-        }
+      grid.getModels()(0)._output._training_metrics match {
+        case _: ModelMetricsRegression => Ordering.Double
+        case _: ModelMetricsBinomial => Ordering.Double.reverse
+        case _: ModelMetricsMultinomial => Ordering.Double
+        case metric => throw new RuntimeException(s"Unsupported model metric: $metric")
+      }
     }
 
     modelMetricPair.sortBy(_._2)(ordering).map(_._1)
@@ -367,13 +362,15 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
   object SupportedAlgos extends Enumeration {
-    val gbm, glm, deeplearning, xgboost = Value
+    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost = Value
 
-    def isSupportedAlgo(s: String) = values.exists(_.toString == s.toLowerCase())
-
-    def allAsString = values.mkString(", ")
-
-    def fromString(value: String) = values.find(_.toString == value.toLowerCase())
+    def checkIfSupported(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): Unit = {
+      val exists = values.exists(_.toString == algo.getClass.getSimpleName)
+      if (!exists) {
+        throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '${algo.getClass}'. Supported " +
+          s"algorithms are ${H2OGridSearch.SupportedAlgos.values.mkString(", ")}")
+      }
+    }
   }
 
 }
@@ -440,7 +437,10 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   //
   // Setters
   //
-  def setAlgo(value: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): this.type = set(algo, value)
+  def setAlgo(value: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): this.type = {
+    H2OGridSearch.SupportedAlgos.checkIfSupported(value)
+    set(algo, value)
+  }
 
   def setHyperParameters(value: Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.asJava)
 

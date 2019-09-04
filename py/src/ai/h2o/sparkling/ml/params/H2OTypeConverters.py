@@ -234,6 +234,21 @@ class H2OTypeConverters(object):
                 return value._java_obj
             else:
                 raise TypeError("Invalid type.")
+
+        return convert
+
+    @staticmethod
+    def toH2OGridSearchSupportedAlgo():
+        def convert(value):
+            javaObj = H2OTypeConverters.toJavaObj()(value)
+            if javaObj is None:
+                return None
+            else:
+                package = getattr(_jvm().ai.h2o.sparkling.ml.algos, "H2OGridSearch$SupportedAlgos$")
+                module = package.__getattr__("MODULE$")
+                module.checkIfSupported(javaObj)
+                return javaObj
+
         return convert
 
     @staticmethod

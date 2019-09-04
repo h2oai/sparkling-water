@@ -204,14 +204,14 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         return self.getOrDefault(self.tweedieLinkPower)
 
     def getAlpha(self):
-        Utils.deprecationWarning("getAlpha", "getAlphaValue")
+        Utils.methodDeprecationWarning("getAlpha", "getAlphaValue")
         return self.getAlphaValue()
 
     def getAlphaValue(self):
         return self.getOrDefault(self.alphaValue)
 
     def getLambda(self):
-        Utils.deprecationWarning("getLambda", "getLambdaValue")
+        Utils.methodDeprecationWarning("getLambda", "getLambdaValue")
         return self.getLambdaValue()
 
     def getLambdaValue(self):
@@ -293,14 +293,14 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         return self._set(tweedieLinkPower=value)
 
     def setAlpha(self, value):
-        Utils.deprecationWarning("setAlpha", "setAlphaValue")
+        Utils.methodDeprecationWarning("setAlpha", "setAlphaValue")
         return self.setAlphaValue(value)
 
     def setAlphaValue(self, value):
         return self._set(alphaValue=value)
 
     def setLambda(self, value):
-        Utils.deprecationWarning("setLambda", "setLambdaValue")
+        Utils.methodDeprecationWarning("setLambda", "setLambdaValue")
         return self.setLambdaValue(value)
 
     def setLambdaValue(self, value):
