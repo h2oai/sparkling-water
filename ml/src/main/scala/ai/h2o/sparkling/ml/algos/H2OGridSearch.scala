@@ -47,7 +47,7 @@ import scala.collection.mutable
 
 /**
   * H2O Grid Search algorithm exposed via Spark ML pipelines.
-
+  *
   */
 class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgoCommonUtils with DefaultParamsWritable with H2OGridSearchParams {
@@ -208,9 +208,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }
 
     val ordering = H2OGridSearchOrdering.valueOf(getSelectBestModelOrdering()) match {
-
       case H2OGridSearchOrdering.AUTO =>
-        // in case the user did not specified the metric, override the ordering to ensure we return the best model first
         grid.getModels()(0)._output._training_metrics match {
           case _: ModelMetricsRegression => Ordering.Double
           case _: ModelMetricsBinomial => Ordering.Double.reverse
