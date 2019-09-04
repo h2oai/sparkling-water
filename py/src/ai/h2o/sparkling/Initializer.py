@@ -143,18 +143,22 @@ class Initializer(object):
         loader = jvm.Thread.currentThread().getContextClassLoader()
         logger = Initializer.__get_logger(jvm)
         while loader:
-            methods = [m for m in loader.getClass().getDeclaredMethods() if m.getName() == "addURL"]
-            if len(methods) is 0:  # no addURL method
-                logger.debug("Skipping classloader '{}'".format(loader.toString()))
-            else:
-                method = methods[0]
+            try:
+                classClass = gateway.jvm.Class
+                classArray = gateway.new_array(classClass, 1)
+                classArray[0] = url.getClass()
+                method = loader.getClass().getDeclaredMethod("addURL", classArray)
                 method.setAccessible(True)
 
                 objectClass = gateway.jvm.Object
                 objectArray = gateway.new_array(objectClass, 1)
                 objectArray[0] = url
                 method.invoke(loader, objectArray)
+
                 logger.debug("Adding {} to classloader '{}'".format(url.toString(), loader.toString()))
+            except:
+                # getDeclaredMethod throws exception in case the method does not exist
+                logger.debug("Skipping classloader '{}'".format(loader.toString()))
             loader = loader.getParent()
 
     @staticmethod
