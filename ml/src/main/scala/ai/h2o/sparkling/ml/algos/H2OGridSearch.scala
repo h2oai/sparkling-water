@@ -207,21 +207,14 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       (m, extractMetrics(m).find(_._1 == metric).get._2)
     }
 
-    val ordering = H2OGridSearchOrdering.valueOf(getSelectBestModelOrdering()) match {
-      case H2OGridSearchOrdering.AUTO =>
+    val ordering = {
         grid.getModels()(0)._output._training_metrics match {
           case _: ModelMetricsRegression => Ordering.Double
           case _: ModelMetricsBinomial => Ordering.Double.reverse
           case _: ModelMetricsMultinomial => Ordering.Double
           case metric => throw new RuntimeException(s"Unsupported model metric: $metric")
         }
-      case H2OGridSearchOrdering.DESC =>
-        Ordering.Double.reverse
-      case H2OGridSearchOrdering.ASC =>
-        Ordering.Double
-      case ord => throw new RuntimeException(s"Unsupported ordering: $ord")
     }
-
 
     modelMetricPair.sortBy(_._2)(ordering).map(_._1)
   }
@@ -401,7 +394,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   private val stoppingMetric = new Param[String](this, "stoppingMetric", "Stopping Metric")
   private val selectBestModelBy = new Param[String](this, "selectBestModelBy", "Select best model by specific metric." +
     "If this value is not specified that the first model os taken.")
-  private val selectBestModelOrdering = new Param[String](this, "selectBestModelOrdering",
+  private val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
     "Ordering of models on the final leaderboard. Is automatic by default.")
 
   //
@@ -417,7 +410,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
     selectBestModelBy -> H2OGridSearchMetric.AUTO.name(),
-    selectBestModelOrdering -> H2OGridSearchOrdering.AUTO.name()
+    selectBestModelDecreasing -> true
   )
 
   //
@@ -441,13 +434,8 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
 
   def getSelectBestModelBy(): String = $(selectBestModelBy)
 
-  @DeprecatedMethod("getSelectBestModelOrdering")
-  def getSelectBestModelDecreasing(): Boolean = {
-    val ordering = getSelectBestModelOrdering()
-    ordering == "ASC" // The default value was DESC as well
-  }
-
-  def getSelectBestModelOrdering(): String = $(selectBestModelOrdering)
+  @DeprecatedMethod()
+  def getSelectBestModelDecreasing(): Boolean = $(selectBestModelDecreasing)
 
   //
   // Setters
@@ -483,17 +471,8 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
     set(selectBestModelBy, validated)
   }
 
-  @DeprecatedMethod("setSelectBestModelOrdering")
+  @DeprecatedMethod()
   def setSelectBestModelDecreasing(value: Boolean): this.type = {
-    if (value) {
-      setSelectBestModelOrdering("DESC")
-    } else {
-      setSelectBestModelOrdering("ASC")
-    }
-  }
-
-  def setSelectBestModelOrdering(value: String): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[H2OGridSearchOrdering](value)
-    set(selectBestModelOrdering, validated)
+    set(selectBestModelDecreasing, value)
   }
 }

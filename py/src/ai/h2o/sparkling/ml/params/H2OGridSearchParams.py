@@ -79,13 +79,11 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         "Specifies the metric which is used for comparing and sorting the models returned by the grid.",
         H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.algos.H2OGridSearchMetric"))
 
-    selectBestModelOrdering = Param(
+    selectBestModelDecreasing = Param(
         Params._dummy(),
-        "selectBestModelOrdering",
-        "Specifies the ordering in which the resulting models found by grid search are returned. The "
-        "possible values are ASC, DESC and AUTO. The automatic mode selects the correct ordering based in the "
-        "selected metric in selectBestModelBy.",
-        H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.algos.H2OGridSearchOrdering"))
+        "selectBestModelDecreasing",
+        "selectBestModelDecreasing",
+        H2OTypeConverters.toBoolean())
 
     ##
     # Getters
@@ -138,12 +136,8 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         return self.getOrDefault(self.selectBestModelBy)
 
     def getSelectBestModelDecreasing(self):
-        Utils.deprecationWarning("getSelectBestModelDecreasing", "getSelectBestModelOrdering")
-        ordering = self.getOrDefault(self.selectBestModelOrdering)
-        return ordering is "ASC"  # The default value was DESC as well
-
-    def getSelectBestModelOrdering(self):
-        return self.getOrDefault(self.selectBestModelOrdering)
+        Utils.deprecationWarning("getSelectBestModelDecreasing")
+        return self.getOrDefault(self.selectBestModelDecreasing)
 
     ##
     # Setters
@@ -176,12 +170,5 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         return self._set(selectBestModelBy=value)
 
     def setSelectBestModelDecreasing(self, value):
-        Utils.deprecationWarning("setSelectBestModelDecreasing", "setSelectBestModelOrdering")
-        if value:
-            self.setSelectBestModelOrdering("DESC")
-        else:
-            self.setSelectBestModelOrdering("ASC")
-        return self
-
-    def setSelectBestModelOrdering(self, value):
-        return self._set(selectBestModelOrdering=value)
+        Utils.deprecationWarning("setSelectBestModelDecreasing")
+        return self._set(selectBestModelDecreasing=value)
