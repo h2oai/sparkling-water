@@ -60,7 +60,7 @@ class Initializer(object):
 
     @staticmethod
     def __add_sparkling_jar_to_spark(sc):
-        jvm = sc._jvm
+        gateway = sc._gateway
         # Add Sparkling water assembly JAR to driver
         sw_jar_file = Initializer.__get_sw_jar(sc)
 
@@ -68,9 +68,9 @@ class Initializer(object):
         if not sw_jar_file.startswith('/'):
             sw_jar_file = '/' + sw_jar_file
 
-        url = jvm.java.net.URL("file://{0}".format(sw_jar_file))
+        url = gateway.jvm.java.net.URL("file://{0}".format(sw_jar_file))
 
-        Initializer.__add_url_to_classloader(jvm, url)
+        Initializer.__add_url_to_classloader(gateway, url)
 
         # Add Sparkling Water Assembly JAR to Spark's file server so executors can fetch it
         # when they need to use the dependency.
@@ -111,9 +111,9 @@ class Initializer(object):
             command_sys_path = "import sys; sys.path = " + str(path_without_sw).replace("'", "\"") + ";"
             command_import_h2o = "import h2o; print(h2o.__version__)"
             full_command = "python -c '" + command_sys_path + command_import_h2o + "'"
-            previous_version = subprocess\
-                .check_output(full_command, shell=True, stderr=DEVNULL)\
-                .decode('utf-8')\
+            previous_version = subprocess \
+                .check_output(full_command, shell=True, stderr=DEVNULL) \
+                .decode('utf-8') \
                 .replace("\n", "")
             if not previous_version == sw_h2o_version and previous_version is not "":
                 warnings.warn("PySparkling is using internally bundled H2O of version {}, but H2O"
@@ -138,17 +138,28 @@ class Initializer(object):
         return jvm.org.apache.log4j.LogManager.getLogger("org")
 
     @staticmethod
-    def __add_url_to_classloader(jvm, url):
-        cl = jvm.Thread.currentThread().getContextClassLoader()
+    def __add_url_to_classloader(gateway, url):
+        jvm = gateway.jvm
+        loader = jvm.Thread.currentThread().getContextClassLoader()
         logger = Initializer.__get_logger(jvm)
-        while cl:
-            methods = [m.getName() for m in cl.getClass().getDeclaredMethods()]
-            if "addURL" in methods:
-                cl.addURL(url)
-                logger.debug("Adding {} to classloader '{}'".format(url.toString(), cl.toString()))
-            else:
-                logger.debug("Skipping classloader '{}'".format(cl.toString()))
-            cl = cl.getParent()
+        while loader:
+            try:
+                classClass = gateway.jvm.Class
+                classArray = gateway.new_array(classClass, 1)
+                classArray[0] = url.getClass()
+                method = loader.getClass().getDeclaredMethod("addURL", classArray)
+                method.setAccessible(True)
+
+                objectClass = gateway.jvm.Object
+                objectArray = gateway.new_array(objectClass, 1)
+                objectArray[0] = url
+                method.invoke(loader, objectArray)
+
+                logger.debug("Adding {} to classloader '{}'".format(url.toString(), loader.toString()))
+            except:
+                # getDeclaredMethod throws exception in case the method does not exist
+                logger.debug("Skipping classloader '{}'".format(loader.toString()))
+            loader = loader.getParent()
 
     @staticmethod
     def getVersion():
