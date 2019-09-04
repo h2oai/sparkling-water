@@ -15,6 +15,7 @@
 #
 
 import os
+
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
@@ -90,11 +91,14 @@ def gridSearchTester(algo, prostateDataset):
 def testPipelineSerializationGBM(prostateDataset):
     gridSearchTester(H2OGBM(), prostateDataset)
 
+
 def testPipelineSerializationGLM(prostateDataset):
     gridSearchTester(H2OGLM(), prostateDataset)
 
+
 def testPipelineSerializationDeepLearning(prostateDataset):
     gridSearchTester(H2ODeepLearning(), prostateDataset)
+
 
 def testPipelineSerializationXGBoost(prostateDataset):
     gridSearchTester(H2OXGBoost(), prostateDataset)
