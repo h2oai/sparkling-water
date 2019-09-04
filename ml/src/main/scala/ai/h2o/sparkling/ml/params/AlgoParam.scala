@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.params
 import ai.h2o.sparkling.ml.algos._
 import hex.Model
 import org.apache.spark.ml.param.{Param, ParamPair, Params}
-import org.json4s.JsonAST.{JArray, JNull, JString}
+import org.json4s.JsonAST.JNull
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
@@ -40,17 +40,24 @@ class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OSupervise
       val jsonParams = render(params.map { case ParamPair(p, v) =>
         p.name -> parse(p.jsonEncode(v))
       }.toList)
-      JString(algoClassName) ++ JString(uid) ++ jsonParams
+
+      ("class" -> algoClassName) ~ ("uid" -> uid) ~ ("paramMap" -> jsonParams)
     }
     compact(render(encoded))
   }
 
 
   override def jsonDecode(json: String): H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters] = {
-    parse(json) match {
+    val parsed = parse(json)
+    parsed match {
       case JNull => null
-      case JArray(JString(algoName) :: JString(uid) :: jsonParams :: Nil) =>
-        val algo = createH2OAlgoInstance(algoName, uid)
+      case _ =>
+        implicit val format = DefaultFormats
+        val className = (parsed \ "class").extract[String]
+        val uid = (parsed \ "uid").extract[String]
+        val jsonParams = parsed \ "paramMap"
+
+        val algo = createH2OAlgoInstance(className, uid)
         jsonParams match {
           case JObject(pairs) => pairs.foreach {
             case (paramName, jsonValue) =>

@@ -17,9 +17,11 @@
 
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.ml.params.AlgoParam
 import hex.Model
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.ml.param.{ParamMap, Params}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -67,6 +69,43 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     testGridSearch(xgboost, hyperParams)
   }
 
+  private val parentParams = new Params {
+    override def copy(extra: ParamMap): Params = throw new UnsupportedOperationException
+
+    override val uid: String = "test_params"
+  }
+
+  test("Serialize null AlgoParam") {
+    val algoParam = new AlgoParam(parentParams, "algo", "desc")
+    val encoded = algoParam.jsonEncode(null)
+    assert(encoded == "null")
+  }
+
+  test("Deserialize null AlgoParam") {
+    val algoParam = new AlgoParam(parentParams, "algo", "desc")
+    val decoded = algoParam.jsonDecode("null")
+    assert(decoded == null)
+  }
+
+  test("Serialize algo param") {
+
+    val algoParam = new AlgoParam(parentParams, "algo", "desc")
+    val gbm = new H2OGBM().setLabelCol("AGE")
+    val encoded = algoParam.jsonEncode(gbm)
+    assert(encoded.contains("\"class\":\"ai.h2o.sparkling.ml.algos.H2OGBM\""))
+    assert(encoded.contains("\"labelCol\":\"AGE\""))
+  }
+
+  test("Deserialize algo param") {
+    val algoParam = new AlgoParam(null, "algo", "desc")
+    val gbm = new H2OGBM().setLabelCol("AGE")
+    val encoded = algoParam.jsonEncode(gbm)
+
+    val algo = algoParam.jsonDecode(encoded)
+    assert(algo.isInstanceOf[H2OGBM])
+    assert(algo.getLabelCol() == "AGE")
+    assert(algo.extractParamMap() == gbm.extractParamMap())
+  }
 
   private def testGridSearch(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
     val stage = new H2OGridSearch()
