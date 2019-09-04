@@ -364,7 +364,7 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
   object SupportedAlgos extends Enumeration {
     val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost = Value
 
-    def checkIfSupported(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): Unit = {
+    def checkIfSupported(algo: H2OAlgorithm[_, _, _ <: Model.Parameters]): Unit = {
       val exists = values.exists(_.toString == algo.getClass.getSimpleName)
       if (!exists) {
         throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '${algo.getClass}'. Supported " +
