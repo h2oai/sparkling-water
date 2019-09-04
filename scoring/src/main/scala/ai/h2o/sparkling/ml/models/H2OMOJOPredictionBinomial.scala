@@ -30,7 +30,7 @@ trait H2OMOJOPredictionBinomial {
     // calibrateClassProbabilities returns false if model does not support calibrated probabilities,
     // however it also accepts array of probabilities to calibrate. We are not interested in calibration,
     // but to call this method, we need to pass dummy array of size 2 with default values to 0.
-    predictWrapper.m.calibrateClassProbabilities(Array.fill[Double](2)(0))
+    predictWrapper.m.calibrateClassProbabilities(Array.fill[Double](3)(0))
   }
 
   def getBinomialPredictionUDF(): UserDefinedFunction = {
