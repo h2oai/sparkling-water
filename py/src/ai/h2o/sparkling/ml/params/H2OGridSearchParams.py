@@ -15,12 +15,10 @@
 # limitations under the License.
 #
 
-from h2o.utils.typechecks import assert_is_type
-from py4j.java_gateway import JavaObject
-from pyspark.ml.param import *
-
+from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.params.H2OCommonSupervisedParams import H2OCommonSupervisedParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from pyspark.ml.param import *
 
 
 class H2OGridSearchParams(H2OCommonSupervisedParams):
@@ -30,12 +28,14 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     algo = Param(
         Params._dummy(),
         "algo",
-        "Algo to run grid search on")
+        "Algo to run grid search on",
+        H2OTypeConverters.toH2OGridSearchSupportedAlgo())
 
     hyperParameters = Param(
         Params._dummy(),
         "hyperParameters",
-        "Grid Search Hyper Params map")
+        "Grid Search Hyper Params map",
+        H2OTypeConverters.toDictionaryWithAnyElements())
 
     strategy = Param(
         Params._dummy(),
@@ -76,7 +76,7 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     selectBestModelBy = Param(
         Params._dummy(),
         "selectBestModelBy",
-        "selectBestModelBy",
+        "Specifies the metric which is used for comparing and sorting the models returned by the grid.",
         H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.algos.H2OGridSearchMetric"))
 
     selectBestModelDecreasing = Param(
@@ -88,19 +88,31 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     ##
     # Getters
     ##
-    def getAlgoParams(self):
-        return self._java_obj.getAlgoParams()
+    def getAlgo(self):
+        javaAlgo = self.getOrDefault(self.algo)
+        algoName = javaAlgo.parameters().algoName()
+        if algoName == "GBM":
+            from ai.h2o.sparkling.ml.algos import H2OGBM
+            algo = H2OGBM()
+        elif algoName == "DeepLearning":
+            from ai.h2o.sparkling.ml.algos import H2ODeepLearning
+            algo = H2ODeepLearning()
+        elif algoName == "XGBoost":
+            from ai.h2o.sparkling.ml.algos import H2OXGBoost
+            algo = H2OXGBoost()
+        elif algoName == "GLM":
+            from ai.h2o.sparkling.ml.algos import H2OGLM
+            algo = H2OGLM()
+        else:
+            raise ValueError('Unsupported algorithm for H2OGridSearch')
+
+        algo._resetUid(javaAlgo.uid())
+        algo._java_obj = javaAlgo
+        algo._transfer_params_from_java()
+        return algo
 
     def getHyperParameters(self):
-        params = self.getOrDefault(self.hyperParameters)
-        if isinstance(params, JavaObject):
-            keys = [k for k in params.keySet().toArray()]
-            map = {}
-            for k in keys:
-                map[k] = [v for v in params.get(k)]
-            return map
-        else:
-            return params
+        return self.getOrDefault(self.hyperParameters)
 
     def getStrategy(self):
         return self.getOrDefault(self.strategy)
@@ -124,22 +136,20 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         return self.getOrDefault(self.selectBestModelBy)
 
     def getSelectBestModelDecreasing(self):
+        Utils.methodDeprecationWarning("getSelectBestModelDecreasing")
         return self.getOrDefault(self.selectBestModelDecreasing)
 
     ##
     # Setters
     ##
     def setAlgo(self, value):
-        assert_is_type(value, object)
-        self._java_obj.setAlgo(value._java_obj)
-        return self
+        return self._set(algo=value)
 
     def setHyperParameters(self, value):
-        assert_is_type(value, None, {str: [object]})
         return self._set(hyperParameters=value)
 
     def setStrategy(self, value):
-        return self._set(link=value)
+        return self._set(strategy=value)
 
     def setMaxRuntimeSecs(self, value):
         return self._set(maxRuntimeSecs=value)
@@ -160,4 +170,5 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         return self._set(selectBestModelBy=value)
 
     def setSelectBestModelDecreasing(self, value):
+        Utils.methodDeprecationWarning("setSelectBestModelDecreasing")
         return self._set(selectBestModelDecreasing=value)

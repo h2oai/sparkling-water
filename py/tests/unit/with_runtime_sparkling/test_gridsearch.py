@@ -15,10 +15,11 @@
 #
 
 import os
+
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pysparkling.ml import H2OGridSearch, H2OGBM
+from pysparkling.ml import H2OGridSearch, H2OGBM, H2OXGBoost, H2ODeepLearning, H2OGLM
 
 
 def testParams():
@@ -39,7 +40,6 @@ def testParams():
                          stoppingMetric="AUTO",
                          nfolds=0,
                          selectBestModelBy="AUTO",
-                         selectBestModelDecreasing=True,
                          foldCol=None,
                          convertUnknownCategoricalLevelsToNa=True,
                          predictionCol="prediction",
@@ -63,7 +63,6 @@ def testParams():
     assert grid.getStoppingMetric() == "AUTO"
     assert grid.getNfolds() == 0
     assert grid.getSelectBestModelBy() == "AUTO"
-    assert grid.getSelectBestModelDecreasing() == True
     assert grid.getFoldCol() == None
     assert grid.getConvertUnknownCategoricalLevelsToNa() == True
     assert grid.getPredictionCol() == "prediction"
@@ -72,16 +71,32 @@ def testParams():
     assert grid.getConvertInvalidNumbersToNa() == False
 
 
-def testPipelineSerialization(prostateDataset):
-    algo = H2OGridSearch(labelCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, splitRatio=0.8, algo=H2OGBM(),
+def gridSearchTester(algo, prostateDataset):
+    grid = H2OGridSearch(labelCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, splitRatio=0.8, algo=algo,
                          strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
 
-    pipeline = Pipeline(stages=[algo])
-    pipeline.write().overwrite().save("file://" + os.path.abspath("build/grid_gbm_pipeline"))
-    loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/grid_gbm_pipeline"))
+    pipeline = Pipeline(stages=[grid])
+    pipeline.write().overwrite().save("file://" + os.path.abspath("build/grid_pipeline"))
+    loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/grid_pipeline"))
     model = loadedPipeline.fit(prostateDataset)
 
-    model.write().overwrite().save("file://" + os.path.abspath("build/grid_gbm_pipeline_model"))
-    loadedModel = PipelineModel.load("file://" + os.path.abspath("build/grid_gbm_pipeline_model"))
+    model.write().overwrite().save("file://" + os.path.abspath("build/grid_pipeline_model"))
+    loadedModel = PipelineModel.load("file://" + os.path.abspath("build/grid_pipeline_model"))
 
     loadedModel.transform(prostateDataset).count()
+
+
+def testPipelineSerializationGBM(prostateDataset):
+    gridSearchTester(H2OGBM(), prostateDataset)
+
+
+def testPipelineSerializationGLM(prostateDataset):
+    gridSearchTester(H2OGLM(), prostateDataset)
+
+
+def testPipelineSerializationDeepLearning(prostateDataset):
+    gridSearchTester(H2ODeepLearning(), prostateDataset)
+
+
+def testPipelineSerializationXGBoost(prostateDataset):
+    gridSearchTester(H2OXGBoost(), prostateDataset)

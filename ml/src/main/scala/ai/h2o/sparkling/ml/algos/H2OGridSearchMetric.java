@@ -17,8 +17,38 @@
 package ai.h2o.sparkling.ml.algos;
 
 public enum H2OGridSearchMetric {
-    AUTO,
-    MeanResidualDeviance, R2, ResidualDeviance, ResidualDegreesOfFreedom, NullDeviance,
-    NullDegreesOfFreedom, AIC, AUC, Gini, F1, F2,
-    F0point5, Precision, Recall, MCC, Logloss, Error, MaxPerClassError, Accuracy, MSE, RMSE
+    AUTO(true),
+    MeanResidualDeviance(false),
+    R2(true),
+    ResidualDeviance(false),
+    ResidualDegreesOfFreedom(false),
+    NullDeviance(false),
+    NullDegreesOfFreedom(false),
+    AIC(true),
+    AUC(true),
+    Gini(true),
+    F1(true),
+    F2(true),
+    F0point5(true),
+    Precision(true),
+    Recall(true),
+    MCC(true),
+    Logloss(false),
+    Error(false),
+    MaxPerClassError(false),
+    Accuracy(true),
+    MSE(false),
+    RMSE(false);
+
+    public boolean higherTheBetter() {
+        return higherTheBetter;
+    }
+
+    private boolean higherTheBetter;
+
+    H2OGridSearchMetric(boolean higherTheBetter) {
+        this.higherTheBetter = higherTheBetter;
+    }
+
+
 }

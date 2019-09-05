@@ -42,5 +42,17 @@ class Utils(object):
             return instance._input_kwargs
 
     @staticmethod
-    def deprecationWarning(old, new):
-        warnings.warn("The method '{}' is deprecated. Use '{}' instead!".format(old, new))
+    def methodDeprecationWarning(old, new=None):
+        Utils.__deprecationWarning(old, "method", new)
+
+    @staticmethod
+    def fieldDeprecationWarning(kwargs, old, new=None):
+        if old in kwargs:
+            Utils.__deprecationWarning(old, "field", new)
+
+    @staticmethod
+    def __deprecationWarning(old, type, new=None):
+        if new is None:
+            warnings.warn("The {} '{}' is deprecated without replacement!".format(type, old, new))
+        else:
+            warnings.warn("The {}} '{}' is deprecated. Use '{}' instead!".format(type, old, new))
