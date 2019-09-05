@@ -198,27 +198,20 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     } else {
       H2OGridSearchMetric.valueOf(getSelectBestModelBy())
     }
+
     val modelMetricPair = grid.getModels.map { m =>
       (m, extractMetrics(m).find(_._1 == metric).get._2)
     }
 
-    val ordering = {
-      grid.getModels()(0)._output._training_metrics match {
-        case _: ModelMetricsRegression => Ordering.Double
-        case _: ModelMetricsBinomial => Ordering.Double.reverse
-        case _: ModelMetricsMultinomial => Ordering.Double
-        case metric => throw new RuntimeException(s"Unsupported model metric: $metric")
-      }
-    }
-
+    val ordering = if (metric.higherTheBetter) Ordering.Double.reverse else Ordering.Double
     modelMetricPair.sortBy(_._2)(ordering).map(_._1)
   }
 
-  def selectModelFromGrid(grid: Grid[_]) = {
+  def selectModelFromGrid(grid: Grid[_]): H2OBaseModel = {
     if (gridModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
-    grid.getModels()(0)
+    grid.getModels.head
   }
 
 

@@ -49,28 +49,27 @@ class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OSupervise
 
   override def jsonDecode(json: String): H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters] = {
     val parsed = parse(json)
-    parsed match {
-      case JNull => null
-      case _ =>
-        implicit val format = DefaultFormats
-        val className = (parsed \ "class").extract[String]
-        val uid = (parsed \ "uid").extract[String]
-        val jsonParams = parsed \ "paramMap"
 
-        val algo = createH2OAlgoInstance(className, uid)
-        jsonParams match {
-          case JObject(pairs) => pairs.foreach {
-            case (paramName, jsonValue) =>
-              val param = algo.getParam(paramName)
-              val value = param.jsonDecode(compact(render(jsonValue)))
-              algo.set(param, value)
-          }
-          case _ => throw new RuntimeException("Invalid JSON parameters")
+    if (parsed == JNull) {
+      null
+    } else {
+      implicit val format = DefaultFormats
+      val className = (parsed \ "class").extract[String]
+      val uid = (parsed \ "uid").extract[String]
+      val jsonParams = parsed \ "paramMap"
+
+      val algo = createH2OAlgoInstance(className, uid)
+      jsonParams match {
+        case JObject(pairs) => pairs.foreach {
+          case (paramName, jsonValue) =>
+            val param = algo.getParam(paramName)
+            val value = param.jsonDecode(compact(render(jsonValue)))
+            algo.set(param, value)
         }
-        updateH2OParams(algo)
-        algo
-      case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to a H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters].")
+        case _ => throw new RuntimeException("Invalid JSON parameters")
+      }
+      updateH2OParams(algo)
+      algo
     }
   }
 
