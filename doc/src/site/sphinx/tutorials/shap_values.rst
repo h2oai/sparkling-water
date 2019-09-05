@@ -156,13 +156,13 @@ Note: MOJOs generated for GBM and XGBoost support contributions starting from H2
 
         .. code:: scala
 
-            val predictions = model.transform(testingDF).show(false)
+            val predictions = model.transform(testingDF)
 
         Show contributions
 
         .. code:: scala
 
-            predictions.select("detailed_prediction.contribution").show()
+            predictions.select("detailed_prediction.contributions").show()
 
 
 
@@ -177,13 +177,13 @@ Note: MOJOs generated for GBM and XGBoost support contributions starting from H2
 
         Parse the data using Spark
 
-        .. code:: scala
+        .. code:: python
 
-            val testingDF = spark.read.csv("/path/to/testing/dataset.csv", header=True, inferSchema=True)
+            testingDF = spark.read.csv("/path/to/testing/dataset.csv", header=True, inferSchema=True)
 
         Load the existing MOJO and enable generation of contributions via the settings object.
 
-        .. code:: scala
+        .. code:: python
 
             from pysparkling.ml import *
 
@@ -195,7 +195,7 @@ Note: MOJOs generated for GBM and XGBoost support contributions starting from H2
 
         .. code:: python
 
-            model.transform(testingDF).show(truncate = False)
+            val predictions = model.transform(testingDF)
 
         Show contributions
 
