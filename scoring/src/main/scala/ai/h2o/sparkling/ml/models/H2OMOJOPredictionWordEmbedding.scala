@@ -20,7 +20,7 @@ import java.util
 
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionWordEmbedding.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
@@ -36,18 +36,21 @@ trait H2OMOJOPredictionWordEmbedding {
     }
   }
 
-  private val baseFields = StructField("wordEmbeddings", DataTypes.createMapType(StringType, ArrayType(FloatType))) :: Nil
+  private val predictionColType = DataTypes.createMapType(StringType, ArrayType(FloatType))
+  private val predictionColNullable = false
 
   def getWordEmbeddingPredictionColSchema(): Seq[StructField] = {
-    Seq(StructField(getPredictionCol(), StructType(baseFields), nullable = false))
+    Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
   }
 
   def getWordEmbeddingDetailedPredictionColSchema(): Seq[StructField] = {
-    Seq(StructField(getDetailedPredictionCol(), StructType(baseFields), nullable = false))
+    val fields = StructField("wordEmbeddings", predictionColType, nullable = predictionColNullable) :: Nil
+
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
   }
 
   def extractWordEmbeddingPredictionColContent(): Column = {
-    extractColumnsAsNested(Seq("wordEmbeddings"))
+    col(s"${getDetailedPredictionCol()}.wordEmbeddings")
   }
 
 }

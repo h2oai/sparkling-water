@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionBinomial._
 import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
@@ -34,97 +34,75 @@ trait H2OMOJOPredictionBinomial {
   }
 
   def getBinomialPredictionUDF(): UserDefinedFunction = {
-    logWarning("Starting from the next major release, the content of 'prediction' column will be generated to " +
-      " 'detailed_prediction' instead. The 'prediction' column will contain directly the predicted label.")
-    if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
-      if (getWithDetailedPredictionCol()) {
-        udf[WithCalibrationAndContribution, Row] { r: Row =>
+    if (getWithDetailedPredictionCol()) {
+      if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
+        udf[DetailedWithCalibration, Row] { r: Row =>
           val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
-          WithCalibrationAndContribution(
+          DetailedWithCalibration(
+            pred.label,
             pred.classProbabilities(0),
             pred.classProbabilities(1),
-            pred.calibratedClassProbabilities(0),
-            pred.calibratedClassProbabilities(1),
-            pred.contributions
-          )
-        }
-      } else {
-        udf[WithCalibration, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
-          WithCalibration(
-            pred.classProbabilities(0),
-            pred.classProbabilities(1),
+            pred.contributions,
             pred.calibratedClassProbabilities(0),
             pred.calibratedClassProbabilities(1)
           )
         }
-      }
-    } else if (getWithDetailedPredictionCol()) {
-      udf[WithContribution, Row] { r: Row =>
-        val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
-        WithContribution(
-          pred.classProbabilities(0),
-          pred.classProbabilities(1),
-          pred.contributions
-        )
+      } else {
+        udf[Detailed, Row] { r: Row =>
+          val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
+          Detailed(
+            pred.label,
+            pred.classProbabilities(0),
+            pred.classProbabilities(1),
+            pred.contributions
+          )
+        }
       }
     } else {
       udf[Base, Row] { r: Row =>
         val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
-        Base(
-          pred.classProbabilities(0),
-          pred.classProbabilities(1)
-        )
+        Base(pred.label)
       }
     }
   }
 
-  private val baseFields = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
+  private val predictionColType = StringType
+  private val predictionColNullable = false
 
   def getBinomialPredictionColSchema(): Seq[StructField] = {
-    val fields = if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
-      baseFields ++ Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
-    } else {
-      baseFields
-    }
-
-    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
   }
 
   def getBinomialDetailedPredictionColSchema(): Seq[StructField] = {
-    val fields = if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
-      val base = baseFields ++ Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
-      if (getWithDetailedPredictionCol()) {
-        base ++ Seq(StructField("contributions", ArrayType(FloatType)))
+    val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
+
+    val fields = if (getWithDetailedPredictionCol()) {
+      val probabilitiesFields = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
+      val contributionsField = StructField("contributions", ArrayType(FloatType))
+      if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
+        val calibratedProbabilitiesFields = Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
+        Seq(labelField) ++ probabilitiesFields ++ Seq(contributionsField) ++ calibratedProbabilitiesFields
       } else {
-        base
+        Seq(labelField) ++ probabilitiesFields ++ Seq(contributionsField)
       }
-    } else if (getWithDetailedPredictionCol()) {
-      baseFields ++ Seq(StructField("contributions", ArrayType(FloatType)))
     } else {
-      baseFields
+      labelField :: Nil
     }
 
     Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
   }
 
   def extractBinomialPredictionColContent(): Column = {
-    if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
-      extractColumnsAsNested(Seq("p0", "p1", "p0_calibrated", "p1_calibrated"))
-    } else {
-      extractColumnsAsNested(Seq("p0", "p1"))
-    }
+    col(s"${getDetailedPredictionCol()}.label")
   }
 }
 
 object H2OMOJOPredictionBinomial {
 
-  case class Base(p0: Double, p1: Double)
+  case class Base(label: String)
 
-  case class WithCalibration(p0: Double, p1: Double, p0_calibrated: Double, p1_calibrated: Double)
+  case class Detailed(label: String, p0: Double, p1: Double, contributions: Array[Float])
 
-  case class WithContribution(p0: Double, p1: Double, contributions: Array[Float])
-
-  case class WithCalibrationAndContribution(p0: Double, p1: Double, p0_calibrated: Double, p1_calibrated: Double, contributions: Array[Float])
+  case class DetailedWithCalibration(label: String, p0: Double, p1: Double, contributions: Array[Float], p0_calibrated: Double, p1_calibrated: Double)
 
 }

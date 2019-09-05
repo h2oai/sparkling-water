@@ -49,9 +49,9 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
 
     val model = algo.fit(dataset)
 
-    val expectedCols = Seq("p0", "p1")
+    val expectedCols = Seq("prediction")
     val predictions = model.transform(dataset)
-    assert(predictions.select("prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
+    assert(predictions.select("prediction").schema.fields.map(_.name).sameElements(expectedCols))
     assert(!predictions.columns.contains("detailed_prediction"))
   }
 
@@ -68,7 +68,7 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
 
     val predictions = model.transform(dataset)
 
-    val expectedCols = Seq("p0", "p1", "contributions")
+    val expectedCols = Seq("label", "p0", "p1", "contributions")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
     val contributions = predictions.select("detailed_prediction.contributions").head().getAs[Seq[Double]](0)
     assert(contributions != null)
@@ -86,10 +86,11 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val model = algo.fit(dataset)
 
     val datasetFields = dataset.schema.fields
+    val labelField = StructField("label", StringType, nullable = false)
     val propFields = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
-    val predictionColField = StructField("prediction", StructType(propFields), nullable = false)
+    val predictionColField = StructField("prediction", StringType, nullable = false)
     val contributionsField = StructField("contributions", ArrayType(FloatType))
-    val detailedPredictionColField = StructField("detailed_prediction", StructType(propFields ++ Seq(contributionsField)), nullable = false)
+    val detailedPredictionColField = StructField("detailed_prediction", StructType(Seq(labelField) ++ propFields ++ Seq(contributionsField)), nullable = false)
 
     val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
     val schema = model.transformSchema(dataset.schema)
@@ -106,8 +107,7 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val model = algo.fit(dataset)
 
     val datasetFields = dataset.schema.fields
-    val propFields = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
-    val predictionColField = StructField("prediction", StructType(propFields), nullable = false)
+    val predictionColField = StructField("prediction", StringType, nullable = false)
 
     val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
     val schema = model.transformSchema(dataset.schema)
