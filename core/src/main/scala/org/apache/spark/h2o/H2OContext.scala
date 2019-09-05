@@ -128,13 +128,9 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     val nodes = backend.init()
     // Fill information about H2O client and H2O nodes in the cluster
     h2oNodes.append(nodes: _*)
-    localClientIp = if (_conf.ignoreSparkPublicDNS) {
-      H2O.getIpPortString.split(":")(0)
-    } else {
-      sys.env.getOrElse("SPARK_PUBLIC_DNS", H2O.getIpPortString.split(":")(0))
-    }
+    localClientIp = flowIp(_conf, nodes)
 
-    localClientPort = H2O.API_PORT
+    localClientPort = flowPort(_conf, nodes)
 
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
 
@@ -147,14 +143,14 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
 
     logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
     // Announce Flow UI location
-    announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, "http", localClientIp, localClientPort))
-    updateUIAfterStart() // updates the spark UI
+    announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, getScheme(conf), localClientIp, localClientPort))
+    updateUIAfterStart(nodes) // updates the spark UI
     uiUpdateThread.start() // start periodical updates of the UI
 
     this
   }
 
-  private[this] def updateUIAfterStart(): Unit = {
+  private[this] def updateUIAfterStart(nodes: Array[NodeDesc]): Unit = {
     val h2oBuildInfo = H2OBuildInfo(
       H2O.ABV.projectVersion(),
       H2O.ABV.branchName(),
@@ -174,8 +170,9 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
 
     val swPropertiesInfo = _conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
     // Initial update
-    val nodes = H2O.CLOUD.members() ++ Array(H2O.SELF)
-    val memoryInfo = nodes.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
+    val self = getSelf(conf).map(_ :: Nil).getOrElse(Nil)
+    val allNodes = nodes ++ self
+    val memoryInfo = allNodes.map(node => (s"${node.hostname}:${node.port}", PrettyPrint.bytes(node._heartbeat.get_free_mem())))
     sparkSession.sparkContext.listenerBus.post(SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo))
     sparkSession.sparkContext.listenerBus.post(H2OContextStartedEvent(
       h2oClusterInfo,

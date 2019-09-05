@@ -166,6 +166,7 @@ class H2OContext(object):
             selected_conf = conf
         else:
             selected_conf = H2OConf(spark_session)
+        selected_conf.set("spark.ext.h2o.running.from.non.jvm.client", True)
 
         # Call pre_create hook
         if pre_create_hook:

@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.backends.external
 
-import org.apache.spark.h2o.H2OFrame
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.h2o.converters.WriteConverterCtx
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.SupportedTypes._
@@ -99,7 +99,7 @@ object ExternalWriteConverterCtx extends ExternalBackendUtils {
   import scala.language.postfixOps
 
   def scheduleUpload(numPartitions: Int): UploadPlan = {
-    val nodes = cloudMembers
+    val nodes = H2OContext.ensure("H2OContext needs to be running").h2oNodes
     val uploadPlan = (0 until numPartitions).zip(Stream.continually(nodes).flatten).toMap
     uploadPlan
   }

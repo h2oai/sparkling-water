@@ -41,8 +41,6 @@ private[external] trait ExternalBackendUtils extends SharedBackendUtils {
       .buildArgs()
   }
 
-  def cloudMembers = H2O.CLOUD.members().map(NodeDesc(_))
-
   /** Check Spark and H2O environment, update it if necessary and and warn about possible problems.
     *
     * This method checks the environments for generic configuration which does not depend on particular backend used
