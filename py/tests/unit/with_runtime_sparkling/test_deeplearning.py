@@ -20,57 +20,15 @@ from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pysparkling.ml import H2OMOJOModel, H2ODeepLearning
 
+from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
-def testParams():
-    dl = H2ODeepLearning(modelId=None,
-                         splitRatio=1.0,
-                         labelCol="label",
-                         weightCol=None,
-                         featuresCols=[],
-                         allStringColumnsToCategorical=True,
-                         columnsToCategorical=[],
-                         nfolds=0,
-                         keepCrossValidationPredictions=False,
-                         keepCrossValidationFoldAssignment=False,
-                         parallelizeCrossValidation=True,
-                         seed=-1,
-                         distribution="AUTO",
-                         epochs=10.0,
-                         l1=0.0,
-                         l2=0.0,
-                         hidden=[200, 200],
-                         reproducible=False,
-                         convertUnknownCategoricalLevelsToNa=False,
-                         foldCol=None,
-                         predictionCol="prediction",
-                         detailedPredictionCol="detailed_prediction",
-                         withDetailedPredictionCol=False,
-                         convertInvalidNumbersToNa=False)
 
-    assert dl.getModelId() == None
-    assert dl.getSplitRatio() == 1.0
-    assert dl.getLabelCol() == "label"
-    assert dl.getWeightCol() == None
-    assert dl.getFeaturesCols() == []
-    assert dl.getAllStringColumnsToCategorical() == True
-    assert dl.getColumnsToCategorical() == []
-    assert dl.getNfolds() == 0
-    assert dl.getKeepCrossValidationPredictions() == False
-    assert dl.getKeepCrossValidationFoldAssignment() == False
-    assert dl.getParallelizeCrossValidation() == True
-    assert dl.getSeed() == -1
-    assert dl.getDistribution() == "AUTO"
-    assert dl.getEpochs() == 10.0
-    assert dl.getL1() == 0.0
-    assert dl.getL2() == 0.0
-    assert dl.getHidden() == [200, 200]
-    assert dl.getReproducible() == False
-    assert dl.getConvertUnknownCategoricalLevelsToNa() == False
-    assert dl.getFoldCol() == None
-    assert dl.getPredictionCol() == "prediction"
-    assert dl.getDetailedPredictionCol() == "detailed_prediction"
-    assert dl.getWithDetailedPredictionCol() == False
-    assert dl.getConvertInvalidNumbersToNa() == False
+def testParamsPassedByConstructor():
+    assertParamsViaConstructor("H2ODeepLearning")
+
+
+def testParamsPassedBySetters():
+    assertParamsViaSetters("H2ODeepLearning")
 
 
 def testLoadAndTrainMojo(prostateDataset):

@@ -15,60 +15,22 @@
 #
 
 import os
-
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pysparkling.ml import H2OGridSearch, H2OGBM, H2OXGBoost, H2ODeepLearning, H2OGLM
 
+from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
-def testParams():
-    grid = H2OGridSearch(featuresCols=[],
-                         algo=None,
-                         splitRatio=1.0,
-                         hyperParameters={},
-                         labelCol="label",
-                         weightCol=None,
-                         allStringColumnsToCategorical=True,
-                         columnsToCategorical=[],
-                         strategy="Cartesian",
-                         maxRuntimeSecs=0.0,
-                         maxModels=0,
-                         seed=-1,
-                         stoppingRounds=0,
-                         stoppingTolerance=0.001,
-                         stoppingMetric="AUTO",
-                         nfolds=0,
-                         selectBestModelBy="AUTO",
-                         foldCol=None,
-                         convertUnknownCategoricalLevelsToNa=True,
-                         predictionCol="prediction",
-                         detailedPredictionCol="detailed_prediction",
-                         withDetailedPredictionCol=False,
-                         convertInvalidNumbersToNa=False)
 
-    assert grid.getFeaturesCols() == []
-    assert grid.getSplitRatio() == 1.0
-    assert grid.getHyperParameters() == {}
-    assert grid.getLabelCol() == "label"
-    assert grid.getWeightCol() == None
-    assert grid.getAllStringColumnsToCategorical() == True
-    assert grid.getColumnsToCategorical() == []
-    assert grid.getStrategy() == "Cartesian"
-    assert grid.getMaxRuntimeSecs() == 0.0
-    assert grid.getMaxModels() == 0
-    assert grid.getSeed() == -1
-    assert grid.getStoppingRounds() == 0
-    assert grid.getStoppingTolerance() == 0.001
-    assert grid.getStoppingMetric() == "AUTO"
-    assert grid.getNfolds() == 0
-    assert grid.getSelectBestModelBy() == "AUTO"
-    assert grid.getFoldCol() == None
-    assert grid.getConvertUnknownCategoricalLevelsToNa() == True
-    assert grid.getPredictionCol() == "prediction"
-    assert grid.getDetailedPredictionCol() == "detailed_prediction"
-    assert grid.getWithDetailedPredictionCol() == False
-    assert grid.getConvertInvalidNumbersToNa() == False
+def testParamsPassedByConstructor():
+    # Skipping testing of algo option as we don't generate equal algo
+    assertParamsViaConstructor("H2OGridSearch", ["algo"])
+
+
+def testParamsPassedBySetters():
+    # Skipping testing of algo option as we don't generate equal algo
+    assertParamsViaSetters("H2OGridSearch", ["algo"])
 
 
 def gridSearchTester(algo, prostateDataset):
