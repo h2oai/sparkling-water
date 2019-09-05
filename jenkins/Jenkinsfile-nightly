@@ -35,6 +35,6 @@ pipeline(params) { p ->
     backendMode = "both"
     hdpVersion = "2.2.6.3-1"
     driverHadoopVersion = "hdp2.2"
-    buildAgainstNightlyH2O = "true"
+    buildAgainstNightlyH2O = "false"
     uploadNightly = "true"
 }
