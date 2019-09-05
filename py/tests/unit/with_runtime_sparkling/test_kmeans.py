@@ -26,6 +26,7 @@ from pyspark.sql.types import *
 from pysparkling.ml import H2OKMeans
 
 from tests import unit_test_utils
+from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
 
 @pytest.fixture(scope="module")
@@ -34,56 +35,12 @@ def dataset(spark):
                           header=True, inferSchema=True)
 
 
-def testParams():
-    kmeans = H2OKMeans(predictionCol="prediction",
-                       detailedPredictionCol="detailed_prediction",
-                       withDetailedPredictionCol=False,
-                       featuresCols=[],
-                       foldCol=None,
-                       weightCol=None,
-                       splitRatio=1.0,
-                       seed=-1,
-                       nfolds=0,
-                       allStringColumnsToCategorical=True,
-                       columnsToCategorical=[],
-                       convertUnknownCategoricalLevelsToNa=False,
-                       convertInvalidNumbersToNa=False,
-                       modelId=None,
-                       keepCrossValidationPredictions=False,
-                       keepCrossValidationFoldAssignment=False,
-                       parallelizeCrossValidation=True,
-                       distribution="AUTO",
-                       maxIterations=10,
-                       standardize=True,
-                       init="Furthest",
-                       userPoints=None,
-                       estimateK=False,
-                       k=2)
+def testParamsPassedByConstructor():
+    assertParamsViaConstructor("H2OKMeans")
 
-    assert kmeans.getPredictionCol() == "prediction"
-    assert kmeans.getDetailedPredictionCol() == "detailed_prediction"
-    assert kmeans.getWithDetailedPredictionCol() == False
-    assert kmeans.getFeaturesCols() == []
-    assert kmeans.getFoldCol() == None
-    assert kmeans.getWeightCol() == None
-    assert kmeans.getSplitRatio() == 1.0
-    assert kmeans.getSeed() == -1
-    assert kmeans.getNfolds() == 0
-    assert kmeans.getAllStringColumnsToCategorical() == True
-    assert kmeans.getColumnsToCategorical() == []
-    assert kmeans.getConvertUnknownCategoricalLevelsToNa() == False
-    assert kmeans.getConvertInvalidNumbersToNa() == False
-    assert kmeans.getModelId() == None
-    assert kmeans.getKeepCrossValidationPredictions() == False
-    assert kmeans.getKeepCrossValidationFoldAssignment() == False
-    assert kmeans.getParallelizeCrossValidation() == True
-    assert kmeans.getDistribution() == "AUTO"
-    assert kmeans.getMaxIterations() == 10
-    assert kmeans.getStandardize() == True
-    assert kmeans.getInit() == "Furthest"
-    assert kmeans.getUserPoints() == None
-    assert kmeans.getEstimateK() == False
-    assert kmeans.getK() == 2
+
+def testParamsPassedBySetters():
+    assertParamsViaSetters("H2OKMeans")
 
 
 def testPipelineSerialization(dataset):
