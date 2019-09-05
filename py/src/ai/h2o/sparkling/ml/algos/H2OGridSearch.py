@@ -22,7 +22,7 @@ from ai.h2o.sparkling.ml.models import H2OMOJOModel
 from ai.h2o.sparkling.ml.params import H2OGridSearchParams
 from pyspark import keyword_only
 from pyspark.sql.dataframe import DataFrame
-
+from pyspark.sql import SparkSession
 
 class H2OGridSearch(H2OGridSearchParams, H2OAlgoBase):
 
@@ -58,14 +58,18 @@ class H2OGridSearch(H2OGridSearchParams, H2OAlgoBase):
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGridSearch", self.uid)
         self._setDefaultValuesFromJava()
         kwargs = Utils.getInputKwargs(self)
-        Utils.fieldDeprecationWarning("selectBestModelDecreasing")
+        Utils.fieldDeprecationWarning(kwargs, "selectBestModelDecreasing")
         self._set(**kwargs)
 
     def get_grid_models(self):
         return [H2OMOJOModel(m) for m in self._java_obj.getGridModels()]
 
     def get_grid_models_params(self):
-        return DataFrame(self._java_obj.getGridModelsParams(), self._hc._sql_context)
+        jdf = self._java_obj.getGridModelsParams()
+        sqlContext = SparkSession.builder.getOrCreate()._wrapped
+        return DataFrame(jdf, sqlContext)
 
     def get_grid_models_metrics(self):
-        return DataFrame(self._java_obj.getGridModelsMetrics(), self._hc._sql_context)
+        jdf = self._java_obj.getGridModelsMetrics()
+        sqlContext = SparkSession.builder.getOrCreate()._wrapped
+        return DataFrame(jdf, sqlContext)

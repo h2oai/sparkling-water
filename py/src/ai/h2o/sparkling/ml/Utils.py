@@ -46,8 +46,9 @@ class Utils(object):
         Utils.__deprecationWarning(old, "method", new)
 
     @staticmethod
-    def fieldDeprecationWarning(old, new=None):
-        Utils.__deprecationWarning(old, "field", new)
+    def fieldDeprecationWarning(kwargs, old, new=None):
+        if old in kwargs:
+            Utils.__deprecationWarning(old, "field", new)
 
     @staticmethod
     def __deprecationWarning(old, type, new=None):
