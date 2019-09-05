@@ -26,13 +26,11 @@ from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
 
 def testParamsPassedByConstructor():
-    # Skipping testing of algo option as we don't generate equal algo
-    assertParamsViaConstructor("H2ODRF", ["algo"])
+    assertParamsViaConstructor("H2ODRF")
 
 
 def testParamsPassedBySetters():
-    # Skipping testing of algo option as we don't generate equal algo
-    assertParamsViaSetters("H2ODRF", ["algo"])
+    assertParamsViaSetters("H2ODRF")
 
 
 def testPipelineSerialization(prostateDataset):
