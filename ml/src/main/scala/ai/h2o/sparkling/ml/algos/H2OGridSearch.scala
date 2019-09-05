@@ -20,7 +20,8 @@ import java.lang.reflect.Field
 import java.util
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
-import ai.h2o.sparkling.ml.params.{AlgoParams, H2OAlgoParamsHelper, H2OCommonSupervisedParams, HyperParamsParam}
+import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
+import ai.h2o.sparkling.ml.params.{AlgoParam, H2OAlgoParamsHelper, H2OCommonSupervisedParams, HyperParamsParam}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
@@ -33,7 +34,6 @@ import hex.{Model, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMu
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
-import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types._
@@ -47,7 +47,7 @@ import scala.collection.mutable
 
 /**
   * H2O Grid Search algorithm exposed via Spark ML pipelines.
-
+  *
   */
 class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgoCommonUtils with DefaultParamsWritable with H2OGridSearchParams {
@@ -61,16 +61,11 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   private var gridMojoModels: Array[H2OMOJOModel] = _
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val algoParams = ${gridAlgoParams}
+    val algoParams = extractH2OParameters(getAlgo())
 
     if (algoParams == null) {
       throw new IllegalArgumentException(s"Algorithm has to be specified. Available algorithms are " +
-        s"${H2OGridSearch.SupportedAlgos.allAsString}")
-    }
-
-    if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(algoParams.algoName())) {
-      throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '${algoParams.algoName()}'. Supported " +
-        s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
+        s"${H2OGridSearch.SupportedAlgos.values.mkString(", ")}")
     }
 
     val hyperParams = processHyperParams(algoParams, getHyperParameters())
@@ -107,7 +102,6 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }
 
     val paramsBuilder = algoParams match {
-
       case _: GBMParameters => new SimpleParametersBuilderFactory[GBMParameters]
       case _: DeepLearningParameters => new SimpleParametersBuilderFactory[DeepLearningParameters]
       case _: GLMParameters => new SimpleParametersBuilderFactory[GLMParameters]
@@ -121,7 +115,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     gridModels = sortGrid(grid)
     gridMojoModels = gridModels.map { m =>
       val data = ModelSerializationSupport.getMojoData(m)
-      H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${$(gridAlgoParams).algoName()}_mojoModel"))
+      H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${algoParams.algoName()}_mojoModel"))
     }
 
     val binaryModel = selectModelFromGrid(grid)
@@ -129,7 +123,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
       mojoData,
-      Identifiable.randomUID("gridSearch_mojoModel"),
+      Identifiable.randomUID(binaryModel._parms.algoName()),
       modelSettings)
   }
 
@@ -204,39 +198,20 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     } else {
       H2OGridSearchMetric.valueOf(getSelectBestModelBy())
     }
+
     val modelMetricPair = grid.getModels.map { m =>
       (m, extractMetrics(m).find(_._1 == metric).get._2)
     }
 
-    val ordering = if (getSelectBestModelBy() == H2OGridSearchMetric.AUTO.name()) {
-      logWarning("'selectBestModelBy' parameter is specified to 'AUTO', but you also specified 'selectBestModelDecreasing'." +
-        " In the case 'selectBestModelBy' is set to AUTO', we sort the grid models by default metric and ignore the ordering" +
-        " specified by 'selectBestModelDecreasing'." +
-        " If you still wish to use the specific ordering, please make sure to explicitly select the metric which you want to" +
-        " order.")
-      // in case the user did not specified the metric, override the ordering to ensure we return the best model first
-      grid.getModels()(0)._output._training_metrics match {
-        case _: ModelMetricsRegression => Ordering.Double
-        case _: ModelMetricsBinomial => Ordering.Double.reverse
-        case _: ModelMetricsMultinomial => Ordering.Double
-      }
-    } else {
-      if (getSelectBestModelDecreasing()) {
-        Ordering.Double.reverse
-      } else {
-        Ordering.Double
-      }
-    }
-
-
+    val ordering = if (metric.higherTheBetter) Ordering.Double.reverse else Ordering.Double
     modelMetricPair.sortBy(_._2)(ordering).map(_._1)
   }
 
-  def selectModelFromGrid(grid: Grid[_]) = {
+  def selectModelFromGrid(grid: Grid[_]): H2OBaseModel = {
     if (gridModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
-    grid.getModels()(0)
+    grid.getModels.head
   }
 
 
@@ -365,23 +340,32 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
+
+  private def extractH2OParameters(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): Model.Parameters = {
+    val m = algo.getClass.getDeclaredMethod("updateH2OParams")
+    m.setAccessible(true)
+    m.invoke(algo)
+
+    val field = PojoUtils.getFieldEvenInherited(algo, "parameters")
+    field.setAccessible(true)
+    field.get(algo).asInstanceOf[Model.Parameters]
+  }
 }
 
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
+
   object SupportedAlgos extends Enumeration {
-    val gbm, glm, deeplearning, xgboost = Value // still missing pipeline wrappers for KMeans & drf
+    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost = Value
 
-    def isSupportedAlgo(s: String) = values.exists(_.toString == s.toLowerCase())
-
-    def allAsString = values.mkString(", ")
-
-    def fromString(value: String) = values.find(_.toString == value.toLowerCase())
+    def checkIfSupported(algo: H2OAlgorithm[_, _, _ <: Model.Parameters]): Unit = {
+      val exists = values.exists(_.toString == algo.getClass.getSimpleName)
+      if (!exists) {
+        throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '${algo.getClass}'. Supported " +
+          s"algorithms are ${H2OGridSearch.SupportedAlgos.values.mkString(", ")}")
+      }
+    }
   }
 
-  object MetricOrder extends Enumeration {
-    type MetricOrder = Value
-    val Asc, Desc = Value
-  }
 }
 
 trait H2OGridSearchParams extends H2OCommonSupervisedParams {
@@ -389,8 +373,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   //
   // Param definitions
   //
-  private val algo = new DoubleParam(this, "algo", "dummy argument for pysparkling")
-  protected final val gridAlgoParams = new AlgoParams(this, "algoParams", "Specifies the algorithm for grid search")
+  private val algo = new AlgoParam(this, "algo", "Specifies the algorithm for grid search")
   private val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
   private val strategy = new Param[String](this, "strategy", "Search criteria strategy")
   private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "maxRuntimeSecs")
@@ -408,8 +391,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   // Default values
   //
   setDefault(
-    algo -> 0,
-    gridAlgoParams -> null,
+    algo -> null,
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
     strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian.name(),
     maxRuntimeSecs -> 0,
@@ -424,6 +406,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   //
   // Getters
   //
+  def getAlgo(): H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters] = $(algo)
 
   def getHyperParameters(): util.Map[String, Array[AnyRef]] = $(hyperParameters)
 
@@ -441,21 +424,15 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
 
   def getSelectBestModelBy(): String = $(selectBestModelBy)
 
+  @DeprecatedMethod()
   def getSelectBestModelDecreasing(): Boolean = $(selectBestModelDecreasing)
 
   //
   // Setters
   //
-
   def setAlgo(value: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): this.type = {
-    val field = PojoUtils.getFieldEvenInherited(value, "parameters")
-    field.setAccessible(true)
-    val algoParams = field.get(value).asInstanceOf[Model.Parameters]
-    if (!H2OGridSearch.SupportedAlgos.isSupportedAlgo(algoParams.algoName())) {
-      throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '$value'. Supported " +
-        s"algorithms are ${H2OGridSearch.SupportedAlgos.allAsString}")
-    }
-    set(gridAlgoParams, algoParams)
+    H2OGridSearch.SupportedAlgos.checkIfSupported(value)
+    set(algo, value)
   }
 
   def setHyperParameters(value: Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.asJava)
@@ -496,6 +473,6 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
     set(selectBestModelBy, validated)
   }
 
-
+  @DeprecatedMethod()
   def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
 }

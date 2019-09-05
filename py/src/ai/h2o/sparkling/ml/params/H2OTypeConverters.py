@@ -221,3 +221,50 @@ class H2OTypeConverters(object):
                 return [H2OTypeConverters.toListFloat()(v) for v in TypeConverters.toList(value)]
 
         return convert
+
+    @staticmethod
+    def toJavaObj():
+        def convert(value):
+            if value is None:
+                return None
+            elif isinstance(value, JavaObject):
+                return value
+            elif isinstance(value._java_obj, JavaObject):
+                value._transfer_params_to_java()
+                return value._java_obj
+            else:
+                raise TypeError("Invalid type.")
+
+        return convert
+
+    @staticmethod
+    def toH2OGridSearchSupportedAlgo():
+        def convert(value):
+            javaObj = H2OTypeConverters.toJavaObj()(value)
+            if javaObj is None:
+                return None
+            else:
+                package = getattr(_jvm().ai.h2o.sparkling.ml.algos, "H2OGridSearch$SupportedAlgos$")
+                module = package.__getattr__("MODULE$")
+                module.checkIfSupported(javaObj)
+                return javaObj
+
+        return convert
+
+    @staticmethod
+    def toDictionaryWithAnyElements():
+        def convert(value):
+            if value is None:
+                raise TypeError("None is not allowed.")
+            elif isinstance(value, JavaObject):
+                keys = [k for k in value.keySet().toArray()]
+                map = {}
+                for k in keys:
+                    map[k] = [v for v in value.get(k)]
+                return map
+            elif isinstance(value, dict):
+                return value
+            else:
+                raise TypeError("Invalid type.")
+
+        return convert

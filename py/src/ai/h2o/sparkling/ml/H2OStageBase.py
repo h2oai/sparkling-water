@@ -21,13 +21,12 @@ from pyspark.ml.util import JavaMLWritable, JavaMLReadable
 class H2OStageBase(JavaMLReadable, JavaMLWritable):
 
     # Set default values directly from Scala so we don't have to duplicate it on PySpark side
-    def _setDefaultValuesFromJava(self, skip=[]):
+    def _setDefaultValuesFromJava(self):
         for paramPair in self._java_obj.extractParamMap().toList():
             paramName = paramPair.param().name()
-            if paramName not in skip:
-                paramValue = self._java_obj.getDefault(paramPair.param()).get()
-                param = getattr(self, paramName)
-                self._defaultParamMap[param] = param.typeConverter(paramValue)
+            paramValue = self._java_obj.getDefault(paramPair.param()).get()
+            param = getattr(self, paramName)
+            self._defaultParamMap[param] = param.typeConverter(paramValue)
  
         return self
 
