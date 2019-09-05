@@ -122,9 +122,6 @@ Obtaining SHAP values is possible only from MOJO's generated for GBM, XGBoost an
 regression or binomial problems. If you don't need to train the model and just need to load existing mojo,
 there is no need to start ``H2OContext``.
 
-Note: MOJO generated for DRF supports contributions starting from H2O version 3.26.0.1
-Note: MOJOs generated for GBM and XGBoost support contributions starting from H2O version 3.24.0.1
-
 .. content-tabs::
 
     .. tab-container:: Scala
