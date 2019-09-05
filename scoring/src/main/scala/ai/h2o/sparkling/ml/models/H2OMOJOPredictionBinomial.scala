@@ -78,11 +78,12 @@ trait H2OMOJOPredictionBinomial {
 
     val fields = if (getWithDetailedPredictionCol()) {
       val probabilitiesFields = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
+      val contributionsField = StructField("contributions", ArrayType(FloatType))
       if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
         val calibratedProbabilitiesFields = Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
-        Seq(labelField) ++ probabilitiesFields ++ calibratedProbabilitiesFields
+        Seq(labelField) ++ probabilitiesFields ++ Seq(contributionsField) ++ calibratedProbabilitiesFields
       } else {
-        Seq(labelField) ++ probabilitiesFields
+        Seq(labelField) ++ probabilitiesFields ++ Seq(contributionsField)
       }
     } else {
       labelField :: Nil
