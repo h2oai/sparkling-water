@@ -363,8 +363,6 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val result = transformTestingDataset(Array("DPROS", "DCAPS", "RACE"))
       .select('ID, 'CAPSULE, 'AGE , 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON, 'RACE_te, 'DPROS_te, 'DCAPS_te)
 
-    expectedResult.show()
-    result.show()
     TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
   }
 
