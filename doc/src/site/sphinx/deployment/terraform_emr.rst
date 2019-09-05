@@ -1,7 +1,7 @@
 Start Sparkling Water on Amazon EMR using our Terraform Template
 ----------------------------------------------------------------
 
-**This terraform template supports only Sparkling Water builds for Apache Spark 2.4**
+**This terraform template supports only Sparkling Water builds for Apache Spark 2.4 and higher.**
 
 Sparkling Water comes with the pre-defined Terraform templates that can be used to
 deploy Sparkling Water to Amazon EMR.
@@ -37,10 +37,10 @@ Sparkling Water provides 3 templates/modules:
    - ``aws_vpc_id`` (mandatory) - ID of existing VPC
    - ``aws_subnet_id`` (mandatory) - ID of existing VPC subnet
    - ``aws_region`` (optional) - AWS region. Defaults to ``us-east-1``.
-   - ``aws_emr_version`` (optional) - EMR version. Defaults to ``emr-2.26.0``.
+   - ``aws_emr_version`` (optional) - EMR version. Defaults to ``SUBST_EMR_VERSION``.
    - ``aws_core_instance_count`` (optional) - Number of worker nodes. Defaults to ``2``.
    - ``aws_instance_type`` (optional) - type of EC2 instances. Defaults to ``m5.xlarge``.
-   - ``sw_version`` (optional) - Sparkling Water version. Defaults to ``SUBST_SW_ONLY_VERSION-2.4``.
+   - ``sw_version`` (optional) - Sparkling Water version. Defaults to ``SUBST_SW_VERSION``.
    - ``jupyter_name`` (optional) - User name for Jupyter Notebook. Defaults to ``admin``.
 
  - ``default`` module  (**/templates/build/terraform/aws**). This module is a combination of the two previous modules. It starts the network infrastructure and starts EMR with Sparkling Water on top of it.
@@ -51,10 +51,10 @@ Sparkling Water provides 3 templates/modules:
    - ``aws_secret_key`` (mandatory) - secret key to access AWS
    - ``aws_ssh_public_key`` (optional) - public key (to be able to access EC2 instances via ssh later)
    - ``aws_region`` (optional) - AWS region. Defaults to ``us-east-1``.
-   - ``aws_emr_version`` (optional) - EMR version. Defaults to ``emr-2.26.0``.
+   - ``aws_emr_version`` (optional) - EMR version. Defaults to ``SUBST_EMR_VERSION``.
    - ``aws_core_instance_count`` (optional) - Number of worker nodes. Defaults to ``2``.
    - ``aws_instance_type`` (optional) - type of EC2 instances. Defaults to ``m5.xlarge``.
-   - ``sw_version`` (optional) - Sparkling Water version. Defaults to ``SUBST_SW_ONLY_VERSION-2.4``.
+   - ``sw_version`` (optional) - Sparkling Water version. Defaults to ``SUBST_SW_VERSION``.
    - ``jupyter_name`` (optional) - User name for Jupyter Notebook. Defaults to ``admin``.
 
 
