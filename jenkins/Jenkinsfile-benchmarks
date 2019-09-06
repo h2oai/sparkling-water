@@ -1,0 +1,34 @@
+#!/usr/bin/groovy
+@Library('test-shared-library') _
+
+properties(
+        [
+                pipelineTriggers([cron('H 8 * * 6')]),
+                buildDiscarder(logRotator(numToKeepStr: '10'))
+        ]
+)
+
+def withDocker(config, code) {
+    def image = 'opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
+    retryWithDelay(3, 120,{
+        withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
+            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
+            sh "docker pull harbor.h2o.ai/${image}"
+        }
+    })
+    docker.image(image).inside("--init --privileged --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
+        sh "activate_java_8"
+        code()
+    }
+}
+
+node("docker") {
+    cleanWs()
+    checkout scm
+    withDocker {
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+            sh "./gradlew :sparkling-water-benchmarks:runBenchmarks -Paws_access_key=${AWS_ACCESS_KEY_ID} -P'aws_secret_key=${AWS_SECRET_ACCESS_KEY}"
+        }
+        arch '**/output/*'
+    }
+}
