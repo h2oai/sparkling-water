@@ -11,6 +11,7 @@ ext {
     spark_file_name = "spark-${sparkVersion}-bin-hadoop2.7"
     spark_download_url = "http://mirrors.ocf.berkeley.edu/apache/spark/spark-${sparkVersion}/${spark_file_name}.tgz"
     sparkling_water_download_url = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${sparkMajorVersion}/${version}/${sparkling_water_file_name}.zip"
+    terraform_download_url = "https://releases.hashicorp.com/terraform/${terraformVersion}/terraform_${terraformVersion}_linux_amd64.zip"
     docker_file = file('sparkling-water/base/Dockerfile')
 }
 
@@ -59,6 +60,14 @@ task createDockerfile(type: Dockerfile) {
                 |   ln -s /opt/${sparkling_water_file_name} /opt/sparkling-water && \\
                 |   rm -f sw.zip
                """.stripMargin()
+
+    // Install Terraform
+    runCommand """\\
+                |   curl -s ${terraform_download_url} --output terraform.zip && \\
+                |   unzip terraform.zip -d /usr/local/bin/ && \\
+                |   rm -f terraform.zip
+               """.stripMargin()
+
 
     // Setup environment
     environmentVariable("SPARK_HOME", "/opt/spark")
