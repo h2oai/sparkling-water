@@ -8,7 +8,7 @@ properties(
         ]
 )
 
-def withDocker(config, code) {
+def withDocker(code) {
     def image = 'opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
     retryWithDelay(3, 120,{
         withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
