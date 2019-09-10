@@ -14,7 +14,7 @@ String getDockerImageVersion() {
 }
 
 def withDocker(code) {
-    def image = 'opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
+    def image = 'harbor.h2o.ai/opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
     retryWithDelay(3, 120,{
         withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
             sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
