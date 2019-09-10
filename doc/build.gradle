@@ -25,7 +25,8 @@ task substitute() {
     doLast {
         def siteDir = "${buildDir}/site"
 
-        def (first, second, minorVersion) = version.tokenize(".")
+        def swOnlyVersion = version.tokenize("-")[0]
+        def (first, second, minorVersion) = swOnlyVersion.tokenize(".")
         def majorVersion = "${first}.${second}"
 
         new File(siteDir).eachFileRecurse(FILES) {
@@ -41,6 +42,7 @@ task substitute() {
                         .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
                         .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
                         .replaceAll("SUBST_MIN_SUPPORTED_JAVA", minSupportedJavaVersion)
+                        .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
                 file(it).write(contents, 'UTF-8')
             }
         }
