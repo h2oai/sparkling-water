@@ -34,7 +34,7 @@ node("docker") {
     checkout scm
     withDocker {
         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-            sh "./gradlew :sparkling-water-benchmarks:runBenchmarks -Paws_access_key=${AWS_ACCESS_KEY_ID} -P'aws_secret_key=${AWS_SECRET_ACCESS_KEY}"
+            sh "./gradlew :sparkling-water-benchmarks:runBenchmarks -Paws_access_key=${AWS_ACCESS_KEY_ID} -Paws_secret_key=${AWS_SECRET_ACCESS_KEY}"
         }
         arch '**/output/*'
     }
