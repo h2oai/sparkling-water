@@ -13,9 +13,13 @@ ext {
     outputFileScala = file("$buildDir/Dockerfile-Scala")
 }
 
-task buildSparkImages(type: Exec, dependsOn: checkSparkVersionTask) {
-    workingDir sparkHome
-    commandLine getOsSpecificCommandLine(['./bin/docker-image-tool.sh', '-t', "$sparkVersion", "build"])
+task buildSparkImages(dependsOn: checkSparkVersionTask) {
+    doLast {
+        exec {
+            workingDir sparkHome
+            commandLine getOsSpecificCommandLine(['./bin/docker-image-tool.sh', '-t', "$sparkVersion", "build"])
+        }
+    }
 }
 
 task copyDist(type: Copy, dependsOn: ":sparkling-water-dist:dist") {
