@@ -50,7 +50,7 @@ def testMojoPredictionsUnseenCategoricals(spark):
     assert data["petal_wid"] == 0.2
     assert data["sepal_len"] == 5.1
     assert data["sepal_wid"] == 3.5
-    assert data["prediction"][0] == 5.240174068202646
+    assert data["prediction"] == 5.240174068202646
 
 
 def testMojoModelSerializationInPipeline(prostateDataset):
