@@ -96,6 +96,9 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         elif algoName == "GLM":
             from ai.h2o.sparkling.ml.algos import H2OGLM
             algo = H2OGLM()
+        elif algoName == "DRF":
+            from ai.h2o.sparkling.ml.algos import H2ODRF
+            algo = H2ODRF()
         else:
             raise ValueError('Unsupported algorithm for H2OGridSearch')
 
