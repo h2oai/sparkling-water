@@ -15,37 +15,25 @@
 # limitations under the License.
 #
 
-import pyspark
 import warnings
-import re
 
 from pysparkling.initializer import Initializer
-from pysparkling.initializer import VersionComponents
 
-__version__ = Initializer.getVersion()
-pySparklingVersionComponents = VersionComponents.parseFromVersion(__version__)
-pySparkMinorVersion = re.search(r"^(\d+\.\d+)\.\d+$", pyspark.__version__).group(1)
+
 
 def custom_formatwarning(msg, *args, **kwargs):
     # ignore everything except the message
     return str(msg) + '\n'
 
+
 warnings.formatwarning = custom_formatwarning
 
+__version__ = Initializer.getVersion()
 
-if not (pySparkMinorVersion == pySparklingVersionComponents.sparkVersion):
-    warnings.warn("""
-    You are using PySparkling for Spark {}, but your PySpark is of version {}.
-    Please make sure Spark and PySparkling versions are compatible.""".format(
-        pySparklingVersionComponents.sparkVersion, pySparkMinorVersion))
-
-
-# set imports from this project which will be available when the module is imported
 from pysparkling.context import H2OContext
 from pysparkling.conf import H2OConf
 
 Initializer.check_different_h2o()
-# set what is meant by * packages in statement from foo import *
 __all__ = ["H2OContext", "H2OConf"]
 
 Initializer.load_sparkling_jar()

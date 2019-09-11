@@ -15,29 +15,52 @@
 # limitations under the License.
 #
 
-from pysparkling import VersionComponents
+from ai.h2o.sparkling.VersionComponents import VersionComponents
 
 
 def testVersionComponentsCanBeParsedFromRegularVersion():
     version = "3.26.2-2.4"
-    components = VersionComponents.parseFromVersion(version)
+    components = VersionComponents.parseFromSparklingWaterVersion(version)
 
     assert components.fullVersion == version
     assert components.sparklingVersion == "3.26.2"
     assert components.sparklingMajorVersion == "3.26"
     assert components.sparklingMinorVersion == "2"
     assert components.nightlyVersion is None
-    assert components.sparkVersion == "2.4"
+    assert components.sparkMajorMinorVersion == "2.4"
 
 
 def testVersionComponentsCanBeParsedFromNightlyVersion():
     version = "3.28.1-14-2.3"
 
-    components = VersionComponents.parseFromVersion(version)
+    components = VersionComponents.parseFromSparklingWaterVersion(version)
 
     assert components.fullVersion == version
     assert components.sparklingVersion == "3.28.1"
     assert components.sparklingMajorVersion == "3.28"
     assert components.sparklingMinorVersion == "1"
     assert components.nightlyVersion == "14"
-    assert components.sparkVersion == "2.3"
+    assert components.sparkMajorMinorVersion == "2.3"
+
+def testParseSparkVersion():
+    version = "2.4.1"
+
+    components = VersionComponents.parseFromPySparkVersion(version)
+
+    assert components.fullVersion == version
+    assert components.sparkMajorMinorVersion == "2.4"
+    assert components.sparkMajorVersion == "2"
+    assert components.sparkMinorVersion == "4"
+    assert components.sparkPatchVersion == "1"
+    assert components.sparkBuildVersion is None
+
+def testParseSparkVersionWithBuildNumber():
+    version = "2.4.1.dev0"
+
+    components = VersionComponents.parseFromPySparkVersion(version)
+
+    assert components.fullVersion == version
+    assert components.sparkMajorMinorVersion == "2.4"
+    assert components.sparkMajorVersion == "2"
+    assert components.sparkMinorVersion == "4"
+    assert components.sparkBuildVersion == "dev0"
