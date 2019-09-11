@@ -27,7 +27,7 @@ def testVersionComponentsCanBeParsedFromRegularVersion():
     assert components.sparklingMajorVersion == "3.26"
     assert components.sparklingMinorVersion == "2"
     assert components.nightlyVersion is None
-    assert components.sparkMajorVersion == "2.4"
+    assert components.sparkMajorMinorVersion == "2.4"
 
 
 def testVersionComponentsCanBeParsedFromNightlyVersion():
@@ -40,7 +40,7 @@ def testVersionComponentsCanBeParsedFromNightlyVersion():
     assert components.sparklingMajorVersion == "3.28"
     assert components.sparklingMinorVersion == "1"
     assert components.nightlyVersion == "14"
-    assert components.sparkMajorVersion == "2.3"
+    assert components.sparkMajorMinorVersion == "2.3"
 
 def testParseSparkVersion():
     version = "2.4.1"
@@ -48,7 +48,9 @@ def testParseSparkVersion():
     components = VersionComponents.parseFromPySparkVersion(version)
 
     assert components.fullVersion == version
-    assert components.sparkMajorVersion == "2.4"
+    assert components.sparkMajorMinorVersion == "2.4"
+    assert components.sparkMajorVersion == "2"
+    assert components.sparkMinorVersion == "4"
     assert components.sparkPatchVersion == "1"
     assert components.sparkBuildVersion is None
 
@@ -58,6 +60,7 @@ def testParseSparkVersionWithBuildNumber():
     components = VersionComponents.parseFromPySparkVersion(version)
 
     assert components.fullVersion == version
-    assert components.sparkMajorVersion == "2.4"
-    assert components.sparkPatchVersion == "1"
+    assert components.sparkMajorMinorVersion == "2.4"
+    assert components.sparkMajorVersion == "2"
+    assert components.sparkMinorVersion == "4"
     assert components.sparkBuildVersion == "dev0"

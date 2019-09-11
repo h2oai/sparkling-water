@@ -176,8 +176,8 @@ class Initializer(object):
         pySparklingVersionComponents = VersionComponents.parseFromSparklingWaterVersion(version)
         pySparkVersionComponents = VersionComponents.parseFromPySparkVersion(pyspark.__version__)
 
-        sparkVersionFromPySparkling = pySparklingVersionComponents.sparkMajorVersion
-        sparkVersionFromPySpark = pySparkVersionComponents.sparkMajorVersion
+        sparkVersionFromPySparkling = pySparklingVersionComponents.sparkMajorMinorVersion
+        sparkVersionFromPySpark = pySparkVersionComponents.sparkMajorMinorVersion
 
         if not (sparkVersionFromPySpark == sparkVersionFromPySparkling):
             raise Exception("""
