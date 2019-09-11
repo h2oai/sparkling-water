@@ -50,7 +50,7 @@ def testParseSparkVersion():
     assert components.fullVersion == version
     assert components.sparkMajorVersion == "2.4"
     assert components.sparkPatchVersion == "1"
-    assert components.sparkBuildVersion == None
+    assert components.sparkBuildVersion is None
 
 def testParseSparkVersionWithBuildNumber():
     version = "2.4.1.dev0"

@@ -21,7 +21,7 @@ class VersionComponents(object):
 
     @staticmethod
     def parseFromSparklingWaterVersion(version):
-        match = re.search(r"^((\d+\.\d+).(\d+))(-(\d+))?-(\d+.\d+)$", version)
+        match = re.search(r"^((\d+\.\d+)\.(\d+))(-(\d+))?-(\d+\.\d+)$", version)
         result = VersionComponents()
         result.fullVersion = match.group(0)
         result.sparklingVersion = match.group(1)
@@ -33,7 +33,7 @@ class VersionComponents(object):
 
     @staticmethod
     def parseFromPySparkVersion(version):
-        match = re.search(r"^(\d+.\d+).(\d+)(.([0-9A-Za-z]+))?$", version)
+        match = re.search(r"^(\d+\.\d+)\.(\d+)(\.([0-9A-Za-z]+))?$", version)
         result = VersionComponents()
         result.fullVersion = match.group(0)
         result.sparkMajorVersion = match.group(1)
