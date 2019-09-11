@@ -39,7 +39,7 @@ import scala.io.Source
 import scala.util.control.NoStackTrace
 
 
-class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ExternalBackendUtils with Logging {
+class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ExternalBackendUtils with Logging with ExternalBackendRestApiUtils {
 
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
@@ -218,26 +218,17 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     logInfo("Connecting to external H2O cluster.")
 
+    val expectedClusterSize = hc.getConf.clusterSize.get.toInt
+    val clusterBuildTimeout = hc.getConf.cloudTimeout
     val nodes = if(runningFromNonJVMClient(hc)) {
-      import scala.io.Source
-      val html = Source.fromURL(s"${hc.getScheme(hc._conf)}://${hc._conf.h2oCluster.get}/3/Cloud")
-      val content = html.mkString
-      html.close()
-      val cloudInfo = new Gson().fromJson(content, classOf[CloudV3])
-      cloudInfo.nodes.zipWithIndex.map{ case (node, idx) =>
-        val splits = node.ip_port.split(":")
-        val ip = splits(0)
-        val port = splits(1).toInt
-        NodeDesc(idx.toString, ip, port)
-      }
-      // wait for the cluster to connect and return cloud members
-      // collect nodes via rest API
+      val endpoint = s"${hc.getScheme(hc._conf)}://${hc._conf.h2oCluster.get}"
+      waitForCloudSizeViaRestAPI(endpoint, expectedClusterSize, clusterBuildTimeout)
     } else {
       val h2oClientArgs = getH2OClientArgs(hc.getConf).toArray
       logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
 
       H2OStarter.start(h2oClientArgs, false)
-      H2O.waitForCloudSize(hc.getConf.clusterSize.get.toInt, hc.getConf.cloudTimeout)
+      H2O.waitForCloudSize(expectedClusterSize, clusterBuildTimeout)
 
       if (hc._conf.isManualClusterStartUsed) {
         ExternalH2OBackend.verifyVersionFromRuntime()

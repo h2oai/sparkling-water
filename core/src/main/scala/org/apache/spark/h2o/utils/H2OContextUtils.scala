@@ -51,34 +51,6 @@ private[spark] trait H2OContextUtils extends Logging {
     }
   }
 
-  def flowIp(conf: H2OConf, nodes: Array[NodeDesc]): String = {
-    if (conf.runsInExternalClusterMode && conf.getBoolean("spark.ext.h2o.running.from.non.jvm.client", defaultValue = false)) {
-      nodes.head.hostname
-    } else {
-      if (conf.ignoreSparkPublicDNS) {
-        H2O.getIpPortString.split(":")(0)
-      } else {
-        sys.env.getOrElse("SPARK_PUBLIC_DNS", H2O.getIpPortString.split(":")(0))
-      }
-    }
-  }
-
-  def flowPort(conf: H2OConf, nodes: Array[NodeDesc]): Int = {
-    if (conf.runsInExternalClusterMode && conf.getBoolean("spark.ext.h2o.running.from.non.jvm.client", defaultValue = false)) {
-      nodes.head.port
-    } else {
-      H2O.API_PORT
-    }
-  }
-
-  def getSelf(conf: H2OConf): Option[NodeDesc] = {
-    if (conf.runsInExternalClusterMode && conf.getBoolean("spark.ext.h2o.running.from.non.jvm.client", defaultValue = false)) {
-      None
-    } else {
-      Some(NodeDesc(H2O.SELF))
-    }
-  }
-
   def getScheme(hc: H2OConf) = {
     if (hc.jks.isDefined && hc.jksPass.isDefined) {
       "https"
