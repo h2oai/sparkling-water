@@ -28,6 +28,7 @@ Memory Consideration When Converting Between Data Frames Types
 
 When Using Sparkling Water External Backend:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 If you have allocated the recommended memory amount to your H2O cluster (4 x the size of your dataset),
 you don't need to worry about memory constraints when converting between a Spark DataFrame
 and an H2OFrame; there is no collision with Spark storage.
@@ -37,6 +38,7 @@ If your dataset is represented as JSON, XML or parquet, the requirements may dif
 
 When Using Sparkling Water Internal Backend:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 In internal backend mode H2O-3 shares the JVM with Spark executors. In this case, you will want to
 allocate enough memory to run Spark transformations on your DataFrame (which means allocating a
 minimum memory of your dataset and memory for those transformations), plus allocate an additional 4 x the
