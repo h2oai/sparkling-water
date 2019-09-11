@@ -17,6 +17,7 @@
 
 import os
 import sys
+import pytest
 
 dist = sys.argv[2]
 path = os.getenv("PYTHONPATH")
@@ -29,6 +30,8 @@ os.putenv("PYTHONPATH", path)
 os.putenv('PYSPARK_DRIVER_PYTHON', sys.executable)
 os.putenv('PYSPARK_PYTHON', sys.executable)
 
-
-cmd = '{} -m pytest {} --dist={} --spark_conf="{}"'.format(sys.executable, sys.argv[1].replace("'", ""), dist, ' '.join(sys.argv[3:]))
-os.system(cmd)
+sys.path.insert(0, dist)
+pytestConfigArgs = sys.argv[1].replace("'", "").split(" ")
+args = pytestConfigArgs + ["--dist", dist, "--spark_conf", ' '.join(sys.argv[3:])]
+code = pytest.main(args)
+sys.exit(code)
