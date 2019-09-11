@@ -451,7 +451,7 @@ object H2OContext extends Logging {
   def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = synchronized {
     if (instantiatedContext.get() == null) {
       if (conf.getBoolean("spark.ext.h2o.running.from.non.jvm.client", defaultValue = false)) {
-        instantiatedContext.set(new H2OContextRestAPIBased(sparkSession, conf))
+        instantiatedContext.set(new H2OContextRestAPIBased(sparkSession, conf).init())
       } else {
         if (H2O.API_PORT == 0) { // api port different than 0 means that client is already running
           instantiatedContext.set(new H2OContextClientBased(sparkSession, conf).init())
