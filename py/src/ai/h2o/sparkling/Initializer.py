@@ -16,9 +16,11 @@
 #
 
 import os
+import pyspark
 import sys
 import warnings
 import zipfile
+from ai.h2o.sparkling.VersionComponents import VersionComponents
 from codecs import open
 from os import path
 from pyspark import SparkContext
@@ -166,7 +168,20 @@ class Initializer(object):
         here = path.abspath(path.dirname(__file__))
         if '.zip' in here:
             with zipfile.ZipFile(here[:-len("ai/h2o/sparkling/")], 'r') as archive:
-                return archive.read('ai/h2o/sparkling/version.txt').decode('utf-8').strip()
+                version = archive.read('ai/h2o/sparkling/version.txt').decode('utf-8').strip()
         else:
             with open(path.join(here, 'version.txt'), encoding='utf-8') as f:
-                return f.read().strip()
+                version = f.read().strip()
+
+        pySparklingVersionComponents = VersionComponents.parseFromSparklingWaterVersion(version)
+        pySparkVersionComponents = VersionComponents.parseFromPySparkVersion(pyspark.__version__)
+
+        sparkVersionFromPySparkling = pySparklingVersionComponents.sparkMajorVersion
+        sparkVersionFromPySpark = pySparkVersionComponents.sparkMajorVersion
+
+        if not (sparkVersionFromPySpark == sparkVersionFromPySparkling):
+            raise Exception("""
+            You are using PySparkling for Spark {}, but your PySpark is of version {}.
+            Please make sure Spark and PySparkling versions are compatible.""".format(
+                sparkVersionFromPySparkling, sparkVersionFromPySpark))
+        return version
