@@ -49,7 +49,7 @@ private[h2o] object AzureDatabricksUtils extends Logging {
     }
 
     if (region == substRegion) {
-      logWarning("Azure region could not be determined automatically, please replace" +
+      logWarning("Azure region could not be determined automatically, please replace " +
         s"'$substRegion' in the provided flow URL with your region.")
     }
     region
