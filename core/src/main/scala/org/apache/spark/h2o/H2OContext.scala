@@ -309,9 +309,9 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     }
   }
 
-  def flowURL() = {
-    if (conf.getOption("spark.databricks.cloudProvider").contains("Azure")) {
-      AzureDatabricksUtils.getDBCAzureFlowURL(sparkContext)
+  def flowURL(): String = {
+    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(_conf)) {
+      AzureDatabricksUtils.flowURL(_conf)
     } else if (_conf.clientFlowBaseurlOverride.isDefined) {
       _conf.clientFlowBaseurlOverride.get + _conf.contextPath.getOrElse("")
     } else {

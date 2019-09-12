@@ -55,7 +55,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       conf.setH2OClientLogDir(defaultLogDir(conf.sparkConf.getAppId))
     }
 
-    if (conf.getOption("spark.databricks.cloudProvider").contains("Azure")) {
+    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
       conf.setClientWebPort(AzureDatabricksUtils.externalFlowPort)
     }
 
