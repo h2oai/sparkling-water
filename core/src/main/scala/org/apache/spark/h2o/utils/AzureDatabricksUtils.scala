@@ -23,7 +23,7 @@ import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
 
 private[h2o] object AzureDatabricksUtils extends Logging {
-  val externalFlowPort = 9009 //This port is exposed in Azure DBC
+  val externalFlowPort = 9009 // This port is exposed in Azure DBC
 
   def isRunningOnAzureDatabricks(conf: H2OConf): Boolean = {
     conf.getOption("spark.databricks.cloudProvider").contains("Azure")
@@ -31,8 +31,8 @@ private[h2o] object AzureDatabricksUtils extends Logging {
 
   private def azureRegion(): String = {
     try {
-      val dbcConfFile = scala.io.Source.fromFile("/databricks/common/conf/deploy.conf")
-      val line = dbcConfFile.getLines.find(_.contains("databricks.region.name")).get.trim()
+      val confFile = scala.io.Source.fromFile("/databricks/common/conf/deploy.conf")
+      val line = confFile.getLines.find(_.contains("databricks.region.name")).get.trim()
       line.split("=")(1).trim().replaceAll("\"", "")
     } catch {
       case FileNotFoundException =>
@@ -45,7 +45,6 @@ private[h2o] object AzureDatabricksUtils extends Logging {
   def flowURL(conf: H2OConf): String = {
     val clusterId = conf.get("spark.databricks.clusterUsageTags.clusterId")
     val orgId = conf.get("spark.databricks.clusterUsageTags.clusterOwnerOrgId")
-
     val azureHost = s"https://${azureRegion()}.azuredatabricks.net"
     s"$azureHost/driver-proxy/o/$orgId/$clusterId/$externalFlowPort/flow/index.html"
   }
