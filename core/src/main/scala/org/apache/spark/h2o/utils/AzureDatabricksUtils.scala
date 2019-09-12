@@ -17,18 +17,29 @@
 
 package org.apache.spark.h2o.utils
 
-import org.apache.spark.SparkContext
+import java.io.FileNotFoundException
 
-private[h2o] object AzureDatabricksUtils {
+import org.apache.spark.SparkContext
+import org.apache.spark.expose.Logging
+
+private[h2o] object AzureDatabricksUtils extends Logging {
   val externalFlowPort = 9009 //This port is exposed in Azure DBC
 
   def getDBCAzureFlowURL(sc: SparkContext): String = {
     val clusterId = sc.getConf.get("spark.databricks.clusterUsageTags.clusterId")
     val orgId = sc.getConf.get("spark.databricks.clusterUsageTags.clusterOwnerOrgId")
 
-    val dbcConfFile = scala.io.Source.fromFile("/databricks/common/conf/deploy.conf")
-    val line = dbcConfFile.getLines.find(_.contains("databricks.region.name")).get.trim()
-    val region = line.split("=")(1).trim().replaceAll("\"", "")
+    val region = try {
+      val dbcConfFile = scala.io.Source.fromFile("/databricks/common/conf/deploy.conf")
+      val line = dbcConfFile.getLines.find(_.contains("databricks.region.name")).get.trim()
+      line.split("=")(1).trim().replaceAll("\"", "")
+    } catch {
+      case FileNotFoundException =>
+        logWarning("Azure region could not be determined automatically, please replace" +
+          "'YOUR_AZURE_REGION' in the provided flow URL with your region.")
+        "YOUR_AZURE_REGION"
+    }
+
 
     val azureHost = s"https://${region}.azuredatabricks.net"
     s"$azureHost/driver-proxy/o/$orgId/$clusterId/$externalFlowPort/flow/index.html"
