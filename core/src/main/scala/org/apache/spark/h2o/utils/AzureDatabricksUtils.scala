@@ -40,11 +40,10 @@ private[h2o] object AzureDatabricksUtils extends Logging {
     val substRegion = "YOUR_AZURE_REGION"
     val region = try {
       val confFile = scala.io.Source.fromFile("/databricks/common/conf/deploy.conf")
-      val line = confFile.getLines.
+      confFile.getLines.
         find(_.contains("databricks.region.name"))
-        .map(_.trim)
+        .map(_.trim.split("=")(1).trim().replaceAll("\"", ""))
         .getOrElse(substRegion)
-      line.split("=")(1).trim().replaceAll("\"", "")
     } catch {
       case e: FileNotFoundException => substRegion
     }
