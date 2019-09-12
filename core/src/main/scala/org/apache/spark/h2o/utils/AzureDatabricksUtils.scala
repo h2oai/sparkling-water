@@ -29,6 +29,13 @@ private[h2o] object AzureDatabricksUtils extends Logging {
     conf.getOption("spark.databricks.cloudProvider").contains("Azure")
   }
 
+  def flowURL(conf: H2OConf): String = {
+    val clusterId = conf.get("spark.databricks.clusterUsageTags.clusterId")
+    val orgId = conf.get("spark.databricks.clusterUsageTags.clusterOwnerOrgId")
+    val azureHost = s"https://${azureRegion()}.azuredatabricks.net"
+    s"$azureHost/driver-proxy/o/$orgId/$clusterId/$externalFlowPort/flow/index.html"
+  }
+
   private def azureRegion(): String = {
     val substRegion = "YOUR_AZURE_REGION"
     try {
@@ -42,12 +49,4 @@ private[h2o] object AzureDatabricksUtils extends Logging {
         substRegion
     }
   }
-
-  def flowURL(conf: H2OConf): String = {
-    val clusterId = conf.get("spark.databricks.clusterUsageTags.clusterId")
-    val orgId = conf.get("spark.databricks.clusterUsageTags.clusterOwnerOrgId")
-    val azureHost = s"https://${azureRegion()}.azuredatabricks.net"
-    s"$azureHost/driver-proxy/o/$orgId/$clusterId/$externalFlowPort/flow/index.html"
-  }
-
 }
