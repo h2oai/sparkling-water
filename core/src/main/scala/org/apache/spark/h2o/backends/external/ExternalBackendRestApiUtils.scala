@@ -32,6 +32,8 @@ trait ExternalBackendRestApiUtils extends H2OContextRestAPIUtils {
         } catch {
           case ignored: InterruptedException =>
         }
+      } else {
+        return getNodes(cloudV3)
       }
     }
 
