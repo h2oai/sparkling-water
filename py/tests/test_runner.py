@@ -26,6 +26,10 @@ if path is None:
 else:
     path = "{}:{}".format(dist, path)
 
+os.putenv("PYTHONPATH", path)
+os.putenv('PYSPARK_DRIVER_PYTHON', sys.executable)
+os.putenv('PYSPARK_PYTHON', sys.executable)
+
 os.environ["PYTHONPATH"] = path
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 os.environ['PYSPARK_PYTHON'] = sys.executable
