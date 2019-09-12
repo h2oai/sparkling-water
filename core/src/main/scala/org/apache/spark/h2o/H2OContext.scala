@@ -20,7 +20,7 @@ package org.apache.spark.h2o
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
-import org.apache.spark.h2o.backends.SparklingBackend
+import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.converters._
@@ -466,7 +466,8 @@ object H2OContext extends Logging {
     */
   def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = synchronized {
     if (instantiatedContext.get() == null) {
-      val isNonJVMClient = conf.getBoolean("spark.ext.h2o.running.from.non.jvm.client", defaultValue = false)
+      val isNonJVMClient = conf.getBoolean(SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._1,
+        SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._2)
       val isExternalBackend = conf.runsInExternalClusterMode
       if (isExternalBackend && isNonJVMClient) {
         instantiatedContext.set(new H2OContextRestAPIBased(sparkSession, conf).init())

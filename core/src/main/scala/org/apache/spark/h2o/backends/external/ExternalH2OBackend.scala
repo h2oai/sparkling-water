@@ -45,7 +45,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   private var cloudHealthCheckThread: Option[Thread] = None
 
   private def runningFromNonJVMClient(hc: H2OContext): Boolean = {
-    hc._conf.getBoolean("spark.ext.h2o.running.from.non.jvm.client", defaultValue = false)
+    hc._conf.getBoolean(SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._1,
+      SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._2)
   }
 
   def launchH2OOnYarn(conf: H2OConf): String = {
