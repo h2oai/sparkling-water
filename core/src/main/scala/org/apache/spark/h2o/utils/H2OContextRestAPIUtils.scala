@@ -20,7 +20,7 @@ package org.apache.spark.h2o.utils
 import com.google.gson.Gson
 import water.api.schemas3.CloudV3
 
-trait RestAPIUtils {
+trait H2OContextRestAPIUtils {
 
   def getCloudInfo(endpoint: String): CloudV3 = {
     import scala.io.Source

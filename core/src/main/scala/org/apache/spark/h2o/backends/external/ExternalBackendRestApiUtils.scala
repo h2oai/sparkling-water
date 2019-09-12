@@ -17,16 +17,16 @@
 
 package org.apache.spark.h2o.backends.external
 
-import org.apache.spark.h2o.utils.{NodeDesc, RestAPIUtils}
+import org.apache.spark.h2o.utils.{NodeDesc, H2OContextRestAPIUtils}
 
-trait ExternalBackendRestApiUtils extends RestAPIUtils {
+trait ExternalBackendRestApiUtils extends H2OContextRestAPIUtils {
 
   protected def waitForCloudSizeViaRestAPI(endpoint: String, extected: Int, timeout: Long): Array[NodeDesc] = {
     val start = System.currentTimeMillis()
-    val cloudV3 = getCloudInfoViaRestAPI(endpoint)
+    val cloudV3 = getCloudInfo(endpoint)
 
     while (System.currentTimeMillis() - start < timeout) {
-      if (getNodesViaRestAPI(cloudV3).length < extected || !cloudV3.consensus) {
+      if (getNodes(cloudV3).length < extected || !cloudV3.consensus) {
         try {
           Thread.sleep(100);
         } catch {
@@ -35,7 +35,7 @@ trait ExternalBackendRestApiUtils extends RestAPIUtils {
       }
     }
 
-    val nodes = getNodesViaRestAPI(cloudV3)
+    val nodes = getNodes(cloudV3)
     if (nodes.length < extected) {
       throw new RuntimeException("Cloud size " + nodes.length + " under " + extected);
     }

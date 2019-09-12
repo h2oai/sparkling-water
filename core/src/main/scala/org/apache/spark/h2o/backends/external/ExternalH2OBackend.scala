@@ -18,11 +18,10 @@
 package org.apache.spark.h2o.backends.external
 
 
-import java.io.{File, FileInputStream}
+  import java.io.{File, FileInputStream}
 import java.util.Properties
 import java.util.jar.JarFile
 
-import com.google.gson.Gson
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend.H2O_JOB_NAME
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
@@ -30,7 +29,6 @@ import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
-import water.api.schemas3.CloudV3
 import water.init.{AbstractBuildVersion, NetworkUtils}
 import water.util.Log
 import water.{H2O, H2OStarter, MRTask}
