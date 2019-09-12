@@ -21,6 +21,7 @@ import java.io.File
 
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.utils.AzureDatabricksUtils
 import org.apache.spark.internal.Logging
 import org.apache.spark.util.Utils
 
@@ -52,6 +53,10 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
     if (conf.h2oClientLogDir.isEmpty) {
       conf.setH2OClientLogDir(defaultLogDir(conf.sparkConf.getAppId))
+    }
+
+    if (conf.getOption("spark.databricks.cloudProvider").contains("Azure")) {
+      conf.setClientWebPort(AzureDatabricksUtils.externalFlowPort)
     }
 
     if (conf.backendClusterMode != "internal" && conf.backendClusterMode != "external") {
