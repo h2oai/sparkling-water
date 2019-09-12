@@ -38,15 +38,21 @@ private[h2o] object AzureDatabricksUtils extends Logging {
 
   private def azureRegion(): String = {
     val substRegion = "YOUR_AZURE_REGION"
-    try {
+    val region = try {
       val confFile = scala.io.Source.fromFile("/databricks/common/conf/deploy.conf")
-      val line = confFile.getLines.find(_.contains("databricks.region.name")).get.trim()
+      val line = confFile.getLines.
+        find(_.contains("databricks.region.name"))
+        .map(_.trim)
+        .getOrElse(substRegion)
       line.split("=")(1).trim().replaceAll("\"", "")
     } catch {
-      case FileNotFoundException =>
-        logWarning("Azure region could not be determined automatically, please replace" +
-          s"'$substRegion' in the provided flow URL with your region.")
-        substRegion
+      case e: FileNotFoundException => substRegion
     }
+
+    if (region == substRegion) {
+      logWarning("Azure region could not be determined automatically, please replace" +
+        s"'$substRegion' in the provided flow URL with your region.")
+    }
+    region
   }
 }
