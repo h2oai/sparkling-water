@@ -112,10 +112,10 @@ loaded_model = PipelineModel.load("examples/build/model")
 ## Make predictions on unlabeled data
 ## Spam detector
 ##
-def isSpam(smsText, model, hamThreshold = 0.5):
+def isSpam(smsText, model):
     smsTextDF = spark.createDataFrame([(smsText,)], ["text"]) # create one element tuple
     prediction = model.transform(smsTextDF)
-    return prediction.select("prediction.p1").first()["p1"] > hamThreshold
+    return prediction.select("prediction").first() == "spam"
 
 
 print(isSpam("Michal, h2oworld party tonight in MV?", loaded_model))
