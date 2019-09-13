@@ -20,6 +20,9 @@ package ai.h2o.sparkling.ml.params
 import org.apache.spark.ml.param._
 
 trait H2OTargetEncoderParams extends Params {
+
+  protected final def possibleHoldoutStrategyValues: Array[String] = Array("LeaveOneOut", "KFold", "None").map(_.toLowerCase)
+
   //
   // List of Parameters
   //
