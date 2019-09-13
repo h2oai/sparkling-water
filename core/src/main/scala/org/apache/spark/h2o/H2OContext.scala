@@ -25,7 +25,7 @@ import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.ui._
-import org.apache.spark.h2o.utils.{H2OContextUtils, LogUtil, NodeDesc}
+import org.apache.spark.h2o.utils.{AzureDatabricksUtils, H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -137,7 +137,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     localClientPort = H2O.API_PORT
 
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
-    
+
     // Force initialization of H2O logs so flow and other dependant tools have logs available from the start
     val level = LogBridge.getH2OLogLevel()
     LogBridge.setH2OLogLevel(Log.TRACE) // just temporarily, set Trace Level so we can
@@ -145,7 +145,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     Log.trace("H2OContext initialized") // force creation of log files
     LogBridge.setH2OLogLevel(level) // set the level back on the level user want's to use
 
-    logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this")
+    logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
     // Announce Flow UI location
     announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, "http", localClientIp, localClientPort))
     updateUIAfterStart() // updates the spark UI
@@ -309,10 +309,14 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     }
   }
 
-  def flowURL() = if (_conf.clientFlowBaseurlOverride.isDefined) {
-    _conf.clientFlowBaseurlOverride.get + _conf.contextPath.getOrElse("")
-  } else {
-    s"${getScheme(_conf)}://$h2oLocalClient"
+  def flowURL(): String = {
+    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(_conf)) {
+      AzureDatabricksUtils.flowURL(_conf)
+    } else if (_conf.clientFlowBaseurlOverride.isDefined) {
+      _conf.clientFlowBaseurlOverride.get + _conf.contextPath.getOrElse("")
+    } else {
+      s"${getScheme(_conf)}://$h2oLocalClient"
+    }
   }
 
   /** Open H2O Flow running in this client. */
