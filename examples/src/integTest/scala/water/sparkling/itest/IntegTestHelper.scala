@@ -32,7 +32,6 @@ trait IntegTestHelper extends BeforeAndAfterEach {
       Seq("--conf", "spark.scheduler.minRegisteredResourcesRatio=1") ++
       Seq("--conf", "spark.ext.h2o.repl.enabled=false") ++ // disable repl in tests
       Seq("--conf", s"spark.test.home=${env.sparkHome}") ++
-      Seq("--conf", s"spark.driver.extraClassPath=${env.assemblyJar}") ++
       Seq("--conf", "spark.task.maxFailures=1") ++ // Any task failures are suspicious
       Seq("--conf", "spark.rpc.numRetries=1") ++ // Any RPC failures are suspicious
       Seq("--conf", "spark.deploy.maxExecutorRetries=1") ++ // Fail directly, do not try to restart executors

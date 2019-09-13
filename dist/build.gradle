@@ -147,32 +147,13 @@ task copyFilesForZipDistribution {
 
         copyAndKeepPath("assembly/build/libs/sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar", "$zipDir")
         copyAndKeepPath("py/build/dist/h2o_pysparkling_$sparkMajorVersion-${version}.zip", "$zipDir")
-        copyAndKeepPath("examples/README.rst", "$zipDir")
-        copyAndKeepPath("examples/scripts/chicagoCrimeSmall.script.scala", "$zipDir")
-        copyAndKeepPath("examples/scripts/chicagoCrimeSmallShell.script.scala", "$zipDir")
-        copyAndKeepPath("examples/scripts/hamOrSpam.script.scala", "$zipDir")
-        copyAndKeepPath("examples/scripts/StrataAirlines.script.scala", "$zipDir")
-        copyAndKeepPath("examples/scripts/craigslistJobTitles.script.scala", "$zipDir")
-        copyAndKeepPath("examples/smalldata/airlines/allyears2k_headers.zip", "$zipDir")
-        copyAndKeepPath("examples/smalldata/airlines/year2005.csv.gz", "$zipDir")
-        copyAndKeepPath("examples/smalldata/chicago/Chicago_Ohare_International_Airport.csv", "$zipDir")
-        copyAndKeepPath("examples/smalldata/chicago/chicagoAllWeather.csv", "$zipDir")
-        copyAndKeepPath("examples/smalldata/chicago/chicagoCensus.csv", "$zipDir")
-        copyAndKeepPath("examples/smalldata/chicago/chicagoCrimes10k.csv.zip", "$zipDir")
-        copyAndKeepPath("examples/smalldata/iris/iris_wheader.csv", "$zipDir")
-        copyAndKeepPath("examples/smalldata/prostate/prostate.csv", "$zipDir")
-        copyAndKeepPath("examples/smalldata/smsData.txt", "$zipDir")
-        copyAndKeepPath("examples/smalldata/craigslistJobTitles.csv", "$zipDir")
-        copyAndKeepPath("examples/smalldata/bcwd.csv", "$zipDir")
         copyAndKeepPath("LICENSE", "$zipDir")
         copyAndKeepPath("README.rst", "$zipDir")
         copyAndSubstituteGradleProperties()
 
         copyRecursive("bin/", "$zipDir/bin")
-        copyRecursive("examples/flows/", "$zipDir/examples/flows")
         copyRecursive("doc/build/site/", "$zipDir/doc/build/site")
         copyRecursive("docker/", "$zipDir/docker")
-        copyRecursive("py/examples/", "$zipDir/py/examples/")
     }
 }
 
