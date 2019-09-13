@@ -121,18 +121,9 @@ val title_vectors = words.map(x => new DenseVector(
 
 // Create H2OFrame
 import org.apache.spark.mllib
-case class CRAIGSLIST(target: String, a: org.apache.spark.mllib.linalg.Vector)
-
 import org.apache.spark.h2o._
-val h2oContext = H2OContext.getOrCreate(sc)
-import h2oContext._
-import h2oContext.implicits._
+val hc = H2OContext.getOrCreate(sc)
 
-val resultRDD: DataFrame = XXXlabels.zip(title_vectors).map(v => CRAIGSLIST(v._1, v._2)).toDF
+val resultDF: DataFrame = XXXlabels.zip(title_vectors).map(v => (v._1, v._2)).toDF("target", "fv")
 
-val table:H2OFrame = resultRDD
-
-// OPEN FLOW UI
-openFlow
-
-h2oContext.stop()
+val table = hc.asH2OFrame(resultDF)

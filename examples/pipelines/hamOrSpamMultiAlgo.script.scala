@@ -14,9 +14,9 @@ import org.apache.spark.SparkFiles
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.feature._
 import ai.h2o.sparkling.ml.features.ColumnPruner
-import ai.h2o.sparkling.ml.algos.{H2OAutoML, H2ODeepLearning, H2OGBM, H2OGridSearch}
+import ai.h2o.sparkling.ml.algos.{H2OAutoML, H2ODeepLearning, H2OGBM, H2OGridSearch, H2OXGBoost}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.{DataFrame, Row}
 import water.support.SparkContextSupport
 import water.fvec.H2OFrame
 import org.apache.spark.ml.Pipeline
@@ -31,18 +31,16 @@ val smsDataFilePath = "examples/smalldata/" + smsDataFileName
 SparkContextSupport.addFiles(sc, smsDataFilePath)
 
 // This method loads the data, perform some basic filtering and create Spark's dataframe
-def load(dataFile: String)(implicit sqlContext: SQLContext): DataFrame = {
+def load(dataFile: String): DataFrame = {
   val smsSchema = StructType(Array(
     StructField("label", StringType, nullable = false),
     StructField("text", StringType, nullable = false)))
   val rowRDD = sc.textFile(SparkFiles.get(dataFile)).map(_.split("\t", 2)).filter(r => !r(0).isEmpty).map(p => Row(p(0),p(1)))
-  sqlContext.createDataFrame(rowRDD, smsSchema)
+  spark.createDataFrame(rowRDD, smsSchema)
 }
 
 import org.apache.spark.h2o._
-implicit val h2oContext = H2OContext.getOrCreate(spark)
-
-implicit val sqlContext = spark.sqlContext
+val h2oContext = H2OContext.getOrCreate(spark)
 
 /**
   * Define the pipeline stages
@@ -113,7 +111,7 @@ val algoStage = algo match {
     new H2OGridSearch().
       setLabelCol("label").
       setHyperParameters(hyperParams).
-      setParameters(new H2OGBM().setMaxDepth(30).setSeed(1).getParams())
+      setAlgo(new H2OGBM().setMaxDepth(30).setSeed(1))
 }
 
 
@@ -146,7 +144,7 @@ def isSpam(smsText: String,
            hamThreshold: Double = 0.5) = {
   val smsTextSchema = StructType(Array(StructField("text", StringType, nullable = false)))
   val smsTextRowRDD = sc.parallelize(Seq(smsText)).map(Row(_))
-  val smsTextDF = sqlContext.createDataFrame(smsTextRowRDD, smsTextSchema)
+  val smsTextDF = spark.createDataFrame(smsTextRowRDD, smsTextSchema)
   val prediction = model.transform(smsTextDF)
   prediction.select("prediction").first == "spam"
 }
@@ -154,5 +152,3 @@ def isSpam(smsText: String,
 println(isSpam("Michal, h2oworld party tonight in MV?", loadedModel))
 
 println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", loadedModel))
-
-h2oContext.stop()

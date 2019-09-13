@@ -22,9 +22,7 @@ import water.support.{H2OFrameSupport, SparkContextSupport, ModelMetricsSupport}
 import water.api.TestUtils
 
 // Register files to SparkContext
-SparkContextSupport.addFiles(sc, TestUtils.locate("smalldata/smsData.txt"))
-// One training message
-case class SMS(target: String, fv: org.apache.spark.mllib.linalg.Vector)
+SparkContextSupport.addFiles(sc, "/Users/kuba/devel/repos/sparkling-water/examples/smalldata/smsData.txt")//TestUtils.locate("smalldata/smsData.txt"))
 
 // Data loader
 def load(dataFile: String): RDD[Array[String]] = {
@@ -91,7 +89,6 @@ import sqlContext.implicits._
 // Start H2O services
 import org.apache.spark.h2o._
 implicit val h2oContext = H2OContext.getOrCreate(sc)
-import h2oContext.implicits._
 
 
 // Data load
@@ -107,9 +104,9 @@ val tokens = tokenize(message)
 var (hashingTF, idfModel, tfidf) = buildIDFModel(tokens)
 
 // Merge response with extracted vectors
-val resultRDD: DataFrame = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2)).toDF
+val resultDF = hamSpam.zip(tfidf).map(v => (v._1, v._2)).toDF("target", "fv")
 
-val table:H2OFrame = resultRDD
+val table = h2oContext.asH2OFrame(resultDF)
 // Transform target column into
 table.replace(table.find("target"), table.vec("target").toCategoricalVec).remove()
 
@@ -142,7 +139,7 @@ def isSpam(msg: String,
   val msgRdd = sc.parallelize(Seq(msg))
   val msgVector: DataFrame = idfModel.transform(
     hashingTF.transform (
-      tokenize (msgRdd))).map(v => SMS("?", v)).toDF
+      tokenize (msgRdd))).map(v => ("?", v)).toDF("target", "fv")
   val msgTable: H2OFrame = h2oContext.asH2OFrame(msgVector)
   msgTable.remove(0) // remove first column
   val prediction = dlModel.score(msgTable)
@@ -152,5 +149,3 @@ def isSpam(msg: String,
 
 println(isSpam("Michal, h2oworld party tonight in MV?", dlModel, hashingTF, idfModel, h2oContext))
 println(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", dlModel, hashingTF, idfModel, h2oContext))
-
-h2oContext.stop()
