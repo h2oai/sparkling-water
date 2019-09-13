@@ -63,6 +63,24 @@ resource "aws_s3_bucket_object" "h2o_jar" {
   source = "${var.h2o_jar_file}"
 }
 
+resource "aws_s3_bucket_object" "set_automatic_shutdown" {
+  bucket = "${aws_s3_bucket.deployment_bucket.id}"
+  key = "set_automatic_shutdown.sh"
+  acl = "private"
+  content = <<EOF
+
+  #!/bin/bash
+  set -x -e
+
+  clusterId=$(cat /mnt/var/lib/info/job-flow.json | jq -r ".jobFlowId")
+  export AWS_ACCESS_KEY_ID=${var.aws_access_key}
+  export AWS_SECRET_ACCESS_KEY=${var.aws_secret_key}
+  export AWS_REGION=${var.aws_region}
+  echo "aws emr terminate-clusters --cluster-ids $clusterId" | at now + ${var.aws_emr_timeout}
+
+EOF
+}
+
 resource "aws_s3_bucket_object" "run_benchmarks_script" {
   bucket = "${aws_s3_bucket.deployment_bucket.id}"
   key    = "run_benchmarks.sh"
@@ -112,7 +130,8 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
   depends_on = [
     aws_s3_bucket_object.benchmarks_jar,
     aws_s3_bucket_object.h2o_jar,
-    aws_s3_bucket_object.run_benchmarks_script
+    aws_s3_bucket_object.run_benchmarks_script,
+    aws_s3_bucket_object.set_automatic_shutdown
   ]
 
   ec2_attributes {
@@ -134,6 +153,11 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
 
   tags = {
     name = "SparklingWaterBenchmarks"
+  }
+
+  bootstrap_action {
+    path = "${format("s3://%s/set_automatic_shutdown.sh", aws_s3_bucket.deployment_bucket.bucket)}"
+    name = "Set automatic shutdown"
   }
 
   step {
